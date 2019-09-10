@@ -565,7 +565,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -801,7 +801,7 @@ pub unsafe extern "C" fn print_utf8_str(mut str: *const u8, mut len: i32) {
         }
         let fresh2 = str;
         str = str.offset(1);
-        print_raw_char(*fresh2 as UTF16_code, 1i32 != 0);
+        print_raw_char(*fresh2 as UTF16_code, true);
     }
     /* bypass utf-8 encoding done in print_char() */
 }
@@ -1132,7 +1132,7 @@ unsafe extern "C" fn readFeatureNumber(
     *f = 0i32 as hb_tag_t;
     *v = 0i32;
     if (*s as i32) < '0' as i32 || *s as i32 > '9' as i32 {
-        return 0i32 != 0;
+        return false;
     }
     while *s as i32 >= '0' as i32 && *s as i32 <= '9' as i32 {
         let fresh5 = s;
@@ -1149,10 +1149,10 @@ unsafe extern "C" fn readFeatureNumber(
     s = s.offset(1);
     if *fresh6 as i32 != '=' as i32 {
         /* no setting was specified */
-        return 0i32 != 0;
+        return false;
     } /* NULL-terminated array */
     if (*s as i32) < '0' as i32 || *s as i32 > '9' as i32 {
-        return 0i32 != 0;
+        return false;
     }
     while *s as i32 >= '0' as i32 && *s as i32 <= '9' as i32 {
         let fresh7 = s;
@@ -1163,9 +1163,9 @@ unsafe extern "C" fn readFeatureNumber(
         s = s.offset(1)
     }
     if s != e {
-        return 0i32 != 0;
+        return false;
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn loadOTfont(
     mut fontRef: PlatformFontRef,

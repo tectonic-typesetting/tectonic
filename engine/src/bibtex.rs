@@ -166,7 +166,7 @@ unsafe extern "C" fn peekable_open(
         as *mut peekable_input_t;
     (*peekable).handle = handle;
     (*peekable).peek_char = -1i32;
-    (*peekable).saw_eof = 0i32 != 0;
+    (*peekable).saw_eof = false;
     return peekable;
 }
 unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t) -> i32 {
@@ -187,7 +187,7 @@ unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t) -> i32 {
     }
     rv = ttstub_input_getc((*peekable).handle);
     if rv == -1i32 {
-        (*peekable).saw_eof = 1i32 != 0
+        (*peekable).saw_eof = true
     }
     return rv;
 }
@@ -205,22 +205,22 @@ unsafe extern "C" fn tectonic_eof(mut peekable: *mut peekable_input_t) -> bool {
     /* Check for EOF following Pascal semantics. */
     let mut c: i32 = 0;
     if peekable.is_null() {
-        return 1i32 != 0;
+        return true;
     }
     if (*peekable).saw_eof {
-        return 1i32 != 0;
+        return true;
     }
     c = peekable_getc(peekable);
     if c == -1i32 {
-        return 1i32 != 0;
+        return true;
     }
     peekable_ungetc(peekable, c);
-    return 0i32 != 0;
+    return false;
 }
 unsafe extern "C" fn eoln(mut peekable: *mut peekable_input_t) -> bool {
     let mut c: i32 = 0;
     if (*peekable).saw_eof {
-        return 1i32 != 0;
+        return true;
     }
     c = peekable_getc(peekable);
     if c != -1i32 {
@@ -609,7 +609,7 @@ unsafe extern "C" fn buffer_overflow() {
 unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
     last = 0i32;
     if tectonic_eof(peekable) {
-        return 0i32 != 0;
+        return false;
     }
     while !eoln(peekable) {
         if last >= buf_size {
@@ -626,7 +626,7 @@ unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
         /*white_space */
         last -= 1
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t, mut s: str_number) {
     let mut i: pool_pointer = 0;
@@ -1255,35 +1255,35 @@ unsafe extern "C" fn str_eq_buf(
     let mut i: buf_pointer = 0;
     let mut j: pool_pointer = 0;
     if *str_start.offset((s + 1i32) as isize) - *str_start.offset(s as isize) != len {
-        return 0i32 != 0;
+        return false;
     }
     i = bf_ptr;
     j = *str_start.offset(s as isize);
     while j < *str_start.offset((s + 1i32) as isize) {
         if *str_pool.offset(j as isize) as i32 != *buf.offset(i as isize) as i32 {
-            return 0i32 != 0;
+            return false;
         }
         i = i + 1i32;
         j = j + 1i32
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number) -> bool {
     if *str_start.offset((s1 + 1i32) as isize) - *str_start.offset(s1 as isize)
         != *str_start.offset((s2 + 1i32) as isize) - *str_start.offset(s2 as isize)
     {
-        return 0i32 != 0;
+        return false;
     }
     p_ptr1 = *str_start.offset(s1 as isize);
     p_ptr2 = *str_start.offset(s2 as isize);
     while p_ptr1 < *str_start.offset((s1 + 1i32) as isize) {
         if *str_pool.offset(p_ptr1 as isize) as i32 != *str_pool.offset(p_ptr2 as isize) as i32 {
-            return 0i32 != 0;
+            return false;
         }
         p_ptr1 = p_ptr1 + 1i32;
         p_ptr2 = p_ptr2 + 1i32
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut len: buf_pointer) {
     let mut i: buf_pointer = 0;
@@ -1350,13 +1350,13 @@ unsafe extern "C" fn str_lookup(
         k = k + 1i32
     }
     p = h + 1i32;
-    hash_found = 0i32 != 0;
+    hash_found = false;
     str_num = 0i32;
     loop {
         if *hash_text.offset(p as isize) > 0i32 {
             if str_eq_buf(*hash_text.offset(p as isize), buf, j, l) {
                 if *hash_ilk.offset(p as isize) as i32 == ilk as i32 {
-                    hash_found = 1i32 != 0;
+                    hash_found = true;
                     return p;
                 /* str_found */
                 } else {
@@ -1422,7 +1422,7 @@ unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len, mut ilk: st
             }
         }
     }
-    pre_def_loc = str_lookup(buffer, 1i32, len as buf_pointer, ilk, 1i32 != 0);
+    pre_def_loc = str_lookup(buffer, 1i32, len as buf_pointer, ilk, true);
 }
 unsafe extern "C" fn int_to_ASCII(
     mut the_int: i32,
@@ -1487,7 +1487,7 @@ unsafe extern "C" fn find_cite_locs_for_this_cite_key(mut cite_str: str_number) 
         0i32,
         *str_start.offset((cite_str + 1i32) as isize) - *str_start.offset(cite_str as isize),
         9i32 as str_ilk,
-        0i32 != 0,
+        false,
     );
     cite_hash_found = hash_found;
     lower_case(
@@ -1500,7 +1500,7 @@ unsafe extern "C" fn find_cite_locs_for_this_cite_key(mut cite_str: str_number) 
         0i32,
         *str_start.offset((cite_str + 1i32) as isize) - *str_start.offset(cite_str as isize),
         10i32 as str_ilk,
-        0i32 != 0,
+        false,
     );
     return hash_found;
 }
@@ -1527,27 +1527,27 @@ unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number) -> 
             if char2 as i32 == 127i32 {
                 /*end_of_string */
                 if arg1 < arg2 {
-                    return 1i32 != 0;
+                    return true;
                 } else if arg1 > arg2 {
-                    return 0i32 != 0;
+                    return false;
                 } else {
                     puts_log(b"Duplicate sort key\x00" as *const u8 as *const i8);
                     print_confusion();
                     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                 }
             } else {
-                return 1i32 != 0;
+                return true;
             }
         } else {
             if char2 as i32 == 127i32 {
                 /*end_of_string */
-                return 0i32 != 0;
+                return false;
             } else {
                 if (char1 as i32) < char2 as i32 {
-                    return 1i32 != 0;
+                    return true;
                 } else {
                     if char1 as i32 > char2 as i32 {
-                        return 0i32 != 0;
+                        return false;
                     }
                 }
             }
@@ -2286,11 +2286,11 @@ unsafe extern "C" fn eat_bst_white_space() -> bool {
         if scan_white_space() {
             if *buffer.offset(buf_ptr2 as isize) as i32 != 37i32 {
                 /*comment */
-                return 1i32 != 0;
+                return true;
             }
         }
         if !input_ln(bst_file) {
-            return 0i32 != 0;
+            return false;
         }
         bst_line_num = bst_line_num + 1i32;
         buf_ptr2 = 0i32
@@ -2359,7 +2359,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                             buf_ptr1,
                             buf_ptr2 - buf_ptr1,
                             1i32 as str_ilk,
-                            1i32 != 0,
+                            true,
                         ); /*single_quote */
                         if !hash_found {
                             *fn_type.offset(literal_loc as isize) = 2i32 as fn_class; /*wiz_defined */
@@ -2397,7 +2397,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                             buf_ptr1,
                             buf_ptr2 - buf_ptr1,
                             0i32 as str_ilk,
-                            1i32 != 0,
+                            true,
                         );
                         *fn_type.offset(literal_loc as isize) = 3i32 as fn_class;
                         buf_ptr2 = buf_ptr2 + 1i32;
@@ -2431,7 +2431,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                         buf_ptr1,
                         buf_ptr2 - buf_ptr1,
                         11i32 as str_ilk,
-                        0i32 != 0,
+                        false,
                     );
                     if !hash_found {
                         skp_token_unknown_function_print();
@@ -2463,7 +2463,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 123 => {
                     *ex_buf.offset(0) = 39i32 as ASCII_code;
                     int_to_ASCII(impl_fn_num, ex_buf, 1i32, &mut end_of_num);
-                    impl_fn_loc = str_lookup(ex_buf, 0i32, end_of_num, 11i32 as str_ilk, 1i32 != 0);
+                    impl_fn_loc = str_lookup(ex_buf, 0i32, end_of_num, 11i32 as str_ilk, true);
                     if hash_found {
                         puts_log(
                             b"Already encountered implicit function\x00" as *const u8 as *const i8,
@@ -2504,7 +2504,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                         buf_ptr1,
                         buf_ptr2 - buf_ptr1,
                         11i32 as str_ilk,
-                        0i32 != 0,
+                        false,
                     );
                     if !hash_found {
                         skp_token_unknown_function_print();
@@ -2572,17 +2572,17 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
 unsafe extern "C" fn eat_bib_white_space() -> bool {
     while !scan_white_space() {
         if !input_ln(*bib_file.offset(bib_ptr as isize)) {
-            return 0i32 != 0;
+            return false;
         }
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn compress_bib_white() -> bool {
     if ex_buf_ptr == buf_size {
         bib_field_too_long_print();
-        return 0i32 != 0;
+        return false;
     } else {
         *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
         ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2590,18 +2590,18 @@ unsafe extern "C" fn compress_bib_white() -> bool {
     while !scan_white_space() {
         if !input_ln(*bib_file.offset(bib_ptr as isize)) {
             eat_bib_print();
-            return 0i32 != 0;
+            return false;
         }
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn scan_balanced_braces() -> bool {
     buf_ptr2 = buf_ptr2 + 1i32;
     if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 || buf_ptr2 == last {
         if !compress_bib_white() {
-            return 0i32 != 0;
+            return false;
         }
     }
     if ex_buf_ptr > 1i32 {
@@ -2622,7 +2622,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                     bib_brace_level = bib_brace_level + 1i32; /*left_brace */
                     if ex_buf_ptr == buf_size {
                         bib_field_too_long_print(); /*right_brace */
-                        return 0i32 != 0;
+                        return false;
                     } else {
                         *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code; /*left_brace */
                         ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2632,7 +2632,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         || buf_ptr2 == last
                     {
                         if !compress_bib_white() {
-                            return 0i32 != 0;
+                            return false;
                         }
                     }
                     loop {
@@ -2641,7 +2641,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                 bib_brace_level = bib_brace_level - 1i32;
                                 if ex_buf_ptr == buf_size {
                                     bib_field_too_long_print();
-                                    return 0i32 != 0;
+                                    return false;
                                 } else {
                                     *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as ASCII_code;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2652,7 +2652,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     || buf_ptr2 == last
                                 {
                                     if !compress_bib_white() {
-                                        return 0i32 != 0;
+                                        return false;
                                     }
                                 }
                                 if bib_brace_level == 0i32 {
@@ -2663,7 +2663,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                 bib_brace_level = bib_brace_level + 1i32;
                                 if ex_buf_ptr == buf_size {
                                     bib_field_too_long_print();
-                                    return 0i32 != 0;
+                                    return false;
                                 } else {
                                     *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2674,14 +2674,14 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     || buf_ptr2 == last
                                 {
                                     if !compress_bib_white() {
-                                        return 0i32 != 0;
+                                        return false;
                                     }
                                 }
                             }
                             _ => {
                                 if ex_buf_ptr == buf_size {
                                     bib_field_too_long_print();
-                                    return 0i32 != 0;
+                                    return false;
                                 } else {
                                     *ex_buf.offset(ex_buf_ptr as isize) =
                                         *buffer.offset(buf_ptr2 as isize);
@@ -2693,7 +2693,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     || buf_ptr2 == last
                                 {
                                     if !compress_bib_white() {
-                                        return 0i32 != 0;
+                                        return false;
                                     }
                                 }
                             }
@@ -2702,12 +2702,12 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                 }
                 125 => {
                     bib_unbalanced_braces_print();
-                    return 0i32 != 0;
+                    return false;
                 }
                 _ => {
                     if ex_buf_ptr == buf_size {
                         bib_field_too_long_print();
-                        return 0i32 != 0;
+                        return false;
                     } else {
                         *ex_buf.offset(ex_buf_ptr as isize) = *buffer.offset(buf_ptr2 as isize);
                         ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2717,7 +2717,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         || buf_ptr2 == last
                     {
                         if !compress_bib_white() {
-                            return 0i32 != 0;
+                            return false;
                         }
                     }
                 }
@@ -2731,7 +2731,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                 buf_ptr2 = buf_ptr2 + 1i32;
                 if !eat_bib_white_space() {
                     eat_bib_print();
-                    return 0i32 != 0;
+                    return false;
                 }
                 while bib_brace_level > 0i32 {
                     /*256: */
@@ -2741,7 +2741,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         buf_ptr2 = buf_ptr2 + 1i32;
                         if !eat_bib_white_space() {
                             eat_bib_print();
-                            return 0i32 != 0;
+                            return false;
                         }
                     } else if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
                         /*left_brace */
@@ -2749,14 +2749,14 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         buf_ptr2 = buf_ptr2 + 1i32;
                         if !eat_bib_white_space() {
                             eat_bib_print();
-                            return 0i32 != 0;
+                            return false;
                         }
                     } else {
                         buf_ptr2 = buf_ptr2 + 1i32;
                         if !scan2(125i32 as ASCII_code, 123i32 as ASCII_code) {
                             if !eat_bib_white_space() {
                                 eat_bib_print();
-                                return 0i32 != 0;
+                                return false;
                             }
                         }
                     }
@@ -2764,33 +2764,33 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
             } else if *buffer.offset(buf_ptr2 as isize) as i32 == 125i32 {
                 /*right_brace */
                 bib_unbalanced_braces_print(); /*right_brace */
-                return 0i32 != 0;
+                return false;
             } else {
                 buf_ptr2 = buf_ptr2 + 1i32; /*double_quote */
                 if !scan3(right_str_delim, 123i32 as ASCII_code, 125i32 as ASCII_code) {
                     if !eat_bib_white_space() {
                         eat_bib_print();
-                        return 0i32 != 0;
+                        return false;
                     }
                 }
             }
         }
     }
     buf_ptr2 = buf_ptr2 + 1i32;
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
     match *buffer.offset(buf_ptr2 as isize) as i32 {
         123 => {
             right_str_delim = 125i32 as ASCII_code;
             if !scan_balanced_braces() {
-                return 0i32 != 0;
+                return false;
             }
         }
         34 => {
             right_str_delim = 34i32 as ASCII_code;
             if !scan_balanced_braces() {
-                return 0i32 != 0;
+                return false;
             }
         }
         48 | 49 | 50 | 51 | 52 | 53 | 54 | 55 | 56 | 57 => {
@@ -2804,7 +2804,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                 while tmp_ptr < buf_ptr2 {
                     if ex_buf_ptr == buf_size {
                         bib_field_too_long_print();
-                        return 0i32 != 0;
+                        return false;
                     } else {
                         *ex_buf.offset(ex_buf_ptr as isize) = *buffer.offset(tmp_ptr as isize);
                         ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2820,7 +2820,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                 bib_id_print();
                 puts_log(b"a field part\x00" as *const u8 as *const i8);
                 bib_err_print();
-                return 0i32 != 0;
+                return false;
             }
             if store_field {
                 lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
@@ -2829,14 +2829,14 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                     buf_ptr1,
                     buf_ptr2 - buf_ptr1,
                     13i32 as str_ilk,
-                    0i32 != 0,
+                    false,
                 );
-                store_token = 1i32 != 0;
+                store_token = true;
                 if at_bib_command {
                     if command_num == 2i32 {
                         /*n_bib_string */
                         if macro_name_loc == cur_macro_loc {
-                            store_token = 0i32 != 0;
+                            store_token = false;
                             macro_warn_print();
                             puts_log(b"used in its own definition\n\x00" as *const u8 as *const i8);
                             bib_warn_print();
@@ -2844,7 +2844,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                     }
                 }
                 if !hash_found {
-                    store_token = 0i32 != 0;
+                    store_token = false;
                     macro_warn_print();
                     puts_log(b"undefined\n\x00" as *const u8 as *const i8);
                     bib_warn_print();
@@ -2860,7 +2860,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                         {
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print();
-                                return 0i32 != 0;
+                                return false;
                             } else {
                                 *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
                                 ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2879,7 +2879,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                             /*white_space */
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print();
-                                return 0i32 != 0;
+                                return false;
                             } else {
                                 *ex_buf.offset(ex_buf_ptr as isize) =
                                     *str_pool.offset(tmp_ptr as isize);
@@ -2889,7 +2889,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                             /*space */
                             if ex_buf_ptr == buf_size {
                                 bib_field_too_long_print(); /*space */
-                                return 0i32 != 0;
+                                return false;
                             } else {
                                 *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
                                 ex_buf_ptr = ex_buf_ptr + 1i32
@@ -2903,24 +2903,24 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
     }
     if !eat_bib_white_space() {
         eat_bib_print();
-        return 0i32 != 0;
+        return false;
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
     ex_buf_ptr = 0i32;
     if !scan_a_field_token_and_eat_white() {
-        return 0i32 != 0;
+        return false;
     }
     while *buffer.offset(buf_ptr2 as isize) as i32 == 35i32 {
         /*concat_char */
         buf_ptr2 = buf_ptr2 + 1i32;
         if !eat_bib_white_space() {
             eat_bib_print();
-            return 0i32 != 0;
+            return false;
         }
         if !scan_a_field_token_and_eat_white() {
-            return 0i32 != 0;
+            return false;
         }
     }
     if store_field {
@@ -2943,7 +2943,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
             ex_buf_xptr,
             ex_buf_ptr - ex_buf_xptr,
             0i32 as str_ilk,
-            1i32 != 0,
+            true,
         );
         *fn_type.offset(field_val_loc as isize) = 3i32 as fn_class;
         if at_bib_command {
@@ -2992,7 +2992,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
                         ex_buf_xptr,
                         ex_buf_ptr - ex_buf_xptr,
                         10i32 as str_ilk,
-                        1i32 != 0,
+                        true,
                     );
                     if hash_found {
                         cite_loc = *ilk_info.offset(lc_cite_loc as isize);
@@ -3007,7 +3007,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
                             ex_buf_xptr,
                             ex_buf_ptr - ex_buf_xptr,
                             9i32 as str_ilk,
-                            1i32 != 0,
+                            true,
                         );
                         if hash_found {
                             hash_cite_confusion();
@@ -3019,7 +3019,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
             }
         }
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn decr_brace_level(mut pop_lit_var: str_number) {
     if brace_level == 0i32 {
@@ -3035,8 +3035,8 @@ unsafe extern "C" fn check_brace_level(mut pop_lit_var: str_number) {
 }
 unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
     brace_level = 0i32;
-    preceding_white = 0i32 != 0;
-    and_found = 0i32 != 0;
+    preceding_white = false;
+    and_found = false;
     while !and_found && ex_buf_ptr < ex_buf_length {
         match *ex_buf.offset(ex_buf_ptr as isize) as i32 {
             97 | 65 => {
@@ -3056,13 +3056,13 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                                 {
                                     /*white_space */
                                     ex_buf_ptr = ex_buf_ptr + 2i32;
-                                    and_found = 1i32 != 0
+                                    and_found = true
                                 }
                             }
                         }
                     }
                 }
-                preceding_white = 0i32 != 0
+                preceding_white = false
             }
             123 => {
                 brace_level = brace_level + 1i32;
@@ -3077,21 +3077,21 @@ unsafe extern "C" fn name_scan_for_and(mut pop_lit_var: str_number) {
                     }
                     ex_buf_ptr = ex_buf_ptr + 1i32
                 }
-                preceding_white = 0i32 != 0
+                preceding_white = false
             }
             125 => {
                 decr_brace_level(pop_lit_var);
                 ex_buf_ptr = ex_buf_ptr + 1i32;
-                preceding_white = 0i32 != 0
+                preceding_white = false
             }
             _ => {
                 if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32 == 1i32 {
                     /*white_space */
                     ex_buf_ptr = ex_buf_ptr + 1i32;
-                    preceding_white = 1i32 != 0
+                    preceding_white = true
                 } else {
                     ex_buf_ptr = ex_buf_ptr + 1i32;
-                    preceding_white = 0i32 != 0
+                    preceding_white = false
                 }
             }
         }
@@ -3104,12 +3104,12 @@ unsafe extern "C" fn von_token_found() -> bool {
         if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'A' as i32
             && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'Z' as i32
         {
-            return 0i32 != 0;
+            return false;
         } else {
             if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'a' as i32
                 && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'z' as i32
             {
-                return 1i32 != 0;
+                return true;
             } else {
                 if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 123i32 {
                     /*left_brace */
@@ -3132,13 +3132,13 @@ unsafe extern "C" fn von_token_found() -> bool {
                             name_bf_yptr,
                             name_bf_ptr - name_bf_yptr,
                             14i32 as str_ilk,
-                            0i32 != 0,
+                            false,
                         );
                         if hash_found {
                             /*400: */
                             match *ilk_info.offset(control_seq_loc as isize) {
-                                3 | 5 | 7 | 9 | 11 => return 0i32 != 0,
-                                0 | 1 | 2 | 4 | 6 | 8 | 10 | 12 => return 1i32 != 0,
+                                3 | 5 | 7 | 9 | 11 => return false,
+                                0 | 1 | 2 | 4 | 6 | 8 | 10 | 12 => return true,
                                 _ => {
                                     puts_log(
                                         b"Control-sequence hash error\x00" as *const u8
@@ -3153,12 +3153,12 @@ unsafe extern "C" fn von_token_found() -> bool {
                             if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'A' as i32
                                 && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'Z' as i32
                             {
-                                return 0i32 != 0;
+                                return false;
                             } else {
                                 if *sv_buffer.offset(name_bf_ptr as isize) as i32 >= 'a' as i32
                                     && *sv_buffer.offset(name_bf_ptr as isize) as i32 <= 'z' as i32
                                 {
-                                    return 1i32 != 0;
+                                    return true;
                                 } else {
                                     if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 125i32 {
                                         /*right_brace */
@@ -3173,7 +3173,7 @@ unsafe extern "C" fn von_token_found() -> bool {
                             }
                             name_bf_ptr = name_bf_ptr + 1i32
                         }
-                        return 0i32 != 0;
+                        return false;
                     } else {
                         while nm_brace_level > 0i32 && name_bf_ptr < name_bf_xptr {
                             if *sv_buffer.offset(name_bf_ptr as isize) as i32 == 125i32 {
@@ -3192,7 +3192,7 @@ unsafe extern "C" fn von_token_found() -> bool {
             }
         }
     }
-    return 0i32 != 0;
+    return false;
 }
 unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff() {
     von_end = last_end - 1i32;
@@ -3266,82 +3266,82 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
             sp_brace_level = sp_brace_level + 1i32;
             sp_ptr = sp_ptr + 1i32;
             sp_xptr1 = sp_ptr;
-            alpha_found = 0i32 != 0;
-            double_letter = 0i32 != 0;
-            end_of_group = 0i32 != 0;
-            to_be_written = 1i32 != 0;
+            alpha_found = false;
+            double_letter = false;
+            end_of_group = false;
+            to_be_written = true;
             while !end_of_group && sp_ptr < sp_end {
                 if lex_class[*str_pool.offset(sp_ptr as isize) as usize] as i32 == 2i32 {
                     /*alpha */
                     sp_ptr = sp_ptr + 1i32;
                     if alpha_found {
                         brace_lvl_one_letters_complaint();
-                        to_be_written = 0i32 != 0
+                        to_be_written = false
                     } else {
                         match *str_pool.offset((sp_ptr - 1i32) as isize) as i32 {
                             102 | 70 => {
                                 cur_token = first_start;
                                 last_token = first_end;
                                 if cur_token == last_token {
-                                    to_be_written = 0i32 != 0
+                                    to_be_written = false
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'f' as i32
                                     || *str_pool.offset(sp_ptr as isize) as i32 == 'F' as i32
                                 {
-                                    double_letter = 1i32 != 0
+                                    double_letter = true
                                 }
                             }
                             118 | 86 => {
                                 cur_token = von_start;
                                 last_token = von_end;
                                 if cur_token == last_token {
-                                    to_be_written = 0i32 != 0
+                                    to_be_written = false
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'v' as i32
                                     || *str_pool.offset(sp_ptr as isize) as i32 == 'V' as i32
                                 {
-                                    double_letter = 1i32 != 0
+                                    double_letter = true
                                 }
                             }
                             108 | 76 => {
                                 cur_token = von_end;
                                 last_token = last_end;
                                 if cur_token == last_token {
-                                    to_be_written = 0i32 != 0
+                                    to_be_written = false
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'l' as i32
                                     || *str_pool.offset(sp_ptr as isize) as i32 == 'L' as i32
                                 {
-                                    double_letter = 1i32 != 0
+                                    double_letter = true
                                 }
                             }
                             106 | 74 => {
                                 cur_token = last_end;
                                 last_token = jr_end;
                                 if cur_token == last_token {
-                                    to_be_written = 0i32 != 0
+                                    to_be_written = false
                                 }
                                 if *str_pool.offset(sp_ptr as isize) as i32 == 'j' as i32
                                     || *str_pool.offset(sp_ptr as isize) as i32 == 'J' as i32
                                 {
-                                    double_letter = 1i32 != 0
+                                    double_letter = true
                                 }
                             }
                             _ => {
                                 brace_lvl_one_letters_complaint();
-                                to_be_written = 0i32 != 0
+                                to_be_written = false
                             }
                         }
                         if double_letter {
                             sp_ptr = sp_ptr + 1i32
                         }
                     }
-                    alpha_found = 1i32 != 0
+                    alpha_found = true
                 } else if *str_pool.offset(sp_ptr as isize) as i32 == 125i32 {
                     /*right_brace */
                     sp_brace_level = sp_brace_level - 1i32;
                     sp_ptr = sp_ptr + 1i32;
-                    end_of_group = 1i32 != 0
+                    end_of_group = true
                 } else if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
                     /*left_brace */
                     sp_brace_level = sp_brace_level + 1i32;
@@ -3366,11 +3366,11 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                     if double_letter {
                         sp_ptr = sp_ptr + 1i32
                     }
-                    use_default = 1i32 != 0;
+                    use_default = true;
                     sp_xptr2 = sp_ptr;
                     if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
                         /*left_brace */
-                        use_default = 0i32 != 0; /*416: */
+                        use_default = false; /*416: */
                         sp_brace_level = sp_brace_level + 1i32;
                         sp_ptr = sp_ptr + 1i32;
                         sp_xptr1 = sp_ptr;
@@ -3721,12 +3721,12 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
         out_buf_ptr = out_buf_ptr + 1i32
     }
     out_buf_length = out_buf_ptr;
-    unbreakable_tail = 0i32 != 0;
+    unbreakable_tail = false;
     while out_buf_length > 79i32 && !unbreakable_tail {
         /*324: */
         end_ptr = out_buf_length;
         out_buf_ptr = 79i32;
-        break_pt_found = 0i32 != 0;
+        break_pt_found = false;
         while lex_class[*out_buf.offset(out_buf_ptr as isize) as usize] as i32 != 1i32
             && out_buf_ptr >= 3i32
         {
@@ -3744,9 +3744,9 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
             }
             /*loop1_exit */
             if out_buf_ptr == end_ptr {
-                unbreakable_tail = 1i32 != 0
+                unbreakable_tail = true
             } else {
-                break_pt_found = 1i32 != 0;
+                break_pt_found = true;
                 while out_buf_ptr + 1i32 < end_ptr {
                     if !(lex_class[*out_buf.offset((out_buf_ptr + 1i32) as isize) as usize] as i32
                         == 1i32)
@@ -3758,7 +3758,7 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
                 }
             }
         } else {
-            break_pt_found = 1i32 != 0
+            break_pt_found = true
         } /*space */
         if break_pt_found {
             out_buf_length = out_buf_ptr; /*space */
@@ -4231,7 +4231,7 @@ unsafe extern "C" fn x_change_case() {
                                             ex_buf_xptr,
                                             ex_buf_ptr - ex_buf_xptr,
                                             14i32 as str_ilk,
-                                            0i32 != 0,
+                                            false,
                                         );
                                         if hash_found {
                                             /*373: */
@@ -4352,11 +4352,11 @@ unsafe extern "C" fn x_change_case() {
                 }
                 /*backslash */
                 /*ok_pascal_i_give_up */
-                prev_colon = 0i32 != 0
+                prev_colon = false
             } else if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 125i32 {
                 /*right_brace */
                 decr_brace_level(pop_lit2);
-                prev_colon = 0i32 != 0
+                prev_colon = false
             } else if brace_level == 0i32 {
                 /*377: */
                 match conversion_type as i32 {
@@ -4372,12 +4372,12 @@ unsafe extern "C" fn x_change_case() {
                         }
                         if *ex_buf.offset(ex_buf_ptr as isize) as i32 == 58i32 {
                             /*colon */
-                            prev_colon = 1i32 != 0
+                            prev_colon = true
                         } else if lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32
                             != 1i32
                         {
                             /*white_space */
-                            prev_colon = 0i32 != 0
+                            prev_colon = false
                         }
                     }
                     1 => {
@@ -4553,7 +4553,7 @@ unsafe extern "C" fn x_format_name() {
         name_bf_ptr = 0i32;
         num_commas = 0i32;
         num_tokens = 0i32;
-        token_starting = 1i32 != 0;
+        token_starting = true;
         while ex_buf_xptr < ex_buf_ptr {
             match *ex_buf.offset(ex_buf_xptr as isize) as i32 {
                 44 => {
@@ -4576,7 +4576,7 @@ unsafe extern "C" fn x_format_name() {
                         /*comma */
                     }
                     ex_buf_xptr = ex_buf_xptr + 1i32;
-                    token_starting = 1i32 != 0
+                    token_starting = true
                 }
                 123 => {
                     brace_level = brace_level + 1i32;
@@ -4600,7 +4600,7 @@ unsafe extern "C" fn x_format_name() {
                         name_bf_ptr = name_bf_ptr + 1i32;
                         ex_buf_xptr = ex_buf_xptr + 1i32
                     }
-                    token_starting = 0i32 != 0
+                    token_starting = false
                 }
                 125 => {
                     if token_starting {
@@ -4615,7 +4615,7 @@ unsafe extern "C" fn x_format_name() {
                     puts_log(b"\" isn\'t brace balanced\x00" as *const u8 as *const i8);
                     bst_ex_warn_print();
                     ex_buf_xptr = ex_buf_xptr + 1i32;
-                    token_starting = 0i32 != 0
+                    token_starting = false
                 }
                 _ => match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as usize] as i32 {
                     1 => {
@@ -4623,7 +4623,7 @@ unsafe extern "C" fn x_format_name() {
                             *name_sep_char.offset(num_tokens as isize) = 32i32 as ASCII_code
                         }
                         ex_buf_xptr = ex_buf_xptr + 1i32;
-                        token_starting = 1i32 != 0
+                        token_starting = true
                     }
                     4 => {
                         if !token_starting {
@@ -4631,7 +4631,7 @@ unsafe extern "C" fn x_format_name() {
                                 *ex_buf.offset(ex_buf_xptr as isize)
                         }
                         ex_buf_xptr = ex_buf_xptr + 1i32;
-                        token_starting = 1i32 != 0
+                        token_starting = true
                     }
                     _ => {
                         if token_starting {
@@ -4642,7 +4642,7 @@ unsafe extern "C" fn x_format_name() {
                             *ex_buf.offset(ex_buf_xptr as isize);
                         name_bf_ptr = name_bf_ptr + 1i32;
                         ex_buf_xptr = ex_buf_xptr + 1i32;
-                        token_starting = 0i32 != 0
+                        token_starting = false
                     }
                 },
             }
@@ -4844,7 +4844,7 @@ unsafe extern "C" fn x_purify() {
                                         ex_buf_yptr,
                                         ex_buf_ptr - ex_buf_yptr,
                                         14i32 as str_ilk,
-                                        0i32 != 0,
+                                        false,
                                     );
                                     if hash_found {
                                         /*434: */
@@ -5192,7 +5192,7 @@ unsafe extern "C" fn x_width() {
                                     ex_buf_xptr,
                                     ex_buf_ptr - ex_buf_xptr,
                                     14i32 as str_ilk,
-                                    0i32 != 0,
+                                    false,
                                 );
                                 if hash_found {
                                     /*454: */
@@ -11223,12 +11223,10 @@ unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name: *const i
         *buffer.offset((name_ptr + 1i32) as isize) = *name_of_file.offset(name_ptr as isize);
         name_ptr = name_ptr + 1i32
     }
-    top_lev_str =
-        *hash_text
-            .offset(str_lookup(buffer, 1i32, aux_name_length, 0i32 as str_ilk, 1i32 != 0) as isize);
+    top_lev_str = *hash_text
+        .offset(str_lookup(buffer, 1i32, aux_name_length, 0i32 as str_ilk, true) as isize);
     aux_list[aux_ptr as usize] =
-        *hash_text
-            .offset(str_lookup(buffer, 1i32, name_length, 3i32 as str_ilk, 1i32 != 0) as isize);
+        *hash_text.offset(str_lookup(buffer, 1i32, name_length, 3i32 as str_ilk, true) as isize);
     if hash_found {
         puts_log(b"Already encountered auxiliary file\x00" as *const u8 as *const i8);
         print_confusion();
@@ -11243,7 +11241,7 @@ unsafe extern "C" fn aux_bib_data_command() {
         aux_err_print();
         return;
     }
-    bib_seen = 1i32 != 0;
+    bib_seen = true;
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         buf_ptr2 = buf_ptr2 + 1i32;
@@ -11286,7 +11284,7 @@ unsafe extern "C" fn aux_bib_data_command() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             6i32 as str_ilk,
-            1i32 != 0,
+            true,
         ) as isize);
         if hash_found {
             puts_log(b"This database file appears more than once: \x00" as *const u8 as *const i8);
@@ -11312,7 +11310,7 @@ unsafe extern "C" fn aux_bib_style_command() {
         aux_err_print();
         return;
     }
-    bst_seen = 1i32 != 0;
+    bst_seen = true;
     buf_ptr2 = buf_ptr2 + 1i32;
     if !scan1_white(125i32 as ASCII_code) {
         aux_err_no_right_brace_print();
@@ -11330,13 +11328,10 @@ unsafe extern "C" fn aux_bib_style_command() {
         aux_err_print();
         return;
     }
-    bst_str = *hash_text.offset(str_lookup(
-        buffer,
-        buf_ptr1,
-        buf_ptr2 - buf_ptr1,
-        5i32 as str_ilk,
-        1i32 != 0,
-    ) as isize);
+    bst_str =
+        *hash_text.offset(
+            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 5i32 as str_ilk, true) as isize,
+        );
     if hash_found {
         puts_log(b"Already encountered style file\x00" as *const u8 as *const i8);
         print_confusion();
@@ -11360,7 +11355,7 @@ unsafe extern "C" fn aux_bib_style_command() {
     };
 }
 unsafe extern "C" fn aux_citation_command() {
-    citation_seen = 1i32 != 0;
+    citation_seen = true;
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         let mut current_block_56: u64;
         /*right_brace */
@@ -11391,7 +11386,7 @@ unsafe extern "C" fn aux_citation_command() {
                     aux_err_print();
                     return;
                 } else {
-                    all_entries = 1i32 != 0;
+                    all_entries = true;
                     all_marker = cite_ptr
                 }
                 current_block_56 = 10930818133215224067;
@@ -11414,7 +11409,7 @@ unsafe extern "C" fn aux_citation_command() {
                     buf_ptr1,
                     buf_ptr2 - buf_ptr1,
                     10i32 as str_ilk,
-                    1i32 != 0,
+                    true,
                 );
                 if hash_found {
                     dummy_loc = str_lookup(
@@ -11422,7 +11417,7 @@ unsafe extern "C" fn aux_citation_command() {
                         buf_ptr1,
                         buf_ptr2 - buf_ptr1,
                         9i32 as str_ilk,
-                        0i32 != 0,
+                        false,
                     );
                     if !hash_found {
                         puts_log(
@@ -11439,13 +11434,8 @@ unsafe extern "C" fn aux_citation_command() {
                         return;
                     }
                 } else {
-                    cite_loc = str_lookup(
-                        buffer,
-                        buf_ptr1,
-                        buf_ptr2 - buf_ptr1,
-                        9i32 as str_ilk,
-                        1i32 != 0,
-                    );
+                    cite_loc =
+                        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 9i32 as str_ilk, true);
                     if hash_found {
                         hash_cite_confusion();
                     }
@@ -11490,12 +11480,12 @@ unsafe extern "C" fn aux_input_command() {
         );
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
-    aux_extension_ok = 1i32 != 0;
+    aux_extension_ok = true;
     if buf_ptr2 - buf_ptr1
         < *str_start.offset((s_aux_extension + 1i32) as isize)
             - *str_start.offset(s_aux_extension as isize)
     {
-        aux_extension_ok = 0i32 != 0
+        aux_extension_ok = false
     } else if !str_eq_buf(
         s_aux_extension,
         buffer,
@@ -11505,7 +11495,7 @@ unsafe extern "C" fn aux_input_command() {
         *str_start.offset((s_aux_extension + 1i32) as isize)
             - *str_start.offset(s_aux_extension as isize),
     ) {
-        aux_extension_ok = 0i32 != 0
+        aux_extension_ok = false
     }
     if !aux_extension_ok {
         print_a_token();
@@ -11514,13 +11504,10 @@ unsafe extern "C" fn aux_input_command() {
         aux_err_print();
         return;
     }
-    aux_list[aux_ptr as usize] = *hash_text.offset(str_lookup(
-        buffer,
-        buf_ptr1,
-        buf_ptr2 - buf_ptr1,
-        3i32 as str_ilk,
-        1i32 != 0,
-    ) as isize);
+    aux_list[aux_ptr as usize] =
+        *hash_text.offset(
+            str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 3i32 as str_ilk, true) as isize,
+        );
     if hash_found {
         puts_log(b"Already encountered file \x00" as *const u8 as *const i8);
         print_aux_name();
@@ -11565,7 +11552,7 @@ unsafe extern "C" fn get_aux_command_and_process() {
         buf_ptr1,
         buf_ptr2 - buf_ptr1,
         2i32 as str_ilk,
-        0i32 != 0,
+        false,
     ) as isize);
     if hash_found {
         match command_num {
@@ -11626,7 +11613,7 @@ unsafe extern "C" fn bst_entry_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    entry_seen = 1i32 != 0;
+    entry_seen = true;
     if !eat_bst_white_space() {
         eat_bst_print();
         puts_log(b"entry\x00" as *const u8 as *const i8);
@@ -11667,7 +11654,7 @@ unsafe extern "C" fn bst_entry_command() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             11i32 as str_ilk,
-            1i32 != 0,
+            true,
         );
         if hash_found {
             already_seen_function_print(fn_loc);
@@ -11728,7 +11715,7 @@ unsafe extern "C" fn bst_entry_command() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             11i32 as str_ilk,
-            1i32 != 0,
+            true,
         );
         if hash_found {
             already_seen_function_print(fn_loc);
@@ -11785,7 +11772,7 @@ unsafe extern "C" fn bst_entry_command() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             11i32 as str_ilk,
-            1i32 != 0,
+            true,
         );
         if hash_found {
             already_seen_function_print(fn_loc);
@@ -11810,13 +11797,13 @@ unsafe extern "C" fn bad_argument_token() -> bool {
         buf_ptr1,
         buf_ptr2 - buf_ptr1,
         11i32 as str_ilk,
-        0i32 != 0,
+        false,
     );
     if !hash_found {
         print_a_token();
         puts_log(b" is an unknown function\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
-        return 1i32 != 0;
+        return true;
     } else {
         if *fn_type.offset(fn_loc as isize) as i32 != 0i32
             && *fn_type.offset(fn_loc as isize) as i32 != 1i32
@@ -11825,10 +11812,10 @@ unsafe extern "C" fn bad_argument_token() -> bool {
             puts_log(b" has bad function type \x00" as *const u8 as *const i8);
             print_fn_class(fn_loc);
             bst_err_print_and_look_for_blank_line();
-            return 1i32 != 0;
+            return true;
         }
     }
-    return 0i32 != 0;
+    return false;
 }
 unsafe extern "C" fn bst_execute_command() {
     if !read_seen {
@@ -11886,7 +11873,7 @@ unsafe extern "C" fn bst_execute_command() {
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     init_command_execution();
-    mess_with_entries = 0i32 != 0;
+    mess_with_entries = false;
     execute_fn(fn_loc);
     check_command_execution();
 }
@@ -11929,7 +11916,7 @@ unsafe extern "C" fn bst_function_command() {
         buf_ptr1,
         buf_ptr2 - buf_ptr1,
         11i32 as str_ilk,
-        1i32 != 0,
+        true,
     );
     if hash_found {
         already_seen_function_print(wiz_loc);
@@ -12010,7 +11997,7 @@ unsafe extern "C" fn bst_integers_command() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             11i32 as str_ilk,
-            1i32 != 0,
+            true,
         );
         if hash_found {
             already_seen_function_print(fn_loc);
@@ -12083,7 +12070,7 @@ unsafe extern "C" fn bst_iterate_command() {
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     init_command_execution();
-    mess_with_entries = 1i32 != 0;
+    mess_with_entries = true;
     sort_cite_ptr = 0i32;
     while sort_cite_ptr < num_cites {
         cite_ptr = *cite_info.offset(sort_cite_ptr as isize);
@@ -12136,7 +12123,7 @@ unsafe extern "C" fn bst_macro_command() {
         buf_ptr1,
         buf_ptr2 - buf_ptr1,
         13i32 as str_ilk,
-        1i32 != 0,
+        true,
     );
     if hash_found {
         print_a_token();
@@ -12191,13 +12178,7 @@ unsafe extern "C" fn bst_macro_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    macro_def_loc = str_lookup(
-        buffer,
-        buf_ptr1,
-        buf_ptr2 - buf_ptr1,
-        0i32 as str_ilk,
-        1i32 != 0,
-    );
+    macro_def_loc = str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 0i32 as str_ilk, true);
     *fn_type.offset(macro_def_loc as isize) = 3i32 as fn_class;
     *ilk_info.offset(macro_name_loc as isize) = *hash_text.offset(macro_def_loc as isize);
     buf_ptr2 = buf_ptr2 + 1i32;
@@ -12218,7 +12199,7 @@ unsafe extern "C" fn bst_macro_command() {
 }
 unsafe extern "C" fn get_bib_command_or_entry_and_process() {
     let mut current_block: u64;
-    at_bib_command = 0i32 != 0;
+    at_bib_command = false;
     while !scan1(64i32 as ASCII_code) {
         if !input_ln(*bib_file.offset(bib_ptr as isize)) {
             return;
@@ -12255,11 +12236,11 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         buf_ptr1,
         buf_ptr2 - buf_ptr1,
         12i32 as str_ilk,
-        0i32 != 0,
+        false,
     ) as isize);
     if hash_found {
         /*240: */
-        at_bib_command = 1i32 != 0;
+        at_bib_command = true;
         match command_num {
             0 => return,
             1 => {
@@ -12301,7 +12282,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     eat_bib_print();
                     return;
                 }
-                store_field = 1i32 != 0;
+                store_field = true;
                 if !scan_and_store_the_field_value_and_eat_white() {
                     return;
                 }
@@ -12355,7 +12336,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     buf_ptr1,
                     buf_ptr2 - buf_ptr1,
                     13i32 as str_ilk,
-                    1i32 != 0,
+                    true,
                 );
                 *ilk_info.offset(cur_macro_loc as isize) =
                     *hash_text.offset(cur_macro_loc as isize);
@@ -12373,7 +12354,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     eat_bib_print();
                     return;
                 }
-                store_field = 1i32 != 0;
+                store_field = true;
                 if !scan_and_store_the_field_value_and_eat_white() {
                     return;
                 }
@@ -12398,12 +12379,12 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             11i32 as str_ilk,
-            0i32 != 0,
+            false,
         );
         if !hash_found || *fn_type.offset(entry_type_loc as isize) as i32 != 1i32 {
-            type_exists = 0i32 != 0
+            type_exists = false
         } else {
-            type_exists = 1i32 != 0
+            type_exists = true
         }
     }
     if !eat_bib_white_space() {
@@ -12444,7 +12425,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             10i32 as str_ilk,
-            1i32 != 0,
+            true,
         )
     } else {
         lc_cite_loc = str_lookup(
@@ -12452,7 +12433,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             10i32 as str_ilk,
-            0i32 != 0,
+            false,
         )
     }
     if hash_found {
@@ -12461,19 +12442,14 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             if *type_list.offset(entry_cite_ptr as isize) == 0i32 {
                 /*empty */
                 if !all_entries && entry_cite_ptr >= old_num_cites {
-                    cite_loc = str_lookup(
-                        buffer,
-                        buf_ptr1,
-                        buf_ptr2 - buf_ptr1,
-                        9i32 as str_ilk,
-                        1i32 != 0,
-                    );
+                    cite_loc =
+                        str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 9i32 as str_ilk, true);
                     if !hash_found {
                         *ilk_info.offset(lc_cite_loc as isize) = cite_loc;
                         *ilk_info.offset(cite_loc as isize) = entry_cite_ptr;
                         *cite_list.offset(entry_cite_ptr as isize) =
                             *hash_text.offset(cite_loc as isize);
-                        hash_found = 1i32 != 0
+                        hash_found = true
                     }
                 }
                 current_block = 12387625063048049585;
@@ -12502,7 +12478,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 *str_start.offset((*cite_info.offset(entry_cite_ptr as isize) + 1i32) as isize)
                     - *str_start.offset(*cite_info.offset(entry_cite_ptr as isize) as isize),
                 10i32 as str_ilk,
-                0i32 != 0,
+                false,
             );
             if !hash_found {
                 cite_key_disappeared_confusion();
@@ -12531,7 +12507,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         }
     }
     /*first_time_entry */
-    store_entry = 1i32 != 0;
+    store_entry = true;
     if all_entries {
         let mut current_block_216: u64;
         /*273: */
@@ -12539,18 +12515,12 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             if entry_cite_ptr < all_marker {
                 current_block_216 = 17170253997621722914;
             } else {
-                *entry_exists.offset(entry_cite_ptr as isize) = 1i32 != 0;
+                *entry_exists.offset(entry_cite_ptr as isize) = true;
                 cite_loc = *ilk_info.offset(lc_cite_loc as isize);
                 current_block_216 = 763224442071743734;
             }
         } else {
-            cite_loc = str_lookup(
-                buffer,
-                buf_ptr1,
-                buf_ptr2 - buf_ptr1,
-                9i32 as str_ilk,
-                1i32 != 0,
-            );
+            cite_loc = str_lookup(buffer, buf_ptr1, buf_ptr2 - buf_ptr1, 9i32 as str_ilk, true);
             if hash_found {
                 hash_cite_confusion();
             }
@@ -12564,7 +12534,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             _ => {}
         }
     } else if !hash_found {
-        store_entry = 0i32 != 0
+        store_entry = false
     }
     if store_entry {
         /*274: */
@@ -12608,7 +12578,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
             bib_err_print();
             return;
         }
-        store_field = 0i32 != 0;
+        store_field = false;
         if store_entry {
             lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
             field_name_loc = str_lookup(
@@ -12616,12 +12586,12 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 buf_ptr1,
                 buf_ptr2 - buf_ptr1,
                 11i32 as str_ilk,
-                0i32 != 0,
+                false,
             );
             if hash_found {
                 if *fn_type.offset(field_name_loc as isize) as i32 == 4i32 {
                     /*field */
-                    store_field = 1i32 != 0
+                    store_field = true
                 }
             }
         }
@@ -12651,7 +12621,7 @@ unsafe extern "C" fn bst_read_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    read_seen = 1i32 != 0;
+    read_seen = true;
     if !entry_seen {
         puts_log(b"Illegal, read command before entry command\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
@@ -12681,7 +12651,7 @@ unsafe extern "C" fn bst_read_command() {
         cite_ptr = all_marker;
         while cite_ptr < old_num_cites {
             *cite_info.offset(cite_ptr as isize) = *cite_list.offset(cite_ptr as isize);
-            *entry_exists.offset(cite_ptr as isize) = 0i32 != 0;
+            *entry_exists.offset(cite_ptr as isize) = false;
             cite_ptr = cite_ptr + 1i32
         }
         cite_ptr = all_marker
@@ -12690,7 +12660,7 @@ unsafe extern "C" fn bst_read_command() {
         all_marker = 0i32
         /*any_value */
     }
-    read_performed = 1i32 != 0;
+    read_performed = true;
     bib_ptr = 0i32;
     while bib_ptr < num_bib_files {
         if verbose != 0 {
@@ -12720,7 +12690,7 @@ unsafe extern "C" fn bst_read_command() {
         *fresh10 = 0 as *mut peekable_input_t;
         bib_ptr = bib_ptr + 1i32
     }
-    reading_completed = 1i32 != 0;
+    reading_completed = true;
     num_cites = cite_ptr;
     num_preamble_strings = preamble_ptr;
     if (num_cites - 1i32) * num_fields + crossref_num >= max_fields {
@@ -12880,7 +12850,7 @@ unsafe extern "C" fn bst_read_command() {
         *cite_info.offset(cite_ptr as isize) = cite_ptr;
         cite_ptr = cite_ptr + 1i32
     }
-    read_completed = 1i32 != 0;
+    read_completed = true;
     buf_ptr2 = sv_ptr1;
     last = sv_ptr2;
     tmp_ptr = buf_ptr2;
@@ -12945,7 +12915,7 @@ unsafe extern "C" fn bst_reverse_command() {
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     init_command_execution();
-    mess_with_entries = 1i32 != 0;
+    mess_with_entries = true;
     if num_cites > 0i32 {
         sort_cite_ptr = num_cites;
         loop {
@@ -13010,7 +12980,7 @@ unsafe extern "C" fn bst_strings_command() {
             buf_ptr1,
             buf_ptr2 - buf_ptr1,
             11i32 as str_ilk,
-            1i32 != 0,
+            true,
         );
         if hash_found {
             already_seen_function_print(fn_loc);
@@ -13067,7 +13037,7 @@ unsafe extern "C" fn get_bst_command_and_process() {
         buf_ptr1,
         buf_ptr2 - buf_ptr1,
         4i32 as str_ilk,
-        0i32 != 0,
+        false,
     ) as isize);
     if !hash_found {
         print_a_token();
@@ -13151,14 +13121,14 @@ unsafe extern "C" fn compute_hash_prime() {
                 square = *hash_next.offset(o as isize) * *hash_next.offset(o as isize)
             } /*illegal_id_char */
             n = 2i32; /*illegal_id_char */
-            j_prime = 1i32 != 0; /*illegal_id_char */
+            j_prime = true; /*illegal_id_char */
             while n < o && j_prime as i32 != 0 {
                 while *hash_text.offset(n as isize) < j {
                     let ref mut fresh11 = *hash_text.offset(n as isize); /*illegal_id_char */
                     *fresh11 += 2i32 * *hash_next.offset(n as isize)
                 } /*empty */
                 if *hash_text.offset(n as isize) == j {
-                    j_prime = 0i32 != 0
+                    j_prime = false
                 }
                 n = n + 1i32
             }
@@ -13375,12 +13345,12 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> i32 {
     str_ptr = 1i32;
     *str_start.offset(str_ptr as isize) = pool_ptr;
     bib_ptr = 0i32;
-    bib_seen = 0i32 != 0;
+    bib_seen = false;
     bst_str = 0i32;
-    bst_seen = 0i32 != 0;
+    bst_seen = false;
     cite_ptr = 0i32;
-    citation_seen = 0i32 != 0;
-    all_entries = 0i32 != 0;
+    citation_seen = false;
+    all_entries = false;
     wiz_def_ptr = 0i32;
     num_ent_ints = 0i32;
     num_ent_strs = 0i32;
@@ -13392,11 +13362,11 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> i32 {
         str_glb_ptr = str_glb_ptr + 1i32
     }
     num_glb_strs = 0i32;
-    entry_seen = 0i32 != 0;
-    read_seen = 0i32 != 0;
-    read_performed = 0i32 != 0;
-    reading_completed = 0i32 != 0;
-    read_completed = 0i32 != 0;
+    entry_seen = false;
+    read_seen = false;
+    read_performed = false;
+    reading_completed = false;
+    read_completed = false;
     impl_fn_num = 0i32;
     out_buf_length = 0i32;
     pre_def_certain_strings();

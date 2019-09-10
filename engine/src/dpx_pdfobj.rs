@@ -315,7 +315,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -469,7 +469,7 @@ pub unsafe extern "C" fn pdf_out_init(
         b"%\xe4\xf0\xed\xf8\n\x00" as *const u8 as *const i8 as *const libc::c_void,
         strlen(b"%\xe4\xf0\xed\xf8\n\x00" as *const u8 as *const i8) as i32,
     );
-    enc_mode = 0i32 != 0;
+    enc_mode = false;
     doc_enc_mode = do_encryption;
 }
 unsafe extern "C" fn dump_xref_table() {
@@ -530,7 +530,7 @@ unsafe extern "C" fn dump_trailer_dict() {
         b"trailer\n\x00" as *const u8 as *const i8 as *const libc::c_void,
         8i32,
     );
-    enc_mode = 0i32 != 0;
+    enc_mode = false;
     write_dict((*trailer_dict).data as *mut pdf_dict, pdf_output_handle);
     pdf_release_obj(trailer_dict);
     pdf_out_char(pdf_output_handle, '\n' as i32 as i8);
@@ -2171,7 +2171,7 @@ unsafe extern "C" fn pdf_add_objstm(mut objstm: *mut pdf_obj, mut object: *mut p
     add_xref_entry((*object).label, 2_u8, (*objstm).label, (pos - 1i32) as u16);
     /* redirect output into objstm */
     output_stream = objstm;
-    enc_mode = 0i32 != 0;
+    enc_mode = false;
     pdf_write_obj(object, pdf_output_handle);
     pdf_out_char(pdf_output_handle, '\n' as i32 as i8);
     output_stream = 0 as *mut pdf_obj;

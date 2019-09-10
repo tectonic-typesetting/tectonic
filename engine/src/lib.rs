@@ -547,10 +547,10 @@ pub unsafe extern "C" fn dvipdfmx_simple_main(
         dviname,
         0 as *const i8,
         0i32,
-        0i32 != 0,
+        false,
         compress,
         deterministic_tags,
-        0i32 != 0,
+        false,
         0_u32,
     );
     tectonic_global_bridge = 0 as *mut tt_bridge_api_t;

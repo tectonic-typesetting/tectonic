@@ -494,7 +494,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* Force bold at small text sizes */
 unsafe extern "C" fn is_basefont(mut name: *const i8) -> bool {
@@ -518,11 +518,11 @@ unsafe extern "C" fn is_basefont(mut name: *const i8) -> bool {
     i = 0i32;
     while i < 14i32 {
         if streq_ptr(name, basefonts[i as usize]) {
-            return 1i32 != 0;
+            return true;
         }
         i += 1
     }
-    return 0i32 != 0;
+    return false;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> i32 {

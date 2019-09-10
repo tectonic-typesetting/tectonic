@@ -299,7 +299,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 static mut _html_state: spc_html_ = {
     let mut init = spc_html_ {
@@ -1406,9 +1406,9 @@ pub unsafe extern "C" fn spc_html_check_special(mut buffer: *const i8, mut size:
             strlen(b"html:\x00" as *const u8 as *const i8),
         ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

@@ -241,7 +241,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -280,7 +280,7 @@ unsafe extern "C" fn tpic__clear(mut tp: *mut spc_tpic_) {
     (*tp).points = mfree((*tp).points as *mut libc::c_void) as *mut pdf_coord;
     (*tp).num_points = 0i32;
     (*tp).max_points = 0i32;
-    (*tp).fill_shape = 0i32 != 0;
+    (*tp).fill_shape = false;
     (*tp).fill_color = 0.0f64;
 }
 unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: i32) -> *mut pdf_obj
@@ -695,7 +695,7 @@ unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 1i32 != 0, 0.0f64);
+    return tpic__polyline(tp, &mut cp, true, 0.0f64);
 }
 unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -711,7 +711,7 @@ unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 0i32 != 0, 0.0f64);
+    return tpic__polyline(tp, &mut cp, false, 0.0f64);
 }
 unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -735,7 +735,7 @@ unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 1i32 != 0, da);
+    return tpic__polyline(tp, &mut cp, true, da);
 }
 unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -759,7 +759,7 @@ unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 1i32 != 0, da);
+    return tpic__polyline(tp, &mut cp, true, da);
 }
 unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -783,7 +783,7 @@ unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__spline(tp, &mut cp, 1i32 != 0, da);
+    return tpic__spline(tp, &mut cp, true, da);
 }
 unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -824,7 +824,7 @@ unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc
     v[4] *= 180.0f64 / 3.14159265358979323846f64;
     v[5] *= 180.0f64 / 3.14159265358979323846f64;
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__arc(tp, &mut cp, 1i32 != 0, 0.0f64, v.as_mut_ptr());
+    return tpic__arc(tp, &mut cp, true, 0.0f64, v.as_mut_ptr());
 }
 unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -865,14 +865,14 @@ unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc
     v[4] *= 180.0f64 / 3.14159265358979323846f64;
     v[5] *= 180.0f64 / 3.14159265358979323846f64;
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__arc(tp, &mut cp, 0i32 != 0, 0.0f64, v.as_mut_ptr());
+    return tpic__arc(tp, &mut cp, false, 0.0f64, v.as_mut_ptr());
 }
 unsafe extern "C" fn spc_handler_tpic_sh(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
-    (*tp).fill_shape = 1i32 != 0;
+    (*tp).fill_shape = true;
     (*tp).fill_color = 0.5f64;
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     q = parse_float_decimal(&mut (*ap).curptr, (*ap).endptr);
@@ -895,7 +895,7 @@ unsafe extern "C" fn spc_handler_tpic_wh(mut spe: *mut spc_env, mut ap: *mut spc
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
-    (*tp).fill_shape = 1i32 != 0;
+    (*tp).fill_shape = true;
     (*tp).fill_color = 0.0f64;
     return 0i32;
 }
@@ -903,7 +903,7 @@ unsafe extern "C" fn spc_handler_tpic_bk(mut spe: *mut spc_env, mut ap: *mut spc
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
-    (*tp).fill_shape = 1i32 != 0;
+    (*tp).fill_shape = true;
     (*tp).fill_color = 1.0f64;
     return 0i32;
 }
@@ -923,7 +923,7 @@ unsafe extern "C" fn spc_handler_tpic__init(
 ) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     (*tp).pen_size = 1.0f64;
-    (*tp).fill_shape = 0i32 != 0;
+    (*tp).fill_shape = false;
     (*tp).fill_color = 0.0f64;
     (*tp).points = 0 as *mut pdf_coord;
     (*tp).num_points = 0i32;
@@ -1259,8 +1259,8 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
 };
 #[no_mangle]
 pub unsafe extern "C" fn spc_tpic_check_special(mut buf: *const i8, mut len: i32) -> bool {
-    let mut istpic: bool = 0i32 != 0;
-    let mut hasnsp: bool = 0i32 != 0;
+    let mut istpic: bool = false;
+    let mut hasnsp: bool = false;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -1276,16 +1276,16 @@ pub unsafe extern "C" fn spc_tpic_check_special(mut buf: *const i8, mut len: i32
         ) == 0
     {
         p = p.offset(strlen(b"tpic:\x00" as *const u8 as *const i8) as isize);
-        hasnsp = 1i32 != 0
+        hasnsp = true
     }
     q = parse_c_ident(&mut p, endptr);
     if q.is_null() {
-        istpic = 0i32 != 0
+        istpic = false
     } else if !q.is_null()
         && hasnsp as i32 != 0
         && streq_ptr(q, b"__setopt__\x00" as *const u8 as *const i8) as i32 != 0
     {
-        istpic = 1i32 != 0;
+        istpic = true;
         free(q as *mut libc::c_void);
     } else {
         i = 0i32 as size_t;
@@ -1294,7 +1294,7 @@ pub unsafe extern "C" fn spc_tpic_check_special(mut buf: *const i8, mut len: i32
                 .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
         {
             if streq_ptr(q, tpic_handlers[i as usize].key) {
-                istpic = 1i32 != 0;
+                istpic = true;
                 break;
             } else {
                 i = i.wrapping_add(1)

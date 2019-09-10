@@ -551,7 +551,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -2492,7 +2492,7 @@ unsafe extern "C" fn is_fontname(mut token: *const i8) -> bool {
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
     mrec = pdf_lookup_fontmap_record(token);
     if !mrec.is_null() {
-        return 1i32 != 0;
+        return true;
     }
     return tfm_exists(token);
 }
@@ -3232,24 +3232,24 @@ unsafe extern "C" fn cvr_array(
 unsafe extern "C" fn is_fontdict(mut dict: *mut pdf_obj) -> bool {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     if !(!dict.is_null() && pdf_obj_typeof(dict) == 6i32) {
-        return 0i32 != 0;
+        return false;
     }
     tmp = pdf_lookup_dict(dict, b"Type\x00" as *const u8 as *const i8);
     if tmp.is_null()
         || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 4i32)
         || strcmp(pdf_name_value(tmp), b"Font\x00" as *const u8 as *const i8) != 0
     {
-        return 0i32 != 0;
+        return false;
     }
     tmp = pdf_lookup_dict(dict, b"FontName\x00" as *const u8 as *const i8);
     if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 4i32) {
-        return 0i32 != 0;
+        return false;
     }
     tmp = pdf_lookup_dict(dict, b"FontScale\x00" as *const u8 as *const i8);
     if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
-        return 0i32 != 0;
+        return false;
     }
-    return 1i32 != 0;
+    return true;
 }
 unsafe extern "C" fn do_findfont() -> i32 {
     let mut error: i32 = 0i32;

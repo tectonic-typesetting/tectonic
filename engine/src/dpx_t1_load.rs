@@ -372,7 +372,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -2471,13 +2471,13 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
         }
         || ch > 3i32
     {
-        return 0i32 != 0;
+        return false;
     }
     i = 0i32;
     while i < 4i32 {
         ch = ttstub_input_getc(handle);
         if ch < 0i32 {
-            return 0i32 != 0;
+            return false;
         }
         i += 1
     }
@@ -2485,7 +2485,7 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
     while i < 14i32 {
         ch = ttstub_input_getc(handle);
         if ch < 0i32 {
-            return 0i32 != 0;
+            return false;
         }
         sig[i as usize] = ch as i8;
         i += 1
@@ -2501,7 +2501,7 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
             11i32 as u64,
         ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
     if memcmp(
         sig.as_mut_ptr() as *const libc::c_void,
@@ -2514,10 +2514,10 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
             b"Ambiguous PostScript resource type: %s\x00" as *const u8 as *const i8,
             sig.as_mut_ptr(),
         );
-        return 1i32 != 0;
+        return true;
     }
     dpx_warning(b"Not a PFB font file?\x00" as *const u8 as *const i8);
-    return 0i32 != 0;
+    return false;
 }
 unsafe extern "C" fn get_pfb_segment(
     mut handle: rust_input_handle_t,

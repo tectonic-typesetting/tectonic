@@ -1205,16 +1205,16 @@ pub unsafe extern "C" fn open_or_close_in() {
         ) != 0
         {
             make_utf16_name();
-            name_in_progress = 1i32 != 0;
+            name_in_progress = true;
             begin_name();
-            stop_at_space = 0i32 != 0;
+            stop_at_space = false;
             k = 0i32;
             while k < name_length16 && more_name(*name_of_file16.offset(k as isize)) as i32 != 0 {
                 k += 1
             }
-            stop_at_space = 1i32 != 0;
+            stop_at_space = true;
             end_name();
-            name_in_progress = 0i32 != 0;
+            name_in_progress = false;
             read_open[n as usize] = 1_u8
         }
     };

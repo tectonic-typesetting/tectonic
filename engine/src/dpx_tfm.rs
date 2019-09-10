@@ -228,7 +228,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 static mut verbose: i32 = 0i32;
 unsafe extern "C" fn tfm_font_init(mut tfm: *mut tfm_font) {
@@ -1219,12 +1219,12 @@ pub unsafe extern "C" fn tfm_exists(mut tfm_name: *const i8) -> bool {
     handle = ttstub_input_open(tfm_name, TTIF_OFM, 0i32) as *mut rust_input_handle_t;
     if !handle.is_null() {
         ttstub_input_close(handle as rust_input_handle_t);
-        return 1i32 != 0;
+        return true;
     }
     handle = ttstub_input_open(tfm_name, TTIF_TFM, 0i32) as *mut rust_input_handle_t;
     if !handle.is_null() {
         ttstub_input_close(handle as rust_input_handle_t);
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    return false;
 }

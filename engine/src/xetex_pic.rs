@@ -743,7 +743,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     x_size_req = 0.0f64;
     y_size_req = 0.0f64;
     make_identity(&mut t);
-    check_keywords = 1i32 != 0;
+    check_keywords = true;
     while check_keywords {
         if scan_keyword(b"scaled\x00" as *const u8 as *const i8) {
             scan_int();
@@ -807,7 +807,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 transform_concat(&mut t, &mut t2);
             }
         } else if scan_keyword(b"width\x00" as *const u8 as *const i8) {
-            scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+            scan_dimen(false, false, false);
             if cur_val <= 0i32 {
                 if file_line_error_style_p != 0 {
                     print_file_line();
@@ -827,7 +827,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 x_size_req = Fix2D(cur_val)
             }
         } else if scan_keyword(b"height\x00" as *const u8 as *const i8) {
-            scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+            scan_dimen(false, false, false);
             if cur_val <= 0i32 {
                 if file_line_error_style_p != 0 {
                     print_file_line();
@@ -968,7 +968,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             corners[3].y = ymin as f32;
             transform_concat(&mut t, &mut t2);
         } else {
-            check_keywords = 0i32 != 0
+            check_keywords = false
         }
     }
     if x_size_req != 0.0f64 || y_size_req != 0.0f64 {

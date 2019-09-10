@@ -2077,7 +2077,7 @@ unsafe extern "C" fn hlist_out() {
                             /*643: "Change font dvi_f to f" */
                             if !*font_used.offset(f as isize) {
                                 dvi_font_def(f);
-                                *font_used.offset(f as isize) = 1i32 != 0
+                                *font_used.offset(f as isize) = true
                             }
                             if f <= 64i32 {
                                 dvi_out((f + 171i32 - 1i32) as eight_bits);
@@ -2207,7 +2207,7 @@ unsafe extern "C" fn hlist_out() {
                                         if !*font_used.offset(f as isize) {
                                             dvi_font_def(f);
                                             *font_used.offset(f as isize) =
-                                                1i32 != 0
+                                                true
                                         }
                                         if f <= 64i32 {
                                             dvi_out((f + 170i32) as
@@ -2524,7 +2524,7 @@ unsafe extern "C" fn hlist_out() {
                                              isize)).b32.s1 =
                                 (*mem.offset(p as isize)).b32.s1;
                             p = 4999999i32 - 12i32;
-                            xtx_ligature_present = 1i32 != 0
+                            xtx_ligature_present = true
                         }
                         14 => {
                             /*1507: "Cases of hlist_out that arise in mixed direction text only" */
@@ -2599,7 +2599,7 @@ unsafe extern "C" fn hlist_out() {
                                 cur_h += leader_wd
                             }
                             outer_doing_leaders = doing_leaders;
-                            doing_leaders = 1i32 != 0;
+                            doing_leaders = true;
                             if (*mem.offset(leader_box as isize)).b16.s1 as i32 == 1i32 {
                                 vlist_out();
                             } else {
@@ -2829,7 +2829,7 @@ unsafe extern "C" fn vlist_out() {
                                 /*643:*/
                                 if !*font_used.offset(f as isize) {
                                     dvi_font_def(f); /* width */
-                                    *font_used.offset(f as isize) = 1i32 != 0
+                                    *font_used.offset(f as isize) = true
                                 } /* glyph count */
                                 if f <= 64i32 {
                                     dvi_out((f + 170i32) as eight_bits); /* x offset as fixed-point */
@@ -2959,7 +2959,7 @@ unsafe extern "C" fn vlist_out() {
                                     save_v = dvi_v;
                                     temp_ptr = leader_box;
                                     outer_doing_leaders = doing_leaders;
-                                    doing_leaders = 1i32 != 0;
+                                    doing_leaders = true;
                                     if (*mem.offset(leader_box as isize)).b16.s1 as i32 == 1i32 {
                                         vlist_out();
                                     } else {
@@ -3332,7 +3332,7 @@ pub unsafe extern "C" fn out_what(mut p: i32) {
                         ttstub_output_close(write_file[j as usize]);
                     }
                     if (*mem.offset(p as isize)).b16.s0 as i32 == 2i32 {
-                        write_open[j as usize] = 0i32 != 0
+                        write_open[j as usize] = false
                     } else if !(j as i32 >= 16i32) {
                         cur_name = (*mem.offset((p + 1i32) as isize)).b32.s1;
                         cur_area = (*mem.offset((p + 2i32) as isize)).b32.s0;
@@ -3348,7 +3348,7 @@ pub unsafe extern "C" fn out_what(mut p: i32) {
                                 name_of_file,
                             );
                         }
-                        write_open[j as usize] = 1i32 != 0;
+                        write_open[j as usize] = true;
                         if log_opened {
                             old_setting = selector as u8;
                             if (*eqtb.offset(
@@ -3714,7 +3714,7 @@ unsafe extern "C" fn special_out(mut p: i32) {
         movement(cur_v - dvi_v, 157i32 as eight_bits);
         dvi_v = cur_v
     }
-    doing_special = 1i32 != 0;
+    doing_special = true;
     old_setting = selector as u8;
     selector = SELECTOR_NEW_STRING;
     show_token_list(
@@ -3752,7 +3752,7 @@ unsafe extern "C" fn special_out(mut p: i32) {
         }
     }
     pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
-    doing_special = 0i32 != 0;
+    doing_special = false;
 }
 unsafe extern "C" fn write_out(mut p: i32) {
     let mut old_setting: u8 = 0;
@@ -3775,7 +3775,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
     old_mode = cur_list.mode as i32;
     cur_list.mode = 0_i16;
     cur_cs = write_loc;
-    q = scan_toks(0i32 != 0, 1i32 != 0);
+    q = scan_toks(false, true);
     get_token();
     if cur_tok
         != 0x1ffffffi32
@@ -3931,7 +3931,7 @@ unsafe extern "C" fn pic_out(mut p: i32) {
         print_raw_char(
             *(&mut *mem.offset((p + 9i32) as isize) as *mut memory_word as *mut u8)
                 .offset(i as isize) as UTF16_code,
-            1i32 != 0,
+            true,
         );
         i += 1
     }

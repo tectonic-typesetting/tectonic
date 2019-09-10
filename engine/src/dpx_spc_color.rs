@@ -97,7 +97,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -191,7 +191,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_color_check_special(mut buf: *const i8, mut len: i32) -> bool {
-    let mut r: bool = 0i32 != 0;
+    let mut r: bool = false;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     let mut q: *mut i8 = 0 as *mut i8;
@@ -200,12 +200,12 @@ pub unsafe extern "C" fn spc_color_check_special(mut buf: *const i8, mut len: i3
     skip_blank(&mut p, endptr);
     q = parse_c_ident(&mut p, endptr);
     if q.is_null() {
-        return 0i32 != 0;
+        return false;
     } else {
         if streq_ptr(q, b"color\x00" as *const u8 as *const i8) {
-            r = 1i32 != 0
+            r = true
         } else if streq_ptr(q, b"background\x00" as *const u8 as *const i8) {
-            r = 1i32 != 0
+            r = true
         }
     }
     free(q as *mut libc::c_void);

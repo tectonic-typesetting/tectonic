@@ -207,7 +207,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -330,7 +330,7 @@ pub unsafe extern "C" fn CMap_is_valid(mut cmap: *mut CMap) -> bool {
         || (*cmap).codespace.num < 1_u32
         || (*cmap).type_0 != 0i32 && (*cmap).mapTbl.is_null()
     {
-        return 0i32 != 0;
+        return false;
     }
     if !(*cmap).useCMap.is_null() {
         let mut csi1: *mut CIDSysInfo = 0 as *mut CIDSysInfo;
@@ -345,10 +345,10 @@ pub unsafe extern "C" fn CMap_is_valid(mut cmap: *mut CMap) -> bool {
                 CMap_get_name(cmap),
                 CMap_get_name((*cmap).useCMap),
             );
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    return true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_profile(mut cmap: *mut CMap, mut type_0: i32) -> i32 {
@@ -772,7 +772,7 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
     i = 0_u32;
     while i < (*cmap).codespace.num {
         let mut j: size_t = 0;
-        let mut overlap: bool = 1i32 != 0;
+        let mut overlap: bool = true;
         csr = (*cmap).codespace.ranges.offset(i as isize);
         j = 0i32 as size_t;
         while j < (if (*csr).dim < dim { (*csr).dim } else { dim }) && overlap as i32 != 0 {
@@ -781,9 +781,9 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
                 || *codehi.offset(j as isize) as i32 >= *(*csr).codeLo.offset(j as isize) as i32
                     && *codehi.offset(j as isize) as i32 <= *(*csr).codeHi.offset(j as isize) as i32
             {
-                overlap = 1i32 != 0
+                overlap = true
             } else {
-                overlap = 0i32 != 0
+                overlap = false
             }
             j = j.wrapping_add(1)
         }

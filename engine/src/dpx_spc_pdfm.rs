@@ -650,7 +650,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -3651,9 +3651,9 @@ pub unsafe extern "C" fn spc_pdfm_check_special(mut buf: *const i8, mut len: i32
             strlen(b"pdf:\x00" as *const u8 as *const i8),
         ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

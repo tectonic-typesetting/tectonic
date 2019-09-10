@@ -77,14 +77,14 @@ pub unsafe extern "C" fn mult_and_add(
     } else if x <= (max_answer - y) / n && -x <= (max_answer + y) / n {
         return n * x + y;
     } else {
-        arith_error = 1i32 != 0;
+        arith_error = true;
         return 0i32;
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn x_over_n(mut x: scaled_t, mut n: i32) -> scaled_t {
     if n == 0i32 {
-        arith_error = 1i32 != 0;
+        arith_error = true;
         tex_remainder = x;
         return 0i32;
     } else {
@@ -115,16 +115,16 @@ pub unsafe extern "C" fn xn_over_d(mut x: scaled_t, mut n: i32, mut d: i32) -> s
     let mut u: i32 = 0;
     let mut v: i32 = 0;
     if x >= 0i32 {
-        positive = 1i32 != 0
+        positive = true
     } else {
         x = -x;
-        positive = 0i32 != 0
+        positive = false
     }
     t = (x as i64 % 32768 * n as i64) as i32;
     u = (x as i64 / 32768 * n as i64 + t as i64 / 32768) as i32;
     v = ((u % d) as i64 * 32768 + t as i64 % 32768) as i32;
     if (u / d) as i64 >= 32768 {
-        arith_error = 1i32 != 0
+        arith_error = true
     } else {
         u = (32768 * (u / d) as i64 + (v / d) as i64) as i32
     }
@@ -143,16 +143,16 @@ pub unsafe extern "C" fn round_xn_over_d(mut x: scaled_t, mut n: i32, mut d: i32
     let mut u: i32 = 0;
     let mut v: i32 = 0;
     if x >= 0i32 {
-        positive = 1i32 != 0
+        positive = true
     } else {
         x = -x;
-        positive = 0i32 != 0
+        positive = false
     }
     t = (x as i64 % 32768 * n as i64) as i32;
     u = (x as i64 / 32768 * n as i64 + t as i64 / 32768) as i32;
     v = ((u % d) as i64 * 32768 + t as i64 % 32768) as i32;
     if (u / d) as i64 >= 32768 {
-        arith_error = 1i32 != 0
+        arith_error = true
     } else {
         u = (32768 * (u / d) as i64 + (v / d) as i64) as i32
     }

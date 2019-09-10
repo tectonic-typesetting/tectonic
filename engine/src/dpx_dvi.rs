@@ -1017,7 +1017,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* UTF-32 over U+FFFF -> UTF-16 surrogate pair */
 /* Interal Variables */

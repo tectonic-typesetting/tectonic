@@ -228,7 +228,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     } /* Acutesmall, Gravesmall, etc */
-    return 0i32 != 0;
+    return false;
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -393,7 +393,7 @@ unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     if glyphname.is_null() {
-        return 0i32 != 0;
+        return false;
     }
     p = glyphname;
     len = strlen(glyphname);
@@ -403,33 +403,33 @@ unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
             b"small\x00" as *const u8 as *const i8,
         ) != 0
     {
-        return 0i32 != 0;
+        return false;
     }
     endptr = p.offset(len as isize).offset(-5);
     len = (len as u64).wrapping_sub(5i32 as u64) as size_t as size_t;
     slen = skip_modifier(&mut p, endptr);
     if slen == len {
-        return 1i32 != 0;
+        return true;
     } else {
         if slen > 0i32 as u64 {
             /* ??? */
-            return 0i32 != 0;
+            return false;
         }
     }
     len = (len as u64).wrapping_sub(skip_capital(&mut p, endptr) as u64) as size_t as size_t;
     if len == 0i32 as u64 {
-        return 1i32 != 0;
+        return true;
         /* Asmall, AEsmall, etc */
     }
     while len > 0i32 as u64 {
         /* allow multiple accent */
         slen = skip_modifier(&mut p, endptr);
         if slen == 0i32 as u64 {
-            return 0i32 != 0;
+            return false;
         }
         len = (len as u64).wrapping_sub(slen) as size_t as size_t
     }
-    return 1i32 != 0;
+    return true;
 }
 static mut var_list: [C2RustUnnamed_0; 14] = [
     {
@@ -1141,7 +1141,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
     let mut i: size_t = 0;
     let mut len: size_t = 0;
     if glyphname.is_null() {
-        return 0i32 != 0;
+        return false;
     }
     suffix = strchr(glyphname, '.' as i32);
     len = if !suffix.is_null() {
@@ -1166,9 +1166,9 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
             != 0
             || c as i32 >= 'A' as i32 && c as i32 <= 'F' as i32
         {
-            return 1i32 != 0;
+            return true;
         } else {
-            return 0i32 != 0;
+            return false;
         }
     } else {
         if len <= 7i32 as u64 && len >= 5i32 as u64 && *glyphname.offset(0) as i32 == 'u' as i32 {
@@ -1180,14 +1180,14 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
                     == 0
                     && ((c as i32) < 'A' as i32 || c as i32 > 'F' as i32)
                 {
-                    return 0i32 != 0;
+                    return false;
                 }
                 i = i.wrapping_add(1)
             }
-            return 1i32 != 0;
+            return true;
         }
     }
-    return 0i32 != 0;
+    return false;
 }
 #[no_mangle]
 pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i32 {

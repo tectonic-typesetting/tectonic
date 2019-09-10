@@ -239,16 +239,10 @@ pub unsafe extern "C" fn print_char(mut s: i32) {
     let mut l: small_number = 0;
     if selector as u32 > SELECTOR_PSEUDO as i32 as u32 && !doing_special {
         if s >= 0x10000i32 {
-            print_raw_char(
-                (0xd800i32 + (s - 0x10000i32) / 1024i32) as UTF16_code,
-                1i32 != 0,
-            );
-            print_raw_char(
-                (0xdc00i32 + (s - 0x10000i32) % 1024i32) as UTF16_code,
-                1i32 != 0,
-            );
+            print_raw_char((0xd800i32 + (s - 0x10000i32) / 1024i32) as UTF16_code, true);
+            print_raw_char((0xdc00i32 + (s - 0x10000i32) % 1024i32) as UTF16_code, true);
         } else {
-            print_raw_char(s as UTF16_code, 1i32 != 0);
+            print_raw_char(s as UTF16_code, true);
         }
         return;
     }
@@ -289,46 +283,46 @@ pub unsafe extern "C" fn print_char(mut s: i32) {
         }
     }
     if s < 32i32 && !doing_special {
-        print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
-        print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
-        print_raw_char((s + 64i32) as UTF16_code, 1i32 != 0);
+        print_raw_char('^' as i32 as UTF16_code, true);
+        print_raw_char('^' as i32 as UTF16_code, true);
+        print_raw_char((s + 64i32) as UTF16_code, true);
     } else if s < 127i32 {
-        print_raw_char(s as UTF16_code, 1i32 != 0);
+        print_raw_char(s as UTF16_code, true);
     } else if s == 127i32 {
         if !doing_special {
-            print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
-            print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
-            print_raw_char('?' as i32 as UTF16_code, 1i32 != 0);
+            print_raw_char('^' as i32 as UTF16_code, true);
+            print_raw_char('^' as i32 as UTF16_code, true);
+            print_raw_char('?' as i32 as UTF16_code, true);
         } else {
-            print_raw_char(s as UTF16_code, 1i32 != 0);
+            print_raw_char(s as UTF16_code, true);
         }
     } else if s < 160i32 && !doing_special {
-        print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
-        print_raw_char('^' as i32 as UTF16_code, 1i32 != 0);
+        print_raw_char('^' as i32 as UTF16_code, true);
+        print_raw_char('^' as i32 as UTF16_code, true);
         l = (s % 256i32 / 16i32) as small_number;
         if (l as i32) < 10i32 {
-            print_raw_char(('0' as i32 + l as i32) as UTF16_code, 1i32 != 0);
+            print_raw_char(('0' as i32 + l as i32) as UTF16_code, true);
         } else {
-            print_raw_char(('a' as i32 + l as i32 - 10i32) as UTF16_code, 1i32 != 0);
+            print_raw_char(('a' as i32 + l as i32 - 10i32) as UTF16_code, true);
         }
         l = (s % 16i32) as small_number;
         if (l as i32) < 10i32 {
-            print_raw_char(('0' as i32 + l as i32) as UTF16_code, 1i32 != 0);
+            print_raw_char(('0' as i32 + l as i32) as UTF16_code, true);
         } else {
-            print_raw_char(('a' as i32 + l as i32 - 10i32) as UTF16_code, 1i32 != 0);
+            print_raw_char(('a' as i32 + l as i32 - 10i32) as UTF16_code, true);
         }
     } else if s < 2048i32 {
-        print_raw_char((192i32 + s / 64i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 64i32) as UTF16_code, 1i32 != 0);
+        print_raw_char((192i32 + s / 64i32) as UTF16_code, false);
+        print_raw_char((128i32 + s % 64i32) as UTF16_code, true);
     } else if s < 0x10000i32 {
-        print_raw_char((224i32 + s / 4096i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 64i32) as UTF16_code, 1i32 != 0);
+        print_raw_char((224i32 + s / 4096i32) as UTF16_code, false);
+        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code, false);
+        print_raw_char((128i32 + s % 64i32) as UTF16_code, true);
     } else {
-        print_raw_char((240i32 + s / 0x40000i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 0x40000i32 / 4096i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code, 0i32 != 0);
-        print_raw_char((128i32 + s % 64i32) as UTF16_code, 1i32 != 0);
+        print_raw_char((240i32 + s / 0x40000i32) as UTF16_code, false);
+        print_raw_char((128i32 + s % 0x40000i32 / 4096i32) as UTF16_code, false);
+        print_raw_char((128i32 + s % 4096i32 / 64i32) as UTF16_code, false);
+        print_raw_char((128i32 + s % 64i32) as UTF16_code, true);
     };
 }
 #[no_mangle]
@@ -742,7 +736,7 @@ pub unsafe extern "C" fn sprint_cs(mut p: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
-    let mut must_quote: bool = 0i32 != 0;
+    let mut must_quote: bool = false;
     let mut quote_char: i32 = 0i32;
     let mut j: pool_pointer = 0;
     if a != 0i32 {
@@ -751,11 +745,11 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
             && j < *str_start.offset((a + 1i32 - 0x10000i32) as isize)
         {
             if *str_pool.offset(j as isize) as i32 == ' ' as i32 {
-                must_quote = 1i32 != 0
+                must_quote = true
             } else if *str_pool.offset(j as isize) as i32 == '\"' as i32
                 || *str_pool.offset(j as isize) as i32 == '\'' as i32
             {
-                must_quote = 1i32 != 0;
+                must_quote = true;
                 quote_char = 73i32 - *str_pool.offset(j as isize) as i32
             }
             j += 1
@@ -767,11 +761,11 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
             && j < *str_start.offset((n + 1i32 - 0x10000i32) as isize)
         {
             if *str_pool.offset(j as isize) as i32 == ' ' as i32 {
-                must_quote = 1i32 != 0
+                must_quote = true
             } else if *str_pool.offset(j as isize) as i32 == '\"' as i32
                 || *str_pool.offset(j as isize) as i32 == '\'' as i32
             {
-                must_quote = 1i32 != 0;
+                must_quote = true;
                 quote_char = 73i32 - *str_pool.offset(j as isize) as i32
             }
             j += 1
@@ -783,11 +777,11 @@ pub unsafe extern "C" fn print_file_name(mut n: i32, mut a: i32, mut e: i32) {
             && j < *str_start.offset((e + 1i32 - 0x10000i32) as isize)
         {
             if *str_pool.offset(j as isize) as i32 == ' ' as i32 {
-                must_quote = 1i32 != 0
+                must_quote = true
             } else if *str_pool.offset(j as isize) as i32 == '\"' as i32
                 || *str_pool.offset(j as isize) as i32 == '\'' as i32
             {
-                must_quote = 1i32 != 0;
+                must_quote = true;
                 quote_char = 73i32 - *str_pool.offset(j as isize) as i32
             }
             j += 1

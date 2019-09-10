@@ -19,28 +19,28 @@ pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
     mut endptr: *const u8,
 ) -> bool {
     if p.offset(1) >= endptr {
-        return 0i32 != 0;
+        return false;
     }
     while p < endptr {
         let mut ucv: i32 = UC_UTF16BE_decode_char(&mut p, endptr);
         if !UC_is_valid(ucv) {
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    return true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF8_is_valid_string(mut p: *const u8, mut endptr: *const u8) -> bool {
     if p.offset(1) >= endptr {
-        return 0i32 != 0;
+        return false;
     }
     while p < endptr {
         let mut ucv: i32 = UC_UTF8_decode_char(&mut p, endptr);
         if !UC_is_valid(ucv) {
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    return true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_decode_char(

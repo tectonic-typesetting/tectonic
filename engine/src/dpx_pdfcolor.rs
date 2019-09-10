@@ -421,7 +421,7 @@ pub unsafe extern "C" fn pdf_color_is_white(mut color: *const pdf_color) -> bool
             /* CMYK */
             f = 0.0f64
         }
-        _ => return 0i32 != 0,
+        _ => return false,
     }
     loop {
         let fresh1 = n;
@@ -430,10 +430,10 @@ pub unsafe extern "C" fn pdf_color_is_white(mut color: *const pdf_color) -> bool
             break;
         }
         if (*color).values[n as usize] != f {
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    return true;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_to_string(
@@ -545,7 +545,7 @@ pub unsafe extern "C" fn pdf_color_is_valid(mut color: *const pdf_color) -> bool
         4 => {
             current_block_1 = 7844836989092399584;
         }
-        _ => return 0i32 != 0,
+        _ => return false,
     }
     match current_block_1 {
         17490471542129831839 =>
@@ -572,7 +572,7 @@ pub unsafe extern "C" fn pdf_color_is_valid(mut color: *const pdf_color) -> bool
                 b"Invalid color value: %g\x00" as *const u8 as *const i8,
                 (*color).values[n as usize],
             );
-            return 0i32 != 0;
+            return false;
         }
     }
     if pdf_color_type(color) == -2i32 {
@@ -580,10 +580,10 @@ pub unsafe extern "C" fn pdf_color_is_valid(mut color: *const pdf_color) -> bool
             || *(*color).spot_color_name.offset(0) as i32 == '\u{0}' as i32
         {
             dpx_warning(b"Invalid spot color: empty name\x00" as *const u8 as *const i8);
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    return true;
 }
 static mut color_stack: C2RustUnnamed_2 = C2RustUnnamed_2 {
     current: 0,

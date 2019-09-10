@@ -363,11 +363,11 @@ pub unsafe extern "C" fn spc_misc_check_special(mut buffer: *const i8, mut size:
                 strlen(misc_handlers[i as usize].key),
             ) == 0
         {
-            return 1i32 != 0;
+            return true;
         }
         i = i.wrapping_add(1)
     }
-    return 0i32 != 0;
+    return false;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

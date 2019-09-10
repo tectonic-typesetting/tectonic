@@ -810,7 +810,7 @@ pub unsafe extern "C" fn spc_dvips_check_special(mut buf: *const i8, mut len: i3
     endptr = p.offset(len as isize);
     skip_white(&mut p, endptr);
     if p >= endptr {
-        return 0i32 != 0;
+        return false;
     }
     len = endptr.wrapping_offset_from(p) as i64 as i32;
     i = 0i32 as size_t;
@@ -825,11 +825,11 @@ pub unsafe extern "C" fn spc_dvips_check_special(mut buf: *const i8, mut len: i3
                 strlen(dvips_handlers[i as usize].key),
             ) == 0
         {
-            return 1i32 != 0;
+            return true;
         }
         i = i.wrapping_add(1)
     }
-    return 0i32 != 0;
+    return false;
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

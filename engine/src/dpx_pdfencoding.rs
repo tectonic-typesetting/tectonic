@@ -369,7 +369,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    return false;
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -528,11 +528,11 @@ unsafe extern "C" fn is_similar_charset(
             }
         {
             /* is 64 a good level? */
-            return 1i32 != 0;
+            return true;
         }
         code += 1
     }
-    return 0i32 != 0;
+    return false;
 }
 /* Creates a PDF Differences array for the encoding, based on the
  * base encoding baseenc (if not NULL). Only character codes which
