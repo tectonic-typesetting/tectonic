@@ -50,18 +50,16 @@ extern "C" {
     #[no_mangle]
     fn print_nl_cstr(s: *const i8);
     #[no_mangle]
-    fn print_char(s: int32_t);
+    fn print_char(s: i32);
     #[no_mangle]
     fn print_cstr(s: *const i8);
     #[no_mangle]
     fn print_file_line();
     #[no_mangle]
-    fn print_int(n: int32_t);
+    fn print_int(n: i32);
     #[no_mangle]
-    fn print(s: int32_t);
+    fn print(s: i32);
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -82,7 +80,7 @@ pub const SELECTOR_TERM_ONLY: selector_t = 17;
 pub const SELECTOR_NO_PRINT: selector_t = 16;
 pub const SELECTOR_FILE_15: selector_t = 15;
 pub const SELECTOR_FILE_0: selector_t = 0;
-pub type str_number = int32_t;
+pub type str_number = i32;
 /* tectonic/errors.c -- error handling
  * Copyright 2016 the Tectonic Project
  * Licensed under the MIT License.
@@ -177,7 +175,7 @@ pub unsafe extern "C" fn fatal_error(mut s: *const i8) -> ! {
     _tt_abort(b"%s\x00" as *const u8 as *const i8, s);
 }
 #[no_mangle]
-pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: int32_t) -> ! {
+pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: i32) -> ! {
     pre_error_message();
     print_cstr(b"TeX capacity exceeded, sorry [\x00" as *const u8 as *const i8);
     print_cstr(s);

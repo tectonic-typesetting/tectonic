@@ -193,7 +193,7 @@ extern "C" {
         minorversion: *mut libc::c_int,
         do_enc: *mut libc::c_int,
         keybits: *mut libc::c_int,
-        perm: *mut int32_t,
+        perm: *mut i32,
         opasswd: *mut i8,
         upasswd: *mut i8,
     );
@@ -387,7 +387,6 @@ extern "C" {
     #[no_mangle]
     fn tt_aux_set_verbose(level: libc::c_int);
 }
-pub type __int32_t = libc::c_int;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -401,7 +400,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type int32_t = __int32_t;
 /* This is (x)dvipdfmx, an extended version of...
 
     DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
@@ -492,7 +490,7 @@ static mut image_cache_life: libc::c_int = -2i32;
 /* Encryption */
 static mut do_encryption: libc::c_int = 0i32;
 static mut key_bits: libc::c_int = 40i32;
-static mut permission: int32_t = 0x3ci32;
+static mut permission: i32 = 0x3ci32;
 /* Page device */
 #[no_mangle]
 pub static mut paper_width: libc::c_double = 595.0f64;
@@ -819,7 +817,7 @@ unsafe extern "C" fn do_dvi_pages(
                     0 as *mut libc::c_int,
                     0 as *mut libc::c_int,
                     0 as *mut libc::c_int,
-                    0 as *mut int32_t,
+                    0 as *mut i32,
                     0 as *mut i8,
                     0 as *mut i8,
                 );

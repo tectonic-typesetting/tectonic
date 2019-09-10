@@ -86,7 +86,7 @@ extern "C" {
     #[no_mangle]
     fn agl_get_unicodes(
         glyphstr: *const i8,
-        unicodes: *mut int32_t,
+        unicodes: *mut i32,
         max_uncodes: libc::c_int,
     ) -> libc::c_int;
     #[no_mangle]
@@ -124,7 +124,6 @@ extern "C" {
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -139,7 +138,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -197,7 +195,7 @@ unsafe extern "C" fn parse_uc_coverage(
 ) -> *mut pdf_obj {
     let mut coverage: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut ucv: int32_t = 0i32;
+    let mut ucv: i32 = 0i32;
     let mut glyphname: *mut i8 = 0 as *mut i8;
     let mut glyphclass: *mut i8 = 0 as *mut i8;
     if (*pp).offset(1) >= endptr {
@@ -297,7 +295,7 @@ unsafe extern "C" fn add_rule(
 ) {
     let mut glyph1: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut glyph2: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut unicodes: [int32_t; 16] = [0; 16];
+    let mut unicodes: [i32; 16] = [0; 16];
     let mut i: libc::c_int = 0;
     let mut n_unicodes: libc::c_int = 0;
     if *first.offset(0) as libc::c_int == '@' as i32 {

@@ -81,10 +81,10 @@ extern "C" {
        interpreted as either signed or unsigned.
 
        Four bytes from DVI, PK, TFM, or VF files always yield a signed
-       32-bit integer (int32_t), but some of them must not be negative.
+       32-bit integer (i32), but some of them must not be negative.
 
        Four byte numbers from JPEG2000, OpenType, or TrueType files are
-       mostly unsigned (u32) and occasionally signed (int32_t).
+       mostly unsigned (u32) and occasionally signed (i32).
     */
     #[no_mangle]
     fn get_unsigned_byte(_: *mut FILE) -> u8;
@@ -93,9 +93,9 @@ extern "C" {
     #[no_mangle]
     fn get_unsigned_quad(_: *mut FILE) -> u32;
     #[no_mangle]
-    fn seek_relative(file: *mut FILE, pos: int32_t);
+    fn seek_relative(file: *mut FILE, pos: i32);
     #[no_mangle]
-    fn file_size(file: *mut FILE) -> int32_t;
+    fn file_size(file: *mut FILE) -> i32;
     #[no_mangle]
     static mut work_buffer: [i8; 0];
     #[no_mangle]
@@ -129,10 +129,8 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
 }
-pub type __int32_t = libc::c_int;
 pub type __off_t = i64;
 pub type __off64_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -234,7 +232,7 @@ unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: libc::c_uint) 
     match BR {
         1785737760 => {
             /* "jp2 " ... supported */
-            seek_relative(fp, size as int32_t);
+            seek_relative(fp, size as i32);
             size = 0i32 as libc::c_uint;
             supported = 1i32
         }
@@ -253,7 +251,7 @@ unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: libc::c_uint) 
                 b"JPEG2000: Unknown JPEG 2000 File Type box Brand field value.\x00" as *const u8
                     as *const i8,
             );
-            seek_relative(fp, size as int32_t);
+            seek_relative(fp, size as i32);
             size = 0i32 as libc::c_uint;
             supported = 0i32
         }
@@ -309,7 +307,7 @@ unsafe extern "C" fn scan_res_(
                     if have_resd == 0 {
                         read_res__data(info, fp, lbox.wrapping_sub(len));
                     } else {
-                        seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                        seek_relative(fp, lbox.wrapping_sub(len) as i32);
                     }
                 }
                 1919251300 => {
@@ -321,7 +319,7 @@ unsafe extern "C" fn scan_res_(
                         b"JPEG2000: Unknown JPEG 2000 box type in Resolution box.\x00" as *const u8
                             as *const i8,
                     );
-                    seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                    seek_relative(fp, lbox.wrapping_sub(len) as i32);
                 }
             }
             size = size.wrapping_sub(lbox)
@@ -432,14 +430,14 @@ unsafe extern "C" fn scan_jp2h(
                 1919251232 => error = scan_res_(info, fp, lbox.wrapping_sub(len)),
                 1667523942 => error = scan_cdef(info, smask, fp, lbox.wrapping_sub(len)),
                 1651532643 | 1668246642 | 1885564018 | 1668112752 | 1818389536 => {
-                    seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                    seek_relative(fp, lbox.wrapping_sub(len) as i32);
                 }
                 _ => {
                     dpx_warning(
                         b"JPEG2000: Unknown JPEG 2000 box in JP2 Header box.\x00" as *const u8
                             as *const i8,
                     );
-                    seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                    seek_relative(fp, lbox.wrapping_sub(len) as i32);
                     error = -1i32
                 }
             }
@@ -504,10 +502,10 @@ unsafe extern "C" fn scan_file(
                             as *const u8 as *const i8,
                     );
                 }
-                seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                seek_relative(fp, lbox.wrapping_sub(len) as i32);
             }
             _ => {
-                seek_relative(fp, lbox.wrapping_sub(len) as int32_t);
+                seek_relative(fp, lbox.wrapping_sub(len) as i32);
             }
         }
         size = (size as libc::c_uint).wrapping_sub(lbox) as libc::c_int as libc::c_int

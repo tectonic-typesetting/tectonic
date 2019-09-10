@@ -262,9 +262,6 @@ extern "C" {
     #[no_mangle]
     fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: USHORT) -> USHORT;
 }
-pub type __int32_t = libc::c_int;
-pub type __u32 = libc::c_uint;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -534,7 +531,7 @@ pub unsafe extern "C" fn CIDFont_type2_set_verbose(mut level: libc::c_int) {
     verbose = level;
 }
 #[no_mangle]
-pub unsafe extern "C" fn CIDFont_type2_set_flags(mut flags: int32_t) {
+pub unsafe extern "C" fn CIDFont_type2_set_flags(mut flags: i32) {
     opt_flags = flags;
 }
 static mut required_table: [C2RustUnnamed_1; 12] = [

@@ -131,10 +131,10 @@ extern "C" {
        interpreted as either signed or unsigned.
 
        Four bytes from DVI, PK, TFM, or VF files always yield a signed
-       32-bit integer (int32_t), but some of them must not be negative.
+       32-bit integer (i32), but some of them must not be negative.
 
        Four byte numbers from JPEG2000, OpenType, or TrueType files are
-       mostly unsigned (u32) and occasionally signed (int32_t).
+       mostly unsigned (u32) and occasionally signed (i32).
     */
     #[no_mangle]
     fn get_unsigned_byte(_: *mut FILE) -> u8;
@@ -149,7 +149,7 @@ extern "C" {
     #[no_mangle]
     fn get_unsigned_triple(_: *mut FILE) -> libc::c_uint;
     #[no_mangle]
-    fn get_signed_quad(_: *mut FILE) -> int32_t;
+    fn get_signed_quad(_: *mut FILE) -> i32;
     #[no_mangle]
     fn get_unsigned_num(_: *mut FILE, _: u8) -> u32;
     #[no_mangle]
@@ -173,10 +173,8 @@ extern "C" {
     #[no_mangle]
     fn tfm_get_design_size(font_id: libc::c_int) -> libc::c_double;
 }
-pub type __int32_t = libc::c_int;
 pub type __off_t = i64;
 pub type __off64_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -225,14 +223,14 @@ pub struct pdf_rect {
 #[repr(C)]
 pub struct pk_header_ {
     pub pkt_len: u32,
-    pub chrcode: int32_t,
-    pub wd: int32_t,
-    pub dx: int32_t,
-    pub dy: int32_t,
+    pub chrcode: i32,
+    pub wd: i32,
+    pub dx: i32,
+    pub dy: i32,
     pub bm_wd: u32,
     pub bm_ht: u32,
-    pub bm_hoff: int32_t,
-    pub bm_voff: int32_t,
+    pub bm_hoff: i32,
+    pub bm_voff: i32,
     pub dyn_f: libc::c_int,
     pub run_color: libc::c_int,
 }
@@ -710,14 +708,14 @@ unsafe extern "C" fn read_pk_char_header(
         /* short */
         (*h).pkt_len = ((opcode as libc::c_int & 3i32) << 8i32
             | get_unsigned_byte(fp) as libc::c_int) as u32; /* TFM width */
-        (*h).chrcode = get_unsigned_byte(fp) as int32_t; /* horizontal escapement */
-        (*h).wd = get_unsigned_triple(fp) as int32_t; /* extended short */
+        (*h).chrcode = get_unsigned_byte(fp) as i32; /* horizontal escapement */
+        (*h).wd = get_unsigned_triple(fp) as i32; /* extended short */
         (*h).dx = (get_unsigned_byte(fp) as libc::c_int) << 16i32;
         (*h).dy = 0i32;
         (*h).bm_wd = get_unsigned_byte(fp) as u32;
         (*h).bm_ht = get_unsigned_byte(fp) as u32;
-        (*h).bm_hoff = get_signed_byte(fp) as int32_t;
-        (*h).bm_voff = get_signed_byte(fp) as int32_t;
+        (*h).bm_hoff = get_signed_byte(fp) as i32;
+        (*h).bm_voff = get_signed_byte(fp) as i32;
         (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(8i32 as libc::c_uint) as u32
             as u32
     } else if opcode as libc::c_int & 7i32 == 7i32 {
@@ -748,14 +746,14 @@ unsafe extern "C" fn read_pk_char_header(
     } else {
         (*h).pkt_len = ((opcode as libc::c_int & 3i32) << 16i32
             | get_unsigned_pair(fp) as libc::c_int) as u32;
-        (*h).chrcode = get_unsigned_byte(fp) as int32_t;
-        (*h).wd = get_unsigned_triple(fp) as int32_t;
+        (*h).chrcode = get_unsigned_byte(fp) as i32;
+        (*h).wd = get_unsigned_triple(fp) as i32;
         (*h).dx = (get_unsigned_pair(fp) as libc::c_int) << 16i32;
         (*h).dy = 0i32;
         (*h).bm_wd = get_unsigned_pair(fp) as u32;
         (*h).bm_ht = get_unsigned_pair(fp) as u32;
-        (*h).bm_hoff = get_signed_pair(fp) as int32_t;
-        (*h).bm_voff = get_signed_pair(fp) as int32_t;
+        (*h).bm_hoff = get_signed_pair(fp) as i32;
+        (*h).bm_voff = get_signed_pair(fp) as i32;
         (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(13i32 as libc::c_uint)
             as u32
     }
@@ -783,14 +781,14 @@ unsafe extern "C" fn create_pk_CharProc_stream(
     mut pkt_len: u32,
 ) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj; /* charproc */
-    let mut llx: int32_t = 0;
-    let mut lly: int32_t = 0;
-    let mut urx: int32_t = 0;
-    let mut ury: int32_t = 0;
+    let mut llx: i32 = 0;
+    let mut lly: i32 = 0;
+    let mut urx: i32 = 0;
+    let mut ury: i32 = 0;
     let mut len: libc::c_int = 0;
     llx = -(*pkh).bm_hoff;
-    lly = ((*pkh).bm_voff as libc::c_uint).wrapping_sub((*pkh).bm_ht) as int32_t;
-    urx = (*pkh).bm_wd.wrapping_sub((*pkh).bm_hoff as libc::c_uint) as int32_t;
+    lly = ((*pkh).bm_voff as libc::c_uint).wrapping_sub((*pkh).bm_ht) as i32;
+    urx = (*pkh).bm_wd.wrapping_sub((*pkh).bm_hoff as libc::c_uint) as i32;
     ury = (*pkh).bm_voff;
     stream = pdf_new_stream(1i32 << 0i32);
     /*
@@ -1107,8 +1105,8 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
         } else {
             match opcode {
                 240 | 241 | 242 | 243 => {
-                    let mut len: int32_t =
-                        get_unsigned_num(fp, (opcode - 240i32) as u8) as int32_t;
+                    let mut len: i32 =
+                        get_unsigned_num(fp, (opcode - 240i32) as u8) as i32;
                     if len < 0i32 {
                         dpx_warning(
                             b"PK: Special with %d bytes???\x00" as *const u8 as *const i8,

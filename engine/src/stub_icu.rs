@@ -1,8 +1,6 @@
 pub type UChar = u16;
 pub type UErrorCode = libc::c_int;
 
-use crate::int32_t;
-
 macro_rules! no_mangle_extern_fn {
     ($(
         $(#[$meta:meta])*
@@ -283,7 +281,7 @@ extern_and_forward_stub! {
     pub fn ubidi_setPara => tt_ubidi_setPara(
         pBiDi: *mut UBiDi,
         text: *const UChar,
-        length: int32_t,
+        length: i32,
         paraLevel: UBiDiLevel,
         embeddingLevels: *mut UBiDiLevel,
         pErrorCode: *mut UErrorCode
@@ -291,24 +289,24 @@ extern_and_forward_stub! {
     pub fn ubidi_getDirection => tt_ubidi_getDirection(pBiDi: *const UBiDi) -> UBiDiDirection;
     pub fn ubidi_getVisualRun => tt_ubidi_getVisualRun(
         pBiDi: *mut UBiDi,
-        runIndex: int32_t,
-        pLogicalStart: *mut int32_t,
-        pLength: *mut int32_t
+        runIndex: i32,
+        pLogicalStart: *mut i32,
+        pLength: *mut i32
     ) -> UBiDiDirection;
-    pub fn ubidi_countRuns => tt_ubidi_countRuns(pBiDi: *mut UBiDi, pErrorCode: *mut UErrorCode) -> int32_t;
-    pub fn ubrk_next => tt_ubrk_next(bi: *mut UBreakIterator) -> int32_t;
+    pub fn ubidi_countRuns => tt_ubidi_countRuns(pBiDi: *mut UBiDi, pErrorCode: *mut UErrorCode) -> i32;
+    pub fn ubrk_next => tt_ubrk_next(bi: *mut UBreakIterator) -> i32;
     pub fn ubrk_close => tt_ubrk_close(bi: *mut UBreakIterator) -> ();
     pub fn ubrk_open => tt_ubrk_open(
         type_0: UBreakIteratorType,
         locale: *const i8,
         text: *const UChar,
-        textLength: int32_t,
+        textLength: i32,
         status: *mut UErrorCode
     ) -> *mut UBreakIterator;
     pub fn ubrk_setText => tt_ubrk_setText(
         bi: *mut UBreakIterator,
         text: *const UChar,
-        textLength: int32_t,
+        textLength: i32,
         status: *mut UErrorCode
     ) -> ();
     pub fn ucnv_open => tt_ucnv_open(converterName: *const i8, err: *mut UErrorCode) -> *mut UConverter;
@@ -319,9 +317,9 @@ extern_and_forward_stub! {
         algorithmicType: UConverterType,
         cnv: *mut UConverter,
         target: *mut i8,
-        targetCapacity: int32_t,
+        targetCapacity: i32,
         source: *const i8,
-        sourceLength: int32_t,
+        sourceLength: i32,
         pErrorCode: *mut UErrorCode
-    ) -> int32_t;
+    ) -> i32;
 }

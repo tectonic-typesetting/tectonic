@@ -167,18 +167,16 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn UC_is_valid(ucv: int32_t) -> bool;
+    fn UC_is_valid(ucv: i32) -> bool;
     #[no_mangle]
-    fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> int32_t;
+    fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> i32;
     /* They just return PDF dictionary object.
      * Callers are completely responsible for doing right thing...
      */
     #[no_mangle]
     fn pdf_doc_get_dictionary(category: *const i8) -> *mut pdf_obj;
 }
-pub type __int32_t = libc::c_int;
 pub type __time_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
 #[derive(Copy, Clone)]
@@ -287,7 +285,7 @@ pub struct pdf_sec {
     pub UE: [u8; 32],
     pub V: libc::c_int,
     pub R: libc::c_int,
-    pub P: int32_t,
+    pub P: i32,
     pub setting: C2RustUnnamed_0,
     pub label: C2RustUnnamed,
 }
@@ -1100,7 +1098,7 @@ unsafe extern "C" fn stringprep_profile(
     p = input;
     endptr = p.offset(strlen(p) as isize);
     while p < endptr {
-        let mut ucv: int32_t = UC_UTF8_decode_char(
+        let mut ucv: i32 = UC_UTF8_decode_char(
             &mut p as *mut *const i8 as *mut *const u8,
             endptr as *const u8,
         );
@@ -1228,7 +1226,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
         (*p).V = 2i32
     }
     check_version(p, version);
-    (*p).P = (perm | 0xc0u32) as int32_t;
+    (*p).P = (perm | 0xc0u32) as i32;
     match (*p).V {
         1 => {
             (*p).R = if ((*p).P as i64) < 0x100 {
@@ -1260,7 +1258,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
         dpx_warning(b"Invalid UTF-8 string for passowrd.\x00" as *const u8 as *const i8);
     }
     if (*p).R >= 3i32 {
-        (*p).P = ((*p).P as libc::c_uint | 0xfffff000u32) as int32_t
+        (*p).P = ((*p).P as libc::c_uint | 0xfffff000u32) as i32
     }
     if (*p).V < 5i32 {
         compute_owner_password(p, opasswd.as_mut_ptr(), upasswd.as_mut_ptr());

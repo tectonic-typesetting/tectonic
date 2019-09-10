@@ -54,51 +54,51 @@ extern "C" {
     #[no_mangle]
     fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn get_date_and_time(_: *mut int32_t, _: *mut int32_t, _: *mut int32_t, _: *mut int32_t);
+    fn get_date_and_time(_: *mut i32, _: *mut i32, _: *mut i32, _: *mut i32);
     #[no_mangle]
-    fn get_avail() -> int32_t;
+    fn get_avail() -> i32;
     #[no_mangle]
-    fn flush_list(p: int32_t);
+    fn flush_list(p: i32);
     #[no_mangle]
-    fn get_node(s: int32_t) -> int32_t;
+    fn get_node(s: i32) -> i32;
     #[no_mangle]
-    fn free_node(p: int32_t, s: int32_t);
+    fn free_node(p: i32, s: i32);
     #[no_mangle]
-    fn delete_token_ref(p: int32_t);
+    fn delete_token_ref(p: i32);
     #[no_mangle]
-    fn delete_glue_ref(p: int32_t);
+    fn delete_glue_ref(p: i32);
     #[no_mangle]
-    fn flush_node_list(p: int32_t);
+    fn flush_node_list(p: i32);
     #[no_mangle]
     fn begin_diagnostic();
     #[no_mangle]
     fn end_diagnostic(blank_line: bool);
     #[no_mangle]
-    fn print_cmd_chr(cmd: u16, chr_code: int32_t);
+    fn print_cmd_chr(cmd: u16, chr_code: i32);
     #[no_mangle]
-    fn id_lookup(j: int32_t, l: int32_t) -> int32_t;
+    fn id_lookup(j: i32, l: i32) -> i32;
     #[no_mangle]
-    fn prim_lookup(s: str_number) -> int32_t;
+    fn prim_lookup(s: str_number) -> i32;
     #[no_mangle]
     fn pseudo_close();
     #[no_mangle]
-    fn sa_def(p: int32_t, e: int32_t);
+    fn sa_def(p: i32, e: i32);
     #[no_mangle]
-    fn gsa_def(p: int32_t, e: int32_t);
+    fn gsa_def(p: i32, e: i32);
     #[no_mangle]
-    fn eq_define(p: int32_t, t: u16, e: int32_t);
+    fn eq_define(p: i32, t: u16, e: i32);
     #[no_mangle]
     fn alter_page_so_far();
     #[no_mangle]
-    fn load_pool_strings(spare_size: int32_t) -> libc::c_int;
+    fn load_pool_strings(spare_size: i32) -> libc::c_int;
     #[no_mangle]
     fn alter_prev_graf();
     #[no_mangle]
-    fn eq_word_define(p: int32_t, w: int32_t);
+    fn eq_word_define(p: i32, w: i32);
     #[no_mangle]
-    fn geq_define(p: int32_t, t: u16, e: int32_t);
+    fn geq_define(p: i32, t: u16, e: i32);
     #[no_mangle]
-    fn geq_word_define(p: int32_t, w: int32_t);
+    fn geq_word_define(p: i32, w: i32);
     #[no_mangle]
     fn show_cur_cmd_chr();
     #[no_mangle]
@@ -112,7 +112,7 @@ extern "C" {
     #[no_mangle]
     fn get_token();
     #[no_mangle]
-    fn find_sa_element(t: small_number, n: int32_t, w: bool);
+    fn find_sa_element(t: small_number, n: i32, w: bool);
     #[no_mangle]
     fn get_x_token();
     #[no_mangle]
@@ -152,9 +152,9 @@ extern "C" {
     #[no_mangle]
     fn scan_glue(level: small_number);
     #[no_mangle]
-    fn scan_toks(macro_def: bool, xpand: bool) -> int32_t;
+    fn scan_toks(macro_def: bool, xpand: bool) -> i32;
     #[no_mangle]
-    fn read_toks(n: int32_t, r: int32_t, j: int32_t);
+    fn read_toks(n: i32, r: i32, j: i32);
     #[no_mangle]
     fn make_name_string() -> str_number;
     #[no_mangle]
@@ -164,15 +164,15 @@ extern "C" {
     #[no_mangle]
     fn start_input(primary_input_name: *const i8);
     #[no_mangle]
-    fn max_hyphenatable_length() -> int32_t;
+    fn max_hyphenatable_length() -> i32;
     #[no_mangle]
-    fn overflow(s: *const i8, n: int32_t) -> !;
+    fn overflow(s: *const i8, n: i32) -> !;
     #[no_mangle]
     fn show_save_groups();
     #[no_mangle]
-    fn do_marks(a: small_number, l: small_number, q: int32_t) -> bool;
+    fn do_marks(a: small_number, l: small_number, q: i32) -> bool;
     #[no_mangle]
-    fn scan_box(box_context: int32_t);
+    fn scan_box(box_context: i32);
     #[no_mangle]
     fn get_r_token();
     #[no_mangle]
@@ -202,17 +202,17 @@ extern "C" {
     #[no_mangle]
     fn print_file_line();
     #[no_mangle]
-    fn length(s: str_number) -> int32_t;
+    fn length(s: str_number) -> i32;
     #[no_mangle]
     fn make_string() -> str_number;
     #[no_mangle]
     fn alter_aux();
     #[no_mangle]
-    fn print_int(n: int32_t);
+    fn print_int(n: i32);
     #[no_mangle]
-    fn print(s: int32_t);
+    fn print(s: i32);
     #[no_mangle]
-    fn print_char(s: int32_t);
+    fn print_char(s: i32);
     #[no_mangle]
     fn main_control();
     #[no_mangle]
@@ -226,7 +226,7 @@ extern "C" {
     #[no_mangle]
     fn print_esc(s: str_number);
     #[no_mangle]
-    fn print_file_name(n: int32_t, a: int32_t, e: int32_t);
+    fn print_file_name(n: i32, a: i32, e: i32);
     #[no_mangle]
     fn print_scaled(s: scaled_t);
     #[no_mangle]
@@ -291,9 +291,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_files_init();
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type uintptr_t = u64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -347,7 +345,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* harfbuzz */
 /* Endianness foo */
 /* our typedefs */
-pub type scaled_t = int32_t;
+pub type scaled_t = i32;
 pub type selector_t = libc::c_uint;
 pub const SELECTOR_NEW_STRING: selector_t = 21;
 pub const SELECTOR_PSEUDO: selector_t = 20;
@@ -360,17 +358,17 @@ pub const SELECTOR_FILE_0: selector_t = 0;
 /*18: */
 pub type UTF16_code = u16;
 pub type UTF8_code = u8;
-pub type UnicodeScalar = int32_t;
+pub type UnicodeScalar = i32;
 pub type eight_bits = u8;
-pub type pool_pointer = int32_t;
-pub type str_number = int32_t;
+pub type pool_pointer = i32;
+pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
+    pub s0: i32,
+    pub s1: i32,
 }
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
@@ -427,13 +425,13 @@ pub union memory_word {
  * In XeTeX, a "quarterword" is 16 bits. Who knows why. A "halfword" is,
  * sensibly, 32 bits. A "memory word" is a full word: either four quarters or
  * two halves: i.e., 64 bits. The memory word union also has options for
- * doubles (called `gr`), `integer` which is an int32_t (called `cint`), and a
+ * doubles (called `gr`), `integer` which is an i32 (called `cint`), and a
  * pointer (`ptr`).
  *
  * Original struct definition, LITTLE ENDIAN (condensed):
  *
  *   typedef union {
- *       struct { int32_t LH, RH; } v;
+ *       struct { i32 LH, RH; } v;
  *       struct { short B1, B0; } u;
  *   } two_halves;
  *
@@ -445,8 +443,8 @@ pub union memory_word {
  *       two_halves hh;
  *
  *       struct {
- *           int32_t junk;
- *           int32_t CINT;
+ *           i32 junk;
+ *           i32 CINT;
  *       } u;
  *
  *       struct {
@@ -468,9 +466,9 @@ pub union memory_word {
  * Original struct definition, BIG ENDIAN (condensed):
  *
  *   typedef union {
- *       struct { int32_t RH, LH; } v;
+ *       struct { i32 RH, LH; } v;
  *       struct {
- *           int32_t junk;
+ *           i32 junk;
  *           short B0, B1;
  *       } u;
  *   } two_halves;
@@ -591,23 +589,23 @@ pub union memory_word {
 pub type glue_ord = u8;
 /* enum: normal .. filll */
 pub type group_code = u8;
-pub type internal_font_number = int32_t;
-pub type font_index = int32_t;
-pub type nine_bits = int32_t;
+pub type internal_font_number = i32;
+pub type font_index = i32;
+pub type nine_bits = i32;
 /* range: 0 .. 0x1FF */
-pub type trie_pointer = int32_t;
+pub type trie_pointer = i32;
 pub type trie_opcode = u16;
 pub type hyph_pointer = u16;
-pub type save_pointer = int32_t;
+pub type save_pointer = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
     pub mode: libc::c_short,
-    pub head: int32_t,
-    pub tail: int32_t,
-    pub eTeX_aux: int32_t,
-    pub prev_graf: int32_t,
-    pub mode_line: int32_t,
+    pub head: i32,
+    pub tail: i32,
+    pub eTeX_aux: i32,
+    pub prev_graf: i32,
+    pub mode_line: i32,
     pub aux: memory_word,
 }
 #[derive(Copy, Clone)]
@@ -615,11 +613,11 @@ pub struct list_state_record {
 pub struct input_state_t {
     pub state: u16,
     pub index: u16,
-    pub start: int32_t,
-    pub loc: int32_t,
-    pub limit: int32_t,
-    pub name: int32_t,
-    pub synctex_tag: int32_t,
+    pub start: i32,
+    pub loc: i32,
+    pub limit: i32,
+    pub name: i32,
+    pub synctex_tag: i32,
 }
 /* tectonic/xetex-io.h: XeTeX-specific low-level I/O routines
    Copyright 2016-2018 the Tectonic Project
@@ -647,63 +645,63 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 #[no_mangle]
 pub static mut eqtb: *mut memory_word = 0 as *const memory_word as *mut memory_word;
 #[no_mangle]
-pub static mut bad: int32_t = 0;
+pub static mut bad: i32 = 0;
 #[no_mangle]
 pub static mut name_of_file: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub static mut name_of_file16: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
-pub static mut name_length: int32_t = 0;
+pub static mut name_length: i32 = 0;
 #[no_mangle]
-pub static mut name_length16: int32_t = 0;
+pub static mut name_length16: i32 = 0;
 #[no_mangle]
 pub static mut buffer: *mut UnicodeScalar = 0 as *const UnicodeScalar as *mut UnicodeScalar;
 #[no_mangle]
-pub static mut first: int32_t = 0;
+pub static mut first: i32 = 0;
 #[no_mangle]
-pub static mut last: int32_t = 0;
+pub static mut last: i32 = 0;
 #[no_mangle]
-pub static mut max_buf_stack: int32_t = 0;
+pub static mut max_buf_stack: i32 = 0;
 #[no_mangle]
 pub static mut in_initex_mode: bool = false;
 #[no_mangle]
-pub static mut error_line: int32_t = 0;
+pub static mut error_line: i32 = 0;
 #[no_mangle]
-pub static mut half_error_line: int32_t = 0;
+pub static mut half_error_line: i32 = 0;
 #[no_mangle]
-pub static mut max_print_line: int32_t = 0;
+pub static mut max_print_line: i32 = 0;
 #[no_mangle]
-pub static mut max_strings: int32_t = 0;
+pub static mut max_strings: i32 = 0;
 #[no_mangle]
-pub static mut strings_free: int32_t = 0;
+pub static mut strings_free: i32 = 0;
 #[no_mangle]
-pub static mut string_vacancies: int32_t = 0;
+pub static mut string_vacancies: i32 = 0;
 #[no_mangle]
-pub static mut pool_size: int32_t = 0;
+pub static mut pool_size: i32 = 0;
 #[no_mangle]
-pub static mut pool_free: int32_t = 0;
+pub static mut pool_free: i32 = 0;
 #[no_mangle]
-pub static mut font_mem_size: int32_t = 0;
+pub static mut font_mem_size: i32 = 0;
 #[no_mangle]
-pub static mut font_max: int32_t = 0;
+pub static mut font_max: i32 = 0;
 #[no_mangle]
-pub static mut hyph_size: int32_t = 0;
+pub static mut hyph_size: i32 = 0;
 #[no_mangle]
-pub static mut trie_size: int32_t = 0;
+pub static mut trie_size: i32 = 0;
 #[no_mangle]
-pub static mut buf_size: int32_t = 0;
+pub static mut buf_size: i32 = 0;
 #[no_mangle]
-pub static mut stack_size: int32_t = 0;
+pub static mut stack_size: i32 = 0;
 #[no_mangle]
-pub static mut max_in_open: int32_t = 0;
+pub static mut max_in_open: i32 = 0;
 #[no_mangle]
-pub static mut param_size: int32_t = 0;
+pub static mut param_size: i32 = 0;
 #[no_mangle]
-pub static mut nest_size: int32_t = 0;
+pub static mut nest_size: i32 = 0;
 #[no_mangle]
-pub static mut save_size: int32_t = 0;
+pub static mut save_size: i32 = 0;
 #[no_mangle]
-pub static mut expand_depth: int32_t = 0;
+pub static mut expand_depth: i32 = 0;
 #[no_mangle]
 pub static mut file_line_error_style_p: libc::c_int = 0;
 #[no_mangle]
@@ -740,27 +738,27 @@ pub static mut selector: selector_t = SELECTOR_FILE_0;
 #[no_mangle]
 pub static mut dig: [u8; 23] = [0; 23];
 #[no_mangle]
-pub static mut tally: int32_t = 0;
+pub static mut tally: i32 = 0;
 #[no_mangle]
-pub static mut term_offset: int32_t = 0;
+pub static mut term_offset: i32 = 0;
 #[no_mangle]
-pub static mut file_offset: int32_t = 0;
+pub static mut file_offset: i32 = 0;
 #[no_mangle]
 pub static mut trick_buf: [UTF16_code; 256] = [0; 256];
 #[no_mangle]
-pub static mut trick_count: int32_t = 0;
+pub static mut trick_count: i32 = 0;
 #[no_mangle]
-pub static mut first_count: int32_t = 0;
+pub static mut first_count: i32 = 0;
 #[no_mangle]
 pub static mut doing_special: bool = false;
 #[no_mangle]
 pub static mut native_text: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
-pub static mut native_text_size: int32_t = 0;
+pub static mut native_text_size: i32 = 0;
 #[no_mangle]
-pub static mut native_len: int32_t = 0;
+pub static mut native_len: i32 = 0;
 #[no_mangle]
-pub static mut save_native_len: int32_t = 0;
+pub static mut save_native_len: i32 = 0;
 #[no_mangle]
 pub static mut interaction: u8 = 0;
 #[no_mangle]
@@ -782,48 +780,48 @@ pub static mut arith_error: bool = false;
 #[no_mangle]
 pub static mut tex_remainder: scaled_t = 0;
 #[no_mangle]
-pub static mut temp_ptr: int32_t = 0;
+pub static mut temp_ptr: i32 = 0;
 #[no_mangle]
 pub static mut mem: *mut memory_word = 0 as *const memory_word as *mut memory_word;
 #[no_mangle]
-pub static mut lo_mem_max: int32_t = 0;
+pub static mut lo_mem_max: i32 = 0;
 #[no_mangle]
-pub static mut hi_mem_min: int32_t = 0;
+pub static mut hi_mem_min: i32 = 0;
 #[no_mangle]
-pub static mut var_used: int32_t = 0;
+pub static mut var_used: i32 = 0;
 #[no_mangle]
-pub static mut dyn_used: int32_t = 0;
+pub static mut dyn_used: i32 = 0;
 #[no_mangle]
-pub static mut avail: int32_t = 0;
+pub static mut avail: i32 = 0;
 #[no_mangle]
-pub static mut mem_end: int32_t = 0;
+pub static mut mem_end: i32 = 0;
 #[no_mangle]
-pub static mut rover: int32_t = 0;
+pub static mut rover: i32 = 0;
 #[no_mangle]
-pub static mut last_leftmost_char: int32_t = 0;
+pub static mut last_leftmost_char: i32 = 0;
 #[no_mangle]
-pub static mut last_rightmost_char: int32_t = 0;
+pub static mut last_rightmost_char: i32 = 0;
 #[no_mangle]
-pub static mut hlist_stack: [int32_t; 513] = [0; 513];
+pub static mut hlist_stack: [i32; 513] = [0; 513];
 #[no_mangle]
 pub static mut hlist_stack_level: libc::c_short = 0;
 #[no_mangle]
-pub static mut first_p: int32_t = 0;
+pub static mut first_p: i32 = 0;
 #[no_mangle]
-pub static mut global_prev_p: int32_t = 0;
+pub static mut global_prev_p: i32 = 0;
 #[no_mangle]
-pub static mut font_in_short_display: int32_t = 0;
+pub static mut font_in_short_display: i32 = 0;
 #[no_mangle]
-pub static mut depth_threshold: int32_t = 0;
+pub static mut depth_threshold: i32 = 0;
 #[no_mangle]
-pub static mut breadth_max: int32_t = 0;
+pub static mut breadth_max: i32 = 0;
 #[no_mangle]
 pub static mut nest: *mut list_state_record =
     0 as *const list_state_record as *mut list_state_record;
 #[no_mangle]
-pub static mut nest_ptr: int32_t = 0;
+pub static mut nest_ptr: i32 = 0;
 #[no_mangle]
-pub static mut max_nest_stack: int32_t = 0;
+pub static mut max_nest_stack: i32 = 0;
 #[no_mangle]
 pub static mut cur_list: list_state_record = list_state_record {
     mode: 0,
@@ -843,23 +841,23 @@ pub static mut old_setting: u8 = 0;
 #[no_mangle]
 pub static mut hash: *mut b32x2 = 0 as *const b32x2 as *mut b32x2;
 #[no_mangle]
-pub static mut hash_used: int32_t = 0;
+pub static mut hash_used: i32 = 0;
 #[no_mangle]
-pub static mut hash_extra: int32_t = 0;
+pub static mut hash_extra: i32 = 0;
 #[no_mangle]
-pub static mut hash_top: int32_t = 0;
+pub static mut hash_top: i32 = 0;
 #[no_mangle]
-pub static mut eqtb_top: int32_t = 0;
+pub static mut eqtb_top: i32 = 0;
 #[no_mangle]
-pub static mut hash_high: int32_t = 0;
+pub static mut hash_high: i32 = 0;
 #[no_mangle]
 pub static mut no_new_control_sequence: bool = false;
 #[no_mangle]
-pub static mut cs_count: int32_t = 0;
+pub static mut cs_count: i32 = 0;
 #[no_mangle]
 pub static mut prim: [b32x2; 501] = [b32x2 { s0: 0, s1: 0 }; 501];
 #[no_mangle]
-pub static mut prim_used: int32_t = 0;
+pub static mut prim_used: i32 = 0;
 #[no_mangle]
 pub static mut prim_eqtb: [memory_word; 501] = [memory_word {
     b32: b32x2 { s0: 0, s1: 0 },
@@ -867,31 +865,31 @@ pub static mut prim_eqtb: [memory_word; 501] = [memory_word {
 #[no_mangle]
 pub static mut save_stack: *mut memory_word = 0 as *const memory_word as *mut memory_word;
 #[no_mangle]
-pub static mut save_ptr: int32_t = 0;
+pub static mut save_ptr: i32 = 0;
 #[no_mangle]
-pub static mut max_save_stack: int32_t = 0;
+pub static mut max_save_stack: i32 = 0;
 #[no_mangle]
 pub static mut cur_level: u16 = 0;
 #[no_mangle]
 pub static mut cur_group: group_code = 0;
 #[no_mangle]
-pub static mut cur_boundary: int32_t = 0;
+pub static mut cur_boundary: i32 = 0;
 #[no_mangle]
-pub static mut mag_set: int32_t = 0;
+pub static mut mag_set: i32 = 0;
 #[no_mangle]
 pub static mut cur_cmd: eight_bits = 0;
 #[no_mangle]
-pub static mut cur_chr: int32_t = 0;
+pub static mut cur_chr: i32 = 0;
 #[no_mangle]
-pub static mut cur_cs: int32_t = 0;
+pub static mut cur_cs: i32 = 0;
 #[no_mangle]
-pub static mut cur_tok: int32_t = 0;
+pub static mut cur_tok: i32 = 0;
 #[no_mangle]
 pub static mut input_stack: *mut input_state_t = 0 as *const input_state_t as *mut input_state_t;
 #[no_mangle]
-pub static mut input_ptr: int32_t = 0;
+pub static mut input_ptr: i32 = 0;
 #[no_mangle]
-pub static mut max_in_stack: int32_t = 0;
+pub static mut max_in_stack: i32 = 0;
 #[no_mangle]
 pub static mut cur_input: input_state_t = input_state_t {
     state: 0,
@@ -903,15 +901,15 @@ pub static mut cur_input: input_state_t = input_state_t {
     synctex_tag: 0,
 };
 #[no_mangle]
-pub static mut in_open: int32_t = 0;
+pub static mut in_open: i32 = 0;
 #[no_mangle]
-pub static mut open_parens: int32_t = 0;
+pub static mut open_parens: i32 = 0;
 #[no_mangle]
 pub static mut input_file: *mut *mut UFILE = 0 as *const *mut UFILE as *mut *mut UFILE;
 #[no_mangle]
-pub static mut line: int32_t = 0;
+pub static mut line: i32 = 0;
 #[no_mangle]
-pub static mut line_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut line_stack: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
 pub static mut source_filename_stack: *mut str_number = 0 as *const str_number as *mut str_number;
 #[no_mangle]
@@ -920,39 +918,39 @@ pub static mut full_source_filename_stack: *mut str_number =
 #[no_mangle]
 pub static mut scanner_status: u8 = 0;
 #[no_mangle]
-pub static mut warning_index: int32_t = 0;
+pub static mut warning_index: i32 = 0;
 #[no_mangle]
-pub static mut def_ref: int32_t = 0;
+pub static mut def_ref: i32 = 0;
 #[no_mangle]
-pub static mut param_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut param_stack: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut param_ptr: int32_t = 0;
+pub static mut param_ptr: i32 = 0;
 #[no_mangle]
-pub static mut max_param_stack: int32_t = 0;
+pub static mut max_param_stack: i32 = 0;
 #[no_mangle]
-pub static mut align_state: int32_t = 0;
+pub static mut align_state: i32 = 0;
 #[no_mangle]
-pub static mut base_ptr: int32_t = 0;
+pub static mut base_ptr: i32 = 0;
 #[no_mangle]
-pub static mut par_loc: int32_t = 0;
+pub static mut par_loc: i32 = 0;
 #[no_mangle]
-pub static mut par_token: int32_t = 0;
+pub static mut par_token: i32 = 0;
 #[no_mangle]
 pub static mut force_eof: bool = false;
 #[no_mangle]
-pub static mut expand_depth_count: int32_t = 0;
+pub static mut expand_depth_count: i32 = 0;
 #[no_mangle]
 pub static mut is_in_csname: bool = false;
 #[no_mangle]
-pub static mut cur_mark: [int32_t; 5] = [0; 5];
+pub static mut cur_mark: [i32; 5] = [0; 5];
 #[no_mangle]
 pub static mut long_state: u8 = 0;
 #[no_mangle]
-pub static mut pstack: [int32_t; 9] = [0; 9];
+pub static mut pstack: [i32; 9] = [0; 9];
 #[no_mangle]
-pub static mut cur_val: int32_t = 0;
+pub static mut cur_val: i32 = 0;
 #[no_mangle]
-pub static mut cur_val1: int32_t = 0;
+pub static mut cur_val1: i32 = 0;
 #[no_mangle]
 pub static mut cur_val_level: u8 = 0;
 #[no_mangle]
@@ -964,15 +962,15 @@ pub static mut read_file: [*mut UFILE; 16] = [0 as *const UFILE as *mut UFILE; 1
 #[no_mangle]
 pub static mut read_open: [u8; 17] = [0; 17];
 #[no_mangle]
-pub static mut cond_ptr: int32_t = 0;
+pub static mut cond_ptr: i32 = 0;
 #[no_mangle]
 pub static mut if_limit: u8 = 0;
 #[no_mangle]
 pub static mut cur_if: small_number = 0;
 #[no_mangle]
-pub static mut if_line: int32_t = 0;
+pub static mut if_line: i32 = 0;
 #[no_mangle]
-pub static mut skip_line: int32_t = 0;
+pub static mut skip_line: i32 = 0;
 #[no_mangle]
 pub static mut cur_name: str_number = 0;
 #[no_mangle]
@@ -986,7 +984,7 @@ pub static mut ext_delimiter: pool_pointer = 0;
 #[no_mangle]
 pub static mut file_name_quote_char: UTF16_code = 0;
 #[no_mangle]
-pub static mut format_default_length: int32_t = 0;
+pub static mut format_default_length: i32 = 0;
 #[no_mangle]
 pub static mut TEX_format_default: *mut i8 =
     0 as *const i8 as *mut i8;
@@ -1023,13 +1021,13 @@ pub static mut font_bc: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_c
 #[no_mangle]
 pub static mut font_ec: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF16_code;
 #[no_mangle]
-pub static mut font_glue: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut font_glue: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
 pub static mut font_used: *mut bool = 0 as *const bool as *mut bool;
 #[no_mangle]
-pub static mut hyphen_char: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut hyphen_char: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut skew_char: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut skew_char: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
 pub static mut bchar_label: *mut font_index = 0 as *const font_index as *mut font_index;
 #[no_mangle]
@@ -1060,23 +1058,23 @@ pub static mut mapped_text: *mut UTF16_code = 0 as *const UTF16_code as *mut UTF
 #[no_mangle]
 pub static mut xdv_buffer: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
-pub static mut char_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut char_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut width_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut width_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut height_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut height_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut depth_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut depth_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut italic_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut italic_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut lig_kern_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut lig_kern_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut kern_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut kern_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut exten_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut exten_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut param_base: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut param_base: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
 pub static mut null_character: b16x4 = b16x4 {
     s0: 0,
@@ -1085,17 +1083,17 @@ pub static mut null_character: b16x4 = b16x4 {
     s3: 0,
 };
 #[no_mangle]
-pub static mut total_pages: int32_t = 0;
+pub static mut total_pages: i32 = 0;
 #[no_mangle]
 pub static mut max_v: scaled_t = 0;
 #[no_mangle]
 pub static mut max_h: scaled_t = 0;
 #[no_mangle]
-pub static mut max_push: int32_t = 0;
+pub static mut max_push: i32 = 0;
 #[no_mangle]
-pub static mut last_bop: int32_t = 0;
+pub static mut last_bop: i32 = 0;
 #[no_mangle]
-pub static mut dead_cycles: int32_t = 0;
+pub static mut dead_cycles: i32 = 0;
 #[no_mangle]
 pub static mut doing_leaders: bool = false;
 #[no_mangle]
@@ -1113,19 +1111,19 @@ pub static mut total_stretch: [scaled_t; 4] = [0; 4];
 #[no_mangle]
 pub static mut total_shrink: [scaled_t; 4] = [0; 4];
 #[no_mangle]
-pub static mut last_badness: int32_t = 0;
+pub static mut last_badness: i32 = 0;
 #[no_mangle]
-pub static mut adjust_tail: int32_t = 0;
+pub static mut adjust_tail: i32 = 0;
 #[no_mangle]
-pub static mut pre_adjust_tail: int32_t = 0;
+pub static mut pre_adjust_tail: i32 = 0;
 #[no_mangle]
-pub static mut pack_begin_line: int32_t = 0;
+pub static mut pack_begin_line: i32 = 0;
 #[no_mangle]
 pub static mut empty: b32x2 = b32x2 { s0: 0, s1: 0 };
 #[no_mangle]
 pub static mut cur_f: internal_font_number = 0;
 #[no_mangle]
-pub static mut cur_c: int32_t = 0;
+pub static mut cur_c: i32 = 0;
 #[no_mangle]
 pub static mut cur_i: b16x4 = b16x4 {
     s0: 0,
@@ -1134,39 +1132,39 @@ pub static mut cur_i: b16x4 = b16x4 {
     s3: 0,
 };
 #[no_mangle]
-pub static mut cur_align: int32_t = 0;
+pub static mut cur_align: i32 = 0;
 #[no_mangle]
-pub static mut cur_span: int32_t = 0;
+pub static mut cur_span: i32 = 0;
 #[no_mangle]
-pub static mut cur_loop: int32_t = 0;
+pub static mut cur_loop: i32 = 0;
 #[no_mangle]
-pub static mut align_ptr: int32_t = 0;
+pub static mut align_ptr: i32 = 0;
 #[no_mangle]
-pub static mut cur_head: int32_t = 0;
+pub static mut cur_head: i32 = 0;
 #[no_mangle]
-pub static mut cur_tail: int32_t = 0;
+pub static mut cur_tail: i32 = 0;
 #[no_mangle]
-pub static mut cur_pre_head: int32_t = 0;
+pub static mut cur_pre_head: i32 = 0;
 #[no_mangle]
-pub static mut cur_pre_tail: int32_t = 0;
+pub static mut cur_pre_tail: i32 = 0;
 #[no_mangle]
-pub static mut just_box: int32_t = 0;
+pub static mut just_box: i32 = 0;
 #[no_mangle]
 pub static mut active_width: [scaled_t; 7] = [0; 7];
 #[no_mangle]
-pub static mut hc: [int32_t; 4099] = [0; 4099];
+pub static mut hc: [i32; 4099] = [0; 4099];
 #[no_mangle]
 pub static mut hf: internal_font_number = 0;
 #[no_mangle]
-pub static mut hu: [int32_t; 4097] = [0; 4097];
+pub static mut hu: [i32; 4097] = [0; 4097];
 #[no_mangle]
 pub static mut cur_lang: u8 = 0;
 #[no_mangle]
-pub static mut max_hyph_char: int32_t = 0;
+pub static mut max_hyph_char: i32 = 0;
 #[no_mangle]
 pub static mut hyf: [u8; 4097] = [0; 4097];
 #[no_mangle]
-pub static mut init_list: int32_t = 0;
+pub static mut init_list: i32 = 0;
 #[no_mangle]
 pub static mut init_lig: bool = false;
 #[no_mangle]
@@ -1174,13 +1172,13 @@ pub static mut init_lft: bool = false;
 #[no_mangle]
 pub static mut hyphen_passed: small_number = 0;
 #[no_mangle]
-pub static mut cur_l: int32_t = 0;
+pub static mut cur_l: i32 = 0;
 #[no_mangle]
-pub static mut cur_r: int32_t = 0;
+pub static mut cur_r: i32 = 0;
 #[no_mangle]
-pub static mut cur_q: int32_t = 0;
+pub static mut cur_q: i32 = 0;
 #[no_mangle]
-pub static mut lig_stack: int32_t = 0;
+pub static mut lig_stack: i32 = 0;
 #[no_mangle]
 pub static mut ligature_present: bool = false;
 #[no_mangle]
@@ -1200,17 +1198,17 @@ pub static mut hyf_num: [small_number; 35112] = [0; 35112];
 #[no_mangle]
 pub static mut hyf_next: [trie_opcode; 35112] = [0; 35112];
 #[no_mangle]
-pub static mut op_start: [int32_t; 256] = [0; 256];
+pub static mut op_start: [i32; 256] = [0; 256];
 #[no_mangle]
 pub static mut hyph_word: *mut str_number = 0 as *const str_number as *mut str_number;
 #[no_mangle]
-pub static mut hyph_list: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut hyph_list: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
 pub static mut hyph_link: *mut hyph_pointer = 0 as *const hyph_pointer as *mut hyph_pointer;
 #[no_mangle]
-pub static mut hyph_count: int32_t = 0;
+pub static mut hyph_count: i32 = 0;
 #[no_mangle]
-pub static mut hyph_next: int32_t = 0;
+pub static mut hyph_next: i32 = 0;
 #[no_mangle]
 pub static mut trie_used: [trie_opcode; 256] = [0; 256];
 #[no_mangle]
@@ -1218,7 +1216,7 @@ pub static mut trie_op_lang: [u8; 35112] = [0; 35112];
 #[no_mangle]
 pub static mut trie_op_val: [trie_opcode; 35112] = [0; 35112];
 #[no_mangle]
-pub static mut trie_op_ptr: int32_t = 0;
+pub static mut trie_op_ptr: i32 = 0;
 #[no_mangle]
 pub static mut max_op_used: trie_opcode = 0;
 #[no_mangle]
@@ -1263,33 +1261,33 @@ pub static mut main_j: b16x4 = b16x4 {
 #[no_mangle]
 pub static mut main_k: font_index = 0;
 #[no_mangle]
-pub static mut main_p: int32_t = 0;
+pub static mut main_p: i32 = 0;
 #[no_mangle]
-pub static mut main_pp: int32_t = 0;
+pub static mut main_pp: i32 = 0;
 #[no_mangle]
-pub static mut main_ppp: int32_t = 0;
+pub static mut main_ppp: i32 = 0;
 #[no_mangle]
-pub static mut main_h: int32_t = 0;
+pub static mut main_h: i32 = 0;
 #[no_mangle]
 pub static mut is_hyph: bool = false;
 #[no_mangle]
-pub static mut space_class: int32_t = 0;
+pub static mut space_class: i32 = 0;
 #[no_mangle]
-pub static mut prev_class: int32_t = 0;
+pub static mut prev_class: i32 = 0;
 #[no_mangle]
-pub static mut main_s: int32_t = 0;
+pub static mut main_s: i32 = 0;
 #[no_mangle]
-pub static mut bchar: int32_t = 0;
+pub static mut bchar: i32 = 0;
 #[no_mangle]
-pub static mut false_bchar: int32_t = 0;
+pub static mut false_bchar: i32 = 0;
 #[no_mangle]
 pub static mut cancel_boundary: bool = false;
 #[no_mangle]
 pub static mut ins_disc: bool = false;
 #[no_mangle]
-pub static mut cur_box: int32_t = 0;
+pub static mut cur_box: i32 = 0;
 #[no_mangle]
-pub static mut after_token: int32_t = 0;
+pub static mut after_token: i32 = 0;
 #[no_mangle]
 pub static mut long_help_seen: bool = false;
 #[no_mangle]
@@ -1300,7 +1298,7 @@ pub static mut write_file: [rust_output_handle_t; 16] =
 #[no_mangle]
 pub static mut write_open: [bool; 18] = [false; 18];
 #[no_mangle]
-pub static mut write_loc: int32_t = 0;
+pub static mut write_loc: i32 = 0;
 #[no_mangle]
 pub static mut cur_page_width: scaled_t = 0;
 #[no_mangle]
@@ -1310,37 +1308,37 @@ pub static mut cur_h_offset: scaled_t = 0;
 #[no_mangle]
 pub static mut cur_v_offset: scaled_t = 0;
 #[no_mangle]
-pub static mut pdf_last_x_pos: int32_t = 0;
+pub static mut pdf_last_x_pos: i32 = 0;
 #[no_mangle]
-pub static mut pdf_last_y_pos: int32_t = 0;
+pub static mut pdf_last_y_pos: i32 = 0;
 #[no_mangle]
 pub static mut eof_seen: *mut bool = 0 as *const bool as *mut bool;
 #[no_mangle]
-pub static mut LR_ptr: int32_t = 0;
+pub static mut LR_ptr: i32 = 0;
 #[no_mangle]
-pub static mut LR_problems: int32_t = 0;
+pub static mut LR_problems: i32 = 0;
 #[no_mangle]
 pub static mut cur_dir: small_number = 0;
 #[no_mangle]
-pub static mut pseudo_files: int32_t = 0;
+pub static mut pseudo_files: i32 = 0;
 #[no_mangle]
 pub static mut grp_stack: *mut save_pointer = 0 as *const save_pointer as *mut save_pointer;
 #[no_mangle]
-pub static mut if_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+pub static mut if_stack: *mut i32 = 0 as *const i32 as *mut i32;
 #[no_mangle]
-pub static mut max_reg_num: int32_t = 0;
+pub static mut max_reg_num: i32 = 0;
 #[no_mangle]
 pub static mut max_reg_help_line: *const i8 = 0 as *const i8;
 #[no_mangle]
-pub static mut sa_root: [int32_t; 8] = [0; 8];
+pub static mut sa_root: [i32; 8] = [0; 8];
 #[no_mangle]
-pub static mut cur_ptr: int32_t = 0;
+pub static mut cur_ptr: i32 = 0;
 #[no_mangle]
 pub static mut sa_null: memory_word = memory_word {
     b32: b32x2 { s0: 0, s1: 0 },
 };
 #[no_mangle]
-pub static mut sa_chain: int32_t = 0;
+pub static mut sa_chain: i32 = 0;
 #[no_mangle]
 pub static mut sa_level: u16 = 0;
 #[no_mangle]
@@ -1348,13 +1346,13 @@ pub static mut hyph_start: trie_pointer = 0;
 #[no_mangle]
 pub static mut hyph_index: trie_pointer = 0;
 #[no_mangle]
-pub static mut disc_ptr: [int32_t; 4] = [0; 4];
+pub static mut disc_ptr: [i32; 4] = [0; 4];
 #[no_mangle]
 pub static mut edit_name_start: pool_pointer = 0;
 #[no_mangle]
 pub static mut stop_at_space: bool = false;
 #[no_mangle]
-pub static mut native_font_type_flag: int32_t = 0;
+pub static mut native_font_type_flag: i32 = 0;
 #[no_mangle]
 pub static mut xtx_ligature_present: bool = false;
 #[no_mangle]
@@ -1369,26 +1367,26 @@ pub static mut semantic_pagination_enabled: bool = false;
 pub static mut gave_char_warning_help: bool = false;
 /* These ought to live in xetex-pagebuilder.c but are shared a lot: */
 #[no_mangle]
-pub static mut page_tail: int32_t = 0;
+pub static mut page_tail: i32 = 0;
 #[no_mangle]
 pub static mut page_contents: u8 = 0;
 #[no_mangle]
 pub static mut page_so_far: [scaled_t; 8] = [0; 8];
 #[no_mangle]
-pub static mut last_glue: int32_t = 0;
+pub static mut last_glue: i32 = 0;
 #[no_mangle]
-pub static mut last_penalty: int32_t = 0;
+pub static mut last_penalty: i32 = 0;
 #[no_mangle]
 pub static mut last_kern: scaled_t = 0;
 #[no_mangle]
-pub static mut last_node_type: int32_t = 0;
+pub static mut last_node_type: i32 = 0;
 #[no_mangle]
-pub static mut insert_penalties: int32_t = 0;
+pub static mut insert_penalties: i32 = 0;
 #[no_mangle]
 pub static mut output_active: bool = false;
 #[no_mangle]
 pub static mut _xeq_level_array: [u16; 1114732] = [0; 1114732];
-static mut _trie_op_hash_array: [int32_t; 70223] = [0; 70223];
+static mut _trie_op_hash_array: [i32; 70223] = [0; 70223];
 static mut yhash: *mut b32x2 = 0 as *const b32x2 as *mut b32x2;
 /* Read and write dump files.  As distributed, these files are
 architecture dependent; specifically, BigEndian and LittleEndian
@@ -1538,10 +1536,10 @@ unsafe extern "C" fn do_undump(
 /*:134*/
 /*135: */
 unsafe extern "C" fn sort_avail() {
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut old_rover: int32_t = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
+    let mut old_rover: i32 = 0;
     p = get_node(0x40000000i32);
     p = (*mem.offset((rover + 1i32) as isize)).b32.s1;
     (*mem.offset((rover + 1i32) as isize)).b32.s1 = 0x3fffffffi32;
@@ -1576,8 +1574,8 @@ unsafe extern "C" fn sort_avail() {
 }
 /*:271*/
 /*276: */
-unsafe extern "C" fn primitive(mut ident: *const i8, mut c: u16, mut o: int32_t) {
-    let mut prim_val: int32_t = 0;
+unsafe extern "C" fn primitive(mut ident: *const i8, mut c: u16, mut o: i32) {
+    let mut prim_val: i32 = 0;
     let mut len: libc::c_int = strlen(ident) as libc::c_int;
     if len > 1i32 {
         let mut s: str_number = maketexstring(ident);
@@ -1616,29 +1614,29 @@ pub unsafe extern "C" fn new_trie_op(
     mut n: small_number,
     mut v: trie_opcode,
 ) -> trie_opcode {
-    let mut h: int32_t = 0;
+    let mut h: i32 = 0;
     let mut u: trie_opcode = 0;
-    let mut l: int32_t = 0;
+    let mut l: i32 = 0;
     h = (abs(n as libc::c_int
         + 313i32 * d as libc::c_int
         + 361i32 * v as libc::c_int
         + 1009i32 * cur_lang as libc::c_int) as i64
         % (35111 - -35111)
-        + -35111) as int32_t;
+        + -35111) as i32;
     loop {
         l = _trie_op_hash_array[(h as i64 - -35111) as usize];
         if l == 0i32 {
             if trie_op_ptr as i64 == 35111 {
                 overflow(
                     b"pattern memory ops\x00" as *const u8 as *const i8,
-                    35111 as int32_t,
+                    35111 as i32,
                 );
             }
             u = trie_used[cur_lang as usize];
             if u as i64 == 65535 {
                 overflow(
                     b"pattern memory ops per language\x00" as *const u8 as *const i8,
-                    (65535 - 0i32 as i64) as int32_t,
+                    (65535 - 0i32 as i64) as i32,
                 );
             }
             trie_op_ptr += 1;
@@ -1662,10 +1660,10 @@ pub unsafe extern "C" fn new_trie_op(
         {
             return trie_op_val[l as usize];
         }
-        if h > -(35111 as int32_t) {
+        if h > -(35111 as i32) {
             h -= 1
         } else {
-            h = 35111 as int32_t
+            h = 35111 as i32
         }
     }
 }
@@ -1717,7 +1715,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
     let mut c: UTF16_code = 0;
     let mut l: trie_pointer = 0;
     let mut r: trie_pointer = 0;
-    let mut ll: int32_t = 0;
+    let mut ll: i32 = 0;
     c = *trie_c.offset(p as isize);
     z = trie_min[c as usize];
     's_31: loop {
@@ -2018,7 +2016,7 @@ unsafe extern "C" fn new_patterns() {
                             l -= 1
                         }
                         q = 0i32;
-                        hc[0] = cur_lang as int32_t;
+                        hc[0] = cur_lang as i32;
                         while l as libc::c_int <= k as libc::c_int {
                             c = hc[l as usize] as UTF16_code;
                             l += 1;
@@ -2263,14 +2261,14 @@ unsafe extern "C" fn new_patterns() {
 #[no_mangle]
 pub unsafe extern "C" fn init_trie() {
     let mut p: trie_pointer = 0;
-    let mut j: int32_t = 0;
-    let mut k: int32_t = 0;
-    let mut t: int32_t = 0;
+    let mut j: i32 = 0;
+    let mut k: i32 = 0;
+    let mut t: i32 = 0;
     let mut r: trie_pointer = 0;
     let mut s: trie_pointer = 0;
     max_hyph_char += 1;
     op_start[0] = -0i32;
-    let mut for_end: int32_t = 0;
+    let mut for_end: i32 = 0;
     j = 1i32;
     for_end = 255i32;
     if j <= for_end {
@@ -2284,7 +2282,7 @@ pub unsafe extern "C" fn init_trie() {
             }
         }
     }
-    let mut for_end_0: int32_t = 0;
+    let mut for_end_0: i32 = 0;
     j = 1i32;
     for_end_0 = trie_op_ptr;
     if j <= for_end_0 {
@@ -2299,20 +2297,20 @@ pub unsafe extern "C" fn init_trie() {
             }
         }
     }
-    let mut for_end_1: int32_t = 0;
+    let mut for_end_1: i32 = 0;
     j = 1i32;
     for_end_1 = trie_op_ptr;
     if j <= for_end_1 {
         loop {
             while _trie_op_hash_array[(j as i64 - -35111) as usize] > j {
                 k = _trie_op_hash_array[(j as i64 - -35111) as usize];
-                t = hyf_distance[k as usize] as int32_t;
+                t = hyf_distance[k as usize] as i32;
                 hyf_distance[k as usize] = hyf_distance[j as usize];
                 hyf_distance[j as usize] = t as small_number;
-                t = hyf_num[k as usize] as int32_t;
+                t = hyf_num[k as usize] as i32;
                 hyf_num[k as usize] = hyf_num[j as usize];
                 hyf_num[j as usize] = t as small_number;
-                t = hyf_next[k as usize] as int32_t;
+                t = hyf_next[k as usize] as i32;
                 hyf_next[k as usize] = hyf_next[j as usize];
                 hyf_next[j as usize] = t as trie_opcode;
                 _trie_op_hash_array[(j as i64 - -35111) as usize] =
@@ -2326,7 +2324,7 @@ pub unsafe extern "C" fn init_trie() {
             }
         }
     }
-    let mut for_end_2: int32_t = 0;
+    let mut for_end_2: i32 = 0;
     p = 0i32;
     for_end_2 = trie_size;
     if p <= for_end_2 {
@@ -2341,7 +2339,7 @@ pub unsafe extern "C" fn init_trie() {
     }
     *trie_r.offset(0) = compress_trie(*trie_r.offset(0));
     *trie_l.offset(0) = compress_trie(*trie_l.offset(0));
-    let mut for_end_3: int32_t = 0;
+    let mut for_end_3: i32 = 0;
     p = 0i32;
     for_end_3 = trie_ptr;
     if p <= for_end_3 {
@@ -2354,7 +2352,7 @@ pub unsafe extern "C" fn init_trie() {
             }
         }
     }
-    let mut for_end_4: int32_t = 0;
+    let mut for_end_4: i32 = 0;
     p = 0i32;
     for_end_4 = 0xffffi32;
     if p <= for_end_4 {
@@ -2376,7 +2374,7 @@ pub unsafe extern "C" fn init_trie() {
     if *trie_r.offset(0) != 0i32 {
         /*1645: */
         if *trie_l.offset(0) == 0i32 {
-            let mut for_end_5: int32_t = 0;
+            let mut for_end_5: i32 = 0;
             p = 0i32;
             for_end_5 = 255i32;
             if p <= for_end_5 {
@@ -2395,7 +2393,7 @@ pub unsafe extern "C" fn init_trie() {
         hyph_start = *trie_hash.offset(*trie_r.offset(0) as isize)
     }
     if trie_max == 0i32 {
-        let mut for_end_6: int32_t = 0;
+        let mut for_end_6: i32 = 0;
         r = 0i32;
         for_end_6 = max_hyph_char;
         if r <= for_end_6 {
@@ -2440,8 +2438,8 @@ unsafe extern "C" fn new_hyph_exceptions() {
     let mut j: libc::c_short = 0;
     let mut h: hyph_pointer = 0;
     let mut k: str_number = 0;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
     let mut s: str_number = 0;
     let mut u: pool_pointer = 0;
     let mut v: pool_pointer = 0;
@@ -2561,7 +2559,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
                         if (n as libc::c_int) < max_hyphenatable_length() {
                             q = get_avail();
                             (*mem.offset(q as isize)).b32.s1 = p;
-                            (*mem.offset(q as isize)).b32.s0 = n as int32_t;
+                            (*mem.offset(q as isize)).b32.s0 = n as i32;
                             p = q
                         }
                     } else {
@@ -2620,10 +2618,10 @@ unsafe extern "C" fn new_hyph_exceptions() {
                             } else {
                                 hc[n as usize] =
                                     ((hc[0] as i64 - 65536) / 1024i32 as i64
-                                        + 55296) as int32_t;
+                                        + 55296) as i32;
                                 n += 1;
                                 hc[n as usize] =
-                                    ((hc[0] % 1024i32) as i64 + 56320) as int32_t
+                                    ((hc[0] % 1024i32) as i64 + 56320) as i32
                             }
                         }
                     }
@@ -2666,7 +2664,7 @@ unsafe extern "C" fn new_hyph_exceptions() {
             10753070352654377903 => {
                 /*974:*/
                 n += 1;
-                hc[n as usize] = cur_lang as int32_t;
+                hc[n as usize] = cur_lang as i32;
                 if pool_ptr + n as libc::c_int > pool_size {
                     overflow(
                         b"pool size\x00" as *const u8 as *const i8,
@@ -2758,11 +2756,11 @@ pub unsafe extern "C" fn prefixed_command() {
     let mut current_block: u64;
     let mut a: small_number = 0;
     let mut f: internal_font_number = 0;
-    let mut j: int32_t = 0;
+    let mut j: i32 = 0;
     let mut k: font_index = 0;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut n: int32_t = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut n: i32 = 0;
     let mut e: bool = false;
     a = 0i32 as small_number;
     while cur_cmd as libc::c_int == 95i32 {
@@ -3237,7 +3235,7 @@ pub unsafe extern "C" fn prefixed_command() {
                         n =
                             ((cur_val as libc::c_uint &
                                   0x7i32 as libc::c_uint) << 21i32) as
-                                int32_t;
+                                i32;
                         scan_math_fam_int();
                         n =
                             (n as
@@ -3247,7 +3245,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                                  0xffi32 as
                                                                      libc::c_uint)
                                                                 << 24i32) as
-                                int32_t;
+                                i32;
                         scan_usv_num();
                         n = n + cur_val;
                         if a as libc::c_int >= 4i32 {
@@ -3626,7 +3624,7 @@ pub unsafe extern "C" fn prefixed_command() {
         }
         76 | 77 => {
             p = cur_chr;
-            n = cur_cmd as int32_t;
+            n = cur_cmd as i32;
             scan_optional_equals();
             if n == 77i32 {
                 scan_glue(3i32 as small_number);
@@ -3656,17 +3654,17 @@ pub unsafe extern "C" fn prefixed_command() {
                                         (0x10ffffi32 + 1i32) +
                                         (0x10ffffi32 + 1i32) + cur_val) as
                                        isize)).b32.s1 as i64 %
-                         65536) as int32_t;
+                         65536) as i32;
                 scan_optional_equals();
                 scan_char_class();
                 if a as libc::c_int >= 4i32 {
                     geq_define(p, 122i32 as u16,
                                (cur_val as i64 * 65536 +
-                                    n as i64) as int32_t);
+                                    n as i64) as i32);
                 } else {
                     eq_define(p, 122i32 as u16,
                               (cur_val as i64 * 65536 +
-                                   n as i64) as int32_t);
+                                   n as i64) as i32);
                 }
             } else if cur_chr ==
                           1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
@@ -3698,14 +3696,14 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_math_class_int();
                 n =
                     ((cur_val as libc::c_uint & 0x7i32 as libc::c_uint) <<
-                         21i32) as int32_t;
+                         21i32) as i32;
                 scan_math_fam_int();
                 n =
                     (n as
                          libc::c_uint).wrapping_add((cur_val as libc::c_uint &
                                                          0xffi32 as
                                                              libc::c_uint) <<
-                                                        24i32) as int32_t;
+                                                        24i32) as i32;
                 scan_usv_num();
                 n = n + cur_val;
                 if a as libc::c_int >= 4i32 {
@@ -3840,15 +3838,15 @@ pub unsafe extern "C" fn prefixed_command() {
                            (0x10ffffi32 + 1i32) {
                     n =
                         ((*eqtb.offset(p as isize)).b32.s1 as i64 /
-                             65536) as int32_t;
+                             65536) as i32;
                     if a as libc::c_int >= 4i32 {
                         geq_define(p, 122i32 as u16,
                                    (n as i64 * 65536 +
-                                        cur_val as i64) as int32_t);
+                                        cur_val as i64) as i32);
                     } else {
                         eq_define(p, 122i32 as u16,
                                   (n as i64 * 65536 +
-                                       cur_val as i64) as int32_t);
+                                       cur_val as i64) as i32);
                     }
                 } else if a as libc::c_int >= 4i32 {
                     geq_define(p, 122i32 as u16, cur_val);
@@ -3877,7 +3875,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                                               256i32)
                                                                              as
                                                                              libc::c_uint)
-                            as int32_t
+                            as i32
                 }
                 if a as libc::c_int >= 4i32 {
                     geq_define(p, 122i32 as u16, cur_val);
@@ -4045,12 +4043,12 @@ pub unsafe extern "C" fn prefixed_command() {
 /*1337:*/
 unsafe extern "C" fn store_fmt_file() {
     let mut current_block: u64;
-    let mut j: int32_t = 0;
-    let mut k: int32_t = 0;
-    let mut l: int32_t = 0;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut x: int32_t = 0;
+    let mut j: i32 = 0;
+    let mut k: i32 = 0;
+    let mut l: i32 = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut x: i32 = 0;
     let mut fmt_out: rust_output_handle_t = 0 as *mut libc::c_void;
     if save_ptr != 0i32 {
         if file_line_error_style_p != 0 {
@@ -4199,38 +4197,38 @@ unsafe extern "C" fn store_fmt_file() {
     print_nl_cstr(b"\x00" as *const u8 as *const i8);
     print(format_ident);
     /* Header */
-    let mut x_val: int32_t = 0x54544e43i32; /* TODO: can we move this farther up in this function? */
+    let mut x_val: i32 = 0x54544e43i32; /* TODO: can we move this farther up in this function? */
     do_dump(
-        &mut x_val as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_0: int32_t = 28i32;
+    let mut x_val_0: i32 = 28i32;
     do_dump(
-        &mut x_val_0 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_0 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_1: int32_t = hash_high;
+    let mut x_val_1: i32 = hash_high;
     do_dump(
-        &mut x_val_1 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_1 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     while pseudo_files != -0xfffffffi32 {
         pseudo_close();
     }
-    let mut x_val_2: int32_t = 4999999i32;
+    let mut x_val_2: i32 = 4999999i32;
     do_dump(
-        &mut x_val_2 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_2 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_3: int32_t = 1i32
+    let mut x_val_3: i32 = 1i32
         + (0x10ffffi32 + 1i32)
         + (0x10ffffi32 + 1i32)
         + 1i32
@@ -4261,37 +4259,37 @@ unsafe extern "C" fn store_fmt_file() {
         + 256i32
         - 1i32;
     do_dump(
-        &mut x_val_3 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_3 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_4: int32_t = 8501i32;
+    let mut x_val_4: i32 = 8501i32;
     do_dump(
-        &mut x_val_4 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_4 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_5: int32_t = 607i32;
+    let mut x_val_5: i32 = 607i32;
     do_dump(
-        &mut x_val_5 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_5 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     /* string pool */
-    let mut x_val_6: int32_t = pool_ptr;
+    let mut x_val_6: i32 = pool_ptr;
     do_dump(
-        &mut x_val_6 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_6 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_7: int32_t = str_ptr;
+    let mut x_val_7: i32 = str_ptr;
     do_dump(
-        &mut x_val_7 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_7 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4314,26 +4312,26 @@ unsafe extern "C" fn store_fmt_file() {
     /* "memory locations" */
     sort_avail();
     var_used = 0i32;
-    let mut x_val_8: int32_t = lo_mem_max;
+    let mut x_val_8: i32 = lo_mem_max;
     do_dump(
-        &mut x_val_8 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_8 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_9: int32_t = rover;
+    let mut x_val_9: i32 = rover;
     do_dump(
-        &mut x_val_9 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_9 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     k = 0i32;
     while k <= 6i32 {
-        let mut x_val_10: int32_t = sa_root[k as usize];
+        let mut x_val_10: i32 = sa_root[k as usize];
         do_dump(
-            &mut x_val_10 as *mut int32_t as *mut i8,
-            ::std::mem::size_of::<int32_t>() as u64,
+            &mut x_val_10 as *mut i32 as *mut i8,
+            ::std::mem::size_of::<i32>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4366,17 +4364,17 @@ unsafe extern "C" fn store_fmt_file() {
         fmt_out,
     );
     x = x + lo_mem_max + 1i32 - p;
-    let mut x_val_11: int32_t = hi_mem_min;
+    let mut x_val_11: i32 = hi_mem_min;
     do_dump(
-        &mut x_val_11 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_11 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_12: int32_t = avail;
+    let mut x_val_12: i32 = avail;
     do_dump(
-        &mut x_val_12 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_12 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4392,17 +4390,17 @@ unsafe extern "C" fn store_fmt_file() {
         dyn_used -= 1;
         p = (*mem.offset(p as isize)).b32.s1
     }
-    let mut x_val_13: int32_t = var_used;
+    let mut x_val_13: i32 = var_used;
     do_dump(
-        &mut x_val_13 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_13 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_14: int32_t = dyn_used;
+    let mut x_val_14: i32 = dyn_used;
     do_dump(
-        &mut x_val_14 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_14 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4528,10 +4526,10 @@ unsafe extern "C" fn store_fmt_file() {
                 }
             }
         }
-        let mut x_val_15: int32_t = l - k;
+        let mut x_val_15: i32 = l - k;
         do_dump(
-            &mut x_val_15 as *mut int32_t as *mut i8,
-            ::std::mem::size_of::<int32_t>() as u64,
+            &mut x_val_15 as *mut i32 as *mut i8,
+            ::std::mem::size_of::<i32>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4542,10 +4540,10 @@ unsafe extern "C" fn store_fmt_file() {
             fmt_out,
         );
         k = j + 1i32;
-        let mut x_val_16: int32_t = k - l;
+        let mut x_val_16: i32 = k - l;
         do_dump(
-            &mut x_val_16 as *mut int32_t as *mut i8,
-            ::std::mem::size_of::<int32_t>() as u64,
+            &mut x_val_16 as *mut i32 as *mut i8,
+            ::std::mem::size_of::<i32>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4698,10 +4696,10 @@ unsafe extern "C" fn store_fmt_file() {
                 }
             }
         }
-        let mut x_val_17: int32_t = l - k;
+        let mut x_val_17: i32 = l - k;
         do_dump(
-            &mut x_val_17 as *mut int32_t as *mut i8,
-            ::std::mem::size_of::<int32_t>() as u64,
+            &mut x_val_17 as *mut i32 as *mut i8,
+            ::std::mem::size_of::<i32>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4712,10 +4710,10 @@ unsafe extern "C" fn store_fmt_file() {
             fmt_out,
         );
         k = j + 1i32;
-        let mut x_val_18: int32_t = k - l;
+        let mut x_val_18: i32 = k - l;
         do_dump(
-            &mut x_val_18 as *mut int32_t as *mut i8,
-            ::std::mem::size_of::<int32_t>() as u64,
+            &mut x_val_18 as *mut i32 as *mut i8,
+            ::std::mem::size_of::<i32>() as u64,
             1i32 as size_t,
             fmt_out,
         );
@@ -4794,17 +4792,17 @@ unsafe extern "C" fn store_fmt_file() {
             fmt_out,
         );
     }
-    let mut x_val_19: int32_t = par_loc;
+    let mut x_val_19: i32 = par_loc;
     do_dump(
-        &mut x_val_19 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_19 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_20: int32_t = write_loc;
+    let mut x_val_20: i32 = write_loc;
     do_dump(
-        &mut x_val_20 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_20 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4830,10 +4828,10 @@ unsafe extern "C" fn store_fmt_file() {
         p += 1
     }
     /* control sequences */
-    let mut x_val_21: int32_t = hash_used;
+    let mut x_val_21: i32 = hash_used;
     do_dump(
-        &mut x_val_21 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_21 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4843,10 +4841,10 @@ unsafe extern "C" fn store_fmt_file() {
     p = 1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32;
     while p <= hash_used {
         if (*hash.offset(p as isize)).s1 != 0i32 {
-            let mut x_val_22: int32_t = p;
+            let mut x_val_22: i32 = p;
             do_dump(
-                &mut x_val_22 as *mut int32_t as *mut i8,
-                ::std::mem::size_of::<int32_t>() as u64,
+                &mut x_val_22 as *mut i32 as *mut i8,
+                ::std::mem::size_of::<i32>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
@@ -4915,10 +4913,10 @@ unsafe extern "C" fn store_fmt_file() {
             fmt_out,
         );
     }
-    let mut x_val_23: int32_t = cs_count;
+    let mut x_val_23: i32 = cs_count;
     do_dump(
-        &mut x_val_23 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_23 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4926,10 +4924,10 @@ unsafe extern "C" fn store_fmt_file() {
     print_int(cs_count);
     print_cstr(b" multiletter control sequences\x00" as *const u8 as *const i8);
     /* fonts */
-    let mut x_val_24: int32_t = fmem_ptr;
+    let mut x_val_24: i32 = fmem_ptr;
     do_dump(
-        &mut x_val_24 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_24 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4939,10 +4937,10 @@ unsafe extern "C" fn store_fmt_file() {
         fmem_ptr as size_t,
         fmt_out,
     );
-    let mut x_val_25: int32_t = font_ptr;
+    let mut x_val_25: i32 = font_ptr;
     do_dump(
-        &mut x_val_25 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_25 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -4971,14 +4969,14 @@ unsafe extern "C" fn store_fmt_file() {
         fmt_out,
     );
     do_dump(
-        &mut *hyphen_char.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *hyphen_char.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *skew_char.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *skew_char.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
@@ -5007,62 +5005,62 @@ unsafe extern "C" fn store_fmt_file() {
         fmt_out,
     );
     do_dump(
-        &mut *char_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *char_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *width_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *width_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *height_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *height_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *depth_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *depth_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *italic_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *italic_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *lig_kern_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *lig_kern_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *kern_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *kern_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *exten_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *exten_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *param_base.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *param_base.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
     do_dump(
-        &mut *font_glue.offset(0) as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut *font_glue.offset(0) as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         (font_ptr + 1i32) as size_t,
         fmt_out,
     );
@@ -5101,8 +5099,8 @@ unsafe extern "C" fn store_fmt_file() {
         {
             print_file_name(
                 *font_name.offset(k as isize),
-                (65536 + 1i32 as i64) as int32_t,
-                (65536 + 1i32 as i64) as int32_t,
+                (65536 + 1i32 as i64) as i32,
+                (65536 + 1i32 as i64) as i32,
             );
             if file_line_error_style_p != 0 {
                 print_file_line();
@@ -5125,7 +5123,7 @@ unsafe extern "C" fn store_fmt_file() {
             print_file_name(
                 *font_name.offset(k as isize),
                 *font_area.offset(k as isize),
-                (65536 + 1i32 as i64) as int32_t,
+                (65536 + 1i32 as i64) as i32,
             );
         }
         if *font_size.offset(k as isize) != *font_dsize.offset(k as isize) {
@@ -5145,46 +5143,46 @@ unsafe extern "C" fn store_fmt_file() {
         print_cstr(b" preloaded font\x00" as *const u8 as *const i8);
     }
     /* hyphenation info */
-    let mut x_val_26: int32_t = hyph_count;
+    let mut x_val_26: i32 = hyph_count;
     do_dump(
-        &mut x_val_26 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_26 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     if hyph_next <= 607i32 {
         hyph_next = hyph_size
     }
-    let mut x_val_27: int32_t = hyph_next;
+    let mut x_val_27: i32 = hyph_next;
     do_dump(
-        &mut x_val_27 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_27 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
     k = 0i32;
     while k <= hyph_size {
         if *hyph_word.offset(k as isize) != 0i32 {
-            let mut x_val_28: int32_t = (k as i64
+            let mut x_val_28: i32 = (k as i64
                 + 65536 * *hyph_link.offset(k as isize) as i64)
-                as int32_t;
+                as i32;
             do_dump(
-                &mut x_val_28 as *mut int32_t as *mut i8,
-                ::std::mem::size_of::<int32_t>() as u64,
+                &mut x_val_28 as *mut i32 as *mut i8,
+                ::std::mem::size_of::<i32>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
-            let mut x_val_29: int32_t = *hyph_word.offset(k as isize);
+            let mut x_val_29: i32 = *hyph_word.offset(k as isize);
             do_dump(
-                &mut x_val_29 as *mut int32_t as *mut i8,
-                ::std::mem::size_of::<int32_t>() as u64,
+                &mut x_val_29 as *mut i32 as *mut i8,
+                ::std::mem::size_of::<i32>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
-            let mut x_val_30: int32_t = *hyph_list.offset(k as isize);
+            let mut x_val_30: i32 = *hyph_list.offset(k as isize);
             do_dump(
-                &mut x_val_30 as *mut int32_t as *mut i8,
-                ::std::mem::size_of::<int32_t>() as u64,
+                &mut x_val_30 as *mut i32 as *mut i8,
+                ::std::mem::size_of::<i32>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
@@ -5201,17 +5199,17 @@ unsafe extern "C" fn store_fmt_file() {
     if trie_not_ready {
         init_trie();
     }
-    let mut x_val_31: int32_t = trie_max;
+    let mut x_val_31: i32 = trie_max;
     do_dump(
-        &mut x_val_31 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_31 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_32: int32_t = hyph_start;
+    let mut x_val_32: i32 = hyph_start;
     do_dump(
-        &mut x_val_32 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_32 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -5233,17 +5231,17 @@ unsafe extern "C" fn store_fmt_file() {
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
-    let mut x_val_33: int32_t = max_hyph_char;
+    let mut x_val_33: i32 = max_hyph_char;
     do_dump(
-        &mut x_val_33 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_33 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
-    let mut x_val_34: int32_t = trie_op_ptr;
+    let mut x_val_34: i32 = trie_op_ptr;
     do_dump(
-        &mut x_val_34 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_34 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -5275,25 +5273,25 @@ unsafe extern "C" fn store_fmt_file() {
         print_cstr(b" op\x00" as *const u8 as *const i8);
     }
     print_cstr(b" out of \x00" as *const u8 as *const i8);
-    print_int(35111 as int32_t);
+    print_int(35111 as i32);
     k = 255i32;
     while k >= 0i32 {
         if trie_used[k as usize] as libc::c_int > 0i32 {
             print_nl_cstr(b"  \x00" as *const u8 as *const i8);
-            print_int(trie_used[k as usize] as int32_t);
+            print_int(trie_used[k as usize] as i32);
             print_cstr(b" for language \x00" as *const u8 as *const i8);
             print_int(k);
-            let mut x_val_35: int32_t = k;
+            let mut x_val_35: i32 = k;
             do_dump(
-                &mut x_val_35 as *mut int32_t as *mut i8,
-                ::std::mem::size_of::<int32_t>() as u64,
+                &mut x_val_35 as *mut i32 as *mut i8,
+                ::std::mem::size_of::<i32>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
-            let mut x_val_36: int32_t = trie_used[k as usize] as int32_t;
+            let mut x_val_36: i32 = trie_used[k as usize] as i32;
             do_dump(
-                &mut x_val_36 as *mut int32_t as *mut i8,
-                ::std::mem::size_of::<int32_t>() as u64,
+                &mut x_val_36 as *mut i32 as *mut i8,
+                ::std::mem::size_of::<i32>() as u64,
                 1i32 as size_t,
                 fmt_out,
             );
@@ -5301,10 +5299,10 @@ unsafe extern "C" fn store_fmt_file() {
         k -= 1
     }
     /* footer */
-    let mut x_val_37: int32_t = 0x29ai32; /*:1361*/
+    let mut x_val_37: i32 = 0x29ai32; /*:1361*/
     do_dump(
-        &mut x_val_37 as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x_val_37 as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_out,
     );
@@ -5339,22 +5337,22 @@ unsafe extern "C" fn store_fmt_file() {
     .s1 = 0i32;
     ttstub_output_close(fmt_out);
 }
-unsafe extern "C" fn pack_buffered_name(mut n: small_number, mut a: int32_t, mut b: int32_t) {
+unsafe extern "C" fn pack_buffered_name(mut n: small_number, mut a: i32, mut b: i32) {
     free(name_of_file as *mut libc::c_void);
     name_of_file = xmalloc(
         ((format_default_length + 1i32 + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<UTF8_code>() as u64),
     ) as *mut i8;
     strcpy(name_of_file, TEX_format_default);
-    name_length = strlen(name_of_file) as int32_t;
+    name_length = strlen(name_of_file) as i32;
 }
 unsafe extern "C" fn load_fmt_file() -> bool {
     let mut current_block: u64;
-    let mut j: int32_t = 0;
-    let mut k: int32_t = 0;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut x: int32_t = 0;
+    let mut j: i32 = 0;
+    let mut k: i32 = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut x: i32 = 0;
     let mut fmt_in: rust_input_handle_t = 0 as *mut libc::c_void;
     j = cur_input.loc;
     /* This is where a first line starting with "&" used to
@@ -5379,15 +5377,15 @@ unsafe extern "C" fn load_fmt_file() -> bool {
     }
     /* start reading the header */
     do_undump(
-        &mut x as *mut int32_t as *mut i8,
-        ::std::mem::size_of::<int32_t>() as u64,
+        &mut x as *mut i32 as *mut i8,
+        ::std::mem::size_of::<i32>() as u64,
         1i32 as size_t,
         fmt_in,
     );
     if !(x != 0x54544e43i32) {
         do_undump(
-            &mut x as *mut int32_t as *mut i8,
-            ::std::mem::size_of::<int32_t>() as u64,
+            &mut x as *mut i32 as *mut i8,
+            ::std::mem::size_of::<i32>() as u64,
             1i32 as size_t,
             fmt_in,
         );
@@ -5402,8 +5400,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
         }
         /* hash table parameters */
         do_undump(
-            &mut hash_high as *mut int32_t as *mut i8,
-            ::std::mem::size_of::<int32_t>() as u64,
+            &mut hash_high as *mut i32 as *mut i8,
+            ::std::mem::size_of::<i32>() as u64,
             1i32 as size_t,
             fmt_in,
         );
@@ -5558,8 +5556,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                 as *const i8;
             /* "memory locations" */
             do_undump(
-                &mut x as *mut int32_t as *mut i8,
-                ::std::mem::size_of::<int32_t>() as u64,
+                &mut x as *mut i32 as *mut i8,
+                ::std::mem::size_of::<i32>() as u64,
                 1i32 as size_t,
                 fmt_in,
             );
@@ -5572,8 +5570,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                         .wrapping_mul(::std::mem::size_of::<memory_word>() as u64),
                 ) as *mut memory_word;
                 do_undump(
-                    &mut x as *mut int32_t as *mut i8,
-                    ::std::mem::size_of::<int32_t>() as u64,
+                    &mut x as *mut i32 as *mut i8,
+                    ::std::mem::size_of::<i32>() as u64,
                     1i32 as size_t,
                     fmt_in,
                 );
@@ -5610,23 +5608,23 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                         - 1i32)
                 {
                     do_undump(
-                        &mut x as *mut int32_t as *mut i8,
-                        ::std::mem::size_of::<int32_t>() as u64,
+                        &mut x as *mut i32 as *mut i8,
+                        ::std::mem::size_of::<i32>() as u64,
                         1i32 as size_t,
                         fmt_in,
                     );
                     if !(x != 8501i32) {
                         do_undump(
-                            &mut x as *mut int32_t as *mut i8,
-                            ::std::mem::size_of::<int32_t>() as u64,
+                            &mut x as *mut i32 as *mut i8,
+                            ::std::mem::size_of::<i32>() as u64,
                             1i32 as size_t,
                             fmt_in,
                         );
                         if !(x != 607i32) {
                             /* string pool */
                             do_undump(
-                                &mut x as *mut int32_t as *mut i8,
-                                ::std::mem::size_of::<int32_t>() as u64,
+                                &mut x as *mut i32 as *mut i8,
+                                ::std::mem::size_of::<i32>() as u64,
                                 1i32 as size_t,
                                 fmt_in,
                             ); /*:1345 */
@@ -5642,8 +5640,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                     pool_size = pool_ptr + pool_free
                                 }
                                 do_undump(
-                                    &mut x as *mut int32_t as *mut i8,
-                                    ::std::mem::size_of::<int32_t>() as u64,
+                                    &mut x as *mut i32 as *mut i8,
+                                    ::std::mem::size_of::<i32>() as u64,
                                     1i32 as size_t,
                                     fmt_in,
                                 );
@@ -5718,16 +5716,16 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                      * of |mem|, we are usually able to get by without having to dump very
                                      * much of the dynamic memory." */
                                     do_undump(
-                                        &mut x as *mut int32_t as *mut i8,
-                                        ::std::mem::size_of::<int32_t>() as u64,
+                                        &mut x as *mut i32 as *mut i8,
+                                        ::std::mem::size_of::<i32>() as u64,
                                         1i32 as size_t,
                                         fmt_in,
                                     );
                                     if !(x < 1019i32 || x > 4999999i32 - 15i32) {
                                         lo_mem_max = x;
                                         do_undump(
-                                            &mut x as *mut int32_t as *mut i8,
-                                            ::std::mem::size_of::<int32_t>() as u64,
+                                            &mut x as *mut i32 as *mut i8,
+                                            ::std::mem::size_of::<i32>() as u64,
                                             1i32 as size_t,
                                             fmt_in,
                                         );
@@ -5740,8 +5738,8 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                     break;
                                                 }
                                                 do_undump(
-                                                    &mut x as *mut int32_t as *mut i8,
-                                                    ::std::mem::size_of::<int32_t>()
+                                                    &mut x as *mut i32 as *mut i8,
+                                                    ::std::mem::size_of::<i32>()
                                                         as u64,
                                                     1i32 as size_t,
                                                     fmt_in,
@@ -5802,9 +5800,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                 fmt_in,
                                                             );
                                                             do_undump(
-                                                                &mut x as *mut int32_t
+                                                                &mut x as *mut i32
                                                                     as *mut i8,
-                                                                ::std::mem::size_of::<int32_t>()
+                                                                ::std::mem::size_of::<i32>()
                                                                     as u64,
                                                                 1i32 as size_t,
                                                                 fmt_in,
@@ -5814,9 +5812,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                             {
                                                                 hi_mem_min = x;
                                                                 do_undump(
-                                                                    &mut x as *mut int32_t
+                                                                    &mut x as *mut i32
                                                                         as *mut i8,
-                                                                    ::std::mem::size_of::<int32_t>()
+                                                                    ::std::mem::size_of::<i32>()
                                                                         as u64,
                                                                     1i32 as size_t,
                                                                     fmt_in,
@@ -5844,9 +5842,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                     );
                                                                     do_undump(
                                                                         &mut var_used
-                                                                            as *mut int32_t
+                                                                            as *mut i32
                                                                             as *mut i8,
-                                                                        ::std::mem::size_of::<int32_t>(
+                                                                        ::std::mem::size_of::<i32>(
                                                                         )
                                                                             as u64,
                                                                         1i32 as size_t,
@@ -5854,9 +5852,9 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                     );
                                                                     do_undump(
                                                                         &mut dyn_used
-                                                                            as *mut int32_t
+                                                                            as *mut i32
                                                                             as *mut i8,
-                                                                        ::std::mem::size_of::<int32_t>(
+                                                                        ::std::mem::size_of::<i32>(
                                                                         )
                                                                             as u64,
                                                                         1i32 as size_t,
@@ -5874,10 +5872,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                     loop {
                                                                         do_undump(&mut x
                                                                                       as
-                                                                                      *mut int32_t
+                                                                                      *mut i32
                                                                                       as
                                                                                       *mut i8,
-                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                  ::std::mem::size_of::<i32>()
                                                                                       as
                                                                                       u64,
                                                                                   1i32
@@ -5948,10 +5946,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                         k = k + x;
                                                                         do_undump(&mut x
                                                                                       as
-                                                                                      *mut int32_t
+                                                                                      *mut i32
                                                                                       as
                                                                                       *mut i8,
-                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                  ::std::mem::size_of::<i32>()
                                                                                       as
                                                                                       u64,
                                                                                   1i32
@@ -6163,10 +6161,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                             }
                                                                             do_undump(&mut x
                                                                                           as
-                                                                                          *mut int32_t
+                                                                                          *mut i32
                                                                                           as
                                                                                           *mut i8,
-                                                                                      ::std::mem::size_of::<int32_t>()
+                                                                                      ::std::mem::size_of::<i32>()
                                                                                           as
                                                                                           u64,
                                                                                       1i32
@@ -6187,10 +6185,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                         + par_loc;
                                                                                 do_undump(&mut x
                                                                                               as
-                                                                                              *mut int32_t
+                                                                                              *mut i32
                                                                                               as
                                                                                               *mut i8,
-                                                                                          ::std::mem::size_of::<int32_t>()
+                                                                                          ::std::mem::size_of::<i32>()
                                                                                               as
                                                                                               u64,
                                                                                           1i32
@@ -6256,10 +6254,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                     }
                                                                                     do_undump(&mut x
                                                                                                   as
-                                                                                                  *mut int32_t
+                                                                                                  *mut i32
                                                                                                   as
                                                                                                   *mut i8,
-                                                                                              ::std::mem::size_of::<int32_t>()
+                                                                                              ::std::mem::size_of::<i32>()
                                                                                                   as
                                                                                                   u64,
                                                                                               1i32
@@ -6318,10 +6316,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                              {
                                                                                             do_undump(&mut x
                                                                                                           as
-                                                                                                          *mut int32_t
+                                                                                                          *mut i32
                                                                                                           as
                                                                                                           *mut i8,
-                                                                                                      ::std::mem::size_of::<int32_t>()
+                                                                                                      ::std::mem::size_of::<i32>()
                                                                                                           as
                                                                                                           u64,
                                                                                                       1i32
@@ -6520,10 +6518,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                 }
                                                                                                 do_undump(&mut cs_count
                                                                                                               as
-                                                                                                              *mut int32_t
+                                                                                                              *mut i32
                                                                                                               as
                                                                                                               *mut i8,
-                                                                                                          ::std::mem::size_of::<int32_t>()
+                                                                                                          ::std::mem::size_of::<i32>()
                                                                                                               as
                                                                                                               u64,
                                                                                                           1i32
@@ -6533,10 +6531,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                 /* font info */
                                                                                                 do_undump(&mut x
                                                                                                               as
-                                                                                                              *mut int32_t
+                                                                                                              *mut i32
                                                                                                               as
                                                                                                               *mut i8,
-                                                                                                          ::std::mem::size_of::<int32_t>()
+                                                                                                          ::std::mem::size_of::<i32>()
                                                                                                               as
                                                                                                               u64,
                                                                                                           1i32
@@ -6595,10 +6593,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               fmt_in);
                                                                                                     do_undump(&mut x
                                                                                                                   as
-                                                                                                                  *mut int32_t
+                                                                                                                  *mut i32
                                                                                                                   as
                                                                                                                   *mut i8,
-                                                                                                              ::std::mem::size_of::<int32_t>()
+                                                                                                              ::std::mem::size_of::<i32>()
                                                                                                                   as
                                                                                                                   u64,
                                                                                                               1i32
@@ -6763,33 +6761,33 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         hyphen_char
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         skew_char
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         bchar_label
                                                                                                             =
                                                                                                             xmalloc(((font_max
@@ -6829,99 +6827,99 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         width_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         height_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         depth_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         italic_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         lig_kern_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         kern_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         exten_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         param_base
                                                                                                             =
                                                                                                             xmalloc(((font_max
                                                                                                                           +
                                                                                                                           1i32)
                                                                                                                          as
-                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<int32_t>()
+                                                                                                                         u64).wrapping_mul(::std::mem::size_of::<i32>()
                                                                                                                                                          as
                                                                                                                                                          u64))
                                                                                                                 as
-                                                                                                                *mut int32_t;
+                                                                                                                *mut i32;
                                                                                                         k
                                                                                                             =
                                                                                                             0i32;
@@ -7057,10 +7055,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                         }
                                                                                                         do_undump(&mut *hyphen_char.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7071,10 +7069,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *skew_char.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7233,10 +7231,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *char_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7247,10 +7245,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *width_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7261,10 +7259,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *height_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7275,10 +7273,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *depth_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7289,10 +7287,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *italic_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7303,10 +7301,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *lig_kern_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7317,10 +7315,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *kern_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7331,10 +7329,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *exten_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7345,10 +7343,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                   fmt_in);
                                                                                                         do_undump(&mut *param_base.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7362,10 +7360,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                             0;
                                                                                                         do_undump(&mut *font_glue.offset(0)
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   (font_ptr
@@ -7385,7 +7383,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                               {
                                                                                                             if *(&mut *font_glue.offset(0)
                                                                                                                      as
-                                                                                                                     *mut int32_t).offset(i_3
+                                                                                                                     *mut i32).offset(i_3
                                                                                                                                               as
                                                                                                                                               isize)
                                                                                                                    <
@@ -7393,7 +7391,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                    ||
                                                                                                                    *(&mut *font_glue.offset(0)
                                                                                                                          as
-                                                                                                                         *mut int32_t).offset(i_3
+                                                                                                                         *mut i32).offset(i_3
                                                                                                                                                   as
                                                                                                                                                   isize)
                                                                                                                        >
@@ -7407,14 +7405,14 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                           i_3,
                                                                                                                           *(&mut *font_glue.offset(0)
                                                                                                                                 as
-                                                                                                                                *mut int32_t).offset(i_3
+                                                                                                                                *mut i32).offset(i_3
                                                                                                                                                          as
                                                                                                                                                          isize)
                                                                                                                               as
                                                                                                                               uintptr_t,
                                                                                                                           &mut *font_glue.offset(0)
                                                                                                                               as
-                                                                                                                              *mut int32_t
+                                                                                                                              *mut i32
                                                                                                                               as
                                                                                                                               uintptr_t,
                                                                                                                           -0xfffffffi32
@@ -7648,10 +7646,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                         /* hyphenations */
                                                                                                         do_undump(&mut x
                                                                                                                       as
-                                                                                                                      *mut int32_t
+                                                                                                                      *mut i32
                                                                                                                       as
                                                                                                                       *mut i8,
-                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                       as
                                                                                                                       u64,
                                                                                                                   1i32
@@ -7677,10 +7675,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                 x;
                                                                                                             do_undump(&mut x
                                                                                                                           as
-                                                                                                                          *mut int32_t
+                                                                                                                          *mut i32
                                                                                                                           as
                                                                                                                           *mut i8,
-                                                                                                                      ::std::mem::size_of::<int32_t>()
+                                                                                                                      ::std::mem::size_of::<i32>()
                                                                                                                           as
                                                                                                                           u64,
                                                                                                                       1i32
@@ -7724,10 +7722,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                     }
                                                                                                                     do_undump(&mut j
                                                                                                                                   as
-                                                                                                                                  *mut int32_t
+                                                                                                                                  *mut i32
                                                                                                                                   as
                                                                                                                                   *mut i8,
-                                                                                                                              ::std::mem::size_of::<int32_t>()
+                                                                                                                              ::std::mem::size_of::<i32>()
                                                                                                                                   as
                                                                                                                                   u64,
                                                                                                                               1i32
@@ -7758,7 +7756,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                  /
                                                                                                                                  65536)
                                                                                                                                 as
-                                                                                                                                int32_t;
+                                                                                                                                i32;
                                                                                                                         j
                                                                                                                             =
                                                                                                                             (j
@@ -7771,7 +7769,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                      *
                                                                                                                                      65536)
                                                                                                                                 as
-                                                                                                                                int32_t
+                                                                                                                                i32
                                                                                                                     } else {
                                                                                                                         hyph_next
                                                                                                                             =
@@ -7800,10 +7798,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                             hyph_pointer;
                                                                                                                     do_undump(&mut x
                                                                                                                                   as
-                                                                                                                                  *mut int32_t
+                                                                                                                                  *mut i32
                                                                                                                                   as
                                                                                                                                   *mut i8,
-                                                                                                                              ::std::mem::size_of::<int32_t>()
+                                                                                                                              ::std::mem::size_of::<i32>()
                                                                                                                                   as
                                                                                                                                   u64,
                                                                                                                               1i32
@@ -7831,10 +7829,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                         x;
                                                                                                                     do_undump(&mut x
                                                                                                                                   as
-                                                                                                                                  *mut int32_t
+                                                                                                                                  *mut i32
                                                                                                                                   as
                                                                                                                                   *mut i8,
-                                                                                                                              ::std::mem::size_of::<int32_t>()
+                                                                                                                              ::std::mem::size_of::<i32>()
                                                                                                                                   as
                                                                                                                                   u64,
                                                                                                                               1i32
@@ -7904,10 +7902,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                         }
                                                                                                                         do_undump(&mut x
                                                                                                                                       as
-                                                                                                                                      *mut int32_t
+                                                                                                                                      *mut i32
                                                                                                                                       as
                                                                                                                                       *mut i8,
-                                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                                       as
                                                                                                                                       u64,
                                                                                                                                   1i32
@@ -7936,10 +7934,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                 j;
                                                                                                                             do_undump(&mut x
                                                                                                                                           as
-                                                                                                                                          *mut int32_t
+                                                                                                                                          *mut i32
                                                                                                                                           as
                                                                                                                                           *mut i8,
-                                                                                                                                      ::std::mem::size_of::<int32_t>()
+                                                                                                                                      ::std::mem::size_of::<i32>()
                                                                                                                                           as
                                                                                                                                           u64,
                                                                                                                                       1i32
@@ -8049,10 +8047,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                           fmt_in);
                                                                                                                                 do_undump(&mut max_hyph_char
                                                                                                                                               as
-                                                                                                                                              *mut int32_t
+                                                                                                                                              *mut i32
                                                                                                                                               as
                                                                                                                                               *mut i8,
-                                                                                                                                          ::std::mem::size_of::<int32_t>()
+                                                                                                                                          ::std::mem::size_of::<i32>()
                                                                                                                                               as
                                                                                                                                               u64,
                                                                                                                                           1i32
@@ -8061,10 +8059,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                           fmt_in);
                                                                                                                                 do_undump(&mut x
                                                                                                                                               as
-                                                                                                                                              *mut int32_t
+                                                                                                                                              *mut i32
                                                                                                                                               as
                                                                                                                                               *mut i8,
-                                                                                                                                          ::std::mem::size_of::<int32_t>()
+                                                                                                                                          ::std::mem::size_of::<i32>()
                                                                                                                                               as
                                                                                                                                               u64,
                                                                                                                                           1i32
@@ -8212,10 +8210,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                         }
                                                                                                                                         do_undump(&mut x
                                                                                                                                                       as
-                                                                                                                                                      *mut int32_t
+                                                                                                                                                      *mut i32
                                                                                                                                                       as
                                                                                                                                                       *mut i8,
-                                                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                                                       as
                                                                                                                                                       u64,
                                                                                                                                                   1i32
@@ -8243,10 +8241,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                             x;
                                                                                                                                         do_undump(&mut x
                                                                                                                                                       as
-                                                                                                                                                      *mut int32_t
+                                                                                                                                                      *mut i32
                                                                                                                                                       as
                                                                                                                                                       *mut i8,
-                                                                                                                                                  ::std::mem::size_of::<int32_t>()
+                                                                                                                                                  ::std::mem::size_of::<i32>()
                                                                                                                                                       as
                                                                                                                                                       u64,
                                                                                                                                                   1i32
@@ -8302,10 +8300,10 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                             /* trailer */
                                                                                                                                             do_undump(&mut x
                                                                                                                                                           as
-                                                                                                                                                          *mut int32_t
+                                                                                                                                                          *mut i32
                                                                                                                                                           as
                                                                                                                                                           *mut i8,
-                                                                                                                                                      ::std::mem::size_of::<int32_t>()
+                                                                                                                                                      ::std::mem::size_of::<i32>()
                                                                                                                                                           as
                                                                                                                                                           u64,
                                                                                                                                                       1i32
@@ -8386,7 +8384,7 @@ unsafe extern "C" fn final_cleanup() {
         print_nl('(' as i32);
         print_esc_cstr(b"end occurred \x00" as *const u8 as *const i8);
         print_cstr(b"when \x00" as *const u8 as *const i8);
-        print_cmd_chr(107i32 as u16, cur_if as int32_t);
+        print_cmd_chr(107i32 as u16, cur_if as i32);
         if if_line != 0i32 {
             print_cstr(b" on line \x00" as *const u8 as *const i8);
             print_int(if_line);
@@ -8414,7 +8412,7 @@ unsafe extern "C" fn final_cleanup() {
     }
     if c as libc::c_int == 1i32 {
         if in_initex_mode {
-            let mut for_end: int32_t = 0;
+            let mut for_end: i32 = 0;
             c = 0i32 as small_number;
             for_end = 4i32;
             if c as libc::c_int <= for_end {
@@ -8434,7 +8432,7 @@ unsafe extern "C" fn final_cleanup() {
                     sa_root[7] = -0xfffffffi32
                 }
             }
-            let mut for_end_0: int32_t = 0;
+            let mut for_end_0: i32 = 0;
             c = 2i32 as small_number;
             for_end_0 = 3i32;
             if c as libc::c_int <= for_end_0 {
@@ -8483,7 +8481,7 @@ unsafe extern "C" fn init_io() {
     first = last + 1i32;
 }
 unsafe extern "C" fn initialize_more_variables() {
-    let mut k: int32_t = 0;
+    let mut k: i32 = 0;
     let mut z: hyph_pointer = 0;
     doing_special = 0i32 != 0;
     native_text_size = 128i32;
@@ -8707,8 +8705,8 @@ unsafe extern "C" fn initialize_more_variables() {
     stop_at_space = 1i32 != 0;
 }
 unsafe extern "C" fn initialize_more_initex_variables() {
-    let mut i: int32_t = 0;
-    let mut k: int32_t = 0;
+    let mut i: i32 = 0;
+    let mut k: i32 = 0;
     k = 1i32;
     while k <= 19i32 {
         (*mem.offset(k as isize)).b32.s1 = 0i32;
@@ -8721,15 +8719,15 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (*mem.offset(k as isize)).b16.s0 = 0i32 as u16;
         k += 4i32
     }
-    (*mem.offset(6)).b32.s1 = 65536 as int32_t;
+    (*mem.offset(6)).b32.s1 = 65536 as i32;
     (*mem.offset(4)).b16.s1 = 1i32 as u16;
-    (*mem.offset(10)).b32.s1 = 65536 as int32_t;
+    (*mem.offset(10)).b32.s1 = 65536 as i32;
     (*mem.offset(8)).b16.s1 = 2i32 as u16;
-    (*mem.offset(14)).b32.s1 = 65536 as int32_t;
+    (*mem.offset(14)).b32.s1 = 65536 as i32;
     (*mem.offset(12)).b16.s1 = 1i32 as u16;
-    (*mem.offset(15)).b32.s1 = 65536 as int32_t;
+    (*mem.offset(15)).b32.s1 = 65536 as i32;
     (*mem.offset(12)).b16.s0 = 1i32 as u16;
-    (*mem.offset(18)).b32.s1 = -65536 as int32_t;
+    (*mem.offset(18)).b32.s1 = -65536 as i32;
     (*mem.offset(16)).b16.s1 = 1i32 as u16;
     rover = 20i32;
     (*mem.offset(rover as isize)).b32.s1 = 0x3fffffffi32;
@@ -9642,7 +9640,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         .b32
         .s1 = (k as libc::c_uint)
             .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
-            as int32_t;
+            as i32;
         k += 1
     }
     k = 'A' as i32;
@@ -9722,7 +9720,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         .s1 = (k as libc::c_uint)
             .wrapping_add((1i32 as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32)
             .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
-            as int32_t;
+            as i32;
         (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -9752,7 +9750,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         .s1 = ((k + 32i32) as libc::c_uint)
             .wrapping_add((1i32 as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32)
             .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
-            as int32_t;
+            as i32;
         (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -10327,7 +10325,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
     .s1 = maketexstring(b"primitive\x00" as *const u8 as *const i8);
-    k = -(35111 as int32_t);
+    k = -(35111 as i32);
     while k as i64 <= 35111 {
         _trie_op_hash_array[(k as i64 - -35111) as usize] = 0i32;
         k += 1
@@ -14968,7 +14966,7 @@ pub unsafe extern "C" fn tt_run_engine(
     mut dump_name: *mut i8,
     mut input_file_name: *mut i8,
 ) -> tt_history_t {
-    let mut font_k: int32_t = 0;
+    let mut font_k: i32 = 0;
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
     /* Get our stdout handle */
@@ -14976,32 +14974,32 @@ pub unsafe extern "C" fn tt_run_engine(
     let mut len: size_t = strlen(dump_name);
     TEX_format_default = xmalloc(len.wrapping_add(1i32 as u64)) as *mut i8;
     strcpy(TEX_format_default, dump_name);
-    format_default_length = len as int32_t;
+    format_default_length = len as i32;
     /* Not sure why these get custom initializations. */
     if file_line_error_style_p < 0i32 {
         file_line_error_style_p = 0i32
     }
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
-    pool_size = 6250000i64 as int32_t;
-    string_vacancies = 90000i64 as int32_t;
-    pool_free = 47500i64 as int32_t;
-    max_strings = 565536i64 as int32_t;
+    pool_size = 6250000i64 as i32;
+    string_vacancies = 90000i64 as i32;
+    pool_free = 47500i64 as i32;
+    max_strings = 565536i64 as i32;
     strings_free = 100i32;
-    font_mem_size = 8000000i64 as int32_t;
+    font_mem_size = 8000000i64 as i32;
     font_max = 9000i32;
-    trie_size = 1000000i64 as int32_t;
+    trie_size = 1000000i64 as i32;
     hyph_size = 8191i32;
-    buf_size = 200000i64 as int32_t;
+    buf_size = 200000i64 as i32;
     nest_size = 500i32;
     max_in_open = 15i32;
     param_size = 10000i32;
-    save_size = 80000i64 as int32_t;
+    save_size = 80000i64 as i32;
     stack_size = 5000i32;
     error_line = 79i32;
     half_error_line = 50i32;
     max_print_line = 79i32;
-    hash_extra = 600000i64 as int32_t;
+    hash_extra = 600000i64 as i32;
     expand_depth = 10000i32;
     /* Allocate many of our big arrays. */
     buffer = xmalloc(
@@ -15026,8 +15024,8 @@ pub unsafe extern "C" fn tt_run_engine(
     ) as *mut *mut UFILE;
     line_stack = xmalloc(
         ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     eof_seen = xmalloc(
         ((max_in_open + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<bool>() as u64),
@@ -15038,8 +15036,8 @@ pub unsafe extern "C" fn tt_run_engine(
     ) as *mut save_pointer;
     if_stack = xmalloc(
         ((max_in_open + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     source_filename_stack = xmalloc(
         ((max_in_open + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
@@ -15050,16 +15048,16 @@ pub unsafe extern "C" fn tt_run_engine(
     ) as *mut str_number;
     param_stack = xmalloc(
         ((param_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     hyph_word = xmalloc(
         ((hyph_size + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
     hyph_list = xmalloc(
         ((hyph_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     hyph_link = xmalloc(
         ((hyph_size + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<hyph_pointer>() as u64),
@@ -15286,7 +15284,7 @@ pub unsafe extern "C" fn tt_run_engine(
     line = 0i32;
     cur_input.name = 0i32;
     force_eof = 0i32 != 0;
-    align_state = 1000000i64 as int32_t;
+    align_state = 1000000i64 as i32;
     init_io();
     if in_initex_mode {
         no_new_control_sequence = 0i32 != 0;
@@ -16877,16 +16875,16 @@ pub unsafe extern "C" fn tt_run_engine(
         ) as *mut UTF16_code;
         font_glue = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         hyphen_char = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         skew_char = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         bchar_label = xcalloc(
             (font_max + 1i32) as size_t,
             ::std::mem::size_of::<font_index>() as u64,
@@ -16901,40 +16899,40 @@ pub unsafe extern "C" fn tt_run_engine(
         ) as *mut nine_bits;
         char_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         width_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         height_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         depth_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         italic_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         lig_kern_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         kern_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         exten_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         param_base = xcalloc(
             (font_max + 1i32) as size_t,
-            ::std::mem::size_of::<int32_t>() as u64,
-        ) as *mut int32_t;
+            ::std::mem::size_of::<i32>() as u64,
+        ) as *mut i32;
         font_ptr = 0i32;
         fmem_ptr = 7i32;
         *font_name.offset(0) = maketexstring(b"nullfont\x00" as *const u8 as *const i8);

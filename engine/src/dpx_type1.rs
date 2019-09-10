@@ -274,10 +274,8 @@ extern "C" {
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: int32_t) -> libc::c_double;
+    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> libc::c_double;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with

@@ -147,11 +147,11 @@ extern "C" {
         dstpp: *mut *mut u8,
         limptr: *mut u8,
         num_fails: *mut libc::c_int,
-    ) -> int32_t;
+    ) -> i32;
     #[no_mangle]
     fn agl_name_is_unicode(glyphname: *const i8) -> bool;
     #[no_mangle]
-    fn agl_name_convert_unicode(glyphname: *const i8) -> int32_t;
+    fn agl_name_convert_unicode(glyphname: *const i8) -> i32;
     #[no_mangle]
     fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
     #[no_mangle]
@@ -458,9 +458,7 @@ extern "C" {
     #[no_mangle]
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -1033,7 +1031,7 @@ pub struct agl_name {
     pub name: *mut i8,
     pub suffix: *mut i8,
     pub n_components: libc::c_int,
-    pub unicodes: [int32_t; 16],
+    pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
     pub is_predef: libc::c_int,
 }
@@ -2944,7 +2942,7 @@ unsafe extern "C" fn load_base_CMap(
     free(cmap_name as *mut libc::c_void);
     gid = 1i32 as card16;
     while (gid as libc::c_int) < (*cffont).num_glyphs as libc::c_int {
-        let mut ucv: int32_t = 0;
+        let mut ucv: i32 = 0;
         let mut sid: s_SID = 0;
         let mut glyph: *mut i8 = 0 as *mut i8;
         let mut name: *mut i8 = 0 as *mut i8;
@@ -3101,7 +3099,7 @@ unsafe extern "C" fn create_ToUnicode_stream(
             != 0
         {
             let mut glyph: *mut i8 = 0 as *mut i8;
-            let mut len: int32_t = 0;
+            let mut len: i32 = 0;
             let mut fail_count: libc::c_int = 0;
             wbuf[0] = (cid as libc::c_int >> 8i32 & 0xffi32) as u8;
             wbuf[1] = (cid as libc::c_int & 0xffi32) as u8;

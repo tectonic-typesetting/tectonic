@@ -59,17 +59,17 @@ extern "C" {
         name: *const i8,
     ) -> u32;
     #[no_mangle]
-    fn sqxfw(sq: int32_t, fw: fixword) -> int32_t;
+    fn sqxfw(sq: i32, fw: fixword) -> i32;
     #[no_mangle]
     fn dvi_set_font(font_id: libc::c_int);
     #[no_mangle]
-    fn dvi_set(ch: int32_t);
+    fn dvi_set(ch: i32);
     #[no_mangle]
-    fn dvi_put(ch: int32_t);
+    fn dvi_put(ch: i32);
     #[no_mangle]
     fn dvi_dirchg(dir: u8);
     #[no_mangle]
-    fn dvi_do_special(buffer: *const libc::c_void, size: int32_t);
+    fn dvi_do_special(buffer: *const libc::c_void, size: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -94,13 +94,13 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn dvi_z(ch: int32_t);
+    fn dvi_z(ch: i32);
     #[no_mangle]
     fn dvi_z0();
     #[no_mangle]
     fn dvi_vf_init(dev_font_id: libc::c_int);
     #[no_mangle]
-    fn dvi_y(ch: int32_t);
+    fn dvi_y(ch: i32);
     #[no_mangle]
     fn dvi_push();
     #[no_mangle]
@@ -112,19 +112,19 @@ extern "C" {
     #[no_mangle]
     fn dvi_vf_finish();
     #[no_mangle]
-    fn dvi_down(y: int32_t);
+    fn dvi_down(y: i32);
     #[no_mangle]
-    fn dvi_right(x: int32_t);
+    fn dvi_right(x: i32);
     #[no_mangle]
-    fn dvi_x(ch: int32_t);
+    fn dvi_x(ch: i32);
     #[no_mangle]
     fn dvi_w0();
     #[no_mangle]
     fn dvi_x0();
     #[no_mangle]
-    fn dvi_rule(width: int32_t, height: int32_t);
+    fn dvi_rule(width: i32, height: i32);
     #[no_mangle]
-    fn dvi_w(ch: int32_t);
+    fn dvi_w(ch: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -153,11 +153,9 @@ extern "C" {
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
 }
-pub type __int32_t = libc::c_int;
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -223,7 +221,7 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-pub type fixword = int32_t;
+pub type fixword = i32;
 pub type spt_t = libc::c_int;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -241,7 +239,7 @@ pub struct vf {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct font_def {
-    pub font_id: int32_t,
+    pub font_id: i32,
     pub checksum: u32,
     pub size: u32,
     pub design_size: u32,
@@ -382,7 +380,7 @@ unsafe extern "C" fn read_a_char_def(
 }
 unsafe extern "C" fn read_a_font_def(
     mut vf_handle: rust_input_handle_t,
-    mut font_id: int32_t,
+    mut font_id: i32,
     mut thisfont: libc::c_int,
 ) {
     let mut dev_font: *mut font_def = 0 as *mut font_def;
@@ -459,7 +457,7 @@ unsafe extern "C" fn process_vf_file(
         match code {
             243 | 244 | 245 | 246 => {
                 font_id = tt_get_unsigned_num(vf_handle, (code - 243i32) as u8);
-                read_a_font_def(vf_handle, font_id as int32_t, thisfont);
+                read_a_font_def(vf_handle, font_id as i32, thisfont);
             }
             _ => {
                 if code < 242i32 {
@@ -595,12 +593,12 @@ unsafe extern "C" fn get_pkt_signed_num(
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut num: u8,
-) -> int32_t {
-    let mut val: int32_t = 0i32;
+) -> i32 {
+    let mut val: i32 = 0i32;
     if end.wrapping_offset_from(*start) as i64 > num as i64 {
         let fresh11 = *start;
         *start = (*start).offset(1);
-        val = *fresh11 as int32_t;
+        val = *fresh11 as i32;
         if val > 0x7fi32 {
             val -= 0x100i32
         }
@@ -651,12 +649,12 @@ unsafe extern "C" fn get_pkt_unsigned_num(
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut num: u8,
-) -> int32_t {
-    let mut val: int32_t = 0i32;
+) -> i32 {
+    let mut val: i32 = 0i32;
     if end.wrapping_offset_from(*start) as i64 > num as i64 {
         let fresh15 = *start;
         *start = (*start).offset(1);
-        val = *fresh15 as int32_t;
+        val = *fresh15 as i32;
         let mut current_block_5: u64;
         match num as libc::c_int {
             3 => {
@@ -708,8 +706,8 @@ unsafe extern "C" fn vf_putrule(
     mut end: *mut u8,
     mut ptsize: spt_t,
 ) {
-    let mut height: int32_t = get_pkt_signed_num(start, end, 3i32 as u8);
-    let mut width: int32_t = get_pkt_signed_num(start, end, 3i32 as u8);
+    let mut height: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
+    let mut width: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
     dvi_rule(sqxfw(ptsize, width), sqxfw(ptsize, height));
 }
 unsafe extern "C" fn vf_setrule(
@@ -717,15 +715,15 @@ unsafe extern "C" fn vf_setrule(
     mut end: *mut u8,
     mut ptsize: spt_t,
 ) {
-    let mut height: int32_t = get_pkt_signed_num(start, end, 3i32 as u8);
-    let mut s_width: int32_t = sqxfw(
+    let mut height: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
+    let mut s_width: i32 = sqxfw(
         ptsize,
         get_pkt_signed_num(start, end, 3i32 as u8),
     );
     dvi_rule(s_width, sqxfw(ptsize, height));
     dvi_right(s_width);
 }
-unsafe extern "C" fn vf_fnt(mut font_id: int32_t, mut vf_font: libc::c_int) {
+unsafe extern "C" fn vf_fnt(mut font_id: i32, mut vf_font: libc::c_int) {
     let mut i: libc::c_int = 0;
     i = 0i32;
     while (i as libc::c_uint) < (*vf_fonts.offset(vf_font as isize)).num_dev_fonts {
@@ -757,7 +755,7 @@ unsafe extern "C" fn vf_fnt(mut font_id: int32_t, mut vf_font: libc::c_int) {
 }
 /* identical to do_xxx in dvi.c */
 unsafe extern "C" fn vf_xxx(
-    mut len: int32_t,
+    mut len: i32,
     mut start: *mut *mut u8,
     mut end: *mut u8,
 ) {
@@ -802,7 +800,7 @@ unsafe extern "C" fn vf_xxx(
     *start = (*start).offset(len as isize);
 }
 #[no_mangle]
-pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) {
+pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: libc::c_int) {
     let mut opcode: u8 = 0;
     let mut start: *mut u8 = 0 as *mut u8;
     let mut end: *mut u8 = 0 as *mut u8;
@@ -968,7 +966,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
                     );
                 }
                 239 | 240 | 241 | 242 => {
-                    let mut len: int32_t = get_pkt_unsigned_num(
+                    let mut len: i32 = get_pkt_unsigned_num(
                         &mut start,
                         end,
                         (opcode as libc::c_int - 239i32) as u8,
@@ -987,7 +985,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: int32_t, mut vf_font: libc::c_int) 
                 }
                 _ => {
                     if opcode as libc::c_int <= 127i32 {
-                        dvi_set(opcode as int32_t);
+                        dvi_set(opcode as i32);
                     } else if opcode as libc::c_int >= 171i32 && opcode as libc::c_int <= 234i32 {
                         vf_fnt(opcode as libc::c_int - 171i32, vf_font);
                     } else {

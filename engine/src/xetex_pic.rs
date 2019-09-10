@@ -47,7 +47,7 @@ extern "C" {
     #[no_mangle]
     static mut cur_list: list_state_record;
     #[no_mangle]
-    static mut cur_val: int32_t;
+    static mut cur_val: i32;
     #[no_mangle]
     static mut cur_name: str_number;
     #[no_mangle]
@@ -72,7 +72,7 @@ extern "C" {
     #[no_mangle]
     fn error();
     #[no_mangle]
-    fn print(s: int32_t);
+    fn print(s: i32);
     #[no_mangle]
     fn print_cstr(s: *const i8);
     #[no_mangle]
@@ -121,7 +121,7 @@ extern "C" {
     #[no_mangle]
     fn Fix2D(f: Fixed) -> libc::c_double;
     #[no_mangle]
-    fn print_file_name(n: int32_t, a: int32_t, e: int32_t);
+    fn print_file_name(n: i32, a: i32, e: i32);
     #[no_mangle]
     fn print_file_line();
     #[no_mangle]
@@ -259,8 +259,6 @@ extern "C" {
         ydensity: *mut libc::c_double,
     ) -> libc::c_int;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
@@ -289,15 +287,15 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type scaled_t = int32_t;
+pub type scaled_t = i32;
 pub type Fixed = scaled_t;
-pub type str_number = int32_t;
+pub type str_number = i32;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
+    pub s0: i32,
+    pub s1: i32,
 }
 /* quasi-hack to get the primary input */
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
@@ -354,11 +352,11 @@ pub union memory_word {
 #[repr(C)]
 pub struct list_state_record {
     pub mode: libc::c_short,
-    pub head: int32_t,
-    pub tail: int32_t,
-    pub eTeX_aux: int32_t,
-    pub prev_graf: int32_t,
-    pub mode_line: int32_t,
+    pub head: i32,
+    pub tail: i32,
+    pub eTeX_aux: i32,
+    pub prev_graf: i32,
+    pub mode_line: i32,
     pub aux: memory_word,
 }
 #[derive(Copy, Clone)]
@@ -724,9 +722,9 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     let mut ymin: libc::c_double = 0.;
     let mut ymax: libc::c_double = 0.;
     let mut i: small_number = 0;
-    let mut page: int32_t = 0;
-    let mut pdf_box_type: int32_t = 0;
-    let mut result: int32_t = 0;
+    let mut page: i32 = 0;
+    let mut pdf_box_type: i32 = 0;
+    let mut result: i32 = 0;
     scan_file_name();
     pack_file_name(cur_name, cur_area, cur_ext);
     pdf_box_type = 0i32;
@@ -775,7 +773,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                     cur_val as libc::c_double / 1000.0f64,
                     cur_val as libc::c_double / 1000.0f64,
                 );
-                let mut for_end: int32_t = 0;
+                let mut for_end: i32 = 0;
                 i = 0i32 as small_number;
                 for_end = 3i32;
                 if i as libc::c_int <= for_end {
@@ -794,7 +792,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             scan_int();
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
                 make_scale(&mut t2, cur_val as libc::c_double / 1000.0f64, 1.0f64);
-                let mut for_end_0: int32_t = 0;
+                let mut for_end_0: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_0 = 3i32;
                 if i as libc::c_int <= for_end_0 {
@@ -813,7 +811,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             scan_int();
             if x_size_req == 0.0f64 && y_size_req == 0.0f64 {
                 make_scale(&mut t2, 1.0f64, cur_val as libc::c_double / 1000.0f64);
-                let mut for_end_1: int32_t = 0;
+                let mut for_end_1: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_1 = 3i32;
                 if i as libc::c_int <= for_end_1 {
@@ -872,10 +870,10 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             scan_decimal();
             if x_size_req != 0.0f64 || y_size_req != 0.0f64 {
                 xmin = 1000000.0f64;
-                xmax = -(xmin as int32_t) as libc::c_double;
+                xmax = -(xmin as i32) as libc::c_double;
                 ymin = xmin;
                 ymax = xmax;
-                let mut for_end_2: int32_t = 0;
+                let mut for_end_2: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_2 = 3i32;
                 if i as libc::c_int <= for_end_2 {
@@ -918,7 +916,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                         y_size_req / (ymax - ymin),
                     );
                 }
-                let mut for_end_3: int32_t = 0;
+                let mut for_end_3: i32 = 0;
                 i = 0i32 as small_number;
                 for_end_3 = 3i32;
                 if i as libc::c_int <= for_end_3 {
@@ -939,7 +937,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 &mut t2,
                 Fix2D(cur_val) * 3.14159265358979323846f64 / 180.0f64,
             );
-            let mut for_end_4: int32_t = 0;
+            let mut for_end_4: i32 = 0;
             i = 0i32 as small_number;
             for_end_4 = 3i32;
             if i as libc::c_int <= for_end_4 {
@@ -953,10 +951,10 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 }
             }
             xmin = 1000000.0f64;
-            xmax = -(xmin as int32_t) as libc::c_double;
+            xmax = -(xmin as i32) as libc::c_double;
             ymin = xmin;
             ymax = xmax;
-            let mut for_end_5: int32_t = 0;
+            let mut for_end_5: i32 = 0;
             i = 0i32 as small_number;
             for_end_5 = 3i32;
             if i as libc::c_int <= for_end_5 {
@@ -995,10 +993,10 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     }
     if x_size_req != 0.0f64 || y_size_req != 0.0f64 {
         xmin = 1000000.0f64;
-        xmax = -(xmin as int32_t) as libc::c_double;
+        xmax = -(xmin as i32) as libc::c_double;
         ymin = xmin;
         ymax = xmax;
-        let mut for_end_6: int32_t = 0;
+        let mut for_end_6: i32 = 0;
         i = 0i32 as small_number;
         for_end_6 = 3i32;
         if i as libc::c_int <= for_end_6 {
@@ -1041,7 +1039,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 y_size_req / (ymax - ymin),
             );
         }
-        let mut for_end_7: int32_t = 0;
+        let mut for_end_7: i32 = 0;
         i = 0i32 as small_number;
         for_end_7 = 3i32;
         if i as libc::c_int <= for_end_7 {
@@ -1059,10 +1057,10 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         transform_concat(&mut t, &mut t2);
     }
     xmin = 1000000.0f64;
-    xmax = -(xmin as int32_t) as libc::c_double;
+    xmax = -(xmin as i32) as libc::c_double;
     ymin = xmin;
     ymax = xmax;
-    let mut for_end_8: int32_t = 0;
+    let mut for_end_8: i32 = 0;
     i = 0i32 as small_number;
     for_end_8 = 3i32;
     if i as libc::c_int <= for_end_8 {
@@ -1088,8 +1086,8 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     }
     make_translation(
         &mut t2,
-        (-(xmin as int32_t) * 72i32) as libc::c_double / 72.27f64,
-        (-(ymin as int32_t) * 72i32) as libc::c_double / 72.27f64,
+        (-(xmin as i32) * 72i32) as libc::c_double / 72.27f64,
+        (-(ymin as i32) * 72i32) as libc::c_double / 72.27f64,
     );
     transform_concat(&mut t, &mut t2);
     if result == 0i32 {

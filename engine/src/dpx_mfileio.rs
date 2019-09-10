@@ -29,10 +29,8 @@ extern "C" {
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
 }
-pub type __int32_t = libc::c_int;
 pub type __off_t = i64;
 pub type __off64_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -98,7 +96,7 @@ unsafe extern "C" fn os_error() {
     );
 }
 #[no_mangle]
-pub unsafe extern "C" fn seek_relative(mut file: *mut FILE, mut pos: int32_t) {
+pub unsafe extern "C" fn seek_relative(mut file: *mut FILE, mut pos: i32) {
     if fseek(file, pos as i64, 1i32) != 0 {
         os_error();
     };
@@ -108,7 +106,7 @@ unsafe extern "C" fn seek_end(mut file: *mut FILE) {
         os_error();
     };
 }
-unsafe extern "C" fn tell_position(mut file: *mut FILE) -> int32_t {
+unsafe extern "C" fn tell_position(mut file: *mut FILE) -> i32 {
     let mut size: i64 = ftell(file);
     if size < 0i32 as i64 {
         os_error();
@@ -119,11 +117,11 @@ unsafe extern "C" fn tell_position(mut file: *mut FILE) -> int32_t {
             size,
         );
     }
-    return size as int32_t;
+    return size as i32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn file_size(mut file: *mut FILE) -> int32_t {
-    let mut size: int32_t = 0;
+pub unsafe extern "C" fn file_size(mut file: *mut FILE) -> i32 {
+    let mut size: i32 = 0;
     seek_end(file);
     size = tell_position(file);
     rewind(file);

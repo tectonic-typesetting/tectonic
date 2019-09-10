@@ -161,7 +161,7 @@ extern "C" {
         dstpp: *mut *mut u8,
         limptr: *mut u8,
         num_fails: *mut libc::c_int,
-    ) -> int32_t;
+    ) -> i32;
     #[no_mangle]
     fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
     #[no_mangle]
@@ -243,9 +243,7 @@ extern "C" {
     #[no_mangle]
     fn CMap_create_stream(cmap: *mut CMap) -> *mut pdf_obj;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type tt_input_format_type = libc::c_uint;
@@ -377,7 +375,7 @@ pub struct agl_name {
     pub name: *mut i8,
     pub suffix: *mut i8,
     pub n_components: libc::c_int,
-    pub unicodes: [int32_t; 16],
+    pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
     pub is_predef: libc::c_int,
 }
@@ -1192,7 +1190,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
     while code <= 0xffi32 {
         if !(!is_used.is_null() && *is_used.offset(code as isize) == 0) {
             if !(*enc_vec.offset(code as isize)).is_null() {
-                let mut len: int32_t = 0;
+                let mut len: i32 = 0;
                 let mut fail_count: libc::c_int = 0i32;
                 let mut agln: *mut agl_name = agl_lookup_list(*enc_vec.offset(code as isize));
                 /* Adobe glyph naming conventions are not used by viewers,

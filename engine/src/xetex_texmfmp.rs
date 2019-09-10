@@ -28,7 +28,7 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> libc::c_int;
     #[no_mangle]
-    static mut pool_size: int32_t;
+    static mut pool_size: i32;
     #[no_mangle]
     static mut str_pool: *mut packed_UTF16_code;
     #[no_mangle]
@@ -48,15 +48,13 @@ extern "C" {
     #[no_mangle]
     fn localtime(__timer: *const time_t) -> *mut tm;
 }
-pub type __int32_t = libc::c_int;
 pub type __time_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
-pub type str_number = int32_t;
+pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type UInt32 = libc::c_uint;
-pub type pool_pointer = int32_t;
+pub type pool_pointer = i32;
 pub type UInt16 = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -84,10 +82,10 @@ static mut last_source_name: *mut i8 = 0 as *const i8 as *mut i8;
 static mut last_lineno: libc::c_int = 0;
 #[no_mangle]
 pub unsafe extern "C" fn get_date_and_time(
-    mut minutes: *mut int32_t,
-    mut day: *mut int32_t,
-    mut month: *mut int32_t,
-    mut year: *mut int32_t,
+    mut minutes: *mut i32,
+    mut day: *mut i32,
+    mut month: *mut i32,
+    mut year: *mut i32,
 ) {
     let mut tmptr: *mut tm = 0 as *mut tm; /* in the XeTeX case, this may be more than enough */
     let mut myclock: time_t = time(0 as *mut time_t);

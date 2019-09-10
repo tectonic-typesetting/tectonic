@@ -70,7 +70,7 @@ extern "C" {
     fn pdf_stream_set_predictor(
         stream: *mut pdf_obj,
         predictor: libc::c_int,
-        columns: int32_t,
+        columns: i32,
         bpc: libc::c_int,
         colors: libc::c_int,
     );
@@ -129,9 +129,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;

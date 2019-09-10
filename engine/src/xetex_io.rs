@@ -83,23 +83,23 @@ extern "C" {
     #[no_mangle]
     static mut name_of_file16: *mut UTF16_code;
     #[no_mangle]
-    static mut name_length: int32_t;
+    static mut name_length: i32;
     #[no_mangle]
-    static mut name_length16: int32_t;
+    static mut name_length16: i32;
     #[no_mangle]
     static mut buffer: *mut UnicodeScalar;
     #[no_mangle]
-    static mut first: int32_t;
+    static mut first: i32;
     #[no_mangle]
-    static mut last: int32_t;
+    static mut last: i32;
     #[no_mangle]
-    static mut max_buf_stack: int32_t;
+    static mut max_buf_stack: i32;
     #[no_mangle]
-    static mut buf_size: int32_t;
+    static mut buf_size: i32;
     #[no_mangle]
-    static mut cur_chr: int32_t;
+    static mut cur_chr: i32;
     #[no_mangle]
-    static mut cur_val: int32_t;
+    static mut cur_val: i32;
     #[no_mangle]
     static mut read_file: [*mut UFILE; 16];
     #[no_mangle]
@@ -118,15 +118,15 @@ extern "C" {
     #[no_mangle]
     fn print_nl(s: str_number);
     #[no_mangle]
-    fn get_input_normalization_state() -> int32_t;
+    fn get_input_normalization_state() -> i32;
     #[no_mangle]
     fn bad_utf8_warning();
     #[no_mangle]
     fn begin_diagnostic();
     #[no_mangle]
-    fn print_int(n: int32_t);
+    fn print_int(n: i32);
     #[no_mangle]
-    fn print_char(s: int32_t);
+    fn print_char(s: i32);
     #[no_mangle]
     fn end_diagnostic(blank_line: bool);
     #[no_mangle]
@@ -391,13 +391,13 @@ pub type TECkit_Converter = *mut Opaque_TECkit_Converter;
 /*11:*/
 /*18: */
 pub type UTF16_code = u16;
-pub type UnicodeScalar = int32_t;
-pub type str_number = int32_t;
+pub type UnicodeScalar = i32;
+pub type str_number = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
+    pub s0: i32,
+    pub s1: i32,
 }
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
@@ -465,7 +465,7 @@ unsafe extern "C" fn print_c_string(mut str: *const i8) {
     while *str != 0 {
         let fresh0 = str;
         str = str.offset(1);
-        print_char(*fresh0 as int32_t);
+        print_char(*fresh0 as i32);
     }
 }
 /* tectonic/xetex-io.c: low-level input/output functions tied to the XeTeX engine
@@ -486,7 +486,7 @@ pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: libc::c_int) -> rust_i
     if handle.is_null() {
         return 0 as *mut libc::c_void;
     }
-    name_length = strlen(name_of_file) as int32_t;
+    name_length = strlen(name_of_file) as i32;
     free(name_of_input_file as *mut libc::c_void);
     name_of_input_file = xstrdup(name_of_file);
     return handle;
@@ -775,8 +775,8 @@ pub static mut firstByteMark: [u8; 7] = [
 #[no_mangle]
 pub unsafe extern "C" fn set_input_file_encoding(
     mut f: *mut UFILE,
-    mut mode: int32_t,
-    mut encodingData: int32_t,
+    mut mode: i32,
+    mut encodingData: i32,
 ) {
     if (*f).encodingMode as libc::c_int == 5i32 && !(*f).conversionData.is_null() {
         icu::ucnv_close((*f).conversionData as *mut icu::UConverter);
@@ -792,7 +792,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
                 begin_diagnostic();
                 print_nl('E' as i32);
                 print_c_string(b"rror \x00" as *const u8 as *const i8);
-                print_int(err as int32_t);
+                print_int(err as i32);
                 print_c_string(
                     b" creating Unicode converter for `\x00" as *const u8 as *const i8,
                 );
@@ -812,10 +812,10 @@ pub unsafe extern "C" fn set_input_file_encoding(
 #[no_mangle]
 pub unsafe extern "C" fn u_open_in(
     mut f: *mut *mut UFILE,
-    mut filefmt: int32_t,
+    mut filefmt: i32,
     mut fopen_mode: *const i8,
-    mut mode: int32_t,
-    mut encodingData: int32_t,
+    mut mode: i32,
+    mut encodingData: i32,
 ) -> libc::c_int {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut B1: libc::c_int = 0;
@@ -923,7 +923,7 @@ unsafe extern "C" fn apply_normalization(
     last = (first as u64).wrapping_add(
         (outUsed as u64)
             .wrapping_div(::std::mem::size_of::<UnicodeScalar>() as u64),
-    ) as int32_t;
+    ) as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
@@ -999,9 +999,9 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                     utf32Buf as *mut i8,
                     (buf_size as u64)
                         .wrapping_mul(::std::mem::size_of::<u32>() as u64)
-                        as int32_t,
+                        as i32,
                     byteBuffer,
-                    bytesRead as int32_t,
+                    bytesRead as i32,
                     &mut errorCode,
                 );
                 if errorCode as libc::c_int != 0i32 {
@@ -1024,9 +1024,9 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                     &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut i8,
                     (::std::mem::size_of::<UnicodeScalar>() as u64)
                         .wrapping_mul((buf_size - first) as u64)
-                        as int32_t,
+                        as i32,
                     byteBuffer,
-                    bytesRead as int32_t,
+                    bytesRead as i32,
                     &mut errorCode,
                 );
                 if errorCode as libc::c_int != 0i32 {
@@ -1411,13 +1411,13 @@ pub unsafe extern "C" fn make_utf16_name() {
             *fresh15 = rval as u16
         }
     }
-    name_length16 = t.wrapping_offset_from(name_of_file16) as i64 as int32_t;
+    name_length16 = t.wrapping_offset_from(name_of_file16) as i64 as i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn open_or_close_in() {
     let mut c: u8 = 0;
     let mut n: u8 = 0;
-    let mut k: int32_t = 0;
+    let mut k: i32 = 0;
     c = cur_chr as u8;
     scan_four_bit_int();
     n = cur_val as u8;

@@ -17,7 +17,7 @@ extern "C" {
         name: *const i8,
     ) -> u32;
     #[no_mangle]
-    fn tt_get_signed_quad(handle: rust_input_handle_t) -> int32_t;
+    fn tt_get_signed_quad(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
@@ -106,10 +106,8 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __int32_t = libc::c_int;
 pub type __off_t = i64;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type off_t = __off_t;
 pub type ssize_t = __ssize_t;
@@ -141,7 +139,7 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type fixword = int32_t;
+pub type fixword = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct font_metric {
@@ -177,7 +175,7 @@ pub struct coverage {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tfm_font {
-    pub level: int32_t,
+    pub level: i32,
     pub wlenfile: u32,
     pub wlenheader: u32,
     pub bc: u32,
@@ -516,7 +514,7 @@ unsafe extern "C" fn tfm_unpack_arrays(mut fm: *mut font_metric, mut tfm: *mut t
 }
 unsafe extern "C" fn sput_bigendian(
     mut s: *mut i8,
-    mut v: int32_t,
+    mut v: i32,
     mut n: libc::c_int,
 ) -> libc::c_int {
     let mut i: libc::c_int = 0;
@@ -1138,7 +1136,7 @@ pub unsafe extern "C" fn tfm_close_all() {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: libc::c_int, mut ch: int32_t) -> fixword {
+pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: libc::c_int, mut ch: i32) -> fixword {
     let mut fm: *mut font_metric = 0 as *mut font_metric;
     let mut idx: libc::c_int = 0i32;
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
@@ -1179,7 +1177,7 @@ pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: libc::c_int, mut ch: int3
     return *(*fm).widths.offset(idx as isize);
 }
 #[no_mangle]
-pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: libc::c_int, mut ch: int32_t) -> fixword {
+pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: libc::c_int, mut ch: i32) -> fixword {
     let mut fm: *mut font_metric = 0 as *mut font_metric;
     let mut idx: libc::c_int = 0i32;
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
@@ -1220,7 +1218,7 @@ pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: libc::c_int, mut ch: int
     return *(*fm).heights.offset(idx as isize);
 }
 #[no_mangle]
-pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: int32_t) -> fixword {
+pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: i32) -> fixword {
     let mut fm: *mut font_metric = 0 as *mut font_metric;
     let mut idx: libc::c_int = 0i32;
     if font_id < 0i32 || font_id as libc::c_uint >= numfms {
@@ -1267,7 +1265,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: libc::c_int, mut ch: int3
 #[no_mangle]
 pub unsafe extern "C" fn tfm_get_width(
     mut font_id: libc::c_int,
-    mut ch: int32_t,
+    mut ch: i32,
 ) -> libc::c_double {
     return tfm_get_fw_width(font_id, ch) as libc::c_double / (1i32 << 20i32) as libc::c_double;
 }
@@ -1288,7 +1286,7 @@ pub unsafe extern "C" fn tfm_string_width(
     }
     i = 0i32 as libc::c_uint;
     while i < len {
-        result += tfm_get_fw_width(font_id, *s.offset(i as isize) as int32_t);
+        result += tfm_get_fw_width(font_id, *s.offset(i as isize) as i32);
         i = i.wrapping_add(1)
     }
     return result;

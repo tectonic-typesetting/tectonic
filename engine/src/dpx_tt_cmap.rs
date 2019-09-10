@@ -87,7 +87,7 @@ extern "C" {
     #[no_mangle]
     fn agl_get_unicodes(
         glyphstr: *const i8,
-        unicodes: *mut int32_t,
+        unicodes: *mut i32,
         max_uncodes: libc::c_int,
     ) -> libc::c_int;
     #[no_mangle]
@@ -302,7 +302,7 @@ extern "C" {
     fn tt_get_glyphname(post: *mut tt_post_table, gid: USHORT) -> *mut i8;
     #[no_mangle]
     fn UC_UTF16BE_encode_char(
-        ucv: int32_t,
+        ucv: i32,
         dstpp: *mut *mut u8,
         endptr: *mut u8,
     ) -> size_t;
@@ -337,9 +337,7 @@ extern "C" {
     #[no_mangle]
     fn tt_read_maxp_table(sfont: *mut sfnt) -> *mut tt_maxp_table;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -1412,7 +1410,7 @@ unsafe extern "C" fn load_cmap4(
                     let mut p: *mut u8 = wbuf.as_mut_ptr().offset(6);
                     let mut uc_len: size_t = 0;
                     uc_len = UC_UTF16BE_encode_char(
-                        ch as int32_t,
+                        ch as i32,
                         &mut p,
                         wbuf.as_mut_ptr().offset(1024).offset(-1),
                     );
@@ -1485,7 +1483,7 @@ unsafe extern "C" fn load_cmap12(
                 let mut p: *mut u8 = wbuf.as_mut_ptr().offset(6);
                 let mut uc_len: size_t = 0;
                 uc_len = UC_UTF16BE_encode_char(
-                    ch as int32_t,
+                    ch as i32,
                     &mut p,
                     wbuf.as_mut_ptr().offset(1024).offset(-1),
                 );
@@ -1752,7 +1750,7 @@ unsafe extern "C" fn handle_subst_glyphs(
                     if cmap_add.is_null() {
                         /* try to look up Unicode values from the glyph name... */
                         let mut name: *mut i8 = 0 as *mut i8;
-                        let mut unicodes: [int32_t; 16] = [0; 16];
+                        let mut unicodes: [i32; 16] = [0; 16];
                         let mut unicode_count: libc::c_int = -1i32;
                         name = sfnt_get_glyphname(post, cffont, gid);
                         if !name.is_null() {
@@ -1908,7 +1906,7 @@ unsafe extern "C" fn add_to_cmap_if_used(
         count = count.wrapping_add(1);
         wbuf[0] = (cid as libc::c_int >> 8i32 & 0xffi32) as u8;
         wbuf[1] = (cid as libc::c_int & 0xffi32) as u8;
-        len = UC_UTF16BE_encode_char(ch as int32_t, &mut p, wbuf.as_mut_ptr().offset(1024))
+        len = UC_UTF16BE_encode_char(ch as i32, &mut p, wbuf.as_mut_ptr().offset(1024))
             as libc::c_int;
         CMap_add_bfchar(
             cmap,

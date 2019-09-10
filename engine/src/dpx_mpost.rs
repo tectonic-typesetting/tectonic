@@ -77,7 +77,7 @@ extern "C" {
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
     #[no_mangle]
-    fn file_size(file: *mut FILE) -> int32_t;
+    fn file_size(file: *mut FILE) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -409,7 +409,7 @@ extern "C" {
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: int32_t) -> libc::c_double;
+    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> libc::c_double;
     #[no_mangle]
     fn tfm_string_width(
         font_id: libc::c_int,
@@ -419,7 +419,6 @@ extern "C" {
     #[no_mangle]
     fn tfm_exists(tfm_name: *const i8) -> bool;
 }
-pub type __int32_t = libc::c_int;
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
@@ -435,7 +434,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -472,7 +470,7 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-pub type fixword = int32_t;
+pub type fixword = i32;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -3589,7 +3587,7 @@ unsafe extern "C" fn do_show() -> libc::c_int {
             *ustr.offset((2i32 * i + 1i32) as isize) =
                 (uch as libc::c_int & 0xffi32) as u8;
             if (*font).tfm_id >= 0i32 {
-                text_width += tfm_get_width((*font).tfm_id, *strptr.offset(i as isize) as int32_t)
+                text_width += tfm_get_width((*font).tfm_id, *strptr.offset(i as isize) as i32)
             }
             i += 1
         }

@@ -468,9 +468,7 @@ extern "C" {
     #[no_mangle]
     fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
 }
-pub type __int32_t = libc::c_int;
 pub type __time_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -1025,7 +1023,7 @@ pub unsafe extern "C" fn pdf_doc_set_eop_content(
 /* auxiliary function to compute timezone offset on
 systems that do not support the tm_gmtoff in struct tm,
 or have a timezone variable.  Such as i386-solaris.  */
-unsafe extern "C" fn compute_timezone_offset() -> int32_t {
+unsafe extern "C" fn compute_timezone_offset() -> i32 {
     let mut now: time_t = 0;
     let mut tm: tm = tm {
         tm_sec: 0,
@@ -1058,7 +1056,7 @@ unsafe extern "C" fn compute_timezone_offset() -> int32_t {
         now = time(0 as *mut time_t);
         localtime_r(&mut now, &mut local);
         gmtime_r(&mut now, &mut tm);
-        return (mktime(&mut local) - mktime(&mut tm)) as int32_t;
+        return (mktime(&mut local) - mktime(&mut tm)) as i32;
     } else {
         return 0i32;
     };
@@ -1069,7 +1067,7 @@ unsafe extern "C" fn compute_timezone_offset() -> int32_t {
  * Docinfo
  */
 unsafe extern "C" fn asn_date(mut date_string: *mut i8) -> libc::c_int {
-    let mut tz_offset: int32_t = 0;
+    let mut tz_offset: i32 = 0;
     let mut current_time: time_t = 0;
     let mut bd_time: *mut tm = 0 as *mut tm;
     current_time = get_unique_time_if_given();

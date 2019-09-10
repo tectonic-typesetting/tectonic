@@ -13,9 +13,9 @@ extern "C" {
     #[no_mangle]
     static mut buffer: *mut UnicodeScalar;
     #[no_mangle]
-    static mut max_strings: int32_t;
+    static mut max_strings: i32;
     #[no_mangle]
-    static mut pool_size: int32_t;
+    static mut pool_size: i32;
     #[no_mangle]
     static mut str_pool: *mut packed_UTF16_code;
     #[no_mangle]
@@ -29,14 +29,12 @@ extern "C" {
     #[no_mangle]
     static mut init_str_ptr: str_number;
     #[no_mangle]
-    fn overflow(s: *const i8, n: int32_t) -> !;
+    fn overflow(s: *const i8, n: i32) -> !;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
-pub type UnicodeScalar = int32_t;
-pub type pool_pointer = int32_t;
-pub type str_number = int32_t;
+pub type UnicodeScalar = i32;
+pub type pool_pointer = i32;
+pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 /* tectonic/xetex-stringpool.c: preloaded "string pool" constants
    Copyright 2017-2018 the Tectonic Project
@@ -48,7 +46,7 @@ static mut string_constants: [*const i8; 3] = [
     0 as *const i8,
 ];
 #[no_mangle]
-pub unsafe extern "C" fn load_pool_strings(mut spare_size: int32_t) -> libc::c_int {
+pub unsafe extern "C" fn load_pool_strings(mut spare_size: i32) -> libc::c_int {
     let mut s: *const i8 = 0 as *const i8;
     let mut i: libc::c_int = 0i32;
     let mut total_len: size_t = 0i32 as size_t;
@@ -83,7 +81,7 @@ pub unsafe extern "C" fn load_pool_strings(mut spare_size: int32_t) -> libc::c_i
     return g;
 }
 #[no_mangle]
-pub unsafe extern "C" fn length(mut s: str_number) -> int32_t {
+pub unsafe extern "C" fn length(mut s: str_number) -> i32 {
     if s as i64 >= 65536 {
         return *str_start.offset(((s + 1i32) as i64 - 65536) as isize)
             - *str_start.offset((s as i64 - 65536) as isize);
@@ -111,7 +109,7 @@ pub unsafe extern "C" fn make_string() -> str_number {
 }
 #[no_mangle]
 pub unsafe extern "C" fn append_str(mut s: str_number) {
-    let mut i: int32_t = 0;
+    let mut i: i32 = 0;
     let mut j: pool_pointer = 0;
     i = length(s);
     if pool_ptr + i > pool_size {
@@ -129,7 +127,7 @@ pub unsafe extern "C" fn append_str(mut s: str_number) {
     }
 }
 #[no_mangle]
-pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: int32_t) -> bool {
+pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: i32) -> bool {
     let mut j: pool_pointer = 0;
     j = *str_start.offset((s as i64 - 65536) as isize);
     while j < *str_start.offset(((s + 1i32) as i64 - 65536) as isize) {
@@ -210,7 +208,7 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
 #[no_mangle]
 pub unsafe extern "C" fn search_string(mut search: str_number) -> str_number {
     let mut s: str_number = 0;
-    let mut len: int32_t = 0;
+    let mut len: i32 = 0;
     len = length(search);
     if len == 0i32 {
         return (65536 + 1i32 as i64) as str_number;

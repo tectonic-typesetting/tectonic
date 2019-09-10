@@ -404,19 +404,19 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn UC_is_valid(ucv: int32_t) -> bool;
+    fn UC_is_valid(ucv: i32) -> bool;
     #[no_mangle]
     fn UC_UTF16BE_is_valid_string(p: *const u8, endptr: *const u8) -> bool;
     #[no_mangle]
     fn UC_UTF8_is_valid_string(p: *const u8, endptr: *const u8) -> bool;
     #[no_mangle]
     fn UC_UTF16BE_encode_char(
-        ucv: int32_t,
+        ucv: i32,
         dstpp: *mut *mut u8,
         endptr: *mut u8,
     ) -> size_t;
     #[no_mangle]
-    fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> int32_t;
+    fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> i32;
     #[no_mangle]
     fn CMap_decode(
         cmap: *mut CMap,
@@ -430,9 +430,7 @@ extern "C" {
     #[no_mangle]
     fn CMap_cache_find(cmap_name: *const i8) -> libc::c_int;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -1155,7 +1153,7 @@ unsafe extern "C" fn maybe_reencode_utf8(mut instring: *mut pdf_obj) -> libc::c_
     op = op.offset(1);
     *fresh1 = 0xffi32 as u8;
     while cp < inbuf.offset(inlen as isize) as *const u8 {
-        let mut usv: int32_t = 0;
+        let mut usv: i32 = 0;
         let mut len: libc::c_int = 0;
         usv = UC_UTF8_decode_char(&mut cp, inbuf.offset(inlen as isize));
         if !UC_is_valid(usv) {

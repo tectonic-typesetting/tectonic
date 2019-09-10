@@ -27,69 +27,69 @@ extern "C" {
     #[no_mangle]
     static mut arith_error: bool;
     #[no_mangle]
-    static mut temp_ptr: int32_t;
+    static mut temp_ptr: i32;
     #[no_mangle]
     static mut mem: *mut memory_word;
     #[no_mangle]
-    static mut hi_mem_min: int32_t;
+    static mut hi_mem_min: i32;
     #[no_mangle]
-    static mut avail: int32_t;
+    static mut avail: i32;
     #[no_mangle]
-    static mut last_leftmost_char: int32_t;
+    static mut last_leftmost_char: i32;
     #[no_mangle]
-    static mut last_rightmost_char: int32_t;
+    static mut last_rightmost_char: i32;
     #[no_mangle]
-    static mut hlist_stack: [int32_t; 513];
+    static mut hlist_stack: [i32; 513];
     #[no_mangle]
     static mut hlist_stack_level: libc::c_short;
     #[no_mangle]
-    static mut first_p: int32_t;
+    static mut first_p: i32;
     #[no_mangle]
-    static mut global_prev_p: int32_t;
+    static mut global_prev_p: i32;
     #[no_mangle]
-    static mut font_in_short_display: int32_t;
+    static mut font_in_short_display: i32;
     #[no_mangle]
     static mut cur_list: list_state_record;
     #[no_mangle]
     static mut font_info: *mut memory_word;
     #[no_mangle]
-    static mut hyphen_char: *mut int32_t;
+    static mut hyphen_char: *mut i32;
     #[no_mangle]
     static mut bchar_label: *mut font_index;
     #[no_mangle]
     static mut font_bchar: *mut nine_bits;
     #[no_mangle]
-    static mut char_base: *mut int32_t;
+    static mut char_base: *mut i32;
     #[no_mangle]
-    static mut width_base: *mut int32_t;
+    static mut width_base: *mut i32;
     #[no_mangle]
-    static mut lig_kern_base: *mut int32_t;
+    static mut lig_kern_base: *mut i32;
     #[no_mangle]
-    static mut kern_base: *mut int32_t;
+    static mut kern_base: *mut i32;
     #[no_mangle]
-    static mut adjust_tail: int32_t;
+    static mut adjust_tail: i32;
     #[no_mangle]
-    static mut pre_adjust_tail: int32_t;
+    static mut pre_adjust_tail: i32;
     #[no_mangle]
-    static mut pack_begin_line: int32_t;
+    static mut pack_begin_line: i32;
     #[no_mangle]
-    static mut just_box: int32_t;
+    static mut just_box: i32;
     #[no_mangle]
     static mut active_width: [scaled_t; 7];
     #[no_mangle]
-    static mut hc: [int32_t; 4099];
+    static mut hc: [i32; 4099];
     #[no_mangle]
     static mut hf: internal_font_number;
     #[no_mangle]
-    static mut hu: [int32_t; 4097];
+    static mut hu: [i32; 4097];
     #[no_mangle]
     static mut cur_lang: u8;
     #[no_mangle]
-    static mut max_hyph_char: int32_t;
+    static mut max_hyph_char: i32;
     #[no_mangle]
     static mut hyf: [u8; 4097];
     #[no_mangle]
-    static mut init_list: int32_t;
+    static mut init_list: i32;
     #[no_mangle]
     static mut init_lig: bool;
     #[no_mangle]
@@ -97,13 +97,13 @@ extern "C" {
     #[no_mangle]
     static mut hyphen_passed: small_number;
     #[no_mangle]
-    static mut cur_l: int32_t;
+    static mut cur_l: i32;
     #[no_mangle]
-    static mut cur_r: int32_t;
+    static mut cur_r: i32;
     #[no_mangle]
-    static mut cur_q: int32_t;
+    static mut cur_q: i32;
     #[no_mangle]
-    static mut lig_stack: int32_t;
+    static mut lig_stack: i32;
     #[no_mangle]
     static mut ligature_present: bool;
     #[no_mangle]
@@ -123,11 +123,11 @@ extern "C" {
     #[no_mangle]
     static mut hyf_next: [trie_opcode; 35112];
     #[no_mangle]
-    static mut op_start: [int32_t; 256];
+    static mut op_start: [i32; 256];
     #[no_mangle]
     static mut hyph_word: *mut str_number;
     #[no_mangle]
-    static mut hyph_list: *mut int32_t;
+    static mut hyph_list: *mut i32;
     #[no_mangle]
     static mut hyph_link: *mut hyph_pointer;
     #[no_mangle]
@@ -141,63 +141,63 @@ extern "C" {
     #[no_mangle]
     static mut semantic_pagination_enabled: bool;
     #[no_mangle]
-    fn badness(t: scaled_t, s: scaled_t) -> int32_t;
+    fn badness(t: scaled_t, s: scaled_t) -> i32;
     #[no_mangle]
-    fn get_avail() -> int32_t;
+    fn get_avail() -> i32;
     #[no_mangle]
-    fn flush_list(p: int32_t);
+    fn flush_list(p: i32);
     #[no_mangle]
-    fn get_node(s: int32_t) -> int32_t;
+    fn get_node(s: i32) -> i32;
     #[no_mangle]
-    fn free_node(p: int32_t, s: int32_t);
+    fn free_node(p: i32, s: i32);
     #[no_mangle]
-    fn new_ligature(f: internal_font_number, c: u16, q: int32_t) -> int32_t;
+    fn new_ligature(f: internal_font_number, c: u16, q: i32) -> i32;
     #[no_mangle]
-    fn new_lig_item(c: u16) -> int32_t;
+    fn new_lig_item(c: u16) -> i32;
     #[no_mangle]
-    fn new_disc() -> int32_t;
+    fn new_disc() -> i32;
     #[no_mangle]
-    fn new_math(w: scaled_t, s: small_number) -> int32_t;
+    fn new_math(w: scaled_t, s: small_number) -> i32;
     #[no_mangle]
-    fn new_spec(p: int32_t) -> int32_t;
+    fn new_spec(p: i32) -> i32;
     #[no_mangle]
-    fn new_param_glue(n: small_number) -> int32_t;
+    fn new_param_glue(n: small_number) -> i32;
     #[no_mangle]
-    fn new_kern(w: scaled_t) -> int32_t;
+    fn new_kern(w: scaled_t) -> i32;
     #[no_mangle]
-    fn new_penalty(m: int32_t) -> int32_t;
+    fn new_penalty(m: i32) -> i32;
     #[no_mangle]
-    fn prev_rightmost(s: int32_t, e: int32_t) -> int32_t;
+    fn prev_rightmost(s: i32, e: i32) -> i32;
     #[no_mangle]
-    fn delete_glue_ref(p: int32_t);
+    fn delete_glue_ref(p: i32);
     #[no_mangle]
-    fn flush_node_list(p: int32_t);
+    fn flush_node_list(p: i32);
     #[no_mangle]
     fn pop_nest();
     #[no_mangle]
-    fn length(s: str_number) -> int32_t;
+    fn length(s: str_number) -> i32;
     #[no_mangle]
     fn init_trie();
     #[no_mangle]
-    fn max_hyphenatable_length() -> int32_t;
+    fn max_hyphenatable_length() -> i32;
     #[no_mangle]
-    fn append_to_vlist(b: int32_t);
+    fn append_to_vlist(b: i32);
     #[no_mangle]
-    fn hpack(p: int32_t, w: scaled_t, m: small_number) -> int32_t;
+    fn hpack(p: i32, w: scaled_t, m: small_number) -> i32;
     #[no_mangle]
-    fn new_margin_kern(w: scaled_t, p: int32_t, side: small_number) -> int32_t;
+    fn new_margin_kern(w: scaled_t, p: i32, side: small_number) -> i32;
     #[no_mangle]
-    fn char_pw(p: int32_t, side: small_number) -> scaled_t;
+    fn char_pw(p: i32, side: small_number) -> scaled_t;
     #[no_mangle]
-    fn new_character(f: internal_font_number, c: UTF16_code) -> int32_t;
+    fn new_character(f: internal_font_number, c: UTF16_code) -> i32;
     #[no_mangle]
-    fn new_native_character(f: internal_font_number, c: UnicodeScalar) -> int32_t;
+    fn new_native_character(f: internal_font_number, c: UnicodeScalar) -> i32;
     #[no_mangle]
-    fn new_native_word_node(f: internal_font_number, n: int32_t) -> int32_t;
+    fn new_native_word_node(f: internal_font_number, n: i32) -> i32;
     #[no_mangle]
-    fn fract(x: int32_t, n: int32_t, d: int32_t, max_answer: int32_t) -> int32_t;
+    fn fract(x: i32, n: i32, d: i32, max_answer: i32) -> i32;
     #[no_mangle]
-    fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> int32_t;
+    fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> i32;
     #[no_mangle]
     fn confusion(s: *const i8) -> !;
     #[no_mangle]
@@ -211,20 +211,18 @@ extern "C" {
     #[no_mangle]
     fn print_file_line();
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
-pub type scaled_t = int32_t;
+pub type scaled_t = i32;
 pub type UTF16_code = u16;
-pub type UnicodeScalar = int32_t;
-pub type pool_pointer = int32_t;
-pub type str_number = int32_t;
+pub type UnicodeScalar = i32;
+pub type pool_pointer = i32;
+pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
+    pub s0: i32,
+    pub s1: i32,
 }
 pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
@@ -244,74 +242,74 @@ pub union memory_word {
     pub gr: libc::c_double,
     pub ptr: *mut libc::c_void,
 }
-pub type internal_font_number = int32_t;
-pub type font_index = int32_t;
-pub type nine_bits = int32_t;
-pub type trie_pointer = int32_t;
+pub type internal_font_number = i32;
+pub type font_index = i32;
+pub type nine_bits = i32;
+pub type trie_pointer = i32;
 pub type trie_opcode = u16;
 pub type hyph_pointer = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
     pub mode: libc::c_short,
-    pub head: int32_t,
-    pub tail: int32_t,
-    pub eTeX_aux: int32_t,
-    pub prev_graf: int32_t,
-    pub mode_line: int32_t,
+    pub head: i32,
+    pub tail: i32,
+    pub eTeX_aux: i32,
+    pub prev_graf: i32,
+    pub mode_line: i32,
     pub aux: memory_word,
 }
 #[inline]
-unsafe extern "C" fn is_char_node(p: int32_t) -> bool {
+unsafe extern "C" fn is_char_node(p: i32) -> bool {
     return p >= hi_mem_min;
 }
 #[inline]
-unsafe extern "C" fn is_non_discardable_node(p: int32_t) -> bool {
+unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
     return ((*mem.offset(p as isize)).b16.s1 as libc::c_int) < 9i32;
 }
-static mut passive: int32_t = 0;
+static mut passive: i32 = 0;
 static mut cur_active_width: [scaled_t; 7] = [0; 7];
 static mut background: [scaled_t; 7] = [0; 7];
 static mut break_width: [scaled_t; 7] = [0; 7];
-static mut best_place: [int32_t; 4] = [0; 4];
-static mut best_pl_line: [int32_t; 4] = [0; 4];
+static mut best_place: [i32; 4] = [0; 4];
+static mut best_pl_line: [i32; 4] = [0; 4];
 static mut disc_width: scaled_t = 0;
 static mut no_shrink_error_yet: bool = false;
-static mut cur_p: int32_t = 0;
+static mut cur_p: i32 = 0;
 static mut second_pass: bool = false;
 static mut final_pass: bool = false;
-static mut threshold: int32_t = 0;
-static mut minimal_demerits: [int32_t; 4] = [0; 4];
-static mut minimum_demerits: int32_t = 0;
-static mut easy_line: int32_t = 0;
-static mut last_special_line: int32_t = 0;
+static mut threshold: i32 = 0;
+static mut minimal_demerits: [i32; 4] = [0; 4];
+static mut minimum_demerits: i32 = 0;
+static mut easy_line: i32 = 0;
+static mut last_special_line: i32 = 0;
 static mut first_width: scaled_t = 0;
 static mut second_width: scaled_t = 0;
 static mut first_indent: scaled_t = 0;
 static mut second_indent: scaled_t = 0;
-static mut best_bet: int32_t = 0;
-static mut fewest_demerits: int32_t = 0;
-static mut best_line: int32_t = 0;
-static mut actual_looseness: int32_t = 0;
-static mut line_diff: int32_t = 0;
+static mut best_bet: i32 = 0;
+static mut fewest_demerits: i32 = 0;
+static mut best_line: i32 = 0;
+static mut actual_looseness: i32 = 0;
+static mut line_diff: i32 = 0;
 static mut hn: small_number = 0;
-static mut ha: int32_t = 0;
-static mut hb: int32_t = 0;
-static mut hyf_char: int32_t = 0;
+static mut ha: i32 = 0;
+static mut hb: i32 = 0;
+static mut hyf_char: i32 = 0;
 static mut init_cur_lang: u8 = 0;
-static mut l_hyf: int32_t = 0;
-static mut r_hyf: int32_t = 0;
-static mut init_l_hyf: int32_t = 0;
-static mut init_r_hyf: int32_t = 0;
-static mut hyf_bchar: int32_t = 0;
-static mut last_line_fill: int32_t = 0;
+static mut l_hyf: i32 = 0;
+static mut r_hyf: i32 = 0;
+static mut init_l_hyf: i32 = 0;
+static mut init_r_hyf: i32 = 0;
+static mut hyf_bchar: i32 = 0;
+static mut last_line_fill: i32 = 0;
 static mut do_last_line_fit: bool = false;
 static mut active_node_size: small_number = 0;
 static mut fill_width: [scaled_t; 3] = [0; 3];
 static mut best_pl_short: [scaled_t; 4] = [0; 4];
 static mut best_pl_glue: [scaled_t; 4] = [0; 4];
 #[inline]
-unsafe extern "C" fn get_native_usv(mut p: int32_t, mut i: int32_t) -> UnicodeScalar {
+unsafe extern "C" fn get_native_usv(mut p: i32, mut i: i32) -> UnicodeScalar {
     let mut c: u16 = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
         as *mut u16)
         .offset(i as isize);
@@ -339,17 +337,17 @@ unsafe extern "C" fn get_native_usv(mut p: int32_t, mut i: int32_t) -> UnicodeSc
 pub unsafe extern "C" fn line_break(mut d: bool) {
     let mut current_block: u64; /* "this is for over/underfull box messages" */
     let mut auto_breaking: bool = false;
-    let mut prev_p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut s: int32_t = 0;
-    let mut prev_s: int32_t = 0;
+    let mut prev_p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
+    let mut s: i32 = 0;
+    let mut prev_s: i32 = 0;
     let mut f: internal_font_number = 0;
     let mut j: small_number = 0;
     let mut c: UnicodeScalar = 0;
-    let mut l: int32_t = 0;
-    let mut i: int32_t = 0;
-    let mut for_end_1: int32_t = 0;
+    let mut l: i32 = 0;
+    let mut i: i32 = 0;
+    let mut for_end_1: i32 = 0;
     pack_begin_line = cur_list.mode_line;
     (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1 =
         (*mem.offset(cur_list.head as isize)).b32.s1;
@@ -375,7 +373,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
     /* Yet more initialization of various kinds */
     init_cur_lang = (cur_list.prev_graf as i64 % 65536) as u8;
     init_l_hyf = cur_list.prev_graf / 0x400000i32;
-    init_r_hyf = (cur_list.prev_graf as i64 / 65536 % 64i32 as i64) as int32_t;
+    init_r_hyf = (cur_list.prev_graf as i64 / 65536 % 64i32 as i64) as i32;
     pop_nest();
     no_shrink_error_yet = 1i32 != 0;
     if (*mem.offset(
@@ -1302,7 +1300,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                 hyph_index = *trie_trl.offset((hyph_start + cur_lang as libc::c_int) as isize)
             }
         }
-        q = get_node(active_node_size as int32_t);
+        q = get_node(active_node_size as i32);
         (*mem.offset(q as isize)).b16.s1 = 0i32 as u16;
         (*mem.offset(q as isize)).b16.s0 = 2i32 as u16;
         (*mem.offset(q as isize)).b32.s1 = 4999999i32 - 7i32;
@@ -1340,7 +1338,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                 global_prev_p = cur_p;
                 prev_p = global_prev_p;
                 loop {
-                    let mut eff_char: int32_t = 0;
+                    let mut eff_char: i32 = 0;
                     f = (*mem.offset(cur_p as isize)).b16.s1 as internal_font_number;
                     eff_char = effective_char(1i32 != 0, f, (*mem.offset(cur_p as isize)).b16.s0);
                     active_width[1] += (*font_info.offset(
@@ -1363,8 +1361,8 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                 8 => {
                     if (*mem.offset(cur_p as isize)).b16.s0 as libc::c_int == 4i32 {
                         cur_lang = (*mem.offset((cur_p + 1i32) as isize)).b32.s1 as u8;
-                        l_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s1 as int32_t;
-                        r_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s0 as int32_t;
+                        l_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s1 as i32;
+                        r_hyf = (*mem.offset((cur_p + 1i32) as isize)).b16.s0 as i32;
                         if *trie_trc.offset((hyph_start + cur_lang as libc::c_int) as isize)
                             as libc::c_int
                             != cur_lang as libc::c_int
@@ -1496,9 +1494,9 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                         cur_lang = (*mem.offset((s + 1i32) as isize)).b32.s1
                                             as u8;
                                         l_hyf =
-                                            (*mem.offset((s + 1i32) as isize)).b16.s1 as int32_t;
+                                            (*mem.offset((s + 1i32) as isize)).b16.s1 as i32;
                                         r_hyf =
-                                            (*mem.offset((s + 1i32) as isize)).b16.s0 as int32_t;
+                                            (*mem.offset((s + 1i32) as isize)).b16.s0 as i32;
                                         if *trie_trc
                                             .offset((hyph_start + cur_lang as libc::c_int) as isize)
                                             as libc::c_int
@@ -1663,7 +1661,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                     .offset((ha + 4i32) as isize))
                                                                 .b16
                                                                 .s1
-                                                                    as int32_t;
+                                                                    as i32;
                                                                 l = 0i32;
                                                                 loop {
                                                                     if !(l < for_end_1) {
@@ -2220,7 +2218,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                     as i64
                                                                                 + 0xd800i32
                                                                                     as i64)
-                                                                                as int32_t;
+                                                                                as i32;
                                                                             hc[hn as usize] = ((hc
                                                                                 [0]
                                                                                 as i64
@@ -2229,7 +2227,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                     as i64
                                                                                 + 0xd800i32
                                                                                     as i64)
-                                                                                as int32_t;
+                                                                                as i32;
                                                                             hn += 1;
                                                                             hu[hn as usize] = c
                                                                                 % 1024i32
@@ -2260,7 +2258,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                             }
                                                             hyf_bchar =
                                                                 (*mem.offset(s as isize)).b16.s0
-                                                                    as int32_t;
+                                                                    as i32;
                                                             c = hyf_bchar;
                                                             if hyph_index == 0i32 || c > 255i32 {
                                                                 hc[0] = (*eqtb.offset(
@@ -2336,7 +2334,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                             if q > -0xfffffffi32 {
                                                                 hyf_bchar =
                                                                     (*mem.offset(q as isize)).b16.s0
-                                                                        as int32_t
+                                                                        as i32
                                                             }
                                                             while q > -0xfffffffi32 {
                                                                 c = (*mem.offset(q as isize)).b16.s0
@@ -2654,7 +2652,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         loop {
                             /*899:*/
                             if is_char_node(s) {
-                                let mut eff_char_0: int32_t = 0; /*:898 big DISC_NODE case */
+                                let mut eff_char_0: i32 = 0; /*:898 big DISC_NODE case */
                                 f = (*mem.offset(s as isize)).b16.s1 as internal_font_number;
                                 eff_char_0 =
                                     effective_char(1i32 != 0, f, (*mem.offset(s as isize)).b16.s0);
@@ -2673,7 +2671,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                             } else {
                                 match (*mem.offset(s as isize)).b16.s1 as libc::c_int {
                                     6 => {
-                                        let mut eff_char_1: int32_t = 0;
+                                        let mut eff_char_1: i32 = 0;
                                         f = (*mem.offset((s + 1i32) as isize)).b16.s1
                                             as internal_font_number;
                                         xtx_ligature_present = 1i32 != 0;
@@ -2762,11 +2760,11 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         );
                         active_width[1] -= disc_width
                     }
-                    r = (*mem.offset(cur_p as isize)).b16.s0 as int32_t;
+                    r = (*mem.offset(cur_p as isize)).b16.s0 as i32;
                     s = (*mem.offset(cur_p as isize)).b32.s1;
                     while r > 0i32 {
                         if is_char_node(s) {
-                            let mut eff_char_2: int32_t = 0;
+                            let mut eff_char_2: i32 = 0;
                             f = (*mem.offset(s as isize)).b16.s1 as internal_font_number;
                             eff_char_2 =
                                 effective_char(1i32 != 0, f, (*mem.offset(s as isize)).b16.s0);
@@ -2783,7 +2781,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         } else {
                             match (*mem.offset(s as isize)).b16.s1 as libc::c_int {
                                 6 => {
-                                    let mut eff_char_3: int32_t = 0;
+                                    let mut eff_char_3: i32 = 0;
                                     f = (*mem.offset((s + 1i32) as isize)).b16.s1
                                         as internal_font_number;
                                     xtx_ligature_present = 1i32 != 0;
@@ -3048,7 +3046,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
             if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 2i32 {
                 free_node(q, 7i32);
             } else {
-                free_node(q, active_node_size as int32_t);
+                free_node(q, active_node_size as i32);
             }
             q = cur_p
         }
@@ -3177,17 +3175,17 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
     /* Clean up by removing break nodes (894, again) */
     q = (*mem.offset((4999999i32 - 7i32) as isize)).b32.s1;
     while q != 4999999i32 - 7i32 {
-        let mut next: int32_t = (*mem.offset(q as isize)).b32.s1;
+        let mut next: i32 = (*mem.offset(q as isize)).b32.s1;
         if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 2i32 {
             free_node(q, 7i32);
         } else {
-            free_node(q, active_node_size as int32_t);
+            free_node(q, active_node_size as i32);
         }
         q = next
     }
     q = passive;
     while q != -0xfffffffi32 {
-        let mut next_0: int32_t = (*mem.offset(q as isize)).b32.s1;
+        let mut next_0: i32 = (*mem.offset(q as isize)).b32.s1;
         free_node(q, 2i32);
         q = next_0
     }
@@ -3197,22 +3195,22 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
 /* This was just separated out to prevent line_break() from becoming
  * proposterously long. */
 unsafe extern "C" fn post_line_break(mut d: bool) {
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut s: int32_t = 0;
-    let mut p: int32_t = 0;
-    let mut k: int32_t = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
+    let mut s: i32 = 0;
+    let mut p: i32 = 0;
+    let mut k: i32 = 0;
     let mut w: scaled_t = 0;
     let mut glue_break: bool = false;
-    let mut ptmp: int32_t = 0;
+    let mut ptmp: i32 = 0;
     let mut disc_break: bool = false;
     let mut post_disc_break: bool = false;
     let mut cur_width: scaled_t = 0;
     let mut cur_indent: scaled_t = 0;
     let mut t: u16 = 0;
-    let mut pen: int32_t = 0;
-    let mut cur_line: int32_t = 0;
-    let mut LR_ptr: int32_t = 0;
+    let mut pen: i32 = 0;
+    let mut cur_line: i32 = 0;
+    let mut LR_ptr: i32 = 0;
     LR_ptr = cur_list.eTeX_aux;
     /* Reverse the list of break nodes (907) */
     q = (*mem.offset((best_bet + 1i32) as isize)).b32.s1; /*:907*/
@@ -3780,24 +3778,24 @@ unsafe extern "C" fn post_line_break(mut d: bool) {
  * or UNHYPHENATED, depending on whether or not the current break is at a
  * disc_node. The end of a paragraph is also regarded as hyphenated; this case
  * is distinguishable by the condition cur_p = null." */
-unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
+unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
     let mut current_block: u64;
-    let mut r: int32_t = 0;
-    let mut prev_r: int32_t = 0;
-    let mut old_l: int32_t = 0;
+    let mut r: i32 = 0;
+    let mut prev_r: i32 = 0;
+    let mut old_l: i32 = 0;
     let mut no_break_yet: bool = false;
-    let mut prev_prev_r: int32_t = -0xfffffffi32;
-    let mut s: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut v: int32_t = 0;
-    let mut t: int32_t = 0;
+    let mut prev_prev_r: i32 = -0xfffffffi32;
+    let mut s: i32 = 0;
+    let mut q: i32 = 0;
+    let mut v: i32 = 0;
+    let mut t: i32 = 0;
     let mut f: internal_font_number = 0;
-    let mut l: int32_t = 0;
+    let mut l: i32 = 0;
     let mut node_r_stays_active: bool = false;
     let mut line_width: scaled_t = 0i32;
     let mut fit_class: u8 = 0;
-    let mut b: int32_t = 0;
-    let mut d: int32_t = 0;
+    let mut b: i32 = 0;
+    let mut d: i32 = 0;
     let mut artificial_demerits: bool = false;
     let mut shortfall: scaled_t = 0;
     let mut g: scaled_t = 0i32;
@@ -3859,7 +3857,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                         if break_type as libc::c_int > 0i32 {
                             /*869: "Compute the discretionary break_width values" */
                             if cur_p != -0xfffffffi32 {
-                                t = (*mem.offset(cur_p as isize)).b16.s0 as int32_t;
+                                t = (*mem.offset(cur_p as isize)).b16.s0 as i32;
                                 v = cur_p;
                                 s = (*mem.offset((cur_p + 1i32) as isize)).b32.s1;
                                 while t > 0i32 {
@@ -3867,7 +3865,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                     v = (*mem.offset(v as isize)).b32.s1;
                                     /*870: "subtract the width of node v from break_width" */
                                     if is_char_node(v) {
-                                        let mut eff_char: int32_t = 0;
+                                        let mut eff_char: i32 = 0;
                                         f = (*mem.offset(v as isize)).b16.s1
                                             as internal_font_number;
                                         eff_char = effective_char(
@@ -3891,7 +3889,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                     } else {
                                         match (*mem.offset(v as isize)).b16.s1 as libc::c_int {
                                             6 => {
-                                                let mut eff_char_0: int32_t = 0;
+                                                let mut eff_char_0: i32 = 0;
                                                 f = (*mem.offset((v + 1i32) as isize)).b16.s1
                                                     as internal_font_number;
                                                 xtx_ligature_present = 1i32 != 0;
@@ -3956,7 +3954,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                 /*871: "add the width of node s to break_width" */
                                 while s != -0xfffffffi32 {
                                     if is_char_node(s) {
-                                        let mut eff_char_1: int32_t = 0;
+                                        let mut eff_char_1: i32 = 0;
                                         f = (*mem.offset(s as isize)).b16.s1
                                             as internal_font_number;
                                         eff_char_1 = effective_char(
@@ -3980,7 +3978,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                                     } else {
                                         match (*mem.offset(s as isize)).b16.s1 as libc::c_int {
                                             6 => {
-                                                let mut eff_char_2: int32_t = 0;
+                                                let mut eff_char_2: i32 = 0;
                                                 f = (*mem.offset((s + 1i32) as isize)).b16.s1
                                                     as internal_font_number;
                                                 xtx_ligature_present = 1i32 != 0;
@@ -4193,7 +4191,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                             (*mem.offset((q + 1i32) as isize)).b32.s1 = cur_p;
                             (*mem.offset((q + 1i32) as isize)).b32.s0 =
                                 best_place[fit_class as usize];
-                            q = get_node(active_node_size as int32_t);
+                            q = get_node(active_node_size as i32);
                             (*mem.offset((q + 1i32) as isize)).b32.s1 = passive;
                             (*mem.offset((q + 1i32) as isize)).b32.s0 =
                                 best_pl_line[fit_class as usize] + 1i32;
@@ -4660,7 +4658,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
                         .b32
                         .s1 + b; /* algorithmic constant */
                         if abs(d) >= 10000i32 {
-                            d = 100000000 as int32_t
+                            d = 100000000 as i32
                         } else {
                             d = d * d
                         }
@@ -4799,7 +4797,7 @@ unsafe extern "C" fn try_break(mut pi: int32_t, mut break_type: small_number) {
             }
             /*889: "Deactivate node r" */
             (*mem.offset(prev_r as isize)).b32.s1 = (*mem.offset(r as isize)).b32.s1;
-            free_node(r, active_node_size as int32_t);
+            free_node(r, active_node_size as i32);
             if prev_r == 4999999i32 - 7i32 {
                 /*890: "Update the active widths, since the first active node has been deleted" */
                 r = (*mem.offset((4999999i32 - 7i32) as isize)).b32.s1; /*:966 */
@@ -4863,24 +4861,24 @@ unsafe extern "C" fn hyphenate() {
     let mut i: libc::c_short = 0;
     let mut j: libc::c_short = 0;
     let mut l: libc::c_short = 0;
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut s: int32_t = 0;
-    let mut bchar: int32_t = 0;
-    let mut major_tail: int32_t = 0;
-    let mut minor_tail: int32_t = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
+    let mut s: i32 = 0;
+    let mut bchar: i32 = 0;
+    let mut major_tail: i32 = 0;
+    let mut minor_tail: i32 = 0;
     let mut c: UnicodeScalar = 0i32;
     let mut c_loc: libc::c_short = 0;
-    let mut r_count: int32_t = 0;
-    let mut hyf_node: int32_t = 0;
+    let mut r_count: i32 = 0;
+    let mut hyf_node: i32 = 0;
     let mut z: trie_pointer = 0;
-    let mut v: int32_t = 0;
+    let mut v: i32 = 0;
     let mut h: hyph_pointer = 0;
     let mut k: str_number = 0;
     let mut u: pool_pointer = 0;
-    let mut for_end: int32_t = 0;
+    let mut for_end: i32 = 0;
     j = 0i32 as libc::c_short;
-    for_end = hn as int32_t;
+    for_end = hn as i32;
     if j as libc::c_int <= for_end {
         loop {
             hyf[j as usize] = 0i32 as u8;
@@ -4893,10 +4891,10 @@ unsafe extern "C" fn hyphenate() {
     }
     h = hc[1] as hyph_pointer;
     hn += 1;
-    hc[hn as usize] = cur_lang as int32_t;
-    let mut for_end_0: int32_t = 0;
+    hc[hn as usize] = cur_lang as i32;
+    let mut for_end_0: i32 = 0;
     j = 2i32 as libc::c_short;
-    for_end_0 = hn as int32_t;
+    for_end_0 = hn as i32;
     if j as libc::c_int <= for_end_0 {
         loop {
             h = ((h as libc::c_int + h as libc::c_int + hc[j as usize]) % 607i32) as hyph_pointer;
@@ -4960,7 +4958,7 @@ unsafe extern "C" fn hyphenate() {
             hc[0] = 0i32;
             hc[(hn as libc::c_int + 1i32) as usize] = 0i32;
             hc[(hn as libc::c_int + 2i32) as usize] = max_hyph_char;
-            let mut for_end_1: int32_t = 0;
+            let mut for_end_1: i32 = 0;
             j = 0i32 as libc::c_short;
             for_end_1 = hn as libc::c_int - r_hyf + 1i32;
             if j as libc::c_int <= for_end_1 {
@@ -4981,7 +4979,7 @@ unsafe extern "C" fn hyphenate() {
                                 {
                                     hyf[i as usize] = hyf_num[v as usize] as u8
                                 }
-                                v = hyf_next[v as usize] as int32_t;
+                                v = hyf_next[v as usize] as i32;
                                 if v == 0i32 {
                                     break;
                                 }
@@ -5000,7 +4998,7 @@ unsafe extern "C" fn hyphenate() {
         }
         _ => {}
     }
-    let mut for_end_2: int32_t = 0;
+    let mut for_end_2: i32 = 0;
     j = 0i32 as libc::c_short;
     for_end_2 = l_hyf - 1i32;
     if j as libc::c_int <= for_end_2 {
@@ -5013,7 +5011,7 @@ unsafe extern "C" fn hyphenate() {
             }
         }
     }
-    let mut for_end_3: int32_t = 0;
+    let mut for_end_3: i32 = 0;
     j = 0i32 as libc::c_short;
     for_end_3 = r_hyf - 1i32;
     if j as libc::c_int <= for_end_3 {
@@ -5026,7 +5024,7 @@ unsafe extern "C" fn hyphenate() {
             }
         }
     }
-    let mut for_end_4: int32_t = 0;
+    let mut for_end_4: i32 = 0;
     j = l_hyf as libc::c_short;
     for_end_4 = hn as libc::c_int - r_hyf;
     if j as libc::c_int <= for_end_4 {
@@ -5062,7 +5060,7 @@ unsafe extern "C" fn hyphenate() {
             s = (*mem.offset(s as isize)).b32.s1
         }
         hyphen_passed = 0i32 as small_number;
-        let mut for_end_5: int32_t = 0;
+        let mut for_end_5: i32 = 0;
         j = l_hyf as libc::c_short;
         for_end_5 = hn as libc::c_int - r_hyf;
         if j as libc::c_int <= for_end_5 {
@@ -5070,7 +5068,7 @@ unsafe extern "C" fn hyphenate() {
                 if hyf[j as usize] as libc::c_int & 1i32 != 0 {
                     q = new_native_word_node(hf, j as libc::c_int - hyphen_passed as libc::c_int);
                     (*mem.offset(q as isize)).b16.s0 = (*mem.offset(ha as isize)).b16.s0;
-                    let mut for_end_6: int32_t = 0;
+                    let mut for_end_6: i32 = 0;
                     i = 0i32 as libc::c_short;
                     for_end_6 = j as libc::c_int - hyphen_passed as libc::c_int - 1i32;
                     if i as libc::c_int <= for_end_6 {
@@ -5138,7 +5136,7 @@ unsafe extern "C" fn hyphenate() {
         hn = (*mem.offset((ha + 4i32) as isize)).b16.s1 as small_number;
         q = new_native_word_node(hf, hn as libc::c_int - hyphen_passed as libc::c_int);
         (*mem.offset(q as isize)).b16.s0 = (*mem.offset(ha as isize)).b16.s0;
-        let mut for_end_7: int32_t = 0;
+        let mut for_end_7: i32 = 0;
         i = 0i32 as libc::c_short;
         for_end_7 = hn as libc::c_int - hyphen_passed as libc::c_int - 1i32;
         if i as libc::c_int <= for_end_7 {
@@ -5206,7 +5204,7 @@ unsafe extern "C" fn hyphenate() {
             } else {
                 init_list = ha;
                 init_lig = 0i32 != 0;
-                hu[0] = (*mem.offset(ha as isize)).b16.s0 as int32_t;
+                hu[0] = (*mem.offset(ha as isize)).b16.s0 as i32;
                 current_block = 6662862405959679103;
             }
         } else if (*mem.offset(ha as isize)).b16.s1 as libc::c_int == 6i32 {
@@ -5216,7 +5214,7 @@ unsafe extern "C" fn hyphenate() {
                 init_list = (*mem.offset((ha + 1i32) as isize)).b32.s1;
                 init_lig = 1i32 != 0;
                 init_lft = (*mem.offset(ha as isize)).b16.s0 as libc::c_int > 1i32;
-                hu[0] = (*mem.offset((ha + 1i32) as isize)).b16.s0 as int32_t;
+                hu[0] = (*mem.offset((ha + 1i32) as isize)).b16.s0 as i32;
                 if init_list == -0xfffffffi32 {
                     if init_lft {
                         hu[0] = max_hyph_char;
@@ -5402,8 +5400,8 @@ unsafe extern "C" fn hyphenate() {
         flush_list(init_list);
     };
 }
-unsafe extern "C" fn finite_shrink(mut p: int32_t) -> int32_t {
-    let mut q: int32_t = 0;
+unsafe extern "C" fn finite_shrink(mut p: i32) -> i32 {
+    let mut q: i32 = 0;
     if no_shrink_error_yet {
         no_shrink_error_yet = 0i32 != 0;
         if file_line_error_style_p != 0 {
@@ -5435,20 +5433,20 @@ unsafe extern "C" fn finite_shrink(mut p: int32_t) -> int32_t {
 unsafe extern "C" fn reconstitute(
     mut j: small_number,
     mut n: small_number,
-    mut bchar: int32_t,
-    mut hchar: int32_t,
+    mut bchar: i32,
+    mut hchar: i32,
 ) -> small_number {
     let mut current_block: u64;
-    let mut p: int32_t = 0;
-    let mut t: int32_t = 0;
+    let mut p: i32 = 0;
+    let mut t: i32 = 0;
     let mut q: b16x4 = b16x4 {
         s0: 0,
         s1: 0,
         s2: 0,
         s3: 0,
     };
-    let mut cur_rh: int32_t = 0;
-    let mut test_char: int32_t = 0;
+    let mut cur_rh: i32 = 0;
+    let mut test_char: i32 = 0;
     let mut w: scaled_t = 0;
     let mut k: font_index = 0;
     hyphen_passed = 0i32 as small_number;
@@ -5552,11 +5550,11 @@ unsafe extern "C" fn reconstitute(
                                     }
                                     match q.s1 as libc::c_int {
                                         1 | 5 => {
-                                            cur_l = q.s0 as int32_t;
+                                            cur_l = q.s0 as i32;
                                             ligature_present = 1i32 != 0
                                         }
                                         2 | 6 => {
-                                            cur_r = q.s0 as int32_t;
+                                            cur_r = q.s0 as i32;
                                             if lig_stack > -0xfffffffi32 {
                                                 (*mem.offset(lig_stack as isize)).b16.s0 =
                                                     cur_r as u16
@@ -5578,7 +5576,7 @@ unsafe extern "C" fn reconstitute(
                                             }
                                         }
                                         3 => {
-                                            cur_r = q.s0 as int32_t;
+                                            cur_r = q.s0 as i32;
                                             p = lig_stack;
                                             lig_stack = new_lig_item(cur_r as u16);
                                             (*mem.offset(lig_stack as isize)).b32.s1 = p
@@ -5600,11 +5598,11 @@ unsafe extern "C" fn reconstitute(
                                                 ligature_present = 0i32 != 0
                                             }
                                             cur_q = t;
-                                            cur_l = q.s0 as int32_t;
+                                            cur_l = q.s0 as i32;
                                             ligature_present = 1i32 != 0
                                         }
                                         _ => {
-                                            cur_l = q.s0 as int32_t;
+                                            cur_l = q.s0 as i32;
                                             ligature_present = 1i32 != 0;
                                             if lig_stack > -0xfffffffi32 {
                                                 if (*mem.offset((lig_stack + 1i32) as isize)).b32.s1
@@ -5634,7 +5632,7 @@ unsafe extern "C" fn reconstitute(
                                                     }
                                                 } else {
                                                     cur_r = (*mem.offset(lig_stack as isize)).b16.s0
-                                                        as int32_t
+                                                        as i32
                                                 }
                                             } else {
                                                 if j as libc::c_int == n as libc::c_int {
@@ -5722,7 +5720,7 @@ unsafe extern "C" fn reconstitute(
             break;
         }
         cur_q = t;
-        cur_l = (*mem.offset(lig_stack as isize)).b16.s0 as int32_t;
+        cur_l = (*mem.offset(lig_stack as isize)).b16.s0 as i32;
         ligature_present = 1i32 != 0;
         if (*mem.offset((lig_stack + 1i32) as isize)).b32.s1 > -0xfffffffi32 {
             (*mem.offset(t as isize)).b32.s1 = (*mem.offset((lig_stack + 1i32) as isize)).b32.s1;
@@ -5744,16 +5742,16 @@ unsafe extern "C" fn reconstitute(
                 cur_rh = 65536i32
             }
         } else {
-            cur_r = (*mem.offset(lig_stack as isize)).b16.s0 as int32_t
+            cur_r = (*mem.offset(lig_stack as isize)).b16.s0 as i32
         }
     }
     return j;
 }
-unsafe extern "C" fn total_pw(mut q: int32_t, mut p: int32_t) -> scaled_t {
+unsafe extern "C" fn total_pw(mut q: i32, mut p: i32) -> scaled_t {
     let mut current_block: u64;
-    let mut l: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut n: int32_t = 0;
+    let mut l: i32 = 0;
+    let mut r: i32 = 0;
+    let mut n: i32 = 0;
     if (*mem.offset((q + 1i32) as isize)).b32.s1 == -0xfffffffi32 {
         l = first_p
     } else {
@@ -5778,7 +5776,7 @@ unsafe extern "C" fn total_pw(mut q: int32_t, mut p: int32_t) -> scaled_t {
             l = (*mem.offset((l + 1i32) as isize)).b32.s1;
             current_block = 15424580701460361554;
         } else {
-            n = (*mem.offset(l as isize)).b16.s0 as int32_t;
+            n = (*mem.offset(l as isize)).b16.s0 as i32;
             l = (*mem.offset(l as isize)).b32.s1;
             while n > 0i32 {
                 if (*mem.offset(l as isize)).b32.s1 != -0xfffffffi32 {
@@ -5797,8 +5795,8 @@ unsafe extern "C" fn total_pw(mut q: int32_t, mut p: int32_t) -> scaled_t {
     }
     return char_pw(l, 0i32 as small_number) + char_pw(r, 1i32 as small_number);
 }
-unsafe extern "C" fn find_protchar_left(mut l: int32_t, mut d: bool) -> int32_t {
-    let mut t: int32_t = 0;
+unsafe extern "C" fn find_protchar_left(mut l: i32, mut d: bool) -> i32 {
+    let mut t: i32 = 0;
     let mut run: bool = false;
     if (*mem.offset(l as isize)).b32.s1 != -0xfffffffi32
         && (*mem.offset(l as isize)).b16.s1 as libc::c_int == 0i32
@@ -5867,8 +5865,8 @@ unsafe extern "C" fn find_protchar_left(mut l: int32_t, mut d: bool) -> int32_t 
     }
     return l;
 }
-unsafe extern "C" fn find_protchar_right(mut l: int32_t, mut r: int32_t) -> int32_t {
-    let mut t: int32_t = 0;
+unsafe extern "C" fn find_protchar_right(mut l: i32, mut r: i32) -> i32 {
+    let mut t: i32 = 0;
     let mut run: bool = false;
     if r == -0xfffffffi32 {
         return -0xfffffffi32;
@@ -5928,7 +5926,7 @@ unsafe extern "C" fn find_protchar_right(mut l: int32_t, mut r: int32_t) -> int3
     }
     return r;
 }
-unsafe extern "C" fn push_node(mut p: int32_t) {
+unsafe extern "C" fn push_node(mut p: i32) {
     if hlist_stack_level as libc::c_int > 512i32 {
         pdf_error(
             b"push_node\x00" as *const u8 as *const i8,
@@ -5938,7 +5936,7 @@ unsafe extern "C" fn push_node(mut p: int32_t) {
     hlist_stack[hlist_stack_level as usize] = p;
     hlist_stack_level = (hlist_stack_level as libc::c_int + 1i32) as libc::c_short;
 }
-unsafe extern "C" fn pop_node() -> int32_t {
+unsafe extern "C" fn pop_node() -> i32 {
     hlist_stack_level = (hlist_stack_level as libc::c_int - 1i32) as libc::c_short;
     if (hlist_stack_level as libc::c_int) < 0i32 {
         pdf_error(

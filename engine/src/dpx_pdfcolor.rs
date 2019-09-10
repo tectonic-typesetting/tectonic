@@ -105,7 +105,6 @@ extern "C" {
     #[no_mangle]
     fn MD5_final(outbuf: *mut u8, ctx: *mut MD5_CONTEXT);
 }
-pub type __int32_t = libc::c_int;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -119,7 +118,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -147,7 +145,7 @@ pub type iccSig = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct iccbased_cdata {
-    pub sig: int32_t,
+    pub sig: i32,
     pub checksum: [u8; 16],
     pub colorspace: libc::c_int,
     pub alternate: libc::c_int,
@@ -165,7 +163,7 @@ pub struct C2RustUnnamed_0 {
 pub struct iccHeader {
     pub size: libc::c_int,
     pub CMMType: iccSig,
-    pub version: int32_t,
+    pub version: i32,
     pub devClass: iccSig,
     pub colorSpace: iccSig,
     pub PCS: iccSig,
@@ -176,7 +174,7 @@ pub struct iccHeader {
     pub devMnfct: iccSig,
     pub devModel: iccSig,
     pub devAttr: [i8; 8],
-    pub intent: int32_t,
+    pub intent: i32,
     pub illuminant: iccXYZNumber,
     pub creator: iccSig,
     pub ID: [u8; 16],
@@ -184,9 +182,9 @@ pub struct iccHeader {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct iccXYZNumber {
-    pub X: int32_t,
-    pub Y: int32_t,
-    pub Z: int32_t,
+    pub X: i32,
+    pub Y: i32,
+    pub Z: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1105,7 +1103,7 @@ pub unsafe extern "C" fn iccp_get_rendering_intent(
 ) -> *mut pdf_obj {
     let mut ri: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut p: *const u8 = 0 as *const u8;
-    let mut intent: int32_t = 0;
+    let mut intent: i32 = 0;
     if profile.is_null() || proflen < 128i32 {
         return 0 as *mut pdf_obj;
     }

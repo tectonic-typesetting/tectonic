@@ -112,9 +112,7 @@ extern "C" {
     #[no_mangle]
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type __compar_fn_t =
@@ -125,7 +123,7 @@ pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = u16;
 pub type SHORT = libc::c_short;
 pub type SFNT_ULONG = u32;
-pub type SFNT_LONG = int32_t;
+pub type SFNT_LONG = i32;
 pub type Fixed = u32;
 pub type FWord = libc::c_short;
 pub type uFWord = u16;

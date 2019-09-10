@@ -135,7 +135,7 @@ extern "C" {
     #[no_mangle]
     fn agl_name_is_unicode(glyphname: *const i8) -> bool;
     #[no_mangle]
-    fn agl_name_convert_unicode(glyphname: *const i8) -> int32_t;
+    fn agl_name_convert_unicode(glyphname: *const i8) -> i32;
     #[no_mangle]
     fn agl_suffix_to_otltag(suffix: *const i8) -> *const i8;
     #[no_mangle]
@@ -213,7 +213,7 @@ extern "C" {
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: int32_t) -> libc::c_double;
+    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> libc::c_double;
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: libc::c_int) -> SFNT_ULONG;
@@ -289,8 +289,6 @@ extern "C" {
     #[no_mangle]
     fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: USHORT) -> USHORT;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -499,11 +497,11 @@ pub struct agl_name {
     pub name: *mut i8,
     pub suffix: *mut i8,
     pub n_components: libc::c_int,
-    pub unicodes: [int32_t; 16],
+    pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
     pub is_predef: libc::c_int,
 }
-pub type SFNT_LONG = int32_t;
+pub type SFNT_LONG = i32;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -1284,7 +1282,7 @@ unsafe extern "C" fn composeglyph(
 }
 /* This may be called by findparanoiac(). */
 unsafe extern "C" fn composeuchar(
-    mut unicodes: *mut int32_t,
+    mut unicodes: *mut i32,
     mut n_unicodes: libc::c_int,
     mut feat: *const i8,
     mut gm: *mut glyph_mapper,
@@ -1541,7 +1539,7 @@ unsafe extern "C" fn resolve_glyph(
     let mut error: libc::c_int = 0i32;
     let mut name: *mut i8 = 0 as *mut i8;
     let mut suffix: *mut i8 = 0 as *mut i8;
-    let mut ucv: int32_t = 0;
+    let mut ucv: i32 = 0;
     if !glyphname.is_null() {
     } else {
         __assert_fail(

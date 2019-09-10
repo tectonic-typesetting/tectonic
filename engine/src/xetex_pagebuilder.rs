@@ -20,88 +20,88 @@ extern "C" {
     #[no_mangle]
     static mut help_ptr: u8;
     #[no_mangle]
-    static mut temp_ptr: int32_t;
+    static mut temp_ptr: i32;
     #[no_mangle]
     static mut mem: *mut memory_word;
     #[no_mangle]
     static mut nest: *mut list_state_record;
     #[no_mangle]
-    static mut nest_ptr: int32_t;
+    static mut nest_ptr: i32;
     #[no_mangle]
     static mut cur_list: list_state_record;
     #[no_mangle]
-    static mut line: int32_t;
+    static mut line: i32;
     #[no_mangle]
-    static mut cur_mark: [int32_t; 5];
+    static mut cur_mark: [i32; 5];
     #[no_mangle]
-    static mut dead_cycles: int32_t;
+    static mut dead_cycles: i32;
     #[no_mangle]
     static mut best_height_plus_depth: scaled_t;
     #[no_mangle]
-    static mut page_tail: int32_t;
+    static mut page_tail: i32;
     #[no_mangle]
     static mut page_contents: u8;
     #[no_mangle]
     static mut page_so_far: [scaled_t; 8];
     #[no_mangle]
-    static mut last_glue: int32_t;
+    static mut last_glue: i32;
     #[no_mangle]
-    static mut last_penalty: int32_t;
+    static mut last_penalty: i32;
     #[no_mangle]
     static mut last_kern: scaled_t;
     #[no_mangle]
-    static mut last_node_type: int32_t;
+    static mut last_node_type: i32;
     #[no_mangle]
-    static mut insert_penalties: int32_t;
+    static mut insert_penalties: i32;
     #[no_mangle]
     static mut output_active: bool;
     #[no_mangle]
-    static mut sa_root: [int32_t; 8];
+    static mut sa_root: [i32; 8];
     #[no_mangle]
-    static mut cur_ptr: int32_t;
+    static mut cur_ptr: i32;
     #[no_mangle]
-    static mut disc_ptr: [int32_t; 4];
+    static mut disc_ptr: [i32; 4];
     #[no_mangle]
     static mut semantic_pagination_enabled: bool;
     /* the former xetexcoerce.h: */
     #[no_mangle]
-    fn badness(t: scaled_t, s: scaled_t) -> int32_t;
+    fn badness(t: scaled_t, s: scaled_t) -> i32;
     #[no_mangle]
-    fn get_node(s: int32_t) -> int32_t;
+    fn get_node(s: i32) -> i32;
     #[no_mangle]
-    fn free_node(p: int32_t, s: int32_t);
+    fn free_node(p: i32, s: i32);
     #[no_mangle]
-    fn new_null_box() -> int32_t;
+    fn new_null_box() -> i32;
     #[no_mangle]
-    fn new_spec(p: int32_t) -> int32_t;
+    fn new_spec(p: i32) -> i32;
     #[no_mangle]
-    fn new_skip_param(n: small_number) -> int32_t;
+    fn new_skip_param(n: small_number) -> i32;
     #[no_mangle]
-    fn delete_token_ref(p: int32_t);
+    fn delete_token_ref(p: i32);
     #[no_mangle]
-    fn delete_glue_ref(p: int32_t);
+    fn delete_glue_ref(p: i32);
     #[no_mangle]
-    fn flush_node_list(p: int32_t);
+    fn flush_node_list(p: i32);
     #[no_mangle]
     fn push_nest();
     #[no_mangle]
     fn new_save_level(c: group_code);
     #[no_mangle]
-    fn geq_word_define(p: int32_t, w: int32_t);
+    fn geq_word_define(p: i32, w: i32);
     #[no_mangle]
-    fn begin_token_list(p: int32_t, t: u16);
+    fn begin_token_list(p: i32, t: u16);
     #[no_mangle]
-    fn find_sa_element(t: small_number, n: int32_t, w: bool);
+    fn find_sa_element(t: small_number, n: i32, w: bool);
     #[no_mangle]
     fn scan_left_brace();
     #[no_mangle]
-    fn vpackage(p: int32_t, h: scaled_t, m: small_number, l: scaled_t) -> int32_t;
+    fn vpackage(p: i32, h: scaled_t, m: small_number, l: scaled_t) -> i32;
     #[no_mangle]
-    fn prune_page_top(p: int32_t, s: bool) -> int32_t;
+    fn prune_page_top(p: i32, s: bool) -> i32;
     #[no_mangle]
-    fn vert_break(p: int32_t, h: scaled_t, d: scaled_t) -> int32_t;
+    fn vert_break(p: i32, h: scaled_t, d: scaled_t) -> i32;
     #[no_mangle]
-    fn do_marks(a: small_number, l: small_number, q: int32_t) -> bool;
+    fn do_marks(a: small_number, l: small_number, q: i32) -> bool;
     #[no_mangle]
     fn box_error(n: eight_bits);
     #[no_mangle]
@@ -117,24 +117,22 @@ extern "C" {
     #[no_mangle]
     fn print_esc_cstr(s: *const i8);
     #[no_mangle]
-    fn print_int(n: int32_t);
+    fn print_int(n: i32);
     #[no_mangle]
     fn print_file_line();
     #[no_mangle]
-    fn ship_out(p: int32_t);
+    fn ship_out(p: i32);
     #[no_mangle]
-    fn x_over_n(x: scaled_t, n: int32_t) -> scaled_t;
+    fn x_over_n(x: scaled_t, n: i32) -> scaled_t;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
-pub type scaled_t = int32_t;
+pub type scaled_t = i32;
 pub type eight_bits = u8;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
+    pub s0: i32,
+    pub s1: i32,
 }
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
@@ -192,15 +190,15 @@ pub type group_code = u8;
 #[repr(C)]
 pub struct list_state_record {
     pub mode: libc::c_short,
-    pub head: int32_t,
-    pub tail: int32_t,
-    pub eTeX_aux: int32_t,
-    pub prev_graf: int32_t,
-    pub mode_line: int32_t,
+    pub head: i32,
+    pub tail: i32,
+    pub eTeX_aux: i32,
+    pub prev_graf: i32,
+    pub mode_line: i32,
     pub aux: memory_word,
 }
 #[inline]
-unsafe extern "C" fn is_non_discardable_node(p: int32_t) -> bool {
+unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
     return ((*mem.offset(p as isize)).b16.s1 as libc::c_int) < 9i32;
 }
 /* tectonic/xetex-pagebuilder.c: the page builder
@@ -215,9 +213,9 @@ unsafe extern "C" fn is_non_discardable_node(p: int32_t) -> bool {
  * always true: inserts are kept in the page vlist rather than being
  * processed.
  */
-static mut best_page_break: int32_t = 0;
+static mut best_page_break: i32 = 0;
 static mut best_size: scaled_t = 0;
-static mut least_page_cost: int32_t = 0;
+static mut least_page_cost: i32 = 0;
 static mut page_max_depth: scaled_t = 0;
 /* XXX other variables belong here but pop up all over the code */
 #[no_mangle]
@@ -300,7 +298,7 @@ unsafe extern "C" fn freeze_page_specs(mut s: small_number) {
     least_page_cost = 0x3fffffffi32;
 }
 unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
-    let mut p: int32_t = (*eqtb.offset(
+    let mut p: i32 = (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -346,17 +344,17 @@ unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
  * simple ships out the page. There is one parameter, `c`, which represents
  * the node that was being contributed to the page when the decision to force
  * an output was made." */
-unsafe extern "C" fn fire_up(mut c: int32_t) {
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut s: int32_t = 0;
-    let mut prev_p: int32_t = 0;
+unsafe extern "C" fn fire_up(mut c: i32) {
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
+    let mut s: i32 = 0;
+    let mut prev_p: i32 = 0;
     let mut n: u8 = 0;
     let mut wait: bool = false;
-    let mut save_vbadness: int32_t = 0;
+    let mut save_vbadness: i32 = 0;
     let mut save_vfuzz: scaled_t = 0;
-    let mut save_split_top_skip: int32_t = 0;
+    let mut save_split_top_skip: i32 = 0;
     let mut process_inserts: bool = false;
     /*1048: "Set the value of output_penalty" */
     if (*mem.offset(best_page_break as isize)).b16.s1 as libc::c_int == 12i32 {
@@ -1264,12 +1262,12 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
 #[no_mangle]
 pub unsafe extern "C" fn build_page() {
     let mut current_block: u64;
-    let mut p: int32_t = 0;
-    let mut q: int32_t = 0;
-    let mut r: int32_t = 0;
-    let mut b: int32_t = 0;
-    let mut c: int32_t = 0;
-    let mut pi: int32_t = 0;
+    let mut p: i32 = 0;
+    let mut q: i32 = 0;
+    let mut r: i32 = 0;
+    let mut b: i32 = 0;
+    let mut c: i32 = 0;
+    let mut pi: i32 = 0;
     let mut n: u8 = 0;
     let mut delta: scaled_t = 0;
     let mut h: scaled_t = 0;
@@ -1529,7 +1527,7 @@ pub unsafe extern "C" fn build_page() {
                                        as *const u8 as *const i8);
                         print_esc_cstr(b"skip\x00" as *const u8 as
                                            *const i8);
-                        print_int(n as int32_t);
+                        print_int(n as i32);
                         help_ptr = 3i32 as u8;
                         help_line[2] =
                             b"The correction glue for page breaking with insertions\x00"
@@ -1834,7 +1832,7 @@ pub unsafe extern "C" fn build_page() {
                             c = pi
                         } else if b < 10000i32 {
                             c = b + pi + insert_penalties
-                        } else { c = 100000i64 as int32_t }
+                        } else { c = 100000i64 as i32 }
                         /* DEPLORABLE */
                     } else { c = b }
                     if insert_penalties >= 10000i32 { c = 0x3fffffffi32 }

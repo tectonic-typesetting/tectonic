@@ -146,15 +146,14 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn UC_is_valid(ucv: int32_t) -> bool;
+    fn UC_is_valid(ucv: i32) -> bool;
     #[no_mangle]
     fn UC_UTF16BE_encode_char(
-        ucv: int32_t,
+        ucv: i32,
         dstpp: *mut *mut u8,
         endptr: *mut u8,
     ) -> size_t;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -169,7 +168,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -206,7 +204,7 @@ pub struct agl_name {
     pub name: *mut i8,
     pub suffix: *mut i8,
     pub n_components: libc::c_int,
-    pub unicodes: [int32_t; 16],
+    pub unicodes: [i32; 16],
     pub alternate: *mut agl_name,
     pub is_predef: libc::c_int,
 }
@@ -1073,7 +1071,7 @@ unsafe extern "C" fn agl_load_listfile(
         let mut name: *mut i8 = 0 as *mut i8;
         let mut n_unicodes: libc::c_int = 0;
         let mut i: libc::c_int = 0;
-        let mut unicodes: [int32_t; 16] = [0; 16];
+        let mut unicodes: [i32; 16] = [0; 16];
         endptr = p.offset(strlen(p) as isize);
         skip_white(&mut p, endptr);
         /* Need table version check. */
@@ -1108,7 +1106,7 @@ unsafe extern "C" fn agl_load_listfile(
                 } else {
                     let fresh0 = n_unicodes;
                     n_unicodes = n_unicodes + 1;
-                    unicodes[fresh0 as usize] = strtol(p, &mut nextptr, 16i32) as int32_t;
+                    unicodes[fresh0 as usize] = strtol(p, &mut nextptr, 16i32) as i32;
                     p = nextptr;
                     skip_white(&mut p, endptr);
                 }
@@ -1265,8 +1263,8 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
     return 0i32 != 0;
 }
 #[no_mangle]
-pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> int32_t {
-    let mut ucv: int32_t = -1i32;
+pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i32 {
+    let mut ucv: i32 = -1i32;
     let mut p: *const i8 = 0 as *const i8;
     if !agl_name_is_unicode(glyphname) {
         return -1i32;
@@ -1356,23 +1354,23 @@ unsafe extern "C" fn put_unicode_glyph(
     mut name: *const i8,
     mut dstpp: *mut *mut u8,
     mut limptr: *mut u8,
-) -> int32_t {
+) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
-    let mut len: int32_t = 0i32;
-    let mut ucv: int32_t = 0;
+    let mut len: i32 = 0i32;
+    let mut ucv: i32 = 0;
     p = name;
     ucv = 0i32;
     if *p.offset(1) as libc::c_int != 'n' as i32 {
         p = p.offset(1);
         ucv = xtol(p, strlen(p) as libc::c_int);
         len = (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr))
-            as int32_t as int32_t
+            as i32 as i32
     } else {
         p = p.offset(3);
         while *p as libc::c_int != '\u{0}' as i32 {
             ucv = xtol(p, 4i32);
             len = (len as u64).wrapping_add(UC_UTF16BE_encode_char(ucv, dstpp, limptr))
-                as int32_t as int32_t;
+                as i32 as i32;
             p = p.offset(4)
         }
     }
@@ -1384,8 +1382,8 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
     mut dstpp: *mut *mut u8,
     mut limptr: *mut u8,
     mut fail_count: *mut libc::c_int,
-) -> int32_t {
-    let mut len: int32_t = 0i32;
+) -> i32 {
+    let mut len: i32 = 0i32;
     let mut count: libc::c_int = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -1406,7 +1404,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
     while p < endptr {
         let mut name: *mut i8 = 0 as *mut i8;
         let mut delim: *const i8 = 0 as *const i8;
-        let mut sub_len: int32_t = 0;
+        let mut sub_len: i32 = 0;
         let mut i: libc::c_int = 0;
         let mut agln0: *mut agl_name = 0 as *mut agl_name;
         let mut agln1: *mut agl_name = 0 as *mut agl_name;
@@ -1431,7 +1429,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
                 delim = endptr
             }
         }
-        sub_len = delim.wrapping_offset_from(p) as i64 as int32_t;
+        sub_len = delim.wrapping_offset_from(p) as i64 as i32;
         name = new(((sub_len + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
@@ -1480,7 +1478,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
                         (*agln1).unicodes[i as usize],
                         dstpp,
                         limptr,
-                    )) as int32_t as int32_t;
+                    )) as i32 as i32;
                     i += 1
                 }
             } else {
@@ -1526,7 +1524,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
 #[no_mangle]
 pub unsafe extern "C" fn agl_get_unicodes(
     mut glyphstr: *const i8,
-    mut unicodes: *mut int32_t,
+    mut unicodes: *mut i32,
     mut max_unicodes: libc::c_int,
 ) -> libc::c_int {
     let mut count: libc::c_int = 0i32;
@@ -1540,7 +1538,7 @@ pub unsafe extern "C" fn agl_get_unicodes(
     while p < endptr {
         let mut name: *mut i8 = 0 as *mut i8;
         let mut delim: *const i8 = 0 as *const i8;
-        let mut sub_len: int32_t = 0;
+        let mut sub_len: i32 = 0;
         let mut i: libc::c_int = 0;
         let mut agln0: *mut agl_name = 0 as *mut agl_name;
         let mut agln1: *mut agl_name = 0 as *mut agl_name;
@@ -1561,7 +1559,7 @@ pub unsafe extern "C" fn agl_get_unicodes(
                 delim = endptr
             }
         }
-        sub_len = delim.wrapping_offset_from(p) as i64 as int32_t;
+        sub_len = delim.wrapping_offset_from(p) as i64 as i32;
         name = new(((sub_len + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;

@@ -87,8 +87,6 @@ pub struct __va_list_tag {
     pub overflow_arg_area: *mut libc::c_void,
     pub reg_save_area: *mut libc::c_void,
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 pub type va_list = __builtin_va_list;
 pub type size_t = u64;
 #[derive(Copy, Clone)]
@@ -126,10 +124,10 @@ pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type str_number = int32_t;
+pub type str_number = i32;
 /*22: */
 pub type ASCII_code = u8;
-pub type pool_pointer = int32_t;
+pub type pool_pointer = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __jmp_buf_tag {
@@ -139,7 +137,7 @@ pub struct __jmp_buf_tag {
 }
 pub type __jmp_buf = [i64; 8];
 pub type jmp_buf = [__jmp_buf_tag; 1];
-pub type bib_number = int32_t;
+pub type bib_number = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct peekable_input_t {
@@ -147,27 +145,27 @@ pub struct peekable_input_t {
     pub peek_char: libc::c_int,
     pub saw_eof: bool,
 }
-pub type buf_pointer = int32_t;
+pub type buf_pointer = i32;
 pub type lex_type = u8;
 pub type buf_type = *mut ASCII_code;
-pub type hash_loc = int32_t;
+pub type hash_loc = i32;
 pub type fn_class = u8;
 pub type str_ilk = u8;
-pub type hash_pointer = int32_t;
+pub type hash_pointer = i32;
 pub type id_type = u8;
-pub type cite_number = int32_t;
-pub type str_ent_loc = int32_t;
+pub type cite_number = i32;
+pub type str_ent_loc = i32;
 pub type stk_type = u8;
-pub type lit_stk_loc = int32_t;
-pub type int_ent_loc = int32_t;
-pub type field_loc = int32_t;
-pub type wiz_fn_loc = int32_t;
-pub type hash_ptr2 = int32_t;
-pub type fn_def_loc = int32_t;
-pub type aux_number = int32_t;
+pub type lit_stk_loc = i32;
+pub type int_ent_loc = i32;
+pub type field_loc = i32;
+pub type wiz_fn_loc = i32;
+pub type hash_ptr2 = i32;
+pub type fn_def_loc = i32;
+pub type aux_number = i32;
 pub type pds_len = u8;
 pub type pds_type = *const i8;
-pub type blt_in_range = int32_t;
+pub type blt_in_range = i32;
 unsafe extern "C" fn peekable_open(
     mut path: *const i8,
     mut format: tt_input_format_type,
@@ -258,40 +256,40 @@ static mut recover_jmpbuf: jmp_buf = [__jmp_buf_tag {
     __saved_mask: __sigset_t { __val: [0; 16] },
 }; 1];
 static mut standard_output: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
-static mut pool_size: int32_t = 0;
-static mut max_bib_files: int32_t = 0;
-static mut max_cites: int32_t = 0;
-static mut wiz_fn_space: int32_t = 0;
-static mut ent_str_size: int32_t = 0;
-static mut glob_str_size: int32_t = 0;
-static mut max_glob_strs: int32_t = 0;
-static mut max_fields: int32_t = 0;
-static mut lit_stk_size: int32_t = 0;
-static mut max_strings: int32_t = 0;
-static mut hash_size: int32_t = 0;
-static mut hash_prime: int32_t = 0;
-static mut hash_max: int32_t = 0;
-static mut end_of_def: int32_t = 0;
-static mut undefined: int32_t = 0;
-static mut bad: int32_t = 0;
+static mut pool_size: i32 = 0;
+static mut max_bib_files: i32 = 0;
+static mut max_cites: i32 = 0;
+static mut wiz_fn_space: i32 = 0;
+static mut ent_str_size: i32 = 0;
+static mut glob_str_size: i32 = 0;
+static mut max_glob_strs: i32 = 0;
+static mut max_fields: i32 = 0;
+static mut lit_stk_size: i32 = 0;
+static mut max_strings: i32 = 0;
+static mut hash_size: i32 = 0;
+static mut hash_prime: i32 = 0;
+static mut hash_max: i32 = 0;
+static mut end_of_def: i32 = 0;
+static mut undefined: i32 = 0;
+static mut bad: i32 = 0;
 /*fatal_message */
 static mut history: u8 = 0;
-static mut err_count: int32_t = 0;
+static mut err_count: i32 = 0;
 static mut lex_class: [lex_type; 256] = [0; 256];
 static mut id_class: [id_type; 256] = [0; 256];
-static mut char_width: [int32_t; 256] = [0; 256];
-static mut string_width: int32_t = 0;
+static mut char_width: [i32; 256] = [0; 256];
+static mut string_width: i32 = 0;
 static mut name_of_file: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
-static mut name_length: int32_t = 0;
-static mut name_ptr: int32_t = 0;
-static mut buf_size: int32_t = 0;
+static mut name_length: i32 = 0;
+static mut name_ptr: i32 = 0;
+static mut buf_size: i32 = 0;
 static mut buffer: buf_type = 0 as *const ASCII_code as *mut ASCII_code;
 static mut last: buf_pointer = 0;
 static mut sv_buffer: buf_type = 0 as *const ASCII_code as *mut ASCII_code;
 static mut sv_ptr1: buf_pointer = 0;
 static mut sv_ptr2: buf_pointer = 0;
-static mut tmp_ptr: int32_t = 0;
-static mut tmp_end_ptr: int32_t = 0;
+static mut tmp_ptr: i32 = 0;
+static mut tmp_end_ptr: i32 = 0;
 static mut str_pool: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
 static mut str_start: *mut pool_pointer = 0 as *const pool_pointer as *mut pool_pointer;
 static mut pool_ptr: pool_pointer = 0;
@@ -301,8 +299,8 @@ static mut p_ptr2: pool_pointer = 0;
 static mut hash_next: *mut hash_pointer = 0 as *const hash_pointer as *mut hash_pointer;
 static mut hash_text: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut hash_ilk: *mut str_ilk = 0 as *const str_ilk as *mut str_ilk;
-static mut ilk_info: *mut int32_t = 0 as *const int32_t as *mut int32_t;
-static mut hash_used: int32_t = 0;
+static mut ilk_info: *mut i32 = 0 as *const i32 as *mut i32;
+static mut hash_used: i32 = 0;
 static mut hash_found: bool = false;
 static mut dummy_loc: hash_loc = 0;
 static mut s_aux_extension: str_number = 0;
@@ -313,18 +311,18 @@ static mut s_bib_extension: str_number = 0;
 static mut s_bst_area: str_number = 0;
 static mut s_bib_area: str_number = 0;
 static mut pre_def_loc: hash_loc = 0;
-static mut command_num: int32_t = 0;
+static mut command_num: i32 = 0;
 static mut buf_ptr1: buf_pointer = 0;
 static mut buf_ptr2: buf_pointer = 0;
 /*white_adjacent */
 static mut scan_result: u8 = 0;
-static mut token_value: int32_t = 0;
-static mut aux_name_length: int32_t = 0;
+static mut token_value: i32 = 0;
+static mut aux_name_length: i32 = 0;
 static mut aux_file: [*mut peekable_input_t; 21] =
     [0 as *const peekable_input_t as *mut peekable_input_t; 21];
 static mut aux_list: [str_number; 21] = [0; 21];
 static mut aux_ptr: aux_number = 0;
-static mut aux_ln_stack: [int32_t; 21] = [0; 21];
+static mut aux_ln_stack: [i32; 21] = [0; 21];
 static mut top_lev_str: str_number = 0;
 static mut log_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 static mut bbl_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
@@ -348,8 +346,8 @@ static mut lc_cite_loc: hash_loc = 0;
 static mut lc_xcite_loc: hash_loc = 0;
 static mut all_entries: bool = false;
 static mut all_marker: cite_number = 0;
-static mut bbl_line_num: int32_t = 0;
-static mut bst_line_num: int32_t = 0;
+static mut bbl_line_num: i32 = 0;
+static mut bst_line_num: i32 = 0;
 static mut fn_loc: hash_loc = 0;
 static mut wiz_loc: hash_loc = 0;
 static mut literal_loc: hash_loc = 0;
@@ -359,16 +357,16 @@ static mut fn_type: *mut fn_class = 0 as *const fn_class as *mut fn_class;
 static mut wiz_def_ptr: wiz_fn_loc = 0;
 static mut wiz_functions: *mut hash_ptr2 = 0 as *const hash_ptr2 as *mut hash_ptr2;
 static mut int_ent_ptr: int_ent_loc = 0;
-static mut entry_ints: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+static mut entry_ints: *mut i32 = 0 as *const i32 as *mut i32;
 static mut num_ent_ints: int_ent_loc = 0;
 static mut str_ent_ptr: str_ent_loc = 0;
 static mut entry_strs: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
 static mut num_ent_strs: str_ent_loc = 0;
-static mut str_glb_ptr: int32_t = 0;
+static mut str_glb_ptr: i32 = 0;
 static mut glb_str_ptr: *mut str_number = 0 as *const str_number as *mut str_number;
 static mut global_strs: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
-static mut glb_str_end: *mut int32_t = 0 as *const int32_t as *mut int32_t;
-static mut num_glb_strs: int32_t = 0;
+static mut glb_str_end: *mut i32 = 0 as *const i32 as *mut i32;
+static mut num_glb_strs: i32 = 0;
 static mut field_ptr: field_loc = 0;
 static mut field_parent_ptr: field_loc = 0;
 static mut field_end_ptr: field_loc = 0;
@@ -383,8 +381,8 @@ static mut read_seen: bool = false;
 static mut read_performed: bool = false;
 static mut reading_completed: bool = false;
 static mut read_completed: bool = false;
-static mut impl_fn_num: int32_t = 0;
-static mut bib_line_num: int32_t = 0;
+static mut impl_fn_num: i32 = 0;
+static mut bib_line_num: i32 = 0;
 static mut entry_type_loc: hash_loc = 0;
 static mut type_list: *mut hash_ptr2 = 0 as *const hash_ptr2 as *mut hash_ptr2;
 static mut type_exists: bool = false;
@@ -402,13 +400,13 @@ static mut cite_info: *mut str_number = 0 as *const str_number as *mut str_numbe
 static mut cite_hash_found: bool = false;
 static mut preamble_ptr: bib_number = 0;
 static mut num_preamble_strings: bib_number = 0;
-static mut bib_brace_level: int32_t = 0;
-static mut lit_stack: *mut int32_t = 0 as *const int32_t as *mut int32_t;
+static mut bib_brace_level: i32 = 0;
+static mut lit_stack: *mut i32 = 0 as *const i32 as *mut i32;
 static mut lit_stk_type: *mut stk_type = 0 as *const stk_type as *mut stk_type;
 static mut lit_stk_ptr: lit_stk_loc = 0;
 static mut cmd_str_ptr: str_number = 0;
-static mut ent_chr_ptr: int32_t = 0;
-static mut glob_chr_ptr: int32_t = 0;
+static mut ent_chr_ptr: i32 = 0;
+static mut glob_chr_ptr: i32 = 0;
 static mut ex_buf: buf_type = 0 as *const ASCII_code as *mut ASCII_code;
 static mut ex_buf_ptr: buf_pointer = 0;
 static mut ex_buf_length: buf_pointer = 0;
@@ -418,7 +416,7 @@ static mut out_buf_length: buf_pointer = 0;
 static mut mess_with_entries: bool = false;
 static mut sort_cite_ptr: cite_number = 0;
 static mut sort_key_num: str_ent_loc = 0;
-static mut brace_level: int32_t = 0;
+static mut brace_level: i32 = 0;
 static mut b_equals: hash_loc = 0;
 static mut b_greater_than: hash_loc = 0;
 static mut b_less_than: hash_loc = 0;
@@ -460,9 +458,9 @@ static mut b_default: hash_loc = 0;
 static mut s_null: str_number = 0;
 static mut s_default: str_number = 0;
 static mut s_preamble: *mut str_number = 0 as *const str_number as *mut str_number;
-static mut pop_lit1: int32_t = 0;
-static mut pop_lit2: int32_t = 0;
-static mut pop_lit3: int32_t = 0;
+static mut pop_lit1: i32 = 0;
+static mut pop_lit2: i32 = 0;
+static mut pop_lit3: i32 = 0;
 static mut pop_typ1: stk_type = 0;
 static mut pop_typ2: stk_type = 0;
 static mut pop_typ3: stk_type = 0;
@@ -472,17 +470,17 @@ static mut sp_xptr2: pool_pointer = 0;
 static mut sp_end: pool_pointer = 0;
 static mut sp_length: pool_pointer = 0;
 static mut sp2_length: pool_pointer = 0;
-static mut sp_brace_level: int32_t = 0;
+static mut sp_brace_level: i32 = 0;
 static mut ex_buf_xptr: buf_pointer = 0;
 static mut ex_buf_yptr: buf_pointer = 0;
 static mut control_seq_loc: hash_loc = 0;
 static mut preceding_white: bool = false;
 static mut and_found: bool = false;
-static mut num_names: int32_t = 0;
+static mut num_names: i32 = 0;
 static mut name_bf_ptr: buf_pointer = 0;
 static mut name_bf_xptr: buf_pointer = 0;
 static mut name_bf_yptr: buf_pointer = 0;
-static mut nm_brace_level: int32_t = 0;
+static mut nm_brace_level: i32 = 0;
 static mut name_tok: *mut buf_pointer = 0 as *const buf_pointer as *mut buf_pointer;
 static mut name_sep_char: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
 static mut num_tokens: buf_pointer = 0;
@@ -508,7 +506,7 @@ static mut num_text_chars: buf_pointer = 0;
 static mut conversion_type: u8 = 0;
 static mut prev_colon: bool = false;
 static mut verbose: libc::c_int = 0;
-static mut min_crossrefs: int32_t = 0;
+static mut min_crossrefs: i32 = 0;
 /*:473*/
 /*12: *//*3: */
 unsafe extern "C" fn putc_log(c: libc::c_int) {
@@ -677,7 +675,7 @@ unsafe extern "C" fn pool_overflow() {
         ((pool_size as i64 + 65000 + 1i32 as i64) as u64)
             .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as *mut ASCII_code;
-    pool_size = (pool_size as i64 + 65000) as int32_t;
+    pool_size = (pool_size as i64 + 65000) as i32;
 }
 unsafe extern "C" fn out_token(mut handle: rust_output_handle_t) {
     let mut i: buf_pointer = buf_ptr1;
@@ -778,7 +776,7 @@ unsafe extern "C" fn aux_err_print() {
     print_skipping_whatever_remains();
     puts_log(b"command\n\x00" as *const u8 as *const i8);
 }
-unsafe extern "C" fn aux_err_illegal_another_print(mut cmd_num: int32_t) {
+unsafe extern "C" fn aux_err_illegal_another_print(mut cmd_num: i32) {
     puts_log(b"Illegal, another \\bib\x00" as *const u8 as *const i8);
     match cmd_num {
         0 => {
@@ -993,7 +991,7 @@ unsafe extern "C" fn bib_warn_print() {
     bib_ln_num_print();
     mark_warning();
 }
-unsafe extern "C" fn check_field_overflow(mut total_fields: int32_t) {
+unsafe extern "C" fn check_field_overflow(mut total_fields: i32) {
     let mut f_ptr: field_loc = 0;
     let mut start_fields: field_loc = 0;
     if total_fields > max_fields {
@@ -1004,7 +1002,7 @@ unsafe extern "C" fn check_field_overflow(mut total_fields: int32_t) {
                 .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
         ) as *mut str_number;
         max_fields = total_fields + 17250i32;
-        let mut for_end: int32_t = 0;
+        let mut for_end: i32 = 0;
         f_ptr = start_fields;
         for_end = max_fields - 1i32;
         if f_ptr <= for_end {
@@ -1132,7 +1130,7 @@ unsafe extern "C" fn unknwn_literal_confusion() {
     print_confusion();
     longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
 }
-unsafe extern "C" fn print_stk_lit(mut stk_lt: int32_t, mut stk_tp: stk_type) {
+unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     match stk_tp as libc::c_int {
         0 => {
             printf_log(
@@ -1163,7 +1161,7 @@ unsafe extern "C" fn print_stk_lit(mut stk_lt: int32_t, mut stk_tp: stk_type) {
         }
     };
 }
-unsafe extern "C" fn print_lit(mut stk_lt: int32_t, mut stk_tp: stk_type) {
+unsafe extern "C" fn print_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     match stk_tp as libc::c_int {
         0 => {
             printf_log(
@@ -1327,7 +1325,7 @@ unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number) -> bool 
 unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut len: buf_pointer) {
     let mut i: buf_pointer = 0;
     if len > 0i32 {
-        let mut for_end: int32_t = 0;
+        let mut for_end: i32 = 0;
         i = bf_ptr;
         for_end = bf_ptr + len - 1i32;
         if i <= for_end {
@@ -1350,7 +1348,7 @@ unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut 
 unsafe extern "C" fn upper_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut len: buf_pointer) {
     let mut i: buf_pointer = 0;
     if len > 0i32 {
-        let mut for_end: int32_t = 0;
+        let mut for_end: i32 = 0;
         i = bf_ptr;
         for_end = bf_ptr + len - 1i32;
         if i <= for_end {
@@ -1377,7 +1375,7 @@ unsafe extern "C" fn str_lookup(
     mut ilk: str_ilk,
     mut insert_it: bool,
 ) -> hash_loc {
-    let mut h: int32_t = 0;
+    let mut h: i32 = 0;
     let mut p: hash_loc = 0;
     let mut k: buf_pointer = 0;
     let mut str_num: str_number = 0;
@@ -1450,9 +1448,9 @@ unsafe extern "C" fn str_lookup(
 }
 unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len, mut ilk: str_ilk) {
     let mut i: pds_len = 0;
-    let mut for_end: int32_t = 0;
+    let mut for_end: i32 = 0;
     i = 1i32 as pds_len;
-    for_end = len as int32_t;
+    for_end = len as i32;
     if i as libc::c_int <= for_end {
         loop {
             *buffer.offset(i as isize) =
@@ -1467,7 +1465,7 @@ unsafe extern "C" fn pre_define(mut pds: pds_type, mut len: pds_len, mut ilk: st
     pre_def_loc = str_lookup(buffer, 1i32, len as buf_pointer, ilk, 1i32 != 0);
 }
 unsafe extern "C" fn int_to_ASCII(
-    mut the_int: int32_t,
+    mut the_int: i32,
     mut int_buf: buf_type,
     mut int_begin: buf_pointer,
     mut int_end: *mut buf_pointer,
@@ -1553,7 +1551,7 @@ unsafe extern "C" fn swap(mut swap1: cite_number, mut swap2: cite_number) {
     *cite_info.offset(swap1 as isize) = innocent_bystander;
 }
 unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number) -> bool {
-    let mut char_ptr: int32_t = 0;
+    let mut char_ptr: i32 = 0;
     let mut ptr1: str_ent_loc = 0;
     let mut ptr2: str_ent_loc = 0;
     let mut char1: ASCII_code = 0;
@@ -1606,12 +1604,12 @@ unsafe extern "C" fn quick_sort(mut left_end: cite_number, mut right_end: cite_n
     if right_end - left_end < 10i32 {
         /*short_list */
         /*305: */
-        let mut for_end: int32_t = 0; /*built_in */
+        let mut for_end: i32 = 0; /*built_in */
         insert_ptr = left_end + 1i32; /*n_aux_citation */
         for_end = right_end; /*n_aux_bibdata */
         if insert_ptr <= for_end {
             loop {
-                let mut for_end_0: int32_t = 0; /*n_aux_bibstyle */
+                let mut for_end_0: i32 = 0; /*n_aux_bibstyle */
                 right = insert_ptr; /*n_aux_input */
                 for_end_0 = left_end + 1i32; /*n_bst_entry */
                 if right >= for_end_0 {
@@ -2381,7 +2379,7 @@ unsafe extern "C" fn skip_illegal_stuff_after_token_print() {
 unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
     let mut current_block: u64;
     let mut singl_function: *mut hash_ptr2 = 0 as *mut hash_ptr2;
-    let mut single_fn_space: int32_t = 0;
+    let mut single_fn_space: i32 = 0;
     let mut single_ptr: fn_def_loc = 0;
     let mut copy_ptr: fn_def_loc = 0;
     let mut end_of_num: buf_pointer = 0;
@@ -3677,15 +3675,15 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
     }
     ex_buf_length = ex_buf_ptr;
 }
-unsafe extern "C" fn push_lit_stk(mut push_lt: int32_t, mut push_type: stk_type) {
+unsafe extern "C" fn push_lit_stk(mut push_lt: i32, mut push_type: stk_type) {
     *lit_stack.offset(lit_stk_ptr as isize) = push_lt;
     *lit_stk_type.offset(lit_stk_ptr as isize) = push_type;
     if lit_stk_ptr == lit_stk_size {
         lit_stack = xrealloc(
             lit_stack as *mut libc::c_void,
             ((lit_stk_size + 100i32 + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-        ) as *mut int32_t;
+                .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+        ) as *mut i32;
         lit_stk_type = xrealloc(
             lit_stk_type as *mut libc::c_void,
             ((lit_stk_size + 100i32 + 1i32) as u64)
@@ -3695,7 +3693,7 @@ unsafe extern "C" fn push_lit_stk(mut push_lt: int32_t, mut push_type: stk_type)
     }
     lit_stk_ptr = lit_stk_ptr + 1i32;
 }
-unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut int32_t, mut pop_type: *mut stk_type) {
+unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut i32, mut pop_type: *mut stk_type) {
     if lit_stk_ptr == 0i32 {
         puts_log(b"You can\'t pop an empty literal stack\x00" as *const u8 as *const i8);
         bst_ex_warn_print();
@@ -3720,7 +3718,7 @@ unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut int32_t, mut pop_type: *mut s
     };
 }
 unsafe extern "C" fn print_wrong_stk_lit(
-    mut stk_lt: int32_t,
+    mut stk_lt: i32,
     mut stk_tp1: stk_type,
     mut stk_tp2: stk_type,
 ) {
@@ -3748,7 +3746,7 @@ unsafe extern "C" fn print_wrong_stk_lit(
     };
 }
 unsafe extern "C" fn pop_top_and_print() {
-    let mut stk_lt: int32_t = 0;
+    let mut stk_lt: i32 = 0;
     let mut stk_tp: stk_type = 0;
     pop_lit_stk(&mut stk_lt, &mut stk_tp);
     if stk_tp as libc::c_int == 4i32 {
@@ -4530,7 +4528,7 @@ unsafe extern "C" fn x_chr_to_int() {
         push_lit_stk(0i32, 0i32 as stk_type);
     } else {
         push_lit_stk(
-            *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as int32_t,
+            *str_pool.offset(*str_start.offset(pop_lit1 as isize) as isize) as i32,
             0i32 as stk_type,
         );
     };
@@ -5393,8 +5391,8 @@ unsafe extern "C" fn x_write() {
 }
 unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
     let mut current_block: u64;
-    let mut r_pop_lt1: int32_t = 0;
-    let mut r_pop_lt2: int32_t = 0;
+    let mut r_pop_lt1: i32 = 0;
+    let mut r_pop_lt2: i32 = 0;
     let mut r_pop_tp1: stk_type = 0;
     let mut r_pop_tp2: stk_type = 0;
     let mut wiz_ptr: wiz_fn_loc = 0;
@@ -11436,7 +11434,7 @@ unsafe extern "C" fn get_the_top_level_aux_file_name(
             .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as *mut ASCII_code;
     strcpy(name_of_file as *mut i8, aux_file_name);
-    aux_name_length = strlen(name_of_file as *mut i8) as int32_t;
+    aux_name_length = strlen(name_of_file as *mut i8) as i32;
     aux_name_length -= 4i32;
     name_length = aux_name_length;
     /* this code used to auto-add the .aux extension if needed; we don't */
@@ -13131,8 +13129,8 @@ unsafe extern "C" fn bst_read_command() {
     }
     entry_ints = xmalloc(
         (((num_ent_ints + 1i32) * (num_cites + 1i32)) as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     int_ent_ptr = 0i32;
     while int_ent_ptr < num_ent_ints * num_cites {
         *entry_ints.offset(int_ent_ptr as isize) = 0i32;
@@ -13309,8 +13307,8 @@ unsafe extern "C" fn bst_strings_command() {
             glb_str_end = xrealloc(
                 glb_str_end as *mut libc::c_void,
                 ((max_glob_strs + 10i32 + 1i32) as u64)
-                    .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-            ) as *mut int32_t;
+                    .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+            ) as *mut i32;
             max_glob_strs = max_glob_strs + 10i32;
             str_glb_ptr = num_glb_strs;
             while str_glb_ptr < max_glob_strs {
@@ -13404,12 +13402,12 @@ unsafe extern "C" fn setup_params() {
     undefined = hash_max + 1i32; /*illegal */
 }
 unsafe extern "C" fn compute_hash_prime() {
-    let mut hash_want: int32_t = 0; /*white_space */
-    let mut k: int32_t = 0; /*white_space */
-    let mut j: int32_t = 0; /*white_space */
-    let mut o: int32_t = 0; /*sep_char */
-    let mut n: int32_t = 0; /*sep_char */
-    let mut square: int32_t = 0; /*numeric */
+    let mut hash_want: i32 = 0; /*white_space */
+    let mut k: i32 = 0; /*white_space */
+    let mut j: i32 = 0; /*white_space */
+    let mut o: i32 = 0; /*sep_char */
+    let mut n: i32 = 0; /*sep_char */
+    let mut square: i32 = 0; /*numeric */
     let mut j_prime: bool = false; /*alpha */
     hash_want = hash_size / 20i32 * 17i32; /*alpha */
     j = 1i32; /*legal_id_char */
@@ -13449,7 +13447,7 @@ unsafe extern "C" fn compute_hash_prime() {
     }
 }
 unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> libc::c_int {
-    let mut i: int32_t = 0;
+    let mut i: i32 = 0;
     let mut k: hash_loc = 0;
     bad = 0i32;
     if 3i32 < 3i32 {
@@ -13685,7 +13683,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> libc::c_int {
 */
 #[no_mangle]
 pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history_t {
-    pool_size = 65000 as int32_t;
+    pool_size = 65000 as i32;
     buf_size = 20000i32;
     max_bib_files = 20i32;
     max_glob_strs = 10i32;
@@ -13698,7 +13696,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
         return HISTORY_FATAL_ERROR;
     }
     setup_params();
-    entry_ints = 0 as *mut int32_t;
+    entry_ints = 0 as *mut i32;
     entry_strs = 0 as *mut ASCII_code;
     bib_file = xmalloc(
         ((max_bib_files + 1i32) as u64)
@@ -13758,8 +13756,8 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
     ) as *mut ASCII_code;
     glb_str_end = xmalloc(
         (max_glob_strs as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     cite_list = xmalloc(
         ((max_cites + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<str_number>() as u64),
@@ -13794,16 +13792,16 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
     ) as *mut str_ilk;
     ilk_info = xmalloc(
         ((hash_max + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     fn_type = xmalloc(
         ((hash_max + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<fn_class>() as u64),
     ) as *mut fn_class;
     lit_stack = xmalloc(
         ((lit_stk_size + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<int32_t>() as u64),
-    ) as *mut int32_t;
+            .wrapping_mul(::std::mem::size_of::<i32>() as u64),
+    ) as *mut i32;
     lit_stk_type = xmalloc(
         ((lit_stk_size + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<stk_type>() as u64),

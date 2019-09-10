@@ -85,16 +85,14 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = u8;
 pub type USHORT = u16;
 pub type SFNT_ULONG = u32;
-pub type SFNT_LONG = int32_t;
+pub type SFNT_LONG = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {

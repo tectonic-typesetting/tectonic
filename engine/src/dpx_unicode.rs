@@ -16,11 +16,9 @@ extern "C" {
         __function: *const i8,
     ) -> !;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 #[no_mangle]
-pub unsafe extern "C" fn UC_is_valid(mut ucv: int32_t) -> bool {
+pub unsafe extern "C" fn UC_is_valid(mut ucv: i32) -> bool {
     return !(ucv < 0i32
         || ucv as i64 > 0x10ffff
         || ucv as i64 >= 0xd800 && ucv as i64 <= 0xdfff);
@@ -34,7 +32,7 @@ pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
         return 0i32 != 0;
     }
     while p < endptr {
-        let mut ucv: int32_t = UC_UTF16BE_decode_char(&mut p, endptr);
+        let mut ucv: i32 = UC_UTF16BE_decode_char(&mut p, endptr);
         if !UC_is_valid(ucv) {
             return 0i32 != 0;
         }
@@ -50,7 +48,7 @@ pub unsafe extern "C" fn UC_UTF8_is_valid_string(
         return 0i32 != 0;
     }
     while p < endptr {
-        let mut ucv: int32_t = UC_UTF8_decode_char(&mut p, endptr);
+        let mut ucv: i32 = UC_UTF8_decode_char(&mut p, endptr);
         if !UC_is_valid(ucv) {
             return 0i32 != 0;
         }
@@ -61,9 +59,9 @@ pub unsafe extern "C" fn UC_UTF8_is_valid_string(
 pub unsafe extern "C" fn UC_UTF16BE_decode_char(
     mut pp: *mut *const u8,
     mut endptr: *const u8,
-) -> int32_t {
+) -> i32 {
     let mut p: *const u8 = *pp;
-    let mut ucv: int32_t = -1i32;
+    let mut ucv: i32 = -1i32;
     let mut first: u16 = 0;
     let mut second: u16 = 0;
     if p.offset(1) >= endptr {
@@ -77,20 +75,20 @@ pub unsafe extern "C" fn UC_UTF16BE_decode_char(
         }
         second = ((*p.offset(0) as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as u16;
         p = p.offset(2);
-        ucv = (second as libc::c_uint & 0x3ffu32) as int32_t;
-        ucv = (ucv as libc::c_uint | (first as libc::c_uint & 0x3ffu32) << 10i32) as int32_t;
+        ucv = (second as libc::c_uint & 0x3ffu32) as i32;
+        ucv = (ucv as libc::c_uint | (first as libc::c_uint & 0x3ffu32) << 10i32) as i32;
         ucv += 0x10000i32
     } else if first as libc::c_uint >= 0xdc00u32 && (first as libc::c_uint) < 0xe000u32 {
         return -1i32;
     } else {
-        ucv = first as int32_t
+        ucv = first as i32
     }
     *pp = p;
     return ucv;
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_encode_char(
-    mut ucv: int32_t,
+    mut ucv: i32,
     mut pp: *mut *mut u8,
     mut endptr: *mut u8,
 ) -> size_t {
@@ -132,15 +130,15 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
 pub unsafe extern "C" fn UC_UTF8_decode_char(
     mut pp: *mut *const u8,
     mut endptr: *const u8,
-) -> int32_t {
+) -> i32 {
     let mut p: *const u8 = *pp;
-    let mut ucv: int32_t = 0;
+    let mut ucv: i32 = 0;
     let fresh0 = p;
     p = p.offset(1);
     let mut c: u8 = *fresh0;
     let mut nbytes: libc::c_int = 0;
     if c as libc::c_int <= 0x7fi32 {
-        ucv = c as int32_t;
+        ucv = c as i32;
         nbytes = 0i32
     } else if c as libc::c_int & 0xe0i32 == 0xc0i32 {
         /* 110x xxxx */
@@ -208,7 +206,7 @@ pub unsafe extern "C" fn UC_UTF8_decode_char(
 */
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF8_encode_char(
-    mut ucv: int32_t,
+    mut ucv: i32,
     mut pp: *mut *mut u8,
     mut endptr: *mut u8,
 ) -> size_t {

@@ -59,7 +59,7 @@ extern "C" {
     #[no_mangle]
     static mut job_name: str_number;
     #[no_mangle]
-    static mut total_pages: int32_t;
+    static mut total_pages: i32;
     #[no_mangle]
     static mut rule_ht: scaled_t;
     #[no_mangle]
@@ -75,17 +75,15 @@ extern "C" {
     #[no_mangle]
     static mut name_of_input_file: *mut i8;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
-pub type scaled_t = int32_t;
-pub type str_number = int32_t;
+pub type scaled_t = i32;
+pub type str_number = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
+    pub s0: i32,
+    pub s1: i32,
 }
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
@@ -142,11 +140,11 @@ pub union memory_word {
 pub struct input_state_t {
     pub state: u16,
     pub index: u16,
-    pub start: int32_t,
-    pub loc: int32_t,
-    pub limit: int32_t,
-    pub name: int32_t,
-    pub synctex_tag: int32_t,
+    pub start: i32,
+    pub loc: i32,
+    pub limit: i32,
+    pub name: i32,
+    pub synctex_tag: i32,
 }
 #[derive(Copy, Clone, BitfieldStruct)]
 #[repr(C)]
@@ -167,18 +165,18 @@ pub struct _flags {
 pub struct C2RustUnnamed {
     pub file: rust_output_handle_t,
     pub root_name: *mut i8,
-    pub count: int32_t,
-    pub node: int32_t,
+    pub count: i32,
+    pub node: i32,
     pub recorder: synctex_recorder_t,
-    pub tag: int32_t,
-    pub line: int32_t,
-    pub curh: int32_t,
-    pub curv: int32_t,
-    pub magnification: int32_t,
-    pub unit: int32_t,
-    pub total_length: int32_t,
-    pub lastv: int32_t,
-    pub form_depth: int32_t,
+    pub tag: i32,
+    pub line: i32,
+    pub curh: i32,
+    pub curv: i32,
+    pub magnification: i32,
+    pub unit: i32,
+    pub total_length: i32,
+    pub lastv: i32,
+    pub form_depth: i32,
     pub synctex_tag_counter: libc::c_uint,
     pub flags: _flags,
 }
@@ -204,7 +202,7 @@ pub struct C2RustUnnamed {
  *  for dvi mode, we'll have to record the 1in offset in both directions,
  *  eventually modified by the magnification.
  */
-pub type synctex_recorder_t = Option<unsafe extern "C" fn(_: int32_t) -> ()>;
+pub type synctex_recorder_t = Option<unsafe extern "C" fn(_: i32) -> ()>;
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
@@ -585,7 +583,7 @@ pub unsafe extern "C" fn synctex_terminate(mut log_opened: bool) {
  *  the very beginning of the ship_out procedure.
  */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_sheet(mut mag: int32_t) {
+pub unsafe extern "C" fn synctex_sheet(mut mag: i32) {
     if synctex_ctxt.flags.off() != 0 {
         if (*eqtb.offset(
             (1i32
@@ -673,7 +671,7 @@ pub unsafe extern "C" fn synctex_teehs() {
  *  by a synctex_tsilv, sent at the end of the vlist_out procedure.  p is the
  *  address of the vlist. We assume that p is really a vlist node! */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_vlist(mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_vlist(mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -725,7 +723,7 @@ pub unsafe extern "C" fn synctex_vlist(mut this_box: int32_t) {
  *  sent at the end of the vlist_out procedure in *TeX.web to balance a former
  *  synctex_vlist sent at the beginning of that procedure.    */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_tsilv(mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_tsilv(mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -774,7 +772,7 @@ pub unsafe extern "C" fn synctex_tsilv(mut this_box: int32_t) {
 /*  This message is sent when a void vlist will be shipped out.
  *  There is no need to balance a void vlist.  */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_void_vlist(mut p: int32_t, mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_void_vlist(mut p: i32, mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -826,7 +824,7 @@ pub unsafe extern "C" fn synctex_void_vlist(mut p: int32_t, mut this_box: int32_
  *  by a synctex_tsilh, sent at the end of the hlist_out procedure.  p is the
  *  address of the hlist We assume that p is really an hlist node! */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_hlist(mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_hlist(mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -876,7 +874,7 @@ pub unsafe extern "C" fn synctex_hlist(mut this_box: int32_t) {
  *  sent at the end of the hlist_out procedure in *TeX.web to balance a former
  *  synctex_hlist sent at the beginning of that procedure.    */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_tsilh(mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_tsilh(mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -925,7 +923,7 @@ pub unsafe extern "C" fn synctex_tsilh(mut this_box: int32_t) {
 /*  This message is sent when a void hlist will be shipped out.
  *  There is no need to balance a void hlist.  */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_void_hlist(mut p: int32_t, mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_void_hlist(mut p: i32, mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -982,7 +980,7 @@ pub unsafe extern "C" fn synctex_void_hlist(mut p: int32_t, mut this_box: int32_
 /*  glue code, this message is sent whenever an inline math node will ship out
 See: @ @<Output the non-|char_node| |p| for...  */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_math(mut p: int32_t, mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_math(mut p: i32, mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -1039,7 +1037,7 @@ pub unsafe extern "C" fn synctex_math(mut p: int32_t, mut this_box: int32_t) {
 /*  this message is sent whenever an horizontal glue node or rule node ships out
 See: move_past:...    */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: int32_t, mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: i32, mut this_box: i32) {
     match (*mem.offset(p as isize)).b16.s1 as libc::c_int {
         2 => {
             if synctex_ctxt.flags.off() as libc::c_int != 0
@@ -1191,7 +1189,7 @@ pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: int32_t, mut thi
 /*  this message is sent whenever a kern node ships out
 See: @ @<Output the non-|char_node| |p| for...    */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_kern(mut p: int32_t, mut this_box: int32_t) {
+pub unsafe extern "C" fn synctex_kern(mut p: i32, mut this_box: i32) {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -1242,7 +1240,7 @@ pub unsafe extern "C" fn synctex_kern(mut p: int32_t, mut this_box: int32_t) {
             synctex_ctxt.tag = (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s0;
             synctex_ctxt.line = (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s1;
             synctex_ctxt.recorder =
-                Some(synctex_record_node_kern as unsafe extern "C" fn(_: int32_t) -> ())
+                Some(synctex_record_node_kern as unsafe extern "C" fn(_: i32) -> ())
         } else {
             synctex_ctxt.node = p;
             synctex_ctxt.tag = (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s0;
@@ -1258,7 +1256,7 @@ pub unsafe extern "C" fn synctex_kern(mut p: int32_t, mut this_box: int32_t) {
         synctex_ctxt.tag = (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s0;
         synctex_ctxt.line = (*mem.offset((p + 3i32 - 1i32) as isize)).b32.s1;
         synctex_ctxt.recorder =
-            Some(synctex_record_node_kern as unsafe extern "C" fn(_: int32_t) -> ())
+            Some(synctex_record_node_kern as unsafe extern "C" fn(_: i32) -> ())
     };
 }
 /*  For debugging purpose only    */
@@ -1352,7 +1350,7 @@ unsafe extern "C" fn synctex_record_preamble() -> libc::c_int {
 }
 #[inline]
 unsafe extern "C" fn synctex_record_input(
-    mut tag: int32_t,
+    mut tag: i32,
     mut name: *mut i8,
 ) -> libc::c_int {
     let mut len: libc::c_int = ttstub_fprintf(
@@ -1397,7 +1395,7 @@ unsafe extern "C" fn synctex_record_content() -> libc::c_int {
     return -1i32;
 }
 #[inline]
-unsafe extern "C" fn synctex_record_sheet(mut sheet: int32_t) -> libc::c_int {
+unsafe extern "C" fn synctex_record_sheet(mut sheet: i32) -> libc::c_int {
     if 0i32 == synctex_record_anchor() {
         let mut len: libc::c_int = ttstub_fprintf(
             synctex_ctxt.file,
@@ -1415,7 +1413,7 @@ unsafe extern "C" fn synctex_record_sheet(mut sheet: int32_t) -> libc::c_int {
 }
 /*  Recording a "}..." or a ">" line  */
 #[inline]
-unsafe extern "C" fn synctex_record_teehs(mut sheet: int32_t) -> libc::c_int {
+unsafe extern "C" fn synctex_record_teehs(mut sheet: i32) -> libc::c_int {
     if 0i32 == synctex_record_anchor() {
         let mut len: libc::c_int = ttstub_fprintf(
             synctex_ctxt.file,
@@ -1435,7 +1433,7 @@ unsafe extern "C" fn synctex_record_teehs(mut sheet: int32_t) -> libc::c_int {
  *  the very beginning of the pdf_ship_out procedure.
  */
 #[no_mangle]
-pub unsafe extern "C" fn synctex_pdfxform(mut p: int32_t) {
+pub unsafe extern "C" fn synctex_pdfxform(mut p: i32) {
     if synctex_ctxt.flags.off() != 0 {
         if (*eqtb.offset(
             (1i32
@@ -1497,7 +1495,7 @@ pub unsafe extern "C" fn synctex_pdfrefxform(mut objnum: libc::c_int) {
 }
 /*  Recording a "<..." line  */
 #[inline]
-unsafe extern "C" fn synctex_record_pdfxform(mut form: int32_t) -> libc::c_int {
+unsafe extern "C" fn synctex_record_pdfxform(mut form: i32) -> libc::c_int {
     if synctex_ctxt.flags.off() as libc::c_int != 0
         || (*eqtb.offset(
             (1i32
@@ -1628,7 +1626,7 @@ unsafe extern "C" fn synctex_record_node_pdfrefxform(mut objnum: libc::c_int) ->
     return -1i32;
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_void_vlist(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_void_vlist(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b"v%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
@@ -1649,7 +1647,7 @@ unsafe extern "C" fn synctex_record_node_void_vlist(mut p: int32_t) {
     };
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_vlist(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_vlist(mut p: i32) {
     let mut len: libc::c_int = 0;
     synctex_ctxt.flags.set_not_void(1i32 as libc::c_uint);
     len = ttstub_fprintf(
@@ -1672,7 +1670,7 @@ unsafe extern "C" fn synctex_record_node_vlist(mut p: int32_t) {
     };
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_tsilv(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_tsilv(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b"]\n\x00" as *const u8 as *const i8,
@@ -1685,7 +1683,7 @@ unsafe extern "C" fn synctex_record_node_tsilv(mut p: int32_t) {
     };
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_void_hlist(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_void_hlist(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b"h%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
@@ -1706,7 +1704,7 @@ unsafe extern "C" fn synctex_record_node_void_hlist(mut p: int32_t) {
     };
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_hlist(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_hlist(mut p: i32) {
     let mut len: libc::c_int = 0;
     synctex_ctxt.flags.set_not_void(1i32 as libc::c_uint);
     len = ttstub_fprintf(
@@ -1729,7 +1727,7 @@ unsafe extern "C" fn synctex_record_node_hlist(mut p: int32_t) {
     };
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_tsilh(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_tsilh(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b")\n\x00" as *const u8 as *const i8,
@@ -1780,7 +1778,7 @@ unsafe extern "C" fn synctex_record_postamble() -> libc::c_int {
     return -1i32;
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_glue(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_glue(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b"g%i,%i:%i,%i\n\x00" as *const u8 as *const i8,
@@ -1798,7 +1796,7 @@ unsafe extern "C" fn synctex_record_node_glue(mut p: int32_t) {
     };
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_kern(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_kern(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b"k%i,%i:%i,%i:%i\n\x00" as *const u8 as *const i8,
@@ -1817,7 +1815,7 @@ unsafe extern "C" fn synctex_record_node_kern(mut p: int32_t) {
     };
 }
 #[inline]
-unsafe extern "C" fn synctex_record_node_rule(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_rule(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b"r%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
@@ -1837,7 +1835,7 @@ unsafe extern "C" fn synctex_record_node_rule(mut p: int32_t) {
         synctexabort();
     };
 }
-unsafe extern "C" fn synctex_record_node_math(mut p: int32_t) {
+unsafe extern "C" fn synctex_record_node_math(mut p: i32) {
     let mut len: libc::c_int = ttstub_fprintf(
         synctex_ctxt.file,
         b"$%i,%i:%i,%i\n\x00" as *const u8 as *const i8,

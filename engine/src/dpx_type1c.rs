@@ -372,7 +372,7 @@ extern "C" {
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn tfm_get_width(font_id: libc::c_int, ch: int32_t) -> libc::c_double;
+    fn tfm_get_width(font_id: libc::c_int, ch: i32) -> libc::c_double;
     /* FontDescriptor */
     #[no_mangle]
     fn tt_get_fontdesc(
@@ -383,9 +383,7 @@ extern "C" {
         fontname: *const i8,
     ) -> *mut pdf_obj;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;

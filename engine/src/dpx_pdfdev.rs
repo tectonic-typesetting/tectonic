@@ -238,8 +238,6 @@ extern "C" {
         p: *mut transform_info,
     ) -> libc::c_int;
 }
-pub type __int32_t = libc::c_int;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -643,7 +641,7 @@ unsafe extern "C" fn p_dtoa(
     mut prec: libc::c_int,
     mut buf: *mut i8,
 ) -> libc::c_int {
-    let p: [int32_t; 10] = [
+    let p: [i32; 10] = [
         1i32,
         10i32,
         100i32,
@@ -657,7 +655,7 @@ unsafe extern "C" fn p_dtoa(
     ];
     let mut i: libc::c_double = 0.;
     let mut f: libc::c_double = 0.;
-    let mut g: int32_t = 0;
+    let mut g: i32 = 0;
     let mut c: *mut i8 = buf;
     let mut n: libc::c_int = 0;
     if value < 0i32 as libc::c_double {
@@ -670,7 +668,7 @@ unsafe extern "C" fn p_dtoa(
         n = 0i32
     }
     f = modf(value, &mut i);
-    g = (f * p[prec as usize] as libc::c_double + 0.5f64) as int32_t;
+    g = (f * p[prec as usize] as libc::c_double + 0.5f64) as i32;
     if g == p[prec as usize] {
         g = 0i32;
         i += 1i32 as libc::c_double

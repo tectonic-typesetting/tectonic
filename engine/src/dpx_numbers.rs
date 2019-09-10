@@ -19,10 +19,8 @@ extern "C" {
     #[no_mangle]
     fn fgetc(__stream: *mut FILE) -> libc::c_int;
 }
-pub type __int32_t = libc::c_int;
 pub type __off_t = i64;
 pub type __off64_t = i64;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -60,7 +58,7 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-pub type fixword = int32_t;
+pub type fixword = i32;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -158,9 +156,9 @@ pub unsafe extern "C" fn get_signed_triple(mut file: *mut FILE) -> libc::c_int {
     return triple;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_signed_quad(mut file: *mut FILE) -> int32_t {
+pub unsafe extern "C" fn get_signed_quad(mut file: *mut FILE) -> i32 {
     let mut i: libc::c_int = 0;
-    let mut quad: int32_t = get_signed_byte(file) as int32_t;
+    let mut quad: i32 = get_signed_byte(file) as i32;
     i = 0i32;
     while i < 3i32 {
         quad = quad << 8i32 | get_unsigned_byte(file) as libc::c_int;
@@ -221,7 +219,7 @@ pub unsafe extern "C" fn get_positive_quad(
     mut type_0: *const i8,
     mut name: *const i8,
 ) -> u32 {
-    let mut val: int32_t = get_signed_quad(file);
+    let mut val: i32 = get_signed_quad(file);
     if val < 0i32 {
         _tt_abort(
             b"Bad %s: negative %s: %d\x00" as *const u8 as *const i8,
@@ -233,7 +231,7 @@ pub unsafe extern "C" fn get_positive_quad(
     return val as u32;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sqxfw(mut sq: int32_t, mut fw: fixword) -> int32_t {
+pub unsafe extern "C" fn sqxfw(mut sq: i32, mut fw: fixword) -> i32 {
     let mut sign: libc::c_int = 1i32;
     let mut a: u32 = 0;
     let mut b: u32 = 0;
@@ -250,7 +248,7 @@ pub unsafe extern "C" fn sqxfw(mut sq: int32_t, mut fw: fixword) -> int32_t {
     let mut i: u32 = 0;
     let mut j: u32 = 0;
     let mut k: u32 = 0;
-    let mut result: int32_t = 0;
+    let mut result: i32 = 0;
     /* Make positive. */
     if sq < 0i32 {
         sign = -sign; /* 1<<3 is for rounding */
@@ -279,10 +277,10 @@ pub unsafe extern "C" fn sqxfw(mut sq: int32_t, mut fw: fixword) -> int32_t {
         .wrapping_add(g)
         .wrapping_add(i)
         .wrapping_add((1i32 << 3i32) as libc::c_uint)
-        >> 4i32) as int32_t;
+        >> 4i32) as i32;
     result = (result as libc::c_uint).wrapping_add(f.wrapping_add(h).wrapping_add(k) << 12i32)
-        as int32_t as int32_t;
-    result = (result as libc::c_uint).wrapping_add(j << 28i32) as int32_t as int32_t;
+        as i32 as i32;
+    result = (result as libc::c_uint).wrapping_add(j << 28i32) as i32 as i32;
     return if sign > 0i32 { result } else { -result };
 }
 /* Tectonic-ified versions */
@@ -341,9 +339,9 @@ pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -
     return quad;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> int32_t {
+pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> i32 {
     let mut i: libc::c_int = 0;
-    let mut quad: int32_t = tt_get_signed_byte(handle) as int32_t;
+    let mut quad: i32 = tt_get_signed_byte(handle) as i32;
     i = 0i32;
     while i < 3i32 {
         quad = quad << 8i32 | tt_get_unsigned_byte(handle) as libc::c_int;
@@ -421,10 +419,10 @@ pub unsafe extern "C" fn tt_get_unsigned_num(
    interpreted as either signed or unsigned.
 
    Four bytes from DVI, PK, TFM, or VF files always yield a signed
-   32-bit integer (int32_t), but some of them must not be negative.
+   32-bit integer (i32), but some of them must not be negative.
 
    Four byte numbers from JPEG2000, OpenType, or TrueType files are
-   mostly unsigned (u32) and occasionally signed (int32_t).
+   mostly unsigned (u32) and occasionally signed (i32).
 */
 /* Tectonic enabled */
 #[no_mangle]
@@ -433,7 +431,7 @@ pub unsafe extern "C" fn tt_get_positive_quad(
     mut type_0: *const i8,
     mut name: *const i8,
 ) -> u32 {
-    let mut val: int32_t = tt_get_signed_quad(handle);
+    let mut val: i32 = tt_get_signed_quad(handle);
     if val < 0i32 {
         _tt_abort(
             b"Bad %s: negative %s: %d\x00" as *const u8 as *const i8,

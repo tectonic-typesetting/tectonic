@@ -185,7 +185,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_sprint_number(buf: *mut i8, value: libc::c_double) -> libc::c_int;
 }
-pub type __int32_t = libc::c_int;
 pub type __ssize_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -200,7 +199,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_output_handle_t = *mut libc::c_void;
@@ -288,7 +286,7 @@ pub struct pdf_stream {
     pub objstm_data: *mut libc::c_int,
     pub stream_length: libc::c_uint,
     pub max_length: libc::c_uint,
-    pub _flags: int32_t,
+    pub _flags: i32,
     pub decodeparms: decode_parms,
 }
 #[derive(Copy, Clone)]
@@ -297,7 +295,7 @@ pub struct decode_parms {
     pub predictor: libc::c_int,
     pub colors: libc::c_int,
     pub bits_per_component: libc::c_int,
-    pub columns: int32_t,
+    pub columns: i32,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1951,7 +1949,7 @@ pub unsafe extern "C" fn pdf_new_stream(mut flags: libc::c_int) -> *mut pdf_obj 
 pub unsafe extern "C" fn pdf_stream_set_predictor(
     mut stream: *mut pdf_obj,
     mut predictor: libc::c_int,
-    mut columns: int32_t,
+    mut columns: i32,
     mut bpc: libc::c_int,
     mut colors: libc::c_int,
 ) {
