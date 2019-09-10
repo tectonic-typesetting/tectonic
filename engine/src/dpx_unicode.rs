@@ -104,14 +104,14 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
         *p.offset(1) = (ucv & 0xffi32) as u8;
         count = 2i32
     } else if ucv >= 0x10000i32 && ucv <= 0x10ffffi32 {
-        let mut high: libc::c_ushort = 0;
-        let mut low: libc::c_ushort = 0;
+        let mut high: u16 = 0;
+        let mut low: u16 = 0;
         if p.offset(4) >= endptr {
             return 0i32 as size_t;
         }
         ucv -= 0x10000i32;
-        high = ((ucv >> 10i32) as libc::c_uint).wrapping_add(0xd800u32) as libc::c_ushort;
-        low = (ucv as libc::c_uint & 0x3ffu32).wrapping_add(0xdc00u32) as libc::c_ushort;
+        high = ((ucv >> 10i32) as libc::c_uint).wrapping_add(0xd800u32) as u16;
+        low = (ucv as libc::c_uint & 0x3ffu32).wrapping_add(0xdc00u32) as u16;
         *p.offset(0) = (high as libc::c_int >> 8i32 & 0xffi32) as u8;
         *p.offset(1) = (high as libc::c_int & 0xffi32) as u8;
         *p.offset(2) = (low as libc::c_int >> 8i32 & 0xffi32) as u8;

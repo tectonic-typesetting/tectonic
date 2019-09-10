@@ -32,7 +32,7 @@ extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn __assert_fail(
         __assertion: *const libc::c_char,
@@ -994,7 +994,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
         && *(*__ctype_b_loc())
             .offset(*(*args).curptr.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISalpha as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISalpha as libc::c_int as u16 as libc::c_int
             != 0
     {
         (*args).curptr = (*args).curptr.offset(1)

@@ -99,7 +99,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
+    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
@@ -362,7 +362,7 @@ extern "C" {
     #[no_mangle]
     fn subfont_set_verbose(level: libc::c_int);
     #[no_mangle]
-    fn lookup_sfd_record(rec_id: libc::c_int, code: u8) -> libc::c_ushort;
+    fn lookup_sfd_record(rec_id: libc::c_int, code: u8) -> u16;
     #[no_mangle]
     fn sfd_load_record(
         sfd_name: *const libc::c_char,
@@ -546,7 +546,7 @@ pub struct _IO_FILE {
     pub _fileno: libc::c_int,
     pub _flags2: libc::c_int,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
+    pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
     pub _shortbuf: [libc::c_char; 1],
     pub _lock: *mut libc::c_void,
@@ -714,7 +714,7 @@ pub struct cff_index {
 pub type card8 = u8;
 pub type l_offset = u32;
 pub type c_offsize = u8;
-pub type card16 = libc::c_ushort;
+pub type card16 = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict {
@@ -769,7 +769,7 @@ pub struct cff_range2 {
     pub first: s_SID,
     pub n_left: card16,
 }
-pub type s_SID = libc::c_ushort;
+pub type s_SID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_range1 {
@@ -813,7 +813,7 @@ pub struct tt_longMetrics {
     pub sideBearing: SHORT,
 }
 pub type SHORT = libc::c_short;
-pub type USHORT = libc::c_ushort;
+pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_rec {
@@ -1026,7 +1026,7 @@ pub struct tt_hhea_table {
     pub numOfExSideBearings: USHORT,
     /* extra information */
 }
-pub type uFWord = libc::c_ushort;
+pub type uFWord = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_vhea_table {
@@ -2572,7 +2572,7 @@ pub unsafe extern "C" fn dvi_set(mut ch: int32_t) {
                     2i32,
                 );
             } else if (*font).subfont_id >= 0i32 {
-                let mut uch: libc::c_ushort =
+                let mut uch: u16 =
                     lookup_sfd_record((*font).subfont_id, ch as u8);
                 wbuf[0] = (uch as libc::c_int >> 8i32 & 0xffi32) as u8;
                 wbuf[1] = (uch as libc::c_int & 0xffi32) as u8;

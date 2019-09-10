@@ -314,7 +314,7 @@ pub struct png_color_16_struct {
     pub blue: png_uint_16,
     pub gray: png_uint_16,
 }
-pub type png_uint_16 = libc::c_ushort;
+pub type png_uint_16 = u16;
 pub type png_structpp = *mut *mut png_struct;
 pub type png_const_structrp = *const png_struct;
 pub type png_inforp = *mut png_info;

@@ -17,7 +17,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -603,7 +603,7 @@ unsafe extern "C" fn parse_block(
                     while i < len {
                         if *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize)
                             as libc::c_int
-                            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                            & _ISspace as libc::c_int as u16 as libc::c_int
                             == 0
                         {
                             *tmp.offset(i as isize) = **pp

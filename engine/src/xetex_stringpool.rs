@@ -37,7 +37,7 @@ pub type size_t = u64;
 pub type UnicodeScalar = int32_t;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
-pub type packed_UTF16_code = libc::c_ushort;
+pub type packed_UTF16_code = u16;
 /* tectonic/xetex-stringpool.c: preloaded "string pool" constants
    Copyright 2017-2018 the Tectonic Project
    Licensed under the MIT License.

@@ -156,7 +156,7 @@ pub struct hdr_info {
     pub width: libc::c_uint,
     pub height: libc::c_int,
     pub compression: libc::c_int,
-    pub bit_count: libc::c_ushort,
+    pub bit_count: u16,
     pub psize: libc::c_int,
     pub x_pix_per_meter: libc::c_uint,
     pub y_pix_per_meter: libc::c_uint,
@@ -213,7 +213,7 @@ pub unsafe extern "C" fn bmp_get_bbox(
             width: 0i32 as libc::c_uint,
             height: 0i32,
             compression: 0i32,
-            bit_count: 0i32 as libc::c_ushort,
+            bit_count: 0i32 as u16,
             psize: 0i32,
             x_pix_per_meter: 0i32 as libc::c_uint,
             y_pix_per_meter: 0i32 as libc::c_uint,
@@ -277,7 +277,7 @@ pub unsafe extern "C" fn bmp_include_image(
             width: 0i32 as libc::c_uint,
             height: 0i32,
             compression: 0i32,
-            bit_count: 0i32 as libc::c_ushort,
+            bit_count: 0i32 as u16,
             psize: 0i32,
             x_pix_per_meter: 0i32 as libc::c_uint,
             y_pix_per_meter: 0i32 as libc::c_uint,
@@ -590,7 +590,7 @@ unsafe extern "C" fn read_header(
             p = p.offset(2);
             (*hdr).bit_count = (*p.offset(0) as libc::c_int
                 + ((*p.offset(1) as libc::c_int) << 8i32))
-                as libc::c_ushort;
+                as u16;
             p = p.offset(2);
             (*hdr).compression = 0i32;
             (*hdr).psize = 3i32
@@ -617,7 +617,7 @@ unsafe extern "C" fn read_header(
             p = p.offset(2);
             (*hdr).bit_count = (*p.offset(0) as libc::c_int
                 + ((*p.offset(1) as libc::c_int) << 8i32))
-                as libc::c_ushort;
+                as u16;
             p = p.offset(2);
             (*hdr).compression = *p.offset(0) as libc::c_int
                 + ((*p.offset(1) as libc::c_int) << 8i32)

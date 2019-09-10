@@ -17,7 +17,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     /* The internal, C/C++ interface: */
@@ -260,7 +260,7 @@ pub unsafe extern "C" fn pst_get_token(
                 obj = pst_new_mark();
                 *inbuf = (*inbuf).offset(2)
             } else if *(*__ctype_b_loc()).offset(c as libc::c_int as isize) as libc::c_int
-                & _ISxdigit as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISxdigit as libc::c_int as u16 as libc::c_int
                 != 0
             {
                 obj = pst_parse_string(inbuf, inbufend)
@@ -306,7 +306,7 @@ pub unsafe extern "C" fn pst_get_token(
             } else if c as libc::c_int == '+' as i32
                 || c as libc::c_int == '-' as i32
                 || *(*__ctype_b_loc()).offset(c as libc::c_int as isize) as libc::c_int
-                    & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISdigit as libc::c_int as u16 as libc::c_int
                     != 0
                 || c as libc::c_int == '.' as i32
             {

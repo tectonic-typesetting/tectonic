@@ -214,11 +214,11 @@ extern "C" {
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type scaled_t = int32_t;
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 pub type UnicodeScalar = int32_t;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
-pub type packed_UTF16_code = libc::c_ushort;
+pub type packed_UTF16_code = u16;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -248,8 +248,8 @@ pub type internal_font_number = int32_t;
 pub type font_index = int32_t;
 pub type nine_bits = int32_t;
 pub type trie_pointer = int32_t;
-pub type trie_opcode = libc::c_ushort;
-pub type hyph_pointer = libc::c_ushort;
+pub type trie_opcode = u16;
+pub type hyph_pointer = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct list_state_record {
@@ -312,13 +312,13 @@ static mut best_pl_short: [scaled_t; 4] = [0; 4];
 static mut best_pl_glue: [scaled_t; 4] = [0; 4];
 #[inline]
 unsafe extern "C" fn get_native_usv(mut p: int32_t, mut i: int32_t) -> UnicodeScalar {
-    let mut c: libc::c_ushort = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
-        as *mut libc::c_ushort)
+    let mut c: u16 = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
+        as *mut u16)
         .offset(i as isize);
     if c as libc::c_int >= 0xd800i32 && (c as libc::c_int) < 0xdc00i32 {
         return 0x10000i32
             + (c as libc::c_int - 0xd800i32) * 0x400i32
-            + *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
+            + *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
                 .offset((i + 1i32) as isize) as libc::c_int
             - 0xdc00i32;
     }
@@ -1756,7 +1756,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                           as
                                                                                           *mut memory_word
                                                                                           as
-                                                                                          *mut libc::c_ushort).offset((i
+                                                                                          *mut u16).offset((i
                                                                                                                            -
                                                                                                                            l)
                                                                                                                           as
@@ -1770,7 +1770,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                               as
                                                                                               *mut memory_word
                                                                                               as
-                                                                                              *mut libc::c_ushort).offset(i
+                                                                                              *mut u16).offset(i
                                                                                                                               as
                                                                                                                               isize);
                                                                                 i += 1
@@ -1996,7 +1996,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                       as
                                                                                       *mut memory_word
                                                                                       as
-                                                                                      *mut libc::c_ushort).offset((i
+                                                                                      *mut u16).offset((i
                                                                                                                        -
                                                                                                                        l)
                                                                                                                       as
@@ -2010,7 +2010,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                                                                                           as
                                                                                           *mut memory_word
                                                                                           as
-                                                                                          *mut libc::c_ushort).offset(i
+                                                                                          *mut u16).offset(i
                                                                                                                           as
                                                                                                                           isize);
                                                                             i += 1
@@ -5076,10 +5076,10 @@ unsafe extern "C" fn hyphenate() {
                     if i as libc::c_int <= for_end_6 {
                         loop {
                             *(&mut *mem.offset((q + 6i32) as isize) as *mut memory_word
-                                as *mut libc::c_ushort)
+                                as *mut u16)
                                 .offset(i as isize) = *(&mut *mem.offset((ha + 6i32) as isize)
                                 as *mut memory_word
-                                as *mut libc::c_ushort)
+                                as *mut u16)
                                 .offset((i as libc::c_int + hyphen_passed as libc::c_int) as isize);
                             let fresh24 = i;
                             i = i + 1;
@@ -5144,10 +5144,10 @@ unsafe extern "C" fn hyphenate() {
         if i as libc::c_int <= for_end_7 {
             loop {
                 *(&mut *mem.offset((q + 6i32) as isize) as *mut memory_word
-                    as *mut libc::c_ushort)
+                    as *mut u16)
                     .offset(i as isize) = *(&mut *mem.offset((ha + 6i32) as isize)
                     as *mut memory_word
-                    as *mut libc::c_ushort)
+                    as *mut u16)
                     .offset((i as libc::c_int + hyphen_passed as libc::c_int) as isize);
                 let fresh26 = i;
                 i = i + 1;

@@ -17,7 +17,7 @@ extern "C" {
     #[no_mangle]
     fn strtod(_: *const libc::c_char, _: *mut *mut libc::c_char) -> libc::c_double;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_ximage_set_form(
         ximage: *mut pdf_ximage,
@@ -195,7 +195,7 @@ pub struct _IO_FILE {
     pub _fileno: libc::c_int,
     pub _flags2: libc::c_int,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
+    pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
     pub _shortbuf: [libc::c_char; 1],
     pub _lock: *mut libc::c_void,
@@ -1283,7 +1283,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
             || *clip_path as libc::c_int == '.' as i32
             || *(*__ctype_b_loc()).offset(*clip_path as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISdigit as libc::c_int as u16 as libc::c_int
                 != 0
         {
             top += 1;

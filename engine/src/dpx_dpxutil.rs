@@ -16,7 +16,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -640,14 +640,14 @@ unsafe extern "C" fn read_c_escchar(
                 && p < endptr
                 && *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as libc::c_int as isize)
                     as libc::c_int
-                    & _ISxdigit as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISxdigit as libc::c_int as u16 as libc::c_int
                     != 0
             {
                 c = (c << 4i32)
                     + (if *(*__ctype_b_loc())
                         .offset(*p.offset(0) as u8 as libc::c_int as isize)
                         as libc::c_int
-                        & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+                        & _ISdigit as libc::c_int as u16 as libc::c_int
                         != 0
                     {
                         *p.offset(0) as libc::c_int - '0' as i32
@@ -655,7 +655,7 @@ unsafe extern "C" fn read_c_escchar(
                         (if *(*__ctype_b_loc())
                             .offset(*p.offset(0) as u8 as libc::c_int as isize)
                             as libc::c_int
-                            & _ISlower as libc::c_int as libc::c_ushort as libc::c_int
+                            & _ISlower as libc::c_int as u16 as libc::c_int
                             != 0
                         {
                             *p.offset(0) as libc::c_int - 'a' as i32 + 10i32

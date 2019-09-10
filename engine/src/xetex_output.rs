@@ -91,11 +91,11 @@ pub const SELECTOR_FILE_0: selector_t = 0;
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
 /*11:*/
 /*18: */
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 pub type eight_bits = u8;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
-pub type packed_UTF16_code = libc::c_ushort;
+pub type packed_UTF16_code = u16;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -902,12 +902,12 @@ pub unsafe extern "C" fn print_native_word(mut p: int32_t) {
     let mut for_end: int32_t = (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int - 1i32;
     i = 0i32;
     while i <= for_end {
-        c = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
+        c = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
             .offset(i as isize) as int32_t;
         if c >= 0xd800i32 && c < 0xdc00i32 {
             if i < (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int - 1i32 {
                 cc = *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word
-                    as *mut libc::c_ushort)
+                    as *mut u16)
                     .offset((i + 1i32) as isize) as int32_t;
                 if cc >= 0xdc00i32 && cc < 0xe000i32 {
                     c = 0x10000i32 + (c - 0xd800i32) * 1024i32 + (cc - 0xdc00i32);

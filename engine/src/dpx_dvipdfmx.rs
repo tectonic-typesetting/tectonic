@@ -13,7 +13,7 @@ extern "C" {
     #[no_mangle]
     fn atoi(__nptr: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     #[no_mangle]
@@ -665,7 +665,7 @@ unsafe extern "C" fn select_pages(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -681,7 +681,7 @@ unsafe extern "C" fn select_pages(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -691,7 +691,7 @@ unsafe extern "C" fn select_pages(
             while *p as libc::c_int != 0
                 && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                     as libc::c_int
-                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISspace as libc::c_int as u16 as libc::c_int
                     != 0
             {
                 p = p.offset(1)
@@ -706,7 +706,7 @@ unsafe extern "C" fn select_pages(
                 while *p as libc::c_int != 0
                     && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                         as libc::c_int
-                        & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                        & _ISspace as libc::c_int as u16 as libc::c_int
                         != 0
                 {
                     p = p.offset(1)
@@ -723,7 +723,7 @@ unsafe extern "C" fn select_pages(
             while *p as libc::c_int != 0
                 && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                     as libc::c_int
-                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISspace as libc::c_int as u16 as libc::c_int
                     != 0
             {
                 p = p.offset(1)

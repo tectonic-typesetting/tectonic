@@ -548,7 +548,7 @@ pub struct sfnt_table {
     pub data: *mut libc::c_char,
     /* table data */
 }
-pub type USHORT = libc::c_ushort;
+pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cs_ginfo {
@@ -596,8 +596,8 @@ pub struct cff_range2 {
     pub first: s_SID,
     pub n_left: card16,
 }
-pub type card16 = libc::c_ushort;
-pub type s_SID = libc::c_ushort;
+pub type card16 = u16;
+pub type s_SID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_range1 {
@@ -843,7 +843,7 @@ pub struct tt_hhea_table {
     pub numOfExSideBearings: USHORT,
     /* extra information */
 }
-pub type uFWord = libc::c_ushort;
+pub type uFWord = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_VORG_table {
@@ -918,7 +918,7 @@ pub type SFNT_CHAR = libc::c_schar;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-pub type CID = libc::c_ushort;
+pub type CID = u16;
 pub type CIDType0Error = libc::c_int;
 pub const CID_OPEN_ERROR_IS_CIDFONT: CIDType0Error = -6;
 pub const CID_OPEN_ERROR_NOT_CIDFONT: CIDType0Error = -5;
@@ -1108,7 +1108,7 @@ pub unsafe extern "C" fn CIDFont_type0_set_flags(mut flags: libc::c_int) {
 unsafe extern "C" fn add_CIDHMetrics(
     mut fontdict: *mut pdf_obj,
     mut CIDToGIDMap: *mut u8,
-    mut last_cid: libc::c_ushort,
+    mut last_cid: u16,
     mut maxp: *mut tt_maxp_table,
     mut head: *mut tt_head_table,
     mut hmtx: *mut tt_longMetrics,
@@ -1202,7 +1202,7 @@ unsafe extern "C" fn add_CIDVMetrics(
     mut sfont: *mut sfnt,
     mut fontdict: *mut pdf_obj,
     mut CIDToGIDMap: *mut u8,
-    mut last_cid: libc::c_ushort,
+    mut last_cid: u16,
     mut maxp: *mut tt_maxp_table,
     mut head: *mut tt_head_table,
     mut hmtx: *mut tt_longMetrics,
@@ -1375,7 +1375,7 @@ unsafe extern "C" fn add_CIDMetrics(
     mut sfont: *mut sfnt,
     mut fontdict: *mut pdf_obj,
     mut CIDToGIDMap: *mut u8,
-    mut last_cid: libc::c_ushort,
+    mut last_cid: u16,
     mut need_vmetrics: libc::c_int,
 ) {
     let mut hmtx: *mut tt_longMetrics = 0 as *mut tt_longMetrics;
@@ -2004,13 +2004,13 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
         as *mut card8;
     cid = 0i32;
     while cid <= last_cid as libc::c_int {
-        let mut gid_org: libc::c_ushort = 0;
+        let mut gid_org: u16 = 0;
         if !(*used_chars.offset((cid / 8i32) as isize) as libc::c_int & 1i32 << 7i32 - cid % 8i32
             == 0)
         {
             gid_org = ((*CIDToGIDMap.offset((2i32 * cid) as isize) as libc::c_int) << 8i32
                 | *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) as libc::c_int)
-                as libc::c_ushort;
+                as u16;
             size = (*(*idx)
                 .offset
                 .offset((gid_org as libc::c_int + 1i32) as isize))

@@ -1011,7 +1011,7 @@ pub const SELECTOR_NO_PRINT: selector_t = 16;
 pub const SELECTOR_FILE_15: selector_t = 15;
 pub const SELECTOR_FILE_0: selector_t = 0;
 pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
-pub type UInt16 = libc::c_ushort;
+pub type UInt16 = u16;
 pub type UInt32 = libc::c_uint;
 /* quasi-hack to get the primary input */
 /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
@@ -1022,13 +1022,13 @@ pub type UInt32 = libc::c_uint;
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
 /*11:*/
 /*18: */
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 pub type UTF8_code = u8;
 pub type UnicodeScalar = int32_t;
 pub type eight_bits = u8;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
-pub type packed_UTF16_code = libc::c_ushort;
+pub type packed_UTF16_code = u16;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -17233,7 +17233,7 @@ pub unsafe extern "C" fn new_native_character(
         p = new_native_word_node(f, len);
         i = 0i32;
         while i <= len - 1i32 {
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
+            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
                 .offset(i as isize) = *mapped_text.offset(i as isize);
             i += 1
         }
@@ -17282,16 +17282,16 @@ pub unsafe extern "C" fn new_native_character(
         (*mem.offset((p + 4i32) as isize)).b16.s2 = f as u16;
         if c as libc::c_long > 65535 {
             (*mem.offset((p + 4i32) as isize)).b16.s1 = 2i32 as u16;
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
+            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
                 .offset(0) = ((c as libc::c_long - 65536) / 1024i32 as libc::c_long
-                + 0xd800i32 as libc::c_long) as libc::c_ushort;
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
+                + 0xd800i32 as libc::c_long) as u16;
+            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
                 .offset(1) = ((c as libc::c_long - 65536) % 1024i32 as libc::c_long
-                + 0xdc00i32 as libc::c_long) as libc::c_ushort
+                + 0xdc00i32 as libc::c_long) as u16
         } else {
             (*mem.offset((p + 4i32) as isize)).b16.s1 = 1i32 as u16;
-            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
-                .offset(0) = c as libc::c_ushort
+            *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
+                .offset(0) = c as u16
         }
     }
     measure_native_node(
@@ -17696,7 +17696,7 @@ pub unsafe extern "C" fn do_locale_linebreaks(mut s: int32_t, mut len: int32_t) 
         if i <= for_end {
             loop {
                 *(&mut *mem.offset((cur_list.tail + 6i32) as isize) as *mut memory_word
-                    as *mut libc::c_ushort)
+                    as *mut u16)
                     .offset(i as isize) = *native_text.offset((s + i) as isize);
                 let fresh64 = i;
                 i = i + 1;
@@ -17871,7 +17871,7 @@ pub unsafe extern "C" fn do_locale_linebreaks(mut s: int32_t, mut len: int32_t) 
                 if i <= for_end_0 {
                     loop {
                         *(&mut *mem.offset((cur_list.tail + 6i32) as isize) as *mut memory_word
-                            as *mut libc::c_ushort)
+                            as *mut u16)
                             .offset((i - prevOffs) as isize) =
                             *native_text.offset((s + i) as isize);
                         let fresh65 = i;
@@ -20708,11 +20708,11 @@ pub unsafe extern "C" fn hpack(mut p: int32_t, mut w: scaled_t, mut m: small_num
                             if k <= for_end {
                                 loop {
                                     *(&mut *mem.offset((pp + 6i32) as isize) as *mut memory_word
-                                        as *mut libc::c_ushort)
+                                        as *mut u16)
                                         .offset(total_chars as isize) = *(&mut *mem
                                         .offset((ppp + 6i32) as isize)
                                         as *mut memory_word
-                                        as *mut libc::c_ushort)
+                                        as *mut u16)
                                         .offset(k as isize);
                                     total_chars += 1;
                                     let fresh68 = k;
@@ -30897,7 +30897,7 @@ pub unsafe extern "C" fn main_control() {
                                     *native_text.offset(native_len as isize) = *(&mut *mem
                                         .offset((main_pp + 6i32) as isize)
                                         as *mut memory_word
-                                        as *mut libc::c_ushort)
+                                        as *mut u16)
                                         .offset(main_p as isize);
                                     native_len += 1;
                                     let fresh90 = main_p;
@@ -31088,11 +31088,11 @@ pub unsafe extern "C" fn main_control() {
                             loop {
                                 *(&mut *mem.offset((cur_list.tail + 6i32) as isize)
                                     as *mut memory_word
-                                    as *mut libc::c_ushort)
+                                    as *mut u16)
                                     .offset(main_p as isize) = *(&mut *mem
                                     .offset((main_pp + 6i32) as isize)
                                     as *mut memory_word
-                                    as *mut libc::c_ushort)
+                                    as *mut u16)
                                     .offset(main_p as isize);
                                 let fresh93 = main_p;
                                 main_p = main_p + 1;
@@ -31108,7 +31108,7 @@ pub unsafe extern "C" fn main_control() {
                             loop {
                                 *(&mut *mem.offset((cur_list.tail + 6i32) as isize)
                                     as *mut memory_word
-                                    as *mut libc::c_ushort)
+                                    as *mut u16)
                                     .offset(
                                         (main_p
                                             + (*mem.offset((main_pp + 4i32) as isize)).b16.s1
@@ -31176,7 +31176,7 @@ pub unsafe extern "C" fn main_control() {
                             loop {
                                 *(&mut *mem.offset((cur_list.tail + 6i32) as isize)
                                     as *mut memory_word
-                                    as *mut libc::c_ushort)
+                                    as *mut u16)
                                     .offset(main_p as isize) = *native_text.offset(main_p as isize);
                                 let fresh95 = main_p;
                                 main_p = main_p + 1;
@@ -31318,11 +31318,11 @@ pub unsafe extern "C" fn main_control() {
                                         loop {
                                             *(&mut *mem.offset((temp_ptr + 6i32) as isize)
                                                 as *mut memory_word
-                                                as *mut libc::c_ushort)
+                                                as *mut u16)
                                                 .offset(main_k as isize) = *(&mut *mem
                                                 .offset((main_pp + 6i32) as isize)
                                                 as *mut memory_word
-                                                as *mut libc::c_ushort)
+                                                as *mut u16)
                                                 .offset(t as isize);
                                             main_k += 1;
                                             let fresh96 = t;
@@ -31334,8 +31334,8 @@ pub unsafe extern "C" fn main_control() {
                                     }
                                     *(&mut *mem.offset((temp_ptr + 6i32) as isize)
                                         as *mut memory_word
-                                        as *mut libc::c_ushort)
-                                        .offset(main_k as isize) = ' ' as i32 as libc::c_ushort;
+                                        as *mut u16)
+                                        .offset(main_k as isize) = ' ' as i32 as u16;
                                     main_k += 1;
                                     let mut for_end_8: int32_t = 0;
                                     t = 0i32;
@@ -31347,11 +31347,11 @@ pub unsafe extern "C" fn main_control() {
                                         loop {
                                             *(&mut *mem.offset((temp_ptr + 6i32) as isize)
                                                 as *mut memory_word
-                                                as *mut libc::c_ushort)
+                                                as *mut u16)
                                                 .offset(main_k as isize) = *(&mut *mem
                                                 .offset((cur_list.tail + 6i32) as isize)
                                                 as *mut memory_word
-                                                as *mut libc::c_ushort)
+                                                as *mut u16)
                                                 .offset(t as isize);
                                             main_k += 1;
                                             let fresh97 = t;

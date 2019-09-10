@@ -11,7 +11,7 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_file;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
@@ -297,8 +297,8 @@ pub struct cff_range2 {
     pub first: s_SID,
     pub n_left: card16,
 }
-pub type card16 = libc::c_ushort;
-pub type s_SID = libc::c_ushort;
+pub type card16 = u16;
+pub type s_SID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_range1 {
@@ -1858,7 +1858,7 @@ unsafe extern "C" fn get_cidsysinfo(
         q = q.offset(1);
         if *(*__ctype_b_loc()).offset(*q.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             == 0
         {
             _tt_abort(

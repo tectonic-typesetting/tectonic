@@ -367,7 +367,7 @@ pub struct GlyphAssembly {
     pub count: libc::c_uint,
     pub parts: *mut hb_ot_math_glyph_part_t,
 }
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 pub type UnicodeScalar = int32_t;
 pub type eight_bits = u8;
 pub type str_number = int32_t;

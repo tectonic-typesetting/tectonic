@@ -37,7 +37,7 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_file;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn cos(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
@@ -400,7 +400,7 @@ extern "C" {
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn lookup_sfd_record(rec_id: libc::c_int, code: u8) -> libc::c_ushort;
+    fn lookup_sfd_record(rec_id: libc::c_int, code: u8) -> u16;
     #[no_mangle]
     fn sfd_load_record(
         sfd_name: *const libc::c_char,
@@ -457,7 +457,7 @@ pub struct _IO_FILE {
     pub _fileno: libc::c_int,
     pub _flags2: libc::c_int,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
+    pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
     pub _shortbuf: [libc::c_char; 1],
     pub _lock: *mut libc::c_void,
@@ -2593,7 +2593,7 @@ pub unsafe extern "C" fn mps_scan_bbox(
     /* skip_white() skips lines starting '%'... */
     while *pp < endptr
         && *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         *pp = (*pp).offset(1)
@@ -2645,7 +2645,7 @@ pub unsafe extern "C" fn mps_scan_bbox(
         while *pp < endptr
             && *(*__ctype_b_loc()).offset(**pp as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             *pp = (*pp).offset(1)
@@ -3576,7 +3576,7 @@ unsafe extern "C" fn do_show() -> libc::c_int {
     }
     text_width = 0.0f64;
     if (*font).subfont_id >= 0i32 {
-        let mut uch: libc::c_ushort = 0;
+        let mut uch: u16 = 0;
         let mut ustr: *mut u8 = 0 as *mut u8;
         let mut i: libc::c_int = 0;
         ustr = new(((length * 2i32) as u32 as u64)
@@ -4430,7 +4430,7 @@ unsafe extern "C" fn mp_parse_body(
     while *start < end && error == 0 {
         if *(*__ctype_b_loc()).offset(**start as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             != 0
             || *start < end.offset(-1)
                 && (**start as libc::c_int == '+' as i32
@@ -4448,7 +4448,7 @@ unsafe extern "C" fn mp_parse_body(
                 .is_null()
                 && *(*__ctype_b_loc()).offset(*next as u8 as libc::c_int as isize)
                     as libc::c_int
-                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISspace as libc::c_int as u16 as libc::c_int
                     == 0
             {
                 dpx_warning(b"Unkown PostScript operator.\x00" as *const u8 as *const libc::c_char);

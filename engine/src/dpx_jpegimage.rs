@@ -70,7 +70,7 @@ extern "C" {
     #[no_mangle]
     static mut work_buffer: [libc::c_char; 0];
     #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
+    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
@@ -675,7 +675,7 @@ unsafe extern "C" fn add_APPn_marker(
 unsafe extern "C" fn read_APP14_Adobe(
     mut j_info: *mut JPEG_info,
     mut handle: rust_input_handle_t,
-) -> libc::c_ushort {
+) -> u16 {
     let mut app_data: *mut JPEG_APPn_Adobe = 0 as *mut JPEG_APPn_Adobe;
     app_data = new((1i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as u64)
@@ -690,7 +690,7 @@ unsafe extern "C" fn read_APP14_Adobe(
         JS_APPn_ADOBE as libc::c_int,
         app_data as *mut libc::c_void,
     );
-    return 7i32 as libc::c_ushort;
+    return 7i32 as u16;
 }
 unsafe extern "C" fn read_exif_bytes(
     mut pp: *mut *mut u8,

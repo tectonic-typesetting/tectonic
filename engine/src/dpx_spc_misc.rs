@@ -17,7 +17,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -459,7 +459,7 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
         && *(*__ctype_b_loc())
             .offset(*(*args).curptr.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISalpha as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISalpha as libc::c_int as u16 as libc::c_int
             != 0
     {
         (*args).curptr = (*args).curptr.offset(1)

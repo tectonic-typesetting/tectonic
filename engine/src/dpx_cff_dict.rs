@@ -92,10 +92,10 @@ extern "C" {
 }
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type card8 = u8;
-pub type card16 = libc::c_ushort;
+pub type card16 = u16;
 pub type c_offsize = u8;
 pub type l_offset = u32;
-pub type s_SID = libc::c_ushort;
+pub type s_SID = u16;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

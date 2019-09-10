@@ -366,7 +366,7 @@ History:
 /* 16.16 version number */
 /* these are all predefined if using a Mac prefix */
 pub type UInt8 = u8;
-pub type UInt16 = libc::c_ushort;
+pub type UInt16 = u16;
 pub type UInt32 = libc::c_uint;
 /* NB: assumes int is 4 bytes */
 /* n.b. if also using zlib.h, it must precede TECkit headers */
@@ -390,7 +390,7 @@ pub type TECkit_Converter = *mut Opaque_TECkit_Converter;
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
 /*11:*/
 /*18: */
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 pub type UnicodeScalar = int32_t;
 pub type str_number = int32_t;
 #[derive(Copy, Clone)]

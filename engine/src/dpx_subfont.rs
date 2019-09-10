@@ -16,7 +16,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtol(_: *const libc::c_char, _: *mut *mut libc::c_char, _: libc::c_int) -> libc::c_long;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
@@ -187,7 +187,7 @@ pub struct sfd_file_ {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfd_rec_ {
-    pub vector: [libc::c_ushort; 256],
+    pub vector: [u16; 256],
     /* 0 for undefined */
 }
 #[inline]
@@ -322,7 +322,7 @@ unsafe extern "C" fn read_sfd_record(
     let mut error: libc::c_int = 0i32;
     while *p as libc::c_int != 0
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -336,7 +336,7 @@ unsafe extern "C" fn read_sfd_record(
             || !(*q as libc::c_int == '\u{0}' as i32
                 || *(*__ctype_b_loc()).offset(*q as u8 as libc::c_int as isize)
                     as libc::c_int
-                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISspace as libc::c_int as u16 as libc::c_int
                     != 0)
                 && *q as libc::c_int != ':' as i32
                 && *q as libc::c_int != '_' as i32
@@ -383,7 +383,7 @@ unsafe extern "C" fn read_sfd_record(
                             || *(*__ctype_b_loc())
                                 .offset(*q as u8 as libc::c_int as isize)
                                 as libc::c_int
-                                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                                & _ISspace as libc::c_int as u16 as libc::c_int
                                 != 0)
                     {
                         dpx_warning(
@@ -440,7 +440,7 @@ unsafe extern "C" fn read_sfd_record(
                 }
                 let fresh0 = curpos;
                 curpos = curpos + 1;
-                (*rec).vector[fresh0 as usize] = c as libc::c_ushort;
+                (*rec).vector[fresh0 as usize] = c as u16;
                 c += 1
             }
         }
@@ -448,7 +448,7 @@ unsafe extern "C" fn read_sfd_record(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -496,7 +496,7 @@ unsafe extern "C" fn scan_sfd_file(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -510,7 +510,7 @@ unsafe extern "C" fn scan_sfd_file(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 == 0
         {
             p = p.offset(1);
@@ -708,7 +708,7 @@ pub unsafe extern "C" fn sfd_load_record(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -721,7 +721,7 @@ pub unsafe extern "C" fn sfd_load_record(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 == 0
         {
             p = p.offset(1)
@@ -747,7 +747,7 @@ pub unsafe extern "C" fn sfd_load_record(
                 __i = 0i32;
                 while __i < 256i32 {
                     (*sfd_record.offset(num_sfd_records as isize)).vector[__i as usize] =
-                        0i32 as libc::c_ushort;
+                        0i32 as u16;
                     __i += 1
                 }
             }
@@ -807,7 +807,7 @@ pub unsafe extern "C" fn sfd_load_record(
 pub unsafe extern "C" fn lookup_sfd_record(
     mut rec_id: libc::c_int,
     mut c: u8,
-) -> libc::c_ushort {
+) -> u16 {
     if sfd_record.is_null() || rec_id < 0i32 || rec_id >= num_sfd_records {
         _tt_abort(
             b"Invalid subfont_id: %d\x00" as *const u8 as *const libc::c_char,

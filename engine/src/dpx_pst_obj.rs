@@ -18,7 +18,7 @@ extern "C" {
     #[no_mangle]
     fn __errno_location() -> *mut libc::c_int;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtod(_: *const libc::c_char, _: *mut *mut libc::c_char) -> libc::c_double;
     #[no_mangle]
@@ -931,7 +931,7 @@ pub unsafe extern "C" fn pst_parse_number(
             && {
                 cur = cur.offset(1);
                 *(*__ctype_b_loc()).offset(*cur as libc::c_int as isize) as libc::c_int
-                    & _ISalnum as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISalnum as libc::c_int as u16 as libc::c_int
                     != 0
             }
             && (lval != 16i32

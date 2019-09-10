@@ -347,8 +347,8 @@ pub struct cff_range2 {
     pub first: s_SID,
     pub n_left: card16,
 }
-pub type card16 = libc::c_ushort;
-pub type s_SID = libc::c_ushort;
+pub type card16 = u16;
+pub type s_SID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_range1 {
@@ -1739,10 +1739,10 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         if !(*real_font).used_chars.is_null() {
             i = 0i32 as size_t;
             while i < length {
-                let mut cid: libc::c_ushort = ((*str_ptr.offset(i as isize) as libc::c_int) << 8i32
+                let mut cid: u16 = ((*str_ptr.offset(i as isize) as libc::c_int) << 8i32
                     | *str_ptr.offset(i.wrapping_add(1i32 as u64) as isize)
                         as libc::c_int)
-                    as libc::c_ushort;
+                    as u16;
                 let ref mut fresh38 = *(*real_font)
                     .used_chars
                     .offset((cid as libc::c_int / 8i32) as isize);

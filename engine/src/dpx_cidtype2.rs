@@ -310,7 +310,7 @@ pub struct tt_cmap {
     pub map: *mut libc::c_void,
 }
 pub type SFNT_ULONG = u32;
-pub type USHORT = libc::c_ushort;
+pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
@@ -396,7 +396,7 @@ pub struct sfnt_table {
     pub length: SFNT_ULONG,
     pub data: *mut libc::c_char,
 }
-pub type CID = libc::c_ushort;
+pub type CID = u16;
 /*
  * PDF viewer applications use following tables (CIDFontType 2)
  *
@@ -477,14 +477,14 @@ pub type SHORT = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
-    pub alt1: libc::c_ushort,
-    pub alt2: libc::c_ushort,
+    pub alt1: u16,
+    pub alt2: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_3 {
-    pub platform: libc::c_ushort,
-    pub encoding: libc::c_ushort,
+    pub platform: u16,
+    pub encoding: u16,
     pub pdfnames: [*const libc::c_char; 5],
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
@@ -684,8 +684,8 @@ unsafe extern "C" fn validate_name(mut fontname: *mut libc::c_char, mut len: lib
 static mut known_encodings: [C2RustUnnamed_3; 11] = [
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as libc::c_ushort,
-            encoding: 10u32 as libc::c_ushort,
+            platform: 3u32 as u16,
+            encoding: 10u32 as u16,
             pdfnames: [
                 b"UCSms-UCS4\x00" as *const u8 as *const libc::c_char,
                 b"UCSms-UCS2\x00" as *const u8 as *const libc::c_char,
@@ -698,8 +698,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as libc::c_ushort,
-            encoding: 1u32 as libc::c_ushort,
+            platform: 3u32 as u16,
+            encoding: 1u32 as u16,
             pdfnames: [
                 b"UCSms-UCS4\x00" as *const u8 as *const libc::c_char,
                 b"UCSms-UCS2\x00" as *const u8 as *const libc::c_char,
@@ -712,8 +712,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as libc::c_ushort,
-            encoding: 2u32 as libc::c_ushort,
+            platform: 3u32 as u16,
+            encoding: 2u32 as u16,
             pdfnames: [
                 b"90ms-RKSJ\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -726,8 +726,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as libc::c_ushort,
-            encoding: 3u32 as libc::c_ushort,
+            platform: 3u32 as u16,
+            encoding: 3u32 as u16,
             pdfnames: [
                 b"GBK-EUC\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -740,8 +740,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as libc::c_ushort,
-            encoding: 4u32 as libc::c_ushort,
+            platform: 3u32 as u16,
+            encoding: 4u32 as u16,
             pdfnames: [
                 b"ETen-B5\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -754,8 +754,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 3u32 as libc::c_ushort,
-            encoding: 5u32 as libc::c_ushort,
+            platform: 3u32 as u16,
+            encoding: 5u32 as u16,
             pdfnames: [
                 b"KSCms-UHC\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -768,8 +768,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as libc::c_ushort,
-            encoding: 1u32 as libc::c_ushort,
+            platform: 1u32 as u16,
+            encoding: 1u32 as u16,
             pdfnames: [
                 b"90pv-RKSJ\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -782,8 +782,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as libc::c_ushort,
-            encoding: 2u32 as libc::c_ushort,
+            platform: 1u32 as u16,
+            encoding: 2u32 as u16,
             pdfnames: [
                 b"B5pc\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -796,8 +796,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as libc::c_ushort,
-            encoding: 25u32 as libc::c_ushort,
+            platform: 1u32 as u16,
+            encoding: 25u32 as u16,
             pdfnames: [
                 b"GBpc-EUC\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -810,8 +810,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 1u32 as libc::c_ushort,
-            encoding: 3u32 as libc::c_ushort,
+            platform: 1u32 as u16,
+            encoding: 3u32 as u16,
             pdfnames: [
                 b"KSCpc-EUC\x00" as *const u8 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -824,8 +824,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 0i32 as libc::c_ushort,
-            encoding: 0i32 as libc::c_ushort,
+            platform: 0i32 as u16,
+            encoding: 0i32 as u16,
             pdfnames: [
                 0 as *const libc::c_char,
                 0 as *const libc::c_char,
@@ -917,7 +917,7 @@ unsafe extern "C" fn add_TTCIDHMetrics(
     mut g: *mut tt_glyphs,
     mut used_chars: *mut libc::c_char,
     mut cidtogidmap: *mut u8,
-    mut last_cid: libc::c_ushort,
+    mut last_cid: u16,
 ) {
     let mut cid: libc::c_int = 0;
     let mut start: libc::c_int = 0i32;
@@ -1015,7 +1015,7 @@ unsafe extern "C" fn add_TTCIDVMetrics(
     mut fontdict: *mut pdf_obj,
     mut g: *mut tt_glyphs,
     mut used_chars: *mut libc::c_char,
-    mut last_cid: libc::c_ushort,
+    mut last_cid: u16,
 ) {
     let mut w2_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut an_array: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -1117,76 +1117,76 @@ unsafe extern "C" fn add_TTCIDVMetrics(
  * The following routine fixes few problems caused by vendor specific
  * Unicode mappings.
  */
-unsafe extern "C" fn fix_CJK_symbols(mut code: libc::c_ushort) -> libc::c_ushort {
-    let mut alt_code: libc::c_ushort = 0;
+unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
+    let mut alt_code: u16 = 0;
     static mut CJK_Uni_symbols: [C2RustUnnamed_2; 10] = [
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2014i32 as libc::c_ushort,
-                alt2: 0x2015i32 as libc::c_ushort,
+                alt1: 0x2014i32 as u16,
+                alt2: 0x2015i32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2016i32 as libc::c_ushort,
-                alt2: 0x2225i32 as libc::c_ushort,
+                alt1: 0x2016i32 as u16,
+                alt2: 0x2225i32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x203ei32 as libc::c_ushort,
-                alt2: 0xffe3i32 as libc::c_ushort,
+                alt1: 0x203ei32 as u16,
+                alt2: 0xffe3i32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2026i32 as libc::c_ushort,
-                alt2: 0x22efi32 as libc::c_ushort,
+                alt1: 0x2026i32 as u16,
+                alt2: 0x22efi32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2212i32 as libc::c_ushort,
-                alt2: 0xff0di32 as libc::c_ushort,
+                alt1: 0x2212i32 as u16,
+                alt2: 0xff0di32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x301ci32 as libc::c_ushort,
-                alt2: 0xff5ei32 as libc::c_ushort,
+                alt1: 0x301ci32 as u16,
+                alt2: 0xff5ei32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffe0i32 as libc::c_ushort,
-                alt2: 0xa2i32 as libc::c_ushort,
+                alt1: 0xffe0i32 as u16,
+                alt2: 0xa2i32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffe1i32 as libc::c_ushort,
-                alt2: 0xa3i32 as libc::c_ushort,
+                alt1: 0xffe1i32 as u16,
+                alt2: 0xa3i32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffe2i32 as libc::c_ushort,
-                alt2: 0xaci32 as libc::c_ushort,
+                alt1: 0xffe2i32 as u16,
+                alt2: 0xaci32 as u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffffi32 as libc::c_ushort,
-                alt2: 0xffffi32 as libc::c_ushort,
+                alt1: 0xffffi32 as u16,
+                alt2: 0xffffi32 as u16,
             };
             init
         },
@@ -1527,7 +1527,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         cid = 1i32 as CID;
         while cid as libc::c_int <= last_cid as libc::c_int {
             let mut code: libc::c_int = 0;
-            let mut gid: libc::c_ushort = 0;
+            let mut gid: u16 = 0;
             if !(*h_used_chars.offset((cid as libc::c_int / 8i32) as isize) as libc::c_int
                 & 1i32 << 7i32 - cid as libc::c_int % 8i32
                 == 0)
@@ -1540,7 +1540,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     gid = tt_cmap_lookup(ttcmap, code as SFNT_ULONG);
                     if gid as libc::c_int == 0i32 && unicode_cmap != 0 {
                         let mut alt_code: libc::c_int = 0;
-                        alt_code = fix_CJK_symbols(code as libc::c_ushort) as libc::c_int;
+                        alt_code = fix_CJK_symbols(code as u16) as libc::c_int;
                         if alt_code != code {
                             gid = tt_cmap_lookup(ttcmap, alt_code as SFNT_ULONG);
                             if gid as libc::c_int != 0i32 {
@@ -1625,7 +1625,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         cid = 1i32 as CID;
         while cid as libc::c_int <= last_cid as libc::c_int {
             let mut code_0: libc::c_int = 0;
-            let mut gid_0: libc::c_ushort = 0;
+            let mut gid_0: u16 = 0;
             if !(*v_used_chars.offset((cid as libc::c_int / 8i32) as isize) as libc::c_int
                 & 1i32 << 7i32 - cid as libc::c_int % 8i32
                 == 0)
@@ -1647,7 +1647,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                         gid_0 = tt_cmap_lookup(ttcmap, code_0 as SFNT_ULONG);
                         if gid_0 as libc::c_int == 0i32 && unicode_cmap != 0 {
                             let mut alt_code_0: libc::c_int = 0;
-                            alt_code_0 = fix_CJK_symbols(code_0 as libc::c_ushort) as libc::c_int;
+                            alt_code_0 = fix_CJK_symbols(code_0 as u16) as libc::c_int;
                             if alt_code_0 != code_0 {
                                 gid_0 = tt_cmap_lookup(ttcmap, alt_code_0 as SFNT_ULONG);
                                 if gid_0 as libc::c_int != 0i32 {

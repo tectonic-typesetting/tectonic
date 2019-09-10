@@ -19,7 +19,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -30,7 +30,7 @@ extern "C" {
     fn pdf_new_indirect(
         pf: *mut pdf_file,
         label: libc::c_uint,
-        generation: libc::c_ushort,
+        generation: u16,
     ) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_deref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
@@ -293,7 +293,7 @@ pub unsafe extern "C" fn parse_number(
     }
     while p < end
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -303,7 +303,7 @@ pub unsafe extern "C" fn parse_number(
         while p < end
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISdigit as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -324,7 +324,7 @@ pub unsafe extern "C" fn parse_unsigned(
     p = *start;
     while p < end {
         if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             == 0
         {
             break;
@@ -400,7 +400,7 @@ pub unsafe extern "C" fn parse_pdf_number(
     if p >= endptr
         || *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             == 0
             && *p.offset(0) as libc::c_int != '.' as i32
             && *p.offset(0) as libc::c_int != '+' as i32
@@ -456,7 +456,7 @@ pub unsafe extern "C" fn parse_pdf_number(
             }
         } else if *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             != 0
         {
             if has_dot != 0 {
@@ -497,11 +497,11 @@ unsafe extern "C" fn pn_getc(
         }
         if *(*__ctype_b_loc()).offset(*p.offset(1) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISxdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISxdigit as libc::c_int as u16 as libc::c_int
             == 0
             || *(*__ctype_b_loc()).offset(*p.offset(2) as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISxdigit as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISxdigit as libc::c_int as u16 as libc::c_int
                 == 0
         {
             *pp = (*pp).offset(3);
@@ -920,7 +920,7 @@ pub unsafe extern "C" fn parse_pdf_string(
                     || *(*__ctype_b_loc())
                         .offset(*(*pp).offset(1) as u8 as libc::c_int as isize)
                         as libc::c_int
-                        & _ISxdigit as libc::c_int as libc::c_ushort as libc::c_int
+                        & _ISxdigit as libc::c_int as u16 as libc::c_int
                         != 0)
             {
                 return parse_pdf_hex_string(pp, endptr);
@@ -1172,7 +1172,7 @@ unsafe extern "C" fn try_pdf_reference(
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj {
     let mut id: libc::c_uint = 0i32 as libc::c_uint;
-    let mut gen: libc::c_ushort = 0i32 as libc::c_ushort;
+    let mut gen: u16 = 0i32 as u16;
     if !pf.is_null() {
     } else {
         __assert_fail(b"pf\x00" as *const u8 as *const libc::c_char,
@@ -1188,7 +1188,7 @@ unsafe extern "C" fn try_pdf_reference(
     if start > end.offset(-5)
         || *(*__ctype_b_loc()).offset(*start as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             == 0
     {
         return 0 as *mut pdf_obj;
@@ -1203,7 +1203,7 @@ unsafe extern "C" fn try_pdf_reference(
         if start >= end
             || *(*__ctype_b_loc()).offset(*start as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISdigit as libc::c_int as u16 as libc::c_int
                 == 0
         {
             return 0 as *mut pdf_obj;
@@ -1217,7 +1217,7 @@ unsafe extern "C" fn try_pdf_reference(
     if start >= end
         || *(*__ctype_b_loc()).offset(*start as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             == 0
     {
         return 0 as *mut pdf_obj;
@@ -1232,12 +1232,12 @@ unsafe extern "C" fn try_pdf_reference(
         if start >= end
             || *(*__ctype_b_loc()).offset(*start as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISdigit as libc::c_int as u16 as libc::c_int
                 == 0
         {
             return 0 as *mut pdf_obj;
         }
-        gen = (gen as libc::c_int * 10i32 + (*start as libc::c_int - '0' as i32)) as libc::c_ushort;
+        gen = (gen as libc::c_int * 10i32 + (*start as libc::c_int - '0' as i32)) as u16;
         start = start.offset(1)
     }
     skip_white(&mut start, end);

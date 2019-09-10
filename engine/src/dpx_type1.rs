@@ -346,7 +346,7 @@ pub type l_offset = u32;
 /* 2-byte unsigned number */
 pub type c_offsize = u8;
 /* 1-byte unsigned number */
-pub type card16 = libc::c_ushort;
+pub type card16 = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_font {
@@ -438,7 +438,7 @@ pub struct cff_range2 {
     pub n_left: card16,
 }
 /* 1, 2, 3, or 4-byte offset */
-pub type s_SID = libc::c_ushort;
+pub type s_SID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_range1 {

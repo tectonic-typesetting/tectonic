@@ -66,7 +66,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
+    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
     fn tt_get_signed_pair(handle: rust_input_handle_t) -> libc::c_short;
     #[no_mangle]
@@ -365,7 +365,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
 pub type BYTE = u8;
-pub type USHORT = libc::c_ushort;
+pub type USHORT = u16;
 pub type SHORT = libc::c_short;
 pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
@@ -456,7 +456,7 @@ pub struct cff_index {
 pub type card8 = u8;
 pub type l_offset = u32;
 pub type c_offsize = u8;
-pub type card16 = libc::c_ushort;
+pub type card16 = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_dict {
@@ -539,7 +539,7 @@ pub struct cff_range2 {
 /* 1-byte unsigned number specifies the size
 of an Offset field or fields, range 1-4 */
 /* 1, 2, 3, or 4-byte offset */
-pub type s_SID = libc::c_ushort;
+pub type s_SID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_range1 {
@@ -786,7 +786,7 @@ pub struct SubHeader {
 pub struct cmap0 {
     pub glyphIndexArray: [BYTE; 256],
 }
-pub type CID = libc::c_ushort;
+pub type CID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cmap_plat_enc_rec {

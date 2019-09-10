@@ -23,7 +23,7 @@ extern "C" {
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
 }
 pub type card8 = u8;
-pub type card16 = libc::c_ushort;
+pub type card16 = u16;
 pub type c_offsize = u8;
 pub type l_offset = u32;
 #[derive(Copy, Clone)]

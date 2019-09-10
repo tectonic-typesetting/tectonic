@@ -21,7 +21,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
+    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
@@ -198,7 +198,7 @@ pub struct tfm_font {
     pub npc: u32,
     pub header: *mut fixword,
     pub char_info: *mut u32,
-    pub width_index: *mut libc::c_ushort,
+    pub width_index: *mut u16,
     pub height_index: *mut u8,
     pub depth_index: *mut u8,
     pub width: *mut fixword,
@@ -211,16 +211,16 @@ pub struct tfm_font {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct range_map {
-    pub num_coverages: libc::c_ushort,
+    pub num_coverages: u16,
     pub coverages: *mut coverage,
-    pub indices: *mut libc::c_ushort,
+    pub indices: *mut u16,
 }
 /* Special case of num_coverages = 1 */
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct char_map {
     pub coverage: coverage,
-    pub indices: *mut libc::c_ushort,
+    pub indices: *mut u16,
 }
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
@@ -250,7 +250,7 @@ unsafe extern "C" fn tfm_font_init(mut tfm: *mut tfm_font) {
     (*tfm).ncw = (*tfm).npc;
     (*tfm).nco = (*tfm).ncw;
     (*tfm).char_info = 0 as *mut u32;
-    (*tfm).width_index = 0 as *mut libc::c_ushort;
+    (*tfm).width_index = 0 as *mut u16;
     (*tfm).height_index = 0 as *mut u8;
     (*tfm).depth_index = 0 as *mut u8;
     (*tfm).depth = 0 as *mut fixword;
@@ -264,20 +264,20 @@ unsafe extern "C" fn tfm_font_clear(mut tfm: *mut tfm_font) {
         (*tfm).width = mfree((*tfm).width as *mut libc::c_void) as *mut fixword;
         (*tfm).height = mfree((*tfm).height as *mut libc::c_void) as *mut fixword;
         (*tfm).depth = mfree((*tfm).depth as *mut libc::c_void) as *mut fixword;
-        (*tfm).width_index = mfree((*tfm).width_index as *mut libc::c_void) as *mut libc::c_ushort;
+        (*tfm).width_index = mfree((*tfm).width_index as *mut libc::c_void) as *mut u16;
         (*tfm).height_index = mfree((*tfm).height_index as *mut libc::c_void) as *mut u8;
         (*tfm).depth_index = mfree((*tfm).depth_index as *mut libc::c_void) as *mut u8
     };
 }
 unsafe extern "C" fn release_char_map(mut map: *mut char_map) {
-    (*map).indices = mfree((*map).indices as *mut libc::c_void) as *mut libc::c_ushort;
+    (*map).indices = mfree((*map).indices as *mut libc::c_void) as *mut u16;
     free(map as *mut libc::c_void);
 }
 unsafe extern "C" fn release_range_map(mut map: *mut range_map) {
     free((*map).coverages as *mut libc::c_void);
     free((*map).indices as *mut libc::c_void);
     (*map).coverages = 0 as *mut coverage;
-    (*map).indices = 0 as *mut libc::c_ushort;
+    (*map).indices = 0 as *mut u16;
     free(map as *mut libc::c_void);
 }
 unsafe extern "C" fn lookup_char(
@@ -484,7 +484,7 @@ unsafe extern "C" fn tfm_get_sizes(
 }
 unsafe extern "C" fn tfm_unpack_arrays(mut fm: *mut font_metric, mut tfm: *mut tfm_font) {
     let mut charinfo: u32 = 0;
-    let mut width_index: libc::c_ushort = 0;
+    let mut width_index: u16 = 0;
     let mut height_index: u8 = 0;
     let mut depth_index: u8 = 0;
     let mut i: u32 = 0;
@@ -507,7 +507,7 @@ unsafe extern "C" fn tfm_unpack_arrays(mut fm: *mut font_metric, mut tfm: *mut t
     i = (*tfm).bc;
     while i <= (*tfm).ec {
         charinfo = *(*tfm).char_info.offset(i.wrapping_sub((*tfm).bc) as isize);
-        width_index = (charinfo >> 24i32) as libc::c_ushort;
+        width_index = (charinfo >> 24i32) as u16;
         height_index = (charinfo >> 20i32 & 0xfi32 as libc::c_uint) as u8;
         depth_index = (charinfo >> 16i32 & 0xfi32 as libc::c_uint) as u8;
         *(*fm).widths.offset(i as isize) = *(*tfm).width.offset(width_index as isize);
@@ -717,8 +717,8 @@ unsafe extern "C" fn ofm_do_char_info_zero(
     if num_chars != 0i32 as libc::c_uint {
         let mut i: u32 = 0;
         (*tfm).width_index = new((num_chars as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_ushort>() as u64)
-            as u32) as *mut libc::c_ushort;
+            .wrapping_mul(::std::mem::size_of::<u16>() as u64)
+            as u32) as *mut u16;
         (*tfm).height_index = new((num_chars as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
@@ -753,8 +753,8 @@ unsafe extern "C" fn ofm_do_char_info_one(
         let mut i: u32 = 0;
         let mut char_infos_read: u32 = 0;
         (*tfm).width_index = new((num_chars as u64)
-            .wrapping_mul(::std::mem::size_of::<libc::c_ushort>() as u64)
-            as u32) as *mut libc::c_ushort;
+            .wrapping_mul(::std::mem::size_of::<u16>() as u64)
+            as u32) as *mut u16;
         (*tfm).height_index = new((num_chars as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
@@ -870,7 +870,7 @@ unsafe extern "C" fn read_ofm(
         npc: 0,
         header: 0 as *mut fixword,
         char_info: 0 as *mut u32,
-        width_index: 0 as *mut libc::c_ushort,
+        width_index: 0 as *mut u16,
         height_index: 0 as *mut u8,
         depth_index: 0 as *mut u8,
         width: 0 as *mut fixword,
@@ -952,7 +952,7 @@ unsafe extern "C" fn read_tfm(
         npc: 0,
         header: 0 as *mut fixword,
         char_info: 0 as *mut u32,
-        width_index: 0 as *mut libc::c_ushort,
+        width_index: 0 as *mut u16,
         height_index: 0 as *mut u8,
         depth_index: 0 as *mut u8,
         width: 0 as *mut fixword,

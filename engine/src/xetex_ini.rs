@@ -358,13 +358,13 @@ pub const SELECTOR_NO_PRINT: selector_t = 16;
 pub const SELECTOR_FILE_15: selector_t = 15;
 pub const SELECTOR_FILE_0: selector_t = 0;
 /*18: */
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 pub type UTF8_code = u8;
 pub type UnicodeScalar = int32_t;
 pub type eight_bits = u8;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
-pub type packed_UTF16_code = libc::c_ushort;
+pub type packed_UTF16_code = u16;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -596,8 +596,8 @@ pub type font_index = int32_t;
 pub type nine_bits = int32_t;
 /* range: 0 .. 0x1FF */
 pub type trie_pointer = int32_t;
-pub type trie_opcode = libc::c_ushort;
-pub type hyph_pointer = libc::c_ushort;
+pub type trie_opcode = u16;
+pub type hyph_pointer = u16;
 pub type save_pointer = int32_t;
 #[derive(Copy, Clone)]
 #[repr(C)]

@@ -45,7 +45,7 @@ pub struct _IO_FILE {
     pub _fileno: libc::c_int,
     pub _flags2: libc::c_int,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
+    pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
     pub _shortbuf: [libc::c_char; 1],
     pub _lock: *mut libc::c_void,
@@ -112,20 +112,20 @@ pub unsafe extern "C" fn get_signed_byte(mut file: *mut FILE) -> libc::c_schar {
     return byte as libc::c_schar;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_unsigned_pair(mut file: *mut FILE) -> libc::c_ushort {
-    let mut pair: libc::c_ushort = get_unsigned_byte(file) as libc::c_ushort;
+pub unsafe extern "C" fn get_unsigned_pair(mut file: *mut FILE) -> u16 {
+    let mut pair: u16 = get_unsigned_byte(file) as u16;
     pair =
-        ((pair as libc::c_int) << 8i32 | get_unsigned_byte(file) as libc::c_int) as libc::c_ushort;
+        ((pair as libc::c_int) << 8i32 | get_unsigned_byte(file) as libc::c_int) as u16;
     return pair;
 }
 #[no_mangle]
-pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> libc::c_ushort {
+pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> u16 {
     let fresh1 = s;
     s = s.offset(1);
-    let mut pair: libc::c_ushort = *fresh1 as libc::c_ushort;
+    let mut pair: u16 = *fresh1 as u16;
     let fresh2 = s;
     s = s.offset(1);
-    pair = ((pair as libc::c_int) << 8i32 | *fresh2 as libc::c_int) as libc::c_ushort;
+    pair = ((pair as libc::c_int) << 8i32 | *fresh2 as libc::c_int) as u16;
     return pair;
 }
 #[no_mangle]
@@ -316,10 +316,10 @@ pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> 
     return byte as libc::c_schar;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_unsigned_pair(mut handle: rust_input_handle_t) -> libc::c_ushort {
-    let mut pair: libc::c_ushort = tt_get_unsigned_byte(handle) as libc::c_ushort;
+pub unsafe extern "C" fn tt_get_unsigned_pair(mut handle: rust_input_handle_t) -> u16 {
+    let mut pair: u16 = tt_get_unsigned_byte(handle) as u16;
     pair = ((pair as libc::c_int) << 8i32 | tt_get_unsigned_byte(handle) as libc::c_int)
-        as libc::c_ushort;
+        as u16;
     return pair;
 }
 #[no_mangle]

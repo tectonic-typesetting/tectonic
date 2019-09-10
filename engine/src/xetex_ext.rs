@@ -77,10 +77,10 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn getCachedGlyphBBox(fontID: uint16_t, glyphID: uint16_t, bbox: *mut GlyphBBox)
+    fn getCachedGlyphBBox(fontID: u16, glyphID: u16, bbox: *mut GlyphBBox)
         -> libc::c_int;
     #[no_mangle]
-    fn cacheGlyphBBox(fontID: uint16_t, glyphID: uint16_t, bbox: *const GlyphBBox);
+    fn cacheGlyphBBox(fontID: u16, glyphID: u16, bbox: *const GlyphBBox);
     #[no_mangle]
     fn get_cp_code(fontNum: libc::c_int, code: libc::c_uint, side: libc::c_int) -> libc::c_int;
     #[no_mangle]
@@ -100,7 +100,7 @@ extern "C" {
     #[no_mangle]
     fn layoutChars(
         engine: XeTeXLayoutEngine,
-        chars: *mut uint16_t,
+        chars: *mut u16,
         offset: int32_t,
         count: int32_t,
         max: int32_t,
@@ -207,13 +207,13 @@ extern "C" {
     #[no_mangle]
     fn initGraphiteBreaking(
         engine: XeTeXLayoutEngine,
-        txtPtr: *const uint16_t,
+        txtPtr: *const u16,
         txtLen: libc::c_int,
     ) -> bool;
     #[no_mangle]
     fn getFontCharRange(engine: XeTeXLayoutEngine, reqFirst: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn getGlyphName(font: XeTeXFont, gid: uint16_t, len: *mut libc::c_int) -> *const libc::c_char;
+    fn getGlyphName(font: XeTeXFont, gid: u16, len: *mut libc::c_int) -> *const libc::c_char;
     #[no_mangle]
     fn mapGlyphToIndex(engine: XeTeXLayoutEngine, glyphName: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
@@ -370,11 +370,9 @@ extern "C" {
     #[no_mangle]
     fn xn_over_d(x: scaled_t, n: int32_t, d: int32_t) -> scaled_t;
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -512,7 +510,7 @@ pub type str_number = int32_t;
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
 /*11:*/
 /*18: */
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 /*
     all public functions return a status code
 */
@@ -542,7 +540,7 @@ History:
 */
 /* 16.16 version number */
 /* these are all predefined if using a Mac prefix */
-pub type UInt16 = libc::c_ushort;
+pub type UInt16 = u16;
 pub type UInt32 = libc::c_uint;
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
@@ -595,10 +593,10 @@ pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type UniChar = UInt16;
 #[inline]
@@ -664,8 +662,8 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 #[inline]
-unsafe extern "C" fn SWAP16(p: uint16_t) -> uint16_t {
-    return ((p as libc::c_int >> 8i32) + ((p as libc::c_int) << 8i32)) as uint16_t;
+unsafe extern "C" fn SWAP16(p: u16) -> u16 {
+    return ((p as libc::c_int >> 8i32) + ((p as libc::c_int) << 8i32)) as u16;
 }
 #[inline]
 unsafe extern "C" fn SWAP32(p: u32) -> u32 {
@@ -726,14 +724,14 @@ authorization from the copyright holders.
 /* OT-related constants we need */
 static mut brkIter: *mut icu::UBreakIterator = 0 as *const icu::UBreakIterator as *mut icu::UBreakIterator;
 static mut brkLocaleStrNum: libc::c_int = 0i32;
-/* info for each glyph is location (FixedPoint) + glyph ID (uint16_t) */
+/* info for each glyph is location (FixedPoint) + glyph ID (u16) */
 /* glyph ID field in a glyph_node */
 /* For Unicode encoding form interpretation... */
 #[no_mangle]
 pub unsafe extern "C" fn linebreak_start(
     mut f: libc::c_int,
     mut localeStrNum: int32_t,
-    mut text: *mut uint16_t,
+    mut text: *mut u16,
     mut textLength: int32_t,
 ) {
     let mut status: icu::UErrorCode = icu::U_ZERO_ERROR;
@@ -883,7 +881,7 @@ pub unsafe extern "C" fn print_utf8_str(mut str: *const u8, mut len: libc::c_int
     /* bypass utf-8 encoding done in print_char() */
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_chars(mut str: *const libc::c_ushort, mut len: libc::c_int) {
+pub unsafe extern "C" fn print_chars(mut str: *const u16, mut len: libc::c_int) {
     loop {
         let fresh3 = len;
         len = len - 1;
@@ -2016,12 +2014,12 @@ static mut xdvBufSize: libc::c_int = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> libc::c_int {
     let mut cp: *mut u8 = 0 as *mut u8;
-    let mut glyphIDs: *mut uint16_t = 0 as *mut uint16_t;
+    let mut glyphIDs: *mut u16 = 0 as *mut u16;
     let mut p: *mut memory_word = pNode as *mut memory_word;
     let mut glyph_info: *mut libc::c_void = 0 as *mut libc::c_void;
     let mut locations: *mut FixedPoint = 0 as *mut FixedPoint;
     let mut width: Fixed = 0;
-    let mut glyphCount: uint16_t = (*p.offset(4)).b16.s0;
+    let mut glyphCount: u16 = (*p.offset(4)).b16.s0;
     let mut i: libc::c_int = glyphCount as libc::c_int * 10i32 + 8i32;
     if i > xdvBufSize {
         free(xdv_buffer as *mut libc::c_void);
@@ -2030,7 +2028,7 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
     }
     glyph_info = (*p.offset(5)).ptr;
     locations = glyph_info as *mut FixedPoint;
-    glyphIDs = locations.offset(glyphCount as libc::c_int as isize) as *mut uint16_t;
+    glyphIDs = locations.offset(glyphCount as libc::c_int as isize) as *mut u16;
     cp = xdv_buffer as *mut u8;
     width = (*p.offset(1)).b32.s1;
     let fresh13 = cp;
@@ -2083,7 +2081,7 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
     }
     i = 0i32;
     while i < glyphCount as libc::c_int {
-        let mut g: uint16_t = *glyphIDs.offset(i as isize);
+        let mut g: u16 = *glyphIDs.offset(i as isize);
         let fresh27 = cp;
         cp = cp.offset(1);
         *fresh27 = (g as libc::c_int >> 8i32 & 0xffi32) as u8;
@@ -2097,7 +2095,7 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
 }
 #[no_mangle]
 pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
-    let mut flags: uint16_t = 0i32 as uint16_t;
+    let mut flags: u16 = 0i32 as u16;
     let mut rgba: u32 = 0;
     let mut size: Fixed = 0;
     let mut filename: *mut libc::c_char = 0 as *mut libc::c_char;
@@ -2129,7 +2127,7 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
         }
         rgba = getRgbValue(engine);
         if *font_flags.offset(f as isize) as libc::c_int & 0x2i32 != 0i32 {
-            flags = (flags as libc::c_int | 0x100i32) as uint16_t
+            flags = (flags as libc::c_int | 0x100i32) as u16
         }
         extend = getExtendFactor(engine);
         slant = getSlantFactor(engine);
@@ -2151,19 +2149,19 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
     fontDefLength = 4i32 + 2i32 + 1i32 + filenameLen as libc::c_int + 4i32; /* face index */
     if *font_flags.offset(f as isize) as libc::c_int & 0x1i32 != 0i32 {
         fontDefLength += 4i32; /* 32-bit RGBA value */
-        flags = (flags as libc::c_int | 0x200i32) as uint16_t
+        flags = (flags as libc::c_int | 0x200i32) as u16
     }
     if extend as libc::c_double != 1.0f64 {
         fontDefLength += 4i32;
-        flags = (flags as libc::c_int | 0x1000i32) as uint16_t
+        flags = (flags as libc::c_int | 0x1000i32) as u16
     }
     if slant as libc::c_double != 0.0f64 {
         fontDefLength += 4i32;
-        flags = (flags as libc::c_int | 0x2000i32) as uint16_t
+        flags = (flags as libc::c_int | 0x2000i32) as u16
     }
     if embolden as libc::c_double != 0.0f64 {
         fontDefLength += 4i32;
-        flags = (flags as libc::c_int | 0x4000i32) as uint16_t
+        flags = (flags as libc::c_int | 0x4000i32) as u16
     }
     if fontDefLength > xdvBufSize {
         free(xdv_buffer as *mut libc::c_void);
@@ -2173,7 +2171,7 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
     cp = xdv_buffer;
     *(cp as *mut Fixed) = SWAP32(size as u32) as Fixed;
     cp = cp.offset(4);
-    *(cp as *mut uint16_t) = SWAP16(flags);
+    *(cp as *mut u16) = SWAP16(flags);
     cp = cp.offset(2);
     *(cp as *mut u8) = filenameLen;
     cp = cp.offset(1);
@@ -2210,7 +2208,7 @@ pub unsafe extern "C" fn make_font_def(mut f: int32_t) -> libc::c_int {
 #[no_mangle]
 pub unsafe extern "C" fn apply_mapping(
     mut pCnv: *mut libc::c_void,
-    mut txtPtr: *mut uint16_t,
+    mut txtPtr: *mut u16,
     mut txtLen: libc::c_int,
 ) -> libc::c_int {
     let mut cnv: TECkit_Converter = pCnv as TECkit_Converter;
@@ -2412,13 +2410,13 @@ pub unsafe extern "C" fn getnativecharwd(mut f: int32_t, mut c: int32_t) -> scal
 pub unsafe extern "C" fn real_get_native_glyph(
     mut pNode: *mut libc::c_void,
     mut index: libc::c_uint,
-) -> uint16_t {
+) -> u16 {
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
-    let mut glyphIDs: *mut uint16_t =
-        locations.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut uint16_t;
+    let mut glyphIDs: *mut u16 =
+        locations.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut u16;
     if index >= (*node.offset(4)).b16.s0 as libc::c_uint {
-        return 0i32 as uint16_t;
+        return 0i32 as u16;
     } else {
         return *glyphIDs.offset(index as isize);
     };
@@ -2436,8 +2434,8 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
         let mut justAmount: libc::c_double = Fix2D(savedWidth - (*node.offset(1)).b32.s1);
         /* apply justification to spaces (or if there are none, distribute it to all glyphs as a last resort) */
         let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
-        let mut glyphIDs: *mut uint16_t =
-            locations.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut uint16_t;
+        let mut glyphIDs: *mut u16 =
+            locations.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut u16;
         let mut glyphCount: libc::c_int = (*node.offset(4)).b16.s0 as libc::c_int;
         let mut spaceCount: libc::c_int = 0i32;
         let mut i: libc::c_int = 0;
@@ -2483,14 +2481,14 @@ pub unsafe extern "C" fn measure_native_node(
 ) {
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut txtLen: libc::c_int = (*node.offset(4)).b16.s1 as libc::c_int;
-    let mut txtPtr: *mut uint16_t = node.offset(6) as *mut uint16_t;
+    let mut txtPtr: *mut u16 = node.offset(6) as *mut u16;
     let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
     if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
         /* using this font in OT Layout mode, so font_layout_engine[f] is actually a XeTeXLayoutEngine */
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
         let mut locations: *mut FixedPoint = 0 as *mut FixedPoint;
-        let mut glyphIDs: *mut uint16_t = 0 as *mut uint16_t;
+        let mut glyphIDs: *mut u16 = 0 as *mut u16;
         let mut glyphAdvances: *mut Fixed = 0 as *mut Fixed;
         let mut totalGlyphCount: libc::c_int = 0i32;
         /* need to find direction runs within the text, and call layoutChars separately for each */
@@ -2539,7 +2537,7 @@ pub unsafe extern "C" fn measure_native_node(
                 let mut y: libc::c_double = 0.;
                 glyph_info = xcalloc(totalGlyphCount as size_t, 10i32 as size_t);
                 locations = glyph_info as *mut FixedPoint;
-                glyphIDs = locations.offset(totalGlyphCount as isize) as *mut uint16_t;
+                glyphIDs = locations.offset(totalGlyphCount as isize) as *mut u16;
                 glyphAdvances = xcalloc(
                     totalGlyphCount as size_t,
                     ::std::mem::size_of::<Fixed>() as u64,
@@ -2577,7 +2575,7 @@ pub unsafe extern "C" fn measure_native_node(
                     i = 0i32;
                     while i < nGlyphs {
                         *glyphIDs.offset(totalGlyphCount as isize) =
-                            *glyphs.offset(i as isize) as uint16_t;
+                            *glyphs.offset(i as isize) as u16;
                         (*locations.offset(totalGlyphCount as isize)).x =
                             D2Fix((*positions.offset(i as isize)).x as libc::c_double + x);
                         (*locations.offset(totalGlyphCount as isize)).y =
@@ -2597,7 +2595,7 @@ pub unsafe extern "C" fn measure_native_node(
                 width = x
             }
             (*node.offset(1)).b32.s1 = D2Fix(width);
-            (*node.offset(4)).b16.s0 = totalGlyphCount as uint16_t;
+            (*node.offset(4)).b16.s0 = totalGlyphCount as u16;
             let ref mut fresh29 = (*node.offset(5)).ptr;
             *fresh29 = glyph_info
         } else {
@@ -2629,14 +2627,14 @@ pub unsafe extern "C" fn measure_native_node(
                 let mut i_0: libc::c_int = 0;
                 glyph_info = xcalloc(totalGlyphCount as size_t, 10i32 as size_t);
                 locations = glyph_info as *mut FixedPoint;
-                glyphIDs = locations.offset(totalGlyphCount as isize) as *mut uint16_t;
+                glyphIDs = locations.offset(totalGlyphCount as isize) as *mut u16;
                 glyphAdvances = xcalloc(
                     totalGlyphCount as size_t,
                     ::std::mem::size_of::<Fixed>() as u64,
                 ) as *mut Fixed;
                 i_0 = 0i32;
                 while i_0 < totalGlyphCount {
-                    *glyphIDs.offset(i_0 as isize) = *glyphs.offset(i_0 as isize) as uint16_t;
+                    *glyphIDs.offset(i_0 as isize) = *glyphs.offset(i_0 as isize) as u16;
                     *glyphAdvances.offset(i_0 as isize) =
                         D2Fix(*advances.offset(i_0 as isize) as libc::c_double);
                     (*locations.offset(i_0 as isize)).x =
@@ -2648,7 +2646,7 @@ pub unsafe extern "C" fn measure_native_node(
                 width_0 = (*positions.offset(totalGlyphCount as isize)).x as libc::c_double
             }
             (*node.offset(1)).b32.s1 = D2Fix(width_0);
-            (*node.offset(4)).b16.s0 = totalGlyphCount as uint16_t;
+            (*node.offset(4)).b16.s0 = totalGlyphCount as u16;
             let ref mut fresh30 = (*node.offset(5)).ptr;
             *fresh30 = glyph_info;
             free(glyphs as *mut libc::c_void);
@@ -2692,8 +2690,8 @@ pub unsafe extern "C" fn measure_native_node(
     } else {
         /* this iterates over the glyph data whether it comes from AAT or OT layout */
         let mut locations_0: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint; /* NB negative is upwards in locations[].y! */
-        let mut glyphIDs_0: *mut uint16_t =
-            locations_0.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut uint16_t;
+        let mut glyphIDs_0: *mut u16 =
+            locations_0.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut u16;
         let mut yMin: libc::c_float = 65536.0f64 as libc::c_float;
         let mut yMax: libc::c_float = -65536.0f64 as libc::c_float;
         let mut i_2: libc::c_int = 0;
@@ -2709,7 +2707,7 @@ pub unsafe extern "C" fn measure_native_node(
                 xMax: 0.,
                 yMax: 0.,
             };
-            if getCachedGlyphBBox(f as uint16_t, *glyphIDs_0.offset(i_2 as isize), &mut bbox)
+            if getCachedGlyphBBox(f as u16, *glyphIDs_0.offset(i_2 as isize), &mut bbox)
                 == 0i32
             {
                 if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
@@ -2719,7 +2717,7 @@ pub unsafe extern "C" fn measure_native_node(
                         &mut bbox,
                     );
                 }
-                cacheGlyphBBox(f as uint16_t, *glyphIDs_0.offset(i_2 as isize), &mut bbox);
+                cacheGlyphBBox(f as u16, *glyphIDs_0.offset(i_2 as isize), &mut bbox);
             }
             ht = bbox.yMax;
             dp = -bbox.yMin;
@@ -2742,7 +2740,7 @@ pub unsafe extern "C" fn real_get_native_italic_correction(mut pNode: *mut libc:
     let mut n: libc::c_uint = (*node.offset(4)).b16.s0 as libc::c_uint;
     if n > 0i32 as libc::c_uint {
         let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
-        let mut glyphIDs: *mut uint16_t = locations.offset(n as isize) as *mut uint16_t;
+        let mut glyphIDs: *mut u16 = locations.offset(n as isize) as *mut u16;
         if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
             return D2Fix(getGlyphItalCorr(
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
@@ -2758,7 +2756,7 @@ pub unsafe extern "C" fn real_get_native_glyph_italic_correction(
     mut pNode: *mut libc::c_void,
 ) -> Fixed {
     let mut node: *mut memory_word = pNode as *mut memory_word;
-    let mut gid: uint16_t = (*node.offset(4)).b16.s1;
+    let mut gid: u16 = (*node.offset(4)).b16.s1;
     let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
     if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
         return D2Fix(getGlyphItalCorr(
@@ -2775,7 +2773,7 @@ pub unsafe extern "C" fn measure_native_glyph(
     mut use_glyph_metrics: libc::c_int,
 ) {
     let mut node: *mut memory_word = pNode as *mut memory_word;
-    let mut gid: uint16_t = (*node.offset(4)).b16.s1;
+    let mut gid: u16 = (*node.offset(4)).b16.s1;
     let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
     let mut ht: libc::c_float = 0.0f64 as libc::c_float;
     let mut dp: libc::c_float = 0.0f64 as libc::c_float;
@@ -2927,7 +2925,7 @@ pub unsafe extern "C" fn print_glyph_name(mut font: int32_t, mut gid: int32_t) {
     if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
-        s = getGlyphName(getFont(engine), gid as uint16_t, &mut len)
+        s = getGlyphName(getFont(engine), gid as u16, &mut len)
     } else {
         _tt_abort(
             b"bad native font flag in `print_glyph_name`\x00" as *const u8 as *const libc::c_char,
@@ -2951,11 +2949,11 @@ pub unsafe extern "C" fn real_get_native_word_cp(
 ) -> int32_t {
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
-    let mut glyphIDs: *mut uint16_t =
-        locations.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut uint16_t;
-    let mut glyphCount: uint16_t = (*node.offset(4)).b16.s0;
+    let mut glyphIDs: *mut u16 =
+        locations.offset((*node.offset(4)).b16.s0 as libc::c_int as isize) as *mut u16;
+    let mut glyphCount: u16 = (*node.offset(4)).b16.s0;
     let mut f: int32_t = (*node.offset(4)).b16.s2 as int32_t;
-    let mut actual_glyph: uint16_t = 0;
+    let mut actual_glyph: u16 = 0;
     if glyphCount as libc::c_int == 0i32 {
         return 0i32;
     }

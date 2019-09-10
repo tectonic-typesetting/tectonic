@@ -208,7 +208,7 @@ pub struct _IO_FILE {
     pub _fileno: libc::c_int,
     pub _flags2: libc::c_int,
     pub _old_offset: __off_t,
-    pub _cur_column: libc::c_ushort,
+    pub _cur_column: u16,
     pub _vtable_offset: libc::c_schar,
     pub _shortbuf: [libc::c_char; 1],
     pub _lock: *mut libc::c_void,

@@ -10,7 +10,7 @@ extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn cos(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
@@ -349,7 +349,7 @@ unsafe extern "C" fn parse_key_val(
     p = *pp;
     while p < endptr
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -430,7 +430,7 @@ unsafe extern "C" fn read_html_tag(
     let mut error: libc::c_int = 0i32;
     while p < endptr
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -442,7 +442,7 @@ unsafe extern "C" fn read_html_tag(
     p = p.offset(1);
     while p < endptr
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -453,7 +453,7 @@ unsafe extern "C" fn read_html_tag(
         while p < endptr
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -466,7 +466,7 @@ unsafe extern "C" fn read_html_tag(
             || *p as libc::c_int == '/' as i32
             || *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0)
     {
         *name.offset(n as isize) = *p;
@@ -480,7 +480,7 @@ unsafe extern "C" fn read_html_tag(
             || *p as libc::c_int == '/' as i32
             || *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0)
     {
         *pp = p;
@@ -488,7 +488,7 @@ unsafe extern "C" fn read_html_tag(
     }
     while p < endptr
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -525,7 +525,7 @@ unsafe extern "C" fn read_html_tag(
         while p < endptr
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -541,7 +541,7 @@ unsafe extern "C" fn read_html_tag(
         while p < endptr
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -1108,7 +1108,7 @@ unsafe extern "C" fn spc_html__img_empty(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -1140,7 +1140,7 @@ unsafe extern "C" fn spc_html__img_empty(
                 while *p as libc::c_int != 0
                     && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                         as libc::c_int
-                        & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                        & _ISspace as libc::c_int as u16 as libc::c_int
                         != 0
                 {
                     p = p.offset(1)
@@ -1150,7 +1150,7 @@ unsafe extern "C" fn spc_html__img_empty(
                     while *p as libc::c_int != 0
                         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                             as libc::c_int
-                            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                            & _ISspace as libc::c_int as u16 as libc::c_int
                             != 0
                     {
                         p = p.offset(1)
@@ -1337,7 +1337,7 @@ unsafe extern "C" fn spc_handler_html_default(
         && *(*__ctype_b_loc())
             .offset(*(*ap).curptr.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         (*ap).curptr = (*ap).curptr.offset(1)
@@ -1366,7 +1366,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
     let mut k: libc::c_int = 0;
     while *p as libc::c_int != 0
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -1384,7 +1384,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
     /* handle args */
     while *p as libc::c_int != 0
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -1395,7 +1395,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
     p = p.offset(1);
     while *p as libc::c_int != 0
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -1413,7 +1413,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
         while *p as libc::c_int != 0
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISspace as libc::c_int as u16 as libc::c_int
                 != 0
         {
             p = p.offset(1)
@@ -1423,7 +1423,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
             while *p as libc::c_int != 0
                 && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                     as libc::c_int
-                    & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISspace as libc::c_int as u16 as libc::c_int
                     != 0
             {
                 p = p.offset(1)
@@ -1538,7 +1538,7 @@ pub unsafe extern "C" fn spc_html_check_special(
     endptr = p.offset(size as isize);
     while p < endptr
         && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         p = p.offset(1)
@@ -1595,7 +1595,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
         && *(*__ctype_b_loc())
             .offset(*(*ap).curptr.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         (*ap).curptr = (*ap).curptr.offset(1)
@@ -1625,7 +1625,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
         && *(*__ctype_b_loc())
             .offset(*(*ap).curptr.offset(0) as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISspace as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISspace as libc::c_int as u16 as libc::c_int
             != 0
     {
         (*ap).curptr = (*ap).curptr.offset(1)

@@ -22,7 +22,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
+    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
     fn ttstub_input_open(
         path: *const libc::c_char,

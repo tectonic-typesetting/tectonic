@@ -54,10 +54,10 @@ pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
 pub type str_number = int32_t;
-pub type packed_UTF16_code = libc::c_ushort;
+pub type packed_UTF16_code = u16;
 pub type UInt32 = libc::c_uint;
 pub type pool_pointer = int32_t;
-pub type UInt16 = libc::c_ushort;
+pub type UInt16 = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tm {

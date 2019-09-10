@@ -176,11 +176,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_doc_get_dictionary(category: *const libc::c_char) -> *mut pdf_obj;
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
 #[derive(Copy, Clone)]
@@ -297,7 +295,7 @@ pub struct pdf_sec {
 #[repr(C)]
 pub struct C2RustUnnamed {
     pub objnum: u64,
-    pub gennum: uint16_t,
+    pub gennum: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1585,6 +1583,6 @@ pub unsafe extern "C" fn pdf_enc_set_label(mut label: libc::c_uint) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_set_generation(mut generation: libc::c_uint) {
     let mut p: *mut pdf_sec = &mut sec_data;
-    (*p).label.gennum = generation as uint16_t;
+    (*p).label.gennum = generation as u16;
 }
 /* Order is important here */

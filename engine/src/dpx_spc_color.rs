@@ -16,7 +16,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -203,7 +203,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const libc::c_char, mut endptr: *c
         && (*p as libc::c_int & !0x7fi32 == 0i32
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISblank as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISblank as libc::c_int as u16 as libc::c_int
                 != 0)
     {
         p = p.offset(1)

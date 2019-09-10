@@ -15,7 +15,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn atof(__nptr: *const libc::c_char) -> libc::c_double;
     #[no_mangle]
@@ -226,7 +226,7 @@ pub struct ht_table {
 pub struct pdf_obj {
     pub type_0: libc::c_int,
     pub label: libc::c_uint,
-    pub generation: libc::c_ushort,
+    pub generation: u16,
     pub refcount: libc::c_uint,
     pub flags: libc::c_int,
     pub data: *mut libc::c_void,
@@ -269,7 +269,7 @@ pub struct pdf_file {
 pub struct xref_entry {
     pub type_0: u8,
     pub field2: libc::c_uint,
-    pub field3: libc::c_ushort,
+    pub field3: u16,
     pub direct: *mut pdf_obj,
     pub indirect: *mut pdf_obj,
 }
@@ -310,7 +310,7 @@ pub struct pdf_indirect {
     pub pf: *mut pdf_file,
     pub obj: *mut pdf_obj,
     pub label: libc::c_uint,
-    pub generation: libc::c_ushort,
+    pub generation: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -421,7 +421,7 @@ unsafe extern "C" fn add_xref_entry(
     mut label: libc::c_uint,
     mut type_0: u8,
     mut field2: libc::c_uint,
-    mut field3: libc::c_ushort,
+    mut field3: u16,
 ) {
     if label >= pdf_max_ind_objects {
         pdf_max_ind_objects = label
@@ -456,7 +456,7 @@ pub unsafe extern "C" fn pdf_out_init(
         0i32 as libc::c_uint,
         0i32 as u8,
         0i32 as libc::c_uint,
-        0xffffi32 as libc::c_ushort,
+        0xffffi32 as u16,
     );
     next_label = 1i32 as libc::c_uint;
     if pdf_version >= 5i32 as libc::c_uint {
@@ -623,12 +623,12 @@ unsafe extern "C" fn dump_xref_stream() {
         next_label.wrapping_sub(1i32 as libc::c_uint),
         1i32 as u8,
         startxref,
-        0i32 as libc::c_ushort,
+        0i32 as u16,
     );
     i = 0i32 as libc::c_uint;
     while i < next_label {
         let mut j: libc::c_uint = 0;
-        let mut f3: libc::c_ushort = 0;
+        let mut f3: u16 = 0;
         buf[0] = (*output_xref.offset(i as isize)).type_0;
         pos = (*output_xref.offset(i as isize)).field2;
         j = poslen;
@@ -866,7 +866,7 @@ unsafe extern "C" fn pdf_new_obj(mut type_0: libc::c_int) -> *mut pdf_obj {
     (*result).type_0 = type_0;
     (*result).data = 0 as *mut libc::c_void;
     (*result).label = 0i32 as libc::c_uint;
-    (*result).generation = 0i32 as libc::c_ushort;
+    (*result).generation = 0i32 as u16;
     (*result).refcount = 1i32 as libc::c_uint;
     (*result).flags = 0i32;
     return result;
@@ -891,7 +891,7 @@ unsafe extern "C" fn pdf_label_obj(mut object: *mut pdf_obj) {
         let fresh3 = next_label;
         next_label = next_label.wrapping_add(1);
         (*object).label = fresh3;
-        (*object).generation = 0i32 as libc::c_ushort
+        (*object).generation = 0i32 as u16
     };
 }
 /*
@@ -915,7 +915,7 @@ pub unsafe extern "C" fn pdf_transfer_label(mut dst: *mut pdf_obj, mut src: *mut
     (*dst).label = (*src).label;
     (*dst).generation = (*src).generation;
     (*src).label = 0i32 as libc::c_uint;
-    (*src).generation = 0i32 as libc::c_ushort;
+    (*src).generation = 0i32 as u16;
 }
 /*
  * This doesn't really copy the object, but allows it to be used without
@@ -1284,7 +1284,7 @@ unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_out
     i = 0i32 as size_t;
     while i < len {
         if *(*__ctype_b_loc()).offset(*s.offset(i as isize) as libc::c_int as isize) as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         {
             nescc += 1
@@ -2348,7 +2348,7 @@ unsafe extern "C" fn pdf_add_objstm(
         (*object).label,
         2i32 as u8,
         (*objstm).label,
-        (pos - 1i32) as libc::c_ushort,
+        (pos - 1i32) as u16,
     );
     /* redirect output into objstm */
     output_stream = objstm;
@@ -2712,7 +2712,7 @@ unsafe extern "C" fn next_object_offset(
 pub unsafe extern "C" fn pdf_new_indirect(
     mut pf: *mut pdf_file,
     mut obj_num: libc::c_uint,
-    mut obj_gen: libc::c_ushort,
+    mut obj_gen: u16,
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut indirect: *mut pdf_indirect = 0 as *mut pdf_indirect;
@@ -2729,7 +2729,7 @@ pub unsafe extern "C" fn pdf_new_indirect(
 }
 unsafe extern "C" fn pdf_read_object(
     mut obj_num: libc::c_uint,
-    mut obj_gen: libc::c_ushort,
+    mut obj_gen: u16,
     mut pf: *mut pdf_file,
     mut offset: libc::c_int,
     mut limit: libc::c_int,
@@ -2806,7 +2806,7 @@ unsafe extern "C" fn pdf_read_object(
 unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: libc::c_uint) -> *mut pdf_obj {
     let mut current_block: u64;
     let mut offset: libc::c_uint = (*(*pf).xref_table.offset(num as isize)).field2;
-    let mut gen: libc::c_ushort = (*(*pf).xref_table.offset(num as isize)).field3;
+    let mut gen: u16 = (*(*pf).xref_table.offset(num as isize)).field3;
     let mut limit: libc::c_int = next_object_offset(pf, num);
     let mut n: libc::c_int = 0;
     let mut first: libc::c_int = 0;
@@ -2917,7 +2917,7 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: libc::c_uint) -
 unsafe extern "C" fn pdf_get_object(
     mut pf: *mut pdf_file,
     mut obj_num: libc::c_uint,
-    mut obj_gen: libc::c_ushort,
+    mut obj_gen: u16,
 ) -> *mut pdf_obj {
     let mut current_block: u64;
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -2951,7 +2951,7 @@ unsafe extern "C" fn pdf_get_object(
     } else {
         /* type == 2 */
         let mut objstm_num: libc::c_uint = (*(*pf).xref_table.offset(obj_num as isize)).field2;
-        let mut index: libc::c_ushort = (*(*pf).xref_table.offset(obj_num as isize)).field3;
+        let mut index: u16 = (*(*pf).xref_table.offset(obj_num as isize)).field3;
         let mut objstm: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut data: *mut libc::c_int = 0 as *mut libc::c_int;
         let mut n: libc::c_int = 0;
@@ -3043,7 +3043,7 @@ pub unsafe extern "C" fn pdf_deref_obj(mut obj: *mut pdf_obj) -> *mut pdf_obj {
         let mut pf: *mut pdf_file = (*((*obj).data as *mut pdf_indirect)).pf;
         if !pf.is_null() {
             let mut obj_num: libc::c_uint = (*((*obj).data as *mut pdf_indirect)).label;
-            let mut obj_gen: libc::c_ushort = (*((*obj).data as *mut pdf_indirect)).generation;
+            let mut obj_gen: u16 = (*((*obj).data as *mut pdf_indirect)).generation;
             pdf_release_obj(obj);
             obj = pdf_get_object(pf, obj_num, obj_gen)
         } else {
@@ -3082,7 +3082,7 @@ unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: libc::c_in
         let ref mut fresh30 = (*(*pf).xref_table.offset(i as isize)).indirect;
         *fresh30 = 0 as *mut pdf_obj;
         (*(*pf).xref_table.offset(i as isize)).type_0 = 0i32 as u8;
-        (*(*pf).xref_table.offset(i as isize)).field3 = 0i32 as libc::c_ushort;
+        (*(*pf).xref_table.offset(i as isize)).field3 = 0i32 as u16;
         (*(*pf).xref_table.offset(i as isize)).field2 = 0i64 as libc::c_uint;
         i = i.wrapping_add(1)
     }
@@ -3341,7 +3341,7 @@ unsafe extern "C" fn parse_xref_table(
                                         as u8; /* TODO: change! why? */
                                 (*(*pf).xref_table.offset(i as isize)).field2 = offset;
                                 (*(*pf).xref_table.offset(i as isize)).field3 =
-                                    obj_gen as libc::c_ushort
+                                    obj_gen as u16
                             }
                             i += 1
                         }
@@ -3400,7 +3400,7 @@ unsafe extern "C" fn parse_xrefstm_subsec(
         }
         let mut type_0: u8 = 0;
         let mut field2: libc::c_uint = 0;
-        let mut field3: libc::c_ushort = 0;
+        let mut field3: u16 = 0;
         type_0 = parse_xrefstm_field(p, *W.offset(0), 1i32 as libc::c_uint) as u8;
         if type_0 as libc::c_int > 2i32 {
             dpx_warning(
@@ -3409,7 +3409,7 @@ unsafe extern "C" fn parse_xrefstm_subsec(
             );
         }
         field2 = parse_xrefstm_field(p, *W.offset(1), 0i32 as libc::c_uint);
-        field3 = parse_xrefstm_field(p, *W.offset(2), 0i32 as libc::c_uint) as libc::c_ushort;
+        field3 = parse_xrefstm_field(p, *W.offset(2), 0i32 as libc::c_uint) as u16;
         if (*e).field2 == 0 {
             (*e).type_0 = type_0;
             (*e).field2 = field2;
@@ -3437,7 +3437,7 @@ unsafe extern "C" fn parse_xref_stream(
     let mut p: *const libc::c_char = 0 as *const libc::c_char;
     xrefstm = pdf_read_object(
         0i32 as libc::c_uint,
-        0i32 as libc::c_ushort,
+        0i32 as u16,
         pf,
         xref_pos,
         (*pf).file_size,
@@ -3976,7 +3976,7 @@ static mut loop_marker: pdf_obj = {
     let mut init = pdf_obj {
         type_0: 0i32,
         label: 0i32 as libc::c_uint,
-        generation: 0i32 as libc::c_ushort,
+        generation: 0i32 as u16,
         refcount: 0i32 as libc::c_uint,
         flags: 0i32,
         data: 0 as *const libc::c_void as *mut libc::c_void,
@@ -3986,7 +3986,7 @@ static mut loop_marker: pdf_obj = {
 unsafe extern "C" fn pdf_import_indirect(mut object: *mut pdf_obj) -> *mut pdf_obj {
     let mut pf: *mut pdf_file = (*((*object).data as *mut pdf_indirect)).pf;
     let mut obj_num: libc::c_uint = (*((*object).data as *mut pdf_indirect)).label;
-    let mut obj_gen: libc::c_ushort = (*((*object).data as *mut pdf_indirect)).generation;
+    let mut obj_gen: u16 = (*((*object).data as *mut pdf_indirect)).generation;
     let mut ref_0: *mut pdf_obj = 0 as *mut pdf_obj;
     if !pf.is_null() {
     } else {

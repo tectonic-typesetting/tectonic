@@ -9,7 +9,7 @@ extern crate libc;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn floor(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
@@ -1177,7 +1177,7 @@ unsafe extern "C" fn print_error(
     p = (*ap).base;
     while i < 63i32 && p < (*ap).endptr {
         if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             != 0
         {
             let fresh0 = i;
@@ -1216,7 +1216,7 @@ unsafe extern "C" fn print_error(
         while i < 63i32 && p < (*ap).endptr {
             if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISprint as libc::c_int as u16 as libc::c_int
                 != 0
             {
                 let fresh2 = i;

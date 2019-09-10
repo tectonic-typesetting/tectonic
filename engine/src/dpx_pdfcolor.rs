@@ -9,7 +9,7 @@ extern crate libc;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -93,7 +93,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn sget_unsigned_pair(_: *mut u8) -> libc::c_ushort;
+    fn sget_unsigned_pair(_: *mut u8) -> u16;
     #[no_mangle]
     fn pdf_dev_get_param(param_type: libc::c_int) -> libc::c_int;
     #[no_mangle]
@@ -1312,22 +1312,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).CMMType >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).CMMType >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).CMMType >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).CMMType & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(
@@ -1358,22 +1358,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).devClass >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devClass >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devClass >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devClass & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(
@@ -1398,22 +1398,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).colorSpace >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).colorSpace >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).colorSpace >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).colorSpace & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(
@@ -1438,22 +1438,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).PCS >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).PCS >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).PCS >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).PCS & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(
@@ -1497,22 +1497,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).platform >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).platform >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).platform >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).platform & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(
@@ -1545,22 +1545,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).devMnfct >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devMnfct >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devMnfct >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devMnfct & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(
@@ -1585,22 +1585,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).devModel >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devModel >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devModel >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).devModel & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(
@@ -1661,22 +1661,22 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
     } else if *(*__ctype_b_loc())
         .offset(((*icch).creator >> 24i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
         as libc::c_int
-        & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+        & _ISprint as libc::c_int as u16 as libc::c_int
         == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).creator >> 16i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).creator >> 8i32 & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
         || *(*__ctype_b_loc())
             .offset(((*icch).creator & 0xffi32 as libc::c_uint) as libc::c_int as isize)
             as libc::c_int
-            & _ISprint as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISprint as libc::c_int as u16 as libc::c_int
             == 0
     {
         dpx_message(

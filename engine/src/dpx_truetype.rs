@@ -322,7 +322,7 @@ pub struct sfnt_table {
     pub length: SFNT_ULONG,
     pub data: *mut libc::c_char,
 }
-pub type USHORT = libc::c_ushort;
+pub type USHORT = u16;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

@@ -189,7 +189,7 @@ pub struct C2RustUnnamed_0 {
     pub max: libc::c_uint,
     pub ranges: *mut rangeDef,
 }
-pub type CID = libc::c_ushort;
+pub type CID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap_cache {

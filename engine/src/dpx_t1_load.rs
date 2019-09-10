@@ -224,14 +224,14 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* size offset(0) */
 pub type card8 = u8;
 /* 1-byte unsigned number */
-pub type card16 = libc::c_ushort;
+pub type card16 = u16;
 /* 2-byte unsigned number */
 pub type c_offsize = u8;
 /* 1-byte unsigned number specifies the size
 of an Offset field or fields, range 1-4 */
 pub type l_offset = u32;
 /* 1, 2, 3, or 4-byte offset */
-pub type s_SID = libc::c_ushort;
+pub type s_SID = u16;
 /* 2-byte string identifier  */
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -401,7 +401,7 @@ unsafe extern "C" fn strstartswith(
     return 0 as *const libc::c_char;
 }
 unsafe extern "C" fn t1_decrypt(
-    mut key: libc::c_ushort,
+    mut key: u16,
     mut dst: *mut u8,
     mut src: *const u8,
     mut skip: libc::c_int,
@@ -418,7 +418,7 @@ unsafe extern "C" fn t1_decrypt(
         src = src.offset(1);
         key = ((key as libc::c_int + *fresh1 as libc::c_int) as libc::c_uint)
             .wrapping_mul(52845u32)
-            .wrapping_add(22719u32) as libc::c_ushort
+            .wrapping_add(22719u32) as u16
     }
     loop {
         let fresh2 = len;
@@ -434,7 +434,7 @@ unsafe extern "C" fn t1_decrypt(
         *fresh4 = (c as libc::c_int ^ key as libc::c_int >> 8i32) as u8;
         key = ((key as libc::c_int + c as libc::c_int) as libc::c_uint)
             .wrapping_mul(52845u32)
-            .wrapping_add(22719u32) as libc::c_ushort
+            .wrapping_add(22719u32) as u16
     }
 }
 /* T1CRYPT */
@@ -1820,7 +1820,7 @@ unsafe extern "C" fn parse_subrs(
                 }
                 if lenIV >= 0i32 {
                     t1_decrypt(
-                        4330u32 as libc::c_ushort,
+                        4330u32 as u16,
                         data.offset(offset as isize),
                         *start,
                         lenIV,
@@ -2105,7 +2105,7 @@ unsafe extern "C" fn parse_charstrings(
                     let mut offs: libc::c_int = if gid != 0 { offset } else { 0i32 };
                     *(*charstrings).offset.offset(gid as isize) = (offs + 1i32) as l_offset;
                     t1_decrypt(
-                        4330u32 as libc::c_ushort,
+                        4330u32 as u16,
                         (*charstrings).data.offset(offs as isize),
                         *start,
                         lenIV,
@@ -2842,7 +2842,7 @@ pub unsafe extern "C" fn t1_load_font(
             b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const libc::c_char,
         );
     } else {
-        t1_decrypt(55665u32 as libc::c_ushort, buffer, buffer, 0i32, length);
+        t1_decrypt(55665u32 as u16, buffer, buffer, 0i32, length);
     }
     start = buffer.offset(4);
     end = buffer.offset(length as isize);

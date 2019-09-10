@@ -11,7 +11,7 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const libc::c_char) -> libc::c_double;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn cos(_: libc::c_double) -> libc::c_double;
     #[no_mangle]
@@ -187,7 +187,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const libc::c_char, mut endptr: *c
         && (*p as libc::c_int & !0x7fi32 == 0i32
             && *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISblank as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISblank as libc::c_int as u16 as libc::c_int
                 != 0)
     {
         p = p.offset(1)

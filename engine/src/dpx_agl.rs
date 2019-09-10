@@ -15,7 +15,7 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
     #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const libc::c_ushort;
+    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtol(_: *const libc::c_char, _: *mut *mut libc::c_char, _: libc::c_int) -> libc::c_long;
     #[no_mangle]
@@ -921,7 +921,7 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut libc::c_char) -> *m
             *(*agln).name.offset(i as isize) = (if *(*__ctype_b_loc())
                 .offset(*glyphname.offset(i as isize) as u8 as libc::c_int as isize)
                 as libc::c_int
-                & _ISupper as libc::c_int as libc::c_ushort as libc::c_int
+                & _ISupper as libc::c_int as u16 as libc::c_int
                 != 0
             {
                 *glyphname.offset(i as isize) as libc::c_int + 32i32
@@ -1233,7 +1233,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const libc::c_char)
          * "union" should not be treated as Unicode glyph name.
          */
         if *(*__ctype_b_loc()).offset(c as u8 as libc::c_int as isize) as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             != 0
             || c as libc::c_int >= 'A' as i32 && c as libc::c_int <= 'F' as i32
         {
@@ -1251,7 +1251,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const libc::c_char)
                 c = *glyphname.offset(i as isize);
                 if *(*__ctype_b_loc()).offset(c as u8 as libc::c_int as isize)
                     as libc::c_int
-                    & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+                    & _ISdigit as libc::c_int as u16 as libc::c_int
                     == 0
                     && ((c as libc::c_int) < 'A' as i32 || c as libc::c_int > 'F' as i32)
                 {
@@ -1288,7 +1288,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const libc::c_
     ucv = 0i32;
     while *p as libc::c_int != '\u{0}' as i32 && *p as libc::c_int != '.' as i32 {
         if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize) as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             == 0
             && ((*p as libc::c_int) < 'A' as i32 || *p as libc::c_int > 'F' as i32)
         {
@@ -1303,7 +1303,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const libc::c_
         ucv <<= 4i32;
         ucv += if *(*__ctype_b_loc()).offset(*p as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             != 0
         {
             *p as libc::c_int - '0' as i32
@@ -1339,7 +1339,7 @@ unsafe extern "C" fn xtol(mut start: *const libc::c_char, mut len: libc::c_int) 
         v <<= 4i32;
         if *(*__ctype_b_loc()).offset(*start as u8 as libc::c_int as isize)
             as libc::c_int
-            & _ISdigit as libc::c_int as libc::c_ushort as libc::c_int
+            & _ISdigit as libc::c_int as u16 as libc::c_int
             != 0
         {
             v += *start as libc::c_int - '0' as i32

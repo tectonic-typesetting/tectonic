@@ -345,11 +345,11 @@ pub const SELECTOR_FILE_0: selector_t = 0;
 /* Array allocations. Add 1 to size to account for Pascal indexing convention. */
 /*11:*/
 /*18: */
-pub type UTF16_code = libc::c_ushort;
+pub type UTF16_code = u16;
 pub type eight_bits = u8;
 pub type pool_pointer = int32_t;
 pub type str_number = int32_t;
-pub type packed_UTF16_code = libc::c_ushort;
+pub type packed_UTF16_code = u16;
 pub type small_number = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1916,7 +1916,7 @@ unsafe extern "C" fn hlist_out() {
                                         *str_pool.offset(pool_ptr as isize) = *(&mut *mem
                                             .offset((q + 6i32) as isize)
                                             as *mut memory_word
-                                            as *mut libc::c_ushort)
+                                            as *mut u16)
                                             .offset(j as isize);
                                         pool_ptr += 1;
                                         j += 1
@@ -1966,7 +1966,7 @@ unsafe extern "C" fn hlist_out() {
                         j = 0i32;
                         while j < cur_length() {
                             *(&mut *mem.offset((q + 6i32) as isize) as *mut memory_word
-                                as *mut libc::c_ushort)
+                                as *mut u16)
                                 .offset(j as isize) = *str_pool.offset(
                                 (*str_start.offset((str_ptr - 65536i32) as isize) + j) as isize,
                             );
@@ -2281,7 +2281,7 @@ unsafe extern "C" fn hlist_out() {
                                                                   as
                                                                   *mut memory_word
                                                                   as
-                                                                  *mut libc::c_ushort).offset(k
+                                                                  *mut u16).offset(k
                                                                                                   as
                                                                                                   isize));
                                                     k += 1

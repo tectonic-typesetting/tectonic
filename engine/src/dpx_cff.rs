@@ -32,7 +32,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
+    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
     fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
     #[no_mangle]
@@ -132,14 +132,14 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* size offset(0) */
 pub type card8 = u8;
 /* 1-byte unsigned number */
-pub type card16 = libc::c_ushort;
+pub type card16 = u16;
 /* 2-byte unsigned number */
 pub type c_offsize = u8;
 /* 1-byte unsigned number specifies the size
 of an Offset field or fields, range 1-4 */
 pub type l_offset = u32;
 /* 1, 2, 3, or 4-byte offset */
-pub type s_SID = libc::c_ushort;
+pub type s_SID = u16;
 /* 2-byte string identifier  */
 #[derive(Copy, Clone)]
 #[repr(C)]
