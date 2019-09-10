@@ -442,8 +442,8 @@ unsafe extern "C" fn jpeg_get_density(
     *ydensity = 72.0f64 / (*j_info).ydpi;
 }
 unsafe extern "C" fn JPEG_info_init(mut j_info: *mut JPEG_info) {
-    (*j_info).width = 0i32 as u16;
-    (*j_info).height = 0i32 as u16;
+    (*j_info).width = 0_u16;
+    (*j_info).height = 0_u16;
     (*j_info).bits_per_component = 0i32 as u8;
     (*j_info).num_components = 0i32 as u8;
     (*j_info).xdpi = 0.0f64;
@@ -650,7 +650,7 @@ unsafe extern "C" fn read_APP14_Adobe(
         JS_APPn_ADOBE as i32,
         app_data as *mut libc::c_void,
     );
-    return 7i32 as u16;
+    return 7_u16;
 }
 unsafe extern "C" fn read_exif_bytes(mut pp: *mut *mut u8, mut n: i32, mut endian: i32) -> i32 {
     let mut rval: i32 = 0i32;

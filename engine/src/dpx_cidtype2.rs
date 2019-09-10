@@ -807,8 +807,8 @@ static mut known_encodings: [C2RustUnnamed_3; 11] = [
     },
     {
         let mut init = C2RustUnnamed_3 {
-            platform: 0i32 as u16,
-            encoding: 0i32 as u16,
+            platform: 0_u16,
+            encoding: 0_u16,
             pdfnames: [
                 0 as *const i8,
                 0 as *const i8,
@@ -1077,71 +1077,71 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
     static mut CJK_Uni_symbols: [C2RustUnnamed_2; 10] = [
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2014i32 as u16,
-                alt2: 0x2015i32 as u16,
+                alt1: 0x2014_u16,
+                alt2: 0x2015_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2016i32 as u16,
-                alt2: 0x2225i32 as u16,
+                alt1: 0x2016_u16,
+                alt2: 0x2225_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x203ei32 as u16,
-                alt2: 0xffe3i32 as u16,
+                alt1: 0x203e_u16,
+                alt2: 0xffe3_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2026i32 as u16,
-                alt2: 0x22efi32 as u16,
+                alt1: 0x2026_u16,
+                alt2: 0x22ef_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x2212i32 as u16,
-                alt2: 0xff0di32 as u16,
+                alt1: 0x2212_u16,
+                alt2: 0xff0d_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0x301ci32 as u16,
-                alt2: 0xff5ei32 as u16,
+                alt1: 0x301c_u16,
+                alt2: 0xff5e_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffe0i32 as u16,
-                alt2: 0xa2i32 as u16,
+                alt1: 0xffe0_u16,
+                alt2: 0xa2_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffe1i32 as u16,
-                alt2: 0xa3i32 as u16,
+                alt1: 0xffe1_u16,
+                alt2: 0xa3_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffe2i32 as u16,
-                alt2: 0xaci32 as u16,
+                alt1: 0xffe2_u16,
+                alt2: 0xac_u16,
             };
             init
         },
         {
             let mut init = C2RustUnnamed_2 {
-                alt1: 0xffffi32 as u16,
-                alt2: 0xffffi32 as u16,
+                alt1: 0xffff_u16,
+                alt2: 0xffff_u16,
             };
             init
         },
@@ -1403,7 +1403,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     } /* .notdef */
     glyphs = tt_build_init();
     last_cid = 0i32 as CID;
-    num_glyphs = 1i32 as u16;
+    num_glyphs = 1_u16;
     v_used_chars = 0 as *mut i8;
     h_used_chars = v_used_chars;
     used_chars = h_used_chars;
@@ -1865,7 +1865,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     let mut namelen: i32 = 0;
     /* MAC-ROMAN-EN-POSTSCRIPT or WIN-UNICODE-EN(US)-POSTSCRIPT */
     shortname = new((127_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8; /* for SJIS, UTF-16, ... string */
-    namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as u16) as i32;
+    namelen = tt_get_ps_fontname(sfont, shortname, 127_u16) as i32;
     if namelen == 0i32 {
         memset(shortname as *mut libc::c_void, 0i32, 127i32 as u64);
         strncpy(shortname, name, 127i32 as u64);

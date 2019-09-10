@@ -703,8 +703,7 @@ pub unsafe extern "C" fn sfd_load_record(
                 let mut __i: i32 = 0;
                 __i = 0i32;
                 while __i < 256i32 {
-                    (*sfd_record.offset(num_sfd_records as isize)).vector[__i as usize] =
-                        0i32 as u16;
+                    (*sfd_record.offset(num_sfd_records as isize)).vector[__i as usize] = 0_u16;
                     __i += 1
                 }
             }

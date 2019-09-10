@@ -588,7 +588,7 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
          * The vertOriginYMetrics array must be sorted in increasing
          * glyphIndex order.
          */
-        i = 0i32 as u16;
+        i = 0_u16;
         while (i as i32) < (*vorg).numVertOriginYMetrics as i32 {
             (*(*vorg).vertOriginYMetrics.offset(i as isize)).glyphIndex =
                 tt_get_unsigned_pair((*sfont).handle);
@@ -615,13 +615,13 @@ pub unsafe extern "C" fn tt_read_longMetrics(
 ) -> *mut tt_longMetrics {
     let mut m: *mut tt_longMetrics = 0 as *mut tt_longMetrics;
     let mut gid: u16 = 0;
-    let mut last_adv: u16 = 0i32 as u16;
+    let mut last_adv: u16 = 0_u16;
     let mut last_esb: i16 = 0i32 as i16;
     m = new(
         (numGlyphs as u32 as u64).wrapping_mul(::std::mem::size_of::<tt_longMetrics>() as u64)
             as u32,
     ) as *mut tt_longMetrics;
-    gid = 0i32 as u16;
+    gid = 0_u16;
     while (gid as i32) < numGlyphs as i32 {
         if (gid as i32) < numLongMetrics as i32 {
             last_adv = tt_get_unsigned_pair((*sfont).handle)
@@ -708,7 +708,7 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         /* used in tt_get_fontdesc() of tt_aux.c */
         (*table).usWeightClass = 400u32 as u16; /* Normal(Regular) */
         (*table).xAvgCharWidth = 0i32 as i16; /* ignore */
-        (*table).version = 0i32 as u16; /* TrueType rev 1.5 */
+        (*table).version = 0_u16; /* TrueType rev 1.5 */
         (*table).fsType = 0i32 as i16; /* Installable Embedding */
         (*table).fsSelection = 0u32 as u16; /* All undefined */
         (*table).sFamilyClass = 0i32 as i16; /* No Classification */
@@ -730,7 +730,7 @@ unsafe extern "C" fn tt_get_name(
     mut lang_id: u16,
     mut name_id: u16,
 ) -> u16 {
-    let mut length: u16 = 0i32 as u16;
+    let mut length: u16 = 0_u16;
     let mut num_names: u16 = 0;
     let mut string_offset: u16 = 0;
     let mut name_offset: u32 = 0;
@@ -787,7 +787,7 @@ unsafe extern "C" fn tt_get_name(
         }
     }
     if i == num_names as i32 {
-        length = 0i32 as u16
+        length = 0_u16
     }
     return length;
 }
@@ -836,40 +836,16 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
     mut dest: *mut i8,
     mut destlen: u16,
 ) -> u16 {
-    let mut namelen: u16 = 0i32 as u16;
+    let mut namelen: u16 = 0_u16;
     /* First try Mac-Roman PS name and then Win-Unicode PS name */
-    namelen = tt_get_name(
-        sfont,
-        dest,
-        destlen,
-        1i32 as u16,
-        0i32 as u16,
-        0i32 as u16,
-        6i32 as u16,
-    );
+    namelen = tt_get_name(sfont, dest, destlen, 1_u16, 0_u16, 0_u16, 6_u16);
     if namelen as i32 != 0i32
         || {
-            namelen = tt_get_name(
-                sfont,
-                dest,
-                destlen,
-                3i32 as u16,
-                1i32 as u16,
-                0x409u32 as u16,
-                6i32 as u16,
-            );
+            namelen = tt_get_name(sfont, dest, destlen, 3_u16, 1_u16, 0x409u32 as u16, 6_u16);
             namelen as i32 != 0i32
         }
         || {
-            namelen = tt_get_name(
-                sfont,
-                dest,
-                destlen,
-                3i32 as u16,
-                5i32 as u16,
-                0x412u32 as u16,
-                6i32 as u16,
-            );
+            namelen = tt_get_name(sfont, dest, destlen, 3_u16, 5_u16, 0x412u32 as u16, 6_u16);
             namelen as i32 != 0i32
         }
     {
@@ -880,30 +856,14 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
       Workaround for some bad TTfonts:
       Language ID value 0xffffu for `accept any language ID'
     */
-    namelen = tt_get_name(
-        sfont,
-        dest,
-        destlen,
-        1i32 as u16,
-        0i32 as u16,
-        0xffffu32 as u16,
-        6i32 as u16,
-    );
+    namelen = tt_get_name(sfont, dest, destlen, 1_u16, 0_u16, 0xffffu32 as u16, 6_u16);
     if namelen as i32 == 0i32 {
         /*
           Finally falling back to Mac Roman name field.
           Warning: Some bad Japanese TTfonts using SJIS encoded string in the
           Mac Roman name field.
         */
-        namelen = tt_get_name(
-            sfont,
-            dest,
-            destlen,
-            1i32 as u16,
-            0i32 as u16,
-            0i32 as u16,
-            1i32 as u16,
-        )
+        namelen = tt_get_name(sfont, dest, destlen, 1_u16, 0_u16, 0_u16, 1_u16)
     }
     return namelen;
 }

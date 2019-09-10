@@ -616,7 +616,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         0i32,
         256i32 as u64,
     );
-    length = tt_get_ps_fontname(sfont, fontname.as_mut_ptr(), 255i32 as u16) as i32;
+    length = tt_get_ps_fontname(sfont, fontname.as_mut_ptr(), 255_u16) as i32;
     if length < 1i32 {
         length = (if strlen(ident) < 255i32 as u64 {
             strlen(ident)
@@ -933,7 +933,7 @@ unsafe extern "C" fn do_builtin_encoding(
                     code,
                     pdf_font_get_ident(font),
                 );
-                idx = 0i32 as u16
+                idx = 0_u16
             } else {
                 idx = tt_find_glyph(glyphs, gid);
                 if idx as i32 == 0i32 {
@@ -1621,7 +1621,7 @@ unsafe extern "C" fn do_custom_encoding(
                 dpx_warning(
                     b">> Maybe incorrect encoding specified?\x00" as *const u8 as *const i8,
                 );
-                idx = 0i32 as u16
+                idx = 0_u16
             } else {
                 if !strchr(*encoding.offset(code as isize), '_' as i32).is_null() {
                     error = findcomposite(*encoding.offset(code as isize), &mut gid, &mut gm)

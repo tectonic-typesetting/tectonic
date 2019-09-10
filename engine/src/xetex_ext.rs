@@ -1942,7 +1942,7 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
 }
 #[no_mangle]
 pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
-    let mut flags: u16 = 0i32 as u16;
+    let mut flags: u16 = 0_u16;
     let mut rgba: u32 = 0;
     let mut size: Fixed = 0;
     let mut filename: *mut i8 = 0 as *mut i8;
@@ -2247,7 +2247,7 @@ pub unsafe extern "C" fn real_get_native_glyph(
     let mut glyphIDs: *mut u16 =
         locations.offset((*node.offset(4)).b16.s0 as i32 as isize) as *mut u16;
     if index >= (*node.offset(4)).b16.s0 as u32 {
-        return 0i32 as u16;
+        return 0_u16;
     } else {
         return *glyphIDs.offset(index as isize);
     };

@@ -1081,7 +1081,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             ) as small_number,
         );
         if is_pdf {
-            (*mem.offset(cur_list.tail as isize)).b16.s0 = 44i32 as u16
+            (*mem.offset(cur_list.tail as isize)).b16.s0 = 44_u16
         }
         (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 = strlen(pic_path) as u16;
         (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 = page as u16;

@@ -1097,7 +1097,7 @@ unsafe extern "C" fn try_pdf_reference(
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj {
     let mut id: u32 = 0_u32;
-    let mut gen: u16 = 0i32 as u16;
+    let mut gen: u16 = 0_u16;
     if !pf.is_null() {
     } else {
         __assert_fail(b"pf\x00" as *const u8 as *const i8,

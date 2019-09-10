@@ -188,7 +188,7 @@ pub unsafe extern "C" fn dfont_open(mut handle: rust_input_handle_t, mut index: 
     tags_pos = map_pos.wrapping_add(tt_get_unsigned_pair((*sfont).handle) as u32);
     ttstub_input_seek((*sfont).handle, tags_pos as ssize_t, 0i32);
     tags_num = tt_get_unsigned_pair((*sfont).handle);
-    i = 0i32 as u16;
+    i = 0_u16;
     while i as i32 <= tags_num as i32 {
         tag = tt_get_unsigned_quad((*sfont).handle);
         types_num = tt_get_unsigned_pair((*sfont).handle);
@@ -209,7 +209,7 @@ pub unsafe extern "C" fn dfont_open(mut handle: rust_input_handle_t, mut index: 
             index,
         );
     }
-    i = 0i32 as u16;
+    i = 0_u16;
     while i as i32 <= types_num as i32 {
         tt_get_unsigned_pair((*sfont).handle);
         tt_get_unsigned_pair((*sfont).handle);
@@ -516,7 +516,7 @@ pub unsafe extern "C" fn sfnt_read_table_directory(mut sfont: *mut sfnt, mut off
         *(*td).flags.offset(i as isize) = 0i32 as i8;
         i = i.wrapping_add(1)
     }
-    (*td).num_kept_tables = 0i32 as u16;
+    (*td).num_kept_tables = 0_u16;
     return 0i32;
 }
 #[no_mangle]

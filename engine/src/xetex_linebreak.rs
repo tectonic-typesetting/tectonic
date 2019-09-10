@@ -361,7 +361,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
         *fresh1 = new_penalty(10000i32);
         cur_list.tail = *fresh1
     } else {
-        (*mem.offset(cur_list.tail as isize)).b16.s1 = 12i32 as u16;
+        (*mem.offset(cur_list.tail as isize)).b16.s1 = 12_u16;
         delete_glue_ref((*mem.offset((cur_list.tail + 1i32) as isize)).b32.s0);
         flush_node_list((*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1);
         (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 = 10000i32
@@ -1298,8 +1298,8 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
             }
         }
         q = get_node(active_node_size as i32);
-        (*mem.offset(q as isize)).b16.s1 = 0i32 as u16;
-        (*mem.offset(q as isize)).b16.s0 = 2i32 as u16;
+        (*mem.offset(q as isize)).b16.s1 = 0_u16;
+        (*mem.offset(q as isize)).b16.s0 = 2_u16;
         (*mem.offset(q as isize)).b32.s1 = 4999999i32 - 7i32;
         (*mem.offset((q + 1i32) as isize)).b32.s1 = -0xfffffffi32;
         (*mem.offset((q + 1i32) as isize)).b32.s0 = cur_list.prev_graf + 1i32;
@@ -3283,7 +3283,7 @@ unsafe extern "C" fn post_line_break(mut d: bool) {
                 r = (*mem.offset(s as isize)).b32.s1;
                 (*mem.offset(s as isize)).b32.s1 = -0xfffffffi32;
                 flush_node_list((*mem.offset(q as isize)).b32.s1);
-                (*mem.offset(q as isize)).b16.s0 = 0i32 as u16
+                (*mem.offset(q as isize)).b16.s0 = 0_u16
             }
             if (*mem.offset((q + 1i32) as isize)).b32.s1 != -0xfffffffi32 {
                 /*913:*/
@@ -4033,8 +4033,8 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                     } else {
                         q = get_node(7i32);
                         (*mem.offset(q as isize)).b32.s1 = r;
-                        (*mem.offset(q as isize)).b16.s1 = 2i32 as u16;
-                        (*mem.offset(q as isize)).b16.s0 = 0i32 as u16;
+                        (*mem.offset(q as isize)).b16.s1 = 2_u16;
+                        (*mem.offset(q as isize)).b16.s0 = 0_u16;
                         (*mem.offset((q + 1i32) as isize)).b32.s1 =
                             break_width[1] - cur_active_width[1];
                         (*mem.offset((q + 2i32) as isize)).b32.s1 =
@@ -4152,8 +4152,8 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                     if r != 4999999i32 - 7i32 {
                         q = get_node(7i32); /* subtype is not used */
                         (*mem.offset(q as isize)).b32.s1 = r;
-                        (*mem.offset(q as isize)).b16.s1 = 2i32 as u16;
-                        (*mem.offset(q as isize)).b16.s0 = 0i32 as u16;
+                        (*mem.offset(q as isize)).b16.s1 = 2_u16;
+                        (*mem.offset(q as isize)).b16.s0 = 0_u16;
                         (*mem.offset((q + 1i32) as isize)).b32.s1 =
                             cur_active_width[1] - break_width[1];
                         (*mem.offset((q + 2i32) as isize)).b32.s1 =
@@ -5211,7 +5211,7 @@ unsafe extern "C" fn hyphenate() {
                     r = get_node(2i32);
                     (*mem.offset(r as isize)).b32.s1 =
                         (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1;
-                    (*mem.offset(r as isize)).b16.s1 = 7i32 as u16;
+                    (*mem.offset(r as isize)).b16.s1 = 7_u16;
                     major_tail = r;
                     r_count = 0i32;
                     while (*mem.offset(major_tail as isize)).b32.s1 > -0xfffffffi32 {
@@ -5344,7 +5344,7 @@ unsafe extern "C" fn finite_shrink(mut p: i32) -> i32 {
         error();
     }
     q = new_spec(p);
-    (*mem.offset(q as isize)).b16.s0 = 0i32 as u16;
+    (*mem.offset(q as isize)).b16.s0 = 0_u16;
     delete_glue_ref(p);
     return q;
 }
@@ -5504,7 +5504,7 @@ unsafe extern "C" fn reconstitute(
                                                     (*mem.offset(cur_q as isize)).b32.s1,
                                                 );
                                                 if lft_hit {
-                                                    (*mem.offset(p as isize)).b16.s0 = 2i32 as u16;
+                                                    (*mem.offset(p as isize)).b16.s0 = 2_u16;
                                                     lft_hit = 0i32 != 0
                                                 }
                                                 (*mem.offset(cur_q as isize)).b32.s1 = p;
@@ -5608,7 +5608,7 @@ unsafe extern "C" fn reconstitute(
         if ligature_present {
             p = new_ligature(hf, cur_l as u16, (*mem.offset(cur_q as isize)).b32.s1);
             if lft_hit {
-                (*mem.offset(p as isize)).b16.s0 = 2i32 as u16;
+                (*mem.offset(p as isize)).b16.s0 = 2_u16;
                 lft_hit = 0i32 != 0
             }
             if rt_hit {

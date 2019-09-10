@@ -418,7 +418,7 @@ pub unsafe extern "C" fn pdf_out_init(
     let mut v: i8 = 0;
     output_xref = 0 as *mut xref_entry;
     pdf_max_ind_objects = 0_u32;
-    add_xref_entry(0_u32, 0i32 as u8, 0_u32, 0xffffi32 as u16);
+    add_xref_entry(0_u32, 0i32 as u8, 0_u32, 0xffff_u16);
     next_label = 1_u32;
     if pdf_version >= 5_u32 {
         if enable_object_stream {
@@ -574,12 +574,7 @@ unsafe extern "C" fn dump_xref_stream() {
         w,
     );
     /* We need the xref entry for the xref stream right now */
-    add_xref_entry(
-        next_label.wrapping_sub(1_u32),
-        1i32 as u8,
-        startxref,
-        0i32 as u16,
-    );
+    add_xref_entry(next_label.wrapping_sub(1_u32), 1i32 as u8, startxref, 0_u16);
     i = 0_u32;
     while i < next_label {
         let mut j: u32 = 0;
@@ -817,7 +812,7 @@ unsafe extern "C" fn pdf_new_obj(mut type_0: i32) -> *mut pdf_obj {
     (*result).type_0 = type_0;
     (*result).data = 0 as *mut libc::c_void;
     (*result).label = 0_u32;
-    (*result).generation = 0i32 as u16;
+    (*result).generation = 0_u16;
     (*result).refcount = 1_u32;
     (*result).flags = 0i32;
     return result;
@@ -840,7 +835,7 @@ unsafe extern "C" fn pdf_label_obj(mut object: *mut pdf_obj) {
         let fresh3 = next_label;
         next_label = next_label.wrapping_add(1);
         (*object).label = fresh3;
-        (*object).generation = 0i32 as u16
+        (*object).generation = 0_u16
     };
 }
 /*
@@ -864,7 +859,7 @@ pub unsafe extern "C" fn pdf_transfer_label(mut dst: *mut pdf_obj, mut src: *mut
     (*dst).label = (*src).label;
     (*dst).generation = (*src).generation;
     (*src).label = 0_u32;
-    (*src).generation = 0i32 as u16;
+    (*src).generation = 0_u16;
 }
 /*
  * This doesn't really copy the object, but allows it to be used without
@@ -2936,7 +2931,7 @@ unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: i32) {
         let ref mut fresh30 = (*(*pf).xref_table.offset(i as isize)).indirect;
         *fresh30 = 0 as *mut pdf_obj;
         (*(*pf).xref_table.offset(i as isize)).type_0 = 0i32 as u8;
-        (*(*pf).xref_table.offset(i as isize)).field3 = 0i32 as u16;
+        (*(*pf).xref_table.offset(i as isize)).field3 = 0_u16;
         (*(*pf).xref_table.offset(i as isize)).field2 = 0i64 as u32;
         i = i.wrapping_add(1)
     }
@@ -3276,7 +3271,7 @@ unsafe extern "C" fn parse_xref_stream(
     let mut i: i32 = 0;
     let mut wsum: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
-    xrefstm = pdf_read_object(0_u32, 0i32 as u16, pf, xref_pos, (*pf).file_size);
+    xrefstm = pdf_read_object(0_u32, 0_u16, pf, xref_pos, (*pf).file_size);
     if !xrefstm.is_null() && pdf_obj_typeof(xrefstm) == 7i32 {
         let mut tmp: *mut pdf_obj = pdf_stream_uncompress(xrefstm);
         if !tmp.is_null() {
@@ -3795,7 +3790,7 @@ static mut loop_marker: pdf_obj = {
     let mut init = pdf_obj {
         type_0: 0i32,
         label: 0_u32,
-        generation: 0i32 as u16,
+        generation: 0_u16,
         refcount: 0_u32,
         flags: 0i32,
         data: 0 as *const libc::c_void as *mut libc::c_void,

@@ -1252,7 +1252,7 @@ unsafe extern "C" fn add_CIDVMetrics(
                     + 0.5f64,
             ) * 1i32 as f64;
             vertOriginY = defaultVertOriginY;
-            i = 0i32 as u16;
+            i = 0_u16;
             while (i as i32) < (*vorg).numVertOriginYMetrics as i32
                 && gid as i32 > (*(*vorg).vertOriginYMetrics.offset(i as isize)).glyphIndex as i32
             {

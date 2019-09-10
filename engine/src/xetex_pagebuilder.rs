@@ -1182,7 +1182,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                 ))
                 .b32
                 .s1,
-                7i32 as u16,
+                7_u16,
             );
             new_save_level(8i32 as group_code);
             normal_paragraph();
@@ -1411,7 +1411,7 @@ pub unsafe extern "C" fn build_page() {
                     (*mem.offset(r as isize)).b32.s1 = q;
                     r = q;
                     (*mem.offset(r as isize)).b16.s0 = n as u16;
-                    (*mem.offset(r as isize)).b16.s1 = 0i32 as u16;
+                    (*mem.offset(r as isize)).b16.s1 = 0_u16;
                     ensure_vbox(n);
                     if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 1i32 +
@@ -1778,7 +1778,7 @@ pub unsafe extern "C" fn build_page() {
                                                       isize)).b32.s1
                         }
                         page_so_far[0] -= best_height_plus_depth;
-                        (*mem.offset(r as isize)).b16.s1 = 1i32 as u16;
+                        (*mem.offset(r as isize)).b16.s1 = 1_u16;
                         (*mem.offset((r + 1i32) as isize)).b32.s1 = q;
                         (*mem.offset((r + 1i32) as isize)).b32.s0 = p;
                         if q == -0xfffffffi32 {
@@ -1946,7 +1946,7 @@ pub unsafe extern "C" fn build_page() {
                                 as *const u8 as *const i8;
                         error();
                         r = new_spec(q);
-                        (*mem.offset(r as isize)).b16.s0 = 0i32 as u16;
+                        (*mem.offset(r as isize)).b16.s0 = 0_u16;
                         delete_glue_ref(q);
                         (*mem.offset((p + 1i32) as isize)).b32.s0 = r;
                         q = r
