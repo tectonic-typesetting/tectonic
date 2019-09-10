@@ -1,14 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
-extern crate c2rust_bitfields;
 extern crate libc;
-use c2rust_bitfields::BitfieldStruct;
 extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -142,17 +142,15 @@ pub struct input_state_t {
     pub name: i32,
     pub synctex_tag: i32,
 }
-#[derive(Copy, Clone, BitfieldStruct)]
-#[repr(C)]
-pub struct _flags {
-    #[bitfield(name = "content_ready", ty = "u32", bits = "0..=0")]
-    #[bitfield(name = "off", ty = "u32", bits = "1..=1")]
-    #[bitfield(name = "not_void", ty = "u32", bits = "2..=2")]
-    #[bitfield(name = "warn", ty = "u32", bits = "3..=3")]
-    #[bitfield(name = "output_p", ty = "u32", bits = "4..=4")]
-    pub content_ready_off_not_void_warn_output_p: [u8; 1],
-    #[bitfield(padding)]
-    pub c2rust_padding: [u8; 3],
+bitflags::bitflags! {
+    #[repr(C)]
+    pub struct Flags: u32 {
+        const CONTENT_READY = 0b00000001;
+        const OFF = 0b00000010;
+        const NOT_VOID = 0b00000100;
+        const WARN = 0b00001000;
+        const OUTPUT_P = 0b00010000;
+    }
 }
 /* recorders know how to record a node */
 /*  Here are all the local variables gathered in one "synchronization context"  */
@@ -174,7 +172,7 @@ pub struct C2RustUnnamed {
     pub lastv: i32,
     pub form_depth: i32,
     pub synctex_tag_counter: u32,
-    pub flags: _flags,
+    pub flags: Flags,
 }
 /*  For non-GCC compilation.  */
 /*  UNIT is the scale. TeX coordinates are very accurate and client won't need
@@ -221,10 +219,7 @@ static mut synctex_ctxt: C2RustUnnamed = C2RustUnnamed {
     lastv: 0,
     form_depth: 0,
     synctex_tag_counter: 0,
-    flags: _flags {
-        content_ready_off_not_void_warn_output_p: [0; 1],
-        c2rust_padding: [0; 3],
-    },
+    flags: Flags::empty(),
 };
 unsafe extern "C" fn get_current_name() -> *mut i8 {
     /* This used to always make the pathname absolute but I'm getting rid of
@@ -298,11 +293,7 @@ pub unsafe extern "C" fn synctex_init_command() {
     synctex_ctxt.lastv = -1i32;
     synctex_ctxt.form_depth = 0i32;
     synctex_ctxt.synctex_tag_counter = 0_u32;
-    synctex_ctxt.flags.set_content_ready(0_u32);
-    synctex_ctxt.flags.set_off(0_u32);
-    synctex_ctxt.flags.set_not_void(0_u32);
-    synctex_ctxt.flags.set_warn(0_u32);
-    synctex_ctxt.flags.set_output_p(0_u32);
+    synctex_ctxt.flags = Flags::empty();
     if synctex_enabled != 0 {
         (*eqtb.offset(
             (1i32
@@ -375,7 +366,7 @@ unsafe extern "C" fn synctexabort() {
         synctex_ctxt.file = 0 as *mut libc::c_void
     }
     synctex_ctxt.root_name = mfree(synctex_ctxt.root_name as *mut libc::c_void) as *mut i8;
-    synctex_ctxt.flags.set_off(1_u32);
+    synctex_ctxt.flags.insert(Flags::OFF);
     /* disable synctex */
 }
 static mut synctex_suffix: *const i8 = b".synctex\x00" as *const u8 as *const i8;
@@ -392,7 +383,7 @@ unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
     let mut tmp: *mut i8 = 0 as *mut i8;
     let mut the_name: *mut i8 = 0 as *mut i8;
     let mut len: size_t = 0;
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -468,14 +459,14 @@ unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
  *  in pdf or dvi mode.
  */
 unsafe extern "C" fn synctex_prepare_content() -> *mut libc::c_void {
-    if synctex_ctxt.flags.content_ready() != 0 {
+    if synctex_ctxt.flags.contains(Flags::CONTENT_READY) {
         return synctex_ctxt.file;
     }
     if !synctex_dot_open().is_null()
         && 0i32 == synctex_record_settings()
         && 0i32 == synctex_record_content()
     {
-        synctex_ctxt.flags.set_content_ready(1_u32);
+        synctex_ctxt.flags.insert(Flags::CONTENT_READY);
         return synctex_ctxt.file;
     }
     synctexabort();
@@ -502,7 +493,7 @@ unsafe extern "C" fn synctex_prepare_content() -> *mut libc::c_void {
  */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_start_input() {
-    if synctex_ctxt.flags.off() != 0 {
+    if synctex_ctxt.flags.contains(Flags::OFF) {
         return;
     }
     /*  synctex_tag_counter is a counter uniquely identifying the file actually
@@ -577,7 +568,7 @@ pub unsafe extern "C" fn synctex_terminate(mut log_opened: bool) {
  */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_sheet(mut mag: i32) {
-    if synctex_ctxt.flags.off() != 0 {
+    if synctex_ctxt.flags.contains(Flags::OFF) {
         if (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -607,9 +598,9 @@ pub unsafe extern "C" fn synctex_sheet(mut mag: i32) {
         ))
         .b32
         .s1 != 0
-            && synctex_ctxt.flags.warn() == 0
+            && !synctex_ctxt.flags.contains(Flags::WARN)
         {
-            synctex_ctxt.flags.set_warn(1_u32);
+            synctex_ctxt.flags.insert(Flags::WARN);
             ttstub_issue_warning(
                 b"SyncTeX was disabled -- changing the value of \\synctex has no effect\x00"
                     as *const u8 as *const i8,
@@ -639,7 +630,7 @@ pub unsafe extern "C" fn synctex_sheet(mut mag: i32) {
  */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_teehs() {
-    if synctex_ctxt.flags.off() as i32 != 0 || synctex_ctxt.file.is_null() {
+    if synctex_ctxt.flags.contains(Flags::OFF) || synctex_ctxt.file.is_null() {
         return;
     } /* not total_pages+1*/
     synctex_record_teehs(total_pages);
@@ -665,7 +656,7 @@ pub unsafe extern "C" fn synctex_teehs() {
  *  address of the vlist. We assume that p is really a vlist node! */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_vlist(mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -717,7 +708,7 @@ pub unsafe extern "C" fn synctex_vlist(mut this_box: i32) {
  *  synctex_vlist sent at the beginning of that procedure.    */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_tsilv(mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -766,7 +757,7 @@ pub unsafe extern "C" fn synctex_tsilv(mut this_box: i32) {
  *  There is no need to balance a void vlist.  */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_void_vlist(mut p: i32, mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -818,7 +809,7 @@ pub unsafe extern "C" fn synctex_void_vlist(mut p: i32, mut this_box: i32) {
  *  address of the hlist We assume that p is really an hlist node! */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_hlist(mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -868,7 +859,7 @@ pub unsafe extern "C" fn synctex_hlist(mut this_box: i32) {
  *  synctex_hlist sent at the beginning of that procedure.    */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_tsilh(mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -917,7 +908,7 @@ pub unsafe extern "C" fn synctex_tsilh(mut this_box: i32) {
  *  There is no need to balance a void hlist.  */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_void_hlist(mut p: i32, mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -974,7 +965,7 @@ pub unsafe extern "C" fn synctex_void_hlist(mut p: i32, mut this_box: i32) {
 See: @ @<Output the non-|char_node| |p| for...  */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_math(mut p: i32, mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1033,7 +1024,7 @@ See: move_past:...    */
 pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: i32, mut this_box: i32) {
     match (*mem.offset(p as isize)).b16.s1 as i32 {
         2 => {
-            if synctex_ctxt.flags.off() as i32 != 0
+            if synctex_ctxt.flags.contains(Flags::OFF)
                 || (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -1070,7 +1061,7 @@ pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: i32, mut this_bo
             }
         }
         10 => {
-            if synctex_ctxt.flags.off() as i32 != 0
+            if synctex_ctxt.flags.contains(Flags::OFF)
                 || (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -1107,7 +1098,7 @@ pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: i32, mut this_bo
             }
         }
         11 => {
-            if synctex_ctxt.flags.off() as i32 != 0
+            if synctex_ctxt.flags.contains(Flags::OFF)
                 || (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -1183,7 +1174,7 @@ pub unsafe extern "C" fn synctex_horizontal_rule_or_glue(mut p: i32, mut this_bo
 See: @ @<Output the non-|char_node| |p| for...    */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_kern(mut p: i32, mut this_box: i32) {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1257,7 +1248,7 @@ synchronously for the current location    */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_current() {
     let mut len: i32 = 0; /* magic pt/in conversion */
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1423,7 +1414,7 @@ unsafe extern "C" fn synctex_record_teehs(mut sheet: i32) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn synctex_pdfxform(mut p: i32) {
-    if synctex_ctxt.flags.off() != 0 {
+    if synctex_ctxt.flags.contains(Flags::OFF) {
         if (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1453,9 +1444,9 @@ pub unsafe extern "C" fn synctex_pdfxform(mut p: i32) {
         ))
         .b32
         .s1 != 0
-            && synctex_ctxt.flags.warn() == 0
+            && !synctex_ctxt.flags.contains(Flags::WARN)
         {
-            synctex_ctxt.flags.set_warn(1_u32);
+            synctex_ctxt.flags.insert(Flags::WARN);
             ttstub_issue_warning(
                 b"SyncTeX was disabled - changing the value of \\synctex has no effect\x00"
                     as *const u8 as *const i8,
@@ -1485,7 +1476,7 @@ pub unsafe extern "C" fn synctex_pdfrefxform(mut objnum: i32) {
 /*  Recording a "<..." line  */
 #[inline]
 unsafe extern "C" fn synctex_record_pdfxform(mut form: i32) -> i32 {
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1559,7 +1550,7 @@ unsafe extern "C" fn synctex_record_node_pdfrefxform(mut objnum: i32) -> i32
 /* UNUSED form JL */ {
     synctex_ctxt.curh = cur_h + 4736287i32;
     synctex_ctxt.curv = cur_v + 4736287i32;
-    if synctex_ctxt.flags.off() as i32 != 0
+    if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -1635,7 +1626,7 @@ unsafe extern "C" fn synctex_record_node_void_vlist(mut p: i32) {
 #[inline]
 unsafe extern "C" fn synctex_record_node_vlist(mut p: i32) {
     let mut len: i32 = 0;
-    synctex_ctxt.flags.set_not_void(1_u32);
+    synctex_ctxt.flags.insert(Flags::NOT_VOID);
     len = ttstub_fprintf(
         synctex_ctxt.file,
         b"[%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
@@ -1689,7 +1680,7 @@ unsafe extern "C" fn synctex_record_node_void_hlist(mut p: i32) {
 #[inline]
 unsafe extern "C" fn synctex_record_node_hlist(mut p: i32) {
     let mut len: i32 = 0;
-    synctex_ctxt.flags.set_not_void(1_u32);
+    synctex_ctxt.flags.insert(Flags::NOT_VOID);
     len = ttstub_fprintf(
         synctex_ctxt.file,
         b"(%i,%i:%i,%i:%i,%i,%i\n\x00" as *const u8 as *const i8,
@@ -1850,18 +1841,7 @@ unsafe extern "C" fn run_static_initializers() {
             lastv: -1i32,
             form_depth: 0i32,
             synctex_tag_counter: 0_u32,
-            flags: {
-                let mut init = _flags {
-                    content_ready_off_not_void_warn_output_p: [0; 1],
-                    c2rust_padding: [0; 3],
-                };
-                init.set_content_ready(0_u32);
-                init.set_off(0_u32);
-                init.set_not_void(0_u32);
-                init.set_warn(0_u32);
-                init.set_output_p(0_u32);
-                init
-            },
+            flags: Flags::empty(),
         };
         init
     }
