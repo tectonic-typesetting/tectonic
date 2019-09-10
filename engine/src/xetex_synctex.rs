@@ -75,10 +75,8 @@ extern "C" {
     #[no_mangle]
     static mut name_of_input_file: *mut libc::c_char;
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = int32_t;
@@ -125,10 +123,10 @@ pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -142,8 +140,8 @@ pub union memory_word {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct input_state_t {
-    pub state: uint16_t,
-    pub index: uint16_t,
+    pub state: u16,
+    pub index: u16,
     pub start: int32_t,
     pub loc: int32_t,
     pub limit: int32_t,

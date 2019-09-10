@@ -435,10 +435,10 @@ pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -1164,7 +1164,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
             rval = ttstub_input_getc((*f).handle);
             c = rval;
             if rval != -1i32 {
-                let mut extraBytes: uint16_t = bytesFromUTF8[rval as usize] as uint16_t;
+                let mut extraBytes: u16 = bytesFromUTF8[rval as usize] as u16;
                 match extraBytes as libc::c_int {
                     3 => {
                         /* note: code falls through cases! */
@@ -1300,23 +1300,23 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
 pub unsafe extern "C" fn make_utf16_name() {
     let mut s: *mut libc::c_uchar = name_of_file as *mut libc::c_uchar;
     let mut rval: u32 = 0;
-    let mut t: *mut uint16_t = 0 as *mut uint16_t;
+    let mut t: *mut u16 = 0 as *mut u16;
     static mut name16len: libc::c_int = 0i32;
     if name16len <= name_length {
         free(name_of_file16 as *mut libc::c_void);
         name16len = name_length + 10i32;
         name_of_file16 = xcalloc(
             name16len as size_t,
-            ::std::mem::size_of::<uint16_t>() as u64,
+            ::std::mem::size_of::<u16>() as u64,
         ) as *mut UTF16_code
     }
     t = name_of_file16;
     while s < (name_of_file as *mut libc::c_uchar).offset(name_length as isize) {
-        let mut extraBytes: uint16_t = 0;
+        let mut extraBytes: u16 = 0;
         let fresh7 = s;
         s = s.offset(1);
         rval = *fresh7 as u32;
-        extraBytes = bytesFromUTF8[rval as usize] as uint16_t;
+        extraBytes = bytesFromUTF8[rval as usize] as u16;
         let mut current_block_23: u64;
         match extraBytes as libc::c_int {
             5 => {
@@ -1399,16 +1399,16 @@ pub unsafe extern "C" fn make_utf16_name() {
             t = t.offset(1);
             *fresh13 = (0xd800i32 as libc::c_uint)
                 .wrapping_add(rval.wrapping_div(0x400i32 as libc::c_uint))
-                as uint16_t;
+                as u16;
             let fresh14 = t;
             t = t.offset(1);
             *fresh14 = (0xdc00i32 as libc::c_uint)
                 .wrapping_add(rval.wrapping_rem(0x400i32 as libc::c_uint))
-                as uint16_t
+                as u16
         } else {
             let fresh15 = t;
             t = t.offset(1);
-            *fresh15 = rval as uint16_t
+            *fresh15 = rval as u16
         }
     }
     name_length16 = t.wrapping_offset_from(name_of_file16) as libc::c_long as int32_t;

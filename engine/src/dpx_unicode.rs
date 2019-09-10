@@ -16,10 +16,8 @@ extern "C" {
         __function: *const libc::c_char,
     ) -> !;
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 #[no_mangle]
 pub unsafe extern "C" fn UC_is_valid(mut ucv: int32_t) -> bool {
@@ -66,18 +64,18 @@ pub unsafe extern "C" fn UC_UTF16BE_decode_char(
 ) -> int32_t {
     let mut p: *const libc::c_uchar = *pp;
     let mut ucv: int32_t = -1i32;
-    let mut first: uint16_t = 0;
-    let mut second: uint16_t = 0;
+    let mut first: u16 = 0;
+    let mut second: u16 = 0;
     if p.offset(1) >= endptr {
         return -1i32;
     }
-    first = ((*p.offset(0) as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as uint16_t;
+    first = ((*p.offset(0) as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as u16;
     p = p.offset(2);
     if first as libc::c_uint >= 0xd800u32 && (first as libc::c_uint) < 0xdc00u32 {
         if p.offset(1) >= endptr {
             return -1i32;
         }
-        second = ((*p.offset(0) as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as uint16_t;
+        second = ((*p.offset(0) as libc::c_int) << 8i32 | *p.offset(1) as libc::c_int) as u16;
         p = p.offset(2);
         ucv = (second as libc::c_uint & 0x3ffu32) as int32_t;
         ucv = (ucv as libc::c_uint | (first as libc::c_uint & 0x3ffu32) << 10i32) as int32_t;

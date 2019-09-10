@@ -74,7 +74,7 @@ extern "C" {
     #[no_mangle]
     fn end_diagnostic(blank_line: bool);
     #[no_mangle]
-    fn print_cmd_chr(cmd: uint16_t, chr_code: int32_t);
+    fn print_cmd_chr(cmd: u16, chr_code: int32_t);
     #[no_mangle]
     fn id_lookup(j: int32_t, l: int32_t) -> int32_t;
     #[no_mangle]
@@ -86,7 +86,7 @@ extern "C" {
     #[no_mangle]
     fn gsa_def(p: int32_t, e: int32_t);
     #[no_mangle]
-    fn eq_define(p: int32_t, t: uint16_t, e: int32_t);
+    fn eq_define(p: int32_t, t: u16, e: int32_t);
     #[no_mangle]
     fn alter_page_so_far();
     #[no_mangle]
@@ -96,7 +96,7 @@ extern "C" {
     #[no_mangle]
     fn eq_word_define(p: int32_t, w: int32_t);
     #[no_mangle]
-    fn geq_define(p: int32_t, t: uint16_t, e: int32_t);
+    fn geq_define(p: int32_t, t: u16, e: int32_t);
     #[no_mangle]
     fn geq_word_define(p: int32_t, w: int32_t);
     #[no_mangle]
@@ -291,11 +291,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_files_init();
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type uintptr_t = u64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -410,10 +408,10 @@ pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -440,7 +438,7 @@ pub union memory_word {
  *   } two_halves;
  *
  *   typedef struct {
- *       struct { uint16_t B3, B2, B1, B0; } u;
+ *       struct { u16 B3, B2, B1, B0; } u;
  *   } four_quarters;
  *
  *   typedef union {
@@ -478,7 +476,7 @@ pub union memory_word {
  *   } two_halves;
  *
  *   typedef struct {
- *       struct { uint16_t B0, B1, B2, B3; } u;
+ *       struct { u16 B0, B1, B2, B3; } u;
  *   } four_quarters;
  *
  *   typedef union {
@@ -615,8 +613,8 @@ pub struct list_state_record {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct input_state_t {
-    pub state: uint16_t,
-    pub index: uint16_t,
+    pub state: u16,
+    pub index: u16,
     pub start: int32_t,
     pub loc: int32_t,
     pub limit: int32_t,
@@ -873,7 +871,7 @@ pub static mut save_ptr: int32_t = 0;
 #[no_mangle]
 pub static mut max_save_stack: int32_t = 0;
 #[no_mangle]
-pub static mut cur_level: uint16_t = 0;
+pub static mut cur_level: u16 = 0;
 #[no_mangle]
 pub static mut cur_group: group_code = 0;
 #[no_mangle]
@@ -1194,7 +1192,7 @@ pub static mut trie_trl: *mut trie_pointer = 0 as *const trie_pointer as *mut tr
 #[no_mangle]
 pub static mut trie_tro: *mut trie_pointer = 0 as *const trie_pointer as *mut trie_pointer;
 #[no_mangle]
-pub static mut trie_trc: *mut uint16_t = 0 as *const uint16_t as *mut uint16_t;
+pub static mut trie_trc: *mut u16 = 0 as *const u16 as *mut u16;
 #[no_mangle]
 pub static mut hyf_distance: [small_number; 35112] = [0; 35112];
 #[no_mangle]
@@ -1344,7 +1342,7 @@ pub static mut sa_null: memory_word = memory_word {
 #[no_mangle]
 pub static mut sa_chain: int32_t = 0;
 #[no_mangle]
-pub static mut sa_level: uint16_t = 0;
+pub static mut sa_level: u16 = 0;
 #[no_mangle]
 pub static mut hyph_start: trie_pointer = 0;
 #[no_mangle]
@@ -1389,7 +1387,7 @@ pub static mut insert_penalties: int32_t = 0;
 #[no_mangle]
 pub static mut output_active: bool = false;
 #[no_mangle]
-pub static mut _xeq_level_array: [uint16_t; 1114732] = [0; 1114732];
+pub static mut _xeq_level_array: [u16; 1114732] = [0; 1114732];
 static mut _trie_op_hash_array: [int32_t; 70223] = [0; 70223];
 static mut yhash: *mut b32x2 = 0 as *const b32x2 as *mut b32x2;
 /* Read and write dump files.  As distributed, these files are
@@ -1578,7 +1576,7 @@ unsafe extern "C" fn sort_avail() {
 }
 /*:271*/
 /*276: */
-unsafe extern "C" fn primitive(mut ident: *const libc::c_char, mut c: uint16_t, mut o: int32_t) {
+unsafe extern "C" fn primitive(mut ident: *const libc::c_char, mut c: u16, mut o: int32_t) {
     let mut prim_val: int32_t = 0;
     let mut len: libc::c_int = strlen(ident) as libc::c_int;
     if len > 1i32 {
@@ -1603,10 +1601,10 @@ unsafe extern "C" fn primitive(mut ident: *const libc::c_char, mut c: uint16_t, 
         cur_val = *ident.offset(0) as libc::c_int + (1i32 + (0x10ffffi32 + 1i32));
         prim_val = prim_lookup(*ident.offset(0) as str_number)
     }
-    (*eqtb.offset(cur_val as isize)).b16.s0 = 1i32 as uint16_t;
+    (*eqtb.offset(cur_val as isize)).b16.s0 = 1i32 as u16;
     (*eqtb.offset(cur_val as isize)).b16.s1 = c;
     (*eqtb.offset(cur_val as isize)).b32.s1 = o;
-    prim_eqtb[prim_val as usize].b16.s0 = 1i32 as uint16_t;
+    prim_eqtb[prim_val as usize].b16.s0 = 1i32 as u16;
     prim_eqtb[prim_val as usize].b16.s1 = c;
     prim_eqtb[prim_val as usize].b32.s1 = o;
 }
@@ -2404,7 +2402,7 @@ pub unsafe extern "C" fn init_trie() {
             loop {
                 *trie_trl.offset(r as isize) = 0i32;
                 *trie_tro.offset(r as isize) = 0i32;
-                *trie_trc.offset(r as isize) = 0i32 as uint16_t;
+                *trie_trc.offset(r as isize) = 0i32 as u16;
                 let fresh11 = r;
                 r = r + 1;
                 if !(fresh11 < for_end_6) {
@@ -2425,14 +2423,14 @@ pub unsafe extern "C" fn init_trie() {
             s = *trie_trl.offset(r as isize);
             *trie_trl.offset(r as isize) = 0i32;
             *trie_tro.offset(r as isize) = 0i32;
-            *trie_trc.offset(r as isize) = 0i32 as uint16_t;
+            *trie_trc.offset(r as isize) = 0i32 as u16;
             r = s;
             if r > trie_max {
                 break;
             }
         }
     }
-    *trie_trc.offset(0) = '?' as i32 as uint16_t;
+    *trie_trc.offset(0) = '?' as i32 as u16;
     trie_not_ready = 0i32 != 0;
 }
 /*:1001*/
@@ -2785,7 +2783,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
             }
             print_cstr(b"You can\'t use a prefix with `\x00" as *const u8 as *const libc::c_char);
-            print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+            print_cmd_chr(cur_cmd as u16, cur_chr);
             print_char('\'' as i32);
             help_ptr = 1i32 as libc::c_uchar;
             help_line[0] =
@@ -2849,7 +2847,7 @@ pub unsafe extern "C" fn prefixed_command() {
         print_cstr(b"\' or `\x00" as *const u8 as *const libc::c_char);
         print_esc_cstr(b"protected\x00" as *const u8 as *const libc::c_char);
         print_cstr(b"\' with `\x00" as *const u8 as *const libc::c_char);
-        print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+        print_cmd_chr(cur_cmd as u16, cur_chr);
         print_char('\'' as i32);
         error();
     }
@@ -2927,12 +2925,12 @@ pub unsafe extern "C" fn prefixed_command() {
                 geq_define(1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
                                + 1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 +
                                1i32 + 19i32 + 256i32 + 256i32 + 13i32 + 256i32
-                               + 4i32 + 256i32, 122i32 as uint16_t, cur_chr);
+                               + 4i32 + 256i32, 122i32 as u16, cur_chr);
             } else {
                 eq_define(1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                               1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
                               + 19i32 + 256i32 + 256i32 + 13i32 + 256i32 +
-                              4i32 + 256i32, 122i32 as uint16_t, cur_chr);
+                              4i32 + 256i32, 122i32 as u16, cur_chr);
             }
         }
         99 => {
@@ -2963,10 +2961,10 @@ pub unsafe extern "C" fn prefixed_command() {
                 (*mem.offset(def_ref as isize)).b32.s1 = q
             }
             if a as libc::c_int >= 4i32 {
-                geq_define(p, (113i32 + a as libc::c_int % 4i32) as uint16_t,
+                geq_define(p, (113i32 + a as libc::c_int % 4i32) as u16,
                            def_ref);
             } else {
-                eq_define(p, (113i32 + a as libc::c_int % 4i32) as uint16_t,
+                eq_define(p, (113i32 + a as libc::c_int % 4i32) as u16,
                           def_ref);
             }
         }
@@ -3004,8 +3002,8 @@ pub unsafe extern "C" fn prefixed_command() {
                 }
             }
             if a as libc::c_int >= 4i32 {
-                geq_define(p, cur_cmd as uint16_t, cur_chr);
-            } else { eq_define(p, cur_cmd as uint16_t, cur_chr); }
+                geq_define(p, cur_cmd as u16, cur_chr);
+            } else { eq_define(p, cur_cmd as u16, cur_chr); }
         }
         97 => {
             if cur_chr == 7i32 {
@@ -3055,8 +3053,8 @@ pub unsafe extern "C" fn prefixed_command() {
                 }
                 n = n * 256i32 + cur_val;
                 if a as libc::c_int >= 4i32 {
-                    geq_define(p, 122i32 as uint16_t, n);
-                } else { eq_define(p, 122i32 as uint16_t, n); }
+                    geq_define(p, 122i32 as u16, n);
+                } else { eq_define(p, 122i32 as u16, n); }
                 if p -
                        (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                             1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32 +
@@ -3212,27 +3210,27 @@ pub unsafe extern "C" fn prefixed_command() {
                 get_r_token();
                 p = cur_cs;
                 if a as libc::c_int >= 4i32 {
-                    geq_define(p, 0i32 as uint16_t, 0x10ffffi32 + 1i32);
-                } else { eq_define(p, 0i32 as uint16_t, 0x10ffffi32 + 1i32); }
+                    geq_define(p, 0i32 as u16, 0x10ffffi32 + 1i32);
+                } else { eq_define(p, 0i32 as u16, 0x10ffffi32 + 1i32); }
                 scan_optional_equals();
                 match n {
                     0 => {
                         scan_usv_num();
                         if a as libc::c_int >= 4i32 {
-                            geq_define(p, 68i32 as uint16_t, cur_val);
-                        } else { eq_define(p, 68i32 as uint16_t, cur_val); }
+                            geq_define(p, 68i32 as u16, cur_val);
+                        } else { eq_define(p, 68i32 as u16, cur_val); }
                     }
                     1 => {
                         scan_fifteen_bit_int();
                         if a as libc::c_int >= 4i32 {
-                            geq_define(p, 69i32 as uint16_t, cur_val);
-                        } else { eq_define(p, 69i32 as uint16_t, cur_val); }
+                            geq_define(p, 69i32 as u16, cur_val);
+                        } else { eq_define(p, 69i32 as u16, cur_val); }
                     }
                     8 => {
                         scan_xetex_math_char_int();
                         if a as libc::c_int >= 4i32 {
-                            geq_define(p, 70i32 as uint16_t, cur_val);
-                        } else { eq_define(p, 70i32 as uint16_t, cur_val); }
+                            geq_define(p, 70i32 as u16, cur_val);
+                        } else { eq_define(p, 70i32 as u16, cur_val); }
                     }
                     9 => {
                         scan_math_class_int();
@@ -3253,8 +3251,8 @@ pub unsafe extern "C" fn prefixed_command() {
                         scan_usv_num();
                         n = n + cur_val;
                         if a as libc::c_int >= 4i32 {
-                            geq_define(p, 70i32 as uint16_t, n);
-                        } else { eq_define(p, 70i32 as uint16_t, n); }
+                            geq_define(p, 70i32 as u16, n);
+                        } else { eq_define(p, 70i32 as u16, n); }
                     }
                     _ => {
                         scan_register_num();
@@ -3269,13 +3267,13 @@ pub unsafe extern "C" fn prefixed_command() {
                             *fresh14 += 1;
                             if j == 5i32 { j = 72i32 } else { j = 91i32 }
                             if a as libc::c_int >= 4i32 {
-                                geq_define(p, j as uint16_t, cur_ptr);
-                            } else { eq_define(p, j as uint16_t, cur_ptr); }
+                                geq_define(p, j as u16, cur_ptr);
+                            } else { eq_define(p, j as u16, cur_ptr); }
                         } else {
                             match n {
                                 2 => {
                                     if a as libc::c_int >= 4i32 {
-                                        geq_define(p, 74i32 as uint16_t,
+                                        geq_define(p, 74i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
                                                        + 1i32 + 15000i32 +
@@ -3292,7 +3290,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                        + (0x10ffffi32 + 1i32)
                                                        + 85i32 + cur_val);
                                     } else {
-                                        eq_define(p, 74i32 as uint16_t,
+                                        eq_define(p, 74i32 as u16,
                                                   1i32 + (0x10ffffi32 + 1i32)
                                                       + (0x10ffffi32 + 1i32) +
                                                       1i32 + 15000i32 + 12i32
@@ -3312,7 +3310,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                 }
                                 3 => {
                                     if a as libc::c_int >= 4i32 {
-                                        geq_define(p, 75i32 as uint16_t,
+                                        geq_define(p, 75i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
                                                        + 1i32 + 15000i32 +
@@ -3331,7 +3329,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                        (0x10ffffi32 + 1i32) +
                                                        23i32 + cur_val);
                                     } else {
-                                        eq_define(p, 75i32 as uint16_t,
+                                        eq_define(p, 75i32 as u16,
                                                   1i32 + (0x10ffffi32 + 1i32)
                                                       + (0x10ffffi32 + 1i32) +
                                                       1i32 + 15000i32 + 12i32
@@ -3353,7 +3351,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                 }
                                 4 => {
                                     if a as libc::c_int >= 4i32 {
-                                        geq_define(p, 76i32 as uint16_t,
+                                        geq_define(p, 76i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
                                                        + 1i32 + 15000i32 +
@@ -3361,7 +3359,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                        + 1i32 + 19i32 +
                                                        cur_val);
                                     } else {
-                                        eq_define(p, 76i32 as uint16_t,
+                                        eq_define(p, 76i32 as u16,
                                                   1i32 + (0x10ffffi32 + 1i32)
                                                       + (0x10ffffi32 + 1i32) +
                                                       1i32 + 15000i32 + 12i32
@@ -3371,7 +3369,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                 }
                                 5 => {
                                     if a as libc::c_int >= 4i32 {
-                                        geq_define(p, 77i32 as uint16_t,
+                                        geq_define(p, 77i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
                                                        + 1i32 + 15000i32 +
@@ -3379,7 +3377,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                        + 1i32 + 19i32 + 256i32
                                                        + cur_val);
                                     } else {
-                                        eq_define(p, 77i32 as uint16_t,
+                                        eq_define(p, 77i32 as u16,
                                                   1i32 + (0x10ffffi32 + 1i32)
                                                       + (0x10ffffi32 + 1i32) +
                                                       1i32 + 15000i32 + 12i32
@@ -3390,7 +3388,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                 }
                                 6 => {
                                     if a as libc::c_int >= 4i32 {
-                                        geq_define(p, 73i32 as uint16_t,
+                                        geq_define(p, 73i32 as u16,
                                                    1i32 + (0x10ffffi32 + 1i32)
                                                        + (0x10ffffi32 + 1i32)
                                                        + 1i32 + 15000i32 +
@@ -3399,7 +3397,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                                        + 256i32 + 13i32 +
                                                        cur_val);
                                     } else {
-                                        eq_define(p, 73i32 as uint16_t,
+                                        eq_define(p, 73i32 as u16,
                                                   1i32 + (0x10ffffi32 + 1i32)
                                                       + (0x10ffffi32 + 1i32) +
                                                       1i32 + 15000i32 + 12i32
@@ -3442,8 +3440,8 @@ pub unsafe extern "C" fn prefixed_command() {
             p = cur_cs;
             read_toks(n, p, j);
             if a as libc::c_int >= 4i32 {
-                geq_define(p, 113i32 as uint16_t, cur_val);
-            } else { eq_define(p, 113i32 as uint16_t, cur_val); }
+                geq_define(p, 113i32 as u16, cur_val);
+            } else { eq_define(p, 113i32 as u16, cur_val); }
         }
         72 | 73 => {
             q = cur_cs;
@@ -3544,9 +3542,9 @@ pub unsafe extern "C" fn prefixed_command() {
                                 gsa_def(p, -0xfffffffi32);
                             } else { sa_def(p, -0xfffffffi32); }
                         } else if a as libc::c_int >= 4i32 {
-                            geq_define(p, 103i32 as uint16_t, -0xfffffffi32);
+                            geq_define(p, 103i32 as u16, -0xfffffffi32);
                         } else {
-                            eq_define(p, 103i32 as uint16_t, -0xfffffffi32);
+                            eq_define(p, 103i32 as u16, -0xfffffffi32);
                         }
                     } else {
                         let ref mut fresh15 =
@@ -3557,8 +3555,8 @@ pub unsafe extern "C" fn prefixed_command() {
                                 gsa_def(p, q);
                             } else { sa_def(p, q); }
                         } else if a as libc::c_int >= 4i32 {
-                            geq_define(p, 113i32 as uint16_t, q);
-                        } else { eq_define(p, 113i32 as uint16_t, q); }
+                            geq_define(p, 113i32 as u16, q);
+                        } else { eq_define(p, 113i32 as u16, q); }
                     }
                     current_block = 1862445865460439639;
                 } else { current_block = 15174492983169363256; }
@@ -3576,9 +3574,9 @@ pub unsafe extern "C" fn prefixed_command() {
                                 gsa_def(p, -0xfffffffi32);
                             } else { sa_def(p, -0xfffffffi32); }
                         } else if a as libc::c_int >= 4i32 {
-                            geq_define(p, 103i32 as uint16_t, -0xfffffffi32);
+                            geq_define(p, 103i32 as u16, -0xfffffffi32);
                         } else {
-                            eq_define(p, 103i32 as uint16_t, -0xfffffffi32);
+                            eq_define(p, 103i32 as u16, -0xfffffffi32);
                         }
                         (*mem.offset(def_ref as isize)).b32.s1 = avail;
                         avail = def_ref
@@ -3604,8 +3602,8 @@ pub unsafe extern "C" fn prefixed_command() {
                                 gsa_def(p, def_ref);
                             } else { sa_def(p, def_ref); }
                         } else if a as libc::c_int >= 4i32 {
-                            geq_define(p, 113i32 as uint16_t, def_ref);
-                        } else { eq_define(p, 113i32 as uint16_t, def_ref); }
+                            geq_define(p, 113i32 as u16, def_ref);
+                        } else { eq_define(p, 113i32 as u16, def_ref); }
                     }
                 }
             }
@@ -3635,8 +3633,8 @@ pub unsafe extern "C" fn prefixed_command() {
             } else { scan_glue(2i32 as small_number); }
             trap_zero_glue();
             if a as libc::c_int >= 4i32 {
-                geq_define(p, 119i32 as uint16_t, cur_val);
-            } else { eq_define(p, 119i32 as uint16_t, cur_val); }
+                geq_define(p, 119i32 as u16, cur_val);
+            } else { eq_define(p, 119i32 as u16, cur_val); }
         }
         87 => {
             if cur_chr ==
@@ -3662,11 +3660,11 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_optional_equals();
                 scan_char_class();
                 if a as libc::c_int >= 4i32 {
-                    geq_define(p, 122i32 as uint16_t,
+                    geq_define(p, 122i32 as u16,
                                (cur_val as libc::c_long * 65536 +
                                     n as libc::c_long) as int32_t);
                 } else {
-                    eq_define(p, 122i32 as uint16_t,
+                    eq_define(p, 122i32 as u16,
                               (cur_val as libc::c_long * 65536 +
                                    n as libc::c_long) as int32_t);
                 }
@@ -3683,8 +3681,8 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_optional_equals();
                 scan_xetex_math_char_int();
                 if a as libc::c_int >= 4i32 {
-                    geq_define(p, 122i32 as uint16_t, cur_val);
-                } else { eq_define(p, 122i32 as uint16_t, cur_val); }
+                    geq_define(p, 122i32 as u16, cur_val);
+                } else { eq_define(p, 122i32 as u16, cur_val); }
             } else if cur_chr ==
                           1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                               1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
@@ -3711,8 +3709,8 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_usv_num();
                 n = n + cur_val;
                 if a as libc::c_int >= 4i32 {
-                    geq_define(p, 122i32 as uint16_t, n);
-                } else { eq_define(p, 122i32 as uint16_t, n); }
+                    geq_define(p, 122i32 as u16, n);
+                } else { eq_define(p, 122i32 as u16, n); }
             } else if cur_chr ==
                           1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                               1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
@@ -3844,17 +3842,17 @@ pub unsafe extern "C" fn prefixed_command() {
                         ((*eqtb.offset(p as isize)).b32.s1 as libc::c_long /
                              65536) as int32_t;
                     if a as libc::c_int >= 4i32 {
-                        geq_define(p, 122i32 as uint16_t,
+                        geq_define(p, 122i32 as u16,
                                    (n as libc::c_long * 65536 +
                                         cur_val as libc::c_long) as int32_t);
                     } else {
-                        eq_define(p, 122i32 as uint16_t,
+                        eq_define(p, 122i32 as u16,
                                   (n as libc::c_long * 65536 +
                                        cur_val as libc::c_long) as int32_t);
                     }
                 } else if a as libc::c_int >= 4i32 {
-                    geq_define(p, 122i32 as uint16_t, cur_val);
-                } else { eq_define(p, 122i32 as uint16_t, cur_val); }
+                    geq_define(p, 122i32 as u16, cur_val);
+                } else { eq_define(p, 122i32 as u16, cur_val); }
             } else if p <
                           1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                               1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
@@ -3882,8 +3880,8 @@ pub unsafe extern "C" fn prefixed_command() {
                             as int32_t
                 }
                 if a as libc::c_int >= 4i32 {
-                    geq_define(p, 122i32 as uint16_t, cur_val);
-                } else { eq_define(p, 122i32 as uint16_t, cur_val); }
+                    geq_define(p, 122i32 as u16, cur_val);
+                } else { eq_define(p, 122i32 as u16, cur_val); }
             } else if a as libc::c_int >= 4i32 {
                 geq_word_define(p, cur_val);
             } else { eq_word_define(p, cur_val); }
@@ -3895,8 +3893,8 @@ pub unsafe extern "C" fn prefixed_command() {
             scan_optional_equals();
             scan_font_ident();
             if a as libc::c_int >= 4i32 {
-                geq_define(p, 122i32 as uint16_t, cur_val);
-            } else { eq_define(p, 122i32 as uint16_t, cur_val); }
+                geq_define(p, 122i32 as u16, cur_val);
+            } else { eq_define(p, 122i32 as u16, cur_val); }
         }
         91 | 92 | 93 | 94 => { do_register_command(a); }
         100 => {
@@ -3972,8 +3970,8 @@ pub unsafe extern "C" fn prefixed_command() {
                 }
             }
             if a as libc::c_int >= 4i32 {
-                geq_define(q, 120i32 as uint16_t, p);
-            } else { eq_define(q, 120i32 as uint16_t, p); }
+                geq_define(q, 120i32 as u16, p);
+            } else { eq_define(q, 120i32 as u16, p); }
         }
         101 => {
             if cur_chr == 1i32 {
@@ -5230,8 +5228,8 @@ unsafe extern "C" fn store_fmt_file() {
         fmt_out,
     );
     do_dump(
-        &mut *trie_trc.offset(0) as *mut uint16_t as *mut libc::c_char,
-        ::std::mem::size_of::<uint16_t>() as u64,
+        &mut *trie_trc.offset(0) as *mut u16 as *mut libc::c_char,
+        ::std::mem::size_of::<u16>() as u64,
         (trie_max + 1i32) as size_t,
         fmt_out,
     );
@@ -5486,7 +5484,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                     + 1i32) as isize,
             ))
             .b16
-            .s1 = 103i32 as uint16_t;
+            .s1 = 103i32 as u16;
             (*eqtb.offset(
                 (1i32
                     + (0x10ffffi32 + 1i32)
@@ -5510,7 +5508,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                     + 1i32) as isize,
             ))
             .b16
-            .s0 = 0i32 as uint16_t;
+            .s0 = 0i32 as u16;
             x = 1i32
                 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -8029,18 +8027,18 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                       +
                                                                                                                                                       1i32)
                                                                                                                                                      as
-                                                                                                                                                     u64).wrapping_mul(::std::mem::size_of::<uint16_t>()
+                                                                                                                                                     u64).wrapping_mul(::std::mem::size_of::<u16>()
                                                                                                                                                                                      as
                                                                                                                                                                                      u64))
                                                                                                                                             as
-                                                                                                                                            *mut uint16_t
+                                                                                                                                            *mut u16
                                                                                                                                 }
                                                                                                                                 do_undump(&mut *trie_trc.offset(0)
                                                                                                                                               as
-                                                                                                                                              *mut uint16_t
+                                                                                                                                              *mut u16
                                                                                                                                               as
                                                                                                                                               *mut libc::c_char,
-                                                                                                                                          ::std::mem::size_of::<uint16_t>()
+                                                                                                                                          ::std::mem::size_of::<u16>()
                                                                                                                                               as
                                                                                                                                               u64,
                                                                                                                                           (j
@@ -8388,7 +8386,7 @@ unsafe extern "C" fn final_cleanup() {
         print_nl('(' as i32);
         print_esc_cstr(b"end occurred \x00" as *const u8 as *const libc::c_char);
         print_cstr(b"when \x00" as *const u8 as *const libc::c_char);
-        print_cmd_chr(107i32 as uint16_t, cur_if as int32_t);
+        print_cmd_chr(107i32 as u16, cur_if as int32_t);
         if if_line != 0i32 {
             print_cstr(b" on line \x00" as *const u8 as *const libc::c_char);
             print_int(if_line);
@@ -8595,7 +8593,7 @@ unsafe extern "C" fn initialize_more_variables() {
                 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32))) as usize] = 1i32 as uint16_t;
+                + (0x10ffffi32 + 1i32))) as usize] = 1i32 as u16;
         k += 1
     }
     no_new_control_sequence = 1i32 != 0;
@@ -8606,8 +8604,8 @@ unsafe extern "C" fn initialize_more_variables() {
         prim[k as usize] = prim[0];
         k += 1
     }
-    prim_eqtb[0].b16.s0 = 0i32 as uint16_t;
-    prim_eqtb[0].b16.s1 = 103i32 as uint16_t;
+    prim_eqtb[0].b16.s0 = 0i32 as u16;
+    prim_eqtb[0].b16.s1 = 103i32 as u16;
     prim_eqtb[0].b32.s1 = -0xfffffffi32;
     k = 1i32;
     while k <= 500i32 {
@@ -8615,7 +8613,7 @@ unsafe extern "C" fn initialize_more_variables() {
         k += 1
     }
     save_ptr = 0i32;
-    cur_level = 1i32 as uint16_t;
+    cur_level = 1i32 as u16;
     cur_group = 0i32 as group_code;
     cur_boundary = 0i32;
     max_save_stack = 0i32;
@@ -8640,10 +8638,10 @@ unsafe extern "C" fn initialize_more_variables() {
     if_limit = 0i32 as libc::c_uchar;
     cur_if = 0i32 as small_number;
     if_line = 0i32;
-    null_character.s3 = 0i32 as uint16_t;
-    null_character.s2 = 0i32 as uint16_t;
-    null_character.s1 = 0i32 as uint16_t;
-    null_character.s0 = 0i32 as uint16_t;
+    null_character.s3 = 0i32 as u16;
+    null_character.s2 = 0i32 as u16;
+    null_character.s1 = 0i32 as u16;
+    null_character.s0 = 0i32 as u16;
     total_pages = 0i32;
     max_v = 0i32;
     max_h = 0i32;
@@ -8702,7 +8700,7 @@ unsafe extern "C" fn initialize_more_variables() {
     sa_null.b32.s0 = -0xfffffffi32;
     sa_null.b32.s1 = -0xfffffffi32;
     sa_chain = -0xfffffffi32;
-    sa_level = 0i32 as uint16_t;
+    sa_level = 0i32 as u16;
     disc_ptr[2] = -0xfffffffi32;
     disc_ptr[3] = -0xfffffffi32;
     edit_name_start = 0i32;
@@ -8719,20 +8717,20 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     k = 0i32;
     while k <= 19i32 {
         (*mem.offset(k as isize)).b32.s1 = -0xfffffffi32 + 1i32;
-        (*mem.offset(k as isize)).b16.s1 = 0i32 as uint16_t;
-        (*mem.offset(k as isize)).b16.s0 = 0i32 as uint16_t;
+        (*mem.offset(k as isize)).b16.s1 = 0i32 as u16;
+        (*mem.offset(k as isize)).b16.s0 = 0i32 as u16;
         k += 4i32
     }
     (*mem.offset(6)).b32.s1 = 65536 as int32_t;
-    (*mem.offset(4)).b16.s1 = 1i32 as uint16_t;
+    (*mem.offset(4)).b16.s1 = 1i32 as u16;
     (*mem.offset(10)).b32.s1 = 65536 as int32_t;
-    (*mem.offset(8)).b16.s1 = 2i32 as uint16_t;
+    (*mem.offset(8)).b16.s1 = 2i32 as u16;
     (*mem.offset(14)).b32.s1 = 65536 as int32_t;
-    (*mem.offset(12)).b16.s1 = 1i32 as uint16_t;
+    (*mem.offset(12)).b16.s1 = 1i32 as u16;
     (*mem.offset(15)).b32.s1 = 65536 as int32_t;
-    (*mem.offset(12)).b16.s0 = 1i32 as uint16_t;
+    (*mem.offset(12)).b16.s0 = 1i32 as u16;
     (*mem.offset(18)).b32.s1 = -65536 as int32_t;
-    (*mem.offset(16)).b16.s1 = 1i32 as uint16_t;
+    (*mem.offset(16)).b16.s1 = 1i32 as u16;
     rover = 20i32;
     (*mem.offset(rover as isize)).b32.s1 = 0x3fffffffi32;
     (*mem.offset(rover as isize)).b32.s0 = 1000i32;
@@ -8750,14 +8748,14 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32);
     (*mem.offset((4999999i32 - 9i32) as isize)).b32.s1 = 65535i32 + 1i32;
     (*mem.offset((4999999i32 - 9i32) as isize)).b32.s0 = -0xfffffffi32;
-    (*mem.offset((4999999i32 - 7i32) as isize)).b16.s1 = 1i32 as uint16_t;
+    (*mem.offset((4999999i32 - 7i32) as isize)).b16.s1 = 1i32 as u16;
     (*mem.offset((4999999i32 - 7i32 + 1i32) as isize)).b32.s0 = 0x3fffffffi32;
-    (*mem.offset((4999999i32 - 7i32) as isize)).b16.s0 = 0i32 as uint16_t;
-    (*mem.offset(4999999)).b16.s0 = 255i32 as uint16_t;
-    (*mem.offset(4999999)).b16.s1 = 1i32 as uint16_t;
+    (*mem.offset((4999999i32 - 7i32) as isize)).b16.s0 = 0i32 as u16;
+    (*mem.offset(4999999)).b16.s0 = 255i32 as u16;
+    (*mem.offset(4999999)).b16.s1 = 1i32 as u16;
     (*mem.offset(4999999)).b32.s1 = 4999999i32;
-    (*mem.offset((4999999i32 - 2i32) as isize)).b16.s1 = 10i32 as uint16_t;
-    (*mem.offset((4999999i32 - 2i32) as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset((4999999i32 - 2i32) as isize)).b16.s1 = 10i32 as u16;
+    (*mem.offset((4999999i32 - 2i32) as isize)).b16.s0 = 0i32 as u16;
     avail = -0xfffffffi32;
     mem_end = 4999999i32;
     hi_mem_min = 4999999i32 - 14i32;
@@ -8774,7 +8772,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 1i32) as isize,
     ))
     .b16
-    .s1 = 103i32 as uint16_t;
+    .s1 = 103i32 as u16;
     (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -8798,7 +8796,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 1i32) as isize,
     ))
     .b16
-    .s0 = 0i32 as uint16_t;
+    .s0 = 0i32 as u16;
     k = 1i32;
     while k <= eqtb_top {
         *eqtb.offset(k as isize) = *eqtb.offset(
@@ -8838,7 +8836,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 1i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -8851,7 +8849,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 1i32) as isize,
     ))
     .b16
-    .s1 = 119i32 as uint16_t;
+    .s1 = 119i32 as u16;
     k = 1i32
         + (0x10ffffi32 + 1i32)
         + (0x10ffffi32 + 1i32)
@@ -8925,7 +8923,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 0i32) as isize,
     ))
     .b16
-    .s1 = 120i32 as uint16_t;
+    .s1 = 120i32 as u16;
     (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -8942,7 +8940,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 0i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     k = 1i32
         + (0x10ffffi32 + 1i32)
         + (0x10ffffi32 + 1i32)
@@ -9071,7 +9069,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 4i32) as isize,
     ))
     .b16
-    .s1 = 121i32 as uint16_t;
+    .s1 = 121i32 as u16;
     (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -9090,7 +9088,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 4i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     k = 1i32
         + (0x10ffffi32 + 1i32)
         + (0x10ffffi32 + 1i32)
@@ -9184,7 +9182,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 256i32) as isize,
     ))
     .b16
-    .s1 = 122i32 as uint16_t;
+    .s1 = 122i32 as u16;
     (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -9204,7 +9202,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 256i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     k = 1i32
         + (0x10ffffi32 + 1i32)
         + (0x10ffffi32 + 1i32)
@@ -9306,7 +9304,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 3i32 * 256i32) as isize,
     ))
     .b16
-    .s1 = 122i32 as uint16_t;
+    .s1 = 122i32 as u16;
     (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -9328,7 +9326,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
             + 3i32 * 256i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     k = 1i32
         + (0x10ffffi32 + 1i32)
         + (0x10ffffi32 + 1i32)
@@ -10305,7 +10303,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 9i32) as isize,
     ))
     .b16
-    .s1 = 118i32 as uint16_t;
+    .s1 = 118i32 as u16;
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 9i32) as isize,
     ))
@@ -10314,7 +10312,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
     .b16
-    .s1 = 39i32 as uint16_t;
+    .s1 = 39i32 as u16;
     (*eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
@@ -10324,7 +10322,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 11i32) as isize,
     ))
@@ -10355,12 +10353,12 @@ unsafe extern "C" fn initialize_more_initex_variables() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     (*eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
     ))
     .b16
-    .s1 = 115i32 as uint16_t;
+    .s1 = 115i32 as u16;
     (*eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32) as isize,
     ))
@@ -10411,7 +10409,7 @@ unsafe extern "C" fn initialize_primitives() {
     first = 0i32;
     primitive(
         b"lineskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10424,7 +10422,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"baselineskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10437,7 +10435,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"parskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10450,7 +10448,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"abovedisplayskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10463,7 +10461,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"belowdisplayskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10476,7 +10474,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"abovedisplayshortskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10489,7 +10487,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"belowdisplayshortskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10502,7 +10500,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"leftskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10515,7 +10513,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"rightskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10528,7 +10526,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"topskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10541,7 +10539,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"splittopskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10554,7 +10552,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tabskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10567,7 +10565,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"spaceskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10580,7 +10578,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"xspaceskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10593,7 +10591,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"parfillskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10606,7 +10604,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXlinebreakskip\x00" as *const u8 as *const libc::c_char,
-        76i32 as uint16_t,
+        76i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10619,7 +10617,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"thinmuskip\x00" as *const u8 as *const libc::c_char,
-        77i32 as uint16_t,
+        77i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10632,7 +10630,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"medmuskip\x00" as *const u8 as *const libc::c_char,
-        77i32 as uint16_t,
+        77i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10645,7 +10643,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"thickmuskip\x00" as *const u8 as *const libc::c_char,
-        77i32 as uint16_t,
+        77i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10658,7 +10656,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"output\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10674,7 +10672,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everypar\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10690,7 +10688,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everymath\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10706,7 +10704,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everydisplay\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10722,7 +10720,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everyhbox\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10738,7 +10736,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everyvbox\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10754,7 +10752,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everyjob\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10770,7 +10768,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everycr\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10786,7 +10784,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"errhelp\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10802,7 +10800,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"everyeof\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10818,7 +10816,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXinterchartoks\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10834,7 +10832,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"TectonicCodaTokens\x00" as *const u8 as *const libc::c_char,
-        73i32 as uint16_t,
+        73i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10850,7 +10848,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"pretolerance\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10878,7 +10876,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tolerance\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10906,7 +10904,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"linepenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10934,7 +10932,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hyphenpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10962,7 +10960,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"exhyphenpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -10990,7 +10988,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"clubpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11018,7 +11016,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"widowpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11046,7 +11044,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"displaywidowpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11074,7 +11072,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"brokenpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11102,7 +11100,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"binoppenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11130,7 +11128,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"relpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11158,7 +11156,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"predisplaypenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11186,7 +11184,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"postdisplaypenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11214,7 +11212,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"interlinepenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11242,7 +11240,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"doublehyphendemerits\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11270,7 +11268,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"finalhyphendemerits\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11298,7 +11296,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"adjdemerits\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11326,7 +11324,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"mag\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11354,7 +11352,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"delimiterfactor\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11382,7 +11380,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"looseness\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11410,7 +11408,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"time\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11438,7 +11436,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"day\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11466,7 +11464,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"month\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11494,7 +11492,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"year\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11522,7 +11520,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"showboxbreadth\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11550,7 +11548,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"showboxdepth\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11578,7 +11576,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hbadness\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11606,7 +11604,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"vbadness\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11634,7 +11632,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"pausing\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11662,7 +11660,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingonline\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11690,7 +11688,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingmacros\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11718,7 +11716,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingstats\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11746,7 +11744,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingparagraphs\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11774,7 +11772,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingpages\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11802,7 +11800,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingoutput\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11830,7 +11828,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracinglostchars\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11858,7 +11856,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingcommands\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11886,7 +11884,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"tracingrestores\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11914,7 +11912,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"uchyph\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11942,7 +11940,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"outputpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11970,7 +11968,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"maxdeadcycles\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -11998,7 +11996,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hangafter\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12026,7 +12024,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"floatingpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12054,7 +12052,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"globaldefs\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12082,7 +12080,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"fam\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12110,7 +12108,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"escapechar\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12138,7 +12136,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"defaulthyphenchar\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12166,7 +12164,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"defaultskewchar\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12194,7 +12192,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"endlinechar\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12222,7 +12220,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"newlinechar\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12250,7 +12248,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"language\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12278,7 +12276,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"lefthyphenmin\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12306,7 +12304,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"righthyphenmin\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12334,7 +12332,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"holdinginserts\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12362,7 +12360,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"errorcontextlines\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12390,7 +12388,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXlinebreakpenalty\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12418,7 +12416,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXprotrudechars\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12446,7 +12444,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"parindent\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12477,7 +12475,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"mathsurround\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12508,7 +12506,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"lineskiplimit\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12539,7 +12537,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hsize\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12570,7 +12568,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"vsize\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12601,7 +12599,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"maxdepth\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12632,7 +12630,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"splitmaxdepth\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12663,7 +12661,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"boxmaxdepth\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12694,7 +12692,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hfuzz\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12725,7 +12723,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"vfuzz\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12756,7 +12754,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"delimitershortfall\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12787,7 +12785,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"nulldelimiterspace\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12818,7 +12816,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"scriptspace\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12849,7 +12847,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"predisplaysize\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12880,7 +12878,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"displaywidth\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12911,7 +12909,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"displayindent\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12942,7 +12940,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"overfullrule\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -12973,7 +12971,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hangindent\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -13004,7 +13002,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hoffset\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -13035,7 +13033,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"voffset\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -13066,7 +13064,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"emergencystretch\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -13097,7 +13095,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"pdfpagewidth\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -13128,7 +13126,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"pdfpageheight\x00" as *const u8 as *const libc::c_char,
-        75i32 as uint16_t,
+        75i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -13159,77 +13157,77 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b" \x00" as *const u8 as *const libc::c_char,
-        64i32 as uint16_t,
+        64i32 as u16,
         0i32,
     );
     primitive(
         b"/\x00" as *const u8 as *const libc::c_char,
-        44i32 as uint16_t,
+        44i32 as u16,
         0i32,
     );
     primitive(
         b"accent\x00" as *const u8 as *const libc::c_char,
-        45i32 as uint16_t,
+        45i32 as u16,
         0i32,
     );
     primitive(
         b"advance\x00" as *const u8 as *const libc::c_char,
-        92i32 as uint16_t,
+        92i32 as u16,
         0i32,
     );
     primitive(
         b"afterassignment\x00" as *const u8 as *const libc::c_char,
-        40i32 as uint16_t,
+        40i32 as u16,
         0i32,
     );
     primitive(
         b"aftergroup\x00" as *const u8 as *const libc::c_char,
-        41i32 as uint16_t,
+        41i32 as u16,
         0i32,
     );
     primitive(
         b"begingroup\x00" as *const u8 as *const libc::c_char,
-        61i32 as uint16_t,
+        61i32 as u16,
         0i32,
     );
     primitive(
         b"char\x00" as *const u8 as *const libc::c_char,
-        16i32 as uint16_t,
+        16i32 as u16,
         0i32,
     );
     primitive(
         b"csname\x00" as *const u8 as *const libc::c_char,
-        109i32 as uint16_t,
+        109i32 as u16,
         0i32,
     );
     primitive(
         b"delimiter\x00" as *const u8 as *const libc::c_char,
-        15i32 as uint16_t,
+        15i32 as u16,
         0i32,
     );
     primitive(
         b"XeTeXdelimiter\x00" as *const u8 as *const libc::c_char,
-        15i32 as uint16_t,
+        15i32 as u16,
         1i32,
     );
     primitive(
         b"Udelimiter\x00" as *const u8 as *const libc::c_char,
-        15i32 as uint16_t,
+        15i32 as u16,
         1i32,
     );
     primitive(
         b"divide\x00" as *const u8 as *const libc::c_char,
-        94i32 as uint16_t,
+        94i32 as u16,
         0i32,
     );
     primitive(
         b"endcsname\x00" as *const u8 as *const libc::c_char,
-        67i32 as uint16_t,
+        67i32 as u16,
         0i32,
     );
     primitive(
         b"endgroup\x00" as *const u8 as *const libc::c_char,
-        62i32 as uint16_t,
+        62i32 as u16,
         0i32,
     );
     (*hash.offset(
@@ -13241,127 +13239,127 @@ unsafe extern "C" fn initialize_primitives() {
     ) = *eqtb.offset(cur_val as isize);
     primitive(
         b"expandafter\x00" as *const u8 as *const libc::c_char,
-        104i32 as uint16_t,
+        104i32 as u16,
         0i32,
     );
     primitive(
         b"font\x00" as *const u8 as *const libc::c_char,
-        90i32 as uint16_t,
+        90i32 as u16,
         0i32,
     );
     primitive(
         b"fontdimen\x00" as *const u8 as *const libc::c_char,
-        78i32 as uint16_t,
+        78i32 as u16,
         0i32,
     );
     primitive(
         b"halign\x00" as *const u8 as *const libc::c_char,
-        32i32 as uint16_t,
+        32i32 as u16,
         0i32,
     );
     primitive(
         b"hrule\x00" as *const u8 as *const libc::c_char,
-        36i32 as uint16_t,
+        36i32 as u16,
         0i32,
     );
     primitive(
         b"ignorespaces\x00" as *const u8 as *const libc::c_char,
-        39i32 as uint16_t,
+        39i32 as u16,
         0i32,
     );
     primitive(
         b"insert\x00" as *const u8 as *const libc::c_char,
-        37i32 as uint16_t,
+        37i32 as u16,
         0i32,
     );
     primitive(
         b"mark\x00" as *const u8 as *const libc::c_char,
-        18i32 as uint16_t,
+        18i32 as u16,
         0i32,
     );
     primitive(
         b"mathaccent\x00" as *const u8 as *const libc::c_char,
-        46i32 as uint16_t,
+        46i32 as u16,
         0i32,
     );
     primitive(
         b"XeTeXmathaccent\x00" as *const u8 as *const libc::c_char,
-        46i32 as uint16_t,
+        46i32 as u16,
         1i32,
     );
     primitive(
         b"Umathaccent\x00" as *const u8 as *const libc::c_char,
-        46i32 as uint16_t,
+        46i32 as u16,
         1i32,
     );
     primitive(
         b"mathchar\x00" as *const u8 as *const libc::c_char,
-        17i32 as uint16_t,
+        17i32 as u16,
         0i32,
     );
     primitive(
         b"XeTeXmathcharnum\x00" as *const u8 as *const libc::c_char,
-        17i32 as uint16_t,
+        17i32 as u16,
         1i32,
     );
     primitive(
         b"Umathcharnum\x00" as *const u8 as *const libc::c_char,
-        17i32 as uint16_t,
+        17i32 as u16,
         1i32,
     );
     primitive(
         b"XeTeXmathchar\x00" as *const u8 as *const libc::c_char,
-        17i32 as uint16_t,
+        17i32 as u16,
         2i32,
     );
     primitive(
         b"Umathchar\x00" as *const u8 as *const libc::c_char,
-        17i32 as uint16_t,
+        17i32 as u16,
         2i32,
     );
     primitive(
         b"mathchoice\x00" as *const u8 as *const libc::c_char,
-        54i32 as uint16_t,
+        54i32 as u16,
         0i32,
     );
     primitive(
         b"multiply\x00" as *const u8 as *const libc::c_char,
-        93i32 as uint16_t,
+        93i32 as u16,
         0i32,
     );
     primitive(
         b"noalign\x00" as *const u8 as *const libc::c_char,
-        34i32 as uint16_t,
+        34i32 as u16,
         0i32,
     );
     primitive(
         b"noboundary\x00" as *const u8 as *const libc::c_char,
-        65i32 as uint16_t,
+        65i32 as u16,
         0i32,
     );
     primitive(
         b"noexpand\x00" as *const u8 as *const libc::c_char,
-        105i32 as uint16_t,
+        105i32 as u16,
         0i32,
     );
     primitive(
         b"primitive\x00" as *const u8 as *const libc::c_char,
-        105i32 as uint16_t,
+        105i32 as u16,
         1i32,
     );
     primitive(
         b"nonscript\x00" as *const u8 as *const libc::c_char,
-        55i32 as uint16_t,
+        55i32 as u16,
         0i32,
     );
     primitive(
         b"omit\x00" as *const u8 as *const libc::c_char,
-        63i32 as uint16_t,
+        63i32 as u16,
         0i32,
     );
     primitive(
         b"parshape\x00" as *const u8 as *const libc::c_char,
-        85i32 as uint16_t,
+        85i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -13377,37 +13375,37 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"penalty\x00" as *const u8 as *const libc::c_char,
-        42i32 as uint16_t,
+        42i32 as u16,
         0i32,
     );
     primitive(
         b"prevgraf\x00" as *const u8 as *const libc::c_char,
-        81i32 as uint16_t,
+        81i32 as u16,
         0i32,
     );
     primitive(
         b"radical\x00" as *const u8 as *const libc::c_char,
-        66i32 as uint16_t,
+        66i32 as u16,
         0i32,
     );
     primitive(
         b"XeTeXradical\x00" as *const u8 as *const libc::c_char,
-        66i32 as uint16_t,
+        66i32 as u16,
         1i32,
     );
     primitive(
         b"Uradical\x00" as *const u8 as *const libc::c_char,
-        66i32 as uint16_t,
+        66i32 as u16,
         1i32,
     );
     primitive(
         b"read\x00" as *const u8 as *const libc::c_char,
-        98i32 as uint16_t,
+        98i32 as u16,
         0i32,
     );
     primitive(
         b"relax\x00" as *const u8 as *const libc::c_char,
-        0i32 as uint16_t,
+        0i32 as u16,
         0x10ffffi32 + 1i32,
     );
     (*hash.offset(
@@ -13419,304 +13417,304 @@ unsafe extern "C" fn initialize_primitives() {
     ) = *eqtb.offset(cur_val as isize);
     primitive(
         b"setbox\x00" as *const u8 as *const libc::c_char,
-        100i32 as uint16_t,
+        100i32 as u16,
         0i32,
     );
     primitive(
         b"the\x00" as *const u8 as *const libc::c_char,
-        111i32 as uint16_t,
+        111i32 as u16,
         0i32,
     );
     primitive(
         b"toks\x00" as *const u8 as *const libc::c_char,
-        72i32 as uint16_t,
+        72i32 as u16,
         0i32,
     );
     primitive(
         b"vadjust\x00" as *const u8 as *const libc::c_char,
-        38i32 as uint16_t,
+        38i32 as u16,
         0i32,
     );
     primitive(
         b"valign\x00" as *const u8 as *const libc::c_char,
-        33i32 as uint16_t,
+        33i32 as u16,
         0i32,
     );
     primitive(
         b"vcenter\x00" as *const u8 as *const libc::c_char,
-        56i32 as uint16_t,
+        56i32 as u16,
         0i32,
     );
     primitive(
         b"vrule\x00" as *const u8 as *const libc::c_char,
-        35i32 as uint16_t,
+        35i32 as u16,
         0i32,
     );
     primitive(
         b"par\x00" as *const u8 as *const libc::c_char,
-        13i32 as uint16_t,
+        13i32 as u16,
         0x10ffffi32 + 1i32,
     );
     par_loc = cur_val;
     par_token = 0x1ffffffi32 + par_loc;
     primitive(
         b"input\x00" as *const u8 as *const libc::c_char,
-        106i32 as uint16_t,
+        106i32 as u16,
         0i32,
     );
     primitive(
         b"endinput\x00" as *const u8 as *const libc::c_char,
-        106i32 as uint16_t,
+        106i32 as u16,
         1i32,
     );
     primitive(
         b"topmark\x00" as *const u8 as *const libc::c_char,
-        112i32 as uint16_t,
+        112i32 as u16,
         0i32,
     );
     primitive(
         b"firstmark\x00" as *const u8 as *const libc::c_char,
-        112i32 as uint16_t,
+        112i32 as u16,
         1i32,
     );
     primitive(
         b"botmark\x00" as *const u8 as *const libc::c_char,
-        112i32 as uint16_t,
+        112i32 as u16,
         2i32,
     );
     primitive(
         b"splitfirstmark\x00" as *const u8 as *const libc::c_char,
-        112i32 as uint16_t,
+        112i32 as u16,
         3i32,
     );
     primitive(
         b"splitbotmark\x00" as *const u8 as *const libc::c_char,
-        112i32 as uint16_t,
+        112i32 as u16,
         4i32,
     );
     primitive(
         b"count\x00" as *const u8 as *const libc::c_char,
-        91i32 as uint16_t,
+        91i32 as u16,
         0i32,
     );
     primitive(
         b"dimen\x00" as *const u8 as *const libc::c_char,
-        91i32 as uint16_t,
+        91i32 as u16,
         1i32,
     );
     primitive(
         b"skip\x00" as *const u8 as *const libc::c_char,
-        91i32 as uint16_t,
+        91i32 as u16,
         2i32,
     );
     primitive(
         b"muskip\x00" as *const u8 as *const libc::c_char,
-        91i32 as uint16_t,
+        91i32 as u16,
         3i32,
     );
     primitive(
         b"spacefactor\x00" as *const u8 as *const libc::c_char,
-        80i32 as uint16_t,
+        80i32 as u16,
         104i32,
     );
     primitive(
         b"prevdepth\x00" as *const u8 as *const libc::c_char,
-        80i32 as uint16_t,
+        80i32 as u16,
         1i32,
     );
     primitive(
         b"deadcycles\x00" as *const u8 as *const libc::c_char,
-        83i32 as uint16_t,
+        83i32 as u16,
         0i32,
     );
     primitive(
         b"insertpenalties\x00" as *const u8 as *const libc::c_char,
-        83i32 as uint16_t,
+        83i32 as u16,
         1i32,
     );
     primitive(
         b"wd\x00" as *const u8 as *const libc::c_char,
-        84i32 as uint16_t,
+        84i32 as u16,
         1i32,
     );
     primitive(
         b"ht\x00" as *const u8 as *const libc::c_char,
-        84i32 as uint16_t,
+        84i32 as u16,
         3i32,
     );
     primitive(
         b"dp\x00" as *const u8 as *const libc::c_char,
-        84i32 as uint16_t,
+        84i32 as u16,
         2i32,
     );
     primitive(
         b"lastpenalty\x00" as *const u8 as *const libc::c_char,
-        71i32 as uint16_t,
+        71i32 as u16,
         0i32,
     );
     primitive(
         b"lastkern\x00" as *const u8 as *const libc::c_char,
-        71i32 as uint16_t,
+        71i32 as u16,
         1i32,
     );
     primitive(
         b"lastskip\x00" as *const u8 as *const libc::c_char,
-        71i32 as uint16_t,
+        71i32 as u16,
         2i32,
     );
     primitive(
         b"inputlineno\x00" as *const u8 as *const libc::c_char,
-        71i32 as uint16_t,
+        71i32 as u16,
         4i32,
     );
     primitive(
         b"badness\x00" as *const u8 as *const libc::c_char,
-        71i32 as uint16_t,
+        71i32 as u16,
         5i32,
     );
     primitive(
         b"number\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         0i32,
     );
     primitive(
         b"romannumeral\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         1i32,
     );
     primitive(
         b"string\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         2i32,
     );
     primitive(
         b"meaning\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         3i32,
     );
     primitive(
         b"fontname\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         4i32,
     );
     primitive(
         b"jobname\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         15i32,
     );
     primitive(
         b"leftmarginkern\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         11i32,
     );
     primitive(
         b"rightmarginkern\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         12i32,
     );
     primitive(
         b"Uchar\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         13i32,
     );
     primitive(
         b"Ucharcat\x00" as *const u8 as *const libc::c_char,
-        110i32 as uint16_t,
+        110i32 as u16,
         14i32,
     );
     primitive(
         b"if\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         0i32,
     );
     primitive(
         b"ifcat\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         1i32,
     );
     primitive(
         b"ifnum\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         2i32,
     );
     primitive(
         b"ifdim\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         3i32,
     );
     primitive(
         b"ifodd\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         4i32,
     );
     primitive(
         b"ifvmode\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         5i32,
     );
     primitive(
         b"ifhmode\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         6i32,
     );
     primitive(
         b"ifmmode\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         7i32,
     );
     primitive(
         b"ifinner\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         8i32,
     );
     primitive(
         b"ifvoid\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         9i32,
     );
     primitive(
         b"ifhbox\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         10i32,
     );
     primitive(
         b"ifvbox\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         11i32,
     );
     primitive(
         b"ifx\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         12i32,
     );
     primitive(
         b"ifeof\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         13i32,
     );
     primitive(
         b"iftrue\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         14i32,
     );
     primitive(
         b"iffalse\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         15i32,
     );
     primitive(
         b"ifcase\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         16i32,
     );
     primitive(
         b"ifprimitive\x00" as *const u8 as *const libc::c_char,
-        107i32 as uint16_t,
+        107i32 as u16,
         21i32,
     );
     primitive(
         b"fi\x00" as *const u8 as *const libc::c_char,
-        108i32 as uint16_t,
+        108i32 as u16,
         2i32,
     );
     (*hash.offset(
@@ -13728,17 +13726,17 @@ unsafe extern "C" fn initialize_primitives() {
     ) = *eqtb.offset(cur_val as isize);
     primitive(
         b"or\x00" as *const u8 as *const libc::c_char,
-        108i32 as uint16_t,
+        108i32 as u16,
         4i32,
     );
     primitive(
         b"else\x00" as *const u8 as *const libc::c_char,
-        108i32 as uint16_t,
+        108i32 as u16,
         3i32,
     );
     primitive(
         b"nullfont\x00" as *const u8 as *const libc::c_char,
-        89i32 as uint16_t,
+        89i32 as u16,
         0i32,
     );
     (*hash.offset(
@@ -13750,12 +13748,12 @@ unsafe extern "C" fn initialize_primitives() {
     ) = *eqtb.offset(cur_val as isize);
     primitive(
         b"span\x00" as *const u8 as *const libc::c_char,
-        4i32 as uint16_t,
+        4i32 as u16,
         0x10ffffi32 + 2i32,
     );
     primitive(
         b"cr\x00" as *const u8 as *const libc::c_char,
-        5i32 as uint16_t,
+        5i32 as u16,
         0x10ffffi32 + 3i32,
     );
     (*hash.offset(
@@ -13767,7 +13765,7 @@ unsafe extern "C" fn initialize_primitives() {
     ) = *eqtb.offset(cur_val as isize);
     primitive(
         b"crcr\x00" as *const u8 as *const libc::c_char,
-        5i32 as uint16_t,
+        5i32 as u16,
         0x10ffffi32 + 4i32,
     );
     (*hash.offset(
@@ -13782,7 +13780,7 @@ unsafe extern "C" fn initialize_primitives() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
     ))
     .b16
-    .s1 = 9i32 as uint16_t;
+    .s1 = 9i32 as u16;
     (*eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
     ))
@@ -13792,7 +13790,7 @@ unsafe extern "C" fn initialize_primitives() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 6i32) as isize,
     ))
     .b16
-    .s0 = 1i32 as uint16_t;
+    .s0 = 1i32 as u16;
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32) as isize,
     ) = *eqtb.offset(
@@ -13802,385 +13800,385 @@ unsafe extern "C" fn initialize_primitives() {
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 5i32) as isize,
     ))
     .b16
-    .s1 = 117i32 as uint16_t;
+    .s1 = 117i32 as u16;
     primitive(
         b"pagegoal\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         0i32,
     );
     primitive(
         b"pagetotal\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         1i32,
     );
     primitive(
         b"pagestretch\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         2i32,
     );
     primitive(
         b"pagefilstretch\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         3i32,
     );
     primitive(
         b"pagefillstretch\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         4i32,
     );
     primitive(
         b"pagefilllstretch\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         5i32,
     );
     primitive(
         b"pageshrink\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         6i32,
     );
     primitive(
         b"pagedepth\x00" as *const u8 as *const libc::c_char,
-        82i32 as uint16_t,
+        82i32 as u16,
         7i32,
     );
     primitive(
         b"end\x00" as *const u8 as *const libc::c_char,
-        14i32 as uint16_t,
+        14i32 as u16,
         0i32,
     );
     primitive(
         b"dump\x00" as *const u8 as *const libc::c_char,
-        14i32 as uint16_t,
+        14i32 as u16,
         1i32,
     );
     primitive(
         b"hskip\x00" as *const u8 as *const libc::c_char,
-        26i32 as uint16_t,
+        26i32 as u16,
         4i32,
     );
     primitive(
         b"hfil\x00" as *const u8 as *const libc::c_char,
-        26i32 as uint16_t,
+        26i32 as u16,
         0i32,
     );
     primitive(
         b"hfill\x00" as *const u8 as *const libc::c_char,
-        26i32 as uint16_t,
+        26i32 as u16,
         1i32,
     );
     primitive(
         b"hss\x00" as *const u8 as *const libc::c_char,
-        26i32 as uint16_t,
+        26i32 as u16,
         2i32,
     );
     primitive(
         b"hfilneg\x00" as *const u8 as *const libc::c_char,
-        26i32 as uint16_t,
+        26i32 as u16,
         3i32,
     );
     primitive(
         b"vskip\x00" as *const u8 as *const libc::c_char,
-        27i32 as uint16_t,
+        27i32 as u16,
         4i32,
     );
     primitive(
         b"vfil\x00" as *const u8 as *const libc::c_char,
-        27i32 as uint16_t,
+        27i32 as u16,
         0i32,
     );
     primitive(
         b"vfill\x00" as *const u8 as *const libc::c_char,
-        27i32 as uint16_t,
+        27i32 as u16,
         1i32,
     );
     primitive(
         b"vss\x00" as *const u8 as *const libc::c_char,
-        27i32 as uint16_t,
+        27i32 as u16,
         2i32,
     );
     primitive(
         b"vfilneg\x00" as *const u8 as *const libc::c_char,
-        27i32 as uint16_t,
+        27i32 as u16,
         3i32,
     );
     primitive(
         b"mskip\x00" as *const u8 as *const libc::c_char,
-        28i32 as uint16_t,
+        28i32 as u16,
         5i32,
     );
     primitive(
         b"kern\x00" as *const u8 as *const libc::c_char,
-        29i32 as uint16_t,
+        29i32 as u16,
         1i32,
     );
     primitive(
         b"mkern\x00" as *const u8 as *const libc::c_char,
-        30i32 as uint16_t,
+        30i32 as u16,
         99i32,
     );
     primitive(
         b"moveleft\x00" as *const u8 as *const libc::c_char,
-        21i32 as uint16_t,
+        21i32 as u16,
         1i32,
     );
     primitive(
         b"moveright\x00" as *const u8 as *const libc::c_char,
-        21i32 as uint16_t,
+        21i32 as u16,
         0i32,
     );
     primitive(
         b"raise\x00" as *const u8 as *const libc::c_char,
-        22i32 as uint16_t,
+        22i32 as u16,
         1i32,
     );
     primitive(
         b"lower\x00" as *const u8 as *const libc::c_char,
-        22i32 as uint16_t,
+        22i32 as u16,
         0i32,
     );
     primitive(
         b"box\x00" as *const u8 as *const libc::c_char,
-        20i32 as uint16_t,
+        20i32 as u16,
         0i32,
     );
     primitive(
         b"copy\x00" as *const u8 as *const libc::c_char,
-        20i32 as uint16_t,
+        20i32 as u16,
         1i32,
     );
     primitive(
         b"lastbox\x00" as *const u8 as *const libc::c_char,
-        20i32 as uint16_t,
+        20i32 as u16,
         2i32,
     );
     primitive(
         b"vsplit\x00" as *const u8 as *const libc::c_char,
-        20i32 as uint16_t,
+        20i32 as u16,
         3i32,
     );
     primitive(
         b"vtop\x00" as *const u8 as *const libc::c_char,
-        20i32 as uint16_t,
+        20i32 as u16,
         4i32,
     );
     primitive(
         b"vbox\x00" as *const u8 as *const libc::c_char,
-        20i32 as uint16_t,
+        20i32 as u16,
         4i32 + 1i32,
     );
     primitive(
         b"hbox\x00" as *const u8 as *const libc::c_char,
-        20i32 as uint16_t,
+        20i32 as u16,
         4i32 + 104i32,
     );
     primitive(
         b"shipout\x00" as *const u8 as *const libc::c_char,
-        31i32 as uint16_t,
+        31i32 as u16,
         100i32 - 1i32,
     );
     primitive(
         b"leaders\x00" as *const u8 as *const libc::c_char,
-        31i32 as uint16_t,
+        31i32 as u16,
         100i32,
     );
     primitive(
         b"cleaders\x00" as *const u8 as *const libc::c_char,
-        31i32 as uint16_t,
+        31i32 as u16,
         101i32,
     );
     primitive(
         b"xleaders\x00" as *const u8 as *const libc::c_char,
-        31i32 as uint16_t,
+        31i32 as u16,
         102i32,
     );
     primitive(
         b"indent\x00" as *const u8 as *const libc::c_char,
-        43i32 as uint16_t,
+        43i32 as u16,
         1i32,
     );
     primitive(
         b"noindent\x00" as *const u8 as *const libc::c_char,
-        43i32 as uint16_t,
+        43i32 as u16,
         0i32,
     );
     primitive(
         b"unpenalty\x00" as *const u8 as *const libc::c_char,
-        25i32 as uint16_t,
+        25i32 as u16,
         12i32,
     );
     primitive(
         b"unkern\x00" as *const u8 as *const libc::c_char,
-        25i32 as uint16_t,
+        25i32 as u16,
         11i32,
     );
     primitive(
         b"unskip\x00" as *const u8 as *const libc::c_char,
-        25i32 as uint16_t,
+        25i32 as u16,
         10i32,
     );
     primitive(
         b"unhbox\x00" as *const u8 as *const libc::c_char,
-        23i32 as uint16_t,
+        23i32 as u16,
         0i32,
     );
     primitive(
         b"unhcopy\x00" as *const u8 as *const libc::c_char,
-        23i32 as uint16_t,
+        23i32 as u16,
         1i32,
     );
     primitive(
         b"unvbox\x00" as *const u8 as *const libc::c_char,
-        24i32 as uint16_t,
+        24i32 as u16,
         0i32,
     );
     primitive(
         b"unvcopy\x00" as *const u8 as *const libc::c_char,
-        24i32 as uint16_t,
+        24i32 as u16,
         1i32,
     );
     primitive(
         b"-\x00" as *const u8 as *const libc::c_char,
-        47i32 as uint16_t,
+        47i32 as u16,
         1i32,
     );
     primitive(
         b"discretionary\x00" as *const u8 as *const libc::c_char,
-        47i32 as uint16_t,
+        47i32 as u16,
         0i32,
     );
     primitive(
         b"eqno\x00" as *const u8 as *const libc::c_char,
-        48i32 as uint16_t,
+        48i32 as u16,
         0i32,
     );
     primitive(
         b"leqno\x00" as *const u8 as *const libc::c_char,
-        48i32 as uint16_t,
+        48i32 as u16,
         1i32,
     );
     primitive(
         b"mathord\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         16i32,
     );
     primitive(
         b"mathop\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         17i32,
     );
     primitive(
         b"mathbin\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         18i32,
     );
     primitive(
         b"mathrel\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         19i32,
     );
     primitive(
         b"mathopen\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         20i32,
     );
     primitive(
         b"mathclose\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         21i32,
     );
     primitive(
         b"mathpunct\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         22i32,
     );
     primitive(
         b"mathinner\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         23i32,
     );
     primitive(
         b"underline\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         26i32,
     );
     primitive(
         b"overline\x00" as *const u8 as *const libc::c_char,
-        50i32 as uint16_t,
+        50i32 as u16,
         27i32,
     );
     primitive(
         b"displaylimits\x00" as *const u8 as *const libc::c_char,
-        51i32 as uint16_t,
+        51i32 as u16,
         0i32,
     );
     primitive(
         b"limits\x00" as *const u8 as *const libc::c_char,
-        51i32 as uint16_t,
+        51i32 as u16,
         1i32,
     );
     primitive(
         b"nolimits\x00" as *const u8 as *const libc::c_char,
-        51i32 as uint16_t,
+        51i32 as u16,
         2i32,
     );
     primitive(
         b"displaystyle\x00" as *const u8 as *const libc::c_char,
-        53i32 as uint16_t,
+        53i32 as u16,
         0i32,
     );
     primitive(
         b"textstyle\x00" as *const u8 as *const libc::c_char,
-        53i32 as uint16_t,
+        53i32 as u16,
         2i32,
     );
     primitive(
         b"scriptstyle\x00" as *const u8 as *const libc::c_char,
-        53i32 as uint16_t,
+        53i32 as u16,
         4i32,
     );
     primitive(
         b"scriptscriptstyle\x00" as *const u8 as *const libc::c_char,
-        53i32 as uint16_t,
+        53i32 as u16,
         6i32,
     );
     primitive(
         b"above\x00" as *const u8 as *const libc::c_char,
-        52i32 as uint16_t,
+        52i32 as u16,
         0i32,
     );
     primitive(
         b"over\x00" as *const u8 as *const libc::c_char,
-        52i32 as uint16_t,
+        52i32 as u16,
         1i32,
     );
     primitive(
         b"atop\x00" as *const u8 as *const libc::c_char,
-        52i32 as uint16_t,
+        52i32 as u16,
         2i32,
     );
     primitive(
         b"abovewithdelims\x00" as *const u8 as *const libc::c_char,
-        52i32 as uint16_t,
+        52i32 as u16,
         3i32 + 0i32,
     );
     primitive(
         b"overwithdelims\x00" as *const u8 as *const libc::c_char,
-        52i32 as uint16_t,
+        52i32 as u16,
         3i32 + 1i32,
     );
     primitive(
         b"atopwithdelims\x00" as *const u8 as *const libc::c_char,
-        52i32 as uint16_t,
+        52i32 as u16,
         3i32 + 2i32,
     );
     primitive(
         b"left\x00" as *const u8 as *const libc::c_char,
-        49i32 as uint16_t,
+        49i32 as u16,
         30i32,
     );
     primitive(
         b"right\x00" as *const u8 as *const libc::c_char,
-        49i32 as uint16_t,
+        49i32 as u16,
         31i32,
     );
     (*hash.offset(
@@ -14192,107 +14190,107 @@ unsafe extern "C" fn initialize_primitives() {
     ) = *eqtb.offset(cur_val as isize);
     primitive(
         b"long\x00" as *const u8 as *const libc::c_char,
-        95i32 as uint16_t,
+        95i32 as u16,
         1i32,
     );
     primitive(
         b"outer\x00" as *const u8 as *const libc::c_char,
-        95i32 as uint16_t,
+        95i32 as u16,
         2i32,
     );
     primitive(
         b"global\x00" as *const u8 as *const libc::c_char,
-        95i32 as uint16_t,
+        95i32 as u16,
         4i32,
     );
     primitive(
         b"def\x00" as *const u8 as *const libc::c_char,
-        99i32 as uint16_t,
+        99i32 as u16,
         0i32,
     );
     primitive(
         b"gdef\x00" as *const u8 as *const libc::c_char,
-        99i32 as uint16_t,
+        99i32 as u16,
         1i32,
     );
     primitive(
         b"edef\x00" as *const u8 as *const libc::c_char,
-        99i32 as uint16_t,
+        99i32 as u16,
         2i32,
     );
     primitive(
         b"xdef\x00" as *const u8 as *const libc::c_char,
-        99i32 as uint16_t,
+        99i32 as u16,
         3i32,
     );
     primitive(
         b"let\x00" as *const u8 as *const libc::c_char,
-        96i32 as uint16_t,
+        96i32 as u16,
         0i32,
     );
     primitive(
         b"futurelet\x00" as *const u8 as *const libc::c_char,
-        96i32 as uint16_t,
+        96i32 as u16,
         0i32 + 1i32,
     );
     primitive(
         b"chardef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         0i32,
     );
     primitive(
         b"mathchardef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         1i32,
     );
     primitive(
         b"XeTeXmathcharnumdef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         8i32,
     );
     primitive(
         b"Umathcharnumdef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         8i32,
     );
     primitive(
         b"XeTeXmathchardef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         9i32,
     );
     primitive(
         b"Umathchardef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         9i32,
     );
     primitive(
         b"countdef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         2i32,
     );
     primitive(
         b"dimendef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         3i32,
     );
     primitive(
         b"skipdef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         4i32,
     );
     primitive(
         b"muskipdef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         5i32,
     );
     primitive(
         b"toksdef\x00" as *const u8 as *const libc::c_char,
-        97i32 as uint16_t,
+        97i32 as u16,
         6i32,
     );
     primitive(
         b"catcode\x00" as *const u8 as *const libc::c_char,
-        86i32 as uint16_t,
+        86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14313,7 +14311,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"mathcode\x00" as *const u8 as *const libc::c_char,
-        86i32 as uint16_t,
+        86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14338,7 +14336,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXmathcodenum\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14363,7 +14361,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"Umathcodenum\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14388,7 +14386,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXmathcode\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14414,7 +14412,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"Umathcode\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14440,7 +14438,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"lccode\x00" as *const u8 as *const libc::c_char,
-        86i32 as uint16_t,
+        86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14462,7 +14460,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"uccode\x00" as *const u8 as *const libc::c_char,
-        86i32 as uint16_t,
+        86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14485,7 +14483,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"sfcode\x00" as *const u8 as *const libc::c_char,
-        86i32 as uint16_t,
+        86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14509,7 +14507,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXcharclass\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14533,7 +14531,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"delcode\x00" as *const u8 as *const libc::c_char,
-        86i32 as uint16_t,
+        86i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14562,7 +14560,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXdelcodenum\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14591,7 +14589,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"Udelcodenum\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14620,7 +14618,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"XeTeXdelcode\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14650,7 +14648,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"Udelcode\x00" as *const u8 as *const libc::c_char,
-        87i32 as uint16_t,
+        87i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14680,7 +14678,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"textfont\x00" as *const u8 as *const libc::c_char,
-        88i32 as uint16_t,
+        88i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14701,7 +14699,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"scriptfont\x00" as *const u8 as *const libc::c_char,
-        88i32 as uint16_t,
+        88i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14722,7 +14720,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"scriptscriptfont\x00" as *const u8 as *const libc::c_char,
-        88i32 as uint16_t,
+        88i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14743,77 +14741,77 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"hyphenation\x00" as *const u8 as *const libc::c_char,
-        101i32 as uint16_t,
+        101i32 as u16,
         0i32,
     );
     primitive(
         b"patterns\x00" as *const u8 as *const libc::c_char,
-        101i32 as uint16_t,
+        101i32 as u16,
         1i32,
     );
     primitive(
         b"hyphenchar\x00" as *const u8 as *const libc::c_char,
-        79i32 as uint16_t,
+        79i32 as u16,
         0i32,
     );
     primitive(
         b"skewchar\x00" as *const u8 as *const libc::c_char,
-        79i32 as uint16_t,
+        79i32 as u16,
         1i32,
     );
     primitive(
         b"lpcode\x00" as *const u8 as *const libc::c_char,
-        79i32 as uint16_t,
+        79i32 as u16,
         2i32,
     );
     primitive(
         b"rpcode\x00" as *const u8 as *const libc::c_char,
-        79i32 as uint16_t,
+        79i32 as u16,
         3i32,
     );
     primitive(
         b"batchmode\x00" as *const u8 as *const libc::c_char,
-        102i32 as uint16_t,
+        102i32 as u16,
         0i32,
     );
     primitive(
         b"nonstopmode\x00" as *const u8 as *const libc::c_char,
-        102i32 as uint16_t,
+        102i32 as u16,
         1i32,
     );
     primitive(
         b"scrollmode\x00" as *const u8 as *const libc::c_char,
-        102i32 as uint16_t,
+        102i32 as u16,
         2i32,
     );
     primitive(
         b"errorstopmode\x00" as *const u8 as *const libc::c_char,
-        102i32 as uint16_t,
+        102i32 as u16,
         3i32,
     );
     primitive(
         b"openin\x00" as *const u8 as *const libc::c_char,
-        60i32 as uint16_t,
+        60i32 as u16,
         1i32,
     );
     primitive(
         b"closein\x00" as *const u8 as *const libc::c_char,
-        60i32 as uint16_t,
+        60i32 as u16,
         0i32,
     );
     primitive(
         b"message\x00" as *const u8 as *const libc::c_char,
-        58i32 as uint16_t,
+        58i32 as u16,
         0i32,
     );
     primitive(
         b"errmessage\x00" as *const u8 as *const libc::c_char,
-        58i32 as uint16_t,
+        58i32 as u16,
         1i32,
     );
     primitive(
         b"lowercase\x00" as *const u8 as *const libc::c_char,
-        57i32 as uint16_t,
+        57i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14835,7 +14833,7 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"uppercase\x00" as *const u8 as *const libc::c_char,
-        57i32 as uint16_t,
+        57i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -14858,43 +14856,43 @@ unsafe extern "C" fn initialize_primitives() {
     );
     primitive(
         b"show\x00" as *const u8 as *const libc::c_char,
-        19i32 as uint16_t,
+        19i32 as u16,
         0i32,
     );
     primitive(
         b"showbox\x00" as *const u8 as *const libc::c_char,
-        19i32 as uint16_t,
+        19i32 as u16,
         1i32,
     );
     primitive(
         b"showthe\x00" as *const u8 as *const libc::c_char,
-        19i32 as uint16_t,
+        19i32 as u16,
         2i32,
     );
     primitive(
         b"showlists\x00" as *const u8 as *const libc::c_char,
-        19i32 as uint16_t,
+        19i32 as u16,
         3i32,
     );
     primitive(
         b"openout\x00" as *const u8 as *const libc::c_char,
-        59i32 as uint16_t,
+        59i32 as u16,
         0i32,
     );
     primitive(
         b"write\x00" as *const u8 as *const libc::c_char,
-        59i32 as uint16_t,
+        59i32 as u16,
         1i32,
     );
     write_loc = cur_val;
     primitive(
         b"closeout\x00" as *const u8 as *const libc::c_char,
-        59i32 as uint16_t,
+        59i32 as u16,
         2i32,
     );
     primitive(
         b"special\x00" as *const u8 as *const libc::c_char,
-        59i32 as uint16_t,
+        59i32 as u16,
         3i32,
     );
     (*hash.offset(
@@ -14906,17 +14904,17 @@ unsafe extern "C" fn initialize_primitives() {
     ) = *eqtb.offset(cur_val as isize);
     primitive(
         b"immediate\x00" as *const u8 as *const libc::c_char,
-        59i32 as uint16_t,
+        59i32 as u16,
         4i32,
     );
     primitive(
         b"setlanguage\x00" as *const u8 as *const libc::c_char,
-        59i32 as uint16_t,
+        59i32 as u16,
         5i32,
     );
     primitive(
         b"synctex\x00" as *const u8 as *const libc::c_char,
-        74i32 as uint16_t,
+        74i32 as u16,
         1i32 + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + 1i32
@@ -15282,9 +15280,9 @@ pub unsafe extern "C" fn tt_run_engine(
     scanner_status = 0i32 as libc::c_uchar;
     warning_index = -0xfffffffi32;
     first = 1i32;
-    cur_input.state = 33i32 as uint16_t;
+    cur_input.state = 33i32 as u16;
     cur_input.start = 1i32;
-    cur_input.index = 0i32 as uint16_t;
+    cur_input.index = 0i32 as u16;
     line = 0i32;
     cur_input.name = 0i32;
     force_eof = 0i32 != 0;
@@ -15294,247 +15292,247 @@ pub unsafe extern "C" fn tt_run_engine(
         no_new_control_sequence = 0i32 != 0;
         primitive(
             b"XeTeXpicfile\x00" as *const u8 as *const libc::c_char,
-            59i32 as uint16_t,
+            59i32 as u16,
             41i32,
         );
         primitive(
             b"XeTeXpdffile\x00" as *const u8 as *const libc::c_char,
-            59i32 as uint16_t,
+            59i32 as u16,
             42i32,
         );
         primitive(
             b"XeTeXglyph\x00" as *const u8 as *const libc::c_char,
-            59i32 as uint16_t,
+            59i32 as u16,
             43i32,
         );
         primitive(
             b"XeTeXlinebreaklocale\x00" as *const u8 as *const libc::c_char,
-            59i32 as uint16_t,
+            59i32 as u16,
             46i32,
         );
         primitive(
             b"pdfsavepos\x00" as *const u8 as *const libc::c_char,
-            59i32 as uint16_t,
+            59i32 as u16,
             6i32 + 0i32,
         );
         primitive(
             b"lastnodetype\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             3i32,
         );
         primitive(
             b"eTeXversion\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             6i32,
         );
         primitive(
             b"eTeXrevision\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             5i32,
         );
         primitive(
             b"XeTeXversion\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             14i32,
         );
         primitive(
             b"XeTeXrevision\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             6i32,
         );
         primitive(
             b"XeTeXcountglyphs\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             15i32,
         );
         primitive(
             b"XeTeXcountvariations\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             16i32,
         );
         primitive(
             b"XeTeXvariation\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             17i32,
         );
         primitive(
             b"XeTeXfindvariationbyname\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             18i32,
         );
         primitive(
             b"XeTeXvariationmin\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             19i32,
         );
         primitive(
             b"XeTeXvariationmax\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             20i32,
         );
         primitive(
             b"XeTeXvariationdefault\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             21i32,
         );
         primitive(
             b"XeTeXcountfeatures\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             22i32,
         );
         primitive(
             b"XeTeXfeaturecode\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             23i32,
         );
         primitive(
             b"XeTeXfindfeaturebyname\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             24i32,
         );
         primitive(
             b"XeTeXisexclusivefeature\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             25i32,
         );
         primitive(
             b"XeTeXcountselectors\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             26i32,
         );
         primitive(
             b"XeTeXselectorcode\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             27i32,
         );
         primitive(
             b"XeTeXfindselectorbyname\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             28i32,
         );
         primitive(
             b"XeTeXisdefaultselector\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             29i32,
         );
         primitive(
             b"XeTeXvariationname\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             7i32,
         );
         primitive(
             b"XeTeXfeaturename\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             8i32,
         );
         primitive(
             b"XeTeXselectorname\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             9i32,
         );
         primitive(
             b"XeTeXOTcountscripts\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             30i32,
         );
         primitive(
             b"XeTeXOTcountlanguages\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             31i32,
         );
         primitive(
             b"XeTeXOTcountfeatures\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             32i32,
         );
         primitive(
             b"XeTeXOTscripttag\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             33i32,
         );
         primitive(
             b"XeTeXOTlanguagetag\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             34i32,
         );
         primitive(
             b"XeTeXOTfeaturetag\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             35i32,
         );
         primitive(
             b"XeTeXcharglyph\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             36i32,
         );
         primitive(
             b"XeTeXglyphindex\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             37i32,
         );
         primitive(
             b"XeTeXglyphbounds\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             47i32,
         );
         primitive(
             b"XeTeXglyphname\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             10i32,
         );
         primitive(
             b"XeTeXfonttype\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             38i32,
         );
         primitive(
             b"XeTeXfirstfontchar\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             39i32,
         );
         primitive(
             b"XeTeXlastfontchar\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             40i32,
         );
         primitive(
             b"pdflastxpos\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             41i32,
         );
         primitive(
             b"pdflastypos\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             42i32,
         );
         primitive(
             b"strcmp\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             43i32,
         );
         primitive(
             b"mdfivesum\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             44i32,
         );
         primitive(
             b"pdfmdfivesum\x00" as *const u8 as *const libc::c_char,
-            110i32 as uint16_t,
+            110i32 as u16,
             44i32,
         );
         primitive(
             b"shellescape\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             45i32,
         );
         primitive(
             b"XeTeXpdfpagecount\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             46i32,
         );
         primitive(
             b"tracingassigns\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15562,7 +15560,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"tracinggroups\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15590,7 +15588,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"tracingifs\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15618,7 +15616,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"tracingscantokens\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15646,7 +15644,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"tracingnesting\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15674,7 +15672,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"predisplaydirection\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15702,7 +15700,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"lastlinefit\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15730,7 +15728,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"savingvdiscards\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15758,7 +15756,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"savinghyphcodes\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15786,102 +15784,102 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"currentgrouplevel\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             7i32,
         );
         primitive(
             b"currentgrouptype\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             8i32,
         );
         primitive(
             b"currentiflevel\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             9i32,
         );
         primitive(
             b"currentiftype\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             10i32,
         );
         primitive(
             b"currentifbranch\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             11i32,
         );
         primitive(
             b"fontcharwd\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             48i32,
         );
         primitive(
             b"fontcharht\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             49i32,
         );
         primitive(
             b"fontchardp\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             50i32,
         );
         primitive(
             b"fontcharic\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             51i32,
         );
         primitive(
             b"parshapelength\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             52i32,
         );
         primitive(
             b"parshapeindent\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             53i32,
         );
         primitive(
             b"parshapedimen\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             54i32,
         );
         primitive(
             b"showgroups\x00" as *const u8 as *const libc::c_char,
-            19i32 as uint16_t,
+            19i32 as u16,
             4i32,
         );
         primitive(
             b"showtokens\x00" as *const u8 as *const libc::c_char,
-            19i32 as uint16_t,
+            19i32 as u16,
             5i32,
         );
         primitive(
             b"unexpanded\x00" as *const u8 as *const libc::c_char,
-            111i32 as uint16_t,
+            111i32 as u16,
             1i32,
         );
         primitive(
             b"detokenize\x00" as *const u8 as *const libc::c_char,
-            111i32 as uint16_t,
+            111i32 as u16,
             5i32,
         );
         primitive(
             b"showifs\x00" as *const u8 as *const libc::c_char,
-            19i32 as uint16_t,
+            19i32 as u16,
             6i32,
         );
         primitive(
             b"interactionmode\x00" as *const u8 as *const libc::c_char,
-            83i32 as uint16_t,
+            83i32 as u16,
             2i32,
         );
         primitive(
             b"middle\x00" as *const u8 as *const libc::c_char,
-            49i32 as uint16_t,
+            49i32 as u16,
             1i32,
         );
         primitive(
             b"suppressfontnotfounderror\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15909,7 +15907,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"TeXXeTstate\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15937,7 +15935,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXupwardsmode\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15965,7 +15963,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXuseglyphmetrics\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -15993,7 +15991,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXinterchartokenstate\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16021,7 +16019,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXdashbreakstate\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16049,7 +16047,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXinputnormalization\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16077,7 +16075,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXtracingfonts\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16105,7 +16103,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXinterwordspaceshaping\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16133,7 +16131,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXgenerateactualtext\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16161,7 +16159,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXhyphenatablelength\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16189,7 +16187,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"pdfoutput\x00" as *const u8 as *const libc::c_char,
-            74i32 as uint16_t,
+            74i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16217,167 +16215,167 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"XeTeXinputencoding\x00" as *const u8 as *const libc::c_char,
-            59i32 as uint16_t,
+            59i32 as u16,
             44i32,
         );
         primitive(
             b"XeTeXdefaultencoding\x00" as *const u8 as *const libc::c_char,
-            59i32 as uint16_t,
+            59i32 as u16,
             45i32,
         );
         primitive(
             b"beginL\x00" as *const u8 as *const libc::c_char,
-            33i32 as uint16_t,
+            33i32 as u16,
             6i32,
         );
         primitive(
             b"endL\x00" as *const u8 as *const libc::c_char,
-            33i32 as uint16_t,
+            33i32 as u16,
             7i32,
         );
         primitive(
             b"beginR\x00" as *const u8 as *const libc::c_char,
-            33i32 as uint16_t,
+            33i32 as u16,
             10i32,
         );
         primitive(
             b"endR\x00" as *const u8 as *const libc::c_char,
-            33i32 as uint16_t,
+            33i32 as u16,
             11i32,
         );
         primitive(
             b"scantokens\x00" as *const u8 as *const libc::c_char,
-            106i32 as uint16_t,
+            106i32 as u16,
             2i32,
         );
         primitive(
             b"readline\x00" as *const u8 as *const libc::c_char,
-            98i32 as uint16_t,
+            98i32 as u16,
             1i32,
         );
         primitive(
             b"unless\x00" as *const u8 as *const libc::c_char,
-            104i32 as uint16_t,
+            104i32 as u16,
             1i32,
         );
         primitive(
             b"ifdefined\x00" as *const u8 as *const libc::c_char,
-            107i32 as uint16_t,
+            107i32 as u16,
             17i32,
         );
         primitive(
             b"ifcsname\x00" as *const u8 as *const libc::c_char,
-            107i32 as uint16_t,
+            107i32 as u16,
             18i32,
         );
         primitive(
             b"iffontchar\x00" as *const u8 as *const libc::c_char,
-            107i32 as uint16_t,
+            107i32 as u16,
             19i32,
         );
         primitive(
             b"ifincsname\x00" as *const u8 as *const libc::c_char,
-            107i32 as uint16_t,
+            107i32 as u16,
             20i32,
         );
         primitive(
             b"protected\x00" as *const u8 as *const libc::c_char,
-            95i32 as uint16_t,
+            95i32 as u16,
             8i32,
         );
         primitive(
             b"numexpr\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             59i32 + 0i32,
         );
         primitive(
             b"dimexpr\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             59i32 + 1i32,
         );
         primitive(
             b"glueexpr\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             59i32 + 2i32,
         );
         primitive(
             b"muexpr\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             59i32 + 3i32,
         );
         primitive(
             b"gluestretchorder\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             12i32,
         );
         primitive(
             b"glueshrinkorder\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             13i32,
         );
         primitive(
             b"gluestretch\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             55i32,
         );
         primitive(
             b"glueshrink\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             56i32,
         );
         primitive(
             b"mutoglue\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             57i32,
         );
         primitive(
             b"gluetomu\x00" as *const u8 as *const libc::c_char,
-            71i32 as uint16_t,
+            71i32 as u16,
             58i32,
         );
         primitive(
             b"marks\x00" as *const u8 as *const libc::c_char,
-            18i32 as uint16_t,
+            18i32 as u16,
             5i32,
         );
         primitive(
             b"topmarks\x00" as *const u8 as *const libc::c_char,
-            112i32 as uint16_t,
+            112i32 as u16,
             0i32 + 5i32,
         );
         primitive(
             b"firstmarks\x00" as *const u8 as *const libc::c_char,
-            112i32 as uint16_t,
+            112i32 as u16,
             1i32 + 5i32,
         );
         primitive(
             b"botmarks\x00" as *const u8 as *const libc::c_char,
-            112i32 as uint16_t,
+            112i32 as u16,
             2i32 + 5i32,
         );
         primitive(
             b"splitfirstmarks\x00" as *const u8 as *const libc::c_char,
-            112i32 as uint16_t,
+            112i32 as u16,
             3i32 + 5i32,
         );
         primitive(
             b"splitbotmarks\x00" as *const u8 as *const libc::c_char,
-            112i32 as uint16_t,
+            112i32 as u16,
             4i32 + 5i32,
         );
         primitive(
             b"pagediscards\x00" as *const u8 as *const libc::c_char,
-            24i32 as uint16_t,
+            24i32 as u16,
             2i32,
         );
         primitive(
             b"splitdiscards\x00" as *const u8 as *const libc::c_char,
-            24i32 as uint16_t,
+            24i32 as u16,
             3i32,
         );
         primitive(
             b"interlinepenalties\x00" as *const u8 as *const libc::c_char,
-            85i32 as uint16_t,
+            85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16395,7 +16393,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"clubpenalties\x00" as *const u8 as *const libc::c_char,
-            85i32 as uint16_t,
+            85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16413,7 +16411,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"widowpenalties\x00" as *const u8 as *const libc::c_char,
-            85i32 as uint16_t,
+            85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16431,7 +16429,7 @@ pub unsafe extern "C" fn tt_run_engine(
         );
         primitive(
             b"displaywidowpenalties\x00" as *const u8 as *const libc::c_char,
-            85i32 as uint16_t,
+            85i32 as u16,
             1i32 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
                 + 1i32
@@ -16798,8 +16796,8 @@ pub unsafe extern "C" fn tt_run_engine(
         ) as *mut trie_pointer;
         trie_trc = xmalloc(
             ((trie_size + 1i32) as u64)
-                .wrapping_mul(::std::mem::size_of::<uint16_t>() as u64),
-        ) as *mut uint16_t;
+                .wrapping_mul(::std::mem::size_of::<u16>() as u64),
+        ) as *mut u16;
         trie_c = xmalloc(
             ((trie_size + 1i32) as u64)
                 .wrapping_mul(::std::mem::size_of::<packed_UTF16_code>() as u64),
@@ -17092,6 +17090,6 @@ pub unsafe extern "C" fn tt_run_engine(
     free(param_base as *mut libc::c_void);
     trie_trl = mfree(trie_trl as *mut libc::c_void) as *mut trie_pointer;
     trie_tro = mfree(trie_tro as *mut libc::c_void) as *mut trie_pointer;
-    trie_trc = mfree(trie_trc as *mut libc::c_void) as *mut uint16_t;
+    trie_trc = mfree(trie_trc as *mut libc::c_void) as *mut u16;
     return history;
 }

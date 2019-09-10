@@ -1,4 +1,4 @@
-pub type UChar = crate::uint16_t;
+pub type UChar = u16;
 pub type UErrorCode = libc::c_int;
 
 use crate::int32_t;

@@ -181,7 +181,7 @@ extern "C" {
     #[no_mangle]
     fn graphics_mode();
     #[no_mangle]
-    fn pdf_dev_begin_actualtext(unicodes: *mut uint16_t, len: libc::c_int);
+    fn pdf_dev_begin_actualtext(unicodes: *mut u16, len: libc::c_int);
     #[no_mangle]
     fn pdf_dev_end_actualtext();
     #[no_mangle]
@@ -3063,12 +3063,12 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: libc::c_int) {
                 i = i.wrapping_add(1)
             }
         } else {
-            let mut unicodes: *mut uint16_t = new((slen as u64)
-                .wrapping_mul(::std::mem::size_of::<uint16_t>() as u64)
-                as u32) as *mut uint16_t;
+            let mut unicodes: *mut u16 = new((slen as u64)
+                .wrapping_mul(::std::mem::size_of::<u16>() as u64)
+                as u32) as *mut u16;
             i = 0i32 as libc::c_uint;
             while i < slen {
-                *unicodes.offset(i as isize) = get_buffered_unsigned_pair() as uint16_t;
+                *unicodes.offset(i as isize) = get_buffered_unsigned_pair() as u16;
                 i = i.wrapping_add(1)
             }
             pdf_dev_begin_actualtext(unicodes, slen as libc::c_int);

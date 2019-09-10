@@ -89,7 +89,7 @@ extern "C" {
     #[no_mangle]
     fn geq_word_define(p: int32_t, w: int32_t);
     #[no_mangle]
-    fn begin_token_list(p: int32_t, t: uint16_t);
+    fn begin_token_list(p: int32_t, t: u16);
     #[no_mangle]
     fn find_sa_element(t: small_number, n: int32_t, w: bool);
     #[no_mangle]
@@ -125,10 +125,8 @@ extern "C" {
     #[no_mangle]
     fn x_over_n(x: scaled_t, n: int32_t) -> scaled_t;
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type scaled_t = int32_t;
 pub type eight_bits = libc::c_uchar;
 pub type small_number = libc::c_short;
@@ -174,10 +172,10 @@ pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -1188,7 +1186,7 @@ unsafe extern "C" fn fire_up(mut c: int32_t) {
                 ))
                 .b32
                 .s1,
-                7i32 as uint16_t,
+                7i32 as u16,
             );
             new_save_level(8i32 as group_code);
             normal_paragraph();
@@ -1416,8 +1414,8 @@ pub unsafe extern "C" fn build_page() {
                         (*mem.offset(r as isize)).b32.s1;
                     (*mem.offset(r as isize)).b32.s1 = q;
                     r = q;
-                    (*mem.offset(r as isize)).b16.s0 = n as uint16_t;
-                    (*mem.offset(r as isize)).b16.s1 = 0i32 as uint16_t;
+                    (*mem.offset(r as isize)).b16.s0 = n as u16;
+                    (*mem.offset(r as isize)).b16.s1 = 0i32 as u16;
                     ensure_vbox(n);
                     if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 1i32 +
@@ -1784,7 +1782,7 @@ pub unsafe extern "C" fn build_page() {
                                                       isize)).b32.s1
                         }
                         page_so_far[0] -= best_height_plus_depth;
-                        (*mem.offset(r as isize)).b16.s1 = 1i32 as uint16_t;
+                        (*mem.offset(r as isize)).b16.s1 = 1i32 as u16;
                         (*mem.offset((r + 1i32) as isize)).b32.s1 = q;
                         (*mem.offset((r + 1i32) as isize)).b32.s0 = p;
                         if q == -0xfffffffi32 {
@@ -1952,7 +1950,7 @@ pub unsafe extern "C" fn build_page() {
                                 as *const u8 as *const libc::c_char;
                         error();
                         r = new_spec(q);
-                        (*mem.offset(r as isize)).b16.s0 = 0i32 as uint16_t;
+                        (*mem.offset(r as isize)).b16.s0 = 0i32 as u16;
                         delete_glue_ref(q);
                         (*mem.offset((p + 1i32) as isize)).b32.s0 = r;
                         q = r

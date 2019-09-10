@@ -238,10 +238,8 @@ extern "C" {
         p: *mut transform_info,
     ) -> libc::c_int;
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -2734,7 +2732,7 @@ pub unsafe extern "C" fn transform_info_clear(mut info: *mut transform_info) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_begin_actualtext(
-    mut unicodes: *mut uint16_t,
+    mut unicodes: *mut u16,
     mut count: libc::c_int,
 ) {
     let mut len: libc::c_int = 0;

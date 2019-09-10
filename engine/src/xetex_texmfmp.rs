@@ -49,12 +49,10 @@ extern "C" {
     fn localtime(__timer: *const time_t) -> *mut tm;
 }
 pub type __uint8_t = libc::c_uchar;
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
 pub type str_number = int32_t;
@@ -476,7 +474,7 @@ pub unsafe extern "C" fn getmd5sum(mut s: str_number, mut file: bool) {
     while i < 2i32 * 16i32 {
         let fresh15 = pool_ptr;
         pool_ptr = pool_ptr + 1;
-        *str_pool.offset(fresh15 as isize) = outbuf[i as usize] as uint16_t;
+        *str_pool.offset(fresh15 as isize) = outbuf[i as usize] as u16;
         i += 1
     }
 }

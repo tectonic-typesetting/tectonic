@@ -209,7 +209,7 @@ extern "C" {
     #[no_mangle]
     fn token_show(p: int32_t);
     #[no_mangle]
-    fn begin_token_list(p: int32_t, t: uint16_t);
+    fn begin_token_list(p: int32_t, t: u16);
     #[no_mangle]
     fn end_token_list();
     #[no_mangle]
@@ -227,7 +227,7 @@ extern "C" {
     #[no_mangle]
     fn apply_tfm_font_mapping(mapping: *mut libc::c_void, c: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn effective_char(err_p: bool, f: internal_font_number, c: uint16_t) -> int32_t;
+    fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> int32_t;
     #[no_mangle]
     fn scan_toks(macro_def: bool, xpand: bool) -> int32_t;
     #[no_mangle]
@@ -323,10 +323,8 @@ extern "C" {
     #[no_mangle]
     fn synctex_current();
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = int32_t;
@@ -395,10 +393,10 @@ pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -425,7 +423,7 @@ pub union memory_word {
  *   } two_halves;
  *
  *   typedef struct {
- *       struct { uint16_t B3, B2, B1, B0; } u;
+ *       struct { u16 B3, B2, B1, B0; } u;
  *   } four_quarters;
  *
  *   typedef union {
@@ -463,7 +461,7 @@ pub union memory_word {
  *   } two_halves;
  *
  *   typedef struct {
- *       struct { uint16_t B0, B1, B2, B3; } u;
+ *       struct { u16 B0, B1, B2, B3; } u;
  *   } four_quarters;
  *
  *   typedef union {
@@ -1734,7 +1732,7 @@ unsafe extern "C" fn hlist_out() {
     let mut glue_temp: libc::c_double = 0.;
     let mut cur_glue: libc::c_double = 0.;
     let mut cur_g: scaled_t = 0;
-    let mut c: uint16_t = 0;
+    let mut c: u16 = 0;
     let mut f: internal_font_number = 0;
     cur_g = 0i32;
     cur_glue = 0.0f64;
@@ -2039,7 +2037,7 @@ unsafe extern "C" fn hlist_out() {
             cur_dir = 0i32 as small_number;
             cur_h -= (*mem.offset((this_box + 1i32) as isize)).b32.s1
         } else {
-            (*mem.offset(this_box as isize)).b16.s0 = 0i32 as uint16_t
+            (*mem.offset(this_box as isize)).b16.s0 = 0i32 as u16
         }
     }
     if cur_dir as libc::c_int == 1i32
@@ -2056,7 +2054,7 @@ unsafe extern "C" fn hlist_out() {
             reverse(this_box, -0xfffffffi32, &mut cur_g, &mut cur_glue);
         (*mem.offset((p + 1i32) as isize)).b32.s1 = -cur_h;
         cur_h = save_h;
-        (*mem.offset(this_box as isize)).b16.s0 = 1i32 as uint16_t
+        (*mem.offset(this_box as isize)).b16.s0 = 1i32 as u16
     }
     /* ... resuming 639 ... */
     left_edge = cur_h;
@@ -2091,7 +2089,7 @@ unsafe extern "C" fn hlist_out() {
                                                                                 as
                                                                                 isize),
                                                        c as libc::c_int) as
-                                    uint16_t
+                                    u16
                         }
                         if f != dvi_f {
                             /*643: "Change font dvi_f to f" */
@@ -2425,15 +2423,15 @@ unsafe extern "C" fn hlist_out() {
                                 if ((*mem.offset(p as isize)).b16.s0 as
                                         libc::c_int) < 100i32 {
                                     (*mem.offset(p as isize)).b16.s1 =
-                                        11i32 as uint16_t;
+                                        11i32 as u16;
                                     (*mem.offset((p + 1i32) as isize)).b32.s1
                                         = rule_wd
                                 } else {
                                     g = get_node(4i32);
                                     (*mem.offset(g as isize)).b16.s1 =
-                                        (3i32 + 1i32) as uint16_t;
+                                        (3i32 + 1i32) as u16;
                                     (*mem.offset(g as isize)).b16.s0 =
-                                        (3i32 + 1i32) as uint16_t;
+                                        (3i32 + 1i32) as u16;
                                     (*mem.offset((g + 1i32) as isize)).b32.s1
                                         = rule_wd;
                                     (*mem.offset((g + 2i32) as isize)).b32.s1
@@ -2643,7 +2641,7 @@ unsafe extern "C" fn hlist_out() {
                 }
             }
             330672039582001856 => {
-                (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
                 cur_h += (*mem.offset((p + 1i32) as isize)).b32.s1;
                 current_block = 13889995436552222973;
             }
@@ -3099,7 +3097,7 @@ unsafe extern "C" fn reverse(
     let mut glue_temp: libc::c_double = 0.;
     let mut m: int32_t = 0;
     let mut n: int32_t = 0;
-    let mut c: uint16_t = 0;
+    let mut c: u16 = 0;
     let mut f: internal_font_number = 0;
     g_order = (*mem.offset((this_box + 5i32) as isize)).b16.s0 as glue_ord;
     g_sign = (*mem.offset((this_box + 5i32) as isize)).b16.s1 as libc::c_uchar;
@@ -3213,12 +3211,12 @@ unsafe extern "C" fn reverse(
                                     *fresh3 -= 1
                                 }
                                 if ((*mem.offset(p as isize)).b16.s0 as libc::c_int) < 100i32 {
-                                    (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                                    (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
                                     (*mem.offset((p + 1i32) as isize)).b32.s1 = rule_wd
                                 } else {
                                     g = get_node(4i32);
-                                    (*mem.offset(g as isize)).b16.s1 = (3i32 + 1i32) as uint16_t;
-                                    (*mem.offset(g as isize)).b16.s0 = (3i32 + 1i32) as uint16_t;
+                                    (*mem.offset(g as isize)).b16.s1 = (3i32 + 1i32) as u16;
+                                    (*mem.offset(g as isize)).b16.s0 = (3i32 + 1i32) as u16;
                                     (*mem.offset((g + 1i32) as isize)).b32.s1 = rule_wd;
                                     (*mem.offset((g + 2i32) as isize)).b32.s1 = 0i32;
                                     (*mem.offset((g + 3i32) as isize)).b32.s1 = 0i32;
@@ -3264,7 +3262,7 @@ unsafe extern "C" fn reverse(
                     if (*mem.offset(LR_ptr as isize)).b32.s0
                         != 4i32 * ((*mem.offset(p as isize)).b16.s0 as libc::c_int / 4i32) + 3i32
                     {
-                        (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                        (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
                         LR_problems += 1
                     } else {
                         temp_ptr = LR_ptr;
@@ -3276,7 +3274,7 @@ unsafe extern "C" fn reverse(
                             let ref mut fresh4 = (*mem.offset(p as isize)).b16.s0;
                             *fresh4 = (*fresh4).wrapping_sub(1)
                         } else {
-                            (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                            (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
                             if m > -0xfffffffi32 {
                                 m -= 1
                             } else {
@@ -3305,7 +3303,7 @@ unsafe extern "C" fn reverse(
                         let ref mut fresh5 = (*mem.offset(p as isize)).b16.s0;
                         *fresh5 = (*fresh5).wrapping_add(1)
                     } else {
-                        (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                        (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
                         m += 1
                     }
                     current_block = 3812947724376655173;
@@ -3345,8 +3343,8 @@ unsafe extern "C" fn reverse(
 pub unsafe extern "C" fn new_edge(mut s: small_number, mut w: scaled_t) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 14i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = s as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 14i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = w;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
     return p;
@@ -3806,11 +3804,11 @@ unsafe extern "C" fn write_out(mut p: int32_t) {
     (*mem.offset(q as isize)).b32.s1 = r;
     (*mem.offset(r as isize)).b32.s0 = 0x1ffffffi32
         + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32);
-    begin_token_list(q, 5i32 as uint16_t);
-    begin_token_list((*mem.offset((p + 1i32) as isize)).b32.s1, 18i32 as uint16_t);
+    begin_token_list(q, 5i32 as u16);
+    begin_token_list((*mem.offset((p + 1i32) as isize)).b32.s1, 18i32 as u16);
     q = get_avail();
     (*mem.offset(q as isize)).b32.s0 = 0x200000i32 + '{' as i32;
-    begin_token_list(q, 5i32 as uint16_t);
+    begin_token_list(q, 5i32 as u16);
     old_mode = cur_list.mode as int32_t;
     cur_list.mode = 0i32 as libc::c_short;
     cur_cs = write_loc;

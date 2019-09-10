@@ -114,7 +114,7 @@ extern "C" {
     but otherwise we'll need these substitute definitions */
     /* command codes for XeTeX extension commands */
     /* accessing info in a native_word_node */
-    /* info for each glyph is location (FixedPoint) + glyph ID (uint16_t) */
+    /* info for each glyph is location (FixedPoint) + glyph ID (u16) */
     /* glyph ID field in a glyph_node */
     /* For Unicode encoding form interpretation... */
     /* single-purpose metrics accessors */
@@ -259,10 +259,8 @@ extern "C" {
         ydensity: *mut libc::c_double,
     ) -> libc::c_int;
 }
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
-pub type uint16_t = __uint16_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
@@ -338,10 +336,10 @@ pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -1105,11 +1103,11 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             ) as small_number,
         );
         if is_pdf {
-            (*mem.offset(cur_list.tail as isize)).b16.s0 = 44i32 as uint16_t
+            (*mem.offset(cur_list.tail as isize)).b16.s0 = 44i32 as u16
         }
-        (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 = strlen(pic_path) as uint16_t;
-        (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 = page as uint16_t;
-        (*mem.offset((cur_list.tail + 8i32) as isize)).b16.s1 = pdf_box_type as uint16_t;
+        (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 = strlen(pic_path) as u16;
+        (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 = page as u16;
+        (*mem.offset((cur_list.tail + 8i32) as isize)).b16.s1 = pdf_box_type as u16;
         (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 = D2Fix(xmax - xmin);
         (*mem.offset((cur_list.tail + 3i32) as isize)).b32.s1 = D2Fix(ymax - ymin);
         (*mem.offset((cur_list.tail + 2i32) as isize)).b32.s1 = 0i32;

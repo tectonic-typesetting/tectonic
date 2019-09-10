@@ -238,7 +238,7 @@ extern "C" {
     #[no_mangle]
     static mut max_save_stack: int32_t;
     #[no_mangle]
-    static mut cur_level: uint16_t;
+    static mut cur_level: u16;
     #[no_mangle]
     static mut cur_group: group_code;
     #[no_mangle]
@@ -515,7 +515,7 @@ extern "C" {
     but otherwise we'll need these substitute definitions */
     /* command codes for XeTeX extension commands */
     /* accessing info in a native_word_node */
-    /* info for each glyph is location (FixedPoint) + glyph ID (uint16_t) */
+    /* info for each glyph is location (FixedPoint) + glyph ID (u16) */
     /* glyph ID field in a glyph_node */
     /* For Unicode encoding form interpretation... */
     /* single-purpose metrics accessors */
@@ -600,7 +600,7 @@ extern "C" {
     #[no_mangle]
     fn apply_mapping(
         cnv: *mut libc::c_void,
-        txtPtr: *mut uint16_t,
+        txtPtr: *mut u16,
         txtLen: libc::c_int,
     ) -> libc::c_int;
     #[no_mangle]
@@ -669,7 +669,7 @@ extern "C" {
     fn linebreak_start(
         f: libc::c_int,
         localeStrNum: int32_t,
-        text: *mut uint16_t,
+        text: *mut u16,
         textLength: int32_t,
     );
     #[no_mangle]
@@ -797,7 +797,7 @@ extern "C" {
     #[no_mangle]
     static mut sa_chain: int32_t;
     #[no_mangle]
-    static mut sa_level: uint16_t;
+    static mut sa_level: u16;
     #[no_mangle]
     static mut disc_ptr: [int32_t; 4];
     #[no_mangle]
@@ -815,7 +815,7 @@ extern "C" {
      * with negative indices. The underlying arrays used to be named "zzzaa" and
      * "zzzbb". */
     #[no_mangle]
-    static mut _xeq_level_array: [uint16_t; 1114732];
+    static mut _xeq_level_array: [u16; 1114732];
     /* xetex-errors */
     /* xetex-math */
     /* xetex-output */
@@ -957,11 +957,9 @@ extern "C" {
     fn synctex_start_input();
 }
 pub type __uint8_t = libc::c_uchar;
-pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2018 the Tectonic Project
@@ -1076,10 +1074,10 @@ pub type b32x2 = b32x2_le_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
+    pub s0: u16,
+    pub s1: u16,
+    pub s2: u16,
+    pub s3: u16,
 }
 pub type b16x4 = b16x4_le_t;
 #[derive(Copy, Clone)]
@@ -1106,7 +1104,7 @@ pub union memory_word {
  *   } two_halves;
  *
  *   typedef struct {
- *       struct { uint16_t B3, B2, B1, B0; } u;
+ *       struct { u16 B3, B2, B1, B0; } u;
  *   } four_quarters;
  *
  *   typedef union {
@@ -1144,7 +1142,7 @@ pub union memory_word {
  *   } two_halves;
  *
  *   typedef struct {
- *       struct { uint16_t B0, B1, B2, B3; } u;
+ *       struct { u16 B0, B1, B2, B3; } u;
  *   } four_quarters;
  *
  *   typedef union {
@@ -1277,8 +1275,8 @@ pub struct list_state_record {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct input_state_t {
-    pub state: uint16_t,
-    pub index: uint16_t,
+    pub state: u16,
+    pub index: u16,
     pub start: int32_t,
     pub loc: int32_t,
     pub limit: int32_t,
@@ -1623,15 +1621,15 @@ pub unsafe extern "C" fn free_node(mut p: int32_t, mut s: int32_t) {
 pub unsafe extern "C" fn new_null_box() -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(8i32);
-    (*mem.offset(p as isize)).b16.s1 = 0i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 0i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = 0i32;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
     (*mem.offset((p + 3i32) as isize)).b32.s1 = 0i32;
     (*mem.offset((p + 4i32) as isize)).b32.s1 = 0i32;
     (*mem.offset((p + 5i32) as isize)).b32.s1 = -0xfffffffi32;
-    (*mem.offset((p + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
-    (*mem.offset((p + 5i32) as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset((p + 5i32) as isize)).b16.s1 = 0i32 as u16;
+    (*mem.offset((p + 5i32) as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 6i32) as isize)).gr = 0.0f64;
     return p;
 }
@@ -1639,8 +1637,8 @@ pub unsafe extern "C" fn new_null_box() -> int32_t {
 pub unsafe extern "C" fn new_rule() -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(5i32);
-    (*mem.offset(p as isize)).b16.s1 = 2i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 2i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0x40000000i32;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = -0x40000000i32;
     (*mem.offset((p + 3i32) as isize)).b32.s1 = -0x40000000i32;
@@ -1649,20 +1647,20 @@ pub unsafe extern "C" fn new_rule() -> int32_t {
 #[no_mangle]
 pub unsafe extern "C" fn new_ligature(
     mut f: internal_font_number,
-    mut c: uint16_t,
+    mut c: u16,
     mut q: int32_t,
 ) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(2i32);
-    (*mem.offset(p as isize)).b16.s1 = 6i32 as uint16_t;
-    (*mem.offset((p + 1i32) as isize)).b16.s1 = f as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 6i32 as u16;
+    (*mem.offset((p + 1i32) as isize)).b16.s1 = f as u16;
     (*mem.offset((p + 1i32) as isize)).b16.s0 = c;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = q;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     return p;
 }
 #[no_mangle]
-pub unsafe extern "C" fn new_lig_item(mut c: uint16_t) -> int32_t {
+pub unsafe extern "C" fn new_lig_item(mut c: u16) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(2i32);
     (*mem.offset(p as isize)).b16.s0 = c;
@@ -1673,8 +1671,8 @@ pub unsafe extern "C" fn new_lig_item(mut c: uint16_t) -> int32_t {
 pub unsafe extern "C" fn new_disc() -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(2i32);
-    (*mem.offset(p as isize)).b16.s1 = 7i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 7i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s0 = -0xfffffffi32;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0xfffffffi32;
     return p;
@@ -1694,15 +1692,15 @@ pub unsafe extern "C" fn copy_native_glyph_info(mut src: int32_t, mut dest: int3
             (*mem.offset((src + 5i32) as isize)).ptr,
             (glyph_count * 10i32) as u64,
         );
-        (*mem.offset((dest + 4i32) as isize)).b16.s0 = glyph_count as uint16_t
+        (*mem.offset((dest + 4i32) as isize)).b16.s0 = glyph_count as u16
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_math(mut w: scaled_t, mut s: small_number) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 9i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = s as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 9i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = w;
     return p;
 }
@@ -1722,8 +1720,8 @@ pub unsafe extern "C" fn new_param_glue(mut n: small_number) -> int32_t {
     let mut p: int32_t = 0;
     let mut q: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 10i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = (n as libc::c_int + 1i32) as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 10i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = (n as libc::c_int + 1i32) as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0xfffffffi32;
     q = (*eqtb.offset(
         (1i32
@@ -1748,8 +1746,8 @@ pub unsafe extern "C" fn new_param_glue(mut n: small_number) -> int32_t {
 pub unsafe extern "C" fn new_glue(mut q: int32_t) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 10i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 10i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0xfffffffi32;
     (*mem.offset((p + 1i32) as isize)).b32.s0 = q;
     let ref mut fresh3 = (*mem.offset(q as isize)).b32.s1;
@@ -1777,15 +1775,15 @@ pub unsafe extern "C" fn new_skip_param(mut n: small_number) -> int32_t {
     );
     p = new_glue(temp_ptr);
     (*mem.offset(temp_ptr as isize)).b32.s1 = -0xfffffffi32;
-    (*mem.offset(p as isize)).b16.s0 = (n as libc::c_int + 1i32) as uint16_t;
+    (*mem.offset(p as isize)).b16.s0 = (n as libc::c_int + 1i32) as u16;
     return p;
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_kern(mut w: scaled_t) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = w;
     return p;
 }
@@ -1793,8 +1791,8 @@ pub unsafe extern "C" fn new_kern(mut w: scaled_t) -> int32_t {
 pub unsafe extern "C" fn new_penalty(mut m: int32_t) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 12i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 12i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = m;
     return p;
 }
@@ -2820,7 +2818,7 @@ pub unsafe extern "C" fn flush_node_list(mut p: int32_t) {
                             if !(*mem.offset((p + 5i32) as isize)).ptr.is_null() {
                                 let ref mut fresh6 = (*mem.offset((p + 5i32) as isize)).ptr;
                                 *fresh6 = mfree((*mem.offset((p + 5i32) as isize)).ptr);
-                                (*mem.offset((p + 4i32) as isize)).b16.s0 = 0i32 as uint16_t
+                                (*mem.offset((p + 4i32) as isize)).b16.s0 = 0i32 as u16
                             }
                             free_node(p, (*mem.offset((p + 4i32) as isize)).b16.s3 as int32_t);
                         }
@@ -3021,7 +3019,7 @@ pub unsafe extern "C" fn copy_node_list(mut p: int32_t) -> int32_t {
                         }
                         let ref mut fresh10 = (*mem.offset((r + 5i32) as isize)).ptr;
                         *fresh10 = 0 as *mut libc::c_void;
-                        (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                        (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as u16;
                         copy_native_glyph_info(p, r);
                     }
                     42 => {
@@ -3802,7 +3800,7 @@ pub unsafe extern "C" fn print_length_param(mut n: int32_t) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn print_cmd_chr(mut cmd: uint16_t, mut chr_code: int32_t) {
+pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
     let mut n: int32_t = 0;
     let mut font_name_str: str_number = 0;
     let mut quote_char: UTF16_code = 0;
@@ -4457,9 +4455,9 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: uint16_t, mut chr_code: int32_t)
         91 => {
             if chr_code < 0i32 || chr_code > 19i32 {
                 /*lo_mem_stat_max*/
-                cmd = ((*mem.offset(chr_code as isize)).b16.s1 as libc::c_int / 64i32) as uint16_t
+                cmd = ((*mem.offset(chr_code as isize)).b16.s1 as libc::c_int / 64i32) as u16
             } else {
-                cmd = chr_code as uint16_t;
+                cmd = chr_code as u16;
                 chr_code = -0xfffffffi32
             }
             if cmd as libc::c_int == 0i32 {
@@ -5640,7 +5638,7 @@ pub unsafe extern "C" fn not_aat_font_error(mut cmd: int32_t, mut c: int32_t, mu
         print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
     }
     print_cstr(b"Cannot use \x00" as *const u8 as *const libc::c_char);
-    print_cmd_chr(cmd as uint16_t, c);
+    print_cmd_chr(cmd as u16, c);
     print_cstr(b" with \x00" as *const u8 as *const libc::c_char);
     print(*font_name.offset(f as isize));
     print_cstr(b"; not an AAT font\x00" as *const u8 as *const libc::c_char);
@@ -5654,7 +5652,7 @@ pub unsafe extern "C" fn not_aat_gr_font_error(mut cmd: int32_t, mut c: int32_t,
         print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
     }
     print_cstr(b"Cannot use \x00" as *const u8 as *const libc::c_char);
-    print_cmd_chr(cmd as uint16_t, c);
+    print_cmd_chr(cmd as u16, c);
     print_cstr(b" with \x00" as *const u8 as *const libc::c_char);
     print(*font_name.offset(f as isize));
     print_cstr(b"; not an AAT or Graphite font\x00" as *const u8 as *const libc::c_char);
@@ -5668,7 +5666,7 @@ pub unsafe extern "C" fn not_ot_font_error(mut cmd: int32_t, mut c: int32_t, mut
         print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
     }
     print_cstr(b"Cannot use \x00" as *const u8 as *const libc::c_char);
-    print_cmd_chr(cmd as uint16_t, c);
+    print_cmd_chr(cmd as u16, c);
     print_cstr(b" with \x00" as *const u8 as *const libc::c_char);
     print(*font_name.offset(f as isize));
     print_cstr(b"; not an OpenType Layout font\x00" as *const u8 as *const libc::c_char);
@@ -5682,7 +5680,7 @@ pub unsafe extern "C" fn not_native_font_error(mut cmd: int32_t, mut c: int32_t,
         print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
     }
     print_cstr(b"Cannot use \x00" as *const u8 as *const libc::c_char);
-    print_cmd_chr(cmd as uint16_t, c);
+    print_cmd_chr(cmd as u16, c);
     print_cstr(b" with \x00" as *const u8 as *const libc::c_char);
     print(*font_name.offset(f as isize));
     print_cstr(b"; not a native platform font\x00" as *const u8 as *const libc::c_char);
@@ -6236,7 +6234,7 @@ pub unsafe extern "C" fn if_warning() {
     }
     if w {
         print_nl_cstr(b"Warning: end of \x00" as *const u8 as *const libc::c_char);
-        print_cmd_chr(107i32 as uint16_t, cur_if as int32_t);
+        print_cmd_chr(107i32 as u16, cur_if as int32_t);
         if if_line != 0i32 {
             print_cstr(b" entered on line \x00" as *const u8 as *const libc::c_char);
             print_int(if_line);
@@ -6283,12 +6281,12 @@ pub unsafe extern "C" fn if_warning() {
 #[no_mangle]
 pub unsafe extern "C" fn file_warning() {
     let mut p: int32_t = 0;
-    let mut l: uint16_t = 0;
-    let mut c: uint16_t = 0;
+    let mut l: u16 = 0;
+    let mut c: u16 = 0;
     let mut i: int32_t = 0;
     p = save_ptr;
     l = cur_level;
-    c = cur_group as uint16_t;
+    c = cur_group as u16;
     save_ptr = cur_boundary;
     while *grp_stack.offset(in_open as isize) != save_ptr {
         cur_level = cur_level.wrapping_sub(1);
@@ -6302,12 +6300,12 @@ pub unsafe extern "C" fn file_warning() {
     cur_level = l;
     cur_group = c as group_code;
     p = cond_ptr;
-    l = if_limit as uint16_t;
-    c = cur_if as uint16_t;
+    l = if_limit as u16;
+    c = cur_if as u16;
     i = if_line;
     while *if_stack.offset(in_open as isize) != cond_ptr {
         print_nl_cstr(b"Warning: end of file when \x00" as *const u8 as *const libc::c_char);
-        print_cmd_chr(107i32 as uint16_t, cur_if as int32_t);
+        print_cmd_chr(107i32 as u16, cur_if as int32_t);
         if if_limit as libc::c_int == 2i32 {
             print_esc_cstr(b"else\x00" as *const u8 as *const libc::c_char);
         }
@@ -6421,7 +6419,7 @@ pub unsafe extern "C" fn delete_sa_ref(mut q: int32_t) {
 #[no_mangle]
 pub unsafe extern "C" fn sa_save(mut p: int32_t) {
     let mut q: int32_t = 0;
-    let mut i: uint16_t = 0;
+    let mut i: u16 = 0;
     if cur_level as libc::c_int != sa_level as libc::c_int {
         if save_ptr > max_save_stack {
             max_save_stack = save_ptr;
@@ -6432,7 +6430,7 @@ pub unsafe extern "C" fn sa_save(mut p: int32_t) {
                 );
             }
         }
-        (*save_stack.offset(save_ptr as isize)).b16.s1 = 4i32 as uint16_t;
+        (*save_stack.offset(save_ptr as isize)).b16.s1 = 4i32 as u16;
         (*save_stack.offset(save_ptr as isize)).b16.s0 = sa_level;
         (*save_stack.offset(save_ptr as isize)).b32.s1 = sa_chain;
         save_ptr += 1;
@@ -6443,7 +6441,7 @@ pub unsafe extern "C" fn sa_save(mut p: int32_t) {
     if (i as libc::c_int) < 128i32 {
         if (*mem.offset((p + 2i32) as isize)).b32.s1 == 0i32 {
             q = get_node(2i32);
-            i = 384i32 as uint16_t
+            i = 384i32 as u16
         } else {
             q = get_node(3i32);
             (*mem.offset((q + 2i32) as isize)).b32.s1 = (*mem.offset((p + 2i32) as isize)).b32.s1
@@ -6508,7 +6506,7 @@ pub unsafe extern "C" fn gsa_def(mut p: int32_t, mut e: int32_t) {
     let ref mut fresh21 = (*mem.offset((p + 1i32) as isize)).b32.s0;
     *fresh21 += 1;
     sa_destroy(p);
-    (*mem.offset(p as isize)).b16.s0 = 1i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s0 = 1i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = e;
     delete_sa_ref(p);
 }
@@ -6516,7 +6514,7 @@ pub unsafe extern "C" fn gsa_def(mut p: int32_t, mut e: int32_t) {
 pub unsafe extern "C" fn gsa_w_def(mut p: int32_t, mut w: int32_t) {
     let ref mut fresh22 = (*mem.offset((p + 1i32) as isize)).b32.s0;
     *fresh22 += 1;
-    (*mem.offset(p as isize)).b16.s0 = 1i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s0 = 1i32 as u16;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = w;
     delete_sa_ref(p);
 }
@@ -6570,8 +6568,8 @@ pub unsafe extern "C" fn new_save_level(mut c: group_code) {
     }
     (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 = line;
     save_ptr += 1;
-    (*save_stack.offset(save_ptr as isize)).b16.s1 = 3i32 as uint16_t;
-    (*save_stack.offset(save_ptr as isize)).b16.s0 = cur_group as uint16_t;
+    (*save_stack.offset(save_ptr as isize)).b16.s1 = 3i32 as u16;
+    (*save_stack.offset(save_ptr as isize)).b16.s0 = cur_group as u16;
     (*save_stack.offset(save_ptr as isize)).b32.s1 = cur_boundary;
     if cur_level as libc::c_int == 65535i32 {
         overflow(
@@ -6615,7 +6613,7 @@ pub unsafe extern "C" fn eq_destroy(mut w: memory_word) {
     };
 }
 #[no_mangle]
-pub unsafe extern "C" fn eq_save(mut p: int32_t, mut l: uint16_t) {
+pub unsafe extern "C" fn eq_save(mut p: int32_t, mut l: u16) {
     if save_ptr > max_save_stack {
         max_save_stack = save_ptr;
         if max_save_stack > save_size - 7i32 {
@@ -6626,18 +6624,18 @@ pub unsafe extern "C" fn eq_save(mut p: int32_t, mut l: uint16_t) {
         }
     }
     if l as libc::c_int == 0i32 {
-        (*save_stack.offset(save_ptr as isize)).b16.s1 = 1i32 as uint16_t
+        (*save_stack.offset(save_ptr as isize)).b16.s1 = 1i32 as u16
     } else {
         *save_stack.offset(save_ptr as isize) = *eqtb.offset(p as isize);
         save_ptr += 1;
-        (*save_stack.offset(save_ptr as isize)).b16.s1 = 0i32 as uint16_t
+        (*save_stack.offset(save_ptr as isize)).b16.s1 = 0i32 as u16
     }
     (*save_stack.offset(save_ptr as isize)).b16.s0 = l;
     (*save_stack.offset(save_ptr as isize)).b32.s1 = p;
     save_ptr += 1;
 }
 #[no_mangle]
-pub unsafe extern "C" fn eq_define(mut p: int32_t, mut t: uint16_t, mut e: int32_t) {
+pub unsafe extern "C" fn eq_define(mut p: int32_t, mut t: u16, mut e: int32_t) {
     if (*eqtb.offset(p as isize)).b16.s1 as libc::c_int == t as libc::c_int
         && (*eqtb.offset(p as isize)).b32.s1 == e
     {
@@ -6742,9 +6740,9 @@ pub unsafe extern "C" fn eq_word_define(mut p: int32_t, mut w: int32_t) {
     (*eqtb.offset(p as isize)).b32.s1 = w;
 }
 #[no_mangle]
-pub unsafe extern "C" fn geq_define(mut p: int32_t, mut t: uint16_t, mut e: int32_t) {
+pub unsafe extern "C" fn geq_define(mut p: int32_t, mut t: u16, mut e: int32_t) {
     eq_destroy(*eqtb.offset(p as isize));
-    (*eqtb.offset(p as isize)).b16.s0 = 1i32 as uint16_t;
+    (*eqtb.offset(p as isize)).b16.s0 = 1i32 as u16;
     (*eqtb.offset(p as isize)).b16.s1 = t;
     (*eqtb.offset(p as isize)).b32.s1 = e;
 }
@@ -6775,7 +6773,7 @@ pub unsafe extern "C" fn geq_word_define(mut p: int32_t, mut w: int32_t) {
             + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32))) as usize] = 1i32 as uint16_t;
+            + (0x10ffffi32 + 1i32))) as usize] = 1i32 as u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn save_for_after(mut t: int32_t) {
@@ -6789,8 +6787,8 @@ pub unsafe extern "C" fn save_for_after(mut t: int32_t) {
                 );
             }
         }
-        (*save_stack.offset(save_ptr as isize)).b16.s1 = 2i32 as uint16_t;
-        (*save_stack.offset(save_ptr as isize)).b16.s0 = 0i32 as uint16_t;
+        (*save_stack.offset(save_ptr as isize)).b16.s1 = 2i32 as u16;
+        (*save_stack.offset(save_ptr as isize)).b16.s0 = 0i32 as u16;
         (*save_stack.offset(save_ptr as isize)).b32.s1 = t;
         save_ptr += 1
     };
@@ -6798,7 +6796,7 @@ pub unsafe extern "C" fn save_for_after(mut t: int32_t) {
 #[no_mangle]
 pub unsafe extern "C" fn unsave() {
     let mut p: int32_t = 0;
-    let mut l: uint16_t = 0i32 as uint16_t;
+    let mut l: u16 = 0i32 as u16;
     let mut t: int32_t = 0;
     let mut a: bool = false;
     a = 0i32 != 0;
@@ -7262,7 +7260,7 @@ pub unsafe extern "C" fn token_show(mut p: int32_t) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_meaning() {
-    print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+    print_cmd_chr(cur_cmd as u16, cur_chr);
     if cur_cmd as libc::c_int >= 113i32 {
         print_char(':' as i32);
         print_ln();
@@ -7285,7 +7283,7 @@ pub unsafe extern "C" fn show_cur_cmd_chr() {
         print_cstr(b": \x00" as *const u8 as *const libc::c_char);
         shown_mode = cur_list.mode
     }
-    print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+    print_cmd_chr(cur_cmd as u16, cur_chr);
     if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -7320,7 +7318,7 @@ pub unsafe extern "C" fn show_cur_cmd_chr() {
             if cur_cmd as libc::c_int <= 108i32 {
                 print_cstr(b": \x00" as *const u8 as *const libc::c_char);
                 if cur_cmd as libc::c_int == 108i32 {
-                    print_cmd_chr(107i32 as uint16_t, cur_if as int32_t);
+                    print_cmd_chr(107i32 as u16, cur_if as int32_t);
                     print_char(' ' as i32);
                     n = 0i32;
                     l = if_line
@@ -7704,7 +7702,7 @@ pub unsafe extern "C" fn show_context() {
     cur_input = *input_stack.offset(input_ptr as isize);
 }
 #[no_mangle]
-pub unsafe extern "C" fn begin_token_list(mut p: int32_t, mut t: uint16_t) {
+pub unsafe extern "C" fn begin_token_list(mut p: int32_t, mut t: u16) {
     if input_ptr > max_in_stack {
         max_in_stack = input_ptr;
         if input_ptr == stack_size {
@@ -7716,7 +7714,7 @@ pub unsafe extern "C" fn begin_token_list(mut p: int32_t, mut t: uint16_t) {
     }
     *input_stack.offset(input_ptr as isize) = cur_input;
     input_ptr += 1;
-    cur_input.state = 0i32 as uint16_t;
+    cur_input.state = 0i32 as u16;
     cur_input.start = p;
     cur_input.index = t;
     if t as libc::c_int >= 6i32 {
@@ -7767,7 +7765,7 @@ pub unsafe extern "C" fn begin_token_list(mut p: int32_t, mut t: uint16_t) {
                     }
                     _ => {
                         print_cmd_chr(
-                            73i32 as uint16_t,
+                            73i32 as u16,
                             t as libc::c_int
                                 + (1i32
                                     + (0x10ffffi32 + 1i32)
@@ -7851,9 +7849,9 @@ pub unsafe extern "C" fn back_input() {
     }
     *input_stack.offset(input_ptr as isize) = cur_input;
     input_ptr += 1;
-    cur_input.state = 0i32 as uint16_t;
+    cur_input.state = 0i32 as u16;
     cur_input.start = p;
-    cur_input.index = 3i32 as uint16_t;
+    cur_input.index = 3i32 as u16;
     cur_input.loc = p;
 }
 #[no_mangle]
@@ -7864,7 +7862,7 @@ pub unsafe extern "C" fn back_error() {
 #[no_mangle]
 pub unsafe extern "C" fn ins_error() {
     back_input();
-    cur_input.index = 5i32 as uint16_t;
+    cur_input.index = 5i32 as u16;
     error();
 }
 #[no_mangle]
@@ -7893,7 +7891,7 @@ pub unsafe extern "C" fn begin_file_reading() {
     }
     *input_stack.offset(input_ptr as isize) = cur_input;
     input_ptr += 1;
-    cur_input.index = in_open as uint16_t;
+    cur_input.index = in_open as u16;
     *source_filename_stack.offset(cur_input.index as isize) = 0i32;
     *full_source_filename_stack.offset(cur_input.index as isize) = 0i32;
     *eof_seen.offset(cur_input.index as isize) = 0i32 != 0;
@@ -7901,7 +7899,7 @@ pub unsafe extern "C" fn begin_file_reading() {
     *if_stack.offset(cur_input.index as isize) = cond_ptr;
     *line_stack.offset(cur_input.index as isize) = line;
     cur_input.start = first;
-    cur_input.state = 1i32 as uint16_t;
+    cur_input.state = 1i32 as u16;
     cur_input.name = 0i32;
     cur_input.synctex_tag = 0i32;
 }
@@ -7931,7 +7929,7 @@ pub unsafe extern "C" fn check_outer_validity() {
             {
                 p = get_avail();
                 (*mem.offset(p as isize)).b32.s0 = 0x1ffffffi32 + cur_cs;
-                begin_token_list(p, 3i32 as uint16_t);
+                begin_token_list(p, 3i32 as u16);
             }
             cur_cmd = 10i32 as eight_bits;
             cur_chr = ' ' as i32
@@ -7991,7 +7989,7 @@ pub unsafe extern "C" fn check_outer_validity() {
                 }
                 _ => {}
             }
-            begin_token_list(p, 5i32 as uint16_t);
+            begin_token_list(p, 5i32 as u16);
             print_cstr(b" of \x00" as *const u8 as *const libc::c_char);
             sprint_cs(warning_index);
             help_ptr = 4i32 as libc::c_uchar;
@@ -8011,7 +8009,7 @@ pub unsafe extern "C" fn check_outer_validity() {
                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
             }
             print_cstr(b"Incomplete \x00" as *const u8 as *const libc::c_char);
-            print_cmd_chr(107i32 as uint16_t, cur_if as int32_t);
+            print_cmd_chr(107i32 as u16, cur_if as int32_t);
             print_cstr(
                 b"; all text was ignored after line \x00" as *const u8 as *const libc::c_char,
             );
@@ -8110,7 +8108,7 @@ pub unsafe extern "C" fn get_next() {
                                 cur_cs = cur_chr + 1i32;
                                 cur_cmd = (*eqtb.offset(cur_cs as isize)).b16.s1 as eight_bits;
                                 cur_chr = (*eqtb.offset(cur_cs as isize)).b32.s1;
-                                cur_input.state = 1i32 as uint16_t;
+                                cur_input.state = 1i32 as u16;
                                 if cur_cmd as libc::c_int >= 115i32 {
                                     check_outer_validity();
                                 }
@@ -8226,7 +8224,7 @@ pub unsafe extern "C" fn get_next() {
                                 continue 'c_63502;
                             }
                             11 => {
-                                cur_input.state = 17i32 as uint16_t;
+                                cur_input.state = 17i32 as u16;
                                 cur_chr = ' ' as i32;
                                 current_block = 14956172121224201915;
                                 break 'c_63807;
@@ -8259,7 +8257,7 @@ pub unsafe extern "C" fn get_next() {
                                 break 'c_63807;
                             }
                             18 | 34 => {
-                                cur_input.state = 1i32 as uint16_t;
+                                cur_input.state = 1i32 as u16;
                                 align_state += 1;
                                 current_block = 14956172121224201915;
                                 break 'c_63807;
@@ -8270,13 +8268,13 @@ pub unsafe extern "C" fn get_next() {
                                 break 'c_63807;
                             }
                             19 | 35 => {
-                                cur_input.state = 1i32 as uint16_t;
+                                cur_input.state = 1i32 as u16;
                                 align_state -= 1;
                                 current_block = 14956172121224201915;
                                 break 'c_63807;
                             }
                             20 | 21 | 23 | 25 | 28 | 29 | 36 | 37 | 39 | 41 | 44 | 45 => {
-                                cur_input.state = 1i32 as uint16_t;
+                                cur_input.state = 1i32 as u16;
                                 current_block = 14956172121224201915;
                                 break 'c_63807;
                             }
@@ -8287,7 +8285,7 @@ pub unsafe extern "C" fn get_next() {
                         }
                     }
                 } else {
-                    cur_input.state = 33i32 as uint16_t;
+                    cur_input.state = 33i32 as u16;
                     if cur_input.name > 17i32 {
                         /*374:*/
                         line += 1; /*367:*/
@@ -8336,7 +8334,7 @@ pub unsafe extern "C" fn get_next() {
                                         ))
                                         .b32
                                         .s1,
-                                        16i32 as uint16_t,
+                                        16i32 as u16,
                                     );
                                     continue 'c_63502;
                                 } else {
@@ -8385,7 +8383,7 @@ pub unsafe extern "C" fn get_next() {
                                     ))
                                     .b32
                                     .s1,
-                                    16i32 as uint16_t,
+                                    16i32 as u16,
                                 );
                                 continue 'c_63502;
                             } else {
@@ -8554,7 +8552,7 @@ pub unsafe extern "C" fn get_next() {
                 _ => {
                     match current_block {
                         8567661057257693057 => {
-                            cur_input.state = 1i32 as uint16_t;
+                            cur_input.state = 1i32 as u16;
                             current_block = 14956172121224201915;
                         }
                         7720778817628725688 => {
@@ -8586,11 +8584,11 @@ pub unsafe extern "C" fn get_next() {
                                 .s1 as libc::c_uchar;
                                 k += 1;
                                 if cat as libc::c_int == 11i32 {
-                                    cur_input.state = 17i32 as uint16_t
+                                    cur_input.state = 17i32 as u16
                                 } else if cat as libc::c_int == 10i32 {
-                                    cur_input.state = 17i32 as uint16_t
+                                    cur_input.state = 17i32 as u16
                                 } else {
-                                    cur_input.state = 1i32 as uint16_t
+                                    cur_input.state = 1i32 as u16
                                 }
                                 if cat as libc::c_int == 11i32 && k <= cur_input.limit {
                                     loop
@@ -8917,7 +8915,7 @@ pub unsafe extern "C" fn get_next() {
                                     ))
                                     .b32
                                     .s1,
-                                    19i32 as uint16_t,
+                                    19i32 as u16,
                                 );
                                 continue;
                             } else {
@@ -8979,7 +8977,7 @@ pub unsafe extern "C" fn get_next() {
                                 begin_token_list(
                                     *param_stack
                                         .offset((cur_input.limit + cur_chr - 1i32) as isize),
-                                    0i32 as uint16_t,
+                                    0i32 as u16,
                                 );
                                 continue;
                             }
@@ -8994,7 +8992,7 @@ pub unsafe extern "C" fn get_next() {
                                 begin_token_list(
                                     *param_stack
                                         .offset((cur_input.limit + cur_chr - 1i32) as isize),
-                                    0i32 as uint16_t,
+                                    0i32 as u16,
                                 );
                                 continue;
                             }
@@ -9009,7 +9007,7 @@ pub unsafe extern "C" fn get_next() {
                                 begin_token_list(
                                     *param_stack
                                         .offset((cur_input.limit + cur_chr - 1i32) as isize),
-                                    0i32 as uint16_t,
+                                    0i32 as u16,
                                 );
                                 continue;
                             }
@@ -9035,11 +9033,11 @@ pub unsafe extern "C" fn get_next() {
             cur_cmd = (*mem.offset((cur_align + 5i32) as isize)).b32.s0 as eight_bits;
             (*mem.offset((cur_align + 5i32) as isize)).b32.s0 = cur_chr;
             if cur_cmd as libc::c_int == 63i32 {
-                begin_token_list(4999999i32 - 10i32, 2i32 as uint16_t);
+                begin_token_list(4999999i32 - 10i32, 2i32 as u16);
             } else {
                 begin_token_list(
                     (*mem.offset((cur_align + 2i32) as isize)).b32.s1,
-                    2i32 as uint16_t,
+                    2i32 as u16,
                 );
             }
             align_state = 1000000i64 as int32_t
@@ -9491,7 +9489,7 @@ pub unsafe extern "C" fn macro_call() {
             {
                 end_token_list();
             }
-            begin_token_list(ref_count, 6i32 as uint16_t);
+            begin_token_list(ref_count, 6i32 as u16);
             cur_input.name = warning_index;
             cur_input.loc = (*mem.offset(r as isize)).b32.s1;
             if n as libc::c_int > 0i32 {
@@ -9524,14 +9522,14 @@ pub unsafe extern "C" fn insert_relax() {
     cur_tok = 0x1ffffffi32
         + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 7i32);
     back_input();
-    cur_input.index = 5i32 as uint16_t;
+    cur_input.index = 5i32 as u16;
 }
 #[no_mangle]
-pub unsafe extern "C" fn new_index(mut i: uint16_t, mut q: int32_t) {
+pub unsafe extern "C" fn new_index(mut i: u16, mut q: int32_t) {
     let mut k: small_number = 0;
     cur_ptr = get_node(33i32);
     (*mem.offset(cur_ptr as isize)).b16.s1 = i;
-    (*mem.offset(cur_ptr as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(cur_ptr as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset(cur_ptr as isize)).b32.s1 = q;
     let mut for_end: int32_t = 0;
     k = 1i32 as small_number;
@@ -9555,7 +9553,7 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: int32_t, mu
     cur_ptr = sa_root[t as usize];
     if cur_ptr == -0xfffffffi32 {
         if w {
-            new_index(t as uint16_t, -0xfffffffi32);
+            new_index(t as u16, -0xfffffffi32);
             sa_root[t as usize] = cur_ptr;
             q = cur_ptr;
             i = (n / 0x40000i32) as small_number
@@ -9641,7 +9639,7 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: int32_t, mu
     match current_block {
         15806769474000922024 => {
             /*not_found1 */
-            new_index(i as uint16_t, q);
+            new_index(i as u16, q);
             if i as libc::c_int & 1i32 != 0 {
                 (*mem.offset((q + i as libc::c_int / 2i32 + 1i32) as isize))
                     .b32
@@ -9662,7 +9660,7 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: int32_t, mu
     match current_block {
         14787586673191526541 => {
             /*not_found2 */
-            new_index(i as uint16_t, q);
+            new_index(i as u16, q);
             if i as libc::c_int & 1i32 != 0 {
                 (*mem.offset((q + i as libc::c_int / 2i32 + 1i32) as isize))
                     .b32
@@ -9683,7 +9681,7 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: int32_t, mu
     match current_block {
         9497429165911859091 => {
             /*not_found3 */
-            new_index(i as uint16_t, q);
+            new_index(i as u16, q);
             if i as libc::c_int & 1i32 != 0 {
                 (*mem.offset((q + i as libc::c_int / 2i32 + 1i32) as isize))
                     .b32
@@ -9724,8 +9722,8 @@ pub unsafe extern "C" fn find_sa_element(mut t: small_number, mut n: int32_t, mu
         (*mem.offset((cur_ptr + 1i32) as isize)).b32.s0 = -0xfffffffi32
     }
     (*mem.offset(cur_ptr as isize)).b16.s1 =
-        (64i32 * t as libc::c_int + i as libc::c_int) as uint16_t;
-    (*mem.offset(cur_ptr as isize)).b16.s0 = 1i32 as uint16_t;
+        (64i32 * t as libc::c_int + i as libc::c_int) as u16;
+    (*mem.offset(cur_ptr as isize)).b16.s0 = 1i32 as u16;
     (*mem.offset(cur_ptr as isize)).b32.s1 = q;
     if i as libc::c_int & 1i32 != 0 {
         (*mem.offset((q + i as libc::c_int / 2i32 + 1i32) as isize))
@@ -9821,7 +9819,7 @@ pub unsafe extern "C" fn expand() {
                         }
                     }
                     if cur_ptr != -0xfffffffi32 {
-                        begin_token_list(cur_ptr, 15i32 as uint16_t);
+                        begin_token_list(cur_ptr, 15i32 as u16);
                     }
                     break;
                 }
@@ -9852,7 +9850,7 @@ pub unsafe extern "C" fn expand() {
                             print_cstr(b"You can\'t use `\x00" as *const u8 as *const libc::c_char);
                             print_esc_cstr(b"unless\x00" as *const u8 as *const libc::c_char);
                             print_cstr(b"\' before `\x00" as *const u8 as *const libc::c_char);
-                            print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+                            print_cmd_chr(cur_cmd as u16, cur_chr);
                             print_char('\'' as i32);
                             help_ptr = 1i32 as libc::c_uchar;
                             help_line[0] = b"Continue, and I\'ll forget that it ever happened.\x00"
@@ -9987,7 +9985,7 @@ pub unsafe extern "C" fn expand() {
                     }
                     flush_list(r);
                     if (*eqtb.offset(cur_cs as isize)).b16.s1 as libc::c_int == 103i32 {
-                        eq_define(cur_cs, 0i32 as uint16_t, 0x10ffffi32 + 1i32);
+                        eq_define(cur_cs, 0i32 as u16, 0x10ffffi32 + 1i32);
                     }
                     cur_tok = cur_cs + 0x1ffffffi32;
                     back_input();
@@ -10079,7 +10077,7 @@ pub unsafe extern "C" fn expand() {
                                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                             }
                             print_cstr(b"Extra \x00" as *const u8 as *const libc::c_char);
-                            print_cmd_chr(108i32 as uint16_t, cur_chr);
+                            print_cmd_chr(108i32 as u16, cur_chr);
                             help_ptr = 1i32 as libc::c_uchar;
                             help_line[0] = b"I\'m ignoring this; it doesn\'t match any \\if.\x00"
                                 as *const u8
@@ -10266,7 +10264,7 @@ pub unsafe extern "C" fn scan_keyword(mut s: *const libc::c_char) -> bool {
                     if p != 4999999i32 - 13i32 {
                         begin_token_list(
                             (*mem.offset((4999999i32 - 13i32) as isize)).b32.s1,
-                            3i32 as uint16_t,
+                            3i32 as u16,
                         );
                     }
                     return 0i32 != 0;
@@ -10292,7 +10290,7 @@ pub unsafe extern "C" fn scan_keyword(mut s: *const libc::c_char) -> bool {
             if p != 4999999i32 - 13i32 {
                 begin_token_list(
                     (*mem.offset((4999999i32 - 13i32) as isize)).b32.s1,
-                    3i32 as uint16_t,
+                    3i32 as u16,
                 );
             }
             return 0i32 != 0;
@@ -10590,7 +10588,7 @@ pub unsafe extern "C" fn scan_math(mut p: int32_t) {
         }
     }
     (*mem.offset(p as isize)).b32.s1 = 1i32;
-    (*mem.offset(p as isize)).b16.s0 = (c as libc::c_long % 65536) as uint16_t;
+    (*mem.offset(p as isize)).b16.s0 = (c as libc::c_long % 65536) as u16;
     if c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint
         && ((*eqtb.offset(
             (1i32
@@ -10679,14 +10677,14 @@ pub unsafe extern "C" fn scan_math(mut p: int32_t) {
                 + 44i32) as isize,
         ))
         .b32
-        .s1 as uint16_t
+        .s1 as u16
     } else {
         (*mem.offset(p as isize)).b16.s1 =
-            (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as uint16_t
+            (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as u16
     }
     (*mem.offset(p as isize)).b16.s1 = ((*mem.offset(p as isize)).b16.s1 as libc::c_long
         + (c as libc::c_uint & 0x1fffffi32 as libc::c_uint) as libc::c_long / 65536
-            * 256i32 as libc::c_long) as uint16_t;
+            * 256i32 as libc::c_long) as u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn set_math_char(mut c: int32_t) {
@@ -10703,9 +10701,9 @@ pub unsafe extern "C" fn set_math_char(mut c: int32_t) {
         p = new_noad();
         (*mem.offset((p + 1i32) as isize)).b32.s1 = 1i32;
         ch = (c as libc::c_uint & 0x1fffffi32 as libc::c_uint) as UnicodeScalar;
-        (*mem.offset((p + 1i32) as isize)).b16.s0 = (ch as libc::c_long % 65536) as uint16_t;
+        (*mem.offset((p + 1i32) as isize)).b16.s0 = (ch as libc::c_long % 65536) as u16;
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
-            (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as uint16_t;
+            (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as u16;
         if c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint {
             if (*eqtb.offset(
                 (1i32
@@ -10794,17 +10792,17 @@ pub unsafe extern "C" fn set_math_char(mut c: int32_t) {
                         + 44i32) as isize,
                 ))
                 .b32
-                .s1 as uint16_t
+                .s1 as u16
             }
-            (*mem.offset(p as isize)).b16.s1 = 16i32 as uint16_t
+            (*mem.offset(p as isize)).b16.s1 = 16i32 as u16
         } else {
             (*mem.offset(p as isize)).b16.s1 = (16i32 as libc::c_uint)
                 .wrapping_add(c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint)
-                as uint16_t
+                as u16
         }
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
             ((*mem.offset((p + 1i32) as isize)).b16.s1 as libc::c_long
-                + ch as libc::c_long / 65536 * 256i32 as libc::c_long) as uint16_t;
+                + ch as libc::c_long / 65536 * 256i32 as libc::c_long) as u16;
         (*mem.offset(cur_list.tail as isize)).b32.s1 = p;
         cur_list.tail = p
     };
@@ -10957,10 +10955,10 @@ pub unsafe extern "C" fn get_x_or_protected() {
 pub unsafe extern "C" fn effective_char(
     mut err_p: bool,
     mut f: internal_font_number,
-    mut c: uint16_t,
+    mut c: u16,
 ) -> int32_t {
     if !xtx_ligature_present && !(*font_mapping.offset(f as isize)).is_null() {
-        c = apply_tfm_font_mapping(*font_mapping.offset(f as isize), c as libc::c_int) as uint16_t
+        c = apply_tfm_font_mapping(*font_mapping.offset(f as isize), c as libc::c_int) as u16
     }
     xtx_ligature_present = 0i32 != 0;
     return c as int32_t;
@@ -11678,7 +11676,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                     print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                 }
                 print_cstr(b"Improper \x00" as *const u8 as *const libc::c_char);
-                print_cmd_chr(80i32 as uint16_t, m);
+                print_cmd_chr(80i32 as u16, m);
                 help_ptr = 4i32 as libc::c_uchar;
                 help_line[3] = b"You can refer to \\spacefactor only in horizontal mode;\x00"
                     as *const u8 as *const libc::c_char;
@@ -12229,7 +12227,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                             {
                                 i = (*font_info.offset(
                                     (*char_base.offset(q as isize)
-                                        + effective_char(1i32 != 0, q, cur_val as uint16_t))
+                                        + effective_char(1i32 != 0, q, cur_val as u16))
                                         as isize,
                                 ))
                                 .b16;
@@ -13015,7 +13013,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
             }
             print_cstr(b"You can\'t use `\x00" as *const u8 as *const libc::c_char);
-            print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+            print_cmd_chr(cur_cmd as u16, cur_chr);
             print_cstr(b"\' after \x00" as *const u8 as *const libc::c_char);
             print_esc_cstr(b"the\x00" as *const u8 as *const libc::c_char);
             help_ptr = 1i32 as libc::c_uchar;
@@ -13884,12 +13882,12 @@ pub unsafe extern "C" fn scan_glue(mut level: small_number) {
     if scan_keyword(b"plus\x00" as *const u8 as *const libc::c_char) {
         scan_dimen(mu, 1i32 != 0, 0i32 != 0);
         (*mem.offset((q + 2i32) as isize)).b32.s1 = cur_val;
-        (*mem.offset(q as isize)).b16.s1 = cur_order as uint16_t
+        (*mem.offset(q as isize)).b16.s1 = cur_order as u16
     }
     if scan_keyword(b"minus\x00" as *const u8 as *const libc::c_char) {
         scan_dimen(mu, 1i32 != 0, 0i32 != 0);
         (*mem.offset((q + 3i32) as isize)).b32.s1 = cur_val;
-        (*mem.offset(q as isize)).b16.s0 = cur_order as uint16_t
+        (*mem.offset(q as isize)).b16.s0 = cur_order as u16
     }
     cur_val = q;
     /*:481*/
@@ -14192,10 +14190,10 @@ pub unsafe extern "C" fn scan_expr() {
                             t = new_spec(f);
                             delete_glue_ref(f);
                             if (*mem.offset((t + 2i32) as isize)).b32.s1 == 0i32 {
-                                (*mem.offset(t as isize)).b16.s1 = 0i32 as uint16_t
+                                (*mem.offset(t as isize)).b16.s1 = 0i32 as u16
                             }
                             if (*mem.offset((t + 3i32) as isize)).b32.s1 == 0i32 {
-                                (*mem.offset(t as isize)).b16.s0 = 0i32 as uint16_t
+                                (*mem.offset(t as isize)).b16.s0 = 0i32 as u16
                             }
                         } else {
                             t = f
@@ -14325,10 +14323,10 @@ pub unsafe extern "C" fn scan_expr() {
                         }
                         delete_glue_ref(t);
                         if (*mem.offset((e + 2i32) as isize)).b32.s1 == 0i32 {
-                            (*mem.offset(e as isize)).b16.s1 = 0i32 as uint16_t
+                            (*mem.offset(e as isize)).b16.s1 = 0i32 as u16
                         }
                         if (*mem.offset((e + 3i32) as isize)).b32.s1 == 0i32 {
-                            (*mem.offset(e as isize)).b16.s0 = 0i32 as uint16_t
+                            (*mem.offset(e as isize)).b16.s0 = 0i32 as u16
                         }
                     }
                     r = o
@@ -14356,8 +14354,8 @@ pub unsafe extern "C" fn scan_expr() {
         /*1576: */
         q = get_node(4i32);
         (*mem.offset(q as isize)).b32.s1 = p;
-        (*mem.offset(q as isize)).b16.s1 = l as uint16_t;
-        (*mem.offset(q as isize)).b16.s0 = (4i32 * s as libc::c_int + r as libc::c_int) as uint16_t;
+        (*mem.offset(q as isize)).b16.s1 = l as u16;
+        (*mem.offset(q as isize)).b16.s0 = (4i32 * s as libc::c_int + r as libc::c_int) as u16;
         (*mem.offset((q + 1i32) as isize)).b32.s1 = e;
         (*mem.offset((q + 2i32) as isize)).b32.s1 = t;
         (*mem.offset((q + 3i32) as isize)).b32.s1 = n;
@@ -14558,10 +14556,10 @@ pub unsafe extern "C" fn pseudo_start() {
             (*mem.offset(r as isize)).b16 = w;
             m = m + 4i32
         }
-        w.s3 = ' ' as i32 as uint16_t;
-        w.s2 = ' ' as i32 as uint16_t;
-        w.s1 = ' ' as i32 as uint16_t;
-        w.s0 = ' ' as i32 as uint16_t;
+        w.s3 = ' ' as i32 as u16;
+        w.s2 = ' ' as i32 as u16;
+        w.s1 = ' ' as i32 as u16;
+        w.s0 = ' ' as i32 as u16;
         if l > m {
             w.s3 = *str_pool.offset(m as isize);
             if l > m + 1i32 {
@@ -14773,7 +14771,7 @@ pub unsafe extern "C" fn ins_the_toks() {
     (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = the_toks();
     begin_token_list(
         (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1,
-        5i32 as uint16_t,
+        5i32 as u16,
     );
 }
 #[no_mangle]
@@ -14898,7 +14896,7 @@ pub unsafe extern "C" fn conv_toks() {
             }
             begin_token_list(
                 (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1,
-                5i32 as uint16_t,
+                5i32 as u16,
             );
             if u != 0i32 {
                 str_ptr -= 1
@@ -15198,7 +15196,7 @@ pub unsafe extern "C" fn conv_toks() {
     (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = str_toks_cat(b, cat);
     begin_token_list(
         (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1,
-        5i32 as uint16_t,
+        5i32 as u16,
     );
 }
 #[no_mangle]
@@ -15576,7 +15574,7 @@ pub unsafe extern "C" fn read_toks(mut n: int32_t, mut r: int32_t, mut j: int32_
         }
         first = cur_input.limit + 1i32;
         cur_input.loc = cur_input.start;
-        cur_input.state = 33i32 as uint16_t;
+        cur_input.state = 33i32 as u16;
         if j == 1i32 {
             while cur_input.loc <= cur_input.limit {
                 cur_chr = *buffer.offset(cur_input.loc as isize);
@@ -15690,7 +15688,7 @@ pub unsafe extern "C" fn change_if_limit(mut l: small_number, mut p: int32_t) {
                 confusion(b"if\x00" as *const u8 as *const libc::c_char);
             }
             if (*mem.offset(q as isize)).b32.s1 == p {
-                (*mem.offset(q as isize)).b16.s1 = l as uint16_t;
+                (*mem.offset(q as isize)).b16.s1 = l as u16;
                 return;
             }
             q = (*mem.offset(q as isize)).b32.s1
@@ -15776,8 +15774,8 @@ pub unsafe extern "C" fn conditional() {
     }
     p = get_node(2i32);
     (*mem.offset(p as isize)).b32.s1 = cond_ptr;
-    (*mem.offset(p as isize)).b16.s1 = if_limit as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = cur_if as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = if_limit as u16;
+    (*mem.offset(p as isize)).b16.s0 = cur_if as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = if_line;
     cond_ptr = p;
     cur_if = cur_chr as small_number;
@@ -15842,7 +15840,7 @@ pub unsafe extern "C" fn conditional() {
                     print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                 }
                 print_cstr(b"Missing = inserted for \x00" as *const u8 as *const libc::c_char);
-                print_cmd_chr(107i32 as uint16_t, this_if as int32_t);
+                print_cmd_chr(107i32 as u16, this_if as int32_t);
                 help_ptr = 1i32 as libc::c_uchar;
                 help_line[0] = b"I was expecting to see `<\', `=\', or `>\'. Didn\'t.\x00"
                     as *const u8 as *const libc::c_char;
@@ -16072,7 +16070,7 @@ pub unsafe extern "C" fn conditional() {
             {
                 b = (*font_info.offset(
                     (*char_base.offset(n as isize)
-                        + effective_char(1i32 != 0, n, cur_val as uint16_t))
+                        + effective_char(1i32 != 0, n, cur_val as u16))
                         as isize,
                 ))
                 .b16
@@ -16809,7 +16807,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const libc::c_char
     open_parens += 1;
     print(*full_source_filename_stack.offset(in_open as isize));
     ttstub_output_flush(rust_stdout);
-    cur_input.state = 33i32 as uint16_t;
+    cur_input.state = 33i32 as u16;
     synctex_start_input();
     line = 1i32;
     input_line(*input_file.offset(cur_input.index as isize));
@@ -16911,10 +16909,10 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const libc::c_char
 #[no_mangle]
 pub unsafe extern "C" fn effective_char_info(
     mut f: internal_font_number,
-    mut c: uint16_t,
+    mut c: u16,
 ) -> b16x4 {
     if !xtx_ligature_present && !(*font_mapping.offset(f as isize)).is_null() {
-        c = apply_tfm_font_mapping(*font_mapping.offset(f as isize), c as libc::c_int) as uint16_t
+        c = apply_tfm_font_mapping(*font_mapping.offset(f as isize), c as libc::c_int) as u16
     }
     xtx_ligature_present = 0i32 != 0;
     return (*font_info.offset((*char_base.offset(f as isize) + c as libc::c_int) as isize)).b16;
@@ -17132,7 +17130,7 @@ pub unsafe extern "C" fn new_native_word_node(
             .wrapping_div(::std::mem::size_of::<memory_word>() as u64),
     ) as int32_t;
     q = get_node(l);
-    (*mem.offset(q as isize)).b16.s1 = 8i32 as uint16_t;
+    (*mem.offset(q as isize)).b16.s1 = 8i32 as u16;
     if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -17163,14 +17161,14 @@ pub unsafe extern "C" fn new_native_word_node(
     .b32
     .s1 > 0i32
     {
-        (*mem.offset(q as isize)).b16.s0 = 41i32 as uint16_t
+        (*mem.offset(q as isize)).b16.s0 = 41i32 as u16
     } else {
-        (*mem.offset(q as isize)).b16.s0 = 40i32 as uint16_t
+        (*mem.offset(q as isize)).b16.s0 = 40i32 as u16
     }
-    (*mem.offset((q + 4i32) as isize)).b16.s3 = l as uint16_t;
-    (*mem.offset((q + 4i32) as isize)).b16.s2 = f as uint16_t;
-    (*mem.offset((q + 4i32) as isize)).b16.s1 = n as uint16_t;
-    (*mem.offset((q + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset((q + 4i32) as isize)).b16.s3 = l as u16;
+    (*mem.offset((q + 4i32) as isize)).b16.s2 = f as u16;
+    (*mem.offset((q + 4i32) as isize)).b16.s1 = n as u16;
+    (*mem.offset((q + 4i32) as isize)).b16.s0 = 0i32 as u16;
     let ref mut fresh48 = (*mem.offset((q + 5i32) as isize)).ptr;
     *fresh48 = 0 as *mut libc::c_void;
     return q;
@@ -17277,15 +17275,15 @@ pub unsafe extern "C" fn new_native_character(
             }
         }
         p = get_node(6i32 + 1i32);
-        (*mem.offset(p as isize)).b16.s1 = 8i32 as uint16_t;
-        (*mem.offset(p as isize)).b16.s0 = 40i32 as uint16_t;
-        (*mem.offset((p + 4i32) as isize)).b16.s3 = (6i32 + 1i32) as uint16_t;
-        (*mem.offset((p + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+        (*mem.offset(p as isize)).b16.s1 = 8i32 as u16;
+        (*mem.offset(p as isize)).b16.s0 = 40i32 as u16;
+        (*mem.offset((p + 4i32) as isize)).b16.s3 = (6i32 + 1i32) as u16;
+        (*mem.offset((p + 4i32) as isize)).b16.s0 = 0i32 as u16;
         let ref mut fresh49 = (*mem.offset((p + 5i32) as isize)).ptr;
         *fresh49 = 0 as *mut libc::c_void;
-        (*mem.offset((p + 4i32) as isize)).b16.s2 = f as uint16_t;
+        (*mem.offset((p + 4i32) as isize)).b16.s2 = f as u16;
         if c as libc::c_long > 65535 {
-            (*mem.offset((p + 4i32) as isize)).b16.s1 = 2i32 as uint16_t;
+            (*mem.offset((p + 4i32) as isize)).b16.s1 = 2i32 as u16;
             *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
                 .offset(0) = ((c as libc::c_long - 65536) / 1024i32 as libc::c_long
                 + 0xd800i32 as libc::c_long) as libc::c_ushort;
@@ -17293,7 +17291,7 @@ pub unsafe extern "C" fn new_native_character(
                 .offset(1) = ((c as libc::c_long - 65536) % 1024i32 as libc::c_long
                 + 0xdc00i32 as libc::c_long) as libc::c_ushort
         } else {
-            (*mem.offset((p + 4i32) as isize)).b16.s1 = 1i32 as uint16_t;
+            (*mem.offset((p + 4i32) as isize)).b16.s1 = 1i32 as u16;
             *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut libc::c_ushort)
                 .offset(0) = c as libc::c_ushort
         }
@@ -17512,10 +17510,10 @@ pub unsafe extern "C" fn load_native_font(
     font_ptr += 1;
     *font_area.offset(font_ptr as isize) = native_font_type_flag;
     *font_name.offset(font_ptr as isize) = full_name;
-    (*font_check.offset(font_ptr as isize)).s3 = 0i32 as uint16_t;
-    (*font_check.offset(font_ptr as isize)).s2 = 0i32 as uint16_t;
-    (*font_check.offset(font_ptr as isize)).s1 = 0i32 as uint16_t;
-    (*font_check.offset(font_ptr as isize)).s0 = 0i32 as uint16_t;
+    (*font_check.offset(font_ptr as isize)).s3 = 0i32 as u16;
+    (*font_check.offset(font_ptr as isize)).s2 = 0i32 as u16;
+    (*font_check.offset(font_ptr as isize)).s1 = 0i32 as u16;
+    (*font_check.offset(font_ptr as isize)).s0 = 0i32 as u16;
     *font_glue.offset(font_ptr as isize) = -0xfffffffi32;
     *font_dsize.offset(font_ptr as isize) = loaded_font_design_size;
     *font_size.offset(font_ptr as isize) = actual_size;
@@ -18309,22 +18307,22 @@ pub unsafe extern "C" fn read_font_info(
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
                                                                                 qw.s3 =
-                                                                                    a as uint16_t;
+                                                                                    a as u16;
                                                                                 b
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
                                                                                 qw.s2 =
-                                                                                    b as uint16_t;
+                                                                                    b as u16;
                                                                                 c
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
                                                                                 qw.s1 =
-                                                                                    c as uint16_t;
+                                                                                    c as u16;
                                                                                 d
                                                                                     =
                                                                                     ttstub_input_getc(tfm_file);
                                                                                 qw.s0 =
-                                                                                    d as uint16_t;
+                                                                                    d as u16;
                                                                                 if a == -1i32
                                                                                     || b == -1i32
                                                                                     || c == -1i32
@@ -18446,7 +18444,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                     =
                                                                                                     a
                                                                                                         as
-                                                                                                        uint16_t;
+                                                                                                        u16;
                                                                                                 b
                                                                                                     =
                                                                                                     ttstub_input_getc(tfm_file);
@@ -18454,7 +18452,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                     =
                                                                                                     b
                                                                                                         as
-                                                                                                        uint16_t;
+                                                                                                        u16;
                                                                                                 c
                                                                                                     =
                                                                                                     ttstub_input_getc(tfm_file);
@@ -18462,7 +18460,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                     =
                                                                                                     c
                                                                                                         as
-                                                                                                        uint16_t;
+                                                                                                        u16;
                                                                                                 d
                                                                                                     =
                                                                                                     ttstub_input_getc(tfm_file);
@@ -18470,7 +18468,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                     =
                                                                                                     d
                                                                                                         as
-                                                                                                        uint16_t;
+                                                                                                        u16;
                                                                                                 if a
                                                                                                        ==
                                                                                                        -1i32
@@ -18900,7 +18898,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                             =
                                                                                                                             a
                                                                                                                                 as
-                                                                                                                                uint16_t;
+                                                                                                                                u16;
                                                                                                                         b
                                                                                                                             =
                                                                                                                             ttstub_input_getc(tfm_file);
@@ -18908,7 +18906,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                             =
                                                                                                                             b
                                                                                                                                 as
-                                                                                                                                uint16_t;
+                                                                                                                                u16;
                                                                                                                         c
                                                                                                                             =
                                                                                                                             ttstub_input_getc(tfm_file);
@@ -18916,7 +18914,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                             =
                                                                                                                             c
                                                                                                                                 as
-                                                                                                                                uint16_t;
+                                                                                                                                u16;
                                                                                                                         d
                                                                                                                             =
                                                                                                                             ttstub_input_getc(tfm_file);
@@ -18924,7 +18922,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                             =
                                                                                                                             d
                                                                                                                                 as
-                                                                                                                                uint16_t;
+                                                                                                                                u16;
                                                                                                                         if a
                                                                                                                                ==
                                                                                                                                -1i32
@@ -19300,7 +19298,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                                         =
                                                                                                                                         a
                                                                                                                                             as
-                                                                                                                                            uint16_t;
+                                                                                                                                            u16;
                                                                                                                                     b
                                                                                                                                         =
                                                                                                                                         ttstub_input_getc(tfm_file);
@@ -19308,7 +19306,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                                         =
                                                                                                                                         b
                                                                                                                                             as
-                                                                                                                                            uint16_t;
+                                                                                                                                            u16;
                                                                                                                                     c
                                                                                                                                         =
                                                                                                                                         ttstub_input_getc(tfm_file);
@@ -19316,7 +19314,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                                         =
                                                                                                                                         c
                                                                                                                                             as
-                                                                                                                                            uint16_t;
+                                                                                                                                            u16;
                                                                                                                                     d
                                                                                                                                         =
                                                                                                                                         ttstub_input_getc(tfm_file);
@@ -19324,7 +19322,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                                                         =
                                                                                                                                         d
                                                                                                                                             as
-                                                                                                                                            uint16_t;
+                                                                                                                                            u16;
                                                                                                                                     if a
                                                                                                                                            ==
                                                                                                                                            -1i32
@@ -20193,13 +20191,13 @@ pub unsafe extern "C" fn read_font_info(
 #[no_mangle]
 pub unsafe extern "C" fn new_character(mut f: internal_font_number, mut c: UTF16_code) -> int32_t {
     let mut p: int32_t = 0;
-    let mut ec: uint16_t = 0;
+    let mut ec: u16 = 0;
     if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
         || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
     {
         return new_native_character(f, c as UnicodeScalar);
     }
-    ec = effective_char(0i32 != 0, f, c) as uint16_t;
+    ec = effective_char(0i32 != 0, f, c) as u16;
     if *font_bc.offset(f as isize) as libc::c_int <= ec as libc::c_int {
         if *font_ec.offset(f as isize) as libc::c_int >= ec as libc::c_int {
             if (*font_info.offset((*char_base.offset(f as isize) + ec as libc::c_int) as isize))
@@ -20208,7 +20206,7 @@ pub unsafe extern "C" fn new_character(mut f: internal_font_number, mut c: UTF16
                 > 0i32
             {
                 p = get_avail();
-                (*mem.offset(p as isize)).b16.s1 = f as uint16_t;
+                (*mem.offset(p as isize)).b16.s1 = f as u16;
                 (*mem.offset(p as isize)).b16.s0 = c;
                 return p;
             }
@@ -20341,8 +20339,8 @@ pub unsafe extern "C" fn new_margin_kern(
 ) -> int32_t {
     let mut k: int32_t = 0;
     k = get_node(3i32);
-    (*mem.offset(k as isize)).b16.s1 = 40i32 as uint16_t;
-    (*mem.offset(k as isize)).b16.s0 = side as uint16_t;
+    (*mem.offset(k as isize)).b16.s1 = 40i32 as u16;
+    (*mem.offset(k as isize)).b16.s0 = side as u16;
     (*mem.offset((k + 1i32) as isize)).b32.s1 = w;
     return k;
 }
@@ -20370,8 +20368,8 @@ pub unsafe extern "C" fn hpack(mut p: int32_t, mut w: scaled_t, mut m: small_num
     let mut k: int32_t = 0;
     last_badness = 0i32;
     r = get_node(8i32);
-    (*mem.offset(r as isize)).b16.s1 = 0i32 as uint16_t;
-    (*mem.offset(r as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(r as isize)).b16.s1 = 0i32 as u16;
+    (*mem.offset(r as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((r + 4i32) as isize)).b32.s1 = 0i32;
     q = r + 5i32;
     (*mem.offset(q as isize)).b32.s1 = p;
@@ -20612,8 +20610,8 @@ pub unsafe extern "C" fn hpack(mut p: int32_t, mut w: scaled_t, mut m: small_num
                                 avail = temp_ptr
                             } else {
                                 LR_problems += 1;
-                                (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
-                                (*mem.offset(p as isize)).b16.s0 = 1i32 as uint16_t
+                                (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
+                                (*mem.offset(p as isize)).b16.s0 = 1i32 as u16
                             }
                         } else {
                             temp_ptr = get_avail();
@@ -20802,8 +20800,8 @@ pub unsafe extern "C" fn hpack(mut p: int32_t, mut w: scaled_t, mut m: small_num
     (*mem.offset((r + 1i32) as isize)).b32.s1 = w;
     x = w - x;
     if x == 0i32 {
-        (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
-        (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as uint16_t;
+        (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
+        (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as u16;
         (*mem.offset((r + 6i32) as isize)).gr = 0.0f64;
         current_block = 2380354494544673732;
     } else if x > 0i32 {
@@ -20817,13 +20815,13 @@ pub unsafe extern "C" fn hpack(mut p: int32_t, mut w: scaled_t, mut m: small_num
         } else {
             o = 0i32 as glue_ord
         } /*normal *//*:684 */
-        (*mem.offset((r + 5i32) as isize)).b16.s0 = o as uint16_t;
-        (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as uint16_t;
+        (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
+        (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
         if total_stretch[o as usize] != 0i32 {
             (*mem.offset((r + 6i32) as isize)).gr =
                 x as libc::c_double / total_stretch[o as usize] as libc::c_double
         } else {
-            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
+            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
         }
         if o as libc::c_int == 0i32 {
@@ -20889,13 +20887,13 @@ pub unsafe extern "C" fn hpack(mut p: int32_t, mut w: scaled_t, mut m: small_num
         } else {
             o = 0i32 as glue_ord
         }
-        (*mem.offset((r + 5i32) as isize)).b16.s0 = o as uint16_t;
-        (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as uint16_t;
+        (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
+        (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
         if total_shrink[o as usize] != 0i32 {
             (*mem.offset((r + 6i32) as isize)).gr =
                 -x as libc::c_double / total_shrink[o as usize] as libc::c_double
         } else {
-            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
+            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
         }
         if total_shrink[o as usize] < -x
@@ -21261,7 +21259,7 @@ pub unsafe extern "C" fn vpackage(
     let mut o: glue_ord = 0;
     last_badness = 0i32;
     r = get_node(8i32);
-    (*mem.offset(r as isize)).b16.s1 = 1i32 as uint16_t;
+    (*mem.offset(r as isize)).b16.s1 = 1i32 as u16;
     if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -21292,9 +21290,9 @@ pub unsafe extern "C" fn vpackage(
     .b32
     .s1 > 0i32
     {
-        (*mem.offset(r as isize)).b16.s0 = 1i32 as uint16_t
+        (*mem.offset(r as isize)).b16.s0 = 1i32 as u16
     } else {
-        (*mem.offset(r as isize)).b16.s0 = 0i32 as uint16_t
+        (*mem.offset(r as isize)).b16.s0 = 0i32 as u16
     }
     (*mem.offset((r + 4i32) as isize)).b32.s1 = 0i32;
     (*mem.offset((r + 5i32) as isize)).b32.s1 = p;
@@ -21378,8 +21376,8 @@ pub unsafe extern "C" fn vpackage(
     (*mem.offset((r + 3i32) as isize)).b32.s1 = h;
     x = h - x;
     if x == 0i32 {
-        (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
-        (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as uint16_t;
+        (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
+        (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as u16;
         (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
     } else {
         if x > 0i32 {
@@ -21393,13 +21391,13 @@ pub unsafe extern "C" fn vpackage(
             } else {
                 o = 0i32 as glue_ord
             } /*normal *//*:684 */
-            (*mem.offset((r + 5i32) as isize)).b16.s0 = o as uint16_t;
-            (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as uint16_t;
+            (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
+            (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
             if total_stretch[o as usize] != 0i32 {
                 (*mem.offset((r + 6i32) as isize)).gr =
                     x as libc::c_double / total_stretch[o as usize] as libc::c_double
             } else {
-                (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
+                (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
             }
             if o as libc::c_int == 0i32 {
@@ -21465,13 +21463,13 @@ pub unsafe extern "C" fn vpackage(
             } else {
                 o = 0i32 as glue_ord
             }
-            (*mem.offset((r + 5i32) as isize)).b16.s0 = o as uint16_t;
-            (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as uint16_t;
+            (*mem.offset((r + 5i32) as isize)).b16.s0 = o as u16;
+            (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
             if total_shrink[o as usize] != 0i32 {
                 (*mem.offset((r + 6i32) as isize)).gr =
                     -x as libc::c_double / total_shrink[o as usize] as libc::c_double
             } else {
-                (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
+                (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
             }
             if total_shrink[o as usize] < -x
@@ -21760,8 +21758,8 @@ pub unsafe extern "C" fn append_to_vlist(mut b: int32_t) {
 pub unsafe extern "C" fn new_noad() -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(4i32);
-    (*mem.offset(p as isize)).b16.s1 = 16i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 16i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32 = empty;
     (*mem.offset((p + 3i32) as isize)).b32 = empty;
     (*mem.offset((p + 2i32) as isize)).b32 = empty;
@@ -21771,8 +21769,8 @@ pub unsafe extern "C" fn new_noad() -> int32_t {
 pub unsafe extern "C" fn new_style(mut s: small_number) -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 14i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = s as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 14i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = 0i32;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
     return p;
@@ -21781,8 +21779,8 @@ pub unsafe extern "C" fn new_style(mut s: small_number) -> int32_t {
 pub unsafe extern "C" fn new_choice() -> int32_t {
     let mut p: int32_t = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 15i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 15i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s0 = -0xfffffffi32;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0xfffffffi32;
     (*mem.offset((p + 2i32) as isize)).b32.s0 = -0xfffffffi32;
@@ -21905,7 +21903,7 @@ pub unsafe extern "C" fn get_preamble_token() {
                     + 1i32
                     + 1i32
                     + 11i32,
-                119i32 as uint16_t,
+                119i32 as u16,
                 cur_val,
             );
         } else {
@@ -21919,7 +21917,7 @@ pub unsafe extern "C" fn get_preamble_token() {
                     + 1i32
                     + 1i32
                     + 11i32,
-                119i32 as uint16_t,
+                119i32 as u16,
                 cur_val,
             );
         }
@@ -22101,7 +22099,7 @@ pub unsafe extern "C" fn init_align() {
             ))
             .b32
             .s1,
-            14i32 as uint16_t,
+            14i32 as u16,
         );
     }
     align_peek();
@@ -22132,7 +22130,7 @@ pub unsafe extern "C" fn init_row() {
             .s0,
     );
     cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-    (*mem.offset(cur_list.tail as isize)).b16.s0 = (11i32 + 1i32) as uint16_t;
+    (*mem.offset(cur_list.tail as isize)).b16.s0 = (11i32 + 1i32) as u16;
     cur_align = (*mem.offset((*mem.offset((4999999i32 - 8i32) as isize)).b32.s1 as isize))
         .b32
         .s1;
@@ -22149,7 +22147,7 @@ pub unsafe extern "C" fn init_col() {
         back_input();
         begin_token_list(
             (*mem.offset((cur_align + 3i32) as isize)).b32.s1,
-            1i32 as uint16_t,
+            1i32 as u16,
         );
     };
 }
@@ -22303,8 +22301,8 @@ pub unsafe extern "C" fn fin_col() -> bool {
         } else if w > (*mem.offset((cur_align + 1i32) as isize)).b32.s1 {
             (*mem.offset((cur_align + 1i32) as isize)).b32.s1 = w
         }
-        (*mem.offset(u as isize)).b16.s1 = 13i32 as uint16_t;
-        (*mem.offset(u as isize)).b16.s0 = n as uint16_t;
+        (*mem.offset(u as isize)).b16.s1 = 13i32 as u16;
+        (*mem.offset(u as isize)).b16.s0 = n as u16;
         if total_stretch[3] != 0i32 {
             o = 3i32 as glue_ord
         } else if total_stretch[2] != 0i32 {
@@ -22314,7 +22312,7 @@ pub unsafe extern "C" fn fin_col() -> bool {
         } else {
             o = 0i32 as glue_ord
         }
-        (*mem.offset((u + 5i32) as isize)).b16.s0 = o as uint16_t;
+        (*mem.offset((u + 5i32) as isize)).b16.s0 = o as u16;
         (*mem.offset((u + 6i32) as isize)).b32.s1 = total_stretch[o as usize];
         if total_shrink[3] != 0i32 {
             o = 3i32 as glue_ord
@@ -22325,7 +22323,7 @@ pub unsafe extern "C" fn fin_col() -> bool {
         } else {
             o = 0i32 as glue_ord
         }
-        (*mem.offset((u + 5i32) as isize)).b16.s1 = o as uint16_t;
+        (*mem.offset((u + 5i32) as isize)).b16.s1 = o as u16;
         (*mem.offset((u + 4i32) as isize)).b32.s1 = total_shrink[o as usize];
         pop_nest();
         (*mem.offset(cur_list.tail as isize)).b32.s1 = u;
@@ -22336,7 +22334,7 @@ pub unsafe extern "C" fn fin_col() -> bool {
                 .s0,
         );
         cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-        (*mem.offset(cur_list.tail as isize)).b16.s0 = 12i32 as uint16_t;
+        (*mem.offset(cur_list.tail as isize)).b16.s0 = 12i32 as u16;
         if (*mem.offset((cur_align + 5i32) as isize)).b32.s0 >= 0x10ffffi32 + 3i32 {
             return 1i32 != 0;
         }
@@ -22385,7 +22383,7 @@ pub unsafe extern "C" fn fin_row() {
         cur_list.tail = p;
         cur_list.aux.b32.s0 = 1000i32
     }
-    (*mem.offset(p as isize)).b16.s1 = 13i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 13i32 as u16;
     (*mem.offset((p + 6i32) as isize)).b32.s1 = 0i32;
     if (*eqtb.offset(
         (1i32
@@ -22423,7 +22421,7 @@ pub unsafe extern "C" fn fin_row() {
             ))
             .b32
             .s1,
-            14i32 as uint16_t,
+            14i32 as u16,
         );
     }
     align_peek();
@@ -22559,12 +22557,12 @@ pub unsafe extern "C" fn fin_align() {
                 }
             }
         }
-        (*mem.offset(q as isize)).b16.s1 = 13i32 as uint16_t;
-        (*mem.offset(q as isize)).b16.s0 = 0i32 as uint16_t;
+        (*mem.offset(q as isize)).b16.s1 = 13i32 as u16;
+        (*mem.offset(q as isize)).b16.s0 = 0i32 as u16;
         (*mem.offset((q + 3i32) as isize)).b32.s1 = 0i32;
         (*mem.offset((q + 2i32) as isize)).b32.s1 = 0i32;
-        (*mem.offset((q + 5i32) as isize)).b16.s0 = 0i32 as uint16_t;
-        (*mem.offset((q + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
+        (*mem.offset((q + 5i32) as isize)).b16.s0 = 0i32 as u16;
+        (*mem.offset((q + 5i32) as isize)).b16.s1 = 0i32 as u16;
         (*mem.offset((q + 6i32) as isize)).b32.s1 = 0i32;
         (*mem.offset((q + 4i32) as isize)).b32.s1 = 0i32;
         q = p;
@@ -22718,14 +22716,14 @@ pub unsafe extern "C" fn fin_align() {
             if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 13i32 {
                 /*836: */
                 if cur_list.mode as libc::c_int == -1i32 {
-                    (*mem.offset(q as isize)).b16.s1 = 0i32 as uint16_t;
+                    (*mem.offset(q as isize)).b16.s1 = 0i32 as u16;
                     (*mem.offset((q + 1i32) as isize)).b32.s1 =
                         (*mem.offset((p + 1i32) as isize)).b32.s1;
                     if (*nest.offset((nest_ptr - 1i32) as isize)).mode as libc::c_int == 207i32 {
-                        (*mem.offset(q as isize)).b16.s0 = 2i32 as uint16_t
+                        (*mem.offset(q as isize)).b16.s0 = 2i32 as u16
                     }
                 } else {
-                    (*mem.offset(q as isize)).b16.s1 = 1i32 as uint16_t;
+                    (*mem.offset(q as isize)).b16.s1 = 1i32 as u16;
                     (*mem.offset((q + 3i32) as isize)).b32.s1 =
                         (*mem.offset((p + 3i32) as isize)).b32.s1
                 }
@@ -22747,14 +22745,14 @@ pub unsafe extern "C" fn fin_align() {
                     t = (*mem.offset((s + 1i32) as isize)).b32.s1;
                     w = t;
                     u = 4999999i32 - 4i32;
-                    (*mem.offset(r as isize)).b16.s0 = 0i32 as uint16_t;
+                    (*mem.offset(r as isize)).b16.s0 = 0i32 as u16;
                     while n > 0i32 {
                         n -= 1;
                         s = (*mem.offset(s as isize)).b32.s1;
                         v = (*mem.offset((s + 1i32) as isize)).b32.s0;
                         (*mem.offset(u as isize)).b32.s1 = new_glue(v);
                         u = (*mem.offset(u as isize)).b32.s1;
-                        (*mem.offset(u as isize)).b16.s0 = (11i32 + 1i32) as uint16_t;
+                        (*mem.offset(u as isize)).b16.s0 = (11i32 + 1i32) as u16;
                         t = t + (*mem.offset((v + 1i32) as isize)).b32.s1;
                         if (*mem.offset((p + 5i32) as isize)).b16.s1 as libc::c_int == 1i32 {
                             if (*mem.offset(v as isize)).b16.s1 as libc::c_int
@@ -22785,7 +22783,7 @@ pub unsafe extern "C" fn fin_align() {
                             (*mem.offset((u + 1i32) as isize)).b32.s1 =
                                 (*mem.offset((s + 1i32) as isize)).b32.s1
                         } else {
-                            (*mem.offset(u as isize)).b16.s1 = 1i32 as uint16_t;
+                            (*mem.offset(u as isize)).b16.s1 = 1i32 as u16;
                             (*mem.offset((u + 3i32) as isize)).b32.s1 =
                                 (*mem.offset((s + 1i32) as isize)).b32.s1
                         }
@@ -22797,11 +22795,11 @@ pub unsafe extern "C" fn fin_align() {
                         (*mem.offset((r + 2i32) as isize)).b32.s1 =
                             (*mem.offset((q + 2i32) as isize)).b32.s1;
                         if t == (*mem.offset((r + 1i32) as isize)).b32.s1 {
-                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
-                            (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
+                            (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as u16;
                             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                         } else if t > (*mem.offset((r + 1i32) as isize)).b32.s1 {
-                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as uint16_t;
+                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
                             if (*mem.offset((r + 6i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                             } else {
@@ -22813,7 +22811,7 @@ pub unsafe extern "C" fn fin_align() {
                         } else {
                             (*mem.offset((r + 5i32) as isize)).b16.s0 =
                                 (*mem.offset((r + 5i32) as isize)).b16.s1;
-                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as uint16_t;
+                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
                             if (*mem.offset((r + 4i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                             } else if (*mem.offset((r + 5i32) as isize)).b16.s0 as libc::c_int
@@ -22831,16 +22829,16 @@ pub unsafe extern "C" fn fin_align() {
                             }
                         }
                         (*mem.offset((r + 1i32) as isize)).b32.s1 = w;
-                        (*mem.offset(r as isize)).b16.s1 = 0i32 as uint16_t
+                        (*mem.offset(r as isize)).b16.s1 = 0i32 as u16
                     } else {
                         (*mem.offset((r + 1i32) as isize)).b32.s1 =
                             (*mem.offset((q + 1i32) as isize)).b32.s1;
                         if t == (*mem.offset((r + 3i32) as isize)).b32.s1 {
-                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as uint16_t;
-                            (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 0i32 as u16;
+                            (*mem.offset((r + 5i32) as isize)).b16.s0 = 0i32 as u16;
                             (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                         } else if t > (*mem.offset((r + 3i32) as isize)).b32.s1 {
-                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as uint16_t;
+                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 1i32 as u16;
                             if (*mem.offset((r + 6i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                             } else {
@@ -22852,7 +22850,7 @@ pub unsafe extern "C" fn fin_align() {
                         } else {
                             (*mem.offset((r + 5i32) as isize)).b16.s0 =
                                 (*mem.offset((r + 5i32) as isize)).b16.s1;
-                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as uint16_t;
+                            (*mem.offset((r + 5i32) as isize)).b16.s1 = 2i32 as u16;
                             if (*mem.offset((r + 4i32) as isize)).b32.s1 == 0i32 {
                                 (*mem.offset((r + 6i32) as isize)).gr = 0.0f64
                             } else if (*mem.offset((r + 5i32) as isize)).b16.s0 as libc::c_int
@@ -22870,7 +22868,7 @@ pub unsafe extern "C" fn fin_align() {
                             }
                         }
                         (*mem.offset((r + 3i32) as isize)).b32.s1 = w;
-                        (*mem.offset(r as isize)).b16.s1 = 1i32 as uint16_t
+                        (*mem.offset(r as isize)).b16.s1 = 1i32 as u16
                     }
                     (*mem.offset((r + 4i32) as isize)).b32.s1 = 0i32;
                     if u != 4999999i32 - 4i32 {
@@ -23140,7 +23138,7 @@ pub unsafe extern "C" fn max_hyphenatable_length() -> int32_t {
     .s1;
 }
 #[no_mangle]
-pub unsafe extern "C" fn eTeX_enabled(mut b: bool, mut j: uint16_t, mut k: int32_t) -> bool {
+pub unsafe extern "C" fn eTeX_enabled(mut b: bool, mut j: u16, mut k: int32_t) -> bool {
     if !b {
         if file_line_error_style_p != 0 {
             print_file_line();
@@ -23162,11 +23160,11 @@ pub unsafe extern "C" fn show_save_groups() {
     let mut p: int32_t = 0;
     let mut m: libc::c_short = 0;
     let mut v: save_pointer = 0;
-    let mut l: uint16_t = 0;
+    let mut l: u16 = 0;
     let mut c: group_code = 0;
     let mut a: libc::c_schar = 0;
     let mut i: int32_t = 0;
-    let mut j: uint16_t = 0;
+    let mut j: u16 = 0;
     let mut s: *const libc::c_char = 0 as *const libc::c_char;
     p = nest_ptr;
     *nest.offset(p as isize) = cur_list;
@@ -23287,7 +23285,7 @@ pub unsafe extern "C" fn show_save_groups() {
                     current_block = 17441561948628420366;
                 } else if (*nest.offset(p as isize)).mode as libc::c_int == 207i32 {
                     print_cmd_chr(
-                        48i32 as uint16_t,
+                        48i32 as u16,
                         (*save_stack.offset((save_ptr - 2i32) as isize)).b32.s1,
                     );
                     current_block = 5407796692416645153;
@@ -23324,9 +23322,9 @@ pub unsafe extern "C" fn show_save_groups() {
                 if i != 0i32 {
                     if i < 0x40000000i32 {
                         if abs((*nest.offset(p as isize)).mode as libc::c_int) == 1i32 {
-                            j = 21i32 as uint16_t
+                            j = 21i32 as u16
                         } else {
-                            j = 22i32 as uint16_t
+                            j = 22i32 as u16
                         }
                         if i > 0i32 {
                             print_cmd_chr(j, 0i32);
@@ -23344,7 +23342,7 @@ pub unsafe extern "C" fn show_save_groups() {
                         print_int(i - 0x40000000i32);
                         print_char('=' as i32);
                     } else {
-                        print_cmd_chr(31i32 as uint16_t, i - (0x40010001i32 - 100i32));
+                        print_cmd_chr(31i32 as u16, i - (0x40010001i32 - 100i32));
                     }
                 }
                 current_block = 17798259985923180687;
@@ -23819,7 +23817,7 @@ pub unsafe extern "C" fn vert_break(mut p: int32_t, mut h: scaled_t, mut d: scal
                                 as *const u8 as *const libc::c_char;
                         error();
                         r = new_spec(q);
-                        (*mem.offset(r as isize)).b16.s0 = 0i32 as uint16_t;
+                        (*mem.offset(r as isize)).b16.s0 = 0i32 as u16;
                         delete_glue_ref(q);
                         (*mem.offset((p + 1i32) as isize)).b32.s0 = r;
                         q = r
@@ -24401,7 +24399,7 @@ pub unsafe extern "C" fn you_cant() {
         print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
     }
     print_cstr(b"You can\'t use `\x00" as *const u8 as *const libc::c_char);
-    print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+    print_cmd_chr(cur_cmd as u16, cur_chr);
     print_in_mode(cur_list.mode as int32_t);
 }
 #[no_mangle]
@@ -24499,14 +24497,14 @@ pub unsafe extern "C" fn append_glue() {
         let ref mut fresh75 = (*mem.offset(cur_val as isize)).b32.s1;
         *fresh75 -= 1;
         if s as libc::c_int > 4i32 {
-            (*mem.offset(cur_list.tail as isize)).b16.s0 = 99i32 as uint16_t
+            (*mem.offset(cur_list.tail as isize)).b16.s0 = 99i32 as u16
         }
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn append_kern() {
-    let mut s: uint16_t = 0;
-    s = cur_chr as uint16_t;
+    let mut s: u16 = 0;
+    s = cur_chr as u16;
     scan_dimen(s as libc::c_int == 99i32, 0i32 != 0, 0i32 != 0);
     (*mem.offset(cur_list.tail as isize)).b32.s1 = new_kern(cur_val);
     cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
@@ -24523,7 +24521,7 @@ pub unsafe extern "C" fn off_save() {
             print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
         }
         print_cstr(b"Extra \x00" as *const u8 as *const libc::c_char);
-        print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+        print_cmd_chr(cur_cmd as u16, cur_chr);
         help_ptr = 1i32 as libc::c_uchar;
         help_line[0] = b"Things are pretty mixed up, but I think the worst is over.\x00"
             as *const u8 as *const libc::c_char;
@@ -24564,7 +24562,7 @@ pub unsafe extern "C" fn off_save() {
         print_cstr(b" inserted\x00" as *const u8 as *const libc::c_char);
         begin_token_list(
             (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1,
-            5i32 as uint16_t,
+            5i32 as u16,
         );
         help_ptr = 5i32 as libc::c_uchar;
         help_line[4] = b"I\'ve inserted something that you may have forgotten.\x00" as *const u8
@@ -24826,7 +24824,7 @@ pub unsafe extern "C" fn normal_paragraph() {
                 + 256i32
                 + 256i32
                 + 0i32,
-            120i32 as uint16_t,
+            120i32 as u16,
             -0xfffffffi32,
         );
     }
@@ -24865,7 +24863,7 @@ pub unsafe extern "C" fn normal_paragraph() {
                 + 13i32
                 + 256i32
                 + 0i32,
-            120i32 as uint16_t,
+            120i32 as u16,
             -0xfffffffi32,
         );
     };
@@ -24945,7 +24943,7 @@ pub unsafe extern "C" fn box_end(mut box_context: int32_t) {
                         + 256i32
                         + 4i32
                         + cur_val,
-                    121i32 as uint16_t,
+                    121i32 as u16,
                     cur_box,
                 );
             } else {
@@ -24965,7 +24963,7 @@ pub unsafe extern "C" fn box_end(mut box_context: int32_t) {
                         + 256i32
                         + 4i32
                         + cur_val,
-                    121i32 as uint16_t,
+                    121i32 as u16,
                     cur_box,
                 );
             }
@@ -24992,7 +24990,7 @@ pub unsafe extern "C" fn box_end(mut box_context: int32_t) {
             {
                 append_glue();
                 (*mem.offset(cur_list.tail as isize)).b16.s0 =
-                    (box_context - (0x40010001i32 - 100i32)) as uint16_t;
+                    (box_context - (0x40010001i32 - 100i32)) as u16;
                 (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 = cur_box
             } else {
                 if file_line_error_style_p != 0 {
@@ -25025,7 +25023,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: int32_t) {
     let mut r: int32_t = 0;
     let mut fm: bool = false;
     let mut tx: int32_t = 0;
-    let mut m: uint16_t = 0;
+    let mut m: u16 = 0;
     let mut k: int32_t = 0;
     let mut n: int32_t = 0;
     match cur_chr {
@@ -25171,7 +25169,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: int32_t) {
                             fm = 0i32 != 0;
                             if q < hi_mem_min {
                                 if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 7i32 {
-                                    m = 1i32 as uint16_t;
+                                    m = 1i32 as u16;
                                     while m as libc::c_int
                                         <= (*mem.offset(q as isize)).b16.s0 as libc::c_int
                                     {
@@ -25297,7 +25295,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: int32_t) {
                         ))
                         .b32
                         .s1,
-                        12i32 as uint16_t,
+                        12i32 as u16,
                     );
                 }
             } else {
@@ -25338,7 +25336,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: int32_t) {
                         ))
                         .b32
                         .s1,
-                        11i32 as uint16_t,
+                        11i32 as u16,
                     );
                 }
             }
@@ -25820,7 +25818,7 @@ pub unsafe extern "C" fn new_graf(mut indented: bool) {
             ))
             .b32
             .s1,
-            8i32 as uint16_t,
+            8i32 as u16,
         );
     }
     if nest_ptr == 1i32 {
@@ -25901,7 +25899,7 @@ pub unsafe extern "C" fn head_for_vmode() {
         back_input();
         cur_tok = par_token;
         back_input();
-        cur_input.index = 5i32 as uint16_t
+        cur_input.index = 5i32 as u16
     };
 }
 #[no_mangle]
@@ -25971,8 +25969,8 @@ pub unsafe extern "C" fn make_mark() {
     p = scan_toks(0i32 != 0, 1i32 != 0);
     p = get_node(2i32);
     (*mem.offset((p + 1i32) as isize)).b32.s0 = c;
-    (*mem.offset(p as isize)).b16.s1 = 4i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = 0i32 as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 4i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = 0i32 as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = def_ref;
     (*mem.offset(cur_list.tail as isize)).b32.s1 = p;
     cur_list.tail = p;
@@ -25993,7 +25991,7 @@ pub unsafe extern "C" fn delete_last() {
     let mut r: int32_t = 0;
     let mut fm: bool = false;
     let mut tx: int32_t = 0;
-    let mut m: uint16_t = 0;
+    let mut m: u16 = 0;
     if cur_list.mode as libc::c_int == 1i32 && cur_list.tail == cur_list.head {
         /*1141: */
         if cur_chr != 10i32 || last_glue != 0x3fffffffi32 {
@@ -26040,7 +26038,7 @@ pub unsafe extern "C" fn delete_last() {
                     if !is_char_node(q) {
                         if (*mem.offset(q as isize)).b16.s1 as libc::c_int == 7i32 {
                             let mut for_end: int32_t = 0;
-                            m = 1i32 as uint16_t;
+                            m = 1i32 as u16;
                             for_end = (*mem.offset(q as isize)).b16.s0 as int32_t;
                             if m as libc::c_int <= for_end {
                                 loop {
@@ -26220,7 +26218,7 @@ pub unsafe extern "C" fn append_italic_correction() {
                         as *mut libc::c_void),
                 );
                 cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-                (*mem.offset(cur_list.tail as isize)).b16.s0 = 1i32 as uint16_t
+                (*mem.offset(cur_list.tail as isize)).b16.s0 = 1i32 as u16
             } else if (*mem.offset(cur_list.tail as isize)).b16.s0 as libc::c_int == 42i32 {
                 (*mem.offset(cur_list.tail as isize)).b32.s1 =
                     new_kern(real_get_native_glyph_italic_correction(
@@ -26228,7 +26226,7 @@ pub unsafe extern "C" fn append_italic_correction() {
                             as *mut libc::c_void,
                     ));
                 cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-                (*mem.offset(cur_list.tail as isize)).b16.s0 = 1i32 as uint16_t
+                (*mem.offset(cur_list.tail as isize)).b16.s0 = 1i32 as u16
             }
             return;
         } else {
@@ -26251,7 +26249,7 @@ pub unsafe extern "C" fn append_italic_correction() {
             .s1,
         );
         cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-        (*mem.offset(cur_list.tail as isize)).b16.s0 = 1i32 as uint16_t
+        (*mem.offset(cur_list.tail as isize)).b16.s0 = 1i32 as u16
     };
 }
 #[no_mangle]
@@ -26399,7 +26397,7 @@ pub unsafe extern "C" fn build_discretionary() {
                 (*mem.offset(cur_list.tail as isize)).b32.s1 = p
             }
             if n <= 65535i32 {
-                (*mem.offset(cur_list.tail as isize)).b16.s0 = n as uint16_t
+                (*mem.offset(cur_list.tail as isize)).b16.s0 = n as u16
             } else {
                 if file_line_error_style_p != 0 {
                     print_file_line();
@@ -26585,11 +26583,11 @@ pub unsafe extern "C" fn make_accent() {
                 )
             }
             r = new_kern(delta);
-            (*mem.offset(r as isize)).b16.s0 = 2i32 as uint16_t;
+            (*mem.offset(r as isize)).b16.s0 = 2i32 as u16;
             (*mem.offset(cur_list.tail as isize)).b32.s1 = r;
             (*mem.offset(r as isize)).b32.s1 = p;
             cur_list.tail = new_kern(-a - delta);
-            (*mem.offset(cur_list.tail as isize)).b16.s0 = 2i32 as uint16_t;
+            (*mem.offset(cur_list.tail as isize)).b16.s0 = 2i32 as u16;
             (*mem.offset(p as isize)).b32.s1 = cur_list.tail;
             p = q
         }
@@ -26608,7 +26606,7 @@ pub unsafe extern "C" fn align_error() {
             print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
         }
         print_cstr(b"Misplaced \x00" as *const u8 as *const libc::c_char);
-        print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+        print_cmd_chr(cur_cmd as u16, cur_chr);
         if cur_tok == 0x800000i32 + 38i32 {
             help_ptr = 6i32 as libc::c_uchar;
             help_line[5] = b"I can\'t figure out why you would want to use a tab mark\x00"
@@ -26795,7 +26793,7 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     }
                                     let ref mut fresh82 = (*mem.offset((r + 5i32) as isize)).ptr;
                                     *fresh82 = 0 as *mut libc::c_void;
-                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as u16;
                                     copy_native_glyph_info(p, r);
                                 }
                                 42 => {
@@ -26900,7 +26898,7 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     }
                                     let ref mut fresh82 = (*mem.offset((r + 5i32) as isize)).ptr;
                                     *fresh82 = 0 as *mut libc::c_void;
-                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as u16;
                                     copy_native_glyph_info(p, r);
                                 }
                                 42 => {
@@ -27005,7 +27003,7 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     }
                                     let ref mut fresh82 = (*mem.offset((r + 5i32) as isize)).ptr;
                                     *fresh82 = 0 as *mut libc::c_void;
-                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as u16;
                                     copy_native_glyph_info(p, r);
                                 }
                                 42 => {
@@ -27110,7 +27108,7 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     }
                                     let ref mut fresh82 = (*mem.offset((r + 5i32) as isize)).ptr;
                                     *fresh82 = 0 as *mut libc::c_void;
-                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as u16;
                                     copy_native_glyph_info(p, r);
                                 }
                                 42 => {
@@ -27215,7 +27213,7 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     }
                                     let ref mut fresh82 = (*mem.offset((r + 5i32) as isize)).ptr;
                                     *fresh82 = 0 as *mut libc::c_void;
-                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as u16;
                                     copy_native_glyph_info(p, r);
                                 }
                                 42 => {
@@ -27320,7 +27318,7 @@ pub unsafe extern "C" fn just_copy(mut p: int32_t, mut h: int32_t, mut t: int32_
                                     }
                                     let ref mut fresh82 = (*mem.offset((r + 5i32) as isize)).ptr;
                                     *fresh82 = 0 as *mut libc::c_void;
-                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as uint16_t;
+                                    (*mem.offset((r + 4i32) as isize)).b16.s0 = 0i32 as u16;
                                     copy_native_glyph_info(p, r);
                                 }
                                 42 => {
@@ -27462,7 +27460,7 @@ pub unsafe extern "C" fn just_reverse(mut p: int32_t) {
                     if (*mem.offset(LR_ptr as isize)).b32.s0
                         != 4i32 * ((*mem.offset(p as isize)).b16.s0 as libc::c_int / 4i32) + 3i32
                     {
-                        (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                        (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
                         LR_problems += 1
                     } else {
                         temp_ptr = LR_ptr;
@@ -27475,7 +27473,7 @@ pub unsafe extern "C" fn just_reverse(mut p: int32_t) {
                             *fresh83 = (*fresh83).wrapping_sub(1)
                         } else if m > -0xfffffffi32 {
                             m -= 1;
-                            (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t
+                            (*mem.offset(p as isize)).b16.s1 = 11i32 as u16
                         } else {
                             (*mem.offset((t + 1i32) as isize)).b32.s1 =
                                 (*mem.offset((p + 1i32) as isize)).b32.s1;
@@ -27498,7 +27496,7 @@ pub unsafe extern "C" fn just_reverse(mut p: int32_t) {
                         let ref mut fresh84 = (*mem.offset(p as isize)).b16.s0;
                         *fresh84 = (*fresh84).wrapping_add(1)
                     } else {
-                        (*mem.offset(p as isize)).b16.s1 = 11i32 as uint16_t;
+                        (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
                         m += 1
                     }
                 }
@@ -27618,9 +27616,9 @@ pub unsafe extern "C" fn do_register_command(mut a: small_number) {
                     print_nl_cstr(b"! \x00" as *const u8 as *const libc::c_char);
                 }
                 print_cstr(b"You can\'t use `\x00" as *const u8 as *const libc::c_char);
-                print_cmd_chr(cur_cmd as uint16_t, cur_chr);
+                print_cmd_chr(cur_cmd as u16, cur_chr);
                 print_cstr(b"\' after \x00" as *const u8 as *const libc::c_char);
-                print_cmd_chr(q as uint16_t, 0i32);
+                print_cmd_chr(q as u16, 0i32);
                 help_ptr = 1i32 as libc::c_uchar;
                 help_line[0] = b"I\'m forgetting what you said and not changing anything.\x00"
                     as *const u8 as *const libc::c_char;
@@ -27781,7 +27779,7 @@ pub unsafe extern "C" fn do_register_command(mut a: small_number) {
                     (*mem.offset((q + 1i32) as isize)).b32.s1
                         + (*mem.offset((r + 1i32) as isize)).b32.s1;
                 if (*mem.offset((q + 2i32) as isize)).b32.s1 == 0i32 {
-                    (*mem.offset(q as isize)).b16.s1 = 0i32 as uint16_t
+                    (*mem.offset(q as isize)).b16.s1 = 0i32 as u16
                 }
                 if (*mem.offset(q as isize)).b16.s1 as libc::c_int
                     == (*mem.offset(r as isize)).b16.s1 as libc::c_int
@@ -27798,7 +27796,7 @@ pub unsafe extern "C" fn do_register_command(mut a: small_number) {
                     (*mem.offset(q as isize)).b16.s1 = (*mem.offset(r as isize)).b16.s1
                 }
                 if (*mem.offset((q + 3i32) as isize)).b32.s1 == 0i32 {
-                    (*mem.offset(q as isize)).b16.s0 = 0i32 as uint16_t
+                    (*mem.offset(q as isize)).b16.s0 = 0i32 as u16
                 }
                 if (*mem.offset(q as isize)).b16.s0 as libc::c_int
                     == (*mem.offset(r as isize)).b16.s0 as libc::c_int
@@ -27899,9 +27897,9 @@ pub unsafe extern "C" fn do_register_command(mut a: small_number) {
                 sa_def(l, cur_val);
             }
         } else if a as libc::c_int >= 4i32 {
-            geq_define(l, 119i32 as uint16_t, cur_val);
+            geq_define(l, 119i32 as u16, cur_val);
         } else {
-            eq_define(l, 119i32 as uint16_t, cur_val);
+            eq_define(l, 119i32 as u16, cur_val);
         }
     };
 }
@@ -28077,9 +28075,9 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
         t = make_string()
     }
     if a as libc::c_int >= 4i32 {
-        geq_define(u, 89i32 as uint16_t, 0i32);
+        geq_define(u, 89i32 as u16, 0i32);
     } else {
-        eq_define(u, 89i32 as uint16_t, 0i32);
+        eq_define(u, 89i32 as u16, 0i32);
     }
     scan_optional_equals();
     scan_file_name();
@@ -28193,9 +28191,9 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
         }
     }
     if a as libc::c_int >= 4i32 {
-        geq_define(u, 89i32 as uint16_t, f);
+        geq_define(u, 89i32 as u16, f);
     } else {
-        eq_define(u, 89i32 as uint16_t, f);
+        eq_define(u, 89i32 as u16, f);
     }
     *eqtb.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 12i32 + f) as isize,
@@ -28316,7 +28314,7 @@ pub unsafe extern "C" fn shift_case() {
         }
         p = (*mem.offset(p as isize)).b32.s1
     }
-    begin_token_list((*mem.offset(def_ref as isize)).b32.s1, 3i32 as uint16_t);
+    begin_token_list((*mem.offset(def_ref as isize)).b32.s1, 3i32 as u16);
     (*mem.offset(def_ref as isize)).b32.s1 = avail;
     avail = def_ref;
 }
@@ -28416,7 +28414,7 @@ pub unsafe extern "C" fn show_whatever() {
                     print_nl_cstr(b"### level \x00" as *const u8 as *const libc::c_char);
                     print_int(n);
                     print_cstr(b": \x00" as *const u8 as *const libc::c_char);
-                    print_cmd_chr(107i32 as uint16_t, t as int32_t);
+                    print_cmd_chr(107i32 as u16, t as int32_t);
                     if m as libc::c_int == 2i32 {
                         print_esc_cstr(b"else\x00" as *const u8 as *const libc::c_char);
                     }
@@ -28659,7 +28657,7 @@ pub unsafe extern "C" fn do_extension() {
                     .b32
                     .s1,
                 )
-                    as uint16_t;
+                    as u16;
                 (*mem.offset((cur_list.tail + 1i32) as isize)).b16.s0 = norm_min(
                     (*eqtb.offset(
                         (1i32
@@ -28691,7 +28689,7 @@ pub unsafe extern "C" fn do_extension() {
                     .b32
                     .s1,
                 )
-                    as uint16_t
+                    as u16
             }
         }
         41 => {
@@ -28798,8 +28796,8 @@ pub unsafe extern "C" fn do_extension() {
                 ))
                 .b32
                 .s1
-                    as uint16_t;
-                (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 = cur_val as uint16_t;
+                    as u16;
+                (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 = cur_val as u16;
                 measure_native_glyph(
                     &mut *mem.offset(cur_list.tail as isize) as *mut memory_word
                         as *mut libc::c_void,
@@ -29148,7 +29146,7 @@ pub unsafe extern "C" fn fix_language() {
             ))
             .b32
             .s1,
-        ) as uint16_t;
+        ) as u16;
         (*mem.offset((cur_list.tail + 1i32) as isize)).b16.s0 = norm_min(
             (*eqtb.offset(
                 (1i32
@@ -29179,7 +29177,7 @@ pub unsafe extern "C" fn fix_language() {
             ))
             .b32
             .s1,
-        ) as uint16_t
+        ) as u16
     };
 }
 #[no_mangle]
@@ -29206,7 +29204,7 @@ pub unsafe extern "C" fn insert_src_special() {
         (*mem.offset(p as isize)).b32.s1 = get_avail();
         p = (*mem.offset(p as isize)).b32.s1;
         (*mem.offset(p as isize)).b32.s0 = 0x400000i32 + '}' as i32;
-        begin_token_list(toklist, 5i32 as uint16_t);
+        begin_token_list(toklist, 5i32 as u16);
         remember_source_info(*source_filename_stack.offset(in_open as isize), line);
     };
 }
@@ -29362,9 +29360,9 @@ pub unsafe extern "C" fn handle_right_brace() {
             if (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 < 255i32 {
                 (*mem.offset(cur_list.tail as isize)).b32.s1 = get_node(5i32);
                 cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-                (*mem.offset(cur_list.tail as isize)).b16.s1 = 3i32 as uint16_t;
+                (*mem.offset(cur_list.tail as isize)).b16.s1 = 3i32 as u16;
                 (*mem.offset(cur_list.tail as isize)).b16.s0 =
-                    (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 as uint16_t;
+                    (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 as u16;
                 (*mem.offset((cur_list.tail + 3i32) as isize)).b32.s1 =
                     (*mem.offset((p + 3i32) as isize)).b32.s1
                         + (*mem.offset((p + 2i32) as isize)).b32.s1;
@@ -29376,9 +29374,9 @@ pub unsafe extern "C" fn handle_right_brace() {
             } else {
                 (*mem.offset(cur_list.tail as isize)).b32.s1 = get_node(2i32);
                 cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-                (*mem.offset(cur_list.tail as isize)).b16.s1 = 5i32 as uint16_t;
+                (*mem.offset(cur_list.tail as isize)).b16.s1 = 5i32 as u16;
                 (*mem.offset(cur_list.tail as isize)).b16.s0 =
-                    (*save_stack.offset((save_ptr + 1i32) as isize)).b32.s1 as uint16_t;
+                    (*save_stack.offset((save_ptr + 1i32) as isize)).b32.s1 as u16;
                 (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 =
                     (*mem.offset((p + 5i32) as isize)).b32.s1;
                 delete_glue_ref(q);
@@ -29516,7 +29514,7 @@ pub unsafe extern "C" fn handle_right_brace() {
             pop_nest();
             (*mem.offset(cur_list.tail as isize)).b32.s1 = new_noad();
             cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-            (*mem.offset(cur_list.tail as isize)).b16.s1 = 29i32 as uint16_t;
+            (*mem.offset(cur_list.tail as isize)).b16.s1 = 29i32 as u16;
             (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 = 2i32;
             (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s0 = p
         }
@@ -29611,7 +29609,7 @@ pub unsafe extern "C" fn main_control() {
             ))
             .b32
             .s1,
-            13i32 as uint16_t,
+            13i32 as u16,
         );
     }
     'c_125208: loop {
@@ -29720,7 +29718,7 @@ pub unsafe extern "C" fn main_control() {
                                 back_input();
                                 begin_token_list(
                                     (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1,
-                                    17i32 as uint16_t,
+                                    17i32 as u16,
                                 );
                                 continue 'c_125208;
                             }
@@ -29962,7 +29960,7 @@ pub unsafe extern "C" fn main_control() {
                                     ))
                                     .b32
                                     .s1 > 0i32,
-                                    cur_cmd as uint16_t,
+                                    cur_cmd as u16,
                                     cur_chr,
                                 ) {
                                     (*mem.offset(cur_list.tail as isize)).b32.s1 =
@@ -30160,7 +30158,7 @@ pub unsafe extern "C" fn main_control() {
                         257 => {
                             (*mem.offset(cur_list.tail as isize)).b32.s1 = new_noad();
                             cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-                            (*mem.offset(cur_list.tail as isize)).b16.s1 = cur_chr as uint16_t;
+                            (*mem.offset(cur_list.tail as isize)).b16.s1 = cur_chr as u16;
                             scan_math(cur_list.tail + 1i32);
                             continue 'c_125208;
                         }
@@ -30222,7 +30220,7 @@ pub unsafe extern "C" fn main_control() {
                                     ))
                                     .b32
                                     .s1,
-                                    12i32 as uint16_t,
+                                    12i32 as u16,
                                 );
                             }
                             continue 'c_125208;
@@ -30236,7 +30234,7 @@ pub unsafe extern "C" fn main_control() {
                         262 => {
                             (*mem.offset(cur_list.tail as isize)).b32.s1 = new_glue(0i32);
                             cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-                            (*mem.offset(cur_list.tail as isize)).b16.s0 = 98i32 as uint16_t;
+                            (*mem.offset(cur_list.tail as isize)).b16.s0 = 98i32 as u16;
                             continue 'c_125208;
                         }
                         261 => {
@@ -30534,10 +30532,10 @@ pub unsafe extern "C" fn main_control() {
                                     }
                                     cur_tok = cur_cmd as libc::c_int * 0x200000i32 + cur_chr;
                                     back_input();
-                                    cur_input.index = 4i32 as uint16_t;
+                                    cur_input.index = 4i32 as u16;
                                     begin_token_list(
                                         (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1,
-                                        17i32 as uint16_t,
+                                        17i32 as u16,
                                     );
                                     continue 'c_125208;
                                 }
@@ -30554,10 +30552,10 @@ pub unsafe extern "C" fn main_control() {
                                 }
                                 cur_tok = cur_cmd as libc::c_int * 0x200000i32 + cur_chr;
                                 back_input();
-                                cur_input.index = 4i32 as uint16_t;
+                                cur_input.index = 4i32 as u16;
                                 begin_token_list(
                                     (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1,
-                                    17i32 as uint16_t,
+                                    17i32 as u16,
                                 );
                                 prev_class = 4096i32 - 1i32;
                                 current_block = 9706274459985797855;
@@ -30709,7 +30707,7 @@ pub unsafe extern "C" fn main_control() {
                             back_input();
                             begin_token_list(
                                 (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1,
-                                17i32 as uint16_t,
+                                17i32 as u16,
                             );
                         }
                     }
@@ -31421,7 +31419,7 @@ pub unsafe extern "C" fn main_control() {
                                             .b32
                                             .s1,
                                         );
-                                        (*mem.offset(temp_ptr as isize)).b16.s0 = 3i32 as uint16_t;
+                                        (*mem.offset(temp_ptr as isize)).b16.s0 = 3i32 as u16;
                                         (*mem.offset(temp_ptr as isize)).b32.s1 =
                                             (*mem.offset(main_p as isize)).b32.s1;
                                         (*mem.offset(main_p as isize)).b32.s1 = temp_ptr
@@ -31547,10 +31545,10 @@ pub unsafe extern "C" fn main_control() {
                                 }
                                 cur_tok = cur_cmd as libc::c_int * 0x200000i32 + cur_chr;
                                 back_input();
-                                cur_input.index = 4i32 as uint16_t;
+                                cur_input.index = 4i32 as u16;
                                 begin_token_list(
                                     (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1,
-                                    17i32 as uint16_t,
+                                    17i32 as u16,
                                 );
                                 continue 'c_125208;
                             }
@@ -31567,10 +31565,10 @@ pub unsafe extern "C" fn main_control() {
                             }
                             cur_tok = cur_cmd as libc::c_int * 0x200000i32 + cur_chr;
                             back_input();
-                            cur_input.index = 4i32 as uint16_t;
+                            cur_input.index = 4i32 as u16;
                             begin_token_list(
                                 (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1,
-                                17i32 as uint16_t,
+                                17i32 as u16,
                             );
                             prev_class = 4096i32 - 1i32;
                             continue 'c_125208;
@@ -31641,9 +31639,9 @@ pub unsafe extern "C" fn main_control() {
                     avail = (*mem.offset(lig_stack as isize)).b32.s1;
                     (*mem.offset(lig_stack as isize)).b32.s1 = -0xfffffffi32
                 }
-                (*mem.offset(lig_stack as isize)).b16.s1 = main_f as uint16_t;
+                (*mem.offset(lig_stack as isize)).b16.s1 = main_f as u16;
                 cur_l = cur_chr;
-                (*mem.offset(lig_stack as isize)).b16.s0 = cur_l as uint16_t;
+                (*mem.offset(lig_stack as isize)).b16.s0 = cur_l as u16;
                 cur_q = cur_list.tail;
                 if cancel_boundary {
                     cancel_boundary = 0i32 != 0;
@@ -31668,9 +31666,9 @@ pub unsafe extern "C" fn main_control() {
                         _ =>
                         /*main_loop_move 2 */
                         {
-                            if effective_char(0i32 != 0, main_f, cur_chr as uint16_t)
+                            if effective_char(0i32 != 0, main_f, cur_chr as u16)
                                 > *font_ec.offset(main_f as isize) as libc::c_int
-                                || effective_char(0i32 != 0, main_f, cur_chr as uint16_t)
+                                || effective_char(0i32 != 0, main_f, cur_chr as u16)
                                     < *font_bc.offset(main_f as isize) as libc::c_int
                             {
                                 char_warning(main_f, cur_chr);
@@ -31678,7 +31676,7 @@ pub unsafe extern "C" fn main_control() {
                                 avail = lig_stack;
                                 continue 'c_125208;
                             } else {
-                                main_i = effective_char_info(main_f, cur_l as uint16_t);
+                                main_i = effective_char_info(main_f, cur_l as u16);
                                 if !(main_i.s3 as libc::c_int > 0i32) {
                                     char_warning(main_f, cur_chr);
                                     (*mem.offset(lig_stack as isize)).b32.s1 = avail;
@@ -31715,12 +31713,12 @@ pub unsafe extern "C" fn main_control() {
                                                 if ligature_present {
                                                     main_p = new_ligature(
                                                         main_f,
-                                                        cur_l as uint16_t,
+                                                        cur_l as u16,
                                                         (*mem.offset(cur_q as isize)).b32.s1,
                                                     );
                                                     if lft_hit {
                                                         (*mem.offset(main_p as isize)).b16.s0 =
-                                                            2i32 as uint16_t;
+                                                            2i32 as u16;
                                                         lft_hit = 0i32 != 0
                                                     }
                                                     if rt_hit {
@@ -31777,7 +31775,7 @@ pub unsafe extern "C" fn main_control() {
                                                             + effective_char(
                                                                 1i32 != 0,
                                                                 main_f,
-                                                                cur_l as uint16_t,
+                                                                cur_l as u16,
                                                             ))
                                                             as isize,
                                                     ))
@@ -31788,24 +31786,24 @@ pub unsafe extern "C" fn main_control() {
                                                 2 | 6 => {
                                                     cur_r = main_j.s0 as int32_t;
                                                     if lig_stack == -0xfffffffi32 {
-                                                        lig_stack = new_lig_item(cur_r as uint16_t);
+                                                        lig_stack = new_lig_item(cur_r as u16);
                                                         bchar = 65536i32
                                                     } else if is_char_node(lig_stack) {
                                                         main_p = lig_stack;
-                                                        lig_stack = new_lig_item(cur_r as uint16_t);
+                                                        lig_stack = new_lig_item(cur_r as u16);
                                                         (*mem.offset((lig_stack + 1i32) as isize))
                                                             .b32
                                                             .s1 = main_p
                                                     } else {
                                                         (*mem.offset(lig_stack as isize)).b16.s0 =
-                                                            cur_r as uint16_t
+                                                            cur_r as u16
                                                     }
                                                     current_block = 5062343687657450649;
                                                 }
                                                 3 => {
                                                     cur_r = main_j.s0 as int32_t;
                                                     main_p = lig_stack;
-                                                    lig_stack = new_lig_item(cur_r as uint16_t);
+                                                    lig_stack = new_lig_item(cur_r as u16);
                                                     (*mem.offset(lig_stack as isize)).b32.s1 =
                                                         main_p;
                                                     current_block = 5062343687657450649;
@@ -31828,7 +31826,7 @@ pub unsafe extern "C" fn main_control() {
                                                         if ligature_present {
                                                             main_p = new_ligature(
                                                                 main_f,
-                                                                cur_l as uint16_t,
+                                                                cur_l as u16,
                                                                 (*mem.offset(cur_q as isize))
                                                                     .b32
                                                                     .s1,
@@ -31836,7 +31834,7 @@ pub unsafe extern "C" fn main_control() {
                                                             if lft_hit {
                                                                 (*mem.offset(main_p as isize))
                                                                     .b16
-                                                                    .s0 = 2i32 as uint16_t;
+                                                                    .s0 = 2i32 as u16;
                                                                 lft_hit = 0i32 != 0
                                                             }
                                                             (*mem.offset(cur_q as isize)).b32.s1 =
@@ -31866,7 +31864,7 @@ pub unsafe extern "C" fn main_control() {
                                                             + effective_char(
                                                                 1i32 != 0,
                                                                 main_f,
-                                                                cur_l as uint16_t,
+                                                                cur_l as u16,
                                                             ))
                                                             as isize,
                                                     ))
@@ -32094,13 +32092,13 @@ pub unsafe extern "C" fn main_control() {
                                                             * 0x200000i32
                                                             + cur_chr;
                                                         back_input();
-                                                        cur_input.index = 4i32 as uint16_t;
+                                                        cur_input.index = 4i32 as u16;
                                                         begin_token_list(
                                                             (*mem
                                                                 .offset((cur_ptr + 1i32) as isize))
                                                             .b32
                                                             .s1,
-                                                            17i32 as uint16_t,
+                                                            17i32 as u16,
                                                         );
                                                         continue 'c_125208;
                                                     }
@@ -32118,12 +32116,12 @@ pub unsafe extern "C" fn main_control() {
                                                     cur_tok = cur_cmd as libc::c_int * 0x200000i32
                                                         + cur_chr;
                                                     back_input();
-                                                    cur_input.index = 4i32 as uint16_t;
+                                                    cur_input.index = 4i32 as u16;
                                                     begin_token_list(
                                                         (*mem.offset((cur_ptr + 1i32) as isize))
                                                             .b32
                                                             .s1,
-                                                        17i32 as uint16_t,
+                                                        17i32 as u16,
                                                     );
                                                     prev_class = 4096i32 - 1i32;
                                                     continue 'c_125208;
@@ -32139,10 +32137,10 @@ pub unsafe extern "C" fn main_control() {
                                             (*mem.offset(lig_stack as isize)).b32.s1 = -0xfffffffi32
                                         }
                                         (*mem.offset(lig_stack as isize)).b16.s1 =
-                                            main_f as uint16_t;
+                                            main_f as u16;
                                         cur_r = cur_chr;
                                         (*mem.offset(lig_stack as isize)).b16.s0 =
-                                            cur_r as uint16_t;
+                                            cur_r as u16;
                                         if cur_r == false_bchar {
                                             cur_r = 65536i32
                                         }
@@ -32167,12 +32165,12 @@ pub unsafe extern "C" fn main_control() {
                                         if ligature_present {
                                             main_p = new_ligature(
                                                 main_f,
-                                                cur_l as uint16_t,
+                                                cur_l as u16,
                                                 (*mem.offset(cur_q as isize)).b32.s1,
                                             );
                                             if lft_hit {
                                                 (*mem.offset(main_p as isize)).b16.s0 =
-                                                    2i32 as uint16_t;
+                                                    2i32 as u16;
                                                 lft_hit = 0i32 != 0
                                             }
                                             if rt_hit {
@@ -32240,7 +32238,7 @@ pub unsafe extern "C" fn main_control() {
                                     free_node(temp_ptr, 2i32);
                                     main_i = (*font_info.offset(
                                         (*char_base.offset(main_f as isize)
-                                            + effective_char(1i32 != 0, main_f, cur_l as uint16_t))
+                                            + effective_char(1i32 != 0, main_f, cur_l as u16))
                                             as isize,
                                     ))
                                     .b16;
@@ -32335,7 +32333,7 @@ pub unsafe extern "C" fn main_control() {
                         back_input();
                         begin_token_list(
                             (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1,
-                            17i32 as uint16_t,
+                            17i32 as u16,
                         );
                         continue;
                     }
@@ -32774,8 +32772,8 @@ pub unsafe extern "C" fn do_assignments() {
 pub unsafe extern "C" fn new_whatsit(mut s: small_number, mut w: small_number) {
     let mut p: int32_t = 0;
     p = get_node(w as int32_t);
-    (*mem.offset(p as isize)).b16.s1 = 8i32 as uint16_t;
-    (*mem.offset(p as isize)).b16.s0 = s as uint16_t;
+    (*mem.offset(p as isize)).b16.s1 = 8i32 as u16;
+    (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset(cur_list.tail as isize)).b32.s1 = p;
     cur_list.tail = p;
 }

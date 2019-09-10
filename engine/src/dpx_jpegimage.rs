@@ -128,10 +128,8 @@ extern "C" {
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
 pub type __uint8_t = libc::c_uchar;
-pub type __uint16_t = libc::c_ushort;
 pub type __ssize_t = libc::c_long;
 pub type uint8_t = __uint8_t;
-pub type uint16_t = __uint16_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -152,8 +150,8 @@ pub const JM_SOI: JPEG_marker = 216;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct JPEG_info {
-    pub height: uint16_t,
-    pub width: uint16_t,
+    pub height: u16,
+    pub width: u16,
     pub bits_per_component: uint8_t,
     pub num_components: uint8_t,
     pub xdpi: libc::c_double,
@@ -222,9 +220,9 @@ pub struct JPEG_APPn_XMP {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct JPEG_APPn_Adobe {
-    pub version: uint16_t,
-    pub flag0: uint16_t,
-    pub flag1: uint16_t,
+    pub version: u16,
+    pub flag0: u16,
+    pub flag1: u16,
     pub transform: uint8_t,
     /* color transform code */
 }
@@ -239,10 +237,10 @@ pub struct JPEG_APPn_ICC {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct JPEG_APPn_JFIF {
-    pub version: uint16_t,
+    pub version: u16,
     pub units: uint8_t,
-    pub Xdensity: uint16_t,
-    pub Ydensity: uint16_t,
+    pub Xdensity: u16,
+    pub Ydensity: u16,
     pub Xthumbnail: uint8_t,
     pub Ythumbnail: uint8_t,
     pub thumbnail: *mut libc::c_uchar,
@@ -475,8 +473,8 @@ unsafe extern "C" fn jpeg_get_density(
     *ydensity = 72.0f64 / (*j_info).ydpi;
 }
 unsafe extern "C" fn JPEG_info_init(mut j_info: *mut JPEG_info) {
-    (*j_info).width = 0i32 as uint16_t;
-    (*j_info).height = 0i32 as uint16_t;
+    (*j_info).width = 0i32 as u16;
+    (*j_info).height = 0i32 as u16;
     (*j_info).bits_per_component = 0i32 as uint8_t;
     (*j_info).num_components = 0i32 as uint8_t;
     (*j_info).xdpi = 0.0f64;
