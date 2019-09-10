@@ -387,7 +387,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
     return 0 as *mut libc::c_void;
 }
-static mut verbose: u8 = 0i32 as u8;
+static mut verbose: u8 = 0_u8;
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: i32) {
     verbose = level as u8;

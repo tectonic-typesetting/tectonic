@@ -616,7 +616,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         0i32,
         256i32 as u64,
     );
-    length = tt_get_ps_fontname(sfont, fontname.as_mut_ptr(), 255i32 as u16) as i32;
+    length = tt_get_ps_fontname(sfont, fontname.as_mut_ptr(), 255_u16) as i32;
     if length < 1i32 {
         length = (if strlen(ident) < 255i32 as u64 {
             strlen(ident)
@@ -889,7 +889,7 @@ unsafe extern "C" fn do_builtin_encoding(
     let mut code: i32 = 0;
     let mut count: i32 = 0;
     let mut widths: [f64; 256] = [0.; 256];
-    ttcm = tt_cmap_read(sfont, 1u32 as u16, 0u32 as u16);
+    ttcm = tt_cmap_read(sfont, 1_u16, 0_u16);
     if ttcm.is_null() {
         dpx_warning(
             b"Could not read Mac-Roman TrueType cmap table...\x00" as *const u8 as *const i8,
@@ -933,7 +933,7 @@ unsafe extern "C" fn do_builtin_encoding(
                     code,
                     pdf_font_get_ident(font),
                 );
-                idx = 0i32 as u16
+                idx = 0_u16
             } else {
                 idx = tt_find_glyph(glyphs, gid);
                 if idx as i32 == 0i32 {
@@ -1187,7 +1187,7 @@ unsafe extern "C" fn composeglyph(
         ' ' as i32 as i8,
         ' ' as i32 as i8,
         ' ' as i32 as i8,
-        0i32 as i8,
+        0_i8,
     ];
     if !glyphs.is_null() && n_glyphs > 0i32 && !gm.is_null() && !gid.is_null() {
     } else {
@@ -1338,7 +1338,7 @@ unsafe extern "C" fn findparanoiac(
     mut gm: *mut glyph_mapper,
 ) -> i32 {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
-    let mut idx: u16 = 0u32 as u16;
+    let mut idx: u16 = 0_u16;
     let mut error: i32 = 0i32;
     agln = agl_lookup_list(glyphname);
     while !agln.is_null() && idx as i32 == 0i32 {
@@ -1519,9 +1519,9 @@ unsafe extern "C" fn resolve_glyph(
 unsafe extern "C" fn setup_glyph_mapper(mut gm: *mut glyph_mapper, mut sfont: *mut sfnt) -> i32 {
     (*gm).sfont = sfont;
     (*gm).nametogid = tt_read_post_table(sfont);
-    (*gm).codetogid = tt_cmap_read(sfont, 3u32 as u16, 10u32 as u16);
+    (*gm).codetogid = tt_cmap_read(sfont, 3_u16, 10_u16);
     if (*gm).codetogid.is_null() {
-        (*gm).codetogid = tt_cmap_read(sfont, 3u32 as u16, 1u32 as u16)
+        (*gm).codetogid = tt_cmap_read(sfont, 3_u16, 1_u16)
     }
     if (*gm).nametogid.is_null() && (*gm).codetogid.is_null() {
         return -1i32;
@@ -1621,7 +1621,7 @@ unsafe extern "C" fn do_custom_encoding(
                 dpx_warning(
                     b">> Maybe incorrect encoding specified?\x00" as *const u8 as *const i8,
                 );
-                idx = 0i32 as u16
+                idx = 0_u16
             } else {
                 if !strchr(*encoding.offset(code as isize), '_' as i32).is_null() {
                     error = findcomposite(*encoding.offset(code as isize), &mut gid, &mut gm)

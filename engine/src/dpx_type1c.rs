@@ -1256,7 +1256,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
                     /* Already have this glyph. */
                     (*(*encoding).supp.offset((*encoding).num_supps as isize)).code = code as card8; /* Used but multiply-encoded. */
                     (*(*encoding).supp.offset((*encoding).num_supps as isize)).glyph = sid;
-                    *usedchars.offset(code as isize) = 0i32 as i8;
+                    *usedchars.offset(code as isize) = 0_i8;
                     (*encoding).num_supps = ((*encoding).num_supps as i32 + 1i32) as card8;
                     break;
                 } else {
@@ -1275,7 +1275,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
                     dpx_warning(
                         b"Maybe incorrect encoding specified.\x00" as *const u8 as *const i8,
                     );
-                    *usedchars.offset(code as isize) = 0i32 as i8
+                    *usedchars.offset(code as isize) = 0_i8
                 } else {
                     pdf_add_stream(
                         pdfcharset,

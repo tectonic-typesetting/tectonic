@@ -1252,7 +1252,7 @@ unsafe extern "C" fn add_CIDVMetrics(
                     + 0.5f64,
             ) * 1i32 as f64;
             vertOriginY = defaultVertOriginY;
-            i = 0i32 as u16;
+            i = 0_u16;
             while (i as i32) < (*vorg).numVertOriginYMetrics as i32
                 && gid as i32 > (*(*vorg).vertOriginYMetrics.offset(i as isize)).glyphIndex as i32
             {
@@ -2721,8 +2721,8 @@ unsafe extern "C" fn load_base_CMap(
     let mut cmap: *mut CMap = 0 as *mut CMap;
     let mut cmap_name: *mut i8 = 0 as *mut i8;
     let mut gid: card16 = 0;
-    let mut range_min: [u8; 4] = [0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8];
-    let mut range_max: [u8; 4] = [0x7fi32 as u8, 0xffi32 as u8, 0xffi32 as u8, 0xffi32 as u8];
+    let mut range_min: [u8; 4] = [0; 4];
+    let mut range_max: [u8; 4] = [0x7f, 0xff, 0xff, 0xff];
     cmap_name = new((strlen(font_name)
         .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const i8))
         .wrapping_add(1i32 as u64) as u32 as u64)
@@ -2874,8 +2874,8 @@ unsafe extern "C" fn create_ToUnicode_stream(
     let mut wbuf: [u8; 1024] = [0; 1024];
     let mut p: *mut u8 = 0 as *mut u8;
     let mut endptr: *mut u8 = 0 as *mut u8;
-    static mut range_min: [u8; 2] = [0i32 as u8, 0i32 as u8];
-    static mut range_max: [u8; 2] = [0xffi32 as u8, 0xffi32 as u8];
+    static mut range_min: [u8; 2] = [0; 2];
+    static mut range_max: [u8; 2] = [0xff, 0xff];
     if font_name.is_null() || used_glyphs.is_null() {
         return 0 as *mut pdf_obj;
     }

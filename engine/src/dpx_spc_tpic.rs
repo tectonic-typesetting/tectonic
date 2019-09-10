@@ -303,7 +303,7 @@ unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: i32) -> *mut pdf_obj
         pdf_add_dict(
             dict,
             pdf_new_name(b"AIS\x00" as *const u8 as *const i8),
-            pdf_new_boolean(1i32 as i8),
+            pdf_new_boolean(1_i8),
         );
     }
     pdf_add_dict(
@@ -393,7 +393,7 @@ unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i3
     };
     pdf_color_get_current(&mut sc, &mut fc);
     pdf_color_brighten_color(&mut new_fc, fc, g);
-    pdf_dev_set_color(&mut new_fc, 0x20i32 as i8, 0i32);
+    pdf_dev_set_color(&mut new_fc, 0x20_i8, 0i32);
     return 0i32;
 }
 unsafe extern "C" fn set_styles(
@@ -1219,7 +1219,7 @@ unsafe extern "C" fn spc_parse_kvpairs(mut ap: *mut spc_arg) -> *mut pdf_obj {
             }
         } else {
             /* Treated as 'flag' */
-            pdf_add_dict(dict, pdf_new_name(kp), pdf_new_boolean(1i32 as i8));
+            pdf_add_dict(dict, pdf_new_name(kp), pdf_new_boolean(1_i8));
         }
         free(kp as *mut libc::c_void);
         if error == 0 {

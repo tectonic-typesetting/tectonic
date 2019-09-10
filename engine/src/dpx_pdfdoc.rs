@@ -712,11 +712,11 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     return 0i32 != 0;
 }
 static mut verbose: i32 = 0i32;
-static mut manual_thumb_enabled: i8 = 0i32 as i8;
+static mut manual_thumb_enabled: i8 = 0_i8;
 static mut thumb_basename: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_enable_manual_thumbnails() {
-    manual_thumb_enabled = 1i32 as i8;
+    manual_thumb_enabled = 1_i8;
     // without HAVE_LIBPNG:
     // dpx_warning("Manual thumbnail is not supported without the libpng library.");
 }
@@ -2665,7 +2665,7 @@ unsafe extern "C" fn warn_undef_dests(mut dests: *mut ht_table, mut gotos: *mut 
                 key as *const libc::c_void,
                 keylen as u64,
             );
-            *dest.offset(keylen as isize) = 0i32 as i8;
+            *dest.offset(keylen as isize) = 0_i8;
             dpx_warning(
                 b"PDF destination \"%s\" not defined.\x00" as *const u8 as *const i8,
                 dest,
@@ -3515,7 +3515,7 @@ unsafe extern "C" fn doc_fill_page_background(mut p: *mut pdf_doc) {
     saved_content = (*currentpage).contents;
     (*currentpage).contents = (*currentpage).background;
     pdf_dev_gsave();
-    pdf_dev_set_color(&mut bgcolor, 0x20i32 as i8, 0i32);
+    pdf_dev_set_color(&mut bgcolor, 0x20_i8, 0i32);
     pdf_dev_rectfill(r.llx, r.lly, r.urx - r.llx, r.ury - r.lly);
     pdf_dev_grestore();
     (*currentpage).contents = saved_content;
@@ -3626,7 +3626,7 @@ pub unsafe extern "C" fn pdf_open_document(
                     .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
             ) as *mut i8;
             strncpy(thumb_basename, filename, fn_len.wrapping_sub(4i32 as u64));
-            *thumb_basename.offset(fn_len.wrapping_sub(4i32 as u64) as isize) = 0i32 as i8
+            *thumb_basename.offset(fn_len.wrapping_sub(4i32 as u64) as isize) = 0_i8
         } else {
             thumb_basename = new((fn_len.wrapping_add(1i32 as u64) as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<i8>() as u64)

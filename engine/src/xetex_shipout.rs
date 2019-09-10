@@ -725,7 +725,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
         print_char(' ' as i32);
     }
     print_char('[' as i32);
-    j = 9i32 as u8;
+    j = 9_u8;
     while j as i32 > 0i32
         && (*eqtb.offset(
             (1i32
@@ -760,7 +760,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
     {
         j = j.wrapping_sub(1)
     }
-    k = 0i32 as u8;
+    k = 0_u8;
     while k as i32 <= j as i32 {
         print_int(
             (*eqtb.offset(
@@ -916,7 +916,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"Huge page cannot be shipped out\x00" as *const u8 as *const i8);
-        help_ptr = 2i32 as u8;
+        help_ptr = 2_u8;
         help_line[1] =
             b"The page just created is more than 18 feet tall or\x00" as *const u8 as *const i8;
         help_line[0] = b"more than 18 feet wide, so I suspect something went wrong.\x00"
@@ -1406,7 +1406,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
         /* ... resuming 662 ... Emit per-page preamble. */
         page_loc = dvi_offset + dvi_ptr;
         dvi_out(139i32 as eight_bits);
-        k = 0i32 as u8;
+        k = 0_u8;
         while (k as i32) < 10i32 {
             dvi_four(
                 (*eqtb.offset(
@@ -2021,7 +2021,7 @@ unsafe extern "C" fn hlist_out() {
             cur_dir = 0i32 as small_number;
             cur_h -= (*mem.offset((this_box + 1i32) as isize)).b32.s1
         } else {
-            (*mem.offset(this_box as isize)).b16.s0 = 0i32 as u16
+            (*mem.offset(this_box as isize)).b16.s0 = 0_u16
         }
     }
     if cur_dir as i32 == 1i32 && (*mem.offset(this_box as isize)).b16.s0 as i32 != 1i32 {
@@ -2036,7 +2036,7 @@ unsafe extern "C" fn hlist_out() {
             reverse(this_box, -0xfffffffi32, &mut cur_g, &mut cur_glue);
         (*mem.offset((p + 1i32) as isize)).b32.s1 = -cur_h;
         cur_h = save_h;
-        (*mem.offset(this_box as isize)).b16.s0 = 1i32 as u16
+        (*mem.offset(this_box as isize)).b16.s0 = 1_u16
     }
     /* ... resuming 639 ... */
     left_edge = cur_h;
@@ -2405,7 +2405,7 @@ unsafe extern "C" fn hlist_out() {
                                 if ((*mem.offset(p as isize)).b16.s0 as
                                         i32) < 100i32 {
                                     (*mem.offset(p as isize)).b16.s1 =
-                                        11i32 as u16;
+                                        11_u16;
                                     (*mem.offset((p + 1i32) as isize)).b32.s1
                                         = rule_wd
                                 } else {
@@ -2623,7 +2623,7 @@ unsafe extern "C" fn hlist_out() {
                 }
             }
             330672039582001856 => {
-                (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
+                (*mem.offset(p as isize)).b16.s1 = 11_u16;
                 cur_h += (*mem.offset((p + 1i32) as isize)).b32.s1;
                 current_block = 13889995436552222973;
             }
@@ -3180,7 +3180,7 @@ unsafe extern "C" fn reverse(
                                     *fresh3 -= 1
                                 }
                                 if ((*mem.offset(p as isize)).b16.s0 as i32) < 100i32 {
-                                    (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
+                                    (*mem.offset(p as isize)).b16.s1 = 11_u16;
                                     (*mem.offset((p + 1i32) as isize)).b32.s1 = rule_wd
                                 } else {
                                     g = get_node(4i32);
@@ -3231,7 +3231,7 @@ unsafe extern "C" fn reverse(
                     if (*mem.offset(LR_ptr as isize)).b32.s0
                         != 4i32 * ((*mem.offset(p as isize)).b16.s0 as i32 / 4i32) + 3i32
                     {
-                        (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
+                        (*mem.offset(p as isize)).b16.s1 = 11_u16;
                         LR_problems += 1
                     } else {
                         temp_ptr = LR_ptr;
@@ -3243,7 +3243,7 @@ unsafe extern "C" fn reverse(
                             let ref mut fresh4 = (*mem.offset(p as isize)).b16.s0;
                             *fresh4 = (*fresh4).wrapping_sub(1)
                         } else {
-                            (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
+                            (*mem.offset(p as isize)).b16.s1 = 11_u16;
                             if m > -0xfffffffi32 {
                                 m -= 1
                             } else {
@@ -3271,7 +3271,7 @@ unsafe extern "C" fn reverse(
                         let ref mut fresh5 = (*mem.offset(p as isize)).b16.s0;
                         *fresh5 = (*fresh5).wrapping_add(1)
                     } else {
-                        (*mem.offset(p as isize)).b16.s1 = 11i32 as u16;
+                        (*mem.offset(p as isize)).b16.s1 = 11_u16;
                         m += 1
                     }
                     current_block = 3812947724376655173;
@@ -3311,7 +3311,7 @@ unsafe extern "C" fn reverse(
 pub unsafe extern "C" fn new_edge(mut s: small_number, mut w: scaled_t) -> i32 {
     let mut p: i32 = 0;
     p = get_node(3i32);
-    (*mem.offset(p as isize)).b16.s1 = 14i32 as u16;
+    (*mem.offset(p as isize)).b16.s1 = 14_u16;
     (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = w;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
@@ -3767,13 +3767,13 @@ unsafe extern "C" fn write_out(mut p: i32) {
     (*mem.offset(q as isize)).b32.s1 = r;
     (*mem.offset(r as isize)).b32.s0 = 0x1ffffffi32
         + (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 8i32);
-    begin_token_list(q, 5i32 as u16);
-    begin_token_list((*mem.offset((p + 1i32) as isize)).b32.s1, 18i32 as u16);
+    begin_token_list(q, 5_u16);
+    begin_token_list((*mem.offset((p + 1i32) as isize)).b32.s1, 18_u16);
     q = get_avail();
     (*mem.offset(q as isize)).b32.s0 = 0x200000i32 + '{' as i32;
-    begin_token_list(q, 5i32 as u16);
+    begin_token_list(q, 5_u16);
     old_mode = cur_list.mode as i32;
-    cur_list.mode = 0i32 as i16;
+    cur_list.mode = 0_i16;
     cur_cs = write_loc;
     q = scan_toks(0i32 != 0, 1i32 != 0);
     get_token();
@@ -3788,7 +3788,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"Unbalanced write command\x00" as *const u8 as *const i8);
-        help_ptr = 2i32 as u8;
+        help_ptr = 2_u8;
         help_line[1] = b"On this page there\'s a \\write with fewer real {\'s than }\'s.\x00"
             as *const u8 as *const i8;
         help_line[0] = b"I can\'t handle that very well; good luck.\x00" as *const u8 as *const i8;

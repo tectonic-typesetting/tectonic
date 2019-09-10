@@ -1103,9 +1103,9 @@ unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value
     );
     i = 0i32;
     while buffer[i as usize] as i32 != '\u{0}' as i32 {
-        let mut ch: u8 = 0i32 as u8;
+        let mut ch: u8 = 0_u8;
         if buffer[i as usize] as i32 == '.' as i32 {
-            ch = 0xai32 as u8
+            ch = 0xa_u8
         } else if buffer[i as usize] as i32 >= '0' as i32 && buffer[i as usize] as i32 <= '9' as i32
         {
             ch = (buffer[i as usize] as i32 - '0' as i32) as u8

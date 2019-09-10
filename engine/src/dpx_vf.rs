@@ -257,7 +257,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     }
     return 0i32 != 0;
 }
-static mut verbose: u8 = 0i32 as u8;
+static mut verbose: u8 = 0_u8;
 #[no_mangle]
 pub unsafe extern "C" fn vf_set_verbose(mut level: i32) {
     verbose = level as u8;
@@ -412,8 +412,8 @@ unsafe extern "C" fn read_a_font_def(
     if ttstub_input_read(vf_handle, (*dev_font).name, name_length as size_t) != name_length as i64 {
         _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
     }
-    *(*dev_font).directory.offset(dir_length as isize) = 0i32 as i8;
-    *(*dev_font).name.offset(name_length as isize) = 0i32 as i8;
+    *(*dev_font).directory.offset(dir_length as isize) = 0_i8;
+    *(*dev_font).name.offset(name_length as isize) = 0_i8;
     let ref mut fresh5 = (*vf_fonts.offset(thisfont as isize)).num_dev_fonts;
     *fresh5 = (*fresh5).wrapping_add(1_u32);
     (*dev_font).tfm_id = tfm_open((*dev_font).name, 1i32);
@@ -653,13 +653,13 @@ unsafe extern "C" fn get_pkt_unsigned_num(
     return val;
 }
 unsafe extern "C" fn vf_putrule(mut start: *mut *mut u8, mut end: *mut u8, mut ptsize: spt_t) {
-    let mut height: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
-    let mut width: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
+    let mut height: i32 = get_pkt_signed_num(start, end, 3_u8);
+    let mut width: i32 = get_pkt_signed_num(start, end, 3_u8);
     dvi_rule(sqxfw(ptsize, width), sqxfw(ptsize, height));
 }
 unsafe extern "C" fn vf_setrule(mut start: *mut *mut u8, mut end: *mut u8, mut ptsize: spt_t) {
-    let mut height: i32 = get_pkt_signed_num(start, end, 3i32 as u8);
-    let mut s_width: i32 = sqxfw(ptsize, get_pkt_signed_num(start, end, 3i32 as u8));
+    let mut height: i32 = get_pkt_signed_num(start, end, 3_u8);
+    let mut s_width: i32 = sqxfw(ptsize, get_pkt_signed_num(start, end, 3_u8));
     dvi_rule(s_width, sqxfw(ptsize, height));
     dvi_right(s_width);
 }

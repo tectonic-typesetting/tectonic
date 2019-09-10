@@ -818,7 +818,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 print_cstr(b"size (\x00" as *const u8 as *const i8);
                 print_scaled(cur_val);
                 print_cstr(b"pt) will be ignored\x00" as *const u8 as *const i8);
-                help_ptr = 2i32 as u8;
+                help_ptr = 2_u8;
                 help_line[1] = b"I can\'t scale images to zero or negative sizes,\x00" as *const u8
                     as *const i8;
                 help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const i8;
@@ -838,7 +838,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
                 print_cstr(b"size (\x00" as *const u8 as *const i8);
                 print_scaled(cur_val);
                 print_cstr(b"pt) will be ignored\x00" as *const u8 as *const i8);
-                help_ptr = 2i32 as u8;
+                help_ptr = 2_u8;
                 help_line[1] = b"I can\'t scale images to zero or negative sizes,\x00" as *const u8
                     as *const i8;
                 help_line[0] = b"so I\'m ignoring this.\x00" as *const u8 as *const i8;
@@ -1081,7 +1081,7 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
             ) as small_number,
         );
         if is_pdf {
-            (*mem.offset(cur_list.tail as isize)).b16.s0 = 44i32 as u16
+            (*mem.offset(cur_list.tail as isize)).b16.s0 = 44_u16
         }
         (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s1 = strlen(pic_path) as u16;
         (*mem.offset((cur_list.tail + 4i32) as isize)).b16.s0 = page as u16;
@@ -1112,12 +1112,12 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
         print_file_name(cur_name, cur_area, cur_ext);
         print('\'' as i32);
         if result == -43i32 {
-            help_ptr = 2i32 as u8;
+            help_ptr = 2_u8;
             help_line[1] =
                 b"The requested image couldn\'t be read because\x00" as *const u8 as *const i8;
             help_line[0] = b"the file was not found.\x00" as *const u8 as *const i8
         } else {
-            help_ptr = 2i32 as u8;
+            help_ptr = 2_u8;
             help_line[1] =
                 b"The requested image couldn\'t be read because\x00" as *const u8 as *const i8;
             help_line[0] = b"it was not a recognized image format.\x00" as *const u8 as *const i8

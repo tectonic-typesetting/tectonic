@@ -546,7 +546,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
                 || *(*inbuf).offset(4) as i32 == '\u{0}' as i32))
     {
         *inbuf = (*inbuf).offset(4);
-        return pst_new_obj(1i32, pst_boolean_new(1i32 as i8) as *mut libc::c_void);
+        return pst_new_obj(1i32, pst_boolean_new(1_i8) as *mut libc::c_void);
     } else if (*inbuf).offset(5) <= inbufend
         && memcmp(
             *inbuf as *const libc::c_void,
@@ -572,7 +572,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
                 || *(*inbuf).offset(5) as i32 == '\u{0}' as i32))
     {
         *inbuf = (*inbuf).offset(5);
-        return pst_new_obj(1i32, pst_boolean_new(0i32 as i8) as *mut libc::c_void);
+        return pst_new_obj(1i32, pst_boolean_new(0_i8) as *mut libc::c_void);
     } else {
         return 0 as *mut pst_obj;
     };
@@ -1197,9 +1197,9 @@ unsafe extern "C" fn ostrtouc(
         cur = cur.offset(1)
     }
     if val > 255_u32 || cur == *inbuf {
-        *valid = 0i32 as u8
+        *valid = 0_u8
     } else {
-        *valid = 1i32 as u8
+        *valid = 1_u8
     }
     *inbuf = cur;
     return val as u8;
@@ -1212,7 +1212,7 @@ unsafe extern "C" fn esctouc(
     let mut unescaped: u8 = 0;
     let mut escaped: u8 = 0;
     escaped = **inbuf;
-    *valid = 1i32 as u8;
+    *valid = 1_u8;
     match escaped as i32 {
         92 | 41 | 40 => {
             /* Backslash, unbalanced paranthes */
@@ -1245,8 +1245,8 @@ unsafe extern "C" fn esctouc(
              * An end-of-line marker preceeded by backslash is not part of a
              * literal string
              */
-            unescaped = 0i32 as u8;
-            *valid = 0i32 as u8;
+            unescaped = 0_u8;
+            *valid = 0_u8;
             *inbuf = (*inbuf).offset(
                 (if *inbuf < inbufend.offset(-1) && *(*inbuf).offset(1) as i32 == '\n' as i32 {
                     2i32
@@ -1256,8 +1256,8 @@ unsafe extern "C" fn esctouc(
             )
         }
         10 => {
-            unescaped = 0i32 as u8;
-            *valid = 0i32 as u8;
+            unescaped = 0_u8;
+            *valid = 0_u8;
             *inbuf = (*inbuf).offset(1)
         }
         _ => {
@@ -1274,7 +1274,7 @@ unsafe extern "C" fn pst_string_parse_literal(
 ) -> *mut pst_string {
     let mut wbuf: [u8; 4096] = [0; 4096];
     let mut cur: *mut u8 = *inbuf;
-    let mut c: u8 = 0i32 as u8;
+    let mut c: u8 = 0_u8;
     let mut len: i32 = 0i32;
     let mut balance: i32 = 1i32;
     if cur.offset(2) > inbufend || *cur as i32 != '(' as i32 {

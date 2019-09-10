@@ -330,7 +330,7 @@ unsafe extern "C" fn ensure_vbox(mut n: eight_bits) {
         print_nl_cstr(b"! \x00" as *const u8 as *const i8);
     }
     print_cstr(b"Insertions can only be added to a vbox\x00" as *const u8 as *const i8);
-    help_ptr = 3i32 as u8;
+    help_ptr = 3_u8;
     help_line[2] = b"Tut tut: You\'re trying to \\insert into a\x00" as *const u8 as *const i8;
     help_line[1] = b"\\box register that now contains an \\hbox.\x00" as *const u8 as *const i8;
     help_line[0] =
@@ -471,7 +471,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
         print_cstr(b"\x00" as *const u8 as *const i8);
         print_esc_cstr(b"box\x00" as *const u8 as *const i8);
         print_cstr(b"255 is not void\x00" as *const u8 as *const i8);
-        help_ptr = 2i32 as u8;
+        help_ptr = 2_u8;
         help_line[1] = b"You shouldn\'t use \\box255 except in \\output routines.\x00" as *const u8
             as *const i8;
         help_line[0] =
@@ -1055,7 +1055,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
         delete_glue_ref(last_glue);
     }
     /*1026: "Start a new current page" */
-    page_contents = 0i32 as u8;
+    page_contents = 0_u8;
     page_tail = 4999999i32 - 2i32;
     (*mem.offset((4999999i32 - 2i32) as isize)).b32.s1 = -0xfffffffi32;
     last_glue = 0x3fffffffi32;
@@ -1148,7 +1148,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
             print_cstr(b"Output loop---\x00" as *const u8 as *const i8);
             print_int(dead_cycles);
             print_cstr(b" consecutive dead cycles\x00" as *const u8 as *const i8);
-            help_ptr = 3i32 as u8;
+            help_ptr = 3_u8;
             help_line[2] = b"I\'ve concluded that your \\output is awry; it never does a\x00"
                 as *const u8 as *const i8;
             help_line[1] = b"\\shipout, so I\'m shipping \\box255 out myself. Next time\x00"
@@ -1161,7 +1161,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
             output_active = 1i32 != 0; /* this is `prev_depth` */
             dead_cycles += 1;
             push_nest();
-            cur_list.mode = -1i32 as i16;
+            cur_list.mode = -1_i16;
             cur_list.aux.b32.s1 = -65536000i32;
             cur_list.mode_line = -line;
             begin_token_list(
@@ -1182,7 +1182,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                 ))
                 .b32
                 .s1,
-                7i32 as u16,
+                7_u16,
             );
             new_save_level(8i32 as group_code);
             normal_paragraph();
@@ -1322,7 +1322,7 @@ pub unsafe extern "C" fn build_page() {
                     if page_contents as i32 == 0i32 {
                         freeze_page_specs(2i32 as
                                               small_number); /* "now temp_ptr = glue_ptr(q) */
-                    } else { page_contents = 2i32 as u8 }
+                    } else { page_contents = 2_u8 }
                     q = new_skip_param(9i32 as small_number);
                     if (*mem.offset((temp_ptr + 1i32) as isize)).b32.s1 >
                            (*mem.offset((p + 3i32) as isize)).b32.s1 {
@@ -1411,7 +1411,7 @@ pub unsafe extern "C" fn build_page() {
                     (*mem.offset(r as isize)).b32.s1 = q;
                     r = q;
                     (*mem.offset(r as isize)).b16.s0 = n as u16;
-                    (*mem.offset(r as isize)).b16.s1 = 0i32 as u16;
+                    (*mem.offset(r as isize)).b16.s1 = 0_u16;
                     ensure_vbox(n);
                     if (*eqtb.offset((1i32 + (0x10ffffi32 + 1i32) +
                                           (0x10ffffi32 + 1i32) + 1i32 +
@@ -1526,7 +1526,7 @@ pub unsafe extern "C" fn build_page() {
                         print_esc_cstr(b"skip\x00" as *const u8 as
                                            *const i8);
                         print_int(n as i32);
-                        help_ptr = 3i32 as u8;
+                        help_ptr = 3_u8;
                         help_line[2] =
                             b"The correction glue for page breaking with insertions\x00"
                                 as *const u8 as *const i8;
@@ -1778,7 +1778,7 @@ pub unsafe extern "C" fn build_page() {
                                                       isize)).b32.s1
                         }
                         page_so_far[0] -= best_height_plus_depth;
-                        (*mem.offset(r as isize)).b16.s1 = 1i32 as u16;
+                        (*mem.offset(r as isize)).b16.s1 = 1_u16;
                         (*mem.offset((r + 1i32) as isize)).b32.s1 = q;
                         (*mem.offset((r + 1i32) as isize)).b32.s0 = p;
                         if q == -0xfffffffi32 {
@@ -1931,7 +1931,7 @@ pub unsafe extern "C" fn build_page() {
                         }
                         print_cstr(b"Infinite glue shrinkage found on current page\x00"
                                        as *const u8 as *const i8);
-                        help_ptr = 4i32 as u8;
+                        help_ptr = 4_u8;
                         help_line[3] =
                             b"The page about to be output contains some infinitely\x00"
                                 as *const u8 as *const i8;
@@ -1946,7 +1946,7 @@ pub unsafe extern "C" fn build_page() {
                                 as *const u8 as *const i8;
                         error();
                         r = new_spec(q);
-                        (*mem.offset(r as isize)).b16.s0 = 0i32 as u16;
+                        (*mem.offset(r as isize)).b16.s0 = 0_u16;
                         delete_glue_ref(q);
                         (*mem.offset((p + 1i32) as isize)).b32.s0 = r;
                         q = r

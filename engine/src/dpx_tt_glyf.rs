@@ -308,7 +308,7 @@ unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> u16 {
             .as_ptr(),
         );
     }
-    gid = 0i32 as u16;
+    gid = 0_u16;
     while (gid as i32) < 65534i32 {
         if *(*g).used_slot.offset((gid as i32 / 8i32) as isize) as i32
             & 1i32 << 7i32 - gid as i32 % 8i32
@@ -326,7 +326,7 @@ unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> u16 {
 #[no_mangle]
 pub unsafe extern "C" fn tt_find_glyph(mut g: *mut tt_glyphs, mut gid: u16) -> u16 {
     let mut idx: u16 = 0;
-    let mut new_gid: u16 = 0i32 as u16;
+    let mut new_gid: u16 = 0_u16;
     if !g.is_null() {
     } else {
         __assert_fail(
@@ -339,7 +339,7 @@ pub unsafe extern "C" fn tt_find_glyph(mut g: *mut tt_glyphs, mut gid: u16) -> u
             .as_ptr(),
         );
     }
-    idx = 0i32 as u16;
+    idx = 0_u16;
     while (idx as i32) < (*g).num_glyphs as i32 {
         if gid as i32 == (*(*g).gd.offset(idx as isize)).ogid as i32 {
             new_gid = (*(*g).gd.offset(idx as isize)).gid;
@@ -365,7 +365,7 @@ pub unsafe extern "C" fn tt_get_index(mut g: *mut tt_glyphs, mut gid: u16) -> u1
             .as_ptr(),
         );
     }
-    idx = 0i32 as u16;
+    idx = 0_u16;
     while (idx as i32) < (*g).num_glyphs as i32 {
         if gid as i32 == (*(*g).gd.offset(idx as isize)).gid as i32 {
             break;
@@ -373,7 +373,7 @@ pub unsafe extern "C" fn tt_get_index(mut g: *mut tt_glyphs, mut gid: u16) -> u1
         idx = idx.wrapping_add(1)
     }
     if idx as i32 == (*g).num_glyphs as i32 {
-        idx = 0i32 as u16
+        idx = 0_u16
     }
     return idx;
 }
@@ -438,17 +438,17 @@ pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     let mut g: *mut tt_glyphs = 0 as *mut tt_glyphs;
     g = new((1_u64).wrapping_mul(::std::mem::size_of::<tt_glyphs>() as u64) as u32)
         as *mut tt_glyphs;
-    (*g).num_glyphs = 0i32 as u16;
-    (*g).max_glyphs = 0i32 as u16;
-    (*g).last_gid = 0i32 as u16;
-    (*g).emsize = 1i32 as u16;
-    (*g).default_advh = 0i32 as u16;
-    (*g).default_tsb = 0i32 as i16;
+    (*g).num_glyphs = 0_u16;
+    (*g).max_glyphs = 0_u16;
+    (*g).last_gid = 0_u16;
+    (*g).emsize = 1_u16;
+    (*g).default_advh = 0_u16;
+    (*g).default_tsb = 0_i16;
     (*g).gd = 0 as *mut tt_glyph_desc;
     (*g).used_slot =
         new((8192_u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     memset((*g).used_slot as *mut libc::c_void, 0i32, 8192i32 as u64);
-    tt_add_glyph(g, 0i32 as u16, 0i32 as u16);
+    tt_add_glyph(g, 0_u16, 0_u16);
     return g;
 }
 #[no_mangle]
@@ -456,7 +456,7 @@ pub unsafe extern "C" fn tt_build_finish(mut g: *mut tt_glyphs) {
     if !g.is_null() {
         if !(*g).gd.is_null() {
             let mut idx: u16 = 0;
-            idx = 0i32 as u16;
+            idx = 0_u16;
             while (idx as i32) < (*g).num_glyphs as i32 {
                 free((*(*g).gd.offset(idx as isize)).data as *mut libc::c_void);
                 idx = idx.wrapping_add(1)
@@ -819,7 +819,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
     }
     /* All advance widths are same. */
     if num_hm_known == 0 {
-        (*hhea).numOfLongHorMetrics = 1i32 as u16
+        (*hhea).numOfLongHorMetrics = 1_u16
     }
     hmtx_table_size =
         ((*hhea).numOfLongHorMetrics as i32 * 2i32 + ((*g).last_gid as i32 + 1i32) * 2i32) as u32;
@@ -828,10 +828,10 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
      * when compressed. Sometimes increases size.
      */
     if (glyf_table_size as u64) < 0x20000 {
-        (*head).indexToLocFormat = 0i32 as i16;
+        (*head).indexToLocFormat = 0_i16;
         loca_table_size = (((*g).last_gid as i32 + 2i32) * 2i32) as u32
     } else {
-        (*head).indexToLocFormat = 1i32 as i16;
+        (*head).indexToLocFormat = 1_i16;
         loca_table_size = (((*g).last_gid as i32 + 2i32) * 4i32) as u32
     }
     p_0 = new((hmtx_table_size as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
@@ -844,7 +844,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
         new((glyf_table_size as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
     offset = 0u64 as u32;
-    prev = 0i32 as u16;
+    prev = 0_u16;
     i = 0i32;
     while i < (*g).num_glyphs as i32 {
         let mut gap: i32 = 0;

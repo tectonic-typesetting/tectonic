@@ -312,7 +312,7 @@ unsafe extern "C" fn ifreader_create(
     (*reader).unread = size;
     (*reader).endptr = (*reader).buf;
     (*reader).cursor = (*reader).endptr;
-    *(*reader).endptr = 0i32 as u8;
+    *(*reader).endptr = 0_u8;
     return reader;
 }
 unsafe extern "C" fn ifreader_destroy(mut reader: *mut ifreader) {
@@ -390,7 +390,7 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
             );
         }
     }
-    *(*reader).endptr = 0i32 as u8;
+    *(*reader).endptr = 0_u8;
     return bytesread.wrapping_add(bytesrem);
 }
 unsafe extern "C" fn check_next_token(mut input: *mut ifreader, mut key: *const i8) -> i32 {
@@ -1014,7 +1014,7 @@ pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -
     if ttstub_input_read(handle, sig.as_mut_ptr(), 64i32 as size_t) != 64i32 as i64 {
         result = -1i32
     } else {
-        sig[64] = 0i32 as i8;
+        sig[64] = 0_i8;
         if strstartswith(sig.as_mut_ptr(), b"%!PS\x00" as *const u8 as *const i8).is_null() {
             result = -1i32
         } else if !strstr(

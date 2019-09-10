@@ -325,40 +325,10 @@ static mut sec_data: pdf_sec = pdf_sec {
     },
 };
 static mut padding_bytes: [u8; 32] = [
-    0x28i32 as u8,
-    0xbfi32 as u8,
-    0x4ei32 as u8,
-    0x5ei32 as u8,
-    0x4ei32 as u8,
-    0x75i32 as u8,
-    0x8ai32 as u8,
-    0x41i32 as u8,
-    0x64i32 as u8,
-    0i32 as u8,
-    0x4ei32 as u8,
-    0x56i32 as u8,
-    0xffi32 as u8,
-    0xfai32 as u8,
-    0x1i32 as u8,
-    0x8i32 as u8,
-    0x2ei32 as u8,
-    0x2ei32 as u8,
-    0i32 as u8,
-    0xb6i32 as u8,
-    0xd0i32 as u8,
-    0x68i32 as u8,
-    0x3ei32 as u8,
-    0x80i32 as u8,
-    0x2fi32 as u8,
-    0xci32 as u8,
-    0xa9i32 as u8,
-    0xfei32 as u8,
-    0x64i32 as u8,
-    0x53i32 as u8,
-    0x69i32 as u8,
-    0x7ai32 as u8,
+    0x28, 0xbf, 0x4e, 0x5e, 0x4e, 0x75, 0x8a, 0x41, 0x64, 0, 0x4e, 0x56, 0xff, 0xfa, 0x1, 0x8,
+    0x2e, 0x2e, 0, 0xb6, 0xd0, 0x68, 0x3e, 0x80, 0x2f, 0xc, 0xa9, 0xfe, 0x64, 0x53, 0x69, 0x7a,
 ];
-static mut verbose: u8 = 0i32 as u8;
+static mut verbose: u8 = 0_u8;
 /*
 
     This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -1216,10 +1186,10 @@ unsafe extern "C" fn calculate_key(mut p: *mut pdf_sec, mut key: *mut u8) {
     tmp[((*p).key_size + 4i32) as usize] =
         (((*p).label.gennum as i32 >> 8i32) as u8 as i32 & 0xffi32) as u8;
     if (*p).V >= 4i32 {
-        tmp[((*p).key_size + 5i32) as usize] = 0x73i32 as u8;
-        tmp[((*p).key_size + 6i32) as usize] = 0x41i32 as u8;
-        tmp[((*p).key_size + 7i32) as usize] = 0x6ci32 as u8;
-        tmp[((*p).key_size + 8i32) as usize] = 0x54i32 as u8;
+        tmp[((*p).key_size + 5i32) as usize] = 0x73_u8;
+        tmp[((*p).key_size + 6i32) as usize] = 0x41_u8;
+        tmp[((*p).key_size + 7i32) as usize] = 0x6c_u8;
+        tmp[((*p).key_size + 8i32) as usize] = 0x54_u8;
         len += 4i32
     }
     MD5_init(&mut md5);
@@ -1411,10 +1381,10 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
         perms[1] = ((*p).P >> 8i32 & 0xffi32) as u8;
         perms[2] = ((*p).P >> 16i32 & 0xffi32) as u8;
         perms[3] = ((*p).P >> 24i32 & 0xffi32) as u8;
-        perms[4] = 0xffi32 as u8;
-        perms[5] = 0xffi32 as u8;
-        perms[6] = 0xffi32 as u8;
-        perms[7] = 0xffi32 as u8;
+        perms[4] = 0xff_u8;
+        perms[5] = 0xff_u8;
+        perms[6] = 0xff_u8;
+        perms[7] = 0xff_u8;
         perms[8] = (if (*p).setting.encrypt_metadata != 0 {
             'T' as i32
         } else {
@@ -1423,10 +1393,10 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
         perms[9] = 'a' as i32 as u8;
         perms[10] = 'd' as i32 as u8;
         perms[11] = 'b' as i32 as u8;
-        perms[12] = 0i32 as u8;
-        perms[13] = 0i32 as u8;
-        perms[14] = 0i32 as u8;
-        perms[15] = 0i32 as u8;
+        perms[12] = 0_u8;
+        perms[13] = 0_u8;
+        perms[14] = 0_u8;
+        perms[15] = 0_u8;
         AES_ecb_encrypt(
             (*p).key.as_mut_ptr(),
             (*p).key_size as size_t,

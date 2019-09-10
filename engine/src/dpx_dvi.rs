@@ -1022,7 +1022,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 /* UTF-32 over U+FFFF -> UTF-16 surrogate pair */
 /* Interal Variables */
 static mut dvi_handle: rust_input_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
-static mut linear: i8 = 0i32 as i8;
+static mut linear: i8 = 0_i8;
 /* set to 1 for strict linear processing of the input */
 static mut page_loc: *mut u32 = 0 as *const u32 as *mut u32;
 static mut num_pages: u32 = 0_u32;
@@ -3685,7 +3685,7 @@ unsafe extern "C" fn scan_special(
                 skip_white(&mut p, endptr);
             }
         } else if streq_ptr(q, b"papersize\x00" as *const u8 as *const i8) {
-            let mut qchr: i8 = 0i32 as i8;
+            let mut qchr: i8 = 0_i8;
             if *p as i32 == '=' as i32 {
                 p = p.offset(1)
             }
@@ -3753,7 +3753,7 @@ unsafe extern "C" fn scan_special(
             && !do_enc.is_null()
         {
             *do_enc = 1i32;
-            *user_pw = 0i32 as i8;
+            *user_pw = 0_i8;
             *owner_pw = *user_pw;
             while error == 0 && p < endptr {
                 let mut kp_0: *mut i8 = parse_c_ident(&mut p, endptr);

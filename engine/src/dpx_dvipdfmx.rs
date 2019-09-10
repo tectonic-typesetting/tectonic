@@ -454,7 +454,7 @@ pub struct paper {
 pub static mut is_xdv: i32 = 0i32;
 #[no_mangle]
 pub static mut translate_origin: i32 = 0i32;
-static mut ignore_colors: i8 = 0i32 as i8;
+static mut ignore_colors: i8 = 0_i8;
 static mut annot_grow: f64 = 0.0f64;
 static mut bookmark_open: i32 = 0i32;
 static mut mag: f64 = 1.0f64;

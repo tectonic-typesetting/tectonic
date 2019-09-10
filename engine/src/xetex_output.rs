@@ -605,7 +605,7 @@ unsafe extern "C" fn print_the_digs(mut k: eight_bits) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_int(mut n: i32) {
-    let mut k: u8 = 0i32 as u8;
+    let mut k: u8 = 0_u8;
     let mut m: i32 = 0;
     if n < 0i32 {
         print_char('-' as i32);
@@ -615,11 +615,11 @@ pub unsafe extern "C" fn print_int(mut n: i32) {
             m = -1i32 - n;
             n = m / 10i32;
             m = m % 10i32 + 1i32;
-            k = 1i32 as u8;
+            k = 1_u8;
             if m < 10i32 {
                 dig[0] = m as u8
             } else {
-                dig[0] = 0i32 as u8;
+                dig[0] = 0_u8;
                 n += 1
             }
         }
@@ -965,7 +965,7 @@ pub unsafe extern "C" fn print_two(mut n: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_hex(mut n: i32) {
-    let mut k: u8 = 0i32 as u8;
+    let mut k: u8 = 0_u8;
     print_char('\"' as i32);
     loop {
         dig[k as usize] = (n % 16i32) as u8;
@@ -982,8 +982,8 @@ pub unsafe extern "C" fn print_roman_int(mut n: i32) {
     let mut u: i32 = 0;
     let mut v: i32 = 0;
     let mut roman_data: *const i8 = b"m2d5c2l5x2v5i\x00" as *const u8 as *const i8;
-    let mut j: u8 = 0i32 as u8;
-    let mut k: u8 = 0i32 as u8;
+    let mut j: u8 = 0_u8;
+    let mut k: u8 = 0_u8;
     v = 1000i32;
     loop {
         while n >= v {

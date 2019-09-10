@@ -179,8 +179,8 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
     (*post).numberOfGlyphs = tt_get_unsigned_pair((*sfont).handle);
     indices = new(((*post).numberOfGlyphs as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32) as *mut u16;
-    maxidx = 257i32 as u16;
-    i = 0i32 as u16;
+    maxidx = 257_u16;
+    i = 0_u16;
     while (i as i32) < (*post).numberOfGlyphs as i32 {
         idx = tt_get_unsigned_pair((*sfont).handle);
         if idx as i32 >= 258i32 {
@@ -191,20 +191,20 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
                 /* Although this is strictly speaking out of spec, it seems to work
                 and there are real-life fonts that use it.
                 We show a warning only once, instead of thousands of times */
-                static mut warning_issued: i8 = 0i32 as i8;
+                static mut warning_issued: i8 = 0_i8;
                 if warning_issued == 0 {
                     dpx_warning(
                         b"TrueType post table name index %u > 32767\x00" as *const u8 as *const i8,
                         idx as i32,
                     );
-                    warning_issued = 1i32 as i8
+                    warning_issued = 1_i8
                 }
                 /* In a real-life large font, (x)dvipdfmx crashes if we use
                 nonvanishing idx in the case of idx > 32767.
                 If we set idx = 0, (x)dvipdfmx works fine for the font and
                 created pdf seems fine. The post table may not be important
                 in such a case */
-                idx = 0i32 as u16
+                idx = 0_u16
             }
         }
         *indices.offset(i as isize) = idx;
@@ -217,7 +217,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
         (*post).names = new(((*post).count as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<*mut i8>() as u64)
             as u32) as *mut *mut i8;
-        i = 0i32 as u16;
+        i = 0_u16;
         while (i as i32) < (*post).count as i32 {
             /* read Pascal strings */
             len = tt_get_unsigned_byte((*sfont).handle) as i32;
@@ -231,7 +231,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
                     *(*post).names.offset(i as isize),
                     len as size_t,
                 );
-                *(*(*post).names.offset(i as isize)).offset(len as isize) = 0i32 as i8
+                *(*(*post).names.offset(i as isize)).offset(len as isize) = 0_i8
             } else {
                 let ref mut fresh1 = *(*post).names.offset(i as isize);
                 *fresh1 = 0 as *mut i8
@@ -242,7 +242,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
     (*post).glyphNamePtr = new(((*post).numberOfGlyphs as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<*const i8>() as u64)
         as u32) as *mut *const i8;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < (*post).numberOfGlyphs as i32 {
         idx = *indices.offset(i as isize);
         if (idx as i32) < 258i32 {
@@ -281,12 +281,12 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     (*post).maxMemType42 = tt_get_unsigned_quad((*sfont).handle);
     (*post).minMemType1 = tt_get_unsigned_quad((*sfont).handle);
     (*post).maxMemType1 = tt_get_unsigned_quad((*sfont).handle);
-    (*post).numberOfGlyphs = 0i32 as u16;
+    (*post).numberOfGlyphs = 0_u16;
     (*post).glyphNamePtr = 0 as *mut *const i8;
-    (*post).count = 0i32 as u16;
+    (*post).count = 0_u16;
     (*post).names = 0 as *mut *mut i8;
     if (*post).Version as u64 == 0x10000 {
-        (*post).numberOfGlyphs = 258i32 as u16;
+        (*post).numberOfGlyphs = 258_u16;
         (*post).glyphNamePtr = macglyphorder.as_mut_ptr()
     } else if (*post).Version as u64 == 0x28000 {
         dpx_warning(
@@ -324,7 +324,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
             .as_ptr(),
         );
     }
-    gid = 0i32 as u16;
+    gid = 0_u16;
     while (gid as i32) < (*post).count as i32 {
         if !(*(*post).glyphNamePtr.offset(gid as isize)).is_null()
             && streq_ptr(glyphname, *(*post).glyphNamePtr.offset(gid as isize)) as i32 != 0
@@ -333,7 +333,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
         }
         gid = gid.wrapping_add(1)
     }
-    return 0i32 as u16;
+    return 0_u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_glyphname(mut post: *mut tt_post_table, mut gid: u16) -> *mut i8 {
@@ -385,14 +385,14 @@ pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
         free((*post).glyphNamePtr as *mut libc::c_void);
     }
     if !(*post).names.is_null() {
-        i = 0i32 as u16;
+        i = 0_u16;
         while (i as i32) < (*post).count as i32 {
             free(*(*post).names.offset(i as isize) as *mut libc::c_void);
             i = i.wrapping_add(1)
         }
         free((*post).names as *mut libc::c_void);
     }
-    (*post).count = 0i32 as u16;
+    (*post).count = 0_u16;
     (*post).glyphNamePtr = 0 as *mut *const i8;
     (*post).names = 0 as *mut *mut i8;
     free(post as *mut libc::c_void);

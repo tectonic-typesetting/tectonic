@@ -145,7 +145,7 @@ pub unsafe extern "C" fn mfgets(
         i = i + 1;
         *buffer.offset(fresh0 as isize) = ch as i8
     }
-    *buffer.offset(i as isize) = 0i32 as i8;
+    *buffer.offset(i as isize) = 0_i8;
     if ch < 0i32 && i == 0i32 {
         return 0 as *mut i8;
     }

@@ -108,7 +108,7 @@ unsafe extern "C" fn pre_error_message() {
 /*82: */
 unsafe extern "C" fn post_error_message(mut need_to_print_it: i32) {
     if interaction as i32 == 3i32 {
-        interaction = 2i32 as u8
+        interaction = 2_u8
     }
     if need_to_print_it != 0 && log_opened as i32 != 0 {
         error();
@@ -176,7 +176,7 @@ pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: i32) -> ! {
     print_char('=' as i32);
     print_int(n);
     print_char(']' as i32);
-    help_ptr = 2i32 as u8;
+    help_ptr = 2_u8;
     help_line[1] = b"If you really absolutely need more capacity,\x00" as *const u8 as *const i8;
     help_line[0] = b"you can ask a wizard to enlarge me.\x00" as *const u8 as *const i8;
     post_error_message(1i32);
@@ -189,12 +189,12 @@ pub unsafe extern "C" fn confusion(mut s: *const i8) -> ! {
         print_cstr(b"This can\'t happen (\x00" as *const u8 as *const i8);
         print_cstr(s);
         print_char(')' as i32);
-        help_ptr = 1i32 as u8;
+        help_ptr = 1_u8;
         help_line[0] = b"I\'m broken. Please show this to someone who can fix can fix\x00"
             as *const u8 as *const i8
     } else {
         print_cstr(b"I can\'t go on meeting you like this\x00" as *const u8 as *const i8);
-        help_ptr = 2i32 as u8;
+        help_ptr = 2_u8;
         help_line[1] = b"One of your faux pas seems to have wounded me deeply...\x00" as *const u8
             as *const i8;
         help_line[0] = b"in fact, I\'m barely conscious. Please fix it and try again.\x00"

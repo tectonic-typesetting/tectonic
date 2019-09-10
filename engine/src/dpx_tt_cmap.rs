@@ -823,13 +823,13 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
         _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const i8);
     }
     map = new((1_u64).wrapping_mul(::std::mem::size_of::<cmap2>() as u64) as u32) as *mut cmap2;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < 256i32 {
         (*map).subHeaderKeys[i as usize] = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
     }
-    n = 0i32 as u16;
-    i = 0i32 as u16;
+    n = 0_u16;
+    i = 0_u16;
     while (i as i32) < 256i32 {
         (*map).subHeaderKeys[i as usize] = ((*map).subHeaderKeys[i as usize] as i32 / 8i32) as u16;
         if (n as i32) < (*map).subHeaderKeys[i as usize] as i32 {
@@ -841,7 +841,7 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     (*map).subHeaders =
         new((n as u32 as u64).wrapping_mul(::std::mem::size_of::<SubHeader>() as u64) as u32)
             as *mut SubHeader;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < n as i32 {
         (*(*map).subHeaders.offset(i as isize)).firstCode = tt_get_unsigned_pair((*sfont).handle);
         (*(*map).subHeaders.offset(i as isize)).entryCount = tt_get_unsigned_pair((*sfont).handle);
@@ -866,7 +866,7 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
         / 2i32) as u16;
     (*map).glyphIndexArray =
         new((n as u32 as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32) as *mut u16;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < n as i32 {
         *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
@@ -881,7 +881,7 @@ unsafe extern "C" fn release_cmap2(mut map: *mut cmap2) {
     };
 }
 unsafe extern "C" fn lookup_cmap2(mut map: *mut cmap2, mut cc: u16) -> u16 {
-    let mut idx: u16 = 0i32 as u16;
+    let mut idx: u16 = 0_u16;
     let mut idDelta: i16 = 0;
     let mut firstCode: u16 = 0;
     let mut entryCount: u16 = 0;
@@ -924,7 +924,7 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     (*map).endCount =
         new((segCount as u32 as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32)
             as *mut u16;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < segCount as i32 {
         *(*map).endCount.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
@@ -933,7 +933,7 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     (*map).startCount =
         new((segCount as u32 as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32)
             as *mut u16;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < segCount as i32 {
         *(*map).startCount.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
@@ -941,7 +941,7 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     (*map).idDelta =
         new((segCount as u32 as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32)
             as *mut u16;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < segCount as i32 {
         *(*map).idDelta.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
@@ -949,7 +949,7 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     (*map).idRangeOffset =
         new((segCount as u32 as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32)
             as *mut u16;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < segCount as i32 {
         *(*map).idRangeOffset.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
@@ -964,7 +964,7 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
         (*map).glyphIndexArray = new((n as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<u16>() as u64)
             as u32) as *mut u16;
-        i = 0i32 as u16;
+        i = 0_u16;
         while (i as i32) < n as i32 {
             *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
             i = i.wrapping_add(1)
@@ -983,7 +983,7 @@ unsafe extern "C" fn release_cmap4(mut map: *mut cmap4) {
     };
 }
 unsafe extern "C" fn lookup_cmap4(mut map: *mut cmap4, mut cc: u16) -> u16 {
-    let mut gid: u16 = 0i32 as u16;
+    let mut gid: u16 = 0_u16;
     let mut i: u16 = 0;
     let mut j: u16 = 0;
     let mut segCount: u16 = 0;
@@ -1008,7 +1008,7 @@ unsafe extern "C" fn lookup_cmap4(mut map: *mut cmap4, mut cc: u16) -> u16 {
             && *(*map).idRangeOffset.offset(i as isize) as i32 == 0xffffi32
         {
             /* this is for protection against some old broken fonts... */
-            gid = 0i32 as u16
+            gid = 0_u16
         } else {
             j = (*(*map).idRangeOffset.offset(i as isize) as i32
                 - (segCount as i32 - i as i32) * 2i32) as u16;
@@ -1034,7 +1034,7 @@ unsafe extern "C" fn read_cmap6(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     (*map).glyphIndexArray = new(
         ((*map).entryCount as u32 as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32
     ) as *mut u16;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < (*map).entryCount as i32 {
         *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
@@ -1053,7 +1053,7 @@ unsafe extern "C" fn lookup_cmap6(mut map: *mut cmap6, mut cc: u16) -> u16 {
     if (idx as i32) < (*map).entryCount as i32 {
         return *(*map).glyphIndexArray.offset(idx as isize);
     }
-    return 0i32 as u16;
+    return 0_u16;
 }
 /* ULONG length */
 unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap12 {
@@ -1083,7 +1083,7 @@ unsafe extern "C" fn release_cmap12(mut map: *mut cmap12) {
     };
 }
 unsafe extern "C" fn lookup_cmap12(mut map: *mut cmap12, mut cccc: u32) -> u16 {
-    let mut gid: u16 = 0i32 as u16;
+    let mut gid: u16 = 0_u16;
     let mut i: i32 = 0;
     i = (*map).nGroups as i32;
     loop {
@@ -1132,7 +1132,7 @@ pub unsafe extern "C" fn tt_cmap_read(
     offset = sfnt_locate_table(sfont, b"cmap\x00" as *const u8 as *const i8);
     tt_get_unsigned_pair((*sfont).handle);
     n_subtabs = tt_get_unsigned_pair((*sfont).handle);
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < n_subtabs as i32 {
         p_id = tt_get_unsigned_pair((*sfont).handle);
         e_id = tt_get_unsigned_pair((*sfont).handle);
@@ -1227,7 +1227,7 @@ pub unsafe extern "C" fn tt_cmap_release(mut cmap: *mut tt_cmap) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> u16 {
-    let mut gid: u16 = 0i32 as u16;
+    let mut gid: u16 = 0_u16;
     if !cmap.is_null() {
     } else {
         __assert_fail(
@@ -1245,7 +1245,7 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> 
             b"Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.\x00"
                 as *const u8 as *const i8,
         );
-        return 0i32 as u16;
+        return 0_u16;
     }
     match (*cmap).format as i32 {
         0 => gid = lookup_cmap0((*cmap).map as *mut cmap0, cc as u16),
@@ -1263,10 +1263,10 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> 
     return gid;
 }
 static mut wbuf: [u8; 1024] = [0; 1024];
-static mut srange_min: [u8; 2] = [0i32 as u8, 0i32 as u8];
-static mut srange_max: [u8; 2] = [0xffi32 as u8, 0xffi32 as u8];
-static mut lrange_min: [u8; 4] = [0i32 as u8, 0i32 as u8, 0i32 as u8, 0i32 as u8];
-static mut lrange_max: [u8; 4] = [0x7fi32 as u8, 0xffi32 as u8, 0xffi32 as u8, 0xffi32 as u8];
+static mut srange_min: [u8; 2] = [0; 2];
+static mut srange_max: [u8; 2] = [0xff_u8, 0xff_u8];
+static mut lrange_min: [u8; 4] = [0; 4];
+static mut lrange_max: [u8; 4] = [0x7f_u8, 0xff_u8, 0xff_u8, 0xff_u8];
 unsafe extern "C" fn load_cmap4(
     mut map: *mut cmap4,
     mut GIDToCIDMap: *mut u8,
@@ -1290,7 +1290,7 @@ unsafe extern "C" fn load_cmap4(
         c0 = *(*map).startCount.offset(i as isize);
         c1 = *(*map).endCount.offset(i as isize);
         d = (*(*map).idRangeOffset.offset(i as isize) as i32 / 2i32 - (segCount as i32 - i)) as u16;
-        j = 0i32 as u16;
+        j = 0_u16;
         while j as i32 <= c1 as i32 - c0 as i32 {
             ch = (c0 as i32 + j as i32) as u16;
             if *(*map).idRangeOffset.offset(i as isize) as i32 == 0i32 {
@@ -1300,7 +1300,7 @@ unsafe extern "C" fn load_cmap4(
                 && *(*map).idRangeOffset.offset(i as isize) as i32 == 0xffffi32
             {
                 /* this is for protection against some old broken fonts... */
-                gid = 0i32 as u16
+                gid = 0_u16
             } else {
                 gid = (*(*map)
                     .glyphIndexArray
@@ -1330,8 +1330,8 @@ unsafe extern "C" fn load_cmap4(
                 } else {
                     cid = gid
                 }
-                wbuf[0] = 0i32 as u8;
-                wbuf[1] = 0i32 as u8;
+                wbuf[0] = 0_u8;
+                wbuf[1] = 0_u8;
                 wbuf[2] = (ch as i32 >> 8i32 & 0xffi32) as u8;
                 wbuf[3] = (ch as i32 & 0xffi32) as u8;
                 wbuf[4] = (cid as i32 >> 8i32 & 0xffi32) as u8;
@@ -1642,8 +1642,8 @@ unsafe extern "C" fn handle_subst_glyphs(
     if cmap_add.is_null() {
         post = tt_read_post_table(sfont)
     }
-    count = 0i32 as u16;
-    i = 0i32 as u16;
+    count = 0_u16;
+    i = 0_u16;
     while (i as i32) < 8192i32 {
         let mut j: u32 = 0;
         let mut len: size_t = 0;
@@ -1790,7 +1790,7 @@ unsafe extern "C" fn add_to_cmap_if_used(
     mut gid: u16,
     mut ch: u32,
 ) -> u16 {
-    let mut count: u16 = 0i32 as u16;
+    let mut count: u16 = 0_u16;
     let mut cid: u16 = (if !cffont.is_null() {
         cff_charsets_lookup_inverse(cffont, gid) as i32
     } else {
@@ -1833,17 +1833,17 @@ unsafe extern "C" fn create_ToUnicode_cmap4(
     mut used_chars: *mut i8,
     mut cffont: *mut cff_font,
 ) -> u16 {
-    let mut count: u16 = 0i32 as u16;
+    let mut count: u16 = 0_u16;
     let mut segCount: u16 = ((*map).segCountX2 as i32 / 2i32) as u16;
     let mut i: u16 = 0;
     let mut j: u16 = 0;
-    i = 0i32 as u16;
+    i = 0_u16;
     while (i as i32) < segCount as i32 {
         let mut c0: u16 = *(*map).startCount.offset(i as isize);
         let mut c1: u16 = *(*map).endCount.offset(i as isize);
         let mut d: u16 = (*(*map).idRangeOffset.offset(i as isize) as i32 / 2i32
             - (segCount as i32 - i as i32)) as u16;
-        j = 0i32 as u16;
+        j = 0_u16;
         while j as i32 <= c1 as i32 - c0 as i32 {
             let mut ch: u16 = (c0 as i32 + j as i32) as u16;
             let mut gid: u16 = 0;
@@ -1854,7 +1854,7 @@ unsafe extern "C" fn create_ToUnicode_cmap4(
                 && *(*map).idRangeOffset.offset(i as isize) as i32 == 0xffffi32
             {
                 /* this is for protection against some old broken fonts... */
-                gid = 0i32 as u16
+                gid = 0_u16
             } else {
                 gid = (*(*map)
                     .glyphIndexArray
@@ -1909,7 +1909,7 @@ unsafe extern "C" fn create_ToUnicode_cmap(
 ) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cmap: *mut CMap = 0 as *mut CMap;
-    let mut count: u16 = 0i32 as u16;
+    let mut count: u16 = 0_u16;
     let mut cffont: *mut cff_font = prepare_CIDFont_from_sfnt(sfont);
     let mut is_cidfont: i8 = (!cffont.is_null() && (*cffont).flag & 1i32 << 0i32 != 0) as i32 as i8;
     cmap = CMap_new();
@@ -1932,7 +1932,7 @@ unsafe extern "C" fn create_ToUnicode_cmap(
         && cmap_add.is_null()
     {
         let mut i: u16 = 0;
-        i = 0i32 as u16;
+        i = 0_u16;
         while (i as i32) < 8192i32 {
             let mut j: i32 = 0;
             if !(*used_chars.offset(i as isize) as i32 == 0i32) {
@@ -2032,36 +2032,36 @@ unsafe extern "C" fn create_ToUnicode_cmap(
 static mut cmap_plat_encs: [cmap_plat_enc_rec; 5] = [
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 3i32 as i16,
-            encoding: 10i32 as i16,
+            platform: 3_i16,
+            encoding: 10_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as i16,
-            encoding: 3i32 as i16,
+            platform: 0_i16,
+            encoding: 3_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as i16,
-            encoding: 0i32 as i16,
+            platform: 0_i16,
+            encoding: 0_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 3i32 as i16,
-            encoding: 1i32 as i16,
+            platform: 3_i16,
+            encoding: 1_i16,
         };
         init
     },
     {
         let mut init = cmap_plat_enc_rec {
-            platform: 0i32 as i16,
-            encoding: 1i32 as i16,
+            platform: 0_i16,
+            encoding: 1_i16,
         };
         init
     },
@@ -2516,11 +2516,11 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         }
         return cmap_id;
     }
-    ttcmap = tt_cmap_read(sfont, 3i32 as u16, 10i32 as u16);
+    ttcmap = tt_cmap_read(sfont, 3_u16, 10_u16);
     if ttcmap.is_null() {
-        ttcmap = tt_cmap_read(sfont, 3i32 as u16, 1i32 as u16);
+        ttcmap = tt_cmap_read(sfont, 3_u16, 1_u16);
         if ttcmap.is_null() {
-            ttcmap = tt_cmap_read(sfont, 0i32 as u16, 3i32 as u16);
+            ttcmap = tt_cmap_read(sfont, 0_u16, 3_u16);
             if ttcmap.is_null() {
                 _tt_abort(
                     b"Unable to read OpenType/TrueType Unicode cmap table.\x00" as *const u8

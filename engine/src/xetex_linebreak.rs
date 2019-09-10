@@ -361,7 +361,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
         *fresh1 = new_penalty(10000i32);
         cur_list.tail = *fresh1
     } else {
-        (*mem.offset(cur_list.tail as isize)).b16.s1 = 12i32 as u16;
+        (*mem.offset(cur_list.tail as isize)).b16.s1 = 12_u16;
         delete_glue_ref((*mem.offset((cur_list.tail + 1i32) as isize)).b32.s0);
         flush_node_list((*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1);
         (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 = 10000i32
@@ -1298,8 +1298,8 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
             }
         }
         q = get_node(active_node_size as i32);
-        (*mem.offset(q as isize)).b16.s1 = 0i32 as u16;
-        (*mem.offset(q as isize)).b16.s0 = 2i32 as u16;
+        (*mem.offset(q as isize)).b16.s1 = 0_u16;
+        (*mem.offset(q as isize)).b16.s0 = 2_u16;
         (*mem.offset(q as isize)).b32.s1 = 4999999i32 - 7i32;
         (*mem.offset((q + 1i32) as isize)).b32.s1 = -0xfffffffi32;
         (*mem.offset((q + 1i32) as isize)).b32.s0 = cur_list.prev_graf + 1i32;
@@ -3283,7 +3283,7 @@ unsafe extern "C" fn post_line_break(mut d: bool) {
                 r = (*mem.offset(s as isize)).b32.s1;
                 (*mem.offset(s as isize)).b32.s1 = -0xfffffffi32;
                 flush_node_list((*mem.offset(q as isize)).b32.s1);
-                (*mem.offset(q as isize)).b16.s0 = 0i32 as u16
+                (*mem.offset(q as isize)).b16.s0 = 0_u16
             }
             if (*mem.offset((q + 1i32) as isize)).b32.s1 != -0xfffffffi32 {
                 /*913:*/
@@ -4033,8 +4033,8 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                     } else {
                         q = get_node(7i32);
                         (*mem.offset(q as isize)).b32.s1 = r;
-                        (*mem.offset(q as isize)).b16.s1 = 2i32 as u16;
-                        (*mem.offset(q as isize)).b16.s0 = 0i32 as u16;
+                        (*mem.offset(q as isize)).b16.s1 = 2_u16;
+                        (*mem.offset(q as isize)).b16.s0 = 0_u16;
                         (*mem.offset((q + 1i32) as isize)).b32.s1 =
                             break_width[1] - cur_active_width[1];
                         (*mem.offset((q + 2i32) as isize)).b32.s1 =
@@ -4115,7 +4115,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                             .b32
                             .s1)
                     }
-                    fit_class = 0i32 as u8;
+                    fit_class = 0_u8;
                     while fit_class as i32 <= 3i32 {
                         if minimal_demerits[fit_class as usize] <= minimum_demerits {
                             /*874: "Insert a new active node from best_place[fit_class] to cur_p" */
@@ -4152,8 +4152,8 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                     if r != 4999999i32 - 7i32 {
                         q = get_node(7i32); /* subtype is not used */
                         (*mem.offset(q as isize)).b32.s1 = r;
-                        (*mem.offset(q as isize)).b16.s1 = 2i32 as u16;
-                        (*mem.offset(q as isize)).b16.s0 = 0i32 as u16;
+                        (*mem.offset(q as isize)).b16.s1 = 2_u16;
+                        (*mem.offset(q as isize)).b16.s0 = 0_u16;
                         (*mem.offset((q + 1i32) as isize)).b32.s1 =
                             cur_active_width[1] - break_width[1];
                         (*mem.offset((q + 2i32) as isize)).b32.s1 =
@@ -4396,7 +4396,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                             if (cur_active_width[2] as i64) < 1663497 {
                                                 /* XXX: magic number in original WEB code */
                                                 b = 10000i32;
-                                                fit_class = 0i32 as u8;
+                                                fit_class = 0_u8;
                                                 current_block = 11849408527845460430;
                                             } else {
                                                 current_block = 16221891950104054966;
@@ -4410,12 +4410,12 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                                 b = badness(g, cur_active_width[2]);
                                                 if b > 12i32 {
                                                     if b > 99i32 {
-                                                        fit_class = 0i32 as u8
+                                                        fit_class = 0_u8
                                                     } else {
-                                                        fit_class = 1i32 as u8
+                                                        fit_class = 1_u8
                                                     }
                                                 } else {
-                                                    fit_class = 2i32 as u8
+                                                    fit_class = 2_u8
                                                 }
                                                 current_block = 11849408527845460430;
                                             }
@@ -4430,9 +4430,9 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                         b = badness(-g, cur_active_width[6]);
                                         if b > 12i32 {
                                             /* XXX hardcoded in WEB */
-                                            fit_class = 3i32 as u8
+                                            fit_class = 3_u8
                                         } else {
-                                            fit_class = 2i32 as u8
+                                            fit_class = 2_u8
                                         }
                                         current_block = 11849408527845460430;
                                     } else {
@@ -4457,7 +4457,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                         11849408527845460430 => {}
                         _ => {
                             b = 0i32;
-                            fit_class = 2i32 as u8;
+                            fit_class = 2_u8;
                             current_block = 8633396468472091231;
                         }
                     }
@@ -4468,7 +4468,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                         if (cur_active_width[2] as i64) < 1663497 {
                             /* XXX: magic number in original WEB code */
                             b = 10000i32;
-                            fit_class = 0i32 as u8;
+                            fit_class = 0_u8;
                             current_block_230 = 4001239642700071046;
                         } else {
                             current_block_230 = 15455430299222214173;
@@ -4481,12 +4481,12 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                             b = badness(shortfall, cur_active_width[2]);
                             if b > 12i32 {
                                 if b > 99i32 {
-                                    fit_class = 0i32 as u8
+                                    fit_class = 0_u8
                                 } else {
-                                    fit_class = 1i32 as u8
+                                    fit_class = 1_u8
                                 }
                             } else {
-                                fit_class = 2i32 as u8
+                                fit_class = 2_u8
                             }
                         }
                         _ => {}
@@ -4502,9 +4502,9 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                     b = badness(-shortfall, cur_active_width[6])
                 }
                 if b > 12i32 {
-                    fit_class = 3i32 as u8
+                    fit_class = 3_u8
                 } else {
-                    fit_class = 2i32 as u8
+                    fit_class = 2_u8
                 }
                 current_block = 8633396468472091231;
             }
@@ -4808,11 +4808,11 @@ unsafe extern "C" fn hyphenate() {
     let mut k: str_number = 0;
     let mut u: pool_pointer = 0;
     let mut for_end: i32 = 0;
-    j = 0i32 as i16;
+    j = 0_i16;
     for_end = hn as i32;
     if j as i32 <= for_end {
         loop {
-            hyf[j as usize] = 0i32 as u8;
+            hyf[j as usize] = 0_u8;
             let fresh18 = j;
             j = j + 1;
             if !((fresh18 as i32) < for_end) {
@@ -4824,7 +4824,7 @@ unsafe extern "C" fn hyphenate() {
     hn += 1;
     hc[hn as usize] = cur_lang as i32;
     let mut for_end_0: i32 = 0;
-    j = 2i32 as i16;
+    j = 2_i16;
     for_end_0 = hn as i32;
     if j as i32 <= for_end_0 {
         loop {
@@ -4843,7 +4843,7 @@ unsafe extern "C" fn hyphenate() {
             break;
         }
         if length(k) == hn as i32 {
-            j = 1i32 as i16;
+            j = 1_i16;
             u = *str_start.offset((k as i64 - 65536) as isize);
             loop {
                 if *str_pool.offset(u as isize) as i32 != hc[j as usize] {
@@ -4862,7 +4862,7 @@ unsafe extern "C" fn hyphenate() {
                 _ => {
                     s = *hyph_list.offset(h as isize);
                     while s != -0xfffffffi32 {
-                        hyf[(*mem.offset(s as isize)).b32.s0 as usize] = 1i32 as u8;
+                        hyf[(*mem.offset(s as isize)).b32.s0 as usize] = 1_u8;
                         s = (*mem.offset(s as isize)).b32.s1
                     }
                     hn -= 1;
@@ -4888,7 +4888,7 @@ unsafe extern "C" fn hyphenate() {
             hc[(hn as i32 + 1i32) as usize] = 0i32;
             hc[(hn as i32 + 2i32) as usize] = max_hyph_char;
             let mut for_end_1: i32 = 0;
-            j = 0i32 as i16;
+            j = 0_i16;
             for_end_1 = hn as i32 - r_hyf + 1i32;
             if j as i32 <= for_end_1 {
                 loop {
@@ -4924,11 +4924,11 @@ unsafe extern "C" fn hyphenate() {
         _ => {}
     }
     let mut for_end_2: i32 = 0;
-    j = 0i32 as i16;
+    j = 0_i16;
     for_end_2 = l_hyf - 1i32;
     if j as i32 <= for_end_2 {
         loop {
-            hyf[j as usize] = 0i32 as u8;
+            hyf[j as usize] = 0_u8;
             let fresh21 = j;
             j = j + 1;
             if !((fresh21 as i32) < for_end_2) {
@@ -4937,11 +4937,11 @@ unsafe extern "C" fn hyphenate() {
         }
     }
     let mut for_end_3: i32 = 0;
-    j = 0i32 as i16;
+    j = 0_i16;
     for_end_3 = r_hyf - 1i32;
     if j as i32 <= for_end_3 {
         loop {
-            hyf[(hn as i32 - j as i32) as usize] = 0i32 as u8;
+            hyf[(hn as i32 - j as i32) as usize] = 0_u8;
             let fresh22 = j;
             j = j + 1;
             if !((fresh22 as i32) < for_end_3) {
@@ -4994,7 +4994,7 @@ unsafe extern "C" fn hyphenate() {
                     q = new_native_word_node(hf, j as i32 - hyphen_passed as i32);
                     (*mem.offset(q as isize)).b16.s0 = (*mem.offset(ha as isize)).b16.s0;
                     let mut for_end_6: i32 = 0;
-                    i = 0i32 as i16;
+                    i = 0_i16;
                     for_end_6 = j as i32 - hyphen_passed as i32 - 1i32;
                     if i as i32 <= for_end_6 {
                         loop {
@@ -5062,7 +5062,7 @@ unsafe extern "C" fn hyphenate() {
         q = new_native_word_node(hf, hn as i32 - hyphen_passed as i32);
         (*mem.offset(q as isize)).b16.s0 = (*mem.offset(ha as isize)).b16.s0;
         let mut for_end_7: i32 = 0;
-        i = 0i32 as i16;
+        i = 0_i16;
         for_end_7 = hn as i32 - hyphen_passed as i32 - 1i32;
         if i as i32 <= for_end_7 {
             loop {
@@ -5164,7 +5164,7 @@ unsafe extern "C" fn hyphenate() {
             match current_block {
                 6826215413708131726 => {}
                 _ => {
-                    j = 1i32 as i16;
+                    j = 1_i16;
                     s = ha;
                     init_list = -0xfffffffi32;
                     current_block = 5209103994167801282;
@@ -5177,11 +5177,11 @@ unsafe extern "C" fn hyphenate() {
                 while (*mem.offset(s as isize)).b32.s1 != ha {
                     s = (*mem.offset(s as isize)).b32.s1
                 }
-                j = 0i32 as i16
+                j = 0_i16
             }
             6826215413708131726 => {
                 s = ha;
-                j = 0i32 as i16;
+                j = 0_i16;
                 hu[0] = max_hyph_char;
                 init_lig = 0i32 != 0;
                 init_list = -0xfffffffi32
@@ -5211,7 +5211,7 @@ unsafe extern "C" fn hyphenate() {
                     r = get_node(2i32);
                     (*mem.offset(r as isize)).b32.s1 =
                         (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1;
-                    (*mem.offset(r as isize)).b16.s1 = 7i32 as u16;
+                    (*mem.offset(r as isize)).b16.s1 = 7_u16;
                     major_tail = r;
                     r_count = 0i32;
                     while (*mem.offset(major_tail as isize)).b32.s1 > -0xfffffffi32 {
@@ -5219,7 +5219,7 @@ unsafe extern "C" fn hyphenate() {
                         r_count += 1
                     }
                     i = hyphen_passed;
-                    hyf[i as usize] = 0i32 as u8;
+                    hyf[i as usize] = 0_u8;
                     minor_tail = -0xfffffffi32;
                     (*mem.offset((r + 1i32) as isize)).b32.s0 = -0xfffffffi32;
                     hyf_node = new_character(hf, hyf_char as UTF16_code);
@@ -5254,7 +5254,7 @@ unsafe extern "C" fn hyphenate() {
                     }
                     minor_tail = -0xfffffffi32;
                     (*mem.offset((r + 1i32) as isize)).b32.s1 = -0xfffffffi32;
-                    c_loc = 0i32 as i16;
+                    c_loc = 0_i16;
                     if *bchar_label.offset(hf as isize) != 0i32 {
                         l -= 1;
                         c = hu[l as usize];
@@ -5266,7 +5266,7 @@ unsafe extern "C" fn hyphenate() {
                             l = (reconstitute(l, hn, bchar, 65536i32) as i32 + 1i32) as i16;
                             if c_loc as i32 > 0i32 {
                                 hu[c_loc as usize] = c;
-                                c_loc = 0i32 as i16
+                                c_loc = 0_i16
                             }
                             if (*mem.offset((4999999i32 - 4i32) as isize)).b32.s1 > -0xfffffffi32 {
                                 if minor_tail == -0xfffffffi32 {
@@ -5330,7 +5330,7 @@ unsafe extern "C" fn finite_shrink(mut p: i32) -> i32 {
             print_nl_cstr(b"! \x00" as *const u8 as *const i8);
         }
         print_cstr(b"Infinite glue shrinkage found in a paragraph\x00" as *const u8 as *const i8);
-        help_ptr = 5i32 as u8;
+        help_ptr = 5_u8;
         help_line[4] =
             b"The paragraph just ended includes some glue that has\x00" as *const u8 as *const i8;
         help_line[3] = b"infinite shrinkability, e.g., `\\hskip 0pt minus 1fil\'.\x00" as *const u8
@@ -5344,7 +5344,7 @@ unsafe extern "C" fn finite_shrink(mut p: i32) -> i32 {
         error();
     }
     q = new_spec(p);
-    (*mem.offset(q as isize)).b16.s0 = 0i32 as u16;
+    (*mem.offset(q as isize)).b16.s0 = 0_u16;
     delete_glue_ref(p);
     return q;
 }
@@ -5504,7 +5504,7 @@ unsafe extern "C" fn reconstitute(
                                                     (*mem.offset(cur_q as isize)).b32.s1,
                                                 );
                                                 if lft_hit {
-                                                    (*mem.offset(p as isize)).b16.s0 = 2i32 as u16;
+                                                    (*mem.offset(p as isize)).b16.s0 = 2_u16;
                                                     lft_hit = 0i32 != 0
                                                 }
                                                 (*mem.offset(cur_q as isize)).b32.s1 = p;
@@ -5608,7 +5608,7 @@ unsafe extern "C" fn reconstitute(
         if ligature_present {
             p = new_ligature(hf, cur_l as u16, (*mem.offset(cur_q as isize)).b32.s1);
             if lft_hit {
-                (*mem.offset(p as isize)).b16.s0 = 2i32 as u16;
+                (*mem.offset(p as isize)).b16.s0 = 2_u16;
                 lft_hit = 0i32 != 0
             }
             if rt_hit {
@@ -5725,7 +5725,7 @@ unsafe extern "C" fn find_protchar_left(mut l: i32, mut d: bool) -> i32 {
             l = (*mem.offset(l as isize)).b32.s1
         }
     }
-    hlist_stack_level = 0i32 as i16;
+    hlist_stack_level = 0_i16;
     run = 1i32 != 0;
     loop {
         t = l;
@@ -5782,7 +5782,7 @@ unsafe extern "C" fn find_protchar_right(mut l: i32, mut r: i32) -> i32 {
     if r == -0xfffffffi32 {
         return -0xfffffffi32;
     }
-    hlist_stack_level = 0i32 as i16;
+    hlist_stack_level = 0_i16;
     run = 1i32 != 0;
     loop {
         t = r;

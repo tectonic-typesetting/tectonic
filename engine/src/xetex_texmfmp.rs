@@ -310,7 +310,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
         j = (j as u32).wrapping_add(bytesToWrite) as pool_pointer as pool_pointer;
         i += 1
     }
-    *name.offset(j as isize) = 0i32 as i8;
+    *name.offset(j as isize) = 0_i8;
     return name;
 }
 unsafe extern "C" fn compare_paths(mut p1: *const i8, mut p2: *const i8) -> i32 {

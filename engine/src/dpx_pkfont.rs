@@ -1009,7 +1009,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                 pdf_add_dict(charprocs, pdf_new_name(charname), pdf_ref_obj(charproc));
                 pdf_release_obj(charproc);
             }
-            charavail[(pkh.chrcode & 0xffi32) as usize] = 1i32 as i8
+            charavail[(pkh.chrcode & 0xffi32) as usize] = 1_i8
         } else {
             match opcode {
                 240 | 241 | 242 | 243 => {
