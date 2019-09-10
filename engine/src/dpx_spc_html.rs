@@ -22,13 +22,6 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -617,30 +610,8 @@ unsafe extern "C" fn html_open_link(
 ) -> i32 {
     let mut color: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut url: *mut i8 = 0 as *mut i8;
-    if !name.is_null() {
-    } else {
-        __assert_fail(
-            b"name\x00" as *const u8 as *const i8,
-            b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            289_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"int html_open_link(struct spc_env *, const char *, struct spc_html_ *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if (*sd).link_dict.is_null() {
-    } else {
-        __assert_fail(
-            b"sd->link_dict == NULL\x00" as *const u8 as *const i8,
-            b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            290_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"int html_open_link(struct spc_env *, const char *, struct spc_html_ *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!name.is_null());
+    assert!((*sd).link_dict.is_null());
     (*sd).link_dict = pdf_new_dict();
     pdf_add_dict(
         (*sd).link_dict,
@@ -711,18 +682,7 @@ unsafe extern "C" fn html_open_dest(
     cp.y = (*spe).y_user;
     pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
     page_ref = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8);
-    if !page_ref.is_null() {
-    } else {
-        __assert_fail(
-            b"page_ref\x00" as *const u8 as *const i8,
-            b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            346_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"int html_open_dest(struct spc_env *, const char *, struct spc_html_ *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!page_ref.is_null());
     array = pdf_new_array();
     pdf_add_array(array, page_ref);
     pdf_add_array(array, pdf_new_name(b"XYZ\x00" as *const u8 as *const i8));
@@ -1477,15 +1437,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
     mut spe: *mut spc_env,
     mut ap: *mut spc_arg,
 ) -> i32 {
-    if !sph.is_null() && !spe.is_null() && !ap.is_null() {
-    } else {
-        __assert_fail(b"sph && spe && ap\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_html.c\x00" as *const u8 as
-                          *const i8, 910_u32,
-                      (*::std::mem::transmute::<&[u8; 85],
-                                                &[i8; 85]>(b"int spc_html_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
-    }
+    assert!(!sph.is_null() && !spe.is_null() && !ap.is_null());
     while (*ap).curptr < (*ap).endptr
         && *(*__ctype_b_loc()).offset(*(*ap).curptr.offset(0) as u8 as i32 as isize) as i32
             & _ISspace as i32 as u16 as i32

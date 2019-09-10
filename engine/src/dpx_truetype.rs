@@ -39,13 +39,6 @@ extern "C" {
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -526,32 +519,10 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     let mut handle: *mut rust_input_handle_t = 0 as *mut rust_input_handle_t;
     let mut length: i32 = 0;
     let mut error: i32 = 0i32;
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            65_u32,
-            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
-                b"int pdf_font_open_truetype(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     ident = pdf_font_get_ident(font);
     index = pdf_font_get_index(font);
-    if !ident.is_null() {
-    } else {
-        __assert_fail(
-            b"ident\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            70_u32,
-            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
-                b"int pdf_font_open_truetype(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ident.is_null());
     handle = dpx_open_truetype_file(ident) as *mut rust_input_handle_t;
     if handle.is_null() {
         handle = dpx_open_dfont_file(ident) as *mut rust_input_handle_t;
@@ -596,18 +567,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     fontdict = pdf_font_get_resource(font);
     descriptor = pdf_font_get_descriptor(font);
     /* ENABLE_NOEMBED */
-    if !fontdict.is_null() && !descriptor.is_null() {
-    } else {
-        __assert_fail(
-            b"fontdict && descriptor\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            114_u32,
-            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
-                b"int pdf_font_open_truetype(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!fontdict.is_null() && !descriptor.is_null());
     let mut fontname: [i8; 256] = [0; 256];
     let mut n: i32 = 0;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -653,18 +613,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         ttstub_input_close(handle as rust_input_handle_t);
         _tt_abort(b"Could not obtain necessary font info.\x00" as *const u8 as *const i8);
     }
-    if pdf_obj_typeof(tmp) == 6i32 {
-    } else {
-        __assert_fail(
-            b"pdf_obj_typeof(tmp) == PDF_DICT\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            154_u32,
-            (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
-                b"int pdf_font_open_truetype(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(pdf_obj_typeof(tmp) == 6i32);
     pdf_merge_dict(descriptor, tmp);
     pdf_release_obj(tmp);
     if embedding == 0 {
@@ -1077,30 +1026,8 @@ unsafe extern "C" fn selectglyph(
     let mut r: *const i8 = 0 as *const i8;
     let mut n: i32 = 0;
     let mut error: i32 = 0i32;
-    if !suffix.is_null() && !gm.is_null() && !out.is_null() {
-    } else {
-        __assert_fail(
-            b"suffix && gm && out\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            451_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"int selectglyph(USHORT, const char *, struct glyph_mapper *, USHORT *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if !suffix.is_null() && *suffix as i32 != 0i32 {
-    } else {
-        __assert_fail(
-            b"suffix && *suffix != 0\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            452_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"int selectglyph(USHORT, const char *, struct glyph_mapper *, USHORT *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!suffix.is_null() && !gm.is_null() && !out.is_null());
+    assert!(!suffix.is_null() && *suffix as i32 != 0i32);
     s = new((strlen(suffix).wrapping_add(1i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(s, suffix);
@@ -1189,15 +1116,7 @@ unsafe extern "C" fn composeglyph(
         ' ' as i32 as i8,
         0_i8,
     ];
-    if !glyphs.is_null() && n_glyphs > 0i32 && !gm.is_null() && !gid.is_null() {
-    } else {
-        __assert_fail(b"glyphs && n_glyphs > 0 && gm && gid\x00" as *const u8
-                          as *const i8,
-                      b"dpx-truetype.c\x00" as *const u8 as
-                          *const i8, 514_u32,
-                      (*::std::mem::transmute::<&[u8; 79],
-                                                &[i8; 79]>(b"int composeglyph(USHORT *, int, const char *, struct glyph_mapper *, USHORT *)\x00")).as_ptr());
-    }
+    assert!(!glyphs.is_null() && n_glyphs > 0i32 && !gm.is_null() && !gid.is_null());
     if feat.is_null() || *feat.offset(0) as i32 == '\u{0}' as i32 {
         /* meaning "Unknown" */
         error = select_gsub(
@@ -1430,15 +1349,7 @@ unsafe extern "C" fn findparanoiac(
                 }
             }
         } else {
-            __assert_fail(
-                b"0\x00" as *const u8 as *const i8,
-                b"dpx-truetype.c\x00" as *const u8 as *const i8,
-                670_u32,
-                (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
-                    b"int findparanoiac(const char *, USHORT *, struct glyph_mapper *)\x00",
-                ))
-                .as_ptr(),
-            );
+            unreachable!();
         }
         agln = (*agln).alternate
     }
@@ -1454,18 +1365,7 @@ unsafe extern "C" fn resolve_glyph(
     let mut name: *mut i8 = 0 as *mut i8;
     let mut suffix: *mut i8 = 0 as *mut i8;
     let mut ucv: i32 = 0;
-    if !glyphname.is_null() {
-    } else {
-        __assert_fail(
-            b"glyphname\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            686_u32,
-            (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
-                b"int resolve_glyph(const char *, USHORT *, struct glyph_mapper *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!glyphname.is_null());
     /* Boooo */
     /*
      * First we try glyph name to GID mapping using post table if post table
@@ -1564,18 +1464,7 @@ unsafe extern "C" fn do_custom_encoding(
     let mut idx: u16 = 0;
     let mut gid: u16 = 0;
     let mut error: i32 = 0i32;
-    if !font.is_null() && !encoding.is_null() && !usedchars.is_null() && !sfont.is_null() {
-    } else {
-        __assert_fail(
-            b"font && encoding && usedchars && sfont\x00" as *const u8 as *const i8,
-            b"dpx-truetype.c\x00" as *const u8 as *const i8,
-            778_u32,
-            (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
-                b"int do_custom_encoding(pdf_font *, char **, const char *, sfnt *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null() && !encoding.is_null() && !usedchars.is_null() && !sfont.is_null());
     error = setup_glyph_mapper(&mut gm, sfont);
     if error != 0 {
         dpx_warning(

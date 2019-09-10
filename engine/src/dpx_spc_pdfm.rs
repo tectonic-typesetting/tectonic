@@ -80,13 +80,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
@@ -816,18 +809,7 @@ unsafe extern "C" fn safeputresdent(
     mut dp: *mut libc::c_void,
 ) -> i32 {
     let mut key: *mut i8 = 0 as *mut i8;
-    if !kp.is_null() && !vp.is_null() && !dp.is_null() {
-    } else {
-        __assert_fail(
-            b"kp && vp && dp\x00" as *const u8 as *const i8,
-            b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            221_u32,
-            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
-                b"int safeputresdent(pdf_obj *, pdf_obj *, void *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!kp.is_null() && !vp.is_null() && !dp.is_null());
     key = pdf_name_value(kp);
     if !pdf_lookup_dict(dp as *mut pdf_obj, key).is_null() {
         dpx_warning(
@@ -846,18 +828,7 @@ unsafe extern "C" fn safeputresdict(
 ) -> i32 {
     let mut key: *mut i8 = 0 as *mut i8;
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !kp.is_null() && !vp.is_null() && !dp.is_null() {
-    } else {
-        __assert_fail(
-            b"kp && vp && dp\x00" as *const u8 as *const i8,
-            b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            243_u32,
-            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
-                b"int safeputresdict(pdf_obj *, pdf_obj *, void *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!kp.is_null() && !vp.is_null() && !dp.is_null());
     key = pdf_name_value(kp);
     dict = pdf_lookup_dict(dp as *mut pdf_obj, key);
     if pdf_obj_typeof(vp) == 9i32 {
@@ -1117,57 +1088,13 @@ unsafe extern "C" fn needreencode(
     let mut r: i32 = 0i32;
     let mut i: u32 = 0;
     let mut tk: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !cd.is_null() && !(*cd).taintkeys.is_null() {
-    } else {
-        __assert_fail(
-            b"cd && cd->taintkeys\x00" as *const u8 as *const i8,
-            b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            459_u32,
-            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
-                b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if pdf_obj_typeof(kp) == 4i32 {
-    } else {
-        __assert_fail(
-            b"pdf_obj_typeof(kp) == PDF_NAME\x00" as *const u8 as *const i8,
-            b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            460_u32,
-            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
-                b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
-    if pdf_obj_typeof(vp) == 3i32 {
-    } else {
-        __assert_fail(
-            b"pdf_obj_typeof(vp) == PDF_STRING\x00" as *const u8 as *const i8,
-            b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            461_u32,
-            (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
-                b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cd.is_null() && !(*cd).taintkeys.is_null());
+    assert!(pdf_obj_typeof(kp) == 4i32);
+    assert!(pdf_obj_typeof(vp) == 3i32);
     i = 0_u32;
     while i < pdf_array_length((*cd).taintkeys) {
         tk = pdf_get_array((*cd).taintkeys, i as i32);
-        if !tk.is_null() && pdf_obj_typeof(tk) == 4i32 {
-        } else {
-            __assert_fail(
-                b"tk && pdf_obj_typeof(tk) == PDF_NAME\x00" as *const u8 as *const i8,
-                b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-                465_u32,
-                (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
-                    b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
-                ))
-                .as_ptr(),
-            );
-        }
+        assert!(!tk.is_null() && pdf_obj_typeof(tk) == 4i32);
         if streq_ptr(pdf_name_value(kp), pdf_name_value(tk)) {
             r = 1i32;
             break;
@@ -1196,18 +1123,7 @@ unsafe extern "C" fn modstrings(
 ) -> i32 {
     let mut r: i32 = 0i32;
     let mut cd: *mut tounicode = dp as *mut tounicode;
-    if pdf_obj_typeof(kp) == 4i32 {
-    } else {
-        __assert_fail(
-            b"pdf_obj_typeof(kp) == PDF_NAME\x00" as *const u8 as *const i8,
-            b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            487_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"int modstrings(pdf_obj *, pdf_obj *, void *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(pdf_obj_typeof(kp) == 4i32);
     match pdf_obj_typeof(vp) {
         3 => {
             if !cd.is_null() && (*cd).cmap_id >= 0i32 && !(*cd).taintkeys.is_null() {
@@ -3769,15 +3685,7 @@ pub unsafe extern "C" fn spc_pdfm_setup_handler(
     let mut error: i32 = -1i32;
     let mut i: size_t = 0;
     let mut q: *mut i8 = 0 as *mut i8;
-    if !sph.is_null() && !spe.is_null() && !ap.is_null() {
-    } else {
-        __assert_fail(b"sph && spe && ap\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_pdfm.c\x00" as *const u8 as
-                          *const i8, 1970_u32,
-                      (*::std::mem::transmute::<&[u8; 85],
-                                                &[i8; 85]>(b"int spc_pdfm_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
-    }
+    assert!(!sph.is_null() && !spe.is_null() && !ap.is_null());
     skip_white(&mut (*ap).curptr, (*ap).endptr);
     if (*ap)
         .curptr

@@ -17,13 +17,6 @@ extern "C" {
     #[no_mangle]
     fn round(_: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn abs(_: i32) -> i32;
     #[no_mangle]
     fn labs(_: i64) -> i64;
@@ -1293,15 +1286,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
     /* text_mode() must come before text_state.is_mb is changed. */
     text_mode(); /* Caller should check font_id. */
     font = &mut *dev_fonts.offset(font_id as isize) as *mut dev_font; /* space not necessary. */
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-pdfdev.c\x00" as *const u8 as *const i8,
-            847_u32,
-            (*::std::mem::transmute::<&[u8; 22], &[i8; 22]>(b"int dev_set_font(int)\x00")).as_ptr(),
-        ); /* op: Tf */
-    } /* _FIXME_ */
+    assert!(!font.is_null());
     if (*font).real_font_index >= 0i32 {
         real_font = &mut *dev_fonts.offset((*font).real_font_index as isize) as *mut dev_font
     } else {

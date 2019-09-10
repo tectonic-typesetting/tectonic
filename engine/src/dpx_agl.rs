@@ -8,13 +8,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
@@ -281,18 +274,7 @@ pub unsafe extern "C" fn agl_chop_suffix(
     let mut name: *mut i8 = 0 as *mut i8;
     let mut p: *mut i8 = 0 as *mut i8;
     let mut len: i32 = 0;
-    if !glyphname.is_null() && !suffix.is_null() {
-    } else {
-        __assert_fail(
-            b"glyphname && suffix\x00" as *const u8 as *const i8,
-            b"dpx-agl.c\x00" as *const u8 as *const i8,
-            95_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"char *agl_chop_suffix(const char *, char **)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!glyphname.is_null() && !suffix.is_null());
     p = strchr(glyphname, '.' as i32);
     if !p.is_null() {
         len = strlen(glyphname).wrapping_sub(strlen(p)) as i32;
@@ -1325,15 +1307,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
     let mut count: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
-    if !glyphstr.is_null() && !dstpp.is_null() {
-    } else {
-        __assert_fail(b"glyphstr && dstpp\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-agl.c\x00" as *const u8 as *const i8,
-                      656_u32,
-                      (*::std::mem::transmute::<&[u8; 81],
-                                                &[i8; 81]>(b"int32_t agl_sput_UTF16BE(const char *, unsigned char **, unsigned char *, int *)\x00")).as_ptr());
-    }
+    assert!(!glyphstr.is_null() && !dstpp.is_null());
     p = glyphstr;
     endptr = strchr(p, '.' as i32);
     if endptr.is_null() {

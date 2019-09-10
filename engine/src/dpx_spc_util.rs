@@ -37,13 +37,6 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
@@ -203,18 +196,7 @@ unsafe extern "C" fn rgb_color_from_hsv(
     let mut r: f64 = 0.;
     let mut g: f64 = 0.;
     let mut b: f64 = 0.;
-    if !color.is_null() {
-    } else {
-        __assert_fail(
-            b"color\x00" as *const u8 as *const i8,
-            b"dpx-spc_util.c\x00" as *const u8 as *const i8,
-            81_u32,
-            (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
-                b"void rgb_color_from_hsv(pdf_color *, double, double, double)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!color.is_null());
     b = v;
     g = b;
     r = g;
@@ -460,15 +442,7 @@ pub unsafe extern "C" fn spc_util_read_colorspec(
     mut ap: *mut spc_arg,
     mut syntax: i32,
 ) -> i32 {
-    if !colorspec.is_null() && !spe.is_null() && !ap.is_null() {
-    } else {
-        __assert_fail(b"colorspec && spe && ap\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_util.c\x00" as *const u8 as
-                          *const i8, 243_u32,
-                      (*::std::mem::transmute::<&[u8; 82],
-                                                &[i8; 82]>(b"int spc_util_read_colorspec(struct spc_env *, pdf_color *, struct spc_arg *, int)\x00")).as_ptr());
-    }
+    assert!(!colorspec.is_null() && !spe.is_null() && !ap.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     if (*ap).curptr >= (*ap).endptr {
         return -1i32;
@@ -487,15 +461,7 @@ pub unsafe extern "C" fn spc_util_read_pdfcolor(
     mut defaultcolor: *mut pdf_color,
 ) -> i32 {
     let mut error: i32 = 0i32;
-    if !colorspec.is_null() && !spe.is_null() && !ap.is_null() {
-    } else {
-        __assert_fail(b"colorspec && spe && ap\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_util.c\x00" as *const u8 as
-                          *const i8, 261_u32,
-                      (*::std::mem::transmute::<&[u8; 89],
-                                                &[i8; 89]>(b"int spc_util_read_pdfcolor(struct spc_env *, pdf_color *, struct spc_arg *, pdf_color *)\x00")).as_ptr());
-    }
+    assert!(!colorspec.is_null() && !spe.is_null() && !ap.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     if (*ap).curptr >= (*ap).endptr {
         return -1i32;

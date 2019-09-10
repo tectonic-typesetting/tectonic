@@ -53,13 +53,6 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn CIDFont_get_fontname(font: *mut CIDFont) -> *mut i8;
     #[no_mangle]
     fn CIDFont_get_ident(font: *mut CIDFont) -> *mut i8;
@@ -322,18 +315,7 @@ unsafe extern "C" fn new_used_chars2() -> *mut i8 {
 }
 /* MUST BE NULL */
 unsafe extern "C" fn Type0Font_init_font_struct(mut font: *mut Type0Font) {
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type0.c\x00" as *const u8 as *const i8,
-            104_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"void Type0Font_init_font_struct(Type0Font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     (*font).fontname = 0 as *mut i8;
     (*font).fontdict = 0 as *mut pdf_obj;
     (*font).indirect = 0 as *mut pdf_obj;
@@ -523,18 +505,7 @@ pub unsafe extern "C" fn Type0Font_set_ToUnicode(
     mut font: *mut Type0Font,
     mut cmap_ref: *mut pdf_obj,
 ) {
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type0.c\x00" as *const u8 as *const i8,
-            259_u32,
-            (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
-                b"void Type0Font_set_ToUnicode(Type0Font *, pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     pdf_add_dict(
         (*font).fontdict,
         pdf_new_name(b"ToUnicode\x00" as *const u8 as *const i8),
@@ -567,50 +538,17 @@ unsafe extern "C" fn Type0Font_flush(mut font: *mut Type0Font) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_get_wmode(mut font: *mut Type0Font) -> i32 {
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type0.c\x00" as *const u8 as *const i8,
-            293_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"int Type0Font_get_wmode(Type0Font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     return (*font).wmode;
 }
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_get_usedchars(mut font: *mut Type0Font) -> *mut i8 {
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type0.c\x00" as *const u8 as *const i8,
-            301_u32,
-            (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
-                b"char *Type0Font_get_usedchars(Type0Font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     return (*font).used_chars;
 }
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_get_resource(mut font: *mut Type0Font) -> *mut pdf_obj {
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type0.c\x00" as *const u8 as *const i8,
-            309_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"pdf_obj *Type0Font_get_resource(Type0Font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     /*
      * This looks somewhat strange.
      */
@@ -1020,18 +958,7 @@ unsafe extern "C" fn create_dummy_CMap() -> *mut pdf_obj {
 unsafe extern "C" fn pdf_read_ToUnicode_file(mut cmap_name: *const i8) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut res_id: i32 = -1i32;
-    if !cmap_name.is_null() {
-    } else {
-        __assert_fail(
-            b"cmap_name\x00" as *const u8 as *const i8,
-            b"dpx-type0.c\x00" as *const u8 as *const i8,
-            646_u32,
-            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
-                b"pdf_obj *pdf_read_ToUnicode_file(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!cmap_name.is_null());
     res_id = pdf_findresource(b"CMap\x00" as *const u8 as *const i8, cmap_name);
     if res_id < 0i32 {
         if streq_ptr(

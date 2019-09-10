@@ -7,15 +7,7 @@
          unused_mut)]
 
 extern crate libc;
-extern "C" {
-    #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-}
+
 pub type size_t = u64;
 #[no_mangle]
 pub unsafe extern "C" fn UC_is_valid(mut ucv: i32) -> bool {
@@ -204,18 +196,7 @@ pub unsafe extern "C" fn UC_UTF8_encode_char(
 ) -> size_t {
     let mut count: i32 = 0i32;
     let mut p: *mut u8 = *pp;
-    if !pp.is_null() && !(*pp).is_null() && !endptr.is_null() {
-    } else {
-        __assert_fail(
-            b"pp && *pp && endptr\x00" as *const u8 as *const i8,
-            b"dpx-unicode.c\x00" as *const u8 as *const i8,
-            197_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"size_t UC_UTF8_encode_char(int32_t, unsigned char **, unsigned char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!pp.is_null() && !(*pp).is_null() && !endptr.is_null());
     if !UC_is_valid(ucv) {
         return 0i32 as size_t;
     }

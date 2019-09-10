@@ -25,13 +25,6 @@ extern "C" {
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
@@ -604,18 +597,7 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut k: i32 = 0;
-    if !named_objects.is_null() {
-    } else {
-        __assert_fail(
-            b"named_objects\x00" as *const u8 as *const i8,
-            b"dpx-specials.c\x00" as *const u8 as *const i8,
-            162_u32,
-            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
-                b"pdf_obj *spc_lookup_reference(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!named_objects.is_null());
     if key.is_null() {
         return 0 as *mut pdf_obj;
     }
@@ -686,18 +668,7 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     let mut k: i32 = 0;
-    if !named_objects.is_null() {
-    } else {
-        __assert_fail(
-            b"named_objects\x00" as *const u8 as *const i8,
-            b"dpx-specials.c\x00" as *const u8 as *const i8,
-            227_u32,
-            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
-                b"pdf_obj *spc_lookup_object(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!named_objects.is_null());
     if key.is_null() {
         return 0 as *mut pdf_obj;
     }
@@ -741,18 +712,7 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_push_object(mut key: *const i8, mut value: *mut pdf_obj) {
-    if !named_objects.is_null() {
-    } else {
-        __assert_fail(
-            b"named_objects\x00" as *const u8 as *const i8,
-            b"dpx-specials.c\x00" as *const u8 as *const i8,
-            279_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"void spc_push_object(const char *, pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!named_objects.is_null());
     if key.is_null() || value.is_null() {
         return;
     }
@@ -777,18 +737,7 @@ pub unsafe extern "C" fn spc_clear_objects() {
     named_objects = pdf_new_name_tree();
 }
 unsafe extern "C" fn spc_handler_unknown(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
-    if !spe.is_null() && !args.is_null() {
-    } else {
-        __assert_fail(
-            b"spe && args\x00" as *const u8 as *const i8,
-            b"dpx-specials.c\x00" as *const u8 as *const i8,
-            305_u32,
-            (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
-                b"int spc_handler_unknown(struct spc_env *, struct spc_arg *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!spe.is_null() && !args.is_null());
     (*args).curptr = (*args).endptr;
     return -1i32;
 }
@@ -819,18 +768,7 @@ unsafe extern "C" fn init_special(
     (*args).command = 0 as *const i8;
 }
 unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
-    if !args.is_null() {
-    } else {
-        __assert_fail(
-            b"args\x00" as *const u8 as *const i8,
-            b"dpx-specials.c\x00" as *const u8 as *const i8,
-            339_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"void check_garbage(struct spc_arg *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!args.is_null());
     if (*args).curptr >= (*args).endptr {
         return;
     }
@@ -1059,18 +997,7 @@ pub unsafe extern "C" fn spc_exec_at_end_page() -> i32 {
 pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
     let mut error: i32 = 0i32;
     let mut i: u32 = 0;
-    if named_objects.is_null() {
-    } else {
-        __assert_fail(
-            b"!named_objects\x00" as *const u8 as *const i8,
-            b"dpx-specials.c\x00" as *const u8 as *const i8,
-            474_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"int spc_exec_at_begin_document(void)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(named_objects.is_null());
     named_objects = pdf_new_name_tree();
     i = 0_u32;
     while !known_specials[i as usize].key.is_null() {

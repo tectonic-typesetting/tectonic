@@ -8,13 +8,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
@@ -842,18 +835,7 @@ unsafe extern "C" fn pdf_label_obj(mut object: *mut pdf_obj) {
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_transfer_label(mut dst: *mut pdf_obj, mut src: *mut pdf_obj) {
-    if !dst.is_null() && (*dst).label == 0 && !src.is_null() {
-    } else {
-        __assert_fail(
-            b"dst && !dst->label && src\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            682_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"void pdf_transfer_label(pdf_obj *, pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!dst.is_null() && (*dst).label == 0 && !src.is_null());
     (*dst).label = (*src).label;
     (*dst).generation = (*src).generation;
     (*src).label = 0_u32;
@@ -897,18 +879,7 @@ unsafe extern "C" fn write_indirect(
     mut handle: rust_output_handle_t,
 ) {
     let mut length: i32 = 0;
-    if (*indirect).pf.is_null() {
-    } else {
-        __assert_fail(
-            b"!indirect->pf\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            736_u32,
-            (*::std::mem::transmute::<&[u8; 58], &[i8; 58]>(
-                b"void write_indirect(pdf_indirect *, rust_output_handle_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!((*indirect).pf.is_null());
     length = sprintf(
         format_buffer.as_mut_ptr(),
         b"%u %hu R\x00" as *const u8 as *const i8,
@@ -1058,18 +1029,7 @@ pub unsafe extern "C" fn pdf_new_string(
 ) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_string = 0 as *mut pdf_string;
-    if !str.is_null() {
-    } else {
-        __assert_fail(
-            b"str\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            875_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"pdf_obj *pdf_new_string(const void *, size_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!str.is_null());
     result = pdf_new_obj(3i32);
     data = new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_string>() as u64) as u32)
         as *mut pdf_string;
@@ -1697,14 +1657,7 @@ pub unsafe extern "C" fn pdf_foreach_dict(
 ) -> i32 {
     let mut error: i32 = 0i32;
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
-    if proc_0.is_some() {
-    } else {
-        __assert_fail(b"proc\x00" as *const u8 as *const i8,
-                      b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-                      1369_u32,
-                      (*::std::mem::transmute::<&[u8; 79],
-                                                &[i8; 79]>(b"int pdf_foreach_dict(pdf_obj *, int (*)(pdf_obj *, pdf_obj *, void *), void *)\x00")).as_ptr());
-    }
+    assert!(proc_0.is_some());
     if dict.is_null() || (*dict).type_0 != 6i32 {
         _tt_abort(
             b"typecheck: Invalid object type: %d %d (line %d)\x00" as *const u8 as *const i8,
@@ -1730,18 +1683,7 @@ pub unsafe extern "C" fn pdf_lookup_dict(
     mut name: *const i8,
 ) -> *mut pdf_obj {
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
-    if !name.is_null() {
-    } else {
-        __assert_fail(
-            b"name\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            1389_u32,
-            (*::std::mem::transmute::<&[u8; 50], &[i8; 50]>(
-                b"pdf_obj *pdf_lookup_dict(pdf_obj *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!name.is_null());
     if dict.is_null() || (*dict).type_0 != 6i32 {
         _tt_abort(
             b"typecheck: Invalid object type: %d %d (line %d)\x00" as *const u8 as *const i8,
@@ -3471,18 +3413,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
 static mut pdf_files: *mut ht_table = 0 as *const ht_table as *mut ht_table;
 unsafe extern "C" fn pdf_file_new(mut handle: rust_input_handle_t) -> *mut pdf_file {
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
-    if !handle.is_null() {
-    } else {
-        __assert_fail(
-            b"handle\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3507_u32,
-            (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
-                b"pdf_file *pdf_file_new(rust_input_handle_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!handle.is_null());
     pf =
         new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_file>() as u64) as u32) as *mut pdf_file;
     (*pf).handle = handle;
@@ -3527,50 +3458,17 @@ pub unsafe extern "C" fn pdf_files_init() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_file_get_version(mut pf: *mut pdf_file) -> u32 {
-    if !pf.is_null() {
-    } else {
-        __assert_fail(
-            b"pf\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3554_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"unsigned int pdf_file_get_version(pdf_file *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!pf.is_null());
     return (*pf).version;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_file_get_trailer(mut pf: *mut pdf_file) -> *mut pdf_obj {
-    if !pf.is_null() {
-    } else {
-        __assert_fail(
-            b"pf\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3561_u32,
-            (*::std::mem::transmute::<&[u8; 42], &[i8; 42]>(
-                b"pdf_obj *pdf_file_get_trailer(pdf_file *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!pf.is_null());
     return pdf_link_obj((*pf).trailer);
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_file_get_catalog(mut pf: *mut pdf_file) -> *mut pdf_obj {
-    if !pf.is_null() {
-    } else {
-        __assert_fail(
-            b"pf\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3568_u32,
-            (*::std::mem::transmute::<&[u8; 42], &[i8; 42]>(
-                b"pdf_obj *pdf_file_get_catalog(pdf_file *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!pf.is_null());
     return (*pf).catalog;
 }
 #[no_mangle]
@@ -3580,18 +3478,7 @@ pub unsafe extern "C" fn pdf_open(
 ) -> *mut pdf_file {
     let mut current_block: u64;
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
-    if !pdf_files.is_null() {
-    } else {
-        __assert_fail(
-            b"pdf_files\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3577_u32,
-            (*::std::mem::transmute::<&[u8; 54], &[i8; 54]>(
-                b"pdf_file *pdf_open(const char *, rust_input_handle_t)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!pdf_files.is_null());
     if !ident.is_null() {
         pf = ht_lookup_table(
             pdf_files,
@@ -3701,16 +3588,7 @@ pub unsafe extern "C" fn pdf_close(mut pf: *mut pdf_file) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_files_close() {
-    if !pdf_files.is_null() {
-    } else {
-        __assert_fail(
-            b"pdf_files\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3653_u32,
-            (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(b"void pdf_files_close(void)\x00"))
-                .as_ptr(),
-        );
-    }
+    assert!(!pdf_files.is_null());
     ht_clear_table(pdf_files);
     free(pdf_files as *mut libc::c_void);
 }
@@ -3795,18 +3673,7 @@ unsafe extern "C" fn pdf_import_indirect(mut object: *mut pdf_obj) -> *mut pdf_o
     let mut obj_num: u32 = (*((*object).data as *mut pdf_indirect)).label;
     let mut obj_gen: u16 = (*((*object).data as *mut pdf_indirect)).generation;
     let mut ref_0: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !pf.is_null() {
-    } else {
-        __assert_fail(
-            b"pf\x00" as *const u8 as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3721_u32,
-            (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
-                b"pdf_obj *pdf_import_indirect(pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!pf.is_null());
     if !(obj_num > 0_u32
         && obj_num < (*pf).num_obj as u32
         && ((*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 1i32
@@ -3933,22 +3800,11 @@ pub unsafe extern "C" fn pdf_compare_reference(
 ) -> i32 {
     let mut data1: *mut pdf_indirect = 0 as *mut pdf_indirect;
     let mut data2: *mut pdf_indirect = 0 as *mut pdf_indirect;
-    if !ref1.is_null()
-        && pdf_obj_typeof(ref1) == 9i32
-        && (!ref2.is_null() && pdf_obj_typeof(ref2) == 9i32)
-    {
-    } else {
-        __assert_fail(
-            b"PDF_OBJ_INDIRECTTYPE(ref1) && PDF_OBJ_INDIRECTTYPE(ref2)\x00" as *const u8
-                as *const i8,
-            b"dpx-pdfobj.c\x00" as *const u8 as *const i8,
-            3834_u32,
-            (*::std::mem::transmute::<&[u8; 48], &[i8; 48]>(
-                b"int pdf_compare_reference(pdf_obj *, pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(
+        !ref1.is_null()
+            && pdf_obj_typeof(ref1) == 9i32
+            && (!ref2.is_null() && pdf_obj_typeof(ref2) == 9i32)
+    );
     data1 = (*ref1).data as *mut pdf_indirect;
     data2 = (*ref2).data as *mut pdf_indirect;
     return ((*data1).pf != (*data2).pf

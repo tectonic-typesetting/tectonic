@@ -38,13 +38,6 @@ extern "C" {
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
@@ -661,18 +654,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
     let mut offset: u32 = 0_u32;
     let mut encoding_id: i32 = 0;
     let mut embedding: i32 = 0;
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type1c.c\x00" as *const u8 as *const i8,
-            74_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"int pdf_font_open_type1c(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     ident = pdf_font_get_ident(font);
     encoding_id = pdf_font_get_encoding(font);
     handle = dpx_open_opentype_file(ident) as *mut rust_input_handle_t;
@@ -947,18 +929,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     let mut notdef_width: f64 = 0.;
     let mut widths: [f64; 256] = [0.; 256];
     let mut verbose: i32 = 0;
-    if !font.is_null() {
-    } else {
-        __assert_fail(
-            b"font\x00" as *const u8 as *const i8,
-            b"dpx-type1c.c\x00" as *const u8 as *const i8,
-            253_u32,
-            (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
-                b"int pdf_font_load_type1c(pdf_font *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null());
     verbose = pdf_font_get_verbose();
     if !pdf_font_is_in_use(font) {
         return 0i32;

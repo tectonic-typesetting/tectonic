@@ -27,13 +27,6 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn pdf_obj_set_verbose(level: i32);
     #[no_mangle]
     fn pdf_obj_reset_global_state();
@@ -867,22 +860,8 @@ pub unsafe extern "C" fn dvipdfmx_main(
     let mut dvi2pts: f64 = 0.;
     let mut num_page_ranges: u32 = 0_u32;
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
-    if !pdf_filename.is_null() {
-    } else {
-        __assert_fail(b"pdf_filename\x00" as *const u8 as *const i8,
-                      b"dpx-dvipdfmx.c\x00" as *const u8 as
-                          *const i8, 381_u32,
-                      (*::std::mem::transmute::<&[u8; 107],
-                                                &[i8; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
-    }
-    if !dvi_filename.is_null() {
-    } else {
-        __assert_fail(b"dvi_filename\x00" as *const u8 as *const i8,
-                      b"dpx-dvipdfmx.c\x00" as *const u8 as
-                          *const i8, 382_u32,
-                      (*::std::mem::transmute::<&[u8; 107],
-                                                &[i8; 107]>(b"int dvipdfmx_main(const char *, const char *, const char *, int, _Bool, _Bool, _Bool, _Bool, unsigned int)\x00")).as_ptr());
-    }
+    assert!(!pdf_filename.is_null());
+    assert!(!dvi_filename.is_null());
     translate_origin = translate as i32;
     dvi_reset_global_state();
     tfm_reset_global_state();

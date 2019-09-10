@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
@@ -312,18 +305,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
     mut glyphname: *const i8,
 ) -> u16 {
     let mut gid: u16 = 0;
-    if !post.is_null() && !glyphname.is_null() {
-    } else {
-        __assert_fail(
-            b"post && glyphname\x00" as *const u8 as *const i8,
-            b"dpx-tt_post.c\x00" as *const u8 as *const i8,
-            157_u32,
-            (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
-                b"USHORT tt_lookup_post_table(struct tt_post_table *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!post.is_null() && !glyphname.is_null());
     gid = 0_u16;
     while (gid as i32) < (*post).count as i32 {
         if !(*(*post).glyphNamePtr.offset(gid as isize)).is_null()
@@ -369,18 +351,7 @@ pub unsafe extern "C" fn tt_get_glyphname(mut post: *mut tt_post_table, mut gid:
 #[no_mangle]
 pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
     let mut i: u16 = 0;
-    if !post.is_null() {
-    } else {
-        __assert_fail(
-            b"post\x00" as *const u8 as *const i8,
-            b"dpx-tt_post.c\x00" as *const u8 as *const i8,
-            182_u32,
-            (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
-                b"void tt_release_post_table(struct tt_post_table *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!post.is_null());
     if !(*post).glyphNamePtr.is_null() && (*post).Version as u64 != 0x10000 {
         free((*post).glyphNamePtr as *mut libc::c_void);
     }

@@ -10,13 +10,6 @@ extern crate libc;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -210,18 +203,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(mut spe: *mut spc_env, mut ap: *m
     let mut filename: [i8; 256] = [0; 256];
     let mut buf: [i8; 512] = [0; 512];
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    if !spe.is_null() && !ap.is_null() {
-    } else {
-        __assert_fail(
-            b"spe && ap\x00" as *const u8 as *const i8,
-            b"dpx-spc_misc.c\x00" as *const u8 as *const i8,
-            51_u32,
-            (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
-                b"int spc_handler_postscriptbox(struct spc_env *, struct spc_arg *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!spe.is_null() && !ap.is_null());
     if (*ap).curptr >= (*ap).endptr {
         spc_warn(
             spe,
@@ -417,15 +399,7 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
     let mut key: *const i8 = 0 as *const i8;
     let mut keylen: i32 = 0;
     let mut i: size_t = 0;
-    if !handle.is_null() && !spe.is_null() && !args.is_null() {
-    } else {
-        __assert_fail(b"handle && spe && args\x00" as *const u8 as
-                          *const i8,
-                      b"dpx-spc_misc.c\x00" as *const u8 as
-                          *const i8, 156_u32,
-                      (*::std::mem::transmute::<&[u8; 85],
-                                                &[i8; 85]>(b"int spc_misc_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
-    }
+    assert!(!handle.is_null() && !spe.is_null() && !args.is_null());
     skip_white(&mut (*args).curptr, (*args).endptr);
     key = (*args).curptr;
     while (*args).curptr < (*args).endptr

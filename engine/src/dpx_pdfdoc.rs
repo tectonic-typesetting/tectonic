@@ -59,13 +59,6 @@ extern "C" {
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn abs(_: i32) -> i32;
@@ -951,18 +944,7 @@ unsafe extern "C" fn doc_get_page_entry(mut p: *mut pdf_doc, mut page_no: u32) -
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_set_bop_content(mut content: *const i8, mut length: u32) {
     let mut p: *mut pdf_doc = &mut pdoc;
-    if !p.is_null() {
-    } else {
-        __assert_fail(
-            b"p\x00" as *const u8 as *const i8,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const i8,
-            392_u32,
-            (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
-                b"void pdf_doc_set_bop_content(const char *, unsigned int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!p.is_null());
     if !(*p).pages.bop.is_null() {
         pdf_release_obj((*p).pages.bop);
         (*p).pages.bop = 0 as *mut pdf_obj
@@ -2147,18 +2129,7 @@ unsafe extern "C" fn flush_bookmarks(
     let mut this_ref: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut prev_ref: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut next_ref: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !(*node).dict.is_null() {
-    } else {
-        __assert_fail(
-            b"node->dict\x00" as *const u8 as *const i8,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const i8,
-            1321_u32,
-            (*::std::mem::transmute::<&[u8; 56], &[i8; 56]>(
-                b"int flush_bookmarks(pdf_olitem *, pdf_obj *, pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!(*node).dict.is_null());
     this_ref = pdf_ref_obj((*node).dict);
     pdf_add_dict(
         parent_dict,
@@ -2330,18 +2301,7 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_op
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
     let mut next: *mut pdf_olitem = 0 as *mut pdf_olitem;
-    if !p.is_null() && !dict.is_null() {
-    } else {
-        __assert_fail(
-            b"p && dict\x00" as *const u8 as *const i8,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const i8,
-            1475_u32,
-            (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
-                b"void pdf_doc_bookmarks_add(pdf_obj *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!p.is_null() && !dict.is_null());
     item = (*p).outlines.current;
     if item.is_null() {
         item = new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_olitem>() as u64) as u32)
@@ -3221,18 +3181,7 @@ pub unsafe extern "C" fn pdf_doc_current_page_resources() -> *mut pdf_obj {
 pub unsafe extern "C" fn pdf_doc_get_dictionary(mut category: *const i8) -> *mut pdf_obj {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !category.is_null() {
-    } else {
-        __assert_fail(
-            b"category\x00" as *const u8 as *const i8,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const i8,
-            2183_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"pdf_obj *pdf_doc_get_dictionary(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!category.is_null());
     if streq_ptr(category, b"Names\x00" as *const u8 as *const i8) {
         if (*p).root.names.is_null() {
             (*p).root.names = pdf_new_dict()
@@ -3288,18 +3237,7 @@ pub unsafe extern "C" fn pdf_doc_ref_page(mut page_no: u32) -> *mut pdf_obj {
 pub unsafe extern "C" fn pdf_doc_get_reference(mut category: *const i8) -> *mut pdf_obj {
     let mut ref_0: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut page_no: i32 = 0;
-    if !category.is_null() {
-    } else {
-        __assert_fail(
-            b"category\x00" as *const u8 as *const i8,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const i8,
-            2245_u32,
-            (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                b"pdf_obj *pdf_doc_get_reference(const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!category.is_null());
     page_no = pdf_doc_current_page_number();
     if streq_ptr(category, b"@THISPAGE\x00" as *const u8 as *const i8) {
         ref_0 = pdf_doc_ref_page(page_no as u32)
@@ -3497,18 +3435,7 @@ unsafe extern "C" fn doc_fill_page_background(mut p: *mut pdf_doc) {
     }
     pdf_doc_get_mediabox(pdf_doc_current_page_number() as u32, &mut r);
     currentpage = &mut *(*p).pages.entries.offset((*p).pages.num_entries as isize) as *mut pdf_page;
-    if !currentpage.is_null() {
-    } else {
-        __assert_fail(
-            b"currentpage\x00" as *const u8 as *const i8,
-            b"dpx-pdfdoc.c\x00" as *const u8 as *const i8,
-            2426_u32,
-            (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
-                b"void doc_fill_page_background(pdf_doc *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!currentpage.is_null());
     if (*currentpage).background.is_null() {
         (*currentpage).background = pdf_new_stream(1i32 << 0i32)
     }

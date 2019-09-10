@@ -33,13 +33,6 @@ extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
@@ -197,18 +190,7 @@ static mut resources: [res_cache; 9] = [res_cache {
     resources: 0 as *const pdf_res as *mut pdf_res,
 }; 9];
 unsafe extern "C" fn pdf_init_resource(mut res: *mut pdf_res) {
-    if !res.is_null() {
-    } else {
-        __assert_fail(
-            b"res\x00" as *const u8 as *const i8,
-            b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            94_u32,
-            (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
-                b"void pdf_init_resource(pdf_res *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!res.is_null());
     (*res).ident = 0 as *mut i8;
     (*res).category = -1i32;
     (*res).flags = 0i32;
@@ -299,18 +281,7 @@ pub unsafe extern "C" fn pdf_defineresource(
     let mut rc: *mut res_cache = 0 as *mut res_cache;
     let mut cat_id: i32 = 0;
     let mut res: *mut pdf_res = 0 as *mut pdf_res;
-    if !category.is_null() && !object.is_null() {
-    } else {
-        __assert_fail(
-            b"category && object\x00" as *const u8 as *const i8,
-            b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            192_u32,
-            (*::std::mem::transmute::<&[u8; 67], &[i8; 67]>(
-                b"int pdf_defineresource(const char *, const char *, pdf_obj *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!category.is_null() && !object.is_null());
     cat_id = get_category(category);
     if cat_id < 0i32 {
         _tt_abort(
@@ -379,18 +350,7 @@ pub unsafe extern "C" fn pdf_findresource(mut category: *const i8, mut resname: 
     let mut res_id: i32 = 0;
     let mut cat_id: i32 = 0;
     let mut rc: *mut res_cache = 0 as *mut res_cache;
-    if !resname.is_null() && !category.is_null() {
-    } else {
-        __assert_fail(
-            b"resname && category\x00" as *const u8 as *const i8,
-            b"dpx-pdfresource.c\x00" as *const u8 as *const i8,
-            254_u32,
-            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
-                b"int pdf_findresource(const char *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!resname.is_null() && !category.is_null());
     cat_id = get_category(category);
     if cat_id < 0i32 {
         _tt_abort(

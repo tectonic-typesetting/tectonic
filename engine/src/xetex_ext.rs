@@ -65,13 +65,6 @@ extern "C" {
     #[no_mangle]
     fn hb_tag_from_string(str: *const i8, len: i32) -> hb_tag_t;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn getCachedGlyphBBox(fontID: u16, glyphID: u16, bbox: *mut GlyphBBox) -> i32;
     #[no_mangle]
     fn cacheGlyphBBox(fontID: u16, glyphID: u16, bbox: *const GlyphBBox);
@@ -1958,16 +1951,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
         /* fontRef = */
         getFontRef(engine);
         filename = getFontFilename(engine, &mut index);
-        if !filename.is_null() {
-        } else {
-            __assert_fail(
-                b"filename\x00" as *const u8 as *const i8,
-                b"xetex-ext.c\x00" as *const u8 as *const i8,
-                1190_u32,
-                (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(b"int make_font_def(int32_t)\x00"))
-                    .as_ptr(),
-            );
-        }
+        assert!(!filename.is_null());
         rgba = getRgbValue(engine);
         if *font_flags.offset(f as isize) as i32 & 0x2i32 != 0i32 {
             flags = (flags as i32 | 0x100i32) as u16
@@ -2762,17 +2746,7 @@ pub unsafe extern "C" fn real_get_native_word_cp(
             // we should not reach this point
         }
         1 => actual_glyph = *glyphIDs.offset((glyphCount as i32 - 1i32) as isize),
-        _ => {
-            __assert_fail(
-                b"0\x00" as *const u8 as *const i8,
-                b"xetex-ext.c\x00" as *const u8 as *const i8,
-                2136_u32,
-                (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
-                    b"int32_t real_get_native_word_cp(void *, int)\x00",
-                ))
-                .as_ptr(),
-            );
-        }
+        _ => unreachable!(),
     }
     return get_cp_code(f, actual_glyph as u32, side);
 }

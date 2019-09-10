@@ -10,13 +10,6 @@ extern crate libc;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -268,18 +261,7 @@ unsafe extern "C" fn check_objects_defined(mut ht_tab: *mut ht_table) {
             let mut value: *mut obj_data = 0 as *mut obj_data;
             key = ht_iter_getkey(&mut iter, &mut keylen);
             value = ht_iter_getval(&mut iter) as *mut obj_data;
-            if !(*value).object.is_null() {
-            } else {
-                __assert_fail(
-                    b"value->object\x00" as *const u8 as *const i8,
-                    b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-                    109_u32,
-                    (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                        b"void check_objects_defined(struct ht_table *)\x00",
-                    ))
-                    .as_ptr(),
-                );
-            }
+            assert!(!(*value).object.is_null());
             if !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
                 pdf_names_add_object(ht_tab, key as *const libc::c_void, keylen, pdf_new_null());
                 dpx_warning(
@@ -297,18 +279,7 @@ unsafe extern "C" fn check_objects_defined(mut ht_tab: *mut ht_table) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_delete_name_tree(mut names: *mut *mut ht_table) {
-    if !names.is_null() && !(*names).is_null() {
-    } else {
-        __assert_fail(
-            b"names && *names\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            123_u32,
-            (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
-                b"void pdf_delete_name_tree(struct ht_table **)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!names.is_null() && !(*names).is_null());
     check_objects_defined(*names);
     ht_clear_table(*names);
     *names = mfree(*names as *mut libc::c_void) as *mut ht_table;
@@ -321,18 +292,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
     mut object: *mut pdf_obj,
 ) -> i32 {
     let mut value: *mut obj_data = 0 as *mut obj_data;
-    if !names.is_null() && !object.is_null() {
-    } else {
-        __assert_fail(
-            b"names && object\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            137_u32,
-            (*::std::mem::transmute::<&[u8; 74], &[i8; 74]>(
-                b"int pdf_names_add_object(struct ht_table *, const void *, int, pdf_obj *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!names.is_null() && !object.is_null());
     if key.is_null() || keylen < 1i32 {
         dpx_warning(b"Null string used for name tree key.\x00" as *const u8 as *const i8);
         return -1i32;
@@ -345,15 +305,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
         (*value).closed = 0i32;
         ht_append_table(names, key, keylen, value as *mut libc::c_void);
     } else {
-        if !(*value).object.is_null() {
-        } else {
-            __assert_fail(b"value->object\x00" as *const u8 as
-                              *const i8,
-                          b"dpx-pdfnames.c\x00" as *const u8 as
-                              *const i8, 151_u32,
-                          (*::std::mem::transmute::<&[u8; 74],
-                                                    &[i8; 74]>(b"int pdf_names_add_object(struct ht_table *, const void *, int, pdf_obj *)\x00")).as_ptr());
-        }
+        assert!(!(*value).object.is_null());
         if !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
             pdf_transfer_label(object, (*value).object);
             pdf_release_obj((*value).object);
@@ -380,29 +332,11 @@ pub unsafe extern "C" fn pdf_names_lookup_reference(
 ) -> *mut pdf_obj {
     let mut value: *mut obj_data = 0 as *mut obj_data;
     let mut object: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !names.is_null() {
-    } else {
-        __assert_fail(
-            b"names\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            176_u32,
-            (*::std::mem::transmute::<&[u8; 74], &[i8; 74]>(
-                b"pdf_obj *pdf_names_lookup_reference(struct ht_table *, const void *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!names.is_null());
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;
     if !value.is_null() {
         object = (*value).object;
-        if !object.is_null() {
-        } else {
-            __assert_fail(b"object\x00" as *const u8 as *const i8,
-                          b"dpx-pdfnames.c\x00" as *const u8 as
-                              *const i8, 182_u32,
-                          (*::std::mem::transmute::<&[u8; 74],
-                                                    &[i8; 74]>(b"pdf_obj *pdf_names_lookup_reference(struct ht_table *, const void *, int)\x00")).as_ptr());
-        }
+        assert!(!object.is_null());
     } else {
         /* A null object as dummy would create problems because as value
          * of a dictionary entry, a null object is be equivalent to no entry
@@ -420,34 +354,12 @@ pub unsafe extern "C" fn pdf_names_lookup_object(
     mut keylen: i32,
 ) -> *mut pdf_obj {
     let mut value: *mut obj_data = 0 as *mut obj_data;
-    if !names.is_null() {
-    } else {
-        __assert_fail(
-            b"names\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            201_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"pdf_obj *pdf_names_lookup_object(struct ht_table *, const void *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!names.is_null());
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;
     if value.is_null() || !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
         return 0 as *mut pdf_obj;
     }
-    if !(*value).object.is_null() {
-    } else {
-        __assert_fail(
-            b"value->object\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            206_u32,
-            (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
-                b"pdf_obj *pdf_names_lookup_object(struct ht_table *, const void *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!(*value).object.is_null());
     return (*value).object;
 }
 #[no_mangle]
@@ -457,18 +369,7 @@ pub unsafe extern "C" fn pdf_names_close_object(
     mut keylen: i32,
 ) -> i32 {
     let mut value: *mut obj_data = 0 as *mut obj_data;
-    if !names.is_null() {
-    } else {
-        __assert_fail(
-            b"names\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            217_u32,
-            (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
-                b"int pdf_names_close_object(struct ht_table *, const void *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!names.is_null());
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;
     if value.is_null() || !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
         dpx_warning(
@@ -477,18 +378,7 @@ pub unsafe extern "C" fn pdf_names_close_object(
         );
         return -1i32;
     }
-    if !(*value).object.is_null() {
-    } else {
-        __assert_fail(
-            b"value->object\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            224_u32,
-            (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
-                b"int pdf_names_close_object(struct ht_table *, const void *, int)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!(*value).object.is_null());
     if (*value).closed != 0 {
         dpx_warning(
             b"Object @%s already closed.\x00" as *const u8 as *const i8,
@@ -638,18 +528,7 @@ unsafe extern "C" fn flat_table(
         hash: 0 as *mut ht_table,
     };
     let mut count: i32 = 0;
-    if !ht_tab.is_null() {
-    } else {
-        __assert_fail(
-            b"ht_tab\x00" as *const u8 as *const i8,
-            b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            352_u32,
-            (*::std::mem::transmute::<&[u8; 77], &[i8; 77]>(
-                b"struct named_object *flat_table(struct ht_table *, int *, struct ht_table *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!ht_tab.is_null());
     objects = new(((*ht_tab).count as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<named_object>() as u64) as u32)
         as *mut named_object;
@@ -677,16 +556,7 @@ unsafe extern "C" fn flat_table(
             match current_block_19 {
                 12800627514080957624 => {
                     value = ht_iter_getval(&mut iter) as *mut obj_data;
-                    if !(*value).object.is_null() {
-                    } else {
-                        __assert_fail(b"value->object\x00" as *const u8 as
-                                          *const i8,
-                                      b"dpx-pdfnames.c\x00" as *const u8 as
-                                          *const i8,
-                                      375_u32,
-                                      (*::std::mem::transmute::<&[u8; 77],
-                                                                &[i8; 77]>(b"struct named_object *flat_table(struct ht_table *, int *, struct ht_table *)\x00")).as_ptr());
-                    }
+                    assert!(!(*value).object.is_null());
                     if !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
                         dpx_warning(
                             b"Object @%s\" not defined. Replaced by null.\x00" as *const u8

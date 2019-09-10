@@ -32,13 +32,6 @@ extern "C" {
     #[no_mangle]
     fn floor(_: f64) -> f64;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -1802,18 +1795,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     let mut sfont: *mut sfnt = 0 as *mut sfnt;
     let mut offset: u32 = 0_u32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    if !font.is_null() && !opt.is_null() {
-    } else {
-        __assert_fail(
-            b"font && opt\x00" as *const u8 as *const i8,
-            b"dpx-cidtype2.c\x00" as *const u8 as *const i8,
-            901_u32,
-            (*::std::mem::transmute::<&[u8; 73], &[i8; 73]>(
-                b"int CIDFont_type2_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!font.is_null() && !opt.is_null());
     handle = dpx_open_truetype_file(name);
     if handle.is_null() {
         handle = dpx_open_dfont_file(name);

@@ -10,13 +10,6 @@ extern crate libc;
 extern "C" {
     pub type pst_obj;
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -203,18 +196,7 @@ pub unsafe extern "C" fn pst_get_token(
 ) -> *mut pst_obj {
     let mut obj: *mut pst_obj = 0 as *mut pst_obj;
     let mut c: u8 = 0;
-    if *inbuf <= inbufend && *inbufend == 0 {
-    } else {
-        __assert_fail(
-            b"*inbuf <= inbufend && !*inbufend\x00" as *const u8 as *const i8,
-            b"dpx-pst.c\x00" as *const u8 as *const i8,
-            87_u32,
-            (*::std::mem::transmute::<&[u8; 58], &[i8; 58]>(
-                b"pst_obj *pst_get_token(unsigned char **, unsigned char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(*inbuf <= inbufend && *inbufend == 0);
     skip_white_spaces(inbuf, inbufend);
     skip_comments(inbuf, inbufend);
     if *inbuf >= inbufend {

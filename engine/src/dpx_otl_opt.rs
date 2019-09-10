@@ -9,13 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn __assert_fail(
-        __assertion: *const i8,
-        __file: *const i8,
-        __line: u32,
-        __function: *const i8,
-    ) -> !;
-    #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -269,18 +262,7 @@ pub unsafe extern "C" fn otl_release_opt(mut opt: *mut otl_opt) {
 pub unsafe extern "C" fn otl_parse_optstring(mut opt: *mut otl_opt, mut optstr: *const i8) -> i32 {
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
-    if !opt.is_null() {
-    } else {
-        __assert_fail(
-            b"opt\x00" as *const u8 as *const i8,
-            b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
-            237_u32,
-            (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
-                b"int otl_parse_optstring(otl_opt *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!opt.is_null());
     if !optstr.is_null() {
         p = optstr;
         endptr = p.offset(strlen(optstr) as isize);
@@ -309,18 +291,7 @@ pub unsafe extern "C" fn otl_parse_optstring(mut opt: *mut otl_opt, mut optstr: 
 */
 #[no_mangle]
 pub unsafe extern "C" fn otl_match_optrule(mut opt: *mut otl_opt, mut tag: *const i8) -> i32 {
-    if !tag.is_null() {
-    } else {
-        __assert_fail(
-            b"tag\x00" as *const u8 as *const i8,
-            b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
-            251_u32,
-            (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
-                b"int otl_match_optrule(otl_opt *, const char *)\x00",
-            ))
-            .as_ptr(),
-        );
-    }
+    assert!(!tag.is_null());
     if opt.is_null() || (*opt).rule.is_null() {
         return 1i32;
     }
