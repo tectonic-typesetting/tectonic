@@ -112,8 +112,6 @@ pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type SFNT_CHAR = libc::c_schar;
-pub type USHORT = u16;
-pub type SHORT = i16;
 pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
 #[derive(Copy, Clone)]
@@ -130,11 +128,11 @@ pub struct sfnt_table {
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -168,8 +166,8 @@ pub struct otl_gsub_tab {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_subtab {
-    pub LookupType: USHORT,
-    pub SubstFormat: USHORT,
+    pub LookupType: u16,
+    pub SubstFormat: u16,
     pub table: C2RustUnnamed,
 }
 #[derive(Copy, Clone)]
@@ -183,15 +181,15 @@ pub union C2RustUnnamed {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_ligature1 {
-    pub LigSetCount: USHORT,
+    pub LigSetCount: u16,
     pub LigatureSet: *mut otl_gsub_ligset,
     pub coverage: clt_coverage,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct clt_coverage {
-    pub format: USHORT,
-    pub count: USHORT,
+    pub format: u16,
+    pub count: u16,
     pub list: *mut GlyphID,
     pub range: *mut clt_range,
 }
@@ -200,46 +198,46 @@ pub struct clt_coverage {
 pub struct clt_range {
     pub Start: GlyphID,
     pub End: GlyphID,
-    pub StartCoverageIndex: USHORT,
+    pub StartCoverageIndex: u16,
 }
-pub type GlyphID = USHORT;
+pub type GlyphID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_ligset {
-    pub LigatureCount: USHORT,
+    pub LigatureCount: u16,
     pub Ligature: *mut otl_gsub_ligtab,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_ligtab {
     pub LigGlyph: GlyphID,
-    pub CompCount: USHORT,
+    pub CompCount: u16,
     pub Component: *mut GlyphID,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_alternate1 {
-    pub AlternateSetCount: USHORT,
+    pub AlternateSetCount: u16,
     pub AlternateSet: *mut otl_gsub_altset,
     pub coverage: clt_coverage,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_altset {
-    pub GlyphCount: USHORT,
+    pub GlyphCount: u16,
     pub Alternate: *mut GlyphID,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_single2 {
-    pub GlyphCount: USHORT,
+    pub GlyphCount: u16,
     pub Substitute: *mut GlyphID,
     pub coverage: clt_coverage,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub_single1 {
-    pub DeltaGlyphID: SHORT,
+    pub DeltaGlyphID: i16,
     pub coverage: clt_coverage,
 }
 #[derive(Copy, Clone)]
@@ -254,18 +252,18 @@ pub struct clt_record {
     pub tag: [i8; 5],
     pub offset: Offset,
 }
-pub type Offset = USHORT;
+pub type Offset = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct clt_record_list {
-    pub count: USHORT,
+    pub count: u16,
     pub record: *mut clt_record,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct clt_number_list {
-    pub count: USHORT,
-    pub value: *mut USHORT,
+    pub count: u16,
+    pub value: *mut u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -276,8 +274,8 @@ pub struct clt_feature_table {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct clt_lookup_table {
-    pub LookupType: USHORT,
-    pub LookupFlag: USHORT,
+    pub LookupType: u16,
+    pub LookupFlag: u16,
     pub SubTableList: clt_number_list,
 }
 #[derive(Copy, Clone)]
@@ -298,7 +296,7 @@ pub struct clt_script_table {
 #[repr(C)]
 pub struct clt_langsys_table {
     pub LookupOrder: Offset,
-    pub ReqFeatureIndex: USHORT,
+    pub ReqFeatureIndex: u16,
     pub FeatureIndex: clt_number_list,
 }
 #[inline]
@@ -406,7 +404,7 @@ unsafe extern "C" fn clt_read_record_list(
 unsafe extern "C" fn clt_release_record_list(mut list: *mut clt_record_list) {
     if !list.is_null() {
         (*list).record = mfree((*list).record as *mut libc::c_void) as *mut clt_record;
-        (*list).count = 0i32 as USHORT
+        (*list).count = 0i32 as u16
     };
 }
 unsafe extern "C" fn clt_read_number_list(
@@ -428,11 +426,11 @@ unsafe extern "C" fn clt_read_number_list(
     }
     (*list).count = tt_get_unsigned_pair((*sfont).handle);
     if (*list).count as i32 == 0i32 {
-        (*list).value = 0 as *mut USHORT
+        (*list).value = 0 as *mut u16
     } else {
         (*list).value = new(((*list).count as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<USHORT>() as u64)
-            as u32) as *mut USHORT;
+            .wrapping_mul(::std::mem::size_of::<u16>() as u64)
+            as u32) as *mut u16;
         i = 0i32;
         while i < (*list).count as i32 {
             *(*list).value.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -443,8 +441,8 @@ unsafe extern "C" fn clt_read_number_list(
 }
 unsafe extern "C" fn clt_release_number_list(mut list: *mut clt_number_list) {
     if !list.is_null() {
-        (*list).value = mfree((*list).value as *mut libc::c_void) as *mut USHORT;
-        (*list).count = 0i32 as USHORT
+        (*list).value = mfree((*list).value as *mut libc::c_void) as *mut u16;
+        (*list).count = 0i32 as u16
     };
 }
 unsafe extern "C" fn clt_read_script_table(
@@ -584,8 +582,8 @@ unsafe extern "C" fn clt_read_coverage(
                 (*cov).list = 0 as *mut GlyphID
             } else {
                 (*cov).list = new(((*cov).count as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<USHORT>() as u64)
-                    as u32) as *mut USHORT;
+                    .wrapping_mul(::std::mem::size_of::<u16>() as u64)
+                    as u32) as *mut u16;
                 i = 0i32;
                 while i < (*cov).count as i32 {
                     *(*cov).list.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -626,11 +624,11 @@ unsafe extern "C" fn clt_release_coverage(mut cov: *mut clt_coverage) {
             }
         }
     }
-    (*cov).count = 0i32 as USHORT;
+    (*cov).count = 0i32 as u16;
 }
 unsafe extern "C" fn clt_lookup_coverage(
     mut cov: *mut clt_coverage,
-    mut gid: USHORT,
+    mut gid: u16,
 ) -> i32 {
     let mut i: i32 = 0;
     if !cov.is_null() {
@@ -698,7 +696,7 @@ unsafe extern "C" fn otl_gsub_read_single(
         );
     }
     offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
-    (*subtab).LookupType = 1i32 as USHORT;
+    (*subtab).LookupType = 1i32 as u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     len = 2i32;
     if (*subtab).SubstFormat as i32 == 1i32 {
@@ -718,7 +716,7 @@ unsafe extern "C" fn otl_gsub_read_single(
         len += clt_read_coverage(&mut (*data).coverage, sfont)
     } else if (*subtab).SubstFormat as i32 == 2i32 {
         let mut data_0: *mut otl_gsub_single2 = 0 as *mut otl_gsub_single2;
-        let mut count: USHORT = 0;
+        let mut count: u16 = 0;
         data_0 = new((1i32 as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<otl_gsub_single2>() as u64)
             as u32) as *mut otl_gsub_single2;
@@ -732,7 +730,7 @@ unsafe extern "C" fn otl_gsub_read_single(
             (*data_0).Substitute = new(((*data_0).GlyphCount as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<GlyphID>() as u64)
                 as u32) as *mut GlyphID;
-            count = 0i32 as USHORT;
+            count = 0i32 as u16;
             while (count as i32) < (*data_0).GlyphCount as i32 {
                 *(*data_0).Substitute.offset(count as isize) =
                     tt_get_unsigned_pair((*sfont).handle);
@@ -756,13 +754,13 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     mut sfont: *mut sfnt,
 ) -> i32 {
     let mut len: i32 = 0;
-    let mut i: USHORT = 0;
-    let mut j: USHORT = 0;
+    let mut i: u16 = 0;
+    let mut j: u16 = 0;
     let mut offset: SFNT_ULONG = 0;
     let mut cov_offset: Offset = 0;
     let mut altset_offsets: clt_number_list = clt_number_list {
         count: 0,
-        value: 0 as *mut USHORT,
+        value: 0 as *mut u16,
     };
     let mut data: *mut otl_gsub_alternate1 = 0 as *mut otl_gsub_alternate1;
     if !subtab.is_null() && !sfont.is_null() {
@@ -778,7 +776,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         );
     }
     offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
-    (*subtab).LookupType = 3i32 as USHORT;
+    (*subtab).LookupType = 3i32 as u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as i32 != 1i32 {
         dpx_warning(
@@ -798,15 +796,15 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     (*data).AlternateSetCount = altset_offsets.count;
     if (*data).AlternateSetCount as i32 == 0i32 {
         (*data).AlternateSet = 0 as *mut otl_gsub_altset;
-        (*data).coverage.count = 0i32 as USHORT;
-        (*data).coverage.format = 0i32 as USHORT;
+        (*data).coverage.count = 0i32 as u16;
+        (*data).coverage.format = 0i32 as u16;
         (*data).coverage.list = 0 as *mut GlyphID;
         return len;
     }
     (*data).AlternateSet = new(((*data).AlternateSetCount as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<otl_gsub_altset>() as u64)
         as u32) as *mut otl_gsub_altset;
-    i = 0i32 as USHORT;
+    i = 0i32 as u16;
     while (i as i32) < (*data).AlternateSetCount as i32 {
         let mut altset: *mut otl_gsub_altset = 0 as *mut otl_gsub_altset;
         let mut altset_offset: SFNT_ULONG = 0;
@@ -823,7 +821,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
             (*altset).Alternate = new(((*altset).GlyphCount as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<GlyphID>() as u64)
                 as u32) as *mut GlyphID;
-            j = 0i32 as USHORT;
+            j = 0i32 as u16;
             while (j as i32) < (*altset).GlyphCount as i32 {
                 *(*altset).Alternate.offset(j as isize) = tt_get_unsigned_pair((*sfont).handle);
                 len += 2i32;
@@ -846,13 +844,13 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     mut sfont: *mut sfnt,
 ) -> i32 {
     let mut len: i32 = 0;
-    let mut i: USHORT = 0;
-    let mut j: USHORT = 0;
+    let mut i: u16 = 0;
+    let mut j: u16 = 0;
     let mut offset: SFNT_ULONG = 0;
     let mut cov_offset: Offset = 0;
     let mut ligset_offsets: clt_number_list = clt_number_list {
         count: 0,
-        value: 0 as *mut USHORT,
+        value: 0 as *mut u16,
     };
     let mut data: *mut otl_gsub_ligature1 = 0 as *mut otl_gsub_ligature1;
     if !subtab.is_null() && !sfont.is_null() {
@@ -868,7 +866,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         );
     }
     offset = ttstub_input_seek((*sfont).handle, 0i32 as ssize_t, 1i32) as SFNT_ULONG;
-    (*subtab).LookupType = 4i32 as USHORT;
+    (*subtab).LookupType = 4i32 as u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as i32 != 1i32 {
         dpx_warning(
@@ -888,23 +886,23 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     (*data).LigSetCount = ligset_offsets.count;
     if (*data).LigSetCount as i32 == 0i32 {
         (*data).LigatureSet = 0 as *mut otl_gsub_ligset;
-        (*data).coverage.count = 0i32 as USHORT;
-        (*data).coverage.format = 0i32 as USHORT;
+        (*data).coverage.count = 0i32 as u16;
+        (*data).coverage.format = 0i32 as u16;
         (*data).coverage.list = 0 as *mut GlyphID;
         return len;
     }
     (*data).LigatureSet = new(((*data).LigSetCount as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<otl_gsub_ligset>() as u64)
         as u32) as *mut otl_gsub_ligset;
-    i = 0i32 as USHORT;
+    i = 0i32 as u16;
     while (i as i32) < (*data).LigSetCount as i32 {
         let mut ligset_tab: clt_number_list = clt_number_list {
             count: 0,
-            value: 0 as *mut USHORT,
+            value: 0 as *mut u16,
         };
         let mut ligset: *mut otl_gsub_ligset = 0 as *mut otl_gsub_ligset;
         let mut ligset_offset: SFNT_ULONG = 0;
-        let mut count: USHORT = 0;
+        let mut count: u16 = 0;
         ligset = &mut *(*data).LigatureSet.offset(i as isize) as *mut otl_gsub_ligset;
         ligset_offset =
             offset.wrapping_add(*ligset_offsets.value.offset(i as isize) as u32);
@@ -918,7 +916,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
             (*ligset).Ligature = new((ligset_tab.count as u32 as u64)
                 .wrapping_mul(::std::mem::size_of::<otl_gsub_ligtab>() as u64)
                 as u32) as *mut otl_gsub_ligtab;
-            j = 0i32 as USHORT;
+            j = 0i32 as u16;
             while (j as i32) < ligset_tab.count as i32 {
                 ttstub_input_seek(
                     (*sfont).handle,
@@ -941,7 +939,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
                         - 1i32) as u32 as u64)
                         .wrapping_mul(::std::mem::size_of::<GlyphID>() as u64)
                         as u32) as *mut GlyphID;
-                    count = 0i32 as USHORT;
+                    count = 0i32 as u16;
                     while (count as i32)
                         < (*(*ligset).Ligature.offset(j as isize)).CompCount as i32 - 1i32
                     {
@@ -1001,15 +999,15 @@ unsafe extern "C" fn otl_gsub_release_single(mut subtab: *mut otl_gsub_subtab) {
 unsafe extern "C" fn otl_gsub_release_ligature(mut subtab: *mut otl_gsub_subtab) {
     if !subtab.is_null() {
         let mut data: *mut otl_gsub_ligature1 = 0 as *mut otl_gsub_ligature1;
-        let mut i: USHORT = 0;
-        let mut j: USHORT = 0;
+        let mut i: u16 = 0;
+        let mut j: u16 = 0;
         data = (*subtab).table.ligature1;
         if !data.is_null() && !(*data).LigatureSet.is_null() {
-            i = 0i32 as USHORT;
+            i = 0i32 as u16;
             while (i as i32) < (*data).LigSetCount as i32 {
                 let mut ligset: *mut otl_gsub_ligset = 0 as *mut otl_gsub_ligset;
                 ligset = &mut *(*data).LigatureSet.offset(i as isize) as *mut otl_gsub_ligset;
-                j = 0i32 as USHORT;
+                j = 0i32 as u16;
                 while (j as i32) < (*ligset).LigatureCount as i32 {
                     let ref mut fresh2 = (*(*ligset).Ligature.offset(j as isize)).Component;
                     *fresh2 = mfree(
@@ -1032,10 +1030,10 @@ unsafe extern "C" fn otl_gsub_release_ligature(mut subtab: *mut otl_gsub_subtab)
 unsafe extern "C" fn otl_gsub_release_alternate(mut subtab: *mut otl_gsub_subtab) {
     if !subtab.is_null() {
         let mut data: *mut otl_gsub_alternate1 = 0 as *mut otl_gsub_alternate1;
-        let mut i: USHORT = 0;
+        let mut i: u16 = 0;
         data = (*subtab).table.alternate1;
         if !data.is_null() && !(*data).AlternateSet.is_null() {
-            i = 0i32 as USHORT;
+            i = 0i32 as u16;
             while (i as i32) < (*data).AlternateSetCount as i32 {
                 let mut altset: *mut otl_gsub_altset = 0 as *mut otl_gsub_altset;
                 altset = &mut *(*data).AlternateSet.offset(i as isize) as *mut otl_gsub_altset;
@@ -1088,7 +1086,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
         LookupList: 0,
     };
     let mut subtab: *mut otl_gsub_subtab = 0 as *mut otl_gsub_subtab;
-    let mut num_subtabs: USHORT = 0i32 as USHORT;
+    let mut num_subtabs: u16 = 0i32 as u16;
     let mut feat_bits: [u8; 8192] = [0; 8192];
     let mut feature_list: clt_record_list = clt_record_list {
         count: 0,
@@ -1100,7 +1098,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
     };
     let mut lookup_list: clt_number_list = clt_number_list {
         count: 0,
-        value: 0 as *mut USHORT,
+        value: 0 as *mut u16,
     };
     let mut script: *mut otl_opt = 0 as *mut otl_opt;
     let mut language: *mut otl_opt = 0 as *mut otl_opt;
@@ -1169,7 +1167,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     ReqFeatureIndex: 0,
                     FeatureIndex: clt_number_list {
                         count: 0,
-                        value: 0 as *mut USHORT,
+                        value: 0 as *mut u16,
                     },
                 };
                 if verbose > 0i32 {
@@ -1225,7 +1223,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         ReqFeatureIndex: 0,
                         FeatureIndex: clt_number_list {
                             count: 0,
-                            value: 0 as *mut USHORT,
+                            value: 0 as *mut u16,
                         },
                     };
                     if verbose > 0i32 {
@@ -1310,7 +1308,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                 FeatureParams: 0,
                 LookupListIndex: clt_number_list {
                     count: 0,
-                    value: 0 as *mut USHORT,
+                    value: 0 as *mut u16,
                 },
             };
             let mut i: i32 = 0;
@@ -1340,7 +1338,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                     LookupFlag: 0,
                     SubTableList: clt_number_list {
                         count: 0,
-                        value: 0 as *mut USHORT,
+                        value: 0 as *mut u16,
                     },
                 };
                 let mut ll_idx: i32 = 0;
@@ -1455,8 +1453,8 @@ unsafe extern "C" fn otl_gsub_read_feat(
                                 }
                             }
                             7 => {
-                                let mut SubstFormat: USHORT = 0;
-                                let mut ExtensionLookupType: USHORT = 0;
+                                let mut SubstFormat: u16 = 0;
+                                let mut ExtensionLookupType: u16 = 0;
                                 let mut ExtensionOffset: SFNT_ULONG = 0;
                                 SubstFormat = tt_get_unsigned_pair((*sfont).handle);
                                 if !(SubstFormat as i32 != 1i32) {
@@ -1542,7 +1540,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         }
                         st_idx += 1
                     }
-                    num_subtabs = (num_subtabs as i32 + n_st) as USHORT;
+                    num_subtabs = (num_subtabs as i32 + n_st) as u16;
                     clt_release_lookup_table(&mut lookup_table);
                 }
                 i += 1
@@ -1574,7 +1572,7 @@ unsafe extern "C" fn otl_gsub_read_feat(
 }
 unsafe extern "C" fn otl_gsub_apply_single(
     mut subtab: *mut otl_gsub_subtab,
-    mut gid: *mut USHORT,
+    mut gid: *mut u16,
 ) -> i32 {
     let mut idx: i32 = 0;
     if !subtab.is_null() && !gid.is_null() {
@@ -1594,7 +1592,7 @@ unsafe extern "C" fn otl_gsub_apply_single(
         data = (*subtab).table.single1;
         idx = clt_lookup_coverage(&mut (*data).coverage, *gid);
         if idx >= 0i32 {
-            *gid = (*gid as i32 + (*data).DeltaGlyphID as i32) as USHORT;
+            *gid = (*gid as i32 + (*data).DeltaGlyphID as i32) as u16;
             return 0i32;
         }
     } else if (*subtab).SubstFormat as i32 == 2i32 {
@@ -1610,8 +1608,8 @@ unsafe extern "C" fn otl_gsub_apply_single(
 }
 unsafe extern "C" fn otl_gsub_apply_alternate(
     mut subtab: *mut otl_gsub_subtab,
-    mut alt_idx: USHORT,
-    mut gid: *mut USHORT,
+    mut alt_idx: u16,
+    mut gid: *mut u16,
 ) -> i32 {
     let mut idx: i32 = 0;
     if !subtab.is_null() && !gid.is_null() {
@@ -1647,15 +1645,15 @@ unsafe extern "C" fn otl_gsub_apply_alternate(
 }
 unsafe extern "C" fn glyph_seq_cmp(
     mut glyph_seq0: *mut GlyphID,
-    mut n_glyphs0: USHORT,
+    mut n_glyphs0: u16,
     mut glyph_seq1: *mut GlyphID,
-    mut n_glyphs1: USHORT,
+    mut n_glyphs1: u16,
 ) -> i32 {
-    let mut i: USHORT = 0;
+    let mut i: u16 = 0;
     if n_glyphs0 as i32 != n_glyphs1 as i32 {
         return n_glyphs0 as i32 - n_glyphs1 as i32;
     }
-    i = 0i32 as USHORT;
+    i = 0i32 as u16;
     while (i as i32) < n_glyphs0 as i32 {
         if *glyph_seq0.offset(i as isize) as i32
             != *glyph_seq1.offset(i as isize) as i32
@@ -1669,9 +1667,9 @@ unsafe extern "C" fn glyph_seq_cmp(
 }
 unsafe extern "C" fn otl_gsub_apply_ligature(
     mut subtab: *mut otl_gsub_subtab,
-    mut gid_in: *mut USHORT,
-    mut num_gids: USHORT,
-    mut gid_out: *mut USHORT,
+    mut gid_in: *mut u16,
+    mut num_gids: u16,
+    mut gid_out: *mut u16,
 ) -> i32 {
     let mut idx: i32 = 0;
     if !subtab.is_null() && !gid_out.is_null() {
@@ -1692,16 +1690,16 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
         idx = clt_lookup_coverage(&mut (*data).coverage, *gid_in.offset(0));
         if idx >= 0i32 && idx < (*data).LigSetCount as i32 {
             let mut ligset: *mut otl_gsub_ligset = 0 as *mut otl_gsub_ligset;
-            let mut j: USHORT = 0;
+            let mut j: u16 = 0;
             ligset = &mut *(*data).LigatureSet.offset(idx as isize) as *mut otl_gsub_ligset;
-            j = 0i32 as USHORT;
+            j = 0i32 as u16;
             while (j as i32) < (*ligset).LigatureCount as i32 {
                 if glyph_seq_cmp(
                     &mut *gid_in.offset(1),
-                    (num_gids as i32 - 1i32) as USHORT,
+                    (num_gids as i32 - 1i32) as u16,
                     (*(*ligset).Ligature.offset(j as isize)).Component,
                     ((*(*ligset).Ligature.offset(j as isize)).CompCount as i32 - 1i32)
-                        as USHORT,
+                        as u16,
                 ) == 0
                 {
                     *gid_out = (*(*ligset).Ligature.offset(j as isize)).LigGlyph;
@@ -1943,7 +1941,7 @@ pub unsafe extern "C" fn otl_gsub_release(mut gsub_list: *mut otl_gsub) {
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_apply(
     mut gsub_list: *mut otl_gsub,
-    mut gid: *mut USHORT,
+    mut gid: *mut u16,
 ) -> i32 {
     let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
@@ -1972,8 +1970,8 @@ pub unsafe extern "C" fn otl_gsub_apply(
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_apply_alt(
     mut gsub_list: *mut otl_gsub,
-    mut alt_idx: USHORT,
-    mut gid: *mut USHORT,
+    mut alt_idx: u16,
+    mut gid: *mut u16,
 ) -> i32 {
     let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
@@ -2002,9 +2000,9 @@ pub unsafe extern "C" fn otl_gsub_apply_alt(
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_apply_lig(
     mut gsub_list: *mut otl_gsub,
-    mut gid_in: *mut USHORT,
-    mut num_gids: USHORT,
-    mut gid_out: *mut USHORT,
+    mut gid_in: *mut u16,
+    mut num_gids: u16,
+    mut gid_out: *mut u16,
 ) -> i32 {
     let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
@@ -2196,7 +2194,7 @@ pub unsafe extern "C" fn otl_gsub_add_feat_list(
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_apply_chain(
     mut gsub_list: *mut otl_gsub,
-    mut gid: *mut USHORT,
+    mut gid: *mut u16,
 ) -> i32 {
     let mut retval: i32 = -1i32;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;

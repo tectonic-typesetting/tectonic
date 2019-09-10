@@ -93,8 +93,6 @@ pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = u8;
-pub type USHORT = u16;
-pub type SHORT = i16;
 pub type SFNT_ULONG = u32;
 pub type Fixed = u32;
 pub type FWord = i16;
@@ -111,11 +109,11 @@ pub struct sfnt_table {
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -139,10 +137,10 @@ pub struct tt_post_table {
     pub maxMemType42: SFNT_ULONG,
     pub minMemType1: SFNT_ULONG,
     pub maxMemType1: SFNT_ULONG,
-    pub numberOfGlyphs: USHORT,
+    pub numberOfGlyphs: u16,
     pub glyphNamePtr: *mut *const i8,
     pub names: *mut *mut i8,
-    pub count: USHORT,
+    pub count: u16,
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -182,17 +180,17 @@ unsafe extern "C" fn read_v2_post_names(
     mut post: *mut tt_post_table,
     mut sfont: *mut sfnt,
 ) -> i32 {
-    let mut i: USHORT = 0;
-    let mut idx: USHORT = 0;
-    let mut indices: *mut USHORT = 0 as *mut USHORT;
-    let mut maxidx: USHORT = 0;
+    let mut i: u16 = 0;
+    let mut idx: u16 = 0;
+    let mut indices: *mut u16 = 0 as *mut u16;
+    let mut maxidx: u16 = 0;
     let mut len: i32 = 0;
     (*post).numberOfGlyphs = tt_get_unsigned_pair((*sfont).handle);
     indices = new(((*post).numberOfGlyphs as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<USHORT>() as u64)
-        as u32) as *mut USHORT;
-    maxidx = 257i32 as USHORT;
-    i = 0i32 as USHORT;
+        .wrapping_mul(::std::mem::size_of::<u16>() as u64)
+        as u32) as *mut u16;
+    maxidx = 257i32 as u16;
+    i = 0i32 as u16;
     while (i as i32) < (*post).numberOfGlyphs as i32 {
         idx = tt_get_unsigned_pair((*sfont).handle);
         if idx as i32 >= 258i32 {
@@ -217,20 +215,20 @@ unsafe extern "C" fn read_v2_post_names(
                 If we set idx = 0, (x)dvipdfmx works fine for the font and
                 created pdf seems fine. The post table may not be important
                 in such a case */
-                idx = 0i32 as USHORT
+                idx = 0i32 as u16
             }
         }
         *indices.offset(i as isize) = idx;
         i = i.wrapping_add(1)
     }
-    (*post).count = (maxidx as i32 - 257i32) as USHORT;
+    (*post).count = (maxidx as i32 - 257i32) as u16;
     if ((*post).count as i32) < 1i32 {
         (*post).names = 0 as *mut *mut i8
     } else {
         (*post).names = new(((*post).count as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<*mut i8>() as u64)
             as u32) as *mut *mut i8;
-        i = 0i32 as USHORT;
+        i = 0i32 as u16;
         while (i as i32) < (*post).count as i32 {
             /* read Pascal strings */
             len = tt_get_unsigned_byte((*sfont).handle) as i32;
@@ -255,7 +253,7 @@ unsafe extern "C" fn read_v2_post_names(
     (*post).glyphNamePtr = new(((*post).numberOfGlyphs as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<*const i8>() as u64)
         as u32) as *mut *const i8;
-    i = 0i32 as USHORT;
+    i = 0i32 as u16;
     while (i as i32) < (*post).numberOfGlyphs as i32 {
         idx = *indices.offset(i as isize);
         if (idx as i32) < 258i32 {
@@ -296,12 +294,12 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     (*post).maxMemType42 = tt_get_unsigned_quad((*sfont).handle);
     (*post).minMemType1 = tt_get_unsigned_quad((*sfont).handle);
     (*post).maxMemType1 = tt_get_unsigned_quad((*sfont).handle);
-    (*post).numberOfGlyphs = 0i32 as USHORT;
+    (*post).numberOfGlyphs = 0i32 as u16;
     (*post).glyphNamePtr = 0 as *mut *const i8;
-    (*post).count = 0i32 as USHORT;
+    (*post).count = 0i32 as u16;
     (*post).names = 0 as *mut *mut i8;
     if (*post).Version as u64 == 0x10000 {
-        (*post).numberOfGlyphs = 258i32 as USHORT;
+        (*post).numberOfGlyphs = 258i32 as u16;
         (*post).glyphNamePtr = macglyphorder.as_mut_ptr()
     } else if (*post).Version as u64 == 0x28000 {
         dpx_warning(
@@ -331,8 +329,8 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
 pub unsafe extern "C" fn tt_lookup_post_table(
     mut post: *mut tt_post_table,
     mut glyphname: *const i8,
-) -> USHORT {
-    let mut gid: USHORT = 0;
+) -> u16 {
+    let mut gid: u16 = 0;
     if !post.is_null() && !glyphname.is_null() {
     } else {
         __assert_fail(
@@ -345,7 +343,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
             .as_ptr(),
         );
     }
-    gid = 0i32 as USHORT;
+    gid = 0i32 as u16;
     while (gid as i32) < (*post).count as i32 {
         if !(*(*post).glyphNamePtr.offset(gid as isize)).is_null()
             && streq_ptr(glyphname, *(*post).glyphNamePtr.offset(gid as isize)) as i32 != 0
@@ -354,12 +352,12 @@ pub unsafe extern "C" fn tt_lookup_post_table(
         }
         gid = gid.wrapping_add(1)
     }
-    return 0i32 as USHORT;
+    return 0i32 as u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_glyphname(
     mut post: *mut tt_post_table,
-    mut gid: USHORT,
+    mut gid: u16,
 ) -> *mut i8 {
     if (gid as i32) < (*post).count as i32
         && !(*(*post).glyphNamePtr.offset(gid as isize)).is_null()
@@ -392,7 +390,7 @@ pub unsafe extern "C" fn tt_get_glyphname(
 /* Number of glyph names in names[] */
 #[no_mangle]
 pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
-    let mut i: USHORT = 0;
+    let mut i: u16 = 0;
     if !post.is_null() {
     } else {
         __assert_fail(
@@ -409,14 +407,14 @@ pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
         free((*post).glyphNamePtr as *mut libc::c_void);
     }
     if !(*post).names.is_null() {
-        i = 0i32 as USHORT;
+        i = 0i32 as u16;
         while (i as i32) < (*post).count as i32 {
             free(*(*post).names.offset(i as isize) as *mut libc::c_void);
             i = i.wrapping_add(1)
         }
         free((*post).names as *mut libc::c_void);
     }
-    (*post).count = 0i32 as USHORT;
+    (*post).count = 0i32 as u16;
     (*post).glyphNamePtr = 0 as *mut *const i8;
     (*post).names = 0 as *mut *mut i8;
     free(post as *mut libc::c_void);

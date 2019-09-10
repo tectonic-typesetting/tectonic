@@ -513,11 +513,11 @@ pub type SFNT_ULONG = u32;
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -531,7 +531,6 @@ pub struct sfnt_table {
     pub data: *mut i8,
     /* table data */
 }
-pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_font {

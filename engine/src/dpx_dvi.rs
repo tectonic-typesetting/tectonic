@@ -453,9 +453,9 @@ extern "C" {
     #[no_mangle]
     fn tt_read_longMetrics(
         sfont: *mut sfnt,
-        numGlyphs: USHORT,
-        numLongMetrics: USHORT,
-        numExSideBearings: USHORT,
+        numGlyphs: u16,
+        numLongMetrics: u16,
+        numExSideBearings: u16,
     ) -> *mut tt_longMetrics;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -809,11 +809,9 @@ pub struct cff_header {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_longMetrics {
-    pub advance: USHORT,
-    pub sideBearing: SHORT,
+    pub advance: u16,
+    pub sideBearing: i16,
 }
-pub type SHORT = i16;
-pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_rec {
@@ -904,11 +902,11 @@ pub type SFNT_ULONG = u32;
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -948,19 +946,19 @@ pub struct tt_head_table {
     pub fontRevision: Fixed,
     pub checkSumAdjustment: SFNT_ULONG,
     pub magicNumber: SFNT_ULONG,
-    pub flags: USHORT,
-    pub unitsPerEm: USHORT,
+    pub flags: u16,
+    pub unitsPerEm: u16,
     pub created: [BYTE; 8],
     pub modified: [BYTE; 8],
     pub xMin: FWord,
     pub yMin: FWord,
     pub xMax: FWord,
     pub yMax: FWord,
-    pub macStyle: USHORT,
-    pub lowestRecPPEM: USHORT,
-    pub fontDirectionHint: SHORT,
-    pub indexToLocFormat: SHORT,
-    pub glyphDataFormat: SHORT,
+    pub macStyle: u16,
+    pub lowestRecPPEM: u16,
+    pub fontDirectionHint: i16,
+    pub indexToLocFormat: i16,
+    pub glyphDataFormat: i16,
 }
 /* 16.16-bit signed fixed-point number */
 pub type FWord = i16;
@@ -991,20 +989,20 @@ pub type Fixed = u32;
 #[repr(C)]
 pub struct tt_maxp_table {
     pub version: Fixed,
-    pub numGlyphs: USHORT,
-    pub maxPoints: USHORT,
-    pub maxContours: USHORT,
-    pub maxComponentPoints: USHORT,
-    pub maxComponentContours: USHORT,
-    pub maxZones: USHORT,
-    pub maxTwilightPoints: USHORT,
-    pub maxStorage: USHORT,
-    pub maxFunctionDefs: USHORT,
-    pub maxInstructionDefs: USHORT,
-    pub maxStackElements: USHORT,
-    pub maxSizeOfInstructions: USHORT,
-    pub maxComponentElements: USHORT,
-    pub maxComponentDepth: USHORT,
+    pub numGlyphs: u16,
+    pub maxPoints: u16,
+    pub maxContours: u16,
+    pub maxComponentPoints: u16,
+    pub maxComponentContours: u16,
+    pub maxZones: u16,
+    pub maxTwilightPoints: u16,
+    pub maxStorage: u16,
+    pub maxFunctionDefs: u16,
+    pub maxInstructionDefs: u16,
+    pub maxStackElements: u16,
+    pub maxSizeOfInstructions: u16,
+    pub maxComponentElements: u16,
+    pub maxComponentDepth: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1017,13 +1015,13 @@ pub struct tt_hhea_table {
     pub minLeftSideBearing: FWord,
     pub minRightSideBearing: FWord,
     pub xMaxExtent: FWord,
-    pub caretSlopeRise: SHORT,
-    pub caretSlopeRun: SHORT,
+    pub caretSlopeRise: i16,
+    pub caretSlopeRun: i16,
     pub caretOffset: FWord,
-    pub reserved: [SHORT; 4],
-    pub metricDataFormat: SHORT,
-    pub numOfLongHorMetrics: USHORT,
-    pub numOfExSideBearings: USHORT,
+    pub reserved: [i16; 4],
+    pub metricDataFormat: i16,
+    pub numOfLongHorMetrics: u16,
+    pub numOfExSideBearings: u16,
     /* extra information */
 }
 pub type uFWord = u16;
@@ -1031,20 +1029,20 @@ pub type uFWord = u16;
 #[repr(C)]
 pub struct tt_vhea_table {
     pub version: Fixed,
-    pub vertTypoAscender: SHORT,
-    pub vertTypoDescender: SHORT,
-    pub vertTypoLineGap: SHORT,
-    pub advanceHeightMax: SHORT,
-    pub minTopSideBearing: SHORT,
-    pub minBottomSideBearing: SHORT,
-    pub yMaxExtent: SHORT,
-    pub caretSlopeRise: SHORT,
-    pub caretSlopeRun: SHORT,
-    pub caretOffset: SHORT,
-    pub reserved: [SHORT; 4],
-    pub metricDataFormat: SHORT,
-    pub numOfLongVerMetrics: USHORT,
-    pub numOfExSideBearings: USHORT,
+    pub vertTypoAscender: i16,
+    pub vertTypoDescender: i16,
+    pub vertTypoLineGap: i16,
+    pub advanceHeightMax: i16,
+    pub minTopSideBearing: i16,
+    pub minBottomSideBearing: i16,
+    pub yMaxExtent: i16,
+    pub caretSlopeRise: i16,
+    pub caretSlopeRun: i16,
+    pub caretOffset: i16,
+    pub reserved: [i16; 4],
+    pub metricDataFormat: i16,
+    pub numOfLongVerMetrics: u16,
+    pub numOfExSideBearings: u16,
     /* extra information */
 }
 #[inline]

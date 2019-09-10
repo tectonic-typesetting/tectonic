@@ -72,8 +72,6 @@ pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = u8;
 pub type SFNT_CHAR = libc::c_schar;
-pub type USHORT = u16;
-pub type SHORT = i16;
 pub type SFNT_ULONG = u32;
 pub type SFNT_LONG = i32;
 pub type Fixed = u32;
@@ -92,11 +90,11 @@ pub struct sfnt_table {
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -115,19 +113,19 @@ pub struct tt_head_table {
     pub fontRevision: Fixed,
     pub checkSumAdjustment: SFNT_ULONG,
     pub magicNumber: SFNT_ULONG,
-    pub flags: USHORT,
-    pub unitsPerEm: USHORT,
+    pub flags: u16,
+    pub unitsPerEm: u16,
     pub created: [BYTE; 8],
     pub modified: [BYTE; 8],
     pub xMin: FWord,
     pub yMin: FWord,
     pub xMax: FWord,
     pub yMax: FWord,
-    pub macStyle: USHORT,
-    pub lowestRecPPEM: USHORT,
-    pub fontDirectionHint: SHORT,
-    pub indexToLocFormat: SHORT,
-    pub glyphDataFormat: SHORT,
+    pub macStyle: u16,
+    pub lowestRecPPEM: u16,
+    pub fontDirectionHint: i16,
+    pub indexToLocFormat: i16,
+    pub glyphDataFormat: i16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -140,111 +138,111 @@ pub struct tt_hhea_table {
     pub minLeftSideBearing: FWord,
     pub minRightSideBearing: FWord,
     pub xMaxExtent: FWord,
-    pub caretSlopeRise: SHORT,
-    pub caretSlopeRun: SHORT,
+    pub caretSlopeRise: i16,
+    pub caretSlopeRun: i16,
     pub caretOffset: FWord,
-    pub reserved: [SHORT; 4],
-    pub metricDataFormat: SHORT,
-    pub numOfLongHorMetrics: USHORT,
-    pub numOfExSideBearings: USHORT,
+    pub reserved: [i16; 4],
+    pub metricDataFormat: i16,
+    pub numOfLongHorMetrics: u16,
+    pub numOfExSideBearings: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_vhea_table {
     pub version: Fixed,
-    pub vertTypoAscender: SHORT,
-    pub vertTypoDescender: SHORT,
-    pub vertTypoLineGap: SHORT,
-    pub advanceHeightMax: SHORT,
-    pub minTopSideBearing: SHORT,
-    pub minBottomSideBearing: SHORT,
-    pub yMaxExtent: SHORT,
-    pub caretSlopeRise: SHORT,
-    pub caretSlopeRun: SHORT,
-    pub caretOffset: SHORT,
-    pub reserved: [SHORT; 4],
-    pub metricDataFormat: SHORT,
-    pub numOfLongVerMetrics: USHORT,
-    pub numOfExSideBearings: USHORT,
+    pub vertTypoAscender: i16,
+    pub vertTypoDescender: i16,
+    pub vertTypoLineGap: i16,
+    pub advanceHeightMax: i16,
+    pub minTopSideBearing: i16,
+    pub minBottomSideBearing: i16,
+    pub yMaxExtent: i16,
+    pub caretSlopeRise: i16,
+    pub caretSlopeRun: i16,
+    pub caretOffset: i16,
+    pub reserved: [i16; 4],
+    pub metricDataFormat: i16,
+    pub numOfLongVerMetrics: u16,
+    pub numOfExSideBearings: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_maxp_table {
     pub version: Fixed,
-    pub numGlyphs: USHORT,
-    pub maxPoints: USHORT,
-    pub maxContours: USHORT,
-    pub maxComponentPoints: USHORT,
-    pub maxComponentContours: USHORT,
-    pub maxZones: USHORT,
-    pub maxTwilightPoints: USHORT,
-    pub maxStorage: USHORT,
-    pub maxFunctionDefs: USHORT,
-    pub maxInstructionDefs: USHORT,
-    pub maxStackElements: USHORT,
-    pub maxSizeOfInstructions: USHORT,
-    pub maxComponentElements: USHORT,
-    pub maxComponentDepth: USHORT,
+    pub numGlyphs: u16,
+    pub maxPoints: u16,
+    pub maxContours: u16,
+    pub maxComponentPoints: u16,
+    pub maxComponentContours: u16,
+    pub maxZones: u16,
+    pub maxTwilightPoints: u16,
+    pub maxStorage: u16,
+    pub maxFunctionDefs: u16,
+    pub maxInstructionDefs: u16,
+    pub maxStackElements: u16,
+    pub maxSizeOfInstructions: u16,
+    pub maxComponentElements: u16,
+    pub maxComponentDepth: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_os2__table {
-    pub version: USHORT,
-    pub xAvgCharWidth: SHORT,
-    pub usWeightClass: USHORT,
-    pub usWidthClass: USHORT,
-    pub fsType: SHORT,
-    pub ySubscriptXSize: SHORT,
-    pub ySubscriptYSize: SHORT,
-    pub ySubscriptXOffset: SHORT,
-    pub ySubscriptYOffset: SHORT,
-    pub ySuperscriptXSize: SHORT,
-    pub ySuperscriptYSize: SHORT,
-    pub ySuperscriptXOffset: SHORT,
-    pub ySuperscriptYOffset: SHORT,
-    pub yStrikeoutSize: SHORT,
-    pub yStrikeoutPosition: SHORT,
-    pub sFamilyClass: SHORT,
+    pub version: u16,
+    pub xAvgCharWidth: i16,
+    pub usWeightClass: u16,
+    pub usWidthClass: u16,
+    pub fsType: i16,
+    pub ySubscriptXSize: i16,
+    pub ySubscriptYSize: i16,
+    pub ySubscriptXOffset: i16,
+    pub ySubscriptYOffset: i16,
+    pub ySuperscriptXSize: i16,
+    pub ySuperscriptYSize: i16,
+    pub ySuperscriptXOffset: i16,
+    pub ySuperscriptYOffset: i16,
+    pub yStrikeoutSize: i16,
+    pub yStrikeoutPosition: i16,
+    pub sFamilyClass: i16,
     pub panose: [BYTE; 10],
     pub ulUnicodeRange1: SFNT_ULONG,
     pub ulUnicodeRange2: SFNT_ULONG,
     pub ulUnicodeRange3: SFNT_ULONG,
     pub ulUnicodeRange4: SFNT_ULONG,
     pub achVendID: [SFNT_CHAR; 4],
-    pub fsSelection: USHORT,
-    pub usFirstCharIndex: USHORT,
-    pub usLastCharIndex: USHORT,
-    pub sTypoAscender: SHORT,
-    pub sTypoDescender: SHORT,
-    pub sTypoLineGap: SHORT,
-    pub usWinAscent: USHORT,
-    pub usWinDescent: USHORT,
+    pub fsSelection: u16,
+    pub usFirstCharIndex: u16,
+    pub usLastCharIndex: u16,
+    pub sTypoAscender: i16,
+    pub sTypoDescender: i16,
+    pub sTypoLineGap: i16,
+    pub usWinAscent: u16,
+    pub usWinDescent: u16,
     pub ulCodePageRange1: SFNT_ULONG,
     pub ulCodePageRange2: SFNT_ULONG,
-    pub sxHeight: SHORT,
-    pub sCapHeight: SHORT,
-    pub usDefaultChar: USHORT,
-    pub usBreakChar: USHORT,
-    pub usMaxContext: USHORT,
+    pub sxHeight: i16,
+    pub sCapHeight: i16,
+    pub usDefaultChar: u16,
+    pub usBreakChar: u16,
+    pub usMaxContext: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_vertOriginYMetrics {
-    pub glyphIndex: USHORT,
-    pub vertOriginY: SHORT,
+    pub glyphIndex: u16,
+    pub vertOriginY: i16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_VORG_table {
-    pub defaultVertOriginY: SHORT,
-    pub numVertOriginYMetrics: USHORT,
+    pub defaultVertOriginY: i16,
+    pub numVertOriginYMetrics: u16,
     pub vertOriginYMetrics: *mut tt_vertOriginYMetrics,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_longMetrics {
-    pub advance: USHORT,
-    pub sideBearing: SHORT,
+    pub advance: u16,
+    pub sideBearing: i16,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -379,8 +377,8 @@ pub unsafe extern "C" fn tt_read_head_table(mut sfont: *mut sfnt) -> *mut tt_hea
     (*table).yMin = tt_get_signed_pair((*sfont).handle);
     (*table).xMax = tt_get_signed_pair((*sfont).handle);
     (*table).yMax = tt_get_signed_pair((*sfont).handle);
-    (*table).macStyle = tt_get_signed_pair((*sfont).handle) as USHORT;
-    (*table).lowestRecPPEM = tt_get_signed_pair((*sfont).handle) as USHORT;
+    (*table).macStyle = tt_get_signed_pair((*sfont).handle) as u16;
+    (*table).lowestRecPPEM = tt_get_signed_pair((*sfont).handle) as u16;
     (*table).fontDirectionHint = tt_get_signed_pair((*sfont).handle);
     (*table).indexToLocFormat = tt_get_signed_pair((*sfont).handle);
     (*table).glyphDataFormat = tt_get_signed_pair((*sfont).handle);
@@ -599,7 +597,7 @@ pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhe
     len = sfnt_find_table_len(sfont, b"hmtx\x00" as *const u8 as *const i8);
     (*table).numOfExSideBearings = len
         .wrapping_sub(((*table).numOfLongHorMetrics as i32 * 4i32) as u32)
-        .wrapping_div(2i32 as u32) as USHORT;
+        .wrapping_div(2i32 as u32) as u16;
     return table;
 }
 /* vhea */
@@ -632,14 +630,14 @@ pub unsafe extern "C" fn tt_read_vhea_table(mut sfont: *mut sfnt) -> *mut tt_vhe
     len = sfnt_find_table_len(sfont, b"vmtx\x00" as *const u8 as *const i8);
     (*table).numOfExSideBearings = len
         .wrapping_sub(((*table).numOfLongVerMetrics as i32 * 4i32) as u32)
-        .wrapping_div(2i32 as u32) as USHORT;
+        .wrapping_div(2i32 as u32) as u16;
     return table;
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VORG_table {
     let mut vorg: *mut tt_VORG_table = 0 as *mut tt_VORG_table;
     let mut offset: SFNT_ULONG = 0;
-    let mut i: USHORT = 0;
+    let mut i: u16 = 0;
     offset = sfnt_find_table_pos(sfont, b"VORG\x00" as *const u8 as *const i8);
     if offset > 0i32 as u32 {
         vorg = new((1i32 as u32 as u64)
@@ -661,7 +659,7 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
          * The vertOriginYMetrics array must be sorted in increasing
          * glyphIndex order.
          */
-        i = 0i32 as USHORT;
+        i = 0i32 as u16;
         while (i as i32) < (*vorg).numVertOriginYMetrics as i32 {
             (*(*vorg).vertOriginYMetrics.offset(i as isize)).glyphIndex =
                 tt_get_unsigned_pair((*sfont).handle);
@@ -682,18 +680,18 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_longMetrics(
     mut sfont: *mut sfnt,
-    mut numGlyphs: USHORT,
-    mut numLongMetrics: USHORT,
-    mut numExSideBearings: USHORT,
+    mut numGlyphs: u16,
+    mut numLongMetrics: u16,
+    mut numExSideBearings: u16,
 ) -> *mut tt_longMetrics {
     let mut m: *mut tt_longMetrics = 0 as *mut tt_longMetrics;
-    let mut gid: USHORT = 0;
-    let mut last_adv: USHORT = 0i32 as USHORT;
-    let mut last_esb: SHORT = 0i32 as SHORT;
+    let mut gid: u16 = 0;
+    let mut last_adv: u16 = 0i32 as u16;
+    let mut last_esb: i16 = 0i32 as i16;
     m = new((numGlyphs as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<tt_longMetrics>() as u64)
         as u32) as *mut tt_longMetrics;
-    gid = 0i32 as USHORT;
+    gid = 0i32 as u16;
     while (gid as i32) < numGlyphs as i32 {
         if (gid as i32) < numLongMetrics as i32 {
             last_adv = tt_get_unsigned_pair((*sfont).handle)
@@ -780,15 +778,15 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         }
     } else {
         /* used in add_CIDVMetrics() of cidtype0.c */
-        (*table).sTypoAscender = 880i32 as SHORT;
-        (*table).sTypoDescender = -120i32 as SHORT;
+        (*table).sTypoAscender = 880i32 as i16;
+        (*table).sTypoDescender = -120i32 as i16;
         /* used in tt_get_fontdesc() of tt_aux.c */
-        (*table).usWeightClass = 400u32 as USHORT; /* Normal(Regular) */
-        (*table).xAvgCharWidth = 0i32 as SHORT; /* ignore */
-        (*table).version = 0i32 as USHORT; /* TrueType rev 1.5 */
-        (*table).fsType = 0i32 as SHORT; /* Installable Embedding */
-        (*table).fsSelection = 0u32 as USHORT; /* All undefined */
-        (*table).sFamilyClass = 0i32 as SHORT; /* No Classification */
+        (*table).usWeightClass = 400u32 as u16; /* Normal(Regular) */
+        (*table).xAvgCharWidth = 0i32 as i16; /* ignore */
+        (*table).version = 0i32 as u16; /* TrueType rev 1.5 */
+        (*table).fsType = 0i32 as i16; /* Installable Embedding */
+        (*table).fsSelection = 0u32 as u16; /* All undefined */
+        (*table).sFamilyClass = 0i32 as i16; /* No Classification */
         i = 0i32;
         while i < 10i32 {
             (*table).panose[i as usize] = 0i32 as BYTE;
@@ -801,15 +799,15 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
 unsafe extern "C" fn tt_get_name(
     mut sfont: *mut sfnt,
     mut dest: *mut i8,
-    mut destlen: USHORT,
-    mut plat_id: USHORT,
-    mut enco_id: USHORT,
-    mut lang_id: USHORT,
-    mut name_id: USHORT,
-) -> USHORT {
-    let mut length: USHORT = 0i32 as USHORT;
-    let mut num_names: USHORT = 0;
-    let mut string_offset: USHORT = 0;
+    mut destlen: u16,
+    mut plat_id: u16,
+    mut enco_id: u16,
+    mut lang_id: u16,
+    mut name_id: u16,
+) -> u16 {
+    let mut length: u16 = 0i32 as u16;
+    let mut num_names: u16 = 0;
+    let mut string_offset: u16 = 0;
     let mut name_offset: SFNT_ULONG = 0;
     let mut i: i32 = 0;
     name_offset = sfnt_locate_table(sfont, b"name\x00" as *const u8 as *const i8);
@@ -820,11 +818,11 @@ unsafe extern "C" fn tt_get_name(
     string_offset = tt_get_unsigned_pair((*sfont).handle);
     i = 0i32;
     while i < num_names as i32 {
-        let mut p_id: USHORT = 0;
-        let mut e_id: USHORT = 0;
-        let mut n_id: USHORT = 0;
-        let mut l_id: USHORT = 0;
-        let mut offset: USHORT = 0;
+        let mut p_id: u16 = 0;
+        let mut e_id: u16 = 0;
+        let mut n_id: u16 = 0;
+        let mut l_id: u16 = 0;
+        let mut offset: u16 = 0;
         p_id = tt_get_unsigned_pair((*sfont).handle);
         e_id = tt_get_unsigned_pair((*sfont).handle);
         l_id = tt_get_unsigned_pair((*sfont).handle);
@@ -845,7 +843,7 @@ unsafe extern "C" fn tt_get_name(
                     length as i32,
                     destlen as i32,
                 );
-                length = (destlen as i32 - 1i32) as USHORT
+                length = (destlen as i32 - 1i32) as u16
             }
             ttstub_input_seek(
                 (*sfont).handle,
@@ -866,7 +864,7 @@ unsafe extern "C" fn tt_get_name(
         }
     }
     if i == num_names as i32 {
-        length = 0i32 as USHORT
+        length = 0i32 as u16
     }
     return length;
 }
@@ -913,18 +911,18 @@ unsafe extern "C" fn tt_get_name(
 pub unsafe extern "C" fn tt_get_ps_fontname(
     mut sfont: *mut sfnt,
     mut dest: *mut i8,
-    mut destlen: USHORT,
-) -> USHORT {
-    let mut namelen: USHORT = 0i32 as USHORT;
+    mut destlen: u16,
+) -> u16 {
+    let mut namelen: u16 = 0i32 as u16;
     /* First try Mac-Roman PS name and then Win-Unicode PS name */
     namelen = tt_get_name(
         sfont,
         dest,
         destlen,
-        1i32 as USHORT,
-        0i32 as USHORT,
-        0i32 as USHORT,
-        6i32 as USHORT,
+        1i32 as u16,
+        0i32 as u16,
+        0i32 as u16,
+        6i32 as u16,
     );
     if namelen as i32 != 0i32
         || {
@@ -932,10 +930,10 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
                 sfont,
                 dest,
                 destlen,
-                3i32 as USHORT,
-                1i32 as USHORT,
-                0x409u32 as USHORT,
-                6i32 as USHORT,
+                3i32 as u16,
+                1i32 as u16,
+                0x409u32 as u16,
+                6i32 as u16,
             );
             namelen as i32 != 0i32
         }
@@ -944,10 +942,10 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
                 sfont,
                 dest,
                 destlen,
-                3i32 as USHORT,
-                5i32 as USHORT,
-                0x412u32 as USHORT,
-                6i32 as USHORT,
+                3i32 as u16,
+                5i32 as u16,
+                0x412u32 as u16,
+                6i32 as u16,
             );
             namelen as i32 != 0i32
         }
@@ -963,10 +961,10 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
         sfont,
         dest,
         destlen,
-        1i32 as USHORT,
-        0i32 as USHORT,
-        0xffffu32 as USHORT,
-        6i32 as USHORT,
+        1i32 as u16,
+        0i32 as u16,
+        0xffffu32 as u16,
+        6i32 as u16,
     );
     if namelen as i32 == 0i32 {
         /*
@@ -978,10 +976,10 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
             sfont,
             dest,
             destlen,
-            1i32 as USHORT,
-            0i32 as USHORT,
-            0i32 as USHORT,
-            1i32 as USHORT,
+            1i32 as u16,
+            0i32 as u16,
+            0i32 as u16,
+            1i32 as u16,
         )
     }
     return namelen;

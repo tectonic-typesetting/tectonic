@@ -450,9 +450,9 @@ extern "C" {
     #[no_mangle]
     fn tt_read_longMetrics(
         sfont: *mut sfnt,
-        numGlyphs: USHORT,
-        numLongMetrics: USHORT,
-        numExSideBearings: USHORT,
+        numGlyphs: u16,
+        numLongMetrics: u16,
+        numExSideBearings: u16,
     ) -> *mut tt_longMetrics;
     /* OS/2 table */
     #[no_mangle]
@@ -528,11 +528,11 @@ pub type SFNT_ULONG = u32;
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -546,7 +546,6 @@ pub struct sfnt_table {
     pub data: *mut i8,
     /* table data */
 }
-pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cs_ginfo {
@@ -635,28 +634,27 @@ pub struct cff_range3 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_longMetrics {
-    pub advance: USHORT,
-    pub sideBearing: SHORT,
+    pub advance: u16,
+    pub sideBearing: i16,
 }
-pub type SHORT = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_vhea_table {
     pub version: Fixed,
-    pub vertTypoAscender: SHORT,
-    pub vertTypoDescender: SHORT,
-    pub vertTypoLineGap: SHORT,
-    pub advanceHeightMax: SHORT,
-    pub minTopSideBearing: SHORT,
-    pub minBottomSideBearing: SHORT,
-    pub yMaxExtent: SHORT,
-    pub caretSlopeRise: SHORT,
-    pub caretSlopeRun: SHORT,
-    pub caretOffset: SHORT,
-    pub reserved: [SHORT; 4],
-    pub metricDataFormat: SHORT,
-    pub numOfLongVerMetrics: USHORT,
-    pub numOfExSideBearings: USHORT,
+    pub vertTypoAscender: i16,
+    pub vertTypoDescender: i16,
+    pub vertTypoLineGap: i16,
+    pub advanceHeightMax: i16,
+    pub minTopSideBearing: i16,
+    pub minBottomSideBearing: i16,
+    pub yMaxExtent: i16,
+    pub caretSlopeRise: i16,
+    pub caretSlopeRun: i16,
+    pub caretOffset: i16,
+    pub reserved: [i16; 4],
+    pub metricDataFormat: i16,
+    pub numOfLongVerMetrics: u16,
+    pub numOfExSideBearings: u16,
     /* extra information */
 }
 pub type Fixed = u32;
@@ -764,19 +762,19 @@ pub struct tt_head_table {
     pub fontRevision: Fixed,
     pub checkSumAdjustment: SFNT_ULONG,
     pub magicNumber: SFNT_ULONG,
-    pub flags: USHORT,
-    pub unitsPerEm: USHORT,
+    pub flags: u16,
+    pub unitsPerEm: u16,
     pub created: [BYTE; 8],
     pub modified: [BYTE; 8],
     pub xMin: FWord,
     pub yMin: FWord,
     pub xMax: FWord,
     pub yMax: FWord,
-    pub macStyle: USHORT,
-    pub lowestRecPPEM: USHORT,
-    pub fontDirectionHint: SHORT,
-    pub indexToLocFormat: SHORT,
-    pub glyphDataFormat: SHORT,
+    pub macStyle: u16,
+    pub lowestRecPPEM: u16,
+    pub fontDirectionHint: i16,
+    pub indexToLocFormat: i16,
+    pub glyphDataFormat: i16,
 }
 /* 16.16-bit signed fixed-point number */
 pub type FWord = i16;
@@ -806,20 +804,20 @@ pub type BYTE = u8;
 #[repr(C)]
 pub struct tt_maxp_table {
     pub version: Fixed,
-    pub numGlyphs: USHORT,
-    pub maxPoints: USHORT,
-    pub maxContours: USHORT,
-    pub maxComponentPoints: USHORT,
-    pub maxComponentContours: USHORT,
-    pub maxZones: USHORT,
-    pub maxTwilightPoints: USHORT,
-    pub maxStorage: USHORT,
-    pub maxFunctionDefs: USHORT,
-    pub maxInstructionDefs: USHORT,
-    pub maxStackElements: USHORT,
-    pub maxSizeOfInstructions: USHORT,
-    pub maxComponentElements: USHORT,
-    pub maxComponentDepth: USHORT,
+    pub numGlyphs: u16,
+    pub maxPoints: u16,
+    pub maxContours: u16,
+    pub maxComponentPoints: u16,
+    pub maxComponentContours: u16,
+    pub maxZones: u16,
+    pub maxTwilightPoints: u16,
+    pub maxStorage: u16,
+    pub maxFunctionDefs: u16,
+    pub maxInstructionDefs: u16,
+    pub maxStackElements: u16,
+    pub maxSizeOfInstructions: u16,
+    pub maxComponentElements: u16,
+    pub maxComponentDepth: u16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -832,69 +830,69 @@ pub struct tt_hhea_table {
     pub minLeftSideBearing: FWord,
     pub minRightSideBearing: FWord,
     pub xMaxExtent: FWord,
-    pub caretSlopeRise: SHORT,
-    pub caretSlopeRun: SHORT,
+    pub caretSlopeRise: i16,
+    pub caretSlopeRun: i16,
     pub caretOffset: FWord,
-    pub reserved: [SHORT; 4],
-    pub metricDataFormat: SHORT,
-    pub numOfLongHorMetrics: USHORT,
-    pub numOfExSideBearings: USHORT,
+    pub reserved: [i16; 4],
+    pub metricDataFormat: i16,
+    pub numOfLongHorMetrics: u16,
+    pub numOfExSideBearings: u16,
     /* extra information */
 }
 pub type uFWord = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_VORG_table {
-    pub defaultVertOriginY: SHORT,
-    pub numVertOriginYMetrics: USHORT,
+    pub defaultVertOriginY: i16,
+    pub numVertOriginYMetrics: u16,
     pub vertOriginYMetrics: *mut tt_vertOriginYMetrics,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_vertOriginYMetrics {
-    pub glyphIndex: USHORT,
-    pub vertOriginY: SHORT,
+    pub glyphIndex: u16,
+    pub vertOriginY: i16,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_os2__table {
-    pub version: USHORT,
-    pub xAvgCharWidth: SHORT,
-    pub usWeightClass: USHORT,
-    pub usWidthClass: USHORT,
-    pub fsType: SHORT,
-    pub ySubscriptXSize: SHORT,
-    pub ySubscriptYSize: SHORT,
-    pub ySubscriptXOffset: SHORT,
-    pub ySubscriptYOffset: SHORT,
-    pub ySuperscriptXSize: SHORT,
-    pub ySuperscriptYSize: SHORT,
-    pub ySuperscriptXOffset: SHORT,
-    pub ySuperscriptYOffset: SHORT,
-    pub yStrikeoutSize: SHORT,
-    pub yStrikeoutPosition: SHORT,
-    pub sFamilyClass: SHORT,
+    pub version: u16,
+    pub xAvgCharWidth: i16,
+    pub usWeightClass: u16,
+    pub usWidthClass: u16,
+    pub fsType: i16,
+    pub ySubscriptXSize: i16,
+    pub ySubscriptYSize: i16,
+    pub ySubscriptXOffset: i16,
+    pub ySubscriptYOffset: i16,
+    pub ySuperscriptXSize: i16,
+    pub ySuperscriptYSize: i16,
+    pub ySuperscriptXOffset: i16,
+    pub ySuperscriptYOffset: i16,
+    pub yStrikeoutSize: i16,
+    pub yStrikeoutPosition: i16,
+    pub sFamilyClass: i16,
     pub panose: [BYTE; 10],
     pub ulUnicodeRange1: SFNT_ULONG,
     pub ulUnicodeRange2: SFNT_ULONG,
     pub ulUnicodeRange3: SFNT_ULONG,
     pub ulUnicodeRange4: SFNT_ULONG,
     pub achVendID: [SFNT_CHAR; 4],
-    pub fsSelection: USHORT,
-    pub usFirstCharIndex: USHORT,
-    pub usLastCharIndex: USHORT,
-    pub sTypoAscender: SHORT,
-    pub sTypoDescender: SHORT,
-    pub sTypoLineGap: SHORT,
-    pub usWinAscent: USHORT,
-    pub usWinDescent: USHORT,
+    pub fsSelection: u16,
+    pub usFirstCharIndex: u16,
+    pub usLastCharIndex: u16,
+    pub sTypoAscender: i16,
+    pub sTypoDescender: i16,
+    pub sTypoLineGap: i16,
+    pub usWinAscent: u16,
+    pub usWinDescent: u16,
     pub ulCodePageRange1: SFNT_ULONG,
     pub ulCodePageRange2: SFNT_ULONG,
-    pub sxHeight: SHORT,
-    pub sCapHeight: SHORT,
-    pub usDefaultChar: USHORT,
-    pub usBreakChar: USHORT,
-    pub usMaxContext: USHORT,
+    pub sxHeight: i16,
+    pub sCapHeight: i16,
+    pub usDefaultChar: u16,
+    pub usBreakChar: u16,
+    pub usMaxContext: u16,
 }
 pub type SFNT_CHAR = libc::c_schar;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -1131,14 +1129,14 @@ unsafe extern "C" fn add_CIDHMetrics(
     w_array = pdf_new_array();
     cid = 0i32;
     while cid <= last_cid as i32 {
-        let mut gid: USHORT = 0;
+        let mut gid: u16 = 0;
         let mut advanceWidth: f64 = 0.;
         gid = (if !CIDToGIDMap.is_null() {
             (*CIDToGIDMap.offset((2i32 * cid) as isize) as i32) << 8i32
                 | *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) as i32
         } else {
             cid
-        }) as USHORT;
+        }) as u16;
         if !(gid as i32 >= (*maxp).numGlyphs as i32
             || cid != 0i32 && gid as i32 == 0i32)
         {
@@ -1275,8 +1273,8 @@ unsafe extern "C" fn add_CIDVMetrics(
     w2_array = pdf_new_array();
     cid = 0i32;
     while cid <= last_cid as i32 {
-        let mut i: USHORT = 0;
-        let mut gid: USHORT = 0;
+        let mut i: u16 = 0;
+        let mut gid: u16 = 0;
         let mut advanceHeight: f64 = 0.;
         let mut vertOriginX: f64 = 0.;
         let mut vertOriginY: f64 = 0.;
@@ -1285,7 +1283,7 @@ unsafe extern "C" fn add_CIDVMetrics(
                 | *CIDToGIDMap.offset((2i32 * cid + 1i32) as isize) as i32
         } else {
             cid
-        }) as USHORT;
+        }) as u16;
         if !(gid as i32 >= (*maxp).numGlyphs as i32
             || cid != 0i32 && gid as i32 == 0i32)
         {
@@ -1309,7 +1307,7 @@ unsafe extern "C" fn add_CIDVMetrics(
                     + 0.5f64,
             ) * 1i32 as f64;
             vertOriginY = defaultVertOriginY;
-            i = 0i32 as USHORT;
+            i = 0i32 as u16;
             while (i as i32) < (*vorg).numVertOriginYMetrics as i32
                 && gid as i32
                     > (*(*vorg).vertOriginYMetrics.offset(i as isize)).glyphIndex as i32

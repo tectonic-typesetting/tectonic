@@ -219,9 +219,9 @@ extern "C" {
         fontname: *const i8,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn tt_cmap_read(sfont: *mut sfnt, platform: USHORT, encoding: USHORT) -> *mut tt_cmap;
+    fn tt_cmap_read(sfont: *mut sfnt, platform: u16, encoding: u16) -> *mut tt_cmap;
     #[no_mangle]
-    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: SFNT_ULONG) -> USHORT;
+    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: SFNT_ULONG) -> u16;
     #[no_mangle]
     fn tt_cmap_release(cmap: *mut tt_cmap);
     #[no_mangle]
@@ -229,9 +229,9 @@ extern "C" {
     #[no_mangle]
     fn tt_build_finish(g: *mut tt_glyphs);
     #[no_mangle]
-    fn tt_add_glyph(g: *mut tt_glyphs, gid: USHORT, new_gid: USHORT) -> USHORT;
+    fn tt_add_glyph(g: *mut tt_glyphs, gid: u16, new_gid: u16) -> u16;
     #[no_mangle]
-    fn tt_get_index(g: *mut tt_glyphs, gid: USHORT) -> USHORT;
+    fn tt_get_index(g: *mut tt_glyphs, gid: u16) -> u16;
     #[no_mangle]
     fn tt_build_tables(sfont: *mut sfnt, g: *mut tt_glyphs) -> i32;
     #[no_mangle]
@@ -257,10 +257,10 @@ extern "C" {
         sfont: *mut sfnt,
     ) -> i32;
     #[no_mangle]
-    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut USHORT) -> i32;
+    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut u16) -> i32;
     /* name table */
     #[no_mangle]
-    fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: USHORT) -> USHORT;
+    fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: u16) -> u16;
 }
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -300,14 +300,13 @@ pub struct cid_opt {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_cmap {
-    pub format: USHORT,
-    pub platform: USHORT,
-    pub encoding: USHORT,
+    pub format: u16,
+    pub platform: u16,
+    pub encoding: u16,
     pub language: SFNT_ULONG,
     pub map: *mut libc::c_void,
 }
 pub type SFNT_ULONG = u32;
-pub type USHORT = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct CMap {
@@ -376,11 +375,11 @@ pub struct sfnt {
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -424,13 +423,13 @@ pub struct C2RustUnnamed_1 {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_glyphs {
-    pub num_glyphs: USHORT,
-    pub max_glyphs: USHORT,
-    pub last_gid: USHORT,
-    pub emsize: USHORT,
-    pub dw: USHORT,
-    pub default_advh: USHORT,
-    pub default_tsb: SHORT,
+    pub num_glyphs: u16,
+    pub max_glyphs: u16,
+    pub last_gid: u16,
+    pub emsize: u16,
+    pub dw: u16,
+    pub default_advh: u16,
+    pub default_tsb: i16,
     pub gd: *mut tt_glyph_desc,
     pub used_slot: *mut u8,
 }
@@ -456,21 +455,20 @@ pub struct tt_glyphs {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_glyph_desc {
-    pub gid: USHORT,
-    pub ogid: USHORT,
-    pub advw: USHORT,
-    pub advh: USHORT,
-    pub lsb: SHORT,
-    pub tsb: SHORT,
-    pub llx: SHORT,
-    pub lly: SHORT,
-    pub urx: SHORT,
-    pub ury: SHORT,
+    pub gid: u16,
+    pub ogid: u16,
+    pub advw: u16,
+    pub advh: u16,
+    pub lsb: i16,
+    pub tsb: i16,
+    pub llx: i16,
+    pub lly: i16,
+    pub urx: i16,
+    pub ury: i16,
     pub length: SFNT_ULONG,
     pub data: *mut BYTE,
 }
 pub type BYTE = u8;
-pub type SHORT = i16;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {
@@ -941,8 +939,8 @@ unsafe extern "C" fn add_TTCIDHMetrics(
     }
     cid = 0i32;
     while cid <= last_cid as i32 {
-        let mut idx: USHORT = 0;
-        let mut gid: USHORT = 0;
+        let mut idx: u16 = 0;
+        let mut gid: u16 = 0;
         let mut width: f64 = 0.;
         if !(*used_chars.offset((cid / 8i32) as isize) as i32 & 1i32 << 7i32 - cid % 8i32
             == 0)
@@ -952,7 +950,7 @@ unsafe extern "C" fn add_TTCIDHMetrics(
                     | *cidtogidmap.offset((2i32 * cid + 1i32) as isize) as i32
             } else {
                 cid
-            }) as USHORT;
+            }) as u16;
             idx = tt_get_index(g, gid);
             if !(cid != 0i32 && idx as i32 == 0i32) {
                 width = floor(
@@ -1037,14 +1035,14 @@ unsafe extern "C" fn add_TTCIDVMetrics(
     w2_array = pdf_new_array();
     cid = 0i32;
     while cid <= last_cid as i32 {
-        let mut idx: USHORT = 0;
+        let mut idx: u16 = 0;
         let mut vertOriginX: f64 = 0.;
         let mut vertOriginY: f64 = 0.;
         let mut advanceHeight: f64 = 0.;
         if !(*used_chars.offset((cid / 8i32) as isize) as i32 & 1i32 << 7i32 - cid % 8i32
             == 0)
         {
-            idx = tt_get_index(g, cid as USHORT);
+            idx = tt_get_index(g, cid as u16);
             if !(cid != 0i32 && idx as i32 == 0i32) {
                 advanceHeight = floor(
                     1000.0f64
@@ -1270,7 +1268,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     let mut cid: CID = 0;
     let mut last_cid: CID = 0;
     let mut cidtogidmap: *mut u8 = 0 as *mut u8;
-    let mut num_glyphs: USHORT = 0;
+    let mut num_glyphs: u16 = 0;
     let mut i: i32 = 0;
     let mut glyph_ordering: i32 = 0i32;
     let mut unicode_cmap: i32 = 0i32;
@@ -1448,7 +1446,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     } /* .notdef */
     glyphs = tt_build_init();
     last_cid = 0i32 as CID;
-    num_glyphs = 1i32 as USHORT;
+    num_glyphs = 1i32 as u16;
     v_used_chars = 0 as *mut i8;
     h_used_chars = v_used_chars;
     used_chars = h_used_chars;
@@ -1924,7 +1922,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     shortname = new((127i32 as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8; /* for SJIS, UTF-16, ... string */
-    namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as USHORT) as i32;
+    namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as u16) as i32;
     if namelen == 0i32 {
         memset(
             shortname as *mut libc::c_void,

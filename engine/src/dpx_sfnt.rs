@@ -90,7 +90,6 @@ pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = u8;
-pub type USHORT = u16;
 pub type SFNT_ULONG = u32;
 pub type SFNT_LONG = i32;
 #[derive(Copy, Clone)]
@@ -106,11 +105,11 @@ pub struct sfnt_table {
 #[repr(C)]
 pub struct sfnt_table_directory {
     pub version: SFNT_ULONG,
-    pub num_tables: USHORT,
-    pub search_range: USHORT,
-    pub entry_selector: USHORT,
-    pub range_shift: USHORT,
-    pub num_kept_tables: USHORT,
+    pub num_tables: u16,
+    pub search_range: u16,
+    pub entry_selector: u16,
+    pub range_shift: u16,
+    pub num_kept_tables: u16,
     pub flags: *mut i8,
     pub tables: *mut sfnt_table,
 }
@@ -175,9 +174,9 @@ pub unsafe extern "C" fn dfont_open(
     let mut types_pos: SFNT_ULONG = 0;
     let mut res_pos: SFNT_ULONG = 0;
     let mut tag: SFNT_ULONG = 0;
-    let mut tags_num: USHORT = 0;
-    let mut types_num: USHORT = 0;
-    let mut i: USHORT = 0;
+    let mut tags_num: u16 = 0;
+    let mut types_num: u16 = 0;
+    let mut i: u16 = 0;
     if !handle.is_null() {
     } else {
         __assert_fail(
@@ -205,7 +204,7 @@ pub unsafe extern "C" fn dfont_open(
     tags_pos = map_pos.wrapping_add(tt_get_unsigned_pair((*sfont).handle) as u32);
     ttstub_input_seek((*sfont).handle, tags_pos as ssize_t, 0i32);
     tags_num = tt_get_unsigned_pair((*sfont).handle);
-    i = 0i32 as USHORT;
+    i = 0i32 as u16;
     while i as i32 <= tags_num as i32 {
         tag = tt_get_unsigned_quad((*sfont).handle);
         types_num = tt_get_unsigned_pair((*sfont).handle);
@@ -226,7 +225,7 @@ pub unsafe extern "C" fn dfont_open(
             index,
         );
     }
-    i = 0i32 as USHORT;
+    i = 0i32 as u16;
     while i as i32 <= types_num as i32 {
         tt_get_unsigned_pair((*sfont).handle);
         tt_get_unsigned_pair((*sfont).handle);
@@ -554,7 +553,7 @@ pub unsafe extern "C" fn sfnt_read_table_directory(
         *(*td).flags.offset(i as isize) = 0i32 as i8;
         i = i.wrapping_add(1)
     }
-    (*td).num_kept_tables = 0i32 as USHORT;
+    (*td).num_kept_tables = 0i32 as u16;
     return 0i32;
 }
 #[no_mangle]
