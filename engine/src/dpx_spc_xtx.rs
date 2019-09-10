@@ -90,7 +90,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     static mut work_buffer: [libc::c_char; 0];
     /* Text composition mode is ignored (always same as font's
@@ -171,8 +171,6 @@ extern "C" {
         args: *mut spc_arg,
     ) -> libc::c_int;
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -553,9 +551,9 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
                 *fresh2 = *fresh1
             }
             *q = '\u{0}' as i32 as libc::c_char;
-            mrec = new((1i32 as uint32_t as libc::c_ulong)
+            mrec = new((1i32 as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-                as uint32_t) as *mut fontmap_rec;
+                as u32) as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             error = pdf_read_fontmap_line(
                 mrec,

@@ -60,7 +60,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
@@ -277,10 +277,8 @@ extern "C" {
     ) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -561,7 +559,7 @@ pub unsafe extern "C" fn png_include_image(
     stream_dict = pdf_stream_dict(stream);
     stream_data_ptr = new((rowbytes.wrapping_mul(height) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
+        as u32) as *mut png_byte;
     read_image_data(png_ptr, stream_data_ptr, height, rowbytes);
     /* Non-NULL intent means there is valid sRGB chunk. */
     intent = get_rendering_intent(png_ptr, png_info_ptr);
@@ -1538,9 +1536,9 @@ unsafe extern "C" fn create_cspace_Indexed(
         colorspace,
         pdf_new_number((num_plte - 1i32) as libc::c_double),
     );
-    data_ptr = new(((num_plte * 3i32) as uint32_t as libc::c_ulong)
+    data_ptr = new(((num_plte * 3i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
+        as u32) as *mut png_byte;
     i = 0i32;
     while i < num_plte {
         *data_ptr.offset((3i32 * i) as isize) = (*plte.offset(i as isize)).red;
@@ -1688,7 +1686,7 @@ unsafe extern "C" fn create_soft_mask(
     dict = pdf_stream_dict(smask);
     smask_data_ptr = new((width.wrapping_mul(height) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
+        as u32) as *mut png_byte;
     pdf_add_dict(
         dict,
         pdf_new_name(b"Type\x00" as *const u8 as *const libc::c_char),
@@ -1825,7 +1823,7 @@ unsafe extern "C" fn strip_soft_mask(
         .wrapping_mul(width)
         .wrapping_mul(height) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
-        as uint32_t) as *mut png_byte;
+        as u32) as *mut png_byte;
     match color_type as libc::c_int {
         6 => {
             if bpc as libc::c_int == 8i32 {
@@ -1962,7 +1960,7 @@ unsafe extern "C" fn read_image_data(
     let mut i: png_uint_32 = 0;
     rows_p = new((height as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<png_bytep>() as libc::c_ulong)
-        as uint32_t) as *mut png_bytep as png_bytepp;
+        as u32) as *mut png_bytep as png_bytepp;
     i = 0i32 as png_uint_32;
     while i < height {
         let ref mut fresh1 = *rows_p.offset(i as isize);
@@ -1996,8 +1994,8 @@ unsafe extern "C" fn read_image_data(
 #[no_mangle]
 pub unsafe extern "C" fn png_get_bbox(
     mut handle: rust_input_handle_t,
-    mut width: *mut uint32_t,
-    mut height: *mut uint32_t,
+    mut width: *mut u32,
+    mut height: *mut u32,
     mut xdensity: *mut libc::c_double,
     mut ydensity: *mut libc::c_double,
 ) -> libc::c_int {

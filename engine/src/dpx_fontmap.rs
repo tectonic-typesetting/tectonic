@@ -170,7 +170,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn release_sfd_record();
     #[no_mangle]
@@ -179,7 +179,6 @@ extern "C" {
         num_subfonts: *mut libc::c_int,
     ) -> *mut *mut libc::c_char;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -193,7 +192,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
@@ -374,9 +372,9 @@ unsafe extern "C" fn mstrdup(mut s: *const libc::c_char) -> *mut libc::c_char {
         return 0 as *mut libc::c_char;
     }
     r = new(
-        (strlen(s).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(s).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy(r, s);
     return r;
@@ -455,16 +453,16 @@ unsafe extern "C" fn fill_in_defaults(
     /* We *must* fill font_name either explicitly or by default */
     if (*mrec).font_name.is_null() {
         (*mrec).font_name = new(
-            (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy((*mrec).font_name, tex_name);
     }
     (*mrec).map_name = new(
-        (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*mrec).map_name, tex_name);
     /* Use "UCS" character collection for Unicode SFD
@@ -518,9 +516,9 @@ unsafe extern "C" fn fill_in_defaults(
         {
             (*mrec).opt.charcoll = new((strlen(b"UCS\x00" as *const u8 as *const libc::c_char)
                 .wrapping_add(1i32 as libc::c_ulong)
-                as uint32_t as libc::c_ulong)
+                as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char; /* we don't have quoted string */
+                as u32) as *mut libc::c_char; /* we don't have quoted string */
             strcpy(
                 (*mrec).opt.charcoll,
                 b"UCS\x00" as *const u8 as *const libc::c_char,
@@ -601,7 +599,7 @@ unsafe extern "C" fn parse_string_value(
         }
         q = new((n.wrapping_add(1i32 as libc::c_uint) as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             q as *mut libc::c_void,
             *pp as *const libc::c_void,
@@ -683,9 +681,9 @@ unsafe extern "C" fn parse_integer_value(
     if has_prefix != 0 {
         n += 2i32
     }
-    q = new(((n + 1i32) as uint32_t as libc::c_ulong)
+    q = new(((n + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memcpy(
         q as *mut libc::c_void,
         *pp as *const libc::c_void,
@@ -1206,9 +1204,9 @@ unsafe extern "C" fn chop_sfd_name(
     n = q.wrapping_offset_from(p) as libc::c_long as libc::c_int;
     q = q.offset(1);
     len = strlen(tex_name).wrapping_sub(n as libc::c_ulong) as libc::c_int;
-    fontname = new(((len + 1i32) as uint32_t as libc::c_ulong)
+    fontname = new(((len + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memcpy(
         fontname as *mut libc::c_void,
         tex_name as *const libc::c_void,
@@ -1218,9 +1216,9 @@ unsafe extern "C" fn chop_sfd_name(
     if *q != 0 {
         strcat(fontname, q);
     }
-    *sfd_name = new(((n + 1i32) as uint32_t as libc::c_ulong)
+    *sfd_name = new(((n + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memcpy(
         *sfd_name as *mut libc::c_void,
         p as *const libc::c_void,
@@ -1261,9 +1259,9 @@ unsafe extern "C" fn make_subfont_name(
     tfm_name = new((strlen(map_name)
         .wrapping_sub(n as libc::c_ulong)
         .wrapping_add(strlen(sub_id))
-        .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memcpy(
         tfm_name as *mut libc::c_void,
         map_name as *const libc::c_void,
@@ -1326,9 +1324,9 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
                 strlen(tfm_name) as libc::c_int,
             ) as *mut fontmap_rec;
             if mrec.is_null() {
-                mrec = new((1i32 as uint32_t as libc::c_ulong)
+                mrec = new((1i32 as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-                    as uint32_t) as *mut fontmap_rec;
+                    as u32) as *mut fontmap_rec;
                 pdf_init_fontmap_record(mrec);
                 (*mrec).map_name = mstrdup(kp);
                 (*mrec).charmap.sfd_name = mstrdup(sfd_name);
@@ -1351,9 +1349,9 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
         strlen(kp) as libc::c_int,
     ) as *mut fontmap_rec;
     if mrec.is_null() {
-        mrec = new((1i32 as uint32_t as libc::c_ulong)
+        mrec = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-            as uint32_t) as *mut fontmap_rec;
+            as u32) as *mut fontmap_rec;
         pdf_copy_fontmap_record(mrec, vp);
         if !(*mrec).map_name.is_null() && streq_ptr(kp, (*mrec).map_name) as libc::c_int != 0 {
             (*mrec).map_name = mfree((*mrec).map_name as *mut libc::c_void) as *mut libc::c_char
@@ -1483,9 +1481,9 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
             if verbose > 3i32 {
                 dpx_message(b" %s\x00" as *const u8 as *const libc::c_char, tfm_name);
             }
-            mrec = new((1i32 as uint32_t as libc::c_ulong)
+            mrec = new((1i32 as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-                as uint32_t) as *mut fontmap_rec;
+                as u32) as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             (*mrec).map_name = mstrdup(kp);
             (*mrec).charmap.sfd_name = mstrdup(sfd_name);
@@ -1501,9 +1499,9 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
         free(fnt_name as *mut libc::c_void);
         free(sfd_name as *mut libc::c_void);
     }
-    mrec = new((1i32 as uint32_t as libc::c_ulong)
+    mrec = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-        as uint32_t) as *mut fontmap_rec;
+        as u32) as *mut fontmap_rec;
     pdf_copy_fontmap_record(mrec, vp);
     if !(*mrec).map_name.is_null() && streq_ptr(kp, (*mrec).map_name) as libc::c_int != 0 {
         (*mrec).map_name = mfree((*mrec).map_name as *mut libc::c_void) as *mut libc::c_char
@@ -1705,9 +1703,9 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(
             );
         } else {
             format += m;
-            mrec = new((1i32 as uint32_t as libc::c_ulong)
+            mrec = new((1i32 as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-                as uint32_t) as *mut fontmap_rec;
+                as u32) as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             /* format > 0: DVIPDFM, format <= 0: DVIPS/pdfTeX */
             error = pdf_read_fontmap_line(mrec, p, llen, format); // CHECK
@@ -1752,7 +1750,7 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     mut path: *const libc::c_char,
-    mut index: uint32_t,
+    mut index: u32,
     mut layout_dir: libc::c_int,
     mut extend: libc::c_int,
     mut slant: libc::c_int,
@@ -1790,9 +1788,9 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
             fontmap_key,
         );
     }
-    mrec = new((1i32 as uint32_t as libc::c_ulong)
+    mrec = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-        as uint32_t) as *mut fontmap_rec;
+        as u32) as *mut fontmap_rec;
     pdf_init_fontmap_record(mrec);
     (*mrec).map_name = fontmap_key;
     (*mrec).enc_name = mstrdup(if layout_dir == 0i32 {
@@ -1834,9 +1832,9 @@ pub unsafe extern "C" fn pdf_lookup_fontmap_record(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_init_fontmaps() {
-    fontmap = new((1i32 as uint32_t as libc::c_ulong)
+    fontmap = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<ht_table>() as libc::c_ulong)
-        as uint32_t) as *mut ht_table;
+        as u32) as *mut ht_table;
     ht_init_table(
         fontmap,
         Some(hval_free as unsafe extern "C" fn(_: *mut libc::c_void) -> ()),
@@ -1902,10 +1900,10 @@ unsafe extern "C" fn substr(
         return 0 as *mut libc::c_char;
     }
     sstr = new(
-        ((endptr.wrapping_offset_from(*str) as libc::c_long + 1i32 as libc::c_long) as uint32_t
+        ((endptr.wrapping_offset_from(*str) as libc::c_long + 1i32 as libc::c_long) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     memcpy(
         sstr as *mut libc::c_void,
@@ -2015,10 +2013,10 @@ unsafe extern "C" fn strip_options(
             font_name = substr(&mut p, ',' as i32 as libc::c_char);
             have_style = 1i32
         } else {
-            font_name = new((strlen(p).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            font_name = new((strlen(p).wrapping_add(1i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strcpy(font_name, p);
         }
     }
@@ -2033,10 +2031,10 @@ unsafe extern "C" fn strip_options(
                 map_name,
             );
         } else {
-            (*opt).charcoll = new((strlen(p).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            (*opt).charcoll = new((strlen(p).wrapping_add(1i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strcpy((*opt).charcoll, p);
         }
     }

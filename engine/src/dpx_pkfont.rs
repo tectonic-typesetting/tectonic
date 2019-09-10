@@ -105,7 +105,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -134,7 +134,7 @@ extern "C" {
        32-bit integer (int32_t), but some of them must not be negative.
 
        Four byte numbers from JPEG2000, OpenType, or TrueType files are
-       mostly unsigned (uint32_t) and occasionally signed (int32_t).
+       mostly unsigned (u32) and occasionally signed (int32_t).
     */
     #[no_mangle]
     fn get_unsigned_byte(_: *mut FILE) -> libc::c_uchar;
@@ -151,9 +151,9 @@ extern "C" {
     #[no_mangle]
     fn get_signed_quad(_: *mut FILE) -> int32_t;
     #[no_mangle]
-    fn get_unsigned_num(_: *mut FILE, _: libc::c_uchar) -> uint32_t;
+    fn get_unsigned_num(_: *mut FILE, _: libc::c_uchar) -> u32;
     #[no_mangle]
-    fn get_positive_quad(_: *mut FILE, _: *const libc::c_char, _: *const libc::c_char) -> uint32_t;
+    fn get_positive_quad(_: *mut FILE, _: *const libc::c_char, _: *const libc::c_char) -> u32;
     #[no_mangle]
     static mut work_buffer: [libc::c_char; 0];
     #[no_mangle]
@@ -174,11 +174,9 @@ extern "C" {
     fn tfm_get_design_size(font_id: libc::c_int) -> libc::c_double;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -226,13 +224,13 @@ pub struct pdf_rect {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pk_header_ {
-    pub pkt_len: uint32_t,
+    pub pkt_len: u32,
     pub chrcode: int32_t,
     pub wd: int32_t,
     pub dx: int32_t,
     pub dy: int32_t,
-    pub bm_wd: uint32_t,
-    pub bm_ht: uint32_t,
+    pub bm_wd: u32,
+    pub bm_ht: u32,
     pub bm_hoff: int32_t,
     pub bm_voff: int32_t,
     pub dyn_f: libc::c_int,
@@ -332,9 +330,9 @@ pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> libc::
  */
 unsafe extern "C" fn fill_black_run(
     mut dp: *mut libc::c_uchar,
-    mut left: uint32_t,
-    mut run_count: uint32_t,
-) -> uint32_t {
+    mut left: u32,
+    mut run_count: u32,
+) -> u32 {
     static mut mask: [libc::c_uchar; 8] = [
         127u32 as libc::c_uchar,
         191u32 as libc::c_uchar,
@@ -345,7 +343,7 @@ unsafe extern "C" fn fill_black_run(
         253u32 as libc::c_uchar,
         254u32 as libc::c_uchar,
     ];
-    let mut right: uint32_t = left
+    let mut right: u32 = left
         .wrapping_add(run_count)
         .wrapping_sub(1i32 as libc::c_uint);
     while left <= right {
@@ -358,24 +356,24 @@ unsafe extern "C" fn fill_black_run(
     return run_count;
 }
 /* Just skip bits. See decode_packed() */
-unsafe extern "C" fn fill_white_run(mut run_count: uint32_t) -> uint32_t {
+unsafe extern "C" fn fill_white_run(mut run_count: u32) -> u32 {
     return run_count;
 }
 unsafe extern "C" fn pk_packed_num(
-    mut np: *mut uint32_t,
+    mut np: *mut u32,
     mut dyn_f: libc::c_int,
     mut dp: *mut libc::c_uchar,
-    mut pl: uint32_t,
-) -> uint32_t {
-    let mut nmbr: uint32_t = 0i32 as uint32_t;
-    let mut i: uint32_t = *np;
+    mut pl: u32,
+) -> u32 {
+    let mut nmbr: u32 = 0i32 as u32;
+    let mut i: u32 = *np;
     let mut nyb: libc::c_int = 0;
     let mut j: libc::c_int = 0;
     if i.wrapping_div(2i32 as libc::c_uint) == pl {
         dpx_warning(
             b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const libc::c_char,
         );
-        return 0i32 as uint32_t;
+        return 0i32 as u32;
     }
     nyb = if i.wrapping_rem(2i32 as libc::c_uint) != 0 {
         *dp.offset(i.wrapping_div(2i32 as libc::c_uint) as isize) as libc::c_int & 0xfi32
@@ -407,7 +405,7 @@ unsafe extern "C" fn pk_packed_num(
                 }
             }
         }
-        nmbr = nyb as uint32_t;
+        nmbr = nyb as u32;
         loop {
             let fresh1 = j;
             j = j - 1;
@@ -436,16 +434,16 @@ unsafe extern "C" fn pk_packed_num(
         }
         nmbr = (nmbr as libc::c_uint)
             .wrapping_add(((13i32 - dyn_f) * 16i32 + dyn_f - 15i32) as libc::c_uint)
-            as uint32_t as uint32_t
+            as u32
     } else if nyb <= dyn_f {
-        nmbr = nyb as uint32_t
+        nmbr = nyb as u32
     } else if nyb < 14i32 {
         if i.wrapping_div(2i32 as libc::c_uint) == pl {
             dpx_warning(
                 b"EOD reached while unpacking pk_packed_num.\x00" as *const u8
                     as *const libc::c_char,
             );
-            return 0i32 as uint32_t;
+            return 0i32 as u32;
         }
         nmbr = ((nyb - dyn_f - 1i32) * 16i32
             + (if i.wrapping_rem(2i32 as libc::c_uint) != 0 {
@@ -455,7 +453,7 @@ unsafe extern "C" fn pk_packed_num(
                     & 0xfi32
             })
             + dyn_f
-            + 1i32) as uint32_t;
+            + 1i32) as u32;
         i = i.wrapping_add(1)
     }
     *np = i;
@@ -463,43 +461,43 @@ unsafe extern "C" fn pk_packed_num(
 }
 unsafe extern "C" fn send_out(
     mut rowptr: *mut libc::c_uchar,
-    mut rowbytes: uint32_t,
+    mut rowbytes: u32,
     mut stream: *mut pdf_obj,
 ) {
     pdf_add_stream(stream, rowptr as *mut libc::c_void, rowbytes as libc::c_int);
 }
 unsafe extern "C" fn pk_decode_packed(
     mut stream: *mut pdf_obj,
-    mut wd: uint32_t,
-    mut ht: uint32_t,
+    mut wd: u32,
+    mut ht: u32,
     mut dyn_f: libc::c_int,
     mut run_color: libc::c_int,
     mut dp: *mut libc::c_uchar,
-    mut pl: uint32_t,
+    mut pl: u32,
 ) -> libc::c_int {
     let mut rowptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
-    let mut rowbytes: uint32_t = 0;
-    let mut i: uint32_t = 0;
-    let mut np: uint32_t = 0i32 as uint32_t;
-    let mut run_count: uint32_t = 0i32 as uint32_t;
-    let mut repeat_count: uint32_t = 0i32 as uint32_t;
+    let mut rowbytes: u32 = 0;
+    let mut i: u32 = 0;
+    let mut np: u32 = 0i32 as u32;
+    let mut run_count: u32 = 0i32 as u32;
+    let mut repeat_count: u32 = 0i32 as u32;
     rowbytes = wd
         .wrapping_add(7i32 as libc::c_uint)
         .wrapping_div(8i32 as libc::c_uint);
     rowptr = new((rowbytes as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     /* repeat count is applied to the *current* row.
      * "run" can span across rows.
      * If there are non-zero repeat count and if run
      * spans across row, first repeat and then continue.
      */
-    np = 0i32 as uint32_t; /* 1 is white */
-    i = 0i32 as uint32_t;
+    np = 0i32 as u32; /* 1 is white */
+    i = 0i32 as u32;
     while i < ht {
-        let mut rowbits_left: uint32_t = 0;
-        let mut nbits: uint32_t = 0;
-        repeat_count = 0i32 as uint32_t;
+        let mut rowbits_left: u32 = 0;
+        let mut nbits: u32 = 0;
+        repeat_count = 0i32 as u32;
         memset(
             rowptr as *mut libc::c_void,
             0xffi32,
@@ -517,18 +515,18 @@ unsafe extern "C" fn pk_decode_packed(
                 0 => {
                     rowbits_left = (rowbits_left as libc::c_uint).wrapping_sub(fill_black_run(
                         rowptr,
-                        0i32 as uint32_t,
+                        0i32 as u32,
                         nbits,
-                    )) as uint32_t as uint32_t
+                    )) as u32
                 }
                 1 => {
                     rowbits_left = (rowbits_left as libc::c_uint)
                         .wrapping_sub(fill_white_run(nbits))
-                        as uint32_t as uint32_t
+                        as u32
                 }
                 _ => {}
             }
-            run_count = (run_count as libc::c_uint).wrapping_sub(nbits) as uint32_t as uint32_t
+            run_count = (run_count as libc::c_uint).wrapping_sub(nbits) as u32
         }
         /* Read nybbles until we have a full row */
         while np.wrapping_div(2i32 as libc::c_uint) < pl && rowbits_left > 0i32 as libc::c_uint {
@@ -557,7 +555,7 @@ unsafe extern "C" fn pk_decode_packed(
                     );
                 }
                 np = np.wrapping_add(1);
-                repeat_count = 1i32 as uint32_t
+                repeat_count = 1i32 as u32
             } else {
                 /* Interprete current nybble as packed number */
                 run_count = pk_packed_num(&mut np, dyn_f, dp, pl);
@@ -567,19 +565,19 @@ unsafe extern "C" fn pk_decode_packed(
                     run_count
                 };
                 run_color = (run_color == 0) as libc::c_int;
-                run_count = (run_count as libc::c_uint).wrapping_sub(nbits) as uint32_t as uint32_t;
+                run_count = (run_count as libc::c_uint).wrapping_sub(nbits) as u32;
                 match run_color {
                     0 => {
                         rowbits_left = (rowbits_left as libc::c_uint).wrapping_sub(fill_black_run(
                             rowptr,
                             wd.wrapping_sub(rowbits_left),
                             nbits,
-                        )) as uint32_t as uint32_t
+                        )) as u32
                     }
                     1 => {
                         rowbits_left = (rowbits_left as libc::c_uint)
                             .wrapping_sub(fill_white_run(nbits))
-                            as uint32_t as uint32_t
+                            as u32
                     }
                     _ => {}
                 }
@@ -599,18 +597,18 @@ unsafe extern "C" fn pk_decode_packed(
 }
 unsafe extern "C" fn pk_decode_bitmap(
     mut stream: *mut pdf_obj,
-    mut wd: uint32_t,
-    mut ht: uint32_t,
+    mut wd: u32,
+    mut ht: u32,
     mut dyn_f: libc::c_int,
     mut run_color: libc::c_int,
     mut dp: *mut libc::c_uchar,
-    mut pl: uint32_t,
+    mut pl: u32,
 ) -> libc::c_int {
     let mut rowptr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     let mut c: libc::c_uchar = 0;
-    let mut i: uint32_t = 0;
-    let mut j: uint32_t = 0;
-    let mut rowbytes: uint32_t = 0;
+    let mut i: u32 = 0;
+    let mut j: u32 = 0;
+    let mut rowbytes: u32 = 0;
     static mut mask: [libc::c_uchar; 8] = [
         0x80u32 as libc::c_uchar,
         0x40u32 as libc::c_uchar,
@@ -651,11 +649,11 @@ unsafe extern "C" fn pk_decode_bitmap(
         .wrapping_div(8i32 as libc::c_uint);
     rowptr = new((rowbytes as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     memset(rowptr as *mut libc::c_void, 0i32, rowbytes as libc::c_ulong);
     /* Flip. PK bitmap is not byte aligned for each rows. */
-    i = 0i32 as uint32_t; /* flip bit */
-    j = 0i32 as uint32_t;
+    i = 0i32 as u32; /* flip bit */
+    j = 0i32 as u32;
     while i < ht.wrapping_mul(wd) {
         c = (*dp.offset(i.wrapping_div(8i32 as libc::c_uint) as isize) as libc::c_int
             & mask[i.wrapping_rem(8i32 as libc::c_uint) as usize] as libc::c_int)
@@ -670,7 +668,7 @@ unsafe extern "C" fn pk_decode_bitmap(
         if j == wd {
             send_out(rowptr, rowbytes, stream);
             memset(rowptr as *mut libc::c_void, 0i32, rowbytes as libc::c_ulong);
-            j = 0i32 as uint32_t
+            j = 0i32 as u32
         }
         i = i.wrapping_add(1)
     }
@@ -711,17 +709,17 @@ unsafe extern "C" fn read_pk_char_header(
     if opcode as libc::c_int & 4i32 == 0i32 {
         /* short */
         (*h).pkt_len = ((opcode as libc::c_int & 3i32) << 8i32
-            | get_unsigned_byte(fp) as libc::c_int) as uint32_t; /* TFM width */
+            | get_unsigned_byte(fp) as libc::c_int) as u32; /* TFM width */
         (*h).chrcode = get_unsigned_byte(fp) as int32_t; /* horizontal escapement */
         (*h).wd = get_unsigned_triple(fp) as int32_t; /* extended short */
         (*h).dx = (get_unsigned_byte(fp) as libc::c_int) << 16i32;
         (*h).dy = 0i32;
-        (*h).bm_wd = get_unsigned_byte(fp) as uint32_t;
-        (*h).bm_ht = get_unsigned_byte(fp) as uint32_t;
+        (*h).bm_wd = get_unsigned_byte(fp) as u32;
+        (*h).bm_ht = get_unsigned_byte(fp) as u32;
         (*h).bm_hoff = get_signed_byte(fp) as int32_t;
         (*h).bm_voff = get_signed_byte(fp) as int32_t;
-        (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(8i32 as libc::c_uint) as uint32_t
-            as uint32_t
+        (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(8i32 as libc::c_uint) as u32
+            as u32
     } else if opcode as libc::c_int & 7i32 == 7i32 {
         /* long */
         (*h).pkt_len = get_positive_quad(
@@ -746,20 +744,20 @@ unsafe extern "C" fn read_pk_char_header(
         (*h).bm_hoff = get_signed_quad(fp);
         (*h).bm_voff = get_signed_quad(fp);
         (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(28i32 as libc::c_uint)
-            as uint32_t as uint32_t
+            as u32
     } else {
         (*h).pkt_len = ((opcode as libc::c_int & 3i32) << 16i32
-            | get_unsigned_pair(fp) as libc::c_int) as uint32_t;
+            | get_unsigned_pair(fp) as libc::c_int) as u32;
         (*h).chrcode = get_unsigned_byte(fp) as int32_t;
         (*h).wd = get_unsigned_triple(fp) as int32_t;
         (*h).dx = (get_unsigned_pair(fp) as libc::c_int) << 16i32;
         (*h).dy = 0i32;
-        (*h).bm_wd = get_unsigned_pair(fp) as uint32_t;
-        (*h).bm_ht = get_unsigned_pair(fp) as uint32_t;
+        (*h).bm_wd = get_unsigned_pair(fp) as u32;
+        (*h).bm_ht = get_unsigned_pair(fp) as u32;
         (*h).bm_hoff = get_signed_pair(fp) as int32_t;
         (*h).bm_voff = get_signed_pair(fp) as int32_t;
         (*h).pkt_len = ((*h).pkt_len as libc::c_uint).wrapping_sub(13i32 as libc::c_uint)
-            as uint32_t as uint32_t
+            as u32
     }
     (*h).dyn_f = opcode as libc::c_int / 16i32;
     (*h).run_color = if opcode as libc::c_int & 8i32 != 0 {
@@ -767,7 +765,7 @@ unsafe extern "C" fn read_pk_char_header(
     } else {
         0i32
     };
-    if (*h).chrcode as uint32_t > 0xffi32 as libc::c_uint {
+    if (*h).chrcode as u32 > 0xffi32 as libc::c_uint {
         dpx_warning(
             b"Unable to handle long characters in PK files: code=0x%04x\x00" as *const u8
                 as *const libc::c_char,
@@ -782,7 +780,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
     mut pkh: *mut pk_header_,
     mut chrwid: libc::c_double,
     mut pkt_ptr: *mut libc::c_uchar,
-    mut pkt_len: uint32_t,
+    mut pkt_len: u32,
 ) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj; /* charproc */
     let mut llx: int32_t = 0;
@@ -1053,7 +1051,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                 };
                 pkt_ptr = new((pkh.pkt_len as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_uchar;
+                    as u32) as *mut libc::c_uchar;
                 bytesread = fread(
                     pkt_ptr as *mut libc::c_void,
                     1i32 as libc::c_ulong,
@@ -1069,7 +1067,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> libc::
                     );
                 }
                 charproc =
-                    create_pk_CharProc_stream(&mut pkh, charwidth, pkt_ptr, bytesread as uint32_t);
+                    create_pk_CharProc_stream(&mut pkh, charwidth, pkt_ptr, bytesread as u32);
                 free(pkt_ptr as *mut libc::c_void);
                 if charproc.is_null() {
                     _tt_abort(

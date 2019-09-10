@@ -120,12 +120,11 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn skip_white(start: *mut *const libc::c_char, end: *const libc::c_char);
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -141,7 +140,6 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -593,9 +591,9 @@ unsafe extern "C" fn parse_block(
                     len += 1
                 }
                 if len > 0i32 {
-                    tmp = new(((len + 1i32) as uint32_t as libc::c_ulong)
+                    tmp = new(((len + 1i32) as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                        as uint32_t) as *mut libc::c_char;
+                        as u32) as *mut libc::c_char;
                     memset(
                         tmp as *mut libc::c_void,
                         0i32,
@@ -728,9 +726,9 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const libc::c_char) -> *mut p
     let mut len: libc::c_int = 0;
     filename = new((strlen(conf_name)
         .wrapping_add(strlen(b".otl\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     strcpy(filename, conf_name);
     strcat(filename, b".otl\x00" as *const u8 as *const libc::c_char);
     handle = ttstub_input_open(filename, TTIF_CNF, 0i32) as *mut rust_input_handle_t;
@@ -753,9 +751,9 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const libc::c_char) -> *mut p
     if size < 1i32 {
         return 0 as *mut pdf_obj;
     }
-    wbuf = new((size as uint32_t as libc::c_ulong)
+    wbuf = new((size as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     p = wbuf;
     endptr = p.offset(size as isize);
     while size > 0i32 && p < endptr {

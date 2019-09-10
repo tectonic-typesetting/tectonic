@@ -212,8 +212,8 @@ extern "C" {
     #[no_mangle]
     fn png_get_bbox(
         handle: rust_input_handle_t,
-        width: *mut uint32_t,
-        height: *mut uint32_t,
+        width: *mut u32,
+        height: *mut u32,
         xdensity: *mut libc::c_double,
         ydensity: *mut libc::c_double,
     ) -> libc::c_int;
@@ -261,10 +261,8 @@ extern "C" {
 }
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.

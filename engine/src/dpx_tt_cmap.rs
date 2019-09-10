@@ -70,7 +70,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_signed_pair(handle: rust_input_handle_t) -> libc::c_short;
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> uint32_t;
+    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
     #[no_mangle]
@@ -224,7 +224,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_defineresource(
         category: *const libc::c_char,
@@ -338,10 +338,8 @@ extern "C" {
     fn tt_read_maxp_table(sfont: *mut sfnt) -> *mut tt_maxp_table;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -369,8 +367,8 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = libc::c_uchar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
-pub type SFNT_ULONG = uint32_t;
-pub type Fixed = uint32_t;
+pub type SFNT_ULONG = u32;
+pub type Fixed = u32;
 /* 16.16-bit signed fixed-point number */
 pub type FWord = libc::c_short;
 #[derive(Copy, Clone)]
@@ -456,7 +454,7 @@ pub struct cff_index {
     pub data: *mut card8,
 }
 pub type card8 = libc::c_uchar;
-pub type l_offset = uint32_t;
+pub type l_offset = u32;
 pub type c_offsize = libc::c_uchar;
 pub type card16 = libc::c_ushort;
 #[derive(Copy, Clone)]
@@ -831,8 +829,8 @@ unsafe extern "C" fn read_cmap0(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
     if len < 256i32 as libc::c_uint {
         _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const libc::c_char);
     }
-    map = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cmap0>() as libc::c_ulong) as uint32_t)
+    map = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<cmap0>() as libc::c_ulong) as u32)
         as *mut cmap0;
     i = 0i32 as libc::c_uint;
     while i < 256i32 as libc::c_uint {
@@ -858,8 +856,8 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
     if len < 512i32 as libc::c_uint {
         _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const libc::c_char);
     }
-    map = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cmap2>() as libc::c_ulong) as uint32_t)
+    map = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<cmap2>() as libc::c_ulong) as u32)
         as *mut cmap2;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < 256i32 {
@@ -877,9 +875,9 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
         i = i.wrapping_add(1)
     }
     n = (n as libc::c_int + 1i32) as USHORT;
-    (*map).subHeaders = new((n as uint32_t as libc::c_ulong)
+    (*map).subHeaders = new((n as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<SubHeader>() as libc::c_ulong)
-        as uint32_t) as *mut SubHeader;
+        as u32) as *mut SubHeader;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < n as libc::c_int {
         (*(*map).subHeaders.offset(i as isize)).firstCode = tt_get_unsigned_pair((*sfont).handle);
@@ -905,9 +903,9 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
         .wrapping_sub(518i32 as libc::c_uint)
         .wrapping_sub((n as libc::c_int * 8i32) as libc::c_uint) as USHORT as libc::c_int
         / 2i32) as USHORT;
-    (*map).glyphIndexArray = new((n as uint32_t as libc::c_ulong)
+    (*map).glyphIndexArray = new((n as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-        as uint32_t) as *mut USHORT;
+        as u32) as *mut USHORT;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < n as libc::c_int {
         *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -957,8 +955,8 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
     if len < 8i32 as libc::c_uint {
         _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const libc::c_char);
     }
-    map = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cmap4>() as libc::c_ulong) as uint32_t)
+    map = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<cmap4>() as libc::c_ulong) as u32)
         as *mut cmap4;
     segCount = tt_get_unsigned_pair((*sfont).handle);
     (*map).segCountX2 = segCount;
@@ -966,34 +964,34 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
     (*map).entrySelector = tt_get_unsigned_pair((*sfont).handle);
     (*map).rangeShift = tt_get_unsigned_pair((*sfont).handle);
     segCount = (segCount as libc::c_int / 2i32) as USHORT;
-    (*map).endCount = new((segCount as uint32_t as libc::c_ulong)
+    (*map).endCount = new((segCount as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-        as uint32_t) as *mut USHORT;
+        as u32) as *mut USHORT;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < segCount as libc::c_int {
         *(*map).endCount.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
     }
     (*map).reservedPad = tt_get_unsigned_pair((*sfont).handle);
-    (*map).startCount = new((segCount as uint32_t as libc::c_ulong)
+    (*map).startCount = new((segCount as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-        as uint32_t) as *mut USHORT;
+        as u32) as *mut USHORT;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < segCount as libc::c_int {
         *(*map).startCount.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
     }
-    (*map).idDelta = new((segCount as uint32_t as libc::c_ulong)
+    (*map).idDelta = new((segCount as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-        as uint32_t) as *mut USHORT;
+        as u32) as *mut USHORT;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < segCount as libc::c_int {
         *(*map).idDelta.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
     }
-    (*map).idRangeOffset = new((segCount as uint32_t as libc::c_ulong)
+    (*map).idRangeOffset = new((segCount as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-        as uint32_t) as *mut USHORT;
+        as u32) as *mut USHORT;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < segCount as libc::c_int {
         *(*map).idRangeOffset.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -1006,9 +1004,9 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
     if n as libc::c_int == 0i32 {
         (*map).glyphIndexArray = 0 as *mut USHORT
     } else {
-        (*map).glyphIndexArray = new((n as uint32_t as libc::c_ulong)
+        (*map).glyphIndexArray = new((n as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-            as uint32_t) as *mut USHORT;
+            as u32) as *mut USHORT;
         i = 0i32 as USHORT;
         while (i as libc::c_int) < n as libc::c_int {
             *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -1078,14 +1076,14 @@ unsafe extern "C" fn read_cmap6(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *m
     if len < 4i32 as libc::c_uint {
         _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const libc::c_char);
     }
-    map = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cmap6>() as libc::c_ulong) as uint32_t)
+    map = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<cmap6>() as libc::c_ulong) as u32)
         as *mut cmap6;
     (*map).firstCode = tt_get_unsigned_pair((*sfont).handle);
     (*map).entryCount = tt_get_unsigned_pair((*sfont).handle);
-    (*map).glyphIndexArray = new(((*map).entryCount as uint32_t as libc::c_ulong)
+    (*map).glyphIndexArray = new(((*map).entryCount as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-        as uint32_t) as *mut USHORT;
+        as u32) as *mut USHORT;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < (*map).entryCount as libc::c_int {
         *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -1114,13 +1112,13 @@ unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: SFNT_ULONG) -> *
     if len < 4i32 as libc::c_uint {
         _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const libc::c_char);
     }
-    map = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cmap12>() as libc::c_ulong) as uint32_t)
+    map = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<cmap12>() as libc::c_ulong) as u32)
         as *mut cmap12;
     (*map).nGroups = tt_get_unsigned_quad((*sfont).handle);
     (*map).groups = new(((*map).nGroups as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<charGroup>() as libc::c_ulong)
-        as uint32_t) as *mut charGroup;
+        as u32) as *mut charGroup;
     i = 0i32 as SFNT_ULONG;
     while i < (*map).nGroups {
         (*(*map).groups.offset(i as isize)).startCharCode = tt_get_unsigned_quad((*sfont).handle);
@@ -1204,8 +1202,8 @@ pub unsafe extern "C" fn tt_cmap_read(
     if i as libc::c_int == n_subtabs as libc::c_int {
         return 0 as *mut tt_cmap;
     }
-    cmap = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<tt_cmap>() as libc::c_ulong) as uint32_t)
+    cmap = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<tt_cmap>() as libc::c_ulong) as u32)
         as *mut tt_cmap;
     (*cmap).map = 0 as *mut libc::c_void;
     (*cmap).platform = platform;
@@ -1592,9 +1590,9 @@ unsafe extern "C" fn handle_CIDFont(
         _tt_abort(b"No CFF charset data???\x00" as *const u8 as *const libc::c_char);
     }
     map = new(
-        ((num_glyphs as libc::c_int * 2i32) as uint32_t as libc::c_ulong)
+        ((num_glyphs as libc::c_int * 2i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_uchar;
     memset(
         map as *mut libc::c_void,
@@ -2199,9 +2197,9 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
      * https://sourceforge.net/p/xetex/bugs/52/
      */
     normalized_font_name = new(
-        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char; /* many warnings without this... */
     strcpy(normalized_font_name, font_name);
     i = 0i32 as size_t;
@@ -2213,9 +2211,9 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
     }
     cmap_name = new((strlen(font_name)
         .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(5i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(5i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     sprintf(
         cmap_name,
         b"%s,%03d-UTF16\x00" as *const u8 as *const libc::c_char,
@@ -2284,9 +2282,9 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
         .wrapping_add(strlen(
             b",000-UCS32-Add\x00" as *const u8 as *const libc::c_char,
         ))
-        .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     sprintf(
         cmap_add_name,
         b"%s,%03d-UCS32-Add\x00" as *const u8 as *const libc::c_char,
@@ -2513,9 +2511,9 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
     }
     base_name = new((strlen(map_name)
         .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(5i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(5i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     if wmode != 0 {
         sprintf(
             base_name,
@@ -2535,10 +2533,10 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         cmap_name = new((strlen(map_name)
             .wrapping_add(strlen(otl_tags))
             .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const libc::c_char))
-            .wrapping_add(6i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(6i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         if wmode != 0 {
             sprintf(
                 cmap_name,
@@ -2564,10 +2562,10 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
             .wrapping_add(strlen(
                 b",000-UCS32-Add\x00" as *const u8 as *const libc::c_char,
             ))
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char; /* Microsoft UCS4 */
+            as u32) as *mut libc::c_char; /* Microsoft UCS4 */
         sprintf(
             tounicode_add_name,
             b"%s,%03d-UCS32-Add\x00" as *const u8 as *const libc::c_char,
@@ -2601,9 +2599,9 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         free(tounicode_add_name as *mut libc::c_void);
     } else {
         cmap_name = new(
-            (strlen(base_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(base_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy(cmap_name, base_name);
     }

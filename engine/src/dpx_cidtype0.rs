@@ -359,9 +359,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_font_make_uniqueTag(tag: *mut libc::c_char);
     #[no_mangle]
@@ -459,10 +459,8 @@ extern "C" {
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -527,7 +525,7 @@ pub struct sfnt {
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
 }
-pub type SFNT_ULONG = uint32_t;
+pub type SFNT_ULONG = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
@@ -614,7 +612,7 @@ pub struct cff_index {
     pub offset: *mut l_offset,
     pub data: *mut card8,
 }
-pub type l_offset = uint32_t;
+pub type l_offset = u32;
 pub type c_offsize = libc::c_uchar;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -663,7 +661,7 @@ pub struct tt_vhea_table {
     pub numOfExSideBearings: USHORT,
     /* extra information */
 }
-pub type Fixed = uint32_t;
+pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_font {
@@ -1491,8 +1489,8 @@ unsafe extern "C" fn write_fontfile(
     destlen = (destlen as libc::c_uint).wrapping_add(
         (*(*private).offset.offset((*private).count as isize)).wrapping_sub(1i32 as libc::c_uint),
     ) as libc::c_int as libc::c_int;
-    dest = new((destlen as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong) as uint32_t)
+    dest = new((destlen as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong) as u32)
         as *mut card8;
     offset = 0i32;
     /* Header */
@@ -1560,7 +1558,7 @@ unsafe extern "C" fn write_fontfile(
     (*fdarray).data = new(((*(*fdarray).offset.offset((*fdarray).count as isize))
         .wrapping_sub(1i32 as libc::c_uint) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-        as uint32_t) as *mut card8;
+        as u32) as *mut card8;
     i = 0i32;
     while i < (*cffont).num_fds as libc::c_int {
         size = (*(*private).offset.offset((i + 1i32) as isize))
@@ -1607,7 +1605,7 @@ unsafe extern "C" fn write_fontfile(
     (*topdict).data = new(((*(*topdict).offset.offset((*topdict).count as isize))
         .wrapping_sub(1i32 as libc::c_uint) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-        as uint32_t) as *mut card8;
+        as u32) as *mut card8;
     cff_dict_pack(
         (*cffont).topdict,
         (*topdict).data,
@@ -1892,9 +1890,9 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
         } else {
             cid_count = 65535i32 + 1i32
         }
-        CIDToGIDMap = new(((2i32 * cid_count) as uint32_t as libc::c_ulong)
+        CIDToGIDMap = new(((2i32 * cid_count) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         memset(
             CIDToGIDMap as *mut libc::c_void,
             0i32,
@@ -1972,37 +1970,37 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
         _tt_abort(b"No valid charstring data found.\x00" as *const u8 as *const libc::c_char);
     }
     /* New Charsets data */
-    charset = new((1i32 as uint32_t as libc::c_ulong)
+    charset = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_charsets>() as libc::c_ulong)
-        as uint32_t) as *mut cff_charsets;
+        as u32) as *mut cff_charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = 0i32 as card16;
-    (*charset).data.glyphs = new((num_glyphs as uint32_t as libc::c_ulong)
+    (*charset).data.glyphs = new((num_glyphs as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<s_SID>() as libc::c_ulong)
-        as uint32_t) as *mut s_SID;
+        as u32) as *mut s_SID;
     /* New FDSelect data */
-    fdselect = new((1i32 as uint32_t as libc::c_ulong)
+    fdselect = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_fdselect>() as libc::c_ulong)
-        as uint32_t) as *mut cff_fdselect;
+        as u32) as *mut cff_fdselect;
     (*fdselect).format = 3i32 as card8;
     (*fdselect).num_entries = 0i32 as card16;
-    (*fdselect).data.ranges = new((num_glyphs as uint32_t as libc::c_ulong)
+    (*fdselect).data.ranges = new((num_glyphs as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_range3>() as libc::c_ulong)
-        as uint32_t) as *mut cff_range3;
+        as u32) as *mut cff_range3;
     /* New CharStrings INDEX */
     charstrings = cff_new_index((num_glyphs as libc::c_int + 1i32) as card16);
     max_len = 2i32 * 65536i32;
-    (*charstrings).data = new((max_len as uint32_t as libc::c_ulong)
+    (*charstrings).data = new((max_len as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-        as uint32_t) as *mut card8;
+        as u32) as *mut card8;
     charstring_len = 0i32;
     /*
      * TODO: Re-assign FD number.
      */
     prev_fd = -1i32;
     gid = 0i32 as card16;
-    data = new((65536i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong) as uint32_t)
+    data = new((65536i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong) as u32)
         as *mut card8;
     cid = 0i32;
     while cid <= last_cid as libc::c_int {
@@ -2028,9 +2026,9 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
                 max_len = charstring_len + 2i32 * 65536i32;
                 (*charstrings).data = renew(
                     (*charstrings).data as *mut libc::c_void,
-                    (max_len as uint32_t as libc::c_ulong)
+                    (max_len as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-                        as uint32_t,
+                        as u32,
                 ) as *mut card8
             }
             *(*charstrings).offset.offset(gid as isize) = (charstring_len + 1i32) as l_offset;
@@ -2231,9 +2229,9 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         }
         ttstub_input_close(handle);
     }
-    csi = new((1i32 as uint32_t as libc::c_ulong)
+    csi = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
-        as uint32_t) as *mut CIDSysInfo;
+        as u32) as *mut CIDSysInfo;
     if is_cid_font != 0 {
         (*csi).registry = cff_get_string(
             cffont,
@@ -2258,19 +2256,19 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         ) as libc::c_int
     } else {
         (*csi).registry = new((strlen(b"Adobe\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(
             (*csi).registry,
             b"Adobe\x00" as *const u8 as *const libc::c_char,
         );
         (*csi).ordering = new((strlen(b"Identity\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(
             (*csi).ordering,
             b"Identity\x00" as *const u8 as *const libc::c_char,
@@ -2325,9 +2323,9 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         fontname_len += 11i32
     }
     fontname = new(
-        (strlen(shortname).wrapping_add(fontname_len as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(shortname).wrapping_add(fontname_len as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     memset(
         fontname as *mut libc::c_void,
@@ -2581,26 +2579,26 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         i += 1
     }
     let mut fdselect: *mut cff_fdselect = 0 as *mut cff_fdselect;
-    fdselect = new((1i32 as uint32_t as libc::c_ulong)
+    fdselect = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_fdselect>() as libc::c_ulong)
-        as uint32_t) as *mut cff_fdselect;
+        as u32) as *mut cff_fdselect;
     (*fdselect).format = 3i32 as card8;
     (*fdselect).num_entries = 1i32 as card16;
-    (*fdselect).data.ranges = new((1i32 as uint32_t as libc::c_ulong)
+    (*fdselect).data.ranges = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_range3>() as libc::c_ulong)
-        as uint32_t) as *mut cff_range3;
+        as u32) as *mut cff_range3;
     (*(*fdselect).data.ranges.offset(0)).first = 0i32 as card16;
     (*(*fdselect).data.ranges.offset(0)).fd = 0i32 as card8;
     (*cffont).fdselect = fdselect;
     let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
-    charset = new((1i32 as uint32_t as libc::c_ulong)
+    charset = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_charsets>() as libc::c_ulong)
-        as uint32_t) as *mut cff_charsets;
+        as u32) as *mut cff_charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = (num_glyphs as libc::c_int - 1i32) as card16;
     (*charset).data.glyphs = new(
-        ((num_glyphs as libc::c_int - 1i32) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<s_SID>() as libc::c_ulong) as uint32_t,
+        ((num_glyphs as libc::c_int - 1i32) as u32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<s_SID>() as libc::c_ulong) as u32,
     ) as *mut s_SID;
     gid = 0i32 as card16;
     cid = 0i32;
@@ -2630,9 +2628,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         0i32,
         (last_cid as libc::c_int + 1i32) as libc::c_double,
     );
-    (*cffont).fdarray = new((1i32 as uint32_t as libc::c_ulong)
+    (*cffont).fdarray = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as libc::c_ulong)
-        as uint32_t) as *mut *mut cff_dict;
+        as u32) as *mut *mut cff_dict;
     let ref mut fresh4 = *(*cffont).fdarray.offset(0);
     *fresh4 = cff_new_dict();
     cff_dict_add(
@@ -2723,13 +2721,13 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
     /* New CharStrings INDEX */
     charstrings = cff_new_index((num_glyphs as libc::c_int + 1i32) as card16);
     max_len = 2i32 * 65536i32;
-    (*charstrings).data = new((max_len as uint32_t as libc::c_ulong)
+    (*charstrings).data = new((max_len as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-        as uint32_t) as *mut card8;
+        as u32) as *mut card8;
     charstring_len = 0i32;
     gid = 0i32 as card16;
-    data = new((65536i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong) as uint32_t)
+    data = new((65536i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong) as u32)
         as *mut card8;
     cid = 0i32;
     while cid <= last_cid as libc::c_int {
@@ -2749,9 +2747,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
                 max_len = charstring_len + 2i32 * 65536i32;
                 (*charstrings).data = renew(
                     (*charstrings).data as *mut libc::c_void,
-                    (max_len as uint32_t as libc::c_ulong)
+                    (max_len as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-                        as uint32_t,
+                        as u32,
                 ) as *mut card8
             }
             *(*charstrings).offset.offset(gid as isize) = (charstring_len + 1i32) as l_offset;
@@ -2848,9 +2846,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
      */
     let mut CIDToGIDMap: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     CIDToGIDMap = new(
-        ((2i32 * (last_cid as libc::c_int + 1i32)) as uint32_t as libc::c_ulong)
+        ((2i32 * (last_cid as libc::c_int + 1i32)) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_uchar;
     memset(
         CIDToGIDMap as *mut libc::c_void,
@@ -2911,9 +2909,9 @@ unsafe extern "C" fn load_base_CMap(
     ];
     cmap_name = new((strlen(font_name)
         .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     if wmode != 0 {
         sprintf(
             cmap_name,
@@ -3075,9 +3073,9 @@ unsafe extern "C" fn create_ToUnicode_stream(
     cmap = CMap_new();
     cmap_name = new((strlen(font_name)
         .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const libc::c_char))
-        .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     strcpy(cmap_name, font_name);
     strcat(cmap_name, b"-UTF16\x00" as *const u8 as *const libc::c_char);
     CMap_set_name(cmap, cmap_name);
@@ -3688,21 +3686,21 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         i += 1
     }
     let mut fdselect: *mut cff_fdselect = 0 as *mut cff_fdselect;
-    fdselect = new((1i32 as uint32_t as libc::c_ulong)
+    fdselect = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_fdselect>() as libc::c_ulong)
-        as uint32_t) as *mut cff_fdselect;
+        as u32) as *mut cff_fdselect;
     (*fdselect).format = 3i32 as card8;
     (*fdselect).num_entries = 1i32 as card16;
-    (*fdselect).data.ranges = new((1i32 as uint32_t as libc::c_ulong)
+    (*fdselect).data.ranges = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_range3>() as libc::c_ulong)
-        as uint32_t) as *mut cff_range3;
+        as u32) as *mut cff_range3;
     (*(*fdselect).data.ranges.offset(0)).first = 0i32 as card16;
     (*(*fdselect).data.ranges.offset(0)).fd = 0i32 as card8;
     (*cffont).fdselect = fdselect;
     CIDToGIDMap = new(
-        ((2i32 * (last_cid as libc::c_int + 1i32)) as uint32_t as libc::c_ulong)
+        ((2i32 * (last_cid as libc::c_int + 1i32)) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_uchar;
     memset(
         CIDToGIDMap as *mut libc::c_void,
@@ -3710,14 +3708,14 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         (2i32 * (last_cid as libc::c_int + 1i32)) as libc::c_ulong,
     );
     let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
-    charset = new((1i32 as uint32_t as libc::c_ulong)
+    charset = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_charsets>() as libc::c_ulong)
-        as uint32_t) as *mut cff_charsets;
+        as u32) as *mut cff_charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = (num_glyphs - 1i32) as card16;
-    (*charset).data.glyphs = new(((num_glyphs - 1i32) as uint32_t as libc::c_ulong)
+    (*charset).data.glyphs = new(((num_glyphs - 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<s_SID>() as libc::c_ulong)
-        as uint32_t) as *mut s_SID;
+        as u32) as *mut s_SID;
     gid = 0i32 as card16;
     cid = 0i32 as card16;
     while cid as libc::c_int <= last_cid as libc::c_int {
@@ -3752,9 +3750,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         0i32,
         (last_cid as libc::c_int + 1i32) as libc::c_double,
     );
-    (*cffont).fdarray = new((1i32 as uint32_t as libc::c_ulong)
+    (*cffont).fdarray = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as libc::c_ulong)
-        as uint32_t) as *mut *mut cff_dict;
+        as u32) as *mut *mut cff_dict;
     let ref mut fresh7 = *(*cffont).fdarray.offset(0);
     *fresh7 = cff_new_dict();
     cff_dict_add(
@@ -3855,9 +3853,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
     let mut w_stat: [libc::c_int; 1001] = [0; 1001];
     let mut max_count: libc::c_int = 0;
     let mut dw: libc::c_int = 0;
-    widths = new((num_glyphs as uint32_t as libc::c_ulong)
+    widths = new((num_glyphs as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_double>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_double;
+        as u32) as *mut libc::c_double;
     memset(
         w_stat.as_mut_ptr() as *mut libc::c_void,
         0i32,
@@ -3879,9 +3877,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
                 max += 65536i32 * 2i32;
                 (*cstring).data = renew(
                     (*cstring).data as *mut libc::c_void,
-                    (max as uint32_t as libc::c_ulong)
+                    (max as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-                        as uint32_t,
+                        as u32,
                 ) as *mut card8
             }
             offset += t1char_convert_charstring(

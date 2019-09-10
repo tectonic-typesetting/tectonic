@@ -35,10 +35,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
 }
 pub type uint8_t = u8;
-pub type uint32_t = u32;
 pub type uint64_t = u64;
 pub type size_t = libc::c_ulong;
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
@@ -64,10 +63,10 @@ pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct MD5_CONTEXT {
-    pub A: uint32_t,
-    pub B: uint32_t,
-    pub C: uint32_t,
-    pub D: uint32_t,
+    pub A: u32,
+    pub B: u32,
+    pub C: u32,
+    pub D: u32,
     pub nblocks: size_t,
     pub buf: [libc::c_uchar; 64],
     pub count: libc::c_int,
@@ -75,14 +74,14 @@ pub struct MD5_CONTEXT {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct SHA256_CONTEXT {
-    pub h0: uint32_t,
-    pub h1: uint32_t,
-    pub h2: uint32_t,
-    pub h3: uint32_t,
-    pub h4: uint32_t,
-    pub h5: uint32_t,
-    pub h6: uint32_t,
-    pub h7: uint32_t,
+    pub h0: u32,
+    pub h1: u32,
+    pub h2: u32,
+    pub h3: u32,
+    pub h4: u32,
+    pub h5: u32,
+    pub h6: u32,
+    pub h7: u32,
     pub nblocks: size_t,
     pub buf: [libc::c_uchar; 64],
     pub count: libc::c_int,
@@ -118,7 +117,7 @@ pub struct ARC4_CONTEXT {
 #[repr(C)]
 pub struct AES_CONTEXT {
     pub nrounds: libc::c_int,
-    pub rk: [uint32_t; 60],
+    pub rk: [u32; 60],
     pub iv: [libc::c_uchar; 16],
 }
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
@@ -195,16 +194,16 @@ pub unsafe extern "C" fn MD5_init(mut ctx: *mut MD5_CONTEXT) {
 /* #define FF(b, c, d) ((b & c) | (~b & d)) */
 /* transform n*64 bytes */
 unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const libc::c_uchar) {
-    let mut correct_words: [uint32_t; 16] = [0; 16];
-    let mut A: uint32_t = (*ctx).A;
-    let mut B: uint32_t = (*ctx).B;
-    let mut C: uint32_t = (*ctx).C;
-    let mut D: uint32_t = (*ctx).D;
-    let mut cwp: *mut uint32_t = correct_words.as_mut_ptr();
+    let mut correct_words: [u32; 16] = [0; 16];
+    let mut A: u32 = (*ctx).A;
+    let mut B: u32 = (*ctx).B;
+    let mut C: u32 = (*ctx).C;
+    let mut D: u32 = (*ctx).D;
+    let mut cwp: *mut u32 = correct_words.as_mut_ptr();
     memcpy(
         correct_words.as_mut_ptr() as *mut libc::c_void,
         data as *const libc::c_void,
-        (::std::mem::size_of::<uint32_t>() as libc::c_ulong).wrapping_mul(16i32 as libc::c_ulong),
+        (::std::mem::size_of::<u32>() as libc::c_ulong).wrapping_mul(16i32 as libc::c_ulong),
     );
     /* Before we start, one word about the strange constants.
      * They are defined in RFC 1321 as
@@ -218,488 +217,488 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const libc:
         (D ^ B & (C ^ D))
             .wrapping_add(*fresh0)
             .wrapping_add(0xd76aa478u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 7i32 | A >> 32i32 - 7i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     let fresh1 = cwp;
     cwp = cwp.offset(1);
     D = (D as libc::c_uint).wrapping_add(
         (C ^ A & (B ^ C))
             .wrapping_add(*fresh1)
             .wrapping_add(0xe8c7b756u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 12i32 | D >> 32i32 - 12i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     let fresh2 = cwp;
     cwp = cwp.offset(1);
     C = (C as libc::c_uint).wrapping_add(
         (B ^ D & (A ^ B))
             .wrapping_add(*fresh2)
             .wrapping_add(0x242070dbi32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 17i32 | C >> 32i32 - 17i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     let fresh3 = cwp;
     cwp = cwp.offset(1);
     B = (B as libc::c_uint).wrapping_add(
         (A ^ C & (D ^ A))
             .wrapping_add(*fresh3)
             .wrapping_add(0xc1bdceeeu32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 22i32 | B >> 32i32 - 22i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     let fresh4 = cwp;
     cwp = cwp.offset(1);
     A = (A as libc::c_uint).wrapping_add(
         (D ^ B & (C ^ D))
             .wrapping_add(*fresh4)
             .wrapping_add(0xf57c0fafu32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 7i32 | A >> 32i32 - 7i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     let fresh5 = cwp;
     cwp = cwp.offset(1);
     D = (D as libc::c_uint).wrapping_add(
         (C ^ A & (B ^ C))
             .wrapping_add(*fresh5)
             .wrapping_add(0x4787c62ai32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 12i32 | D >> 32i32 - 12i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     let fresh6 = cwp;
     cwp = cwp.offset(1);
     C = (C as libc::c_uint).wrapping_add(
         (B ^ D & (A ^ B))
             .wrapping_add(*fresh6)
             .wrapping_add(0xa8304613u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 17i32 | C >> 32i32 - 17i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     let fresh7 = cwp;
     cwp = cwp.offset(1);
     B = (B as libc::c_uint).wrapping_add(
         (A ^ C & (D ^ A))
             .wrapping_add(*fresh7)
             .wrapping_add(0xfd469501u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 22i32 | B >> 32i32 - 22i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     let fresh8 = cwp;
     cwp = cwp.offset(1);
     A = (A as libc::c_uint).wrapping_add(
         (D ^ B & (C ^ D))
             .wrapping_add(*fresh8)
             .wrapping_add(0x698098d8i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 7i32 | A >> 32i32 - 7i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     let fresh9 = cwp;
     cwp = cwp.offset(1);
     D = (D as libc::c_uint).wrapping_add(
         (C ^ A & (B ^ C))
             .wrapping_add(*fresh9)
             .wrapping_add(0x8b44f7afu32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 12i32 | D >> 32i32 - 12i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     let fresh10 = cwp;
     cwp = cwp.offset(1);
     C = (C as libc::c_uint).wrapping_add(
         (B ^ D & (A ^ B))
             .wrapping_add(*fresh10)
             .wrapping_add(0xffff5bb1u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 17i32 | C >> 32i32 - 17i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     let fresh11 = cwp;
     cwp = cwp.offset(1);
     B = (B as libc::c_uint).wrapping_add(
         (A ^ C & (D ^ A))
             .wrapping_add(*fresh11)
             .wrapping_add(0x895cd7beu32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 22i32 | B >> 32i32 - 22i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     let fresh12 = cwp;
     cwp = cwp.offset(1);
     A = (A as libc::c_uint).wrapping_add(
         (D ^ B & (C ^ D))
             .wrapping_add(*fresh12)
             .wrapping_add(0x6b901122i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 7i32 | A >> 32i32 - 7i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     let fresh13 = cwp;
     cwp = cwp.offset(1);
     D = (D as libc::c_uint).wrapping_add(
         (C ^ A & (B ^ C))
             .wrapping_add(*fresh13)
             .wrapping_add(0xfd987193u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 12i32 | D >> 32i32 - 12i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     let fresh14 = cwp;
     cwp = cwp.offset(1);
     C = (C as libc::c_uint).wrapping_add(
         (B ^ D & (A ^ B))
             .wrapping_add(*fresh14)
             .wrapping_add(0xa679438eu32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 17i32 | C >> 32i32 - 17i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     let fresh15 = cwp;
     cwp = cwp.offset(1);
     B = (B as libc::c_uint).wrapping_add(
         (A ^ C & (D ^ A))
             .wrapping_add(*fresh15)
             .wrapping_add(0x49b40821i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 22i32 | B >> 32i32 - 22i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     /* Round 2. */
     A = (A as libc::c_uint).wrapping_add(
         (C ^ D & (B ^ C))
             .wrapping_add(correct_words[1])
             .wrapping_add(0xf61e2562u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 5i32 | A >> 32i32 - 5i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ C & (A ^ B))
             .wrapping_add(correct_words[6])
             .wrapping_add(0xc040b340u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 9i32 | D >> 32i32 - 9i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ B & (D ^ A))
             .wrapping_add(correct_words[11])
             .wrapping_add(0x265e5a51i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 14i32 | C >> 32i32 - 14i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ A & (C ^ D))
             .wrapping_add(correct_words[0])
             .wrapping_add(0xe9b6c7aau32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 20i32 | B >> 32i32 - 20i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (C ^ D & (B ^ C))
             .wrapping_add(correct_words[5])
             .wrapping_add(0xd62f105du32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 5i32 | A >> 32i32 - 5i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ C & (A ^ B))
             .wrapping_add(correct_words[10])
             .wrapping_add(0x2441453i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 9i32 | D >> 32i32 - 9i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ B & (D ^ A))
             .wrapping_add(correct_words[15])
             .wrapping_add(0xd8a1e681u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 14i32 | C >> 32i32 - 14i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ A & (C ^ D))
             .wrapping_add(correct_words[4])
             .wrapping_add(0xe7d3fbc8u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 20i32 | B >> 32i32 - 20i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (C ^ D & (B ^ C))
             .wrapping_add(correct_words[9])
             .wrapping_add(0x21e1cde6i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 5i32 | A >> 32i32 - 5i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ C & (A ^ B))
             .wrapping_add(correct_words[14])
             .wrapping_add(0xc33707d6u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 9i32 | D >> 32i32 - 9i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ B & (D ^ A))
             .wrapping_add(correct_words[3])
             .wrapping_add(0xf4d50d87u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 14i32 | C >> 32i32 - 14i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ A & (C ^ D))
             .wrapping_add(correct_words[8])
             .wrapping_add(0x455a14edi32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 20i32 | B >> 32i32 - 20i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (C ^ D & (B ^ C))
             .wrapping_add(correct_words[13])
             .wrapping_add(0xa9e3e905u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 5i32 | A >> 32i32 - 5i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ C & (A ^ B))
             .wrapping_add(correct_words[2])
             .wrapping_add(0xfcefa3f8u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 9i32 | D >> 32i32 - 9i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ B & (D ^ A))
             .wrapping_add(correct_words[7])
             .wrapping_add(0x676f02d9i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 14i32 | C >> 32i32 - 14i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ A & (C ^ D))
             .wrapping_add(correct_words[12])
             .wrapping_add(0x8d2a4c8au32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 20i32 | B >> 32i32 - 20i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     /* Round 3. */
     A = (A as libc::c_uint).wrapping_add(
         (B ^ C ^ D)
             .wrapping_add(correct_words[5])
             .wrapping_add(0xfffa3942u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 4i32 | A >> 32i32 - 4i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (A ^ B ^ C)
             .wrapping_add(correct_words[8])
             .wrapping_add(0x8771f681u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 11i32 | D >> 32i32 - 11i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (D ^ A ^ B)
             .wrapping_add(correct_words[11])
             .wrapping_add(0x6d9d6122i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 16i32 | C >> 32i32 - 16i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (C ^ D ^ A)
             .wrapping_add(correct_words[14])
             .wrapping_add(0xfde5380cu32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 23i32 | B >> 32i32 - 23i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (B ^ C ^ D)
             .wrapping_add(correct_words[1])
             .wrapping_add(0xa4beea44u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 4i32 | A >> 32i32 - 4i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (A ^ B ^ C)
             .wrapping_add(correct_words[4])
             .wrapping_add(0x4bdecfa9i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 11i32 | D >> 32i32 - 11i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (D ^ A ^ B)
             .wrapping_add(correct_words[7])
             .wrapping_add(0xf6bb4b60u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 16i32 | C >> 32i32 - 16i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (C ^ D ^ A)
             .wrapping_add(correct_words[10])
             .wrapping_add(0xbebfbc70u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 23i32 | B >> 32i32 - 23i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (B ^ C ^ D)
             .wrapping_add(correct_words[13])
             .wrapping_add(0x289b7ec6i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 4i32 | A >> 32i32 - 4i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (A ^ B ^ C)
             .wrapping_add(correct_words[0])
             .wrapping_add(0xeaa127fau32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 11i32 | D >> 32i32 - 11i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (D ^ A ^ B)
             .wrapping_add(correct_words[3])
             .wrapping_add(0xd4ef3085u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 16i32 | C >> 32i32 - 16i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (C ^ D ^ A)
             .wrapping_add(correct_words[6])
             .wrapping_add(0x4881d05i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 23i32 | B >> 32i32 - 23i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (B ^ C ^ D)
             .wrapping_add(correct_words[9])
             .wrapping_add(0xd9d4d039u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 4i32 | A >> 32i32 - 4i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (A ^ B ^ C)
             .wrapping_add(correct_words[12])
             .wrapping_add(0xe6db99e5u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 11i32 | D >> 32i32 - 11i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (D ^ A ^ B)
             .wrapping_add(correct_words[15])
             .wrapping_add(0x1fa27cf8i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 16i32 | C >> 32i32 - 16i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (C ^ D ^ A)
             .wrapping_add(correct_words[2])
             .wrapping_add(0xc4ac5665u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 23i32 | B >> 32i32 - 23i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     /* Round 4.  */
     A = (A as libc::c_uint).wrapping_add(
         (C ^ (B | !D))
             .wrapping_add(correct_words[0])
             .wrapping_add(0xf4292244u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 6i32 | A >> 32i32 - 6i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ (A | !C))
             .wrapping_add(correct_words[7])
             .wrapping_add(0x432aff97i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 10i32 | D >> 32i32 - 10i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ (D | !B))
             .wrapping_add(correct_words[14])
             .wrapping_add(0xab9423a7u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 15i32 | C >> 32i32 - 15i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ (C | !A))
             .wrapping_add(correct_words[5])
             .wrapping_add(0xfc93a039u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 21i32 | B >> 32i32 - 21i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (C ^ (B | !D))
             .wrapping_add(correct_words[12])
             .wrapping_add(0x655b59c3i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 6i32 | A >> 32i32 - 6i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ (A | !C))
             .wrapping_add(correct_words[3])
             .wrapping_add(0x8f0ccc92u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 10i32 | D >> 32i32 - 10i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ (D | !B))
             .wrapping_add(correct_words[10])
             .wrapping_add(0xffeff47du32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 15i32 | C >> 32i32 - 15i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ (C | !A))
             .wrapping_add(correct_words[1])
             .wrapping_add(0x85845dd1u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 21i32 | B >> 32i32 - 21i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (C ^ (B | !D))
             .wrapping_add(correct_words[8])
             .wrapping_add(0x6fa87e4fi32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 6i32 | A >> 32i32 - 6i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ (A | !C))
             .wrapping_add(correct_words[15])
             .wrapping_add(0xfe2ce6e0u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 10i32 | D >> 32i32 - 10i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ (D | !B))
             .wrapping_add(correct_words[6])
             .wrapping_add(0xa3014314u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 15i32 | C >> 32i32 - 15i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ (C | !A))
             .wrapping_add(correct_words[13])
             .wrapping_add(0x4e0811a1i32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 21i32 | B >> 32i32 - 21i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     A = (A as libc::c_uint).wrapping_add(
         (C ^ (B | !D))
             .wrapping_add(correct_words[4])
             .wrapping_add(0xf7537e82u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     A = A << 6i32 | A >> 32i32 - 6i32;
-    A = (A as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
+    A = (A as libc::c_uint).wrapping_add(B) as u32;
     D = (D as libc::c_uint).wrapping_add(
         (B ^ (A | !C))
             .wrapping_add(correct_words[11])
             .wrapping_add(0xbd3af235u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     D = D << 10i32 | D >> 32i32 - 10i32;
-    D = (D as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
+    D = (D as libc::c_uint).wrapping_add(A) as u32;
     C = (C as libc::c_uint).wrapping_add(
         (A ^ (D | !B))
             .wrapping_add(correct_words[2])
             .wrapping_add(0x2ad7d2bbi32 as libc::c_uint),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     C = C << 15i32 | C >> 32i32 - 15i32;
-    C = (C as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    C = (C as libc::c_uint).wrapping_add(D) as u32;
     B = (B as libc::c_uint).wrapping_add(
         (D ^ (C | !A))
             .wrapping_add(correct_words[9])
             .wrapping_add(0xeb86d391u32),
-    ) as uint32_t as uint32_t;
+    ) as u32;
     B = B << 21i32 | B >> 32i32 - 21i32;
-    B = (B as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
+    B = (B as libc::c_uint).wrapping_add(C) as u32;
     /* Put checksum in context given as argument. */
-    (*ctx).A = ((*ctx).A as libc::c_uint).wrapping_add(A) as uint32_t as uint32_t;
-    (*ctx).B = ((*ctx).B as libc::c_uint).wrapping_add(B) as uint32_t as uint32_t;
-    (*ctx).C = ((*ctx).C as libc::c_uint).wrapping_add(C) as uint32_t as uint32_t;
-    (*ctx).D = ((*ctx).D as libc::c_uint).wrapping_add(D) as uint32_t as uint32_t;
+    (*ctx).A = ((*ctx).A as libc::c_uint).wrapping_add(A) as u32;
+    (*ctx).B = ((*ctx).B as libc::c_uint).wrapping_add(B) as u32;
+    (*ctx).C = ((*ctx).C as libc::c_uint).wrapping_add(C) as u32;
+    (*ctx).D = ((*ctx).D as libc::c_uint).wrapping_add(D) as u32;
 }
 /* The routine updates the message-digest context to
  * account for the presence of each of the characters inBuf[0..inLen-1]
@@ -767,18 +766,18 @@ pub unsafe extern "C" fn MD5_write(
  * Returns 16 bytes representing the digest. */
 #[no_mangle]
 pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut MD5_CONTEXT) {
-    let mut t: uint32_t = 0; /* flush */
-    let mut msb: uint32_t = 0;
-    let mut lsb: uint32_t = 0;
+    let mut t: u32 = 0; /* flush */
+    let mut msb: u32 = 0;
+    let mut lsb: u32 = 0;
     let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     MD5_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
-    t = (*hd).nblocks as uint32_t;
+    t = (*hd).nblocks as u32;
     /* multiply by 64 to make a byte count */
     lsb = t << 6i32;
     msb = t >> 26i32;
     /* add the count */
     t = lsb;
-    lsb = (lsb as libc::c_uint).wrapping_add((*hd).count as libc::c_uint) as uint32_t as uint32_t;
+    lsb = (lsb as libc::c_uint).wrapping_add((*hd).count as libc::c_uint) as u32;
     if lsb < t {
         msb = msb.wrapping_add(1)
     }
@@ -833,14 +832,14 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut 
     );
     p = outbuf;
     /* little endian */
-    *(p as *mut uint32_t) = (*hd).A;
-    p = p.offset(::std::mem::size_of::<uint32_t>() as libc::c_ulong as isize);
-    *(p as *mut uint32_t) = (*hd).B;
-    p = p.offset(::std::mem::size_of::<uint32_t>() as libc::c_ulong as isize);
-    *(p as *mut uint32_t) = (*hd).C;
-    p = p.offset(::std::mem::size_of::<uint32_t>() as libc::c_ulong as isize);
-    *(p as *mut uint32_t) = (*hd).D;
-    p = p.offset(::std::mem::size_of::<uint32_t>() as libc::c_ulong as isize);
+    *(p as *mut u32) = (*hd).A;
+    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
+    *(p as *mut u32) = (*hd).B;
+    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
+    *(p as *mut u32) = (*hd).C;
+    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
+    *(p as *mut u32) = (*hd).D;
+    p = p.offset(::std::mem::size_of::<u32>() as libc::c_ulong as isize);
 }
 /*
  * The following codes for the SHA256 hash function are taken from
@@ -864,24 +863,24 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut 
  * You should have received a copy of the GNU Lesser General Public
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
-unsafe extern "C" fn _gcry_bswap32(mut x: uint32_t) -> uint32_t {
+unsafe extern "C" fn _gcry_bswap32(mut x: u32) -> u32 {
     return ((x << 8i32 | x >> 32i32 - 8i32) as libc::c_long & 0xff00ffi64
         | (x >> (8i32 & 32i32 - 1i32) | x << (32i32 - 8i32 & 32i32 - 1i32)) as libc::c_long
-            & 0xff00ff00i64) as uint32_t;
+            & 0xff00ff00i64) as u32;
 }
 unsafe extern "C" fn _gcry_bswap64(mut x: uint64_t) -> uint64_t {
-    return (_gcry_bswap32(x as uint32_t) as uint64_t) << 32i32
-        | _gcry_bswap32((x >> 32i32) as uint32_t) as libc::c_ulong;
+    return (_gcry_bswap32(x as u32) as uint64_t) << 32i32
+        | _gcry_bswap32((x >> 32i32) as u32) as libc::c_ulong;
 }
 /* Endian dependent byte swap operations.  */
-unsafe extern "C" fn buf_get_be32(mut _buf: *const libc::c_void) -> uint32_t {
+unsafe extern "C" fn buf_get_be32(mut _buf: *const libc::c_void) -> u32 {
     let mut in_0: *const uint8_t = _buf as *const uint8_t;
-    return (*in_0.offset(0) as uint32_t) << 24i32
-        | (*in_0.offset(1) as uint32_t) << 16i32
-        | (*in_0.offset(2) as uint32_t) << 8i32
-        | *in_0.offset(3) as uint32_t;
+    return (*in_0.offset(0) as u32) << 24i32
+        | (*in_0.offset(1) as u32) << 16i32
+        | (*in_0.offset(2) as u32) << 8i32
+        | *in_0.offset(3) as u32;
 }
-unsafe extern "C" fn buf_put_be32(mut _buf: *mut libc::c_void, mut val: uint32_t) {
+unsafe extern "C" fn buf_put_be32(mut _buf: *mut libc::c_void, mut val: u32) {
     let mut out: *mut uint8_t = _buf as *mut uint8_t;
     *out.offset(0) = (val >> 24i32) as uint8_t;
     *out.offset(1) = (val >> 16i32) as uint8_t;
@@ -912,14 +911,14 @@ unsafe extern "C" fn buf_put_be64(mut _buf: *mut libc::c_void, mut val: uint64_t
 }
 #[no_mangle]
 pub unsafe extern "C" fn SHA256_init(mut hd: *mut SHA256_CONTEXT) {
-    (*hd).h0 = 0x6a09e667i32 as uint32_t;
+    (*hd).h0 = 0x6a09e667i32 as u32;
     (*hd).h1 = 0xbb67ae85u32;
-    (*hd).h2 = 0x3c6ef372i32 as uint32_t;
+    (*hd).h2 = 0x3c6ef372i32 as u32;
     (*hd).h3 = 0xa54ff53au32;
-    (*hd).h4 = 0x510e527fi32 as uint32_t;
+    (*hd).h4 = 0x510e527fi32 as u32;
     (*hd).h5 = 0x9b05688cu32;
-    (*hd).h6 = 0x1f83d9abi32 as uint32_t;
-    (*hd).h7 = 0x5be0cd19i32 as uint32_t;
+    (*hd).h6 = 0x1f83d9abi32 as u32;
+    (*hd).h7 = 0x5be0cd19i32 as u32;
     (*hd).nblocks = 0i32 as size_t;
     (*hd).count = 0i32;
 }
@@ -932,45 +931,45 @@ unsafe extern "C" fn _SHA256_transform(
     mut hd: *mut SHA256_CONTEXT,
     mut data: *const libc::c_uchar,
 ) -> libc::c_uint {
-    static mut K: [uint32_t; 64] = [
-        0x428a2f98i32 as uint32_t,
-        0x71374491i32 as uint32_t,
+    static mut K: [u32; 64] = [
+        0x428a2f98i32 as u32,
+        0x71374491i32 as u32,
         0xb5c0fbcfu32,
         0xe9b5dba5u32,
-        0x3956c25bi32 as uint32_t,
-        0x59f111f1i32 as uint32_t,
+        0x3956c25bi32 as u32,
+        0x59f111f1i32 as u32,
         0x923f82a4u32,
         0xab1c5ed5u32,
         0xd807aa98u32,
-        0x12835b01i32 as uint32_t,
-        0x243185bei32 as uint32_t,
-        0x550c7dc3i32 as uint32_t,
-        0x72be5d74i32 as uint32_t,
+        0x12835b01i32 as u32,
+        0x243185bei32 as u32,
+        0x550c7dc3i32 as u32,
+        0x72be5d74i32 as u32,
         0x80deb1feu32,
         0x9bdc06a7u32,
         0xc19bf174u32,
         0xe49b69c1u32,
         0xefbe4786u32,
-        0xfc19dc6i32 as uint32_t,
-        0x240ca1cci32 as uint32_t,
-        0x2de92c6fi32 as uint32_t,
-        0x4a7484aai32 as uint32_t,
-        0x5cb0a9dci32 as uint32_t,
-        0x76f988dai32 as uint32_t,
+        0xfc19dc6i32 as u32,
+        0x240ca1cci32 as u32,
+        0x2de92c6fi32 as u32,
+        0x4a7484aai32 as u32,
+        0x5cb0a9dci32 as u32,
+        0x76f988dai32 as u32,
         0x983e5152u32,
         0xa831c66du32,
         0xb00327c8u32,
         0xbf597fc7u32,
         0xc6e00bf3u32,
         0xd5a79147u32,
-        0x6ca6351i32 as uint32_t,
-        0x14292967i32 as uint32_t,
-        0x27b70a85i32 as uint32_t,
-        0x2e1b2138i32 as uint32_t,
-        0x4d2c6dfci32 as uint32_t,
-        0x53380d13i32 as uint32_t,
-        0x650a7354i32 as uint32_t,
-        0x766a0abbi32 as uint32_t,
+        0x6ca6351i32 as u32,
+        0x14292967i32 as u32,
+        0x27b70a85i32 as u32,
+        0x2e1b2138i32 as u32,
+        0x4d2c6dfci32 as u32,
+        0x53380d13i32 as u32,
+        0x650a7354i32 as u32,
+        0x766a0abbi32 as u32,
         0x81c2c92eu32,
         0x92722c85u32,
         0xa2bfe8a1u32,
@@ -980,17 +979,17 @@ unsafe extern "C" fn _SHA256_transform(
         0xd192e819u32,
         0xd6990624u32,
         0xf40e3585u32,
-        0x106aa070i32 as uint32_t,
-        0x19a4c116i32 as uint32_t,
-        0x1e376c08i32 as uint32_t,
-        0x2748774ci32 as uint32_t,
-        0x34b0bcb5i32 as uint32_t,
-        0x391c0cb3i32 as uint32_t,
-        0x4ed8aa4ai32 as uint32_t,
-        0x5b9cca4fi32 as uint32_t,
-        0x682e6ff3i32 as uint32_t,
-        0x748f82eei32 as uint32_t,
-        0x78a5636fi32 as uint32_t,
+        0x106aa070i32 as u32,
+        0x19a4c116i32 as u32,
+        0x1e376c08i32 as u32,
+        0x2748774ci32 as u32,
+        0x34b0bcb5i32 as u32,
+        0x391c0cb3i32 as u32,
+        0x4ed8aa4ai32 as u32,
+        0x5b9cca4fi32 as u32,
+        0x682e6ff3i32 as u32,
+        0x748f82eei32 as u32,
+        0x78a5636fi32 as u32,
         0x84c87814u32,
         0x8cc70208u32,
         0x90befffau32,
@@ -998,17 +997,17 @@ unsafe extern "C" fn _SHA256_transform(
         0xbef9a3f7u32,
         0xc67178f2u32,
     ];
-    let mut a: uint32_t = 0;
-    let mut b: uint32_t = 0;
-    let mut c: uint32_t = 0;
-    let mut d: uint32_t = 0;
-    let mut e: uint32_t = 0;
-    let mut f: uint32_t = 0;
-    let mut g: uint32_t = 0;
-    let mut h: uint32_t = 0;
-    let mut t1: uint32_t = 0;
-    let mut t2: uint32_t = 0;
-    let mut w: [uint32_t; 64] = [0; 64];
+    let mut a: u32 = 0;
+    let mut b: u32 = 0;
+    let mut c: u32 = 0;
+    let mut d: u32 = 0;
+    let mut e: u32 = 0;
+    let mut f: u32 = 0;
+    let mut g: u32 = 0;
+    let mut h: u32 = 0;
+    let mut t1: u32 = 0;
+    let mut t2: u32 = 0;
+    let mut w: [u32; 64] = [0; 64];
     let mut i: libc::c_int = 0;
     a = (*hd).h0;
     b = (*hd).h1;
@@ -1055,7 +1054,7 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (a >> (13i32 & 32i32 - 1i32) | a << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (a >> (22i32 & 32i32 - 1i32) | a << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(a & b | c & (a | b));
-        d = (d as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        d = (d as libc::c_uint).wrapping_add(t1) as u32;
         h = t1.wrapping_add(t2);
         t1 = g
             .wrapping_add(
@@ -1070,7 +1069,7 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (h >> (13i32 & 32i32 - 1i32) | h << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (h >> (22i32 & 32i32 - 1i32) | h << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(h & a | b & (h | a));
-        c = (c as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        c = (c as libc::c_uint).wrapping_add(t1) as u32;
         g = t1.wrapping_add(t2);
         t1 = f
             .wrapping_add(
@@ -1085,7 +1084,7 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (g >> (13i32 & 32i32 - 1i32) | g << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (g >> (22i32 & 32i32 - 1i32) | g << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(g & h | a & (g | h));
-        b = (b as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        b = (b as libc::c_uint).wrapping_add(t1) as u32;
         f = t1.wrapping_add(t2);
         t1 = e
             .wrapping_add(
@@ -1100,7 +1099,7 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (f >> (13i32 & 32i32 - 1i32) | f << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (f >> (22i32 & 32i32 - 1i32) | f << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(f & g | h & (f | g));
-        a = (a as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        a = (a as libc::c_uint).wrapping_add(t1) as u32;
         e = t1.wrapping_add(t2);
         t1 = d
             .wrapping_add(
@@ -1115,7 +1114,7 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (e >> (13i32 & 32i32 - 1i32) | e << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (e >> (22i32 & 32i32 - 1i32) | e << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(e & f | g & (e | f));
-        h = (h as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        h = (h as libc::c_uint).wrapping_add(t1) as u32;
         d = t1.wrapping_add(t2);
         t1 = c
             .wrapping_add(
@@ -1130,7 +1129,7 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (d >> (13i32 & 32i32 - 1i32) | d << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (d >> (22i32 & 32i32 - 1i32) | d << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(d & e | f & (d | e));
-        g = (g as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        g = (g as libc::c_uint).wrapping_add(t1) as u32;
         c = t1.wrapping_add(t2);
         t1 = b
             .wrapping_add(
@@ -1145,7 +1144,7 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (c >> (13i32 & 32i32 - 1i32) | c << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (c >> (22i32 & 32i32 - 1i32) | c << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(c & d | e & (c | d));
-        f = (f as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        f = (f as libc::c_uint).wrapping_add(t1) as u32;
         b = t1.wrapping_add(t2);
         t1 = a
             .wrapping_add(
@@ -1160,18 +1159,18 @@ unsafe extern "C" fn _SHA256_transform(
             ^ (b >> (13i32 & 32i32 - 1i32) | b << (32i32 - 13i32 & 32i32 - 1i32))
             ^ (b >> (22i32 & 32i32 - 1i32) | b << (32i32 - 22i32 & 32i32 - 1i32)))
             .wrapping_add(b & c | d & (b | c));
-        e = (e as libc::c_uint).wrapping_add(t1) as uint32_t as uint32_t;
+        e = (e as libc::c_uint).wrapping_add(t1) as u32;
         a = t1.wrapping_add(t2);
         i += 8i32
     }
-    (*hd).h0 = ((*hd).h0 as libc::c_uint).wrapping_add(a) as uint32_t as uint32_t;
-    (*hd).h1 = ((*hd).h1 as libc::c_uint).wrapping_add(b) as uint32_t as uint32_t;
-    (*hd).h2 = ((*hd).h2 as libc::c_uint).wrapping_add(c) as uint32_t as uint32_t;
-    (*hd).h3 = ((*hd).h3 as libc::c_uint).wrapping_add(d) as uint32_t as uint32_t;
-    (*hd).h4 = ((*hd).h4 as libc::c_uint).wrapping_add(e) as uint32_t as uint32_t;
-    (*hd).h5 = ((*hd).h5 as libc::c_uint).wrapping_add(f) as uint32_t as uint32_t;
-    (*hd).h6 = ((*hd).h6 as libc::c_uint).wrapping_add(g) as uint32_t as uint32_t;
-    (*hd).h7 = ((*hd).h7 as libc::c_uint).wrapping_add(h) as uint32_t as uint32_t;
+    (*hd).h0 = ((*hd).h0 as libc::c_uint).wrapping_add(a) as u32;
+    (*hd).h1 = ((*hd).h1 as libc::c_uint).wrapping_add(b) as u32;
+    (*hd).h2 = ((*hd).h2 as libc::c_uint).wrapping_add(c) as u32;
+    (*hd).h3 = ((*hd).h3 as libc::c_uint).wrapping_add(d) as u32;
+    (*hd).h4 = ((*hd).h4 as libc::c_uint).wrapping_add(e) as u32;
+    (*hd).h5 = ((*hd).h5 as libc::c_uint).wrapping_add(f) as u32;
+    (*hd).h6 = ((*hd).h6 as libc::c_uint).wrapping_add(g) as u32;
+    (*hd).h7 = ((*hd).h7 as libc::c_uint).wrapping_add(h) as u32;
     return (74i32 * 4i32 + 32i32) as libc::c_uint;
 }
 #[no_mangle]
@@ -1229,20 +1228,20 @@ to the handle will the destroy the returned buffer.  Returns: 32
 bytes with the message the digest.  */
 #[no_mangle]
 pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut libc::c_uchar, mut hd: *mut SHA256_CONTEXT) {
-    let mut t: uint32_t = 0;
-    let mut msb: uint32_t = 0;
-    let mut lsb: uint32_t = 0;
+    let mut t: u32 = 0;
+    let mut msb: u32 = 0;
+    let mut lsb: u32 = 0;
     let mut p: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     let mut burn: libc::c_uint = 0;
     SHA256_write(hd, 0 as *const libc::c_uchar, 0i32 as libc::c_uint);
     /* flush */
-    t = (*hd).nblocks as uint32_t;
+    t = (*hd).nblocks as u32;
     /* multiply by 64 to make a byte count */
     lsb = t << 6i32;
     msb = t >> 26i32;
     /* add the count */
     t = lsb;
-    lsb = (lsb as libc::c_uint).wrapping_add((*hd).count as libc::c_uint) as uint32_t as uint32_t;
+    lsb = (lsb as libc::c_uint).wrapping_add((*hd).count as libc::c_uint) as u32;
     if lsb < t {
         msb = msb.wrapping_add(1)
     }
@@ -1287,21 +1286,21 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut libc::c_uchar, mut hd: *m
     burn = _SHA256_transform(hd, (*hd).buf.as_mut_ptr());
     _gcry_burn_stack(burn as libc::c_int);
     p = outbuf;
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h0);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h0);
     p = p.offset(4);
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h1);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h1);
     p = p.offset(4);
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h2);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h2);
     p = p.offset(4);
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h3);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h3);
     p = p.offset(4);
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h4);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h4);
     p = p.offset(4);
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h5);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h5);
     p = p.offset(4);
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h6);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h6);
     p = p.offset(4);
-    *(p as *mut uint32_t) = _gcry_bswap32((*hd).h7);
+    *(p as *mut u32) = _gcry_bswap32((*hd).h7);
     p = p.offset(4);
 }
 /* The following code are taken from libgcrypt-1.6.3. (slightly modified):
@@ -2155,7 +2154,7 @@ unsafe extern "C" fn __transform(
     (*hd).h7 = ((*hd).h7 as libc::c_ulong).wrapping_add(h) as uint64_t as uint64_t;
     return ((8i32 + 16i32) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<uint64_t>() as libc::c_ulong)
-        .wrapping_add(::std::mem::size_of::<uint32_t>() as libc::c_ulong)
+        .wrapping_add(::std::mem::size_of::<u32>() as libc::c_ulong)
         .wrapping_add(
             (3i32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<*mut libc::c_void>() as libc::c_ulong),
@@ -2440,9 +2439,9 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
     let mut len: size_t = 0;
     ctx = &mut aes;
     *cipher_len = plain_len;
-    *cipher = new((*cipher_len as uint32_t as libc::c_ulong)
+    *cipher = new((*cipher_len as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
@@ -2529,9 +2528,9 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
     *cipher_len = plain_len
         .wrapping_add((if !iv.is_null() { 0i32 } else { 16i32 }) as libc::c_ulong)
         .wrapping_add(padbytes as libc::c_ulong);
-    *cipher = new((*cipher_len as uint32_t as libc::c_ulong)
+    *cipher = new((*cipher_len as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     (*ctx).nrounds = rijndaelSetupEncrypt(
         (*ctx).rk.as_mut_ptr(),
         key,
@@ -2606,7 +2605,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
  *   http://www.efgh.com/software/rijndael.htm
  *   http://www.efgh.com/software/rijndael.txt
  */
-static mut Te0: [uint32_t; 256] = [
+static mut Te0: [u32; 256] = [
     0xc66363a5u32,
     0xf87c7c84u32,
     0xee777799u32,
@@ -2864,7 +2863,7 @@ static mut Te0: [uint32_t; 256] = [
     0x6dbbbbd6u32,
     0x2c16163au32,
 ];
-static mut Te1: [uint32_t; 256] = [
+static mut Te1: [u32; 256] = [
     0xa5c66363u32,
     0x84f87c7cu32,
     0x99ee7777u32,
@@ -3122,7 +3121,7 @@ static mut Te1: [uint32_t; 256] = [
     0xd66dbbbbu32,
     0x3a2c1616u32,
 ];
-static mut Te2: [uint32_t; 256] = [
+static mut Te2: [u32; 256] = [
     0x63a5c663u32,
     0x7c84f87cu32,
     0x7799ee77u32,
@@ -3380,7 +3379,7 @@ static mut Te2: [uint32_t; 256] = [
     0xbbd66dbbu32,
     0x163a2c16u32,
 ];
-static mut Te3: [uint32_t; 256] = [
+static mut Te3: [u32; 256] = [
     0x6363a5c6u32,
     0x7c7c84f8u32,
     0x777799eeu32,
@@ -3638,7 +3637,7 @@ static mut Te3: [uint32_t; 256] = [
     0xbbbbd66du32,
     0x16163a2cu32,
 ];
-static mut Te4: [uint32_t; 256] = [
+static mut Te4: [u32; 256] = [
     0x63636363u32,
     0x7c7c7c7cu32,
     0x77777777u32,
@@ -3896,17 +3895,17 @@ static mut Te4: [uint32_t; 256] = [
     0xbbbbbbbbu32,
     0x16161616u32,
 ];
-static mut rcon: [uint32_t; 10] = [
-    0x1000000i32 as uint32_t,
-    0x2000000i32 as uint32_t,
-    0x4000000i32 as uint32_t,
-    0x8000000i32 as uint32_t,
-    0x10000000i32 as uint32_t,
-    0x20000000i32 as uint32_t,
-    0x40000000i32 as uint32_t,
+static mut rcon: [u32; 10] = [
+    0x1000000i32 as u32,
+    0x2000000i32 as u32,
+    0x4000000i32 as u32,
+    0x8000000i32 as u32,
+    0x10000000i32 as u32,
+    0x20000000i32 as u32,
+    0x40000000i32 as u32,
     0x80000000u32,
-    0x1b000000i32 as uint32_t,
-    0x36000000i32 as uint32_t,
+    0x1b000000i32 as u32,
+    0x36000000i32 as u32,
 ];
 /* AES Support */
 /* *
@@ -3915,28 +3914,28 @@ static mut rcon: [uint32_t; 10] = [
  * @return the number of rounds for the given cipher key size.
  */
 unsafe extern "C" fn rijndaelSetupEncrypt(
-    mut rk: *mut uint32_t,
+    mut rk: *mut u32,
     mut key: *const uint8_t,
     mut keybits: libc::c_int,
 ) -> libc::c_int {
     let mut i: libc::c_uint = 0i32 as libc::c_uint;
-    let mut temp: uint32_t = 0;
-    *rk.offset(0) = (*key.offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(2) as uint32_t) << 8i32
-        ^ *key.offset(3) as uint32_t;
-    *rk.offset(1) = (*key.offset(4).offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(4).offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(4).offset(2) as uint32_t) << 8i32
-        ^ *key.offset(4).offset(3) as uint32_t;
-    *rk.offset(2) = (*key.offset(8).offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(8).offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(8).offset(2) as uint32_t) << 8i32
-        ^ *key.offset(8).offset(3) as uint32_t;
-    *rk.offset(3) = (*key.offset(12).offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(12).offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(12).offset(2) as uint32_t) << 8i32
-        ^ *key.offset(12).offset(3) as uint32_t;
+    let mut temp: u32 = 0;
+    *rk.offset(0) = (*key.offset(0) as u32) << 24i32
+        ^ (*key.offset(1) as u32) << 16i32
+        ^ (*key.offset(2) as u32) << 8i32
+        ^ *key.offset(3) as u32;
+    *rk.offset(1) = (*key.offset(4).offset(0) as u32) << 24i32
+        ^ (*key.offset(4).offset(1) as u32) << 16i32
+        ^ (*key.offset(4).offset(2) as u32) << 8i32
+        ^ *key.offset(4).offset(3) as u32;
+    *rk.offset(2) = (*key.offset(8).offset(0) as u32) << 24i32
+        ^ (*key.offset(8).offset(1) as u32) << 16i32
+        ^ (*key.offset(8).offset(2) as u32) << 8i32
+        ^ *key.offset(8).offset(3) as u32;
+    *rk.offset(3) = (*key.offset(12).offset(0) as u32) << 24i32
+        ^ (*key.offset(12).offset(1) as u32) << 16i32
+        ^ (*key.offset(12).offset(2) as u32) << 8i32
+        ^ *key.offset(12).offset(3) as u32;
     if keybits == 128i32 {
         loop {
             temp = *rk.offset(3);
@@ -3957,14 +3956,14 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
             rk = rk.offset(4)
         }
     }
-    *rk.offset(4) = (*key.offset(16).offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(16).offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(16).offset(2) as uint32_t) << 8i32
-        ^ *key.offset(16).offset(3) as uint32_t;
-    *rk.offset(5) = (*key.offset(20).offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(20).offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(20).offset(2) as uint32_t) << 8i32
-        ^ *key.offset(20).offset(3) as uint32_t;
+    *rk.offset(4) = (*key.offset(16).offset(0) as u32) << 24i32
+        ^ (*key.offset(16).offset(1) as u32) << 16i32
+        ^ (*key.offset(16).offset(2) as u32) << 8i32
+        ^ *key.offset(16).offset(3) as u32;
+    *rk.offset(5) = (*key.offset(20).offset(0) as u32) << 24i32
+        ^ (*key.offset(20).offset(1) as u32) << 16i32
+        ^ (*key.offset(20).offset(2) as u32) << 8i32
+        ^ *key.offset(20).offset(3) as u32;
     if keybits == 192i32 {
         loop {
             temp = *rk.offset(5);
@@ -3987,14 +3986,14 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
             rk = rk.offset(6)
         }
     }
-    *rk.offset(6) = (*key.offset(24).offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(24).offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(24).offset(2) as uint32_t) << 8i32
-        ^ *key.offset(24).offset(3) as uint32_t;
-    *rk.offset(7) = (*key.offset(28).offset(0) as uint32_t) << 24i32
-        ^ (*key.offset(28).offset(1) as uint32_t) << 16i32
-        ^ (*key.offset(28).offset(2) as uint32_t) << 8i32
-        ^ *key.offset(28).offset(3) as uint32_t;
+    *rk.offset(6) = (*key.offset(24).offset(0) as u32) << 24i32
+        ^ (*key.offset(24).offset(1) as u32) << 16i32
+        ^ (*key.offset(24).offset(2) as u32) << 8i32
+        ^ *key.offset(24).offset(3) as u32;
+    *rk.offset(7) = (*key.offset(28).offset(0) as u32) << 24i32
+        ^ (*key.offset(28).offset(1) as u32) << 16i32
+        ^ (*key.offset(28).offset(2) as u32) << 8i32
+        ^ *key.offset(28).offset(3) as u32;
     if keybits == 256i32 {
         loop {
             temp = *rk.offset(7);
@@ -4029,43 +4028,43 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
     return 0i32;
 }
 unsafe extern "C" fn rijndaelEncrypt(
-    mut rk: *const uint32_t,
+    mut rk: *const u32,
     mut nrounds: libc::c_int,
     mut plaintext: *const uint8_t,
     mut ciphertext: *mut uint8_t,
 ) {
-    let mut s0: uint32_t = 0;
-    let mut s1: uint32_t = 0;
-    let mut s2: uint32_t = 0;
-    let mut s3: uint32_t = 0;
-    let mut t0: uint32_t = 0;
-    let mut t1: uint32_t = 0;
-    let mut t2: uint32_t = 0;
-    let mut t3: uint32_t = 0;
+    let mut s0: u32 = 0;
+    let mut s1: u32 = 0;
+    let mut s2: u32 = 0;
+    let mut s3: u32 = 0;
+    let mut t0: u32 = 0;
+    let mut t1: u32 = 0;
+    let mut t2: u32 = 0;
+    let mut t3: u32 = 0;
     /* ?FULL_UNROLL */
     /*
      * map byte array block to cipher state
      * and add initial round key:
      */
-    s0 = (*plaintext.offset(0) as uint32_t) << 24i32
-        ^ (*plaintext.offset(1) as uint32_t) << 16i32
-        ^ (*plaintext.offset(2) as uint32_t) << 8i32
-        ^ *plaintext.offset(3) as uint32_t
+    s0 = (*plaintext.offset(0) as u32) << 24i32
+        ^ (*plaintext.offset(1) as u32) << 16i32
+        ^ (*plaintext.offset(2) as u32) << 8i32
+        ^ *plaintext.offset(3) as u32
         ^ *rk.offset(0);
-    s1 = (*plaintext.offset(4).offset(0) as uint32_t) << 24i32
-        ^ (*plaintext.offset(4).offset(1) as uint32_t) << 16i32
-        ^ (*plaintext.offset(4).offset(2) as uint32_t) << 8i32
-        ^ *plaintext.offset(4).offset(3) as uint32_t
+    s1 = (*plaintext.offset(4).offset(0) as u32) << 24i32
+        ^ (*plaintext.offset(4).offset(1) as u32) << 16i32
+        ^ (*plaintext.offset(4).offset(2) as u32) << 8i32
+        ^ *plaintext.offset(4).offset(3) as u32
         ^ *rk.offset(1);
-    s2 = (*plaintext.offset(8).offset(0) as uint32_t) << 24i32
-        ^ (*plaintext.offset(8).offset(1) as uint32_t) << 16i32
-        ^ (*plaintext.offset(8).offset(2) as uint32_t) << 8i32
-        ^ *plaintext.offset(8).offset(3) as uint32_t
+    s2 = (*plaintext.offset(8).offset(0) as u32) << 24i32
+        ^ (*plaintext.offset(8).offset(1) as u32) << 16i32
+        ^ (*plaintext.offset(8).offset(2) as u32) << 8i32
+        ^ *plaintext.offset(8).offset(3) as u32
         ^ *rk.offset(2);
-    s3 = (*plaintext.offset(12).offset(0) as uint32_t) << 24i32
-        ^ (*plaintext.offset(12).offset(1) as uint32_t) << 16i32
-        ^ (*plaintext.offset(12).offset(2) as uint32_t) << 8i32
-        ^ *plaintext.offset(12).offset(3) as uint32_t
+    s3 = (*plaintext.offset(12).offset(0) as u32) << 24i32
+        ^ (*plaintext.offset(12).offset(1) as u32) << 16i32
+        ^ (*plaintext.offset(12).offset(2) as u32) << 8i32
+        ^ *plaintext.offset(12).offset(3) as u32
         ^ *rk.offset(3);
     /* round 1: */
     t0 = Te0[(s0 >> 24i32) as usize]

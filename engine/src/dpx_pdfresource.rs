@@ -80,12 +80,10 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_res {
@@ -355,18 +353,18 @@ pub unsafe extern "C" fn pdf_defineresource(
                 ((*rc).capacity as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
             (*rc).resources = renew(
                 (*rc).resources as *mut libc::c_void,
-                ((*rc).capacity as uint32_t as libc::c_ulong)
+                ((*rc).capacity as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<pdf_res>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut pdf_res
         }
         res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
         pdf_init_resource(res);
         if !resname.is_null() && *resname.offset(0) as libc::c_int != '\u{0}' as i32 {
             (*res).ident = new(
-                (strlen(resname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                (strlen(resname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_char;
             strcpy((*res).ident, resname);
         }

@@ -150,9 +150,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -204,8 +204,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_resource_reference(res_id: libc::c_int) -> *mut pdf_obj;
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -319,9 +317,9 @@ pub unsafe extern "C" fn Type0Font_set_verbose(mut level: libc::c_int) {
 }
 unsafe extern "C" fn new_used_chars2() -> *mut libc::c_char {
     let mut used_chars: *mut libc::c_char = 0 as *mut libc::c_char;
-    used_chars = new((8192i32 as uint32_t as libc::c_ulong)
+    used_chars = new((8192i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memset(
         used_chars as *mut libc::c_void,
         0i32,
@@ -406,9 +404,9 @@ unsafe extern "C" fn Type0Font_try_load_ToUnicode_stream(
 ) -> *mut pdf_obj {
     let mut cmap_name: *mut libc::c_char = new((strlen(cmap_base)
         .wrapping_add(strlen(b"-UTF-16\x00" as *const u8 as *const libc::c_char))
-        as uint32_t as libc::c_ulong)
+        as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     let mut tounicode: *mut pdf_obj = 0 as *mut pdf_obj;
     sprintf(
         cmap_name,
@@ -513,9 +511,9 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
         let mut cmap_base: *mut libc::c_char = new((strlen((*csi).registry)
             .wrapping_add(strlen((*csi).ordering))
             .wrapping_add(2i32 as libc::c_ulong)
-            as uint32_t as libc::c_ulong)
+            as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         sprintf(
             cmap_base,
             b"%s-%s\x00" as *const u8 as *const libc::c_char,
@@ -744,9 +742,9 @@ pub unsafe extern "C" fn Type0Font_cache_find(
             (__cache.capacity as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
         __cache.fonts = renew(
             __cache.fonts as *mut libc::c_void,
-            (__cache.capacity as uint32_t as libc::c_ulong)
+            (__cache.capacity as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<Type0Font>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut Type0Font
     }
     font_id = __cache.count;
@@ -761,9 +759,9 @@ pub unsafe extern "C" fn Type0Font_cache_find(
     if wmode != 0 {
         (*font).encoding = new(
             (strlen(b"Identity-V\x00" as *const u8 as *const libc::c_char)
-                .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy(
             (*font).encoding,
@@ -772,9 +770,9 @@ pub unsafe extern "C" fn Type0Font_cache_find(
     } else {
         (*font).encoding = new(
             (strlen(b"Identity-H\x00" as *const u8 as *const libc::c_char)
-                .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy(
             (*font).encoding,
@@ -844,10 +842,10 @@ pub unsafe extern "C" fn Type0Font_cache_find(
         1 => {
             (*font).fontname = new((strlen(fontname)
                 .wrapping_add(strlen((*font).encoding))
-                .wrapping_add(2i32 as libc::c_ulong) as uint32_t
+                .wrapping_add(2i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             sprintf(
                 (*font).fontname,
                 b"%s-%s\x00" as *const u8 as *const libc::c_char,

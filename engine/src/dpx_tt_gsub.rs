@@ -74,7 +74,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_signed_pair(handle: rust_input_handle_t) -> libc::c_short;
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> uint32_t;
+    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const libc::c_char) -> SFNT_ULONG;
     #[no_mangle]
@@ -103,21 +103,19 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
-pub type SFNT_ULONG = uint32_t;
-pub type Fixed = uint32_t;
+pub type SFNT_ULONG = u32;
+pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table {
@@ -394,9 +392,9 @@ unsafe extern "C" fn clt_read_record_list(
     if (*list).count as libc::c_int == 0i32 {
         (*list).record = 0 as *mut clt_record
     } else {
-        (*list).record = new(((*list).count as uint32_t as libc::c_ulong)
+        (*list).record = new(((*list).count as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<clt_record>() as libc::c_ulong)
-            as uint32_t) as *mut clt_record;
+            as u32) as *mut clt_record;
         i = 0i32;
         while i < (*list).count as libc::c_int {
             len += clt_read_record(&mut *(*list).record.offset(i as isize), sfont);
@@ -432,9 +430,9 @@ unsafe extern "C" fn clt_read_number_list(
     if (*list).count as libc::c_int == 0i32 {
         (*list).value = 0 as *mut USHORT
     } else {
-        (*list).value = new(((*list).count as uint32_t as libc::c_ulong)
+        (*list).value = new(((*list).count as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-            as uint32_t) as *mut USHORT;
+            as u32) as *mut USHORT;
         i = 0i32;
         while i < (*list).count as libc::c_int {
             *(*list).value.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -585,9 +583,9 @@ unsafe extern "C" fn clt_read_coverage(
             if (*cov).count as libc::c_int == 0i32 {
                 (*cov).list = 0 as *mut GlyphID
             } else {
-                (*cov).list = new(((*cov).count as uint32_t as libc::c_ulong)
+                (*cov).list = new(((*cov).count as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-                    as uint32_t) as *mut USHORT;
+                    as u32) as *mut USHORT;
                 i = 0i32;
                 while i < (*cov).count as libc::c_int {
                     *(*cov).list.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -601,9 +599,9 @@ unsafe extern "C" fn clt_read_coverage(
             if (*cov).count as libc::c_int == 0i32 {
                 (*cov).range = 0 as *mut clt_range
             } else {
-                (*cov).range = new(((*cov).count as uint32_t as libc::c_ulong)
+                (*cov).range = new(((*cov).count as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<clt_range>() as libc::c_ulong)
-                    as uint32_t) as *mut clt_range;
+                    as u32) as *mut clt_range;
                 i = 0i32;
                 while i < (*cov).count as libc::c_int {
                     len += clt_read_range(&mut *(*cov).range.offset(i as isize), sfont);
@@ -705,9 +703,9 @@ unsafe extern "C" fn otl_gsub_read_single(
     len = 2i32;
     if (*subtab).SubstFormat as libc::c_int == 1i32 {
         let mut data: *mut otl_gsub_single1 = 0 as *mut otl_gsub_single1;
-        data = new((1i32 as uint32_t as libc::c_ulong)
+        data = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<otl_gsub_single1>() as libc::c_ulong)
-            as uint32_t) as *mut otl_gsub_single1;
+            as u32) as *mut otl_gsub_single1;
         (*subtab).table.single1 = data;
         cov_offset = tt_get_unsigned_pair((*sfont).handle);
         (*data).DeltaGlyphID = tt_get_signed_pair((*sfont).handle);
@@ -721,9 +719,9 @@ unsafe extern "C" fn otl_gsub_read_single(
     } else if (*subtab).SubstFormat as libc::c_int == 2i32 {
         let mut data_0: *mut otl_gsub_single2 = 0 as *mut otl_gsub_single2;
         let mut count: USHORT = 0;
-        data_0 = new((1i32 as uint32_t as libc::c_ulong)
+        data_0 = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<otl_gsub_single2>() as libc::c_ulong)
-            as uint32_t) as *mut otl_gsub_single2;
+            as u32) as *mut otl_gsub_single2;
         (*subtab).table.single2 = data_0;
         cov_offset = tt_get_unsigned_pair((*sfont).handle);
         (*data_0).GlyphCount = tt_get_unsigned_pair((*sfont).handle);
@@ -731,9 +729,9 @@ unsafe extern "C" fn otl_gsub_read_single(
         if (*data_0).GlyphCount as libc::c_int == 0i32 {
             (*data_0).Substitute = 0 as *mut GlyphID
         } else {
-            (*data_0).Substitute = new(((*data_0).GlyphCount as uint32_t as libc::c_ulong)
+            (*data_0).Substitute = new(((*data_0).GlyphCount as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<GlyphID>() as libc::c_ulong)
-                as uint32_t) as *mut GlyphID;
+                as u32) as *mut GlyphID;
             count = 0i32 as USHORT;
             while (count as libc::c_int) < (*data_0).GlyphCount as libc::c_int {
                 *(*data_0).Substitute.offset(count as isize) =
@@ -790,9 +788,9 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         return -1i32;
     }
     len = 2i32;
-    data = new((1i32 as uint32_t as libc::c_ulong)
+    data = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<otl_gsub_alternate1>() as libc::c_ulong)
-        as uint32_t) as *mut otl_gsub_alternate1;
+        as u32) as *mut otl_gsub_alternate1;
     (*subtab).table.alternate1 = data;
     cov_offset = tt_get_unsigned_pair((*sfont).handle);
     len += 2i32;
@@ -805,9 +803,9 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         (*data).coverage.list = 0 as *mut GlyphID;
         return len;
     }
-    (*data).AlternateSet = new(((*data).AlternateSetCount as uint32_t as libc::c_ulong)
+    (*data).AlternateSet = new(((*data).AlternateSetCount as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<otl_gsub_altset>() as libc::c_ulong)
-        as uint32_t) as *mut otl_gsub_altset;
+        as u32) as *mut otl_gsub_altset;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < (*data).AlternateSetCount as libc::c_int {
         let mut altset: *mut otl_gsub_altset = 0 as *mut otl_gsub_altset;
@@ -822,9 +820,9 @@ unsafe extern "C" fn otl_gsub_read_alternate(
             (*altset).Alternate = 0 as *mut GlyphID;
             break;
         } else {
-            (*altset).Alternate = new(((*altset).GlyphCount as uint32_t as libc::c_ulong)
+            (*altset).Alternate = new(((*altset).GlyphCount as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<GlyphID>() as libc::c_ulong)
-                as uint32_t) as *mut GlyphID;
+                as u32) as *mut GlyphID;
             j = 0i32 as USHORT;
             while (j as libc::c_int) < (*altset).GlyphCount as libc::c_int {
                 *(*altset).Alternate.offset(j as isize) = tt_get_unsigned_pair((*sfont).handle);
@@ -880,9 +878,9 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         return -1i32;
     }
     len = 2i32;
-    data = new((1i32 as uint32_t as libc::c_ulong)
+    data = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<otl_gsub_ligature1>() as libc::c_ulong)
-        as uint32_t) as *mut otl_gsub_ligature1;
+        as u32) as *mut otl_gsub_ligature1;
     (*subtab).table.ligature1 = data;
     cov_offset = tt_get_unsigned_pair((*sfont).handle);
     len += 2i32;
@@ -895,9 +893,9 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         (*data).coverage.list = 0 as *mut GlyphID;
         return len;
     }
-    (*data).LigatureSet = new(((*data).LigSetCount as uint32_t as libc::c_ulong)
+    (*data).LigatureSet = new(((*data).LigSetCount as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<otl_gsub_ligset>() as libc::c_ulong)
-        as uint32_t) as *mut otl_gsub_ligset;
+        as u32) as *mut otl_gsub_ligset;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < (*data).LigSetCount as libc::c_int {
         let mut ligset_tab: clt_number_list = clt_number_list {
@@ -917,9 +915,9 @@ unsafe extern "C" fn otl_gsub_read_ligature(
             (*ligset).Ligature = 0 as *mut otl_gsub_ligtab;
             break;
         } else {
-            (*ligset).Ligature = new((ligset_tab.count as uint32_t as libc::c_ulong)
+            (*ligset).Ligature = new((ligset_tab.count as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<otl_gsub_ligtab>() as libc::c_ulong)
-                as uint32_t) as *mut otl_gsub_ligtab;
+                as u32) as *mut otl_gsub_ligtab;
             j = 0i32 as USHORT;
             while (j as libc::c_int) < ligset_tab.count as libc::c_int {
                 ttstub_input_seek(
@@ -940,9 +938,9 @@ unsafe extern "C" fn otl_gsub_read_ligature(
                     let ref mut fresh1 = (*(*ligset).Ligature.offset(j as isize)).Component;
                     *fresh1 = new((((*(*ligset).Ligature.offset(j as isize)).CompCount
                         as libc::c_int
-                        - 1i32) as uint32_t as libc::c_ulong)
+                        - 1i32) as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<GlyphID>() as libc::c_ulong)
-                        as uint32_t) as *mut GlyphID;
+                        as u32) as *mut GlyphID;
                     count = 0i32 as USHORT;
                     while (count as libc::c_int)
                         < (*(*ligset).Ligature.offset(j as isize)).CompCount as libc::c_int - 1i32
@@ -1375,9 +1373,9 @@ unsafe extern "C" fn otl_gsub_read_feat(
                         subtab as *mut libc::c_void,
                         ((num_subtabs as libc::c_int
                             + lookup_table.SubTableList.count as libc::c_int)
-                            as uint32_t as libc::c_ulong)
+                            as u32 as libc::c_ulong)
                             .wrapping_mul(::std::mem::size_of::<otl_gsub_subtab>() as libc::c_ulong)
-                            as uint32_t,
+                            as u32,
                     ) as *mut otl_gsub_subtab;
                     n_st = 0i32;
                     st_idx = 0i32;
@@ -1718,9 +1716,9 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_new() -> *mut otl_gsub {
     let mut gsub_list: *mut otl_gsub = 0 as *mut otl_gsub;
-    gsub_list = new((1i32 as uint32_t as libc::c_ulong)
+    gsub_list = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<otl_gsub>() as libc::c_ulong)
-        as uint32_t) as *mut otl_gsub;
+        as u32) as *mut otl_gsub;
     (*gsub_list).num_gsubs = 0i32;
     (*gsub_list).select = -1i32;
     (*gsub_list).first = 0 as *mut gsub_entry;
@@ -1765,21 +1763,21 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     (*gsub).script = new(
-        (strlen(script).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(script).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*gsub).script, script);
     (*gsub).language = new(
-        (strlen(language).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(language).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*gsub).language, language);
     (*gsub).feature = new(
-        (strlen(feature).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(feature).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*gsub).feature, feature);
     if verbose > 0i32 {
@@ -2100,9 +2098,9 @@ pub unsafe extern "C" fn otl_gsub_set_chain(
             );
             if idx >= 0i32 && idx <= (*gsub_list).num_gsubs {
                 let mut entry: *mut gsub_entry = 0 as *mut gsub_entry;
-                entry = new((1i32 as uint32_t as libc::c_ulong)
+                entry = new((1i32 as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<gsub_entry>() as libc::c_ulong)
-                    as uint32_t) as *mut gsub_entry;
+                    as u32) as *mut gsub_entry;
                 if (*gsub_list).first.is_null() {
                     (*gsub_list).first = entry
                 }

@@ -97,7 +97,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -155,7 +155,6 @@ extern "C" {
     ) -> size_t;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -171,7 +170,6 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -269,9 +267,9 @@ pub unsafe extern "C" fn agl_set_verbose(mut level: libc::c_int) {
 }
 unsafe extern "C" fn agl_new_name() -> *mut agl_name {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
-    agln = new((1i32 as uint32_t as libc::c_ulong)
+    agln = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<agl_name>() as libc::c_ulong)
-        as uint32_t) as *mut agl_name;
+        as u32) as *mut agl_name;
     (*agln).name = 0 as *mut libc::c_char;
     (*agln).suffix = 0 as *mut libc::c_char;
     (*agln).n_components = 0i32;
@@ -315,32 +313,32 @@ pub unsafe extern "C" fn agl_chop_suffix(
         len = strlen(glyphname).wrapping_sub(strlen(p)) as libc::c_int;
         if len < 1i32 {
             name = 0 as *mut libc::c_char;
-            *suffix = new((strlen(glyphname) as uint32_t as libc::c_ulong)
+            *suffix = new((strlen(glyphname) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strcpy(*suffix, glyphname.offset(1));
         } else {
             p = p.offset(1);
-            name = new(((len + 1i32) as uint32_t as libc::c_ulong)
+            name = new(((len + 1i32) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strncpy(name, glyphname, len as libc::c_ulong);
             *name.offset(len as isize) = '\u{0}' as i32 as libc::c_char;
             if *p.offset(0) as libc::c_int == '\u{0}' as i32 {
                 *suffix = 0 as *mut libc::c_char
             } else {
-                *suffix = new((strlen(p).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+                *suffix = new((strlen(p).wrapping_add(1i32 as libc::c_ulong) as u32
                     as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_char;
+                    as u32) as *mut libc::c_char;
                 strcpy(*suffix, p);
             }
         }
     } else {
         name = new(
-            (strlen(glyphname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(glyphname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy(name, glyphname);
         *suffix = 0 as *mut libc::c_char
@@ -892,14 +890,14 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut libc::c_char) -> *m
     if !suffix.is_null() {
         n = strlen(glyphname).wrapping_sub(strlen(suffix)) as libc::c_int;
         if *suffix.offset(1) as libc::c_int != '\u{0}' as i32 {
-            (*agln).suffix = new((strlen(suffix) as uint32_t as libc::c_ulong)
+            (*agln).suffix = new((strlen(suffix) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strcpy((*agln).suffix, suffix.offset(1));
         }
-        (*agln).name = new(((n + 1i32) as uint32_t as libc::c_ulong)
+        (*agln).name = new(((n + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             (*agln).name as *mut libc::c_void,
             glyphname as *const libc::c_void,
@@ -908,16 +906,16 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut libc::c_char) -> *m
         *(*agln).name.offset(n as isize) = '\u{0}' as i32 as libc::c_char
     } else if is_smallcap(glyphname) {
         n = strlen(glyphname).wrapping_sub(5i32 as libc::c_ulong) as libc::c_int;
-        (*agln).suffix = new((3i32 as uint32_t as libc::c_ulong)
+        (*agln).suffix = new((3i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(
             (*agln).suffix,
             b"sc\x00" as *const u8 as *const libc::c_char,
         );
-        (*agln).name = new(((n + 1i32) as uint32_t as libc::c_ulong)
+        (*agln).name = new(((n + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         i = 0i32;
         while i < n {
             *(*agln).name.offset(i as isize) = (if *(*__ctype_b_loc())
@@ -944,22 +942,22 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut libc::c_char) -> *m
             if !var_list[var_idx as usize].suffixes[0].is_null() {
                 (*agln).suffix = new((strlen(var_list[var_idx as usize].suffixes[0])
                     .wrapping_add(1i32 as libc::c_ulong)
-                    as uint32_t as libc::c_ulong)
+                    as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_char;
+                    as u32) as *mut libc::c_char;
                 strcpy((*agln).suffix, var_list[var_idx as usize].suffixes[0]);
             } else {
                 (*agln).suffix = new((strlen(var_list[var_idx as usize].key)
                     .wrapping_add(1i32 as libc::c_ulong)
-                    as uint32_t as libc::c_ulong)
+                    as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_char;
+                    as u32) as *mut libc::c_char;
                 strcpy((*agln).suffix, var_list[var_idx as usize].key);
             }
         }
-        (*agln).name = new(((n + 1i32) as uint32_t as libc::c_ulong)
+        (*agln).name = new(((n + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             (*agln).name as *mut libc::c_void,
             glyphname as *const libc::c_void,
@@ -1434,9 +1432,9 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
             }
         }
         sub_len = delim.wrapping_offset_from(p) as libc::c_long as int32_t;
-        name = new(((sub_len + 1i32) as uint32_t as libc::c_ulong)
+        name = new(((sub_len + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             name as *mut libc::c_void,
             p as *const libc::c_void,
@@ -1564,9 +1562,9 @@ pub unsafe extern "C" fn agl_get_unicodes(
             }
         }
         sub_len = delim.wrapping_offset_from(p) as libc::c_long as int32_t;
-        name = new(((sub_len + 1i32) as uint32_t as libc::c_ulong)
+        name = new(((sub_len + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             name as *mut libc::c_void,
             p as *const libc::c_void,

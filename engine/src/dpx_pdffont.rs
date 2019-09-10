@@ -177,9 +177,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -370,11 +370,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_font_load_type1c(font: *mut pdf_font) -> libc::c_int;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __int64_t = libc::c_long;
 pub type __time_t = libc::c_long;
 pub type int64_t = __int64_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type time_t = __time_t;
 /* Options */
@@ -702,10 +700,10 @@ unsafe extern "C" fn pdf_flush_font(mut font: *mut pdf_font) {
                 }
                 fontname = new(((7i32 as libc::c_ulong)
                     .wrapping_add(strlen((*font).fontname))
-                    .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+                    .wrapping_add(1i32 as libc::c_ulong) as u32
                     as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_char;
+                    as u32) as *mut libc::c_char;
                 uniqueTag = pdf_font_get_uniqueTag(font);
                 sprintf(
                     fontname,
@@ -792,9 +790,9 @@ pub unsafe extern "C" fn pdf_init_fonts() {
     Type0Font_cache_init();
     font_cache.count = 0i32;
     font_cache.capacity = 16u32 as libc::c_int;
-    font_cache.fonts = new((font_cache.capacity as uint32_t as libc::c_ulong)
+    font_cache.fonts = new((font_cache.capacity as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<pdf_font>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_font;
+        as u32) as *mut pdf_font;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_font_reference(mut font_id: libc::c_int) -> *mut pdf_obj {
@@ -833,9 +831,9 @@ pub unsafe extern "C" fn pdf_get_font_usedchars(mut font_id: libc::c_int) -> *mu
         return Type0Font_get_usedchars(t0font);
     } else {
         if (*font).usedchars.is_null() {
-            (*font).usedchars = new((256i32 as uint32_t as libc::c_ulong)
+            (*font).usedchars = new((256i32 as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             memset(
                 (*font).usedchars as *mut libc::c_void,
                 0i32,
@@ -1263,9 +1261,9 @@ pub unsafe extern "C" fn pdf_font_findresource(
                     as libc::c_int as libc::c_int;
                 font_cache.fonts = renew(
                     font_cache.fonts as *mut libc::c_void,
-                    (font_cache.capacity as uint32_t as libc::c_ulong)
+                    (font_cache.capacity as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<pdf_font>() as libc::c_ulong)
-                        as uint32_t,
+                        as u32,
                 ) as *mut pdf_font
             }
             font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
@@ -1357,9 +1355,9 @@ pub unsafe extern "C" fn pdf_font_findresource(
                     as libc::c_int as libc::c_int;
                 font_cache.fonts = renew(
                     font_cache.fonts as *mut libc::c_void,
-                    (font_cache.capacity as uint32_t as libc::c_ulong)
+                    (font_cache.capacity as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<pdf_font>() as libc::c_ulong)
-                        as uint32_t,
+                        as u32,
                 ) as *mut pdf_font
             }
             font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
@@ -1367,15 +1365,15 @@ pub unsafe extern "C" fn pdf_font_findresource(
             (*font).point_size = font_scale;
             (*font).encoding_id = encoding_id;
             (*font).ident = new(
-                (strlen(fontname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                (strlen(fontname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_char;
             strcpy((*font).ident, fontname);
             (*font).map_name = new(
-                (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_char;
             strcpy((*font).map_name, tex_name);
             (*font).index = if !mrec.is_null() && (*mrec).opt.index != 0 {
@@ -1699,9 +1697,9 @@ pub unsafe extern "C" fn pdf_font_set_fontname(
         free((*font).fontname as *mut libc::c_void);
     }
     (*font).fontname = new(
-        (strlen(fontname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(fontname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*font).fontname, fontname);
     return 0i32;

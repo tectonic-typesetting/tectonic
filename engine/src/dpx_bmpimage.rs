@@ -127,13 +127,11 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -354,9 +352,9 @@ pub unsafe extern "C" fn bmp_include_image(
         let mut lookup: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut palette: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
         let mut bgrq: [libc::c_uchar; 4] = [0; 4];
-        palette = new(((num_palette * 3i32 + 1i32) as uint32_t as libc::c_ulong)
+        palette = new(((num_palette * 3i32 + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         i = 0i32;
         while i < num_palette {
             if ttstub_input_read(
@@ -419,9 +417,9 @@ pub unsafe extern "C" fn bmp_include_image(
         };
         dib_rowbytes = rowbytes + padding;
         stream_data_ptr = new(
-            ((rowbytes * info.height + padding) as uint32_t as libc::c_ulong)
+            ((rowbytes * info.height + padding) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_uchar;
         n = 0i32;
         while n < info.height {
@@ -439,9 +437,9 @@ pub unsafe extern "C" fn bmp_include_image(
             n += 1
         }
     } else if hdr.compression == 1i32 {
-        stream_data_ptr = new(((rowbytes * info.height) as uint32_t as libc::c_ulong)
+        stream_data_ptr = new(((rowbytes * info.height) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         if read_raster_rle8(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
                 b"Reading BMP raster data failed...\x00" as *const u8 as *const libc::c_char,
@@ -451,9 +449,9 @@ pub unsafe extern "C" fn bmp_include_image(
             return -1i32;
         }
     } else if hdr.compression == 2i32 {
-        stream_data_ptr = new(((rowbytes * info.height) as uint32_t as libc::c_ulong)
+        stream_data_ptr = new(((rowbytes * info.height) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         if read_raster_rle4(stream_data_ptr, info.width, info.height, handle) < 0i32 {
             dpx_warning(
                 b"Reading BMP raster data failed...\x00" as *const u8 as *const libc::c_char,

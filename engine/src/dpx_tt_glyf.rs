@@ -56,7 +56,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_signed_pair(handle: rust_input_handle_t) -> libc::c_short;
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> uint32_t;
+    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -81,9 +81,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     /* head, hhea, maxp */
     #[no_mangle]
     fn tt_pack_head_table(table: *mut tt_head_table) -> *mut libc::c_char;
@@ -113,10 +113,8 @@ extern "C" {
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type __compar_fn_t =
@@ -126,9 +124,9 @@ pub type BYTE = libc::c_uchar;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
-pub type SFNT_ULONG = uint32_t;
+pub type SFNT_ULONG = u32;
 pub type SFNT_LONG = int32_t;
-pub type Fixed = uint32_t;
+pub type Fixed = u32;
 pub type FWord = libc::c_short;
 pub type uFWord = libc::c_ushort;
 #[derive(Copy, Clone)]
@@ -436,9 +434,9 @@ pub unsafe extern "C" fn tt_add_glyph(
             (*g).max_glyphs = ((*g).max_glyphs as libc::c_int + 256i32) as USHORT;
             (*g).gd = renew(
                 (*g).gd as *mut libc::c_void,
-                ((*g).max_glyphs as uint32_t as libc::c_ulong)
+                ((*g).max_glyphs as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<tt_glyph_desc>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut tt_glyph_desc
         }
         (*(*g).gd.offset((*g).num_glyphs as isize)).gid = new_gid;
@@ -464,8 +462,8 @@ pub unsafe extern "C" fn tt_add_glyph(
 #[no_mangle]
 pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     let mut g: *mut tt_glyphs = 0 as *mut tt_glyphs;
-    g = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<tt_glyphs>() as libc::c_ulong) as uint32_t)
+    g = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<tt_glyphs>() as libc::c_ulong) as u32)
         as *mut tt_glyphs;
     (*g).num_glyphs = 0i32 as USHORT;
     (*g).max_glyphs = 0i32 as USHORT;
@@ -474,9 +472,9 @@ pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     (*g).default_advh = 0i32 as USHORT;
     (*g).default_tsb = 0i32 as SHORT;
     (*g).gd = 0 as *mut tt_glyph_desc;
-    (*g).used_slot = new((8192i32 as uint32_t as libc::c_ulong)
+    (*g).used_slot = new((8192i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     memset(
         (*g).used_slot as *mut libc::c_void,
         0i32,
@@ -614,8 +612,8 @@ pub unsafe extern "C" fn tt_build_tables(
     }
     sfnt_locate_table(sfont, b"loca\x00" as *const u8 as *const libc::c_char);
     location = new(
-        (((*maxp).numGlyphs as libc::c_int + 1i32) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as libc::c_ulong) as uint32_t,
+        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as libc::c_ulong) as u32,
     ) as *mut SFNT_ULONG;
     if (*head).indexToLocFormat as libc::c_int == 0i32 {
         i = 0i32;
@@ -634,8 +632,8 @@ pub unsafe extern "C" fn tt_build_tables(
         _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const libc::c_char);
     }
     w_stat = new(
-        (((*g).emsize as libc::c_int + 2i32) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as uint32_t,
+        (((*g).emsize as libc::c_int + 2i32) as u32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as u32,
     ) as *mut USHORT;
     memset(
         w_stat as *mut libc::c_void,
@@ -704,7 +702,7 @@ pub unsafe extern "C" fn tt_build_tables(
             }
             p = new((len as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<BYTE>() as libc::c_ulong)
-                as uint32_t) as *mut BYTE;
+                as u32) as *mut BYTE;
             let ref mut fresh5 = (*(*g).gd.offset(i as isize)).data;
             *fresh5 = p;
             endptr = p.offset(len as isize);
@@ -907,15 +905,15 @@ pub unsafe extern "C" fn tt_build_tables(
     }
     p_0 = new((hmtx_table_size as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     hmtx_table_data = p_0;
     q = new((loca_table_size as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     loca_table_data = q;
     glyf_table_data = new((glyf_table_size as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     offset = 0u64 as SFNT_ULONG;
     prev = 0i32 as USHORT;
     i = 0i32;
@@ -1168,8 +1166,8 @@ pub unsafe extern "C" fn tt_get_metrics(
     }
     sfnt_locate_table(sfont, b"loca\x00" as *const u8 as *const libc::c_char);
     location = new(
-        (((*maxp).numGlyphs as libc::c_int + 1i32) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as libc::c_ulong) as uint32_t,
+        (((*maxp).numGlyphs as libc::c_int + 1i32) as u32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<SFNT_ULONG>() as libc::c_ulong) as u32,
     ) as *mut SFNT_ULONG;
     if (*head).indexToLocFormat as libc::c_int == 0i32 {
         i = 0i32 as libc::c_uint;
@@ -1188,8 +1186,8 @@ pub unsafe extern "C" fn tt_get_metrics(
         _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const libc::c_char);
     }
     w_stat = new(
-        (((*g).emsize as libc::c_int + 2i32) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as uint32_t,
+        (((*g).emsize as libc::c_int + 2i32) as u32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as u32,
     ) as *mut USHORT;
     memset(
         w_stat as *mut libc::c_void,

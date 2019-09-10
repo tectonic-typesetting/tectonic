@@ -495,13 +495,13 @@ pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: libc::c_int) -> rust_i
 code is based on ConvertUTF.[ch] sample code
 published by the Unicode consortium */
 #[no_mangle]
-pub static mut offsetsFromUTF8: [uint32_t; 6] = [
-    0u64 as uint32_t,
-    0x3080u64 as uint32_t,
-    0xe2080u64 as uint32_t,
-    0x3c82080u64 as uint32_t,
-    0xfa082080u64 as uint32_t,
-    0x82082080u64 as uint32_t,
+pub static mut offsetsFromUTF8: [u32; 6] = [
+    0u64 as u32,
+    0x3080u64 as u32,
+    0xe2080u64 as u32,
+    0x3c82080u64 as u32,
+    0xfa082080u64 as u32,
+    0x82082080u64 as u32,
 ];
 #[no_mangle]
 pub static mut bytesFromUTF8: [uint8_t; 256] = [
@@ -875,7 +875,7 @@ unsafe extern "C" fn conversion_error(mut errcode: libc::c_int) {
     end_diagnostic(1i32 != 0);
 }
 unsafe extern "C" fn apply_normalization(
-    mut buf: *mut uint32_t,
+    mut buf: *mut u32,
     mut len: libc::c_int,
     mut norm: libc::c_int,
 ) {
@@ -928,7 +928,7 @@ unsafe extern "C" fn apply_normalization(
 #[no_mangle]
 pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
     static mut byteBuffer: *mut libc::c_char = 0 as *const libc::c_char as *mut libc::c_char;
-    static mut utf32Buf: *mut uint32_t = 0 as *const uint32_t as *mut uint32_t;
+    static mut utf32Buf: *mut u32 = 0 as *const u32 as *mut u32;
     let mut i: libc::c_int = 0;
     let mut tmpLen: libc::c_int = 0;
     let mut norm: libc::c_int = get_input_normalization_state();
@@ -941,7 +941,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
     }
     last = first;
     if (*f).encodingMode as libc::c_int == 5i32 {
-        let mut bytesRead: uint32_t = 0i32 as uint32_t;
+        let mut bytesRead: u32 = 0i32 as u32;
         let mut cnv: *mut icu::UConverter = 0 as *mut icu::UConverter;
         let mut outLen: libc::c_int = 0;
         let mut errorCode: UErrorCode = U_ZERO_ERROR;
@@ -990,15 +990,15 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 if utf32Buf.is_null() {
                     utf32Buf = xcalloc(
                         buf_size as size_t,
-                        ::std::mem::size_of::<uint32_t>() as libc::c_ulong,
-                    ) as *mut uint32_t
+                        ::std::mem::size_of::<u32>() as libc::c_ulong,
+                    ) as *mut u32
                 } // sets 'last' correctly
                 tmpLen = icu::ucnv_toAlgorithmic(
                     icu::UCNV_UTF32_LittleEndian,
                     cnv,
                     utf32Buf as *mut libc::c_char,
                     (buf_size as libc::c_ulong)
-                        .wrapping_mul(::std::mem::size_of::<uint32_t>() as libc::c_ulong)
+                        .wrapping_mul(::std::mem::size_of::<u32>() as libc::c_ulong)
                         as int32_t,
                     byteBuffer,
                     bytesRead as int32_t,
@@ -1011,7 +1011,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 apply_normalization(
                     utf32Buf,
                     (tmpLen as libc::c_ulong)
-                        .wrapping_div(::std::mem::size_of::<uint32_t>() as libc::c_ulong)
+                        .wrapping_div(::std::mem::size_of::<u32>() as libc::c_ulong)
                         as libc::c_int,
                     norm,
                 );
@@ -1056,14 +1056,14 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                 if utf32Buf.is_null() {
                     utf32Buf = xcalloc(
                         buf_size as size_t,
-                        ::std::mem::size_of::<uint32_t>() as libc::c_ulong,
-                    ) as *mut uint32_t
+                        ::std::mem::size_of::<u32>() as libc::c_ulong,
+                    ) as *mut u32
                 }
                 tmpLen = 0i32;
                 if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
                     let fresh3 = tmpLen;
                     tmpLen = tmpLen + 1;
-                    *utf32Buf.offset(fresh3 as isize) = i as uint32_t
+                    *utf32Buf.offset(fresh3 as isize) = i as u32
                 }
                 if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
                     while tmpLen < buf_size
@@ -1076,7 +1076,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> libc::c_int {
                     {
                         let fresh4 = tmpLen;
                         tmpLen = tmpLen + 1;
-                        *utf32Buf.offset(fresh4 as isize) = i as uint32_t
+                        *utf32Buf.offset(fresh4 as isize) = i as u32
                     }
                 }
                 if i == -1i32 && *__errno_location() != 4i32 && tmpLen == 0i32 {
@@ -1299,7 +1299,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
 #[no_mangle]
 pub unsafe extern "C" fn make_utf16_name() {
     let mut s: *mut libc::c_uchar = name_of_file as *mut libc::c_uchar;
-    let mut rval: uint32_t = 0;
+    let mut rval: u32 = 0;
     let mut t: *mut uint16_t = 0 as *mut uint16_t;
     static mut name16len: libc::c_int = 0i32;
     if name16len <= name_length {
@@ -1315,7 +1315,7 @@ pub unsafe extern "C" fn make_utf16_name() {
         let mut extraBytes: uint16_t = 0;
         let fresh7 = s;
         s = s.offset(1);
-        rval = *fresh7 as uint32_t;
+        rval = *fresh7 as u32;
         extraBytes = bytesFromUTF8[rval as usize] as uint16_t;
         let mut current_block_23: u64;
         match extraBytes as libc::c_int {
@@ -1325,8 +1325,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh8 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh8 as libc::c_uint) as uint32_t
-                        as uint32_t
+                    rval = (rval as libc::c_uint).wrapping_add(*fresh8 as libc::c_uint) as u32
                 }
                 current_block_23 = 1933956893526356233;
             }
@@ -1352,8 +1351,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh9 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh9 as libc::c_uint) as uint32_t
-                        as uint32_t
+                    rval = (rval as libc::c_uint).wrapping_add(*fresh9 as libc::c_uint) as u32
                 }
                 current_block_23 = 15901505722045918842;
             }
@@ -1365,8 +1363,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh10 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh10 as libc::c_uint) as uint32_t
-                        as uint32_t
+                    rval = (rval as libc::c_uint).wrapping_add(*fresh10 as libc::c_uint) as u32
                 }
                 current_block_23 = 5484884370842436748;
             }
@@ -1378,8 +1375,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh11 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh11 as libc::c_uint) as uint32_t
-                        as uint32_t
+                    rval = (rval as libc::c_uint).wrapping_add(*fresh11 as libc::c_uint) as u32
                 }
                 current_block_23 = 1843389027537967668;
             }
@@ -1391,17 +1387,14 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh12 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh12 as libc::c_uint) as uint32_t
-                        as uint32_t
+                    rval = (rval as libc::c_uint).wrapping_add(*fresh12 as libc::c_uint) as u32
                 }
             }
             _ => {}
         }
-        rval = (rval as libc::c_uint).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as uint32_t
-            as uint32_t;
+        rval = (rval as libc::c_uint).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as u32;
         if rval > 0xffffi32 as libc::c_uint {
-            rval = (rval as libc::c_uint).wrapping_sub(0x10000i32 as libc::c_uint) as uint32_t
-                as uint32_t;
+            rval = (rval as libc::c_uint).wrapping_sub(0x10000i32 as libc::c_uint) as u32;
             let fresh13 = t;
             t = t.offset(1);
             *fresh13 = (0xd800i32 as libc::c_uint)

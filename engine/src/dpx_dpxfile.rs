@@ -20,7 +20,7 @@ extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut libc::c_char, _: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> uint32_t;
+    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> libc::c_ushort;
     #[no_mangle]
@@ -81,11 +81,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -253,7 +251,7 @@ unsafe extern "C" fn check_stream_is_type1(mut handle: rust_input_handle_t) -> b
 unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> bool {
     let mut i: libc::c_int = 0;
     let mut n: libc::c_int = 0;
-    let mut pos: uint32_t = 0;
+    let mut pos = 0_u32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     tt_get_unsigned_quad(handle);
     pos = tt_get_unsigned_quad(handle);
@@ -288,9 +286,9 @@ unsafe extern "C" fn ensuresuffix(
     let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
     p = new((strlen(basename)
         .wrapping_add(strlen(sfx))
-        .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     strcpy(p, basename);
     q = strrchr(p, '.' as i32);
     if q.is_null() && *sfx.offset(0) as libc::c_int != 0 {
@@ -384,9 +382,9 @@ pub unsafe extern "C" fn dpx_open_dfont_file(
         /* I've double-checked that we're accurately representing the original
          * code -- the above strncmp() is *not* missing a logical negation.
          */
-        q = new(((len + 6i32) as uint32_t as libc::c_ulong)
+        q = new(((len + 6i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(q, filename);
         strcat(q, b"/rsrc\x00" as *const u8 as *const libc::c_char);
     } else {
@@ -433,9 +431,9 @@ pub unsafe extern "C" fn dpx_create_temp_file() -> *mut libc::c_char {
             b"/dvipdfmx.XXXXXX\x00" as *const u8 as *const libc::c_char,
         ))
         .wrapping_add(1i32 as libc::c_ulong);
-    tmp = new((n as uint32_t as libc::c_ulong)
+    tmp = new((n as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     strcpy(tmp, tmpdir);
     free(tmpdir as *mut libc::c_void);
     strcat(

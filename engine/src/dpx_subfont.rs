@@ -118,11 +118,10 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -137,7 +136,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type tt_input_format_type = libc::c_uint;
@@ -518,9 +516,9 @@ unsafe extern "C" fn scan_sfd_file(
             p = p.offset(1);
             n += 1
         }
-        id = new(((n + 1i32) as uint32_t as libc::c_ulong)
+        id = new(((n + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             id as *mut libc::c_void,
             q as *const libc::c_void,
@@ -531,9 +529,9 @@ unsafe extern "C" fn scan_sfd_file(
             (*sfd).max_subfonts += 16i32;
             (*sfd).sub_id = renew(
                 (*sfd).sub_id as *mut libc::c_void,
-                ((*sfd).max_subfonts as uint32_t as libc::c_ulong)
+                ((*sfd).max_subfonts as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut *mut libc::c_char
         }
         if verbose > 3i32 {
@@ -547,9 +545,9 @@ unsafe extern "C" fn scan_sfd_file(
         *fresh1 = id;
         (*sfd).num_subfonts += 1
     }
-    (*sfd).rec_id = new(((*sfd).num_subfonts as uint32_t as libc::c_ulong)
+    (*sfd).rec_id = new(((*sfd).num_subfonts as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_int;
+        as u32) as *mut libc::c_int;
     n = 0i32;
     while n < (*sfd).num_subfonts {
         *(*sfd).rec_id.offset(n as isize) = -1i32;
@@ -590,17 +588,17 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const libc::c_char) -> libc::c
             max_sfd_files += 8i32;
             sfd_files = renew(
                 sfd_files as *mut libc::c_void,
-                (max_sfd_files as uint32_t as libc::c_ulong)
+                (max_sfd_files as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<sfd_file_>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut sfd_file_
         }
         sfd = &mut *sfd_files.offset(num_sfd_files as isize) as *mut sfd_file_;
         init_sfd_file_(sfd);
         (*sfd).ident = new(
-            (strlen(sfd_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(sfd_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy((*sfd).ident, sfd_name);
         handle = ttstub_input_open((*sfd).ident, TTIF_SFD, 0i32) as *mut rust_input_handle_t;
@@ -735,9 +733,9 @@ pub unsafe extern "C" fn sfd_load_record(
                 max_sfd_records += 16i32;
                 sfd_record = renew(
                     sfd_record as *mut libc::c_void,
-                    (max_sfd_records as uint32_t as libc::c_ulong)
+                    (max_sfd_records as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<sfd_rec_>() as libc::c_ulong)
-                        as uint32_t,
+                        as u32,
                 ) as *mut sfd_rec_
             }
             if !(*sfd_record.offset(num_sfd_records as isize))

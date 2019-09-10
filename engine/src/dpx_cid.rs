@@ -183,9 +183,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn parse_pdf_dict(
         pp: *mut *const libc::c_char,
@@ -193,7 +193,6 @@ extern "C" {
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -207,7 +206,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -640,8 +638,8 @@ pub unsafe extern "C" fn CIDFont_set_verbose(mut level: libc::c_int) {
 }
 unsafe extern "C" fn CIDFont_new() -> *mut CIDFont {
     let mut font: *mut CIDFont = 0 as *mut CIDFont;
-    font = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<CIDFont>() as libc::c_ulong) as uint32_t)
+    font = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<CIDFont>() as libc::c_ulong) as u32)
         as *mut CIDFont;
     (*font).name = 0 as *mut libc::c_char;
     (*font).fontname = 0 as *mut libc::c_char;
@@ -1360,9 +1358,9 @@ unsafe extern "C" fn CIDFont_base_open(
         return -1i32;
     }
     fontname = new(
-        (strlen(name).wrapping_add(12i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(name).wrapping_add(12i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     memset(
         fontname as *mut libc::c_void,
@@ -1463,18 +1461,18 @@ unsafe extern "C" fn CIDFont_base_open(
             }
         }
     }
-    (*font).csi = new((1i32 as uint32_t as libc::c_ulong)
+    (*font).csi = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
-        as uint32_t) as *mut CIDSysInfo;
+        as u32) as *mut CIDSysInfo;
     (*(*font).csi).registry = new(
-        (strlen(registry).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(registry).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     (*(*font).csi).ordering = new(
-        (strlen(ordering).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(ordering).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*(*font).csi).registry, registry);
     strcpy((*(*font).csi).ordering, ordering);
@@ -1553,13 +1551,13 @@ unsafe extern "C" fn CIDFont_cache_init() {
             b"CIDFont\x00" as *const u8 as *const libc::c_char,
         );
     }
-    __cache = new((1i32 as uint32_t as libc::c_ulong)
+    __cache = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<FontCache>() as libc::c_ulong)
-        as uint32_t) as *mut FontCache;
+        as u32) as *mut FontCache;
     (*__cache).max = 16u32 as libc::c_int;
-    (*__cache).fonts = new(((*__cache).max as uint32_t as libc::c_ulong)
+    (*__cache).fonts = new(((*__cache).max as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<*mut CIDFont>() as libc::c_ulong)
-        as uint32_t) as *mut *mut CIDFont;
+        as u32) as *mut *mut CIDFont;
     (*__cache).num = 0i32;
 }
 #[no_mangle]
@@ -1594,8 +1592,8 @@ pub unsafe extern "C" fn CIDFont_cache_find(
     if __cache.is_null() {
         CIDFont_cache_init();
     }
-    opt = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cid_opt>() as libc::c_ulong) as uint32_t)
+    opt = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<cid_opt>() as libc::c_ulong) as u32)
         as *mut cid_opt;
     (*opt).style = (*fmap_opt).style;
     (*opt).index = (*fmap_opt).index;
@@ -1613,20 +1611,20 @@ pub unsafe extern "C" fn CIDFont_cache_find(
          * No CIDSystemInfo supplied explicitly. Copy from CMap's one if available.
          * It is not neccesary for CID-keyed fonts. But TrueType requires them.
          */
-        (*opt).csi = new((1i32 as uint32_t as libc::c_ulong)
+        (*opt).csi = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
-            as uint32_t) as *mut CIDSysInfo;
+            as u32) as *mut CIDSysInfo;
         (*(*opt).csi).registry = new((strlen((*cmap_csi).registry)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*opt).csi).registry, (*cmap_csi).registry);
         (*(*opt).csi).ordering = new((strlen((*cmap_csi).ordering)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*opt).csi).ordering, (*cmap_csi).ordering);
         (*(*opt).csi).supplement = (*cmap_csi).supplement
     }
@@ -1702,21 +1700,21 @@ pub unsafe extern "C" fn CIDFont_cache_find(
                     as libc::c_int;
                 (*__cache).fonts = renew(
                     (*__cache).fonts as *mut libc::c_void,
-                    ((*__cache).max as uint32_t as libc::c_ulong)
+                    ((*__cache).max as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<*mut CIDFont>() as libc::c_ulong)
-                        as uint32_t,
+                        as u32,
                 ) as *mut *mut CIDFont
             }
             (*font).name = new(
-                (strlen(map_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                (strlen(map_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_char;
             strcpy((*font).name, map_name);
             (*font).ident = new(
-                (strlen(map_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                (strlen(map_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_char;
             strcpy((*font).ident, map_name);
             (*font).options = opt;
@@ -1795,23 +1793,23 @@ unsafe extern "C" fn get_cidsysinfo(
         n = strlen(CIDFont_stdcc_alias[i as usize].name);
         if !strstartswith((*fmap_opt).charcoll, CIDFont_stdcc_alias[i as usize].name).is_null() {
             csi_idx = CIDFont_stdcc_alias[i as usize].index;
-            csi = new((1i32 as uint32_t as libc::c_ulong)
+            csi = new((1i32 as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
-                as uint32_t) as *mut CIDSysInfo;
+                as u32) as *mut CIDSysInfo;
             (*csi).registry = new((strlen(CIDFont_stdcc_def[csi_idx as usize].registry)
-                .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+                .wrapping_add(1i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strcpy(
                 (*csi).registry,
                 CIDFont_stdcc_def[csi_idx as usize].registry,
             );
             (*csi).ordering = new((strlen(CIDFont_stdcc_def[csi_idx as usize].ordering)
-                .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+                .wrapping_add(1i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strcpy(
                 (*csi).ordering,
                 CIDFont_stdcc_def[csi_idx as usize].ordering,
@@ -1834,9 +1832,9 @@ unsafe extern "C" fn get_cidsysinfo(
         let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
         let mut q: *mut libc::c_char = 0 as *mut libc::c_char;
         p = (*fmap_opt).charcoll;
-        csi = new((1i32 as uint32_t as libc::c_ulong)
+        csi = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
-            as uint32_t) as *mut CIDSysInfo;
+            as u32) as *mut CIDSysInfo;
         /* Full REGISTRY-ORDERING-SUPPLEMENT */
         p = strchr((*fmap_opt).charcoll, '-' as i32);
         if p.is_null() || *p.offset(1) as libc::c_int == '\u{0}' as i32 {
@@ -1874,9 +1872,9 @@ unsafe extern "C" fn get_cidsysinfo(
             .wrapping_sub(strlen(p))
             .wrapping_sub(1i32 as libc::c_ulong);
         (*csi).registry = new(
-            (n.wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (n.wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         memcpy(
             (*csi).registry as *mut libc::c_void,
@@ -1887,9 +1885,9 @@ unsafe extern "C" fn get_cidsysinfo(
         m = strlen(p)
             .wrapping_sub(strlen(q))
             .wrapping_sub(1i32 as libc::c_ulong) as libc::c_int;
-        (*csi).ordering = new(((m + 1i32) as uint32_t as libc::c_ulong)
+        (*csi).ordering = new(((m + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             (*csi).ordering as *mut libc::c_void,
             p as *const libc::c_void,

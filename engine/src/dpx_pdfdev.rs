@@ -142,9 +142,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_doc_add_page_content(buffer: *const libc::c_char, length: libc::c_uint);
     #[no_mangle]
@@ -240,10 +240,8 @@ extern "C" {
 }
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -573,17 +571,17 @@ static mut dev_unit: C2RustUnnamed_0 = {
 pub unsafe extern "C" fn dev_unit_dviunit() -> libc::c_double {
     return 1.0f64 / dev_unit.dvi2pts;
 }
-static mut ten_pow: [uint32_t; 10] = [
-    1u32,
-    10u32,
-    100u32,
-    1000u32,
-    10000u32,
-    100000u32,
-    1000000u32,
-    10000000u32,
-    100000000u32,
-    1000000000u32,
+static mut ten_pow: [u32; 10] = [
+    1,
+    10,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000,
 ];
 static mut ten_pow_inv: [libc::c_double; 10] = [
     1.0f64,
@@ -1659,9 +1657,9 @@ pub unsafe extern "C" fn pdf_dev_push_coord(mut xpos: libc::c_double, mut ypos: 
         max_dev_coords += 4i32;
         dev_coords = renew(
             dev_coords as *mut libc::c_void,
-            (max_dev_coords as uint32_t as libc::c_ulong)
+            (max_dev_coords as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<pdf_coord>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut pdf_coord
     }
     (*dev_coords.offset(num_dev_coords as isize)).x = xpos;
@@ -2134,9 +2132,9 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
         max_dev_fonts += 16i32;
         dev_fonts = renew(
             dev_fonts as *mut libc::c_void,
-            (max_dev_fonts as uint32_t as libc::c_ulong)
+            (max_dev_fonts as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<dev_font>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut dev_font
     }
     font = &mut *dev_fonts.offset(num_dev_fonts as isize) as *mut dev_font;
@@ -2171,9 +2169,9 @@ pub unsafe extern "C" fn pdf_dev_locate_font(
     }
     (*font).used_on_this_page = 0i32;
     (*font).tex_name = new(
-        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*font).tex_name, font_name);
     (*font).sptsize = ptsize;

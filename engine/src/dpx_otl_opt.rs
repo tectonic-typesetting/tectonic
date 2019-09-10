@@ -49,9 +49,8 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -65,7 +64,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_opt {
@@ -120,8 +118,8 @@ unsafe extern "C" fn match_expr(
 }
 unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
     let mut expr: *mut bt_node = 0 as *mut bt_node;
-    expr = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<bt_node>() as libc::c_ulong) as uint32_t)
+    expr = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<bt_node>() as libc::c_ulong) as u32)
         as *mut bt_node;
     (*expr).flag = 0i32;
     (*expr).left = 0 as *mut bt_node;
@@ -282,8 +280,8 @@ unsafe extern "C" fn parse_expr(
 #[no_mangle]
 pub unsafe extern "C" fn otl_new_opt() -> *mut otl_opt {
     let mut opt: *mut otl_opt = 0 as *mut otl_opt;
-    opt = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<otl_opt>() as libc::c_ulong) as uint32_t)
+    opt = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<otl_opt>() as libc::c_ulong) as u32)
         as *mut otl_opt;
     (*opt).rule = 0 as *mut bt_node;
     return opt as *mut otl_opt;

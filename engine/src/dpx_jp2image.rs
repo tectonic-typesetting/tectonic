@@ -84,14 +84,14 @@ extern "C" {
        32-bit integer (int32_t), but some of them must not be negative.
 
        Four byte numbers from JPEG2000, OpenType, or TrueType files are
-       mostly unsigned (uint32_t) and occasionally signed (int32_t).
+       mostly unsigned (u32) and occasionally signed (int32_t).
     */
     #[no_mangle]
     fn get_unsigned_byte(_: *mut FILE) -> libc::c_uchar;
     #[no_mangle]
     fn get_unsigned_pair(_: *mut FILE) -> libc::c_ushort;
     #[no_mangle]
-    fn get_unsigned_quad(_: *mut FILE) -> uint32_t;
+    fn get_unsigned_quad(_: *mut FILE) -> u32;
     #[no_mangle]
     fn seek_relative(file: *mut FILE, pos: int32_t);
     #[no_mangle]
@@ -130,11 +130,9 @@ extern "C" {
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]

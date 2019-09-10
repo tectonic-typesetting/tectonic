@@ -423,7 +423,6 @@ pub struct __va_list_tag {
     pub reg_save_area: *mut libc::c_void,
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -438,7 +437,6 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type va_list = __builtin_va_list;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -824,7 +822,7 @@ unsafe extern "C" fn init_special(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
     mut p: *const libc::c_char,
-    mut size: uint32_t,
+    mut size: u32,
     mut x_user: libc::c_double,
     mut y_user: libc::c_double,
     mut mag: libc::c_double,
@@ -1315,7 +1313,7 @@ pub unsafe extern "C" fn spc_exec_special(
         &mut spe,
         &mut args,
         buffer,
-        size as uint32_t,
+        size as u32,
         x_user,
         y_user,
         mag,

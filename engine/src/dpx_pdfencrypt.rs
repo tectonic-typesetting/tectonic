@@ -113,7 +113,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_get_version() -> libc::c_uint;
     #[no_mangle]
@@ -179,13 +179,11 @@ extern "C" {
 pub type __uint8_t = libc::c_uchar;
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __uint64_t = libc::c_ulong;
 pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
 pub type uint64_t = __uint64_t;
 pub type size_t = libc::c_ulong;
 pub type time_t = __time_t;
@@ -207,10 +205,10 @@ pub struct tm {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct MD5_CONTEXT {
-    pub A: uint32_t,
-    pub B: uint32_t,
-    pub C: uint32_t,
-    pub D: uint32_t,
+    pub A: u32,
+    pub B: u32,
+    pub C: u32,
+    pub D: u32,
     pub nblocks: size_t,
     pub buf: [libc::c_uchar; 64],
     pub count: libc::c_int,
@@ -218,14 +216,14 @@ pub struct MD5_CONTEXT {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct SHA256_CONTEXT {
-    pub h0: uint32_t,
-    pub h1: uint32_t,
-    pub h2: uint32_t,
-    pub h3: uint32_t,
-    pub h4: uint32_t,
-    pub h5: uint32_t,
-    pub h6: uint32_t,
-    pub h7: uint32_t,
+    pub h0: u32,
+    pub h1: u32,
+    pub h2: u32,
+    pub h3: u32,
+    pub h4: u32,
+    pub h5: u32,
+    pub h6: u32,
+    pub h7: u32,
     pub nblocks: size_t,
     pub buf: [libc::c_uchar; 64],
     pub count: libc::c_int,
@@ -432,9 +430,9 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     /* FIXME: This should be placed in main() or somewhere. */
     pdf_enc_init(1i32, 1i32);
     MD5_init(&mut md5);
-    date_string = new((15i32 as uint32_t as libc::c_ulong)
+    date_string = new((15i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     current_time = get_unique_time_if_given();
     if current_time == -1i32 as time_t {
         time(&mut current_time);
@@ -464,9 +462,9 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     )
     .wrapping_add(strlen(b"xdvipdfmx\x00" as *const u8 as *const libc::c_char))
     .wrapping_add(strlen(b"0.1\x00" as *const u8 as *const libc::c_char))
-        as uint32_t as libc::c_ulong)
+        as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     sprintf(
         producer,
         b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
@@ -834,9 +832,9 @@ unsafe extern "C" fn compute_hash_V5(
             );
         }
         Kr = new(
-            (K1_len.wrapping_mul(64i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (K1_len.wrapping_mul(64i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_uchar;
         i = 0i32;
         while i < 64i32 {
@@ -1117,9 +1115,9 @@ unsafe extern "C" fn stringprep_profile(
         }
     }
     *output = new(
-        (strlen(input).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(input).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy(*output, input);
     return 0i32;
@@ -1343,9 +1341,9 @@ pub unsafe extern "C" fn pdf_encrypt_data(
                 sbox: [0; 256],
             };
             *cipher_len = plain_len;
-            *cipher = new((*cipher_len as uint32_t as libc::c_ulong)
+            *cipher = new((*cipher_len as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_uchar;
+                as u32) as *mut libc::c_uchar;
             ARC4_set_key(
                 &mut arc4,
                 (if 16i32 < (*p).key_size + 5i32 {

@@ -77,7 +77,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> libc::c_int;
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> uint32_t;
+    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     #[no_mangle]
@@ -90,9 +90,7 @@ extern "C" {
     #[no_mangle]
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -100,8 +98,8 @@ pub type BYTE = libc::c_uchar;
 pub type SFNT_CHAR = libc::c_schar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
-pub type SFNT_ULONG = uint32_t;
-pub type Fixed = uint32_t;
+pub type SFNT_ULONG = u32;
+pub type Fixed = u32;
 pub type FWord = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]

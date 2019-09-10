@@ -22,12 +22,10 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 pub type card8 = libc::c_uchar;
 pub type card16 = libc::c_ushort;
 pub type c_offsize = libc::c_uchar;
-pub type l_offset = uint32_t;
+pub type l_offset = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_index {

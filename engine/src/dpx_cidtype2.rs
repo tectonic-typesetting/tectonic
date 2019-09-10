@@ -92,7 +92,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -263,9 +263,8 @@ extern "C" {
     fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut libc::c_char, destlen: USHORT) -> USHORT;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
+pub type __u32 = libc::c_uint;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -310,7 +309,7 @@ pub struct tt_cmap {
     pub language: SFNT_ULONG,
     pub map: *mut libc::c_void,
 }
-pub type SFNT_ULONG = uint32_t;
+pub type SFNT_ULONG = u32;
 pub type USHORT = libc::c_ushort;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -864,10 +863,10 @@ unsafe extern "C" fn find_tocode_cmap(
         cmap_name = new((strlen(reg)
             .wrapping_add(strlen(ord))
             .wrapping_add(strlen(append))
-            .wrapping_add(3i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(3i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         sprintf(
             cmap_name,
             b"%s-%s-%s\x00" as *const u8 as *const libc::c_char,
@@ -1925,9 +1924,9 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     let mut shortname: *mut libc::c_char = 0 as *mut libc::c_char;
     let mut namelen: libc::c_int = 0;
     /* MAC-ROMAN-EN-POSTSCRIPT or WIN-UNICODE-EN(US)-POSTSCRIPT */
-    shortname = new((127i32 as uint32_t as libc::c_ulong)
+    shortname = new((127i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char; /* for SJIS, UTF-16, ... string */
+        as u32) as *mut libc::c_char; /* for SJIS, UTF-16, ... string */
     namelen = tt_get_ps_fontname(sfont, shortname, 127i32 as USHORT) as libc::c_int;
     if namelen == 0i32 {
         memset(
@@ -1945,9 +1944,9 @@ pub unsafe extern "C" fn CIDFont_type2_open(
      * Style requires more 11 bytes.
      */
     fontname = new(
-        (strlen(shortname).wrapping_add(19i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(shortname).wrapping_add(19i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy(fontname, shortname);
     free(shortname as *mut libc::c_void);
@@ -1979,9 +1978,9 @@ pub unsafe extern "C" fn CIDFont_type2_open(
      */
     (*font).fontname = fontname; /* This means font's internal glyph ordering. */
     (*font).subtype = 2i32;
-    (*font).csi = new((1i32 as uint32_t as libc::c_ulong)
+    (*font).csi = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
-        as uint32_t) as *mut CIDSysInfo;
+        as u32) as *mut CIDSysInfo;
     if !(*opt).csi.is_null() {
         if !cmap_csi.is_null() {
             if strcmp((*(*opt).csi).registry, (*cmap_csi).registry) != 0
@@ -2020,47 +2019,47 @@ pub unsafe extern "C" fn CIDFont_type2_open(
             }
         }
         (*(*font).csi).registry = new((strlen((*(*opt).csi).registry)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).registry, (*(*opt).csi).registry);
         (*(*font).csi).ordering = new((strlen((*(*opt).csi).ordering)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).ordering, (*(*opt).csi).ordering);
         (*(*font).csi).supplement = (*(*opt).csi).supplement
     } else if !cmap_csi.is_null() {
         (*(*font).csi).registry = new((strlen((*cmap_csi).registry)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).registry, (*cmap_csi).registry);
         (*(*font).csi).ordering = new((strlen((*cmap_csi).ordering)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*font).csi).ordering, (*cmap_csi).ordering);
         (*(*font).csi).supplement = (*cmap_csi).supplement
     } else {
         (*(*font).csi).registry = new((strlen(b"Adobe\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(
             (*(*font).csi).registry,
             b"Adobe\x00" as *const u8 as *const libc::c_char,
         );
         (*(*font).csi).ordering = new((strlen(b"Identity\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(
             (*(*font).csi).ordering,
             b"Identity\x00" as *const u8 as *const libc::c_char,

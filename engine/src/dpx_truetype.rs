@@ -170,7 +170,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_encoding_is_predefined(enc_id: libc::c_int) -> libc::c_int;
     #[no_mangle]
@@ -290,9 +290,7 @@ extern "C" {
     fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut libc::c_char, destlen: USHORT) -> USHORT;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -302,7 +300,7 @@ pub struct sfnt {
     pub handle: rust_input_handle_t,
     pub offset: SFNT_ULONG,
 }
-pub type SFNT_ULONG = uint32_t;
+pub type SFNT_ULONG = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct sfnt_table_directory {
@@ -363,7 +361,7 @@ pub struct tt_post_table {
     /* Number of glyph names in names[] */
 }
 pub type FWord = libc::c_short;
-pub type Fixed = uint32_t;
+pub type Fixed = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_cmap {
@@ -924,9 +922,9 @@ unsafe extern "C" fn do_builtin_encoding(
         );
         return -1i32;
     }
-    cmap_table = new((274i32 as uint32_t as libc::c_ulong)
+    cmap_table = new((274i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memset(
         cmap_table as *mut libc::c_void,
         0i32,
@@ -1155,9 +1153,9 @@ unsafe extern "C" fn selectglyph(
         );
     }
     s = new(
-        (strlen(suffix).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(suffix).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy(s, suffix);
     /* First try converting suffix to feature tag.
@@ -1298,8 +1296,8 @@ unsafe extern "C" fn composeuchar(
     if (*gm).codetogid.is_null() {
         return -1i32;
     }
-    gids = new((n_unicodes as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as uint32_t)
+    gids = new((n_unicodes as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong) as u32)
         as *mut USHORT;
     i = 0i32;
     while error == 0 && i < n_unicodes {
@@ -1353,9 +1351,9 @@ unsafe extern "C" fn findcomposite(
         return 0i32;
     }
     gname = new(
-        (strlen(glyphname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(glyphname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy(gname, glyphname);
     memset(
@@ -1686,9 +1684,9 @@ unsafe extern "C" fn do_custom_encoding(
         );
         return -1i32;
     }
-    cmap_table = new((274i32 as uint32_t as libc::c_ulong)
+    cmap_table = new((274i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memset(
         cmap_table as *mut libc::c_void,
         0i32,

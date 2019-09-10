@@ -473,7 +473,7 @@ extern "C" {
     #[no_mangle]
     static bytesFromUTF8: [uint8_t; 256];
     #[no_mangle]
-    static offsetsFromUTF8: [uint32_t; 6];
+    static offsetsFromUTF8: [u32; 6];
     #[no_mangle]
     static mut name_of_input_file: *mut libc::c_char;
     #[no_mangle]
@@ -959,11 +959,9 @@ extern "C" {
 pub type __uint8_t = libc::c_uchar;
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2018 the Tectonic Project

@@ -315,11 +315,9 @@ extern "C" {
 }
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type int32_t = __int32_t;
 pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
-pub type hb_codepoint_t = uint32_t;
+pub type hb_codepoint_t = u32;
 pub type hb_position_t = int32_t;
 pub type hb_ot_math_glyph_part_flags_t = libc::c_uint;
 pub const HB_OT_MATH_GLYPH_PART_FLAG_EXTENDER: hb_ot_math_glyph_part_flags_t = 1;

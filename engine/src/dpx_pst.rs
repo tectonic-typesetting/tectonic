@@ -51,7 +51,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -95,7 +95,6 @@ extern "C" {
         inbufend: *mut libc::c_uchar,
     ) -> *mut pst_obj;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -109,7 +108,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type pst_type = libc::c_int;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -163,7 +161,7 @@ unsafe extern "C" fn pst_parse_any(
     len = cur.wrapping_offset_from(*inbuf) as libc::c_long as libc::c_uint;
     data = new((len.wrapping_add(1i32 as libc::c_uint) as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     memcpy(
         data as *mut libc::c_void,
         *inbuf as *const libc::c_void,
@@ -280,9 +278,9 @@ pub unsafe extern "C" fn pst_get_token(
                 );
             } else {
                 let mut mark: *mut libc::c_char = 0 as *mut libc::c_char;
-                mark = new((3i32 as uint32_t as libc::c_ulong)
+                mark = new((3i32 as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_char;
+                    as u32) as *mut libc::c_char;
                 *mark.offset(0) = '>' as i32 as libc::c_char;
                 *mark.offset(1) = '>' as i32 as libc::c_char;
                 *mark.offset(2) = '\u{0}' as i32 as libc::c_char;
@@ -292,9 +290,9 @@ pub unsafe extern "C" fn pst_get_token(
         }
         93 | 125 => {
             let mut mark_0: *mut libc::c_char = 0 as *mut libc::c_char;
-            mark_0 = new((2i32 as uint32_t as libc::c_ulong)
+            mark_0 = new((2i32 as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             *mark_0.offset(0) = c as libc::c_char;
             *mark_0.offset(1) = '\u{0}' as i32 as libc::c_char;
             obj = pst_new_obj(-1i32, mark_0 as *mut libc::c_void);

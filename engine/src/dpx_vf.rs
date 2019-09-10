@@ -49,15 +49,15 @@ extern "C" {
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> libc::c_uchar;
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> uint32_t;
+    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
-    fn tt_get_unsigned_num(handle: rust_input_handle_t, num: libc::c_uchar) -> uint32_t;
+    fn tt_get_unsigned_num(handle: rust_input_handle_t, num: libc::c_uchar) -> u32;
     #[no_mangle]
     fn tt_get_positive_quad(
         handle: rust_input_handle_t,
         type_0: *const libc::c_char,
         name: *const libc::c_char,
-    ) -> uint32_t;
+    ) -> u32;
     #[no_mangle]
     fn sqxfw(sq: int32_t, fw: fixword) -> int32_t;
     #[no_mangle]
@@ -147,19 +147,17 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn tfm_open(tex_name: *const libc::c_char, must_exist: libc::c_int) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -232,21 +230,21 @@ pub type spt_t = libc::c_int;
 pub struct vf {
     pub tex_name: *mut libc::c_char,
     pub ptsize: spt_t,
-    pub design_size: uint32_t,
+    pub design_size: u32,
     pub num_dev_fonts: libc::c_uint,
     pub max_dev_fonts: libc::c_uint,
     pub dev_fonts: *mut font_def,
     pub ch_pkt: *mut *mut libc::c_uchar,
-    pub pkt_len: *mut uint32_t,
+    pub pkt_len: *mut u32,
     pub num_chars: libc::c_uint,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct font_def {
     pub font_id: int32_t,
-    pub checksum: uint32_t,
-    pub size: uint32_t,
-    pub design_size: uint32_t,
+    pub checksum: u32,
+    pub size: u32,
+    pub design_size: u32,
     pub directory: *mut libc::c_char,
     pub name: *mut libc::c_char,
     pub tfm_id: libc::c_int,
@@ -307,8 +305,8 @@ unsafe extern "C" fn resize_vf_fonts(mut size: libc::c_int) {
     if size as libc::c_uint > max_vf_fonts {
         vf_fonts = renew(
             vf_fonts as *mut libc::c_void,
-            (size as uint32_t as libc::c_ulong)
-                .wrapping_mul(::std::mem::size_of::<vf>() as libc::c_ulong) as uint32_t,
+            (size as u32 as libc::c_ulong)
+                .wrapping_mul(::std::mem::size_of::<vf>() as libc::c_ulong) as u32,
         ) as *mut vf;
         i = max_vf_fonts as libc::c_int;
         while i < size {
@@ -333,18 +331,18 @@ unsafe extern "C" fn resize_one_vf_font(mut a_vf: *mut vf, mut size: libc::c_uin
             (*a_vf).ch_pkt as *mut libc::c_void,
             (size as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<*mut libc::c_uchar>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut *mut libc::c_uchar;
         (*a_vf).pkt_len = renew(
             (*a_vf).pkt_len as *mut libc::c_void,
-            (size as libc::c_ulong).wrapping_mul(::std::mem::size_of::<uint32_t>() as libc::c_ulong)
-                as uint32_t,
-        ) as *mut uint32_t;
+            (size as libc::c_ulong).wrapping_mul(::std::mem::size_of::<u32>() as libc::c_ulong)
+                as u32,
+        ) as *mut u32;
         i = (*a_vf).num_chars;
         while i < size {
             let ref mut fresh1 = *(*a_vf).ch_pkt.offset(i as isize);
             *fresh1 = 0 as *mut libc::c_uchar;
-            *(*a_vf).pkt_len.offset(i as isize) = 0i32 as uint32_t;
+            *(*a_vf).pkt_len.offset(i as isize) = 0i32 as u32;
             i = i.wrapping_add(1)
         }
         (*a_vf).num_chars = size
@@ -353,8 +351,8 @@ unsafe extern "C" fn resize_one_vf_font(mut a_vf: *mut vf, mut size: libc::c_uin
 unsafe extern "C" fn read_a_char_def(
     mut vf_handle: rust_input_handle_t,
     mut thisfont: libc::c_int,
-    mut pkt_len: uint32_t,
-    mut ch: uint32_t,
+    mut pkt_len: u32,
+    mut ch: u32,
 ) {
     let mut pkt: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     /* Resize and initialize character arrays if necessary */
@@ -367,7 +365,7 @@ unsafe extern "C" fn read_a_char_def(
     if pkt_len > 0i32 as libc::c_uint {
         pkt = new((pkt_len as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         if ttstub_input_read(vf_handle, pkt as *mut libc::c_char, pkt_len as size_t)
             != pkt_len as libc::c_long
         {
@@ -400,7 +398,7 @@ unsafe extern "C" fn read_a_font_def(
             (*vf_fonts.offset(thisfont as isize)).dev_fonts as *mut libc::c_void,
             ((*vf_fonts.offset(thisfont as isize)).max_dev_fonts as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<font_def>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut font_def
     }
     dev_font = (*vf_fonts.offset(thisfont as isize))
@@ -420,17 +418,17 @@ unsafe extern "C" fn read_a_font_def(
     );
     dir_length = tt_get_unsigned_byte(vf_handle) as libc::c_int;
     name_length = tt_get_unsigned_byte(vf_handle) as libc::c_int;
-    (*dev_font).directory = new(((dir_length + 1i32) as uint32_t as libc::c_ulong)
+    (*dev_font).directory = new(((dir_length + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     if ttstub_input_read(vf_handle, (*dev_font).directory, dir_length as size_t)
         != dir_length as libc::c_long
     {
         _tt_abort(b"directory read failed\x00" as *const u8 as *const libc::c_char);
     }
-    (*dev_font).name = new(((name_length + 1i32) as uint32_t as libc::c_ulong)
+    (*dev_font).name = new(((name_length + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     if ttstub_input_read(vf_handle, (*dev_font).name, name_length as size_t)
         != name_length as libc::c_long
     {
@@ -455,7 +453,7 @@ unsafe extern "C" fn process_vf_file(
 ) {
     let mut eof: libc::c_int = 0i32;
     let mut code: libc::c_int = 0;
-    let mut font_id: uint32_t = 0;
+    let mut font_id: u32 = 0;
     while eof == 0 {
         code = tt_get_unsigned_byte(vf_handle) as libc::c_int;
         match code {
@@ -466,17 +464,17 @@ unsafe extern "C" fn process_vf_file(
             _ => {
                 if code < 242i32 {
                     /* For a short packet, code is the pkt_len */
-                    let mut ch: uint32_t = tt_get_unsigned_byte(vf_handle) as uint32_t;
+                    let mut ch: u32 = tt_get_unsigned_byte(vf_handle) as u32;
                     /* Skip over TFM width since we already know it */
                     tt_skip_bytes(3i32 as libc::c_uint, vf_handle);
-                    read_a_char_def(vf_handle, thisfont, code as uint32_t, ch);
+                    read_a_char_def(vf_handle, thisfont, code as u32, ch);
                 } else if code == 242i32 {
-                    let mut pkt_len: uint32_t = tt_get_positive_quad(
+                    let mut pkt_len: u32 = tt_get_positive_quad(
                         vf_handle,
                         b"VF\x00" as *const u8 as *const libc::c_char,
                         b"pkt_len\x00" as *const u8 as *const libc::c_char,
                     );
-                    let mut ch_0: uint32_t = tt_get_unsigned_quad(vf_handle);
+                    let mut ch_0: u32 = tt_get_unsigned_quad(vf_handle);
                     /* Skip over TFM width since we already know it */
                     tt_skip_bytes(4i32 as libc::c_uint, vf_handle);
                     if ch_0 < 0x1000000u32 {
@@ -557,9 +555,9 @@ pub unsafe extern "C" fn vf_locate_font(
     /* Initialize some pointers and such */
     let ref mut fresh7 = (*vf_fonts.offset(thisfont as isize)).tex_name;
     *fresh7 = new(
-        (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(tex_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*vf_fonts.offset(thisfont as isize)).tex_name, tex_name);
     (*vf_fonts.offset(thisfont as isize)).ptsize = ptsize;
@@ -567,7 +565,7 @@ pub unsafe extern "C" fn vf_locate_font(
     let ref mut fresh8 = (*vf_fonts.offset(thisfont as isize)).ch_pkt;
     *fresh8 = 0 as *mut *mut libc::c_uchar;
     let ref mut fresh9 = (*vf_fonts.offset(thisfont as isize)).pkt_len;
-    *fresh9 = 0 as *mut uint32_t;
+    *fresh9 = 0 as *mut u32;
     read_header(vf_handle, thisfont);
     process_vf_file(vf_handle, thisfont);
     if verbose != 0 {
@@ -764,9 +762,9 @@ unsafe extern "C" fn vf_xxx(
     mut end: *mut libc::c_uchar,
 ) {
     if *start <= end.offset(-(len as isize)) {
-        let mut buffer: *mut libc::c_uchar = new(((len + 1i32) as uint32_t as libc::c_ulong)
+        let mut buffer: *mut libc::c_uchar = new(((len + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         memcpy(
             buffer as *mut libc::c_void,
             *start as *const libc::c_void,

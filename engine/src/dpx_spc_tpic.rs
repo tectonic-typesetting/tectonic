@@ -115,7 +115,7 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const libc::c_char, _: ...);
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_color_brighten_color(dst: *mut pdf_color, src: *const pdf_color, f: libc::c_double);
     #[no_mangle]
@@ -194,7 +194,6 @@ extern "C" {
         end: *const libc::c_char,
     ) -> *mut libc::c_char;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -208,7 +207,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -757,9 +755,9 @@ unsafe extern "C" fn spc_handler_tpic_pa(
         (*tp).max_points += 256i32;
         (*tp).points = renew(
             (*tp).points as *mut libc::c_void,
-            ((*tp).max_points as uint32_t as libc::c_ulong)
+            ((*tp).max_points as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<pdf_coord>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut pdf_coord
     }
     (*(*tp).points.offset((*tp).num_points as isize)).x = v[0] * (0.072f64 / pdf_dev_scale());

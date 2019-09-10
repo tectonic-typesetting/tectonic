@@ -219,9 +219,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -388,7 +388,6 @@ extern "C" {
     fn tt_aux_set_verbose(level: libc::c_int);
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -403,7 +402,6 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 /* This is (x)dvipdfmx, an extended version of...
 
     DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
@@ -659,7 +657,7 @@ unsafe extern "C" fn select_pages(
                 page_ranges as *mut libc::c_void,
                 (max_page_ranges as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<PageRange>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut PageRange
         }
         (*page_ranges.offset(num_page_ranges as isize)).first = 0i32;
@@ -982,9 +980,9 @@ pub unsafe extern "C" fn dvipdfmx_main(
         select_pages(pagespec, &mut page_ranges, &mut num_page_ranges);
     }
     if page_ranges.is_null() {
-        page_ranges = new((1i32 as uint32_t as libc::c_ulong)
+        page_ranges = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<PageRange>() as libc::c_ulong)
-            as uint32_t) as *mut PageRange
+            as u32) as *mut PageRange
     }
     if num_page_ranges == 0i32 as libc::c_uint {
         (*page_ranges.offset(0)).first = 0i32;

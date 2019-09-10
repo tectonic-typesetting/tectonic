@@ -109,7 +109,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_defineresource(
         category: *const libc::c_char,
@@ -123,8 +123,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_resource_reference(res_id: libc::c_int) -> *mut pdf_obj;
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -669,12 +667,12 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     if !(*cmap).useCMap.is_null() {
         _tt_abort(b"UseCMap found (not supported yet)...\x00" as *const u8 as *const libc::c_char);
     }
-    wbuf.buf = new((4096i32 as uint32_t as libc::c_ulong)
+    wbuf.buf = new((4096i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
-    codestr = new(((*cmap).profile.maxBytesIn as uint32_t as libc::c_ulong)
+        as u32) as *mut libc::c_char;
+    codestr = new(((*cmap).profile.maxBytesIn as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     memset(
         codestr as *mut libc::c_void,
         0i32,

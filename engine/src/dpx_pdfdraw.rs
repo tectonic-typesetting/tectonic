@@ -81,14 +81,12 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_doc_add_page_content(buffer: *const libc::c_char, length: libc::c_uint);
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
@@ -432,7 +430,7 @@ unsafe extern "C" fn pdf_path__growpath(
     (*p).path = renew(
         (*p).path as *mut libc::c_void,
         ((*p).max_paths as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<pa_elem>() as libc::c_ulong) as uint32_t,
+            .wrapping_mul(::std::mem::size_of::<pa_elem>() as libc::c_ulong) as u32,
     ) as *mut pa_elem;
     return 0i32;
 }
@@ -1215,9 +1213,9 @@ unsafe extern "C" fn m_stack_push(mut stack: *mut m_stack, mut data: *mut libc::
             .as_ptr(),
         );
     }
-    elem = new((1i32 as uint32_t as libc::c_ulong)
+    elem = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<m_stack_elem>() as libc::c_ulong)
-        as uint32_t) as *mut m_stack_elem;
+        as u32) as *mut m_stack_elem;
     (*elem).prev = (*stack).top;
     (*elem).data = data;
     (*stack).top = elem;
@@ -1360,9 +1358,9 @@ unsafe extern "C" fn copy_a_gstate(mut gs1: *mut pdf_gstate, mut gs2: *mut pdf_g
 pub unsafe extern "C" fn pdf_dev_init_gstates() {
     let mut gs: *mut pdf_gstate = 0 as *mut pdf_gstate;
     m_stack_init(&mut gs_stack);
-    gs = new((1i32 as uint32_t as libc::c_ulong)
+    gs = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<pdf_gstate>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_gstate;
+        as u32) as *mut pdf_gstate;
     init_a_gstate(gs);
     m_stack_push(&mut gs_stack, gs as *mut libc::c_void);
 }
@@ -1390,9 +1388,9 @@ pub unsafe extern "C" fn pdf_dev_gsave() -> libc::c_int {
     let mut gs0: *mut pdf_gstate = 0 as *mut pdf_gstate;
     let mut gs1: *mut pdf_gstate = 0 as *mut pdf_gstate;
     gs0 = m_stack_top(&mut gs_stack) as *mut pdf_gstate;
-    gs1 = new((1i32 as uint32_t as libc::c_ulong)
+    gs1 = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<pdf_gstate>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_gstate;
+        as u32) as *mut pdf_gstate;
     init_a_gstate(gs1);
     copy_a_gstate(gs1, gs0);
     m_stack_push(&mut gs_stack, gs1 as *mut libc::c_void);
@@ -1424,9 +1422,9 @@ pub unsafe extern "C" fn pdf_dev_grestore() -> libc::c_int {
 pub unsafe extern "C" fn pdf_dev_push_gstate() -> libc::c_int {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs0: *mut pdf_gstate = 0 as *mut pdf_gstate;
-    gs0 = new((1i32 as uint32_t as libc::c_ulong)
+    gs0 = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<pdf_gstate>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_gstate;
+        as u32) as *mut pdf_gstate;
     init_a_gstate(gs0);
     m_stack_push(gss, gs0 as *mut libc::c_void);
     return 0i32;

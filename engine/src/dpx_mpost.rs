@@ -241,7 +241,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_doc_current_page_number() -> libc::c_int;
     /* Page */
@@ -420,7 +420,6 @@ extern "C" {
     fn tfm_exists(tfm_name: *const libc::c_char) -> bool;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type C2RustUnnamed = libc::c_uint;
@@ -437,7 +436,6 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -2505,9 +2503,9 @@ unsafe extern "C" fn mp_setfont(
     } /* Need not exist in MP mode */
     free((*font).font_name as *mut libc::c_void);
     (*font).font_name = new(
-        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(font_name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*font).font_name, font_name);
     (*font).subfont_id = subfont_id;
@@ -2527,10 +2525,10 @@ unsafe extern "C" fn save_font() {
     let mut next: *mut mp_font = 0 as *mut mp_font;
     if currentfont < 0i32 {
         font_stack[0].font_name = new((strlen(b"Courier\x00" as *const u8 as *const libc::c_char)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            .wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(
             font_stack[0].font_name,
             b"Courier\x00" as *const u8 as *const libc::c_char,
@@ -2545,10 +2543,10 @@ unsafe extern "C" fn save_font() {
     current = &mut *font_stack.as_mut_ptr().offset(fresh0 as isize) as *mut mp_font;
     next = &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font;
     (*next).font_name = new(
-        (strlen((*current).font_name).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+        (strlen((*current).font_name).wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*next).font_name, (*current).font_name);
     (*next).pt_size = (*current).pt_size;
@@ -3581,9 +3579,9 @@ unsafe extern "C" fn do_show() -> libc::c_int {
         let mut uch: libc::c_ushort = 0;
         let mut ustr: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
         let mut i: libc::c_int = 0;
-        ustr = new(((length * 2i32) as uint32_t as libc::c_ulong)
+        ustr = new(((length * 2i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         i = 0i32;
         while i < length {
             uch = lookup_sfd_record((*font).subfont_id, *strptr.offset(i as isize));
@@ -4639,9 +4637,9 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> libc::c_int {
         );
         return -1i32;
     }
-    buffer = new(((size + 1i32) as uint32_t as libc::c_ulong)
+    buffer = new(((size + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     fread(
         buffer as *mut libc::c_void,
         ::std::mem::size_of::<libc::c_char>() as libc::c_ulong,

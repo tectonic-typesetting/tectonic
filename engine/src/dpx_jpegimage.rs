@@ -123,17 +123,15 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
 pub type __uint8_t = libc::c_uchar;
 pub type __uint16_t = libc::c_ushort;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -665,9 +663,9 @@ unsafe extern "C" fn add_APPn_marker(
         (*j_info).max_appn += 16i32;
         (*j_info).appn = renew(
             (*j_info).appn as *mut libc::c_void,
-            ((*j_info).max_appn as uint32_t as libc::c_ulong)
+            ((*j_info).max_appn as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<JPEG_ext>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut JPEG_ext
     }
     n = (*j_info).num_appn;
@@ -683,9 +681,9 @@ unsafe extern "C" fn read_APP14_Adobe(
     mut handle: rust_input_handle_t,
 ) -> libc::c_ushort {
     let mut app_data: *mut JPEG_APPn_Adobe = 0 as *mut JPEG_APPn_Adobe;
-    app_data = new((1i32 as uint32_t as libc::c_ulong)
+    app_data = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<JPEG_APPn_Adobe>() as libc::c_ulong)
-        as uint32_t) as *mut JPEG_APPn_Adobe;
+        as u32) as *mut JPEG_APPn_Adobe;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).flag0 = tt_get_unsigned_pair(handle);
     (*app_data).flag1 = tt_get_unsigned_pair(handle);
@@ -972,9 +970,9 @@ unsafe extern "C" fn read_APP0_JFIF(
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_JFIF = 0 as *mut JPEG_APPn_JFIF;
     let mut thumb_data_len: size_t = 0;
-    app_data = new((1i32 as uint32_t as libc::c_ulong)
+    app_data = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<JPEG_APPn_JFIF>() as libc::c_ulong)
-        as uint32_t) as *mut JPEG_APPn_JFIF;
+        as u32) as *mut JPEG_APPn_JFIF;
     (*app_data).version = tt_get_unsigned_pair(handle);
     (*app_data).units = tt_get_unsigned_byte(handle);
     (*app_data).Xdensity = tt_get_unsigned_pair(handle);
@@ -985,9 +983,9 @@ unsafe extern "C" fn read_APP0_JFIF(
         * (*app_data).Xthumbnail as libc::c_int
         * (*app_data).Ythumbnail as libc::c_int) as size_t;
     if thumb_data_len > 0i32 as libc::c_ulong {
-        (*app_data).thumbnail = new((thumb_data_len as uint32_t as libc::c_ulong)
+        (*app_data).thumbnail = new((thumb_data_len as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         ttstub_input_read(
             handle,
             (*app_data).thumbnail as *mut libc::c_char,
@@ -1042,13 +1040,13 @@ unsafe extern "C" fn read_APP1_XMP(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_XMP = 0 as *mut JPEG_APPn_XMP;
-    app_data = new((1i32 as uint32_t as libc::c_ulong)
+    app_data = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<JPEG_APPn_XMP>() as libc::c_ulong)
-        as uint32_t) as *mut JPEG_APPn_XMP;
+        as u32) as *mut JPEG_APPn_XMP;
     (*app_data).length = length;
-    (*app_data).packet = new(((*app_data).length as uint32_t as libc::c_ulong)
+    (*app_data).packet = new(((*app_data).length as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     ttstub_input_read(
         handle,
         (*app_data).packet as *mut libc::c_char,
@@ -1068,15 +1066,15 @@ unsafe extern "C" fn read_APP2_ICC(
     mut length: size_t,
 ) -> size_t {
     let mut app_data: *mut JPEG_APPn_ICC = 0 as *mut JPEG_APPn_ICC;
-    app_data = new((1i32 as uint32_t as libc::c_ulong)
+    app_data = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<JPEG_APPn_ICC>() as libc::c_ulong)
-        as uint32_t) as *mut JPEG_APPn_ICC;
+        as u32) as *mut JPEG_APPn_ICC;
     (*app_data).seq_id = tt_get_unsigned_byte(handle);
     (*app_data).num_chunks = tt_get_unsigned_byte(handle);
     (*app_data).length = length.wrapping_sub(2i32 as libc::c_ulong);
-    (*app_data).chunk = new(((*app_data).length as uint32_t as libc::c_ulong)
+    (*app_data).chunk = new(((*app_data).length as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
+        as u32) as *mut libc::c_uchar;
     ttstub_input_read(
         handle,
         (*app_data).chunk as *mut libc::c_char,

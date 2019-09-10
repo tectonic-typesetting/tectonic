@@ -68,9 +68,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -97,8 +97,6 @@ extern "C" {
     #[no_mangle]
     fn CMap_parse(cmap: *mut CMap, handle: rust_input_handle_t) -> libc::c_int;
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
@@ -266,8 +264,8 @@ pub unsafe extern "C" fn CMap_set_silent(mut value: libc::c_int) {
 #[no_mangle]
 pub unsafe extern "C" fn CMap_new() -> *mut CMap {
     let mut cmap: *mut CMap = 0 as *mut CMap;
-    cmap = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<CMap>() as libc::c_ulong) as uint32_t)
+    cmap = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<CMap>() as libc::c_ulong) as u32)
         as *mut CMap;
     (*cmap).name = 0 as *mut libc::c_char;
     (*cmap).type_0 = 1i32;
@@ -281,21 +279,21 @@ pub unsafe extern "C" fn CMap_new() -> *mut CMap {
     (*cmap).flags = 0i32;
     (*cmap).codespace.num = 0i32 as libc::c_uint;
     (*cmap).codespace.max = 10i32 as libc::c_uint;
-    (*cmap).codespace.ranges = new((10i32 as uint32_t as libc::c_ulong)
+    (*cmap).codespace.ranges = new((10i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<rangeDef>() as libc::c_ulong)
-        as uint32_t) as *mut rangeDef;
+        as u32) as *mut rangeDef;
     (*cmap).mapTbl = 0 as *mut mapDef;
-    (*cmap).mapData = new((1i32 as uint32_t as libc::c_ulong)
+    (*cmap).mapData = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<mapData>() as libc::c_ulong)
-        as uint32_t) as *mut mapData;
+        as u32) as *mut mapData;
     (*(*cmap).mapData).prev = 0 as *mut mapData;
     (*(*cmap).mapData).pos = 0i32;
-    (*(*cmap).mapData).data = new((4096i32 as uint32_t as libc::c_ulong)
+    (*(*cmap).mapData).data = new((4096i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_uchar;
-    (*cmap).reverseMap = new((65536i32 as uint32_t as libc::c_ulong)
+        as u32) as *mut libc::c_uchar;
+    (*cmap).reverseMap = new((65536i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_int;
+        as u32) as *mut libc::c_int;
     memset(
         (*cmap).reverseMap as *mut libc::c_void,
         0i32,
@@ -765,9 +763,9 @@ pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const lib
     }
     free((*cmap).name as *mut libc::c_void);
     (*cmap).name = new(
-        (strlen(name).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(name).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*cmap).name, name);
 }
@@ -823,18 +821,18 @@ pub unsafe extern "C" fn CMap_set_CIDSysInfo(mut cmap: *mut CMap, mut csi: *cons
         free((*cmap).CSI as *mut libc::c_void);
     }
     if !csi.is_null() && !(*csi).registry.is_null() && !(*csi).ordering.is_null() {
-        (*cmap).CSI = new((1i32 as uint32_t as libc::c_ulong)
+        (*cmap).CSI = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as libc::c_ulong)
-            as uint32_t) as *mut CIDSysInfo;
+            as u32) as *mut CIDSysInfo;
         (*(*cmap).CSI).registry = new((strlen((*csi).registry).wrapping_add(1i32 as libc::c_ulong)
-            as uint32_t as libc::c_ulong)
+            as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*cmap).CSI).registry, (*csi).registry);
         (*(*cmap).CSI).ordering = new((strlen((*csi).ordering).wrapping_add(1i32 as libc::c_ulong)
-            as uint32_t as libc::c_ulong)
+            as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy((*(*cmap).CSI).ordering, (*csi).ordering);
         (*(*cmap).CSI).supplement = (*csi).supplement
     } else {
@@ -1034,7 +1032,7 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
             (*cmap).codespace.ranges as *mut libc::c_void,
             ((*cmap).codespace.max as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<rangeDef>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut rangeDef
     }
     csr = (*cmap)
@@ -1334,8 +1332,8 @@ unsafe extern "C" fn mapDef_release(mut t: *mut mapDef) {
 unsafe extern "C" fn mapDef_new() -> *mut mapDef {
     let mut t: *mut mapDef = 0 as *mut mapDef;
     let mut c: libc::c_int = 0;
-    t = new((256i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<mapDef>() as libc::c_ulong) as uint32_t)
+    t = new((256i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<mapDef>() as libc::c_ulong) as u32)
         as *mut mapDef;
     c = 0i32;
     while c < 256i32 {
@@ -1366,12 +1364,12 @@ unsafe extern "C" fn get_mem(mut cmap: *mut CMap, mut size: libc::c_int) -> *mut
     map = (*cmap).mapData;
     if (*map).pos + size >= 4096i32 {
         let mut prev: *mut mapData = map;
-        map = new((1i32 as uint32_t as libc::c_ulong)
+        map = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<mapData>() as libc::c_ulong)
-            as uint32_t) as *mut mapData;
-        (*map).data = new((4096i32 as uint32_t as libc::c_ulong)
+            as u32) as *mut mapData;
+        (*map).data = new((4096i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_uchar;
+            as u32) as *mut libc::c_uchar;
         (*map).prev = prev;
         (*map).pos = 0i32;
         (*cmap).mapData = map
@@ -1551,13 +1549,13 @@ pub unsafe extern "C" fn CMap_cache_init() {
             b"CMap\x00" as *const u8 as *const libc::c_char,
         );
     }
-    __cache = new((1i32 as uint32_t as libc::c_ulong)
+    __cache = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<CMap_cache>() as libc::c_ulong)
-        as uint32_t) as *mut CMap_cache;
+        as u32) as *mut CMap_cache;
     (*__cache).max = 16u32 as libc::c_int;
-    (*__cache).cmaps = new(((*__cache).max as uint32_t as libc::c_ulong)
+    (*__cache).cmaps = new(((*__cache).max as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<*mut CMap>() as libc::c_ulong)
-        as uint32_t) as *mut *mut CMap;
+        as u32) as *mut *mut CMap;
     (*__cache).num = 0i32;
     /* Create Identity mapping */
     let ref mut fresh7 = *(*__cache).cmaps.offset(0);
@@ -1656,9 +1654,9 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const libc::c_char) -> 
             ((*__cache).max as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
         (*__cache).cmaps = renew(
             (*__cache).cmaps as *mut libc::c_void,
-            ((*__cache).max as uint32_t as libc::c_ulong)
+            ((*__cache).max as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<*mut CMap>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut *mut CMap
     }
     id = (*__cache).num;
@@ -1706,9 +1704,9 @@ pub unsafe extern "C" fn CMap_cache_add(mut cmap: *mut CMap) -> libc::c_int {
             ((*__cache).max as libc::c_uint).wrapping_add(16u32) as libc::c_int as libc::c_int;
         (*__cache).cmaps = renew(
             (*__cache).cmaps as *mut libc::c_void,
-            ((*__cache).max as uint32_t as libc::c_ulong)
+            ((*__cache).max as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<*mut CMap>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut *mut CMap
     }
     id = (*__cache).num;

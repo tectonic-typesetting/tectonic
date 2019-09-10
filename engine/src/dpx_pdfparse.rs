@@ -127,13 +127,12 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     /* PDF parser shouldn't depend on this...
      */
     #[no_mangle]
     fn spc_lookup_reference(ident: *const libc::c_char) -> *mut pdf_obj;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -147,7 +146,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -269,9 +267,9 @@ unsafe extern "C" fn parsed_string(
     let mut len: libc::c_int = 0;
     len = end.wrapping_offset_from(start) as libc::c_long as libc::c_int;
     if len > 0i32 {
-        result = new(((len + 1i32) as uint32_t as libc::c_ulong)
+        result = new(((len + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             result as *mut libc::c_void,
             start as *const libc::c_void,

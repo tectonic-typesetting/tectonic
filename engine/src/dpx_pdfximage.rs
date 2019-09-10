@@ -222,9 +222,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -253,9 +253,7 @@ extern "C" {
     #[no_mangle]
     fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -553,26 +551,26 @@ unsafe extern "C" fn load_image(
         (*ic).capacity += 16i32;
         (*ic).ximages = renew(
             (*ic).ximages as *mut libc::c_void,
-            ((*ic).capacity as uint32_t as libc::c_ulong)
+            ((*ic).capacity as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut pdf_ximage
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
         (*I).ident = new(
-            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy((*I).ident, ident);
     }
     if !fullname.is_null() {
         (*I).filename = new(
-            (strlen(fullname).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(fullname).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy((*I).filename, fullname);
     }
@@ -951,18 +949,18 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
         (*ic).capacity += 16i32;
         (*ic).ximages = renew(
             (*ic).ximages as *mut libc::c_void,
-            ((*ic).capacity as uint32_t as libc::c_ulong)
+            ((*ic).capacity as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<pdf_ximage>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut pdf_ximage
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
         (*I).ident = new(
-            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy((*I).ident, ident);
     }
@@ -1263,10 +1261,10 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut libc::c_char) {
     if s.is_null() || *s as libc::c_int == '\u{0}' as i32 {
         _opts.cmdtmpl = 0 as *mut libc::c_char
     } else {
-        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as libc::c_ulong) as u32
             as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         strcpy(_opts.cmdtmpl, s);
     };
 }

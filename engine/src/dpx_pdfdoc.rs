@@ -359,9 +359,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_dev_rectfill(
         x: libc::c_double,
@@ -469,10 +469,8 @@ extern "C" {
     fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type time_t = __time_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -911,7 +909,7 @@ unsafe extern "C" fn doc_resize_page_entries(mut p: *mut pdf_doc, mut size: libc
         (*p).pages.entries = renew(
             (*p).pages.entries as *mut libc::c_void,
             (size as libc::c_ulong).wrapping_mul(::std::mem::size_of::<pdf_page>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut pdf_page; /* background */
         i = (*p).pages.max_entries; /* page body  */
         while i < size {
@@ -2165,9 +2163,9 @@ unsafe extern "C" fn pdf_doc_init_bookmarks(mut p: *mut pdf_doc, mut bm_open_dep
         256u32.wrapping_sub(bm_open_depth as libc::c_uint)
     }) as libc::c_int;
     (*p).outlines.current_depth = 1i32;
-    item = new((1i32 as uint32_t as libc::c_ulong)
+    item = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_olitem;
+        as u32) as *mut pdf_olitem;
     (*item).dict = 0 as *mut pdf_obj;
     (*item).next = 0 as *mut pdf_olitem;
     (*item).first = 0 as *mut pdf_olitem;
@@ -2293,9 +2291,9 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_up() -> libc::c_int {
     parent = (*item).parent;
     item = (*parent).next;
     if (*parent).next.is_null() {
-        item = new((1i32 as uint32_t as libc::c_ulong)
+        item = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-            as uint32_t) as *mut pdf_olitem;
+            as u32) as *mut pdf_olitem;
         (*parent).next = item;
         (*item).dict = 0 as *mut pdf_obj;
         (*item).first = 0 as *mut pdf_olitem;
@@ -2366,9 +2364,9 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> libc::c_int {
         );
         pdf_release_obj(action);
     }
-    first = new((1i32 as uint32_t as libc::c_ulong)
+    first = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_olitem;
+        as u32) as *mut pdf_olitem;
     (*item).first = first;
     (*first).dict = 0 as *mut pdf_obj;
     (*first).is_open = 0i32;
@@ -2403,9 +2401,9 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_op
     }
     item = (*p).outlines.current;
     if item.is_null() {
-        item = new((1i32 as uint32_t as libc::c_ulong)
+        item = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-            as uint32_t) as *mut pdf_olitem;
+            as u32) as *mut pdf_olitem;
         (*item).parent = 0 as *mut pdf_olitem;
         (*p).outlines.first = item
     } else if !(*item).dict.is_null() {
@@ -2423,9 +2421,9 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_op
     } else {
         is_open
     };
-    next = new((1i32 as uint32_t as libc::c_ulong)
+    next = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<pdf_olitem>() as libc::c_ulong)
-        as uint32_t) as *mut pdf_olitem;
+        as u32) as *mut pdf_olitem;
     (*item).next = next;
     (*next).dict = 0 as *mut pdf_obj;
     (*next).parent = (*item).parent;
@@ -2481,8 +2479,8 @@ unsafe extern "C" fn pdf_doc_init_names(mut p: *mut pdf_doc, mut check_gotos: li
     (*p).names = new(
         ((::std::mem::size_of::<[*const libc::c_char; 10]>() as libc::c_ulong)
             .wrapping_div(::std::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
-            .wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<name_dict>() as libc::c_ulong) as uint32_t,
+            .wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
+            .wrapping_mul(::std::mem::size_of::<name_dict>() as libc::c_ulong) as u32,
     ) as *mut name_dict;
     i = 0i32 as libc::c_uint;
     while (i as libc::c_ulong)
@@ -2726,9 +2724,9 @@ unsafe extern "C" fn warn_undef_dests(mut dests: *mut ht_table, mut gotos: *mut 
         let mut keylen: libc::c_int = 0;
         let mut key: *mut libc::c_char = ht_iter_getkey(&mut iter, &mut keylen);
         if ht_lookup_table(dests, key as *const libc::c_void, keylen).is_null() {
-            let mut dest: *mut libc::c_char = new(((keylen + 1i32) as uint32_t as libc::c_ulong)
+            let mut dest: *mut libc::c_char = new(((keylen + 1i32) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             memcpy(
                 dest as *mut libc::c_void,
                 key as *const libc::c_void,
@@ -2947,7 +2945,7 @@ pub unsafe extern "C" fn pdf_doc_begin_article(
             (*p).articles.entries as *mut libc::c_void,
             ((*p).articles.max_entries as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<pdf_article>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut pdf_article
     }
     article = &mut *(*p)
@@ -2955,9 +2953,9 @@ pub unsafe extern "C" fn pdf_doc_begin_article(
         .entries
         .offset((*p).articles.num_entries as isize) as *mut pdf_article;
     (*article).id = new(
-        (strlen(article_id).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(article_id).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy((*article).id, article_id);
     (*article).info = article_info;
@@ -3026,7 +3024,7 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
                 (*article).beads as *mut libc::c_void,
                 ((*article).max_beads as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<pdf_bead>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut pdf_bead;
             i = (*article).num_beads;
             while i < (*article).max_beads {
@@ -3039,9 +3037,9 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
         bead = &mut *(*article).beads.offset((*article).num_beads as isize) as *mut pdf_bead;
         if !bead_id.is_null() {
             (*bead).id = new(
-                (strlen(bead_id).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+                (strlen(bead_id).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_char;
             strcpy((*bead).id, bead_id);
         } else {
@@ -3567,10 +3565,10 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
         let mut thumb_filename: *mut libc::c_char = 0 as *mut libc::c_char;
         let mut thumb_ref: *mut pdf_obj = 0 as *mut pdf_obj;
         thumb_filename = new(
-            (strlen(thumb_basename).wrapping_add(7i32 as libc::c_ulong) as uint32_t
+            (strlen(thumb_basename).wrapping_add(7i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         sprintf(
             thumb_filename,
@@ -3761,10 +3759,10 @@ pub unsafe extern "C" fn pdf_open_document(
         {
             thumb_basename = new((fn_len
                 .wrapping_sub(4i32 as libc::c_ulong)
-                .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+                .wrapping_add(1i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strncpy(
                 thumb_basename,
                 filename,
@@ -3773,10 +3771,10 @@ pub unsafe extern "C" fn pdf_open_document(
             *thumb_basename.offset(fn_len.wrapping_sub(4i32 as libc::c_ulong) as isize) =
                 0i32 as libc::c_char
         } else {
-            thumb_basename = new((fn_len.wrapping_add(1i32 as libc::c_ulong) as uint32_t
+            thumb_basename = new((fn_len.wrapping_add(1i32 as libc::c_ulong) as u32
                 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             strcpy(thumb_basename, filename);
         }
     }
@@ -3788,9 +3786,9 @@ pub unsafe extern "C" fn pdf_doc_set_creator(mut creator: *const libc::c_char) {
         return;
     }
     doccreator = new(
-        (strlen(creator).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (strlen(creator).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_char;
     strcpy(doccreator, creator);
     /* Ugh */
@@ -3943,9 +3941,9 @@ pub unsafe extern "C" fn pdf_doc_begin_grabbing(
         },
     };
     pdf_dev_push_gstate();
-    fnode = new((1i32 as uint32_t as libc::c_ulong)
+    fnode = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<form_list_node>() as libc::c_ulong)
-        as uint32_t) as *mut form_list_node;
+        as u32) as *mut form_list_node;
     (*fnode).prev = (*p).pending_forms;
     (*fnode).q_depth = pdf_dev_current_depth();
     form = &mut (*fnode).form;

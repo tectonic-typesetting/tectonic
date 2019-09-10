@@ -89,9 +89,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn sget_unsigned_pair(_: *mut libc::c_uchar) -> libc::c_ushort;
     #[no_mangle]
@@ -106,7 +106,6 @@ extern "C" {
     fn MD5_final(outbuf: *mut libc::c_uchar, ctx: *mut MD5_CONTEXT);
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -121,7 +120,6 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -139,7 +137,7 @@ pub struct pdf_colorspace {
     pub reference: *mut pdf_obj,
     pub cdata: *mut libc::c_void,
 }
-pub type iccSig = uint32_t;
+pub type iccSig = u32;
 /*
  * In ICC profile stream dicrionary, there is /Range whose values must
  * "match the information in the profile". But where is those values in?
@@ -193,10 +191,10 @@ pub struct iccXYZNumber {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct MD5_CONTEXT {
-    pub A: uint32_t,
-    pub B: uint32_t,
-    pub C: uint32_t,
-    pub D: uint32_t,
+    pub A: u32,
+    pub B: u32,
+    pub C: u32,
+    pub D: u32,
     pub nblocks: size_t,
     pub buf: [libc::c_uchar; 64],
     pub count: libc::c_int,
@@ -1865,9 +1863,9 @@ pub unsafe extern "C" fn iccp_load_profile(
         print_iccp_header(&mut icch, checksum.as_mut_ptr());
         return -1i32;
     }
-    cdata = new((1i32 as uint32_t as libc::c_ulong)
+    cdata = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<iccbased_cdata>() as libc::c_ulong)
-        as uint32_t) as *mut iccbased_cdata;
+        as u32) as *mut iccbased_cdata;
     init_iccbased_cdata(cdata);
     (*cdata).colorspace = colorspace;
     memcpy(
@@ -2028,7 +2026,7 @@ unsafe extern "C" fn pdf_colorspace_defineresource(
             cspc_cache.colorspaces as *mut libc::c_void,
             (cspc_cache.capacity as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<pdf_colorspace>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut pdf_colorspace
     }
     cspc_id = cspc_cache.count as libc::c_int;
@@ -2036,9 +2034,9 @@ unsafe extern "C" fn pdf_colorspace_defineresource(
     pdf_init_colorspace_struct(colorspace);
     if !ident.is_null() {
         (*colorspace).ident = new(
-            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (strlen(ident).wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_char;
         strcpy((*colorspace).ident, ident);
     }

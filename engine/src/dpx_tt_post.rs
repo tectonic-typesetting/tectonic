@@ -40,7 +40,7 @@ extern "C" {
     #[no_mangle]
     fn tt_get_signed_pair(handle: rust_input_handle_t) -> libc::c_short;
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> uint32_t;
+    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -86,19 +86,17 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type BYTE = libc::c_uchar;
 pub type USHORT = libc::c_ushort;
 pub type SHORT = libc::c_short;
-pub type SFNT_ULONG = uint32_t;
-pub type Fixed = uint32_t;
+pub type SFNT_ULONG = u32;
+pub type Fixed = u32;
 pub type FWord = libc::c_short;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -190,9 +188,9 @@ unsafe extern "C" fn read_v2_post_names(
     let mut maxidx: USHORT = 0;
     let mut len: libc::c_int = 0;
     (*post).numberOfGlyphs = tt_get_unsigned_pair((*sfont).handle);
-    indices = new(((*post).numberOfGlyphs as uint32_t as libc::c_ulong)
+    indices = new(((*post).numberOfGlyphs as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<USHORT>() as libc::c_ulong)
-        as uint32_t) as *mut USHORT;
+        as u32) as *mut USHORT;
     maxidx = 257i32 as USHORT;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < (*post).numberOfGlyphs as libc::c_int {
@@ -229,18 +227,18 @@ unsafe extern "C" fn read_v2_post_names(
     if ((*post).count as libc::c_int) < 1i32 {
         (*post).names = 0 as *mut *mut libc::c_char
     } else {
-        (*post).names = new(((*post).count as uint32_t as libc::c_ulong)
+        (*post).names = new(((*post).count as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<*mut libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut *mut libc::c_char;
+            as u32) as *mut *mut libc::c_char;
         i = 0i32 as USHORT;
         while (i as libc::c_int) < (*post).count as libc::c_int {
             /* read Pascal strings */
             len = tt_get_unsigned_byte((*sfont).handle) as libc::c_int;
             if len > 0i32 {
                 let ref mut fresh0 = *(*post).names.offset(i as isize);
-                *fresh0 = new(((len + 1i32) as uint32_t as libc::c_ulong)
+                *fresh0 = new(((len + 1i32) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t) as *mut libc::c_char;
+                    as u32) as *mut libc::c_char;
                 ttstub_input_read(
                     (*sfont).handle,
                     *(*post).names.offset(i as isize),
@@ -254,9 +252,9 @@ unsafe extern "C" fn read_v2_post_names(
             i = i.wrapping_add(1)
         }
     }
-    (*post).glyphNamePtr = new(((*post).numberOfGlyphs as uint32_t as libc::c_ulong)
+    (*post).glyphNamePtr = new(((*post).numberOfGlyphs as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<*const libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut *const libc::c_char;
+        as u32) as *mut *const libc::c_char;
     i = 0i32 as USHORT;
     while (i as libc::c_int) < (*post).numberOfGlyphs as libc::c_int {
         idx = *indices.offset(i as isize);
@@ -286,9 +284,9 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
     let mut post: *mut tt_post_table = 0 as *mut tt_post_table;
     /* offset = */
     sfnt_locate_table(sfont, b"post\x00" as *const u8 as *const libc::c_char); /* Fixed */
-    post = new((1i32 as uint32_t as libc::c_ulong)
+    post = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<tt_post_table>() as libc::c_ulong)
-        as uint32_t) as *mut tt_post_table; /* Fixed */
+        as u32) as *mut tt_post_table; /* Fixed */
     (*post).Version = tt_get_unsigned_quad((*sfont).handle); /* FWord */
     (*post).italicAngle = tt_get_unsigned_quad((*sfont).handle); /* FWord */
     (*post).underlinePosition = tt_get_signed_pair((*sfont).handle); /* wrong */

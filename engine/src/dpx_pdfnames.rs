@@ -108,11 +108,10 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -126,7 +125,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
@@ -254,9 +252,9 @@ unsafe extern "C" fn hval_free(mut hval: *mut libc::c_void) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_new_name_tree() -> *mut ht_table {
     let mut names: *mut ht_table = 0 as *mut ht_table;
-    names = new((1i32 as uint32_t as libc::c_ulong)
+    names = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<ht_table>() as libc::c_ulong)
-        as uint32_t) as *mut ht_table;
+        as u32) as *mut ht_table;
     ht_init_table(
         names,
         Some(hval_free as unsafe extern "C" fn(_: *mut libc::c_void) -> ()),
@@ -347,9 +345,9 @@ pub unsafe extern "C" fn pdf_names_add_object(
     }
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;
     if value.is_null() {
-        value = new((1i32 as uint32_t as libc::c_ulong)
+        value = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<obj_data>() as libc::c_ulong)
-            as uint32_t) as *mut obj_data;
+            as u32) as *mut obj_data;
         (*value).object = object;
         (*value).closed = 0i32;
         ht_append_table(names, key, keylen, value as *mut libc::c_void);
@@ -662,9 +660,9 @@ unsafe extern "C" fn flat_table(
             .as_ptr(),
         );
     }
-    objects = new(((*ht_tab).count as uint32_t as libc::c_ulong)
+    objects = new(((*ht_tab).count as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<named_object>() as libc::c_ulong)
-        as uint32_t) as *mut named_object;
+        as u32) as *mut named_object;
     count = 0i32;
     if ht_set_iter(ht_tab, &mut iter) >= 0i32 {
         let mut current_block_19: u64;
@@ -730,9 +728,9 @@ unsafe extern "C" fn flat_table(
     *num_entries = count;
     objects = renew(
         objects as *mut libc::c_void,
-        (count as uint32_t as libc::c_ulong)
+        (count as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<named_object>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut named_object;
     return objects;
 }

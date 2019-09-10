@@ -38,7 +38,7 @@ extern "C" {
     #[no_mangle]
     static firstByteMark: [uint8_t; 7];
     #[no_mangle]
-    static offsetsFromUTF8: [uint32_t; 6];
+    static offsetsFromUTF8: [u32; 6];
     #[no_mangle]
     static bytesFromUTF8: [uint8_t; 256];
     #[no_mangle]
@@ -51,12 +51,10 @@ extern "C" {
 pub type __uint8_t = libc::c_uchar;
 pub type __uint16_t = libc::c_ushort;
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __time_t = libc::c_long;
 pub type int32_t = __int32_t;
 pub type uint8_t = __uint8_t;
 pub type uint16_t = __uint16_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type time_t = __time_t;
 pub type str_number = int32_t;
@@ -250,14 +248,14 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
     i = 0i32;
     j = 0i32;
     while i < len {
-        let mut c: uint32_t = *str_pool
+        let mut c: u32 = *str_pool
             .offset((i + *str_start.offset((s as libc::c_long - 65536) as isize)) as isize)
-            as uint32_t;
+            as u32;
         if c >= 0xd800i32 as libc::c_uint && c <= 0xdbffi32 as libc::c_uint {
             i += 1;
-            let mut lo: uint32_t = *str_pool
+            let mut lo: u32 = *str_pool
                 .offset((i + *str_start.offset((s as libc::c_long - 65536) as isize)) as isize)
-                as uint32_t;
+                as u32;
             if lo >= 0xdc00i32 as libc::c_uint && lo <= 0xdfffi32 as libc::c_uint {
                 c = c
                     .wrapping_sub(0xd800i32 as libc::c_uint)
@@ -266,7 +264,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
                     .wrapping_sub(0xdc00i32 as libc::c_uint)
                     .wrapping_add(0x10000i32 as libc::c_uint)
             } else {
-                c = 0xfffdi32 as uint32_t
+                c = 0xfffdi32 as u32
             }
         }
         if c < 0x80i32 as libc::c_uint {
@@ -279,7 +277,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut libc::c_char {
             bytesToWrite = 4i32 as libc::c_uint
         } else {
             bytesToWrite = 3i32 as libc::c_uint;
-            c = 0xfffdi32 as uint32_t
+            c = 0xfffdi32 as u32
         }
         j = (j as libc::c_uint).wrapping_add(bytesToWrite) as pool_pointer as pool_pointer;
         let mut current_block_28: u64;

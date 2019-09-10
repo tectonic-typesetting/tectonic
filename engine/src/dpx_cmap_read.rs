@@ -146,9 +146,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pst_get_token(inbuf: *mut *mut libc::c_uchar, inbufend: *mut libc::c_uchar) -> *mut pst_obj;
     #[no_mangle]
@@ -164,9 +164,7 @@ extern "C" {
     #[no_mangle]
     fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -327,13 +325,13 @@ unsafe extern "C" fn ifreader_create(
     mut bufsize: size_t,
 ) -> *mut ifreader {
     let mut reader: *mut ifreader = 0 as *mut ifreader;
-    reader = new((1i32 as uint32_t as libc::c_ulong)
+    reader = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<ifreader>() as libc::c_ulong)
-        as uint32_t) as *mut ifreader;
+        as u32) as *mut ifreader;
     (*reader).buf = new(
-        (bufsize.wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+        (bufsize.wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_uchar;
     (*reader).max = bufsize;
     (*reader).handle = handle;
@@ -384,9 +382,9 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         }
         (*reader).buf = renew(
             (*reader).buf as *mut libc::c_void,
-            (size.wrapping_add(1i32 as libc::c_ulong) as uint32_t as libc::c_ulong)
+            (size.wrapping_add(1i32 as libc::c_ulong) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-                as uint32_t,
+                as u32,
         ) as *mut libc::c_uchar;
         (*reader).max = size
     }

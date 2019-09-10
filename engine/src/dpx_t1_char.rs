@@ -74,17 +74,15 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> libc::c_int>;
 pub type card8 = libc::c_uchar;
 pub type card16 = libc::c_ushort;
 pub type c_offsize = libc::c_uchar;
-pub type l_offset = uint32_t;
+pub type l_offset = u32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_index {
@@ -348,8 +346,8 @@ unsafe extern "C" fn add_charpath(
             .as_ptr(),
         );
     }
-    p = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<t1_cpath>() as libc::c_ulong) as uint32_t)
+    p = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<t1_cpath>() as libc::c_ulong) as u32)
         as *mut t1_cpath;
     (*p).type_0 = type_0;
     (*p).num_args = argn;

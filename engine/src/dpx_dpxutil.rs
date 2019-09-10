@@ -47,9 +47,8 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -63,7 +62,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_entry {
@@ -417,12 +415,12 @@ pub unsafe extern "C" fn ht_insert_table(
         }
         (*hent).value = value
     } else {
-        hent = new((1i32 as uint32_t as libc::c_ulong)
+        hent = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<ht_entry>() as libc::c_ulong)
-            as uint32_t) as *mut ht_entry;
-        (*hent).key = new((keylen as uint32_t as libc::c_ulong)
+            as u32) as *mut ht_entry;
+        (*hent).key = new((keylen as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             (*hent).key as *mut libc::c_void,
             key,
@@ -452,23 +450,23 @@ pub unsafe extern "C" fn ht_append_table(
     hkey = get_hash(key, keylen);
     hent = (*ht).table[hkey as usize];
     if hent.is_null() {
-        hent = new((1i32 as uint32_t as libc::c_ulong)
+        hent = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<ht_entry>() as libc::c_ulong)
-            as uint32_t) as *mut ht_entry;
+            as u32) as *mut ht_entry;
         (*ht).table[hkey as usize] = hent
     } else {
         while !hent.is_null() {
             last = hent;
             hent = (*hent).next
         }
-        hent = new((1i32 as uint32_t as libc::c_ulong)
+        hent = new((1i32 as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<ht_entry>() as libc::c_ulong)
-            as uint32_t) as *mut ht_entry;
+            as u32) as *mut ht_entry;
         (*last).next = hent
     }
-    (*hent).key = new((keylen as uint32_t as libc::c_ulong)
+    (*hent).key = new((keylen as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memcpy(
         (*hent).key as *mut libc::c_void,
         key,
@@ -760,9 +758,9 @@ pub unsafe extern "C" fn parse_c_string(
     p = p.offset(1);
     l = read_c_litstrc(0 as *mut libc::c_char, 0i32, &mut p, endptr);
     if l >= 0i32 {
-        q = new(((l + 1i32) as uint32_t as libc::c_ulong)
+        q = new(((l + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         p = (*pp).offset(1);
         l = read_c_litstrc(q, l + 1i32, &mut p, endptr)
     }
@@ -794,9 +792,9 @@ pub unsafe extern "C" fn parse_c_ident(
         p = p.offset(1);
         n += 1
     }
-    q = new(((n + 1i32) as uint32_t as libc::c_ulong)
+    q = new(((n + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memcpy(
         q as *mut libc::c_void,
         *pp as *const libc::c_void,
@@ -880,9 +878,9 @@ pub unsafe extern "C" fn parse_float_decimal(
     }
     if n != 0i32 {
         n = p.wrapping_offset_from(*pp) as libc::c_long as libc::c_int;
-        q = new(((n + 1i32) as uint32_t as libc::c_ulong)
+        q = new(((n + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_char;
+            as u32) as *mut libc::c_char;
         memcpy(
             q as *mut libc::c_void,
             *pp as *const libc::c_void,

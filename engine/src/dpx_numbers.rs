@@ -20,11 +20,9 @@ extern "C" {
     fn fgetc(__stream: *mut FILE) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __off_t = libc::c_long;
 pub type __off64_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -171,9 +169,9 @@ pub unsafe extern "C" fn get_signed_quad(mut file: *mut FILE) -> int32_t {
     return quad;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> uint32_t {
+pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> u32 {
     let mut i: libc::c_int = 0;
-    let mut quad: uint32_t = 0i32 as uint32_t;
+    let mut quad = 0u32;
     i = 0i32;
     while i < 4i32 {
         quad = quad << 8i32 | get_unsigned_byte(file) as libc::c_uint;
@@ -182,14 +180,13 @@ pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> uint32_t {
     return quad;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: libc::c_uchar) -> uint32_t {
-    let mut val: uint32_t = get_unsigned_byte(file) as uint32_t;
+pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: libc::c_uchar) -> u32 {
+    let mut val = get_unsigned_byte(file) as u32;
     let mut current_block_4: u64;
     match num as libc::c_int {
         3 => {
             if val > 0x7fi32 as libc::c_uint {
-                val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as uint32_t
-                    as uint32_t
+                val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as u32
             }
             val = val << 8i32 | get_unsigned_byte(file) as libc::c_uint;
             current_block_4 = 10942825333195857913;
@@ -223,7 +220,7 @@ pub unsafe extern "C" fn get_positive_quad(
     mut file: *mut FILE,
     mut type_0: *const libc::c_char,
     mut name: *const libc::c_char,
-) -> uint32_t {
+) -> u32 {
     let mut val: int32_t = get_signed_quad(file);
     if val < 0i32 {
         _tt_abort(
@@ -233,26 +230,26 @@ pub unsafe extern "C" fn get_positive_quad(
             val,
         );
     }
-    return val as uint32_t;
+    return val as u32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn sqxfw(mut sq: int32_t, mut fw: fixword) -> int32_t {
     let mut sign: libc::c_int = 1i32;
-    let mut a: uint32_t = 0;
-    let mut b: uint32_t = 0;
-    let mut c: uint32_t = 0;
-    let mut d: uint32_t = 0;
-    let mut ad: uint32_t = 0;
-    let mut bd: uint32_t = 0;
-    let mut bc: uint32_t = 0;
-    let mut ac: uint32_t = 0;
-    let mut e: uint32_t = 0;
-    let mut f: uint32_t = 0;
-    let mut g: uint32_t = 0;
-    let mut h: uint32_t = 0;
-    let mut i: uint32_t = 0;
-    let mut j: uint32_t = 0;
-    let mut k: uint32_t = 0;
+    let mut a: u32 = 0;
+    let mut b: u32 = 0;
+    let mut c: u32 = 0;
+    let mut d: u32 = 0;
+    let mut ad: u32 = 0;
+    let mut bd: u32 = 0;
+    let mut bc: u32 = 0;
+    let mut ac: u32 = 0;
+    let mut e: u32 = 0;
+    let mut f: u32 = 0;
+    let mut g: u32 = 0;
+    let mut h: u32 = 0;
+    let mut i: u32 = 0;
+    let mut j: u32 = 0;
+    let mut k: u32 = 0;
     let mut result: int32_t = 0;
     /* Make positive. */
     if sq < 0i32 {
@@ -263,10 +260,10 @@ pub unsafe extern "C" fn sqxfw(mut sq: int32_t, mut fw: fixword) -> int32_t {
         sign = -sign;
         fw = -fw
     }
-    a = sq as uint32_t >> 16i32;
-    b = sq as uint32_t & 0xffffu32;
-    c = fw as uint32_t >> 16i32;
-    d = fw as uint32_t & 0xffffu32;
+    a = sq as u32 >> 16i32;
+    b = sq as u32 & 0xffffu32;
+    c = fw as u32 >> 16i32;
+    d = fw as u32 & 0xffffu32;
     ad = a.wrapping_mul(d);
     bd = b.wrapping_mul(d);
     bc = b.wrapping_mul(c);
@@ -333,9 +330,9 @@ pub unsafe extern "C" fn tt_get_signed_pair(mut handle: rust_input_handle_t) -> 
     return pair;
 }
 #[no_mangle]
-pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -> uint32_t {
+pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -> u32 {
     let mut i: libc::c_int = 0;
-    let mut quad: uint32_t = 0i32 as uint32_t;
+    let mut quad: u32 = 0i32 as u32;
     i = 0i32;
     while i < 4i32 {
         quad = quad << 8i32 | tt_get_unsigned_byte(handle) as libc::c_uint;
@@ -358,14 +355,14 @@ pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> 
 pub unsafe extern "C" fn tt_get_unsigned_num(
     mut handle: rust_input_handle_t,
     mut num: libc::c_uchar,
-) -> uint32_t {
-    let mut val: uint32_t = tt_get_unsigned_byte(handle) as uint32_t;
+) -> u32 {
+    let mut val: u32 = tt_get_unsigned_byte(handle) as u32;
     let mut current_block_4: u64;
     match num as libc::c_int {
         3 => {
             if val > 0x7fi32 as libc::c_uint {
-                val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as uint32_t
-                    as uint32_t
+                val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as u32
+                    as u32
             }
             val = val << 8i32 | tt_get_unsigned_byte(handle) as libc::c_uint;
             current_block_4 = 13589375657124263157;
@@ -427,7 +424,7 @@ pub unsafe extern "C" fn tt_get_unsigned_num(
    32-bit integer (int32_t), but some of them must not be negative.
 
    Four byte numbers from JPEG2000, OpenType, or TrueType files are
-   mostly unsigned (uint32_t) and occasionally signed (int32_t).
+   mostly unsigned (u32) and occasionally signed (int32_t).
 */
 /* Tectonic enabled */
 #[no_mangle]
@@ -435,7 +432,7 @@ pub unsafe extern "C" fn tt_get_positive_quad(
     mut handle: rust_input_handle_t,
     mut type_0: *const libc::c_char,
     mut name: *const libc::c_char,
-) -> uint32_t {
+) -> u32 {
     let mut val: int32_t = tt_get_signed_quad(handle);
     if val < 0i32 {
         _tt_abort(
@@ -445,5 +442,5 @@ pub unsafe extern "C" fn tt_get_positive_quad(
             val,
         );
     }
-    return val as uint32_t;
+    return val as u32;
 }

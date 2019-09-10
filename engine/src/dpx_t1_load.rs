@@ -177,9 +177,9 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: uint32_t) -> *mut libc::c_void;
+    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pst_get_token(inbuf: *mut *mut libc::c_uchar, inbufend: *mut libc::c_uchar) -> *mut pst_obj;
     #[no_mangle]
@@ -195,9 +195,7 @@ extern "C" {
     #[no_mangle]
     fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -231,7 +229,7 @@ pub type card16 = libc::c_ushort;
 pub type c_offsize = libc::c_uchar;
 /* 1-byte unsigned number specifies the size
 of an Offset field or fields, range 1-4 */
-pub type l_offset = uint32_t;
+pub type l_offset = u32;
 /* 1, 2, 3, or 4-byte offset */
 pub type s_SID = libc::c_ushort;
 /* 2-byte string identifier  */
@@ -1389,9 +1387,9 @@ unsafe extern "C" fn parse_encoding(
                     let ref mut fresh9 = *enc_vec.offset(code as isize);
                     *fresh9 = new((strlen(StandardEncoding[code as usize])
                         .wrapping_add(1i32 as libc::c_ulong)
-                        as uint32_t as libc::c_ulong)
+                        as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                        as uint32_t) as *mut libc::c_char;
+                        as u32) as *mut libc::c_char;
                     strcpy(
                         *enc_vec.offset(code as isize),
                         StandardEncoding[code as usize],
@@ -1427,9 +1425,9 @@ unsafe extern "C" fn parse_encoding(
                     let ref mut fresh11 = *enc_vec.offset(code as isize);
                     *fresh11 = new((strlen(ISOLatin1Encoding[code as usize])
                         .wrapping_add(1i32 as libc::c_ulong)
-                        as uint32_t as libc::c_ulong)
+                        as u32 as libc::c_ulong)
                         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                        as uint32_t) as *mut libc::c_char;
+                        as u32) as *mut libc::c_char;
                     strcpy(
                         *enc_vec.offset(code as isize),
                         ISOLatin1Encoding[code as usize],
@@ -1655,15 +1653,15 @@ unsafe extern "C" fn parse_subrs(
     }
     if mode != 1i32 {
         max_size = 65536i32;
-        data = new((max_size as uint32_t as libc::c_ulong)
+        data = new((max_size as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-            as uint32_t) as *mut card8;
-        offsets = new((count as uint32_t as libc::c_ulong)
+            as u32) as *mut card8;
+        offsets = new((count as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_int;
-        lengths = new((count as uint32_t as libc::c_ulong)
+            as u32) as *mut libc::c_int;
+        lengths = new((count as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_int>() as libc::c_ulong)
-            as uint32_t) as *mut libc::c_int;
+            as u32) as *mut libc::c_int;
         memset(
             offsets as *mut libc::c_void,
             0i32,
@@ -1815,9 +1813,9 @@ unsafe extern "C" fn parse_subrs(
                     data =
                         renew(
                             data as *mut libc::c_void,
-                            (max_size as uint32_t as libc::c_ulong)
+                            (max_size as u32 as libc::c_ulong)
                                 .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-                                as uint32_t,
+                                as u32,
                         ) as *mut card8
                 }
                 if lenIV >= 0i32 {
@@ -1852,9 +1850,9 @@ unsafe extern "C" fn parse_subrs(
             let ref mut fresh17 = *(*font).subrs.offset(0);
             *fresh17 = cff_new_index(count as card16);
             subrs = *fresh17;
-            (*subrs).data = new((offset as uint32_t as libc::c_ulong)
+            (*subrs).data = new((offset as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-                as uint32_t) as *mut card8;
+                as u32) as *mut card8;
             offset = 0i32;
             i = 0i32;
             while i < count {
@@ -1928,23 +1926,23 @@ unsafe extern "C" fn parse_charstrings(
     if mode != 1i32 {
         charstrings = cff_new_index(count as card16);
         max_size = 65536i32;
-        (*charstrings).data = new((max_size as uint32_t as libc::c_ulong)
+        (*charstrings).data = new((max_size as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-            as uint32_t) as *mut card8
+            as u32) as *mut card8
     } else {
         charstrings = 0 as *mut cff_index;
         max_size = 0i32
     }
     (*font).cstrings = charstrings;
-    (*font).charsets = new((1i32 as uint32_t as libc::c_ulong)
+    (*font).charsets = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<cff_charsets>() as libc::c_ulong)
-        as uint32_t) as *mut cff_charsets;
+        as u32) as *mut cff_charsets;
     charset = (*font).charsets;
     (*charset).format = 0i32 as card8;
     (*charset).num_entries = (count - 1i32) as card16;
-    (*charset).data.glyphs = new(((count - 1i32) as uint32_t as libc::c_ulong)
+    (*charset).data.glyphs = new(((count - 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<s_SID>() as libc::c_ulong)
-        as uint32_t) as *mut s_SID;
+        as u32) as *mut s_SID;
     memset(
         (*charset).data.glyphs as *mut libc::c_void,
         0i32,
@@ -2061,9 +2059,9 @@ unsafe extern "C" fn parse_charstrings(
                     (*charstrings).data =
                         renew(
                             (*charstrings).data as *mut libc::c_void,
-                            (max_size as uint32_t as libc::c_ulong)
+                            (max_size as u32 as libc::c_ulong)
                                 .wrapping_mul(::std::mem::size_of::<card8>() as libc::c_ulong)
-                                as uint32_t,
+                                as u32,
                         ) as *mut card8
                 }
                 if gid == 0i32 {
@@ -2654,9 +2652,9 @@ unsafe extern "C" fn get_pfb_segment(
             }
             buffer = renew(
                 buffer as *mut libc::c_void,
-                ((bytesread + slen) as uint32_t as libc::c_ulong)
+                ((bytesread + slen) as u32 as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_uchar;
             while slen > 0i32 {
                 rlen = ttstub_input_read(
@@ -2678,9 +2676,9 @@ unsafe extern "C" fn get_pfb_segment(
     }
     buffer = renew(
         buffer as *mut libc::c_void,
-        ((bytesread + 1i32) as uint32_t as libc::c_ulong)
+        ((bytesread + 1i32) as u32 as libc::c_ulong)
             .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-            as uint32_t,
+            as u32,
     ) as *mut libc::c_uchar;
     *buffer.offset(bytesread as isize) = 0i32 as libc::c_uchar;
     if !length.is_null() {
@@ -2767,14 +2765,14 @@ unsafe extern "C" fn init_cff_font(mut cff: *mut cff_font) {
     (*cff).fdselect = 0 as *mut cff_fdselect;
     (*cff).cstrings = 0 as *mut cff_index;
     (*cff).fdarray = 0 as *mut *mut cff_dict;
-    (*cff).private = new((1i32 as uint32_t as libc::c_ulong)
+    (*cff).private = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as libc::c_ulong)
-        as uint32_t) as *mut *mut cff_dict;
+        as u32) as *mut *mut cff_dict;
     let ref mut fresh23 = *(*cff).private.offset(0);
     *fresh23 = cff_new_dict();
-    (*cff).subrs = new((1i32 as uint32_t as libc::c_ulong)
+    (*cff).subrs = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<*mut cff_index>() as libc::c_ulong)
-        as uint32_t) as *mut *mut cff_index;
+        as u32) as *mut *mut cff_index;
     let ref mut fresh24 = *(*cff).subrs.offset(0);
     *fresh24 = 0 as *mut cff_index;
     (*cff).offset = 0i32 as l_offset;
@@ -2823,8 +2821,8 @@ pub unsafe extern "C" fn t1_load_font(
     if buffer.is_null() || length == 0i32 {
         _tt_abort(b"Reading PFB (ASCII part) file failed.\x00" as *const u8 as *const libc::c_char);
     }
-    cff = new((1i32 as uint32_t as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<cff_font>() as libc::c_ulong) as uint32_t)
+    cff = new((1i32 as u32 as libc::c_ulong)
+        .wrapping_mul(::std::mem::size_of::<cff_font>() as libc::c_ulong) as u32)
         as *mut cff_font;
     init_cff_font(cff);
     start = buffer;

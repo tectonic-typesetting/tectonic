@@ -127,7 +127,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
@@ -187,7 +187,6 @@ extern "C" {
         p: *mut transform_info,
     ) -> libc::c_int;
 }
-pub type __uint32_t = libc::c_uint;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -201,7 +200,6 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -375,9 +373,9 @@ unsafe extern "C" fn parse_key_val(
         *kp = *vp;
         return -1i32;
     }
-    k = new(((n + 1i32) as uint32_t as libc::c_ulong)
+    k = new(((n + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     memcpy(
         k as *mut libc::c_void,
         q as *const libc::c_void,
@@ -403,9 +401,9 @@ unsafe extern "C" fn parse_key_val(
         if p == endptr || *p as libc::c_int != qchr as libc::c_int {
             error = -1i32
         } else {
-            v = new(((n + 1i32) as uint32_t as libc::c_ulong)
+            v = new(((n + 1i32) as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                as uint32_t) as *mut libc::c_char;
+                as u32) as *mut libc::c_char;
             memcpy(
                 v as *mut libc::c_void,
                 q as *const libc::c_void,
@@ -630,9 +628,9 @@ unsafe extern "C" fn fqurl(
             .wrapping_add(strlen(baseurl).wrapping_add(1i32 as libc::c_ulong))
             as libc::c_int as libc::c_int
     }
-    q = new(((len + 1i32) as uint32_t as libc::c_ulong)
+    q = new(((len + 1i32) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     *q = '\u{0}' as i32 as libc::c_char;
     if !baseurl.is_null() && *baseurl.offset(0) as libc::c_int != 0 {
         let mut p: *mut libc::c_char = 0 as *mut libc::c_char;
@@ -883,10 +881,10 @@ unsafe extern "C" fn spc_html__base_empty(
         );
         free((*sd).baseurl as *mut libc::c_void);
     }
-    (*sd).baseurl = new((strlen(vp).wrapping_add(1i32 as libc::c_ulong) as uint32_t
+    (*sd).baseurl = new((strlen(vp).wrapping_add(1i32 as libc::c_ulong) as u32
         as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-        as uint32_t) as *mut libc::c_char;
+        as u32) as *mut libc::c_char;
     strcpy((*sd).baseurl, vp);
     return 0i32;
 }
@@ -1192,10 +1190,10 @@ unsafe extern "C" fn spc_html__img_empty(
         if a != 0i32 {
             res_name = new(
                 (strlen(b"_Tps_a100_\x00" as *const u8 as *const libc::c_char)
-                    .wrapping_add(1i32 as libc::c_ulong) as uint32_t
+                    .wrapping_add(1i32 as libc::c_ulong) as u32
                     as libc::c_ulong)
                     .wrapping_mul(::std::mem::size_of::<libc::c_char>() as libc::c_ulong)
-                    as uint32_t,
+                    as u32,
             ) as *mut libc::c_char;
             sprintf(
                 res_name,

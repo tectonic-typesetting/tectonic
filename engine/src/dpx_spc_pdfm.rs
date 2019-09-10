@@ -215,7 +215,7 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn new(size: uint32_t) -> *mut libc::c_void;
+    fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
     /* Color special
@@ -431,10 +431,8 @@ extern "C" {
     fn CMap_cache_find(cmap_name: *const libc::c_char) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __uint32_t = libc::c_uint;
 pub type __ssize_t = libc::c_long;
 pub type int32_t = __int32_t;
-pub type uint32_t = __uint32_t;
 pub type size_t = libc::c_ulong;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is
@@ -745,9 +743,9 @@ unsafe extern "C" fn addresource(
     if ident.is_null() || res_id < 0i32 {
         return -1i32;
     }
-    r = new((1i32 as uint32_t as libc::c_ulong)
+    r = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<resource_map>() as libc::c_ulong)
-        as uint32_t) as *mut resource_map;
+        as u32) as *mut resource_map;
     (*r).type_0 = 0i32;
     (*r).res_id = res_id;
     ht_append_table(
@@ -796,9 +794,9 @@ unsafe extern "C" fn spc_handler_pdfm__init(mut dp: *mut libc::c_void) -> libc::
     let mut i: libc::c_int = 0;
     (*sd).annot_dict = 0 as *mut pdf_obj;
     (*sd).lowest_level = 255i32;
-    (*sd).resourcemap = new((1i32 as uint32_t as libc::c_ulong)
+    (*sd).resourcemap = new((1i32 as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<ht_table>() as libc::c_ulong)
-        as uint32_t) as *mut ht_table;
+        as u32) as *mut ht_table;
     ht_init_table(
         (*sd).resourcemap,
         Some(hval_free as unsafe extern "C" fn(_: *mut libc::c_void) -> ()),
@@ -2982,9 +2980,9 @@ unsafe extern "C" fn spc_handler_pdfm_mapline(
                 *fresh12 = *fresh11
             }
             *q = '\u{0}' as i32 as libc::c_char;
-            mrec = new((1i32 as uint32_t as libc::c_ulong)
+            mrec = new((1i32 as u32 as libc::c_ulong)
                 .wrapping_mul(::std::mem::size_of::<fontmap_rec>() as libc::c_ulong)
-                as uint32_t) as *mut fontmap_rec;
+                as u32) as *mut fontmap_rec;
             pdf_init_fontmap_record(mrec);
             error = pdf_read_fontmap_line(
                 mrec,
