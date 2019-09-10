@@ -26,3 +26,4 @@ vcpkg = "0.2.7"
 [dependencies]
 c2rust-bitfields = "0.3"
 libc = "0.2"
+libpng-sys = "1"
