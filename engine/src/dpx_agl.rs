@@ -17,7 +17,7 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> libc::c_long;
+    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -155,7 +155,7 @@ extern "C" {
     ) -> size_t;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -374,7 +374,7 @@ unsafe extern "C" fn skip_capital(
 ) -> libc::c_int {
     let mut slen: libc::c_int = 0i32;
     let mut len: libc::c_int = 0;
-    len = endptr.wrapping_offset_from(*p) as libc::c_long as libc::c_int;
+    len = endptr.wrapping_offset_from(*p) as i64 as libc::c_int;
     if len >= 2i32
         && (**p as libc::c_int == 'A' as i32 && *(*p).offset(1) as libc::c_int == 'E' as i32
             || **p as libc::c_int == 'O' as i32 && *(*p).offset(1) as libc::c_int == 'E' as i32)
@@ -410,7 +410,7 @@ unsafe extern "C" fn skip_modifier(
     let mut slen: size_t = 0i32 as size_t;
     let mut len: size_t = 0;
     let mut i: libc::c_uint = 0;
-    len = endptr.wrapping_offset_from(*p) as libc::c_long as size_t;
+    len = endptr.wrapping_offset_from(*p) as i64 as size_t;
     i = 0i32 as libc::c_uint;
     while !modifiers[i as usize].is_null() {
         if len >= strlen(modifiers[i as usize])
@@ -934,7 +934,7 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
     } else {
         let mut var_idx: ssize_t = 0;
         var_idx = agl_guess_name(glyphname);
-        if var_idx < 0i32 as libc::c_long || var_list[var_idx as usize].key.is_null() {
+        if var_idx < 0i32 as i64 || var_list[var_idx as usize].key.is_null() {
             n = strlen(glyphname) as libc::c_int
         } else {
             n = strlen(glyphname).wrapping_sub(strlen(var_list[var_idx as usize].key))
@@ -1213,7 +1213,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
     }
     suffix = strchr(glyphname, '.' as i32);
     len = if !suffix.is_null() {
-        suffix.wrapping_offset_from(glyphname) as libc::c_long as size_t
+        suffix.wrapping_offset_from(glyphname) as i64 as size_t
     } else {
         strlen(glyphname)
     };
@@ -1431,7 +1431,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
                 delim = endptr
             }
         }
-        sub_len = delim.wrapping_offset_from(p) as libc::c_long as int32_t;
+        sub_len = delim.wrapping_offset_from(p) as i64 as int32_t;
         name = new(((sub_len + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
@@ -1452,12 +1452,12 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
             agln1 = agl_lookup_list(name);
             if agln1.is_null()
                 || (*agln1).n_components == 1i32
-                    && ((*agln1).unicodes[0] as libc::c_long >= 0xe000
-                        && (*agln1).unicodes[0] as libc::c_long <= 0xf8ff
-                        || (*agln1).unicodes[0] as libc::c_long >= 0xf0000
-                            && (*agln1).unicodes[0] as libc::c_long <= 0xffffd
-                        || (*agln1).unicodes[0] as libc::c_long >= 0x100000
-                            && (*agln1).unicodes[0] as libc::c_long <= 0x10fffd)
+                    && ((*agln1).unicodes[0] as i64 >= 0xe000
+                        && (*agln1).unicodes[0] as i64 <= 0xf8ff
+                        || (*agln1).unicodes[0] as i64 >= 0xf0000
+                            && (*agln1).unicodes[0] as i64 <= 0xffffd
+                        || (*agln1).unicodes[0] as i64 >= 0x100000
+                            && (*agln1).unicodes[0] as i64 <= 0x10fffd)
             {
                 agln0 = agl_normalized_name(name);
                 if !agln0.is_null() {
@@ -1561,7 +1561,7 @@ pub unsafe extern "C" fn agl_get_unicodes(
                 delim = endptr
             }
         }
-        sub_len = delim.wrapping_offset_from(p) as libc::c_long as int32_t;
+        sub_len = delim.wrapping_offset_from(p) as i64 as int32_t;
         name = new(((sub_len + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
@@ -1600,12 +1600,12 @@ pub unsafe extern "C" fn agl_get_unicodes(
             agln1 = agl_lookup_list(name);
             if agln1.is_null()
                 || (*agln1).n_components == 1i32
-                    && ((*agln1).unicodes[0] as libc::c_long >= 0xe000
-                        && (*agln1).unicodes[0] as libc::c_long <= 0xf8ff
-                        || (*agln1).unicodes[0] as libc::c_long >= 0xf0000
-                            && (*agln1).unicodes[0] as libc::c_long <= 0xffffd
-                        || (*agln1).unicodes[0] as libc::c_long >= 0x100000
-                            && (*agln1).unicodes[0] as libc::c_long <= 0x10fffd)
+                    && ((*agln1).unicodes[0] as i64 >= 0xe000
+                        && (*agln1).unicodes[0] as i64 <= 0xf8ff
+                        || (*agln1).unicodes[0] as i64 >= 0xf0000
+                            && (*agln1).unicodes[0] as i64 <= 0xffffd
+                        || (*agln1).unicodes[0] as i64 >= 0x100000
+                            && (*agln1).unicodes[0] as i64 <= 0x10fffd)
             {
                 agln0 = agl_normalized_name(name);
                 if !agln0.is_null() {

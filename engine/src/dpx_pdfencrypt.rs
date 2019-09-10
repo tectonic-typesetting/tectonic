@@ -177,7 +177,7 @@ extern "C" {
     fn pdf_doc_get_dictionary(category: *const i8) -> *mut pdf_obj;
 }
 pub type __int32_t = libc::c_int;
-pub type __time_t = libc::c_long;
+pub type __time_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
@@ -193,7 +193,7 @@ pub struct tm {
     pub tm_wday: libc::c_int,
     pub tm_yday: libc::c_int,
     pub tm_isdst: libc::c_int,
-    pub tm_gmtoff: libc::c_long,
+    pub tm_gmtoff: i64,
     pub tm_zone: *const i8,
 }
 #[derive(Copy, Clone)]
@@ -1231,7 +1231,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     (*p).P = (perm | 0xc0u32) as int32_t;
     match (*p).V {
         1 => {
-            (*p).R = if ((*p).P as libc::c_long) < 0x100 {
+            (*p).R = if ((*p).P as i64) < 0x100 {
                 2i32
             } else {
                 3i32

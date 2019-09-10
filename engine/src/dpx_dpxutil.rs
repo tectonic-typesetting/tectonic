@@ -877,7 +877,7 @@ pub unsafe extern "C" fn parse_float_decimal(
         }
     }
     if n != 0i32 {
-        n = p.wrapping_offset_from(*pp) as libc::c_long as libc::c_int;
+        n = p.wrapping_offset_from(*pp) as i64 as libc::c_int;
         q = new(((n + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;

@@ -83,7 +83,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is

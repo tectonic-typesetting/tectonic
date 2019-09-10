@@ -9,9 +9,9 @@
          unused_assignments,
          unused_mut)]
 pub type __int32_t = libc::c_int;
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
-pub type __ssize_t = libc::c_long;
+pub type __off_t = i64;
+pub type __off64_t = i64;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type off_t = __off_t;
@@ -463,7 +463,7 @@ pub struct __jmp_buf_tag {
     pub __mask_was_saved: libc::c_int,
     pub __saved_mask: __sigset_t,
 }
-pub type __jmp_buf = [libc::c_long; 8];
+pub type __jmp_buf = [i64; 8];
 pub type jmp_buf = [__jmp_buf_tag; 1];
 /* tectonic/core-bridge.c: the C/C++ => Rust bridge
    Copyright 2017 the Tectonic Project

@@ -21,7 +21,7 @@ extern "C" {
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> libc::c_int;
     #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> libc::c_long;
+    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
     #[no_mangle]
     fn strtoul(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> u64;
     #[no_mangle]
@@ -913,7 +913,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                         }
                     }
                     v = strtol(q, 0 as *mut *mut i8, 16i32) as libc::c_int;
-                    (*mrec).opt.mapc = ((v << 8i32) as libc::c_long & 0xff00) as libc::c_int;
+                    (*mrec).opt.mapc = ((v << 8i32) as i64 & 0xff00) as libc::c_int;
                     free(q as *mut libc::c_void);
                     p = p.offset(1)
                 } else if p.offset(4) <= endptr
@@ -996,7 +996,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                         }
                     }
                     v = strtol(q, 0 as *mut *mut i8, 16i32) as libc::c_int;
-                    (*mrec).opt.mapc = ((v << 8i32) as libc::c_long & 0xff00) as libc::c_int;
+                    (*mrec).opt.mapc = ((v << 8i32) as i64 & 0xff00) as libc::c_int;
                     free(q as *mut libc::c_void);
                 } else {
                     dpx_warning(
@@ -1195,13 +1195,13 @@ unsafe extern "C" fn chop_sfd_name(
     {
         return 0 as *mut i8;
     }
-    m = p.wrapping_offset_from(tex_name) as libc::c_long as libc::c_int;
+    m = p.wrapping_offset_from(tex_name) as i64 as libc::c_int;
     p = p.offset(1);
     q = strchr(p, '@' as i32);
     if q.is_null() || q == p {
         return 0 as *mut i8;
     }
-    n = q.wrapping_offset_from(p) as libc::c_long as libc::c_int;
+    n = q.wrapping_offset_from(p) as i64 as libc::c_int;
     q = q.offset(1);
     len = strlen(tex_name).wrapping_sub(n as u64) as libc::c_int;
     fontname = new(((len + 1i32) as u32 as u64)
@@ -1241,12 +1241,12 @@ unsafe extern "C" fn make_subfont_name(
     if p.is_null() || p == map_name as *mut i8 {
         return 0 as *mut i8;
     }
-    m = p.wrapping_offset_from(map_name) as libc::c_long as libc::c_int;
+    m = p.wrapping_offset_from(map_name) as i64 as libc::c_int;
     q = strchr(p.offset(1), '@' as i32);
     if q.is_null() || q == p.offset(1) {
         return 0 as *mut i8;
     }
-    n = q.wrapping_offset_from(p) as libc::c_long as libc::c_int + 1i32;
+    n = q.wrapping_offset_from(p) as i64 as libc::c_int + 1i32;
     if strlen(sfd_name) != (n - 2i32) as u64
         || memcmp(
             p.offset(1) as *const libc::c_void,
@@ -1900,7 +1900,7 @@ unsafe extern "C" fn substr(
         return 0 as *mut i8;
     }
     sstr = new(
-        ((endptr.wrapping_offset_from(*str) as libc::c_long + 1i32 as libc::c_long) as u32
+        ((endptr.wrapping_offset_from(*str) as i64 + 1i32 as i64) as u32
             as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32,
@@ -1908,9 +1908,9 @@ unsafe extern "C" fn substr(
     memcpy(
         sstr as *mut libc::c_void,
         *str as *const libc::c_void,
-        endptr.wrapping_offset_from(*str) as libc::c_long as u64,
+        endptr.wrapping_offset_from(*str) as i64 as u64,
     );
-    *sstr.offset(endptr.wrapping_offset_from(*str) as libc::c_long as isize) =
+    *sstr.offset(endptr.wrapping_offset_from(*str) as i64 as isize) =
         '\u{0}' as i32 as i8;
     *str = endptr.offset(1);
     return sstr;

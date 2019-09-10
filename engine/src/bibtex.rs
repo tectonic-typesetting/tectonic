@@ -137,7 +137,7 @@ pub struct __jmp_buf_tag {
     pub __mask_was_saved: libc::c_int,
     pub __saved_mask: __sigset_t,
 }
-pub type __jmp_buf = [libc::c_long; 8];
+pub type __jmp_buf = [i64; 8];
 pub type jmp_buf = [__jmp_buf_tag; 1];
 pub type bib_number = int32_t;
 #[derive(Copy, Clone)]
@@ -656,7 +656,7 @@ unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t, mut s: str_n
     if s < 0i32 || s >= str_ptr + 3i32 || s >= max_strings {
         printf_log(
             b"Illegal string number:%ld\x00" as *const u8 as *const i8,
-            s as libc::c_long,
+            s as i64,
         );
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
@@ -674,10 +674,10 @@ unsafe extern "C" fn print_a_pool_str(mut s: str_number) {
 unsafe extern "C" fn pool_overflow() {
     str_pool = xrealloc(
         str_pool as *mut libc::c_void,
-        ((pool_size as libc::c_long + 65000 + 1i32 as libc::c_long) as u64)
+        ((pool_size as i64 + 65000 + 1i32 as i64) as u64)
             .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
     ) as *mut ASCII_code;
-    pool_size = (pool_size as libc::c_long + 65000) as int32_t;
+    pool_size = (pool_size as i64 + 65000) as int32_t;
 }
 unsafe extern "C" fn out_token(mut handle: rust_output_handle_t) {
     let mut i: buf_pointer = buf_ptr1;
@@ -771,7 +771,7 @@ unsafe extern "C" fn log_pr_aux_name() {
 unsafe extern "C" fn aux_err_print() {
     printf_log(
         b"---line %ld of file \x00" as *const u8 as *const i8,
-        aux_ln_stack[aux_ptr as usize] as libc::c_long,
+        aux_ln_stack[aux_ptr as usize] as i64,
     );
     print_aux_name();
     print_bad_input_line();
@@ -870,7 +870,7 @@ unsafe extern "C" fn aux_end2_err_print() {
 unsafe extern "C" fn bst_ln_num_print() {
     printf_log(
         b"--line %ld of file \x00" as *const u8 as *const i8,
-        bst_line_num as libc::c_long,
+        bst_line_num as i64,
     );
     print_bst_name();
 }
@@ -974,7 +974,7 @@ unsafe extern "C" fn already_seen_function_print(mut seen_fn_loc: hash_loc) {
 unsafe extern "C" fn bib_ln_num_print() {
     printf_log(
         b"--line %ld of file\x00" as *const u8 as *const i8,
-        bib_line_num as libc::c_long,
+        bib_line_num as i64,
     );
     print_bib_name();
 }
@@ -1043,7 +1043,7 @@ unsafe extern "C" fn bib_unbalanced_braces_print() {
 unsafe extern "C" fn bib_field_too_long_print() {
     printf_log(
         b"Your field is more than %ld characters\x00" as *const u8 as *const i8,
-        buf_size as libc::c_long,
+        buf_size as i64,
     );
     bib_err_print();
 }
@@ -1137,7 +1137,7 @@ unsafe extern "C" fn print_stk_lit(mut stk_lt: int32_t, mut stk_tp: stk_type) {
         0 => {
             printf_log(
                 b"%ld is an integer literal\x00" as *const u8 as *const i8,
-                stk_lt as libc::c_long,
+                stk_lt as i64,
             );
         }
         1 => {
@@ -1168,7 +1168,7 @@ unsafe extern "C" fn print_lit(mut stk_lt: int32_t, mut stk_tp: stk_type) {
         0 => {
             printf_log(
                 b"%ld\n\x00" as *const u8 as *const i8,
-                stk_lt as libc::c_long,
+                stk_lt as i64,
             );
         }
         1 => {
@@ -1275,7 +1275,7 @@ unsafe extern "C" fn make_string() -> str_number {
         print_overflow();
         printf_log(
             b"number of strings %ld\n\x00" as *const u8 as *const i8,
-            max_strings as libc::c_long,
+            max_strings as i64,
         );
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
@@ -1416,7 +1416,7 @@ unsafe extern "C" fn str_lookup(
                         print_overflow();
                         printf_log(
                             b"hash size %ld\n\x00" as *const u8 as *const i8,
-                            hash_size as libc::c_long,
+                            hash_size as i64,
                         );
                         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                     }
@@ -3771,7 +3771,7 @@ unsafe extern "C" fn check_command_execution() {
     if lit_stk_ptr != 0i32 {
         printf_log(
             b"ptr=%ld, stack=\n\x00" as *const u8 as *const i8,
-            lit_stk_ptr as libc::c_long,
+            lit_stk_ptr as i64,
         );
         pop_whole_stack();
         puts_log(b"---the literal stack isn\'t empty\x00" as *const u8 as *const i8);
@@ -4135,7 +4135,7 @@ unsafe extern "C" fn x_gets() {
                         bst_1print_string_size_exceeded();
                         printf_log(
                             b"%ld, the entry\x00" as *const u8 as *const i8,
-                            ent_str_size as libc::c_long,
+                            ent_str_size as i64,
                         );
                         bst_2print_string_size_exceeded();
                         sp_xptr1 = sp_ptr + ent_str_size
@@ -4178,7 +4178,7 @@ unsafe extern "C" fn x_gets() {
                             bst_1print_string_size_exceeded();
                             printf_log(
                                 b"%ld, the global\x00" as *const u8 as *const i8,
-                                glob_str_size as libc::c_long,
+                                glob_str_size as i64,
                             );
                             bst_2print_string_size_exceeded();
                             sp_end = sp_ptr + glob_str_size
@@ -4640,7 +4640,7 @@ unsafe extern "C" fn x_format_name() {
             } else {
                 printf_log(
                     b"There aren\'t %ld names in \"\x00" as *const u8 as *const i8,
-                    pop_lit2 as libc::c_long,
+                    pop_lit2 as i64,
                 );
             }
             print_a_pool_str(pop_lit3);
@@ -4657,7 +4657,7 @@ unsafe extern "C" fn x_format_name() {
                     /*comma */
                     printf_log(
                         b"Name %ld in \"\x00" as *const u8 as *const i8,
-                        pop_lit2 as libc::c_long,
+                        pop_lit2 as i64,
                     );
                     print_a_pool_str(pop_lit3);
                     puts_log(b"\" has a comma at the end\x00" as *const u8 as *const i8);
@@ -4677,7 +4677,7 @@ unsafe extern "C" fn x_format_name() {
                         printf_log(
                             b"Too many commas in name %ld of \"\x00" as *const u8
                                 as *const i8,
-                            pop_lit2 as libc::c_long,
+                            pop_lit2 as i64,
                         );
                         print_a_pool_str(pop_lit3);
                         putc_log('\"' as i32);
@@ -4726,7 +4726,7 @@ unsafe extern "C" fn x_format_name() {
                     }
                     printf_log(
                         b"Name %ld of \"\x00" as *const u8 as *const i8,
-                        pop_lit2 as libc::c_long,
+                        pop_lit2 as i64,
                     );
                     print_a_pool_str(pop_lit3);
                     puts_log(b"\" isn\'t brace balanced\x00" as *const u8 as *const i8);
@@ -4848,7 +4848,7 @@ unsafe extern "C" fn x_int_to_chr() {
     } else if pop_lit1 < 0i32 || pop_lit1 > 127i32 {
         printf_log(
             b"%ld isn\'t valid ASCII\x00" as *const u8 as *const i8,
-            pop_lit1 as libc::c_long,
+            pop_lit1 as i64,
         );
         bst_ex_warn_print();
         push_lit_stk(s_null, 1i32 as stk_type);
@@ -11737,7 +11737,7 @@ unsafe extern "C" fn aux_input_command() {
         print_overflow();
         printf_log(
             b"auxiliary file depth %ld\n\x00" as *const u8 as *const i8,
-            20i32 as libc::c_long,
+            20i32 as i64,
         );
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
@@ -11792,7 +11792,7 @@ unsafe extern "C" fn aux_input_command() {
     }
     printf_log(
         b"A level-%ld auxiliary file: \x00" as *const u8 as *const i8,
-        aux_ptr as libc::c_long,
+        aux_ptr as i64,
     );
     print_aux_name();
     aux_ln_stack[aux_ptr as usize] = 0i32;
@@ -12965,7 +12965,7 @@ unsafe extern "C" fn bst_read_command() {
         if verbose != 0 {
             printf_log(
                 b"Database file #%ld: \x00" as *const u8 as *const i8,
-                bib_ptr as libc::c_long + 1i32 as libc::c_long,
+                bib_ptr as i64 + 1i32 as i64,
             );
             print_bib_name();
         } else {
@@ -12975,7 +12975,7 @@ unsafe extern "C" fn bst_read_command() {
                 (::std::mem::size_of::<[i8; 512]>() as u64)
                     .wrapping_sub(1i32 as u64),
                 b"Database file #%ld: \x00" as *const u8 as *const i8,
-                bib_ptr as libc::c_long + 1i32 as libc::c_long,
+                bib_ptr as i64 + 1i32 as i64,
             );
             ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()));
             log_pr_bib_name();
@@ -13829,9 +13829,9 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
                 .wrapping_sub(1i32 as u64),
             b"Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n\x00" as *const u8
                 as *const i8,
-            max_strings as libc::c_long,
-            hash_size as libc::c_long,
-            hash_prime as libc::c_long,
+            max_strings as i64,
+            hash_size as i64,
+            hash_prime as i64,
         );
         ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()));
         if verbose != 0 {
@@ -13873,7 +13873,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
     if read_performed as libc::c_int != 0 && !reading_completed {
         printf_log(
             b"Aborted at line %ld of file \x00" as *const u8 as *const i8,
-            bib_line_num as libc::c_long,
+            bib_line_num as i64,
         );
         print_bib_name();
     }
@@ -13885,7 +13885,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
             } else {
                 printf_log(
                     b"(There were %ld warnings)\n\x00" as *const u8 as *const i8,
-                    err_count as libc::c_long,
+                    err_count as i64,
                 );
             }
         }
@@ -13895,7 +13895,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
             } else {
                 printf_log(
                     b"(There were %ld error messages)\n\x00" as *const u8 as *const i8,
-                    err_count as libc::c_long,
+                    err_count as i64,
                 );
             }
         }

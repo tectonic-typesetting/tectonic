@@ -130,7 +130,7 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -361,7 +361,7 @@ pub unsafe extern "C" fn bmp_include_image(
                 handle,
                 bgrq.as_mut_ptr() as *mut i8,
                 hdr.psize as size_t,
-            ) != hdr.psize as libc::c_long
+            ) != hdr.psize as i64
             {
                 dpx_warning(b"Reading file failed...\x00" as *const u8 as *const i8);
                 free(palette as *mut libc::c_void);
@@ -425,7 +425,7 @@ pub unsafe extern "C" fn bmp_include_image(
         while n < info.height {
             p = stream_data_ptr.offset((n * rowbytes) as isize);
             if ttstub_input_read(handle, p as *mut i8, dib_rowbytes as size_t)
-                != dib_rowbytes as libc::c_long
+                != dib_rowbytes as i64
             {
                 dpx_warning(
                     b"Reading BMP raster data failed...\x00" as *const u8 as *const i8,
@@ -526,7 +526,7 @@ unsafe extern "C" fn read_header(
         handle,
         buf.as_mut_ptr() as *mut i8,
         (14i32 + 4i32) as size_t,
-    ) != (14i32 + 4i32) as libc::c_long
+    ) != (14i32 + 4i32) as i64
     {
         dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
         return -1i32;
@@ -566,7 +566,7 @@ unsafe extern "C" fn read_header(
         handle,
         p as *mut i8,
         (*hdr).hsize.wrapping_sub(4i32 as libc::c_uint) as size_t,
-    ) != (*hdr).hsize.wrapping_sub(4i32 as libc::c_uint) as libc::c_long
+    ) != (*hdr).hsize.wrapping_sub(4i32 as libc::c_uint) as i64
     {
         dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
         return -1i32;
@@ -703,7 +703,7 @@ unsafe extern "C" fn read_raster_rle8(
                             return -1i32;
                         }
                         if ttstub_input_read(handle, p as *mut i8, b1 as size_t)
-                            != b1 as libc::c_long
+                            != b1 as i64
                         {
                             return -1i32;
                         }
@@ -825,7 +825,7 @@ unsafe extern "C" fn read_raster_rle4(
                             handle,
                             p as *mut i8,
                             nbytes as size_t,
-                        ) != nbytes as libc::c_long
+                        ) != nbytes as i64
                         {
                             return -1i32;
                         }

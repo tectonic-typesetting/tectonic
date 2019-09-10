@@ -18,7 +18,7 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> libc::c_long;
+    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -122,7 +122,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -366,9 +366,9 @@ unsafe extern "C" fn read_sfd_record(
                 v2 = strtol(p, &mut r, 0i32) as libc::c_int;
                 q = r;
                 if v1 < 0i32
-                    || v1 as libc::c_long > 0xffff
+                    || v1 as i64 > 0xffff
                     || v2 < 0i32
-                    || v2 as libc::c_long > 0xffff
+                    || v2 as i64 > 0xffff
                 {
                     dpx_warning(
                         b"Invalid value in subfont mapping table: 0x%x_0x%x\x00" as *const u8
@@ -396,7 +396,7 @@ unsafe extern "C" fn read_sfd_record(
                 }
             }
             _ => {
-                if v1 < 0i32 || v1 as libc::c_long > 0xffff {
+                if v1 < 0i32 || v1 as i64 > 0xffff {
                     dpx_warning(
                         b"Invalid character code in subfont mapping table: 0x%x\x00" as *const u8
                             as *const i8,

@@ -49,7 +49,7 @@ extern "C" {
     fn localtime(__timer: *const time_t) -> *mut tm;
 }
 pub type __int32_t = libc::c_int;
-pub type __time_t = libc::c_long;
+pub type __time_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type time_t = __time_t;
@@ -70,7 +70,7 @@ pub struct tm {
     pub tm_wday: libc::c_int,
     pub tm_yday: libc::c_int,
     pub tm_isdst: libc::c_int,
-    pub tm_gmtoff: libc::c_long,
+    pub tm_gmtoff: i64,
     pub tm_zone: *const i8,
 }
 /* texmfmp.c: Hand-coded routines for TeX or Metafont in C.  Originally
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> libc::c_int {
     let mut rval: UInt32 = 0;
     let mut cp: *const u8 = s as *const u8;
     if s.is_null() || *s as libc::c_int == 0i32 {
-        return (65536 + 1i32 as libc::c_long) as libc::c_int;
+        return (65536 + 1i32 as i64) as libc::c_int;
     }
     len = strlen(s);
     checkpool_pointer(pool_ptr, len);
@@ -234,9 +234,9 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
     let mut i: pool_pointer = 0;
     let mut j: pool_pointer = 0;
     let mut name: *mut i8 = 0 as *mut i8;
-    if s as libc::c_long >= 65536 {
-        len = *str_start.offset(((s + 1i32) as libc::c_long - 65536) as isize)
-            - *str_start.offset((s as libc::c_long - 65536) as isize)
+    if s as i64 >= 65536 {
+        len = *str_start.offset(((s + 1i32) as i64 - 65536) as isize)
+            - *str_start.offset((s as i64 - 65536) as isize)
     } else {
         len = 0i32
     }
@@ -245,12 +245,12 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
     j = 0i32;
     while i < len {
         let mut c: u32 = *str_pool
-            .offset((i + *str_start.offset((s as libc::c_long - 65536) as isize)) as isize)
+            .offset((i + *str_start.offset((s as i64 - 65536) as isize)) as isize)
             as u32;
         if c >= 0xd800i32 as libc::c_uint && c <= 0xdbffi32 as libc::c_uint {
             i += 1;
             let mut lo: u32 = *str_pool
-                .offset((i + *str_start.offset((s as libc::c_long - 65536) as isize)) as isize)
+                .offset((i + *str_start.offset((s as i64 - 65536) as isize)) as isize)
                 as u32;
             if lo >= 0xdc00i32 as libc::c_uint && lo <= 0xdfffi32 as libc::c_uint {
                 c = c

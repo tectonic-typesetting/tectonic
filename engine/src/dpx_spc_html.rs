@@ -1543,7 +1543,7 @@ pub unsafe extern "C" fn spc_html_check_special(
     {
         p = p.offset(1)
     }
-    size = endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int;
+    size = endptr.wrapping_offset_from(p) as i64 as libc::c_int;
     if size as u64 >= strlen(b"html:\x00" as *const u8 as *const i8)
         && memcmp(
             p as *const libc::c_void,

@@ -107,7 +107,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -1854,7 +1854,7 @@ unsafe extern "C" fn scan_otl_tag(
             strncpy(
                 script,
                 p,
-                period.wrapping_offset_from(p) as libc::c_long as u64,
+                period.wrapping_offset_from(p) as i64 as u64,
             );
         } else {
             dpx_warning(
@@ -1871,7 +1871,7 @@ unsafe extern "C" fn scan_otl_tag(
                 strncpy(
                     language,
                     p,
-                    period.wrapping_offset_from(p) as libc::c_long as u64,
+                    period.wrapping_offset_from(p) as i64 as u64,
                 );
             } else {
                 dpx_warning(
@@ -1891,7 +1891,7 @@ unsafe extern "C" fn scan_otl_tag(
         strncpy(
             feature,
             p,
-            endptr.wrapping_offset_from(p) as libc::c_long as u64,
+            endptr.wrapping_offset_from(p) as i64 as u64,
         );
         p = endptr
     } else {

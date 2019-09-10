@@ -130,8 +130,8 @@ extern "C" {
     fn dpx_warning(fmt: *const i8, _: ...);
 }
 pub type __int32_t = libc::c_int;
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
+pub type __off_t = i64;
+pub type __off64_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 #[derive(Copy, Clone)]

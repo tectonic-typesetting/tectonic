@@ -433,7 +433,7 @@ unsafe extern "C" fn write_map(
             pdf_add_stream(
                 stream,
                 (*wbuf).buf as *const libc::c_void,
-                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as libc::c_long as libc::c_int,
+                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as libc::c_int,
             );
             (*wbuf).curptr = (*wbuf).buf;
             pdf_add_stream(
@@ -461,7 +461,7 @@ unsafe extern "C" fn write_map(
             pdf_add_stream(
                 stream,
                 (*wbuf).buf as *const libc::c_void,
-                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as libc::c_long as libc::c_int,
+                (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as libc::c_int,
             );
             (*wbuf).curptr = (*wbuf).buf;
             pdf_add_stream(
@@ -550,7 +550,7 @@ unsafe extern "C" fn write_map(
         pdf_add_stream(
             stream,
             (*wbuf).buf as *const libc::c_void,
-            (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as libc::c_long as libc::c_int,
+            (*wbuf).curptr.wrapping_offset_from((*wbuf).buf) as i64 as libc::c_int,
         );
         (*wbuf).curptr = (*wbuf).buf;
         pdf_add_stream(
@@ -729,7 +729,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     pdf_add_stream(
         stream,
         wbuf.buf as *const libc::c_void,
-        wbuf.curptr.wrapping_offset_from(wbuf.buf) as libc::c_long as libc::c_int,
+        wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as libc::c_int,
     );
     wbuf.curptr = wbuf.buf;
     /* codespacerange */
@@ -782,7 +782,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     pdf_add_stream(
         stream,
         wbuf.buf as *const libc::c_void,
-        wbuf.curptr.wrapping_offset_from(wbuf.buf) as libc::c_long as libc::c_int,
+        wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as libc::c_int,
     );
     wbuf.curptr = wbuf.buf;
     pdf_add_stream(
@@ -822,7 +822,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
             pdf_add_stream(
                 stream,
                 wbuf.buf as *const libc::c_void,
-                wbuf.curptr.wrapping_offset_from(wbuf.buf) as libc::c_long as libc::c_int,
+                wbuf.curptr.wrapping_offset_from(wbuf.buf) as i64 as libc::c_int,
             );
             pdf_add_stream(
                 stream,

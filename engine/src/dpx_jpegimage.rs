@@ -127,7 +127,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -261,7 +261,7 @@ pub unsafe extern "C" fn check_for_jpeg(mut handle: rust_input_handle_t) -> libc
         handle,
         jpeg_sig.as_mut_ptr() as *mut i8,
         2i32 as size_t,
-    ) != 2i32 as libc::c_long
+    ) != 2i32 as i64
     {
         return 0i32;
     } else {
@@ -750,7 +750,7 @@ unsafe extern "C" fn read_APP1_Exif(
     let mut r: ssize_t = 0;
     buffer = xmalloc(length) as *mut u8;
     r = ttstub_input_read(handle, buffer as *mut i8, length);
-    if !(r < 0i32 as libc::c_long || r as size_t != length) {
+    if !(r < 0i32 as i64 || r as size_t != length) {
         p = buffer;
         endptr = buffer.offset(length as isize);
         while p < buffer.offset(length as isize) && *p as libc::c_int == 0i32 {
@@ -1237,7 +1237,7 @@ unsafe extern "C" fn JPEG_scan_file(
                 224 => {
                     if length > 5i32 {
                         if ttstub_input_read(handle, app_sig.as_mut_ptr(), 5i32 as size_t)
-                            != 5i32 as libc::c_long
+                            != 5i32 as i64
                         {
                             return -1i32;
                         }
@@ -1269,7 +1269,7 @@ unsafe extern "C" fn JPEG_scan_file(
                 225 => {
                     if length > 5i32 {
                         if ttstub_input_read(handle, app_sig.as_mut_ptr(), 5i32 as size_t)
-                            != 5i32 as libc::c_long
+                            != 5i32 as i64
                         {
                             return -1i32;
                         }
@@ -1295,7 +1295,7 @@ unsafe extern "C" fn JPEG_scan_file(
                             && length > 24i32
                         {
                             if ttstub_input_read(handle, app_sig.as_mut_ptr(), 24i32 as size_t)
-                                != 24i32 as libc::c_long
+                                != 24i32 as i64
                             {
                                 return -1i32;
                             }
@@ -1329,7 +1329,7 @@ unsafe extern "C" fn JPEG_scan_file(
                 226 => {
                     if length >= 14i32 {
                         if ttstub_input_read(handle, app_sig.as_mut_ptr(), 12i32 as size_t)
-                            != 12i32 as libc::c_long
+                            != 12i32 as i64
                         {
                             return -1i32;
                         }
@@ -1360,7 +1360,7 @@ unsafe extern "C" fn JPEG_scan_file(
                 238 => {
                     if length > 5i32 {
                         if ttstub_input_read(handle, app_sig.as_mut_ptr(), 5i32 as size_t)
-                            != 5i32 as libc::c_long
+                            != 5i32 as i64
                         {
                             return -1i32;
                         }

@@ -329,15 +329,15 @@ unsafe extern "C" fn spc_handler_ps_header(
     }
     (*args).curptr = (*args).curptr.offset(1);
     pro = xmalloc(
-        ((*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long + 1i32 as libc::c_long)
+        ((*args).endptr.wrapping_offset_from((*args).curptr) as i64 + 1i32 as i64)
             as size_t,
     ) as *mut i8;
     strncpy(
         pro,
         (*args).curptr,
-        (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as u64,
+        (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
     );
-    *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as isize) =
+    *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as i64 as isize) =
         0i32 as i8;
     ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0i32) as *mut rust_input_handle_t;
     if ps_header.is_null() {
@@ -930,7 +930,7 @@ pub unsafe extern "C" fn spc_dvips_check_special(
     if p >= endptr {
         return 0i32 != 0;
     }
-    len = endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int;
+    len = endptr.wrapping_offset_from(p) as i64 as libc::c_int;
     i = 0i32 as size_t;
     while i
         < (::std::mem::size_of::<[spc_handler; 10]>() as u64)
@@ -1022,7 +1022,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     {
         (*args).curptr = (*args).curptr.offset(2)
     }
-    keylen = (*args).curptr.wrapping_offset_from(key) as libc::c_long as libc::c_int;
+    keylen = (*args).curptr.wrapping_offset_from(key) as i64 as libc::c_int;
     if keylen < 1i32 {
         spc_warn(
             spe,

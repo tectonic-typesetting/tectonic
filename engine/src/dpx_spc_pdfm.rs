@@ -431,7 +431,7 @@ extern "C" {
     fn CMap_cache_find(cmap_name: *const i8) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -847,7 +847,7 @@ unsafe extern "C" fn spc_handler_pdfm_bop(
     if (*args).curptr < (*args).endptr {
         pdf_doc_set_bop_content(
             (*args).curptr,
-            (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_int
+            (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as libc::c_int
                 as libc::c_uint,
         );
     }
@@ -861,7 +861,7 @@ unsafe extern "C" fn spc_handler_pdfm_eop(
     if (*args).curptr < (*args).endptr {
         pdf_doc_set_eop_content(
             (*args).curptr,
-            (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_int
+            (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as libc::c_int
                 as libc::c_uint,
         );
     }
@@ -1169,7 +1169,7 @@ unsafe extern "C" fn maybe_reencode_utf8(mut instring: *mut pdf_obj) -> libc::c_
     pdf_set_string(
         instring,
         wbuf.as_mut_ptr(),
-        op.wrapping_offset_from(wbuf.as_mut_ptr()) as libc::c_long as size_t,
+        op.wrapping_offset_from(wbuf.as_mut_ptr()) as i64 as size_t,
     );
     return 0i32;
 }
@@ -2357,7 +2357,7 @@ unsafe extern "C" fn spc_handler_pdfm_content(
         *work_buffer.as_mut_ptr().offset(fresh10 as isize) = ' ' as i32 as i8;
         /* op: Q */
         pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint); /* op: q cm */
-        len = (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_int; /* op: ANY */
+        len = (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as libc::c_int; /* op: ANY */
         pdf_doc_add_page_content((*args).curptr, len as libc::c_uint); /* op: */
         pdf_doc_add_page_content(
             b" Q\x00" as *const u8 as *const i8,
@@ -2423,7 +2423,7 @@ unsafe extern "C" fn spc_handler_pdfm_literal(
         );
         pdf_doc_add_page_content(
             (*args).curptr,
-            (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_int
+            (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as libc::c_int
                 as libc::c_uint,
         );
         if direct == 0 {
@@ -2482,7 +2482,7 @@ unsafe extern "C" fn spc_handler_pdfm_code(
         );
         pdf_doc_add_page_content(
             (*args).curptr,
-            (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_int
+            (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as libc::c_int
                 as libc::c_uint,
         );
         (*args).curptr = (*args).endptr
@@ -2580,7 +2580,7 @@ unsafe extern "C" fn spc_handler_pdfm_stream_with_type(
                     work_buffer.as_mut_ptr(),
                     1024i32 as size_t,
                 );
-                if !(nb_read > 0i32 as libc::c_long) {
+                if !(nb_read > 0i32 as i64) {
                     break;
                 }
                 pdf_add_stream(
@@ -2987,7 +2987,7 @@ unsafe extern "C" fn spc_handler_pdfm_mapline(
             error = pdf_read_fontmap_line(
                 mrec,
                 buffer.as_mut_ptr(),
-                (*ap).endptr.wrapping_offset_from((*ap).curptr) as libc::c_long as libc::c_int,
+                (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as libc::c_int,
                 is_pdfm_mapline(buffer.as_mut_ptr()),
             );
             if error != 0 {

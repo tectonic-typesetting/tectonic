@@ -90,7 +90,7 @@ extern "C" {
     #[no_mangle]
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -546,13 +546,13 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         descriptor,
         pdf_new_name(b"ItalicAngle\x00" as *const u8 as *const i8),
         pdf_new_number(
-            ((*post).italicAngle as libc::c_long % 0x10000) as libc::c_double
+            ((*post).italicAngle as i64 % 0x10000) as libc::c_double
                 / 0x10000i64 as libc::c_double
-                + ((*post).italicAngle as libc::c_long / 0x10000) as libc::c_double
-                - (if (*post).italicAngle as libc::c_long / 0x10000 > 0x7fff {
+                + ((*post).italicAngle as i64 / 0x10000) as libc::c_double
+                - (if (*post).italicAngle as i64 / 0x10000 > 0x7fff {
                     0x10000
                 } else {
-                    0i32 as libc::c_long
+                    0i32 as i64
                 }) as libc::c_double,
         ),
     );

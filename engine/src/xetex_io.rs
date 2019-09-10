@@ -374,7 +374,7 @@ pub type Byte = UInt8;
 /*
     all public functions return a status code
 */
-pub type TECkit_Status = libc::c_long;
+pub type TECkit_Status = i64;
 /*
     end of text value for TECkit_DataSource functions to return
 */
@@ -454,7 +454,7 @@ pub union memory_word {
 #[repr(C)]
 pub struct UFILE {
     pub handle: rust_input_handle_t,
-    pub savedChar: libc::c_long,
+    pub savedChar: i64,
     pub skipNextLF: libc::c_short,
     pub encodingMode: libc::c_short,
     pub conversionData: *mut libc::c_void,
@@ -827,7 +827,7 @@ pub unsafe extern "C" fn u_open_in(
     *f = xmalloc(::std::mem::size_of::<UFILE>() as u64) as *mut UFILE;
     (**f).encodingMode = 0i32 as libc::c_short;
     (**f).conversionData = 0 as *mut libc::c_void;
-    (**f).savedChar = -1i32 as libc::c_long;
+    (**f).savedChar = -1i32 as i64;
     (**f).skipNextLF = 0i32 as libc::c_short;
     (**f).handle = handle;
     if mode == 0i32 {
@@ -897,7 +897,7 @@ unsafe extern "C" fn apply_normalization(
             (6i32 | (if norm == 1i32 { 0x100i32 } else { 0x200i32 })) as UInt16,
             normPtr,
         );
-        if status != 0i32 as libc::c_long {
+        if status != 0i32 as i64 {
             _tt_abort(
                 b"failed to create normalizer: error code = %d\x00" as *const u8
                     as *const i8,
@@ -917,7 +917,7 @@ unsafe extern "C" fn apply_normalization(
         &mut outUsed,
         1i32 as Byte,
     );
-    if status != 0i32 as libc::c_long {
+    if status != 0i32 as i64 {
         buffer_overflow();
     }
     last = (first as u64).wrapping_add(
@@ -1154,9 +1154,9 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
     let mut current_block: u64;
     let mut rval: libc::c_int = 0;
     let mut c: libc::c_int = 0;
-    if (*f).savedChar != -1i32 as libc::c_long {
+    if (*f).savedChar != -1i32 as i64 {
         rval = (*f).savedChar as libc::c_int;
-        (*f).savedChar = -1i32 as libc::c_long;
+        (*f).savedChar = -1i32 as i64;
         return rval;
     }
     match (*f).encodingMode as libc::c_int {
@@ -1257,7 +1257,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
                         rval = 0x10000i32 + (rval - 0xd800i32) * 0x400i32 + (lo - 0xdc00i32)
                     } else {
                         rval = 0xfffdi32;
-                        (*f).savedChar = lo as libc::c_long
+                        (*f).savedChar = lo as i64
                     }
                 } else if rval >= 0xdc00i32 && rval <= 0xdfffi32 {
                     rval = 0xfffdi32
@@ -1275,7 +1275,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> libc::c_int {
                         rval = 0x10000i32 + (rval - 0xd800i32) * 0x400i32 + (lo_0 - 0xdc00i32)
                     } else {
                         rval = 0xfffdi32;
-                        (*f).savedChar = lo_0 as libc::c_long
+                        (*f).savedChar = lo_0 as i64
                     }
                 } else if rval >= 0xdc00i32 && rval <= 0xdfffi32 {
                     rval = 0xfffdi32
@@ -1411,7 +1411,7 @@ pub unsafe extern "C" fn make_utf16_name() {
             *fresh15 = rval as u16
         }
     }
-    name_length16 = t.wrapping_offset_from(name_of_file16) as libc::c_long as int32_t;
+    name_length16 = t.wrapping_offset_from(name_of_file16) as i64 as int32_t;
 }
 #[no_mangle]
 pub unsafe extern "C" fn open_or_close_in() {

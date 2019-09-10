@@ -1285,7 +1285,7 @@ pub struct input_state_t {
 #[repr(C)]
 pub struct UFILE {
     pub handle: rust_input_handle_t,
-    pub savedChar: libc::c_long,
+    pub savedChar: i64,
     pub skipNextLF: libc::c_short,
     pub encodingMode: libc::c_short,
     pub conversionData: *mut libc::c_void,
@@ -1341,10 +1341,10 @@ pub unsafe extern "C" fn badness(mut t: scaled_t, mut s: scaled_t) -> int32_t {
     if s <= 0i32 {
         return 10000i32;
     }
-    if t as libc::c_long <= 7230584 {
+    if t as i64 <= 7230584 {
         /* magic constant */
         r = t * 297i32 / s
-    } else if s as libc::c_long >= 1663497 {
+    } else if s as i64 >= 1663497 {
         /* magic constant */
         r = t / (s / 297i32)
     } else {
@@ -2010,10 +2010,10 @@ pub unsafe extern "C" fn print_fam_and_char(mut p: int32_t) {
     print_esc_cstr(b"fam\x00" as *const u8 as *const i8);
     print_int((*mem.offset(p as isize)).b16.s1 as libc::c_int % 256i32 % 256i32);
     print_char(' ' as i32);
-    c = ((*mem.offset(p as isize)).b16.s0 as libc::c_long
-        + ((*mem.offset(p as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536)
+    c = ((*mem.offset(p as isize)).b16.s0 as i64
+        + ((*mem.offset(p as isize)).b16.s1 as libc::c_int / 256i32) as i64 * 65536)
         as int32_t;
-    if (c as libc::c_long) < 65536 {
+    if (c as i64) < 65536 {
         print(c);
     } else {
         print_char(c);
@@ -2022,14 +2022,14 @@ pub unsafe extern "C" fn print_fam_and_char(mut p: int32_t) {
 #[no_mangle]
 pub unsafe extern "C" fn print_delimiter(mut p: int32_t) {
     let mut a: int32_t = 0;
-    a = (((*mem.offset(p as isize)).b16.s3 as libc::c_int % 256i32 * 256i32) as libc::c_long
-        + ((*mem.offset(p as isize)).b16.s2 as libc::c_long
-            + ((*mem.offset(p as isize)).b16.s3 as libc::c_int / 256i32) as libc::c_long * 65536))
+    a = (((*mem.offset(p as isize)).b16.s3 as libc::c_int % 256i32 * 256i32) as i64
+        + ((*mem.offset(p as isize)).b16.s2 as i64
+            + ((*mem.offset(p as isize)).b16.s3 as libc::c_int / 256i32) as i64 * 65536))
         as int32_t;
     a = ((a * 4096i32 + (*mem.offset(p as isize)).b16.s1 as libc::c_int % 256i32 * 256i32)
-        as libc::c_long
-        + ((*mem.offset(p as isize)).b16.s0 as libc::c_long
-            + ((*mem.offset(p as isize)).b16.s1 as libc::c_int / 256i32) as libc::c_long * 65536))
+        as i64
+        + ((*mem.offset(p as isize)).b16.s0 as i64
+            + ((*mem.offset(p as isize)).b16.s1 as libc::c_int / 256i32) as i64 * 65536))
         as int32_t;
     if a < 0i32 {
         print_int(a);
@@ -2236,7 +2236,7 @@ pub unsafe extern "C" fn show_node_list(mut p: int32_t) {
                                     print_cstr(b"< -\x00" as *const u8 as *const i8);
                                 }
                                 print_glue(
-                                    (20000i32 as libc::c_long * 65536) as scaled_t,
+                                    (20000i32 as i64 * 65536) as scaled_t,
                                     (*mem.offset((p + 5i32) as isize)).b16.s0 as int32_t,
                                     0 as *const i8,
                                 );
@@ -2639,33 +2639,33 @@ pub unsafe extern "C" fn show_node_list(mut p: int32_t) {
                         print_scaled((*mem.offset((p + 1i32) as isize)).b32.s1);
                     }
                     if (*mem.offset((p + 4i32) as isize)).b16.s3 as libc::c_int % 256i32 != 0i32
-                        || (*mem.offset((p + 4i32) as isize)).b16.s2 as libc::c_long
+                        || (*mem.offset((p + 4i32) as isize)).b16.s2 as i64
                             + ((*mem.offset((p + 4i32) as isize)).b16.s3 as libc::c_int / 256i32)
-                                as libc::c_long
+                                as i64
                                 * 65536
-                            != 0i32 as libc::c_long
+                            != 0i32 as i64
                         || (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int % 256i32 != 0i32
-                        || (*mem.offset((p + 4i32) as isize)).b16.s0 as libc::c_long
+                        || (*mem.offset((p + 4i32) as isize)).b16.s0 as i64
                             + ((*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_int / 256i32)
-                                as libc::c_long
+                                as i64
                                 * 65536
-                            != 0i32 as libc::c_long
+                            != 0i32 as i64
                     {
                         print_cstr(b", left-delimiter \x00" as *const u8 as *const i8);
                         print_delimiter(p + 4i32);
                     }
                     if (*mem.offset((p + 5i32) as isize)).b16.s3 as libc::c_int % 256i32 != 0i32
-                        || (*mem.offset((p + 5i32) as isize)).b16.s2 as libc::c_long
+                        || (*mem.offset((p + 5i32) as isize)).b16.s2 as i64
                             + ((*mem.offset((p + 5i32) as isize)).b16.s3 as libc::c_int / 256i32)
-                                as libc::c_long
+                                as i64
                                 * 65536
-                            != 0i32 as libc::c_long
+                            != 0i32 as i64
                         || (*mem.offset((p + 5i32) as isize)).b16.s1 as libc::c_int % 256i32 != 0i32
-                        || (*mem.offset((p + 5i32) as isize)).b16.s0 as libc::c_long
+                        || (*mem.offset((p + 5i32) as isize)).b16.s0 as i64
                             + ((*mem.offset((p + 5i32) as isize)).b16.s1 as libc::c_int / 256i32)
-                                as libc::c_long
+                                as i64
                                 * 65536
-                            != 0i32 as libc::c_long
+                            != 0i32 as i64
                     {
                         print_cstr(b", right-delimiter \x00" as *const u8 as *const i8);
                         print_delimiter(p + 5i32);
@@ -3234,14 +3234,14 @@ pub unsafe extern "C" fn show_activities() {
                 if (*nest.offset(p as isize)).prev_graf != 0x830000i32 {
                     print_cstr(b" (language\x00" as *const u8 as *const i8);
                     print_int(
-                        ((*nest.offset(p as isize)).prev_graf as libc::c_long % 65536) as int32_t,
+                        ((*nest.offset(p as isize)).prev_graf as i64 % 65536) as int32_t,
                     );
                     print_cstr(b":hyphenmin\x00" as *const u8 as *const i8);
                     print_int((*nest.offset(p as isize)).prev_graf / 0x400000i32);
                     print_char(',' as i32);
                     print_int(
-                        ((*nest.offset(p as isize)).prev_graf as libc::c_long / 65536
-                            % 64i32 as libc::c_long) as int32_t,
+                        ((*nest.offset(p as isize)).prev_graf as i64 / 65536
+                            % 64i32 as i64) as int32_t,
                     );
                     print_char(')' as i32);
                 }
@@ -3805,7 +3805,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
     match cmd as libc::c_int {
         1 => {
             print_cstr(b"begin-group character \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3813,7 +3813,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         2 => {
             print_cstr(b"end-group character \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3821,7 +3821,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         3 => {
             print_cstr(b"math shift character \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3829,7 +3829,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         6 => {
             print_cstr(b"macro parameter character \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3837,7 +3837,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         7 => {
             print_cstr(b"superscript character \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3845,7 +3845,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         8 => {
             print_cstr(b"subscript character \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3856,7 +3856,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         10 => {
             print_cstr(b"blank space \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3864,7 +3864,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         11 => {
             print_cstr(b"the letter \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -3872,7 +3872,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
         }
         12 => {
             print_cstr(b"the character \x00" as *const u8 as *const i8);
-            if (chr_code as libc::c_long) < 65536 {
+            if (chr_code as i64) < 65536 {
                 print(chr_code);
             } else {
                 print_char(chr_code);
@@ -4824,7 +4824,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
                 print_esc_cstr(b"span\x00" as *const u8 as *const i8);
             } else {
                 print_cstr(b"alignment tab character \x00" as *const u8 as *const i8);
-                if (chr_code as libc::c_long) < 65536 {
+                if (chr_code as i64) < 65536 {
                     print(chr_code);
                 } else {
                     print_char(chr_code);
@@ -5451,7 +5451,7 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: int32_t) {
                 n = 0i32;
                 while n <= for_end {
                     if *str_pool.offset(
-                        (*str_start.offset((font_name_str as libc::c_long - 65536) as isize) + n)
+                        (*str_start.offset((font_name_str as i64 - 65536) as isize) + n)
                             as isize,
                     ) as libc::c_int
                         == '\"' as i32
@@ -5705,7 +5705,7 @@ pub unsafe extern "C" fn id_lookup(mut j: int32_t, mut l: int32_t) -> int32_t {
     ll = l;
     d = 0i32;
     while d <= l - 1i32 {
-        if *buffer.offset((j + d) as isize) as libc::c_long >= 65536 {
+        if *buffer.offset((j + d) as isize) as i64 >= 65536 {
             ll += 1
         }
         d += 1
@@ -5826,19 +5826,19 @@ pub unsafe extern "C" fn id_lookup(mut j: int32_t, mut l: int32_t) -> int32_t {
                 }
                 k = j;
                 while k <= j + l - 1i32 {
-                    if (*buffer.offset(k as isize) as libc::c_long) < 65536 {
+                    if (*buffer.offset(k as isize) as i64) < 65536 {
                         *str_pool.offset(pool_ptr as isize) =
                             *buffer.offset(k as isize) as packed_UTF16_code;
                         pool_ptr += 1
                     } else {
-                        *str_pool.offset(pool_ptr as isize) = (0xd800i32 as libc::c_long
-                            + (*buffer.offset(k as isize) as libc::c_long - 65536)
-                                / 1024i32 as libc::c_long)
+                        *str_pool.offset(pool_ptr as isize) = (0xd800i32 as i64
+                            + (*buffer.offset(k as isize) as i64 - 65536)
+                                / 1024i32 as i64)
                             as packed_UTF16_code;
                         pool_ptr += 1;
-                        *str_pool.offset(pool_ptr as isize) = (0xdc00i32 as libc::c_long
-                            + (*buffer.offset(k as isize) as libc::c_long - 65536)
-                                % 1024i32 as libc::c_long)
+                        *str_pool.offset(pool_ptr as isize) = (0xdc00i32 as i64
+                            + (*buffer.offset(k as isize) as i64 - 65536)
+                                % 1024i32 as i64)
                             as packed_UTF16_code;
                         pool_ptr += 1
                     }
@@ -5871,7 +5871,7 @@ pub unsafe extern "C" fn prim_lookup(mut s: str_number) -> int32_t {
             current_block = 11307063007268554308;
         }
     } else {
-        j = *str_start.offset((s as libc::c_long - 65536) as isize);
+        j = *str_start.offset((s as i64 - 65536) as isize);
         if s == str_ptr {
             l = cur_length()
         } else {
@@ -5901,7 +5901,7 @@ pub unsafe extern "C" fn prim_lookup(mut s: str_number) -> int32_t {
         match current_block {
             12583739755984661121 => return p,
             _ => {
-                if prim[p as usize].s1 as libc::c_long > 65536 {
+                if prim[p as usize].s1 as i64 > 65536 {
                     if length(prim[p as usize].s1) - 1i32 == l {
                         if str_eq_str(prim[p as usize].s1 - 1i32, s) {
                             current_block = 12583739755984661121;
@@ -7142,7 +7142,7 @@ pub unsafe extern "C" fn prepare_mag() {
                 + 17i32) as isize,
         ))
         .b32
-        .s1 as libc::c_long
+        .s1 as i64
             > 32768
     {
         if file_line_error_style_p != 0 {
@@ -7588,7 +7588,7 @@ pub unsafe extern "C" fn show_context() {
                     }
                 }
                 selector = old_setting_0 as selector_t;
-                if trick_count as libc::c_long == 1000000 {
+                if trick_count as i64 == 1000000 {
                     first_count = tally;
                     trick_count = tally + 1i32 + error_line - half_error_line;
                     if trick_count < error_line {
@@ -7806,7 +7806,7 @@ pub unsafe extern "C" fn end_token_list() {
             }
         }
     } else if cur_input.index as libc::c_int == 1i32 {
-        if align_state as libc::c_long > 500000 {
+        if align_state as i64 > 500000 {
             align_state = 0i32
         } else {
             fatal_error(
@@ -8062,8 +8062,8 @@ pub unsafe extern "C" fn get_next() {
                         lower = (*buffer.offset(cur_input.loc as isize) - 0xdc00i32) as UTF16_code;
                         cur_input.loc += 1;
                         cur_chr = (65536
-                            + ((cur_chr - 0xd800i32) * 1024i32) as libc::c_long
-                            + lower as libc::c_long) as int32_t
+                            + ((cur_chr - 0xd800i32) * 1024i32) as i64
+                            + lower as i64) as int32_t
                     }
                     'c_65186: loop {
                         cur_cmd = (*eqtb.offset(
@@ -8845,7 +8845,7 @@ pub unsafe extern "C" fn get_next() {
                             match current_block {
                                 10802200937357087535 => {}
                                 _ => {
-                                    if *buffer.offset(cur_input.loc as isize) as libc::c_long
+                                    if *buffer.offset(cur_input.loc as isize) as i64
                                         > 65535
                                     {
                                         cur_cs = id_lookup(cur_input.loc, 1i32);
@@ -9971,7 +9971,7 @@ pub unsafe extern "C" fn expand() {
                         j += 1;
                         p = (*mem.offset(p as isize)).b32.s1
                     }
-                    if j > first + 1i32 || *buffer.offset(first as isize) as libc::c_long > 65535 {
+                    if j > first + 1i32 || *buffer.offset(first as isize) as i64 > 65535 {
                         no_new_control_sequence = 0i32 != 0;
                         cur_cs = id_lookup(first, j - first);
                         no_new_control_sequence = 1i32 != 0
@@ -10586,7 +10586,7 @@ pub unsafe extern "C" fn scan_math(mut p: int32_t) {
         }
     }
     (*mem.offset(p as isize)).b32.s1 = 1i32;
-    (*mem.offset(p as isize)).b16.s0 = (c as libc::c_long % 65536) as u16;
+    (*mem.offset(p as isize)).b16.s0 = (c as i64 % 65536) as u16;
     if c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint
         && ((*eqtb.offset(
             (1i32
@@ -10680,9 +10680,9 @@ pub unsafe extern "C" fn scan_math(mut p: int32_t) {
         (*mem.offset(p as isize)).b16.s1 =
             (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as u16
     }
-    (*mem.offset(p as isize)).b16.s1 = ((*mem.offset(p as isize)).b16.s1 as libc::c_long
-        + (c as libc::c_uint & 0x1fffffi32 as libc::c_uint) as libc::c_long / 65536
-            * 256i32 as libc::c_long) as u16;
+    (*mem.offset(p as isize)).b16.s1 = ((*mem.offset(p as isize)).b16.s1 as i64
+        + (c as libc::c_uint & 0x1fffffi32 as libc::c_uint) as i64 / 65536
+            * 256i32 as i64) as u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn set_math_char(mut c: int32_t) {
@@ -10699,7 +10699,7 @@ pub unsafe extern "C" fn set_math_char(mut c: int32_t) {
         p = new_noad();
         (*mem.offset((p + 1i32) as isize)).b32.s1 = 1i32;
         ch = (c as libc::c_uint & 0x1fffffi32 as libc::c_uint) as UnicodeScalar;
-        (*mem.offset((p + 1i32) as isize)).b16.s0 = (ch as libc::c_long % 65536) as u16;
+        (*mem.offset((p + 1i32) as isize)).b16.s0 = (ch as i64 % 65536) as u16;
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
             (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as u16;
         if c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint {
@@ -10799,8 +10799,8 @@ pub unsafe extern "C" fn set_math_char(mut c: int32_t) {
                 as u16
         }
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
-            ((*mem.offset((p + 1i32) as isize)).b16.s1 as libc::c_long
-                + ch as libc::c_long / 65536 * 256i32 as libc::c_long) as u16;
+            ((*mem.offset((p + 1i32) as isize)).b16.s1 as i64
+                + ch as i64 / 65536 * 256i32 as i64) as u16;
         (*mem.offset(cur_list.tail as isize)).b32.s1 = p;
         cur_list.tail = p
     };
@@ -11321,7 +11321,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
             {
-                cur_val = ((*eqtb.offset((m + cur_val) as isize)).b32.s1 as libc::c_long % 65536)
+                cur_val = ((*eqtb.offset((m + cur_val) as isize)).b32.s1 as i64 % 65536)
                     as int32_t;
                 cur_val_level = 0i32 as u8
             } else {
@@ -11378,7 +11378,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         + cur_val) as isize,
                 ))
                 .b32
-                .s1 as libc::c_long
+                .s1 as i64
                     / 65536) as int32_t;
                 cur_val_level = 0i32 as u8
             } else if m
@@ -13579,8 +13579,8 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                                     .b32
                                                     .s1,
                                                 ); /* magic ratio consant */
-                                                f = (((1000i32 * f) as libc::c_long
-                                                    + 65536 * tex_remainder as libc::c_long)
+                                                f = (((1000i32 * f) as i64
+                                                    + 65536 * tex_remainder as i64)
                                                     / (*eqtb.offset(
                                                         (1i32
                                                             + (0x10ffffi32 + 1i32)
@@ -13611,12 +13611,12 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                                     ))
                                                     .b32
                                                     .s1
-                                                        as libc::c_long)
+                                                        as i64)
                                                     as int32_t;
-                                                cur_val = (cur_val as libc::c_long
-                                                    + f as libc::c_long / 65536)
+                                                cur_val = (cur_val as i64
+                                                    + f as i64 / 65536)
                                                     as int32_t;
-                                                f = (f as libc::c_long % 65536) as int32_t
+                                                f = (f as i64 % 65536) as int32_t
                                             }
                                         }
                                         if scan_keyword(
@@ -13725,14 +13725,14 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                                 8982780081639585757 => {}
                                                 _ => {
                                                     cur_val = xn_over_d(cur_val, num, denom);
-                                                    f = (((num * f) as libc::c_long
-                                                        + 65536 * tex_remainder as libc::c_long)
-                                                        / denom as libc::c_long)
+                                                    f = (((num * f) as i64
+                                                        + 65536 * tex_remainder as i64)
+                                                        / denom as i64)
                                                         as int32_t;
-                                                    cur_val = (cur_val as libc::c_long
-                                                        + f as libc::c_long / 65536)
+                                                    cur_val = (cur_val as i64
+                                                        + f as i64 / 65536)
                                                         as int32_t;
-                                                    f = (f as libc::c_long % 65536) as int32_t;
+                                                    f = (f as i64 % 65536) as int32_t;
                                                     current_block = 6063453238281986051;
                                                 }
                                             }
@@ -13781,7 +13781,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
                                 if cur_val >= 16384i32 {
                                     arith_error = 1i32 != 0
                                 } else {
-                                    cur_val = (cur_val as libc::c_long * 65536 + f as libc::c_long)
+                                    cur_val = (cur_val as i64 * 65536 + f as i64)
                                         as int32_t
                                 }
                             }
@@ -13796,7 +13796,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
             } else if cur_val >= 16384i32 {
                 arith_error = 1i32 != 0
             } else {
-                cur_val = (cur_val as libc::c_long * 65536 + f as libc::c_long) as int32_t
+                cur_val = (cur_val as i64 * 65536 + f as i64) as int32_t
             }
         }
         _ => {}
@@ -14499,7 +14499,7 @@ pub unsafe extern "C" fn pseudo_start() {
     }
     s = make_string();
     *str_pool.offset(pool_ptr as isize) = ' ' as i32 as packed_UTF16_code;
-    l = *str_start.offset((s as libc::c_long - 65536) as isize);
+    l = *str_start.offset((s as i64 - 65536) as isize);
     nl = (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -14656,8 +14656,8 @@ pub unsafe extern "C" fn str_toks_cat(mut b: pool_pointer, mut cat: small_number
             {
                 k += 1;
                 t = (65536
-                    + ((t - 0xd800i32) * 1024i32) as libc::c_long
-                    + (*str_pool.offset(k as isize) as libc::c_int - 0xdc00i32) as libc::c_long)
+                    + ((t - 0xd800i32) * 1024i32) as i64
+                    + (*str_pool.offset(k as isize) as libc::c_int - 0xdc00i32) as i64)
                     as int32_t
             }
             if cat as libc::c_int == 0i32 {
@@ -15031,7 +15031,7 @@ pub unsafe extern "C" fn conv_toks() {
                 i = 0i32 as small_number;
                 while i as libc::c_int <= length(font_name_str) - 1i32 {
                     if *str_pool.offset(
-                        (*str_start.offset((font_name_str as libc::c_long - 65536) as isize)
+                        (*str_start.offset((font_name_str as i64 - 65536) as isize)
                             + i as libc::c_int) as isize,
                     ) as libc::c_int
                         == '\"' as i32
@@ -15461,7 +15461,7 @@ pub unsafe extern "C" fn read_toks(mut n: int32_t, mut r: int32_t, mut j: int32_
             } else if input_line(read_file[m as usize]) == 0 {
                 u_close(read_file[m as usize]);
                 read_open[m as usize] = 2i32 as u8;
-                if align_state as libc::c_long != 1000000 {
+                if align_state as i64 != 1000000 {
                     runaway();
                     if file_line_error_style_p != 0 {
                         print_file_line();
@@ -15593,7 +15593,7 @@ pub unsafe extern "C" fn read_toks(mut n: int32_t, mut r: int32_t, mut j: int32_
                 if cur_tok == 0i32 {
                     break;
                 }
-                if (align_state as libc::c_long) < 1000000 {
+                if (align_state as i64) < 1000000 {
                     loop {
                         get_token();
                         if !(cur_tok != 0i32) {
@@ -15611,7 +15611,7 @@ pub unsafe extern "C" fn read_toks(mut n: int32_t, mut r: int32_t, mut j: int32_
             }
         }
         end_file_reading();
-        if !(align_state as libc::c_long != 1000000) {
+        if !(align_state as i64 != 1000000) {
             break;
         }
     }
@@ -16329,17 +16329,17 @@ pub unsafe extern "C" fn end_name() {
      * string `cur_area`. If there was already a string in the stringpool for
      * the area, reuse it. */
     if area_delimiter == 0i32 {
-        cur_area = (65536 + 1i32 as libc::c_long) as str_number
+        cur_area = (65536 + 1i32 as i64) as str_number
     } else {
         cur_area = str_ptr;
-        *str_start.offset(((str_ptr + 1i32) as libc::c_long - 65536) as isize) =
+        *str_start.offset(((str_ptr + 1i32) as i64 - 65536) as isize) =
             *str_start.offset((str_ptr - 65536i32) as isize) + area_delimiter;
         str_ptr += 1;
         temp_str = search_string(cur_area);
         if temp_str > 0i32 {
             cur_area = temp_str;
             str_ptr -= 1;
-            j = *str_start.offset(((str_ptr + 1i32) as libc::c_long - 65536) as isize);
+            j = *str_start.offset(((str_ptr + 1i32) as i64 - 65536) as isize);
             while j <= pool_ptr - 1i32 {
                 *str_pool.offset((j - area_delimiter) as isize) = *str_pool.offset(j as isize);
                 j += 1
@@ -16351,11 +16351,11 @@ pub unsafe extern "C" fn end_name() {
      * extension '.' delimiter, which we use to construct the stringpool
      * strings `cur_ext` and `cur_name`. */
     if ext_delimiter == 0i32 {
-        cur_ext = (65536 + 1i32 as libc::c_long) as str_number;
+        cur_ext = (65536 + 1i32 as i64) as str_number;
         cur_name = slow_make_string()
     } else {
         cur_name = str_ptr;
-        *str_start.offset(((str_ptr + 1i32) as libc::c_long - 65536) as isize) =
+        *str_start.offset(((str_ptr + 1i32) as i64 - 65536) as isize) =
             *str_start.offset((str_ptr - 65536i32) as isize) + ext_delimiter
                 - area_delimiter
                 - 1i32;
@@ -16366,7 +16366,7 @@ pub unsafe extern "C" fn end_name() {
         if temp_str > 0i32 {
             cur_name = temp_str;
             str_ptr -= 1;
-            j = *str_start.offset(((str_ptr + 1i32) as libc::c_long - 65536) as isize);
+            j = *str_start.offset(((str_ptr + 1i32) as i64 - 65536) as isize);
             while j <= pool_ptr - 1i32 {
                 *str_pool.offset((j - ext_delimiter + area_delimiter + 1i32) as isize) =
                     *str_pool.offset(j as isize);
@@ -16467,7 +16467,7 @@ pub unsafe extern "C" fn scan_file_name() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pack_job_name(mut s: *const i8) {
-    cur_area = (65536 + 1i32 as libc::c_long) as str_number;
+    cur_area = (65536 + 1i32 as i64) as str_number;
     cur_ext = maketexstring(s);
     cur_name = job_name;
     pack_file_name(cur_name, cur_area, cur_ext);
@@ -17039,7 +17039,7 @@ pub unsafe extern "C" fn char_warning(mut f: internal_font_number, mut c: int32_
         }
         begin_diagnostic();
         print_nl_cstr(b"Missing character: There is no \x00" as *const u8 as *const i8);
-        if (c as libc::c_long) < 65536 {
+        if (c as i64) < 65536 {
             print(c);
         } else {
             print_char(c);
@@ -17180,7 +17180,7 @@ pub unsafe extern "C" fn new_native_character(
     let mut i: int32_t = 0;
     let mut len: int32_t = 0;
     if !(*font_mapping.offset(f as isize)).is_null() {
-        if c as libc::c_long > 65535 {
+        if c as i64 > 65535 {
             if pool_ptr + 2i32 > pool_size {
                 overflow(
                     b"pool size\x00" as *const u8 as *const i8,
@@ -17188,11 +17188,11 @@ pub unsafe extern "C" fn new_native_character(
                 );
             }
             *str_pool.offset(pool_ptr as isize) =
-                ((c as libc::c_long - 65536) / 1024i32 as libc::c_long + 0xd800i32 as libc::c_long)
+                ((c as i64 - 65536) / 1024i32 as i64 + 0xd800i32 as i64)
                     as packed_UTF16_code;
             pool_ptr += 1;
             *str_pool.offset(pool_ptr as isize) =
-                ((c as libc::c_long - 65536) % 1024i32 as libc::c_long + 0xdc00i32 as libc::c_long)
+                ((c as i64 - 65536) % 1024i32 as i64 + 0xdc00i32 as i64)
                     as packed_UTF16_code;
             pool_ptr += 1
         } else {
@@ -17280,14 +17280,14 @@ pub unsafe extern "C" fn new_native_character(
         let ref mut fresh49 = (*mem.offset((p + 5i32) as isize)).ptr;
         *fresh49 = 0 as *mut libc::c_void;
         (*mem.offset((p + 4i32) as isize)).b16.s2 = f as u16;
-        if c as libc::c_long > 65535 {
+        if c as i64 > 65535 {
             (*mem.offset((p + 4i32) as isize)).b16.s1 = 2i32 as u16;
             *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
-                .offset(0) = ((c as libc::c_long - 65536) / 1024i32 as libc::c_long
-                + 0xd800i32 as libc::c_long) as u16;
+                .offset(0) = ((c as i64 - 65536) / 1024i32 as i64
+                + 0xd800i32 as i64) as u16;
             *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
-                .offset(1) = ((c as libc::c_long - 65536) % 1024i32 as libc::c_long
-                + 0xdc00i32 as libc::c_long) as u16
+                .offset(1) = ((c as i64 - 65536) % 1024i32 as i64
+                + 0xdc00i32 as i64) as u16
         } else {
             (*mem.offset((p + 4i32) as isize)).b16.s1 = 1i32 as u16;
             *(&mut *mem.offset((p + 6i32) as isize) as *mut memory_word as *mut u16)
@@ -18107,7 +18107,7 @@ pub unsafe extern "C" fn read_font_info(
             if name_too_long {
                 current_block = 9519785463931849731;
             } else {
-                pack_file_name(nom, aire, (65536 + 1i32 as libc::c_long) as str_number);
+                pack_file_name(nom, aire, (65536 + 1i32 as i64) as str_number);
                 check_for_tfm_font_mapping();
                 tfm_file = tt_xetex_open_input(TTIF_TFM as libc::c_int);
                 if tfm_file.is_null() {
@@ -18367,7 +18367,7 @@ pub unsafe extern "C" fn read_font_info(
                                                                                                     16i32;
                                                                                         if (z
                                                                                                 as
-                                                                                                libc::c_long)
+                                                                                                i64)
                                                                                                <
                                                                                                65536
                                                                                            {
@@ -21980,7 +21980,7 @@ pub unsafe extern "C" fn init_align() {
             }
             if cur_cmd as libc::c_int <= 5i32
                 && cur_cmd as libc::c_int >= 4i32
-                && align_state as libc::c_long == -1000000
+                && align_state as i64 == -1000000
             {
                 if p == 4999999i32 - 4i32
                     && cur_loop == -0xfffffffi32
@@ -22025,7 +22025,7 @@ pub unsafe extern "C" fn init_align() {
             get_preamble_token();
             if cur_cmd as libc::c_int <= 5i32
                 && cur_cmd as libc::c_int >= 4i32
-                && align_state as libc::c_long == -1000000
+                && align_state as i64 == -1000000
             {
                 break;
             }
@@ -22166,7 +22166,7 @@ pub unsafe extern "C" fn fin_col() -> bool {
     if q == -0xfffffffi32 {
         confusion(b"endv\x00" as *const u8 as *const i8);
     }
-    if (align_state as libc::c_long) < 500000 {
+    if (align_state as i64) < 500000 {
         fatal_error(
             b"(interwoven alignment preambles are not allowed)\x00" as *const u8
                 as *const i8,
@@ -25739,9 +25739,9 @@ pub unsafe extern "C" fn new_graf(mut indented: bool) {
             ))
             .b32
             .s1,
-        ) as libc::c_int) as libc::c_long
+        ) as libc::c_int) as i64
         * 65536
-        + cur_lang as libc::c_long) as int32_t;
+        + cur_lang as i64) as int32_t;
     if indented {
         cur_list.tail = new_null_box();
         (*mem.offset(cur_list.head as isize)).b32.s1 = cur_list.tail;
@@ -28099,12 +28099,12 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
             help_line[0] = b"less than 2048pt, so I\'ve changed what you said to 10pt.\x00"
                 as *const u8 as *const i8;
             error();
-            s = (10i32 as libc::c_long * 65536) as scaled_t
+            s = (10i32 as i64 * 65536) as scaled_t
         }
     } else if scan_keyword(b"scaled\x00" as *const u8 as *const i8) {
         scan_int();
         s = -cur_val;
-        if cur_val <= 0i32 || cur_val as libc::c_long > 32768 {
+        if cur_val <= 0i32 || cur_val as i64 > 32768 {
             if file_line_error_style_p != 0 {
                 print_file_line();
             } else {
@@ -28759,7 +28759,7 @@ pub unsafe extern "C" fn do_extension() {
             {
                 new_whatsit(42i32 as small_number, 5i32 as small_number);
                 scan_int();
-                if cur_val < 0i32 || cur_val as libc::c_long > 65535 {
+                if cur_val < 0i32 || cur_val as i64 > 65535 {
                     if file_line_error_style_p != 0 {
                         print_file_line();
                     } else {
@@ -30443,7 +30443,7 @@ pub unsafe extern "C" fn main_control() {
                             + cur_chr) as isize,
                     ))
                     .b32
-                    .s1 as libc::c_long
+                    .s1 as i64
                         % 65536) as int32_t;
                     if main_s == 1000i32 {
                         cur_list.aux.b32.s0 = 1000i32
@@ -30482,7 +30482,7 @@ pub unsafe extern "C" fn main_control() {
                             + cur_chr) as isize,
                     ))
                     .b32
-                    .s1 as libc::c_long
+                    .s1 as i64
                         / 65536) as int32_t;
                     if (*eqtb.offset(
                         (1i32
@@ -30562,7 +30562,7 @@ pub unsafe extern "C" fn main_control() {
                         }
                         prev_class = space_class
                     }
-                    if cur_chr as libc::c_long > 65535 {
+                    if cur_chr as i64 > 65535 {
                         while native_text_size <= native_len + 2i32 {
                             native_text_size = native_text_size + 128i32;
                             native_text = xrealloc(
@@ -30573,13 +30573,13 @@ pub unsafe extern "C" fn main_control() {
                             ) as *mut UTF16_code
                         }
                         *native_text.offset(native_len as isize) =
-                            ((cur_chr as libc::c_long - 65536) / 1024i32 as libc::c_long
-                                + 0xd800i32 as libc::c_long)
+                            ((cur_chr as i64 - 65536) / 1024i32 as i64
+                                + 0xd800i32 as i64)
                                 as UTF16_code;
                         native_len += 1;
                         *native_text.offset(native_len as isize) =
-                            ((cur_chr as libc::c_long - 65536) % 1024i32 as libc::c_long
-                                + 0xdc00i32 as libc::c_long)
+                            ((cur_chr as i64 - 65536) % 1024i32 as i64
+                                + 0xdc00i32 as i64)
                                 as UTF16_code;
                         native_len += 1
                     } else {
@@ -30819,7 +30819,7 @@ pub unsafe extern "C" fn main_control() {
                         main_k = *native_text.offset(temp_ptr as isize) as font_index;
                         temp_ptr += 1;
                         if main_k >= 0xd800i32 && main_k < 0xdc00i32 {
-                            main_k = (65536 + ((main_k - 0xd800i32) * 1024i32) as libc::c_long)
+                            main_k = (65536 + ((main_k - 0xd800i32) * 1024i32) as i64)
                                 as font_index;
                             main_k = main_k + *native_text.offset(temp_ptr as isize) as libc::c_int
                                 - 0xdc00i32;
@@ -31456,7 +31456,7 @@ pub unsafe extern "C" fn main_control() {
                         + cur_chr) as isize,
                 ))
                 .b32
-                .s1 as libc::c_long
+                .s1 as i64
                     % 65536) as int32_t;
                 if main_s == 1000i32 {
                     cur_list.aux.b32.s0 = 1000i32
@@ -31495,7 +31495,7 @@ pub unsafe extern "C" fn main_control() {
                         + cur_chr) as isize,
                 ))
                 .b32
-                .s1 as libc::c_long
+                .s1 as i64
                     / 65536) as int32_t;
                 if (*eqtb.offset(
                     (1i32
@@ -31996,7 +31996,7 @@ pub unsafe extern "C" fn main_control() {
                                         ))
                                         .b32
                                         .s1
-                                            as libc::c_long
+                                            as i64
                                             % 65536)
                                             as int32_t; /*:1073 */
                                         if main_s == 1000i32 {
@@ -32038,7 +32038,7 @@ pub unsafe extern "C" fn main_control() {
                                         ))
                                         .b32
                                         .s1
-                                            as libc::c_long
+                                            as i64
                                             / 65536)
                                             as int32_t;
                                         if (*eqtb.offset(
@@ -32264,9 +32264,9 @@ pub unsafe extern "C" fn main_control() {
                         main_k = ((*lig_kern_base.offset(main_f as isize)
                             + 256i32 * main_j.s1 as libc::c_int
                             + main_j.s0 as libc::c_int)
-                            as libc::c_long
+                            as i64
                             + 32768
-                            - (256i32 * 128i32) as libc::c_long)
+                            - (256i32 * 128i32) as i64)
                             as font_index;
                         current_block = 13962460947151495567;
                         break;
@@ -32528,10 +32528,10 @@ pub unsafe extern "C" fn compare_strings() {
     scan_toks(0i32 != 0, 1i32 != 0);
     s2 = tokens_to_string(def_ref);
     delete_token_ref(def_ref);
-    i1 = *str_start.offset((s1 as libc::c_long - 65536) as isize);
-    j1 = *str_start.offset(((s1 + 1i32) as libc::c_long - 65536) as isize);
-    i2 = *str_start.offset((s2 as libc::c_long - 65536) as isize);
-    j2 = *str_start.offset(((s2 + 1i32) as libc::c_long - 65536) as isize);
+    i1 = *str_start.offset((s1 as i64 - 65536) as isize);
+    j1 = *str_start.offset(((s1 + 1i32) as i64 - 65536) as isize);
+    i2 = *str_start.offset((s2 as i64 - 65536) as isize);
+    j2 = *str_start.offset(((s2 + 1i32) as i64 - 65536) as isize);
     loop {
         if !(i1 < j1 && i2 < j2) {
             current_block = 12124785117276362961;

@@ -67,7 +67,7 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;

@@ -174,8 +174,8 @@ extern "C" {
     fn tfm_get_design_size(font_id: libc::c_int) -> libc::c_double;
 }
 pub type __int32_t = libc::c_int;
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
+pub type __off_t = i64;
+pub type __off64_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 #[derive(Copy, Clone)]

@@ -88,7 +88,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;

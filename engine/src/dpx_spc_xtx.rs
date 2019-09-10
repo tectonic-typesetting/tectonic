@@ -558,7 +558,7 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
             error = pdf_read_fontmap_line(
                 mrec,
                 buffer.as_mut_ptr(),
-                (*ap).endptr.wrapping_offset_from((*ap).curptr) as libc::c_long as libc::c_int,
+                (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as libc::c_int,
                 is_pdfm_mapline(buffer.as_mut_ptr()),
             );
             if error != 0 {
@@ -626,9 +626,9 @@ unsafe extern "C" fn spc_handler_xtx_initoverlay(
     strncpy(
         overlay_name.as_mut_ptr(),
         (*args).curptr,
-        (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as u64,
+        (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
     );
-    overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as usize] =
+    overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as i64 as usize] =
         0i32 as i8;
     (*args).curptr = (*args).endptr;
     return 0i32;
@@ -695,7 +695,7 @@ unsafe extern "C" fn spc_handler_xtx_renderingmode(
         );
         pdf_doc_add_page_content(
             (*args).curptr,
-            (*args).endptr.wrapping_offset_from((*args).curptr) as libc::c_long as libc::c_uint,
+            (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as libc::c_uint,
         );
     }
     (*args).curptr = (*args).endptr;

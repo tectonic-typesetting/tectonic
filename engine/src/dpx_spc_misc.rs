@@ -248,7 +248,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
         return -1i32;
     }
     /* input is not NULL terminated */
-    len = (*ap).endptr.wrapping_offset_from((*ap).curptr) as libc::c_long as libc::c_int;
+    len = (*ap).endptr.wrapping_offset_from((*ap).curptr) as i64 as libc::c_int;
     len = if 511i32 < len { 511i32 } else { len };
     memcpy(
         buf.as_mut_ptr() as *mut libc::c_void,
@@ -395,7 +395,7 @@ pub unsafe extern "C" fn spc_misc_check_special(
     p = buffer;
     endptr = p.offset(size as isize);
     skip_white(&mut p, endptr);
-    size = endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int;
+    size = endptr.wrapping_offset_from(p) as i64 as libc::c_int;
     i = 0i32 as size_t;
     while i
         < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
@@ -467,7 +467,7 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
     if (*args).curptr < (*args).endptr && *(*args).curptr.offset(0) as libc::c_int == ':' as i32 {
         (*args).curptr = (*args).curptr.offset(1)
     }
-    keylen = (*args).curptr.wrapping_offset_from(key) as libc::c_long as libc::c_int;
+    keylen = (*args).curptr.wrapping_offset_from(key) as i64 as libc::c_int;
     if keylen < 1i32 {
         return -1i32;
     }

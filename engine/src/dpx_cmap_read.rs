@@ -164,7 +164,7 @@ extern "C" {
     #[no_mangle]
     fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -1077,7 +1077,7 @@ pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -
         return -1i32;
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
-    if ttstub_input_read(handle, sig.as_mut_ptr(), 64i32 as size_t) != 64i32 as libc::c_long {
+    if ttstub_input_read(handle, sig.as_mut_ptr(), 64i32 as size_t) != 64i32 as i64 {
         result = -1i32
     } else {
         sig[64] = 0i32 as i8;

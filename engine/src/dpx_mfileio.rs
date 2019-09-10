@@ -23,15 +23,15 @@ extern "C" {
     #[no_mangle]
     fn ungetc(__c: libc::c_int, __stream: *mut FILE) -> libc::c_int;
     #[no_mangle]
-    fn fseek(__stream: *mut FILE, __off: libc::c_long, __whence: libc::c_int) -> libc::c_int;
+    fn fseek(__stream: *mut FILE, __off: i64, __whence: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn ftell(__stream: *mut FILE) -> libc::c_long;
+    fn ftell(__stream: *mut FILE) -> i64;
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
 }
 pub type __int32_t = libc::c_int;
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
+pub type __off_t = i64;
+pub type __off64_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -99,7 +99,7 @@ unsafe extern "C" fn os_error() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn seek_relative(mut file: *mut FILE, mut pos: int32_t) {
-    if fseek(file, pos as libc::c_long, 1i32) != 0 {
+    if fseek(file, pos as i64, 1i32) != 0 {
         os_error();
     };
 }
@@ -109,11 +109,11 @@ unsafe extern "C" fn seek_end(mut file: *mut FILE) {
     };
 }
 unsafe extern "C" fn tell_position(mut file: *mut FILE) -> int32_t {
-    let mut size: libc::c_long = ftell(file);
-    if size < 0i32 as libc::c_long {
+    let mut size: i64 = ftell(file);
+    if size < 0i32 as i64 {
         os_error();
     }
-    if size > 0x7fffffffi32 as libc::c_long {
+    if size > 0x7fffffffi32 as i64 {
         _tt_abort(
             b"ftell: file size %ld exceeds 0x7fffffff.\n\x00" as *const u8 as *const i8,
             size,

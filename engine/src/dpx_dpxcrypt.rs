@@ -862,8 +862,8 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
  * License along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 unsafe extern "C" fn _gcry_bswap32(mut x: u32) -> u32 {
-    return ((x << 8i32 | x >> 32i32 - 8i32) as libc::c_long & 0xff00ffi64
-        | (x >> (8i32 & 32i32 - 1i32) | x << (32i32 - 8i32 & 32i32 - 1i32)) as libc::c_long
+    return ((x << 8i32 | x >> 32i32 - 8i32) as i64 & 0xff00ffi64
+        | (x >> (8i32 & 32i32 - 1i32) | x << (32i32 - 8i32 & 32i32 - 1i32)) as i64
             & 0xff00ff00i64) as u32;
 }
 unsafe extern "C" fn _gcry_bswap64(mut x: u64) -> u64 {

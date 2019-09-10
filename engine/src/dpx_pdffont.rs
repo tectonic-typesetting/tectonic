@@ -370,9 +370,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_font_load_type1c(font: *mut pdf_font) -> libc::c_int;
 }
-pub type __int64_t = libc::c_long;
-pub type __time_t = libc::c_long;
-pub type int64_t = __int64_t;
+pub type __time_t = i64;
 pub type size_t = u64;
 pub type time_t = __time_t;
 /* Options */
@@ -580,7 +578,7 @@ pub unsafe extern "C" fn pdf_font_set_dpi(mut font_dpi: libc::c_int) {
  */
 #[no_mangle]
 pub unsafe extern "C" fn get_unique_time_if_given() -> time_t {
-    let mut epoch: int64_t = 0; /* Type0 ID */
+    let mut epoch: i64 = 0; /* Type0 ID */
     let mut endptr: *mut i8 = 0 as *mut i8;
     let mut ret: time_t = -1i32 as time_t;
     let mut got_it: libc::c_int = 0;
@@ -589,7 +587,7 @@ pub unsafe extern "C" fn get_unique_time_if_given() -> time_t {
     got_it = (source_date_epoch != 0 as *mut libc::c_void as *const i8) as libc::c_int;
     if got_it != 0 {
         *__errno_location() = 0i32;
-        epoch = strtoll(source_date_epoch, &mut endptr, 10i32) as int64_t;
+        epoch = strtoll(source_date_epoch, &mut endptr, 10i32) as i64;
         if !(*endptr as libc::c_int != '\u{0}' as i32 || *__errno_location() != 0i32) {
             ret = epoch
         }

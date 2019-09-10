@@ -26,7 +26,7 @@ extern "C" {
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
-    fn labs(_: libc::c_long) -> libc::c_long;
+    fn labs(_: i64) -> i64;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
@@ -1496,7 +1496,7 @@ unsafe extern "C" fn handle_multibyte_string(
             i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
         }
         p = sbuf0.as_mut_ptr();
-        length = outbuf.wrapping_offset_from(sbuf0.as_mut_ptr()) as libc::c_long as size_t
+        length = outbuf.wrapping_offset_from(sbuf0.as_mut_ptr()) as i64 as size_t
     } else if (*font).is_unicode != 0 {
         /* _FIXME_ */
         /* UCS-4 */
@@ -1802,9 +1802,9 @@ pub unsafe extern "C" fn pdf_dev_set_string(
      * when -kern is equal to space char width.
      */
     if text_state.force_reset != 0
-        || labs(delv as libc::c_long) > dev_unit.min_bp_val as libc::c_long
-        || labs(delh as libc::c_long)
-            > (3.0f64 * (*font).extend * (*font).sptsize as libc::c_double) as spt_t as libc::c_long
+        || labs(delv as i64) > dev_unit.min_bp_val as i64
+        || labs(delh as i64)
+            > (3.0f64 * (*font).extend * (*font).sptsize as libc::c_double) as spt_t as i64
     {
         text_mode();
         kern = 0i32

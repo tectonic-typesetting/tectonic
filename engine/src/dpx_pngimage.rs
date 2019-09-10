@@ -277,7 +277,7 @@ extern "C" {
     ) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -385,7 +385,7 @@ unsafe extern "C" fn _png_read(
     let mut handle: rust_input_handle_t = png_get_io_ptr(png_ptr as *const png_struct);
     let mut r: ssize_t = 0;
     r = ttstub_input_read(handle, outbytes as *mut i8, n);
-    if r < 0i32 as libc::c_long || r as size_t != n {
+    if r < 0i32 as i64 || r as size_t != n {
         _tt_abort(b"error reading PNG\x00" as *const u8 as *const i8);
     };
 }

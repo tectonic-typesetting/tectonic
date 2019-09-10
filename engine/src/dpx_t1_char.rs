@@ -1087,7 +1087,7 @@ unsafe extern "C" fn put_numbers(
         /* Nearest integer value */
         ivalue = floor(value + 0.5f64) as libc::c_int;
         if value >= 0x8000i64 as libc::c_double
-            || value <= (-0x8000 - 1i32 as libc::c_long) as libc::c_double
+            || value <= (-0x8000 - 1i32 as i64) as libc::c_double
         {
             /*
              * This number cannot be represented as a single operand.
@@ -1196,7 +1196,7 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut car
         b2 = *(*data).offset(1);
         result = b1 as libc::c_int * 256i32 + b2 as libc::c_int;
         if result > 0x7fffi32 {
-            result = (result as libc::c_long - 0x10000) as libc::c_int
+            result = (result as i64 - 0x10000) as libc::c_int
         }
         *data = (*data).offset(2)
     } else if b0 as libc::c_int >= 32i32 && b0 as libc::c_int <= 246i32 {
@@ -1241,8 +1241,8 @@ unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut car
         return;
     }
     result = **data as libc::c_int;
-    if result as libc::c_long >= 0x80 {
-        result = (result as libc::c_long - 0x100) as libc::c_int
+    if result as i64 >= 0x80 {
+        result = (result as i64 - 0x100) as libc::c_int
     }
     *data = (*data).offset(1);
     i = 1i32 as libc::c_uint;
@@ -1326,7 +1326,7 @@ unsafe extern "C" fn t1char_build_charpath(
         if !(*data == endptr.offset(-1) && **data as libc::c_int == 11i32) {
             dpx_warning(
                 b"Garbage after endchar. (%d bytes)\x00" as *const u8 as *const i8,
-                endptr.wrapping_offset_from(*data) as libc::c_long as libc::c_int,
+                endptr.wrapping_offset_from(*data) as i64 as libc::c_int,
             );
         }
     } else if status < 0i32 {
@@ -2144,7 +2144,7 @@ unsafe extern "C" fn t1char_encode_charpath(
     let fresh33 = dst;
     dst = dst.offset(1);
     *fresh33 = 14i32 as card8;
-    return dst.wrapping_offset_from(save) as libc::c_long as libc::c_int;
+    return dst.wrapping_offset_from(save) as i64 as libc::c_int;
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1char_convert_charstring(

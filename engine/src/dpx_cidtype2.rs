@@ -669,7 +669,7 @@ unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: libc::c_int) 
                 fontname,
             );
             *p.offset(0) = '\u{0}' as i32 as i8;
-            len = p.wrapping_offset_from(fontname) as libc::c_long as libc::c_int;
+            len = p.wrapping_offset_from(fontname) as i64 as libc::c_int;
             break;
         } else {
             i += 1

@@ -113,7 +113,7 @@ extern "C" {
     fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;

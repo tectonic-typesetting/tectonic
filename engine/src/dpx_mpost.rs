@@ -420,8 +420,8 @@ extern "C" {
     fn tfm_exists(tfm_name: *const i8) -> bool;
 }
 pub type __int32_t = libc::c_int;
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
+pub type __off_t = i64;
+pub type __off64_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;

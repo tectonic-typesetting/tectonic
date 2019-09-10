@@ -107,11 +107,9 @@ extern "C" {
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
 pub type __int32_t = libc::c_int;
-pub type __int64_t = libc::c_long;
-pub type __off_t = libc::c_long;
-pub type __ssize_t = libc::c_long;
+pub type __off_t = i64;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
-pub type int64_t = __int64_t;
 pub type size_t = u64;
 pub type off_t = __off_t;
 pub type ssize_t = __ssize_t;
@@ -415,7 +413,7 @@ unsafe extern "C" fn tfm_check_size(mut tfm: *mut tfm_font, mut tfm_file_size: o
      }
      }
     */
-    if tfm_file_size < (*tfm).wlenfile as int64_t * 4i32 as libc::c_long {
+    if tfm_file_size < (*tfm).wlenfile as i64 * 4i32 as i64 {
         _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const i8);
     }
     expected_size = (expected_size as libc::c_uint).wrapping_add(
@@ -446,10 +444,10 @@ unsafe extern "C" fn tfm_check_size(mut tfm: *mut tfm_font, mut tfm_file_size: o
         dpx_warning(
             b"TFM file size is expected to be %ld bytes but it says it is %ldbytes!\x00"
                 as *const u8 as *const i8,
-            expected_size as int64_t * 4i32 as libc::c_long,
-            (*tfm).wlenfile as int64_t * 4i32 as libc::c_long,
+            expected_size as i64 * 4i32 as i64,
+            (*tfm).wlenfile as i64 * 4i32 as i64,
         );
-        if tfm_file_size > expected_size as int64_t * 4i32 as libc::c_long {
+        if tfm_file_size > expected_size as i64 * 4i32 as i64 {
             dpx_warning(b"Proceeding nervously...\x00" as *const u8 as *const i8);
         } else {
             _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const i8);
@@ -584,7 +582,7 @@ unsafe extern "C" fn ofm_check_size_one(mut tfm: *mut tfm_font, mut ofm_file_siz
         .wrapping_add((2i32 as libc::c_uint).wrapping_mul((*tfm).nextens))
         as u32;
     ofm_size = (ofm_size as libc::c_uint).wrapping_add((*tfm).nfonparm) as u32;
-    if (*tfm).wlenfile as libc::c_long != ofm_file_size / 4i32 as libc::c_long
+    if (*tfm).wlenfile as i64 != ofm_file_size / 4i32 as i64
         || (*tfm).wlenfile != ofm_size
     {
         _tt_abort(
@@ -696,7 +694,7 @@ unsafe extern "C" fn ofm_get_sizes(
         );
         ttstub_input_seek(
             ofm_handle,
-            4i32 as libc::c_long * (*tfm).nco.wrapping_sub((*tfm).wlenheader) as off_t,
+            4i32 as i64 * (*tfm).nco.wrapping_sub((*tfm).wlenheader) as off_t,
             0i32,
         );
     } else {
@@ -1100,7 +1098,7 @@ pub unsafe extern "C" fn tfm_open(
     if tfm_file_size as u64 > 0x1ffffffffu64 {
         _tt_abort(b"TFM/OFM file size exceeds 33-bit\x00" as *const u8 as *const i8);
     }
-    if tfm_file_size < 24i32 as libc::c_long {
+    if tfm_file_size < 24i32 as i64 {
         _tt_abort(
             b"TFM/OFM file too small to be a valid file.\x00" as *const u8 as *const i8,
         );

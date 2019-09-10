@@ -253,7 +253,7 @@ extern "C" {
     #[no_mangle]
     fn check_for_png(handle: rust_input_handle_t) -> libc::c_int;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 /* The weird enum values are historical and could be rationalized. But it is

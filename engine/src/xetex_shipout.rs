@@ -3476,14 +3476,14 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
         dvi_four(*font_dsize.offset(f as isize));
         dvi_out(length(*font_area.offset(f as isize)) as eight_bits);
         l = 0i32;
-        k = *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize);
+        k = *str_start.offset((*font_name.offset(f as isize) as i64 - 65536) as isize);
         while l == 0i32
             && k < *str_start
-                .offset(((*font_name.offset(f as isize) + 1i32) as libc::c_long - 65536) as isize)
+                .offset(((*font_name.offset(f as isize) + 1i32) as i64 - 65536) as isize)
         {
             if *str_pool.offset(k as isize) as libc::c_int == ':' as i32 {
                 l = k - *str_start
-                    .offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize)
+                    .offset((*font_name.offset(f as isize) as i64 - 65536) as isize)
             }
             k += 1
         }
@@ -3492,9 +3492,9 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
         }
         dvi_out(l as eight_bits);
         let mut for_end: int32_t = 0;
-        k = *str_start.offset((*font_area.offset(f as isize) as libc::c_long - 65536) as isize);
+        k = *str_start.offset((*font_area.offset(f as isize) as i64 - 65536) as isize);
         for_end = *str_start
-            .offset(((*font_area.offset(f as isize) + 1i32) as libc::c_long - 65536) as isize)
+            .offset(((*font_area.offset(f as isize) + 1i32) as i64 - 65536) as isize)
             - 1i32;
         if k <= for_end {
             loop {
@@ -3507,9 +3507,9 @@ unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
             }
         }
         let mut for_end_0: int32_t = 0;
-        k = *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize);
+        k = *str_start.offset((*font_name.offset(f as isize) as i64 - 65536) as isize);
         for_end_0 =
-            *str_start.offset((*font_name.offset(f as isize) as libc::c_long - 65536) as isize) + l
+            *str_start.offset((*font_name.offset(f as isize) as i64 - 65536) as isize) + l
                 - 1i32;
         if k <= for_end_0 {
             loop {

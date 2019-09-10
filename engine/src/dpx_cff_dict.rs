@@ -766,8 +766,8 @@ unsafe extern "C" fn get_integer(
         *data = (*data).offset(1);
         b2 = *fresh2;
         result = b1 as libc::c_int * 256i32 + b2 as libc::c_int;
-        if result as libc::c_long > 0x7fff {
-            result = (result as libc::c_long - 0x10000) as libc::c_int
+        if result as i64 > 0x7fff {
+            result = (result as i64 - 0x10000) as libc::c_int
         }
     } else if b0 as libc::c_int == 29i32 && *data < endptr.offset(-4) {
         /* longint */

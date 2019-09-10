@@ -1250,7 +1250,7 @@ unsafe extern "C" fn iccp_unpack_header(
                 b"Reserved pad not zero: %02x (at offset %d in ICC profile header.)\x00"
                     as *const u8 as *const i8,
                 *p as libc::c_int,
-                128i32 - endptr.wrapping_offset_from(p) as libc::c_long as libc::c_int,
+                128i32 - endptr.wrapping_offset_from(p) as i64 as libc::c_int,
             );
             return -1i32;
         }

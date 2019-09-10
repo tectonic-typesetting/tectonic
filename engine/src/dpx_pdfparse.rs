@@ -265,7 +265,7 @@ unsafe extern "C" fn parsed_string(
 ) -> *mut i8 {
     let mut result: *mut i8 = 0 as *mut i8;
     let mut len: libc::c_int = 0;
-    len = end.wrapping_offset_from(start) as libc::c_long as libc::c_int;
+    len = end.wrapping_offset_from(start) as i64 as libc::c_int;
     if len > 0i32 {
         result = new(((len + 1i32) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)

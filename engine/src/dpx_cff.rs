@@ -103,7 +103,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -2839,7 +2839,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int
                     .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                     as u32) as *mut card8;
                 if ttstub_input_read((*cff).handle, data as *mut i8, size as size_t)
-                    != size as libc::c_long
+                    != size as i64
                 {
                     _tt_abort(b"reading file failed\x00" as *const u8 as *const i8);
                 }
@@ -2885,7 +2885,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> libc::c_int
                 .wrapping_mul(::std::mem::size_of::<card8>() as u64)
                 as u32) as *mut card8;
             if ttstub_input_read((*cff).handle, data as *mut i8, size as size_t)
-                != size as libc::c_long
+                != size as i64
             {
                 _tt_abort(b"reading file failed\x00" as *const u8 as *const i8);
             }

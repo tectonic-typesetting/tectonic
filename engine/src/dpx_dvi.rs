@@ -47,7 +47,7 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const i8) -> libc::c_double;
     #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> libc::c_long;
+    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -1431,7 +1431,7 @@ unsafe extern "C" fn get_and_buffer_bytes(
         handle,
         (dvi_page_buffer as *mut i8).offset(dvi_page_buf_index as isize),
         count as size_t,
-    ) != count as libc::c_long
+    ) != count as i64
     {
         _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
     }
@@ -1611,7 +1611,7 @@ unsafe extern "C" fn find_post() -> int32_t {
     let mut current: int32_t = 0;
     let mut ch: libc::c_int = 0;
     dvi_size = ttstub_input_get_size(dvi_handle) as off_t;
-    if dvi_size > 0x7fffffffi32 as libc::c_long {
+    if dvi_size > 0x7fffffffi32 as i64 {
         _tt_abort(b"DVI file size exceeds 31-bit\x00" as *const u8 as *const i8);
     }
     dvi_file_size = dvi_size as u32;
@@ -1814,7 +1814,7 @@ unsafe extern "C" fn read_font_record(mut tex_id: u32) {
     directory = new(((dir_length + 1i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
-    if ttstub_input_read(dvi_handle, directory, dir_length as size_t) != dir_length as libc::c_long
+    if ttstub_input_read(dvi_handle, directory, dir_length as size_t) != dir_length as i64
     {
         _tt_abort(invalid_signature.as_ptr());
     }
@@ -1824,7 +1824,7 @@ unsafe extern "C" fn read_font_record(mut tex_id: u32) {
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
     if ttstub_input_read(dvi_handle, font_name, name_length as size_t)
-        != name_length as libc::c_long
+        != name_length as i64
     {
         _tt_abort(invalid_signature.as_ptr());
     }
@@ -1869,7 +1869,7 @@ unsafe extern "C" fn read_native_font_record(mut tex_id: u32) {
     font_name = new(((len + 1i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
-    if ttstub_input_read(dvi_handle, font_name, len as size_t) != len as libc::c_long {
+    if ttstub_input_read(dvi_handle, font_name, len as size_t) != len as i64 {
         _tt_abort(invalid_signature.as_ptr());
     }
     *font_name.offset(len as isize) = '\u{0}' as i32 as i8;
@@ -1964,7 +1964,7 @@ unsafe extern "C" fn get_comment() {
     ttstub_input_seek(dvi_handle, 14i32 as ssize_t, 0i32);
     length = tt_get_unsigned_byte(dvi_handle) as libc::c_int;
     if ttstub_input_read(dvi_handle, dvi_info.comment.as_mut_ptr(), length as size_t)
-        != length as libc::c_long
+        != length as i64
     {
         _tt_abort(invalid_signature.as_ptr());
     }
@@ -4078,7 +4078,7 @@ pub unsafe extern "C" fn dvi_scan_specials(
                 dvi_handle,
                 dvi_page_buffer.offset(dvi_page_buf_index as isize) as *mut i8,
                 size as size_t,
-            ) != size as libc::c_long
+            ) != size as i64
             {
                 _tt_abort(b"Reading DVI file failed!\x00" as *const u8 as *const i8);
             }

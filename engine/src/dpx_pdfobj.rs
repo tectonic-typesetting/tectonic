@@ -186,7 +186,7 @@ extern "C" {
     fn pdf_sprint_number(buf: *mut i8, value: libc::c_double) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type C2RustUnnamed = libc::c_uint;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
@@ -3164,8 +3164,8 @@ unsafe extern "C" fn parse_xref_table(
                      * might have started to read the trailer dictionary and
                      * parse_trailer would fail.
                      */
-                    current_pos = (current_pos as libc::c_long
-                        + p.wrapping_offset_from(buf.as_mut_ptr()) as libc::c_long)
+                    current_pos = (current_pos as i64
+                        + p.wrapping_offset_from(buf.as_mut_ptr()) as i64)
                         as libc::c_uint; /* Jump to the beginning of "trailer" keyword. */
                     ttstub_input_seek((*pf).handle, current_pos as ssize_t, 0i32);
                     break;

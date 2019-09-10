@@ -244,7 +244,7 @@ extern "C" {
     fn CMap_create_stream(cmap: *mut CMap) -> *mut pdf_obj;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -710,7 +710,7 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> libc::c_int 
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
     *wbuf_0.offset(fsize as isize) = '\u{0}' as i32 as i8;
-    if ttstub_input_read(handle, wbuf_0, fsize as size_t) != fsize as libc::c_long {
+    if ttstub_input_read(handle, wbuf_0, fsize as size_t) != fsize as i64 {
         _tt_abort(
             b"error reading %s\x00" as *const u8 as *const i8,
             filename,

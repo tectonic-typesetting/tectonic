@@ -22,7 +22,7 @@ extern "C" {
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> libc::c_double;
     #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> libc::c_long;
+    fn strtol(_: *const i8, _: *mut *mut i8, _: libc::c_int) -> i64;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]

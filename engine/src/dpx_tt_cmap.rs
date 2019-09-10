@@ -338,7 +338,7 @@ extern "C" {
     fn tt_read_maxp_table(sfont: *mut sfnt) -> *mut tt_maxp_table;
 }
 pub type __int32_t = libc::c_int;
-pub type __ssize_t = libc::c_long;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -1296,7 +1296,7 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: SFNT_ULO
             .as_ptr(),
         );
     }
-    if cc as libc::c_long > 0xffff && ((*cmap).format as libc::c_int) < 12i32 {
+    if cc as i64 > 0xffff && ((*cmap).format as libc::c_int) < 12i32 {
         dpx_warning(
             b"Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.\x00"
                 as *const u8 as *const i8,

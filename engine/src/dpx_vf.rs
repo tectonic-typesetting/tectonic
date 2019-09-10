@@ -154,9 +154,9 @@ extern "C" {
     fn tfm_open(tex_name: *const i8, must_exist: libc::c_int) -> libc::c_int;
 }
 pub type __int32_t = libc::c_int;
-pub type __off_t = libc::c_long;
-pub type __off64_t = libc::c_long;
-pub type __ssize_t = libc::c_long;
+pub type __off_t = i64;
+pub type __off64_t = i64;
+pub type __ssize_t = i64;
 pub type int32_t = __int32_t;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -367,7 +367,7 @@ unsafe extern "C" fn read_a_char_def(
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
         if ttstub_input_read(vf_handle, pkt as *mut i8, pkt_len as size_t)
-            != pkt_len as libc::c_long
+            != pkt_len as i64
         {
             _tt_abort(b"VF file ended prematurely.\x00" as *const u8 as *const i8);
         }
@@ -422,7 +422,7 @@ unsafe extern "C" fn read_a_font_def(
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
     if ttstub_input_read(vf_handle, (*dev_font).directory, dir_length as size_t)
-        != dir_length as libc::c_long
+        != dir_length as i64
     {
         _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
     }
@@ -430,7 +430,7 @@ unsafe extern "C" fn read_a_font_def(
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
     if ttstub_input_read(vf_handle, (*dev_font).name, name_length as size_t)
-        != name_length as libc::c_long
+        != name_length as i64
     {
         _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
     }
@@ -597,7 +597,7 @@ unsafe extern "C" fn get_pkt_signed_num(
     mut num: u8,
 ) -> int32_t {
     let mut val: int32_t = 0i32;
-    if end.wrapping_offset_from(*start) as libc::c_long > num as libc::c_long {
+    if end.wrapping_offset_from(*start) as i64 > num as i64 {
         let fresh11 = *start;
         *start = (*start).offset(1);
         val = *fresh11 as int32_t;
@@ -653,7 +653,7 @@ unsafe extern "C" fn get_pkt_unsigned_num(
     mut num: u8,
 ) -> int32_t {
     let mut val: int32_t = 0i32;
-    if end.wrapping_offset_from(*start) as libc::c_long > num as libc::c_long {
+    if end.wrapping_offset_from(*start) as i64 > num as i64 {
         let fresh15 = *start;
         *start = (*start).offset(1);
         val = *fresh15 as int32_t;
