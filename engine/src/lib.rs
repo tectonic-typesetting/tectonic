@@ -66,7 +66,7 @@ extern "C" {
         compress: bool,
         deterministic_tags: bool,
         quiet: bool,
-        verbose: libc::c_uint,
+        verbose: u32,
     ) -> i32;
     /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
        Copyright 2016-2018 The Tectonic Project
@@ -321,8 +321,8 @@ pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __va_list_tag {
-    pub gp_offset: libc::c_uint,
-    pub fp_offset: libc::c_uint,
+    pub gp_offset: u32,
+    pub fp_offset: u32,
     pub overflow_arg_area: *mut libc::c_void,
     pub reg_save_area: *mut libc::c_void,
 }
@@ -332,12 +332,12 @@ pub type va_list = __builtin_va_list;
 pub struct __sigset_t {
     pub __val: [u64; 16],
 }
-pub type tt_history_t = libc::c_uint;
+pub type tt_history_t = u32;
 pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
 pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
 pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
 pub const HISTORY_SPOTLESS: tt_history_t = 0;
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -584,7 +584,7 @@ pub unsafe extern "C" fn dvipdfmx_simple_main(
         compress,
         deterministic_tags,
         0i32 != 0,
-        0i32 as libc::c_uint,
+        0i32 as u32,
     );
     tectonic_global_bridge = 0 as *mut tt_bridge_api_t;
     return rv;

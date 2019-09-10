@@ -15,7 +15,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -29,7 +29,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_indirect(
         pf: *mut pdf_file,
-        label: libc::c_uint,
+        label: u32,
         generation: u16,
     ) -> *mut pdf_obj;
     #[no_mangle]
@@ -133,7 +133,7 @@ extern "C" {
     #[no_mangle]
     fn spc_lookup_reference(ident: *const i8) -> *mut pdf_obj;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -1171,13 +1171,13 @@ unsafe extern "C" fn try_pdf_reference(
     mut endptr: *mut *const i8,
     mut pf: *mut pdf_file,
 ) -> *mut pdf_obj {
-    let mut id: libc::c_uint = 0i32 as libc::c_uint;
+    let mut id: u32 = 0i32 as u32;
     let mut gen: u16 = 0i32 as u16;
     if !pf.is_null() {
     } else {
         __assert_fail(b"pf\x00" as *const u8 as *const i8,
                       b"dpx-pdfparse.c\x00" as *const u8 as
-                          *const i8, 883i32 as libc::c_uint,
+                          *const i8, 883i32 as u32,
                       (*::std::mem::transmute::<&[u8; 82],
                                                 &[i8; 82]>(b"pdf_obj *try_pdf_reference(const char *, const char *, const char **, pdf_file *)\x00")).as_ptr());
     }
@@ -1209,8 +1209,8 @@ unsafe extern "C" fn try_pdf_reference(
             return 0 as *mut pdf_obj;
         }
         id = id
-            .wrapping_mul(10i32 as libc::c_uint)
-            .wrapping_add((*start as i32 - '0' as i32) as libc::c_uint);
+            .wrapping_mul(10i32 as u32)
+            .wrapping_add((*start as i32 - '0' as i32) as u32);
         start = start.offset(1)
     }
     skip_white(&mut start, end);

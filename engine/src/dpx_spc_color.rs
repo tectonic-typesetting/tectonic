@@ -12,7 +12,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -52,7 +52,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_doc_set_bgcolor(color: *const pdf_color);
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -269,7 +269,7 @@ pub unsafe extern "C" fn spc_color_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_color.c\x00" as *const u8 as
-                          *const i8, 141i32 as libc::c_uint,
+                          *const i8, 141i32 as u32,
                       (*::std::mem::transmute::<&[u8; 86],
                                                 &[i8; 86]>(b"int spc_color_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

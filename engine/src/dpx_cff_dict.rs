@@ -12,7 +12,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -1041,8 +1041,8 @@ unsafe extern "C" fn pack_integer(
             );
         }
         value = 0xf700u32
-            .wrapping_add(value as libc::c_uint)
-            .wrapping_sub(108i32 as libc::c_uint) as i32;
+            .wrapping_add(value as u32)
+            .wrapping_sub(108i32 as u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1054,8 +1054,8 @@ unsafe extern "C" fn pack_integer(
             );
         }
         value = 0xfb00u32
-            .wrapping_sub(value as libc::c_uint)
-            .wrapping_sub(108i32 as libc::c_uint) as i32;
+            .wrapping_sub(value as u32)
+            .wrapping_sub(108i32 as u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
         *dest.offset(1) = (value & 0xffi32) as card8;
         len = 2i32
@@ -1416,7 +1416,7 @@ pub unsafe extern "C" fn cff_dict_get(
         __assert_fail(
             b"key && dict\x00" as *const u8 as *const i8,
             b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            658i32 as libc::c_uint,
+            658i32 as u32,
             (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
                 b"double cff_dict_get(cff_dict *, const char *, int)\x00",
             ))
@@ -1463,7 +1463,7 @@ pub unsafe extern "C" fn cff_dict_set(
         __assert_fail(
             b"dict && key\x00" as *const u8 as *const i8,
             b"dpx-cff_dict.c\x00" as *const u8 as *const i8,
-            680i32 as libc::c_uint,
+            680i32 as u32,
             (*::std::mem::transmute::<&[u8; 57], &[i8; 57]>(
                 b"void cff_dict_set(cff_dict *, const char *, int, double)\x00",
             ))

@@ -62,7 +62,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -332,7 +332,7 @@ pub struct png_text_struct {
 pub type png_charp = *mut i8;
 pub type png_textp = *mut png_text;
 pub type png_bytep = *mut png_byte;
-pub type png_uint_32 = libc::c_uint;
+pub type png_uint_32 = u32;
 pub type png_uint_32p = *mut png_uint_32;
 pub type png_const_inforp = *const png_info;
 pub type png_bytepp = *mut *mut png_byte;
@@ -476,7 +476,7 @@ pub unsafe extern "C" fn png_include_image(
         png_info_ptr as *const png_info,
     );
     if bpc as i32 > 8i32 {
-        if pdf_get_version() < 5i32 as libc::c_uint {
+        if pdf_get_version() < 5i32 as u32 {
             /* Ask libpng to convert down to 8-bpc. */
             dpx_warning(
                 b"%s: 16-bpc PNG requires PDF version 1.5.\x00" as *const u8 as *const i8,
@@ -547,10 +547,10 @@ pub unsafe extern "C" fn png_include_image(
         png_ptr as *const png_struct,
         png_info_ptr as *const png_info,
     );
-    if xppm > 0i32 as libc::c_uint {
+    if xppm > 0i32 as u32 {
         info.xdensity = 72.0f64 / 0.0254f64 / xppm as f64
     }
-    if yppm > 0i32 as libc::c_uint {
+    if yppm > 0i32 as u32 {
         info.ydensity = 72.0f64 / 0.0254f64 / yppm as f64
     }
     stream = pdf_new_stream(1i32 << 0i32);
@@ -701,7 +701,7 @@ pub unsafe extern "C" fn png_include_image(
      * of libpng had a bug that incorrectly treat the compression
      * flag of iTxt chunks.
      */
-    if pdf_get_version() >= 4i32 as libc::c_uint {
+    if pdf_get_version() >= 4i32 as u32 {
         let mut text_ptr: png_textp = 0 as *mut png_text;
         let mut XMP_stream: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut XMP_stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -829,7 +829,7 @@ unsafe extern "C" fn check_transparency(
     mut info_ptr: png_infop,
 ) -> i32 {
     let mut trans_type: i32 = 0;
-    let mut pdf_version: libc::c_uint = 0;
+    let mut pdf_version: u32 = 0;
     let mut color_type: png_byte = 0;
     let mut trans_values: png_color_16p = 0 as *mut png_color_16;
     let mut trans: png_bytep = 0 as *mut png_byte;
@@ -893,8 +893,8 @@ unsafe extern "C" fn check_transparency(
      * We can convert alpha cahnnels to explicit mask via user supplied alpha-
      * threshold value. But I will not do that.
      */
-    if pdf_version < 3i32 as libc::c_uint && trans_type != 0i32
-        || pdf_version < 4i32 as libc::c_uint && trans_type == 2i32
+    if pdf_version < 3i32 as u32 && trans_type != 0i32
+        || pdf_version < 4i32 as u32 && trans_type == 2i32
     {
         /*
          *   No transparency supported but PNG uses transparency, or Soft-Mask
@@ -932,14 +932,14 @@ unsafe extern "C" fn check_transparency(
                 as *const i8,
             b"PNG\x00" as *const u8 as *const i8,
         );
-        if pdf_version < 3i32 as libc::c_uint {
+        if pdf_version < 3i32 as u32 {
             dpx_warning(
                 b"%s: Please use -V 3 option to enable binary transparency support.\x00"
                     as *const u8 as *const i8,
                 b"PNG\x00" as *const u8 as *const i8,
             );
         }
-        if pdf_version < 4i32 as libc::c_uint {
+        if pdf_version < 4i32 as u32 {
             dpx_warning(
                 b"%s: Please use -V 4 option to enable full alpha channel support.\x00" as *const u8
                     as *const i8,
@@ -1757,7 +1757,7 @@ unsafe extern "C" fn strip_soft_mask(
             8i32
         };
         if *rowbytes_ptr as u64
-            != ((bps as libc::c_uint).wrapping_mul(width) as u64)
+            != ((bps as u32).wrapping_mul(width) as u64)
                 .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         {
             /* Something wrong */
@@ -1774,7 +1774,7 @@ unsafe extern "C" fn strip_soft_mask(
             4i32
         };
         if *rowbytes_ptr as u64
-            != ((bps_0 as libc::c_uint).wrapping_mul(width) as u64)
+            != ((bps_0 as u32).wrapping_mul(width) as u64)
                 .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         {
             /* Something wrong */
@@ -1817,7 +1817,7 @@ unsafe extern "C" fn strip_soft_mask(
         pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const i8),
         pdf_new_number(bpc as f64),
     );
-    smask_data_ptr = new((((bpc as i32 / 8i32) as libc::c_uint)
+    smask_data_ptr = new((((bpc as i32 / 8i32) as u32)
         .wrapping_mul(width)
         .wrapping_mul(height) as u64)
         .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
@@ -1828,51 +1828,51 @@ unsafe extern "C" fn strip_soft_mask(
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((3i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((3i32 as u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((4i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((4i32 as u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
                         3i32 as u64,
                     );
                     *smask_data_ptr.offset(i as isize) = *image_data_ptr.offset(
-                        (4i32 as libc::c_uint)
+                        (4i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(3i32 as libc::c_uint) as isize,
+                            .wrapping_add(3i32 as u32) as isize,
                     );
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((3i32 as libc::c_uint).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((3i32 as u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     memmove(
-                        image_data_ptr.offset((6i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((6i32 as u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
-                        image_data_ptr.offset((8i32 as libc::c_uint).wrapping_mul(i) as isize)
+                        image_data_ptr.offset((8i32 as u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
                         6i32 as u64,
                     );
-                    *smask_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize) =
+                    *smask_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
                         *image_data_ptr.offset(
-                            (8i32 as libc::c_uint)
+                            (8i32 as u32)
                                 .wrapping_mul(i)
-                                .wrapping_add(6i32 as libc::c_uint)
+                                .wrapping_add(6i32 as u32)
                                 as isize,
                         );
                     *smask_data_ptr.offset(
-                        (2i32 as libc::c_uint)
+                        (2i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
+                            .wrapping_add(1i32 as u32) as isize,
                     ) = *image_data_ptr.offset(
-                        (8i32 as libc::c_uint)
+                        (8i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(7i32 as libc::c_uint) as isize,
+                            .wrapping_add(7i32 as u32) as isize,
                     );
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((6i32 as libc::c_uint).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((6i32 as u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
@@ -1882,11 +1882,11 @@ unsafe extern "C" fn strip_soft_mask(
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
                     *image_data_ptr.offset(i as isize) =
-                        *image_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize);
+                        *image_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize);
                     *smask_data_ptr.offset(i as isize) = *image_data_ptr.offset(
-                        (2i32 as libc::c_uint)
+                        (2i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
+                            .wrapping_add(1i32 as u32) as isize,
                     );
                     i = i.wrapping_add(1)
                 }
@@ -1896,36 +1896,36 @@ unsafe extern "C" fn strip_soft_mask(
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
-                    *image_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize) =
-                        *image_data_ptr.offset((4i32 as libc::c_uint).wrapping_mul(i) as isize);
+                    *image_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
+                        *image_data_ptr.offset((4i32 as u32).wrapping_mul(i) as isize);
                     *image_data_ptr.offset(
-                        (2i32 as libc::c_uint)
+                        (2i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
+                            .wrapping_add(1i32 as u32) as isize,
                     ) = *image_data_ptr.offset(
-                        (4i32 as libc::c_uint)
+                        (4i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
+                            .wrapping_add(1i32 as u32) as isize,
                     );
-                    *smask_data_ptr.offset((2i32 as libc::c_uint).wrapping_mul(i) as isize) =
+                    *smask_data_ptr.offset((2i32 as u32).wrapping_mul(i) as isize) =
                         *image_data_ptr.offset(
-                            (4i32 as libc::c_uint)
+                            (4i32 as u32)
                                 .wrapping_mul(i)
-                                .wrapping_add(2i32 as libc::c_uint)
+                                .wrapping_add(2i32 as u32)
                                 as isize,
                         );
                     *smask_data_ptr.offset(
-                        (2i32 as libc::c_uint)
+                        (2i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(1i32 as libc::c_uint) as isize,
+                            .wrapping_add(1i32 as u32) as isize,
                     ) = *image_data_ptr.offset(
-                        (4i32 as libc::c_uint)
+                        (4i32 as u32)
                             .wrapping_mul(i)
-                            .wrapping_add(3i32 as libc::c_uint) as isize,
+                            .wrapping_add(3i32 as u32) as isize,
                     );
                     i = i.wrapping_add(1)
                 }
-                *rowbytes_ptr = ((2i32 as libc::c_uint).wrapping_mul(width) as u64)
+                *rowbytes_ptr = ((2i32 as u32).wrapping_mul(width) as u64)
                     .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
                     as png_uint_32
             }
@@ -1940,7 +1940,7 @@ unsafe extern "C" fn strip_soft_mask(
     pdf_add_stream(
         smask,
         smask_data_ptr as *const libc::c_void,
-        ((bpc as i32 / 8i32) as libc::c_uint)
+        ((bpc as i32 / 8i32) as u32)
             .wrapping_mul(width)
             .wrapping_mul(height) as i32,
     );

@@ -152,7 +152,7 @@ use crate::*;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -367,7 +367,7 @@ History:
 /* these are all predefined if using a Mac prefix */
 pub type UInt8 = u8;
 pub type UInt16 = u16;
-pub type UInt32 = libc::c_uint;
+pub type UInt32 = u32;
 /* NB: assumes int is 4 bytes */
 /* n.b. if also using zlib.h, it must precede TECkit headers */
 pub type Byte = UInt8;
@@ -861,7 +861,7 @@ pub unsafe extern "C" fn u_open_in(
 unsafe extern "C" fn buffer_overflow() {
     _tt_abort(
         b"unable to read an entire line (buf_size=%u)\x00" as *const u8 as *const i8,
-        buf_size as libc::c_uint,
+        buf_size as u32,
     );
 }
 unsafe extern "C" fn conversion_error(mut errcode: i32) {
@@ -962,7 +962,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
             *byteBuffer.offset(fresh1 as isize) = i as i8
         }
         if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
-            while bytesRead < buf_size as libc::c_uint
+            while bytesRead < buf_size as u32
                 && {
                     i = ttstub_input_getc((*f).handle);
                     i != -1i32
@@ -975,7 +975,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                 *byteBuffer.offset(fresh2 as isize) = i as i8
             }
         }
-        if i == -1i32 && *__errno_location() != 4i32 && bytesRead == 0i32 as libc::c_uint {
+        if i == -1i32 && *__errno_location() != 4i32 && bytesRead == 0i32 as u32 {
             return 0i32;
         }
         if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
@@ -1218,7 +1218,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> i32 {
                 }
                 match current_block {
                     15925075030174552612 => {
-                        rval = (rval as libc::c_uint)
+                        rval = (rval as u32)
                             .wrapping_sub(offsetsFromUTF8[extraBytes as usize])
                             as i32 as i32;
                         if rval < 0i32 || rval > 0x10ffffi32 {
@@ -1325,7 +1325,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh8 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh8 as libc::c_uint) as u32
+                    rval = (rval as u32).wrapping_add(*fresh8 as u32) as u32
                 }
                 current_block_23 = 1933956893526356233;
             }
@@ -1351,7 +1351,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh9 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh9 as libc::c_uint) as u32
+                    rval = (rval as u32).wrapping_add(*fresh9 as u32) as u32
                 }
                 current_block_23 = 15901505722045918842;
             }
@@ -1363,7 +1363,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh10 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh10 as libc::c_uint) as u32
+                    rval = (rval as u32).wrapping_add(*fresh10 as u32) as u32
                 }
                 current_block_23 = 5484884370842436748;
             }
@@ -1375,7 +1375,7 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh11 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh11 as libc::c_uint) as u32
+                    rval = (rval as u32).wrapping_add(*fresh11 as u32) as u32
                 }
                 current_block_23 = 1843389027537967668;
             }
@@ -1387,23 +1387,23 @@ pub unsafe extern "C" fn make_utf16_name() {
                 if *s != 0 {
                     let fresh12 = s;
                     s = s.offset(1);
-                    rval = (rval as libc::c_uint).wrapping_add(*fresh12 as libc::c_uint) as u32
+                    rval = (rval as u32).wrapping_add(*fresh12 as u32) as u32
                 }
             }
             _ => {}
         }
-        rval = (rval as libc::c_uint).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as u32;
-        if rval > 0xffffi32 as libc::c_uint {
-            rval = (rval as libc::c_uint).wrapping_sub(0x10000i32 as libc::c_uint) as u32;
+        rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize]) as u32;
+        if rval > 0xffffi32 as u32 {
+            rval = (rval as u32).wrapping_sub(0x10000i32 as u32) as u32;
             let fresh13 = t;
             t = t.offset(1);
-            *fresh13 = (0xd800i32 as libc::c_uint)
-                .wrapping_add(rval.wrapping_div(0x400i32 as libc::c_uint))
+            *fresh13 = (0xd800i32 as u32)
+                .wrapping_add(rval.wrapping_div(0x400i32 as u32))
                 as u16;
             let fresh14 = t;
             t = t.offset(1);
-            *fresh14 = (0xdc00i32 as libc::c_uint)
-                .wrapping_add(rval.wrapping_rem(0x400i32 as libc::c_uint))
+            *fresh14 = (0xdc00i32 as u32)
+                .wrapping_add(rval.wrapping_rem(0x400i32 as u32))
                 as u16
         } else {
             let fresh15 = t;

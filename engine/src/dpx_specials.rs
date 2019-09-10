@@ -29,7 +29,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -83,7 +83,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_doc_current_page_resources() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_doc_ref_page(page_no: libc::c_uint) -> *mut pdf_obj;
+    fn pdf_doc_ref_page(page_no: u32) -> *mut pdf_obj;
     /* Annotation with auto- clip and line (or page) break */
     #[no_mangle]
     fn pdf_doc_begin_annot(dict: *mut pdf_obj);
@@ -417,12 +417,12 @@ pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __va_list_tag {
-    pub gp_offset: libc::c_uint,
-    pub fp_offset: libc::c_uint,
+    pub gp_offset: u32,
+    pub fp_offset: u32,
     pub overflow_arg_area: *mut libc::c_void,
     pub reg_save_area: *mut libc::c_void,
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -629,7 +629,7 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            162i32 as libc::c_uint,
+            162i32 as u32,
             (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
                 b"pdf_obj *spc_lookup_reference(const char *)\x00",
             ))
@@ -683,7 +683,7 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
         }
         _ => {
             if ispageref(key) != 0 {
-                value = pdf_doc_ref_page(atoi(key.offset(4)) as libc::c_uint)
+                value = pdf_doc_ref_page(atoi(key.offset(4)) as u32)
             } else {
                 value = pdf_names_lookup_reference(
                     named_objects,
@@ -711,7 +711,7 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            227i32 as libc::c_uint,
+            227i32 as u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"pdf_obj *spc_lookup_object(const char *)\x00",
             ))
@@ -766,7 +766,7 @@ pub unsafe extern "C" fn spc_push_object(mut key: *const i8, mut value: *mut pdf
         __assert_fail(
             b"named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            279i32 as libc::c_uint,
+            279i32 as u32,
             (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                 b"void spc_push_object(const char *, pdf_obj *)\x00",
             ))
@@ -805,7 +805,7 @@ unsafe extern "C" fn spc_handler_unknown(
         __assert_fail(
             b"spe && args\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            305i32 as libc::c_uint,
+            305i32 as u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"int spc_handler_unknown(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -848,7 +848,7 @@ unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
         __assert_fail(
             b"args\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            339i32 as libc::c_uint,
+            339i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void check_garbage(struct spc_arg *)\x00",
             ))
@@ -1071,8 +1071,8 @@ static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_at_begin_page() -> i32 {
     let mut error: i32 = 0i32;
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0i32 as u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].bophk_func.is_some() {
             error = known_specials[i as usize]
@@ -1086,8 +1086,8 @@ pub unsafe extern "C" fn spc_exec_at_begin_page() -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_at_end_page() -> i32 {
     let mut error: i32 = 0i32;
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0i32 as u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].eophk_func.is_some() {
             error = known_specials[i as usize]
@@ -1101,13 +1101,13 @@ pub unsafe extern "C" fn spc_exec_at_end_page() -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
     let mut error: i32 = 0i32;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     if named_objects.is_null() {
     } else {
         __assert_fail(
             b"!named_objects\x00" as *const u8 as *const i8,
             b"dpx-specials.c\x00" as *const u8 as *const i8,
-            474i32 as libc::c_uint,
+            474i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int spc_exec_at_begin_document(void)\x00",
             ))
@@ -1115,7 +1115,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
         );
     }
     named_objects = pdf_new_name_tree();
-    i = 0i32 as libc::c_uint;
+    i = 0i32 as u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].bodhk_func.is_some() {
             error = known_specials[i as usize]
@@ -1129,8 +1129,8 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_at_end_document() -> i32 {
     let mut error: i32 = 0i32;
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0i32 as u32;
     while !known_specials[i as usize].key.is_null() {
         if known_specials[i as usize].eodhk_func.is_some() {
             error = known_specials[i as usize]

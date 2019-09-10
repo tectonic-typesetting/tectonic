@@ -90,11 +90,11 @@ pub unsafe extern "C" fn get_unsigned_byte(mut file: *mut FILE) -> u8 {
     return ch as u8;
 }
 #[no_mangle]
-pub unsafe extern "C" fn skip_bytes(mut n: libc::c_uint, mut file: *mut FILE) {
+pub unsafe extern "C" fn skip_bytes(mut n: u32, mut file: *mut FILE) {
     loop {
         let fresh0 = n;
         n = n.wrapping_sub(1);
-        if !(fresh0 > 0i32 as libc::c_uint) {
+        if !(fresh0 > 0i32 as u32) {
             break;
         }
         get_unsigned_byte(file);
@@ -134,12 +134,12 @@ pub unsafe extern "C" fn get_signed_pair(mut file: *mut FILE) -> libc::c_short {
     return pair;
 }
 #[no_mangle]
-pub unsafe extern "C" fn get_unsigned_triple(mut file: *mut FILE) -> libc::c_uint {
+pub unsafe extern "C" fn get_unsigned_triple(mut file: *mut FILE) -> u32 {
     let mut i: i32 = 0;
-    let mut triple: libc::c_uint = 0i32 as libc::c_uint;
+    let mut triple: u32 = 0i32 as u32;
     i = 0i32;
     while i < 3i32 {
-        triple = triple << 8i32 | get_unsigned_byte(file) as libc::c_uint;
+        triple = triple << 8i32 | get_unsigned_byte(file) as u32;
         i += 1
     }
     return triple;
@@ -172,7 +172,7 @@ pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> u32 {
     let mut quad = 0u32;
     i = 0i32;
     while i < 4i32 {
-        quad = quad << 8i32 | get_unsigned_byte(file) as libc::c_uint;
+        quad = quad << 8i32 | get_unsigned_byte(file) as u32;
         i += 1
     }
     return quad;
@@ -183,10 +183,10 @@ pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u
     let mut current_block_4: u64;
     match num as i32 {
         3 => {
-            if val > 0x7fi32 as libc::c_uint {
-                val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as u32
+            if val > 0x7fi32 as u32 {
+                val = (val as u32).wrapping_sub(0x100i32 as u32) as u32
             }
-            val = val << 8i32 | get_unsigned_byte(file) as libc::c_uint;
+            val = val << 8i32 | get_unsigned_byte(file) as u32;
             current_block_4 = 10942825333195857913;
         }
         2 => {
@@ -201,13 +201,13 @@ pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u
     }
     match current_block_4 {
         10942825333195857913 => {
-            val = val << 8i32 | get_unsigned_byte(file) as libc::c_uint;
+            val = val << 8i32 | get_unsigned_byte(file) as u32;
             current_block_4 = 17819358871496454702;
         }
         _ => {}
     }
     match current_block_4 {
-        17819358871496454702 => val = val << 8i32 | get_unsigned_byte(file) as libc::c_uint,
+        17819358871496454702 => val = val << 8i32 | get_unsigned_byte(file) as u32,
         _ => {}
     }
     return val;
@@ -276,20 +276,20 @@ pub unsafe extern "C" fn sqxfw(mut sq: i32, mut fw: fixword) -> i32 {
     result = (e
         .wrapping_add(g)
         .wrapping_add(i)
-        .wrapping_add((1i32 << 3i32) as libc::c_uint)
+        .wrapping_add((1i32 << 3i32) as u32)
         >> 4i32) as i32;
-    result = (result as libc::c_uint).wrapping_add(f.wrapping_add(h).wrapping_add(k) << 12i32)
+    result = (result as u32).wrapping_add(f.wrapping_add(h).wrapping_add(k) << 12i32)
         as i32 as i32;
-    result = (result as libc::c_uint).wrapping_add(j << 28i32) as i32 as i32;
+    result = (result as u32).wrapping_add(j << 28i32) as i32 as i32;
     return if sign > 0i32 { result } else { -result };
 }
 /* Tectonic-ified versions */
 #[no_mangle]
-pub unsafe extern "C" fn tt_skip_bytes(mut n: libc::c_uint, mut handle: rust_input_handle_t) {
+pub unsafe extern "C" fn tt_skip_bytes(mut n: u32, mut handle: rust_input_handle_t) {
     loop {
         let fresh3 = n;
         n = n.wrapping_sub(1);
-        if !(fresh3 > 0i32 as libc::c_uint) {
+        if !(fresh3 > 0i32 as u32) {
             break;
         }
         tt_get_unsigned_byte(handle);
@@ -333,7 +333,7 @@ pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -
     let mut quad: u32 = 0i32 as u32;
     i = 0i32;
     while i < 4i32 {
-        quad = quad << 8i32 | tt_get_unsigned_byte(handle) as libc::c_uint;
+        quad = quad << 8i32 | tt_get_unsigned_byte(handle) as u32;
         i += 1
     }
     return quad;
@@ -358,11 +358,11 @@ pub unsafe extern "C" fn tt_get_unsigned_num(
     let mut current_block_4: u64;
     match num as i32 {
         3 => {
-            if val > 0x7fi32 as libc::c_uint {
-                val = (val as libc::c_uint).wrapping_sub(0x100i32 as libc::c_uint) as u32
+            if val > 0x7fi32 as u32 {
+                val = (val as u32).wrapping_sub(0x100i32 as u32) as u32
                     as u32
             }
-            val = val << 8i32 | tt_get_unsigned_byte(handle) as libc::c_uint;
+            val = val << 8i32 | tt_get_unsigned_byte(handle) as u32;
             current_block_4 = 13589375657124263157;
         }
         2 => {
@@ -379,7 +379,7 @@ pub unsafe extern "C" fn tt_get_unsigned_num(
         13589375657124263157 =>
         /* fall through */
         {
-            val = val << 8i32 | tt_get_unsigned_byte(handle) as libc::c_uint;
+            val = val << 8i32 | tt_get_unsigned_byte(handle) as u32;
             current_block_4 = 17178013025578009494;
         }
         _ => {}
@@ -388,7 +388,7 @@ pub unsafe extern "C" fn tt_get_unsigned_num(
         17178013025578009494 =>
         /* fall through */
         {
-            val = val << 8i32 | tt_get_unsigned_byte(handle) as libc::c_uint
+            val = val << 8i32 | tt_get_unsigned_byte(handle) as u32
         }
         _ => {}
     }

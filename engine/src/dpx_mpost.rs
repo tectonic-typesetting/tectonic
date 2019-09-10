@@ -91,7 +91,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_string_length(object: *mut pdf_obj) -> u32;
     /* Name does not include the / */
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
@@ -100,7 +100,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
@@ -254,7 +254,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_doc_end_page();
     #[no_mangle]
-    fn pdf_doc_set_mediabox(page_no: libc::c_uint, mediabox: *const pdf_rect);
+    fn pdf_doc_set_mediabox(page_no: u32, mediabox: *const pdf_rect);
     /* Returns xobj_id of started xform. */
     #[no_mangle]
     fn pdf_doc_begin_grabbing(
@@ -414,14 +414,14 @@ extern "C" {
     fn tfm_string_width(
         font_id: i32,
         s: *const u8,
-        len: libc::c_uint,
+        len: u32,
     ) -> fixword;
     #[no_mangle]
     fn tfm_exists(tfm_name: *const i8) -> bool;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -3224,8 +3224,8 @@ static mut mps_operators: [operators; 28] = [
     },
 ];
 unsafe extern "C" fn get_opcode(mut token: *const i8) -> i32 {
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
+    let mut i: u32 = 0;
+    i = 0i32 as u32;
     while (i as u64)
         < (::std::mem::size_of::<[operators; 48]>() as u64)
             .wrapping_div(::std::mem::size_of::<operators>() as u64)
@@ -3235,7 +3235,7 @@ unsafe extern "C" fn get_opcode(mut token: *const i8) -> i32 {
         }
         i = i.wrapping_add(1)
     }
-    i = 0i32 as libc::c_uint;
+    i = 0i32 as u32;
     while (i as u64)
         < (::std::mem::size_of::<[operators; 28]>() as u64)
             .wrapping_div(::std::mem::size_of::<operators>() as u64)
@@ -3248,22 +3248,22 @@ unsafe extern "C" fn get_opcode(mut token: *const i8) -> i32 {
     return -1i32;
 }
 static mut stack: [*mut pdf_obj; 1024] = [0 as *const pdf_obj as *mut pdf_obj; 1024];
-static mut top_stack: libc::c_uint = 0i32 as libc::c_uint;
+static mut top_stack: u32 = 0i32 as u32;
 unsafe extern "C" fn do_exch() -> i32 {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    if top_stack < 2i32 as libc::c_uint {
+    if top_stack < 2i32 as u32 {
         return -1i32;
     }
-    tmp = stack[top_stack.wrapping_sub(1i32 as libc::c_uint) as usize];
-    stack[top_stack.wrapping_sub(1i32 as libc::c_uint) as usize] =
-        stack[top_stack.wrapping_sub(2i32 as libc::c_uint) as usize];
-    stack[top_stack.wrapping_sub(2i32 as libc::c_uint) as usize] = tmp;
+    tmp = stack[top_stack.wrapping_sub(1i32 as u32) as usize];
+    stack[top_stack.wrapping_sub(1i32 as u32) as usize] =
+        stack[top_stack.wrapping_sub(2i32 as u32) as usize];
+    stack[top_stack.wrapping_sub(2i32 as u32) as usize] = tmp;
     return 0i32;
 }
 unsafe extern "C" fn do_clear() -> i32 {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    while top_stack > 0i32 as libc::c_uint {
-        tmp = if top_stack > 0i32 as libc::c_uint {
+    while top_stack > 0i32 as u32 {
+        tmp = if top_stack > 0i32 as u32 {
             top_stack = top_stack.wrapping_sub(1);
             stack[top_stack as usize]
         } else {
@@ -3284,7 +3284,7 @@ unsafe extern "C" fn pop_get_numbers(
         if !(fresh1 > 0i32) {
             break;
         }
-        tmp = if top_stack > 0i32 as libc::c_uint {
+        tmp = if top_stack > 0i32 as u32 {
             top_stack = top_stack.wrapping_sub(1);
             stack[top_stack as usize]
         } else {
@@ -3360,7 +3360,7 @@ unsafe extern "C" fn do_findfont() -> i32 {
     let mut error: i32 = 0i32;
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut font_name: *mut pdf_obj = 0 as *mut pdf_obj;
-    font_name = if top_stack > 0i32 as libc::c_uint {
+    font_name = if top_stack > 0i32 as u32 {
         top_stack = top_stack.wrapping_sub(1);
         stack[top_stack as usize]
     } else {
@@ -3401,7 +3401,7 @@ unsafe extern "C" fn do_findfont() -> i32 {
                 pdf_new_name(b"FontScale\x00" as *const u8 as *const i8),
                 pdf_new_number(1.0f64),
             );
-            if top_stack < 1024i32 as libc::c_uint {
+            if top_stack < 1024i32 as u32 {
                 let fresh3 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh3 as usize] = font_dict
@@ -3428,7 +3428,7 @@ unsafe extern "C" fn do_scalefont() -> i32 {
     if error != 0 {
         return error;
     }
-    font_dict = if top_stack > 0i32 as libc::c_uint {
+    font_dict = if top_stack > 0i32 as u32 {
         top_stack = top_stack.wrapping_sub(1);
         stack[top_stack as usize]
     } else {
@@ -3442,7 +3442,7 @@ unsafe extern "C" fn do_scalefont() -> i32 {
             b"FontScale\x00" as *const u8 as *const i8,
         );
         pdf_set_number(font_scale, pdf_number_value(font_scale) * scale);
-        if top_stack < 1024i32 as libc::c_uint {
+        if top_stack < 1024i32 as u32 {
             let fresh4 = top_stack;
             top_stack = top_stack.wrapping_add(1);
             stack[fresh4 as usize] = font_dict
@@ -3464,7 +3464,7 @@ unsafe extern "C" fn do_setfont() -> i32 {
     let mut font_name: *mut i8 = 0 as *mut i8;
     let mut font_scale: f64 = 0.;
     let mut font_dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    font_dict = if top_stack > 0i32 as libc::c_uint {
+    font_dict = if top_stack > 0i32 as u32 {
         top_stack = top_stack.wrapping_sub(1);
         stack[top_stack as usize]
     } else {
@@ -3519,7 +3519,7 @@ unsafe extern "C" fn do_currentfont() -> i32 {
             pdf_new_name(b"FontScale\x00" as *const u8 as *const i8),
             pdf_new_number((*font).pt_size),
         );
-        if top_stack < 1024i32 as libc::c_uint {
+        if top_stack < 1024i32 as u32 {
             let fresh5 = top_stack;
             top_stack = top_stack.wrapping_add(1);
             stack[fresh5 as usize] = font_dict
@@ -3548,7 +3548,7 @@ unsafe extern "C" fn do_show() -> i32 {
         return 1i32;
     }
     pdf_dev_currentpoint(&mut cp);
-    text_str = if top_stack > 0i32 as libc::c_uint {
+    text_str = if top_stack > 0i32 as u32 {
         top_stack = top_stack.wrapping_sub(1);
         stack[top_stack as usize]
     } else {
@@ -3604,7 +3604,7 @@ unsafe extern "C" fn do_show() -> i32 {
         free(ustr as *mut libc::c_void);
     } else {
         if (*font).tfm_id >= 0i32 {
-            text_width = tfm_string_width((*font).tfm_id, strptr, length as libc::c_uint)
+            text_width = tfm_string_width((*font).tfm_id, strptr, length as u32)
                 as f64
                 / (1i32 << 20i32) as f64;
             text_width *= (*font).pt_size
@@ -3762,7 +3762,7 @@ unsafe extern "C" fn do_operator(
              */
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
             if error == 0 {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh6 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh6 as usize] = pdf_new_number(values[0] + values[1])
@@ -3778,7 +3778,7 @@ unsafe extern "C" fn do_operator(
         3 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
             if error == 0 {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh7 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh7 as usize] = pdf_new_number(values[0] * values[1])
@@ -3794,7 +3794,7 @@ unsafe extern "C" fn do_operator(
         5 => {
             error = pop_get_numbers(values.as_mut_ptr(), 1i32);
             if error == 0 {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh8 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh8 as usize] = pdf_new_number(-values[0])
@@ -3810,7 +3810,7 @@ unsafe extern "C" fn do_operator(
         2 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
             if error == 0 {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh9 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh9 as usize] = pdf_new_number(values[0] - values[1])
@@ -3826,7 +3826,7 @@ unsafe extern "C" fn do_operator(
         4 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
             if error == 0 {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh10 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh10 as usize] = pdf_new_number(values[0] / values[1])
@@ -3843,7 +3843,7 @@ unsafe extern "C" fn do_operator(
             /* Round toward zero. */
             error = pop_get_numbers(values.as_mut_ptr(), 1i32);
             if error == 0 {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh11 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh11 as usize] =
@@ -3866,7 +3866,7 @@ unsafe extern "C" fn do_operator(
             error = do_clear()
         }
         12 => {
-            tmp = if top_stack > 0i32 as libc::c_uint {
+            tmp = if top_stack > 0i32 as u32 {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
             } else {
@@ -3951,7 +3951,7 @@ unsafe extern "C" fn do_operator(
             restore_font();
         }
         52 => {
-            tmp = if top_stack > 0i32 as libc::c_uint {
+            tmp = if top_stack > 0i32 as u32 {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
             } else {
@@ -4037,7 +4037,7 @@ unsafe extern "C" fn do_operator(
                 let mut dash_values: [f64; 16] = [0.; 16];
                 let mut offset: f64 = 0.;
                 offset = values[0];
-                pattern = if top_stack > 0i32 as libc::c_uint {
+                pattern = if top_stack > 0i32 as u32 {
                     top_stack = top_stack.wrapping_sub(1);
                     stack[top_stack as usize]
                 } else {
@@ -4125,11 +4125,11 @@ unsafe extern "C" fn do_operator(
         80 => {
             error = pdf_dev_currentpoint(&mut cp);
             if error == 0 {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh12 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh12 as usize] = pdf_new_number(cp.x);
-                    if top_stack < 1024i32 as libc::c_uint {
+                    if top_stack < 1024i32 as u32 {
                         let fresh13 = top_stack;
                         top_stack = top_stack.wrapping_add(1);
                         stack[fresh13 as usize] = pdf_new_number(cp.y)
@@ -4151,7 +4151,7 @@ unsafe extern "C" fn do_operator(
         }
         82 => {
             let mut has_matrix: i32 = 0i32;
-            tmp = if top_stack > 0i32 as libc::c_uint {
+            tmp = if top_stack > 0i32 as u32 {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
             } else {
@@ -4169,7 +4169,7 @@ unsafe extern "C" fn do_operator(
                     matrix.d = values[3];
                     matrix.e = values[4];
                     matrix.f = values[5];
-                    tmp = if top_stack > 0i32 as libc::c_uint {
+                    tmp = if top_stack > 0i32 as u32 {
                         top_stack = top_stack.wrapping_sub(1);
                         stack[top_stack as usize]
                     } else {
@@ -4189,7 +4189,7 @@ unsafe extern "C" fn do_operator(
                     } else {
                         cp.y = pdf_number_value(tmp);
                         pdf_release_obj(tmp);
-                        tmp = if top_stack > 0i32 as libc::c_uint {
+                        tmp = if top_stack > 0i32 as u32 {
                             top_stack = top_stack.wrapping_sub(1);
                             stack[top_stack as usize]
                         } else {
@@ -4205,11 +4205,11 @@ unsafe extern "C" fn do_operator(
                                 /* Here, we need real PostScript CTM */
                             } /* This does pdf_release_obj() */
                             pdf_dev_dtransform(&mut cp, &mut matrix);
-                            if top_stack < 1024i32 as libc::c_uint {
+                            if top_stack < 1024i32 as u32 {
                                 let fresh14 = top_stack;
                                 top_stack = top_stack.wrapping_add(1);
                                 stack[fresh14 as usize] = pdf_new_number(cp.x);
-                                if top_stack < 1024i32 as libc::c_uint {
+                                if top_stack < 1024i32 as u32 {
                                     let fresh15 = top_stack;
                                     top_stack = top_stack.wrapping_add(1);
                                     stack[fresh15 as usize] = pdf_new_number(cp.y)
@@ -4232,7 +4232,7 @@ unsafe extern "C" fn do_operator(
         }
         81 => {
             let mut has_matrix_0: i32 = 0i32;
-            tmp = if top_stack > 0i32 as libc::c_uint {
+            tmp = if top_stack > 0i32 as u32 {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
             } else {
@@ -4250,7 +4250,7 @@ unsafe extern "C" fn do_operator(
                     matrix.d = values[3];
                     matrix.e = values[4];
                     matrix.f = values[5];
-                    tmp = if top_stack > 0i32 as libc::c_uint {
+                    tmp = if top_stack > 0i32 as u32 {
                         top_stack = top_stack.wrapping_sub(1);
                         stack[top_stack as usize]
                     } else {
@@ -4270,7 +4270,7 @@ unsafe extern "C" fn do_operator(
                     } else {
                         cp.y = pdf_number_value(tmp);
                         pdf_release_obj(tmp);
-                        tmp = if top_stack > 0i32 as libc::c_uint {
+                        tmp = if top_stack > 0i32 as u32 {
                             top_stack = top_stack.wrapping_sub(1);
                             stack[top_stack as usize]
                         } else {
@@ -4286,11 +4286,11 @@ unsafe extern "C" fn do_operator(
                                 /* Here, we need real PostScript CTM */
                             }
                             pdf_dev_idtransform(&mut cp, &mut matrix);
-                            if top_stack < 1024i32 as libc::c_uint {
+                            if top_stack < 1024i32 as u32 {
                                 let fresh16 = top_stack;
                                 top_stack = top_stack.wrapping_add(1);
                                 stack[fresh16 as usize] = pdf_new_number(cp.x);
-                                if top_stack < 1024i32 as libc::c_uint {
+                                if top_stack < 1024i32 as u32 {
                                     let fresh17 = top_stack;
                                     top_stack = top_stack.wrapping_add(1);
                                     stack[fresh17 as usize] = pdf_new_number(cp.y)
@@ -4358,13 +4358,13 @@ unsafe extern "C" fn do_operator(
             )
         }
         999 => {
-            tmp = if top_stack > 0i32 as libc::c_uint {
+            tmp = if top_stack > 0i32 as u32 {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
             } else {
                 0 as *mut pdf_obj
             };
-            tmp = if top_stack > 0i32 as libc::c_uint {
+            tmp = if top_stack > 0i32 as u32 {
                 top_stack = top_stack.wrapping_sub(1);
                 stack[top_stack as usize]
             } else {
@@ -4373,7 +4373,7 @@ unsafe extern "C" fn do_operator(
         }
         _ => {
             if is_fontname(token) {
-                if top_stack < 1024i32 as libc::c_uint {
+                if top_stack < 1024i32 as u32 {
                     let fresh18 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh18 as usize] = pdf_new_name(token)
@@ -4452,7 +4452,7 @@ unsafe extern "C" fn mp_parse_body(
                 dpx_warning(b"Unkown PostScript operator.\x00" as *const u8 as *const i8);
                 dump(*start, next);
                 error = 1i32
-            } else if top_stack < 1024i32 as libc::c_uint {
+            } else if top_stack < 1024i32 as u32 {
                 let fresh19 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh19 as usize] = pdf_new_number(value);
@@ -4473,7 +4473,7 @@ unsafe extern "C" fn mp_parse_body(
             obj = parse_pdf_array(start, end, 0 as *mut pdf_file);
             !obj.is_null()
         } {
-            if top_stack < 1024i32 as libc::c_uint {
+            if top_stack < 1024i32 as u32 {
                 let fresh20 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh20 as usize] = obj
@@ -4494,7 +4494,7 @@ unsafe extern "C" fn mp_parse_body(
                 !obj.is_null()
             }
         {
-            if top_stack < 1024i32 as libc::c_uint {
+            if top_stack < 1024i32 as u32 {
                 let fresh21 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh21 as usize] = obj
@@ -4512,7 +4512,7 @@ unsafe extern "C" fn mp_parse_body(
                 !obj.is_null()
             }
         {
-            if top_stack < 1024i32 as libc::c_uint {
+            if top_stack < 1024i32 as u32 {
                 let fresh22 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh22 as usize] = obj
@@ -4528,7 +4528,7 @@ unsafe extern "C" fn mp_parse_body(
             obj = parse_pdf_name(start, end);
             !obj.is_null()
         } {
-            if top_stack < 1024i32 as libc::c_uint {
+            if top_stack < 1024i32 as u32 {
                 let fresh23 = top_stack;
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh23 as usize] = obj
@@ -4658,7 +4658,7 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
     }
     mp_cmode = 0i32;
     pdf_doc_begin_page(1.0f64, -Xorigin, -Yorigin);
-    pdf_doc_set_mediabox(pdf_doc_current_page_number() as libc::c_uint, &mut bbox);
+    pdf_doc_set_mediabox(pdf_doc_current_page_number() as u32, &mut bbox);
     dir_mode = pdf_dev_get_dirmode();
     pdf_dev_set_param(1i32, 0i32);
     skip_prolog(&mut start, end);

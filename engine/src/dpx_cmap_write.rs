@@ -203,8 +203,8 @@ pub struct C2RustUnnamed {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub num: libc::c_uint,
-    pub max: libc::c_uint,
+    pub num: u32,
+    pub max: u32,
     pub ranges: *mut rangeDef,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

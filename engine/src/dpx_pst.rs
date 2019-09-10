@@ -13,7 +13,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -95,7 +95,7 @@ extern "C" {
         inbufend: *mut u8,
     ) -> *mut pst_obj;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -136,7 +136,7 @@ unsafe extern "C" fn pst_parse_any(
 ) -> *mut pst_obj {
     let mut data: *mut u8 = 0 as *mut u8;
     let mut cur: *mut u8 = *inbuf;
-    let mut len: libc::c_uint = 0;
+    let mut len: u32 = 0;
     while cur < inbufend
         && !(cur == inbufend
             || (*cur as i32 == '(' as i32
@@ -158,8 +158,8 @@ unsafe extern "C" fn pst_parse_any(
     {
         cur = cur.offset(1)
     }
-    len = cur.wrapping_offset_from(*inbuf) as i64 as libc::c_uint;
-    data = new((len.wrapping_add(1i32 as libc::c_uint) as u64)
+    len = cur.wrapping_offset_from(*inbuf) as i64 as u32;
+    data = new((len.wrapping_add(1i32 as u32) as u64)
         .wrapping_mul(::std::mem::size_of::<u8>() as u64)
         as u32) as *mut u8;
     memcpy(
@@ -231,7 +231,7 @@ pub unsafe extern "C" fn pst_get_token(
         __assert_fail(
             b"*inbuf <= inbufend && !*inbufend\x00" as *const u8 as *const i8,
             b"dpx-pst.c\x00" as *const u8 as *const i8,
-            87i32 as libc::c_uint,
+            87i32 as u32,
             (*::std::mem::transmute::<&[u8; 58], &[i8; 58]>(
                 b"pst_obj *pst_get_token(unsigned char **, unsigned char *)\x00",
             ))

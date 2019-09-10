@@ -55,7 +55,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -73,7 +73,7 @@ extern "C" {
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -230,7 +230,7 @@ unsafe extern "C" fn rgb_color_from_hsv(
         __assert_fail(
             b"color\x00" as *const u8 as *const i8,
             b"dpx-spc_util.c\x00" as *const u8 as *const i8,
-            81i32 as libc::c_uint,
+            81i32 as u32,
             (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"void rgb_color_from_hsv(pdf_color *, double, double, double)\x00",
             ))
@@ -493,7 +493,7 @@ pub unsafe extern "C" fn spc_util_read_colorspec(
         __assert_fail(b"colorspec && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_util.c\x00" as *const u8 as
-                          *const i8, 243i32 as libc::c_uint,
+                          *const i8, 243i32 as u32,
                       (*::std::mem::transmute::<&[u8; 82],
                                                 &[i8; 82]>(b"int spc_util_read_colorspec(struct spc_env *, pdf_color *, struct spc_arg *, int)\x00")).as_ptr());
     }
@@ -520,7 +520,7 @@ pub unsafe extern "C" fn spc_util_read_pdfcolor(
         __assert_fail(b"colorspec && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_util.c\x00" as *const u8 as
-                          *const i8, 261i32 as libc::c_uint,
+                          *const i8, 261i32 as u32,
                       (*::std::mem::transmute::<&[u8; 89],
                                                 &[i8; 89]>(b"int spc_util_read_pdfcolor(struct spc_env *, pdf_color *, struct spc_arg *, pdf_color *)\x00")).as_ptr());
     }

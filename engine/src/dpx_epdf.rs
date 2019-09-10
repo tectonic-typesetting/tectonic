@@ -33,7 +33,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_file_get_catalog(pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_file_get_version(pf: *mut pdf_file) -> libc::c_uint;
+    fn pdf_file_get_version(pf: *mut pdf_file) -> u32;
     #[no_mangle]
     fn pdf_file_get_trailer(pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
@@ -57,7 +57,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
@@ -78,7 +78,7 @@ extern "C" {
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
@@ -101,7 +101,7 @@ extern "C" {
         resources_p: *mut *mut pdf_obj,
     ) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     #[no_mangle]
     fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> i32;
     /* Path Construction */
@@ -160,7 +160,7 @@ extern "C" {
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -270,7 +270,7 @@ pub struct operator {
     pub token: *const i8,
     pub opcode: i32,
 }
-pub type C2RustUnnamed_0 = libc::c_uint;
+pub type C2RustUnnamed_0 = u32;
 pub const OP_UNKNOWN: C2RustUnnamed_0 = 16;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -1252,7 +1252,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
     }
     pdf_doc_add_page_content(
         b" \x00" as *const u8 as *const i8,
-        1i32 as libc::c_uint,
+        1i32 as u32,
     );
     save_path = xmalloc((pdf_stream_length(contents) + 1i32) as size_t) as *mut i8;
     strncpy(
@@ -1346,7 +1346,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                 }
             }
         } else {
-            let mut j: libc::c_uint = 0;
+            let mut j: u32 = 0;
             let mut T: pdf_tmatrix = pdf_tmatrix {
                 a: 0.,
                 b: 0.,
@@ -1360,7 +1360,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
             let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
             let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
             token = parse_ident(&mut clip_path, end_path);
-            j = 0i32 as libc::c_uint;
+            j = 0i32 as u32;
             while (j as u64)
                 < (::std::mem::size_of::<[operator; 39]>() as u64)
                     .wrapping_div(::std::mem::size_of::<operator>() as u64)
@@ -1557,7 +1557,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                 11 => {
                     pdf_doc_add_page_content(
                         b" n\x00" as *const u8 as *const i8,
-                        2i32 as libc::c_uint,
+                        2i32 as u32,
                     );
                     current_block_157 = 6328367678128271922;
                 }

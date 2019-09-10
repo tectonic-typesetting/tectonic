@@ -289,7 +289,7 @@ pub unsafe extern "C" fn ttc_read_offset(
     /* version = */
     tt_get_unsigned_quad((*sfont).handle);
     num_dirs = tt_get_unsigned_quad((*sfont).handle);
-    if ttc_idx < 0i32 || ttc_idx as libc::c_uint > num_dirs.wrapping_sub(1i32 as libc::c_uint) {
+    if ttc_idx < 0i32 || ttc_idx as u32 > num_dirs.wrapping_sub(1i32 as u32) {
         _tt_abort(b"Invalid TTC index number\x00" as *const u8 as *const i8);
     }
     ttstub_input_seek((*sfont).handle, (12i32 + ttc_idx * 4i32) as ssize_t, 0i32);

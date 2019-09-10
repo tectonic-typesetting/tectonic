@@ -13,7 +13,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -67,7 +67,7 @@ extern "C" {
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -85,7 +85,7 @@ pub type size_t = u64;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -232,7 +232,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(
         __assert_fail(
             b"spe && ap\x00" as *const u8 as *const i8,
             b"dpx-spc_misc.c\x00" as *const u8 as *const i8,
-            51i32 as libc::c_uint,
+            51i32 as u32,
             (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
                 b"int spc_handler_postscriptbox(struct spc_env *, struct spc_arg *)\x00",
             ))
@@ -449,7 +449,7 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
         __assert_fail(b"handle && spe && args\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_misc.c\x00" as *const u8 as
-                          *const i8, 156i32 as libc::c_uint,
+                          *const i8, 156i32 as u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_misc_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

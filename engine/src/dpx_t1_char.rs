@@ -16,7 +16,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -258,7 +258,7 @@ unsafe extern "C" fn add_stem(
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            290i32 as libc::c_uint,
+            290i32 as u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int add_stem(t1_chardesc *, double, double, int)\x00",
             ))
@@ -327,7 +327,7 @@ unsafe extern "C" fn add_charpath(
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            350i32 as libc::c_uint,
+            350i32 as u32,
             (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
             ))
@@ -339,7 +339,7 @@ unsafe extern "C" fn add_charpath(
         __assert_fail(
             b"argn <= CS_ARG_STACK_MAX\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            351i32 as libc::c_uint,
+            351i32 as u32,
             (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void add_charpath(t1_chardesc *, int, double *, int)\x00",
             ))
@@ -401,7 +401,7 @@ unsafe extern "C" fn release_charpath(mut cd: *mut t1_chardesc) {
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            388i32 as libc::c_uint,
+            388i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void release_charpath(t1_chardesc *)\x00",
             ))
@@ -666,23 +666,23 @@ unsafe extern "C" fn do_othersubr0(mut cd: *mut t1_chardesc) {
         cur = (*cur).next
     }
     flex = cur;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     cur = (*cur).next;
-    i = 1i32 as libc::c_uint;
-    while i < 7i32 as libc::c_uint {
+    i = 1i32 as u32;
+    while i < 7i32 as u32 {
         if cur.is_null() || (*cur).type_0 != -2i32 || (*cur).num_args != 2i32 {
             status = -1i32;
             return;
         }
-        if i == 1i32 as libc::c_uint {
+        if i == 1i32 as u32 {
             (*flex).args[0] += (*cur).args[0];
             (*flex).args[1] += (*cur).args[1]
         } else {
             copy_args(
                 &mut *(*flex).args.as_mut_ptr().offset(
-                    (2i32 as libc::c_uint)
+                    (2i32 as u32)
                         .wrapping_mul(i)
-                        .wrapping_sub(2i32 as libc::c_uint) as isize,
+                        .wrapping_sub(2i32 as u32) as isize,
                 ),
                 (*cur).args.as_mut_ptr(),
                 2i32,
@@ -1136,8 +1136,8 @@ unsafe extern "C" fn put_numbers(
                     return;
                 }
                 ivalue = 0xf700u32
-                    .wrapping_add(ivalue as libc::c_uint)
-                    .wrapping_sub(108i32 as libc::c_uint) as i32;
+                    .wrapping_add(ivalue as u32)
+                    .wrapping_sub(108i32 as u32) as i32;
                 let fresh14 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh14 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -1150,8 +1150,8 @@ unsafe extern "C" fn put_numbers(
                     return;
                 }
                 ivalue = 0xfb00u32
-                    .wrapping_sub(ivalue as libc::c_uint)
-                    .wrapping_sub(108i32 as libc::c_uint) as i32;
+                    .wrapping_sub(ivalue as u32)
+                    .wrapping_sub(108i32 as u32) as i32;
                 let fresh16 = *dest;
                 *dest = (*dest).offset(1);
                 *fresh16 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -1234,7 +1234,7 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut car
 /* Type 1 */
 unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut card8) {
     let mut result: i32 = 0i32;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     *data = (*data).offset(1);
     if endptr < (*data).offset(4) {
         status = -1i32;
@@ -1245,8 +1245,8 @@ unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut car
         result = (result as i64 - 0x100) as i32
     }
     *data = (*data).offset(1);
-    i = 1i32 as libc::c_uint;
-    while i < 4i32 as libc::c_uint {
+    i = 1i32 as u32;
+    while i < 4i32 as u32 {
         result = result * 256i32 + **data as i32;
         *data = (*data).offset(1);
         i = i.wrapping_add(1)
@@ -1347,7 +1347,7 @@ unsafe extern "C" fn t1char_build_charpath(
  *  useless. We will only do very simple charstring compression.
  */
 unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     let mut cur: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut prev: *mut t1_cpath = 0 as *mut t1_cpath;
     let mut next: *mut t1_cpath = 0 as *mut t1_cpath;
@@ -1511,12 +1511,12 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
                 }
             }
             8 => {
-                i = 0i32 as libc::c_uint;
-                while i < 3i32 as libc::c_uint {
-                    x += (*cur).args[(2i32 as libc::c_uint).wrapping_mul(i) as usize];
-                    y += (*cur).args[(2i32 as libc::c_uint)
+                i = 0i32 as u32;
+                while i < 3i32 as u32 {
+                    x += (*cur).args[(2i32 as u32).wrapping_mul(i) as usize];
+                    y += (*cur).args[(2i32 as u32)
                         .wrapping_mul(i)
-                        .wrapping_add(1i32 as libc::c_uint)
+                        .wrapping_add(1i32 as u32)
                         as usize];
                     if (*cd).bbox.llx > x {
                         (*cd).bbox.llx = x
@@ -1668,9 +1668,9 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
                 }
             }
             35 => {
-                i = 0i32 as libc::c_uint;
-                while i < 6i32 as libc::c_uint {
-                    x += (*cur).args[(2i32 as libc::c_uint).wrapping_mul(i) as usize];
+                i = 0i32 as u32;
+                while i < 6i32 as u32 {
+                    x += (*cur).args[(2i32 as u32).wrapping_mul(i) as usize];
                     y += (*cur).args[(2i32 * 1i32 + 1i32) as usize];
                     if (*cd).bbox.llx > x {
                         (*cd).bbox.llx = x
@@ -1837,7 +1837,7 @@ unsafe extern "C" fn t1char_encode_charpath(
         __assert_fail(
             b"cd\x00" as *const u8 as *const i8,
             b"dpx-t1_char.c\x00" as *const u8 as *const i8,
-            1360i32 as libc::c_uint,
+            1360i32 as u32,
             (*::std::mem::transmute::<&[u8; 76], &[i8; 76]>(
                 b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00",
             ))
@@ -1995,7 +1995,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                                           *const u8 as *const i8,
                                       b"dpx-t1_char.c\x00" as *const u8 as
                                           *const i8,
-                                      1452i32 as libc::c_uint,
+                                      1452i32 as u32,
                                       (*::std::mem::transmute::<&[u8; 76],
                                                                 &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
                     }
@@ -2037,7 +2037,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                                           *const u8 as *const i8,
                                       b"dpx-t1_char.c\x00" as *const u8 as
                                           *const i8,
-                                      1472i32 as libc::c_uint,
+                                      1472i32 as u32,
                                       (*::std::mem::transmute::<&[u8; 76],
                                                                 &[i8; 76]>(b"int t1char_encode_charpath(t1_chardesc *, double, double, card8 *, card8 *)\x00")).as_ptr());
                     }

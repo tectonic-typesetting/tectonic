@@ -73,7 +73,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -82,7 +82,7 @@ extern "C" {
     #[no_mangle]
     fn cacheGlyphBBox(fontID: u16, glyphID: u16, bbox: *const GlyphBBox);
     #[no_mangle]
-    fn get_cp_code(fontNum: i32, code: libc::c_uint, side: i32) -> i32;
+    fn get_cp_code(fontNum: i32, code: u32, side: i32) -> i32;
     #[no_mangle]
     fn maketexstring(s: *const i8) -> i32;
     #[no_mangle]
@@ -135,23 +135,23 @@ extern "C" {
     #[no_mangle]
     fn getSlant(font: XeTeXFont) -> Fixed;
     #[no_mangle]
-    fn countScripts(font: XeTeXFont) -> libc::c_uint;
+    fn countScripts(font: XeTeXFont) -> u32;
     #[no_mangle]
-    fn countLanguages(font: XeTeXFont, script: hb_tag_t) -> libc::c_uint;
+    fn countLanguages(font: XeTeXFont, script: hb_tag_t) -> u32;
     #[no_mangle]
-    fn countFeatures(font: XeTeXFont, script: hb_tag_t, language: hb_tag_t) -> libc::c_uint;
+    fn countFeatures(font: XeTeXFont, script: hb_tag_t, language: hb_tag_t) -> u32;
     #[no_mangle]
-    fn countGlyphs(font: XeTeXFont) -> libc::c_uint;
+    fn countGlyphs(font: XeTeXFont) -> u32;
     #[no_mangle]
-    fn getIndScript(font: XeTeXFont, index: libc::c_uint) -> hb_tag_t;
+    fn getIndScript(font: XeTeXFont, index: u32) -> hb_tag_t;
     #[no_mangle]
-    fn getIndLanguage(font: XeTeXFont, script: hb_tag_t, index: libc::c_uint) -> hb_tag_t;
+    fn getIndLanguage(font: XeTeXFont, script: hb_tag_t, index: u32) -> hb_tag_t;
     #[no_mangle]
     fn getIndFeature(
         font: XeTeXFont,
         script: hb_tag_t,
         language: hb_tag_t,
-        index: libc::c_uint,
+        index: u32,
     ) -> hb_tag_t;
     #[no_mangle]
     fn getGlyphWidth(font: XeTeXFont, gid: u32) -> f32;
@@ -377,7 +377,7 @@ pub type ssize_t = __ssize_t;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -411,8 +411,8 @@ pub type hb_tag_t = u32;
 pub struct hb_feature_t {
     pub tag: hb_tag_t,
     pub value: u32,
-    pub start: libc::c_uint,
-    pub end: libc::c_uint,
+    pub start: u32,
+    pub end: u32,
 }
 pub type scaled_t = i32;
 pub type Fixed = scaled_t;
@@ -539,7 +539,7 @@ History:
 /* 16.16 version number */
 /* these are all predefined if using a Mac prefix */
 pub type UInt16 = u16;
-pub type UInt32 = libc::c_uint;
+pub type UInt32 = u32;
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
  * in memory.
@@ -666,8 +666,8 @@ unsafe extern "C" fn SWAP16(p: u16) -> u16 {
 #[inline]
 unsafe extern "C" fn SWAP32(p: u32) -> u32 {
     return (p >> 24i32)
-        .wrapping_add(p >> 8i32 & 0xff00i32 as libc::c_uint)
-        .wrapping_add(p << 8i32 & 0xff0000i32 as libc::c_uint)
+        .wrapping_add(p >> 8i32 & 0xff00i32 as u32)
+        .wrapping_add(p << 8i32 & 0xff0000i32 as u32)
         .wrapping_add(p << 24i32);
 }
 /* xetex-shipout */
@@ -734,7 +734,7 @@ pub unsafe extern "C" fn linebreak_start(
 ) {
     let mut status: icu::UErrorCode = icu::U_ZERO_ERROR;
     let mut locale: *mut i8 = gettexstring(localeStrNum);
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32
         && streq_ptr(locale, b"G\x00" as *const u8 as *const i8) as i32 != 0
     {
         let mut engine: XeTeXLayoutEngine =
@@ -1017,7 +1017,7 @@ pub unsafe extern "C" fn apply_tfm_font_mapping(
         &mut outUsed,
         1i32 as Byte,
     );
-    if outUsed < 1i32 as libc::c_uint {
+    if outUsed < 1i32 as u32 {
         return 0i32;
     } else {
         return out[0] as i32;
@@ -1091,7 +1091,7 @@ unsafe extern "C" fn read_tag_with_param(
     return tag;
 }
 #[no_mangle]
-pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> libc::c_uint {
+pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> u32 {
     let mut rgbValue: u32 = 0i32 as u32;
     let mut alpha: u32 = 0i32 as u32;
     let mut i: i32 = 0;
@@ -1099,20 +1099,20 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> libc::c_uint {
     while i < 6i32 {
         if **cp as i32 >= '0' as i32 && **cp as i32 <= '9' as i32 {
             rgbValue = (rgbValue << 4i32)
-                .wrapping_add(**cp as libc::c_uint)
-                .wrapping_sub('0' as i32 as libc::c_uint)
+                .wrapping_add(**cp as u32)
+                .wrapping_sub('0' as i32 as u32)
         } else if **cp as i32 >= 'A' as i32 && **cp as i32 <= 'F' as i32 {
             rgbValue = (rgbValue << 4i32)
-                .wrapping_add(**cp as libc::c_uint)
-                .wrapping_sub('A' as i32 as libc::c_uint)
-                .wrapping_add(10i32 as libc::c_uint)
+                .wrapping_add(**cp as u32)
+                .wrapping_sub('A' as i32 as u32)
+                .wrapping_add(10i32 as u32)
         } else if **cp as i32 >= 'a' as i32 && **cp as i32 <= 'f' as i32 {
             rgbValue = (rgbValue << 4i32)
-                .wrapping_add(**cp as libc::c_uint)
-                .wrapping_sub('a' as i32 as libc::c_uint)
-                .wrapping_add(10i32 as libc::c_uint)
+                .wrapping_add(**cp as u32)
+                .wrapping_sub('a' as i32 as u32)
+                .wrapping_add(10i32 as u32)
         } else {
-            return 0xffi32 as libc::c_uint;
+            return 0xffi32 as u32;
         }
         *cp = (*cp).offset(1);
         i += 1
@@ -1122,30 +1122,30 @@ pub unsafe extern "C" fn read_rgb_a(mut cp: *mut *const i8) -> libc::c_uint {
     while i < 2i32 {
         if **cp as i32 >= '0' as i32 && **cp as i32 <= '9' as i32 {
             alpha = (alpha << 4i32)
-                .wrapping_add(**cp as libc::c_uint)
-                .wrapping_sub('0' as i32 as libc::c_uint)
+                .wrapping_add(**cp as u32)
+                .wrapping_sub('0' as i32 as u32)
         } else if **cp as i32 >= 'A' as i32 && **cp as i32 <= 'F' as i32 {
             alpha = (alpha << 4i32)
-                .wrapping_add(**cp as libc::c_uint)
-                .wrapping_sub('A' as i32 as libc::c_uint)
-                .wrapping_add(10i32 as libc::c_uint)
+                .wrapping_add(**cp as u32)
+                .wrapping_sub('A' as i32 as u32)
+                .wrapping_add(10i32 as u32)
         } else {
             if !(**cp as i32 >= 'a' as i32 && **cp as i32 <= 'f' as i32) {
                 break;
             }
             alpha = (alpha << 4i32)
-                .wrapping_add(**cp as libc::c_uint)
-                .wrapping_sub('a' as i32 as libc::c_uint)
-                .wrapping_add(10i32 as libc::c_uint)
+                .wrapping_add(**cp as u32)
+                .wrapping_sub('a' as i32 as u32)
+                .wrapping_add(10i32 as u32)
         }
         *cp = (*cp).offset(1);
         i += 1
     }
     if i == 2i32 {
-        rgbValue = (rgbValue as libc::c_uint).wrapping_add(alpha) as u32
+        rgbValue = (rgbValue as u32).wrapping_add(alpha) as u32
     } else {
         rgbValue =
-            (rgbValue as libc::c_uint).wrapping_add(0xffi32 as libc::c_uint) as u32
+            (rgbValue as u32).wrapping_add(0xffi32 as u32) as u32
     }
     return rgbValue;
 }
@@ -1240,9 +1240,9 @@ unsafe extern "C" fn readFeatureNumber(
         let fresh5 = s;
         s = s.offset(1);
         *f = (*f)
-            .wrapping_mul(10i32 as libc::c_uint)
-            .wrapping_add(*fresh5 as libc::c_uint)
-            .wrapping_sub('0' as i32 as libc::c_uint)
+            .wrapping_mul(10i32 as u32)
+            .wrapping_add(*fresh5 as u32)
+            .wrapping_sub('0' as i32 as u32)
     }
     while *s as i32 == ' ' as i32 || *s as i32 == '\t' as i32 {
         s = s.offset(1)
@@ -1277,10 +1277,10 @@ unsafe extern "C" fn loadOTfont(
 ) -> *mut libc::c_void {
     let mut current_block: u64;
     let mut engine: XeTeXLayoutEngine = 0 as XeTeXLayoutEngine;
-    let mut script: hb_tag_t = (0i32 as u32 & 0xffi32 as libc::c_uint) << 24i32
-        | (0i32 as u32 & 0xffi32 as libc::c_uint) << 16i32
-        | (0i32 as u32 & 0xffi32 as libc::c_uint) << 8i32
-        | 0i32 as u32 & 0xffi32 as libc::c_uint;
+    let mut script: hb_tag_t = (0i32 as u32 & 0xffi32 as u32) << 24i32
+        | (0i32 as u32 & 0xffi32 as u32) << 16i32
+        | (0i32 as u32 & 0xffi32 as u32) << 8i32
+        | 0i32 as u32 & 0xffi32 as u32;
     let mut language: *mut i8 = 0 as *mut i8;
     let mut features: *mut hb_feature_t = 0 as *mut hb_feature_t;
     let mut shapers: *mut *mut i8 = 0 as *mut *mut i8;
@@ -1447,9 +1447,9 @@ unsafe extern "C" fn loadOTfont(
                                     (*features.offset(nFeatures as isize)).value =
                                         value as u32;
                                     (*features.offset(nFeatures as isize)).start =
-                                        0i32 as libc::c_uint;
+                                        0i32 as u32;
                                     (*features.offset(nFeatures as isize)).end =
-                                        -1i32 as libc::c_uint;
+                                        -1i32 as u32;
                                     nFeatures += 1;
                                     current_block = 13857423536159756434;
                                 } else {
@@ -1474,9 +1474,9 @@ unsafe extern "C" fn loadOTfont(
                                             as *mut hb_feature_t;
                                         (*features.offset(nFeatures as isize)).tag = tag;
                                         (*features.offset(nFeatures as isize)).start =
-                                            0i32 as libc::c_uint;
+                                            0i32 as u32;
                                         (*features.offset(nFeatures as isize)).end =
-                                            -1i32 as libc::c_uint;
+                                            -1i32 as u32;
                                         // for backward compatibility with pre-0.9999 where feature
                                         // indices started from 0
                                         if param >= 0i32 {
@@ -1503,9 +1503,9 @@ unsafe extern "C" fn loadOTfont(
                                             as *mut hb_feature_t;
                                         (*features.offset(nFeatures as isize)).tag = tag;
                                         (*features.offset(nFeatures as isize)).start =
-                                            0i32 as libc::c_uint;
+                                            0i32 as u32;
                                         (*features.offset(nFeatures as isize)).end =
-                                            -1i32 as libc::c_uint;
+                                            -1i32 as u32;
                                         (*features.offset(nFeatures as isize)).value =
                                             0i32 as u32;
                                         nFeatures += 1;
@@ -1818,7 +1818,7 @@ pub unsafe extern "C" fn release_font_engine(
     mut engine: *mut libc::c_void,
     mut type_flag: i32,
 ) {
-    if type_flag as libc::c_uint == 0xfffeu32 {
+    if type_flag as u32 == 0xfffeu32 {
         deleteLayoutEngine(engine as XeTeXLayoutEngine);
     };
 }
@@ -1894,7 +1894,7 @@ pub unsafe extern "C" fn ot_font_get_1(
     let mut fontInst: XeTeXFont = getFont(engine);
     match what {
         17 => return countLanguages(fontInst, param as hb_tag_t) as i32,
-        19 => return getIndScript(fontInst, param as libc::c_uint) as i32,
+        19 => return getIndScript(fontInst, param as u32) as i32,
         9 => {
             /* for graphite fonts...*/
             return getGraphiteFeatureCode(engine, param as u32) as i32;
@@ -1916,7 +1916,7 @@ pub unsafe extern "C" fn ot_font_get_2(
     let mut fontInst: XeTeXFont = getFont(engine);
     match what {
         20 => {
-            return getIndLanguage(fontInst, param1 as hb_tag_t, param2 as libc::c_uint) as i32
+            return getIndLanguage(fontInst, param1 as hb_tag_t, param2 as u32) as i32
         }
         18 => return countFeatures(fontInst, param1 as hb_tag_t, param2 as hb_tag_t) as i32,
         13 => {
@@ -1926,7 +1926,7 @@ pub unsafe extern "C" fn ot_font_get_2(
         }
         15 => {
             return (getGraphiteFeatureDefaultSetting(engine, param1 as u32)
-                == param2 as libc::c_uint) as i32
+                == param2 as u32) as i32
         }
         _ => {}
     } /* to guarantee enough space in the buffer */
@@ -1948,7 +1948,7 @@ pub unsafe extern "C" fn ot_font_get_3(
                 fontInst,
                 param1 as hb_tag_t,
                 param2 as hb_tag_t,
-                param3 as libc::c_uint,
+                param3 as u32,
             ) as i32
         }
         _ => {}
@@ -2105,7 +2105,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
     let mut extend: f32 = 1.0f64 as f32;
     let mut slant: f32 = 0.0f64 as f32;
     let mut embolden: f32 = 0.0f64 as f32;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine = 0 as *mut XeTeXLayoutEngine_rec;
         engine = *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
         /* fontRef = */
@@ -2116,7 +2116,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
             __assert_fail(
                 b"filename\x00" as *const u8 as *const i8,
                 b"xetex-ext.c\x00" as *const u8 as *const i8,
-                1190i32 as libc::c_uint,
+                1190i32 as u32,
                 (*::std::mem::transmute::<&[u8; 27], &[i8; 27]>(
                     b"int make_font_def(int32_t)\x00",
                 ))
@@ -2281,7 +2281,7 @@ pub unsafe extern "C" fn get_native_char_height_depth(
     let mut ht: f32 = 0.0f64 as f32;
     let mut dp: f32 = 0.0f64 as f32;
     let mut fuzz: Fixed = 0;
-    if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(font as isize) as u32 == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
         let mut gid: i32 = mapCharToGlyph(engine, ch as u32) as i32;
@@ -2339,7 +2339,7 @@ pub unsafe extern "C" fn get_native_char_sidebearings(
 ) {
     let mut l: f32 = 0.;
     let mut r: f32 = 0.;
-    if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(font as isize) as u32 == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
         let mut gid: i32 = mapCharToGlyph(engine, ch as u32) as i32;
@@ -2362,7 +2362,7 @@ pub unsafe extern "C" fn get_glyph_bounds(
     /* edge codes 1,2,3,4 => L T R B */
     let mut a: f32 = 0.;
     let mut b: f32 = 0.;
-    if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(font as isize) as u32 == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
         if edge & 1i32 != 0 {
@@ -2392,7 +2392,7 @@ pub unsafe extern "C" fn getnativecharic(mut f: i32, mut c: i32) -> scaled_t {
 #[no_mangle]
 pub unsafe extern "C" fn getnativecharwd(mut f: i32, mut c: i32) -> scaled_t {
     let mut wd: scaled_t = 0i32;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
         let mut gid: i32 = mapCharToGlyph(engine, c as u32) as i32;
@@ -2407,13 +2407,13 @@ pub unsafe extern "C" fn getnativecharwd(mut f: i32, mut c: i32) -> scaled_t {
 #[no_mangle]
 pub unsafe extern "C" fn real_get_native_glyph(
     mut pNode: *mut libc::c_void,
-    mut index: libc::c_uint,
+    mut index: u32,
 ) -> u16 {
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
     let mut glyphIDs: *mut u16 =
         locations.offset((*node.offset(4)).b16.s0 as i32 as isize) as *mut u16;
-    if index >= (*node.offset(4)).b16.s0 as libc::c_uint {
+    if index >= (*node.offset(4)).b16.s0 as u32 {
         return 0i32 as u16;
     } else {
         return *glyphIDs.offset(index as isize);
@@ -2422,7 +2422,7 @@ pub unsafe extern "C" fn real_get_native_glyph(
 #[no_mangle]
 pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_void) {
     let mut node: *mut memory_word = pNode as *mut memory_word;
-    let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
+    let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
     /* separate Mac-only codepath for AAT fonts */
     /* save desired width */
     let mut savedWidth: i32 = (*node.offset(1)).b32.s1;
@@ -2480,8 +2480,8 @@ pub unsafe extern "C" fn measure_native_node(
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut txtLen: i32 = (*node.offset(4)).b16.s1 as i32;
     let mut txtPtr: *mut u16 = node.offset(6) as *mut u16;
-    let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+    let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
         /* using this font in OT Layout mode, so font_layout_engine[f] is actually a XeTeXLayoutEngine */
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
@@ -2506,7 +2506,7 @@ pub unsafe extern "C" fn measure_native_node(
             &mut errorCode,
         );
         dir = icu::ubidi_getDirection(pBiDi);
-        if dir as libc::c_uint == icu::UBIDI_MIXED as i32 as libc::c_uint {
+        if dir as u32 == icu::UBIDI_MIXED as i32 as u32 {
             /* we actually do the layout twice here, once to count glyphs and then again to get them;
                which is inefficient, but i figure that MIXED is a relatively rare occurrence, so i can't be
                bothered to deal with the memory reallocation headache of doing it differently
@@ -2526,7 +2526,7 @@ pub unsafe extern "C" fn measure_native_node(
                     logicalStart,
                     length,
                     txtLen,
-                    dir as libc::c_uint == icu::UBIDI_RTL as i32 as libc::c_uint,
+                    dir as u32 == icu::UBIDI_RTL as i32 as u32,
                 );
                 runIndex += 1
             }
@@ -2553,7 +2553,7 @@ pub unsafe extern "C" fn measure_native_node(
                         logicalStart,
                         length,
                         txtLen,
-                        dir as libc::c_uint == icu::UBIDI_RTL as i32 as libc::c_uint,
+                        dir as u32 == icu::UBIDI_RTL as i32 as u32,
                     );
                     glyphs = xcalloc(
                         nGlyphs as size_t,
@@ -2604,7 +2604,7 @@ pub unsafe extern "C" fn measure_native_node(
                 0i32,
                 txtLen,
                 txtLen,
-                dir as libc::c_uint == icu::UBIDI_RTL as i32 as libc::c_uint,
+                dir as u32 == icu::UBIDI_RTL as i32 as u32,
             );
             glyphs = xcalloc(
                 totalGlyphCount as size_t,
@@ -2708,7 +2708,7 @@ pub unsafe extern "C" fn measure_native_node(
             if getCachedGlyphBBox(f as u16, *glyphIDs_0.offset(i_2 as isize), &mut bbox)
                 == 0i32
             {
-                if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+                if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
                     getGlyphBounds(
                         *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
                         *glyphIDs_0.offset(i_2 as isize) as u32,
@@ -2734,15 +2734,15 @@ pub unsafe extern "C" fn measure_native_node(
 #[no_mangle]
 pub unsafe extern "C" fn real_get_native_italic_correction(mut pNode: *mut libc::c_void) -> Fixed {
     let mut node: *mut memory_word = pNode as *mut memory_word;
-    let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
-    let mut n: libc::c_uint = (*node.offset(4)).b16.s0 as libc::c_uint;
-    if n > 0i32 as libc::c_uint {
+    let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
+    let mut n: u32 = (*node.offset(4)).b16.s0 as u32;
+    if n > 0i32 as u32 {
         let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
         let mut glyphIDs: *mut u16 = locations.offset(n as isize) as *mut u16;
-        if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+        if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
             return D2Fix(getGlyphItalCorr(
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
-                *glyphIDs.offset(n.wrapping_sub(1i32 as libc::c_uint) as isize) as u32,
+                *glyphIDs.offset(n.wrapping_sub(1i32 as u32) as isize) as u32,
             ) as f64)
                 + *font_letter_space.offset(f as isize);
         }
@@ -2755,8 +2755,8 @@ pub unsafe extern "C" fn real_get_native_glyph_italic_correction(
 ) -> Fixed {
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut gid: u16 = (*node.offset(4)).b16.s1;
-    let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+    let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
         return D2Fix(getGlyphItalCorr(
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
             gid as u32,
@@ -2772,10 +2772,10 @@ pub unsafe extern "C" fn measure_native_glyph(
 ) {
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut gid: u16 = (*node.offset(4)).b16.s1;
-    let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
+    let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
     let mut ht: f32 = 0.0f64 as f32;
     let mut dp: f32 = 0.0f64 as f32;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(f as isize) as u32 == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
         let mut fontInst: XeTeXFont = getFont(engine);
@@ -2803,7 +2803,7 @@ pub unsafe extern "C" fn map_char_to_glyph(mut font: i32, mut ch: i32) -> i32 {
     if ch > 0x10ffffi32 || ch >= 0xd800i32 && ch <= 0xdfffi32 {
         return 0i32;
     }
-    if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(font as isize) as u32 == 0xfffeu32 {
         return mapCharToGlyph(
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine,
             ch as u32,
@@ -2817,7 +2817,7 @@ pub unsafe extern "C" fn map_char_to_glyph(mut font: i32, mut ch: i32) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn map_glyph_to_index(mut font: i32) -> i32
 /* glyph name is at name_of_file */ {
-    if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(font as isize) as u32 == 0xfffeu32 {
         return mapGlyphToIndex(
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine,
             name_of_file,
@@ -2830,7 +2830,7 @@ pub unsafe extern "C" fn map_glyph_to_index(mut font: i32) -> i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_font_char_range(mut font: i32, mut first: i32) -> i32 {
-    if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(font as isize) as u32 == 0xfffeu32 {
         return getFontCharRange(
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine,
             first,
@@ -2920,7 +2920,7 @@ pub unsafe extern "C" fn aat_print_font_name(
 pub unsafe extern "C" fn print_glyph_name(mut font: i32, mut gid: i32) {
     let mut s: *const i8 = 0 as *const i8;
     let mut len: i32 = 0i32;
-    if *font_area.offset(font as isize) as libc::c_uint == 0xfffeu32 {
+    if *font_area.offset(font as isize) as u32 == 0xfffeu32 {
         let mut engine: XeTeXLayoutEngine =
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
         s = getGlyphName(getFont(engine), gid as u16, &mut len)
@@ -2965,7 +2965,7 @@ pub unsafe extern "C" fn real_get_native_word_cp(
             __assert_fail(
                 b"0\x00" as *const u8 as *const i8,
                 b"xetex-ext.c\x00" as *const u8 as *const i8,
-                2136i32 as libc::c_uint,
+                2136i32 as u32,
                 (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                     b"int32_t real_get_native_word_cp(void *, int)\x00",
                 ))
@@ -2973,5 +2973,5 @@ pub unsafe extern "C" fn real_get_native_word_cp(
             );
         }
     }
-    return get_cp_code(f, actual_glyph as libc::c_uint, side);
+    return get_cp_code(f, actual_glyph as u32, side);
 }

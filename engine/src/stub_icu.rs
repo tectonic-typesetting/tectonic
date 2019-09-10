@@ -261,13 +261,13 @@ pub const U_USING_DEFAULT_WARNING: UErrorCode = -127;
 pub const U_ERROR_WARNING_START: UErrorCode = -128;
 pub const U_USING_FALLBACK_WARNING: UErrorCode = -128;
 
-pub type UBiDiDirection = libc::c_uint;
+pub type UBiDiDirection = u32;
 pub const UBIDI_RTL: UBiDiDirection = 1;
 pub const UBIDI_NEUTRAL: UBiDiDirection = 3;
 pub const UBIDI_MIXED: UBiDiDirection = 2;
 pub const UBIDI_LTR: UBiDiDirection = 0;
 
-pub type UBreakIteratorType = libc::c_uint;
+pub type UBreakIteratorType = u32;
 pub const UBRK_COUNT: UBreakIteratorType = 5;
 pub const UBRK_TITLE: UBreakIteratorType = 4;
 pub const UBRK_SENTENCE: UBreakIteratorType = 3;

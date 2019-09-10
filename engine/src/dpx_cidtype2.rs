@@ -35,7 +35,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -353,8 +353,8 @@ pub struct mapDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub num: libc::c_uint,
-    pub max: libc::c_uint,
+    pub num: u32,
+    pub max: u32,
     pub ranges: *mut rangeDef,
 }
 #[derive(Copy, Clone)]
@@ -1188,9 +1188,9 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
             init
         },
     ];
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     alt_code = code;
-    i = 0i32 as libc::c_uint;
+    i = 0i32 as u32;
     while (i as u64)
         < (::std::mem::size_of::<[C2RustUnnamed_2; 10]>() as u64)
             .wrapping_div(::std::mem::size_of::<C2RustUnnamed_2>() as u64)
@@ -1348,7 +1348,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
     match (*sfont).type_0 {
         16 => {
             offset = ttc_read_offset(sfont, (*(*font).options).index);
-            if offset == 0i32 as libc::c_uint {
+            if offset == 0i32 as u32 {
                 _tt_abort(
                     b"Invalid TTC index in %s.\x00" as *const u8 as *const i8,
                     (*font).ident,
@@ -1507,7 +1507,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
             i += 1
         }
     }
-    if last_cid as libc::c_uint >= 0xffffu32 {
+    if last_cid as u32 >= 0xffffu32 {
         _tt_abort(b"CID count > 65535\x00" as *const u8 as *const i8);
     }
     cidtogidmap = 0 as *mut u8;
@@ -1862,7 +1862,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
         __assert_fail(
             b"font && opt\x00" as *const u8 as *const i8,
             b"dpx-cidtype2.c\x00" as *const u8 as *const i8,
-            901i32 as libc::c_uint,
+            901i32 as u32,
             (*::std::mem::transmute::<&[u8; 73], &[i8; 73]>(
                 b"int CIDFont_type2_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))

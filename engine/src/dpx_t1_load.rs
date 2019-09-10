@@ -416,7 +416,7 @@ unsafe extern "C" fn t1_decrypt(
         }
         let fresh1 = src;
         src = src.offset(1);
-        key = ((key as i32 + *fresh1 as i32) as libc::c_uint)
+        key = ((key as i32 + *fresh1 as i32) as u32)
             .wrapping_mul(52845u32)
             .wrapping_add(22719u32) as u16
     }
@@ -432,7 +432,7 @@ unsafe extern "C" fn t1_decrypt(
         let fresh4 = dst;
         dst = dst.offset(1);
         *fresh4 = (c as i32 ^ key as i32 >> 8i32) as u8;
-        key = ((key as i32 + c as i32) as libc::c_uint)
+        key = ((key as i32 + c as i32) as u32)
             .wrapping_mul(52845u32)
             .wrapping_add(22719u32) as u16
     }
@@ -2078,8 +2078,8 @@ unsafe extern "C" fn parse_charstrings(
                         j = 1i32;
                         while j <= i {
                             let ref mut fresh18 = *(*charstrings).offset.offset(j as isize);
-                            *fresh18 = (*fresh18 as libc::c_uint)
-                                .wrapping_add((len - lenIV) as libc::c_uint)
+                            *fresh18 = (*fresh18 as u32)
+                                .wrapping_add((len - lenIV) as u32)
                                 as l_offset as l_offset;
                             j += 1
                         }
@@ -2092,7 +2092,7 @@ unsafe extern "C" fn parse_charstrings(
                         j = 1i32;
                         while j <= i {
                             let ref mut fresh19 = *(*charstrings).offset.offset(j as isize);
-                            *fresh19 = (*fresh19 as libc::c_uint).wrapping_add(len as libc::c_uint)
+                            *fresh19 = (*fresh19 as u32).wrapping_add(len as u32)
                                 as l_offset as l_offset;
                             j += 1
                         }

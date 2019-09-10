@@ -59,7 +59,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
@@ -80,7 +80,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -281,7 +281,7 @@ pub type size_t = u64;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -554,7 +554,7 @@ pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type1.c\x00" as *const u8 as *const i8,
-            85i32 as libc::c_uint,
+            85i32 as u32,
             (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"int pdf_font_open_type1(pdf_font *)\x00",
             ))
@@ -1030,7 +1030,7 @@ unsafe extern "C" fn add_metrics(
             code += 1
         }
     }
-    if pdf_array_length(tmp_array) > 0i32 as libc::c_uint {
+    if pdf_array_length(tmp_array) > 0i32 as u32 {
         pdf_add_dict(
             fontdict,
             pdf_new_name(b"Widths\x00" as *const u8 as *const i8),
@@ -1236,13 +1236,13 @@ unsafe extern "C" fn write_fontfile(
     offset += private_size;
     /* Finally Top DICT */
     (*topdict).data = new(
-        ((*(*topdict).offset.offset(1)).wrapping_sub(1i32 as libc::c_uint) as u64)
+        ((*(*topdict).offset.offset(1)).wrapping_sub(1i32 as u32) as u64)
             .wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32,
     ) as *mut card8;
     cff_dict_pack(
         (*cffont).topdict,
         (*topdict).data,
-        (*(*topdict).offset.offset(1)).wrapping_sub(1i32 as libc::c_uint) as i32,
+        (*(*topdict).offset.offset(1)).wrapping_sub(1i32 as u32) as i32,
     );
     cff_pack_index(
         topdict,
@@ -1325,7 +1325,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type1.c\x00" as *const u8 as *const i8,
-            505i32 as libc::c_uint,
+            505i32 as u32,
             (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"int pdf_font_load_type1(pdf_font *)\x00",
             ))

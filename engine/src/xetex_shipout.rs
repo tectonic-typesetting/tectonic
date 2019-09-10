@@ -326,7 +326,7 @@ extern "C" {
 pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
-pub type selector_t = libc::c_uint;
+pub type selector_t = u32;
 pub const SELECTOR_NEW_STRING: selector_t = 21;
 pub const SELECTOR_PSEUDO: selector_t = 20;
 pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
@@ -3453,8 +3453,8 @@ unsafe extern "C" fn dvi_native_font_def(mut f: internal_font_number) {
 unsafe extern "C" fn dvi_font_def(mut f: internal_font_number) {
     let mut k: pool_pointer = 0;
     let mut l: i32 = 0;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-        || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+    if *font_area.offset(f as isize) as u32 == 0xffffu32
+        || *font_area.offset(f as isize) as u32 == 0xfffeu32
     {
         dvi_native_font_def(f);
     } else {
@@ -3849,7 +3849,7 @@ unsafe extern "C" fn write_out(mut p: i32) {
         selector = j as selector_t
     } else {
         if j as i32 == 17i32
-            && selector as libc::c_uint == SELECTOR_TERM_AND_LOG as i32 as libc::c_uint
+            && selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32
         {
             selector = SELECTOR_LOG_ONLY
         }

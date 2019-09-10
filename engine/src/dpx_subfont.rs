@@ -12,7 +12,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -123,7 +123,7 @@ extern "C" {
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
 pub type __ssize_t = i64;
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -138,7 +138,7 @@ pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -431,7 +431,7 @@ unsafe extern "C" fn read_sfd_record(
                     __assert_fail(
                         b"curpos >= 0 && curpos <= 255\x00" as *const u8 as *const i8,
                         b"dpx-subfont.c\x00" as *const u8 as *const i8,
-                        230i32 as libc::c_uint,
+                        230i32 as u32,
                         (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                             b"int read_sfd_record(struct sfd_rec_ *, const char *)\x00",
                         ))
@@ -471,7 +471,7 @@ unsafe extern "C" fn scan_sfd_file(
         __assert_fail(
             b"sfd && handle\x00" as *const u8 as *const i8,
             b"dpx-subfont.c\x00" as *const u8 as *const i8,
-            248i32 as libc::c_uint,
+            248i32 as u32,
             (*::std::mem::transmute::<&[u8; 61], &[i8; 61]>(
                 b"int scan_sfd_file(struct sfd_file_ *, rust_input_handle_t *)\x00",
             ))

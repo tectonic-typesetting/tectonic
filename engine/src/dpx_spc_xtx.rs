@@ -17,7 +17,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -108,7 +108,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_reset_color(force: i32);
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     /* Similar to bop_content */
     #[no_mangle]
     fn pdf_doc_set_bgcolor(color: *const pdf_color);
@@ -656,7 +656,7 @@ unsafe extern "C" fn spc_handler_xtx_clipoverlay(
     {
         pdf_doc_add_page_content(
             b" 0 0 m W n\x00" as *const u8 as *const i8,
-            10i32 as libc::c_uint,
+            10i32 as u32,
         );
     }
     (*args).curptr = (*args).endptr;
@@ -685,17 +685,17 @@ unsafe extern "C" fn spc_handler_xtx_renderingmode(
     );
     pdf_doc_add_page_content(
         work_buffer.as_mut_ptr(),
-        strlen(work_buffer.as_mut_ptr()) as libc::c_uint,
+        strlen(work_buffer.as_mut_ptr()) as u32,
     );
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
         pdf_doc_add_page_content(
             b" \x00" as *const u8 as *const i8,
-            1i32 as libc::c_uint,
+            1i32 as u32,
         );
         pdf_doc_add_page_content(
             (*args).curptr,
-            (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as libc::c_uint,
+            (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u32,
         );
     }
     (*args).curptr = (*args).endptr;
@@ -993,14 +993,14 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
     mut ap: *mut spc_arg,
 ) -> i32 {
     let mut error: i32 = -1i32;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     if !sph.is_null() && !spe.is_null() && !ap.is_null() {
     } else {
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_xtx.c\x00" as *const u8 as
-                          *const i8, 413i32 as libc::c_uint,
+                          *const i8, 413i32 as u32,
                       (*::std::mem::transmute::<&[u8; 84],
                                                 &[i8; 84]>(b"int spc_xtx_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }
@@ -1027,7 +1027,7 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
     skip_white(&mut (*ap).curptr, (*ap).endptr);
     q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
     if !q.is_null() {
-        i = 0i32 as libc::c_uint;
+        i = 0i32 as u32;
         while (i as u64)
             < (::std::mem::size_of::<[spc_handler; 21]>() as u64)
                 .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)

@@ -11,7 +11,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -179,7 +179,7 @@ extern "C" {
         num_subfonts: *mut i32,
     ) -> *mut *mut i8;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -197,7 +197,7 @@ pub type size_t = u64;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -313,7 +313,7 @@ pub unsafe extern "C" fn pdf_init_fontmap_record(mut mrec: *mut fontmap_rec) {
         __assert_fail(
             b"mrec\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            47i32 as libc::c_uint,
+            47i32 as u32,
             (*::std::mem::transmute::<&[u8; 44], &[i8; 44]>(
                 b"void pdf_init_fontmap_record(fontmap_rec *)\x00",
             ))
@@ -348,7 +348,7 @@ pub unsafe extern "C" fn pdf_clear_fontmap_record(mut mrec: *mut fontmap_rec) {
         __assert_fail(
             b"mrec\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            81i32 as libc::c_uint,
+            81i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"void pdf_clear_fontmap_record(fontmap_rec *)\x00",
             ))
@@ -388,7 +388,7 @@ unsafe extern "C" fn pdf_copy_fontmap_record(
         __assert_fail(
             b"dst && src\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            110i32 as libc::c_uint,
+            110i32 as u32,
             (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
                 b"void pdf_copy_fontmap_record(fontmap_rec *, const fontmap_rec *)\x00",
             ))
@@ -538,7 +538,7 @@ unsafe extern "C" fn tt_readline(
         __assert_fail(
             b"buf && buf_len > 0 && handle\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            199i32 as libc::c_uint,
+            199i32 as u32,
             (*::std::mem::transmute::<&[u8; 52], &[i8; 52]>(
                 b"char *tt_readline(char *, int, rust_input_handle_t)\x00",
             ))
@@ -577,14 +577,14 @@ unsafe extern "C" fn parse_string_value(
 ) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = *pp;
-    let mut n: libc::c_uint = 0;
+    let mut n: u32 = 0;
     if p.is_null() || p >= endptr {
         return 0 as *mut i8;
     }
     if *p as i32 == '\"' as i32 {
         q = parse_c_string(&mut p, endptr)
     } else {
-        n = 0i32 as libc::c_uint;
+        n = 0i32 as u32;
         while p < endptr
             && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize)
                 as i32
@@ -594,10 +594,10 @@ unsafe extern "C" fn parse_string_value(
             p = p.offset(1);
             n = n.wrapping_add(1)
         }
-        if n == 0i32 as libc::c_uint {
+        if n == 0i32 as u32 {
             return 0 as *mut i8;
         }
-        q = new((n.wrapping_add(1i32 as libc::c_uint) as u64)
+        q = new((n.wrapping_add(1i32 as u32) as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64)
             as u32) as *mut i8;
         memcpy(
@@ -626,7 +626,7 @@ unsafe extern "C" fn parse_integer_value(
         __assert_fail(
             b"base == 0 || (base >= 2 && base <= 36)\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            256i32 as libc::c_uint,
+            256i32 as u32,
             (*::std::mem::transmute::<&[u8; 60], &[i8; 60]>(
                 b"char *parse_integer_value(const char **, const char *, int)\x00",
             ))
@@ -1533,7 +1533,7 @@ pub unsafe extern "C" fn pdf_read_fontmap_line(
         __assert_fail(
             b"mrec\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            885i32 as libc::c_uint,
+            885i32 as u32,
             (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
                 b"int pdf_read_fontmap_line(fontmap_rec *, const char *, int, int)\x00",
             ))
@@ -1590,7 +1590,7 @@ pub unsafe extern "C" fn pdf_read_fontmap_line(
 #[no_mangle]
 pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> i32
 /* NULL terminated. */ {
-    let mut n: libc::c_uint = 0i32 as libc::c_uint; /* DVIPS/pdfTeX format */
+    let mut n: u32 = 0i32 as u32; /* DVIPS/pdfTeX format */
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
     if !strchr(mline, '\"' as i32).is_null() || !strchr(mline, '<' as i32).is_null() {
@@ -1618,7 +1618,7 @@ pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> i32
     }
     /* Two entries: TFM_NAME PS_NAME only (DVIPS format)
      * Otherwise (DVIPDFM format) */
-    return if n == 2i32 as libc::c_uint {
+    return if n == 2i32 as u32 {
         0i32
     } else {
         1i32
@@ -1642,7 +1642,7 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(
         __assert_fail(
             b"filename\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            969i32 as libc::c_uint,
+            969i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"int pdf_load_fontmap_file(const char *, int)\x00",
             ))
@@ -1654,7 +1654,7 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(
         __assert_fail(
             b"fontmap\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            970i32 as libc::c_uint,
+            970i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"int pdf_load_fontmap_file(const char *, int)\x00",
             ))
@@ -1763,7 +1763,7 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     } else {
         __assert_fail(b"path\x00" as *const u8 as *const i8,
                       b"dpx-fontmap.c\x00" as *const u8 as
-                          *const i8, 1046i32 as libc::c_uint,
+                          *const i8, 1046i32 as u32,
                       (*::std::mem::transmute::<&[u8; 90],
                                                 &[i8; 90]>(b"fontmap_rec *pdf_insert_native_fontmap_record(const char *, uint32_t, int, int, int, int)\x00")).as_ptr());
     }
@@ -1951,7 +1951,7 @@ unsafe extern "C" fn strip_options(
         __assert_fail(
             b"opt\x00" as *const u8 as *const i8,
             b"dpx-fontmap.c\x00" as *const u8 as *const i8,
-            1152i32 as libc::c_uint,
+            1152i32 as u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"char *strip_options(const char *, fontmap_opt *)\x00",
             ))

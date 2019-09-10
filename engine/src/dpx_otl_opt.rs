@@ -12,7 +12,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -51,7 +51,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -306,7 +306,7 @@ pub unsafe extern "C" fn otl_parse_optstring(
         __assert_fail(
             b"opt\x00" as *const u8 as *const i8,
             b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
-            237i32 as libc::c_uint,
+            237i32 as u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int otl_parse_optstring(otl_opt *, const char *)\x00",
             ))
@@ -349,7 +349,7 @@ pub unsafe extern "C" fn otl_match_optrule(
         __assert_fail(
             b"tag\x00" as *const u8 as *const i8,
             b"dpx-otl_opt.c\x00" as *const u8 as *const i8,
-            251i32 as libc::c_uint,
+            251i32 as u32,
             (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"int otl_match_optrule(otl_opt *, const char *)\x00",
             ))

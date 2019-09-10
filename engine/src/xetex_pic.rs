@@ -243,8 +243,8 @@ extern "C" {
     #[no_mangle]
     fn jpeg_get_bbox(
         handle: rust_input_handle_t,
-        width: *mut libc::c_uint,
-        height: *mut libc::c_uint,
+        width: *mut u32,
+        height: *mut u32,
         xdensity: *mut f64,
         ydensity: *mut f64,
     ) -> i32;
@@ -253,8 +253,8 @@ extern "C" {
     #[no_mangle]
     fn bmp_get_bbox(
         handle: rust_input_handle_t,
-        width: *mut libc::c_uint,
-        height: *mut libc::c_uint,
+        width: *mut u32,
+        height: *mut u32,
         xdensity: *mut f64,
         ydensity: *mut f64,
     ) -> i32;
@@ -263,7 +263,7 @@ extern "C" {
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -547,8 +547,8 @@ unsafe extern "C" fn get_image_size_in_inches(
     mut height: *mut f32,
 ) -> i32 {
     let mut err: i32 = 1i32;
-    let mut width_pix: libc::c_uint = 0;
-    let mut height_pix: libc::c_uint = 0;
+    let mut width_pix: u32 = 0;
+    let mut height_pix: u32 = 0;
     let mut xdensity: f64 = 0.;
     let mut ydensity: f64 = 0.;
     if check_for_jpeg(handle) != 0 {

@@ -36,8 +36,8 @@ pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct __va_list_tag {
-    pub gp_offset: libc::c_uint,
-    pub fp_offset: libc::c_uint,
+    pub gp_offset: u32,
+    pub fp_offset: u32,
     pub overflow_arg_area: *mut libc::c_void,
     pub reg_save_area: *mut libc::c_void,
 }
@@ -66,7 +66,7 @@ pub type rust_output_handle_t = *mut libc::c_void;
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 pub type message_type_t = _message_type;
-pub type _message_type = libc::c_uint;
+pub type _message_type = u32;
 pub const DPX_MESG_WARN: _message_type = 1;
 pub const DPX_MESG_INFO: _message_type = 0;
 static mut _last_message_type: message_type_t = DPX_MESG_INFO;
@@ -155,7 +155,7 @@ pub unsafe extern "C" fn dpx_warning(mut fmt: *const i8, mut args: ...) {
     if _dpx_quietness > 1i32 {
         return;
     }
-    if _last_message_type as libc::c_uint == DPX_MESG_INFO as i32 as libc::c_uint {
+    if _last_message_type as u32 == DPX_MESG_INFO as i32 as u32 {
         ttstub_output_write(
             _dpx_ensure_output_handle(),
             b"\n\x00" as *const u8 as *const i8,

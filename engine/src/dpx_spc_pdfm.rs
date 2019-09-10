@@ -58,7 +58,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
@@ -70,7 +70,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_string_length(object: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     #[no_mangle]
@@ -87,7 +87,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -268,11 +268,11 @@ extern "C" {
         value: *mut pdf_obj,
     ) -> i32;
     #[no_mangle]
-    fn pdf_doc_set_bop_content(str: *const i8, length: libc::c_uint);
+    fn pdf_doc_set_bop_content(str: *const i8, length: u32);
     #[no_mangle]
-    fn pdf_doc_set_eop_content(str: *const i8, length: libc::c_uint);
+    fn pdf_doc_set_eop_content(str: *const i8, length: u32);
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     /* Article thread */
     #[no_mangle]
     fn pdf_doc_begin_article(article_id: *const i8, info: *mut pdf_obj);
@@ -305,7 +305,7 @@ extern "C" {
     /* Annotation */
     #[no_mangle]
     fn pdf_doc_add_annot(
-        page_no: libc::c_uint,
+        page_no: u32,
         rect: *const pdf_rect,
         annot_dict: *mut pdf_obj,
         new_annot: i32,
@@ -437,7 +437,7 @@ pub type ssize_t = __ssize_t;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -662,8 +662,8 @@ pub struct mapDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_1 {
-    pub num: libc::c_uint,
-    pub max: libc::c_uint,
+    pub num: u32,
+    pub max: u32,
     pub ranges: *mut rangeDef,
 }
 #[derive(Copy, Clone)]
@@ -846,7 +846,7 @@ unsafe extern "C" fn spc_handler_pdfm_bop(
         pdf_doc_set_bop_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32
-                as libc::c_uint,
+                as u32,
         );
     }
     (*args).curptr = (*args).endptr;
@@ -860,7 +860,7 @@ unsafe extern "C" fn spc_handler_pdfm_eop(
         pdf_doc_set_eop_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32
-                as libc::c_uint,
+                as u32,
         );
     }
     (*args).curptr = (*args).endptr;
@@ -878,7 +878,7 @@ unsafe extern "C" fn safeputresdent(
         __assert_fail(
             b"kp && vp && dp\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            221i32 as libc::c_uint,
+            221i32 as u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int safeputresdent(pdf_obj *, pdf_obj *, void *)\x00",
             ))
@@ -909,7 +909,7 @@ unsafe extern "C" fn safeputresdict(
         __assert_fail(
             b"kp && vp && dp\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            243i32 as libc::c_uint,
+            243i32 as u32,
             (*::std::mem::transmute::<&[u8; 49], &[i8; 49]>(
                 b"int safeputresdict(pdf_obj *, pdf_obj *, void *)\x00",
             ))
@@ -1182,14 +1182,14 @@ unsafe extern "C" fn needreencode(
     mut cd: *mut tounicode,
 ) -> i32 {
     let mut r: i32 = 0i32;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     let mut tk: *mut pdf_obj = 0 as *mut pdf_obj;
     if !cd.is_null() && !(*cd).taintkeys.is_null() {
     } else {
         __assert_fail(
             b"cd && cd->taintkeys\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            459i32 as libc::c_uint,
+            459i32 as u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
             ))
@@ -1201,7 +1201,7 @@ unsafe extern "C" fn needreencode(
         __assert_fail(
             b"pdf_obj_typeof(kp) == PDF_NAME\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            460i32 as libc::c_uint,
+            460i32 as u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
             ))
@@ -1213,14 +1213,14 @@ unsafe extern "C" fn needreencode(
         __assert_fail(
             b"pdf_obj_typeof(vp) == PDF_STRING\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            461i32 as libc::c_uint,
+            461i32 as u32,
             (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                 b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
             ))
             .as_ptr(),
         );
     }
-    i = 0i32 as libc::c_uint;
+    i = 0i32 as u32;
     while i < pdf_array_length((*cd).taintkeys) {
         tk = pdf_get_array((*cd).taintkeys, i as i32);
         if !tk.is_null() && pdf_obj_typeof(tk) == 4i32 {
@@ -1228,7 +1228,7 @@ unsafe extern "C" fn needreencode(
             __assert_fail(
                 b"tk && pdf_obj_typeof(tk) == PDF_NAME\x00" as *const u8 as *const i8,
                 b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-                465i32 as libc::c_uint,
+                465i32 as u32,
                 (*::std::mem::transmute::<&[u8; 59], &[i8; 59]>(
                     b"int needreencode(pdf_obj *, pdf_obj *, struct tounicode *)\x00",
                 ))
@@ -1244,7 +1244,7 @@ unsafe extern "C" fn needreencode(
     }
     if r != 0 {
         /* Check UTF-16BE BOM. */
-        if pdf_string_length(vp) >= 2i32 as libc::c_uint
+        if pdf_string_length(vp) >= 2i32 as u32
             && memcmp(
                 pdf_string_value(vp),
                 b"\xfe\xff\x00" as *const u8 as *const i8 as *const libc::c_void,
@@ -1268,7 +1268,7 @@ unsafe extern "C" fn modstrings(
         __assert_fail(
             b"pdf_obj_typeof(kp) == PDF_NAME\x00" as *const u8 as *const i8,
             b"dpx-spc_pdfm.c\x00" as *const u8 as *const i8,
-            487i32 as libc::c_uint,
+            487i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"int modstrings(pdf_obj *, pdf_obj *, void *)\x00",
             ))
@@ -1457,7 +1457,7 @@ unsafe extern "C" fn spc_handler_pdfm_annot(
     }
     /* Add this reference. */
     pdf_doc_add_annot(
-        pdf_doc_current_page_number() as libc::c_uint,
+        pdf_doc_current_page_number() as u32,
         &mut rect,
         annot_dict,
         1i32,
@@ -2354,12 +2354,12 @@ unsafe extern "C" fn spc_handler_pdfm_content(
         len = len + 1;
         *work_buffer.as_mut_ptr().offset(fresh10 as isize) = ' ' as i32 as i8;
         /* op: Q */
-        pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint); /* op: q cm */
+        pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as u32); /* op: q cm */
         len = (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32; /* op: ANY */
-        pdf_doc_add_page_content((*args).curptr, len as libc::c_uint); /* op: */
+        pdf_doc_add_page_content((*args).curptr, len as u32); /* op: */
         pdf_doc_add_page_content(
             b" Q\x00" as *const u8 as *const i8,
-            2i32 as libc::c_uint,
+            2i32 as u32,
         ); /* op: ANY */
     } /* op: */
     (*args).curptr = (*args).endptr; /* op: ANY */
@@ -2417,12 +2417,12 @@ unsafe extern "C" fn spc_handler_pdfm_literal(
         }
         pdf_doc_add_page_content(
             b" \x00" as *const u8 as *const i8,
-            1i32 as libc::c_uint,
+            1i32 as u32,
         );
         pdf_doc_add_page_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32
-                as libc::c_uint,
+                as u32,
         );
         if direct == 0 {
             M.e = -(*spe).x_user;
@@ -2476,12 +2476,12 @@ unsafe extern "C" fn spc_handler_pdfm_code(
     if (*args).curptr < (*args).endptr {
         pdf_doc_add_page_content(
             b" \x00" as *const u8 as *const i8,
-            1i32 as libc::c_uint,
+            1i32 as u32,
         );
         pdf_doc_add_page_content(
             (*args).curptr,
             (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32
-                as libc::c_uint,
+                as u32,
         );
         (*args).curptr = (*args).endptr
     }
@@ -3957,7 +3957,7 @@ pub unsafe extern "C" fn spc_pdfm_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_pdfm.c\x00" as *const u8 as
-                          *const i8, 1970i32 as libc::c_uint,
+                          *const i8, 1970i32 as u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_pdfm_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

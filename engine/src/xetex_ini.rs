@@ -240,7 +240,7 @@ extern "C" {
     #[no_mangle]
     fn maketexstring(s: *const i8) -> i32;
     #[no_mangle]
-    fn set_cp_code(fontNum: i32, code: libc::c_uint, side: i32, value: i32);
+    fn set_cp_code(fontNum: i32, code: u32, side: i32, value: i32);
     /* synctex.h
 
     Copyright (c) 2008, 2009 jerome DOT laurens AT u-bourgogne DOT fr
@@ -300,7 +300,7 @@ pub type ssize_t = __ssize_t;
    Licensed under the MIT License.
 */
 /* Both XeTeX and bibtex use this enum: */
-pub type tt_history_t = libc::c_uint;
+pub type tt_history_t = u32;
 pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
 pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
 pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
@@ -309,7 +309,7 @@ pub const HISTORY_SPOTLESS: tt_history_t = 0;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -346,7 +346,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* Endianness foo */
 /* our typedefs */
 pub type scaled_t = i32;
-pub type selector_t = libc::c_uint;
+pub type selector_t = u32;
 pub const SELECTOR_NEW_STRING: selector_t = 21;
 pub const SELECTOR_PSEUDO: selector_t = 20;
 pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
@@ -3233,17 +3233,17 @@ pub unsafe extern "C" fn prefixed_command() {
                     9 => {
                         scan_math_class_int();
                         n =
-                            ((cur_val as libc::c_uint &
-                                  0x7i32 as libc::c_uint) << 21i32) as
+                            ((cur_val as u32 &
+                                  0x7i32 as u32) << 21i32) as
                                 i32;
                         scan_math_fam_int();
                         n =
                             (n as
-                                 libc::c_uint).wrapping_add((cur_val as
-                                                                 libc::c_uint
+                                 u32).wrapping_add((cur_val as
+                                                                 u32
                                                                  &
                                                                  0xffi32 as
-                                                                     libc::c_uint)
+                                                                     u32)
                                                                 << 24i32) as
                                 i32;
                         scan_usv_num();
@@ -3695,14 +3695,14 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_optional_equals();
                 scan_math_class_int();
                 n =
-                    ((cur_val as libc::c_uint & 0x7i32 as libc::c_uint) <<
+                    ((cur_val as u32 & 0x7i32 as u32) <<
                          21i32) as i32;
                 scan_math_fam_int();
                 n =
                     (n as
-                         libc::c_uint).wrapping_add((cur_val as libc::c_uint &
+                         u32).wrapping_add((cur_val as u32 &
                                                          0xffi32 as
-                                                             libc::c_uint) <<
+                                                             u32) <<
                                                         24i32) as i32;
                 scan_usv_num();
                 n = n + cur_val;
@@ -3864,17 +3864,17 @@ pub unsafe extern "C" fn prefixed_command() {
                     cur_val = 0x1fffffi32
                 } else {
                     cur_val =
-                        (((cur_val / 4096i32) as libc::c_uint &
-                              0x7i32 as libc::c_uint) <<
+                        (((cur_val / 4096i32) as u32 &
+                              0x7i32 as u32) <<
                              21i32).wrapping_add(((cur_val % 4096i32 / 256i32)
-                                                      as libc::c_uint &
-                                                      0xffi32 as libc::c_uint)
+                                                      as u32 &
+                                                      0xffi32 as u32)
                                                      <<
                                                      24i32).wrapping_add((cur_val
                                                                               %
                                                                               256i32)
                                                                              as
-                                                                             libc::c_uint)
+                                                                             u32)
                             as i32
                 }
                 if a as i32 >= 4i32 {
@@ -4012,9 +4012,9 @@ pub unsafe extern "C" fn prefixed_command() {
                     *hyphen_char.offset(f as isize) = cur_val
                 } else { *skew_char.offset(f as isize) = cur_val }
             } else {
-                if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
+                if *font_area.offset(f as isize) as u32 == 0xffffu32
                        ||
-                       *font_area.offset(f as isize) as libc::c_uint ==
+                       *font_area.offset(f as isize) as u32 ==
                            0xfffeu32 {
                     scan_glyph_number(f);
                 } else { scan_char_num(); }
@@ -4022,8 +4022,8 @@ pub unsafe extern "C" fn prefixed_command() {
                 scan_optional_equals();
                 scan_int();
                 match n {
-                    2 => { set_cp_code(f, p as libc::c_uint, 0i32, cur_val); }
-                    3 => { set_cp_code(f, p as libc::c_uint, 1i32, cur_val); }
+                    2 => { set_cp_code(f, p as u32, 0i32, cur_val); }
+                    3 => { set_cp_code(f, p as u32, 1i32, cur_val); }
                     _ => { }
                 }
             }
@@ -5093,8 +5093,8 @@ unsafe extern "C" fn store_fmt_file() {
             .s1,
         );
         print_char('=' as i32);
-        if *font_area.offset(k as isize) as libc::c_uint == 0xffffu32
-            || *font_area.offset(k as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(k as isize) as u32 == 0xffffu32
+            || *font_area.offset(k as isize) as u32 == 0xfffeu32
             || !(*font_mapping.offset(k as isize)).is_null()
         {
             print_file_name(
@@ -8396,11 +8396,11 @@ unsafe extern "C" fn final_cleanup() {
         cond_ptr = (*mem.offset(cond_ptr as isize)).b32.s1;
         free_node(temp_ptr, 2i32);
     }
-    if history as libc::c_uint != HISTORY_SPOTLESS as i32 as libc::c_uint {
-        if history as libc::c_uint == HISTORY_WARNING_ISSUED as i32 as libc::c_uint
+    if history as u32 != HISTORY_SPOTLESS as i32 as u32 {
+        if history as u32 == HISTORY_WARNING_ISSUED as i32 as u32
             || (interaction as i32) < 3i32
         {
-            if selector as libc::c_uint == SELECTOR_TERM_AND_LOG as i32 as libc::c_uint {
+            if selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32 {
                 selector = SELECTOR_TERM_ONLY;
                 print_nl_cstr(
                     b"(see the transcript file for additional information)\x00" as *const u8
@@ -9638,8 +9638,8 @@ unsafe extern "C" fn initialize_more_initex_variables() {
                 + k) as isize,
         ))
         .b32
-        .s1 = (k as libc::c_uint)
-            .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+        .s1 = (k as u32)
+            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32)
             as i32;
         k += 1
     }
@@ -9717,9 +9717,9 @@ unsafe extern "C" fn initialize_more_initex_variables() {
                 + k) as isize,
         ))
         .b32
-        .s1 = (k as libc::c_uint)
-            .wrapping_add((1i32 as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32)
-            .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+        .s1 = (k as u32)
+            .wrapping_add((1i32 as u32 & 0xffi32 as u32) << 24i32)
+            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32)
             as i32;
         (*eqtb.offset(
             (1i32
@@ -9747,9 +9747,9 @@ unsafe extern "C" fn initialize_more_initex_variables() {
                 + (k + 32i32)) as isize,
         ))
         .b32
-        .s1 = ((k + 32i32) as libc::c_uint)
-            .wrapping_add((1i32 as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32)
-            .wrapping_add((7i32 as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+        .s1 = ((k + 32i32) as u32)
+            .wrapping_add((1i32 as u32 & 0xffi32 as u32) << 24i32)
+            .wrapping_add((7i32 as u32 & 0x7i32 as u32) << 21i32)
             as i32;
         (*eqtb.offset(
             (1i32

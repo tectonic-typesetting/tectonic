@@ -149,15 +149,15 @@ pub type pdf_ximage = pdf_ximage_;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct hdr_info {
-    pub offset: libc::c_uint,
-    pub hsize: libc::c_uint,
-    pub width: libc::c_uint,
+    pub offset: u32,
+    pub hsize: u32,
+    pub width: u32,
     pub height: i32,
     pub compression: i32,
     pub bit_count: u16,
     pub psize: i32,
-    pub x_pix_per_meter: libc::c_uint,
-    pub y_pix_per_meter: libc::c_uint,
+    pub x_pix_per_meter: u32,
+    pub y_pix_per_meter: u32,
 }
 #[no_mangle]
 pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> i32 {
@@ -184,8 +184,8 @@ unsafe extern "C" fn get_density(
     mut ydensity: *mut f64,
     mut hdr: *mut hdr_info,
 ) {
-    if (*hdr).x_pix_per_meter > 0i32 as libc::c_uint
-        && (*hdr).y_pix_per_meter > 0i32 as libc::c_uint
+    if (*hdr).x_pix_per_meter > 0i32 as u32
+        && (*hdr).y_pix_per_meter > 0i32 as u32
     {
         /* 0 for undefined. FIXME */
         *xdensity = 72.0f64 / ((*hdr).x_pix_per_meter as f64 * 0.0254f64);
@@ -198,23 +198,23 @@ unsafe extern "C" fn get_density(
 #[no_mangle]
 pub unsafe extern "C" fn bmp_get_bbox(
     mut handle: rust_input_handle_t,
-    mut width: *mut libc::c_uint,
-    mut height: *mut libc::c_uint,
+    mut width: *mut u32,
+    mut height: *mut u32,
     mut xdensity: *mut f64,
     mut ydensity: *mut f64,
 ) -> i32 {
     let mut r: i32 = 0;
     let mut hdr: hdr_info = {
         let mut init = hdr_info {
-            offset: 0i32 as libc::c_uint,
-            hsize: 0i32 as libc::c_uint,
-            width: 0i32 as libc::c_uint,
+            offset: 0i32 as u32,
+            hsize: 0i32 as u32,
+            width: 0i32 as u32,
             height: 0i32,
             compression: 0i32,
             bit_count: 0i32 as u16,
             psize: 0i32,
-            x_pix_per_meter: 0i32 as libc::c_uint,
-            y_pix_per_meter: 0i32 as libc::c_uint,
+            x_pix_per_meter: 0i32 as u32,
+            y_pix_per_meter: 0i32 as u32,
         };
         init
     };
@@ -225,7 +225,7 @@ pub unsafe extern "C" fn bmp_get_bbox(
         -hdr.height
     } else {
         hdr.height
-    }) as libc::c_uint;
+    }) as u32;
     get_density(xdensity, ydensity, &mut hdr);
     return r;
 }
@@ -270,15 +270,15 @@ pub unsafe extern "C" fn bmp_include_image(
     };
     let mut hdr: hdr_info = {
         let mut init = hdr_info {
-            offset: 0i32 as libc::c_uint,
-            hsize: 0i32 as libc::c_uint,
-            width: 0i32 as libc::c_uint,
+            offset: 0i32 as u32,
+            hsize: 0i32 as u32,
+            width: 0i32 as u32,
             height: 0i32,
             compression: 0i32,
             bit_count: 0i32 as u16,
             psize: 0i32,
-            x_pix_per_meter: 0i32 as libc::c_uint,
-            y_pix_per_meter: 0i32 as libc::c_uint,
+            x_pix_per_meter: 0i32 as u32,
+            y_pix_per_meter: 0i32 as u32,
         };
         init
     };
@@ -316,8 +316,8 @@ pub unsafe extern "C" fn bmp_include_image(
         num_palette = hdr
             .offset
             .wrapping_sub(hdr.hsize)
-            .wrapping_sub(14i32 as libc::c_uint)
-            .wrapping_div(hdr.psize as libc::c_uint) as i32;
+            .wrapping_sub(14i32 as u32)
+            .wrapping_div(hdr.psize as u32) as i32;
         info.bits_per_component = hdr.bit_count as i32;
         info.num_components = 1i32
     } else if hdr.bit_count as i32 == 24i32 {
@@ -552,19 +552,19 @@ unsafe extern "C" fn read_header(
     (*hdr).offset = (*p.offset(0) as i32
         + ((*p.offset(1) as i32) << 8i32)
         + ((*p.offset(2) as i32) << 16i32)
-        + ((*p.offset(3) as i32) << 24i32)) as libc::c_uint;
+        + ((*p.offset(3) as i32) << 24i32)) as u32;
     p = p.offset(4);
     /* info header */
     (*hdr).hsize = (*p.offset(0) as i32
         + ((*p.offset(1) as i32) << 8i32)
         + ((*p.offset(2) as i32) << 16i32)
-        + ((*p.offset(3) as i32) << 24i32)) as libc::c_uint; /* undefined. FIXME */
+        + ((*p.offset(3) as i32) << 24i32)) as u32; /* undefined. FIXME */
     p = p.offset(4); /* undefined. FIXME */
     if ttstub_input_read(
         handle,
         p as *mut i8,
-        (*hdr).hsize.wrapping_sub(4i32 as libc::c_uint) as size_t,
-    ) != (*hdr).hsize.wrapping_sub(4i32 as libc::c_uint) as i64
+        (*hdr).hsize.wrapping_sub(4i32 as u32) as size_t,
+    ) != (*hdr).hsize.wrapping_sub(4i32 as u32) as i64
     {
         dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
         return -1i32;
@@ -572,12 +572,12 @@ unsafe extern "C" fn read_header(
     match (*hdr).hsize {
         12 => {
             (*hdr).width = (*p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32))
-                as libc::c_uint;
+                as u32;
             p = p.offset(2);
             (*hdr).height = *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32);
             p = p.offset(2);
-            (*hdr).x_pix_per_meter = 0i32 as libc::c_uint;
-            (*hdr).y_pix_per_meter = 0i32 as libc::c_uint;
+            (*hdr).x_pix_per_meter = 0i32 as u32;
+            (*hdr).y_pix_per_meter = 0i32 as u32;
             if *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32) != 1i32 {
                 dpx_warning(
                     b"Unknown bcPlanes value in BMP COREHEADER.\x00" as *const u8
@@ -598,7 +598,7 @@ unsafe extern "C" fn read_header(
                 + ((*p.offset(1) as i32) << 8i32)
                 + ((*p.offset(2) as i32) << 16i32)
                 + ((*p.offset(3) as i32) << 24i32))
-                as libc::c_uint;
+                as u32;
             p = p.offset(4);
             (*hdr).height = *p.offset(0) as i32
                 + ((*p.offset(1) as i32) << 8i32)
@@ -628,13 +628,13 @@ unsafe extern "C" fn read_header(
                 + ((*p.offset(1) as i32) << 8i32)
                 + ((*p.offset(2) as i32) << 16i32)
                 + ((*p.offset(3) as i32) << 24i32))
-                as libc::c_uint;
+                as u32;
             p = p.offset(4);
             (*hdr).y_pix_per_meter = (*p.offset(0) as i32
                 + ((*p.offset(1) as i32) << 8i32)
                 + ((*p.offset(2) as i32) << 16i32)
                 + ((*p.offset(3) as i32) << 24i32))
-                as libc::c_uint;
+                as u32;
             p = p.offset(4);
             (*hdr).psize = 4i32
         }

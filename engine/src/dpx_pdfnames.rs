@@ -13,7 +13,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -75,7 +75,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_string_length(object: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
@@ -112,7 +112,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -279,7 +279,7 @@ unsafe extern "C" fn check_objects_defined(mut ht_tab: *mut ht_table) {
                 __assert_fail(
                     b"value->object\x00" as *const u8 as *const i8,
                     b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-                    109i32 as libc::c_uint,
+                    109i32 as u32,
                     (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                         b"void check_objects_defined(struct ht_table *)\x00",
                     ))
@@ -308,7 +308,7 @@ pub unsafe extern "C" fn pdf_delete_name_tree(mut names: *mut *mut ht_table) {
         __assert_fail(
             b"names && *names\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            123i32 as libc::c_uint,
+            123i32 as u32,
             (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                 b"void pdf_delete_name_tree(struct ht_table **)\x00",
             ))
@@ -332,7 +332,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
         __assert_fail(
             b"names && object\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            137i32 as libc::c_uint,
+            137i32 as u32,
             (*::std::mem::transmute::<&[u8; 74], &[i8; 74]>(
                 b"int pdf_names_add_object(struct ht_table *, const void *, int, pdf_obj *)\x00",
             ))
@@ -357,7 +357,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
             __assert_fail(b"value->object\x00" as *const u8 as
                               *const i8,
                           b"dpx-pdfnames.c\x00" as *const u8 as
-                              *const i8, 151i32 as libc::c_uint,
+                              *const i8, 151i32 as u32,
                           (*::std::mem::transmute::<&[u8; 74],
                                                     &[i8; 74]>(b"int pdf_names_add_object(struct ht_table *, const void *, int, pdf_obj *)\x00")).as_ptr());
         }
@@ -392,7 +392,7 @@ pub unsafe extern "C" fn pdf_names_lookup_reference(
         __assert_fail(
             b"names\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            176i32 as libc::c_uint,
+            176i32 as u32,
             (*::std::mem::transmute::<&[u8; 74], &[i8; 74]>(
                 b"pdf_obj *pdf_names_lookup_reference(struct ht_table *, const void *, int)\x00",
             ))
@@ -406,7 +406,7 @@ pub unsafe extern "C" fn pdf_names_lookup_reference(
         } else {
             __assert_fail(b"object\x00" as *const u8 as *const i8,
                           b"dpx-pdfnames.c\x00" as *const u8 as
-                              *const i8, 182i32 as libc::c_uint,
+                              *const i8, 182i32 as u32,
                           (*::std::mem::transmute::<&[u8; 74],
                                                     &[i8; 74]>(b"pdf_obj *pdf_names_lookup_reference(struct ht_table *, const void *, int)\x00")).as_ptr());
         }
@@ -432,7 +432,7 @@ pub unsafe extern "C" fn pdf_names_lookup_object(
         __assert_fail(
             b"names\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            201i32 as libc::c_uint,
+            201i32 as u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"pdf_obj *pdf_names_lookup_object(struct ht_table *, const void *, int)\x00",
             ))
@@ -448,7 +448,7 @@ pub unsafe extern "C" fn pdf_names_lookup_object(
         __assert_fail(
             b"value->object\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            206i32 as libc::c_uint,
+            206i32 as u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"pdf_obj *pdf_names_lookup_object(struct ht_table *, const void *, int)\x00",
             ))
@@ -469,7 +469,7 @@ pub unsafe extern "C" fn pdf_names_close_object(
         __assert_fail(
             b"names\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            217i32 as libc::c_uint,
+            217i32 as u32,
             (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
                 b"int pdf_names_close_object(struct ht_table *, const void *, int)\x00",
             ))
@@ -489,7 +489,7 @@ pub unsafe extern "C" fn pdf_names_close_object(
         __assert_fail(
             b"value->object\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            224i32 as libc::c_uint,
+            224i32 as u32,
             (*::std::mem::transmute::<&[u8; 65], &[i8; 65]>(
                 b"int pdf_names_close_object(struct ht_table *, const void *, int)\x00",
             ))
@@ -653,7 +653,7 @@ unsafe extern "C" fn flat_table(
         __assert_fail(
             b"ht_tab\x00" as *const u8 as *const i8,
             b"dpx-pdfnames.c\x00" as *const u8 as *const i8,
-            352i32 as libc::c_uint,
+            352i32 as u32,
             (*::std::mem::transmute::<&[u8; 77], &[i8; 77]>(
                 b"struct named_object *flat_table(struct ht_table *, int *, struct ht_table *)\x00",
             ))
@@ -693,7 +693,7 @@ unsafe extern "C" fn flat_table(
                                           *const i8,
                                       b"dpx-pdfnames.c\x00" as *const u8 as
                                           *const i8,
-                                      375i32 as libc::c_uint,
+                                      375i32 as u32,
                                       (*::std::mem::transmute::<&[u8; 77],
                                                                 &[i8; 77]>(b"struct named_object *flat_table(struct ht_table *, int *, struct ht_table *)\x00")).as_ptr());
                     }

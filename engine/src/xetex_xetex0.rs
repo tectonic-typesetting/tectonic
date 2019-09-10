@@ -563,7 +563,7 @@ extern "C" {
     #[no_mangle]
     fn check_for_tfm_font_mapping();
     #[no_mangle]
-    fn get_cp_code(fontNum: i32, code: libc::c_uint, side: i32) -> i32;
+    fn get_cp_code(fontNum: i32, code: u32, side: i32) -> i32;
     #[no_mangle]
     fn maketexstring(s: *const i8) -> i32;
     #[no_mangle]
@@ -962,7 +962,7 @@ pub type size_t = u64;
    Licensed under the MIT License.
 */
 /* Both XeTeX and bibtex use this enum: */
-pub type tt_history_t = libc::c_uint;
+pub type tt_history_t = u32;
 pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
 pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
 pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
@@ -971,7 +971,7 @@ pub const HISTORY_SPOTLESS: tt_history_t = 0;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -999,7 +999,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
 pub type Fixed = scaled_t;
 pub type CFDictionaryRef = *mut libc::c_void;
-pub type selector_t = libc::c_uint;
+pub type selector_t = u32;
 pub const SELECTOR_NEW_STRING: selector_t = 21;
 pub const SELECTOR_PSEUDO: selector_t = 20;
 pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
@@ -1010,7 +1010,7 @@ pub const SELECTOR_FILE_15: selector_t = 15;
 pub const SELECTOR_FILE_0: selector_t = 0;
 pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
 pub type UInt16 = u16;
-pub type UInt32 = libc::c_uint;
+pub type UInt32 = u32;
 /* quasi-hack to get the primary input */
 /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
    Copyright 2016-2018 The Tectonic Project
@@ -3702,10 +3702,10 @@ pub unsafe extern "C" fn begin_diagnostic() {
     ))
     .b32
     .s1 <= 0i32
-        && selector as libc::c_uint == SELECTOR_TERM_AND_LOG as i32 as libc::c_uint
+        && selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32
     {
         selector -= 1;
-        if history as libc::c_uint == HISTORY_SPOTLESS as i32 as libc::c_uint {
+        if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
             history = HISTORY_WARNING_ISSUED
         }
     };
@@ -5161,9 +5161,9 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: i32) {
         }
         70 => {
             print_esc_cstr(b"Umathchar\x00" as *const u8 as *const i8);
-            print_hex((chr_code as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint) as i32);
-            print_hex((chr_code as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as i32);
-            print_hex((chr_code as libc::c_uint & 0x1fffffi32 as libc::c_uint) as i32);
+            print_hex((chr_code as u32 >> 21i32 & 0x7i32 as u32) as i32);
+            print_hex((chr_code as u32 >> 24i32 & 0xffi32 as u32) as i32);
+            print_hex((chr_code as u32 & 0x1fffffi32 as u32) as i32);
         }
         86 => {
             if chr_code
@@ -5441,8 +5441,8 @@ pub unsafe extern "C" fn print_cmd_chr(mut cmd: u16, mut chr_code: i32) {
         89 => {
             print_cstr(b"select font \x00" as *const u8 as *const i8);
             font_name_str = *font_name.offset(chr_code as isize);
-            if *font_area.offset(chr_code as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(chr_code as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(chr_code as isize) as u32 == 0xffffu32
+                || *font_area.offset(chr_code as isize) as u32 == 0xfffeu32
             {
                 let mut for_end: i32 = length(font_name_str) - 1i32;
                 quote_char = '\"' as i32 as UTF16_code;
@@ -6172,7 +6172,7 @@ pub unsafe extern "C" fn group_warning() {
         {
             show_context();
         }
-        if history as libc::c_uint == HISTORY_SPOTLESS as i32 as libc::c_uint {
+        if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
             history = HISTORY_WARNING_ISSUED
         }
     };
@@ -6269,7 +6269,7 @@ pub unsafe extern "C" fn if_warning() {
         {
             show_context();
         }
-        if history as libc::c_uint == HISTORY_SPOTLESS as i32 as libc::c_uint {
+        if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
             history = HISTORY_WARNING_ISSUED
         }
     };
@@ -6352,7 +6352,7 @@ pub unsafe extern "C" fn file_warning() {
     {
         show_context();
     }
-    if history as libc::c_uint == HISTORY_SPOTLESS as i32 as libc::c_uint {
+    if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
         history = HISTORY_WARNING_ISSUED
     };
 }
@@ -8915,8 +8915,8 @@ pub unsafe extern "C" fn get_next() {
                                 );
                                 continue;
                             } else {
-                                if (selector as libc::c_uint)
-                                    < SELECTOR_LOG_ONLY as i32 as libc::c_uint
+                                if (selector as u32)
+                                    < SELECTOR_LOG_ONLY as i32 as u32
                                 {
                                     open_log_file();
                                 }
@@ -10415,7 +10415,7 @@ pub unsafe extern "C" fn scan_char_num() {
 #[no_mangle]
 pub unsafe extern "C" fn scan_xetex_math_char_int() {
     scan_int();
-    if cur_val as libc::c_uint & 0x1fffffi32 as libc::c_uint == 0x1fffffi32 as libc::c_uint {
+    if cur_val as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32 {
         if cur_val != 0x1fffffi32 {
             if file_line_error_style_p != 0 {
                 print_file_line();
@@ -10431,7 +10431,7 @@ pub unsafe extern "C" fn scan_xetex_math_char_int() {
             int_error(cur_val);
             cur_val = 0x1fffffi32
         }
-    } else if cur_val as libc::c_uint & 0x1fffffi32 as libc::c_uint > 0x10ffffi32 as libc::c_uint {
+    } else if cur_val as u32 & 0x1fffffi32 as u32 > 0x10ffffi32 as u32 {
         if file_line_error_style_p != 0 {
             print_file_line();
         } else {
@@ -10488,8 +10488,8 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                     ))
                     .b32
                     .s1;
-                    if !(c as libc::c_uint & 0x1fffffi32 as libc::c_uint
-                        == 0x1fffffi32 as libc::c_uint)
+                    if !(c as u32 & 0x1fffffi32 as u32
+                        == 0x1fffffi32 as u32)
                     {
                         break 'c_118470;
                     }
@@ -10508,11 +10508,11 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                 17 => {
                     if cur_chr == 2i32 {
                         scan_math_class_int();
-                        c = ((cur_val as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+                        c = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
                             as i32;
                         scan_math_fam_int();
-                        c = (c as libc::c_uint).wrapping_add(
-                            (cur_val as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32,
+                        c = (c as u32).wrapping_add(
+                            (cur_val as u32 & 0xffi32 as u32) << 24i32,
                         ) as i32;
                         scan_usv_num();
                         c = c + cur_val
@@ -10521,26 +10521,26 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                         c = cur_val
                     } else {
                         scan_fifteen_bit_int();
-                        c = (((cur_val / 4096i32) as libc::c_uint & 0x7i32 as libc::c_uint)
+                        c = (((cur_val / 4096i32) as u32 & 0x7i32 as u32)
                             << 21i32)
                             .wrapping_add(
-                                ((cur_val % 4096i32 / 256i32) as libc::c_uint
-                                    & 0xffi32 as libc::c_uint)
+                                ((cur_val % 4096i32 / 256i32) as u32
+                                    & 0xffi32 as u32)
                                     << 24i32,
                             )
-                            .wrapping_add((cur_val % 256i32) as libc::c_uint)
+                            .wrapping_add((cur_val % 256i32) as u32)
                             as i32
                     }
                     break 'c_118470;
                 }
                 69 => {
-                    c = (((cur_chr / 4096i32) as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+                    c = (((cur_chr / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
                         .wrapping_add(
-                            ((cur_chr % 4096i32 / 256i32) as libc::c_uint
-                                & 0xffi32 as libc::c_uint)
+                            ((cur_chr % 4096i32 / 256i32) as u32
+                                & 0xffi32 as u32)
                                 << 24i32,
                         )
-                        .wrapping_add((cur_chr % 256i32) as libc::c_uint)
+                        .wrapping_add((cur_chr % 256i32) as u32)
                         as i32;
                     break 'c_118470;
                 }
@@ -10551,23 +10551,23 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
                 15 => {
                     if cur_chr == 1i32 {
                         scan_math_class_int();
-                        c = ((cur_val as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+                        c = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
                             as i32;
                         scan_math_fam_int();
-                        c = (c as libc::c_uint).wrapping_add(
-                            (cur_val as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32,
+                        c = (c as u32).wrapping_add(
+                            (cur_val as u32 & 0xffi32 as u32) << 24i32,
                         ) as i32;
                         scan_usv_num();
                         c = c + cur_val
                     } else {
                         scan_delimiter_int();
                         c = cur_val / 4096i32;
-                        c = (((c / 4096i32) as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+                        c = (((c / 4096i32) as u32 & 0x7i32 as u32) << 21i32)
                             .wrapping_add(
-                                ((c % 4096i32 / 256i32) as libc::c_uint & 0xffi32 as libc::c_uint)
+                                ((c % 4096i32 / 256i32) as u32 & 0xffi32 as u32)
                                     << 24i32,
                             )
-                            .wrapping_add((c % 256i32) as libc::c_uint)
+                            .wrapping_add((c % 256i32) as u32)
                             as i32
                     }
                     break 'c_118470;
@@ -10585,7 +10585,7 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
     }
     (*mem.offset(p as isize)).b32.s1 = 1i32;
     (*mem.offset(p as isize)).b16.s0 = (c as i64 % 65536) as u16;
-    if c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint
+    if c as u32 >> 21i32 & 0x7i32 as u32 == 7i32 as u32
         && ((*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
@@ -10676,17 +10676,17 @@ pub unsafe extern "C" fn scan_math(mut p: i32) {
         .s1 as u16
     } else {
         (*mem.offset(p as isize)).b16.s1 =
-            (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as u16
+            (c as u32 >> 24i32 & 0xffi32 as u32) as u16
     }
     (*mem.offset(p as isize)).b16.s1 = ((*mem.offset(p as isize)).b16.s1 as i64
-        + (c as libc::c_uint & 0x1fffffi32 as libc::c_uint) as i64 / 65536
+        + (c as u32 & 0x1fffffi32 as u32) as i64 / 65536
             * 256i32 as i64) as u16;
 }
 #[no_mangle]
 pub unsafe extern "C" fn set_math_char(mut c: i32) {
     let mut p: i32 = 0;
     let mut ch: UnicodeScalar = 0;
-    if c as libc::c_uint & 0x1fffffi32 as libc::c_uint == 0x1fffffi32 as libc::c_uint {
+    if c as u32 & 0x1fffffi32 as u32 == 0x1fffffi32 as u32 {
         /*1187: */
         cur_cs = cur_chr + 1i32; /* ... "between 0 and 15" */
         cur_cmd = (*eqtb.offset(cur_cs as isize)).b16.s1 as eight_bits; /* ... "between 0 and 15" */
@@ -10696,11 +10696,11 @@ pub unsafe extern "C" fn set_math_char(mut c: i32) {
     } else {
         p = new_noad();
         (*mem.offset((p + 1i32) as isize)).b32.s1 = 1i32;
-        ch = (c as libc::c_uint & 0x1fffffi32 as libc::c_uint) as UnicodeScalar;
+        ch = (c as u32 & 0x1fffffi32 as u32) as UnicodeScalar;
         (*mem.offset((p + 1i32) as isize)).b16.s0 = (ch as i64 % 65536) as u16;
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
-            (c as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint) as u16;
-        if c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint == 7i32 as libc::c_uint {
+            (c as u32 >> 24i32 & 0xffi32 as u32) as u16;
+        if c as u32 >> 21i32 & 0x7i32 as u32 == 7i32 as u32 {
             if (*eqtb.offset(
                 (1i32
                     + (0x10ffffi32 + 1i32)
@@ -10792,8 +10792,8 @@ pub unsafe extern "C" fn set_math_char(mut c: i32) {
             }
             (*mem.offset(p as isize)).b16.s1 = 16i32 as u16
         } else {
-            (*mem.offset(p as isize)).b16.s1 = (16i32 as libc::c_uint)
-                .wrapping_add(c as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint)
+            (*mem.offset(p as isize)).b16.s1 = (16i32 as u32)
+                .wrapping_add(c as u32 >> 21i32 & 0x7i32 as u32)
                 as u16
         }
         (*mem.offset((p + 1i32) as isize)).b16.s1 =
@@ -11154,16 +11154,16 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 ))
                 .b32
                 .s1;
-                if cur_val1 as libc::c_uint & 0x1fffffi32 as libc::c_uint
-                    == 0x1fffffi32 as libc::c_uint
+                if cur_val1 as u32 & 0x1fffffi32 as u32
+                    == 0x1fffffi32 as u32
                 {
                     cur_val1 = 0x8000i32
-                } else if cur_val1 as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint
-                    > 7i32 as libc::c_uint
-                    || cur_val1 as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint
-                        > 15i32 as libc::c_uint
-                    || cur_val1 as libc::c_uint & 0x1fffffi32 as libc::c_uint
-                        > 255i32 as libc::c_uint
+                } else if cur_val1 as u32 >> 21i32 & 0x7i32 as u32
+                    > 7i32 as u32
+                    || cur_val1 as u32 >> 24i32 & 0xffi32 as u32
+                        > 15i32 as u32
+                    || cur_val1 as u32 & 0x1fffffi32 as u32
+                        > 255i32 as u32
                 {
                     if file_line_error_style_p != 0 {
                         print_file_line();
@@ -11182,13 +11182,13 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                     int_error(cur_val1);
                     cur_val1 = 0i32
                 }
-                cur_val1 = (cur_val1 as libc::c_uint >> 21i32 & 0x7i32 as libc::c_uint)
-                    .wrapping_mul(0x1000i32 as libc::c_uint)
+                cur_val1 = (cur_val1 as u32 >> 21i32 & 0x7i32 as u32)
+                    .wrapping_mul(0x1000i32 as u32)
                     .wrapping_add(
-                        (cur_val1 as libc::c_uint >> 24i32 & 0xffi32 as libc::c_uint)
-                            .wrapping_mul(0x100i32 as libc::c_uint),
+                        (cur_val1 as u32 >> 24i32 & 0xffi32 as u32)
+                            .wrapping_mul(0x100i32 as u32),
                     )
-                    .wrapping_add(cur_val1 as libc::c_uint & 0x1fffffi32 as libc::c_uint)
+                    .wrapping_add(cur_val1 as u32 & 0x1fffffi32 as u32)
                     as i32;
                 cur_val = cur_val1;
                 cur_val_level = 0i32 as u8
@@ -11870,8 +11870,8 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 cur_val_level = 0i32 as u8
             } else {
                 n = cur_val;
-                if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32
-                    || *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                if *font_area.offset(n as isize) as u32 == 0xffffu32
+                    || *font_area.offset(n as isize) as u32 == 0xfffeu32
                 {
                     scan_glyph_number(n);
                 } else {
@@ -11880,11 +11880,11 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                 k = cur_val;
                 match m {
                     2 => {
-                        cur_val = get_cp_code(n, k as libc::c_uint, 0i32);
+                        cur_val = get_cp_code(n, k as u32, 0i32);
                         cur_val_level = 0i32 as u8
                     }
                     3 => {
-                        cur_val = get_cp_code(n, k as libc::c_uint, 1i32);
+                        cur_val = get_cp_code(n, k as u32, 1i32);
                         cur_val_level = 0i32 as u8
                     }
                     _ => {}
@@ -12100,7 +12100,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                 ))
                                 .b32
                                 .s1 as isize,
-                            ) as libc::c_uint
+                            ) as u32
                                 == 0xffffu32
                                 || *font_area.offset(
                                     (*eqtb.offset(
@@ -12124,7 +12124,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     ))
                                     .b32
                                     .s1 as isize,
-                                ) as libc::c_uint
+                                ) as u32
                                     == 0xfffeu32
                             {
                                 scan_int(); /* shellenabledp */
@@ -12208,8 +12208,8 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                             scan_font_ident();
                             q = cur_val;
                             scan_usv_num();
-                            if *font_area.offset(q as isize) as libc::c_uint == 0xffffu32
-                                || *font_area.offset(q as isize) as libc::c_uint == 0xfffeu32
+                            if *font_area.offset(q as isize) as u32 == 0xffffu32
+                                || *font_area.offset(q as isize) as u32 == 0xfffeu32
                             {
                                 match m {
                                     48 => cur_val = getnativecharwd(q, cur_val),
@@ -12393,10 +12393,10 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         15 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 cur_val =
                                     aat_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32 {
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32 {
                                 cur_val =
                                     ot_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
                             } else {
@@ -12406,10 +12406,10 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         22 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 cur_val =
                                     aat_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingGraphite(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12429,7 +12429,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         23 | 25 | 26 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 scan_int();
                                 k = cur_val;
                                 cur_val = aat_font_get_1(
@@ -12437,7 +12437,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     *font_layout_engine.offset(n as isize),
                                     k,
                                 )
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingGraphite(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12458,7 +12458,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         27 | 29 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 scan_int();
                                 k = cur_val;
                                 scan_int();
@@ -12468,7 +12468,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     k,
                                     cur_val,
                                 )
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingGraphite(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12491,7 +12491,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         18 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 scan_and_pack_name();
                                 cur_val = aat_font_get_named(
                                     m - 14i32,
@@ -12505,13 +12505,13 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         24 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 scan_and_pack_name();
                                 cur_val = aat_font_get_named(
                                     m - 14i32,
                                     *font_layout_engine.offset(n as isize),
                                 )
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingGraphite(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12530,7 +12530,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         28 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 scan_int();
                                 k = cur_val;
                                 scan_and_pack_name();
@@ -12539,7 +12539,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     *font_layout_engine.offset(n as isize),
                                     k,
                                 )
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingGraphite(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12561,7 +12561,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         30 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingOpenType(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12576,7 +12576,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         31 | 33 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingOpenType(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12596,7 +12596,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         32 | 34 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingOpenType(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12619,7 +12619,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         35 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingOpenType(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12664,7 +12664,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                 ))
                                 .b32
                                 .s1 as isize,
-                            ) as libc::c_uint
+                            ) as u32
                                 == 0xffffu32
                                 || *font_area.offset(
                                     (*eqtb.offset(
@@ -12688,7 +12688,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     ))
                                     .b32
                                     .s1 as isize,
-                                ) as libc::c_uint
+                                ) as u32
                                     == 0xfffeu32
                             {
                                 scan_int();
@@ -12768,7 +12768,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                 ))
                                 .b32
                                 .s1 as isize,
-                            ) as libc::c_uint
+                            ) as u32
                                 == 0xffffu32
                                 || *font_area.offset(
                                     (*eqtb.offset(
@@ -12792,7 +12792,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                                     ))
                                     .b32
                                     .s1 as isize,
-                                ) as libc::c_uint
+                                ) as u32
                                     == 0xfffeu32
                             {
                                 scan_and_pack_name();
@@ -12851,16 +12851,16 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         38 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32 {
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
                                 cur_val = 1i32
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingOpenType(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
                                     != 0
                             {
                                 cur_val = 2i32
-                            } else if *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
                                 && usingGraphite(
                                     *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
                                 ) as i32
@@ -12874,8 +12874,8 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         39 | 40 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32
-                                || *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+                            if *font_area.offset(n as isize) as u32 == 0xffffu32
+                                || *font_area.offset(n as isize) as u32 == 0xfffeu32
                             {
                                 cur_val = get_font_char_range(n, (m == 39i32) as i32)
                             } else if m == 39i32 {
@@ -14863,7 +14863,7 @@ pub unsafe extern "C" fn conv_toks() {
             }
             boolvar = scan_keyword(b"file\x00" as *const u8 as *const i8);
             scan_pdf_ext_toks();
-            if selector as libc::c_uint == SELECTOR_NEW_STRING as i32 as libc::c_uint {
+            if selector as u32 == SELECTOR_NEW_STRING as i32 as u32 {
                 pdf_error(
                     b"tokens\x00" as *const u8 as *const i8,
                     b"tokens_to_string() called while selector = new_string\x00" as *const u8
@@ -14902,7 +14902,7 @@ pub unsafe extern "C" fn conv_toks() {
         7 => {
             scan_font_ident();
             fnt = cur_val;
-            if *font_area.offset(fnt as isize) as libc::c_uint == 0xffffu32 {
+            if *font_area.offset(fnt as isize) as u32 == 0xffffu32 {
                 scan_int();
                 arg1 = cur_val;
                 arg2 = 0i32
@@ -14913,8 +14913,8 @@ pub unsafe extern "C" fn conv_toks() {
         8 => {
             scan_font_ident();
             fnt = cur_val;
-            if *font_area.offset(fnt as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(fnt as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(fnt as isize) as u32 == 0xffffu32
+                || *font_area.offset(fnt as isize) as u32 == 0xfffeu32
                     && usingGraphite(*font_layout_engine.offset(fnt as isize) as XeTeXLayoutEngine)
                         as i32
                         != 0
@@ -14929,8 +14929,8 @@ pub unsafe extern "C" fn conv_toks() {
         9 => {
             scan_font_ident();
             fnt = cur_val;
-            if *font_area.offset(fnt as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(fnt as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(fnt as isize) as u32 == 0xffffu32
+                || *font_area.offset(fnt as isize) as u32 == 0xfffeu32
                     && usingGraphite(*font_layout_engine.offset(fnt as isize) as XeTeXLayoutEngine)
                         as i32
                         != 0
@@ -14946,8 +14946,8 @@ pub unsafe extern "C" fn conv_toks() {
         10 => {
             scan_font_ident();
             fnt = cur_val;
-            if *font_area.offset(fnt as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(fnt as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(fnt as isize) as u32 == 0xffffu32
+                || *font_area.offset(fnt as isize) as u32 == 0xfffeu32
             {
                 scan_int();
                 arg1 = cur_val
@@ -15022,8 +15022,8 @@ pub unsafe extern "C" fn conv_toks() {
         }
         4 => {
             font_name_str = *font_name.offset(cur_val as isize);
-            if *font_area.offset(cur_val as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(cur_val as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(cur_val as isize) as u32 == 0xffffu32
+                || *font_area.offset(cur_val as isize) as u32 == 0xfffeu32
             {
                 quote_char = '\"' as i32 as UTF16_code;
                 i = 0i32 as small_number;
@@ -15063,7 +15063,7 @@ pub unsafe extern "C" fn conv_toks() {
             print_cstr(b".99998\x00" as *const u8 as *const i8);
         }
         7 => {
-            if *font_area.offset(fnt as isize) as libc::c_uint == 0xffffu32 {
+            if *font_area.offset(fnt as isize) as u32 == 0xffffu32 {
                 aat_print_font_name(
                     c as i32,
                     *font_layout_engine.offset(fnt as isize),
@@ -15073,14 +15073,14 @@ pub unsafe extern "C" fn conv_toks() {
             }
         }
         8 | 9 => {
-            if *font_area.offset(fnt as isize) as libc::c_uint == 0xffffu32 {
+            if *font_area.offset(fnt as isize) as u32 == 0xffffu32 {
                 aat_print_font_name(
                     c as i32,
                     *font_layout_engine.offset(fnt as isize),
                     arg1,
                     arg2,
                 );
-            } else if *font_area.offset(fnt as isize) as libc::c_uint == 0xfffeu32
+            } else if *font_area.offset(fnt as isize) as u32 == 0xfffeu32
                 && usingGraphite(*font_layout_engine.offset(fnt as isize) as XeTeXLayoutEngine)
                     as i32
                     != 0
@@ -15094,8 +15094,8 @@ pub unsafe extern "C" fn conv_toks() {
             }
         }
         10 => {
-            if *font_area.offset(fnt as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(fnt as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(fnt as isize) as u32 == 0xffffu32
+                || *font_area.offset(fnt as isize) as u32 == 0xfffeu32
             {
                 print_glyph_name(fnt, arg1);
             }
@@ -16057,8 +16057,8 @@ pub unsafe extern "C" fn conditional() {
             scan_font_ident();
             n = cur_val;
             scan_usv_num();
-            if *font_area.offset(n as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(n as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(n as isize) as u32 == 0xffffu32
+                || *font_area.offset(n as isize) as u32 == 0xfffeu32
             {
                 b = map_char_to_glyph(n, cur_val) > 0i32
             } else if *font_bc.offset(n as isize) as i32 <= cur_val
@@ -16565,7 +16565,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
             let fresh39 = cp;
             cp = cp.offset(1);
             rval = *fresh39 as UInt32;
-            if !(rval != 0i32 as libc::c_uint) {
+            if !(rval != 0i32 as u32) {
                 break;
             }
             let mut extraBytes: UInt16 = bytesFromUTF8[rval as usize] as UInt16;
@@ -16577,7 +16577,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh40 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as libc::c_uint).wrapping_add(*fresh40 as libc::c_uint)
+                        rval = (rval as u32).wrapping_add(*fresh40 as u32)
                             as UInt32 as UInt32
                     }
                     current_block_21 = 7676382540965064243;
@@ -16604,7 +16604,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh41 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as libc::c_uint).wrapping_add(*fresh41 as libc::c_uint)
+                        rval = (rval as u32).wrapping_add(*fresh41 as u32)
                             as UInt32 as UInt32
                     }
                     current_block_21 = 13258898395114305131;
@@ -16617,7 +16617,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh42 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as libc::c_uint).wrapping_add(*fresh42 as libc::c_uint)
+                        rval = (rval as u32).wrapping_add(*fresh42 as u32)
                             as UInt32 as UInt32
                     }
                     current_block_21 = 10625751394499422232;
@@ -16630,7 +16630,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh43 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as libc::c_uint).wrapping_add(*fresh43 as libc::c_uint)
+                        rval = (rval as u32).wrapping_add(*fresh43 as u32)
                             as UInt32 as UInt32
                     }
                     current_block_21 = 4051951890355284227;
@@ -16643,36 +16643,36 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
                     if *cp != 0 {
                         let fresh44 = cp;
                         cp = cp.offset(1);
-                        rval = (rval as libc::c_uint).wrapping_add(*fresh44 as libc::c_uint)
+                        rval = (rval as u32).wrapping_add(*fresh44 as u32)
                             as UInt32 as UInt32
                     }
                 }
                 _ => {}
             }
-            rval = (rval as libc::c_uint).wrapping_sub(offsetsFromUTF8[extraBytes as usize])
+            rval = (rval as u32).wrapping_sub(offsetsFromUTF8[extraBytes as usize])
                 as UInt32 as UInt32;
-            if rval > 0xffffi32 as libc::c_uint {
-                rval = (rval as libc::c_uint).wrapping_sub(0x10000i32 as libc::c_uint) as UInt32
+            if rval > 0xffffi32 as u32 {
+                rval = (rval as u32).wrapping_sub(0x10000i32 as u32) as UInt32
                     as UInt32;
                 let fresh45 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
-                *str_pool.offset(fresh45 as isize) = (0xd800i32 as libc::c_uint)
-                    .wrapping_add(rval.wrapping_div(0x400i32 as libc::c_uint))
+                *str_pool.offset(fresh45 as isize) = (0xd800i32 as u32)
+                    .wrapping_add(rval.wrapping_div(0x400i32 as u32))
                     as packed_UTF16_code;
                 let fresh46 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
-                *str_pool.offset(fresh46 as isize) = (0xdc00i32 as libc::c_uint)
-                    .wrapping_add(rval.wrapping_rem(0x400i32 as libc::c_uint))
+                *str_pool.offset(fresh46 as isize) = (0xdc00i32 as u32)
+                    .wrapping_add(rval.wrapping_rem(0x400i32 as u32))
                     as packed_UTF16_code
             } else {
                 let fresh47 = pool_ptr;
                 pool_ptr = pool_ptr + 1;
                 *str_pool.offset(fresh47 as isize) = rval as packed_UTF16_code
             }
-            if rval == '/' as i32 as libc::c_uint {
+            if rval == '/' as i32 as u32 {
                 area_delimiter = cur_length();
                 ext_delimiter = 0i32
-            } else if rval == '.' as i32 as libc::c_uint {
+            } else if rval == '.' as i32 as u32 {
                 ext_delimiter = cur_length()
             }
         }
@@ -17459,7 +17459,7 @@ pub unsafe extern "C" fn load_native_font(
         }
         f += 1
     }
-    if native_font_type_flag as libc::c_uint == 0xfffeu32
+    if native_font_type_flag as u32 == 0xfffeu32
         && isOpenTypeMathFont(font_engine as XeTeXLayoutEngine) as i32 != 0
     {
         num_font_dimens = 65i32
@@ -17513,7 +17513,7 @@ pub unsafe extern "C" fn load_native_font(
     *font_glue.offset(font_ptr as isize) = -0xfffffffi32;
     *font_dsize.offset(font_ptr as isize) = loaded_font_design_size;
     *font_size.offset(font_ptr as isize) = actual_size;
-    if native_font_type_flag as libc::c_uint == 0xffffu32 {
+    if native_font_type_flag as u32 == 0xffffu32 {
         aat_get_font_metrics(
             font_engine,
             &mut ascent,
@@ -20188,8 +20188,8 @@ pub unsafe extern "C" fn read_font_info(
 pub unsafe extern "C" fn new_character(mut f: internal_font_number, mut c: UTF16_code) -> i32 {
     let mut p: i32 = 0;
     let mut ec: u16 = 0;
-    if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-        || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+    if *font_area.offset(f as isize) as u32 == 0xffffu32
+        || *font_area.offset(f as isize) as u32 == 0xfffeu32
     {
         return new_native_character(f, c as UnicodeScalar);
     }
@@ -20292,7 +20292,7 @@ pub unsafe extern "C" fn char_pw(mut p: i32, mut side: small_number) -> scaled_t
                 .s1,
             get_cp_code(
                 f,
-                (*mem.offset((p + 4i32) as isize)).b16.s1 as libc::c_uint,
+                (*mem.offset((p + 4i32) as isize)).b16.s1 as u32,
                 side as i32,
             ),
             1000i32,
@@ -20308,7 +20308,7 @@ pub unsafe extern "C" fn char_pw(mut p: i32, mut side: small_number) -> scaled_t
     f = (*mem.offset(p as isize)).b16.s1 as internal_font_number;
     c = get_cp_code(
         f,
-        (*mem.offset(p as isize)).b16.s0 as libc::c_uint,
+        (*mem.offset(p as isize)).b16.s0 as u32,
         side as i32,
     );
     match side as i32 {
@@ -26477,8 +26477,8 @@ pub unsafe extern "C" fn make_accent() {
             .b32
             .s1 as f64
             / 65536.0f64;
-        if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-            || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+        if *font_area.offset(f as isize) as u32 == 0xffffu32
+            || *font_area.offset(f as isize) as u32 == 0xfffeu32
         {
             a = (*mem.offset((p + 1i32) as isize)).b32.s1;
             if a == 0i32 {
@@ -26538,8 +26538,8 @@ pub unsafe extern "C" fn make_accent() {
                 .b32
                 .s1 as f64
                 / 65536.0f64;
-            if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+            if *font_area.offset(f as isize) as u32 == 0xffffu32
+                || *font_area.offset(f as isize) as u32 == 0xfffeu32
             {
                 w = (*mem.offset((q + 1i32) as isize)).b32.s1;
                 get_native_char_height_depth(f, cur_val, &mut h, &mut delta);
@@ -26564,8 +26564,8 @@ pub unsafe extern "C" fn make_accent() {
                 p = hpack(p, 0i32, 1i32 as small_number);
                 (*mem.offset((p + 4i32) as isize)).b32.s1 = x - h
             }
-            if (*font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-                || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32)
+            if (*font_area.offset(f as isize) as u32 == 0xffffu32
+                || *font_area.offset(f as isize) as u32 == 0xfffeu32)
                 && a == 0i32
             {
                 delta = tex_round(
@@ -28139,8 +28139,8 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
             _ => {
                 if str_eq_str(*font_name.offset(f as isize), cur_name) as i32 != 0
                     && (length(cur_area) == 0i32
-                        && (*font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-                            || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32)
+                        && (*font_area.offset(f as isize) as u32 == 0xffffu32
+                            || *font_area.offset(f as isize) as u32 == 0xfffeu32)
                         || str_eq_str(*font_area.offset(f as isize), cur_area) as i32 != 0)
                 {
                     if s > 0i32 {
@@ -28159,8 +28159,8 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
                 if str_eq_str(*font_name.offset(f as isize), make_string()) {
                     str_ptr -= 1;
                     pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
-                    if *font_area.offset(f as isize) as libc::c_uint == 0xffffu32
-                        || *font_area.offset(f as isize) as libc::c_uint == 0xfffeu32
+                    if *font_area.offset(f as isize) as u32 == 0xffffu32
+                        || *font_area.offset(f as isize) as u32 == 0xfffeu32
                     {
                         if s > 0i32 {
                             if s == *font_size.offset(f as isize) {
@@ -28209,7 +28209,7 @@ pub unsafe extern "C" fn new_interaction() {
         selector = SELECTOR_TERM_ONLY
     }
     if log_opened {
-        selector = (selector as libc::c_uint).wrapping_add(2i32 as libc::c_uint) as selector_t
+        selector = (selector as u32).wrapping_add(2i32 as u32) as selector_t
     };
 }
 #[no_mangle]
@@ -28447,7 +28447,7 @@ pub unsafe extern "C" fn show_whatever() {
                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
             print_cstr(b"OK\x00" as *const u8 as *const i8);
-            if selector as libc::c_uint == SELECTOR_TERM_AND_LOG as i32 as libc::c_uint {
+            if selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32 {
                 if (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -28729,7 +28729,7 @@ pub unsafe extern "C" fn do_extension() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xffffu32
                 || *font_area.offset(
                     (*eqtb.offset(
@@ -28752,7 +28752,7 @@ pub unsafe extern "C" fn do_extension() {
                     ))
                     .b32
                     .s1 as isize,
-                ) as libc::c_uint
+                ) as u32
                     == 0xfffeu32
             {
                 new_whatsit(42i32 as small_number, 5i32 as small_number);
@@ -30076,11 +30076,11 @@ pub unsafe extern "C" fn main_control() {
                         224 => {
                             if cur_chr == 2i32 {
                                 scan_math_class_int();
-                                t = ((cur_val as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+                                t = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
                                     as i32;
                                 scan_math_fam_int();
-                                t = (t as libc::c_uint).wrapping_add(
-                                    (cur_val as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32,
+                                t = (t as u32).wrapping_add(
+                                    (cur_val as u32 & 0xffi32 as u32) << 24i32,
                                 ) as i32;
                                 scan_usv_num();
                                 t = t + cur_val;
@@ -30091,14 +30091,14 @@ pub unsafe extern "C" fn main_control() {
                             } else {
                                 scan_fifteen_bit_int();
                                 set_math_char(
-                                    (((cur_val / 4096i32) as libc::c_uint & 0x7i32 as libc::c_uint)
+                                    (((cur_val / 4096i32) as u32 & 0x7i32 as u32)
                                         << 21i32)
                                         .wrapping_add(
-                                            ((cur_val % 4096i32 / 256i32) as libc::c_uint
-                                                & 0xffi32 as libc::c_uint)
+                                            ((cur_val % 4096i32 / 256i32) as u32
+                                                & 0xffi32 as u32)
                                                 << 24i32,
                                         )
-                                        .wrapping_add((cur_val % 256i32) as libc::c_uint)
+                                        .wrapping_add((cur_val % 256i32) as u32)
                                         as i32,
                                 );
                             }
@@ -30106,14 +30106,14 @@ pub unsafe extern "C" fn main_control() {
                         }
                         276 => {
                             set_math_char(
-                                (((cur_chr / 4096i32) as libc::c_uint & 0x7i32 as libc::c_uint)
+                                (((cur_chr / 4096i32) as u32 & 0x7i32 as u32)
                                     << 21i32)
                                     .wrapping_add(
-                                        ((cur_chr % 4096i32 / 256i32) as libc::c_uint
-                                            & 0xffi32 as libc::c_uint)
+                                        ((cur_chr % 4096i32 / 256i32) as u32
+                                            & 0xffi32 as u32)
                                             << 24i32,
                                     )
-                                    .wrapping_add((cur_chr % 256i32) as libc::c_uint)
+                                    .wrapping_add((cur_chr % 256i32) as u32)
                                     as i32,
                             );
                             continue 'c_125208;
@@ -30125,11 +30125,11 @@ pub unsafe extern "C" fn main_control() {
                         222 => {
                             if cur_chr == 1i32 {
                                 scan_math_class_int();
-                                t = ((cur_val as libc::c_uint & 0x7i32 as libc::c_uint) << 21i32)
+                                t = ((cur_val as u32 & 0x7i32 as u32) << 21i32)
                                     as i32;
                                 scan_math_fam_int();
-                                t = (t as libc::c_uint).wrapping_add(
-                                    (cur_val as libc::c_uint & 0xffi32 as libc::c_uint) << 24i32,
+                                t = (t as u32).wrapping_add(
+                                    (cur_val as u32 & 0xffi32 as u32) << 24i32,
                                 ) as i32;
                                 scan_usv_num();
                                 t = t + cur_val;
@@ -30138,14 +30138,14 @@ pub unsafe extern "C" fn main_control() {
                                 scan_delimiter_int();
                                 cur_val = cur_val / 4096i32;
                                 set_math_char(
-                                    (((cur_val / 4096i32) as libc::c_uint & 0x7i32 as libc::c_uint)
+                                    (((cur_val / 4096i32) as u32 & 0x7i32 as u32)
                                         << 21i32)
                                         .wrapping_add(
-                                            ((cur_val % 4096i32 / 256i32) as libc::c_uint
-                                                & 0xffi32 as libc::c_uint)
+                                            ((cur_val % 4096i32 / 256i32) as u32
+                                                & 0xffi32 as u32)
                                                 << 24i32,
                                         )
-                                        .wrapping_add((cur_val % 256i32) as libc::c_uint)
+                                        .wrapping_add((cur_val % 256i32) as u32)
                                         as i32,
                                 );
                             }
@@ -30332,7 +30332,7 @@ pub unsafe extern "C" fn main_control() {
                 ))
                 .b32
                 .s1 as isize,
-            ) as libc::c_uint
+            ) as u32
                 == 0xffffu32
                 || *font_area.offset(
                     (*eqtb.offset(
@@ -30355,7 +30355,7 @@ pub unsafe extern "C" fn main_control() {
                     ))
                     .b32
                     .s1 as isize,
-                ) as libc::c_uint
+                ) as u32
                     == 0xfffeu32
             {
                 if cur_list.mode as i32 > 0i32 {
@@ -32472,8 +32472,8 @@ pub unsafe extern "C" fn close_files_and_terminate() {
     if log_opened {
         ttstub_output_putc(log_file, '\n' as i32);
         ttstub_output_close(log_file);
-        selector = (selector as libc::c_uint).wrapping_sub(2i32 as libc::c_uint) as selector_t;
-        if selector as libc::c_uint == SELECTOR_TERM_ONLY as i32 as libc::c_uint {
+        selector = (selector as u32).wrapping_sub(2i32 as u32) as selector_t;
+        if selector as u32 == SELECTOR_TERM_ONLY as i32 as u32 {
             print_nl_cstr(b"Transcript written on \x00" as *const u8 as *const i8);
             print(texmf_log_name);
             print_char('.' as i32);
@@ -32490,7 +32490,7 @@ pub unsafe extern "C" fn flush_str(mut s: str_number) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn tokens_to_string(mut p: i32) -> str_number {
-    if selector as libc::c_uint == SELECTOR_NEW_STRING as i32 as libc::c_uint {
+    if selector as u32 == SELECTOR_NEW_STRING as i32 as u32 {
         pdf_error(
             b"tokens\x00" as *const u8 as *const i8,
             b"tokens_to_string() called while selector = new_string\x00" as *const u8

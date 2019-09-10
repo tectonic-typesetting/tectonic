@@ -11,7 +11,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -155,7 +155,7 @@ extern "C" {
     ) -> size_t;
 }
 pub type __ssize_t = i64;
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -174,7 +174,7 @@ pub type ssize_t = __ssize_t;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -299,7 +299,7 @@ pub unsafe extern "C" fn agl_chop_suffix(
         __assert_fail(
             b"glyphname && suffix\x00" as *const u8 as *const i8,
             b"dpx-agl.c\x00" as *const u8 as *const i8,
-            95i32 as libc::c_uint,
+            95i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"char *agl_chop_suffix(const char *, char **)\x00",
             ))
@@ -407,9 +407,9 @@ unsafe extern "C" fn skip_modifier(
 ) -> size_t {
     let mut slen: size_t = 0i32 as size_t;
     let mut len: size_t = 0;
-    let mut i: libc::c_uint = 0;
+    let mut i: u32 = 0;
     len = endptr.wrapping_offset_from(*p) as i64 as size_t;
-    i = 0i32 as libc::c_uint;
+    i = 0i32 as u32;
     while !modifiers[i as usize].is_null() {
         if len >= strlen(modifiers[i as usize])
             && memcmp(
@@ -1392,7 +1392,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
         __assert_fail(b"glyphstr && dstpp\x00" as *const u8 as
                           *const i8,
                       b"dpx-agl.c\x00" as *const u8 as *const i8,
-                      656i32 as libc::c_uint,
+                      656i32 as u32,
                       (*::std::mem::transmute::<&[u8; 81],
                                                 &[i8; 81]>(b"int32_t agl_sput_UTF16BE(const char *, unsigned char **, unsigned char *, int *)\x00")).as_ptr());
     }

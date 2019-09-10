@@ -598,8 +598,8 @@ pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhe
     (*table).numOfLongHorMetrics = tt_get_unsigned_pair((*sfont).handle);
     len = sfnt_find_table_len(sfont, b"hmtx\x00" as *const u8 as *const i8);
     (*table).numOfExSideBearings = len
-        .wrapping_sub(((*table).numOfLongHorMetrics as i32 * 4i32) as libc::c_uint)
-        .wrapping_div(2i32 as libc::c_uint) as USHORT;
+        .wrapping_sub(((*table).numOfLongHorMetrics as i32 * 4i32) as u32)
+        .wrapping_div(2i32 as u32) as USHORT;
     return table;
 }
 /* vhea */
@@ -631,8 +631,8 @@ pub unsafe extern "C" fn tt_read_vhea_table(mut sfont: *mut sfnt) -> *mut tt_vhe
     (*table).numOfLongVerMetrics = tt_get_unsigned_pair((*sfont).handle);
     len = sfnt_find_table_len(sfont, b"vmtx\x00" as *const u8 as *const i8);
     (*table).numOfExSideBearings = len
-        .wrapping_sub(((*table).numOfLongVerMetrics as i32 * 4i32) as libc::c_uint)
-        .wrapping_div(2i32 as libc::c_uint) as USHORT;
+        .wrapping_sub(((*table).numOfLongVerMetrics as i32 * 4i32) as u32)
+        .wrapping_div(2i32 as u32) as USHORT;
     return table;
 }
 #[no_mangle]
@@ -641,7 +641,7 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
     let mut offset: SFNT_ULONG = 0;
     let mut i: USHORT = 0;
     offset = sfnt_find_table_pos(sfont, b"VORG\x00" as *const u8 as *const i8);
-    if offset > 0i32 as libc::c_uint {
+    if offset > 0i32 as u32 {
         vorg = new((1i32 as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<tt_VORG_table>() as u64)
             as u32) as *mut tt_VORG_table;
@@ -717,7 +717,7 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         .wrapping_mul(::std::mem::size_of::<tt_os2__table>() as u64)
         as u32) as *mut tt_os2__table;
     if sfnt_find_table_pos(sfont, b"OS/2\x00" as *const u8 as *const i8)
-        > 0i32 as libc::c_uint
+        > 0i32 as u32
     {
         sfnt_locate_table(sfont, b"OS/2\x00" as *const u8 as *const i8);
         (*table).version = tt_get_unsigned_pair((*sfont).handle);
@@ -754,7 +754,7 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
         (*table).usFirstCharIndex = tt_get_unsigned_pair((*sfont).handle);
         (*table).usLastCharIndex = tt_get_unsigned_pair((*sfont).handle);
         if sfnt_find_table_len(sfont, b"OS/2\x00" as *const u8 as *const i8)
-            >= 78i32 as libc::c_uint
+            >= 78i32 as u32
         {
             /* these fields are not present in the original Apple spec (68-byte table),
             but Microsoft's version of "format 0" does include them... grr! */
@@ -834,7 +834,7 @@ unsafe extern "C" fn tt_get_name(
         /* language ID value 0xffffu for `accept any language ID' */
         if p_id as i32 == plat_id as i32
             && e_id as i32 == enco_id as i32
-            && (lang_id as libc::c_uint == 0xffffu32
+            && (lang_id as u32 == 0xffffu32
                 || l_id as i32 == lang_id as i32)
             && n_id as i32 == name_id as i32
         {
@@ -850,8 +850,8 @@ unsafe extern "C" fn tt_get_name(
             ttstub_input_seek(
                 (*sfont).handle,
                 name_offset
-                    .wrapping_add(string_offset as libc::c_uint)
-                    .wrapping_add(offset as libc::c_uint) as ssize_t,
+                    .wrapping_add(string_offset as u32)
+                    .wrapping_add(offset as u32) as ssize_t,
                 0i32,
             );
             ttstub_input_read(

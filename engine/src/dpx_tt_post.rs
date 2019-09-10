@@ -12,7 +12,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -338,7 +338,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
         __assert_fail(
             b"post && glyphname\x00" as *const u8 as *const i8,
             b"dpx-tt_post.c\x00" as *const u8 as *const i8,
-            157i32 as libc::c_uint,
+            157i32 as u32,
             (*::std::mem::transmute::<&[u8; 66], &[i8; 66]>(
                 b"USHORT tt_lookup_post_table(struct tt_post_table *, const char *)\x00",
             ))
@@ -398,7 +398,7 @@ pub unsafe extern "C" fn tt_release_post_table(mut post: *mut tt_post_table) {
         __assert_fail(
             b"post\x00" as *const u8 as *const i8,
             b"dpx-tt_post.c\x00" as *const u8 as *const i8,
-            182i32 as libc::c_uint,
+            182i32 as u32,
             (*::std::mem::transmute::<&[u8; 51], &[i8; 51]>(
                 b"void tt_release_post_table(struct tt_post_table *)\x00",
             ))

@@ -72,7 +72,7 @@ extern "C" {
 }
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
-pub type selector_t = libc::c_uint;
+pub type selector_t = u32;
 pub const SELECTOR_NEW_STRING: selector_t = 21;
 pub const SELECTOR_PSEUDO: selector_t = 20;
 pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
@@ -158,7 +158,7 @@ pub union memory_word {
 */
 #[no_mangle]
 pub unsafe extern "C" fn print_ln() {
-    match selector as libc::c_uint {
+    match selector as u32 {
         19 => {
             ttstub_output_putc(rust_stdout, '\n' as i32);
             ttstub_output_putc(log_file, '\n' as i32);
@@ -181,7 +181,7 @@ pub unsafe extern "C" fn print_ln() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool) {
-    match selector as libc::c_uint {
+    match selector as u32 {
         19 => {
             ttstub_output_putc(rust_stdout, s as i32);
             ttstub_output_putc(log_file, s as i32);
@@ -237,7 +237,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
 #[no_mangle]
 pub unsafe extern "C" fn print_char(mut s: i32) {
     let mut l: small_number = 0;
-    if selector as libc::c_uint > SELECTOR_PSEUDO as i32 as libc::c_uint && !doing_special {
+    if selector as u32 > SELECTOR_PSEUDO as i32 as u32 && !doing_special {
         if s >= 0x10000i32 {
             print_raw_char(
                 (0xd800i32 + (s - 0x10000i32) / 1024i32) as UTF16_code,
@@ -283,7 +283,7 @@ pub unsafe extern "C" fn print_char(mut s: i32) {
     .s1
     {
         /*:252 */
-        if (selector as libc::c_uint) < SELECTOR_PSEUDO as i32 as libc::c_uint {
+        if (selector as u32) < SELECTOR_PSEUDO as i32 as u32 {
             print_ln();
             return;
         }
@@ -347,7 +347,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
             if s < 0i32 {
                 return print_cstr(b"???\x00" as *const u8 as *const i8);
             } else {
-                if selector as libc::c_uint > SELECTOR_PSEUDO as i32 as libc::c_uint {
+                if selector as u32 > SELECTOR_PSEUDO as i32 as u32 {
                     print_char(s);
                     return;
                 }
@@ -382,7 +382,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
                 .s1
                 {
                     /*:252 */
-                    if (selector as libc::c_uint) < SELECTOR_PSEUDO as i32 as libc::c_uint {
+                    if (selector as u32) < SELECTOR_PSEUDO as i32 as u32 {
                         print_ln();
                         return;
                     }
@@ -503,7 +503,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
-    let mut i: libc::c_uint = 0i32 as libc::c_uint;
+    let mut i: u32 = 0i32 as u32;
     while (i as u64) < strlen(str) {
         print_char(*str.offset(i as isize) as i32);
         i = i.wrapping_add(1)
@@ -511,9 +511,9 @@ pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl(mut s: str_number) {
-    if term_offset > 0i32 && selector as libc::c_uint & 1i32 as libc::c_uint != 0
+    if term_offset > 0i32 && selector as u32 & 1i32 as u32 != 0
         || file_offset > 0i32
-            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as i32 as libc::c_uint
+            && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
     {
         print_ln();
     }
@@ -521,9 +521,9 @@ pub unsafe extern "C" fn print_nl(mut s: str_number) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl_cstr(mut str: *const i8) {
-    if term_offset > 0i32 && selector as libc::c_uint & 1i32 as libc::c_uint != 0
+    if term_offset > 0i32 && selector as u32 & 1i32 as u32 != 0
         || file_offset > 0i32
-            && selector as libc::c_uint >= SELECTOR_LOG_ONLY as i32 as libc::c_uint
+            && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
     {
         print_ln();
     }

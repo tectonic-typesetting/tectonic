@@ -12,7 +12,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -68,7 +68,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -91,7 +91,7 @@ pub type pst_type = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pst_string {
-    pub length: libc::c_uint,
+    pub length: u32,
     pub value: *mut u8,
 }
 #[derive(Copy, Clone)]
@@ -147,7 +147,7 @@ pub unsafe extern "C" fn pst_release_obj(mut obj: *mut pst_obj) {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            138i32 as libc::c_uint,
+            138i32 as u32,
             (*::std::mem::transmute::<&[u8; 32], &[i8; 32]>(
                 b"void pst_release_obj(pst_obj *)\x00",
             ))
@@ -189,7 +189,7 @@ pub unsafe extern "C" fn pst_type_of(mut obj: *mut pst_obj) -> pst_type {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            159i32 as libc::c_uint,
+            159i32 as u32,
             (*::std::mem::transmute::<&[u8; 32], &[i8; 32]>(
                 b"pst_type pst_type_of(pst_obj *)\x00",
             ))
@@ -206,7 +206,7 @@ pub unsafe extern "C" fn pst_length_of(mut obj: *mut pst_obj) -> i32 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            168i32 as libc::c_uint,
+            168i32 as u32,
             (*::std::mem::transmute::<&[u8; 29], &[i8; 29]>(
                 b"int pst_length_of(pst_obj *)\x00",
             ))
@@ -243,7 +243,7 @@ pub unsafe extern "C" fn pst_getIV(mut obj: *mut pst_obj) -> i32 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            194i32 as libc::c_uint,
+            194i32 as u32,
             (*::std::mem::transmute::<&[u8; 25], &[i8; 25]>(
                 b"int pst_getIV(pst_obj *)\x00",
             ))
@@ -285,7 +285,7 @@ pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> f64 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            220i32 as libc::c_uint,
+            220i32 as u32,
             (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(
                 b"double pst_getRV(pst_obj *)\x00",
             ))
@@ -328,7 +328,7 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut u8 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            247i32 as libc::c_uint,
+            247i32 as u32,
             (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"unsigned char *pst_getSV(pst_obj *)\x00",
             ))
@@ -398,7 +398,7 @@ pub unsafe extern "C" fn pst_data_ptr(mut obj: *mut pst_obj) -> *mut libc::c_voi
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            284i32 as libc::c_uint,
+            284i32 as u32,
             (*::std::mem::transmute::<&[u8; 30], &[i8; 30]>(
                 b"void *pst_data_ptr(pst_obj *)\x00",
             ))
@@ -443,7 +443,7 @@ unsafe extern "C" fn pst_boolean_release(mut obj: *mut pst_boolean) {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            318i32 as libc::c_uint,
+            318i32 as u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"void pst_boolean_release(pst_boolean *)\x00",
             ))
@@ -458,7 +458,7 @@ unsafe extern "C" fn pst_boolean_IV(mut obj: *mut pst_boolean) -> i32 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            325i32 as libc::c_uint,
+            325i32 as u32,
             (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"int pst_boolean_IV(pst_boolean *)\x00",
             ))
@@ -473,7 +473,7 @@ unsafe extern "C" fn pst_boolean_RV(mut obj: *mut pst_boolean) -> f64 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            332i32 as libc::c_uint,
+            332i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"double pst_boolean_RV(pst_boolean *)\x00",
             ))
@@ -489,7 +489,7 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            341i32 as libc::c_uint,
+            341i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"unsigned char *pst_boolean_SV(pst_boolean *)\x00",
             ))
@@ -519,7 +519,7 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
     }
     return str;
 }
-unsafe extern "C" fn pst_boolean_length() -> libc::c_uint {
+unsafe extern "C" fn pst_boolean_length() -> u32 {
     _tt_abort(
         b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
     );
@@ -530,7 +530,7 @@ unsafe extern "C" fn pst_boolean_data_ptr(mut obj: *mut pst_boolean) -> *mut lib
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            366i32 as libc::c_uint,
+            366i32 as u32,
             (*::std::mem::transmute::<&[u8; 42], &[i8; 42]>(
                 b"void *pst_boolean_data_ptr(pst_boolean *)\x00",
             ))
@@ -666,7 +666,7 @@ unsafe extern "C" fn pst_integer_release(mut obj: *mut pst_integer) {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            418i32 as libc::c_uint,
+            418i32 as u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"void pst_integer_release(pst_integer *)\x00",
             ))
@@ -681,7 +681,7 @@ unsafe extern "C" fn pst_integer_IV(mut obj: *mut pst_integer) -> i32 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            425i32 as libc::c_uint,
+            425i32 as u32,
             (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"int pst_integer_IV(pst_integer *)\x00",
             ))
@@ -696,7 +696,7 @@ unsafe extern "C" fn pst_integer_RV(mut obj: *mut pst_integer) -> f64 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            432i32 as libc::c_uint,
+            432i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"double pst_integer_RV(pst_integer *)\x00",
             ))
@@ -714,7 +714,7 @@ unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut u8 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            443i32 as libc::c_uint,
+            443i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"unsigned char *pst_integer_SV(pst_integer *)\x00",
             ))
@@ -738,7 +738,7 @@ unsafe extern "C" fn pst_integer_data_ptr(mut obj: *mut pst_integer) -> *mut lib
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            456i32 as libc::c_uint,
+            456i32 as u32,
             (*::std::mem::transmute::<&[u8; 42], &[i8; 42]>(
                 b"void *pst_integer_data_ptr(pst_integer *)\x00",
             ))
@@ -747,7 +747,7 @@ unsafe extern "C" fn pst_integer_data_ptr(mut obj: *mut pst_integer) -> *mut lib
     }
     return &mut (*obj).value as *mut i32 as *mut libc::c_void;
 }
-unsafe extern "C" fn pst_integer_length() -> libc::c_uint {
+unsafe extern "C" fn pst_integer_length() -> u32 {
     _tt_abort(
         b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
     );
@@ -767,7 +767,7 @@ unsafe extern "C" fn pst_real_release(mut obj: *mut pst_real) {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            482i32 as libc::c_uint,
+            482i32 as u32,
             (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"void pst_real_release(pst_real *)\x00",
             ))
@@ -782,7 +782,7 @@ unsafe extern "C" fn pst_real_IV(mut obj: *mut pst_real) -> i32 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            489i32 as libc::c_uint,
+            489i32 as u32,
             (*::std::mem::transmute::<&[u8; 28], &[i8; 28]>(
                 b"int pst_real_IV(pst_real *)\x00",
             ))
@@ -797,7 +797,7 @@ unsafe extern "C" fn pst_real_RV(mut obj: *mut pst_real) -> f64 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            496i32 as libc::c_uint,
+            496i32 as u32,
             (*::std::mem::transmute::<&[u8; 31], &[i8; 31]>(
                 b"double pst_real_RV(pst_real *)\x00",
             ))
@@ -815,7 +815,7 @@ unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut u8 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            507i32 as libc::c_uint,
+            507i32 as u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"unsigned char *pst_real_SV(pst_real *)\x00",
             ))
@@ -839,7 +839,7 @@ unsafe extern "C" fn pst_real_data_ptr(mut obj: *mut pst_real) -> *mut libc::c_v
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            520i32 as libc::c_uint,
+            520i32 as u32,
             (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"void *pst_real_data_ptr(pst_real *)\x00",
             ))
@@ -848,7 +848,7 @@ unsafe extern "C" fn pst_real_data_ptr(mut obj: *mut pst_real) -> *mut libc::c_v
     }
     return &mut (*obj).value as *mut f64 as *mut libc::c_void;
 }
-unsafe extern "C" fn pst_real_length() -> libc::c_uint {
+unsafe extern "C" fn pst_real_length() -> u32 {
     _tt_abort(
         b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
     );
@@ -997,7 +997,7 @@ unsafe extern "C" fn pst_name_release(mut obj: *mut pst_name) {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            592i32 as libc::c_uint,
+            592i32 as u32,
             (*::std::mem::transmute::<&[u8; 34], &[i8; 34]>(
                 b"void pst_name_release(pst_name *)\x00",
             ))
@@ -1124,7 +1124,7 @@ unsafe extern "C" fn pst_name_data_ptr(mut obj: *mut pst_name) -> *mut libc::c_v
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            679i32 as libc::c_uint,
+            679i32 as u32,
             (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"void *pst_name_data_ptr(pst_name *)\x00",
             ))
@@ -1133,20 +1133,20 @@ unsafe extern "C" fn pst_name_data_ptr(mut obj: *mut pst_name) -> *mut libc::c_v
     }
     return (*obj).value as *mut libc::c_void;
 }
-unsafe extern "C" fn pst_name_length(mut obj: *mut pst_name) -> libc::c_uint {
+unsafe extern "C" fn pst_name_length(mut obj: *mut pst_name) -> u32 {
     if !obj.is_null() {
     } else {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            686i32 as libc::c_uint,
+            686i32 as u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"unsigned int pst_name_length(pst_name *)\x00",
             ))
             .as_ptr(),
         );
     }
-    return strlen((*obj).value) as libc::c_uint;
+    return strlen((*obj).value) as u32;
 }
 /* STRING */
 /*
@@ -1154,7 +1154,7 @@ unsafe extern "C" fn pst_name_length(mut obj: *mut pst_name) -> libc::c_uint {
  */
 unsafe extern "C" fn pst_string_new(
     mut str: *mut u8,
-    mut len: libc::c_uint,
+    mut len: u32,
 ) -> *mut pst_string {
     let mut obj: *mut pst_string = 0 as *mut pst_string;
     obj = new((1i32 as u32 as u64)
@@ -1162,7 +1162,7 @@ unsafe extern "C" fn pst_string_new(
         as u32) as *mut pst_string;
     (*obj).length = len;
     (*obj).value = 0 as *mut u8;
-    if len > 0i32 as libc::c_uint {
+    if len > 0i32 as u32 {
         (*obj).value = new((len as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32) as *mut u8;
@@ -1182,7 +1182,7 @@ unsafe extern "C" fn pst_string_release(mut obj: *mut pst_string) {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            714i32 as libc::c_uint,
+            714i32 as u32,
             (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"void pst_string_release(pst_string *)\x00",
             ))
@@ -1252,15 +1252,15 @@ unsafe extern "C" fn ostrtouc(
     mut valid: *mut u8,
 ) -> u8 {
     let mut cur: *mut u8 = *inbuf;
-    let mut val: libc::c_uint = 0i32 as libc::c_uint;
+    let mut val: u32 = 0i32 as u32;
     while cur < inbufend
         && cur < (*inbuf).offset(3)
         && (*cur as i32 >= '0' as i32 && *cur as i32 <= '7' as i32)
     {
-        val = val << 3i32 | (*cur as i32 - '0' as i32) as libc::c_uint;
+        val = val << 3i32 | (*cur as i32 - '0' as i32) as u32;
         cur = cur.offset(1)
     }
-    if val > 255i32 as libc::c_uint || cur == *inbuf {
+    if val > 255i32 as u32 || cur == *inbuf {
         *valid = 0i32 as u8
     } else {
         *valid = 1i32 as u8
@@ -1399,7 +1399,7 @@ unsafe extern "C" fn pst_string_parse_literal(
         return 0 as *mut pst_string;
     }
     *inbuf = cur;
-    return pst_string_new(wbuf.as_mut_ptr(), len as libc::c_uint);
+    return pst_string_new(wbuf.as_mut_ptr(), len as u32);
 }
 unsafe extern "C" fn pst_string_parse_hex(
     mut inbuf: *mut *mut u8,
@@ -1407,7 +1407,7 @@ unsafe extern "C" fn pst_string_parse_hex(
 ) -> *mut pst_string {
     let mut wbuf: [u8; 4096] = [0; 4096];
     let mut cur: *mut u8 = *inbuf;
-    let mut len: libc::c_uint = 0i32 as libc::c_uint;
+    let mut len: u32 = 0i32 as u32;
     if cur.offset(2) > inbufend
         || *cur as i32 != '<' as i32
         || *cur as i32 == '<' as i32 && *cur.offset(1) as i32 == '<' as i32
@@ -1416,7 +1416,7 @@ unsafe extern "C" fn pst_string_parse_hex(
     }
     cur = cur.offset(1);
     /* PDF Reference does not specify how to treat invalid char */
-    while cur < inbufend && len < 4096i32 as libc::c_uint {
+    while cur < inbufend && len < 4096i32 as u32 {
         let mut hi: i32 = 0;
         let mut lo: i32 = 0;
         skip_white_spaces(&mut cur, inbufend);
@@ -1479,7 +1479,7 @@ unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> f64 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            900i32 as libc::c_uint,
+            900i32 as u32,
             (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
                 b"double pst_string_RV(pst_string *)\x00",
             ))
@@ -1505,7 +1505,7 @@ unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut u8 {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            916i32 as libc::c_uint,
+            916i32 as u32,
             (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
                 b"unsigned char *pst_string_SV(pst_string *)\x00",
             ))
@@ -1513,7 +1513,7 @@ unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut u8 {
         );
     }
     str = new(
-        ((*obj).length.wrapping_add(1i32 as libc::c_uint) as u64)
+        ((*obj).length.wrapping_add(1i32 as u32) as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64)
             as u32,
     ) as *mut u8;
@@ -1531,7 +1531,7 @@ unsafe extern "C" fn pst_string_data_ptr(mut obj: *mut pst_string) -> *mut libc:
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            926i32 as libc::c_uint,
+            926i32 as u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"void *pst_string_data_ptr(pst_string *)\x00",
             ))
@@ -1540,13 +1540,13 @@ unsafe extern "C" fn pst_string_data_ptr(mut obj: *mut pst_string) -> *mut libc:
     }
     return (*obj).value as *mut libc::c_void;
 }
-unsafe extern "C" fn pst_string_length(mut obj: *mut pst_string) -> libc::c_uint {
+unsafe extern "C" fn pst_string_length(mut obj: *mut pst_string) -> u32 {
     if !obj.is_null() {
     } else {
         __assert_fail(
             b"obj\x00" as *const u8 as *const i8,
             b"dpx-pst_obj.c\x00" as *const u8 as *const i8,
-            933i32 as libc::c_uint,
+            933i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"unsigned int pst_string_length(pst_string *)\x00",
             ))

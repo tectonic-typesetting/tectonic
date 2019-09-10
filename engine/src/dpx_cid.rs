@@ -35,7 +35,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -60,7 +60,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -193,7 +193,7 @@ extern "C" {
         pf: *mut pdf_file,
     ) -> *mut pdf_obj;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -712,7 +712,7 @@ pub unsafe extern "C" fn CIDFont_get_fontname(mut font: *mut CIDFont) -> *mut i8
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            193i32 as libc::c_uint,
+            193i32 as u32,
             (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"char *CIDFont_get_fontname(CIDFont *)\x00",
             ))
@@ -728,7 +728,7 @@ pub unsafe extern "C" fn CIDFont_get_ident(mut font: *mut CIDFont) -> *mut i8 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            200i32 as libc::c_uint,
+            200i32 as u32,
             (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
                 b"char *CIDFont_get_ident(CIDFont *)\x00",
             ))
@@ -745,7 +745,7 @@ pub unsafe extern "C" fn CIDFont_get_opt_index(mut font: *mut CIDFont) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            209i32 as libc::c_uint,
+            209i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int CIDFont_get_opt_index(CIDFont *)\x00",
             ))
@@ -766,7 +766,7 @@ pub unsafe extern "C" fn CIDFont_get_subtype(mut font: *mut CIDFont) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            223i32 as libc::c_uint,
+            223i32 as u32,
             (*::std::mem::transmute::<&[u8; 35], &[i8; 35]>(
                 b"int CIDFont_get_subtype(CIDFont *)\x00",
             ))
@@ -782,7 +782,7 @@ pub unsafe extern "C" fn CIDFont_get_embedding(mut font: *mut CIDFont) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            230i32 as libc::c_uint,
+            230i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int CIDFont_get_embedding(CIDFont *)\x00",
             ))
@@ -798,7 +798,7 @@ pub unsafe extern "C" fn CIDFont_get_CIDSysInfo(mut font: *mut CIDFont) -> *mut 
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            237i32 as libc::c_uint,
+            237i32 as u32,
             (*::std::mem::transmute::<&[u8; 46], &[i8; 46]>(
                 b"CIDSysInfo *CIDFont_get_CIDSysInfo(CIDFont *)\x00",
             ))
@@ -821,7 +821,7 @@ pub unsafe extern "C" fn CIDFont_get_parent_id(
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            249i32 as libc::c_uint,
+            249i32 as u32,
             (*::std::mem::transmute::<&[u8; 42], &[i8; 42]>(
                 b"int CIDFont_get_parent_id(CIDFont *, int)\x00",
             ))
@@ -843,7 +843,7 @@ pub unsafe extern "C" fn CIDFont_get_resource(mut font: *mut CIDFont) -> *mut pd
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            260i32 as libc::c_uint,
+            260i32 as u32,
             (*::std::mem::transmute::<&[u8; 41], &[i8; 41]>(
                 b"pdf_obj *CIDFont_get_resource(CIDFont *)\x00",
             ))
@@ -869,7 +869,7 @@ pub unsafe extern "C" fn CIDFont_attach_parent(
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            274i32 as libc::c_uint,
+            274i32 as u32,
             (*::std::mem::transmute::<&[u8; 48], &[i8; 48]>(
                 b"void CIDFont_attach_parent(CIDFont *, int, int)\x00",
             ))
@@ -899,7 +899,7 @@ pub unsafe extern "C" fn CIDFont_is_ACCFont(mut font: *mut CIDFont) -> bool {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            290i32 as libc::c_uint,
+            290i32 as u32,
             (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"_Bool CIDFont_is_ACCFont(CIDFont *)\x00",
             ))
@@ -938,7 +938,7 @@ pub unsafe extern "C" fn CIDFont_is_UCSFont(mut font: *mut CIDFont) -> bool {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            307i32 as libc::c_uint,
+            307i32 as u32,
             (*::std::mem::transmute::<&[u8; 36], &[i8; 36]>(
                 b"_Bool CIDFont_is_UCSFont(CIDFont *)\x00",
             ))
@@ -967,7 +967,7 @@ pub unsafe extern "C" fn CIDFont_get_flag(
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            317i32 as libc::c_uint,
+            317i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int CIDFont_get_flag(CIDFont *, int)\x00",
             ))
@@ -1036,7 +1036,7 @@ pub unsafe extern "C" fn CIDFont_is_BaseFont(mut font: *mut CIDFont) -> bool {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            363i32 as libc::c_uint,
+            363i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"_Bool CIDFont_is_BaseFont(CIDFont *)\x00",
             ))
@@ -1330,7 +1330,7 @@ unsafe extern "C" fn CIDFont_base_open(
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            381i32 as libc::c_uint,
+            381i32 as u32,
             (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
@@ -1396,7 +1396,7 @@ unsafe extern "C" fn CIDFont_base_open(
         __assert_fail(
             b"fontdict && descriptor\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            421i32 as libc::c_uint,
+            421i32 as u32,
             (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
@@ -1418,7 +1418,7 @@ unsafe extern "C" fn CIDFont_base_open(
         __assert_fail(
             b"tmp && pdf_obj_typeof(tmp) == PDF_DICT\x00" as *const u8 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            433i32 as libc::c_uint,
+            433i32 as u32,
             (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
@@ -1486,7 +1486,7 @@ unsafe extern "C" fn CIDFont_base_open(
             b"tmp != NULL && pdf_obj_typeof(tmp) == PDF_NAME\x00" as *const u8
                 as *const i8,
             b"dpx-cid.c\x00" as *const u8 as *const i8,
-            461i32 as libc::c_uint,
+            461i32 as u32,
             (*::std::mem::transmute::<&[u8; 72], &[i8; 72]>(
                 b"int CIDFont_base_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *)\x00",
             ))
@@ -1696,7 +1696,7 @@ pub unsafe extern "C" fn CIDFont_cache_find(
             return -1i32;
         } else {
             if (*__cache).num >= (*__cache).max {
-                (*__cache).max = ((*__cache).max as libc::c_uint).wrapping_add(16u32) as i32
+                (*__cache).max = ((*__cache).max as u32).wrapping_add(16u32) as i32
                     as i32;
                 (*__cache).fonts = renew(
                     (*__cache).fonts as *mut libc::c_void,

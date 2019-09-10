@@ -20,7 +20,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -146,7 +146,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     #[no_mangle]
     fn pdf_doc_add_page_resource(
         category: *const i8,
@@ -436,8 +436,8 @@ pub struct mapDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_5 {
-    pub num: libc::c_uint,
-    pub max: libc::c_uint,
+    pub num: u32,
+    pub max: u32,
     pub ranges: *mut rangeDef,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -591,20 +591,20 @@ static mut ten_pow_inv: [f64; 10] = [
     0.00000001f64,
     0.000000001f64,
 ];
-unsafe extern "C" fn p_itoa(mut value: i32, mut buf: *mut i8) -> libc::c_uint {
-    let mut sign: libc::c_uint = 0;
-    let mut ndigits: libc::c_uint = 0;
+unsafe extern "C" fn p_itoa(mut value: i32, mut buf: *mut i8) -> u32 {
+    let mut sign: u32 = 0;
+    let mut ndigits: u32 = 0;
     let mut p: *mut i8 = buf;
     if value < 0i32 {
         let fresh0 = p;
         p = p.offset(1);
         *fresh0 = '-' as i32 as i8;
         value = -value;
-        sign = 1i32 as libc::c_uint
+        sign = 1i32 as u32
     } else {
-        sign = 0i32 as libc::c_uint
+        sign = 0i32 as u32
     }
-    ndigits = 0i32 as libc::c_uint;
+    ndigits = 0i32 as u32;
     loop
     /* Generate at least one digit in reverse order */
     {
@@ -617,18 +617,18 @@ unsafe extern "C" fn p_itoa(mut value: i32, mut buf: *mut i8) -> libc::c_uint {
         }
     }
     /* Reverse the digits */
-    let mut i: libc::c_uint = 0;
-    i = 0i32 as libc::c_uint;
-    while i < ndigits.wrapping_div(2i32 as libc::c_uint) {
+    let mut i: u32 = 0;
+    i = 0i32 as u32;
+    while i < ndigits.wrapping_div(2i32 as u32) {
         let mut tmp: i8 = *p.offset(i as isize);
         *p.offset(i as isize) =
-            *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as libc::c_uint) as isize);
-        *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as libc::c_uint) as isize) = tmp;
+            *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as u32) as isize);
+        *p.offset(ndigits.wrapping_sub(i).wrapping_sub(1i32 as u32) as isize) = tmp;
         i = i.wrapping_add(1)
     }
     *p.offset(ndigits as isize) = '\u{0}' as i32 as i8;
     return if sign != 0 {
-        ndigits.wrapping_add(1i32 as libc::c_uint)
+        ndigits.wrapping_add(1i32 as u32)
     } else {
         ndigits
     };
@@ -934,7 +934,7 @@ unsafe extern "C" fn dev_set_text_matrix(
     let fresh17 = len;
     len = len + 1;
     format_buffer[fresh17 as usize] = 'm' as i32 as i8;
-    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
+    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
     text_state.ref_x = xpos;
     text_state.ref_y = ypos;
     text_state.matrix.slant = slant;
@@ -951,7 +951,7 @@ unsafe extern "C" fn reset_text_state() {
      */
     pdf_doc_add_page_content(
         b" BT\x00" as *const u8 as *const i8,
-        3i32 as libc::c_uint,
+        3i32 as u32,
     ); /* op: BT */
     /*
      * text_state.matrix is identity at top of page.
@@ -985,7 +985,7 @@ unsafe extern "C" fn text_mode() {
                 } else {
                     b")]TJ\x00" as *const u8 as *const i8
                 },
-                4i32 as libc::c_uint,
+                4i32 as u32,
             );
         }
         1 => {
@@ -1007,7 +1007,7 @@ pub unsafe extern "C" fn graphics_mode() {
                 } else {
                     b")]TJ\x00" as *const u8 as *const i8
                 },
-                4i32 as libc::c_uint,
+                4i32 as u32,
             );
             current_block_3 = 13064676843759196241;
         }
@@ -1024,7 +1024,7 @@ pub unsafe extern "C" fn graphics_mode() {
         {
             pdf_doc_add_page_content(
                 b" ET\x00" as *const u8 as *const i8,
-                3i32 as libc::c_uint,
+                3i32 as u32,
             ); /* op: ET */
             text_state.force_reset = 0i32;
             text_state.font_id = -1i32
@@ -1265,7 +1265,7 @@ unsafe extern "C" fn start_string(
         }
         _ => {}
     }
-    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
+    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
     /*
      * dvipdfm wrongly using "TD" in place of "Td".
      * The TD operator set leading, but we are not using T* etc.
@@ -1276,7 +1276,7 @@ unsafe extern "C" fn start_string(
         } else {
             b" Td[(\x00" as *const u8 as *const i8
         },
-        5i32 as libc::c_uint,
+        5i32 as u32,
     ); /* op: Td */
     /* Error correction */
     text_state.ref_x = xpos - error_delx;
@@ -1315,7 +1315,7 @@ unsafe extern "C" fn string_mode(
                     } else {
                         b"[(\x00" as *const u8 as *const i8
                     },
-                    2i32 as libc::c_uint,
+                    2i32 as u32,
                 );
                 text_state.force_reset = 0i32
             } else {
@@ -1353,7 +1353,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-pdfdev.c\x00" as *const u8 as *const i8,
-            847i32 as libc::c_uint,
+            847i32 as u32,
             (*::std::mem::transmute::<&[u8; 22], &[i8; 22]>(
                 b"int dev_set_font(int)\x00",
             ))
@@ -1425,7 +1425,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
     let fresh33 = len;
     len = len + 1;
     format_buffer[fresh33 as usize] = 'f' as i32 as i8;
-    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
+    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
     if (*font).bold > 0.0f64 || (*font).bold != text_state.bold_param {
         if (*font).bold <= 0.0f64 {
             len = sprintf(
@@ -1439,7 +1439,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
                 (*font).bold,
             )
         }
-        pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
+        pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
         /* op: Tr w */
     }
     text_state.bold_param = (*font).bold;
@@ -1477,20 +1477,20 @@ unsafe extern "C" fn handle_multibyte_string(
         let mut outbuf: *mut u8 = sbuf0.as_mut_ptr();
         i = 0i32 as size_t;
         while i < length {
-            let mut gid: libc::c_uint = 0;
+            let mut gid: u32 = 0;
             let fresh34 = inbuf;
             inbuf = inbuf.offset(1);
-            gid = ((*fresh34 as i32) << 8i32) as libc::c_uint;
+            gid = ((*fresh34 as i32) << 8i32) as u32;
             let fresh35 = inbuf;
             inbuf = inbuf.offset(1);
-            gid = gid.wrapping_add(*fresh35 as libc::c_uint);
-            gid = cff_charsets_lookup_cid((*font).cff_charsets, gid as card16) as libc::c_uint;
+            gid = gid.wrapping_add(*fresh35 as u32);
+            gid = cff_charsets_lookup_cid((*font).cff_charsets, gid as card16) as u32;
             let fresh36 = outbuf;
             outbuf = outbuf.offset(1);
             *fresh36 = (gid >> 8i32) as u8;
             let fresh37 = outbuf;
             outbuf = outbuf.offset(1);
-            *fresh37 = (gid & 0xffi32 as libc::c_uint) as u8;
+            *fresh37 = (gid & 0xffi32 as u32) as u8;
             i = (i as u64).wrapping_add(2i32 as u64) as size_t as size_t
         }
         p = sbuf0.as_mut_ptr();
@@ -1856,7 +1856,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         } else {
             '(' as i32
         }) as i8;
-        pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
+        pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
         len = 0i32 as size_t
     }
     if text_state.is_mb != 0 {
@@ -1896,7 +1896,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         )) as size_t as size_t
     }
     /* I think if you really care about speed, you should avoid memcopy here. */
-    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint); /* op: */
+    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32); /* op: */
     text_state.offset += width;
 }
 #[no_mangle]
@@ -2384,7 +2384,7 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
     let fresh68 = len;
     len = len + 1;
     format_buffer[fresh68 as usize] = 'Q' as i32 as i8;
-    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as libc::c_uint);
+    pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
     /* op: q re f Q */
 }
 /* Rectangle in device space coordinate. */
@@ -2630,7 +2630,7 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         b" /%s Do\x00" as *const u8 as *const i8,
         res_name,
     );
-    pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint);
+    pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as u32);
     pdf_dev_grestore();
     pdf_doc_add_page_resource(
         b"XObject\x00" as *const u8 as *const i8,
@@ -2646,7 +2646,7 @@ pub unsafe extern "C" fn pdf_dev_put_image(
             e: 0.,
             f: 0.,
         };
-        let mut i: libc::c_uint = 0;
+        let mut i: u32 = 0;
         let mut rect: pdf_rect = pdf_rect {
             llx: 0.,
             lly: 0.,
@@ -2676,8 +2676,8 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         P.d = (*p).matrix.d;
         P.e = (*p).matrix.e;
         P.f = (*p).matrix.f;
-        i = 0i32 as libc::c_uint;
-        while i < 4i32 as libc::c_uint {
+        i = 0i32 as u32;
+        while i < 4i32 as u32 {
             corner[i as usize].x -= rect.llx;
             corner[i as usize].y -= rect.lly;
             pdf_dev_transform(&mut *corner.as_mut_ptr().offset(i as isize), &mut P);
@@ -2689,8 +2689,8 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         rect.lly = corner[0].y;
         rect.urx = corner[0].x;
         rect.ury = corner[0].y;
-        i = 0i32 as libc::c_uint;
-        while i < 4i32 as libc::c_uint {
+        i = 0i32 as u32;
+        while i < 4i32 as u32 {
             if corner[i as usize].x < rect.llx {
                 rect.llx = corner[i as usize].x
             }
@@ -2762,7 +2762,7 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(
             b"\xfe\xff\x00" as *const u8 as *const i8,
         )
     }
-    pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint);
+    pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as u32);
     loop {
         let fresh69 = count;
         count = count - 1;
@@ -2801,14 +2801,14 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(
             }
             i += 1
         }
-        pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint);
+        pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as u32);
         unicodes = unicodes.offset(1)
     }
     len = sprintf(
         work_buffer.as_mut_ptr(),
         b")>>BDC\x00" as *const u8 as *const i8,
     );
-    pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as libc::c_uint);
+    pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as u32);
 }
 /* Not in spt_t. */
 /* unit_conv: multiplier for input unit (spt_t) to bp conversion.
@@ -2867,7 +2867,7 @@ pub unsafe extern "C" fn pdf_dev_end_actualtext() {
     graphics_mode();
     pdf_doc_add_page_content(
         b" EMC\x00" as *const u8 as *const i8,
-        4i32 as libc::c_uint,
+        4i32 as u32,
     );
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

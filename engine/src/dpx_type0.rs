@@ -37,7 +37,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -56,7 +56,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -292,8 +292,8 @@ pub struct mapDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
-    pub num: libc::c_uint,
-    pub max: libc::c_uint,
+    pub num: u32,
+    pub max: u32,
     pub ranges: *mut rangeDef,
 }
 #[derive(Copy, Clone)]
@@ -334,7 +334,7 @@ unsafe extern "C" fn Type0Font_init_font_struct(mut font: *mut Type0Font) {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type0.c\x00" as *const u8 as *const i8,
-            104i32 as libc::c_uint,
+            104i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"void Type0Font_init_font_struct(Type0Font *)\x00",
             ))
@@ -547,7 +547,7 @@ pub unsafe extern "C" fn Type0Font_set_ToUnicode(
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type0.c\x00" as *const u8 as *const i8,
-            259i32 as libc::c_uint,
+            259i32 as u32,
             (*::std::mem::transmute::<&[u8; 53], &[i8; 53]>(
                 b"void Type0Font_set_ToUnicode(Type0Font *, pdf_obj *)\x00",
             ))
@@ -597,7 +597,7 @@ pub unsafe extern "C" fn Type0Font_get_wmode(mut font: *mut Type0Font) -> i32 {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type0.c\x00" as *const u8 as *const i8,
-            293i32 as libc::c_uint,
+            293i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"int Type0Font_get_wmode(Type0Font *)\x00",
             ))
@@ -613,7 +613,7 @@ pub unsafe extern "C" fn Type0Font_get_usedchars(mut font: *mut Type0Font) -> *m
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type0.c\x00" as *const u8 as *const i8,
-            301i32 as libc::c_uint,
+            301i32 as u32,
             (*::std::mem::transmute::<&[u8; 43], &[i8; 43]>(
                 b"char *Type0Font_get_usedchars(Type0Font *)\x00",
             ))
@@ -629,7 +629,7 @@ pub unsafe extern "C" fn Type0Font_get_resource(mut font: *mut Type0Font) -> *mu
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-type0.c\x00" as *const u8 as *const i8,
-            309i32 as libc::c_uint,
+            309i32 as u32,
             (*::std::mem::transmute::<&[u8; 45], &[i8; 45]>(
                 b"pdf_obj *Type0Font_get_resource(Type0Font *)\x00",
             ))
@@ -739,7 +739,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      */
     if __cache.count >= __cache.capacity {
         __cache.capacity =
-            (__cache.capacity as libc::c_uint).wrapping_add(16u32) as i32 as i32;
+            (__cache.capacity as u32).wrapping_add(16u32) as i32 as i32;
         __cache.fonts = renew(
             __cache.fonts as *mut libc::c_void,
             (__cache.capacity as u32 as u64)
@@ -1060,7 +1060,7 @@ unsafe extern "C" fn pdf_read_ToUnicode_file(mut cmap_name: *const i8) -> *mut p
         __assert_fail(
             b"cmap_name\x00" as *const u8 as *const i8,
             b"dpx-type0.c\x00" as *const u8 as *const i8,
-            646i32 as libc::c_uint,
+            646i32 as u32,
             (*::std::mem::transmute::<&[u8; 47], &[i8; 47]>(
                 b"pdf_obj *pdf_read_ToUnicode_file(const char *)\x00",
             ))

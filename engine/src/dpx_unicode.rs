@@ -12,7 +12,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
 }
@@ -69,16 +69,16 @@ pub unsafe extern "C" fn UC_UTF16BE_decode_char(
     }
     first = ((*p.offset(0) as i32) << 8i32 | *p.offset(1) as i32) as u16;
     p = p.offset(2);
-    if first as libc::c_uint >= 0xd800u32 && (first as libc::c_uint) < 0xdc00u32 {
+    if first as u32 >= 0xd800u32 && (first as u32) < 0xdc00u32 {
         if p.offset(1) >= endptr {
             return -1i32;
         }
         second = ((*p.offset(0) as i32) << 8i32 | *p.offset(1) as i32) as u16;
         p = p.offset(2);
-        ucv = (second as libc::c_uint & 0x3ffu32) as i32;
-        ucv = (ucv as libc::c_uint | (first as libc::c_uint & 0x3ffu32) << 10i32) as i32;
+        ucv = (second as u32 & 0x3ffu32) as i32;
+        ucv = (ucv as u32 | (first as u32 & 0x3ffu32) << 10i32) as i32;
         ucv += 0x10000i32
-    } else if first as libc::c_uint >= 0xdc00u32 && (first as libc::c_uint) < 0xe000u32 {
+    } else if first as u32 >= 0xdc00u32 && (first as u32) < 0xe000u32 {
         return -1i32;
     } else {
         ucv = first as i32
@@ -108,8 +108,8 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
             return 0i32 as size_t;
         }
         ucv -= 0x10000i32;
-        high = ((ucv >> 10i32) as libc::c_uint).wrapping_add(0xd800u32) as u16;
-        low = (ucv as libc::c_uint & 0x3ffu32).wrapping_add(0xdc00u32) as u16;
+        high = ((ucv >> 10i32) as u32).wrapping_add(0xd800u32) as u16;
+        low = (ucv as u32 & 0x3ffu32).wrapping_add(0xdc00u32) as u16;
         *p.offset(0) = (high as i32 >> 8i32 & 0xffi32) as u8;
         *p.offset(1) = (high as i32 & 0xffi32) as u8;
         *p.offset(2) = (low as i32 >> 8i32 & 0xffi32) as u8;
@@ -217,7 +217,7 @@ pub unsafe extern "C" fn UC_UTF8_encode_char(
         __assert_fail(
             b"pp && *pp && endptr\x00" as *const u8 as *const i8,
             b"dpx-unicode.c\x00" as *const u8 as *const i8,
-            197i32 as libc::c_uint,
+            197i32 as u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"size_t UC_UTF8_encode_char(int32_t, unsigned char **, unsigned char *)\x00",
             ))

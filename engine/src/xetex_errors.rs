@@ -65,13 +65,13 @@ extern "C" {
    Licensed under the MIT License.
 */
 /* Both XeTeX and bibtex use this enum: */
-pub type tt_history_t = libc::c_uint;
+pub type tt_history_t = u32;
 pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
 pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
 pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
 pub const HISTORY_SPOTLESS: tt_history_t = 0;
 pub type rust_output_handle_t = *mut libc::c_void;
-pub type selector_t = libc::c_uint;
+pub type selector_t = u32;
 pub const SELECTOR_NEW_STRING: selector_t = 21;
 pub const SELECTOR_PSEUDO: selector_t = 20;
 pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
@@ -119,7 +119,7 @@ unsafe extern "C" fn post_error_message(mut need_to_print_it: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn error() {
-    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as i32 as libc::c_uint {
+    if (history as u32) < HISTORY_ERROR_ISSUED as i32 as u32 {
         history = HISTORY_ERROR_ISSUED
     }
     print_char('.' as i32);
@@ -192,7 +192,7 @@ pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: i32) -> ! {
 #[no_mangle]
 pub unsafe extern "C" fn confusion(mut s: *const i8) -> ! {
     pre_error_message();
-    if (history as libc::c_uint) < HISTORY_ERROR_ISSUED as i32 as libc::c_uint {
+    if (history as u32) < HISTORY_ERROR_ISSUED as i32 as u32 {
         print_cstr(b"This can\'t happen (\x00" as *const u8 as *const i8);
         print_cstr(s);
         print_char(')' as i32);

@@ -13,7 +13,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -72,7 +72,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     #[no_mangle]
@@ -125,7 +125,7 @@ extern "C" {
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
 pub type __ssize_t = i64;
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -144,7 +144,7 @@ pub type ssize_t = __ssize_t;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -792,7 +792,7 @@ pub unsafe extern "C" fn otl_conf_get_script(mut conf: *mut pdf_obj) -> *mut i8 
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            585i32 as libc::c_uint,
+            585i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"char *otl_conf_get_script(pdf_obj *)\x00",
             ))
@@ -810,7 +810,7 @@ pub unsafe extern "C" fn otl_conf_get_language(mut conf: *mut pdf_obj) -> *mut i
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            597i32 as libc::c_uint,
+            597i32 as u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"char *otl_conf_get_language(pdf_obj *)\x00",
             ))
@@ -827,7 +827,7 @@ pub unsafe extern "C" fn otl_conf_get_rule(mut conf: *mut pdf_obj) -> *mut pdf_o
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            607i32 as libc::c_uint,
+            607i32 as u32,
             (*::std::mem::transmute::<&[u8; 38], &[i8; 38]>(
                 b"pdf_obj *otl_conf_get_rule(pdf_obj *)\x00",
             ))
@@ -848,7 +848,7 @@ pub unsafe extern "C" fn otl_conf_find_opt(
         __assert_fail(
             b"conf\x00" as *const u8 as *const i8,
             b"dpx-otl_conf.c\x00" as *const u8 as *const i8,
-            617i32 as libc::c_uint,
+            617i32 as u32,
             (*::std::mem::transmute::<&[u8; 52], &[i8; 52]>(
                 b"pdf_obj *otl_conf_find_opt(pdf_obj *, const char *)\x00",
             ))

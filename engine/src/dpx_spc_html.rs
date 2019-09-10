@@ -25,7 +25,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -147,7 +147,7 @@ extern "C" {
         value: *mut pdf_obj,
     ) -> i32;
     #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: libc::c_uint);
+    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     #[no_mangle]
     fn pdf_doc_add_page_resource(
         category: *const i8,
@@ -187,7 +187,7 @@ extern "C" {
         p: *mut transform_info,
     ) -> i32;
 }
-pub type C2RustUnnamed = libc::c_uint;
+pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
 pub const _ISpunct: C2RustUnnamed = 4;
 pub const _IScntrl: C2RustUnnamed = 2;
@@ -658,7 +658,7 @@ unsafe extern "C" fn html_open_link(
         __assert_fail(
             b"name\x00" as *const u8 as *const i8,
             b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            289i32 as libc::c_uint,
+            289i32 as u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int html_open_link(struct spc_env *, const char *, struct spc_html_ *)\x00",
             ))
@@ -670,7 +670,7 @@ unsafe extern "C" fn html_open_link(
         __assert_fail(
             b"sd->link_dict == NULL\x00" as *const u8 as *const i8,
             b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            290i32 as libc::c_uint,
+            290i32 as u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int html_open_link(struct spc_env *, const char *, struct spc_html_ *)\x00",
             ))
@@ -752,7 +752,7 @@ unsafe extern "C" fn html_open_dest(
         __assert_fail(
             b"page_ref\x00" as *const u8 as *const i8,
             b"dpx-spc_html.c\x00" as *const u8 as *const i8,
-            346i32 as libc::c_uint,
+            346i32 as u32,
             (*::std::mem::transmute::<&[u8; 71], &[i8; 71]>(
                 b"int html_open_dest(struct spc_env *, const char *, struct spc_html_ *)\x00",
             ))
@@ -1218,12 +1218,12 @@ unsafe extern "C" fn spc_html__img_empty(
             }
             pdf_doc_add_page_content(
                 b" /\x00" as *const u8 as *const i8,
-                2i32 as libc::c_uint,
+                2i32 as u32,
             );
-            pdf_doc_add_page_content(res_name, strlen(res_name) as libc::c_uint);
+            pdf_doc_add_page_content(res_name, strlen(res_name) as u32);
             pdf_doc_add_page_content(
                 b" gs\x00" as *const u8 as *const i8,
-                3i32 as libc::c_uint,
+                3i32 as u32,
             );
             free(res_name as *mut libc::c_void);
         }
@@ -1248,12 +1248,12 @@ unsafe extern "C" fn spc_html__img_empty(
         res_name = pdf_ximage_get_resname(id);
         pdf_doc_add_page_content(
             b" /\x00" as *const u8 as *const i8,
-            2i32 as libc::c_uint,
+            2i32 as u32,
         );
-        pdf_doc_add_page_content(res_name, strlen(res_name) as libc::c_uint);
+        pdf_doc_add_page_content(res_name, strlen(res_name) as u32);
         pdf_doc_add_page_content(
             b" Do\x00" as *const u8 as *const i8,
-            3i32 as libc::c_uint,
+            3i32 as u32,
         );
         pdf_dev_grestore();
         pdf_doc_add_page_resource(
@@ -1587,7 +1587,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
         __assert_fail(b"sph && spe && ap\x00" as *const u8 as
                           *const i8,
                       b"dpx-spc_html.c\x00" as *const u8 as
-                          *const i8, 910i32 as libc::c_uint,
+                          *const i8, 910i32 as u32,
                       (*::std::mem::transmute::<&[u8; 85],
                                                 &[i8; 85]>(b"int spc_html_setup_handler(struct spc_handler *, struct spc_env *, struct spc_arg *)\x00")).as_ptr());
     }

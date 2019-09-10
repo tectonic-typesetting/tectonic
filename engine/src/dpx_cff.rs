@@ -686,8 +686,8 @@ static mut cff_stdstr: [*const i8; 391] = [
 unsafe extern "C" fn get_unsigned(
     mut handle: rust_input_handle_t,
     mut n: i32,
-) -> libc::c_uint {
-    let mut v: libc::c_uint = 0i32 as libc::c_uint;
+) -> u32 {
+    let mut v: u32 = 0i32 as u32;
     loop {
         let fresh0 = n;
         n = n - 1;
@@ -696,7 +696,7 @@ unsafe extern "C" fn get_unsigned(
         }
         v = v
             .wrapping_mul(0x100u32)
-            .wrapping_add(tt_get_unsigned_byte(handle) as libc::c_uint)
+            .wrapping_add(tt_get_unsigned_byte(handle) as u32)
     }
     return v;
 }
@@ -736,7 +736,7 @@ pub unsafe extern "C" fn cff_open(
     (*cff)._string = 0 as *mut cff_index;
     ttstub_input_seek(
         (*cff).handle,
-        (*cff).offset.wrapping_add(0i32 as libc::c_uint) as ssize_t,
+        (*cff).offset.wrapping_add(0i32 as u32) as ssize_t,
         0i32,
     );
     (*cff).header.major = tt_get_unsigned_byte((*cff).handle);
@@ -761,7 +761,7 @@ pub unsafe extern "C" fn cff_open(
         (*cff).handle,
         (*cff)
             .offset
-            .wrapping_add((*cff).header.hdr_size as libc::c_uint) as ssize_t,
+            .wrapping_add((*cff).header.hdr_size as u32) as ssize_t,
         0i32,
     );
     /* Name INDEX */
@@ -833,7 +833,7 @@ pub unsafe extern "C" fn cff_open(
     ) as i32;
     ttstub_input_seek(
         (*cff).handle,
-        (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+        (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
     (*cff).num_glyphs = tt_get_unsigned_pair((*cff).handle);
@@ -971,7 +971,7 @@ pub unsafe extern "C" fn cff_get_name(mut cff: *mut cff_font) -> *mut i8 {
     idx = (*cff).name;
     len = (*(*idx).offset.offset(((*cff).index + 1i32) as isize))
         .wrapping_sub(*(*idx).offset.offset((*cff).index as isize));
-    fontname = new((len.wrapping_add(1i32 as libc::c_uint) as u64)
+    fontname = new((len.wrapping_add(1i32 as u32) as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
         as u32) as *mut i8;
     memcpy(
@@ -1079,7 +1079,7 @@ pub unsafe extern "C" fn cff_get_index_header(mut cff: *mut cff_font) -> *mut cf
             *(*idx).offset.offset(i as isize) =
                 get_unsigned((*cff).handle, (*idx).offsize as i32)
         }
-        if *(*idx).offset.offset(0) != 1i32 as libc::c_uint {
+        if *(*idx).offset.offset(0) != 1i32 as u32 {
             _tt_abort(
                 b"cff_get_index(): invalid index data\x00" as *const u8 as *const i8,
             );
@@ -1119,7 +1119,7 @@ pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index
                 get_unsigned((*cff).handle, (*idx).offsize as i32);
             i = i.wrapping_add(1)
         }
-        if *(*idx).offset.offset(0) != 1i32 as libc::c_uint {
+        if *(*idx).offset.offset(0) != 1i32 as u32 {
             _tt_abort(b"Invalid CFF Index offset data\x00" as *const u8 as *const i8);
         }
         length = (*(*idx).offset.offset(count as isize)).wrapping_sub(*(*idx).offset.offset(0))
@@ -1162,7 +1162,7 @@ pub unsafe extern "C" fn cff_pack_index(
     }
     len = cff_index_size(idx);
     datalen =
-        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as libc::c_uint) as size_t;
+        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as u32) as size_t;
     if destlen < len {
         _tt_abort(b"Not enough space available...\x00" as *const u8 as *const i8);
     }
@@ -1181,7 +1181,7 @@ pub unsafe extern "C" fn cff_pack_index(
         while i as i32 <= (*idx).count as i32 {
             let fresh8 = dest;
             dest = dest.offset(1);
-            *fresh8 = (*(*idx).offset.offset(i as isize) & 0xffi32 as libc::c_uint) as card8;
+            *fresh8 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
             i = i.wrapping_add(1)
         }
     } else if datalen < 0xffff {
@@ -1194,10 +1194,10 @@ pub unsafe extern "C" fn cff_pack_index(
             let fresh10 = dest;
             dest = dest.offset(1);
             *fresh10 =
-                (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as libc::c_uint) as card8;
+                (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as u32) as card8;
             let fresh11 = dest;
             dest = dest.offset(1);
-            *fresh11 = (*(*idx).offset.offset(i as isize) & 0xffi32 as libc::c_uint) as card8;
+            *fresh11 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
             i = i.wrapping_add(1)
         }
     } else if datalen < 0xffffff {
@@ -1210,14 +1210,14 @@ pub unsafe extern "C" fn cff_pack_index(
             let fresh13 = dest;
             dest = dest.offset(1);
             *fresh13 =
-                (*(*idx).offset.offset(i as isize) >> 16i32 & 0xffi32 as libc::c_uint) as card8;
+                (*(*idx).offset.offset(i as isize) >> 16i32 & 0xffi32 as u32) as card8;
             let fresh14 = dest;
             dest = dest.offset(1);
             *fresh14 =
-                (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as libc::c_uint) as card8;
+                (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as u32) as card8;
             let fresh15 = dest;
             dest = dest.offset(1);
-            *fresh15 = (*(*idx).offset.offset(i as isize) & 0xffi32 as libc::c_uint) as card8;
+            *fresh15 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
             i = i.wrapping_add(1)
         }
     } else {
@@ -1230,25 +1230,25 @@ pub unsafe extern "C" fn cff_pack_index(
             let fresh17 = dest;
             dest = dest.offset(1);
             *fresh17 =
-                (*(*idx).offset.offset(i as isize) >> 24i32 & 0xffi32 as libc::c_uint) as card8;
+                (*(*idx).offset.offset(i as isize) >> 24i32 & 0xffi32 as u32) as card8;
             let fresh18 = dest;
             dest = dest.offset(1);
             *fresh18 =
-                (*(*idx).offset.offset(i as isize) >> 16i32 & 0xffi32 as libc::c_uint) as card8;
+                (*(*idx).offset.offset(i as isize) >> 16i32 & 0xffi32 as u32) as card8;
             let fresh19 = dest;
             dest = dest.offset(1);
             *fresh19 =
-                (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as libc::c_uint) as card8;
+                (*(*idx).offset.offset(i as isize) >> 8i32 & 0xffi32 as u32) as card8;
             let fresh20 = dest;
             dest = dest.offset(1);
-            *fresh20 = (*(*idx).offset.offset(i as isize) & 0xffi32 as libc::c_uint) as card8;
+            *fresh20 = (*(*idx).offset.offset(i as isize) & 0xffi32 as u32) as card8;
             i = i.wrapping_add(1)
         }
     }
     memmove(
         dest as *mut libc::c_void,
         (*idx).data as *const libc::c_void,
-        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as libc::c_uint)
+        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as u32)
             as u64,
     );
     return len;
@@ -1257,7 +1257,7 @@ pub unsafe extern "C" fn cff_pack_index(
 pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> i32 {
     if (*idx).count as i32 > 0i32 {
         let mut datalen: l_offset = 0;
-        datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as libc::c_uint);
+        datalen = (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1i32 as u32);
         if (datalen as u64) < 0xff {
             (*idx).offsize = 1i32 as c_offsize
         } else if (datalen as u64) < 0xffff {
@@ -1268,7 +1268,7 @@ pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> i32 {
             (*idx).offsize = 4i32 as c_offsize
         }
         return ((3i32 + (*idx).offsize as i32 * ((*idx).count as i32 + 1i32))
-            as libc::c_uint)
+            as u32)
             .wrapping_add(datalen) as i32;
     } else {
         return 2i32;
@@ -1513,7 +1513,7 @@ pub unsafe extern "C" fn cff_add_string(
     offset = if (*strings).count as i32 > 0i32 {
         *(*strings).offset.offset((*strings).count as isize)
     } else {
-        1i32 as libc::c_uint
+        1i32 as u32
     };
     (*strings).offset = renew(
         (*strings).offset as *mut libc::c_void,
@@ -1583,7 +1583,7 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> i32 {
     }
     ttstub_input_seek(
         (*cff).handle,
-        (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+        (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
     encoding = new((1i32 as u32 as u64)
@@ -1884,7 +1884,7 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> i32 {
     }
     ttstub_input_seek(
         (*cff).handle,
-        (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+        (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
     charset = new((1i32 as u32 as u64)
@@ -2382,7 +2382,7 @@ pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> i32 {
     ) as i32;
     ttstub_input_seek(
         (*cff).handle,
-        (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+        (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
     fdsel = new((1i32 as u32 as u64)
@@ -2645,7 +2645,7 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> i32 {
                     )) as i32;
                 ttstub_input_seek(
                     (*cff).handle,
-                    (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+                    (*cff).offset.wrapping_add(offset as u32) as ssize_t,
                     0i32,
                 );
                 let ref mut fresh48 = *(*cff).subrs.offset(i as isize);
@@ -2676,7 +2676,7 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> i32 {
             )) as i32;
         ttstub_input_seek(
             (*cff).handle,
-            (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+            (*cff).offset.wrapping_add(offset as u32) as ssize_t,
             0i32,
         );
         let ref mut fresh50 = *(*cff).subrs.offset(0);
@@ -2708,7 +2708,7 @@ pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> i32 {
     ) as i32;
     ttstub_input_seek(
         (*cff).handle,
-        (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+        (*cff).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
     idx = cff_get_index(cff);
@@ -2832,7 +2832,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> i32 {
                 ) as i32;
                 ttstub_input_seek(
                     (*cff).handle,
-                    (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+                    (*cff).offset.wrapping_add(offset as u32) as ssize_t,
                     0i32,
                 );
                 data = new((size as u32 as u64)
@@ -2878,7 +2878,7 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> i32 {
             ) as i32;
             ttstub_input_seek(
                 (*cff).handle,
-                (*cff).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+                (*cff).offset.wrapping_add(offset as u32) as ssize_t,
                 0i32,
             );
             data = new((size as u32 as u64)

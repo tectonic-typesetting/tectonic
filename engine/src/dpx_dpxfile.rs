@@ -90,7 +90,7 @@ pub type ssize_t = __ssize_t;
  * good to write them explicitly since they must be kept in sync with
  * `src/engines/mod.rs`.
  */
-pub type tt_input_format_type = libc::c_uint;
+pub type tt_input_format_type = u32;
 pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
 pub const TTIF_OPENTYPE: tt_input_format_type = 47;
 pub const TTIF_SFD: tt_input_format_type = 46;
@@ -257,12 +257,12 @@ unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> b
     pos = tt_get_unsigned_quad(handle);
     ttstub_input_seek(
         handle,
-        pos.wrapping_add(0x18i32 as libc::c_uint) as ssize_t,
+        pos.wrapping_add(0x18i32 as u32) as ssize_t,
         0i32,
     );
     ttstub_input_seek(
         handle,
-        pos.wrapping_add(tt_get_unsigned_pair(handle) as libc::c_uint) as ssize_t,
+        pos.wrapping_add(tt_get_unsigned_pair(handle) as u32) as ssize_t,
         0i32,
     );
     n = tt_get_unsigned_pair(handle) as i32;

@@ -13,7 +13,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -21,7 +21,7 @@ extern "C" {
     #[no_mangle]
     fn rand() -> i32;
     #[no_mangle]
-    fn srand(__seed: libc::c_uint);
+    fn srand(__seed: u32);
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
@@ -43,13 +43,13 @@ extern "C" {
     #[no_mangle]
     fn MD5_init(ctx: *mut MD5_CONTEXT);
     #[no_mangle]
-    fn MD5_write(ctx: *mut MD5_CONTEXT, inbuf: *const u8, inlen: libc::c_uint);
+    fn MD5_write(ctx: *mut MD5_CONTEXT, inbuf: *const u8, inlen: u32);
     #[no_mangle]
     fn MD5_final(outbuf: *mut u8, ctx: *mut MD5_CONTEXT);
     #[no_mangle]
     fn SHA256_init(ctx: *mut SHA256_CONTEXT);
     #[no_mangle]
-    fn SHA256_write(ctx: *mut SHA256_CONTEXT, inbuf: *const u8, inlen: libc::c_uint);
+    fn SHA256_write(ctx: *mut SHA256_CONTEXT, inbuf: *const u8, inlen: u32);
     #[no_mangle]
     fn SHA256_final(outbuf: *mut u8, ctx: *mut SHA256_CONTEXT);
     #[no_mangle]
@@ -57,18 +57,18 @@ extern "C" {
     #[no_mangle]
     fn SHA512_init(ctx: *mut SHA512_CONTEXT);
     #[no_mangle]
-    fn SHA512_write(ctx: *mut SHA512_CONTEXT, inbuf: *const u8, inlen: libc::c_uint);
+    fn SHA512_write(ctx: *mut SHA512_CONTEXT, inbuf: *const u8, inlen: u32);
     #[no_mangle]
     fn SHA512_final(outbuf: *mut u8, ctx: *mut SHA512_CONTEXT);
     #[no_mangle]
     fn ARC4(
         ctx: *mut ARC4_CONTEXT,
-        len: libc::c_uint,
+        len: u32,
         inbuf: *const u8,
         outbuf: *mut u8,
     );
     #[no_mangle]
-    fn ARC4_set_key(ctx: *mut ARC4_CONTEXT, keylen: libc::c_uint, key: *const u8);
+    fn ARC4_set_key(ctx: *mut ARC4_CONTEXT, keylen: u32, key: *const u8);
     #[no_mangle]
     fn AES_ecb_encrypt(
         key: *const u8,
@@ -115,7 +115,7 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_get_version() -> libc::c_uint;
+    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
@@ -396,7 +396,7 @@ unsafe extern "C" fn pdf_enc_init(mut use_aes: i32, mut encrypt_metadata: i32) {
     if current_time == -1i32 as time_t {
         current_time = time(0 as *mut time_t)
     }
-    srand(current_time as libc::c_uint);
+    srand(current_time as u32);
     (*p).setting.use_aes = use_aes;
     (*p).setting.encrypt_metadata = encrypt_metadata;
 }
@@ -445,7 +445,7 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     MD5_write(
         &mut md5,
         date_string as *mut u8,
-        strlen(date_string) as libc::c_uint,
+        strlen(date_string) as u32,
     );
     free(date_string as *mut libc::c_void);
     producer = new((strlen(
@@ -467,21 +467,21 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(
     MD5_write(
         &mut md5,
         producer as *mut u8,
-        strlen(producer) as libc::c_uint,
+        strlen(producer) as u32,
     );
     free(producer as *mut libc::c_void);
     if !dviname.is_null() {
         MD5_write(
             &mut md5,
             dviname as *const u8,
-            strlen(dviname) as libc::c_uint,
+            strlen(dviname) as u32,
         );
     }
     if !pdfname.is_null() {
         MD5_write(
             &mut md5,
             pdfname as *const u8,
-            strlen(pdfname) as libc::c_uint,
+            strlen(pdfname) as u32,
         );
     }
     MD5_final((*p).ID.as_mut_ptr(), &mut md5);
@@ -536,7 +536,7 @@ unsafe extern "C" fn compute_owner_password(
         padded.as_mut_ptr(),
     );
     MD5_init(&mut md5);
-    MD5_write(&mut md5, padded.as_mut_ptr(), 32i32 as libc::c_uint);
+    MD5_write(&mut md5, padded.as_mut_ptr(), 32i32 as u32);
     MD5_final(hash.as_mut_ptr(), &mut md5);
     if (*p).R >= 3i32 {
         i = 0i32;
@@ -546,19 +546,19 @@ unsafe extern "C" fn compute_owner_password(
              *       Otherwise Adobe Reader won't decrypt the PDF file.
              */
             MD5_init(&mut md5);
-            MD5_write(&mut md5, hash.as_mut_ptr(), (*p).key_size as libc::c_uint);
+            MD5_write(&mut md5, hash.as_mut_ptr(), (*p).key_size as u32);
             MD5_final(hash.as_mut_ptr(), &mut md5);
             i += 1
         }
     }
-    ARC4_set_key(&mut arc4, (*p).key_size as libc::c_uint, hash.as_mut_ptr());
+    ARC4_set_key(&mut arc4, (*p).key_size as u32, hash.as_mut_ptr());
     passwd_padding(upasswd, padded.as_mut_ptr());
     let mut tmp1: [u8; 32] = [0; 32];
     let mut tmp2: [u8; 32] = [0; 32];
     let mut key: [u8; 16] = [0; 16];
     ARC4(
         &mut arc4,
-        32i32 as libc::c_uint,
+        32i32 as u32,
         padded.as_mut_ptr(),
         tmp1.as_mut_ptr(),
     );
@@ -575,10 +575,10 @@ unsafe extern "C" fn compute_owner_password(
                 key[j as usize] = (hash[j as usize] as i32 ^ i) as u8;
                 j += 1
             }
-            ARC4_set_key(&mut arc4, (*p).key_size as libc::c_uint, key.as_mut_ptr());
+            ARC4_set_key(&mut arc4, (*p).key_size as u32, key.as_mut_ptr());
             ARC4(
                 &mut arc4,
-                32i32 as libc::c_uint,
+                32i32 as u32,
                 tmp2.as_mut_ptr(),
                 tmp1.as_mut_ptr(),
             );
@@ -606,15 +606,15 @@ unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *co
     };
     passwd_padding(passwd, padded.as_mut_ptr());
     MD5_init(&mut md5);
-    MD5_write(&mut md5, padded.as_mut_ptr(), 32i32 as libc::c_uint);
-    MD5_write(&mut md5, (*p).O.as_mut_ptr(), 32i32 as libc::c_uint);
+    MD5_write(&mut md5, padded.as_mut_ptr(), 32i32 as u32);
+    MD5_write(&mut md5, (*p).O.as_mut_ptr(), 32i32 as u32);
     let mut tmp: [u8; 4] = [0; 4];
     tmp[0] = ((*p).P as u8 as i32 & 0xffi32) as u8;
     tmp[1] = (((*p).P >> 8i32) as u8 as i32 & 0xffi32) as u8;
     tmp[2] = (((*p).P >> 16i32) as u8 as i32 & 0xffi32) as u8;
     tmp[3] = (((*p).P >> 24i32) as u8 as i32 & 0xffi32) as u8;
-    MD5_write(&mut md5, tmp.as_mut_ptr(), 4i32 as libc::c_uint);
-    MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16i32 as libc::c_uint);
+    MD5_write(&mut md5, tmp.as_mut_ptr(), 4i32 as u32);
+    MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16i32 as u32);
     MD5_final(hash.as_mut_ptr(), &mut md5);
     if (*p).R >= 3i32 {
         i = 0i32;
@@ -624,7 +624,7 @@ unsafe extern "C" fn compute_encryption_key(mut p: *mut pdf_sec, mut passwd: *co
              *       Otherwise Adobe Reader won't decrypt the PDF file.
              */
             MD5_init(&mut md5);
-            MD5_write(&mut md5, hash.as_mut_ptr(), (*p).key_size as libc::c_uint);
+            MD5_write(&mut md5, hash.as_mut_ptr(), (*p).key_size as u32);
             MD5_final(hash.as_mut_ptr(), &mut md5);
             i += 1
         }
@@ -658,12 +658,12 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
         2 => {
             ARC4_set_key(
                 &mut arc4,
-                (*p).key_size as libc::c_uint,
+                (*p).key_size as u32,
                 (*p).key.as_mut_ptr(),
             );
             ARC4(
                 &mut arc4,
-                32i32 as libc::c_uint,
+                32i32 as u32,
                 padding_bytes.as_ptr(),
                 upasswd.as_mut_ptr(),
             );
@@ -673,17 +673,17 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
             let mut tmp1: [u8; 32] = [0; 32];
             let mut tmp2: [u8; 32] = [0; 32];
             MD5_init(&mut md5);
-            MD5_write(&mut md5, padding_bytes.as_ptr(), 32i32 as libc::c_uint);
-            MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16i32 as libc::c_uint);
+            MD5_write(&mut md5, padding_bytes.as_ptr(), 32i32 as u32);
+            MD5_write(&mut md5, (*p).ID.as_mut_ptr(), 16i32 as u32);
             MD5_final(hash.as_mut_ptr(), &mut md5);
             ARC4_set_key(
                 &mut arc4,
-                (*p).key_size as libc::c_uint,
+                (*p).key_size as u32,
                 (*p).key.as_mut_ptr(),
             );
             ARC4(
                 &mut arc4,
-                16i32 as libc::c_uint,
+                16i32 as u32,
                 hash.as_mut_ptr(),
                 tmp1.as_mut_ptr(),
             );
@@ -700,10 +700,10 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
                     key[j as usize] = ((*p).key[j as usize] as i32 ^ i) as u8;
                     j += 1
                 }
-                ARC4_set_key(&mut arc4, (*p).key_size as libc::c_uint, key.as_mut_ptr());
+                ARC4_set_key(&mut arc4, (*p).key_size as u32, key.as_mut_ptr());
                 ARC4(
                     &mut arc4,
-                    16i32 as libc::c_uint,
+                    16i32 as u32,
                     tmp2.as_mut_ptr(),
                     tmp1.as_mut_ptr(),
                 );
@@ -755,11 +755,11 @@ unsafe extern "C" fn compute_hash_V5(
     SHA256_write(
         &mut sha,
         passwd as *const u8,
-        strlen(passwd) as libc::c_uint,
+        strlen(passwd) as u32,
     );
-    SHA256_write(&mut sha, salt, 8i32 as libc::c_uint);
+    SHA256_write(&mut sha, salt, 8i32 as u32);
     if !user_key.is_null() {
-        SHA256_write(&mut sha, user_key, 48i32 as libc::c_uint);
+        SHA256_write(&mut sha, user_key, 48i32 as u32);
     }
     SHA256_final(hash, &mut sha);
     if R == 5i32 || R == 6i32 {
@@ -767,7 +767,7 @@ unsafe extern "C" fn compute_hash_V5(
         __assert_fail(b"R ==5 || R == 6\x00" as *const u8 as
                           *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 307i32 as libc::c_uint,
+                          *const i8, 307i32 as u32,
                       (*::std::mem::transmute::<&[u8; 103],
                                                 &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
     }
@@ -800,7 +800,7 @@ unsafe extern "C" fn compute_hash_V5(
             __assert_fail(b"K1_len < 240\x00" as *const u8 as
                               *const i8,
                           b"dpx-pdfencrypt.c\x00" as *const u8 as
-                              *const i8, 319i32 as libc::c_uint,
+                              *const i8, 319i32 as u32,
                           (*::std::mem::transmute::<&[u8; 103],
                                                     &[i8; 103]>(b"void compute_hash_V5(unsigned char *, const char *, const unsigned char *, const unsigned char *, int)\x00")).as_ptr());
         }
@@ -870,7 +870,7 @@ unsafe extern "C" fn compute_hash_V5(
                     count: 0,
                 };
                 SHA256_init(&mut sha_0);
-                SHA256_write(&mut sha_0, E, E_len as libc::c_uint);
+                SHA256_write(&mut sha_0, E, E_len as u32);
                 SHA256_final(K.as_mut_ptr(), &mut sha_0);
                 K_len = 32i32 as size_t
             }
@@ -891,7 +891,7 @@ unsafe extern "C" fn compute_hash_V5(
                     count: 0,
                 };
                 SHA384_init(&mut sha_1);
-                SHA512_write(&mut sha_1, E, E_len as libc::c_uint);
+                SHA512_write(&mut sha_1, E, E_len as u32);
                 SHA512_final(K.as_mut_ptr(), &mut sha_1);
                 K_len = 48i32 as size_t
             }
@@ -912,7 +912,7 @@ unsafe extern "C" fn compute_hash_V5(
                     count: 0,
                 };
                 SHA512_init(&mut sha_2);
-                SHA512_write(&mut sha_2, E, E_len as libc::c_uint);
+                SHA512_write(&mut sha_2, E, E_len as u32);
                 SHA512_final(K.as_mut_ptr(), &mut sha_2);
                 K_len = 64i32 as size_t
             }
@@ -1179,8 +1179,8 @@ unsafe extern "C" fn preproc_password(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_set_passwd(
-    mut bits: libc::c_uint,
-    mut perm: libc::c_uint,
+    mut bits: u32,
+    mut perm: u32,
     mut oplain: *const i8,
     mut uplain: *const i8,
 ) {
@@ -1192,7 +1192,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     } else {
         __assert_fail(b"oplain\x00" as *const u8 as *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 521i32 as libc::c_uint,
+                          *const i8, 521i32 as u32,
                       (*::std::mem::transmute::<&[u8; 80],
                                                 &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
     }
@@ -1200,12 +1200,12 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     } else {
         __assert_fail(b"uplain\x00" as *const u8 as *const i8,
                       b"dpx-pdfencrypt.c\x00" as *const u8 as
-                          *const i8, 522i32 as libc::c_uint,
+                          *const i8, 522i32 as u32,
                       (*::std::mem::transmute::<&[u8; 80],
                                                 &[i8; 80]>(b"void pdf_enc_set_passwd(unsigned int, unsigned int, const char *, const char *)\x00")).as_ptr());
     }
     version = pdf_get_version() as i32;
-    (*p).key_size = bits.wrapping_div(8i32 as libc::c_uint) as i32;
+    (*p).key_size = bits.wrapping_div(8i32 as u32) as i32;
     if (*p).key_size == 5i32 {
         /* 40bit */
         (*p).V = 1i32
@@ -1258,7 +1258,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
         dpx_warning(b"Invalid UTF-8 string for passowrd.\x00" as *const u8 as *const i8);
     }
     if (*p).R >= 3i32 {
-        (*p).P = ((*p).P as libc::c_uint | 0xfffff000u32) as i32
+        (*p).P = ((*p).P as u32 | 0xfffff000u32) as i32
     }
     if (*p).V < 5i32 {
         compute_owner_password(p, opasswd.as_mut_ptr(), upasswd.as_mut_ptr());
@@ -1312,7 +1312,7 @@ unsafe extern "C" fn calculate_key(mut p: *mut pdf_sec, mut key: *mut u8) {
         len += 4i32
     }
     MD5_init(&mut md5);
-    MD5_write(&mut md5, tmp.as_mut_ptr(), len as libc::c_uint);
+    MD5_write(&mut md5, tmp.as_mut_ptr(), len as u32);
     MD5_final(key, &mut md5);
 }
 #[no_mangle]
@@ -1342,10 +1342,10 @@ pub unsafe extern "C" fn pdf_encrypt_data(
                     16i32
                 } else {
                     (*p).key_size + 5i32
-                }) as libc::c_uint,
+                }) as u32,
                 key.as_mut_ptr(),
             );
-            ARC4(&mut arc4, plain_len as libc::c_uint, plain, *cipher);
+            ARC4(&mut arc4, plain_len as u32, plain, *cipher);
         }
         4 => {
             calculate_key(p, key.as_mut_ptr());
@@ -1574,12 +1574,12 @@ pub unsafe extern "C" fn pdf_enc_id_array() -> *mut pdf_obj {
     return id;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_enc_set_label(mut label: libc::c_uint) {
+pub unsafe extern "C" fn pdf_enc_set_label(mut label: u32) {
     let mut p: *mut pdf_sec = &mut sec_data;
     (*p).label.objnum = label as u64;
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_enc_set_generation(mut generation: libc::c_uint) {
+pub unsafe extern "C" fn pdf_enc_set_generation(mut generation: u32) {
     let mut p: *mut pdf_sec = &mut sec_data;
     (*p).label.gennum = generation as u16;
 }

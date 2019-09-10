@@ -37,7 +37,7 @@ extern "C" {
     fn __assert_fail(
         __assertion: *const i8,
         __file: *const i8,
-        __line: libc::c_uint,
+        __line: u32,
         __function: *const i8,
     ) -> !;
     #[no_mangle]
@@ -101,7 +101,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> libc::c_uint;
+    fn pdf_array_length(array: *mut pdf_obj) -> u32;
     #[no_mangle]
     fn pdf_new_dict() -> *mut pdf_obj;
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
@@ -993,8 +993,8 @@ pub struct mapDef {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_5 {
-    pub num: libc::c_uint,
-    pub max: libc::c_uint,
+    pub num: u32,
+    pub max: u32,
     pub ranges: *mut rangeDef,
 }
 #[derive(Copy, Clone)]
@@ -1219,7 +1219,7 @@ unsafe extern "C" fn add_CIDVMetrics(
      * font does not have VORG table. Only CJK fonts may have VORG.
      */
     if sfnt_find_table_pos(sfont, b"VORG\x00" as *const u8 as *const i8)
-        <= 0i32 as libc::c_uint
+        <= 0i32 as u32
     {
         return;
     }
@@ -1231,13 +1231,13 @@ unsafe extern "C" fn add_CIDVMetrics(
             + 0.5f64,
     ) * 1i32 as f64;
     if sfnt_find_table_pos(sfont, b"vhea\x00" as *const u8 as *const i8)
-        > 0i32 as libc::c_uint
+        > 0i32 as u32
     {
         vhea = tt_read_vhea_table(sfont)
     }
     if !vhea.is_null()
         && sfnt_find_table_pos(sfont, b"vmtx\x00" as *const u8 as *const i8)
-            > 0i32 as libc::c_uint
+            > 0i32 as u32
     {
         sfnt_locate_table(sfont, b"vmtx\x00" as *const u8 as *const i8);
         vmtx = tt_read_longMetrics(
@@ -1248,7 +1248,7 @@ unsafe extern "C" fn add_CIDVMetrics(
         )
     }
     if sfnt_find_table_pos(sfont, b"OS/2\x00" as *const u8 as *const i8)
-        <= 0i32 as libc::c_uint
+        <= 0i32 as u32
     {
         let mut os2: *mut tt_os2__table = 0 as *mut tt_os2__table;
         /* OpenType font must have OS/2 table. */
@@ -1466,13 +1466,13 @@ unsafe extern "C" fn write_fontfile(
             }
         } /* charset format 0 */
         *(*private).offset.offset((i + 1i32) as isize) =
-            (*(*private).offset.offset(i as isize)).wrapping_add(size as libc::c_uint); /* fdselect format 3 */
+            (*(*private).offset.offset(i as isize)).wrapping_add(size as u32); /* fdselect format 3 */
         *(*fdarray).offset.offset((i + 1i32) as isize) = (*(*fdarray).offset.offset(i as isize))
             .wrapping_add(cff_dict_pack(
                 *(*cffont).fdarray.offset(i as isize),
                 work_buffer.as_mut_ptr() as *mut card8,
                 1024i32,
-            ) as libc::c_uint); /* Private is not INDEX */
+            ) as u32); /* Private is not INDEX */
         i += 1
     }
     destlen = 4i32;
@@ -1484,8 +1484,8 @@ unsafe extern "C" fn write_fontfile(
     destlen += (*(*cffont).fdselect).num_entries as i32 * 3i32 + 5i32;
     destlen += cff_index_size((*cffont).cstrings);
     destlen += cff_index_size(fdarray);
-    destlen = (destlen as libc::c_uint).wrapping_add(
-        (*(*private).offset.offset((*private).count as isize)).wrapping_sub(1i32 as libc::c_uint),
+    destlen = (destlen as u32).wrapping_add(
+        (*(*private).offset.offset((*private).count as isize)).wrapping_sub(1i32 as u32),
     ) as i32 as i32;
     dest = new((destlen as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32)
@@ -1554,7 +1554,7 @@ unsafe extern "C" fn write_fontfile(
     fdarray_offset = offset;
     offset += cff_index_size(fdarray);
     (*fdarray).data = new(((*(*fdarray).offset.offset((*fdarray).count as isize))
-        .wrapping_sub(1i32 as libc::c_uint) as u64)
+        .wrapping_sub(1i32 as u32) as u64)
         .wrapping_mul(::std::mem::size_of::<card8>() as u64)
         as u32) as *mut card8;
     i = 0i32;
@@ -1587,7 +1587,7 @@ unsafe extern "C" fn write_fontfile(
                 .offset(*(*fdarray).offset.offset(i as isize) as isize)
                 .offset(-1),
             (*(*fdarray).offset.offset((*fdarray).count as isize))
-                .wrapping_sub(1i32 as libc::c_uint) as i32,
+                .wrapping_sub(1i32 as u32) as i32,
         );
         offset += size;
         i += 1
@@ -1601,13 +1601,13 @@ unsafe extern "C" fn write_fontfile(
     cff_release_index(private);
     /* Finally Top DICT */
     (*topdict).data = new(((*(*topdict).offset.offset((*topdict).count as isize))
-        .wrapping_sub(1i32 as libc::c_uint) as u64)
+        .wrapping_sub(1i32 as u32) as u64)
         .wrapping_mul(::std::mem::size_of::<card8>() as u64)
         as u32) as *mut card8;
     cff_dict_pack(
         (*cffont).topdict,
         (*topdict).data,
-        (*(*topdict).offset.offset((*topdict).count as isize)).wrapping_sub(1i32 as libc::c_uint)
+        (*(*topdict).offset.offset((*topdict).count as isize)).wrapping_sub(1i32 as u32)
             as i32,
     );
     cff_pack_index(
@@ -1750,7 +1750,7 @@ unsafe extern "C" fn CIDFont_type0_try_open(
                 (*info).sfont,
                 b"CFF \x00" as *const u8 as *const i8,
             );
-            offset == 0i32 as libc::c_uint
+            offset == 0i32 as u32
         }
     {
         CIDFontInfo_close(info);
@@ -1827,7 +1827,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cidtype0.c\x00" as *const u8 as *const i8,
-            578i32 as libc::c_uint,
+            578i32 as u32,
             (*::std::mem::transmute::<&[u8; 37], &[i8; 37]>(
                 b"void CIDFont_type0_dofont(CIDFont *)\x00",
             ))
@@ -1957,7 +1957,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
     ) as i32;
     ttstub_input_seek(
         (*cffont).handle,
-        (*cffont).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+        (*cffont).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
     idx = cff_get_index_header(cffont);
@@ -2032,9 +2032,9 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
             *(*charstrings).offset.offset(gid as isize) = (charstring_len + 1i32) as l_offset;
             ttstub_input_seek(
                 (*cffont).handle,
-                (offset as libc::c_uint)
+                (offset as u32)
                     .wrapping_add(*(*idx).offset.offset(gid_org as isize))
-                    .wrapping_sub(1i32 as libc::c_uint) as ssize_t,
+                    .wrapping_sub(1i32 as u32) as ssize_t,
                 0i32,
             );
             ttstub_input_read((*cffont).handle, data as *mut i8, size as size_t);
@@ -2144,7 +2144,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
     } else {
         __assert_fail(b"font\x00" as *const u8 as *const i8,
                       b"dpx-cidtype0.c\x00" as *const u8 as
-                          *const i8, 789i32 as libc::c_uint,
+                          *const i8, 789i32 as u32,
                       (*::std::mem::transmute::<&[u8; 78],
                                                 &[i8; 78]>(b"int CIDFont_type0_open(CIDFont *, const char *, CIDSysInfo *, cid_opt *, int)\x00")).as_ptr());
     }
@@ -2189,7 +2189,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
             || {
                 offset =
                     sfnt_find_table_pos(sfont, b"CFF \x00" as *const u8 as *const i8);
-                offset == 0i32 as libc::c_uint
+                offset == 0i32 as u32
             }
         {
             sfnt_close(sfont);
@@ -2486,7 +2486,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cidtype0.c\x00" as *const u8 as *const i8,
-            1011i32 as libc::c_uint,
+            1011i32 as u32,
             (*::std::mem::transmute::<&[u8; 40], &[i8; 40]>(
                 b"void CIDFont_type0_t1cdofont(CIDFont *)\x00",
             ))
@@ -2707,7 +2707,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
     ) as i32;
     ttstub_input_seek(
         (*cffont).handle,
-        (*cffont).offset.wrapping_add(offset as libc::c_uint) as ssize_t,
+        (*cffont).offset.wrapping_add(offset as u32) as ssize_t,
         0i32,
     );
     idx = cff_get_index_header(cffont);
@@ -2753,9 +2753,9 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
             *(*charstrings).offset.offset(gid as isize) = (charstring_len + 1i32) as l_offset;
             ttstub_input_seek(
                 (*cffont).handle,
-                (offset as libc::c_uint)
+                (offset as u32)
                     .wrapping_add(*(*idx).offset.offset(cid as isize))
-                    .wrapping_sub(1i32 as libc::c_uint) as ssize_t,
+                    .wrapping_sub(1i32 as u32) as ssize_t,
                 0i32,
             );
             ttstub_input_read((*cffont).handle, data as *mut i8, size as size_t);
@@ -3523,7 +3523,7 @@ unsafe extern "C" fn add_metrics(
         pdf_new_name(b"DW\x00" as *const u8 as *const i8),
         pdf_new_number(default_width),
     );
-    if pdf_array_length(tmp) > 0i32 as libc::c_uint {
+    if pdf_array_length(tmp) > 0i32 as u32 {
         pdf_add_dict(
             (*font).fontdict,
             pdf_new_name(b"W\x00" as *const u8 as *const i8),
@@ -3571,7 +3571,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         __assert_fail(
             b"font\x00" as *const u8 as *const i8,
             b"dpx-cidtype0.c\x00" as *const u8 as *const i8,
-            1659i32 as libc::c_uint,
+            1659i32 as u32,
             (*::std::mem::transmute::<&[u8; 39], &[i8; 39]>(
                 b"void CIDFont_type0_t1dofont(CIDFont *)\x00",
             ))
