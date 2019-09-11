@@ -8,6 +8,7 @@
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     pub type Type0Font;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -31,8 +32,6 @@ extern "C" {
     */
     #[no_mangle]
     fn Type0Font_set_ToUnicode(font: *mut Type0Font, cmap_ref: *mut pdf_obj);
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

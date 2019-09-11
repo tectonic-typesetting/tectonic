@@ -8,6 +8,7 @@
 
 extern crate libc;
 use super::dpx_pdfdev::pdf_sprint_matrix;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn graphics_mode();
@@ -21,8 +22,6 @@ extern "C" {
     fn pdf_sprint_coord(buf: *mut i8, p: *const pdf_coord) -> i32;
     #[no_mangle]
     fn pdf_sprint_rect(buf: *mut i8, p: *const pdf_rect) -> i32;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

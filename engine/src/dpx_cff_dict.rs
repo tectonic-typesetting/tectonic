@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __errno_location() -> *mut i32;
@@ -14,8 +15,6 @@ extern "C" {
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

@@ -9,6 +9,7 @@ extern crate libc;
 use super::dpx_pdfdev::pdf_sprint_matrix;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn spc_clear_objects();
@@ -80,8 +81,6 @@ extern "C" {
     fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]

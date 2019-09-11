@@ -9,9 +9,8 @@
 )]
 
 extern crate libc;
+use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]

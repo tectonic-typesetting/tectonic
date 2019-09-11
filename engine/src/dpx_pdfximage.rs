@@ -9,9 +9,8 @@
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

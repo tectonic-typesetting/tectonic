@@ -8,6 +8,7 @@
 
 extern crate libc;
 use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
@@ -68,8 +69,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

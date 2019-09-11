@@ -8,6 +8,7 @@
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     pub type Type0Font;
     #[no_mangle]
@@ -36,8 +37,6 @@ extern "C" {
     fn rand() -> i32;
     #[no_mangle]
     fn srand(__seed: u32);
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn getenv(__name: *const i8) -> *mut i8;
     #[no_mangle]

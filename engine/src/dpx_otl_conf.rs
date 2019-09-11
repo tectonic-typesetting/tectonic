@@ -8,11 +8,10 @@
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

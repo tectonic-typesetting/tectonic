@@ -7,9 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]

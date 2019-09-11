@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -18,8 +19,6 @@ extern "C" {
     fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
     fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]

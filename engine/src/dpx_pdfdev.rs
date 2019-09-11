@@ -8,9 +8,8 @@
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
+use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn modf(_: f64, _: *mut f64) -> f64;
     #[no_mangle]

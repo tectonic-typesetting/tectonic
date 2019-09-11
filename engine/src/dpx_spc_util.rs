@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
@@ -32,8 +33,6 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]

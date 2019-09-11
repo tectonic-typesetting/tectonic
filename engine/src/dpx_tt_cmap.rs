@@ -8,6 +8,7 @@
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -34,8 +35,6 @@ extern "C" {
     pub type otl_gsub;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

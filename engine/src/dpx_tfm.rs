@@ -7,9 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn tt_get_positive_quad(handle: rust_input_handle_t, type_0: *const i8, name: *const i8)
         -> u32;

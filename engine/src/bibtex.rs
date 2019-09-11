@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
        Copyright 2016-2018 the Tectonic Project
@@ -49,8 +50,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]

@@ -2,10 +2,9 @@ use libpng_sys::ffi::*;
 use std::convert::TryInto;
 
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     pub type pdf_ximage_;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

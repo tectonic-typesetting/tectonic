@@ -11,6 +11,7 @@ use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 use super::dpx_pdfdraw::{
     pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_dtransform, pdf_dev_idtransform,
 };
+use libc::free;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -43,8 +44,6 @@ extern "C" {
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]

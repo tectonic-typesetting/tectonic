@@ -7,12 +7,11 @@
          unused_mut)]
 extern crate libc;
 use crate::stub_icu as icu;
+use libc::free;
 extern "C" {
     pub type Opaque_TECkit_Converter;
     #[no_mangle]
     fn __errno_location() -> *mut i32;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */

@@ -8,6 +8,7 @@
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -46,8 +47,6 @@ extern "C" {
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */

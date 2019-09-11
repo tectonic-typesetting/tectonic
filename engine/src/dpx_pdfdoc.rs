@@ -9,6 +9,7 @@
 extern crate libc;
 use super::dpx_pdfdev::pdf_dev_bop;
 use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -55,8 +56,6 @@ extern "C" {
     */
     #[no_mangle]
     fn pdf_color_set_verbose(level: i32);
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

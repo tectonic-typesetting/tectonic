@@ -9,6 +9,7 @@
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_concat;
 use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -58,8 +59,6 @@ extern "C" {
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
