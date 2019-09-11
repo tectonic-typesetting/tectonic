@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+
+use super::dpx_pdfdraw::pdf_dev_concat;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -100,8 +102,6 @@ extern "C" {
     fn mps_stack_depth() -> i32;
     #[no_mangle]
     fn mps_eop_cleanup();
-    #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
     #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
@@ -212,16 +212,9 @@ pub struct spc_handler {
     pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {

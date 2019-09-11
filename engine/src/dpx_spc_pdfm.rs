@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use super::dpx_pdfdev::pdf_sprint_matrix;
+use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 extern "C" {
     pub type pdf_obj;
     pub type pdf_file;
@@ -210,9 +212,6 @@ extern "C" {
     fn pdf_color_get_current(sc: *mut *mut pdf_color, fc: *mut *mut pdf_color);
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
-    /* Not in spt_t. */
-    #[no_mangle]
-    fn pdf_sprint_matrix(buf: *mut i8, p: *const pdf_tmatrix) -> i32;
     /* Place XObject */
     #[no_mangle]
     fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
@@ -287,10 +286,6 @@ extern "C" {
     /* Similar to bop_content */
     #[no_mangle]
     fn pdf_doc_set_bgcolor(color: *const pdf_color);
-    #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
-    #[no_mangle]
-    fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
@@ -471,16 +466,9 @@ pub struct ht_entry {
     pub next: *mut ht_entry,
 }
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
@@ -632,12 +620,9 @@ pub struct CIDSysInfo {
     pub ordering: *mut i8,
     pub supplement: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -1287,7 +1272,7 @@ unsafe extern "C" fn spc_handler_pdfm_annot(mut spe: *mut spc_env, mut args: *mu
     }
     cp.x = (*spe).x_user;
     cp.y = (*spe).y_user;
-    pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
+    pdf_dev_transform(&mut cp, None);
     if ti.flags & 1i32 << 0i32 != 0 {
         rect.llx = ti.bbox.llx + cp.x;
         rect.lly = ti.bbox.lly + cp.y;
@@ -1691,7 +1676,7 @@ unsafe extern "C" fn spc_handler_pdfm_bead(mut spe: *mut spc_env, mut args: *mut
     }
     cp.x = (*spe).x_user;
     cp.y = (*spe).y_user;
-    pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
+    pdf_dev_transform(&mut cp, None);
     if ti.flags & 1i32 << 0i32 != 0 {
         rect.llx = ti.bbox.llx + cp.x;
         rect.lly = ti.bbox.lly + cp.y;

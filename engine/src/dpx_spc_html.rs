@@ -6,6 +6,7 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
@@ -138,10 +139,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_rectclip(x: f64, y: f64, w: f64, h: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
-    #[no_mangle]
-    fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
-    #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
     fn pdf_dev_grestore() -> i32;
@@ -235,16 +232,9 @@ pub struct spc_html_ {
 pub struct C2RustUnnamed_0 {
     pub extensions: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
@@ -270,12 +260,9 @@ pub struct load_options {
     pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
@@ -674,7 +661,7 @@ unsafe extern "C" fn html_open_dest(
     let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
     cp.x = (*spe).x_user;
     cp.y = (*spe).y_user;
-    pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
+    pdf_dev_transform(&mut cp, None);
     page_ref = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8);
     assert!(!page_ref.is_null());
     array = pdf_new_array();

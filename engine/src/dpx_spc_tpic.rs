@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfdraw::pdf_dev_concat;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
@@ -130,8 +131,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
     #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
-    #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
     fn pdf_dev_grestore() -> i32;
@@ -207,12 +206,9 @@ pub struct spc_tpic_ {
     pub num_points: i32,
     pub max_points: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {
@@ -220,16 +216,9 @@ pub struct pdf_color {
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[inline]
 unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {

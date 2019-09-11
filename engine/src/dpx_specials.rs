@@ -6,6 +6,7 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use super::dpx_pdfdraw::pdf_dev_transform;
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
@@ -79,8 +80,6 @@ extern "C" {
     fn pdf_doc_begin_annot(dict: *mut pdf_obj);
     #[no_mangle]
     fn pdf_doc_end_annot();
-    #[no_mangle]
-    fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -445,16 +444,7 @@ pub struct spc_handler {
     pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_table {
@@ -471,12 +461,9 @@ pub struct ht_entry {
     pub next: *mut ht_entry,
 }
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
@@ -608,13 +595,13 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
             /* xpos and ypos must be position in device space here. */
             cp.x = dvi_dev_xpos();
             cp.y = 0.0f64;
-            pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
+            pdf_dev_transform(&mut cp, None);
             value = pdf_new_number((cp.x / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         1 => {
             cp.x = 0.0f64;
             cp.y = dvi_dev_ypos();
-            pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
+            pdf_dev_transform(&mut cp, None);
             value = pdf_new_number((cp.y / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         2 => value = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8),
@@ -678,13 +665,13 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
         0 => {
             cp.x = dvi_dev_xpos();
             cp.y = 0.0f64;
-            pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
+            pdf_dev_transform(&mut cp, None);
             value = pdf_new_number((cp.x / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         1 => {
             cp.x = 0.0f64;
             cp.y = dvi_dev_ypos();
-            pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
+            pdf_dev_transform(&mut cp, None);
             value = pdf_new_number((cp.y / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         2 => value = pdf_doc_get_dictionary(b"@THISPAGE\x00" as *const u8 as *const i8),
@@ -1034,7 +1021,7 @@ unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut
     let mut c: pdf_coord = pdf_coord { x: 0., y: 0. };
     c.x = (*spe).x_user;
     c.y = (*spe).y_user;
-    pdf_dev_transform(&mut c, 0 as *const pdf_tmatrix);
+    pdf_dev_transform(&mut c, None);
     if !(*ap).command.is_null() && !name.is_null() {
         dpx_warning(
             b"Interpreting special command %s (%s) failed.\x00" as *const u8 as *const i8,

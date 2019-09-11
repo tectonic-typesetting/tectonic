@@ -6,6 +6,7 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use super::dpx_pdfdraw::pdf_dev_concat;
 extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -92,8 +93,6 @@ extern "C" {
     /* Similar to bop_content */
     #[no_mangle]
     fn pdf_doc_set_bgcolor(color: *const pdf_color);
-    #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
     #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
@@ -222,22 +221,11 @@ pub struct C2RustUnnamed {
     pub sfd_name: *mut i8,
     pub subfont_id: *mut i8,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_color {

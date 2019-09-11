@@ -6,6 +6,7 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 extern "C" {
     pub type pdf_obj;
     #[no_mangle]
@@ -162,10 +163,6 @@ extern "C" {
     fn pdf_dev_clear_gstates();
     #[no_mangle]
     fn pdf_dev_rectclip(x: f64, y: f64, w: f64, h: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
-    #[no_mangle]
-    fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
@@ -683,7 +680,7 @@ unsafe extern "C" fn dev_sprint_bp(
 }
 /* They are affected by precision (set at device initialization). */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_sprint_matrix(mut buf: *mut i8, mut M: *const pdf_tmatrix) -> i32 {
+pub unsafe extern "C" fn pdf_sprint_matrix(mut buf: *mut i8, M: &pdf_tmatrix) -> i32 {
     let mut len: i32 = 0; /* xxx_sprint_xxx NULL terminates strings. */
     let mut prec2: i32 = if dev_unit.precision + 2i32 < 8i32 {
         dev_unit.precision + 2i32
@@ -695,27 +692,27 @@ pub unsafe extern "C" fn pdf_sprint_matrix(mut buf: *mut i8, mut M: *const pdf_t
     } else {
         2i32
     }; /* xxx_sprint_xxx NULL terminates strings. */
-    len = p_dtoa((*M).a, prec2, buf); /* xxx_sprint_xxx NULL terminates strings. */
+    len = p_dtoa(M.a, prec2, buf); /* xxx_sprint_xxx NULL terminates strings. */
     let fresh5 = len; /* xxx_sprint_xxx NULL terminates strings. */
     len = len + 1;
     *buf.offset(fresh5 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*M).b, prec2, buf.offset(len as isize));
+    len += p_dtoa(M.b, prec2, buf.offset(len as isize));
     let fresh6 = len;
     len = len + 1;
     *buf.offset(fresh6 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*M).c, prec2, buf.offset(len as isize));
+    len += p_dtoa(M.c, prec2, buf.offset(len as isize));
     let fresh7 = len;
     len = len + 1;
     *buf.offset(fresh7 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*M).d, prec2, buf.offset(len as isize));
+    len += p_dtoa(M.d, prec2, buf.offset(len as isize));
     let fresh8 = len;
     len = len + 1;
     *buf.offset(fresh8 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*M).e, prec0, buf.offset(len as isize));
+    len += p_dtoa(M.e, prec0, buf.offset(len as isize));
     let fresh9 = len;
     len = len + 1;
     *buf.offset(fresh9 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*M).f, prec0, buf.offset(len as isize));
+    len += p_dtoa(M.f, prec0, buf.offset(len as isize));
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     len
 }
@@ -1873,7 +1870,7 @@ pub unsafe extern "C" fn pdf_dev_reset_color(mut force: i32) {
     pdf_dev_set_color(fc, 0x20_i8, force);
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_dev_bop(mut M: *const pdf_tmatrix) {
+pub unsafe extern "C" fn pdf_dev_bop(M: &pdf_tmatrix) {
     graphics_mode();
     text_state.force_reset = 0i32;
     pdf_dev_gsave();
@@ -2286,10 +2283,10 @@ pub unsafe extern "C" fn pdf_dev_set_rect(
         p3.x = p0.x;
         p3.y = p2.y
     }
-    pdf_dev_transform(&mut p0, 0 as *const pdf_tmatrix);
-    pdf_dev_transform(&mut p1, 0 as *const pdf_tmatrix);
-    pdf_dev_transform(&mut p2, 0 as *const pdf_tmatrix);
-    pdf_dev_transform(&mut p3, 0 as *const pdf_tmatrix);
+    pdf_dev_transform(&mut p0, None);
+    pdf_dev_transform(&mut p1, None);
+    pdf_dev_transform(&mut p2, None);
+    pdf_dev_transform(&mut p3, None);
     min_x = if p0.x < p1.x { p0.x } else { p1.x };
     min_x = if min_x < p2.x { min_x } else { p2.x };
     min_x = if min_x < p3.x { min_x } else { p3.x };
@@ -2538,7 +2535,7 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         while i < 4_u32 {
             corner[i as usize].x -= rect.llx;
             corner[i as usize].y -= rect.lly;
-            pdf_dev_transform(&mut *corner.as_mut_ptr().offset(i as isize), &mut P);
+            pdf_dev_transform(&mut *corner.as_mut_ptr().offset(i as isize), Some(&P));
             corner[i as usize].x += rect.llx;
             corner[i as usize].y += rect.lly;
             i = i.wrapping_add(1)
