@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
@@ -108,12 +109,6 @@ extern "C" {
     fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_color_rgbcolor(color: *mut pdf_color, r: f64, g: f64, b: f64) -> i32;
-    #[no_mangle]
-    fn pdf_color_push(sc: *mut pdf_color, fc: *mut pdf_color);
-    #[no_mangle]
-    fn pdf_color_pop();
     /* Draw texts and rules:
      *
      * xpos, ypos, width, and height are all fixed-point numbers
@@ -539,13 +534,9 @@ pub type fixword = i32;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+
+pub use super::dpx_pdfcolor::pdf_color;
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -3013,7 +3004,8 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: i32) {
             (((*font).rgba_color >> 16i32) as u8 as i32 & 0xffi32) as f64 / 255i32 as f64,
             (((*font).rgba_color >> 8i32) as u8 as i32 & 0xffi32) as f64 / 255i32 as f64,
         );
-        pdf_color_push(&mut color, &mut color);
+        let color_clone = color.clone();
+        pdf_color_push(&mut color, &color_clone);
     }
     i = 0_u32;
     while i < slen {

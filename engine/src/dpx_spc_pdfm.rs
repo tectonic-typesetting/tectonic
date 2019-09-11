@@ -6,9 +6,14 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use super::dpx_pdfcolor::{
+    pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
+};
 use super::dpx_pdfdev::pdf_sprint_matrix;
+use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
-use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use super::dpx_spc_util::spc_util_read_pdfcolor;
+use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -195,19 +200,9 @@ extern "C" {
     */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
     /* Color special
      * See remark in spc_color.c.
      */
-    #[no_mangle]
-    fn pdf_color_set(sc: *mut pdf_color, fc: *mut pdf_color);
-    #[no_mangle]
-    fn pdf_color_push(sc: *mut pdf_color, fc: *mut pdf_color);
-    #[no_mangle]
-    fn pdf_color_pop();
-    #[no_mangle]
-    fn pdf_color_get_current(sc: *mut *mut pdf_color, fc: *mut *mut pdf_color);
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     /* Place XObject */
@@ -283,8 +278,6 @@ extern "C" {
     );
     /* Similar to bop_content */
     #[no_mangle]
-    fn pdf_doc_set_bgcolor(color: *const pdf_color);
-    #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
     fn pdf_dev_grestore() -> i32;
@@ -324,13 +317,6 @@ extern "C" {
         page_no: *mut i32,
         bbox_type: *mut i32,
         args: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_util_read_pdfcolor(
-        spe: *mut spc_env,
-        colorspec: *mut pdf_color,
-        args: *mut spc_arg,
-        defaultcolor: *mut pdf_color,
     ) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -407,22 +393,9 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -467,13 +440,8 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 
 use super::dpx_pdfdev::pdf_tmatrix;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+pub use super::dpx_pdfcolor::pdf_color;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_rec {
@@ -1362,9 +1330,7 @@ unsafe extern "C" fn spc_handler_pdfm_bcolor(mut spe: *mut spc_env, mut ap: *mut
         spot_color_name: 0 as *mut i8,
         values: [0.; 4],
     };
-    let mut pfc: *mut pdf_color = 0 as *mut pdf_color;
-    let mut psc: *mut pdf_color = 0 as *mut pdf_color;
-    pdf_color_get_current(&mut psc, &mut pfc);
+    let (psc, pfc) = pdf_color_get_current();
     error = spc_util_read_pdfcolor(spe, &mut fc, ap, pfc);
     if error == 0 {
         if (*ap).curptr < (*ap).endptr {
@@ -1400,9 +1366,7 @@ unsafe extern "C" fn spc_handler_pdfm_scolor(mut spe: *mut spc_env, mut ap: *mut
         spot_color_name: 0 as *mut i8,
         values: [0.; 4],
     };
-    let mut pfc: *mut pdf_color = 0 as *mut pdf_color;
-    let mut psc: *mut pdf_color = 0 as *mut pdf_color;
-    pdf_color_get_current(&mut psc, &mut pfc);
+    let (psc, pfc) = pdf_color_get_current();
     error = spc_util_read_pdfcolor(spe, &mut fc, ap, pfc);
     if error == 0 {
         if (*ap).curptr < (*ap).endptr {
@@ -2646,7 +2610,7 @@ unsafe extern "C" fn spc_handler_pdfm_bgcolor(
     mut args: *mut spc_arg,
 ) -> i32 {
     let mut error: i32 = 0;
-    let mut colorspec: pdf_color = pdf_color {
+    let mut colorspec = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
         values: [0.; 4],
@@ -2658,7 +2622,7 @@ unsafe extern "C" fn spc_handler_pdfm_bgcolor(
             b"No valid color specified?\x00" as *const u8 as *const i8,
         );
     } else {
-        pdf_doc_set_bgcolor(&mut colorspec);
+        pdf_doc_set_bgcolor(Some(&colorspec));
     }
     error
 }

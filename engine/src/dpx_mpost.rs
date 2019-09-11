@@ -7,10 +7,12 @@
          unused_mut)]
 
 extern crate libc;
-use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
 use super::dpx_pdfdraw::{
-    pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_dtransform, pdf_dev_idtransform,
+    pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_currentpoint, pdf_dev_dtransform,
+    pdf_dev_idtransform, pdf_dev_set_color,
 };
+use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
     pub type _IO_wide_data;
@@ -101,12 +103,6 @@ extern "C" {
      */
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_color_rgbcolor(color: *mut pdf_color, r: f64, g: f64, b: f64) -> i32;
-    #[no_mangle]
-    fn pdf_color_cmykcolor(color: *mut pdf_color, c: f64, m: f64, y: f64, k: f64) -> i32;
-    #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     /* returns 1.0/unit_conv */
@@ -233,8 +229,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_dev_currentpoint(cp: *mut pdf_coord) -> i32;
-    #[no_mangle]
     fn pdf_dev_setlinewidth(width: f64) -> i32;
     #[no_mangle]
     fn pdf_dev_setmiterlimit(mlimit: f64) -> i32;
@@ -276,8 +270,6 @@ extern "C" {
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
     fn pdf_dev_grestore() -> i32;
-    #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: i32);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -404,13 +396,9 @@ pub type fixword = i32;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+
+pub use super::dpx_pdfcolor::pdf_color;
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

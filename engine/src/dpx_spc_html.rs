@@ -193,23 +193,9 @@ pub type size_t = u64;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-    /* current page in PDF */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]

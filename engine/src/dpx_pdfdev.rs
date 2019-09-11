@@ -6,8 +6,9 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
+use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color, pdf_dev_transform};
 use crate::dpx_pdfobj::pdf_obj;
-use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -29,10 +30,6 @@ extern "C" {
     fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     /* Color stack
      */
-    #[no_mangle]
-    fn pdf_color_clear_stack();
-    #[no_mangle]
-    fn pdf_color_get_current(sc: *mut *mut pdf_color, fc: *mut *mut pdf_color);
     #[no_mangle]
     fn pdfobj_escape_str(buffer: *mut i8, size: size_t, s: *const u8, len: size_t) -> size_t;
     #[no_mangle]
@@ -174,8 +171,6 @@ extern "C" {
     fn pdf_dev_current_depth() -> i32;
     #[no_mangle]
     fn pdf_dev_grestore_to(depth: i32);
-    #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: i32);
     /* font_name is used when mrec is NULL.
      * font_scale (point size) used by PK font.
      * It might be necessary if dvipdfmx supports font format with
@@ -227,13 +222,9 @@ pub type size_t = u64;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+
+pub use super::dpx_pdfcolor::pdf_color;
+
 pub type spt_t = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -735,13 +726,13 @@ pub unsafe extern "C" fn pdf_sprint_rect(mut buf: *mut i8, mut rect: *const pdf_
     len
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_sprint_coord(mut buf: *mut i8, mut p: *const pdf_coord) -> i32 {
+pub unsafe extern "C" fn pdf_sprint_coord(mut buf: *mut i8, p: &pdf_coord) -> i32 {
     let mut len: i32 = 0;
-    len = p_dtoa((*p).x, dev_unit.precision, buf);
+    len = p_dtoa(p.x, dev_unit.precision, buf);
     let fresh13 = len;
     len = len + 1;
     *buf.offset(fresh13 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*p).y, dev_unit.precision, buf.offset(len as isize));
+    len += p_dtoa(p.y, dev_unit.precision, buf.offset(len as isize));
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     len
 }
@@ -1862,9 +1853,7 @@ pub unsafe extern "C" fn pdf_dev_reset_fonts(mut newpage: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_reset_color(mut force: i32) {
-    let mut sc: *mut pdf_color = 0 as *mut pdf_color;
-    let mut fc: *mut pdf_color = 0 as *mut pdf_color;
-    pdf_color_get_current(&mut sc, &mut fc);
+    let (sc, fc) = pdf_color_get_current();
     pdf_dev_set_color(sc, 0_i8, force);
     pdf_dev_set_color(fc, 0x20_i8, force);
 }

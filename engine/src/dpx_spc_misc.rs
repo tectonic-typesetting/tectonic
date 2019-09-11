@@ -89,22 +89,9 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -271,70 +258,64 @@ unsafe extern "C" fn spc_handler_null(mut spe: *mut spc_env, mut args: *mut spc_
     (*args).curptr = (*args).endptr;
     0i32
 }
-static mut misc_handlers: [spc_handler; 6] = {
-    [
-        {
-            let mut init = spc_handler {
-                key: b"postscriptbox\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_postscriptbox
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"landscape\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"papersize\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"src:\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"pos:\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"om:\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_null
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-    ]
-};
+static mut misc_handlers: [spc_handler; 6] = [
+    {
+        let mut init = spc_handler {
+            key: b"postscriptbox\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_postscriptbox
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"landscape\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_null as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"papersize\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_null as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"src:\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_null as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"pos:\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_null as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"om:\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_null as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+];
+
 #[no_mangle]
 pub unsafe extern "C" fn spc_misc_check_special(mut buffer: *const i8, mut size: i32) -> bool {
     let mut p: *const i8 = 0 as *const i8;

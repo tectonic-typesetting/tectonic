@@ -499,7 +499,10 @@ impl std::ops::Deref for TectonicBridgeApi {
     }
 }
 
-use tectonic_engine::{tt_get_error_message, tt_xetex_set_int_variable, tex_simple_main, dvipdfmx_simple_main, bibtex_simple_main};
+use tectonic_engine::{
+    bibtex_simple_main, dvipdfmx_simple_main, tex_simple_main, tt_get_error_message,
+    tt_xetex_set_int_variable,
+};
 
 // Entry points for the C/C++ API functions.
 
@@ -798,11 +801,13 @@ extern "C" fn input_close<'a, I: 'a + IoProvider>(
 
 impl TectonicBridgeApi {
     fn new<'a, I: 'a + IoProvider>(exec_state: &ExecutionState<'a, I>) -> TectonicBridgeApi {
-        use tectonic_engine::tt_bridge_api_t;
         use std::mem::transmute;
+        use tectonic_engine::tt_bridge_api_t;
         unsafe {
             TectonicBridgeApi(tt_bridge_api_t {
-                context: transmute((exec_state as *const ExecutionState<'a, I>) as *const libc::c_void),
+                context: transmute(
+                    (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
+                ),
                 issue_warning: transmute(issue_warning::<'a, I> as *const libc::c_void),
                 issue_error: transmute(issue_error::<'a, I> as *const libc::c_void),
                 get_file_md5: transmute(get_file_md5::<'a, I> as *const libc::c_void),

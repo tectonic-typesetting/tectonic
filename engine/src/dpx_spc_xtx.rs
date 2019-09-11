@@ -6,7 +6,9 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
-use super::dpx_pdfdraw::pdf_dev_concat;
+use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
+use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_set_fixed_point};
+use super::dpx_spc_util::spc_util_read_colorspec;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -91,15 +93,9 @@ extern "C" {
     fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     /* Similar to bop_content */
     #[no_mangle]
-    fn pdf_doc_set_bgcolor(color: *const pdf_color);
-    #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
     fn pdf_dev_grestore() -> i32;
-    #[no_mangle]
-    fn pdf_dev_set_fixed_point(x: f64, y: f64);
-    #[no_mangle]
-    fn pdf_dev_get_fixed_point(p: *mut pdf_coord);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
@@ -133,13 +129,6 @@ extern "C" {
      * This is for reading *single* color specification.
      */
     #[no_mangle]
-    fn spc_util_read_colorspec(
-        spe: *mut spc_env,
-        colorspec: *mut pdf_color,
-        args: *mut spc_arg,
-        syntax: i32,
-    ) -> i32;
-    #[no_mangle]
     fn spc_util_read_numbers(values: *mut f64, num_values: i32, args: *mut spc_arg) -> i32;
 }
 pub type size_t = u64;
@@ -164,23 +153,9 @@ pub type size_t = u64;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-    /* current page in PDF */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -225,13 +200,8 @@ use super::dpx_pdfdev::pdf_coord;
 
 use super::dpx_pdfdev::pdf_tmatrix;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+pub use super::dpx_pdfcolor::pdf_color;
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -432,7 +402,7 @@ unsafe extern "C" fn spc_handler_xtx_backgroundcolor(
     mut args: *mut spc_arg,
 ) -> i32 {
     let mut error: i32 = 0;
-    let mut colorspec: pdf_color = pdf_color {
+    let mut colorspec = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
         values: [0.; 4],
@@ -444,7 +414,7 @@ unsafe extern "C" fn spc_handler_xtx_backgroundcolor(
             b"No valid color specified?\x00" as *const u8 as *const i8,
         );
     } else {
-        pdf_doc_set_bgcolor(&mut colorspec);
+        pdf_doc_set_bgcolor(Some(&colorspec));
     }
     error
 }

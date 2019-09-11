@@ -7,7 +7,8 @@
          unused_mut)]
 
 extern crate libc;
-use super::dpx_pdfdraw::pdf_dev_concat;
+use super::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
+use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color};
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
@@ -90,10 +91,6 @@ extern "C" {
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_color_brighten_color(dst: *mut pdf_color, src: *const pdf_color, f: f64);
-    #[no_mangle]
-    fn pdf_color_get_current(sc: *mut *mut pdf_color, fc: *mut *mut pdf_color);
     /* The following two routines are NOT WORKING.
      * Dvipdfmx doesn't manage gstate well..
      */
@@ -148,8 +145,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_bspline(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> i32;
     #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: i32);
-    #[no_mangle]
     fn parse_val_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
 }
 pub type C2RustUnnamed = u32;
@@ -166,22 +161,9 @@ pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type size_t = u64;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -208,13 +190,7 @@ pub struct spc_tpic_ {
 
 use super::dpx_pdfdev::pdf_coord;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+pub use super::dpx_pdfcolor::pdf_color;
 
 use super::dpx_pdfdev::pdf_tmatrix;
 
@@ -359,14 +335,12 @@ unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i3
         pdf_doc_add_page_content(buf.as_mut_ptr(), len as u32);
         /* op: gs */
     } /* get stroking and fill colors */
-    let mut sc: *mut pdf_color = 0 as *mut pdf_color;
-    let mut fc: *mut pdf_color = 0 as *mut pdf_color;
     let mut new_fc: pdf_color = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
         values: [0.; 4],
     };
-    pdf_color_get_current(&mut sc, &mut fc);
+    let (sc, fc) = pdf_color_get_current();
     pdf_color_brighten_color(&mut new_fc, fc, g);
     pdf_dev_set_color(&mut new_fc, 0x20_i8, 0i32);
     0i32
