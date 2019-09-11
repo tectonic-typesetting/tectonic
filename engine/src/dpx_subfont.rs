@@ -180,7 +180,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -279,7 +279,11 @@ unsafe extern "C" fn readline(
             buf_len - 1i32,
         );
     }
-    return if c > 0i32 { buf } else { 0 as *mut i8 };
+    if c > 0i32 {
+        buf
+    } else {
+        0 as *mut i8
+    }
 }
 /* subfont_id ( integer ':' | integer '_' integer | integer )*
  *
@@ -411,7 +415,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
             p = p.offset(1)
         }
     }
-    return error;
+    error
 }
 /* Scan for subfont IDs */
 unsafe extern "C" fn scan_sfd_file(
@@ -498,7 +502,7 @@ unsafe extern "C" fn scan_sfd_file(
             (*sfd).ident,
         );
     }
-    return 0i32;
+    0i32
 }
 /* Open SFD file and gather subfont IDs. We do not read mapping tables
  * here but only read subfont IDs used in SFD file.
@@ -554,7 +558,7 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const i8) -> i32 {
             id = -1i32
         }
     }
-    return id;
+    id
 }
 #[no_mangle]
 pub unsafe extern "C" fn sfd_get_subfont_ids(
@@ -572,7 +576,7 @@ pub unsafe extern "C" fn sfd_get_subfont_ids(
     if !num_ids.is_null() {
         *num_ids = (*sfd_files.offset(sfd_id as isize)).num_subfonts
     }
-    return (*sfd_files.offset(sfd_id as isize)).sub_id;
+    (*sfd_files.offset(sfd_id as isize)).sub_id
 }
 /* Make sure that sfd_name does not have the extension '.sfd'.
  * Mapping tables are actually read here.
@@ -722,7 +726,7 @@ pub unsafe extern "C" fn sfd_load_record(
         }
         dpx_message(b"\n\x00" as *const u8 as *const i8);
     }
-    return rec_id;
+    rec_id
 }
 /* Lookup mapping table */
 #[no_mangle]
@@ -733,7 +737,7 @@ pub unsafe extern "C" fn lookup_sfd_record(mut rec_id: i32, mut c: u8) -> u16 {
             rec_id,
         );
     }
-    return (*sfd_record.offset(rec_id as isize)).vector[c as usize];
+    (*sfd_record.offset(rec_id as isize)).vector[c as usize]
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

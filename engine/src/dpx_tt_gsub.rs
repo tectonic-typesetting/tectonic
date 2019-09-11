@@ -288,7 +288,7 @@ pub struct clt_langsys_table {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -302,7 +302,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 static mut verbose: i32 = 0i32;
 #[no_mangle]
@@ -319,14 +319,14 @@ unsafe extern "C" fn clt_read_record(mut rec: *mut clt_record, mut sfont: *mut s
     }
     (*rec).tag[4] = '\u{0}' as i32 as i8;
     (*rec).offset = tt_get_unsigned_pair((*sfont).handle);
-    return 6i32;
+    6i32
 }
 unsafe extern "C" fn clt_read_range(mut rec: *mut clt_range, mut sfont: *mut sfnt) -> i32 {
     assert!(!rec.is_null() && !sfont.is_null());
     (*rec).Start = tt_get_unsigned_pair((*sfont).handle);
     (*rec).End = tt_get_unsigned_pair((*sfont).handle);
     (*rec).StartCoverageIndex = tt_get_unsigned_pair((*sfont).handle);
-    return 6i32;
+    6i32
 }
 unsafe extern "C" fn clt_read_record_list(
     mut list: *mut clt_record_list,
@@ -349,7 +349,7 @@ unsafe extern "C" fn clt_read_record_list(
             i += 1
         }
     }
-    return len;
+    len
 }
 unsafe extern "C" fn clt_release_record_list(mut list: *mut clt_record_list) {
     if !list.is_null() {
@@ -376,7 +376,7 @@ unsafe extern "C" fn clt_read_number_list(
             i += 1
         }
     }
-    return 2i32 + 2i32 * (*list).count as i32;
+    2i32 + 2i32 * (*list).count as i32
 }
 unsafe extern "C" fn clt_release_number_list(mut list: *mut clt_number_list) {
     if !list.is_null() {
@@ -393,7 +393,7 @@ unsafe extern "C" fn clt_read_script_table(
     (*tab).DefaultLangSys = tt_get_unsigned_pair((*sfont).handle);
     len = 2i32;
     len += clt_read_record_list(&mut (*tab).LangSysRecord, sfont);
-    return len;
+    len
 }
 unsafe extern "C" fn clt_release_script_table(mut tab: *mut clt_script_table) {
     if !tab.is_null() {
@@ -410,7 +410,7 @@ unsafe extern "C" fn clt_read_langsys_table(
     (*tab).ReqFeatureIndex = tt_get_unsigned_pair((*sfont).handle);
     len = 4i32;
     len += clt_read_number_list(&mut (*tab).FeatureIndex, sfont);
-    return len;
+    len
 }
 unsafe extern "C" fn clt_release_langsys_table(mut tab: *mut clt_langsys_table) {
     if !tab.is_null() {
@@ -426,7 +426,7 @@ unsafe extern "C" fn clt_read_feature_table(
     (*tab).FeatureParams = tt_get_unsigned_pair((*sfont).handle);
     len = 2i32;
     len += clt_read_number_list(&mut (*tab).LookupListIndex, sfont);
-    return len;
+    len
 }
 unsafe extern "C" fn clt_release_feature_table(mut tab: *mut clt_feature_table) {
     if !tab.is_null() {
@@ -443,7 +443,7 @@ unsafe extern "C" fn clt_read_lookup_table(
     (*tab).LookupFlag = tt_get_unsigned_pair((*sfont).handle);
     len = 4i32;
     len += clt_read_number_list(&mut (*tab).SubTableList, sfont);
-    return len;
+    len
 }
 unsafe extern "C" fn clt_release_lookup_table(mut tab: *mut clt_lookup_table) {
     if !tab.is_null() {
@@ -493,7 +493,7 @@ unsafe extern "C" fn clt_read_coverage(mut cov: *mut clt_coverage, mut sfont: *m
             _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
         }
     }
-    return len;
+    len
 }
 unsafe extern "C" fn clt_release_coverage(mut cov: *mut clt_coverage) {
     if !cov.is_null() {
@@ -541,7 +541,7 @@ unsafe extern "C" fn clt_lookup_coverage(mut cov: *mut clt_coverage, mut gid: u1
             _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
         }
     }
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn otl_gsub_read_single(
     mut subtab: *mut otl_gsub_subtab,
@@ -601,7 +601,7 @@ unsafe extern "C" fn otl_gsub_read_single(
     } else {
         _tt_abort(b"unexpected SubstFormat\x00" as *const u8 as *const i8);
     }
-    return len;
+    len
 }
 unsafe extern "C" fn otl_gsub_read_alternate(
     mut subtab: *mut otl_gsub_subtab,
@@ -678,7 +678,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
         0i32,
     );
     len += clt_read_coverage(&mut (*data).coverage, sfont);
-    return len;
+    len
 }
 unsafe extern "C" fn otl_gsub_read_ligature(
     mut subtab: *mut otl_gsub_subtab,
@@ -790,7 +790,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
         0i32,
     );
     len += clt_read_coverage(&mut (*data).coverage, sfont);
-    return len;
+    len
 }
 unsafe extern "C" fn otl_gsub_release_single(mut subtab: *mut otl_gsub_subtab) {
     if !subtab.is_null() {
@@ -882,7 +882,7 @@ unsafe extern "C" fn otl_gsub_read_header(
     (*head).ScriptList = tt_get_unsigned_pair((*sfont).handle);
     (*head).FeatureList = tt_get_unsigned_pair((*sfont).handle);
     (*head).LookupList = tt_get_unsigned_pair((*sfont).handle);
-    return 10i32;
+    10i32
 }
 unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: *mut sfnt) -> i32 {
     let mut feat_idx: i32 = 0;
@@ -1340,7 +1340,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
     } else {
         return -1i32;
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn otl_gsub_apply_single(
     mut subtab: *mut otl_gsub_subtab,
@@ -1365,7 +1365,7 @@ unsafe extern "C" fn otl_gsub_apply_single(
             return 0i32;
         }
     }
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn otl_gsub_apply_alternate(
     mut subtab: *mut otl_gsub_subtab,
@@ -1391,7 +1391,7 @@ unsafe extern "C" fn otl_gsub_apply_alternate(
             }
         }
     }
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn glyph_seq_cmp(
     mut glyph_seq0: *mut GlyphID,
@@ -1410,7 +1410,7 @@ unsafe extern "C" fn glyph_seq_cmp(
         }
         i = i.wrapping_add(1)
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn otl_gsub_apply_ligature(
     mut subtab: *mut otl_gsub_subtab,
@@ -1447,7 +1447,7 @@ unsafe extern "C" fn otl_gsub_apply_ligature(
             }
         }
     }
-    return -1i32;
+    -1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_new() -> *mut otl_gsub {
@@ -1457,7 +1457,7 @@ pub unsafe extern "C" fn otl_gsub_new() -> *mut otl_gsub {
     (*gsub_list).num_gsubs = 0i32;
     (*gsub_list).select = -1i32;
     (*gsub_list).first = 0 as *mut gsub_entry;
-    return gsub_list as *mut otl_gsub;
+    gsub_list as *mut otl_gsub
 }
 unsafe extern "C" fn clear_chain(mut gsub_list: *mut otl_gsub) {
     let mut entry: *mut gsub_entry = 0 as *mut gsub_entry;
@@ -1527,7 +1527,7 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
         free((*gsub).language as *mut libc::c_void);
         free((*gsub).feature as *mut libc::c_void);
     }
-    return retval;
+    retval
 }
 unsafe extern "C" fn scan_otl_tag(
     mut otl_tags: *const i8,
@@ -1589,7 +1589,7 @@ unsafe extern "C" fn scan_otl_tag(
         dpx_warning(b"No valid OTL feature tag specified.\x00" as *const u8 as *const i8);
         return -1i32;
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_release(mut gsub_list: *mut otl_gsub) {
@@ -1655,7 +1655,7 @@ pub unsafe extern "C" fn otl_gsub_apply(mut gsub_list: *mut otl_gsub, mut gid: *
         }
         j += 1
     }
-    return retval;
+    retval
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_apply_alt(
@@ -1685,7 +1685,7 @@ pub unsafe extern "C" fn otl_gsub_apply_alt(
         }
         j += 1
     }
-    return retval;
+    retval
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_apply_lig(
@@ -1716,7 +1716,7 @@ pub unsafe extern "C" fn otl_gsub_apply_lig(
         }
         j += 1
     }
-    return retval;
+    retval
 }
 unsafe extern "C" fn gsub_find(
     mut gsub_list: *mut otl_gsub,
@@ -1737,7 +1737,7 @@ unsafe extern "C" fn gsub_find(
         }
         i += 1
     }
-    return -1i32;
+    -1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_select(
@@ -1747,7 +1747,7 @@ pub unsafe extern "C" fn otl_gsub_select(
     mut feature: *const i8,
 ) -> i32 {
     (*gsub_list).select = gsub_find(gsub_list, script, language, feature);
-    return (*gsub_list).select;
+    (*gsub_list).select
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_set_chain(
@@ -1804,7 +1804,7 @@ pub unsafe extern "C" fn otl_gsub_set_chain(
     if !prev.is_null() {
         (*prev).next = 0 as *mut gsub_entry
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_gsub_add_feat_list(
@@ -1857,7 +1857,7 @@ pub unsafe extern "C" fn otl_gsub_add_feat_list(
         nextptr = nextptr.offset(1);
         p = nextptr
     }
-    return 0i32;
+    0i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1912,5 +1912,5 @@ pub unsafe extern "C" fn otl_gsub_apply_chain(
         }
         entry = (*entry).next
     }
-    return retval;
+    retval
 }

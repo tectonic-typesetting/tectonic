@@ -484,7 +484,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -652,7 +652,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         pdf_new_name(b"Subtype\x00" as *const u8 as *const i8),
         pdf_new_name(b"TrueType\x00" as *const u8 as *const i8),
     );
-    return 0i32;
+    0i32
 }
 static mut required_table: [C2RustUnnamed; 13] = [
     {
@@ -934,7 +934,7 @@ unsafe extern "C" fn do_builtin_encoding(
         cmap_table as *mut libc::c_void,
         274_u32,
     );
-    return 0i32;
+    0i32
 }
 /* WARNING: This modifies glyphname itself */
 unsafe extern "C" fn agl_decompose_glyphname(
@@ -971,7 +971,7 @@ unsafe extern "C" fn agl_decompose_glyphname(
         *fresh1 = p;
         n += 1
     }
-    return n;
+    n
 }
 unsafe extern "C" fn select_gsub(mut feat: *const i8, mut gm: *mut glyph_mapper) -> i32 {
     let mut idx: i32 = 0;
@@ -1011,7 +1011,7 @@ unsafe extern "C" fn select_gsub(mut feat: *const i8, mut gm: *mut glyph_mapper)
         );
         return if idx >= 0i32 { 0i32 } else { -1i32 };
     }
-    return -1i32;
+    -1i32
 }
 /* Apply GSUB. This is a bit tricky... */
 unsafe extern "C" fn selectglyph(
@@ -1098,7 +1098,7 @@ unsafe extern "C" fn selectglyph(
     }
     free(s as *mut libc::c_void);
     *out = in_0;
-    return error;
+    error
 }
 /* Compose glyphs via ligature substitution. */
 unsafe extern "C" fn composeglyph(
@@ -1136,7 +1136,7 @@ unsafe extern "C" fn composeglyph(
     if error == 0 {
         error = otl_gsub_apply_lig((*gm).gsub, glyphs, n_glyphs as u16, gid)
     }
-    return error;
+    error
 }
 /* This may be called by findparanoiac(). */
 unsafe extern "C" fn composeuchar(
@@ -1169,7 +1169,7 @@ unsafe extern "C" fn composeuchar(
         error = composeglyph(gids, n_unicodes, feat, gm, gid)
     }
     free(gids as *mut libc::c_void);
-    return error;
+    error
 }
 /* Search 'post' table. */
 unsafe extern "C" fn findposttable(
@@ -1181,7 +1181,11 @@ unsafe extern "C" fn findposttable(
         return -1i32;
     }
     *gid = tt_lookup_post_table((*gm).nametogid, glyph_name);
-    return if *gid as i32 == 0i32 { -1i32 } else { 0i32 };
+    if *gid as i32 == 0i32 {
+        -1i32
+    } else {
+        0i32
+    }
 }
 /* This is wrong. We must care about '.'. */
 /* Glyph names are concatinated with '_'. */
@@ -1248,7 +1252,7 @@ unsafe extern "C" fn findcomposite(
         }
     }
     free(gname as *mut libc::c_void);
-    return error;
+    error
 }
 /* glyphname should not have suffix here */
 unsafe extern "C" fn findparanoiac(
@@ -1354,7 +1358,11 @@ unsafe extern "C" fn findparanoiac(
         agln = (*agln).alternate
     }
     *gid = idx;
-    return if idx as i32 == 0i32 { -1i32 } else { 0i32 };
+    if idx as i32 == 0i32 {
+        -1i32
+    } else {
+        0i32
+    }
 }
 unsafe extern "C" fn resolve_glyph(
     mut glyphname: *const i8,
@@ -1409,7 +1417,7 @@ unsafe extern "C" fn resolve_glyph(
     }
     free(suffix as *mut libc::c_void);
     free(name as *mut libc::c_void);
-    return error;
+    error
 }
 /* Things are complicated. We still need to use PostScript
  * glyph names. But OpenType fonts may not have PS name to
@@ -1427,7 +1435,7 @@ unsafe extern "C" fn setup_glyph_mapper(mut gm: *mut glyph_mapper, mut sfont: *m
         return -1i32;
     }
     (*gm).gsub = otl_gsub_new();
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn clean_glyph_mapper(mut gm: *mut glyph_mapper) {
     if !(*gm).gsub.is_null() {
@@ -1582,7 +1590,7 @@ unsafe extern "C" fn do_custom_encoding(
         cmap_table as *mut libc::c_void,
         274_u32,
     );
-    return 0i32;
+    0i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1741,5 +1749,5 @@ pub unsafe extern "C" fn pdf_font_load_truetype(mut font: *mut pdf_font) -> i32 
         pdf_ref_obj(fontfile),
     );
     pdf_release_obj(fontfile);
-    return 0i32;
+    0i32
 }

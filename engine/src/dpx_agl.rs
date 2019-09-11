@@ -228,7 +228,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     } /* Acutesmall, Gravesmall, etc */
-    return false;
+    false
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -237,7 +237,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 static mut verbose: i32 = 0i32;
 #[no_mangle]
@@ -253,7 +253,7 @@ unsafe extern "C" fn agl_new_name() -> *mut agl_name {
     (*agln).n_components = 0i32;
     (*agln).alternate = 0 as *mut agl_name;
     (*agln).is_predef = 0i32;
-    return agln;
+    agln
 }
 unsafe extern "C" fn agl_release_name(mut agln: *mut agl_name) {
     let mut next: *mut agl_name = 0 as *mut agl_name;
@@ -307,7 +307,7 @@ pub unsafe extern "C" fn agl_chop_suffix(
         strcpy(name, glyphname);
         *suffix = 0 as *mut i8
     }
-    return name;
+    name
 }
 static mut modifiers: [*const i8; 21] = [
     b"acute\x00" as *const u8 as *const i8,
@@ -362,7 +362,7 @@ unsafe extern "C" fn skip_capital(mut p: *mut *const i8, mut endptr: *const i8) 
         *p = (*p).offset(1);
         slen = 1i32
     }
-    return slen;
+    slen
 }
 unsafe extern "C" fn skip_modifier(mut p: *mut *const i8, mut endptr: *const i8) -> size_t {
     let mut slen: size_t = 0i32 as size_t;
@@ -385,7 +385,7 @@ unsafe extern "C" fn skip_modifier(mut p: *mut *const i8, mut endptr: *const i8)
             i = i.wrapping_add(1)
         }
     }
-    return slen;
+    slen
 }
 unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
     let mut len: size_t = 0;
@@ -429,7 +429,7 @@ unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
         }
         len = (len as u64).wrapping_sub(slen) as size_t as size_t
     }
-    return true;
+    true
 }
 static mut var_list: [C2RustUnnamed_0; 14] = [
     {
@@ -806,7 +806,7 @@ pub unsafe extern "C" fn agl_suffix_to_otltag(mut suffix: *const i8) -> *const i
         }
         i += 1
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 unsafe extern "C" fn agl_guess_name(mut glyphname: *const i8) -> ssize_t {
     let mut i: ssize_t = 0;
@@ -830,7 +830,7 @@ unsafe extern "C" fn agl_guess_name(mut glyphname: *const i8) -> ssize_t {
         }
         i += 1
     }
-    return -1i32 as ssize_t;
+    -1i32 as ssize_t
 }
 unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_name {
     let mut agln: *mut agl_name = 0 as *mut agl_name;
@@ -913,7 +913,7 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         );
         *(*agln).name.offset(n as isize) = '\u{0}' as i32 as i8
     }
-    return agln;
+    agln
 }
 static mut aglmap: ht_table = ht_table {
     count: 0,
@@ -1119,7 +1119,7 @@ unsafe extern "C" fn agl_load_listfile(mut filename: *const i8, mut is_predef: i
     if verbose != 0 {
         dpx_message(b">\x00" as *const u8 as *const i8);
     }
-    return count;
+    count
 }
 #[no_mangle]
 pub unsafe extern "C" fn agl_lookup_list(mut glyphname: *const i8) -> *mut agl_name {
@@ -1132,7 +1132,7 @@ pub unsafe extern "C" fn agl_lookup_list(mut glyphname: *const i8) -> *mut agl_n
         glyphname as *const libc::c_void,
         strlen(glyphname) as i32,
     ) as *mut agl_name;
-    return agln;
+    agln
 }
 #[no_mangle]
 pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
@@ -1187,7 +1187,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 #[no_mangle]
 pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i32 {
@@ -1246,7 +1246,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
         }
         ucv = -1i32
     }
-    return ucv;
+    ucv
 }
 unsafe extern "C" fn xtol(mut start: *const i8, mut len: i32) -> i32 {
     let mut v: i32 = 0i32;
@@ -1269,7 +1269,7 @@ unsafe extern "C" fn xtol(mut start: *const i8, mut len: i32) -> i32 {
         }
         start = start.offset(1)
     }
-    return v;
+    v
 }
 unsafe extern "C" fn put_unicode_glyph(
     mut name: *const i8,
@@ -1294,7 +1294,7 @@ unsafe extern "C" fn put_unicode_glyph(
             p = p.offset(4)
         }
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn agl_sput_UTF16BE(
@@ -1411,7 +1411,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
     if !fail_count.is_null() {
         *fail_count = count
     }
-    return len;
+    len
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1560,5 +1560,5 @@ pub unsafe extern "C" fn agl_get_unicodes(
         free(name as *mut libc::c_void);
         p = delim.offset(1)
     }
-    return count;
+    count
 }

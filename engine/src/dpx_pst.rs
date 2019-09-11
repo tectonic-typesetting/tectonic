@@ -148,7 +148,7 @@ unsafe extern "C" fn pst_parse_any(mut inbuf: *mut *mut u8, mut inbufend: *mut u
     );
     *data.offset(len as isize) = '\u{0}' as i32 as u8;
     *inbuf = cur;
-    return pst_new_obj(-1i32, data as *mut libc::c_void);
+    pst_new_obj(-1i32, data as *mut libc::c_void)
 }
 unsafe extern "C" fn skip_line(mut inbuf: *mut *mut u8, mut inbufend: *mut u8) {
     while *inbuf < inbufend && **inbuf as i32 != '\n' as i32 && **inbuf as i32 != '\r' as i32 {
@@ -273,5 +273,5 @@ pub unsafe extern "C" fn pst_get_token(
     if obj.is_null() {
         obj = pst_parse_any(inbuf, inbufend)
     }
-    return obj;
+    obj
 }

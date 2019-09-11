@@ -627,7 +627,7 @@ pub struct UFILE {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* xetex-ini.c: WEB initialization code translated to C
    Copyright 2016-2018 The Tectonic Project
@@ -1682,12 +1682,12 @@ pub unsafe extern "C" fn trie_node(mut p: trie_pointer) -> trie_pointer {
 #[no_mangle]
 pub unsafe extern "C" fn compress_trie(mut p: trie_pointer) -> trie_pointer {
     if p == 0i32 {
-        return 0i32;
+        0i32
     } else {
         *trie_l.offset(p as isize) = compress_trie(*trie_l.offset(p as isize));
         *trie_r.offset(p as isize) = compress_trie(*trie_r.offset(p as isize));
-        return trie_node(p);
-    };
+        trie_node(p)
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
@@ -15993,5 +15993,5 @@ pub unsafe extern "C" fn tt_run_engine(
     trie_trl = mfree(trie_trl as *mut libc::c_void) as *mut trie_pointer;
     trie_tro = mfree(trie_tro as *mut libc::c_void) as *mut trie_pointer;
     trie_trc = mfree(trie_trc as *mut libc::c_void) as *mut u16;
-    return history;
+    history
 }

@@ -1252,7 +1252,7 @@ pub struct UFILE {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* xetex-pagebuilder */
 /* xetex-scaledmath */
@@ -1260,18 +1260,18 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 /* Inlines */
 #[inline]
 unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    return p >= hi_mem_min;
+    p >= hi_mem_min
 }
 /* Strings printed this way will end up in the .log as well
  * as the terminal output. */
 #[inline]
 unsafe extern "C" fn cur_length() -> pool_pointer {
     /*41: The length of the current string in the pool */
-    return pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize);
+    pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize)
 }
 #[inline]
 unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    return ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32;
+    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }
 #[inline]
 unsafe extern "C" fn print_c_string(mut str: *const i8) {
@@ -1313,7 +1313,7 @@ pub unsafe extern "C" fn badness(mut t: scaled_t, mut s: scaled_t) -> i32 {
         /* magic constant */
         return 10000i32;
     }
-    return (r * r * r + 0x20000i32) / 0x40000i32;
+    (r * r * r + 0x20000i32) / 0x40000i32
 }
 /*:112*/
 /*118:*/
@@ -1444,7 +1444,7 @@ pub unsafe extern "C" fn get_avail() -> i32 {
         }
     }
     (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn flush_list(mut p: i32) {
@@ -1588,7 +1588,7 @@ pub unsafe extern "C" fn new_null_box() -> i32 {
     (*mem.offset((p + 5i32) as isize)).b16.s1 = 0_u16;
     (*mem.offset((p + 5i32) as isize)).b16.s0 = 0_u16;
     (*mem.offset((p + 6i32) as isize)).gr = 0.0f64;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_rule() -> i32 {
@@ -1599,7 +1599,7 @@ pub unsafe extern "C" fn new_rule() -> i32 {
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0x40000000i32;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = -0x40000000i32;
     (*mem.offset((p + 3i32) as isize)).b32.s1 = -0x40000000i32;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_ligature(mut f: internal_font_number, mut c: u16, mut q: i32) -> i32 {
@@ -1610,7 +1610,7 @@ pub unsafe extern "C" fn new_ligature(mut f: internal_font_number, mut c: u16, m
     (*mem.offset((p + 1i32) as isize)).b16.s0 = c;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = q;
     (*mem.offset(p as isize)).b16.s0 = 0_u16;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_lig_item(mut c: u16) -> i32 {
@@ -1618,7 +1618,7 @@ pub unsafe extern "C" fn new_lig_item(mut c: u16) -> i32 {
     p = get_node(2i32);
     (*mem.offset(p as isize)).b16.s0 = c;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0xfffffffi32;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_disc() -> i32 {
@@ -1628,7 +1628,7 @@ pub unsafe extern "C" fn new_disc() -> i32 {
     (*mem.offset(p as isize)).b16.s0 = 0_u16;
     (*mem.offset((p + 1i32) as isize)).b32.s0 = -0xfffffffi32;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0xfffffffi32;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn copy_native_glyph_info(mut src: i32, mut dest: i32) {
@@ -1654,7 +1654,7 @@ pub unsafe extern "C" fn new_math(mut w: scaled_t, mut s: small_number) -> i32 {
     (*mem.offset(p as isize)).b16.s1 = 9_u16;
     (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = w;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_spec(mut p: i32) -> i32 {
@@ -1665,7 +1665,7 @@ pub unsafe extern "C" fn new_spec(mut p: i32) -> i32 {
     (*mem.offset((q + 1i32) as isize)).b32.s1 = (*mem.offset((p + 1i32) as isize)).b32.s1;
     (*mem.offset((q + 2i32) as isize)).b32.s1 = (*mem.offset((p + 2i32) as isize)).b32.s1;
     (*mem.offset((q + 3i32) as isize)).b32.s1 = (*mem.offset((p + 3i32) as isize)).b32.s1;
-    return q;
+    q
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_param_glue(mut n: small_number) -> i32 {
@@ -1692,7 +1692,7 @@ pub unsafe extern "C" fn new_param_glue(mut n: small_number) -> i32 {
     (*mem.offset((p + 1i32) as isize)).b32.s0 = q;
     let ref mut fresh2 = (*mem.offset(q as isize)).b32.s1;
     *fresh2 += 1;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_glue(mut q: i32) -> i32 {
@@ -1704,7 +1704,7 @@ pub unsafe extern "C" fn new_glue(mut q: i32) -> i32 {
     (*mem.offset((p + 1i32) as isize)).b32.s0 = q;
     let ref mut fresh3 = (*mem.offset(q as isize)).b32.s1;
     *fresh3 += 1;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_skip_param(mut n: small_number) -> i32 {
@@ -1728,7 +1728,7 @@ pub unsafe extern "C" fn new_skip_param(mut n: small_number) -> i32 {
     p = new_glue(temp_ptr);
     (*mem.offset(temp_ptr as isize)).b32.s1 = -0xfffffffi32;
     (*mem.offset(p as isize)).b16.s0 = (n as i32 + 1i32) as u16;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_kern(mut w: scaled_t) -> i32 {
@@ -1737,7 +1737,7 @@ pub unsafe extern "C" fn new_kern(mut w: scaled_t) -> i32 {
     (*mem.offset(p as isize)).b16.s1 = 11_u16;
     (*mem.offset(p as isize)).b16.s0 = 0_u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = w;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_penalty(mut m: i32) -> i32 {
@@ -1746,7 +1746,7 @@ pub unsafe extern "C" fn new_penalty(mut m: i32) -> i32 {
     (*mem.offset(p as isize)).b16.s1 = 12_u16;
     (*mem.offset(p as isize)).b16.s0 = 0_u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = m;
-    return p;
+    p
 }
 /*:165*/
 #[no_mangle]
@@ -1762,7 +1762,7 @@ pub unsafe extern "C" fn prev_rightmost(mut s: i32, mut e: i32) -> i32 {
             return -0xfffffffi32;
         }
     }
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn short_display(mut p: i32) {
@@ -3027,7 +3027,7 @@ pub unsafe extern "C" fn copy_node_list(mut p: i32) -> i32 {
     q = (*mem.offset(h as isize)).b32.s1;
     (*mem.offset(h as isize)).b32.s1 = avail;
     avail = h;
-    return q;
+    q
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_mode(mut m: i32) {
@@ -5747,7 +5747,7 @@ pub unsafe extern "C" fn id_lookup(mut j: i32, mut l: i32) -> i32 {
             p = (*hash.offset(p as isize)).s0
         }
     }
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn prim_lookup(mut s: str_number) -> i32 {
@@ -5924,7 +5924,7 @@ pub unsafe extern "C" fn pseudo_input() -> bool {
     last = first;
     p = (*mem.offset(pseudo_files as isize)).b32.s0;
     if p == -0xfffffffi32 {
-        return false;
+        false
     } else {
         (*mem.offset(pseudo_files as isize)).b32.s0 = (*mem.offset(p as isize)).b32.s1;
         sz = (*mem.offset(p as isize)).b32.s0;
@@ -5960,8 +5960,8 @@ pub unsafe extern "C" fn pseudo_input() -> bool {
             last -= 1
         }
         free_node(p, sz);
-        return true;
-    };
+        true
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn pseudo_close() {
@@ -10031,7 +10031,7 @@ pub unsafe extern "C" fn scan_keyword(mut s: *const i8) -> bool {
         }
     }
     flush_list((*mem.offset((4999999i32 - 13i32) as isize)).b32.s1);
-    return true;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn mu_error() {
@@ -10669,7 +10669,7 @@ pub unsafe extern "C" fn effective_char(
         c = apply_tfm_font_mapping(*font_mapping.offset(f as isize), c as i32) as u16
     }
     xtx_ligature_present = false;
-    return c as i32;
+    c as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn scan_font_ident() {
@@ -12886,7 +12886,7 @@ unsafe extern "C" fn round_decimals(mut k: small_number) -> scaled_t {
         k -= 1;
         a = (a + dig[k as usize] as i32 * 0x20000i32) / 10i32
     }
-    return (a + 1i32) / 2i32;
+    (a + 1i32) / 2i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn xetex_scan_dimen(
@@ -13573,7 +13573,7 @@ pub unsafe extern "C" fn add_or_sub(
         arith_error = true;
         a = 0i32
     }
-    return a;
+    a
 }
 #[no_mangle]
 pub unsafe extern "C" fn quotient(mut n: i32, mut d: i32) -> i32 {
@@ -13603,7 +13603,7 @@ pub unsafe extern "C" fn quotient(mut n: i32, mut d: i32) -> i32 {
             a = -a
         }
     }
-    return a;
+    a
 }
 #[no_mangle]
 pub unsafe extern "C" fn fract(mut x: i32, mut n: i32, mut d: i32, mut max_answer: i32) -> i32 {
@@ -13724,7 +13724,7 @@ pub unsafe extern "C" fn fract(mut x: i32, mut n: i32, mut d: i32, mut max_answe
         }
         _ => {}
     }
-    return a;
+    a
 }
 #[no_mangle]
 pub unsafe extern "C" fn scan_expr() {
@@ -14070,7 +14070,7 @@ pub unsafe extern "C" fn scan_rule_spec() -> i32 {
             (*mem.offset((q + 2i32) as isize)).b32.s1 = cur_val
         }
     }
-    return q;
+    q
 }
 #[no_mangle]
 pub unsafe extern "C" fn scan_general_text() {
@@ -14331,11 +14331,11 @@ pub unsafe extern "C" fn str_toks_cat(mut b: pool_pointer, mut cat: small_number
         k += 1
     }
     pool_ptr = b;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn str_toks(mut b: pool_pointer) -> i32 {
-    return str_toks_cat(b, 0i32 as small_number);
+    str_toks_cat(b, 0i32 as small_number)
 }
 #[no_mangle]
 pub unsafe extern "C" fn the_toks() -> i32 {
@@ -15057,7 +15057,7 @@ pub unsafe extern "C" fn scan_toks(mut macro_def: bool, mut xpand: bool) -> i32 
         (*mem.offset(q as isize)).b32.s0 = hash_brace;
         p = q
     }
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn read_toks(mut n: i32, mut r: i32, mut j: i32) {
@@ -15945,7 +15945,7 @@ pub unsafe extern "C" fn more_name(mut c: UTF16_code) -> bool {
     } else if c as i32 == '.' as i32 {
         ext_delimiter = cur_length()
     }
-    return true;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn end_name() {
@@ -16071,7 +16071,7 @@ pub unsafe extern "C" fn make_name_string() -> str_number {
     name_in_progress = save_name_in_progress;
     area_delimiter = save_area_delimiter;
     ext_delimiter = save_ext_delimiter;
-    return Result;
+    Result
 }
 #[no_mangle]
 pub unsafe extern "C" fn scan_file_name() {
@@ -16533,7 +16533,7 @@ pub unsafe extern "C" fn effective_char_info(mut f: internal_font_number, mut c:
         c = apply_tfm_font_mapping(*font_mapping.offset(f as isize), c as i32) as u16
     }
     xtx_ligature_present = false;
-    return (*font_info.offset((*char_base.offset(f as isize) + c as i32) as isize)).b16;
+    (*font_info.offset((*char_base.offset(f as isize) + c as i32) as isize)).b16
 }
 #[no_mangle]
 pub unsafe extern "C" fn char_warning(mut f: internal_font_number, mut c: i32) {
@@ -16785,7 +16785,7 @@ pub unsafe extern "C" fn new_native_word_node(mut f: internal_font_number, mut n
     (*mem.offset((q + 4i32) as isize)).b16.s0 = 0_u16;
     let ref mut fresh48 = (*mem.offset((q + 5i32) as isize)).ptr;
     *fresh48 = 0 as *mut libc::c_void;
-    return q;
+    q
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_native_character(
@@ -16938,7 +16938,7 @@ pub unsafe extern "C" fn new_native_character(
         .b32
         .s1 > 0i32) as i32,
     );
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn font_feature_warning(
@@ -17259,7 +17259,7 @@ pub unsafe extern "C" fn load_native_font(
     let ref mut fresh63 = *font_mapping.offset(font_ptr as isize);
     *fresh63 = loaded_font_mapping;
     *font_flags.offset(font_ptr as isize) = loaded_font_flags;
-    return font_ptr;
+    font_ptr
 }
 #[no_mangle]
 pub unsafe extern "C" fn do_locale_linebreaks(mut s: i32, mut len: i32) {
@@ -17548,9 +17548,9 @@ pub unsafe extern "C" fn bad_utf8_warning() {
 #[no_mangle]
 pub unsafe extern "C" fn get_input_normalization_state() -> i32 {
     if eqtb.is_null() {
-        return 0i32;
+        0
     } else {
-        return (*eqtb.offset(
+        (*eqtb.offset(
             (1i32
                 + (0x10ffffi32 + 1i32)
                 + (0x10ffffi32 + 1i32)
@@ -17578,12 +17578,12 @@ pub unsafe extern "C" fn get_input_normalization_state() -> i32 {
                 + 76i32) as isize,
         ))
         .b32
-        .s1;
-    };
+        .s1
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_tracing_fonts_state() -> i32 {
-    return (*eqtb.offset(
+    (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -17611,7 +17611,7 @@ pub unsafe extern "C" fn get_tracing_fonts_state() -> i32 {
             + 79i32) as isize,
     ))
     .b32
-    .s1;
+    .s1
 }
 #[no_mangle]
 pub unsafe extern "C" fn read_font_info(
@@ -19782,7 +19782,7 @@ pub unsafe extern "C" fn read_font_info(
             end_diagnostic(false);
         }
     }
-    return g;
+    g
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_character(mut f: internal_font_number, mut c: UTF16_code) -> i32 {
@@ -19809,7 +19809,7 @@ pub unsafe extern "C" fn new_character(mut f: internal_font_number, mut c: UTF16
         }
     }
     char_warning(f, c as i32);
-    return -0xfffffffi32;
+    -0xfffffffi32
 }
 #[no_mangle]
 pub unsafe extern "C" fn scan_spec(mut c: group_code, mut three_codes: bool) {
@@ -19915,13 +19915,13 @@ pub unsafe extern "C" fn char_pw(mut p: i32, mut side: small_number) -> scaled_t
     if c == 0i32 {
         return 0i32;
     }
-    return round_xn_over_d(
+    round_xn_over_d(
         (*font_info.offset((6i32 + *param_base.offset(f as isize)) as isize))
             .b32
             .s1,
         c,
         1000i32,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_margin_kern(
@@ -19934,7 +19934,7 @@ pub unsafe extern "C" fn new_margin_kern(
     (*mem.offset(k as isize)).b16.s1 = 40_u16;
     (*mem.offset(k as isize)).b16.s0 = side as u16;
     (*mem.offset((k + 1i32) as isize)).b32.s1 = w;
-    return k;
+    k
 }
 #[no_mangle]
 pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number) -> i32 {
@@ -20811,7 +20811,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
             }
         }
     }
-    return r;
+    r
 }
 #[no_mangle]
 pub unsafe extern "C" fn vpackage(
@@ -21191,7 +21191,7 @@ pub unsafe extern "C" fn vpackage(
             }
         }
     }
-    return r;
+    r
 }
 #[no_mangle]
 pub unsafe extern "C" fn append_to_vlist(mut b: i32) {
@@ -21327,7 +21327,7 @@ pub unsafe extern "C" fn new_noad() -> i32 {
     (*mem.offset((p + 1i32) as isize)).b32 = empty;
     (*mem.offset((p + 3i32) as isize)).b32 = empty;
     (*mem.offset((p + 2i32) as isize)).b32 = empty;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_style(mut s: small_number) -> i32 {
@@ -21337,7 +21337,7 @@ pub unsafe extern "C" fn new_style(mut s: small_number) -> i32 {
     (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = 0i32;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_choice() -> i32 {
@@ -21349,7 +21349,7 @@ pub unsafe extern "C" fn new_choice() -> i32 {
     (*mem.offset((p + 1i32) as isize)).b32.s1 = -0xfffffffi32;
     (*mem.offset((p + 2i32) as isize)).b32.s0 = -0xfffffffi32;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = -0xfffffffi32;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn show_info() {
@@ -21894,7 +21894,7 @@ pub unsafe extern "C" fn fin_col() -> bool {
     }
     cur_align = p;
     init_col();
-    return false;
+    false
 }
 #[no_mangle]
 pub unsafe extern "C" fn fin_row() {
@@ -22640,7 +22640,7 @@ pub unsafe extern "C" fn max_hyphenatable_length() -> i32 {
     {
         return 4095i32;
     }
-    return (*eqtb.offset(
+    (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
             + (0x10ffffi32 + 1i32)
@@ -22668,7 +22668,7 @@ pub unsafe extern "C" fn max_hyphenatable_length() -> i32 {
             + 82i32) as isize,
     ))
     .b32
-    .s1;
+    .s1
 }
 #[no_mangle]
 pub unsafe extern "C" fn eTeX_enabled(mut b: bool, mut j: u16, mut k: i32) -> bool {
@@ -22685,7 +22685,7 @@ pub unsafe extern "C" fn eTeX_enabled(mut b: bool, mut j: u16, mut k: i32) -> bo
             b"Sorry, this optional e-TeX feature has been disabled.\x00" as *const u8 as *const i8;
         error();
     }
-    return b;
+    b
 }
 #[no_mangle]
 pub unsafe extern "C" fn show_save_groups() {
@@ -23366,7 +23366,7 @@ pub unsafe extern "C" fn vert_break(mut p: i32, mut h: scaled_t, mut d: scaled_t
         prev_p = p;
         p = (*mem.offset(prev_p as isize)).b32.s1
     }
-    return best_place;
+    best_place
 }
 #[no_mangle]
 pub unsafe extern "C" fn vsplit(mut n: i32, mut h: scaled_t) -> i32 {
@@ -23591,7 +23591,7 @@ pub unsafe extern "C" fn vsplit(mut n: i32, mut h: scaled_t) -> i32 {
             delete_sa_ref(cur_ptr);
         }
     }
-    return vpackage(
+    vpackage(
         p,
         h,
         0i32 as small_number,
@@ -23627,7 +23627,7 @@ pub unsafe extern "C" fn vsplit(mut n: i32, mut h: scaled_t) -> i32 {
         ))
         .b32
         .s1,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_totals() {
@@ -23948,11 +23948,11 @@ pub unsafe extern "C" fn report_illegal_case() {
 #[no_mangle]
 pub unsafe extern "C" fn privileged() -> bool {
     if cur_list.mode as i32 > 0i32 {
-        return true;
+        true
     } else {
         report_illegal_case();
-        return false;
-    };
+        false
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn its_all_over() -> bool {
@@ -24001,7 +24001,7 @@ pub unsafe extern "C" fn its_all_over() -> bool {
         cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
         build_page();
     }
-    return false;
+    false
 }
 #[no_mangle]
 pub unsafe extern "C" fn append_glue() {
@@ -25084,13 +25084,13 @@ pub unsafe extern "C" fn package(mut c: small_number) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn norm_min(mut h: i32) -> small_number {
-    if h <= 0i32 {
-        return 1i32 as small_number;
+    (if h <= 0 {
+        1
     } else if h >= 63i32 {
-        return 63i32 as small_number;
+        63
     } else {
-        return h as small_number;
-    };
+        h
+    }) as small_number
 }
 #[no_mangle]
 pub unsafe extern "C" fn new_graf(mut indented: bool) {
@@ -31942,7 +31942,7 @@ pub unsafe extern "C" fn tokens_to_string(mut p: i32) -> str_number {
         pool_size - pool_ptr,
     );
     selector = old_setting as selector_t;
-    return make_string();
+    make_string()
 }
 #[no_mangle]
 pub unsafe extern "C" fn scan_pdf_ext_toks() {
@@ -32050,7 +32050,7 @@ pub unsafe extern "C" fn prune_page_top(mut p: i32, mut s: bool) -> i32 {
             }
         }
     }
-    return (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1;
+    (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1
 }
 #[no_mangle]
 pub unsafe extern "C" fn do_marks(mut a: small_number, mut l: small_number, mut q: i32) -> bool {
@@ -32159,7 +32159,7 @@ pub unsafe extern "C" fn do_marks(mut a: small_number, mut l: small_number, mut 
             }
         }
     }
-    return q == -0xfffffffi32;
+    q == -0xfffffffi32
 }
 #[no_mangle]
 pub unsafe extern "C" fn do_assignments() {

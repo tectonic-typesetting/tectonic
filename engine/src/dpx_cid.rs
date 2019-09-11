@@ -364,14 +364,14 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 #[inline]
 unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -380,7 +380,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     {
@@ -644,7 +644,7 @@ unsafe extern "C" fn CIDFont_new() -> *mut CIDFont {
     (*font).indirect = 0 as *mut pdf_obj;
     (*font).fontdict = 0 as *mut pdf_obj;
     (*font).descriptor = 0 as *mut pdf_obj;
-    return font;
+    font
 }
 /* It does write PDF objects. */
 unsafe extern "C" fn CIDFont_flush(mut font: *mut CIDFont) {
@@ -693,12 +693,12 @@ unsafe extern "C" fn CIDFont_release(mut font: *mut CIDFont) {
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_fontname(mut font: *mut CIDFont) -> *mut i8 {
     assert!(!font.is_null());
-    return (*font).fontname;
+    (*font).fontname
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_ident(mut font: *mut CIDFont) -> *mut i8 {
     assert!(!font.is_null());
-    return (*font).ident;
+    (*font).ident
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_opt_index(mut font: *mut CIDFont) -> i32 {
@@ -709,22 +709,22 @@ pub unsafe extern "C" fn CIDFont_get_opt_index(mut font: *mut CIDFont) -> i32 {
     } else {
         opt_index = 0i32
     }
-    return opt_index;
+    opt_index
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_subtype(mut font: *mut CIDFont) -> i32 {
     assert!(!font.is_null());
-    return (*font).subtype;
+    (*font).subtype
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_embedding(mut font: *mut CIDFont) -> i32 {
     assert!(!font.is_null());
-    return (*(*font).options).embed;
+    (*(*font).options).embed
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_CIDSysInfo(mut font: *mut CIDFont) -> *mut CIDSysInfo {
     assert!(!font.is_null());
-    return (*font).csi;
+    (*font).csi
 }
 /*
  * Returns ID of parent Type0 font
@@ -739,7 +739,7 @@ pub unsafe extern "C" fn CIDFont_get_parent_id(mut font: *mut CIDFont, mut wmode
             b"CIDFont\x00" as *const u8 as *const i8,
         );
     }
-    return (*font).parent[wmode as usize];
+    (*font).parent[wmode as usize]
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_get_resource(mut font: *mut CIDFont) -> *mut pdf_obj {
@@ -747,7 +747,7 @@ pub unsafe extern "C" fn CIDFont_get_resource(mut font: *mut CIDFont) -> *mut pd
     if (*font).indirect.is_null() {
         (*font).indirect = pdf_ref_obj((*font).fontdict)
     }
-    return pdf_link_obj((*font).indirect);
+    pdf_link_obj((*font).indirect)
 }
 /*
  * Set parent Type0 font.
@@ -800,7 +800,7 @@ pub unsafe extern "C" fn CIDFont_is_ACCFont(mut font: *mut CIDFont) -> bool {
         }
         i += 1
     }
-    return false;
+    false
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_is_UCSFont(mut font: *mut CIDFont) -> bool {
@@ -872,7 +872,7 @@ unsafe extern "C" fn CIDFont_dofont(mut font: *mut CIDFont) {
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_is_BaseFont(mut font: *mut CIDFont) -> bool {
     assert!(!font.is_null());
-    return (*font).flags & 1i32 << 0i32 != 0;
+    (*font).flags & 1i32 << 0i32 != 0
 }
 static mut cid_basefont: [C2RustUnnamed_2; 21] = [
     {
@@ -1304,7 +1304,7 @@ unsafe extern "C" fn CIDFont_base_open(
     (*font).fontdict = fontdict;
     (*font).descriptor = descriptor;
     (*opt).embed = 0i32;
-    return 0i32;
+    0i32
 }
 static mut __cache: *mut FontCache = 0 as *const FontCache as *mut FontCache;
 unsafe extern "C" fn CIDFont_cache_init() {
@@ -1337,7 +1337,7 @@ pub unsafe extern "C" fn CIDFont_cache_get(mut font_id: i32) -> *mut CIDFont {
             font_id,
         );
     }
-    return *(*__cache).fonts.offset(font_id as isize);
+    *(*__cache).fonts.offset(font_id as isize)
 }
 /*
  * cmap_csi is NULL if CMap is Identity.
@@ -1476,7 +1476,7 @@ pub unsafe extern "C" fn CIDFont_cache_find(
     } else if !opt.is_null() {
         release_opt(opt);
     }
-    return font_id;
+    font_id
 }
 /* FIXME */
 /* Converted from Type 1 */
@@ -1671,7 +1671,7 @@ unsafe extern "C" fn get_cidsysinfo(
             );
         }
     }
-    return csi;
+    csi
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

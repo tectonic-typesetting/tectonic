@@ -303,7 +303,7 @@ unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> u16 {
     if gid as i32 == 65534i32 {
         _tt_abort(b"No empty glyph slot available.\x00" as *const u8 as *const i8);
     }
-    return gid;
+    gid
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_find_glyph(mut g: *mut tt_glyphs, mut gid: u16) -> u16 {
@@ -319,7 +319,7 @@ pub unsafe extern "C" fn tt_find_glyph(mut g: *mut tt_glyphs, mut gid: u16) -> u
             idx = idx.wrapping_add(1)
         }
     }
-    return new_gid;
+    new_gid
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_index(mut g: *mut tt_glyphs, mut gid: u16) -> u16 {
@@ -335,7 +335,7 @@ pub unsafe extern "C" fn tt_get_index(mut g: *mut tt_glyphs, mut gid: u16) -> u1
     if idx as i32 == (*g).num_glyphs as i32 {
         idx = 0_u16
     }
-    return idx;
+    idx
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_add_glyph(
@@ -377,7 +377,7 @@ pub unsafe extern "C" fn tt_add_glyph(
     if new_gid as i32 > (*g).last_gid as i32 {
         (*g).last_gid = new_gid
     }
-    return new_gid;
+    new_gid
 }
 /*
  * Initialization
@@ -398,7 +398,7 @@ pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
         new((8192_u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
     memset((*g).used_slot as *mut libc::c_void, 0i32, 8192i32 as u64);
     tt_add_glyph(g, 0_u16, 0_u16);
-    return g;
+    g
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_build_finish(mut g: *mut tt_glyphs) {
@@ -430,7 +430,7 @@ unsafe extern "C" fn glyf_cmp(mut v1: *const libc::c_void, mut v2: *const libc::
     } else {
         cmp = 1i32
     }
-    return cmp;
+    cmp
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_glyphs) -> i32 {
@@ -912,7 +912,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
     free(hhea as *mut libc::c_void);
     free(head as *mut libc::c_void);
     free(os2 as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1107,5 +1107,5 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
         i = i.wrapping_add(1)
     }
     free(w_stat as *mut libc::c_void);
-    return 0i32;
+    0i32
 }

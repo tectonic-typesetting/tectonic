@@ -114,7 +114,7 @@ unsafe extern "C" fn tell_position(mut file: *mut FILE) -> i32 {
             size,
         );
     }
-    return size as i32;
+    size as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn file_size(mut file: *mut FILE) -> i32 {
@@ -122,7 +122,7 @@ pub unsafe extern "C" fn file_size(mut file: *mut FILE) -> i32 {
     seek_end(file);
     size = tell_position(file);
     rewind(file);
-    return size;
+    size
 }
 /* Unlike fgets, mfgets works with \r, \n, or \r\n end of lines. */
 #[no_mangle]
@@ -158,7 +158,7 @@ pub unsafe extern "C" fn mfgets(
     {
         ungetc(ch, file);
     }
-    return buffer;
+    buffer
 }
 /* Note: this is really just a random array used in other files. */
 #[no_mangle]
@@ -219,5 +219,5 @@ pub unsafe extern "C" fn tt_mfgets(
     {
         ttstub_input_ungetc(file, ch);
     }
-    return buffer;
+    buffer
 }

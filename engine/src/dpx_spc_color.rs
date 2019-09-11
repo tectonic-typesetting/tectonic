@@ -97,7 +97,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -137,11 +137,11 @@ unsafe extern "C" fn spc_handler_color_push(mut spe: *mut spc_env, mut args: *mu
     if error == 0 {
         pdf_color_push(&mut colorspec, &mut colorspec);
     }
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_color_pop(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     pdf_color_pop();
-    return 0i32;
+    0i32
 }
 /* Invoked by the special command "color rgb .625 0 0".
  * DVIPS clears the color stack, and then saves and sets the given color.
@@ -161,7 +161,7 @@ unsafe extern "C" fn spc_handler_color_default(
         pdf_color_clear_stack();
         pdf_color_set(&mut colorspec, &mut colorspec);
     }
-    return error;
+    error
 }
 /* This is from color special? */
 unsafe extern "C" fn spc_handler_background(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
@@ -175,7 +175,7 @@ unsafe extern "C" fn spc_handler_background(mut spe: *mut spc_env, mut args: *mu
     if error == 0 {
         pdf_doc_set_bgcolor(&mut colorspec);
     }
-    return error;
+    error
 }
 unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp;
@@ -209,7 +209,7 @@ pub unsafe extern "C" fn spc_color_check_special(mut buf: *const i8, mut len: i3
         }
     }
     free(q as *mut libc::c_void);
-    return r;
+    r
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -293,5 +293,5 @@ pub unsafe extern "C" fn spc_color_setup_handler(
         return -1i32;
     }
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
-    return 0i32;
+    0i32
 }

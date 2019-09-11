@@ -163,7 +163,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 static mut verbose: i32 = 0i32;
 #[no_mangle]
@@ -265,7 +265,7 @@ unsafe extern "C" fn parse_uc_coverage(
         }
         skip_white(pp, endptr);
     }
-    return coverage;
+    coverage
 }
 unsafe extern "C" fn add_rule(
     mut rule: *mut pdf_obj,
@@ -495,7 +495,7 @@ unsafe extern "C" fn parse_substrule(
     if *pp < endptr && **pp as i32 == '}' as i32 {
         *pp = (*pp).offset(1)
     }
-    return substrule;
+    substrule
 }
 unsafe extern "C" fn parse_block(
     mut gclass: *mut pdf_obj,
@@ -654,7 +654,7 @@ unsafe extern "C" fn parse_block(
     if *pp < endptr && **pp as i32 == '}' as i32 {
         *pp = (*pp).offset(1)
     }
-    return rule;
+    rule
 }
 unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     let mut rule: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -715,7 +715,7 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     rule = parse_block(gclass, &mut pp, endptr);
     pdf_release_obj(gclass);
     free(wbuf as *mut libc::c_void);
-    return rule;
+    rule
 }
 static mut otl_confs: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
 #[no_mangle]
@@ -724,26 +724,26 @@ pub unsafe extern "C" fn otl_find_conf(mut conf_name: *const i8) -> *mut pdf_obj
     let mut script: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut language: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut options: *mut pdf_obj = 0 as *mut pdf_obj;
-    return 0 as *mut pdf_obj;
+    0 as *mut pdf_obj
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_get_script(mut conf: *mut pdf_obj) -> *mut i8 {
     let mut script: *mut pdf_obj = 0 as *mut pdf_obj;
     assert!(!conf.is_null());
     script = pdf_lookup_dict(conf, b"script\x00" as *const u8 as *const i8);
-    return pdf_string_value(script) as *mut i8;
+    pdf_string_value(script) as *mut i8
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_get_language(mut conf: *mut pdf_obj) -> *mut i8 {
     let mut language: *mut pdf_obj = 0 as *mut pdf_obj;
     assert!(!conf.is_null());
     language = pdf_lookup_dict(conf, b"language\x00" as *const u8 as *const i8);
-    return pdf_string_value(language) as *mut i8;
+    pdf_string_value(language) as *mut i8
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_get_rule(mut conf: *mut pdf_obj) -> *mut pdf_obj {
     assert!(!conf.is_null());
-    return pdf_lookup_dict(conf, b"rule\x00" as *const u8 as *const i8);
+    pdf_lookup_dict(conf, b"rule\x00" as *const u8 as *const i8)
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_find_opt(
@@ -759,7 +759,7 @@ pub unsafe extern "C" fn otl_conf_find_opt(
     } else {
         opt_conf = 0 as *mut pdf_obj
     }
-    return opt_conf;
+    opt_conf
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_init_conf() {

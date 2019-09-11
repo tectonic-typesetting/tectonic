@@ -81,7 +81,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -104,7 +104,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 */
 unsafe extern "C" fn spc_handler_null(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 static mut dvipdfmx_handlers: [spc_handler; 1] = unsafe {
     [{
@@ -133,7 +133,7 @@ pub unsafe extern "C" fn spc_dvipdfmx_check_special(mut buf: *const i8, mut len:
     {
         return true;
     }
-    return false;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -205,5 +205,5 @@ pub unsafe extern "C" fn spc_dvipdfmx_setup_handler(
         }
         free(q as *mut libc::c_void);
     }
-    return error;
+    error
 }

@@ -300,7 +300,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 static mut __verbose: i32 = 0i32;
 #[no_mangle]
@@ -311,7 +311,7 @@ unsafe extern "C" fn new_used_chars2() -> *mut i8 {
     let mut used_chars: *mut i8 = 0 as *mut i8;
     used_chars = new((8192_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     memset(used_chars as *mut libc::c_void, 0i32, 8192i32 as u64);
-    return used_chars;
+    used_chars
 }
 /* MUST BE NULL */
 unsafe extern "C" fn Type0Font_init_font_struct(mut font: *mut Type0Font) {
@@ -363,12 +363,12 @@ unsafe extern "C" fn Type0Font_clean(mut font: *mut Type0Font) {
 /* PLEASE FIX THIS */
 unsafe extern "C" fn Type0Font_create_ToUnicode_stream(mut font: *mut Type0Font) -> *mut pdf_obj {
     let mut cidfont: *mut CIDFont = (*font).descendant;
-    return otf_create_ToUnicode_stream(
+    otf_create_ToUnicode_stream(
         CIDFont_get_ident(cidfont),
         CIDFont_get_opt_index(cidfont),
         Type0Font_get_usedchars(font),
         (*font).cmap_id,
-    );
+    )
 }
 /* Try to load ToUnicode CMap from file system first, if not found fallback to
  * font CMap reverse lookup. */
@@ -400,7 +400,7 @@ unsafe extern "C" fn Type0Font_try_load_ToUnicode_stream(
     if tounicode.is_null() {
         tounicode = Type0Font_create_ToUnicode_stream(font)
     }
-    return tounicode;
+    tounicode
 }
 unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     let mut tounicode: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -539,12 +539,12 @@ unsafe extern "C" fn Type0Font_flush(mut font: *mut Type0Font) {
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_get_wmode(mut font: *mut Type0Font) -> i32 {
     assert!(!font.is_null());
-    return (*font).wmode;
+    (*font).wmode
 }
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_get_usedchars(mut font: *mut Type0Font) -> *mut i8 {
     assert!(!font.is_null());
-    return (*font).used_chars;
+    (*font).used_chars
 }
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_get_resource(mut font: *mut Type0Font) -> *mut pdf_obj {
@@ -563,7 +563,7 @@ pub unsafe extern "C" fn Type0Font_get_resource(mut font: *mut Type0Font) -> *mu
         );
         (*font).indirect = pdf_ref_obj((*font).fontdict)
     }
-    return pdf_link_obj((*font).indirect);
+    pdf_link_obj((*font).indirect)
 }
 static mut __cache: font_cache = {
     let mut init = font_cache {
@@ -594,7 +594,7 @@ pub unsafe extern "C" fn Type0Font_cache_get(mut id: i32) -> *mut Type0Font {
             id,
         );
     }
-    return &mut *__cache.fonts.offset(id as isize) as *mut Type0Font;
+    &mut *__cache.fonts.offset(id as isize) as *mut Type0Font
 }
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_cache_find(
@@ -795,7 +795,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
         pdf_new_name((*font).encoding),
     );
     __cache.count += 1;
-    return font_id;
+    font_id
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -953,7 +953,7 @@ unsafe extern "C" fn create_dummy_CMap() -> *mut pdf_obj {
                    strlen(b"endcmap\n\nCMapName currentdict /CMap defineresource pop\n\nend\nend\n\n%%EndResource\n%%EOF\n\x00"
                               as *const u8 as *const i8) as
                        i32);
-    return stream;
+    stream
 }
 unsafe extern "C" fn pdf_read_ToUnicode_file(mut cmap_name: *const i8) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -978,10 +978,10 @@ unsafe extern "C" fn pdf_read_ToUnicode_file(mut cmap_name: *const i8) -> *mut p
             )
         }
     }
-    return if res_id < 0i32 {
+    if res_id < 0i32 {
         0 as *mut pdf_obj
     } else {
         pdf_get_resource_reference(res_id)
-    };
+    }
 }
 /* !WITHOUT_COMPAT */

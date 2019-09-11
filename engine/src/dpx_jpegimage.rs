@@ -232,7 +232,7 @@ pub struct JPEG_APPn_JFIF {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 #[no_mangle]
 pub unsafe extern "C" fn check_for_jpeg(mut handle: rust_input_handle_t) -> i32 {
@@ -245,7 +245,7 @@ pub unsafe extern "C" fn check_for_jpeg(mut handle: rust_input_handle_t) -> i32 
             return 0i32;
         }
     }
-    return 1i32;
+    1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn jpeg_include_image(
@@ -420,7 +420,7 @@ pub unsafe extern "C" fn jpeg_include_image(
         stream,
     );
     JPEG_info_clear(&mut j_info);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn jpeg_get_density(
     mut j_info: *mut JPEG_info,
@@ -547,7 +547,7 @@ unsafe extern "C" fn JPEG_get_iccp(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
         }
         i += 1
     }
-    return icc_stream;
+    icc_stream
 }
 unsafe extern "C" fn JPEG_get_XMP(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
     let mut XMP_stream: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -591,7 +591,7 @@ unsafe extern "C" fn JPEG_get_XMP(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
             b"JPEG\x00" as *const u8 as *const i8,
         );
     }
-    return XMP_stream;
+    XMP_stream
 }
 unsafe extern "C" fn JPEG_get_marker(mut handle: rust_input_handle_t) -> JPEG_marker {
     let mut c: i32 = 0;
@@ -631,7 +631,7 @@ unsafe extern "C" fn add_APPn_marker(
     let ref mut fresh0 = (*(*j_info).appn.offset(n as isize)).app_data;
     *fresh0 = app_data;
     (*j_info).num_appn += 1i32;
-    return n;
+    n
 }
 unsafe extern "C" fn read_APP14_Adobe(
     mut j_info: *mut JPEG_info,
@@ -650,7 +650,7 @@ unsafe extern "C" fn read_APP14_Adobe(
         JS_APPn_ADOBE as i32,
         app_data as *mut libc::c_void,
     );
-    return 7_u16;
+    7_u16
 }
 unsafe extern "C" fn read_exif_bytes(mut pp: *mut *mut u8, mut n: i32, mut endian: i32) -> i32 {
     let mut rval: i32 = 0i32;
@@ -674,7 +674,7 @@ unsafe extern "C" fn read_exif_bytes(mut pp: *mut *mut u8, mut n: i32, mut endia
         _ => {}
     }
     *pp = (*pp).offset(n as isize);
-    return rval;
+    rval
 }
 unsafe extern "C" fn read_APP1_Exif(
     mut info: *mut JPEG_info,
@@ -907,7 +907,7 @@ unsafe extern "C" fn read_APP1_Exif(
         }
     }
     free(buffer as *mut libc::c_void);
-    return length;
+    length
 }
 unsafe extern "C" fn read_APP0_JFIF(
     mut j_info: *mut JPEG_info,
@@ -955,7 +955,7 @@ unsafe extern "C" fn read_APP0_JFIF(
             (*j_info).ydpi = 72.0f64
         }
     }
-    return (9i32 as u64).wrapping_add(thumb_data_len);
+    (9i32 as u64).wrapping_add(thumb_data_len)
 }
 unsafe extern "C" fn read_APP0_JFXX(mut handle: rust_input_handle_t, mut length: size_t) -> size_t {
     tt_get_unsigned_byte(handle);
@@ -988,7 +988,7 @@ unsafe extern "C" fn read_APP1_XMP(
         JS_APPn_XMP as i32,
         app_data as *mut libc::c_void,
     );
-    return length;
+    length
 }
 unsafe extern "C" fn read_APP2_ICC(
     mut j_info: *mut JPEG_info,
@@ -1011,7 +1011,7 @@ unsafe extern "C" fn read_APP2_ICC(
         JS_APPn_ICC as i32,
         app_data as *mut libc::c_void,
     );
-    return length;
+    length
 }
 unsafe extern "C" fn JPEG_copy_stream(
     mut j_info: *mut JPEG_info,
@@ -1129,7 +1129,11 @@ unsafe extern "C" fn JPEG_copy_stream(
         );
         pos = (pos as u64).wrapping_add(length as u64) as size_t as size_t
     }
-    return if found_SOFn != 0 { 0i32 } else { -1i32 };
+    if found_SOFn != 0 {
+        0i32
+    } else {
+        -1i32
+    }
 }
 unsafe extern "C" fn JPEG_scan_file(
     mut j_info: *mut JPEG_info,
@@ -1325,7 +1329,11 @@ unsafe extern "C" fn JPEG_scan_file(
         (*j_info).ydpi = 72.0f64;
         (*j_info).xdpi = (*j_info).ydpi
     }
-    return if found_SOFn != 0 { 0i32 } else { -1i32 };
+    if found_SOFn != 0 {
+        0i32
+    } else {
+        -1i32
+    }
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1382,5 +1390,5 @@ pub unsafe extern "C" fn jpeg_get_bbox(
     *height = j_info.height as u32;
     jpeg_get_density(&mut j_info, xdensity, ydensity);
     JPEG_info_clear(&mut j_info);
-    return 0i32;
+    0i32
 }

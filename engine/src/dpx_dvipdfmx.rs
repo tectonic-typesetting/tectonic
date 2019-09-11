@@ -561,7 +561,7 @@ unsafe extern "C" fn read_length(
     }
     *vp = v * u;
     *pp = p;
-    return error;
+    error
 }
 unsafe extern "C" fn select_paper(mut paperspec: *const i8) {
     let mut pi: *const paper = 0 as *const paper;
@@ -1020,5 +1020,5 @@ pub unsafe extern "C" fn dvipdfmx_main(
     dvi_close();
     dpx_message(b"\n\x00" as *const u8 as *const i8);
     free(page_ranges as *mut libc::c_void);
-    return 0i32;
+    0i32
 }

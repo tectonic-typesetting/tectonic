@@ -85,7 +85,7 @@ pub struct ht_iter {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -119,7 +119,7 @@ pub unsafe extern "C" fn xtoi(mut c: i8) -> i32 {
     if c as i32 >= 'a' as i32 && c as i32 <= 'f' as i32 {
         return c as i32 - 'a' as i32 + 10i32;
     }
-    return -1i32;
+    -1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn min4(mut x1: f64, mut x2: f64, mut x3: f64, mut x4: f64) -> f64 {
@@ -133,7 +133,7 @@ pub unsafe extern "C" fn min4(mut x1: f64, mut x2: f64, mut x3: f64, mut x4: f64
     if x4 < v {
         v = x4
     }
-    return v;
+    v
 }
 #[no_mangle]
 pub unsafe extern "C" fn max4(mut x1: f64, mut x2: f64, mut x3: f64, mut x4: f64) -> f64 {
@@ -147,7 +147,7 @@ pub unsafe extern "C" fn max4(mut x1: f64, mut x2: f64, mut x3: f64, mut x4: f64
     if x4 > v {
         v = x4
     }
-    return v;
+    v
 }
 #[no_mangle]
 pub unsafe extern "C" fn skip_white_spaces(mut s: *mut *mut u8, mut endptr: *mut u8) {
@@ -207,7 +207,7 @@ pub unsafe extern "C" fn ht_clear_table(mut ht: *mut ht_table) {
 #[no_mangle]
 pub unsafe extern "C" fn ht_table_size(mut ht: *mut ht_table) -> i32 {
     assert!(!ht.is_null());
-    return (*ht).count;
+    (*ht).count
 }
 unsafe extern "C" fn get_hash(mut key: *const libc::c_void, mut keylen: i32) -> u32 {
     let mut hkey: u32 = 0_u32;
@@ -219,7 +219,7 @@ unsafe extern "C" fn get_hash(mut key: *const libc::c_void, mut keylen: i32) -> 
             .wrapping_add(*(key as *const i8).offset(i as isize) as u32);
         i += 1
     }
-    return hkey.wrapping_rem(503_u32);
+    hkey.wrapping_rem(503_u32)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ht_lookup_table(
@@ -240,7 +240,7 @@ pub unsafe extern "C" fn ht_lookup_table(
         }
         hent = (*hent).next
     }
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 #[no_mangle]
 pub unsafe extern "C" fn ht_remove_table(
@@ -379,7 +379,7 @@ pub unsafe extern "C" fn ht_set_iter(mut ht: *mut ht_table, mut iter: *mut ht_it
         }
         i += 1
     }
-    return -1i32;
+    -1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn ht_clear_iter(mut iter: *mut ht_iter) {
@@ -426,7 +426,11 @@ pub unsafe extern "C" fn ht_iter_next(mut iter: *mut ht_iter) -> i32 {
         hent = (*ht).table[(*iter).index as usize]
     }
     (*iter).curr = hent as *mut libc::c_void;
-    return if !hent.is_null() { 0i32 } else { -1i32 };
+    if !hent.is_null() {
+        0i32
+    } else {
+        -1i32
+    }
 }
 unsafe extern "C" fn read_c_escchar(
     mut r: *mut i8,
@@ -538,7 +542,7 @@ unsafe extern "C" fn read_c_escchar(
         *r = c as i8
     }
     *pp = p;
-    return l;
+    l
 }
 unsafe extern "C" fn read_c_litstrc(
     mut q: *mut i8,
@@ -600,7 +604,11 @@ unsafe extern "C" fn read_c_litstrc(
         }
     }
     *pp = p;
-    return if s == 0i32 { l } else { s };
+    if s == 0i32 {
+        l
+    } else {
+        s
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_c_string(mut pp: *mut *const i8, mut endptr: *const i8) -> *mut i8 {
@@ -619,7 +627,7 @@ pub unsafe extern "C" fn parse_c_string(mut pp: *mut *const i8, mut endptr: *con
         l = read_c_litstrc(q, l + 1i32, &mut p, endptr)
     }
     *pp = p;
-    return q;
+    q
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_c_ident(mut pp: *mut *const i8, mut endptr: *const i8) -> *mut i8 {
@@ -648,7 +656,7 @@ pub unsafe extern "C" fn parse_c_ident(mut pp: *mut *const i8, mut endptr: *cons
     memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as u64);
     *q.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
-    return q;
+    q
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -730,5 +738,5 @@ pub unsafe extern "C" fn parse_float_decimal(
         *q.offset(n as isize) = '\u{0}' as i32 as i8
     }
     *pp = p;
-    return q;
+    q
 }

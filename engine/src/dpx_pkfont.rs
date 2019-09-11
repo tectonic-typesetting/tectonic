@@ -248,7 +248,7 @@ unsafe extern "C" fn truedpi(mut ident: *const i8, mut point_size: f64, mut bdpi
     } else {
         dpi = (floor(base_dpi as f64 * point_size / design_size / 1.0f64 + 0.5f64) * 1.0f64) as u32
     }
-    return dpi;
+    dpi
 }
 unsafe extern "C" fn dpx_open_pk_font_at(mut ident: *const i8, mut dpi: u32) -> *mut FILE {
     let mut fp: *mut FILE = 0 as *mut FILE;
@@ -260,7 +260,7 @@ unsafe extern "C" fn dpx_open_pk_font_at(mut ident: *const i8, mut dpi: u32) -> 
     }
     fp = fopen(fqpn, b"rb\x00" as *const u8 as *const i8);
     free(fqpn as *mut libc::c_void);
-    return fp;
+    fp
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> i32 {
@@ -297,7 +297,7 @@ pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> i32 {
             b">> Assuming this is for glyph name assignment.\x00" as *const u8 as *const i8,
         );
     }
-    return 0i32;
+    0i32
 }
 /* We are using Mask Image. Fill black is bit clear.
  * Optimizing those codes doesn't improve things.
@@ -319,11 +319,11 @@ unsafe extern "C" fn fill_black_run(mut dp: *mut u8, mut left: u32, mut run_coun
         *fresh0 = (*fresh0 as i32 & mask[left.wrapping_rem(8_u32) as usize] as i32) as u8;
         left = left.wrapping_add(1)
     }
-    return run_count;
+    run_count
 }
 /* Just skip bits. See decode_packed() */
 unsafe extern "C" fn fill_white_run(mut run_count: u32) -> u32 {
-    return run_count;
+    run_count
 }
 unsafe extern "C" fn pk_packed_num(
     mut np: *mut u32,
@@ -409,7 +409,7 @@ unsafe extern "C" fn pk_packed_num(
         i = i.wrapping_add(1)
     }
     *np = i;
-    return nmbr;
+    nmbr
 }
 unsafe extern "C" fn send_out(mut rowptr: *mut u8, mut rowbytes: u32, mut stream: *mut pdf_obj) {
     pdf_add_stream(stream, rowptr as *mut libc::c_void, rowbytes as i32);
@@ -523,7 +523,7 @@ unsafe extern "C" fn pk_decode_packed(
         i = i.wrapping_add(1)
     }
     free(rowptr as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn pk_decode_bitmap(
     mut stream: *mut pdf_obj,
@@ -583,7 +583,7 @@ unsafe extern "C" fn pk_decode_bitmap(
         }
         i = i.wrapping_add(1)
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn do_preamble(mut fp: *mut FILE) {
     /* Check for id byte */
@@ -668,7 +668,7 @@ unsafe extern "C" fn read_pk_char_header(
         );
         return -1i32;
     }
-    return 0i32;
+    0i32
 }
 /* CCITT Group 4 filter may reduce file size. */
 unsafe extern "C" fn create_pk_CharProc_stream(
@@ -764,7 +764,7 @@ unsafe extern "C" fn create_pk_CharProc_stream(
         );
         pdf_add_stream(stream, work_buffer.as_mut_ptr() as *const libc::c_void, len);
     }
-    return stream;
+    stream
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1172,5 +1172,5 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
         pdf_new_name(b"LastChar\x00" as *const u8 as *const i8),
         pdf_new_number(lastchar as f64),
     );
-    return 0i32;
+    0i32
 }

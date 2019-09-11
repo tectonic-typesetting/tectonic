@@ -1550,7 +1550,7 @@ unsafe extern "C" fn write_fontfile(mut font: *mut CIDFont, mut cffont: *mut cff
     pdf_add_stream(fontfile, dest as *mut i8 as *const libc::c_void, offset);
     pdf_release_obj(fontfile);
     free(dest as *mut libc::c_void);
-    return destlen;
+    destlen
 }
 unsafe extern "C" fn CIDFont_type0_get_used_chars(mut font: *mut CIDFont) -> *mut i8 {
     let mut parent_id: i32 = 0;
@@ -1566,7 +1566,7 @@ unsafe extern "C" fn CIDFont_type0_get_used_chars(mut font: *mut CIDFont) -> *mu
     if used_chars.is_null() {
         _tt_abort(b"Unexpected error: Font not actually used???\x00" as *const u8 as *const i8);
     }
-    return used_chars;
+    used_chars
 }
 unsafe extern "C" fn CIDType0Error_Show(mut error: CIDType0Error, mut name: *const i8) {
     match error as i32 {
@@ -1671,7 +1671,7 @@ unsafe extern "C" fn CIDFont_type0_try_open(
             CID_OPEN_ERROR_IS_CIDFONT as i32
         }) as CIDType0Error;
     }
-    return CID_OPEN_ERROR_NO_ERROR;
+    CID_OPEN_ERROR_NO_ERROR
 }
 unsafe extern "C" fn CIDFont_type0_add_CIDSet(
     mut font: *mut CIDFont,
@@ -2293,7 +2293,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
             ttstub_input_close(handle);
         }
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
@@ -2782,7 +2782,7 @@ unsafe extern "C" fn load_base_CMap(
         gid = gid.wrapping_add(1)
     }
     cmap_id = CMap_cache_add(cmap);
-    return cmap_id;
+    cmap_id
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1_load_UnicodeCMap(
@@ -2818,7 +2818,7 @@ pub unsafe extern "C" fn t1_load_UnicodeCMap(
             b"Glyph substitution not supported for Type1 font yet...\x00" as *const u8 as *const i8,
         );
     }
-    return cmap_id;
+    cmap_id
 }
 /*
  * ToUnicode CMap
@@ -2915,7 +2915,7 @@ unsafe extern "C" fn create_ToUnicode_stream(
         stream = CMap_create_stream(cmap)
     }
     CMap_release(cmap);
-    return stream;
+    stream
 }
 /* Force bold at small text sizes */
 /* pdf_font --> CIDFont */

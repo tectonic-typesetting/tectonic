@@ -250,7 +250,7 @@ pub struct load_options {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -259,7 +259,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -332,7 +332,7 @@ unsafe extern "C" fn spc_handler_ps_header(mut spe: *mut spc_env, mut args: *mut
     let ref mut fresh1 = *ps_headers.offset(fresh0 as isize);
     *fresh1 = pro;
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_filename(mut pp: *mut *const i8, mut endptr: *const i8) -> *mut i8 {
     let mut r: *mut i8 = 0 as *mut i8;
@@ -372,7 +372,7 @@ unsafe extern "C" fn parse_filename(mut pp: *mut *const i8, mut endptr: *const i
     memcpy(r as *mut libc::c_void, q as *const libc::c_void, n as u64);
     *r.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
-    return r;
+    r
 }
 /* =filename ... */
 unsafe extern "C" fn spc_handler_ps_file(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
@@ -442,7 +442,7 @@ unsafe extern "C" fn spc_handler_ps_file(mut spe: *mut spc_env, mut args: *mut s
     }
     free(filename as *mut libc::c_void);
     pdf_dev_put_image(form_id, &mut ti, (*spe).x_user, (*spe).y_user);
-    return 0i32;
+    0i32
 }
 /* This isn't correct implementation but dvipdfm supports... */
 unsafe extern "C" fn spc_handler_ps_plotfile(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
@@ -505,7 +505,7 @@ unsafe extern "C" fn spc_handler_ps_plotfile(mut spe: *mut spc_env, mut args: *m
         pdf_dev_put_image(form_id, &mut p, 0i32 as f64, 0i32 as f64);
     }
     free(filename as *mut libc::c_void);
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_ps_literal(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0i32;
@@ -595,7 +595,7 @@ unsafe extern "C" fn spc_handler_ps_literal(mut spe: *mut spc_env, mut args: *mu
             );
         }
     }
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_ps_trickscmd(
     mut spe: *mut spc_env,
@@ -603,7 +603,7 @@ unsafe extern "C" fn spc_handler_ps_trickscmd(
 ) -> i32 {
     dpx_warning(b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8);
     (*args).curptr = (*args).endptr;
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn spc_handler_ps_tricksobj(
     mut spe: *mut spc_env,
@@ -611,7 +611,7 @@ unsafe extern "C" fn spc_handler_ps_tricksobj(
 ) -> i32 {
     dpx_warning(b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8);
     (*args).curptr = (*args).endptr;
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0;
@@ -669,7 +669,7 @@ unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mu
     }
     pdf_dev_grestore_to(gs_depth);
     pdf_dev_grestore();
-    return error;
+    error
 }
 static mut dvips_handlers: [spc_handler; 10] = unsafe {
     [
@@ -778,7 +778,7 @@ static mut dvips_handlers: [spc_handler; 10] = unsafe {
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_at_begin_document() -> i32 {
     /* This function used to start the global_defs temp file. */
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_at_end_document() -> i32 {
@@ -789,17 +789,17 @@ pub unsafe extern "C" fn spc_dvips_at_end_document() -> i32 {
         }
         ps_headers = mfree(ps_headers as *mut libc::c_void) as *mut *mut i8
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_at_begin_page() -> i32 {
     /* This function used do some things related to now-removed PSTricks functionality. */
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_at_end_page() -> i32 {
     mps_eop_cleanup();
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_check_special(mut buf: *const i8, mut len: i32) -> bool {
@@ -829,7 +829,7 @@ pub unsafe extern "C" fn spc_dvips_check_special(mut buf: *const i8, mut len: i3
         }
         i = i.wrapping_add(1)
     }
-    return false;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -911,5 +911,5 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
         }
         i = i.wrapping_add(1)
     }
-    return -1i32;
+    -1i32
 }

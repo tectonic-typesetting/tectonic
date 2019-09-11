@@ -210,7 +210,7 @@ pub struct C2RustUnnamed_2 {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -247,7 +247,7 @@ pub unsafe extern "C" fn pdf_color_set_verbose(mut level: i32) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_type(mut color: *const pdf_color) -> i32 {
     assert!(!color.is_null());
-    return -(*color).num_components;
+    -(*color).num_components
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_rgbcolor(
@@ -283,7 +283,7 @@ pub unsafe extern "C" fn pdf_color_rgbcolor(
     (*color).values[2] = b;
     (*color).num_components = 3i32;
     (*color).spot_color_name = 0 as *mut i8;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_cmykcolor(
@@ -328,7 +328,7 @@ pub unsafe extern "C" fn pdf_color_cmykcolor(
     (*color).values[3] = k;
     (*color).num_components = 4i32;
     (*color).spot_color_name = 0 as *mut i8;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_graycolor(mut color: *mut pdf_color, mut g: f64) -> i32 {
@@ -343,7 +343,7 @@ pub unsafe extern "C" fn pdf_color_graycolor(mut color: *mut pdf_color, mut g: f
     (*color).values[0] = g;
     (*color).num_components = 1i32;
     (*color).spot_color_name = 0 as *mut i8;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_spotcolor(
@@ -363,7 +363,7 @@ pub unsafe extern "C" fn pdf_color_spotcolor(
     (*color).values[1] = 0.0f64;
     (*color).num_components = 2i32;
     (*color).spot_color_name = name;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_copycolor(
@@ -433,7 +433,7 @@ pub unsafe extern "C" fn pdf_color_is_white(mut color: *const pdf_color) -> bool
             return false;
         }
     }
-    return true;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_to_string(
@@ -465,7 +465,7 @@ pub unsafe extern "C" fn pdf_color_to_string(
             i += 1
         }
     }
-    return len;
+    len
 }
 /*
  * This routine is not a real color matching.
@@ -524,7 +524,7 @@ pub unsafe extern "C" fn pdf_color_compare(
     if !(*color1).spot_color_name.is_null() && !(*color2).spot_color_name.is_null() {
         return strcmp((*color1).spot_color_name, (*color2).spot_color_name);
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_is_valid(mut color: *const pdf_color) -> bool {
@@ -583,7 +583,7 @@ pub unsafe extern "C" fn pdf_color_is_valid(mut color: *const pdf_color) -> bool
             return false;
         }
     }
-    return true;
+    true
 }
 static mut color_stack: C2RustUnnamed_2 = C2RustUnnamed_2 {
     current: 0,
@@ -747,7 +747,7 @@ unsafe extern "C" fn iccp_version_supported(mut major: i32, mut minor: i32) -> i
             return 1i32;
         }
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn str2iccSig(mut s: *const libc::c_void) -> iccSig {
     let mut p: *const i8 = 0 as *const i8;
@@ -835,7 +835,7 @@ unsafe extern "C" fn get_num_components_iccbased(mut cdata: *const iccbased_cdat
         2 => num_components = 3i32,
         _ => {}
     }
-    return num_components;
+    num_components
 }
 unsafe extern "C" fn compare_iccbased(
     mut ident1: *const i8,
@@ -925,7 +925,7 @@ pub unsafe extern "C" fn iccp_check_colorspace(
         }
         _ => return -1i32,
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn iccp_get_rendering_intent(
@@ -956,7 +956,7 @@ pub unsafe extern "C" fn iccp_get_rendering_intent(
             ri = 0 as *mut pdf_obj
         }
     }
-    return ri;
+    ri
 }
 unsafe extern "C" fn iccp_unpack_header(
     mut icch: *mut iccHeader,
@@ -1079,7 +1079,7 @@ unsafe extern "C" fn iccp_unpack_header(
         }
         p = p.offset(1)
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn iccp_get_checksum(
     mut checksum: *mut u8,
@@ -1517,7 +1517,7 @@ unsafe extern "C" fn iccp_devClass_allowed(mut dev_class: i32) -> i32 {
     {
         return 0i32;
     }
-    return 1i32;
+    1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn iccp_load_profile(
@@ -1647,7 +1647,7 @@ pub unsafe extern "C" fn iccp_load_profile(
     pdf_add_stream(stream, profile, proflen);
     pdf_release_obj(stream);
     cspc_id = pdf_colorspace_defineresource(ident, 4i32, cdata as *mut libc::c_void, resource);
-    return cspc_id;
+    cspc_id
 }
 static mut cspc_cache: C2RustUnnamed_0 = {
     let mut init = C2RustUnnamed_0 {
@@ -1770,7 +1770,7 @@ unsafe extern "C" fn pdf_colorspace_defineresource(
         dpx_message(b")\x00" as *const u8 as *const i8);
     }
     cspc_cache.count = cspc_cache.count.wrapping_add(1);
-    return cspc_id;
+    cspc_id
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_colorspace_reference(mut cspc_id: i32) -> *mut pdf_obj {
@@ -1781,7 +1781,7 @@ pub unsafe extern "C" fn pdf_get_colorspace_reference(mut cspc_id: i32) -> *mut 
         pdf_release_obj((*colorspace).resource);
         (*colorspace).resource = 0 as *mut pdf_obj
     }
-    return pdf_link_obj((*colorspace).reference);
+    pdf_link_obj((*colorspace).reference)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_init_colors() {

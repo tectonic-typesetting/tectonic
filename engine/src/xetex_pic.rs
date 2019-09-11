@@ -436,7 +436,7 @@ pub unsafe extern "C" fn count_pdf_file_pages() -> i32 {
     pages = pdf_doc_get_page_count(pf);
     pdf_close(pf);
     ttstub_input_close(handle);
-    return pages;
+    pages
 }
 unsafe extern "C" fn pdf_get_rect(
     mut filename: *mut i8,
@@ -529,7 +529,7 @@ unsafe extern "C" fn pdf_get_rect(
     (*box_0).y = (72.27f64 / 72i32 as f64 * bbox.lly) as f32;
     (*box_0).wd = (72.27f64 / 72i32 as f64 * (bbox.urx - bbox.llx)) as f32;
     (*box_0).ht = (72.27f64 / 72i32 as f64 * (bbox.ury - bbox.lly)) as f32;
-    return 0i32;
+    0
 }
 unsafe extern "C" fn get_image_size_in_inches(
     mut handle: rust_input_handle_t,
@@ -574,7 +574,7 @@ unsafe extern "C" fn get_image_size_in_inches(
     /* xdvipdfmx defines density = 72 / dpi, so ... */
     *width = (width_pix as f64 * xdensity / 72i32 as f64) as f32;
     *height = (height_pix as f64 * ydensity / 72i32 as f64) as f32;
-    return 0i32;
+    0
 }
 /*
   pdfBoxType indicates which pdf bounding box to use (0 for \XeTeXpicfile)
@@ -611,7 +611,7 @@ unsafe extern "C" fn find_pic_file(
         *path = xstrdup(name_of_file)
     }
     ttstub_input_close(handle);
-    return err;
+    err
 }
 unsafe extern "C" fn transform_point(mut p: *mut real_point, mut t: *const transform_t) {
     let mut r: real_point = real_point { x: 0., y: 0. };

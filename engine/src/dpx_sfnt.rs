@@ -130,7 +130,7 @@ pub unsafe extern "C" fn sfnt_open(mut handle: rust_input_handle_t) -> *mut sfnt
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     (*sfont).directory = 0 as *mut sfnt_table_directory;
     (*sfont).offset = 0u64 as u32;
-    return sfont;
+    sfont
 }
 #[no_mangle]
 pub unsafe extern "C" fn dfont_open(mut handle: rust_input_handle_t, mut index: i32) -> *mut sfnt {
@@ -197,7 +197,7 @@ pub unsafe extern "C" fn dfont_open(mut handle: rust_input_handle_t, mut index: 
     (*sfont).offset = (res_pos as u64 & 0xffffff)
         .wrapping_add(rdata_pos as u64)
         .wrapping_add(4i32 as u64) as u32;
-    return sfont;
+    sfont
 }
 unsafe extern "C" fn release_directory(mut td: *mut sfnt_table_directory) {
     let mut i: u32 = 0;
@@ -234,7 +234,7 @@ pub unsafe extern "C" fn put_big_endian(mut s: *mut libc::c_void, mut q: i32, mu
         q >>= 8i32;
         i -= 1
     }
-    return n;
+    n
 }
 /* Convert four-byte number to big endianess
  * in a machine independent way.
@@ -257,7 +257,7 @@ unsafe extern "C" fn max2floor(mut n: u32) -> u32 {
         n = n.wrapping_div(2_u32);
         val *= 2i32
     }
-    return val as u32;
+    val as u32
 }
 /*
  * Computes the log2 of the max power of 2 <= n
@@ -268,7 +268,7 @@ unsafe extern "C" fn log2floor(mut n: u32) -> u32 {
         n = n.wrapping_div(2_u32);
         val = val.wrapping_add(1)
     }
-    return val;
+    val
 }
 unsafe extern "C" fn sfnt_calc_checksum(mut data: *mut libc::c_void, mut length: u32) -> u32 {
     let mut chksum: u32 = 0_u32;
@@ -284,7 +284,7 @@ unsafe extern "C" fn sfnt_calc_checksum(mut data: *mut libc::c_void, mut length:
         count = count + 1i32 & 3i32;
         p = p.offset(1)
     }
-    return chksum;
+    chksum
 }
 unsafe extern "C" fn find_table_index(
     mut td: *mut sfnt_table_directory,
@@ -306,7 +306,7 @@ unsafe extern "C" fn find_table_index(
         }
         idx += 1
     }
-    return -1i32;
+    -1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn sfnt_set_table(
@@ -353,7 +353,7 @@ pub unsafe extern "C" fn sfnt_find_table_len(mut sfont: *mut sfnt, mut tag: *con
     } else {
         length = (*(*td).tables.offset(idx as isize)).length
     }
-    return length;
+    length
 }
 #[no_mangle]
 pub unsafe extern "C" fn sfnt_find_table_pos(mut sfont: *mut sfnt, mut tag: *const i8) -> u32 {
@@ -368,7 +368,7 @@ pub unsafe extern "C" fn sfnt_find_table_pos(mut sfont: *mut sfnt, mut tag: *con
     } else {
         offset = (*(*td).tables.offset(idx as isize)).offset
     }
-    return offset;
+    offset
 }
 #[no_mangle]
 pub unsafe extern "C" fn sfnt_locate_table(mut sfont: *mut sfnt, mut tag: *const i8) -> u32 {
@@ -379,7 +379,7 @@ pub unsafe extern "C" fn sfnt_locate_table(mut sfont: *mut sfnt, mut tag: *const
         _tt_abort(b"sfnt: table not found...\x00" as *const u8 as *const i8);
     }
     ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
-    return offset;
+    offset
 }
 #[no_mangle]
 pub unsafe extern "C" fn sfnt_read_table_directory(mut sfont: *mut sfnt, mut offset: u32) -> i32 {
@@ -422,7 +422,7 @@ pub unsafe extern "C" fn sfnt_read_table_directory(mut sfont: *mut sfnt, mut off
         i = i.wrapping_add(1)
     }
     (*td).num_kept_tables = 0_u16;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn sfnt_require_table(
@@ -444,7 +444,7 @@ pub unsafe extern "C" fn sfnt_require_table(
         *fresh2 = (*fresh2 as i32 | 1i32 << 0i32) as i8;
         (*td).num_kept_tables = (*td).num_kept_tables.wrapping_add(1)
     }
-    return 0i32;
+    0i32
 }
 /*
  * o All tables begin on four byte boundries, and pad any remaining space
@@ -621,5 +621,5 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
         pdf_new_name(b"Length1\x00" as *const u8 as *const i8),
         pdf_new_number(offset as f64),
     );
-    return stream;
+    stream
 }

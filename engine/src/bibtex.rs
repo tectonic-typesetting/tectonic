@@ -167,7 +167,7 @@ unsafe extern "C" fn peekable_open(
     (*peekable).handle = handle;
     (*peekable).peek_char = -1i32;
     (*peekable).saw_eof = false;
-    return peekable;
+    peekable
 }
 unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t) -> i32 {
     let mut rv: i32 = 0;
@@ -176,7 +176,7 @@ unsafe extern "C" fn peekable_close(mut peekable: *mut peekable_input_t) -> i32 
     }
     rv = ttstub_input_close((*peekable).handle);
     free(peekable as *mut libc::c_void);
-    return rv;
+    rv
 }
 unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t) -> i32 {
     let mut rv: i32 = 0;
@@ -189,7 +189,7 @@ unsafe extern "C" fn peekable_getc(mut peekable: *mut peekable_input_t) -> i32 {
     if rv == -1i32 {
         (*peekable).saw_eof = true
     }
-    return rv;
+    rv
 }
 unsafe extern "C" fn peekable_ungetc(mut peekable: *mut peekable_input_t, mut c: i32) {
     /*last_lex */
@@ -215,7 +215,7 @@ unsafe extern "C" fn tectonic_eof(mut peekable: *mut peekable_input_t) -> bool {
         return true;
     }
     peekable_ungetc(peekable, c);
-    return false;
+    false
 }
 unsafe extern "C" fn eoln(mut peekable: *mut peekable_input_t) -> bool {
     let mut c: i32 = 0;
@@ -226,7 +226,7 @@ unsafe extern "C" fn eoln(mut peekable: *mut peekable_input_t) -> bool {
     if c != -1i32 {
         peekable_ungetc(peekable, c);
     }
-    return c == '\n' as i32 || c == '\r' as i32 || c == -1i32;
+    c == '\n' as i32 || c == '\r' as i32 || c == -1i32
 }
 /* end eofeoln.c */
 static mut error_jmpbuf: jmp_buf = [__jmp_buf_tag {
@@ -626,7 +626,7 @@ unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
         /*white_space */
         last -= 1
     }
-    return true;
+    true
 }
 unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t, mut s: str_number) {
     let mut i: pool_pointer = 0;
@@ -1244,7 +1244,7 @@ unsafe extern "C" fn make_string() -> str_number {
     }
     str_ptr = str_ptr + 1i32;
     *str_start.offset(str_ptr as isize) = pool_ptr;
-    return str_ptr - 1i32;
+    str_ptr - 1i32
 }
 unsafe extern "C" fn str_eq_buf(
     mut s: str_number,
@@ -1266,7 +1266,7 @@ unsafe extern "C" fn str_eq_buf(
         i = i + 1i32;
         j = j + 1i32
     }
-    return true;
+    true
 }
 unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number) -> bool {
     if *str_start.offset((s1 + 1i32) as isize) - *str_start.offset(s1 as isize)
@@ -1283,7 +1283,7 @@ unsafe extern "C" fn str_eq_str(mut s1: str_number, mut s2: str_number) -> bool 
         p_ptr1 = p_ptr1 + 1i32;
         p_ptr2 = p_ptr2 + 1i32
     }
-    return true;
+    true
 }
 unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut len: buf_pointer) {
     let mut i: buf_pointer = 0;
@@ -1502,7 +1502,7 @@ unsafe extern "C" fn find_cite_locs_for_this_cite_key(mut cite_str: str_number) 
         10i32 as str_ilk,
         false,
     );
-    return hash_found;
+    hash_found
 }
 unsafe extern "C" fn swap(mut swap1: cite_number, mut swap2: cite_number) {
     let mut innocent_bystander: cite_number = 0;
@@ -2161,7 +2161,7 @@ unsafe extern "C" fn scan1(mut char1: ASCII_code) -> bool {
     while buf_ptr2 < last && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32 {
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 < last;
+    buf_ptr2 < last
 }
 unsafe extern "C" fn scan1_white(mut char1: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
@@ -2171,7 +2171,7 @@ unsafe extern "C" fn scan1_white(mut char1: ASCII_code) -> bool {
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 < last;
+    buf_ptr2 < last
 }
 unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
@@ -2181,7 +2181,7 @@ unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code) -> bool
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 < last;
+    buf_ptr2 < last
 }
 unsafe extern "C" fn scan2_white(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
     buf_ptr1 = buf_ptr2;
@@ -2192,7 +2192,7 @@ unsafe extern "C" fn scan2_white(mut char1: ASCII_code, mut char2: ASCII_code) -
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 < last;
+    buf_ptr2 < last
 }
 unsafe extern "C" fn scan3(
     mut char1: ASCII_code,
@@ -2207,14 +2207,14 @@ unsafe extern "C" fn scan3(
     {
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 < last;
+    buf_ptr2 < last
 }
 unsafe extern "C" fn scan_alpha() -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 2i32 {
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 - buf_ptr1 != 0i32;
+    buf_ptr2 - buf_ptr1 != 0i32
 }
 unsafe extern "C" fn scan_identifier(
     mut char1: ASCII_code,
@@ -2253,7 +2253,7 @@ unsafe extern "C" fn scan_nonneg_integer() -> bool {
         token_value = token_value * 10i32 + (*buffer.offset(buf_ptr2 as isize) as i32 - 48i32);
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 - buf_ptr1 != 0i32;
+    buf_ptr2 - buf_ptr1 != 0i32
 }
 unsafe extern "C" fn scan_integer() -> bool {
     let mut sign_length: u8 = 0;
@@ -2273,13 +2273,13 @@ unsafe extern "C" fn scan_integer() -> bool {
     if sign_length as i32 == 1i32 {
         token_value = -token_value
     }
-    return buf_ptr2 - buf_ptr1 != sign_length as i32;
+    buf_ptr2 - buf_ptr1 != sign_length as i32
 }
 unsafe extern "C" fn scan_white_space() -> bool {
     while buf_ptr2 < last && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 == 1i32 {
         buf_ptr2 = buf_ptr2 + 1i32
     }
-    return buf_ptr2 < last;
+    buf_ptr2 < last
 }
 unsafe extern "C" fn eat_bst_white_space() -> bool {
     loop {
@@ -2577,7 +2577,7 @@ unsafe extern "C" fn eat_bib_white_space() -> bool {
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
     }
-    return true;
+    true
 }
 unsafe extern "C" fn compress_bib_white() -> bool {
     if ex_buf_ptr == buf_size {
@@ -2595,7 +2595,7 @@ unsafe extern "C" fn compress_bib_white() -> bool {
         bib_line_num = bib_line_num + 1i32;
         buf_ptr2 = 0i32
     }
-    return true;
+    true
 }
 unsafe extern "C" fn scan_balanced_braces() -> bool {
     buf_ptr2 = buf_ptr2 + 1i32;
@@ -2777,7 +2777,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
         }
     }
     buf_ptr2 = buf_ptr2 + 1i32;
-    return true;
+    true
 }
 unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
     match *buffer.offset(buf_ptr2 as isize) as i32 {
@@ -2905,7 +2905,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
         eat_bib_print();
         return false;
     }
-    return true;
+    true
 }
 unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
     ex_buf_ptr = 0i32;
@@ -3019,7 +3019,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
             }
         }
     }
-    return true;
+    true
 }
 unsafe extern "C" fn decr_brace_level(mut pop_lit_var: str_number) {
     if brace_level == 0i32 {
@@ -3192,7 +3192,7 @@ unsafe extern "C" fn von_token_found() -> bool {
             }
         }
     }
-    return false;
+    false
 }
 unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff() {
     von_end = last_end - 1i32;
@@ -3253,7 +3253,7 @@ unsafe extern "C" fn enough_text_chars(mut enough_chars: buf_pointer) -> bool {
         }
         num_text_chars = num_text_chars + 1i32
     }
-    return num_text_chars >= enough_chars;
+    num_text_chars >= enough_chars
 }
 unsafe extern "C" fn figure_out_the_formatted_name() {
     ex_buf_ptr = 0i32;
@@ -11233,7 +11233,7 @@ unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name: *const i
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     aux_ln_stack[aux_ptr as usize] = 0i32;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn aux_bib_data_command() {
     if bib_seen {
@@ -11540,7 +11540,7 @@ unsafe extern "C" fn pop_the_aux_stack() -> i32 {
         return 1i32;
     }
     aux_ptr -= 1;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn get_aux_command_and_process() {
     buf_ptr2 = 0i32;
@@ -11815,7 +11815,7 @@ unsafe extern "C" fn bad_argument_token() -> bool {
             return true;
         }
     }
-    return false;
+    false
 }
 unsafe extern "C" fn bst_execute_command() {
     if !read_seen {
@@ -13370,7 +13370,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> i32 {
     impl_fn_num = 0i32;
     out_buf_length = 0i32;
     pre_def_certain_strings();
-    return get_the_top_level_aux_file_name(aux_file_name);
+    get_the_top_level_aux_file_name(aux_file_name)
 }
 /* tectonic/bibtex.h
    Copyright 2017 the Tectonic Project
@@ -13573,5 +13573,5 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
         }
     }
     ttstub_output_close(log_file);
-    return history as tt_history_t;
+    history as tt_history_t
 }

@@ -261,11 +261,11 @@ pub struct list_state_record {
 }
 #[inline]
 unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    return p >= hi_mem_min;
+    p >= hi_mem_min
 }
 #[inline]
 unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    return ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32;
+    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }
 static mut passive: i32 = 0;
 static mut cur_active_width: [scaled_t; 7] = [0; 7];
@@ -319,7 +319,7 @@ unsafe extern "C" fn get_native_usv(mut p: i32, mut i: i32) -> UnicodeScalar {
                 .offset((i + 1i32) as isize) as i32
             - 0xdc00i32;
     }
-    return c as UnicodeScalar;
+    c as UnicodeScalar
 }
 /* Break a paragraph into lines (XTTP:843).
  *
@@ -5346,7 +5346,7 @@ unsafe extern "C" fn finite_shrink(mut p: i32) -> i32 {
     q = new_spec(p);
     (*mem.offset(q as isize)).b16.s0 = 0_u16;
     delete_glue_ref(p);
-    return q;
+    q
 }
 unsafe extern "C" fn reconstitute(
     mut j: small_number,
@@ -5657,7 +5657,7 @@ unsafe extern "C" fn reconstitute(
             cur_r = (*mem.offset(lig_stack as isize)).b16.s0 as i32
         }
     }
-    return j;
+    j
 }
 unsafe extern "C" fn total_pw(mut q: i32, mut p: i32) -> scaled_t {
     let mut current_block: u64;
@@ -5705,7 +5705,7 @@ unsafe extern "C" fn total_pw(mut q: i32, mut p: i32) -> scaled_t {
         15089075282327824602 => l = find_protchar_left(l, 1i32 != 0),
         _ => {}
     }
-    return char_pw(l, 0i32 as small_number) + char_pw(r, 1i32 as small_number);
+    char_pw(l, 0i32 as small_number) + char_pw(r, 1i32 as small_number)
 }
 unsafe extern "C" fn find_protchar_left(mut l: i32, mut d: bool) -> i32 {
     let mut t: i32 = 0;
@@ -5774,7 +5774,7 @@ unsafe extern "C" fn find_protchar_left(mut l: i32, mut d: bool) -> i32 {
             break;
         }
     }
-    return l;
+    l
 }
 unsafe extern "C" fn find_protchar_right(mut l: i32, mut r: i32) -> i32 {
     let mut t: i32 = 0;
@@ -5835,7 +5835,7 @@ unsafe extern "C" fn find_protchar_right(mut l: i32, mut r: i32) -> i32 {
             break;
         }
     }
-    return r;
+    r
 }
 unsafe extern "C" fn push_node(mut p: i32) {
     if hlist_stack_level as i32 > 512i32 {
@@ -5855,5 +5855,5 @@ unsafe extern "C" fn pop_node() -> i32 {
             b"stack underflow (internal error)\x00" as *const u8 as *const i8,
         );
     }
-    return hlist_stack[hlist_stack_level as usize];
+    hlist_stack[hlist_stack_level as usize]
 }

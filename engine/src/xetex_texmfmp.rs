@@ -210,7 +210,7 @@ pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
             *str_pool.offset(fresh8 as isize) = rval as packed_UTF16_code
         }
     }
-    return make_string();
+    make_string()
 }
 #[no_mangle]
 pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
@@ -311,7 +311,7 @@ pub unsafe extern "C" fn gettexstring(mut s: str_number) -> *mut i8 {
         i += 1
     }
     *name.offset(j as isize) = 0_i8;
-    return name;
+    name
 }
 unsafe extern "C" fn compare_paths(mut p1: *const i8, mut p2: *const i8) -> i32 {
     let mut ret: i32 = 0;
@@ -332,12 +332,12 @@ unsafe extern "C" fn compare_paths(mut p1: *const i8, mut p2: *const i8) -> i32 
     } else {
         0i32
     };
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn is_new_source(mut srcfilename: str_number, mut lineno: i32) -> bool {
     let mut name: *mut i8 = gettexstring(srcfilename);
-    return compare_paths(name, last_source_name) != 0i32 || lineno != last_lineno;
+    compare_paths(name, last_source_name) != 0i32 || lineno != last_lineno
 }
 #[no_mangle]
 pub unsafe extern "C" fn remember_source_info(mut srcfilename: str_number, mut lineno: i32) {
@@ -386,7 +386,7 @@ pub unsafe extern "C" fn make_src_special(
         pool_ptr = pool_ptr + 1;
         *str_pool.offset(fresh12 as isize) = *fresh11 as packed_UTF16_code
     }
-    return oldpool_ptr;
+    oldpool_ptr
 }
 /* Converts any given string in into an allowed PDF string which is
  * hexadecimal encoded;

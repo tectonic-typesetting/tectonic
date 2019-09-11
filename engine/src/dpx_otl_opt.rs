@@ -103,7 +103,7 @@ unsafe extern "C" fn match_expr(mut expr: *mut bt_node, mut key: *const i8) -> i
             retval = if retval != 0 { 0i32 } else { 1i32 }
         }
     }
-    return retval;
+    retval
 }
 unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
     let mut expr: *mut bt_node = 0 as *mut bt_node;
@@ -117,7 +117,7 @@ unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
         0i32,
         4i32 as u64,
     );
-    return expr;
+    expr
 }
 unsafe extern "C" fn bt_release_tree(mut tree: *mut bt_node) {
     if !tree.is_null() {
@@ -241,14 +241,14 @@ unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -
             }
         }
     }
-    return root;
+    root
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_new_opt() -> *mut otl_opt {
     let mut opt: *mut otl_opt = 0 as *mut otl_opt;
     opt = new((1_u64).wrapping_mul(::std::mem::size_of::<otl_opt>() as u64) as u32) as *mut otl_opt;
     (*opt).rule = 0 as *mut bt_node;
-    return opt as *mut otl_opt;
+    opt as *mut otl_opt
 }
 #[no_mangle]
 pub unsafe extern "C" fn otl_release_opt(mut opt: *mut otl_opt) {
@@ -268,7 +268,7 @@ pub unsafe extern "C" fn otl_parse_optstring(mut opt: *mut otl_opt, mut optstr: 
         endptr = p.offset(strlen(optstr) as isize);
         (*opt).rule = parse_expr(&mut p, endptr)
     }
-    return 0i32;
+    0i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -295,5 +295,5 @@ pub unsafe extern "C" fn otl_match_optrule(mut opt: *mut otl_opt, mut tag: *cons
     if opt.is_null() || (*opt).rule.is_null() {
         return 1i32;
     }
-    return match_expr((*opt).rule, tag);
+    match_expr((*opt).rule, tag)
 }

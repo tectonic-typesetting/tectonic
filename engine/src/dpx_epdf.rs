@@ -257,7 +257,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -351,7 +351,7 @@ unsafe extern "C" fn rect_equal(mut rect1: *mut pdf_obj, mut rect2: *mut pdf_obj
         }
         i += 1
     }
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn pdf_get_page_obj(
     mut pf: *mut pdf_file,
@@ -575,7 +575,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     if !ret_resources.is_null() {
         *ret_resources = resources
     }
-    return page_tree;
+    page_tree
 }
 unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_obj {
     let mut contents: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -651,7 +651,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
         pdf_release_obj(contents);
         contents = content_new
     }
-    return contents;
+    contents
 }
 /* ximage here is the result. DONT USE IT FOR PASSING OPTIONS! */
 #[no_mangle]
@@ -865,7 +865,7 @@ pub unsafe extern "C" fn pdf_include_page(
     pdf_release_obj(page);
     pdf_release_obj(contents);
     pdf_close(pf);
-    return -1i32;
+    -1i32
 }
 static mut pdf_operators: [operator; 39] = [
     {
@@ -1575,5 +1575,5 @@ pub unsafe extern "C" fn pdf_copy_clip(
     free(save_path as *mut libc::c_void);
     pdf_release_obj(contents);
     pdf_close(pf);
-    return 0i32;
+    0i32
 }

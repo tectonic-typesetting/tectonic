@@ -78,22 +78,22 @@ pub unsafe extern "C" fn load_pool_strings(mut spare_size: i32) -> i32 {
         g = make_string()
         /* Returns 0 on error. */
     }
-    return g;
+    g
 }
 #[no_mangle]
 pub unsafe extern "C" fn length(mut s: str_number) -> i32 {
     if s as i64 >= 65536 {
-        return *str_start.offset(((s + 1i32) as i64 - 65536) as isize)
-            - *str_start.offset((s as i64 - 65536) as isize);
+        *str_start.offset(((s + 1i32) as i64 - 65536) as isize)
+            - *str_start.offset((s as i64 - 65536) as isize)
     } else if s >= 32i32 && s < 127i32 {
-        return 1i32;
+        1
     } else if s <= 127i32 {
-        return 3i32;
+        3
     } else if s < 256i32 {
-        return 4i32;
+        4
     } else {
-        return 8i32;
-    };
+        8
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn make_string() -> str_number {
@@ -105,7 +105,7 @@ pub unsafe extern "C" fn make_string() -> str_number {
     }
     str_ptr += 1;
     *str_start.offset((str_ptr - 65536i32) as isize) = pool_ptr;
-    return str_ptr - 1i32;
+    str_ptr - 1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn append_str(mut s: str_number) {
@@ -151,7 +151,7 @@ pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: i32) -> bool {
         j += 1;
         k += 1
     }
-    return true;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> bool {
@@ -192,7 +192,7 @@ pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> boo
             k += 1
         }
     }
-    return true;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn search_string(mut search: str_number) -> str_number {
@@ -212,7 +212,7 @@ pub unsafe extern "C" fn search_string(mut search: str_number) -> str_number {
             s -= 1
         }
     }
-    return 0i32;
+    0i32
 }
 /* tectonic/xetex-stringpool.h: preloaded "string pool" constants
    Copyright 2017 the Tectonic Project
@@ -229,5 +229,5 @@ pub unsafe extern "C" fn slow_make_string() -> str_number {
         pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
         return s;
     }
-    return t;
+    t
 }

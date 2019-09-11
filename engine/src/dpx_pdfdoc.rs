@@ -687,7 +687,7 @@ pub struct C2RustUnnamed_4 {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* quasi-hack to get the primary input */
 /* tectonic/core-strutils.h: miscellaneous C string utilities
@@ -702,7 +702,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 static mut verbose: i32 = 0i32;
 static mut manual_thumb_enabled: i8 = 0_i8;
@@ -754,7 +754,7 @@ unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const i8) -> *mut pdf_o
     } else {
         image_ref = pdf_ximage_get_reference(xobj_id)
     }
-    return image_ref;
+    image_ref
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_set_verbose(mut level: i32) {
@@ -939,7 +939,7 @@ unsafe extern "C" fn doc_get_page_entry(mut p: *mut pdf_doc, mut page_no: u32) -
         .pages
         .entries
         .offset(page_no.wrapping_sub(1_u32) as isize) as *mut pdf_page;
-    return page;
+    page
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_set_bop_content(mut content: *const i8, mut length: u32) {
@@ -1056,7 +1056,7 @@ unsafe extern "C" fn asn_date(mut date_string: *mut i8) -> i32 {
         abs(tz_offset) / 3600i32,
         abs(tz_offset) / 60i32 % 60i32,
     );
-    return strlen(date_string) as i32;
+    strlen(date_string) as i32
 }
 unsafe extern "C" fn pdf_doc_init_docinfo(mut p: *mut pdf_doc) {
     (*p).info = pdf_new_dict();
@@ -1170,7 +1170,7 @@ unsafe extern "C" fn pdf_doc_get_page_resources(
         resources = pdf_new_dict();
         pdf_add_dict(res_dict, pdf_new_name(category), resources);
     }
-    return resources;
+    resources
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_add_page_resource(
@@ -1400,7 +1400,7 @@ unsafe extern "C" fn build_page_tree(
         kids,
     );
     pdf_release_obj(self_ref);
-    return self_0;
+    self_0
 }
 unsafe extern "C" fn pdf_doc_init_page_tree(
     mut p: *mut pdf_doc,
@@ -1559,7 +1559,7 @@ pub unsafe extern "C" fn pdf_doc_get_page_count(mut pf: *mut pdf_file) -> i32 {
     }
     count = pdf_number_value(tmp) as i32;
     pdf_release_obj(tmp);
-    return count;
+    count
 }
 /*
  * From PDFReference15_v6.pdf (p.119 and p.834)
@@ -2085,7 +2085,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
     pdf_release_obj(rotate);
     pdf_release_obj(resources);
     pdf_release_obj(page_tree);
-    return 0 as *mut pdf_obj;
+    0 as *mut pdf_obj
 }
 unsafe extern "C" fn pdf_doc_init_bookmarks(mut p: *mut pdf_doc, mut bm_open_depth: i32) {
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
@@ -2116,7 +2116,7 @@ unsafe extern "C" fn clean_bookmarks(mut item: *mut pdf_olitem) -> i32 {
         free(item as *mut libc::c_void);
         item = next
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn flush_bookmarks(
     mut node: *mut pdf_olitem,
@@ -2194,7 +2194,7 @@ unsafe extern "C" fn flush_bookmarks(
     pdf_release_obj(prev_ref);
     pdf_release_obj((*node).dict);
     (*node).dict = 0 as *mut pdf_obj;
-    return retval;
+    retval
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_bookmarks_up() -> i32 {
@@ -2220,7 +2220,7 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_up() -> i32 {
     }
     (*p).outlines.current = item;
     (*p).outlines.current_depth -= 1;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> i32 {
@@ -2289,12 +2289,12 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> i32 {
     (*first).first = 0 as *mut pdf_olitem;
     (*p).outlines.current = first;
     (*p).outlines.current_depth += 1;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_bookmarks_depth() -> i32 {
     let mut p: *mut pdf_doc = &mut pdoc;
-    return (*p).outlines.current_depth;
+    (*p).outlines.current_depth
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_bookmarks_add(mut dict: *mut pdf_obj, mut is_open: i32) {
@@ -2455,7 +2455,7 @@ pub unsafe extern "C" fn pdf_doc_add_names(
         let ref mut fresh17 = (*(*p).names.offset(i as isize)).data;
         *fresh17 = pdf_new_name_tree()
     }
-    return pdf_names_add_object((*(*p).names.offset(i as isize)).data, key, keylen, value);
+    pdf_names_add_object((*(*p).names.offset(i as isize)).data, key, keylen, value)
 }
 unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
     let mut current_block: u64;
@@ -2855,7 +2855,7 @@ unsafe extern "C" fn find_bead(
             i = i.wrapping_add(1)
         }
     }
-    return bead;
+    bead
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_add_bead(
@@ -3061,7 +3061,7 @@ unsafe extern "C" fn make_article(
         pdf_release_obj(art_dict);
         art_dict = 0 as *mut pdf_obj
     }
-    return art_dict;
+    art_dict
 }
 unsafe extern "C" fn clean_article(mut article: *mut pdf_article) {
     if article.is_null() {
@@ -3175,7 +3175,7 @@ pub unsafe extern "C" fn pdf_doc_current_page_resources() -> *mut pdf_obj {
             resources = (*currentpage).resources
         }
     }
-    return resources;
+    resources
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_get_dictionary(mut category: *const i8) -> *mut pdf_obj {
@@ -3215,12 +3215,12 @@ pub unsafe extern "C" fn pdf_doc_get_dictionary(mut category: *const i8) -> *mut
             category,
         );
     }
-    return dict;
+    dict
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_current_page_number() -> i32 {
     let mut p: *mut pdf_doc = &mut pdoc;
-    return (*p).pages.num_entries.wrapping_add(1_u32) as i32;
+    (*p).pages.num_entries.wrapping_add(1_u32) as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_ref_page(mut page_no: u32) -> *mut pdf_obj {
@@ -3231,7 +3231,7 @@ pub unsafe extern "C" fn pdf_doc_ref_page(mut page_no: u32) -> *mut pdf_obj {
         (*page).page_obj = pdf_new_dict();
         (*page).page_ref = pdf_ref_obj((*page).page_obj)
     }
-    return pdf_link_obj((*page).page_ref);
+    pdf_link_obj((*page).page_ref)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_get_reference(mut category: *const i8) -> *mut pdf_obj {
@@ -3258,7 +3258,7 @@ pub unsafe extern "C" fn pdf_doc_get_reference(mut category: *const i8) -> *mut 
             category,
         );
     }
-    return ref_0;
+    ref_0
 }
 unsafe extern "C" fn pdf_doc_new_page(mut p: *mut pdf_doc) {
     let mut currentpage: *mut pdf_page = 0 as *mut pdf_page;
@@ -3769,7 +3769,7 @@ pub unsafe extern "C" fn pdf_doc_begin_grabbing(
      */
     pdf_dev_reset_fonts(1i32); /* force color operators to be added to stream */
     pdf_dev_reset_color(1i32);
-    return xobj_id;
+    xobj_id
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_doc_end_grabbing(mut attrib: *mut pdf_obj) {

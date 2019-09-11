@@ -52,14 +52,14 @@ pub unsafe extern "C" fn tex_round(mut r: f64) -> i32 {
     if r >= 0.0f64 {
         return (r + 0.5f64) as i32;
     }
-    return (r - 0.5f64) as i32;
+    (r - 0.5f64) as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn half(mut x: i32) -> i32 {
     if x & 1i32 != 0 {
         return (x + 1i32) / 2i32;
     }
-    return x / 2i32;
+    x / 2i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn mult_and_add(
@@ -73,20 +73,20 @@ pub unsafe extern "C" fn mult_and_add(
         n = -n
     }
     if n == 0i32 {
-        return y;
+        y
     } else if x <= (max_answer - y) / n && -x <= (max_answer + y) / n {
-        return n * x + y;
+        n * x + y
     } else {
         arith_error = true;
-        return 0i32;
-    };
+        0i32
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn x_over_n(mut x: scaled_t, mut n: i32) -> scaled_t {
     if n == 0i32 {
         arith_error = true;
         tex_remainder = x;
-        return 0i32;
+        0i32
     } else {
         if n < 0i32 {
             // negative
@@ -96,12 +96,12 @@ pub unsafe extern "C" fn x_over_n(mut x: scaled_t, mut n: i32) -> scaled_t {
         }
         if x >= 0i32 {
             tex_remainder = x % n;
-            return x / n;
+            x / n
         } else {
             tex_remainder = -(-x % n);
-            return -(-x / n);
+            -(-x / n)
         }
-    };
+    }
 }
 /* xetex-errors */
 /* xetex-math */
@@ -130,11 +130,11 @@ pub unsafe extern "C" fn xn_over_d(mut x: scaled_t, mut n: i32, mut d: i32) -> s
     }
     if positive {
         tex_remainder = v % d;
-        return u;
+        u
     } else {
         tex_remainder = -(v % d);
-        return -u;
-    };
+        -u
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn round_xn_over_d(mut x: scaled_t, mut n: i32, mut d: i32) -> scaled_t {
@@ -161,8 +161,8 @@ pub unsafe extern "C" fn round_xn_over_d(mut x: scaled_t, mut n: i32, mut d: i32
         u += 1
     }
     if positive {
-        return u;
+        u
     } else {
-        return -u;
-    };
+        -u
+    }
 }

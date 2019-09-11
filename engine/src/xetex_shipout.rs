@@ -590,11 +590,11 @@ unsafe extern "C" fn print_c_string(mut str: *const i8) {
 }
 #[inline]
 unsafe extern "C" fn cur_length() -> pool_pointer {
-    return pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize);
+    pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize)
 }
 #[inline]
 unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    return p >= hi_mem_min;
+    p >= hi_mem_min
 }
 /* DVI code */
 static mut dvi_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
@@ -3304,7 +3304,7 @@ unsafe extern "C" fn reverse(
             LR_problems += 10000i32
         }
     }
-    return l;
+    l
 }
 /*1506: Create a new edge node of subtype `s` and width `w` */
 #[no_mangle]
@@ -3315,7 +3315,7 @@ pub unsafe extern "C" fn new_edge(mut s: small_number, mut w: scaled_t) -> i32 {
     (*mem.offset(p as isize)).b16.s0 = s as u16;
     (*mem.offset((p + 1i32) as isize)).b32.s1 = w;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
-    return p;
+    p
 }
 #[no_mangle]
 pub unsafe extern "C" fn out_what(mut p: i32) {

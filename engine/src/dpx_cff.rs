@@ -275,7 +275,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 static mut cff_stdstr: [*const i8; 391] = [
     b".notdef\x00" as *const u8 as *const i8,
@@ -682,7 +682,7 @@ unsafe extern "C" fn get_unsigned(mut handle: rust_input_handle_t, mut n: i32) -
             .wrapping_mul(0x100u32)
             .wrapping_add(tt_get_unsigned_byte(handle) as u32)
     }
-    return v;
+    v
 }
 /*
  * Read Header, Name INDEX, Top DICT INDEX, and String INDEX.
@@ -949,7 +949,7 @@ pub unsafe extern "C" fn cff_get_name(mut cff: *mut cff_font) -> *mut i8 {
         len as u64,
     );
     *fontname.offset(len as isize) = '\u{0}' as i32 as i8;
-    return fontname;
+    fontname
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_set_name(mut cff: *mut cff_font, mut name: *mut i8) -> i32 {
@@ -977,7 +977,7 @@ pub unsafe extern "C" fn cff_set_name(mut cff: *mut cff_font, mut name: *mut i8)
         name as *const libc::c_void,
         strlen(name),
     );
-    return (5i32 as u64).wrapping_add(strlen(name)) as i32;
+    (5i32 as u64).wrapping_add(strlen(name)) as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_put_header(
@@ -1002,7 +1002,7 @@ pub unsafe extern "C" fn cff_put_header(
     dest = dest.offset(1);
     *fresh4 = 4i32 as card8;
     (*cff).header.offsize = 4i32 as c_offsize;
-    return 4i32;
+    4i32
 }
 /* Only read header part but not body */
 #[no_mangle]
@@ -1046,7 +1046,7 @@ pub unsafe extern "C" fn cff_get_index_header(mut cff: *mut cff_font) -> *mut cf
         (*idx).offset = 0 as *mut l_offset;
         (*idx).data = 0 as *mut card8
     }
-    return idx;
+    idx
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index {
@@ -1096,7 +1096,7 @@ pub unsafe extern "C" fn cff_get_index(mut cff: *mut cff_font) -> *mut cff_index
         (*idx).offset = 0 as *mut l_offset;
         (*idx).data = 0 as *mut card8
     }
-    return idx;
+    idx
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_pack_index(
@@ -1197,7 +1197,7 @@ pub unsafe extern "C" fn cff_pack_index(
         (*idx).data as *const libc::c_void,
         (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1_u32) as u64,
     );
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_index_size(mut idx: *mut cff_index) -> i32 {
@@ -1235,7 +1235,7 @@ pub unsafe extern "C" fn cff_new_index(mut count: card16) -> *mut cff_index {
         (*idx).offset = 0 as *mut l_offset
     }
     (*idx).data = 0 as *mut card8;
-    return idx;
+    idx
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_index(mut idx: *mut cff_index) {
@@ -1285,7 +1285,7 @@ pub unsafe extern "C" fn cff_get_string(mut cff: *mut cff_font, mut id: s_SID) -
             *result.offset(len as isize) = '\u{0}' as i32 as i8
         }
     }
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_get_sid(mut cff: *mut cff_font, mut str: *const i8) -> i32 {
@@ -1322,7 +1322,7 @@ pub unsafe extern "C" fn cff_get_sid(mut cff: *mut cff_font, mut str: *const i8)
         }
         i = i.wrapping_add(1)
     }
-    return -1i32;
+    -1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_get_seac_sid(mut cff: *mut cff_font, mut str: *const i8) -> i32 {
@@ -1337,7 +1337,7 @@ pub unsafe extern "C" fn cff_get_seac_sid(mut cff: *mut cff_font, mut str: *cons
         }
         i = i.wrapping_add(1)
     }
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn cff_match_string(
     mut cff: *mut cff_font,
@@ -1375,7 +1375,7 @@ unsafe extern "C" fn cff_match_string(
             };
         }
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_update_string(mut cff: *mut cff_font) {
@@ -1461,7 +1461,7 @@ pub unsafe extern "C" fn cff_add_string(
         str as *const libc::c_void,
         len,
     );
-    return (idx as i32 + 391i32) as s_SID;
+    (idx as i32 + 391i32) as s_SID
 }
 /*
  * Encoding and Charset
@@ -1562,7 +1562,7 @@ pub unsafe extern "C" fn cff_read_encoding(mut cff: *mut cff_font) -> i32 {
         (*encoding).num_supps = 0i32 as card8;
         (*encoding).supp = 0 as *mut cff_map
     }
-    return length;
+    length
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_pack_encoding(
@@ -1643,7 +1643,7 @@ pub unsafe extern "C" fn cff_pack_encoding(
             i = i.wrapping_add(1)
         }
     }
-    return len;
+    len
 }
 /* input: code, output: glyph index */
 #[no_mangle]
@@ -1717,7 +1717,7 @@ pub unsafe extern "C" fn cff_encoding_lookup(mut cff: *mut cff_font, mut code: c
             }
         }
     }
-    return gid;
+    gid
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_encoding(mut encoding: *mut cff_encoding) {
@@ -1856,7 +1856,7 @@ pub unsafe extern "C" fn cff_read_charsets(mut cff: *mut cff_font) -> i32 {
     if count as i32 > 0i32 {
         _tt_abort(b"Charset data possibly broken\x00" as *const u8 as *const i8);
     }
-    return length;
+    length
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_pack_charsets(
@@ -1948,13 +1948,13 @@ pub unsafe extern "C" fn cff_pack_charsets(
             _tt_abort(b"Unknown Charset format\x00" as *const u8 as *const i8);
         }
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_get_glyphname(mut cff: *mut cff_font, mut gid: card16) -> *mut i8 {
     let mut sid: s_SID = 0;
     sid = cff_charsets_lookup_inverse(cff, gid);
-    return cff_get_string(cff, sid);
+    cff_get_string(cff, sid)
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_glyph_lookup(mut cff: *mut cff_font, mut glyph: *const i8) -> card16 {
@@ -2045,7 +2045,7 @@ pub unsafe extern "C" fn cff_charsets_lookup(mut cff: *mut cff_font, mut cid: ca
             _tt_abort(b"Charsets data not available\x00" as *const u8 as *const i8);
         }
     }
-    return cff_charsets_lookup_gid((*cff).charsets, cid);
+    cff_charsets_lookup_gid((*cff).charsets, cid)
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_charsets_lookup_gid(
@@ -2133,7 +2133,7 @@ pub unsafe extern "C" fn cff_charsets_lookup_inverse(
         return 0i32 as card16;
         /* .notdef */
     }
-    return cff_charsets_lookup_cid((*cff).charsets, gid);
+    cff_charsets_lookup_cid((*cff).charsets, gid)
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_charsets_lookup_cid(
@@ -2189,7 +2189,7 @@ pub unsafe extern "C" fn cff_charsets_lookup_cid(
             _tt_abort(b"Unknown Charset format\x00" as *const u8 as *const i8);
         }
     }
-    return sid;
+    sid
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_charsets(mut charset: *mut cff_charsets) {
@@ -2279,7 +2279,7 @@ pub unsafe extern "C" fn cff_read_fdselect(mut cff: *mut cff_font) -> i32 {
             _tt_abort(b"Unknown FDSelect format.\x00" as *const u8 as *const i8);
         }
     }
-    return length;
+    length
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_pack_fdselect(
@@ -2358,7 +2358,7 @@ pub unsafe extern "C" fn cff_pack_fdselect(
             _tt_abort(b"Unknown FDSelect format.\x00" as *const u8 as *const i8);
         }
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_fdselect(mut fdselect: *mut cff_fdselect) {
@@ -2412,7 +2412,7 @@ pub unsafe extern "C" fn cff_fdselect_lookup(mut cff: *mut cff_font, mut gid: ca
             b"in cff_fdselect_lookup(): Invalid Font DICT index\x00" as *const u8 as *const i8,
         );
     }
-    return fd;
+    fd
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> i32 {
@@ -2499,7 +2499,7 @@ pub unsafe extern "C" fn cff_read_subrs(mut cff: *mut cff_font) -> i32 {
         *fresh50 = cff_get_index(cff);
         len += cff_index_size(*(*cff).subrs.offset(0))
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> i32 {
@@ -2549,7 +2549,7 @@ pub unsafe extern "C" fn cff_read_fdarray(mut cff: *mut cff_font) -> i32 {
     }
     len = cff_index_size(idx);
     cff_release_index(idx);
-    return len;
+    len
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -2705,5 +2705,5 @@ pub unsafe extern "C" fn cff_read_private(mut cff: *mut cff_font) -> i32 {
             len = 0i32
         }
     }
-    return len;
+    len
 }

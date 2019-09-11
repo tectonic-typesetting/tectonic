@@ -47,7 +47,7 @@ pub unsafe extern "C" fn new(mut size: u32) -> *mut libc::c_void {
             size,
         );
     }
-    return result;
+    result
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

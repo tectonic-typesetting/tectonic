@@ -266,7 +266,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -306,7 +306,7 @@ unsafe extern "C" fn ifreader_create(
     (*reader).endptr = (*reader).buf;
     (*reader).cursor = (*reader).endptr;
     *(*reader).endptr = 0_u8;
-    return reader;
+    reader
 }
 unsafe extern "C" fn ifreader_destroy(mut reader: *mut ifreader) {
     assert!(!reader.is_null());
@@ -362,7 +362,7 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         }
     }
     *(*reader).endptr = 0_u8;
-    return bytesread.wrapping_add(bytesrem);
+    bytesread.wrapping_add(bytesrem)
 }
 unsafe extern "C" fn check_next_token(mut input: *mut ifreader, mut key: *const i8) -> i32 {
     let mut cmp: i32 = 0;
@@ -379,7 +379,7 @@ unsafe extern "C" fn check_next_token(mut input: *mut ifreader, mut key: *const 
     cmp = if strcmp(str, key) != 0 { -1i32 } else { 0i32 };
     free(str as *mut libc::c_void);
     pst_release_obj(token);
-    return cmp;
+    cmp
 }
 unsafe extern "C" fn get_coderange(
     mut input: *mut ifreader,
@@ -418,7 +418,7 @@ unsafe extern "C" fn get_coderange(
     pst_release_obj(tok1);
     pst_release_obj(tok2);
     *dim = dim1;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn do_codespacerange(
     mut cmap: *mut CMap,
@@ -451,7 +451,7 @@ unsafe extern "C" fn do_codespacerange(
             dim as size_t,
         );
     }
-    return check_next_token(input, b"endcodespacerange\x00" as *const u8 as *const i8);
+    check_next_token(input, b"endcodespacerange\x00" as *const u8 as *const i8)
 }
 /*
  * bfrange
@@ -502,7 +502,7 @@ unsafe extern "C" fn handle_codearray(
         let ref mut fresh2 = *codeLo.offset((dim - 1i32) as isize);
         *fresh2 = (*fresh2 as i32 + 1i32) as u8
     }
-    return check_next_token(input, b"]\x00" as *const u8 as *const i8);
+    check_next_token(input, b"]\x00" as *const u8 as *const i8)
 }
 unsafe extern "C" fn do_notdefrange(
     mut cmap: *mut CMap,
@@ -556,7 +556,7 @@ unsafe extern "C" fn do_notdefrange(
         }
         pst_release_obj(tok);
     }
-    return check_next_token(input, b"endnotdefrange\x00" as *const u8 as *const i8);
+    check_next_token(input, b"endnotdefrange\x00" as *const u8 as *const i8)
 }
 unsafe extern "C" fn do_bfrange(
     mut cmap: *mut CMap,
@@ -620,7 +620,7 @@ unsafe extern "C" fn do_bfrange(
         }
         pst_release_obj(tok);
     }
-    return check_next_token(input, b"endbfrange\x00" as *const u8 as *const i8);
+    check_next_token(input, b"endbfrange\x00" as *const u8 as *const i8)
 }
 unsafe extern "C" fn do_cidrange(
     mut cmap: *mut CMap,
@@ -674,7 +674,7 @@ unsafe extern "C" fn do_cidrange(
         }
         pst_release_obj(tok);
     }
-    return check_next_token(input, b"endcidrange\x00" as *const u8 as *const i8);
+    check_next_token(input, b"endcidrange\x00" as *const u8 as *const i8)
 }
 unsafe extern "C" fn do_notdefchar(
     mut cmap: *mut CMap,
@@ -721,7 +721,7 @@ unsafe extern "C" fn do_notdefchar(
         pst_release_obj(tok1);
         pst_release_obj(tok2);
     }
-    return check_next_token(input, b"endnotdefchar\x00" as *const u8 as *const i8);
+    check_next_token(input, b"endnotdefchar\x00" as *const u8 as *const i8)
 }
 unsafe extern "C" fn do_bfchar(
     mut cmap: *mut CMap,
@@ -771,7 +771,7 @@ unsafe extern "C" fn do_bfchar(
         pst_release_obj(tok1);
         pst_release_obj(tok2);
     }
-    return check_next_token(input, b"endbfchar\x00" as *const u8 as *const i8);
+    check_next_token(input, b"endbfchar\x00" as *const u8 as *const i8)
 }
 unsafe extern "C" fn do_cidchar(
     mut cmap: *mut CMap,
@@ -818,7 +818,7 @@ unsafe extern "C" fn do_cidchar(
         pst_release_obj(tok1);
         pst_release_obj(tok2);
     }
-    return check_next_token(input, b"endcidchar\x00" as *const u8 as *const i8);
+    check_next_token(input, b"endcidchar\x00" as *const u8 as *const i8)
 }
 unsafe extern "C" fn do_cidsysteminfo(mut cmap: *mut CMap, mut input: *mut ifreader) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj;
@@ -972,7 +972,7 @@ unsafe extern "C" fn do_cidsysteminfo(mut cmap: *mut CMap, mut input: *mut ifrea
     }
     free(csi.registry as *mut libc::c_void);
     free(csi.ordering as *mut libc::c_void);
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -> i32 {
@@ -998,7 +998,7 @@ pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -
         }
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
-    return result;
+    result
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1206,9 +1206,9 @@ pub unsafe extern "C" fn CMap_parse(mut cmap: *mut CMap, mut handle: rust_input_
         }
     }
     ifreader_destroy(input);
-    return if status < 0i32 {
+    if status < 0i32 {
         -1i32
     } else {
         CMap_is_valid(cmap) as i32
-    };
+    }
 }

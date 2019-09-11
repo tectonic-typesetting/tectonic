@@ -199,7 +199,7 @@ pub struct list_state_record {
 }
 #[inline]
 unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    return ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32;
+    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }
 /* tectonic/xetex-pagebuilder.c: the page builder
    Copyright 2017-2018 The Tectonic Project

@@ -183,7 +183,7 @@ pub struct named_object {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 unsafe extern "C" fn printable_key(mut key: *const i8, mut keylen: i32) -> *mut i8 {
     static mut pkey: [i8; 36] = [0; 36];
@@ -225,7 +225,7 @@ unsafe extern "C" fn printable_key(mut key: *const i8, mut keylen: i32) -> *mut 
         i += 1
     }
     pkey[len as usize] = '\u{0}' as i32 as i8;
-    return pkey.as_mut_ptr();
+    pkey.as_mut_ptr()
 }
 #[inline]
 unsafe extern "C" fn hval_free(mut hval: *mut libc::c_void) {
@@ -246,7 +246,7 @@ pub unsafe extern "C" fn pdf_new_name_tree() -> *mut ht_table {
         names,
         Some(hval_free as unsafe extern "C" fn(_: *mut libc::c_void) -> ()),
     );
-    return names;
+    names
 }
 unsafe extern "C" fn check_objects_defined(mut ht_tab: *mut ht_table) {
     let mut iter: ht_iter = ht_iter {
@@ -319,7 +319,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
             return -1i32;
         }
     }
-    return 0i32;
+    0i32
 }
 /*
  * The following routine returns copies, not the original object.
@@ -345,7 +345,7 @@ pub unsafe extern "C" fn pdf_names_lookup_reference(
         object = pdf_new_undefined();
         pdf_names_add_object(names, key, keylen, object);
     }
-    return pdf_ref_obj(object);
+    pdf_ref_obj(object)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_names_lookup_object(
@@ -360,7 +360,7 @@ pub unsafe extern "C" fn pdf_names_lookup_object(
         return 0 as *mut pdf_obj;
     }
     assert!(!(*value).object.is_null());
-    return (*value).object;
+    (*value).object
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_names_close_object(
@@ -387,7 +387,7 @@ pub unsafe extern "C" fn pdf_names_close_object(
         return -1i32;
     }
     (*value).closed = 1i32;
-    return 0i32;
+    0i32
 }
 #[inline]
 unsafe extern "C" fn cmp_key(mut d1: *const libc::c_void, mut d2: *const libc::c_void) -> i32 {
@@ -416,7 +416,7 @@ unsafe extern "C" fn cmp_key(mut d1: *const libc::c_void, mut d2: *const libc::c
             cmp = (*sd1).keylen - (*sd2).keylen
         }
     }
-    return cmp;
+    cmp
 }
 unsafe extern "C" fn build_name_tree(
     mut first: *mut named_object,
@@ -514,7 +514,7 @@ unsafe extern "C" fn build_name_tree(
             kids,
         );
     }
-    return result;
+    result
 }
 unsafe extern "C" fn flat_table(
     mut ht_tab: *mut ht_table,
@@ -590,7 +590,7 @@ unsafe extern "C" fn flat_table(
         objects as *mut libc::c_void,
         (count as u32 as u64).wrapping_mul(::std::mem::size_of::<named_object>() as u64) as u32,
     ) as *mut named_object;
-    return objects;
+    objects
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -640,5 +640,5 @@ pub unsafe extern "C" fn pdf_names_create_tree(
         name_tree = build_name_tree(flat, *count, 1i32);
         free(flat as *mut libc::c_void);
     }
-    return name_tree;
+    name_tree
 }

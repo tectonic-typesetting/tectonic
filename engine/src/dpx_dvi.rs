@@ -1003,7 +1003,7 @@ pub struct tt_vhea_table {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -1017,7 +1017,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 /* UTF-32 over U+FFFF -> UTF-16 surrogate pair */
 /* Interal Variables */
@@ -1301,7 +1301,11 @@ static mut dev_origin_x: f64 = 72.0f64;
 static mut dev_origin_y: f64 = 770.0f64;
 #[no_mangle]
 pub unsafe extern "C" fn get_origin(mut x: i32) -> f64 {
-    return if x != 0 { dev_origin_x } else { dev_origin_y };
+    if x != 0 {
+        dev_origin_x
+    } else {
+        dev_origin_y
+    }
 }
 static mut lr_state: dvi_lr = dvi_lr {
     state: 0,
@@ -1355,12 +1359,12 @@ unsafe extern "C" fn get_and_buffer_unsigned_byte(mut handle: rust_input_handle_
     let fresh0 = dvi_page_buf_index;
     dvi_page_buf_index = dvi_page_buf_index.wrapping_add(1);
     *dvi_page_buffer.offset(fresh0 as isize) = ch as u8;
-    return ch;
+    ch
 }
 unsafe extern "C" fn get_and_buffer_unsigned_pair(mut handle: rust_input_handle_t) -> u32 {
     let mut pair: u32 = get_and_buffer_unsigned_byte(handle) as u32;
     pair = pair << 8i32 | get_and_buffer_unsigned_byte(handle) as u32;
-    return pair;
+    pair
 }
 unsafe extern "C" fn get_and_buffer_bytes(mut handle: rust_input_handle_t, mut count: u32) {
     if dvi_page_buf_index.wrapping_add(count) >= dvi_page_buf_size {
@@ -1386,7 +1390,7 @@ unsafe extern "C" fn get_and_buffer_bytes(mut handle: rust_input_handle_t, mut c
 unsafe extern "C" fn get_buffered_unsigned_byte() -> i32 {
     let fresh1 = dvi_page_buf_index;
     dvi_page_buf_index = dvi_page_buf_index.wrapping_add(1);
-    return *dvi_page_buffer.offset(fresh1 as isize) as i32;
+    *dvi_page_buffer.offset(fresh1 as isize) as i32
 }
 unsafe extern "C" fn get_buffered_unsigned_pair() -> u32 {
     let fresh2 = dvi_page_buf_index;
@@ -1395,7 +1399,7 @@ unsafe extern "C" fn get_buffered_unsigned_pair() -> u32 {
     let fresh3 = dvi_page_buf_index;
     dvi_page_buf_index = dvi_page_buf_index.wrapping_add(1);
     pair = pair << 8i32 | *dvi_page_buffer.offset(fresh3 as isize) as u32;
-    return pair;
+    pair
 }
 unsafe extern "C" fn get_buffered_signed_quad() -> i32 {
     let mut i: u32 = 0;
@@ -1413,7 +1417,7 @@ unsafe extern "C" fn get_buffered_signed_quad() -> i32 {
         quad = quad << 8i32 | *dvi_page_buffer.offset(fresh5 as isize) as i32;
         i = i.wrapping_add(1)
     }
-    return quad;
+    quad
 }
 unsafe extern "C" fn get_buffered_signed_num(mut num: u8) -> i32 {
     let fresh6 = dvi_page_buf_index;
@@ -1457,7 +1461,7 @@ unsafe extern "C" fn get_buffered_signed_num(mut num: u8) -> i32 {
         }
         _ => {}
     }
-    return quad;
+    quad
 }
 unsafe extern "C" fn get_buffered_unsigned_num(mut num: u8) -> i32 {
     let fresh10 = dvi_page_buf_index;
@@ -1501,7 +1505,7 @@ unsafe extern "C" fn get_buffered_unsigned_num(mut num: u8) -> i32 {
         }
         _ => {}
     }
-    return quad;
+    quad
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_set_verbose(mut level: i32) {
@@ -1513,7 +1517,7 @@ pub unsafe extern "C" fn dvi_set_verbose(mut level: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_npages() -> u32 {
-    return num_pages;
+    num_pages
 }
 static mut invalid_signature: [i8; 53] = [
     83, 111, 109, 101, 116, 104, 105, 110, 103, 32, 105, 115, 32, 119, 114, 111, 110, 103, 46, 32,
@@ -1622,7 +1626,7 @@ unsafe extern "C" fn find_post() -> i32 {
     }
     pre_id_byte = ch;
     check_id_bytes();
-    return current;
+    current
 }
 unsafe extern "C" fn get_page_info(mut post_location: i32) {
     let mut i: i32 = 0;
@@ -1720,7 +1724,7 @@ unsafe extern "C" fn get_dvi_info(mut post_location: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_comment() -> *const i8 {
-    return dvi_info.comment.as_mut_ptr();
+    dvi_info.comment.as_mut_ptr()
 }
 unsafe extern "C" fn read_font_record(mut tex_id: u32) {
     let mut dir_length: i32 = 0;
@@ -1985,7 +1989,7 @@ pub unsafe extern "C" fn dvi_link_annot(mut flag: i32) {
 /* allow other modules (pdfdev) to ask whether we're collecting box areas */
 #[no_mangle]
 pub unsafe extern "C" fn dvi_is_tracking_boxes() -> bool {
-    return compute_boxes != 0 && link_annot != 0 && marked_depth >= tagged_depth;
+    compute_boxes != 0 && link_annot != 0 && marked_depth >= tagged_depth
 }
 /* link or nolink:
  * See dvipdfm (not x) user's manual on pdf:link and pdf:nolink.
@@ -2015,7 +2019,7 @@ pub unsafe extern "C" fn dvi_do_special(mut buffer: *const libc::c_void, mut siz
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_unit_size() -> f64 {
-    return dvi2pts;
+    dvi2pts
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: spt_t) -> u32 {
@@ -2195,7 +2199,7 @@ pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: sp
     if verbose != 0 {
         dpx_message(b">\x00" as *const u8 as *const i8);
     }
-    return cur_id;
+    cur_id
 }
 unsafe extern "C" fn dvi_locate_native_font(
     mut filename: *const i8,
@@ -2379,15 +2383,15 @@ unsafe extern "C" fn dvi_locate_native_font(
     if verbose != 0 {
         dpx_message(b">\x00" as *const u8 as *const i8);
     }
-    return cur_id;
+    cur_id
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_dev_xpos() -> f64 {
-    return dvi_state.h as f64 * dvi2pts;
+    dvi_state.h as f64 * dvi2pts
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_dev_ypos() -> f64 {
-    return -(dvi_state.v as f64 * dvi2pts);
+    -(dvi_state.v as f64 * dvi2pts)
 }
 unsafe extern "C" fn do_moveto(mut x: i32, mut y: i32) {
     dvi_state.h = x;
@@ -3412,7 +3416,7 @@ pub unsafe extern "C" fn dvi_init(mut dvi_filename: *const i8, mut mag: f64) -> 
     dvi_page_buffer =
         new((dvi_page_buf_size as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
             as *mut u8;
-    return dvi2pts;
+    dvi2pts
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvi_close() {
@@ -3587,7 +3591,7 @@ unsafe extern "C" fn read_length(
     }
     *vp = v * u;
     *pp = p;
-    return error;
+    error
 }
 unsafe extern "C" fn scan_special(
     mut wd: *mut f64,
@@ -3814,7 +3818,7 @@ unsafe extern "C" fn scan_special(
         }
         free(q as *mut libc::c_void);
     }
-    return error;
+    error
 }
 static mut buffered_page: i32 = -1i32;
 /* returns scale (dvi2pts) */

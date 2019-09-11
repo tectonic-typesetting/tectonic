@@ -537,7 +537,7 @@ pub struct operators {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -551,7 +551,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return false;
+    false
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -560,7 +560,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -2436,7 +2436,7 @@ unsafe extern "C" fn mp_setfont(mut font_name: *const i8, mut pt_size: f64) -> i
             font_name,
         );
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn save_font() {
     let mut current: *mut mp_font = 0 as *mut mp_font;
@@ -2494,7 +2494,7 @@ unsafe extern "C" fn is_fontname(mut token: *const i8) -> bool {
     if !mrec.is_null() {
         return true;
     }
-    return tfm_exists(token);
+    tfm_exists(token)
 }
 #[no_mangle]
 pub unsafe extern "C" fn mps_scan_bbox(
@@ -2561,7 +2561,7 @@ pub unsafe extern "C" fn mps_scan_bbox(
             *pp = (*pp).offset(1)
         }
     }
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn skip_prolog(mut start: *mut *const i8, mut end: *const i8) {
     let mut found_prolog: i32 = 0i32;
@@ -3147,7 +3147,7 @@ unsafe extern "C" fn get_opcode(mut token: *const i8) -> i32 {
         }
         i = i.wrapping_add(1)
     }
-    return -1i32;
+    -1i32
 }
 static mut stack: [*mut pdf_obj; 1024] = [0 as *const pdf_obj as *mut pdf_obj; 1024];
 static mut top_stack: u32 = 0_u32;
@@ -3159,7 +3159,7 @@ unsafe extern "C" fn do_exch() -> i32 {
     tmp = stack[top_stack.wrapping_sub(1_u32) as usize];
     stack[top_stack.wrapping_sub(1_u32) as usize] = stack[top_stack.wrapping_sub(2_u32) as usize];
     stack[top_stack.wrapping_sub(2_u32) as usize] = tmp;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn do_clear() -> i32 {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -3172,7 +3172,7 @@ unsafe extern "C" fn do_clear() -> i32 {
         };
         pdf_release_obj(tmp);
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn pop_get_numbers(mut values: *mut f64, mut count: i32) -> i32 {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -3200,7 +3200,7 @@ unsafe extern "C" fn pop_get_numbers(mut values: *mut f64, mut count: i32) -> i3
             pdf_release_obj(tmp);
         }
     }
-    return count + 1i32;
+    count + 1i32
 }
 unsafe extern "C" fn cvr_array(
     mut array: *mut pdf_obj,
@@ -3227,7 +3227,7 @@ unsafe extern "C" fn cvr_array(
         }
     }
     pdf_release_obj(array);
-    return count + 1i32;
+    count + 1i32
 }
 unsafe extern "C" fn is_fontdict(mut dict: *mut pdf_obj) -> bool {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -3249,7 +3249,7 @@ unsafe extern "C" fn is_fontdict(mut dict: *mut pdf_obj) -> bool {
     if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
         return false;
     }
-    return true;
+    true
 }
 unsafe extern "C" fn do_findfont() -> i32 {
     let mut error: i32 = 0i32;
@@ -3312,7 +3312,7 @@ unsafe extern "C" fn do_findfont() -> i32 {
             error = 1i32
         }
     }
-    return error;
+    error
 }
 unsafe extern "C" fn do_scalefont() -> i32 {
     let mut error: i32 = 0i32;
@@ -3349,7 +3349,7 @@ unsafe extern "C" fn do_scalefont() -> i32 {
     } else {
         error = 1i32
     }
-    return error;
+    error
 }
 unsafe extern "C" fn do_setfont() -> i32 {
     let mut error: i32 = 0i32;
@@ -3379,7 +3379,7 @@ unsafe extern "C" fn do_setfont() -> i32 {
         error = mp_setfont(font_name, font_scale)
     }
     pdf_release_obj(font_dict);
-    return error;
+    error
 }
 /* Push dummy font dict onto PS stack */
 unsafe extern "C" fn do_currentfont() -> i32 {
@@ -3421,7 +3421,7 @@ unsafe extern "C" fn do_currentfont() -> i32 {
             error = 1i32
         }
     }
-    return error;
+    error
 }
 unsafe extern "C" fn do_show() -> i32 {
     let mut font: *mut mp_font = 0 as *mut mp_font;
@@ -3516,7 +3516,7 @@ unsafe extern "C" fn do_show() -> i32 {
     }
     graphics_mode();
     pdf_release_obj(text_str);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn do_mpost_bind_def(
     mut ps_code: *const i8,
@@ -3529,7 +3529,7 @@ unsafe extern "C" fn do_mpost_bind_def(
     start = ps_code;
     end = start.offset(strlen(start) as isize);
     error = mp_parse_body(&mut start, end, x_user, y_user);
-    return error;
+    error
 }
 unsafe extern "C" fn do_texfig_operator(mut opcode: i32, mut x_user: f64, mut y_user: f64) -> i32 {
     static mut fig_p: transform_info = transform_info {
@@ -3597,7 +3597,7 @@ unsafe extern "C" fn do_texfig_operator(mut opcode: i32, mut x_user: f64, mut y_
         }
         _ => error = 1i32,
     }
-    return error;
+    error
 }
 unsafe extern "C" fn ps_dev_CTM(mut M: *mut pdf_tmatrix) -> i32 {
     pdf_dev_currentmatrix(M);
@@ -3607,7 +3607,7 @@ unsafe extern "C" fn ps_dev_CTM(mut M: *mut pdf_tmatrix) -> i32 {
     (*M).d *= 1000i32 as f64;
     (*M).e *= 1000i32 as f64;
     (*M).f *= 1000i32 as f64;
-    return 0i32;
+    0i32
 }
 /*
  * Again, the only piece that needs x_user and y_user is
@@ -4265,7 +4265,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             }
         }
     }
-    return error;
+    error
 }
 /*
  * In PDF, current path is not a part of graphics state parameter.
@@ -4414,7 +4414,7 @@ unsafe extern "C" fn mp_parse_body(
         }
         skip_white(start, end);
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn mps_eop_cleanup() {
@@ -4423,7 +4423,7 @@ pub unsafe extern "C" fn mps_eop_cleanup() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn mps_stack_depth() -> i32 {
-    return top_stack as i32;
+    top_stack as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn mps_exec_inline(
@@ -4453,7 +4453,7 @@ pub unsafe extern "C" fn mps_exec_inline(
     //pdf_color_pop(); /* ... */
     pdf_dev_set_param(1i32, autorotate);
     pdf_dev_set_dirmode(dirmode);
-    return error;
+    error
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -4537,5 +4537,9 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
      * The reason why we don't return XObject itself is
      * PDF inclusion may not be made so.
      */
-    return if error != 0 { -1i32 } else { 0i32 };
+    if error != 0 {
+        -1i32
+    } else {
+        0i32
+    }
 }
