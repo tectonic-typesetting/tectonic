@@ -39,14 +39,6 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn cos(_: f64) -> f64;
-    #[no_mangle]
-    fn sin(_: f64) -> f64;
-    #[no_mangle]
-    fn ceil(_: f64) -> f64;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
@@ -3726,9 +3718,9 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                     let fresh11 = top_stack;
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh11 as usize] = pdf_new_number(if values[0] > 0i32 as f64 {
-                        floor(values[0])
+                        values[0].floor()
                     } else {
-                        ceil(values[0])
+                        values[0].ceil()
                     })
                 } else {
                     dpx_warning(
@@ -3872,20 +3864,22 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                 match mp_cmode {
                     1 | 0 => {
                         /* Really? */
-                        matrix.a = cos(values[0]);
-                        matrix.b = -sin(values[0]);
-                        matrix.c = sin(values[0]);
-                        matrix.d = cos(values[0]);
-                        matrix.e = 0.0f64;
-                        matrix.f = 0.0f64
+                        let (s, c) = values[0].sin_cos();
+                        matrix.a = c;
+                        matrix.b = -s;
+                        matrix.c = s;
+                        matrix.d = c;
+                        matrix.e = 0.;
+                        matrix.f = 0.
                     }
                     _ => {
-                        matrix.a = cos(values[0]);
-                        matrix.b = sin(values[0]);
-                        matrix.c = -sin(values[0]);
-                        matrix.d = cos(values[0]);
-                        matrix.e = 0.0f64;
-                        matrix.f = 0.0f64
+                        let (s, c) = values[0].sin_cos();
+                        matrix.a = c;
+                        matrix.b = s;
+                        matrix.c = -s;
+                        matrix.d = c;
+                        matrix.e = 0.;
+                        matrix.f = 0.
                     }
                 }
                 error = pdf_dev_concat(&mut matrix)
@@ -3894,10 +3888,10 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
         54 => {
             error = pop_get_numbers(values.as_mut_ptr(), 2i32);
             if error == 0 {
-                matrix.a = 1.0f64;
-                matrix.b = 0.0f64;
-                matrix.c = 0.0f64;
-                matrix.d = 1.0f64;
+                matrix.a = 1.;
+                matrix.b = 0.;
+                matrix.c = 0.;
+                matrix.d = 1.;
                 matrix.e = values[0];
                 matrix.f = values[1];
                 error = pdf_dev_concat(&mut matrix)

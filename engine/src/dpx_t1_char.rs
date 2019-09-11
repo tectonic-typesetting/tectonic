@@ -9,10 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
@@ -1018,7 +1014,7 @@ unsafe extern "C" fn put_numbers(
         let mut ivalue: i32 = 0;
         value = *argv.offset(i as isize);
         /* Nearest integer value */
-        ivalue = floor(value + 0.5f64) as i32;
+        ivalue = (value + 0.5).floor() as i32;
         if value >= 0x8000i64 as f64 || value <= (-0x8000 - 1i32 as i64) as f64 {
             /*
              * This number cannot be represented as a single operand.
@@ -1026,7 +1022,7 @@ unsafe extern "C" fn put_numbers(
              */
             _tt_abort(b"Argument value too large. (This is bug)\x00" as *const u8 as *const i8);
         } else {
-            if fabs(value - ivalue as f64) > 3.0e-5f64 {
+            if (value - ivalue as f64).abs() > 3.0e-5f64 {
                 /* 16.16-bit signed fixed value  */
                 if limit < (*dest).offset(5) {
                     status = -3i32;
@@ -1036,7 +1032,7 @@ unsafe extern "C" fn put_numbers(
                 *dest = (*dest).offset(1);
                 *fresh8 = 255i32 as card8;
                 /* Everything else are integers. */
-                ivalue = floor(value) as i32; /* mantissa */
+                ivalue = value.floor() as i32; /* mantissa */
                 let fresh9 = *dest; /* fraction */
                 *dest = (*dest).offset(1); /* Shouldn't come here */
                 *fresh9 = (ivalue >> 8i32 & 0xffi32) as card8;

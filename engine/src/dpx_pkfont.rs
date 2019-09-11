@@ -68,8 +68,6 @@ extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -246,7 +244,8 @@ unsafe extern "C" fn truedpi(mut ident: *const i8, mut point_size: f64, mut bdpi
             ident,
         );
     } else {
-        dpi = (floor(base_dpi as f64 * point_size / design_size / 1.0f64 + 0.5f64) * 1.0f64) as u32
+        dpi =
+            ((base_dpi as f64 * point_size / design_size / 1.0f64 + 0.5f64).floor() * 1.0f64) as u32
     }
     dpi
 }
@@ -896,10 +895,11 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                 let mut bytesread: size_t = 0;
                 let mut charwidth: f64 = 0.;
                 /* Charwidth in PDF units */
-                charwidth = floor(
-                    1000.0f64 * pkh.wd as f64 / ((1i32 << 20i32) as f64 * pix2charu) / 0.1f64
-                        + 0.5f64,
-                ) * 0.1f64;
+                charwidth =
+                    (1000.0f64 * pkh.wd as f64 / ((1i32 << 20i32) as f64 * pix2charu) / 0.1f64
+                        + 0.5f64)
+                        .floor()
+                        * 0.1f64;
                 widths[(pkh.chrcode & 0xffi32) as usize] = charwidth;
                 /* Update font BBox info */
                 bbox.llx = if bbox.llx < -pkh.bm_hoff as f64 {

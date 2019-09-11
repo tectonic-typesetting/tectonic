@@ -30,8 +30,6 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -894,16 +892,16 @@ unsafe extern "C" fn add_TTCIDHMetrics(
     let mut empty: i32 = 1i32;
     w_array = pdf_new_array();
     if (*g).dw as i32 != 0i32 && (*g).dw as i32 <= (*g).emsize as i32 {
-        dw = floor(
-            1000.0f64 * (*g).dw as i32 as f64 / (*g).emsize as i32 as f64 / 1i32 as f64 + 0.5f64,
-        ) * 1i32 as f64
+        dw = (1000.0f64 * (*g).dw as i32 as f64 / (*g).emsize as i32 as f64 / 1i32 as f64 + 0.5f64)
+            .floor()
+            * 1i32 as f64
     } else {
-        dw = floor(
-            1000.0f64 * (*(*g).gd.offset(0)).advw as i32 as f64
-                / (*g).emsize as i32 as f64
-                / 1i32 as f64
-                + 0.5f64,
-        ) * 1i32 as f64
+        dw = (1000.0f64 * (*(*g).gd.offset(0)).advw as i32 as f64
+            / (*g).emsize as i32 as f64
+            / 1i32 as f64
+            + 0.5f64)
+            .floor()
+            * 1i32 as f64
     }
     cid = 0i32;
     while cid <= last_cid as i32 {
@@ -919,12 +917,12 @@ unsafe extern "C" fn add_TTCIDHMetrics(
             }) as u16;
             idx = tt_get_index(g, gid);
             if !(cid != 0i32 && idx as i32 == 0i32) {
-                width = floor(
-                    1000.0f64 * (*(*g).gd.offset(idx as isize)).advw as i32 as f64
-                        / (*g).emsize as i32 as f64
-                        / 1i32 as f64
-                        + 0.5f64,
-                ) * 1i32 as f64;
+                width = (1000.0f64 * (*(*g).gd.offset(idx as isize)).advw as i32 as f64
+                    / (*g).emsize as i32 as f64
+                    / 1i32 as f64
+                    + 0.5f64)
+                    .floor()
+                    * 1i32 as f64;
                 if width == dw {
                     if !an_array.is_null() {
                         pdf_add_array(w_array, pdf_new_number(start as f64));
@@ -983,16 +981,17 @@ unsafe extern "C" fn add_TTCIDVMetrics(
     let mut defaultVertOriginY: f64 = 0.;
     let mut defaultAdvanceHeight: f64 = 0.;
     let mut empty: i32 = 1i32;
-    defaultVertOriginY = floor(
-        1000.0f64 * ((*g).default_advh as i32 - (*g).default_tsb as i32) as f64
-            / (*g).emsize as i32 as f64
-            / 1i32 as f64
-            + 0.5f64,
-    ) * 1i32 as f64;
-    defaultAdvanceHeight = floor(
-        1000.0f64 * (*g).default_advh as i32 as f64 / (*g).emsize as i32 as f64 / 1i32 as f64
-            + 0.5f64,
-    ) * 1i32 as f64;
+    defaultVertOriginY = (1000.0f64 * ((*g).default_advh as i32 - (*g).default_tsb as i32) as f64
+        / (*g).emsize as i32 as f64
+        / 1i32 as f64
+        + 0.5f64)
+        .floor()
+        * 1i32 as f64;
+    defaultAdvanceHeight =
+        (1000.0f64 * (*g).default_advh as i32 as f64 / (*g).emsize as i32 as f64 / 1i32 as f64
+            + 0.5f64)
+            .floor()
+            * 1i32 as f64;
     w2_array = pdf_new_array();
     cid = 0i32;
     while cid <= last_cid as i32 {
@@ -1003,27 +1002,27 @@ unsafe extern "C" fn add_TTCIDVMetrics(
         if !(*used_chars.offset((cid / 8i32) as isize) as i32 & 1i32 << 7i32 - cid % 8i32 == 0) {
             idx = tt_get_index(g, cid as u16);
             if !(cid != 0i32 && idx as i32 == 0i32) {
-                advanceHeight = floor(
-                    1000.0f64 * (*(*g).gd.offset(idx as isize)).advh as i32 as f64
-                        / (*g).emsize as i32 as f64
-                        / 1i32 as f64
-                        + 0.5f64,
-                ) * 1i32 as f64;
-                vertOriginX = floor(
-                    1000.0f64 * (0.5f64 * (*(*g).gd.offset(idx as isize)).advw as i32 as f64)
-                        / (*g).emsize as i32 as f64
-                        / 1i32 as f64
-                        + 0.5f64,
-                ) * 1i32 as f64;
-                vertOriginY = floor(
-                    1000.0f64
-                        * ((*(*g).gd.offset(idx as isize)).tsb as i32
-                            + (*(*g).gd.offset(idx as isize)).ury as i32)
-                            as f64
-                        / (*g).emsize as i32 as f64
-                        / 1i32 as f64
-                        + 0.5f64,
-                ) * 1i32 as f64;
+                advanceHeight = (1000.0f64 * (*(*g).gd.offset(idx as isize)).advh as i32 as f64
+                    / (*g).emsize as i32 as f64
+                    / 1i32 as f64
+                    + 0.5f64)
+                    .floor()
+                    * 1i32 as f64;
+                vertOriginX = (1000.0f64
+                    * (0.5f64 * (*(*g).gd.offset(idx as isize)).advw as i32 as f64)
+                    / (*g).emsize as i32 as f64
+                    / 1i32 as f64
+                    + 0.5f64)
+                    .floor()
+                    * 1i32 as f64;
+                vertOriginY = (1000.0f64
+                    * ((*(*g).gd.offset(idx as isize)).tsb as i32
+                        + (*(*g).gd.offset(idx as isize)).ury as i32) as f64
+                    / (*g).emsize as i32 as f64
+                    / 1i32 as f64
+                    + 0.5f64)
+                    .floor()
+                    * 1i32 as f64;
                 /*
                  * c_first c_last w1_y v_x v_y
                  * This form may hit Acrobat's implementation limit of array element size,

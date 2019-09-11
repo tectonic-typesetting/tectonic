@@ -35,8 +35,6 @@ extern "C" {
     pub type pdf_font;
     pub type otl_gsub;
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
@@ -790,7 +788,7 @@ unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut f64) {
             }
             pdf_add_array(
                 tmparray,
-                pdf_new_number(floor(width / 0.1f64 + 0.5f64) * 0.1f64),
+                pdf_new_number((width / 0.1f64 + 0.5f64).floor() * 0.1f64),
             );
         } else {
             pdf_add_array(tmparray, pdf_new_number(0.0f64));
@@ -909,12 +907,13 @@ unsafe extern "C" fn do_builtin_encoding(
     while code < 256i32 {
         if *usedchars.offset(code as isize) != 0 {
             idx = tt_get_index(glyphs, *cmap_table.offset((18i32 + code) as isize) as u16);
-            widths[code as usize] = floor(
-                1000.0f64 * (*(*glyphs).gd.offset(idx as isize)).advw as i32 as f64
-                    / (*glyphs).emsize as i32 as f64
-                    / 1i32 as f64
-                    + 0.5f64,
-            ) * 1i32 as f64
+            widths[code as usize] = (1000.0f64
+                * (*(*glyphs).gd.offset(idx as isize)).advw as i32 as f64
+                / (*glyphs).emsize as i32 as f64
+                / 1i32 as f64
+                + 0.5f64)
+                .floor()
+                * 1i32 as f64
         } else {
             widths[code as usize] = 0.0f64
         }
@@ -1565,12 +1564,13 @@ unsafe extern "C" fn do_custom_encoding(
     while code < 256i32 {
         if *usedchars.offset(code as isize) != 0 {
             idx = tt_get_index(glyphs, *cmap_table.offset((18i32 + code) as isize) as u16);
-            widths[code as usize] = floor(
-                1000.0f64 * (*(*glyphs).gd.offset(idx as isize)).advw as i32 as f64
-                    / (*glyphs).emsize as i32 as f64
-                    / 1i32 as f64
-                    + 0.5f64,
-            ) * 1i32 as f64
+            widths[code as usize] = (1000.0f64
+                * (*(*glyphs).gd.offset(idx as isize)).advw as i32 as f64
+                / (*glyphs).emsize as i32 as f64
+                / 1i32 as f64
+                + 0.5f64)
+                .floor()
+                * 1i32 as f64
         } else {
             widths[code as usize] = 0.0f64
         }

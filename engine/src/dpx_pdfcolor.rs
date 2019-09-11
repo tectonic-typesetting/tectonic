@@ -55,8 +55,6 @@ extern "C" {
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
@@ -450,7 +448,7 @@ pub unsafe extern "C" fn pdf_color_to_string(
             (*color).spot_color_name,
             'C' as i32 | mask as i32,
             'S' as i32 | mask as i32,
-            floor((*color).values[0] / 0.001f64 + 0.5f64) * 0.001f64,
+            ((*color).values[0] / 0.001f64 + 0.5f64).floor() * 0.001f64,
             'S' as i32 | mask as i32,
             'C' as i32 | mask as i32,
         )
@@ -460,7 +458,7 @@ pub unsafe extern "C" fn pdf_color_to_string(
             len += sprintf(
                 buffer.offset(len as isize),
                 b" %g\x00" as *const u8 as *const i8,
-                floor((*color).values[i as usize] / 0.001f64 + 0.5f64) * 0.001f64,
+                ((*color).values[i as usize] / 0.001f64 + 0.5f64).floor() * 0.001f64,
             );
             i += 1
         }

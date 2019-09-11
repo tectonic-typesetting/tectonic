@@ -12,13 +12,7 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn cos(_: f64) -> f64;
-    #[no_mangle]
-    fn sin(_: f64) -> f64;
-    #[no_mangle]
     fn tan(_: f64) -> f64;
-    #[no_mangle]
-    fn round(_: f64) -> f64;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
@@ -1086,7 +1080,7 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
         graphics_mode();
         pdf_dev_gsave();
         let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-        let mut a: i32 = round(100.0f64 * alpha) as i32;
+        let mut a: i32 = (100.0f64 * alpha).round() as i32;
         if a != 0i32 {
             res_name = new((strlen(b"_Tps_a100_\x00" as *const u8 as *const i8)
                 .wrapping_add(1i32 as u64) as u32 as u64)
@@ -1094,7 +1088,7 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
                 as *mut i8;
             sprintf(res_name, b"_Tps_a%03d_\x00" as *const u8 as *const i8, a);
             if check_resourcestatus(b"ExtGState\x00" as *const u8 as *const i8, res_name) == 0 {
-                dict = create_xgstate(round(0.01f64 * a as f64 / 0.01f64) * 0.01f64, 0i32);
+                dict = create_xgstate((0.01f64 * a as f64 / 0.01f64).round() * 0.01f64, 0i32);
                 pdf_doc_add_page_resource(
                     b"ExtGState\x00" as *const u8 as *const i8,
                     res_name,
@@ -1310,12 +1304,12 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
             if n != 1i32 && n != 2i32 {
                 return -1i32;
             }
-            (*M).d = 1.0f64;
+            (*M).d = 1.;
             (*M).a = (*M).d;
-            (*M).b = 0.0f64;
+            (*M).b = 0.;
             (*M).c = (*M).b;
             (*M).e = v[0];
-            (*M).f = if n == 2i32 { v[1] } else { 0.0f64 }
+            (*M).f = if n == 2i32 { v[1] } else { 0. }
         }
         2 => {
             if n != 1i32 && n != 2i32 {
@@ -1323,19 +1317,20 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
             }
             (*M).a = v[0];
             (*M).d = if n == 2i32 { v[1] } else { v[0] };
-            (*M).b = 0.0f64;
+            (*M).b = 0.;
             (*M).c = (*M).b;
-            (*M).f = 0.0f64;
+            (*M).f = 0.;
             (*M).e = (*M).f
         }
         3 => {
             if n != 1i32 && n != 3i32 {
                 return -1i32;
             }
-            (*M).a = cos(v[0] * 3.14159265358979323846f64 / 180.0f64);
-            (*M).c = sin(v[0] * 3.14159265358979323846f64 / 180.0f64);
-            (*M).b = -(*M).c;
-            (*M).d = (*M).a;
+            let (s, c) = (v[0] * core::f64::consts::PI / 180.).sin_cos();
+            (*M).a = c;
+            (*M).c = s;
+            (*M).b = -s;
+            (*M).d = c;
             (*M).e = if n == 3i32 { v[1] } else { 0.0f64 };
             (*M).f = if n == 3i32 { v[2] } else { 0.0f64 }
         }
@@ -1343,19 +1338,19 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
             if n != 1i32 {
                 return -1i32;
             }
-            (*M).d = 1.0f64;
+            (*M).d = 1.;
             (*M).a = (*M).d;
-            (*M).c = 0.0f64;
-            (*M).b = tan(v[0] * 3.14159265358979323846f64 / 180.0f64)
+            (*M).c = 0.;
+            (*M).b = tan(v[0] * core::f64::consts::PI / 180.)
         }
         5 => {
             if n != 1i32 {
                 return -1i32;
             }
-            (*M).d = 1.0f64;
+            (*M).d = 1.;
             (*M).a = (*M).d;
-            (*M).c = tan(v[0] * 3.14159265358979323846f64 / 180.0f64);
-            (*M).b = 0.0f64
+            (*M).c = tan(v[0] * core::f64::consts::PI / 180.);
+            (*M).b = 0.
         }
         _ => {}
     }

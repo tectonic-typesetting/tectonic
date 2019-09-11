@@ -60,12 +60,6 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
-    fn round(_: f64) -> f64;
-    #[no_mangle]
     fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
     fn parse_c_string(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
@@ -347,7 +341,7 @@ unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i3
     let mut alp: i32 = 0;
     let mut len: i32 = 0i32;
     if a > 0.0f64 {
-        alp = round(100.0f64 * a) as i32;
+        alp = (100.0f64 * a).round() as i32;
         sprintf(
             resname.as_mut_ptr(),
             b"_Tps_a%03d_\x00" as *const u8 as *const i8,
@@ -359,7 +353,7 @@ unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i3
         ) == 0
         {
             dict = create_xgstate(
-                floor(0.01f64 * alp as f64 / 0.01f64 + 0.5f64) * 0.01f64,
+                (0.01f64 * alp as f64 / 0.01f64 + 0.5f64).floor() * 0.01f64,
                 f_ais,
             );
             pdf_doc_add_page_resource(
@@ -575,7 +569,7 @@ unsafe extern "C" fn tpic__arc(
 /* 6 numbers */ {
     let mut pn: f64 = (*tp).pen_size;
     let mut f_fs: bool = (*tp).fill_shape;
-    f_fs = if round(fabs(*v.offset(4) - *v.offset(5)) + 0.5f64) >= 360i32 as f64 {
+    f_fs = if ((*v.offset(4) - *v.offset(5)).abs() + 0.5f64).round() >= 360i32 as f64 {
         f_fs as i32
     } else {
         0i32

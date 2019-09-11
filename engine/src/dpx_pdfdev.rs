@@ -13,14 +13,6 @@ extern "C" {
     #[no_mangle]
     fn modf(_: f64, _: *mut f64) -> f64;
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
-    fn round(_: f64) -> f64;
-    #[no_mangle]
-    fn abs(_: i32) -> i32;
-    #[no_mangle]
-    fn labs(_: i64) -> i64;
-    #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
@@ -683,8 +675,9 @@ unsafe extern "C" fn dev_sprint_bp(
     value_in_bp = value as f64 * dev_unit.dvi2pts;
     if !error.is_null() {
         error_in_bp = value_in_bp
-            - floor(value_in_bp / ten_pow_inv[prec as usize] + 0.5f64) * ten_pow_inv[prec as usize];
-        *error = round(error_in_bp / dev_unit.dvi2pts) as spt_t
+            - (value_in_bp / ten_pow_inv[prec as usize] + 0.5f64).floor()
+                * ten_pow_inv[prec as usize];
+        *error = (error_in_bp / dev_unit.dvi2pts).round() as spt_t
     }
     p_dtoa(value_in_bp, prec, buf)
 }
@@ -1302,7 +1295,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
     text_rotate = vert_font << 2i32 | vert_dir;
     if (*font).slant != text_state.matrix.slant
         || (*font).extend != text_state.matrix.extend
-        || (if abs(text_rotate - text_state.matrix.rotate) % 5i32 == 0i32 {
+        || (if (text_rotate - text_state.matrix.rotate).abs() % 5i32 == 0i32 {
             0i32
         } else {
             1i32
@@ -1658,10 +1651,10 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         }
     }
     if num_dev_coords > 0i32 {
-        xpos -= round((*dev_coords.offset((num_dev_coords - 1i32) as isize)).x / dev_unit.dvi2pts)
-            as spt_t;
-        ypos -= round((*dev_coords.offset((num_dev_coords - 1i32) as isize)).y / dev_unit.dvi2pts)
-            as spt_t
+        xpos -= ((*dev_coords.offset((num_dev_coords - 1i32) as isize)).x / dev_unit.dvi2pts)
+            .round() as spt_t;
+        ypos -= ((*dev_coords.offset((num_dev_coords - 1i32) as isize)).y / dev_unit.dvi2pts)
+            .round() as spt_t
     }
     /*
      * Kern is in units of character units, i.e., 1000 = 1 em.
@@ -1699,8 +1692,8 @@ pub unsafe extern "C" fn pdf_dev_set_string(
      * when -kern is equal to space char width.
      */
     if text_state.force_reset != 0
-        || labs(delv as i64) > dev_unit.min_bp_val as i64
-        || labs(delh as i64) > (3.0f64 * (*font).extend * (*font).sptsize as f64) as spt_t as i64
+        || (delv as i64).abs() > dev_unit.min_bp_val as i64
+        || (delh as i64).abs() > (3.0f64 * (*font).extend * (*font).sptsize as f64) as spt_t as i64
     {
         text_mode();
         kern = 0i32
@@ -1810,9 +1803,10 @@ pub unsafe extern "C" fn pdf_init_device(
         dev_unit.precision = precision
     }
     dev_unit.dvi2pts = dvi2pts;
-    dev_unit.min_bp_val = (floor(
-        1.0f64 / (ten_pow[dev_unit.precision as usize] as f64 * dvi2pts) / 1i32 as f64 + 0.5f64,
-    ) * 1i32 as f64) as i32;
+    dev_unit.min_bp_val =
+        ((1.0f64 / (ten_pow[dev_unit.precision as usize] as f64 * dvi2pts) / 1i32 as f64 + 0.5f64)
+            .floor()
+            * 1i32 as f64) as i32;
     if dev_unit.min_bp_val < 0i32 {
         dev_unit.min_bp_val = -dev_unit.min_bp_val
     }
@@ -2158,10 +2152,10 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
     let mut len: i32 = 0i32;
     let mut width_in_bp: f64 = 0.;
     if num_dev_coords > 0i32 {
-        xpos -= round((*dev_coords.offset((num_dev_coords - 1i32) as isize)).x / dev_unit.dvi2pts)
-            as spt_t;
-        ypos -= round((*dev_coords.offset((num_dev_coords - 1i32) as isize)).y / dev_unit.dvi2pts)
-            as spt_t
+        xpos -= ((*dev_coords.offset((num_dev_coords - 1i32) as isize)).x / dev_unit.dvi2pts)
+            .round() as spt_t;
+        ypos -= ((*dev_coords.offset((num_dev_coords - 1i32) as isize)).y / dev_unit.dvi2pts)
+            .round() as spt_t
     }
     graphics_mode();
     let fresh59 = len;
@@ -2340,7 +2334,7 @@ pub unsafe extern "C" fn pdf_dev_set_dirmode(mut text_dir: i32) {
     }
     text_rotate = vert_font << 2i32 | vert_dir;
     if !font.is_null()
-        && (if abs(text_rotate - text_state.matrix.rotate) % 5i32 == 0i32 {
+        && (if (text_rotate - text_state.matrix.rotate).abs() % 5i32 == 0i32 {
             0i32
         } else {
             1i32
@@ -2372,7 +2366,7 @@ unsafe extern "C" fn dev_set_param_autorotate(mut auto_rotate: i32) {
         vert_dir = vert_font
     }
     text_rotate = vert_font << 2i32 | vert_dir;
-    if if abs(text_rotate - text_state.matrix.rotate) % 5i32 == 0i32 {
+    if if (text_rotate - text_state.matrix.rotate).abs() % 5i32 == 0i32 {
         0i32
     } else {
         1i32

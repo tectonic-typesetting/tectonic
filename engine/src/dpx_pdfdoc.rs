@@ -57,11 +57,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_color_set_verbose(level: i32);
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
-    fn abs(_: i32) -> i32;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -1053,8 +1049,8 @@ unsafe extern "C" fn asn_date(mut date_string: *mut i8) -> i32 {
         } else {
             '-' as i32
         },
-        abs(tz_offset) / 3600i32,
-        abs(tz_offset) / 60i32 % 60i32,
+        tz_offset.abs() / 3600i32,
+        tz_offset.abs() / 60i32 % 60i32,
     );
     strlen(date_string) as i32
 }
@@ -1230,19 +1226,19 @@ unsafe extern "C" fn doc_flush_page(
         mediabox = pdf_new_array();
         pdf_add_array(
             mediabox,
-            pdf_new_number(floor((*page).cropbox.llx / 0.01f64 + 0.5f64) * 0.01f64),
+            pdf_new_number(((*page).cropbox.llx / 0.01f64 + 0.5f64).floor() * 0.01f64),
         );
         pdf_add_array(
             mediabox,
-            pdf_new_number(floor((*page).cropbox.lly / 0.01f64 + 0.5f64) * 0.01f64),
+            pdf_new_number(((*page).cropbox.lly / 0.01f64 + 0.5f64).floor() * 0.01f64),
         );
         pdf_add_array(
             mediabox,
-            pdf_new_number(floor((*page).cropbox.urx / 0.01f64 + 0.5f64) * 0.01f64),
+            pdf_new_number(((*page).cropbox.urx / 0.01f64 + 0.5f64).floor() * 0.01f64),
         );
         pdf_add_array(
             mediabox,
-            pdf_new_number(floor((*page).cropbox.ury / 0.01f64 + 0.5f64) * 0.01f64),
+            pdf_new_number(((*page).cropbox.ury / 0.01f64 + 0.5f64).floor() * 0.01f64),
         );
         pdf_add_dict(
             (*page).page_obj,
@@ -1506,19 +1502,19 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
     mediabox = pdf_new_array();
     pdf_add_array(
         mediabox,
-        pdf_new_number(floor((*p).pages.mediabox.llx / 0.01f64 + 0.5f64) * 0.01f64),
+        pdf_new_number(((*p).pages.mediabox.llx / 0.01f64 + 0.5f64).floor() * 0.01f64),
     );
     pdf_add_array(
         mediabox,
-        pdf_new_number(floor((*p).pages.mediabox.lly / 0.01f64 + 0.5f64) * 0.01f64),
+        pdf_new_number(((*p).pages.mediabox.lly / 0.01f64 + 0.5f64).floor() * 0.01f64),
     );
     pdf_add_array(
         mediabox,
-        pdf_new_number(floor((*p).pages.mediabox.urx / 0.01f64 + 0.5f64) * 0.01f64),
+        pdf_new_number(((*p).pages.mediabox.urx / 0.01f64 + 0.5f64).floor() * 0.01f64),
     );
     pdf_add_array(
         mediabox,
-        pdf_new_number(floor((*p).pages.mediabox.ury / 0.01f64 + 0.5f64) * 0.01f64),
+        pdf_new_number(((*p).pages.mediabox.ury / 0.01f64 + 0.5f64).floor() * 0.01f64),
     );
     pdf_add_dict(
         (*p).root.pages,
@@ -2775,19 +2771,19 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
     rect_array = pdf_new_array();
     pdf_add_array(
         rect_array,
-        pdf_new_number(floor((annbox.llx - annot_grow) / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((annbox.llx - annot_grow) / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_array(
         rect_array,
-        pdf_new_number(floor((annbox.lly - annot_grow) / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((annbox.lly - annot_grow) / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_array(
         rect_array,
-        pdf_new_number(floor((annbox.urx + annot_grow) / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((annbox.urx + annot_grow) / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_array(
         rect_array,
-        pdf_new_number(floor((annbox.ury + annot_grow) / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((annbox.ury + annot_grow) / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_dict(
         annot_dict,
@@ -3000,19 +2996,19 @@ unsafe extern "C" fn make_article(
             rect = pdf_new_array();
             pdf_add_array(
                 rect,
-                pdf_new_number(floor((*bead).rect.llx / 0.01f64 + 0.5f64) * 0.01f64),
+                pdf_new_number(((*bead).rect.llx / 0.01f64 + 0.5f64).floor() * 0.01f64),
             );
             pdf_add_array(
                 rect,
-                pdf_new_number(floor((*bead).rect.lly / 0.01f64 + 0.5f64) * 0.01f64),
+                pdf_new_number(((*bead).rect.lly / 0.01f64 + 0.5f64).floor() * 0.01f64),
             );
             pdf_add_array(
                 rect,
-                pdf_new_number(floor((*bead).rect.urx / 0.01f64 + 0.5f64) * 0.01f64),
+                pdf_new_number(((*bead).rect.urx / 0.01f64 + 0.5f64).floor() * 0.01f64),
             );
             pdf_add_array(
                 rect,
-                pdf_new_number(floor((*bead).rect.ury / 0.01f64 + 0.5f64) * 0.01f64),
+                pdf_new_number(((*bead).rect.ury / 0.01f64 + 0.5f64).floor() * 0.01f64),
             );
             pdf_add_dict(last, pdf_new_name(b"R\x00" as *const u8 as *const i8), rect);
             pdf_add_array((*page).beads, pdf_ref_obj(last));
@@ -3627,19 +3623,19 @@ unsafe extern "C" fn pdf_doc_make_xform(
     tmp = pdf_new_array();
     pdf_add_array(
         tmp,
-        pdf_new_number(floor((*bbox).llx / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((*bbox).llx / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_array(
         tmp,
-        pdf_new_number(floor((*bbox).lly / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((*bbox).lly / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_array(
         tmp,
-        pdf_new_number(floor((*bbox).urx / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((*bbox).urx / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_array(
         tmp,
-        pdf_new_number(floor((*bbox).ury / 0.001f64 + 0.5f64) * 0.001f64),
+        pdf_new_number(((*bbox).ury / 0.001f64 + 0.5f64).floor() * 0.001f64),
     );
     pdf_add_dict(
         xform_dict,
@@ -3650,27 +3646,27 @@ unsafe extern "C" fn pdf_doc_make_xform(
         tmp = pdf_new_array();
         pdf_add_array(
             tmp,
-            pdf_new_number(floor((*matrix).a / 0.00001f64 + 0.5f64) * 0.00001f64),
+            pdf_new_number(((*matrix).a / 0.00001f64 + 0.5f64).floor() * 0.00001f64),
         );
         pdf_add_array(
             tmp,
-            pdf_new_number(floor((*matrix).b / 0.00001f64 + 0.5f64) * 0.00001f64),
+            pdf_new_number(((*matrix).b / 0.00001f64 + 0.5f64).floor() * 0.00001f64),
         );
         pdf_add_array(
             tmp,
-            pdf_new_number(floor((*matrix).c / 0.00001f64 + 0.5f64) * 0.00001f64),
+            pdf_new_number(((*matrix).c / 0.00001f64 + 0.5f64).floor() * 0.00001f64),
         );
         pdf_add_array(
             tmp,
-            pdf_new_number(floor((*matrix).d / 0.00001f64 + 0.5f64) * 0.00001f64),
+            pdf_new_number(((*matrix).d / 0.00001f64 + 0.5f64).floor() * 0.00001f64),
         );
         pdf_add_array(
             tmp,
-            pdf_new_number(floor((*matrix).e / 0.001f64 + 0.5f64) * 0.001f64),
+            pdf_new_number(((*matrix).e / 0.001f64 + 0.5f64).floor() * 0.001f64),
         );
         pdf_add_array(
             tmp,
-            pdf_new_number(floor((*matrix).f / 0.001f64 + 0.5f64) * 0.001f64),
+            pdf_new_number(((*matrix).f / 0.001f64 + 0.5f64).floor() * 0.001f64),
         );
         pdf_add_dict(
             xform_dict,

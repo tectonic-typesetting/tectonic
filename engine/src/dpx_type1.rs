@@ -11,10 +11,6 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn pdf_font_set_subtype(font: *mut pdf_font, subtype: i32) -> i32;
     #[no_mangle]
     fn pdf_font_set_flags(font: *mut pdf_font, flags: i32) -> i32;
@@ -903,7 +899,7 @@ unsafe extern "C" fn add_metrics(
         );
         pdf_add_array(
             tmp_array,
-            pdf_new_number(floor(val / 1.0f64 + 0.5f64) * 1.0f64),
+            pdf_new_number((val / 1.0f64 + 0.5f64).floor() * 1.0f64),
         );
         i += 1
     }
@@ -961,7 +957,7 @@ unsafe extern "C" fn add_metrics(
                             * *widths
                                 .offset(cff_glyph_lookup(cffont, *enc_vec.offset(code as isize))
                                     as isize);
-                    if fabs(diff) > 1.0f64 {
+                    if diff.abs() > 1.0f64 {
                         dpx_warning(
                             b"Glyph width mismatch for TFM and font (%s)\x00" as *const u8
                                 as *const i8,
@@ -978,7 +974,7 @@ unsafe extern "C" fn add_metrics(
                 }
                 pdf_add_array(
                     tmp_array,
-                    pdf_new_number(floor(width / 0.1f64 + 0.5f64) * 0.1f64),
+                    pdf_new_number((width / 0.1f64 + 0.5f64).floor() * 0.1f64),
                 );
             } else {
                 pdf_add_array(tmp_array, pdf_new_number(0.0f64));

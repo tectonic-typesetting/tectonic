@@ -11,8 +11,6 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn abs(_: i32) -> i32;
-    #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
@@ -1603,7 +1601,8 @@ pub unsafe extern "C" fn new_trie_op(
     let mut h: i32 = 0;
     let mut u: trie_opcode = 0;
     let mut l: i32 = 0;
-    h = (abs(n as i32 + 313i32 * d as i32 + 361i32 * v as i32 + 1009i32 * cur_lang as i32) as i64
+    h = ((n as i32 + 313i32 * d as i32 + 361i32 * v as i32 + 1009i32 * cur_lang as i32).abs()
+        as i64
         % (35111 - -35111)
         + -35111) as i32;
     loop {
@@ -1654,10 +1653,11 @@ pub unsafe extern "C" fn new_trie_op(
 pub unsafe extern "C" fn trie_node(mut p: trie_pointer) -> trie_pointer {
     let mut h: trie_pointer = 0;
     let mut q: trie_pointer = 0;
-    h = abs(*trie_c.offset(p as isize) as i32
+    h = (*trie_c.offset(p as isize) as i32
         + 1009i32 * *trie_o.offset(p as isize) as i32
         + 2718i32 * *trie_l.offset(p as isize)
         + 3142i32 * *trie_r.offset(p as isize))
+    .abs()
         % trie_size;
     loop {
         q = *trie_hash.offset(h as isize);

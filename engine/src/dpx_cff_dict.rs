@@ -11,10 +11,6 @@ extern "C" {
     #[no_mangle]
     fn __errno_location() -> *mut i32;
     #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
@@ -1154,7 +1150,7 @@ unsafe extern "C" fn cff_dict_put_number(
 ) -> i32 {
     let mut len: i32 = 0i32;
     let mut nearint: f64 = 0.;
-    nearint = floor(value + 0.5f64);
+    nearint = (value + 0.5f64).floor();
     /* set offset to longint */
     if type_0 == 1i32 << 7i32 {
         let mut lvalue: i32 = 0; /* integer */
@@ -1173,7 +1169,7 @@ unsafe extern "C" fn cff_dict_put_number(
         len = 5i32
     } else if value > 0x7fffffffi32 as f64
         || value < (-0x7fffffffi32 - 1i32) as f64
-        || fabs(value - nearint) > 1.0e-5f64
+        || (value - nearint).abs() > 1.0e-5f64
     {
         /* real */
         len = pack_real(dest, destlen, value)
