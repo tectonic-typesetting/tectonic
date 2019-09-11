@@ -1,16 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
@@ -301,11 +301,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
     let mut v2: i32 = 0i32;
     let mut curpos: i32 = 0i32;
     let mut error: i32 = 0i32;
-    while *p as i32 != 0
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     while error == 0 && *p as i32 != 0 {
@@ -314,10 +310,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
         v1 = strtol(p, &mut r, 0i32) as i32;
         q = r;
         if q == p
-            || !(*q as i32 == '\u{0}' as i32
-                || *(*__ctype_b_loc()).offset(*q as u8 as i32 as isize) as i32
-                    & _ISspace as i32 as u16 as i32
-                    != 0)
+            || !(*q as i32 == '\u{0}' as i32 || libc::isspace(*q as _) != 0)
                 && *q as i32 != ':' as i32
                 && *q as i32 != '_' as i32
         {
@@ -352,12 +345,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
                     );
                     return -1i32;
                 } else {
-                    if q == p
-                        || !(*q as i32 == '\u{0}' as i32
-                            || *(*__ctype_b_loc()).offset(*q as u8 as i32 as isize) as i32
-                                & _ISspace as i32 as u16 as i32
-                                != 0)
-                    {
+                    if q == p || !(*q as i32 == '\u{0}' as i32 || libc::isspace(*q as _) != 0) {
                         dpx_warning(
                             b"Invalid char in subfont mapping table: %c\x00" as *const u8
                                 as *const i8,
@@ -406,11 +394,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
             }
         }
         p = q;
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
     }
@@ -442,11 +426,7 @@ unsafe extern "C" fn scan_sfd_file(
             break;
         }
         lpos += 1;
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
         if *p as i32 == 0i32 {
@@ -455,11 +435,7 @@ unsafe extern "C" fn scan_sfd_file(
         /* Saw non-wsp here */
         n = 0i32;
         q = p;
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                == 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) == 0 {
             p = p.offset(1);
             n += 1
         }
@@ -638,11 +614,7 @@ pub unsafe extern "C" fn sfd_load_record(
         if p.is_null() {
             break;
         }
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
         if *p as i32 == 0i32 {
@@ -650,11 +622,7 @@ pub unsafe extern "C" fn sfd_load_record(
         }
         /* q = parse_ident(&p, p + strlen(p)); */
         q = p;
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                == 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) == 0 {
             p = p.offset(1)
         }
         *p = '\u{0}' as i32 as i8;

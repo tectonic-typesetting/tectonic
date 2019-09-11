@@ -1,15 +1,15 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 extern crate libc;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
     #[no_mangle]
@@ -868,16 +868,12 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
                 as *mut i8;
         i = 0i32;
         while i < n {
-            *(*agln).name.offset(i as isize) = (if *(*__ctype_b_loc())
-                .offset(*glyphname.offset(i as isize) as u8 as i32 as isize)
-                as i32
-                & _ISupper as i32 as u16 as i32
-                != 0
-            {
-                *glyphname.offset(i as isize) as i32 + 32i32
-            } else {
-                *glyphname.offset(i as isize) as i32
-            }) as i8;
+            *(*agln).name.offset(i as isize) =
+                (if libc::isupper(*glyphname.offset(i as isize) as _) != 0 {
+                    *glyphname.offset(i as isize) as i32 + 32i32
+                } else {
+                    *glyphname.offset(i as isize) as i32
+                }) as i8;
             i += 1
         }
         *(*agln).name.offset(n as isize) = '\u{0}' as i32 as i8
@@ -1160,11 +1156,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
          * Check if the 4th character is uppercase hexadecimal digit.
          * "union" should not be treated as Unicode glyph name.
          */
-        if *(*__ctype_b_loc()).offset(c as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            != 0
-            || c as i32 >= 'A' as i32 && c as i32 <= 'F' as i32
-        {
+        if libc::isdigit(c as _) != 0 || c as i32 >= 'A' as i32 && c as i32 <= 'F' as i32 {
             return true;
         } else {
             return false;
@@ -1174,10 +1166,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
             i = 1i32 as size_t;
             while i < len.wrapping_sub(1i32 as u64) {
                 c = *glyphname.offset(i as isize);
-                if *(*__ctype_b_loc()).offset(c as u8 as i32 as isize) as i32
-                    & _ISdigit as i32 as u16 as i32
-                    == 0
-                    && ((c as i32) < 'A' as i32 || c as i32 > 'F' as i32)
+                if libc::isdigit(c as _) == 0 && ((c as i32) < 'A' as i32 || c as i32 > 'F' as i32)
                 {
                     return false;
                 }
@@ -1208,11 +1197,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
     }
     ucv = 0i32;
     while *p as i32 != '\u{0}' as i32 && *p as i32 != '.' as i32 {
-        if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            == 0
-            && ((*p as i32) < 'A' as i32 || *p as i32 > 'F' as i32)
-        {
+        if libc::isdigit(*p as _) == 0 && ((*p as i32) < 'A' as i32 || *p as i32 > 'F' as i32) {
             dpx_warning(
                 b"Invalid char %c in Unicode glyph name %s.\x00" as *const u8 as *const i8,
                 *p as i32,
@@ -1221,10 +1206,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
             return -1i32;
         }
         ucv <<= 4i32;
-        ucv += if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            != 0
-        {
+        ucv += if libc::isdigit(*p as _) != 0 {
             *p as i32 - '0' as i32
         } else {
             *p as i32 - 'A' as i32 + 10i32
@@ -1256,10 +1238,7 @@ unsafe extern "C" fn xtol(mut start: *const i8, mut len: i32) -> i32 {
             break;
         }
         v <<= 4i32;
-        if *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            != 0
-        {
+        if libc::isdigit(*start as _) != 0 {
             v += *start as i32 - '0' as i32
         } else if *start as i32 >= 'A' as i32 && *start as i32 <= 'F' as i32 {
             v += *start as i32 - 'A' as i32 + 10i32

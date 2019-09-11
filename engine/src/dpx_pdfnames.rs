@@ -1,17 +1,17 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
     #[no_mangle]
@@ -193,10 +193,7 @@ unsafe extern "C" fn printable_key(mut key: *const i8, mut keylen: i32) -> *mut 
     i = 0i32;
     len = 0i32;
     while i < keylen && len < 32i32 {
-        if *(*__ctype_b_loc()).offset(*key.offset(i as isize) as u8 as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            != 0
-        {
+        if libc::isprint(*key.offset(i as isize) as _) != 0 {
             let fresh0 = len;
             len = len + 1;
             pkey[fresh0 as usize] = *key.offset(i as isize)

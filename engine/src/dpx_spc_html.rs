@@ -1,17 +1,17 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 extern crate libc;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn tan(_: f64) -> f64;
     #[no_mangle]
@@ -293,11 +293,7 @@ unsafe extern "C" fn parse_key_val(
     let mut n: i32 = 0; /* Assume this is URL */
     let mut error: i32 = 0i32;
     p = *pp;
-    while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while p < endptr && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     v = 0 as *mut i8;
@@ -365,11 +361,7 @@ unsafe extern "C" fn read_html_tag(
     let mut p: *const i8 = *pp;
     let mut n: i32 = 0i32;
     let mut error: i32 = 0i32;
-    while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while p < endptr && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     if p >= endptr || *p as i32 != '<' as i32 {
@@ -377,32 +369,20 @@ unsafe extern "C" fn read_html_tag(
     }
     *type_0 = 1i32;
     p = p.offset(1);
-    while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while p < endptr && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     if p < endptr && *p as i32 == '/' as i32 {
         *type_0 = 2i32;
         p = p.offset(1);
-        while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while p < endptr && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
     }
     n = 0i32;
     while p < endptr
         && n < 127i32
-        && !(*p as i32 == '>' as i32
-            || *p as i32 == '/' as i32
-            || *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0)
+        && !(*p as i32 == '>' as i32 || *p as i32 == '/' as i32 || libc::isspace(*p as _) != 0)
     {
         *name.offset(n as isize) = *p;
         n += 1;
@@ -411,20 +391,12 @@ unsafe extern "C" fn read_html_tag(
     *name.offset(n as isize) = '\u{0}' as i32 as i8;
     if n == 0i32
         || p == endptr
-        || !(*p as i32 == '>' as i32
-            || *p as i32 == '/' as i32
-            || *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0)
+        || !(*p as i32 == '>' as i32 || *p as i32 == '/' as i32 || libc::isspace(*p as _) != 0)
     {
         *pp = p;
         return -1i32;
     }
-    while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while p < endptr && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     while p < endptr && error == 0 && *p as i32 != '/' as i32 && *p as i32 != '>' as i32 {
@@ -452,11 +424,7 @@ unsafe extern "C" fn read_html_tag(
             free(kp as *mut libc::c_void);
             free(vp as *mut libc::c_void);
         }
-        while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while p < endptr && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
     }
@@ -467,11 +435,7 @@ unsafe extern "C" fn read_html_tag(
     if p < endptr && *p as i32 == '/' as i32 {
         *type_0 = 1i32;
         p = p.offset(1);
-        while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while p < endptr && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
     }
@@ -973,11 +937,7 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
             e: 0.,
             f: 0.,
         };
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
         while *p as i32 != 0 && error == 0 {
@@ -1004,20 +964,12 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
                 M.d = N.c * _tmp_b + N.d * _tmp_d;
                 M.e += N.e * _tmp_a + N.f * _tmp_c;
                 M.f += N.e * _tmp_b + N.f * _tmp_d;
-                while *p as i32 != 0
-                    && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                        & _ISspace as i32 as u16 as i32
-                        != 0
-                {
+                while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
                     p = p.offset(1)
                 }
                 if *p as i32 == ',' as i32 {
                     p = p.offset(1);
-                    while *p as i32 != 0
-                        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                            & _ISspace as i32 as u16 as i32
-                            != 0
-                    {
+                    while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
                         p = p.offset(1)
                     }
                 }
@@ -1160,11 +1112,7 @@ unsafe extern "C" fn spc_handler_html_default(mut spe: *mut spc_env, mut ap: *mu
         }
     }
     pdf_release_obj(attr);
-    while (*ap).curptr < (*ap).endptr
-        && *(*__ctype_b_loc()).offset(*(*ap).curptr.offset(0) as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while (*ap).curptr < (*ap).endptr && libc::isspace(*(*ap).curptr.offset(0) as _) != 0 {
         (*ap).curptr = (*ap).curptr.offset(1)
     }
     error
@@ -1189,11 +1137,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
         0 as *const i8,
     ];
     let mut k: i32 = 0;
-    while *p as i32 != 0
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     q = parse_c_ident(&mut p, p.offset(strlen(p) as isize));
@@ -1207,22 +1151,14 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
     }
     free(q as *mut libc::c_void);
     /* handle args */
-    while *p as i32 != 0
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     if *p as i32 != '(' as i32 || *p.offset(1) as i32 == 0i32 {
         return -1i32;
     }
     p = p.offset(1);
-    while *p as i32 != 0
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     n = 0i32;
@@ -1235,20 +1171,12 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
         if *p as i32 == ',' as i32 {
             p = p.offset(1)
         }
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
         if *p as i32 == ',' as i32 {
             p = p.offset(1);
-            while *p as i32 != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                    & _ISspace as i32 as u16 as i32
-                    != 0
-            {
+            while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
                 p = p.offset(1)
             }
         }
@@ -1357,11 +1285,7 @@ pub unsafe extern "C" fn spc_html_check_special(mut buffer: *const i8, mut size:
     let mut endptr: *const i8 = 0 as *const i8;
     p = buffer;
     endptr = p.offset(size as isize);
-    while p < endptr
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while p < endptr && libc::isspace(*p as _) != 0 {
         p = p.offset(1)
     }
     size = endptr.wrapping_offset_from(p) as i64 as i32;
@@ -1404,11 +1328,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
     mut ap: *mut spc_arg,
 ) -> i32 {
     assert!(!sph.is_null() && !spe.is_null() && !ap.is_null());
-    while (*ap).curptr < (*ap).endptr
-        && *(*__ctype_b_loc()).offset(*(*ap).curptr.offset(0) as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while (*ap).curptr < (*ap).endptr && libc::isspace(*(*ap).curptr.offset(0) as _) != 0 {
         (*ap).curptr = (*ap).curptr.offset(1)
     }
     if (*ap)
@@ -1431,11 +1351,7 @@ pub unsafe extern "C" fn spc_html_setup_handler(
     (*ap).curptr = (*ap)
         .curptr
         .offset(strlen(b"html:\x00" as *const u8 as *const i8) as isize);
-    while (*ap).curptr < (*ap).endptr
-        && *(*__ctype_b_loc()).offset(*(*ap).curptr.offset(0) as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while (*ap).curptr < (*ap).endptr && libc::isspace(*(*ap).curptr.offset(0) as _) != 0 {
         (*ap).curptr = (*ap).curptr.offset(1)
     }
     0i32

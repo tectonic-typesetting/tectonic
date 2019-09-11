@@ -1,16 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -211,12 +211,8 @@ unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -
                     while i < 4i32 {
                         if **pp as i32 == ' ' as i32
                             || **pp as i32 == '?' as i32
-                            || *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
-                                & _ISalpha as i32 as u16 as i32
-                                != 0
-                            || *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
-                                & _ISdigit as i32 as u16 as i32
-                                != 0
+                            || libc::isalpha(**pp as _) != 0
+                            || libc::isdigit(**pp as _) != 0
                         {
                             (*curr).data[i as usize] = **pp
                         } else if **pp as i32 == '_' as i32 {

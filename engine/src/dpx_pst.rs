@@ -1,16 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 extern "C" {
     pub type pst_obj;
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     /* The internal, C/C++ interface: */
@@ -218,10 +218,7 @@ pub unsafe extern "C" fn pst_get_token(
             if c as i32 == '<' as i32 {
                 obj = pst_new_mark();
                 *inbuf = (*inbuf).offset(2)
-            } else if *(*__ctype_b_loc()).offset(c as i32 as isize) as i32
-                & _ISxdigit as i32 as u16 as i32
-                != 0
-            {
+            } else if libc::isxdigit(c as _) != 0 {
                 obj = pst_parse_string(inbuf, inbufend)
             } else if c as i32 == '~' as i32 {
                 /* ASCII85 */
@@ -261,9 +258,7 @@ pub unsafe extern "C" fn pst_get_token(
                 obj = pst_parse_null(inbuf, inbufend)
             } else if c as i32 == '+' as i32
                 || c as i32 == '-' as i32
-                || *(*__ctype_b_loc()).offset(c as i32 as isize) as i32
-                    & _ISdigit as i32 as u16 as i32
-                    != 0
+                || libc::isdigit(c as _) != 0
                 || c as i32 == '.' as i32
             {
                 obj = pst_parse_number(inbuf, inbufend)

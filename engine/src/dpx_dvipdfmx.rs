@@ -1,10 +1,12 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use libc::free;
@@ -13,8 +15,6 @@ extern "C" {
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -631,11 +631,7 @@ unsafe extern "C" fn select_pages(
         }
         (*page_ranges.offset(num_page_ranges as isize)).first = 0i32;
         (*page_ranges.offset(num_page_ranges as isize)).last = 0i32;
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
         q = parse_unsigned(&mut p, p.offset(strlen(p) as isize));
@@ -646,20 +642,12 @@ unsafe extern "C" fn select_pages(
                 (*page_ranges.offset(num_page_ranges as isize)).first;
             free(q as *mut libc::c_void);
         }
-        while *p as i32 != 0
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
         if *p as i32 == '-' as i32 {
             p = p.offset(1);
-            while *p as i32 != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                    & _ISspace as i32 as u16 as i32
-                    != 0
-            {
+            while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
                 p = p.offset(1)
             }
             (*page_ranges.offset(num_page_ranges as isize)).last = -1i32;
@@ -669,11 +657,7 @@ unsafe extern "C" fn select_pages(
                     (*page_ranges.offset(num_page_ranges as isize)).last = atoi(q) - 1i32;
                     free(q as *mut libc::c_void);
                 }
-                while *p as i32 != 0
-                    && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                        & _ISspace as i32 as u16 as i32
-                        != 0
-                {
+                while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
                     p = p.offset(1)
                 }
             }
@@ -685,11 +669,7 @@ unsafe extern "C" fn select_pages(
         if *p as i32 == ',' as i32 {
             p = p.offset(1)
         } else {
-            while *p as i32 != 0
-                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                    & _ISspace as i32 as u16 as i32
-                    != 0
-            {
+            while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
                 p = p.offset(1)
             }
             if *p != 0 {

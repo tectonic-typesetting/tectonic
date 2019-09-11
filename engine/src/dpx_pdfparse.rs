@@ -1,18 +1,18 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 extern crate libc;
 use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -257,20 +257,12 @@ pub unsafe extern "C" fn parse_number(mut start: *mut *const i8, mut end: *const
     if p < end && (*p as i32 == '+' as i32 || *p as i32 == '-' as i32) {
         p = p.offset(1)
     }
-    while p < end
-        && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            != 0
-    {
+    while p < end && libc::isdigit(*p as _) != 0 {
         p = p.offset(1)
     }
     if p < end && *p as i32 == '.' as i32 {
         p = p.offset(1);
-        while p < end
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISdigit as i32 as u16 as i32
-                != 0
-        {
+        while p < end && libc::isdigit(*p as _) != 0 {
             p = p.offset(1)
         }
     }
@@ -285,10 +277,7 @@ pub unsafe extern "C" fn parse_unsigned(mut start: *mut *const i8, mut end: *con
     skip_white(start, end);
     p = *start;
     while p < end {
-        if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            == 0
-        {
+        if libc::isdigit(*p as _) == 0 {
             break;
         }
         p = p.offset(1)
@@ -351,9 +340,7 @@ pub unsafe extern "C" fn parse_pdf_number(
     p = *pp;
     skip_white(&mut p, endptr);
     if p >= endptr
-        || *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            == 0
+        || libc::isdigit(*p.offset(0) as _) == 0
             && *p.offset(0) as i32 != '.' as i32
             && *p.offset(0) as i32 != '+' as i32
             && *p.offset(0) as i32 != '-' as i32
@@ -400,10 +387,7 @@ pub unsafe extern "C" fn parse_pdf_number(
             } else {
                 has_dot = 1i32
             }
-        } else if *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            != 0
-        {
+        } else if libc::isdigit(*p.offset(0) as _) != 0 {
             if has_dot != 0 {
                 v += (*p.offset(0) as i32 - '0' as i32) as f64
                     / pow(10i32 as f64, (nddigits + 1i32) as f64);
@@ -434,13 +418,7 @@ unsafe extern "C" fn pn_getc(mut pp: *mut *const i8, mut endptr: *const i8) -> i
             *pp = endptr;
             return -1i32;
         }
-        if *(*__ctype_b_loc()).offset(*p.offset(1) as u8 as i32 as isize) as i32
-            & _ISxdigit as i32 as u16 as i32
-            == 0
-            || *(*__ctype_b_loc()).offset(*p.offset(2) as u8 as i32 as isize) as i32
-                & _ISxdigit as i32 as u16 as i32
-                == 0
-        {
+        if libc::isxdigit(*p.offset(1) as _) == 0 || libc::isxdigit(*p.offset(2) as _) == 0 {
             *pp = (*pp).offset(3);
             return -1i32;
         }
@@ -843,9 +821,7 @@ pub unsafe extern "C" fn parse_pdf_string(
         } else {
             if **pp as i32 == '<' as i32
                 && (*(*pp).offset(1) as i32 == '>' as i32
-                    || *(*__ctype_b_loc()).offset(*(*pp).offset(1) as u8 as i32 as isize) as i32
-                        & _ISxdigit as i32 as u16 as i32
-                        != 0)
+                    || libc::isxdigit(*(*pp).offset(1) as _) != 0)
             {
                 return parse_pdf_hex_string(pp, endptr);
             }
@@ -1094,11 +1070,7 @@ unsafe extern "C" fn try_pdf_reference(
         *endptr = start
     }
     skip_white(&mut start, end);
-    if start > end.offset(-5)
-        || *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            == 0
-    {
+    if start > end.offset(-5) || libc::isdigit(*start as _) == 0 {
         return 0 as *mut pdf_obj;
     }
     while !(*start as i32 == ' ' as i32
@@ -1108,11 +1080,7 @@ unsafe extern "C" fn try_pdf_reference(
         || *start as i32 == '\n' as i32
         || *start as i32 == '\u{0}' as i32)
     {
-        if start >= end
-            || *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize) as i32
-                & _ISdigit as i32 as u16 as i32
-                == 0
-        {
+        if start >= end || libc::isdigit(*start as _) == 0 {
             return 0 as *mut pdf_obj;
         }
         id = id
@@ -1121,11 +1089,7 @@ unsafe extern "C" fn try_pdf_reference(
         start = start.offset(1)
     }
     skip_white(&mut start, end);
-    if start >= end
-        || *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            == 0
-    {
+    if start >= end || libc::isdigit(*start as _) == 0 {
         return 0 as *mut pdf_obj;
     }
     while !(*start as i32 == ' ' as i32
@@ -1135,11 +1099,7 @@ unsafe extern "C" fn try_pdf_reference(
         || *start as i32 == '\n' as i32
         || *start as i32 == '\u{0}' as i32)
     {
-        if start >= end
-            || *(*__ctype_b_loc()).offset(*start as u8 as i32 as isize) as i32
-                & _ISdigit as i32 as u16 as i32
-                == 0
-        {
+        if start >= end || libc::isdigit(*start as _) == 0 {
             return 0 as *mut pdf_obj;
         }
         gen = (gen as i32 * 10i32 + (*start as i32 - '0' as i32)) as u16;

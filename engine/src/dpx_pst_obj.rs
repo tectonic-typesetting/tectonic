@@ -1,18 +1,18 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use libc::free;
 extern "C" {
     #[no_mangle]
     fn __errno_location() -> *mut i32;
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
     #[no_mangle]
@@ -650,9 +650,7 @@ pub unsafe extern "C" fn pst_parse_number(
             && *cur as i32 == '#' as i32
             && {
                 cur = cur.offset(1);
-                *(*__ctype_b_loc()).offset(*cur as i32 as isize) as i32
-                    & _ISalnum as i32 as u16 as i32
-                    != 0
+                libc::isalnum(*cur as _) != 0
             }
             && (lval != 16i32
                 || *cur.offset(1) as i32 != 'x' as i32 && *cur.offset(1) as i32 != 'X' as i32)

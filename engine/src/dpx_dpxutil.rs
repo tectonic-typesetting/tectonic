@@ -1,16 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -502,23 +502,12 @@ unsafe extern "C" fn read_c_escchar(
             c = 0i32;
             i_0 = 0i32;
             p = p.offset(1);
-            while i_0 < 2i32
-                && p < endptr
-                && *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as i32 as isize) as i32
-                    & _ISxdigit as i32 as u16 as i32
-                    != 0
-            {
+            while i_0 < 2i32 && p < endptr && libc::isxdigit(*p.offset(0) as _) != 0 {
                 c = (c << 4i32)
-                    + (if *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as i32 as isize) as i32
-                        & _ISdigit as i32 as u16 as i32
-                        != 0
-                    {
+                    + (if libc::isdigit(*p.offset(0) as _) != 0 {
                         *p.offset(0) as i32 - '0' as i32
                     } else {
-                        (if *(*__ctype_b_loc()).offset(*p.offset(0) as u8 as i32 as isize) as i32
-                            & _ISlower as i32 as u16 as i32
-                            != 0
-                        {
+                        (if libc::islower(*p.offset(0) as _) != 0 {
                             *p.offset(0) as i32 - 'a' as i32 + 10i32
                         } else {
                             *p.offset(0) as i32 - 'A' as i32 + 10i32

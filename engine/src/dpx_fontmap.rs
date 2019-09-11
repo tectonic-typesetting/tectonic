@@ -1,15 +1,15 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 extern crate libc;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
@@ -457,12 +457,7 @@ unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     if p.is_null() || p >= endptr {
         return;
     }
-    while p < endptr
-        && (*p as i32 & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISblank as i32 as u16 as i32
-                != 0)
-    {
+    while p < endptr && (*p as i32 & !0x7fi32 == 0i32 && crate::isblank(*p as _) != 0) {
         p = p.offset(1)
     }
     *pp = p;
@@ -478,11 +473,7 @@ unsafe extern "C" fn parse_string_value(mut pp: *mut *const i8, mut endptr: *con
         q = parse_c_string(&mut p, endptr)
     } else {
         n = 0_u32;
-        while p < endptr
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                == 0
-        {
+        while p < endptr && libc::isspace(*p as _) == 0 {
             p = p.offset(1);
             n = n.wrapping_add(1)
         }
@@ -829,11 +820,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                         );
                         return -1i32;
                     } else {
-                        if p < endptr
-                            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                                & _ISspace as i32 as u16 as i32
-                                == 0
-                        {
+                        if p < endptr && libc::isspace(*p as _) == 0 {
                             dpx_warning(
                                 b"Invalid value for option \'m\': %s\x00" as *const u8 as *const i8,
                                 q,
@@ -1410,12 +1397,7 @@ pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> i32
             return 1i32;
         }
         n = n.wrapping_add(1);
-        while p < endptr
-            && !(*p as i32 & !0x7fi32 == 0i32
-                && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                    & _ISblank as i32 as u16 as i32
-                    != 0)
-        {
+        while p < endptr && !(*p as i32 & !0x7fi32 == 0i32 && crate::isblank(*p as _) != 0) {
             p = p.offset(1)
         }
         skip_blank(&mut p, endptr);
@@ -1708,11 +1690,7 @@ unsafe extern "C" fn strip_options(mut map_name: *const i8, mut opt: *mut fontma
     (*opt).index = 0i32;
     (*opt).style = 0i32;
     (*opt).flags = 0i32;
-    if *p as i32 == ':' as i32
-        && *(*__ctype_b_loc()).offset(*p.offset(1) as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            != 0
-    {
+    if *p as i32 == ':' as i32 && libc::isdigit(*p.offset(1) as _) != 0 {
         (*opt).index = strtoul(p.offset(1), &mut next, 10i32) as i32;
         if *next as i32 == ':' as i32 {
             p = next.offset(1)

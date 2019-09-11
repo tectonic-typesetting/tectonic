@@ -1,10 +1,12 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set};
@@ -12,8 +14,6 @@ use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_spc_util::spc_util_read_colorspec;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -148,12 +148,7 @@ unsafe extern "C" fn spc_handler_background(mut spe: *mut spc_env, mut args: *mu
 }
 unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp;
-    while p < endptr
-        && (*p as i32 & !0x7fi32 == 0i32
-            && *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISblank as i32 as u16 as i32
-                != 0)
-    {
+    while p < endptr && (*p as i32 & !0x7fi32 == 0i32 && crate::isblank(*p as _) != 0) {
         p = p.offset(1)
     }
     *pp = p;
