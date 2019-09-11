@@ -122,24 +122,6 @@ extern "C" {
        mostly unsigned (u32) and occasionally signed (i32).
     */
     #[no_mangle]
-    fn get_unsigned_byte(_: *mut FILE) -> u8;
-    #[no_mangle]
-    fn skip_bytes(_: u32, _: *mut FILE);
-    #[no_mangle]
-    fn get_signed_byte(_: *mut FILE) -> i8;
-    #[no_mangle]
-    fn get_unsigned_pair(_: *mut FILE) -> u16;
-    #[no_mangle]
-    fn get_signed_pair(_: *mut FILE) -> i16;
-    #[no_mangle]
-    fn get_unsigned_triple(_: *mut FILE) -> u32;
-    #[no_mangle]
-    fn get_signed_quad(_: *mut FILE) -> i32;
-    #[no_mangle]
-    fn get_unsigned_num(_: *mut FILE, _: u8) -> u32;
-    #[no_mangle]
-    fn get_positive_quad(_: *mut FILE, _: *const i8, _: *const i8) -> u32;
-    #[no_mangle]
     static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
@@ -158,44 +140,16 @@ extern "C" {
     #[no_mangle]
     fn tfm_get_design_size(font_id: i32) -> f64;
 }
+
+use crate::dpx_numbers::{
+    get_unsigned_byte, skip_bytes, get_signed_byte, get_unsigned_pair, get_signed_pair,
+    get_unsigned_triple, get_signed_quad, get_unsigned_num, get_positive_quad
+};
+
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _IO_FILE {
-    pub _flags: i32,
-    pub _IO_read_ptr: *mut i8,
-    pub _IO_read_end: *mut i8,
-    pub _IO_read_base: *mut i8,
-    pub _IO_write_base: *mut i8,
-    pub _IO_write_ptr: *mut i8,
-    pub _IO_write_end: *mut i8,
-    pub _IO_buf_base: *mut i8,
-    pub _IO_buf_end: *mut i8,
-    pub _IO_save_base: *mut i8,
-    pub _IO_backup_base: *mut i8,
-    pub _IO_save_end: *mut i8,
-    pub _markers: *mut _IO_marker,
-    pub _chain: *mut _IO_FILE,
-    pub _fileno: i32,
-    pub _flags2: i32,
-    pub _old_offset: __off_t,
-    pub _cur_column: u16,
-    pub _vtable_offset: i8,
-    pub _shortbuf: [i8; 1],
-    pub _lock: *mut libc::c_void,
-    pub _offset: __off64_t,
-    pub _codecvt: *mut _IO_codecvt,
-    pub _wide_data: *mut _IO_wide_data,
-    pub _freeres_list: *mut _IO_FILE,
-    pub _freeres_buf: *mut libc::c_void,
-    pub __pad5: size_t,
-    pub _mode: i32,
-    pub _unused2: [i8; 20],
-}
-pub type _IO_lock_t = ();
-pub type FILE = _IO_FILE;
+use libc::FILE;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {

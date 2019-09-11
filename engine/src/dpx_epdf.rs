@@ -9,14 +9,13 @@
 )]
 
 extern crate libc;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
     pub type _IO_marker;
-    pub type pdf_ximage_;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
     #[no_mangle]
@@ -141,42 +140,6 @@ pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _IO_FILE {
-    pub _flags: i32,
-    pub _IO_read_ptr: *mut i8,
-    pub _IO_read_end: *mut i8,
-    pub _IO_read_base: *mut i8,
-    pub _IO_write_base: *mut i8,
-    pub _IO_write_ptr: *mut i8,
-    pub _IO_write_end: *mut i8,
-    pub _IO_buf_base: *mut i8,
-    pub _IO_buf_end: *mut i8,
-    pub _IO_save_base: *mut i8,
-    pub _IO_backup_base: *mut i8,
-    pub _IO_save_end: *mut i8,
-    pub _markers: *mut _IO_marker,
-    pub _chain: *mut _IO_FILE,
-    pub _fileno: i32,
-    pub _flags2: i32,
-    pub _old_offset: __off_t,
-    pub _cur_column: u16,
-    pub _vtable_offset: i8,
-    pub _shortbuf: [i8; 1],
-    pub _lock: *mut libc::c_void,
-    pub _offset: __off64_t,
-    pub _codecvt: *mut _IO_codecvt,
-    pub _wide_data: *mut _IO_wide_data,
-    pub _freeres_list: *mut _IO_FILE,
-    pub _freeres_buf: *mut libc::c_void,
-    pub __pad5: size_t,
-    pub _mode: i32,
-    pub _unused2: [i8; 20],
-}
-pub type _IO_lock_t = ();
-pub type FILE = _IO_FILE;
-
 use super::dpx_pdfdev::pdf_tmatrix;
 
 #[derive(Copy, Clone)]
@@ -1148,7 +1111,7 @@ static mut pdf_operators: [operator; 39] = [
 */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_copy_clip(
-    mut image_file: *mut FILE,
+    mut image_file: *mut libc::FILE,
     mut pageNo: i32,
     mut x_user: f64,
     mut y_user: f64,

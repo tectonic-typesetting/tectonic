@@ -34,8 +34,6 @@ extern "C" {
     fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> i32;
     /* Tectonic enabled */
     #[no_mangle]
     fn tt_skip_bytes(n: u32, handle: rust_input_handle_t);
@@ -176,41 +174,6 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _IO_FILE {
-    pub _flags: i32,
-    pub _IO_read_ptr: *mut i8,
-    pub _IO_read_end: *mut i8,
-    pub _IO_read_base: *mut i8,
-    pub _IO_write_base: *mut i8,
-    pub _IO_write_ptr: *mut i8,
-    pub _IO_write_end: *mut i8,
-    pub _IO_buf_base: *mut i8,
-    pub _IO_buf_end: *mut i8,
-    pub _IO_save_base: *mut i8,
-    pub _IO_backup_base: *mut i8,
-    pub _IO_save_end: *mut i8,
-    pub _markers: *mut _IO_marker,
-    pub _chain: *mut _IO_FILE,
-    pub _fileno: i32,
-    pub _flags2: i32,
-    pub _old_offset: __off_t,
-    pub _cur_column: u16,
-    pub _vtable_offset: i8,
-    pub _shortbuf: [i8; 1],
-    pub _lock: *mut libc::c_void,
-    pub _offset: __off64_t,
-    pub _codecvt: *mut _IO_codecvt,
-    pub _wide_data: *mut _IO_wide_data,
-    pub _freeres_list: *mut _IO_FILE,
-    pub _freeres_buf: *mut libc::c_void,
-    pub __pad5: size_t,
-    pub _mode: i32,
-    pub _unused2: [i8; 20],
-}
-pub type _IO_lock_t = ();
-pub type FILE = _IO_FILE;
 pub type fixword = i32;
 pub type spt_t = i32;
 #[derive(Copy, Clone)]

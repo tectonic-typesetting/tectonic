@@ -11,9 +11,6 @@ use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -73,8 +70,6 @@ extern "C" {
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -474,41 +469,6 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct _IO_FILE {
-    pub _flags: i32,
-    pub _IO_read_ptr: *mut i8,
-    pub _IO_read_end: *mut i8,
-    pub _IO_read_base: *mut i8,
-    pub _IO_write_base: *mut i8,
-    pub _IO_write_ptr: *mut i8,
-    pub _IO_write_end: *mut i8,
-    pub _IO_buf_base: *mut i8,
-    pub _IO_buf_end: *mut i8,
-    pub _IO_save_base: *mut i8,
-    pub _IO_backup_base: *mut i8,
-    pub _IO_save_end: *mut i8,
-    pub _markers: *mut _IO_marker,
-    pub _chain: *mut _IO_FILE,
-    pub _fileno: i32,
-    pub _flags2: i32,
-    pub _old_offset: __off_t,
-    pub _cur_column: u16,
-    pub _vtable_offset: i8,
-    pub _shortbuf: [i8; 1],
-    pub _lock: *mut libc::c_void,
-    pub _offset: __off64_t,
-    pub _codecvt: *mut _IO_codecvt,
-    pub _wide_data: *mut _IO_wide_data,
-    pub _freeres_list: *mut _IO_FILE,
-    pub _freeres_buf: *mut libc::c_void,
-    pub __pad5: size_t,
-    pub _mode: i32,
-    pub _unused2: [i8; 20],
-}
-pub type _IO_lock_t = ();
-pub type FILE = _IO_FILE;
 pub type fixword = i32;
 /* quasi-hack to get the primary input */
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
