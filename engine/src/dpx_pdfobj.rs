@@ -360,17 +360,13 @@ pub unsafe extern "C" fn pdf_set_compression(mut level: i32) {
         );
     }
     if cfg!(feature = "legacy-libz") && level != 0i32 {
-        dpx_warning(
-            b"Unable to set compression level -- your zlib doesn\'t have compress2().\x00"
-                as *const u8 as *const libc::c_char,
-        );
+        warn!("Unable to set compression level -- your zlib doesn\'t have compress2().");
     }
     if level >= 0i32 && level <= 9i32 {
-        compression_level = level as libc::c_char
+        compression_level = level as i8
     } else {
         _tt_abort(
-            b"set_compression: invalid compression level: %d\x00" as *const u8
-                as *const libc::c_char,
+            b"set_compression: invalid compression level: %d\x00" as *const u8 as *const i8,
             level,
         );
     };
@@ -672,13 +668,13 @@ pub unsafe extern "C" fn pdf_out_flush() {
         );
         if verbose != 0 {
             if compression_level as i32 > 0i32 {
-                dpx_message(
-                    b"Compression saved %d bytes%s\n\x00" as *const u8 as *const i8,
+                info!(
+                    "Compression saved {} bytes{}\n",
                     compression_saved,
                     if pdf_version < 5_u32 {
-                        b". Try \"-V 5\" for better compression\x00" as *const u8 as *const i8
+                        ". Try \"-V 5\" for better compression"
                     } else {
-                        b"\x00" as *const u8 as *const i8
+                        ""
                     },
                 );
             }
@@ -883,9 +879,7 @@ pub unsafe extern "C" fn pdf_ref_obj(mut object: *mut pdf_obj) -> *mut pdf_obj {
         _tt_abort(b"pdf_ref_obj(): passed invalid object.\x00" as *const u8 as *const i8);
     }
     if (*object).refcount == 0_u32 {
-        dpx_message(
-            b"\nTrying to refer already released object!!!\n\x00" as *const u8 as *const i8,
-        );
+        info!("\nTrying to refer already released object!!!\n");
         pdf_write_obj(object, ttstub_output_open_stdout());
         _tt_abort(b"Cannot continue...\x00" as *const u8 as *const i8);
     }
@@ -1525,8 +1519,7 @@ unsafe extern "C" fn pdf_unshift_array(mut array: *mut pdf_obj, mut object: *mut
     let mut data: *mut pdf_array = 0 as *mut pdf_array;
     if array.is_null() || (*array).type_0 != 5i32 {
         _tt_abort(
-            b"typecheck: Invalid object type: %d %d (line %d)\x00" as *const u8
-                as *const libc::c_char,
+            b"typecheck: Invalid object type: %d %d (line %d)\x00" as *const u8 as *const i8,
             if !array.is_null() {
                 (*array).type_0
             } else {
@@ -2306,22 +2299,22 @@ unsafe extern "C" fn filter_create_predictor_dict(
     parms = pdf_new_dict();
     pdf_add_dict(
         parms,
-        pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const i8),
         pdf_new_number(bpc as libc::c_double),
     );
     pdf_add_dict(
         parms,
-        pdf_new_name(b"Colors\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Colors\x00" as *const u8 as *const i8),
         pdf_new_number(colors as libc::c_double),
     );
     pdf_add_dict(
         parms,
-        pdf_new_name(b"Columns\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Columns\x00" as *const u8 as *const i8),
         pdf_new_number(columns as libc::c_double),
     );
     pdf_add_dict(
         parms,
-        pdf_new_name(b"Predictor\x00" as *const u8 as *const libc::c_char),
+        pdf_new_name(b"Predictor\x00" as *const u8 as *const i8),
         pdf_new_number(predictor as libc::c_double),
     );
     return parms;
@@ -2365,11 +2358,8 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
             /* First apply predictor filter if requested. */
             if compression_use_predictor as libc::c_int != 0
                 && (*stream)._flags & 1i32 << 1i32 != 0
-                && pdf_lookup_dict(
-                    (*stream).dict,
-                    b"DecodeParms\x00" as *const u8 as *const libc::c_char,
-                )
-                .is_null()
+                && pdf_lookup_dict((*stream).dict, b"DecodeParms\x00" as *const u8 as *const i8)
+                    .is_null()
             {
                 let mut bits_per_pixel: libc::c_int =
                     (*stream).decodeparms.colors * (*stream).decodeparms.bits_per_component;
@@ -2409,10 +2399,9 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                         )
                     }
                     _ => {
-                        dpx_warning(
-                            b"Unknown/unsupported Predictor function %d.\x00" as *const u8
-                                as *const libc::c_char,
-                            (*stream).decodeparms.predictor,
+                        warn!(
+                            "Unknown/unsupported Predictor function {}.",
+                            (*stream).decodeparms.predictor
                         );
                     }
                 }
@@ -2422,15 +2411,12 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                     filtered_length = length2 as libc::c_uint;
                     pdf_add_dict(
                         (*stream).dict,
-                        pdf_new_name(b"DecodeParms\x00" as *const u8 as *const libc::c_char),
+                        pdf_new_name(b"DecodeParms\x00" as *const u8 as *const i8),
                         parms,
                     );
                 }
             }
-            filters = pdf_lookup_dict(
-                (*stream).dict,
-                b"Filter\x00" as *const u8 as *const libc::c_char,
-            );
+            filters = pdf_lookup_dict((*stream).dict, b"Filter\x00" as *const u8 as *const i8);
             let mut buffer_length: libz::uLong;
             let mut buffer: *mut u8 = 0 as *mut u8;
             buffer_length = filtered_length
@@ -2440,7 +2426,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                 .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
                 as u32) as *mut libc::c_uchar;
             let mut filter_name: *mut pdf_obj =
-                pdf_new_name(b"FlateDecode\x00" as *const u8 as *const libc::c_char);
+                pdf_new_name(b"FlateDecode\x00" as *const u8 as *const i8);
             if !filters.is_null() {
                 /*
                  * FlateDecode is the first filter to be applied to the stream.
@@ -2454,7 +2440,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                  */
                 pdf_add_dict(
                     (*stream).dict,
-                    pdf_new_name(b"Filter\x00" as *const u8 as *const libc::c_char),
+                    pdf_new_name(b"Filter\x00" as *const u8 as *const i8),
                     filter_name,
                 );
             }
@@ -2469,7 +2455,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                     compression_level as libc::c_int,
                 ) != 0
                 {
-                    _tt_abort(b"Zlib error\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"Zlib error\x00" as *const u8 as *const i8);
                 }
             }
             #[cfg(feature = "legacy-libz")]
@@ -2481,7 +2467,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                     filtered_length as libz::uLong,
                 ) != 0
                 {
-                    _tt_abort(b"Zlib error\x00" as *const u8 as *const libc::c_char);
+                    _tt_abort(b"Zlib error\x00" as *const u8 as *const i8);
                 }
             }
             free(filtered as *mut libc::c_void);
@@ -2489,9 +2475,9 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                 (filtered_length as libc::c_ulong)
                     .wrapping_sub(buffer_length)
                     .wrapping_sub(if !filters.is_null() {
-                        strlen(b"/FlateDecode \x00" as *const u8 as *const libc::c_char)
+                        strlen(b"/FlateDecode \x00" as *const u8 as *const i8)
                     } else {
-                        strlen(b"/Filter/FlateDecode\n\x00" as *const u8 as *const libc::c_char)
+                        strlen(b"/Filter/FlateDecode\n\x00" as *const u8 as *const i8)
                     } as libc::c_ulong),
             ) as libc::c_int as libc::c_int;
             filtered = buffer;
@@ -2699,11 +2685,11 @@ pub unsafe extern "C" fn pdf_add_stream_flate(
     z.avail_out = 4096i32 as libz::uInt;
     if inflateInit_(
         &mut z,
-        b"1.2.11\x00" as *const u8 as *const libc::c_char,
+        b"1.2.11\x00" as *const u8 as *const i8,
         ::std::mem::size_of::<z_stream>() as libc::c_ulong as libc::c_int,
     ) != 0i32
     {
-        dpx_warning(b"inflateInit() failed.\x00" as *const u8 as *const libc::c_char);
+        warn!("inflateInit() failed.");
         return -1i32;
     }
     loop {
@@ -2713,9 +2699,7 @@ pub unsafe extern "C" fn pdf_add_stream_flate(
             break;
         }
         if status != 0i32 {
-            dpx_warning(
-                b"inflate() failed. Broken PDF file?\x00" as *const u8 as *const libc::c_char,
-            );
+            warn!("inflate() failed. Broken PDF file?");
             inflateEnd(&mut z);
             return -1i32;
         }
@@ -2754,28 +2738,28 @@ unsafe extern "C" fn get_decode_parms(
     (*parms).columns = 1i32;
     tmp = pdf_deref_obj(pdf_lookup_dict(
         dict,
-        b"Predictor\x00" as *const u8 as *const libc::c_char,
+        b"Predictor\x00" as *const u8 as *const i8,
     ));
     if !tmp.is_null() {
         (*parms).predictor = pdf_number_value(tmp) as libc::c_int
     }
     tmp = pdf_deref_obj(pdf_lookup_dict(
         dict,
-        b"Colors\x00" as *const u8 as *const libc::c_char,
+        b"Colors\x00" as *const u8 as *const i8,
     ));
     if !tmp.is_null() {
         (*parms).colors = pdf_number_value(tmp) as libc::c_int
     }
     tmp = pdf_deref_obj(pdf_lookup_dict(
         dict,
-        b"BitsPerComponent\x00" as *const u8 as *const libc::c_char,
+        b"BitsPerComponent\x00" as *const u8 as *const i8,
     ));
     if !tmp.is_null() {
         (*parms).bits_per_component = pdf_number_value(tmp) as libc::c_int
     }
     tmp = pdf_deref_obj(pdf_lookup_dict(
         dict,
-        b"Columns\x00" as *const u8 as *const libc::c_char,
+        b"Columns\x00" as *const u8 as *const i8,
     ));
     if !tmp.is_null() {
         (*parms).columns = pdf_number_value(tmp) as i32
@@ -2786,8 +2770,8 @@ unsafe extern "C" fn get_decode_parms(
         && (*parms).bits_per_component != 8i32
         && (*parms).bits_per_component != 16i32
     {
-        dpx_warning(
-            b"Invalid BPC value in DecodeParms: %d\x00" as *const u8 as *const libc::c_char,
+        warn!(
+            "Invalid BPC value in DecodeParms: {}",
             (*parms).bits_per_component,
         );
         return -1i32;
@@ -2929,16 +2913,16 @@ unsafe extern "C" fn filter_decoded(
                     i = 0i32;
                     while i < length {
                         let mut b: libc::c_int = i - bytes_per_pixel;
-                        let mut hi: libc::c_char = (if b >= 0i32 {
+                        let mut hi: i8 = (if b >= 0i32 {
                             *buf.offset(b as isize) as libc::c_int
                         } else {
                             0i32
-                        }) as libc::c_char;
-                        let mut lo: libc::c_char = (if b >= 0i32 {
+                        }) as i8;
+                        let mut lo: i8 = (if b >= 0i32 {
                             *buf.offset((b + 1i32) as isize) as libc::c_int
                         } else {
                             0i32
-                        }) as libc::c_char;
+                        }) as i8;
                         let mut pv_0: libc::c_int = (hi as libc::c_int) << 8i32 | lo as libc::c_int;
                         let mut cv: libc::c_int = (*p.offset(i as isize) as libc::c_int) << 8i32
                             | *p.offset((i + 1i32) as isize) as libc::c_int;
@@ -2978,10 +2962,7 @@ unsafe extern "C" fn filter_decoded(
             current_block_77 = 6912830033131235815;
         }
         _ => {
-            dpx_warning(
-                b"Unknown Predictor type value :%d\x00" as *const u8 as *const libc::c_char,
-                (*parms).predictor,
-            );
+            warn!("Unknown Predictor type value :{}", (*parms).predictor,);
             error = -1i32;
             current_block_77 = 6040267449472925966;
         }
@@ -3020,10 +3001,7 @@ unsafe extern "C" fn filter_decoded(
                 if (*parms).predictor == 15i32 {
                     type_0 = *p as libc::c_int
                 } else if *p as libc::c_int != type_0 {
-                    dpx_warning(
-                        b"Mismatched Predictor type in data stream.\x00" as *const u8
-                            as *const libc::c_char,
-                    );
+                    warn!("Mismatched Predictor type in data stream.",);
                     error = -1i32
                 }
                 p = p.offset(1);
@@ -3115,11 +3093,7 @@ unsafe extern "C" fn filter_decoded(
                         }
                     }
                     _ => {
-                        dpx_warning(
-                            b"Unknown PNG predictor type: %d\x00" as *const u8
-                                as *const libc::c_char,
-                            type_0,
-                        );
+                        warn!("Unknown PNG predictor type: {}", type_0,);
                         error = -1i32
                     }
                 }
@@ -3161,11 +3135,11 @@ unsafe extern "C" fn pdf_add_stream_flate_filtered(
     z.avail_out = 4096i32 as libz::uInt;
     if inflateInit_(
         &mut z,
-        b"1.2.11\x00" as *const u8 as *const libc::c_char,
+        b"1.2.11\x00" as *const u8 as *const i8,
         ::std::mem::size_of::<z_stream>() as libc::c_ulong as libc::c_int,
     ) != 0i32
     {
-        dpx_warning(b"inflateInit() failed.\x00" as *const u8 as *const libc::c_char);
+        warn!("inflateInit() failed.");
         return -1i32;
     }
     tmp = pdf_new_stream(0i32);
@@ -3176,9 +3150,7 @@ unsafe extern "C" fn pdf_add_stream_flate_filtered(
             break;
         }
         if status != 0i32 {
-            dpx_warning(
-                b"inflate() failed. Broken PDF file?\x00" as *const u8 as *const libc::c_char,
-            );
+            warn!("inflate() failed. Broken PDF file?");
             inflateEnd(&mut z);
             return -1i32;
         }
@@ -3231,60 +3203,44 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                 columns: 0,
             };
             let mut have_parms: libc::c_int = 0i32;
-            if !pdf_lookup_dict(
-                stream_dict,
-                b"DecodeParms\x00" as *const u8 as *const libc::c_char,
-            )
-            .is_null()
+            if !pdf_lookup_dict(stream_dict, b"DecodeParms\x00" as *const u8 as *const i8).is_null()
             {
                 let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
                 /* Dictionary or array */
                 tmp = pdf_deref_obj(pdf_lookup_dict(
                     stream_dict,
-                    b"DecodeParms\x00" as *const u8 as *const libc::c_char,
+                    b"DecodeParms\x00" as *const u8 as *const i8,
                 ));
                 if !tmp.is_null() && pdf_obj_typeof(tmp) == 5i32 {
                     if pdf_array_length(tmp) > 1i32 as libc::c_uint {
-                        dpx_warning(
-                            b"Unexpected size for DecodeParms array.\x00" as *const u8
-                                as *const libc::c_char,
-                        );
+                        warn!("Unexpected size for DecodeParms array.");
                         return -1i32;
                     }
                     tmp = pdf_deref_obj(pdf_get_array(tmp, 0i32))
                 }
                 if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 6i32) {
-                    dpx_warning(
-                        b"PDF dict expected for DecodeParms...\x00" as *const u8
-                            as *const libc::c_char,
-                    );
+                    warn!("PDF dict expected for DecodeParms...");
                     return -1i32;
                 }
                 error = get_decode_parms(&mut parms, tmp);
                 if error != 0 {
                     _tt_abort(
                         b"Invalid value(s) in DecodeParms dictionary.\x00" as *const u8
-                            as *const libc::c_char,
+                            as *const i8,
                     );
                 }
                 have_parms = 1i32
             }
             if !filter.is_null() && pdf_obj_typeof(filter) == 5i32 {
                 if pdf_array_length(filter) > 1i32 as libc::c_uint {
-                    dpx_warning(
-                        b"Multiple DecodeFilter not supported.\x00" as *const u8
-                            as *const libc::c_char,
-                    );
+                    warn!("Multiple DecodeFilter not supported.");
                     return -1i32;
                 }
                 filter = pdf_get_array(filter, 0i32)
             }
             if !filter.is_null() && pdf_obj_typeof(filter) == 4i32 {
-                let mut filter_name: *mut libc::c_char = pdf_name_value(filter);
-                if streq_ptr(
-                    filter_name,
-                    b"FlateDecode\x00" as *const u8 as *const libc::c_char,
-                ) {
+                let mut filter_name: *mut i8 = pdf_name_value(filter);
+                if streq_ptr(filter_name, b"FlateDecode\x00" as *const u8 as *const i8) {
                     if have_parms != 0 {
                         error = pdf_add_stream_flate_filtered(
                             dst,
@@ -3301,14 +3257,13 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                     }
                 } else {
                     dpx_warning(
-                        b"DecodeFilter \"%s\" not supported.\x00" as *const u8
-                            as *const libc::c_char,
+                        b"DecodeFilter \"%s\" not supported.\x00" as *const u8 as *const i8,
                         filter_name,
                     );
                     error = -1i32
                 }
             } else {
-                _tt_abort(b"Broken PDF file?\x00" as *const u8 as *const libc::c_char);
+                _tt_abort(b"Broken PDF file?\x00" as *const u8 as *const i8);
             }
         }
     }
@@ -4309,9 +4264,9 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                             free(q_0 as *mut libc::c_void);
                             skip_white(&mut p, endptr);
                             if p == endptr {
-                                dpx_warning(b"Unexpected EOL reached while reading a xref subsection entry.\x00"
-                                                as *const u8 as
-                                                *const i8);
+                                warn!(
+                                    "Unexpected EOL reached while reading a xref subsection entry."
+                                );
                                 return -1i32;
                             }
                             /* Flag -- a char */
@@ -4327,10 +4282,8 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                                         && (offset >= (*pf).file_size as u32
                                             || offset > 0_u32 && offset < 4_u32)
                                 {
-                                    dpx_warning(
-                                        b"Invalid xref table entry [%u]. PDF file is corrupt...\x00"
-                                            as *const u8
-                                            as *const i8,
+                                    warn!(
+                                        "Invalid xref table entry [{}]. PDF file is corrupt...",
                                         i,
                                     );
                                     return -1i32;
@@ -4713,10 +4666,7 @@ pub unsafe extern "C" fn pdf_open(
         let mut version: u32 = 0_u32;
         let mut r: i32 = parse_pdf_version(handle, &mut version);
         if r < 0i32 || version < 1_u32 || version > pdf_version {
-            dpx_warning(
-                b"pdf_open: Not a PDF 1.[1-%u] file.\x00" as *const u8 as *const i8,
-                pdf_version,
-            );
+            warn!("pdf_open: Not a PDF 1.[1-{}] file.", pdf_version,);
             /*
               Try to embed the PDF image, even if the PDF version is newer than
               the setting.
@@ -4893,11 +4843,7 @@ unsafe extern "C" fn pdf_import_indirect(mut object: *mut pdf_obj) -> *mut pdf_o
             && (*(*pf).xref_table.offset(obj_num as isize)).field3 as i32 == obj_gen as i32
             || (*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 2i32 && obj_gen == 0))
     {
-        dpx_warning(
-            b"Can\'t resolve object: %u %u\x00" as *const u8 as *const i8,
-            obj_num,
-            obj_gen as i32,
-        );
+        warn!("Can\'t resolve object: {} {}", obj_num, obj_gen as i32,);
         return pdf_new_null();
     }
     ref_0 = (*(*pf).xref_table.offset(obj_num as isize)).indirect;
@@ -4914,11 +4860,7 @@ unsafe extern "C" fn pdf_import_indirect(mut object: *mut pdf_obj) -> *mut pdf_o
         let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
         obj = pdf_get_object(pf, obj_num, obj_gen);
         if obj.is_null() {
-            dpx_warning(
-                b"Could not read object: %u %u\x00" as *const u8 as *const i8,
-                obj_num,
-                obj_gen as i32,
-            );
+            warn!("Could not read object: {} {}", obj_num, obj_gen as i32,);
             return 0 as *mut pdf_obj;
         }
         /* We mark the reference to be able to detect loops */

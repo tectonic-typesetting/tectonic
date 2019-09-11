@@ -1898,16 +1898,13 @@ unsafe extern "C" fn print_fontmap(mut font_name: *const i8, mut mrec: *mut font
         info!("[slant:{}]", (*mrec).opt.slant);
     }
     if (*mrec).opt.bold != 0.0f64 {
-        dpx_message(b"[bold:%g]\x00" as *const u8 as *const i8, (*mrec).opt.bold);
+        info!("[bold:{}]", (*mrec).opt.bold);
     }
     if (*mrec).opt.flags & 1i32 << 1i32 != 0 {
         info!("[noemb]");
     }
     if (*mrec).opt.mapc >= 0i32 {
-        dpx_message(
-            b"[map:<%02x>]\x00" as *const u8 as *const i8,
-            (*mrec).opt.mapc,
-        );
+        info!("[map:<{:02x}>]", (*mrec).opt.mapc);
     }
     if !(*mrec).opt.charcoll.is_null() {
         dpx_message(

@@ -128,7 +128,7 @@ pub struct ximage_info {
 use crate::dpx_pdfximage::pdf_ximage;
 pub type png_byte = u8;
 pub type png_infopp = *mut *mut png_info;
-pub type png_const_charp = *const libc::c_char;
+pub type png_const_charp = *const i8;
 pub type png_structp = *mut png_struct;
 pub type png_uint_16 = libc::c_ushort;
 pub type png_structpp = *mut *mut png_struct;
@@ -168,9 +168,9 @@ unsafe extern "C" fn _png_read(mut png_ptr: *mut png_struct, mut outbytes: *mut 
     let mut png = png_ptr.as_ref().unwrap();
     let mut handle: rust_input_handle_t = png_get_io_ptr(png);
     let mut r: ssize_t = 0;
-    r = ttstub_input_read(handle, outbytes as *mut libc::c_char, n.try_into().unwrap());
+    r = ttstub_input_read(handle, outbytes as *mut i8, n.try_into().unwrap());
     if r < 0i32 as ssize_t || r as size_t != n.try_into().unwrap() {
-        _tt_abort(b"error reading PNG\x00" as *const u8 as *const libc::c_char);
+        _tt_abort(b"error reading PNG\x00" as *const u8 as *const i8);
     };
 }
 #[no_mangle]
@@ -210,7 +210,7 @@ pub unsafe extern "C" fn png_include_image(
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
 
     let png = if let Some(png) = png_create_read_struct(
-        b"1.6.37\x00" as *const u8 as *const libc::c_char,
+        b"1.6.37\x00" as *const u8 as *const i8,
         0 as *mut libc::c_void,
         None,
         Some(_png_warning_callback),
@@ -739,7 +739,7 @@ unsafe extern "C" fn create_cspace_ICCBased(
     let mut csp_id: i32 = 0;
     let mut colortype: i32 = 0;
     let mut color_type: png_byte = 0;
-    let mut name = 0 as *mut libc::c_char;
+    let mut name = 0 as *mut i8;
     let mut compression_type: libc::c_int = 0;
     let mut profile: png_bytep = 0 as *mut png_byte;
     let mut proflen: png_uint_32 = 0;
@@ -979,10 +979,7 @@ unsafe extern "C" fn make_param_Cal(
     Yb = fb * yb;
     Zb = fb * zb;
     if G < 1.0e-2f64 {
-        dpx_warning(
-            b"Unusual Gamma specified: 1.0 / %g\x00" as *const u8 as *const i8,
-            G,
-        );
+        warn!("Unusual Gamma specified: 1.0 / {}", G,);
         return 0 as *mut pdf_obj;
     }
     cal_param = pdf_new_dict();
@@ -1072,7 +1069,7 @@ unsafe extern "C" fn make_param_Cal(
     } else if G != 1.0f64 {
         pdf_add_dict(
             cal_param,
-            pdf_new_name(b"Gamma\x00" as *const u8 as *const libc::c_char),
+            pdf_new_name(b"Gamma\x00" as *const u8 as *const i8),
             pdf_new_number((G / 0.00001f64 + 0.5f64).floor() * 0.00001f64),
         );
     }
@@ -1519,7 +1516,7 @@ pub unsafe extern "C" fn png_get_bbox(
 ) -> libc::c_int {
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     let mut png = png_create_read_struct(
-        b"1.6.37\x00" as *const u8 as *const libc::c_char,
+        b"1.6.37\x00" as *const u8 as *const i8,
         0 as *mut libc::c_void,
         None,
         Some(_png_warning_callback),

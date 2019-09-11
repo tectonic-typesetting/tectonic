@@ -318,15 +318,9 @@ unsafe extern "C" fn add_rule(
             pdf_add_array(glyph1, pdf_new_number(unicodes[i as usize] as f64));
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
-                    dpx_message(
-                        b" U+%04X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:04X}", unicodes[i as usize],);
                 } else {
-                    dpx_message(
-                        b" U+%06X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:06X}", unicodes[i as usize],);
                 }
             }
             i += 1
@@ -382,15 +376,9 @@ unsafe extern "C" fn add_rule(
             pdf_add_array(glyph2, pdf_new_number(unicodes[i as usize] as f64));
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
-                    dpx_message(
-                        b" U+%04X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:04X}", unicodes[i as usize],);
                 } else {
-                    dpx_message(
-                        b" U+%06X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:06X}", unicodes[i as usize],);
                 }
             }
             i += 1

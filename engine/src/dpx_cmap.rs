@@ -509,7 +509,7 @@ pub unsafe extern "C" fn CMap_decode_char(
                 info!(" input str: ");
                 info!("<");
                 while save < p {
-                    dpx_message(b"%02x\x00" as *const u8 as *const i8, *save as i32);
+                    info!("{:02x}", *save as i32);
                     save = save.offset(1)
                 }
                 info!(">\n");

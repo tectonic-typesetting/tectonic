@@ -1243,10 +1243,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                                                 *const i8);
                                             } else {
                                                 if verbose > 0i32 {
-                                                    dpx_message(
-                                                        b"(ext:single)\x00" as *const u8
-                                                            as *const i8,
-                                                    );
+                                                    info!("(ext:single)",);
                                                 }
                                                 n_st += 1
                                             }
@@ -1264,10 +1261,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                                                 *const i8);
                                             } else {
                                                 if verbose > 0i32 {
-                                                    dpx_message(
-                                                        b"(alternate)\x00" as *const u8
-                                                            as *const i8,
-                                                    );
+                                                    info!("(alternate)",);
                                                 }
                                                 n_st += 1
                                             }
@@ -1285,10 +1279,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                                                 *const i8);
                                             } else {
                                                 if verbose > 0i32 {
-                                                    dpx_message(
-                                                        b"(ext:ligature)\x00" as *const u8
-                                                            as *const i8,
-                                                    );
+                                                    info!("(ext:ligature)",);
                                                 }
                                                 n_st += 1
                                             }

@@ -1576,10 +1576,7 @@ unsafe extern "C" fn get_page_info(mut post_location: i32) {
         _tt_abort(b"Page count is 0!\x00" as *const u8 as *const i8);
     }
     if verbose > 2i32 {
-        dpx_message(
-            b"Page count:\t %4d\n\x00" as *const u8 as *const i8,
-            num_pages,
-        );
+        info!("Page count:\t {:4}\n", num_pages,);
     }
     page_loc = new((num_pages as u64).wrapping_mul(::std::mem::size_of::<u32>() as u64) as u32)
         as *mut u32;
@@ -1779,10 +1776,7 @@ unsafe extern "C" fn get_dvi_fonts(mut post_location: i32) {
                 read_native_font_record(tt_get_signed_quad(dvi_handle) as u32);
             }
             _ => {
-                dpx_message(
-                    b"Unexpected op code: %3d\n\x00" as *const u8 as *const i8,
-                    code,
-                );
+                info!("Unexpected op code: {:3}\n", code,);
                 _tt_abort(invalid_signature.as_ptr());
             }
         }
@@ -1798,8 +1792,8 @@ unsafe extern "C" fn get_dvi_fonts(mut post_location: i32) {
                 (*def_fonts.offset(i as isize)).font_name,
                 (*def_fonts.offset(i as isize)).tex_id,
             );
-            dpx_message(
-                b"size=%5.2fpt (scaled %4.1f%%)\x00" as *const u8 as *const i8,
+            info!(
+                "size={:5.2}pt (scaled {:4.1}%)",
                 (*def_fonts.offset(i as isize)).point_size as f64 * dvi2pts,
                 100.0f64
                     * ((*def_fonts.offset(i as isize)).point_size as f64

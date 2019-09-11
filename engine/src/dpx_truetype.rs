@@ -857,7 +857,7 @@ unsafe extern "C" fn do_builtin_encoding(
     while code < 256i32 {
         if !(*usedchars.offset(code as isize) == 0) {
             if verbose > 2i32 {
-                dpx_message(b"/.c0x%02x\x00" as *const u8 as *const i8, code);
+                info!("/.c0x{:02x}", code);
             }
             gid = tt_cmap_lookup(ttcm, code as u32);
             if gid as i32 == 0i32 {

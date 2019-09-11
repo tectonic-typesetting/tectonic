@@ -1088,15 +1088,9 @@ unsafe extern "C" fn agl_load_listfile(mut filename: *const i8, mut is_predef: i
                     i = 0i32;
                     while i < (*agln).n_components {
                         if (*agln).unicodes[i as usize] > 0xffffi32 {
-                            dpx_message(
-                                b" U+%06X\x00" as *const u8 as *const i8,
-                                (*agln).unicodes[i as usize],
-                            );
+                            info!(" U+{:06X}", (*agln).unicodes[i as usize],);
                         } else {
-                            dpx_message(
-                                b" U+%04X\x00" as *const u8 as *const i8,
-                                (*agln).unicodes[i as usize],
-                            );
+                            info!(" U+{:04X}", (*agln).unicodes[i as usize],);
                         }
                         i += 1
                     }

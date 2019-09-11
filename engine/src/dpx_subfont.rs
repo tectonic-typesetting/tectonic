@@ -682,8 +682,8 @@ pub unsafe extern "C" fn sfd_load_record(
                 if __i_0 % 16i32 == 0i32 {
                     info!("\nsubfont>>  ");
                 }
-                dpx_message(
-                    b" %04x\x00" as *const u8 as *const i8,
+                info!(
+                    " {:04x}",
                     (*sfd_record.offset(rec_id as isize)).vector[__i_0 as usize] as i32,
                 );
                 __i_0 += 1

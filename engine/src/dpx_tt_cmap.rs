@@ -1689,16 +1689,14 @@ unsafe extern "C" fn handle_subst_glyphs(
                             count = count.wrapping_add(1);
                             if verbose > 0i32 {
                                 let mut _i: size_t = 0;
-                                dpx_message(
-                                    b"otf_cmap>> Additional ToUnicode mapping: <%04X> <\x00"
-                                        as *const u8
-                                        as *const i8,
+                                info!(
+                                    "otf_cmap>> Additional ToUnicode mapping: <{:04X}> <",
                                     gid as i32,
                                 );
                                 _i = 0i32 as size_t;
                                 while _i < len {
-                                    dpx_message(
-                                        b"%02X\x00" as *const u8 as *const i8,
+                                    info!(
+                                        "{:02X}",
                                         wbuf[(2i32 as u64).wrapping_add(_i) as usize] as i32,
                                     );
                                     _i = _i.wrapping_add(1)

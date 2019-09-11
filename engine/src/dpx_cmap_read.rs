@@ -352,11 +352,9 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         (*reader).endptr = (*reader).endptr.offset(bytesread as isize);
         (*reader).unread = ((*reader).unread as u64).wrapping_sub(bytesread) as size_t as size_t;
         if __verbose != 0 {
-            dpx_message(
-                b"Reading more %zu bytes (%zu bytes remains in buffer)...\n\x00" as *const u8
-                    as *const i8,
-                bytesread,
-                bytesrem,
+            info!(
+                "Reading more {} bytes ({} bytes remains in buffer)...\n",
+                bytesread, bytesrem,
             );
         }
     }
