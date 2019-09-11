@@ -7,6 +7,9 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfdraw::{
+    pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_dtransform, pdf_dev_idtransform,
+};
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -233,8 +236,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
     #[no_mangle]
-    fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> i32;
-    #[no_mangle]
     fn pdf_dev_currentpoint(cp: *mut pdf_coord) -> i32;
     #[no_mangle]
     fn pdf_dev_setlinewidth(width: f64) -> i32;
@@ -274,13 +275,6 @@ extern "C" {
     fn pdf_dev_eoclip() -> i32;
     #[no_mangle]
     fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_concat(M: *const pdf_tmatrix) -> i32;
-    /* NULL pointer of M mean apply current transformation */
-    #[no_mangle]
-    fn pdf_dev_dtransform(p: *mut pdf_coord, M: *const pdf_tmatrix);
-    #[no_mangle]
-    fn pdf_dev_idtransform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     #[no_mangle]
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
@@ -442,16 +436,9 @@ pub struct pdf_color {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 pub type spt_t = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
@@ -460,12 +447,9 @@ pub struct pdf_rect {
     pub urx: f64,
     pub ury: f64,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 /* The name transform_info is misleading.
  * I'll put this here for a moment...
  */
@@ -3591,14 +3575,14 @@ unsafe extern "C" fn do_texfig_operator(mut opcode: i32, mut x_user: f64, mut y_
     }
     error
 }
-unsafe extern "C" fn ps_dev_CTM(mut M: *mut pdf_tmatrix) -> i32 {
+unsafe extern "C" fn ps_dev_CTM(M: &mut pdf_tmatrix) -> i32 {
     pdf_dev_currentmatrix(M);
-    (*M).a *= 1000i32 as f64;
-    (*M).b *= 1000i32 as f64;
-    (*M).c *= 1000i32 as f64;
-    (*M).d *= 1000i32 as f64;
-    (*M).e *= 1000i32 as f64;
-    (*M).f *= 1000i32 as f64;
+    M.a *= 1000i32 as f64;
+    M.b *= 1000i32 as f64;
+    M.c *= 1000i32 as f64;
+    M.d *= 1000i32 as f64;
+    M.e *= 1000i32 as f64;
+    M.f *= 1000i32 as f64;
     0i32
 }
 /*
@@ -4074,7 +4058,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                                 ps_dev_CTM(&mut matrix);
                                 /* Here, we need real PostScript CTM */
                             } /* This does pdf_release_obj() */
-                            pdf_dev_dtransform(&mut cp, &mut matrix);
+                            pdf_dev_dtransform(&mut cp, Some(&mut matrix));
                             if top_stack < 1024_u32 {
                                 let fresh14 = top_stack;
                                 top_stack = top_stack.wrapping_add(1);
@@ -4155,7 +4139,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                                 ps_dev_CTM(&mut matrix);
                                 /* Here, we need real PostScript CTM */
                             }
-                            pdf_dev_idtransform(&mut cp, &mut matrix);
+                            pdf_dev_idtransform(&mut cp, Some(&matrix));
                             if top_stack < 1024_u32 {
                                 let fresh16 = top_stack;
                                 top_stack = top_stack.wrapping_add(1);

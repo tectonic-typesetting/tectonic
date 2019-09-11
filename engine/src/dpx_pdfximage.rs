@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfdraw::pdf_dev_transform;
 extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     pub type pdf_obj;
@@ -207,8 +208,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -266,16 +265,9 @@ pub const TTIF_BIB: tt_input_format_type = 6;
 pub const TTIF_AFM: tt_input_format_type = 4;
 pub const TTIF_TFM: tt_input_format_type = 3;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
@@ -284,12 +276,9 @@ pub struct pdf_rect {
     pub urx: f64,
     pub ury: f64,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_info {
@@ -865,16 +854,16 @@ pub unsafe extern "C" fn pdf_ximage_set_form(
      */
     p1.x = (*info).bbox.llx; /* Caller don't know we are using reference. */
     p1.y = (*info).bbox.lly;
-    pdf_dev_transform(&mut p1, &mut (*info).matrix);
+    pdf_dev_transform(&mut p1, Some(&(*info).matrix));
     p2.x = (*info).bbox.urx;
     p1.y = (*info).bbox.lly;
-    pdf_dev_transform(&mut p2, &mut (*info).matrix);
+    pdf_dev_transform(&mut p2, Some(&(*info).matrix));
     p3.x = (*info).bbox.urx;
     p3.y = (*info).bbox.ury;
-    pdf_dev_transform(&mut p3, &mut (*info).matrix);
+    pdf_dev_transform(&mut p3, Some(&(*info).matrix));
     p4.x = (*info).bbox.llx;
     p4.y = (*info).bbox.ury;
-    pdf_dev_transform(&mut p4, &mut (*info).matrix);
+    pdf_dev_transform(&mut p4, Some(&(*info).matrix));
     (*I).attr.bbox.llx = min4(p1.x, p2.x, p3.x, p4.x);
     (*I).attr.bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);
     (*I).attr.bbox.urx = max4(p1.x, p2.x, p3.x, p4.x);

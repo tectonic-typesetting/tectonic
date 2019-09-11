@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfdraw::pdf_dev_transform;
 extern "C" {
     pub type pdf_file;
     pub type pdf_obj;
@@ -192,8 +193,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_close(pf: *mut pdf_file);
     #[no_mangle]
-    fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
-    #[no_mangle]
     fn check_for_png(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn png_get_bbox(
@@ -377,12 +376,9 @@ pub struct pdf_rect {
     pub urx: f64,
     pub ury: f64,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -404,16 +400,9 @@ pub struct pdf_coord {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[no_mangle]
 pub unsafe extern "C" fn count_pdf_file_pages() -> i32 {
     let mut pages: i32 = 0;
@@ -507,16 +496,16 @@ unsafe extern "C" fn pdf_get_rect(
      */
     p1.x = bbox.llx;
     p1.y = bbox.lly;
-    pdf_dev_transform(&mut p1, &mut matrix);
+    pdf_dev_transform(&mut p1, Some(&matrix));
     p2.x = bbox.urx;
     p2.y = bbox.lly;
-    pdf_dev_transform(&mut p2, &mut matrix);
+    pdf_dev_transform(&mut p2, Some(&matrix));
     p3.x = bbox.urx;
     p3.y = bbox.ury;
-    pdf_dev_transform(&mut p3, &mut matrix);
+    pdf_dev_transform(&mut p3, Some(&matrix));
     p4.x = bbox.llx;
     p4.y = bbox.ury;
-    pdf_dev_transform(&mut p4, &mut matrix);
+    pdf_dev_transform(&mut p4, Some(&matrix));
     bbox.llx = min4(p1.x, p2.x, p3.x, p4.x);
     bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);
     bbox.urx = max4(p1.x, p2.x, p3.x, p4.x);

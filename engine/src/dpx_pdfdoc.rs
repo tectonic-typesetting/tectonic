@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfdev::pdf_dev_bop;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -203,8 +204,6 @@ extern "C" {
     /* Initialization of transformation matrix with M and others.
      * They are called within pdf_doc_begin_page() and pdf_doc_end_page().
      */
-    #[no_mangle]
-    fn pdf_dev_bop(M: *const pdf_tmatrix);
     #[no_mangle]
     fn pdf_dev_eop();
     #[no_mangle]
@@ -500,16 +499,9 @@ pub struct pdf_color {
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {

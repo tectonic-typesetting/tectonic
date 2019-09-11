@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -101,8 +102,6 @@ extern "C" {
     ) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
-    #[no_mangle]
-    fn pdf_dev_currentmatrix(M: *mut pdf_tmatrix) -> i32;
     /* Path Construction */
     #[no_mangle]
     fn pdf_dev_moveto(x: f64, y: f64) -> i32;
@@ -120,10 +119,6 @@ extern "C" {
     fn pdf_dev_rectadd(x: f64, y: f64, w: f64, h: f64) -> i32;
     #[no_mangle]
     fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_transform(p: *mut pdf_coord, M: *const pdf_tmatrix);
-    #[no_mangle]
-    fn pdf_invertmatrix(M: *mut pdf_tmatrix);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
@@ -183,16 +178,9 @@ pub struct _IO_FILE {
 }
 pub type _IO_lock_t = ();
 pub type FILE = _IO_FILE;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
@@ -201,12 +189,9 @@ pub struct pdf_rect {
     pub urx: f64,
     pub ury: f64,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_coord {
-    pub x: f64,
-    pub y: f64,
-}
+
+use super::dpx_pdfdev::pdf_coord;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct xform_info {
@@ -1425,8 +1410,8 @@ pub unsafe extern "C" fn pdf_copy_clip(
                         M0.d = M.d;
                         M0.e = 0i32 as f64;
                         M0.f = 0i32 as f64;
-                        pdf_dev_transform(&mut p0, &mut M);
-                        pdf_dev_transform(&mut p1, &mut M0);
+                        pdf_dev_transform(&mut p0, Some(&M));
+                        pdf_dev_transform(&mut p1, Some(&M0));
                         pdf_dev_rectadd(p0.x, p0.y, p1.x, p1.y);
                     } else {
                         p2.x = p0.x + p1.x;
@@ -1435,10 +1420,10 @@ pub unsafe extern "C" fn pdf_copy_clip(
                         p3.y = p0.y + p1.y;
                         p1.x += p0.x;
                         p1.y = p0.y;
-                        pdf_dev_transform(&mut p0, &mut M);
-                        pdf_dev_transform(&mut p1, &mut M);
-                        pdf_dev_transform(&mut p2, &mut M);
-                        pdf_dev_transform(&mut p3, &mut M);
+                        pdf_dev_transform(&mut p0, Some(&M));
+                        pdf_dev_transform(&mut p1, Some(&M));
+                        pdf_dev_transform(&mut p2, Some(&M));
+                        pdf_dev_transform(&mut p3, Some(&M));
                         pdf_dev_moveto(p0.x, p0.y);
                         pdf_dev_lineto(p1.x, p1.y);
                         pdf_dev_lineto(p2.x, p2.y);
@@ -1457,21 +1442,21 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh11 = top;
                     top = top - 1;
                     p0.x = stack[fresh11 as usize];
-                    pdf_dev_transform(&mut p0, &mut M);
+                    pdf_dev_transform(&mut p0, Some(&M));
                     let fresh12 = top;
                     top = top - 1;
                     p1.y = stack[fresh12 as usize];
                     let fresh13 = top;
                     top = top - 1;
                     p1.x = stack[fresh13 as usize];
-                    pdf_dev_transform(&mut p1, &mut M);
+                    pdf_dev_transform(&mut p1, Some(&M));
                     let fresh14 = top;
                     top = top - 1;
                     p2.y = stack[fresh14 as usize];
                     let fresh15 = top;
                     top = top - 1;
                     p2.x = stack[fresh15 as usize];
-                    pdf_dev_transform(&mut p2, &mut M);
+                    pdf_dev_transform(&mut p2, Some(&M));
                     pdf_dev_curveto(p2.x, p2.y, p1.x, p1.y, p0.x, p0.y);
                     current_block_157 = 6328367678128271922;
                 }
@@ -1489,7 +1474,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh17 = top;
                     top = top - 1;
                     p0.x = stack[fresh17 as usize];
-                    pdf_dev_transform(&mut p0, &mut M);
+                    pdf_dev_transform(&mut p0, Some(&M));
                     pdf_dev_lineto(p0.x, p0.y);
                     current_block_157 = 6328367678128271922;
                 }
@@ -1503,7 +1488,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh19 = top;
                     top = top - 1;
                     p0.x = stack[fresh19 as usize];
-                    pdf_dev_transform(&mut p0, &mut M);
+                    pdf_dev_transform(&mut p0, Some(&M));
                     pdf_dev_moveto(p0.x, p0.y);
                     current_block_157 = 6328367678128271922;
                 }
@@ -1529,14 +1514,14 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh21 = top;
                     top = top - 1;
                     p0.x = stack[fresh21 as usize];
-                    pdf_dev_transform(&mut p0, &mut M);
+                    pdf_dev_transform(&mut p0, Some(&M));
                     let fresh22 = top;
                     top = top - 1;
                     p1.y = stack[fresh22 as usize];
                     let fresh23 = top;
                     top = top - 1;
                     p1.x = stack[fresh23 as usize];
-                    pdf_dev_transform(&mut p1, &mut M);
+                    pdf_dev_transform(&mut p1, Some(&M));
                     pdf_dev_vcurveto(p1.x, p1.y, p0.x, p0.y);
                     current_block_157 = 6328367678128271922;
                 }
@@ -1550,14 +1535,14 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     let fresh25 = top;
                     top = top - 1;
                     p0.x = stack[fresh25 as usize];
-                    pdf_dev_transform(&mut p0, &mut M);
+                    pdf_dev_transform(&mut p0, Some(&M));
                     let fresh26 = top;
                     top = top - 1;
                     p1.y = stack[fresh26 as usize];
                     let fresh27 = top;
                     top = top - 1;
                     p1.x = stack[fresh27 as usize];
-                    pdf_dev_transform(&mut p1, &mut M);
+                    pdf_dev_transform(&mut p1, Some(&M));
                     pdf_dev_ycurveto(p1.x, p1.y, p0.x, p0.y);
                     current_block_157 = 6328367678128271922;
                 }

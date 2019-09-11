@@ -61,16 +61,9 @@ pub struct pdf_color {
     pub spot_color_name: *mut i8,
     pub values: [f64; 4],
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_tmatrix {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
-    pub d: f64,
-    pub e: f64,
-    pub f: f64,
-}
+
+use super::dpx_pdfdev::pdf_tmatrix;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_rect {
@@ -566,8 +559,8 @@ unsafe extern "C" fn spc_util_read_length(
  * transformations are applied in the following
  * order: scaling, rotate, displacement.
  */
-unsafe extern "C" fn make_transmatrix(
-    mut M: *mut pdf_tmatrix,
+extern "C" fn make_transmatrix(
+    M: &mut pdf_tmatrix,
     mut xoffset: f64,
     mut yoffset: f64,
     mut xscale: f64,
@@ -575,12 +568,12 @@ unsafe extern "C" fn make_transmatrix(
     mut rotate: f64,
 ) {
     let (s, c) = rotate.sin_cos();
-    (*M).a = xscale * c;
-    (*M).b = xscale * s;
-    (*M).c = -yscale * s;
-    (*M).d = yscale * c;
-    (*M).e = xoffset;
-    (*M).f = yoffset;
+    M.a = xscale * c;
+    M.b = xscale * s;
+    M.c = -yscale * s;
+    M.d = yscale * c;
+    M.e = xoffset;
+    M.f = yoffset;
 }
 unsafe extern "C" fn spc_read_dimtrns_dvips(
     mut spe: *mut spc_env,
