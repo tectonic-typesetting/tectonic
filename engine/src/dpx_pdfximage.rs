@@ -315,7 +315,7 @@ pub struct load_options {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct pdf_ximage_ {
+pub struct pdf_ximage {
     pub ident: *mut i8,
     pub res_name: [i8; 16],
     pub subtype: i32,
@@ -338,7 +338,6 @@ pub struct attr_ {
     pub dict: *mut pdf_obj,
     pub tempfile: i8,
 }
-pub type pdf_ximage = pdf_ximage_;
 /* quasi-hack to get the primary input */
 /* verbose, verbose, verbose... */
 #[derive(Copy, Clone)]

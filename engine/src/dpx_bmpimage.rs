@@ -12,8 +12,6 @@ use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 
 extern "C" {
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_ximage_;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -138,7 +136,7 @@ pub struct ximage_info {
     pub xdensity: f64,
     pub ydensity: f64,
 }
-pub type pdf_ximage = pdf_ximage_;
+use crate::dpx_pdfximage::pdf_ximage;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct hdr_info {

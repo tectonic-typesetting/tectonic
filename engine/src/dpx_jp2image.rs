@@ -35,7 +35,6 @@ extern "C" {
     */
     /* Here is the complete list of PDF object types */
     /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_ximage_;
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
@@ -174,7 +173,7 @@ pub struct ximage_info {
     pub xdensity: f64,
     pub ydensity: f64,
 }
-pub type pdf_ximage = pdf_ximage_;
+use crate::dpx_pdfximage::pdf_ximage;
 /* Label */
 unsafe extern "C" fn read_box_hdr(
     mut fp: *mut FILE,
