@@ -7,8 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     pub type CIDFont;
     #[no_mangle]
     fn pdf_add_stream(

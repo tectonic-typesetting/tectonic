@@ -6,8 +6,8 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     pub type Type0Font;
     pub type otl_gsub;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API

@@ -7,8 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]

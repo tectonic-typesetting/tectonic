@@ -8,9 +8,8 @@
 
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]

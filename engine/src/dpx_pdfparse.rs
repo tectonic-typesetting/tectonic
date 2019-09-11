@@ -6,9 +6,8 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 extern "C" {
-    pub type pdf_obj;
-    pub type pdf_file;
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]

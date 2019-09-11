@@ -661,7 +661,7 @@ unsafe extern "C" fn spc_handler_xtx_unsupported(
     (*args).curptr = (*args).endptr;
     0i32
 }
-static mut xtx_handlers: [spc_handler; 21] = unsafe {
+static mut xtx_handlers: [spc_handler; 21] = {
     [
         {
             let mut init = spc_handler {

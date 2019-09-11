@@ -8,9 +8,8 @@
 
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 extern "C" {
-    pub type pdf_file;
-    pub type pdf_obj;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]

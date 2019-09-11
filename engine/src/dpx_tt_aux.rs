@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -30,8 +31,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     /* Here is the complete list of PDF object types */
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]

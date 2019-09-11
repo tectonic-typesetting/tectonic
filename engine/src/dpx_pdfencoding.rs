@@ -7,9 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 extern "C" {
-    pub type pdf_obj;
-    pub type pdf_file;
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]

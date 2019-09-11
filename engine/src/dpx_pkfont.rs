@@ -7,11 +7,11 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
     pub type _IO_marker;
-    pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
     fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> i32;

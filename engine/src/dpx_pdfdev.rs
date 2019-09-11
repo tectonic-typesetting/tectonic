@@ -6,9 +6,9 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 extern "C" {
-    pub type pdf_obj;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]

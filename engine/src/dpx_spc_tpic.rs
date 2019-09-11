@@ -8,8 +8,8 @@
 
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_concat;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
@@ -1106,7 +1106,7 @@ unsafe extern "C" fn spc_handler_tpic__setopts(mut spe: *mut spc_env, mut ap: *m
     error
 }
 /* DEBUG */
-static mut tpic_handlers: [spc_handler; 13] = unsafe {
+static mut tpic_handlers: [spc_handler; 13] = {
     [
         {
             let mut init = spc_handler {

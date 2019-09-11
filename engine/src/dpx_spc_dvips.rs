@@ -6,7 +6,7 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
-
+use crate::dpx_pdfobj::pdf_obj;
 use super::dpx_pdfdraw::pdf_dev_concat;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -31,8 +31,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     /* Here is the complete list of PDF object types */
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
@@ -664,7 +662,7 @@ unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mu
     pdf_dev_grestore();
     error
 }
-static mut dvips_handlers: [spc_handler; 10] = unsafe {
+static mut dvips_handlers: [spc_handler; 10] = {
     [
         {
             let mut init = spc_handler {

@@ -8,9 +8,8 @@
 extern crate libc;
 use super::dpx_pdfdev::pdf_sprint_matrix;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 extern "C" {
-    pub type pdf_obj;
-    pub type pdf_file;
     #[no_mangle]
     fn spc_clear_objects();
     #[no_mangle]
@@ -2822,7 +2821,7 @@ unsafe extern "C" fn spc_handler_pdfm_tounicode(
     free(cmap_name as *mut libc::c_void);
     0i32
 }
-static mut pdfm_handlers: [spc_handler; 80] = unsafe {
+static mut pdfm_handlers: [spc_handler; 80] = {
     [
         {
             let mut init = spc_handler {

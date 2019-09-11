@@ -6,8 +6,8 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]

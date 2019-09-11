@@ -7,8 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
@@ -271,7 +271,7 @@ unsafe extern "C" fn spc_handler_null(mut spe: *mut spc_env, mut args: *mut spc_
     (*args).curptr = (*args).endptr;
     0i32
 }
-static mut misc_handlers: [spc_handler; 6] = unsafe {
+static mut misc_handlers: [spc_handler; 6] = {
     [
         {
             let mut init = spc_handler {

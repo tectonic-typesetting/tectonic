@@ -1,8 +1,8 @@
 use libpng_sys::ffi::*;
 use std::convert::TryInto;
 
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     pub type pdf_ximage_;
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);

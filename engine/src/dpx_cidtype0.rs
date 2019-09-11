@@ -7,8 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     pub type Type0Font;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

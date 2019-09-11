@@ -7,8 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
     fn pdf_font_set_subtype(font: *mut pdf_font, subtype: i32) -> i32;
