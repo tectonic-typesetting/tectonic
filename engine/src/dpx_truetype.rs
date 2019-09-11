@@ -1,10 +1,12 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
@@ -353,7 +355,7 @@ pub struct tt_cmap {
  */
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed {
+pub struct NameTable {
     pub name: *const i8,
     pub must_exist: i32,
 }
@@ -650,97 +652,84 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     );
     0i32
 }
-static mut required_table: [C2RustUnnamed; 13] = [
+static mut required_table: [NameTable; 13] = [
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"OS/2\x00" as *const u8 as *const i8,
             must_exist: 0i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"head\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"hhea\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"loca\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"maxp\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"name\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"glyf\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"hmtx\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"fpgm\x00" as *const u8 as *const i8,
             must_exist: 0i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"cvt \x00" as *const u8 as *const i8,
             must_exist: 0i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"prep\x00" as *const u8 as *const i8,
             must_exist: 0i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: b"cmap\x00" as *const u8 as *const i8,
             must_exist: 1i32,
-        };
-        init
+        }
     },
     {
-        let mut init = C2RustUnnamed {
+        NameTable {
             name: 0 as *const i8,
             must_exist: 0i32,
-        };
-        init
+        }
     },
 ];
 unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut f64) {
