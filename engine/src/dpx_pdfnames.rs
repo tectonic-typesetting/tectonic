@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -290,7 +292,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
     let mut value: *mut obj_data = 0 as *mut obj_data;
     assert!(!names.is_null() && !object.is_null());
     if key.is_null() || keylen < 1i32 {
-        dpx_warning(b"Null string used for name tree key.\x00" as *const u8 as *const i8);
+        warn!("Null string used for name tree key.");
         return -1i32;
     }
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;

@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
@@ -86,8 +88,6 @@ extern "C" {
     fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn pdf_doc_get_page(
         pf: *mut pdf_file,
@@ -320,7 +320,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     trailer = pdf_file_get_trailer(pf);
     if !pdf_lookup_dict(trailer, b"Encrypt\x00" as *const u8 as *const i8).is_null() {
-        dpx_warning(b"This PDF document is encrypted.\x00" as *const u8 as *const i8);
+        warn!("This PDF document is encrypted.");
         pdf_release_obj(trailer);
         return 0 as *mut pdf_obj;
     }
@@ -329,7 +329,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         b"Root\x00" as *const u8 as *const i8,
     ));
     if !(!catalog.is_null() && pdf_obj_typeof(catalog) == 6i32) {
-        dpx_warning(b"Can\'t read document catalog.\x00" as *const u8 as *const i8);
+        warn!("Can\'t read document catalog.");
         pdf_release_obj(trailer);
         pdf_release_obj(catalog);
         return 0 as *mut pdf_obj;
@@ -342,7 +342,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     if !markinfo.is_null() {
         tmp = pdf_lookup_dict(markinfo, b"Marked\x00" as *const u8 as *const i8);
         if !tmp.is_null() && pdf_obj_typeof(tmp) == 1i32 && pdf_boolean_value(tmp) as i32 != 0 {
-            dpx_warning(b"PDF file is tagged... Ignoring tags.\x00" as *const u8 as *const i8);
+            warn!("PDF file is tagged... Ignoring tags.");
         }
         pdf_release_obj(markinfo);
     }
@@ -352,7 +352,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     ));
     pdf_release_obj(catalog);
     if page_tree.is_null() {
-        dpx_warning(b"Page tree not found.\x00" as *const u8 as *const i8);
+        warn!("Page tree not found.");
         return 0 as *mut pdf_obj;
     }
     /*
@@ -364,10 +364,7 @@ unsafe extern "C" fn pdf_get_page_obj(
     )) as i32;
     page_idx = page_no + (if page_no >= 0i32 { -1i32 } else { count });
     if page_idx < 0i32 || page_idx >= count {
-        dpx_warning(
-            b"Page %d does not exist.\x00" as *const u8 as *const i8,
-            page_no,
-        );
+        warn!("Page {} does not exist.", page_no);
         pdf_release_obj(page_tree);
         return 0 as *mut pdf_obj;
     }
@@ -488,10 +485,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         }
         pdf_release_obj(kids);
         if i == kids_length {
-            dpx_warning(
-                b"Page %d not found! Broken PDF file?\x00" as *const u8 as *const i8,
-                page_no,
-            );
+            warn!("Page {} not found! Broken PDF file?", page_no);
             pdf_release_obj(bbox);
             pdf_release_obj(crop_box);
             pdf_release_obj(rotate);
@@ -505,7 +499,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         bbox = crop_box
     }
     if bbox.is_null() {
-        dpx_warning(b"No BoundingBox information available.\x00" as *const u8 as *const i8);
+        warn!("No BoundingBox information available.");
         pdf_release_obj(page_tree);
         pdf_release_obj(resources);
         pdf_release_obj(rotate);
@@ -552,20 +546,14 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
             }
             if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == 8i32) {
                 if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == 7i32) {
-                    dpx_warning(
-                        b"Page content not a stream object. Broken PDF file?\x00" as *const u8
-                            as *const i8,
-                    );
+                    warn!("Page content not a stream object. Broken PDF file?");
                     pdf_release_obj(content_seg);
                     pdf_release_obj(content_new);
                     pdf_release_obj(contents);
                     return 0 as *mut pdf_obj;
                 } else {
                     if pdf_concat_stream(content_new, content_seg) < 0i32 {
-                        dpx_warning(
-                            b"Could not handle content stream with multiple segments.\x00"
-                                as *const u8 as *const i8,
-                        );
+                        warn!("Could not handle content stream with multiple segments.");
                         pdf_release_obj(content_seg);
                         pdf_release_obj(content_new);
                         pdf_release_obj(contents);
@@ -580,16 +568,14 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
         contents = content_new
     } else {
         if !(!contents.is_null() && pdf_obj_typeof(contents) == 7i32) {
-            dpx_warning(
-                b"Page content not a stream object. Broken PDF file?\x00" as *const u8 as *const i8,
-            );
+            warn!("Page content not a stream object. Broken PDF file?");
             pdf_release_obj(contents);
             return 0 as *mut pdf_obj;
         }
         /* Flate the contents if necessary. */
         content_new = pdf_new_stream(1i32 << 0i32);
         if pdf_concat_stream(content_new, contents) < 0i32 {
-            dpx_warning(b"Could not handle a content stream.\x00" as *const u8 as *const i8);
+            warn!("Could not handle a content stream.");
             pdf_release_obj(contents);
             pdf_release_obj(content_new);
             return 0 as *mut pdf_obj;
@@ -636,10 +622,9 @@ pub unsafe extern "C" fn pdf_include_page(
         return -1i32;
     }
     if pdf_file_get_version(pf) > pdf_get_version() {
-        dpx_warning(
-            b"Trying to include PDF file which has newer version number than output PDF: 1.%d.\x00"
-                as *const u8 as *const i8,
-            pdf_get_version(),
+        warn!(
+            "Trying to include PDF file which has newer version number than output PDF: 1.{}.",
+            pdf_get_version()
         );
     }
     pdf_ximage_init_form_info(&mut info);
@@ -671,9 +656,7 @@ pub unsafe extern "C" fn pdf_include_page(
                 current_block = 3699483483911207084;
             } else {
                 if pdf_boolean_value(tmp) != 0 {
-                    dpx_warning(
-                        b"PDF file is tagged... Ignoring tags.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("PDF file is tagged... Ignoring tags.");
                 }
                 pdf_release_obj(tmp);
                 current_block = 1109700713171191020;
@@ -804,7 +787,7 @@ pub unsafe extern "C" fn pdf_include_page(
             }
             _ => {}
         }
-        dpx_warning(b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const i8);
+        warn!("Cannot parse document. Broken PDF file?");
     }
     pdf_release_obj(resources);
     pdf_release_obj(markinfo);

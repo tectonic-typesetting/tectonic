@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -758,7 +760,7 @@ unsafe extern "C" fn do_widths(mut font: *mut pdf_font, mut widths: *mut f64) {
         code += 1
     }
     if firstchar > lastchar {
-        dpx_warning(b"No glyphs actually used???\x00" as *const u8 as *const i8);
+        warn!("No glyphs actually used???");
         pdf_release_obj(tmparray);
         return;
     }
@@ -825,9 +827,7 @@ unsafe extern "C" fn do_builtin_encoding(
     let mut widths: [f64; 256] = [0.; 256];
     ttcm = tt_cmap_read(sfont, 1_u16, 0_u16);
     if ttcm.is_null() {
-        dpx_warning(
-            b"Could not read Mac-Roman TrueType cmap table...\x00" as *const u8 as *const i8,
-        );
+        warn!("Could not read Mac-Roman TrueType cmap table...");
         return -1i32;
     }
     cmap_table = new((274_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
@@ -850,7 +850,7 @@ unsafe extern "C" fn do_builtin_encoding(
     /* Language */
     glyphs = tt_build_init(); /* .notdef */
     if verbose > 2i32 {
-        dpx_message(b"[glyphs:/.notdef\x00" as *const u8 as *const i8);
+        info!("[glyphs:/.notdef");
     }
     count = 1i32;
     code = 0i32;
@@ -882,10 +882,10 @@ unsafe extern "C" fn do_builtin_encoding(
     }
     tt_cmap_release(ttcm);
     if verbose > 2i32 {
-        dpx_message(b"]\x00" as *const u8 as *const i8);
+        info!("]");
     }
     if tt_build_tables(sfont, glyphs) < 0i32 {
-        dpx_warning(b"Packing TrueType font into SFNT failed!\x00" as *const u8 as *const i8);
+        warn!("Packing TrueType font into SFNT failed!");
         tt_build_finish(glyphs);
         free(cmap_table as *mut libc::c_void);
         return -1i32;
@@ -908,10 +908,7 @@ unsafe extern "C" fn do_builtin_encoding(
     }
     do_widths(font, widths.as_mut_ptr());
     if verbose > 1i32 {
-        dpx_message(
-            b"[%d glyphs]\x00" as *const u8 as *const i8,
-            (*glyphs).num_glyphs as i32,
-        );
+        info!("[{} glyphs]", (*glyphs).num_glyphs as i32);
     }
     tt_build_finish(glyphs);
     sfnt_set_table(
@@ -1264,9 +1261,7 @@ unsafe extern "C" fn findparanoiac(
                     (*agln).suffix,
                     (*agln).name,
                 );
-                dpx_warning(
-                    b"Using glyph name without suffix instead...\x00" as *const u8 as *const i8,
-                );
+                warn!("Using glyph name without suffix instead...");
                 error = 0i32
                 /* ignore */
             }
@@ -1289,7 +1284,7 @@ unsafe extern "C" fn findparanoiac(
             );
             if verbose >= 0i32 {
                 if error != 0 {
-                    dpx_warning(b"Not found...\x00" as *const u8 as *const i8);
+                    warn!("Not found...");
                 } else {
                     let mut _i: i32 = 0;
                     let mut _n: i32 = 0i32;
@@ -1394,9 +1389,7 @@ unsafe extern "C" fn resolve_glyph(
                 suffix,
                 name,
             );
-            dpx_warning(
-                b"Using glyph name without suffix instead...\x00" as *const u8 as *const i8,
-            );
+            warn!("Using glyph name without suffix instead...");
             error = 0i32
             /* ignore */
         }
@@ -1465,7 +1458,7 @@ unsafe extern "C" fn do_custom_encoding(
             b"No post table nor Unicode cmap found in font: %s\x00" as *const u8 as *const i8,
             pdf_font_get_ident(font),
         );
-        dpx_warning(b">> I can\'t find glyphs without this!\x00" as *const u8 as *const i8);
+        warn!(">> I can\'t find glyphs without this!");
         return -1i32;
     }
     cmap_table = new((274_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
@@ -1501,9 +1494,7 @@ unsafe extern "C" fn do_custom_encoding(
                 dpx_warning(b"Character code=\"0x%02X\" mapped to \".notdef\" glyph used in font font-file=\"%s\"\x00"
                                 as *const u8 as *const i8, code,
                             pdf_font_get_ident(font));
-                dpx_warning(
-                    b">> Maybe incorrect encoding specified?\x00" as *const u8 as *const i8,
-                );
+                warn!(">> Maybe incorrect encoding specified?");
                 idx = 0_u16
             } else {
                 if !strchr(*encoding.offset(code as isize), '_' as i32).is_null() {
@@ -1542,7 +1533,7 @@ unsafe extern "C" fn do_custom_encoding(
     } /* _FIXME_: wrong message */
     clean_glyph_mapper(&mut gm);
     if tt_build_tables(sfont, glyphs) < 0i32 {
-        dpx_warning(b"Packing TrueType font into SFNT file faild...\x00" as *const u8 as *const i8);
+        warn!("Packing TrueType font into SFNT file faild...");
         tt_build_finish(glyphs);
         free(cmap_table as *mut libc::c_void);
         return -1i32;
@@ -1565,10 +1556,7 @@ unsafe extern "C" fn do_custom_encoding(
     }
     do_widths(font, widths.as_mut_ptr());
     if verbose > 1i32 {
-        dpx_message(
-            b"[%d glyphs]\x00" as *const u8 as *const i8,
-            (*glyphs).num_glyphs as i32,
-        );
+        info!("[{} glyphs]", (*glyphs).num_glyphs as i32);
     }
     tt_build_finish(glyphs);
     sfnt_set_table(
@@ -1725,10 +1713,7 @@ pub unsafe extern "C" fn pdf_font_load_truetype(mut font: *mut pdf_font) -> i32 
     sfnt_close(sfont);
     ttstub_input_close(handle as rust_input_handle_t);
     if verbose > 1i32 {
-        dpx_message(
-            b"[%d bytes]\x00" as *const u8 as *const i8,
-            pdf_stream_length(fontfile),
-        );
+        info!("[{} bytes]", pdf_stream_length(fontfile));
     }
     pdf_add_dict(
         descriptor,

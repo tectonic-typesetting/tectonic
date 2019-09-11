@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -185,10 +187,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
                 We show a warning only once, instead of thousands of times */
                 static mut warning_issued: i8 = 0_i8;
                 if warning_issued == 0 {
-                    dpx_warning(
-                        b"TrueType post table name index %u > 32767\x00" as *const u8 as *const i8,
-                        idx as i32,
-                    );
+                    warn!("TrueType post table name index {} > 32767", idx as i32);
                     warning_issued = 1_i8
                 }
                 /* In a real-life large font, (x)dvipdfmx crashes if we use
@@ -281,12 +280,10 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
         (*post).numberOfGlyphs = 258_u16;
         (*post).glyphNamePtr = macglyphorder.as_mut_ptr()
     } else if (*post).Version as u64 == 0x28000 {
-        dpx_warning(
-            b"TrueType \'post\' version 2.5 found (deprecated)\x00" as *const u8 as *const i8,
-        );
+        warn!("TrueType \'post\' version 2.5 found (deprecated)");
     } else if (*post).Version as u64 == 0x20000 {
         if read_v2_post_names(post, sfont) < 0i32 {
-            dpx_warning(b"Invalid version 2.0 \'post\' table\x00" as *const u8 as *const i8);
+            warn!("Invalid version 2.0 \'post\' table");
             tt_release_post_table(post);
             post = 0 as *mut tt_post_table
         }

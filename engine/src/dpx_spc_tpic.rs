@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::warn;
+
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color};
@@ -833,10 +835,7 @@ unsafe extern "C" fn spc_handler_tpic_sh(mut spe: *mut spc_env, mut ap: *mut spc
         if g >= 0.0f64 && g <= 1.0f64 {
             (*tp).fill_color = g
         } else {
-            dpx_warning(
-                b"Invalid fill color specified: %g\n\x00" as *const u8 as *const i8,
-                g,
-            );
+            warn!("Invalid fill color specified: {}\n", g);
             return -1i32;
         }
     }
@@ -1013,9 +1012,7 @@ unsafe extern "C" fn tpic_filter_getopts(
     k = pdf_name_value(kp);
     if streq_ptr(k, b"fill-mode\x00" as *const u8 as *const i8) {
         if pdf_obj_typeof(vp) != 3i32 {
-            dpx_warning(
-                b"Invalid value for TPIC option fill-mode...\x00" as *const u8 as *const i8,
-            );
+            warn!("Invalid value for TPIC option fill-mode...");
             error = -1i32
         } else {
             v = pdf_string_value(vp) as *mut i8;

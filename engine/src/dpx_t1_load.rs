@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -1432,7 +1434,7 @@ unsafe extern "C" fn parse_encoding(
             tok = 0 as *mut pst_obj
         }
         if !enc_vec.is_null() {
-            dpx_warning(b"ExpertEncoding not supported.\x00" as *const u8 as *const i8);
+            warn!("ExpertEncoding not supported.");
             if !tok.is_null() {
                 pst_release_obj(tok);
                 tok = 0 as *mut pst_obj
@@ -1508,8 +1510,7 @@ unsafe extern "C" fn parse_encoding(
                 {
                     /* possibly putinterval type */
                     if enc_vec.is_null() {
-                        dpx_warning(b"This kind of type1 fonts are not supported as native fonts.\n                   They are supported if used with tfm fonts.\n\x00"
-                                        as *const u8 as *const i8);
+                        warn!("This kind of type1 fonts are not supported as native fonts.\n                   They are supported if used with tfm fonts.\n");
                     } else {
                         try_put_or_putinterval(enc_vec, start, end);
                     }
@@ -1595,7 +1596,7 @@ unsafe extern "C" fn parse_subrs(
     let mut data: *mut card8 = 0 as *mut card8;
     tok = pst_get_token(start, end);
     if !(pst_type_of(tok) == 2i32) || pst_getIV(tok) < 0i32 {
-        dpx_warning(b"Parsing Subrs failed.\x00" as *const u8 as *const i8);
+        warn!("Parsing Subrs failed.");
         if !tok.is_null() {
             pst_release_obj(tok);
             tok = 0 as *mut pst_obj
@@ -1838,10 +1839,7 @@ unsafe extern "C" fn parse_subrs(
             /* Adobe's OPO_____.PFB and OPBO____.PFB have two /Subrs dicts,
              * and also have /CharStrings not followed by dicts.
              * Simply ignores those data. By ChoF on 2009/04/08. */
-            dpx_warning(
-                b"Already found /Subrs; ignores the other /Subrs dicts.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("Already found /Subrs; ignores the other /Subrs dicts.");
         }
         free(data as *mut libc::c_void);
         free(offsets as *mut libc::c_void);
@@ -1950,7 +1948,7 @@ unsafe extern "C" fn parse_charstrings(
                 } else if have_notdef != 0 {
                     gid = i
                 } else if i == count - 1i32 {
-                    dpx_warning(b"No .notdef glyph???\x00" as *const u8 as *const i8);
+                    warn!("No .notdef glyph???");
                     return -1i32;
                 } else {
                     gid = i + 1i32
@@ -2316,10 +2314,7 @@ unsafe extern "C" fn parse_part1(
                 return -1i32;
             }
             if argv[0] != 1.0f64 {
-                dpx_warning(
-                    b"FontType %d not supported.\x00" as *const u8 as *const i8,
-                    argv[0] as i32,
-                );
+                warn!("FontType {} not supported.", argv[0] as i32);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2515,7 +2510,7 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
         );
         return true;
     }
-    dpx_warning(b"Not a PFB font file?\x00" as *const u8 as *const i8);
+    warn!("Not a PFB font file?");
     false
 }
 unsafe extern "C" fn get_pfb_segment(

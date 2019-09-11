@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::{info, warn};
+
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color, pdf_dev_transform};
@@ -1407,7 +1410,7 @@ unsafe extern "C" fn handle_multibyte_string(
         /* UCS-4 */
         if ctype == 1i32 {
             if length.wrapping_mul(4i32 as u64) >= 4096i32 as u64 {
-                dpx_warning(b"Too long string...\x00" as *const u8 as *const i8);
+                warn!("Too long string...");
                 return -1i32;
             }
             i = 0i32 as size_t;
@@ -1425,7 +1428,7 @@ unsafe extern "C" fn handle_multibyte_string(
         } else if ctype == 2i32 {
             let mut len: size_t = 0i32 as size_t;
             if length.wrapping_mul(2i32 as u64) >= 4096i32 as u64 {
-                dpx_warning(b"Too long string...\x00" as *const u8 as *const i8);
+                warn!("Too long string...");
                 return -1i32;
             }
             i = 0i32 as size_t;
@@ -1470,7 +1473,7 @@ unsafe extern "C" fn handle_multibyte_string(
          * Translate single-byte chars to double byte code space.
          */
         if length.wrapping_mul(2i32 as u64) >= 4096i32 as u64 {
-            dpx_warning(b"Too long string...\x00" as *const u8 as *const i8);
+            warn!("Too long string...");
             return -1i32;
         }
         i = 0i32 as size_t;
@@ -1777,10 +1780,7 @@ pub unsafe extern "C" fn pdf_init_device(
     mut black_and_white: i32,
 ) {
     if precision < 0i32 || precision > 8i32 {
-        dpx_warning(
-            b"Number of decimal digits out of range [0-%d].\x00" as *const u8 as *const i8,
-            8i32,
-        );
+        warn!("Number of decimal digits out of range [0-{}].", 8i32);
     }
     if precision < 0i32 {
         dev_unit.precision = 0i32
@@ -1872,10 +1872,7 @@ pub unsafe extern "C" fn pdf_dev_eop() {
     graphics_mode();
     depth = pdf_dev_current_depth();
     if depth != 1i32 {
-        dpx_warning(
-            b"Unbalenced q/Q nesting...: %d\x00" as *const u8 as *const i8,
-            depth,
-        );
+        warn!("Unbalenced q/Q nesting...: {}", depth);
         pdf_dev_grestore_to(0i32);
     } else {
         pdf_dev_grestore();
@@ -1885,7 +1882,7 @@ unsafe extern "C" fn print_fontmap(mut font_name: *const i8, mut mrec: *mut font
     if mrec.is_null() {
         return;
     }
-    dpx_message(b"\n\x00" as *const u8 as *const i8);
+    info!("\n");
     dpx_message(
         b"fontmap: %s -> %s\x00" as *const u8 as *const i8,
         font_name,
@@ -1895,22 +1892,16 @@ unsafe extern "C" fn print_fontmap(mut font_name: *const i8, mut mrec: *mut font
         dpx_message(b"(%s)\x00" as *const u8 as *const i8, (*mrec).enc_name);
     }
     if (*mrec).opt.extend != 1.0f64 {
-        dpx_message(
-            b"[extend:%g]\x00" as *const u8 as *const i8,
-            (*mrec).opt.extend,
-        );
+        info!("[extend:{}]", (*mrec).opt.extend);
     }
     if (*mrec).opt.slant != 0.0f64 {
-        dpx_message(
-            b"[slant:%g]\x00" as *const u8 as *const i8,
-            (*mrec).opt.slant,
-        );
+        info!("[slant:{}]", (*mrec).opt.slant);
     }
     if (*mrec).opt.bold != 0.0f64 {
         dpx_message(b"[bold:%g]\x00" as *const u8 as *const i8, (*mrec).opt.bold);
     }
     if (*mrec).opt.flags & 1i32 << 1i32 != 0 {
-        dpx_message(b"[noemb]\x00" as *const u8 as *const i8);
+        info!("[noemb]");
     }
     if (*mrec).opt.mapc >= 0i32 {
         dpx_message(
@@ -1925,24 +1916,21 @@ unsafe extern "C" fn print_fontmap(mut font_name: *const i8, mut mrec: *mut font
         );
     }
     if (*mrec).opt.index != 0 {
-        dpx_message(
-            b"[index:%d]\x00" as *const u8 as *const i8,
-            (*mrec).opt.index,
-        );
+        info!("[index:{}]", (*mrec).opt.index);
     }
     match (*mrec).opt.style {
         1 => {
-            dpx_message(b"[style:bold]\x00" as *const u8 as *const i8);
+            info!("[style:bold]");
         }
         2 => {
-            dpx_message(b"[style:italic]\x00" as *const u8 as *const i8);
+            info!("[style:italic]");
         }
         3 => {
-            dpx_message(b"[style:bolditalic]\x00" as *const u8 as *const i8);
+            info!("[style:bolditalic]");
         }
         _ => {}
     }
-    dpx_message(b"\n\x00" as *const u8 as *const i8);
+    info!("\n");
 }
 /* _FIXME_
  * Font is identified with font_name and point_size as in DVI here.
@@ -2193,7 +2181,7 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
                 height,
                 width_in_bp,
             );
-            dpx_warning(b"Please consider using \"-d\" option.\x00" as *const u8 as *const i8);
+            warn!("Please consider using \"-d\" option.");
         }
         len += dev_sprint_line(
             format_buffer.as_mut_ptr().offset(len as isize),
@@ -2210,7 +2198,7 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
                 width,
                 width_in_bp,
             );
-            dpx_warning(b"Please consider using \"-d\" option.\x00" as *const u8 as *const i8);
+            warn!("Please consider using \"-d\" option.");
         }
         len += dev_sprint_line(
             format_buffer.as_mut_ptr().offset(len as isize),

@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -207,7 +209,7 @@ unsafe extern "C" fn pdf_flush_resource(mut res: *mut pdf_res) {
 unsafe extern "C" fn pdf_clean_resource(mut res: *mut pdf_res) {
     if !res.is_null() {
         if !(*res).reference.is_null() || !(*res).object.is_null() {
-            dpx_warning(b"Trying to release un-flushed object.\x00" as *const u8 as *const i8);
+            warn!("Trying to release un-flushed object.");
         }
         pdf_release_obj((*res).reference);
         pdf_release_obj((*res).object);

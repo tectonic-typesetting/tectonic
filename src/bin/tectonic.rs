@@ -237,6 +237,8 @@ fn main() {
              .index(1))
         .get_matches ();
 
+    //env_logger::init();
+
     let chatter = match matches.value_of("chatter_level").unwrap() {
         "default" => ChatterLevel::Normal,
         "minimal" => ChatterLevel::Minimal,

@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
@@ -764,10 +766,7 @@ pub unsafe extern "C" fn CIDFont_attach_parent(
         );
     }
     if (*font).parent[wmode as usize] >= 0i32 {
-        dpx_warning(
-            b"%s: CIDFont already have a parent Type1 font.\x00" as *const u8 as *const i8,
-            b"CIDFont\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: CIDFont already have a parent Type1 font.", "CIDFont");
     }
     (*font).parent[wmode as usize] = parent_id;
 }
@@ -839,7 +838,7 @@ unsafe extern "C" fn CIDFont_dofont(mut font: *mut CIDFont) {
     match (*font).subtype {
         1 => {
             if __verbose != 0 {
-                dpx_message(b"[CIDFontType0]\x00" as *const u8 as *const i8);
+                info!("[CIDFontType0]");
             }
             if CIDFont_get_flag(font, 1i32 << 8i32) != 0 {
                 CIDFont_type0_t1dofont(font);
@@ -851,7 +850,7 @@ unsafe extern "C" fn CIDFont_dofont(mut font: *mut CIDFont) {
         }
         2 => {
             if __verbose != 0 {
-                dpx_message(b"[CIDFontType2]\x00" as *const u8 as *const i8);
+                info!("[CIDFontType2]");
             }
             CIDFont_type2_dofont(font);
         }
@@ -1238,10 +1237,7 @@ unsafe extern "C" fn CIDFont_base_open(
                         as *const i8,
                     fontname,
                 );
-                dpx_warning(
-                    b"Some chracters may not be displayed or printed.\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("Some chracters may not be displayed or printed.");
             }
         }
     }
@@ -1489,14 +1485,14 @@ pub unsafe extern "C" fn CIDFont_cache_close() {
             let mut font: *mut CIDFont = 0 as *mut CIDFont;
             font = *(*__cache).fonts.offset(font_id as isize);
             if __verbose != 0 {
-                dpx_message(b"(CID\x00" as *const u8 as *const i8);
+                info!("(CID");
             }
             CIDFont_dofont(font);
             CIDFont_flush(font);
             CIDFont_release(font);
             free(font as *mut libc::c_void);
             if __verbose != 0 {
-                dpx_message(b")\x00" as *const u8 as *const i8);
+                info!(")");
             }
             font_id += 1
         }

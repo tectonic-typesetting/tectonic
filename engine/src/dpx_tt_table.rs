@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::warn;
+
 extern crate libc;
 extern "C" {
     /* The internal, C/C++ interface: */
@@ -851,7 +854,7 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
     {
         return namelen;
     }
-    dpx_warning(b"No valid PostScript name available\x00" as *const u8 as *const i8);
+    warn!("No valid PostScript name available");
     /*
       Workaround for some bad TTfonts:
       Language ID value 0xffffu for `accept any language ID'

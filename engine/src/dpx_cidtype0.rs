@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -1987,11 +1989,9 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
     destlen = write_fontfile(font, cffont);
     CIDFontInfo_close(&mut info);
     if verbose > 1i32 {
-        dpx_message(
-            b"[%u/%u glyphs][%d bytes]\x00" as *const u8 as *const i8,
-            num_glyphs as i32,
-            cs_count as i32,
-            destlen,
+        info!(
+            "[{}/{} glyphs][{} bytes]",
+            num_glyphs as i32, cs_count as i32, destlen,
         );
     }
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
@@ -2130,7 +2130,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         if strcmp((*csi).registry, (*cmap_csi).registry) != 0i32
             || strcmp((*csi).ordering, (*cmap_csi).ordering) != 0i32
         {
-            dpx_message(b"\nCharacter collection mismatched:\n\x00" as *const u8 as *const i8);
+            info!("\nCharacter collection mismatched:\n");
             dpx_message(
                 b"\tFont: %s-%s-%d\n\x00" as *const u8 as *const i8,
                 (*csi).registry,
@@ -2146,10 +2146,8 @@ pub unsafe extern "C" fn CIDFont_type0_open(
             _tt_abort(b"Inconsistent CMap specified for this font.\x00" as *const u8 as *const i8);
         }
         if (*csi).supplement < (*cmap_csi).supplement {
-            dpx_warning(b"CMap have higher supplmement number.\x00" as *const u8 as *const i8);
-            dpx_warning(
-                b"Some characters may not be displayed or printed.\x00" as *const u8 as *const i8,
-            );
+            warn!("CMap have higher supplmement number.");
+            warn!("Some characters may not be displayed or printed.");
         }
     }
     let mut shortname: *mut i8 = 0 as *mut i8;
@@ -2199,10 +2197,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         }
     } else if expect_type1_font != 0 {
         if (*opt).style != 0i32 {
-            dpx_warning(
-                b",Bold, ,Italic, ... not supported for this type of font...\x00" as *const u8
-                    as *const i8,
-            );
+            warn!(",Bold, ,Italic, ... not supported for this type of font...");
             (*opt).style = 0i32
         }
     } else {
@@ -2667,11 +2662,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
     free(CIDToGIDMap as *mut libc::c_void);
     CIDFontInfo_close(&mut info);
     if verbose > 1i32 {
-        dpx_message(
-            b"[%u glyphs][%d bytes]\x00" as *const u8 as *const i8,
-            num_glyphs as i32,
-            destlen,
-        );
+        info!("[{} glyphs][{} bytes]", num_glyphs as i32, destlen);
     }
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
 }
@@ -2813,9 +2804,7 @@ pub unsafe extern "C" fn t1_load_UnicodeCMap(
         );
     }
     if !otl_tags.is_null() {
-        dpx_warning(
-            b"Glyph substitution not supported for Type1 font yet...\x00" as *const u8 as *const i8,
-        );
+        warn!("Glyph substitution not supported for Type1 font yet...");
     }
     cmap_id
 }

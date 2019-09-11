@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -854,9 +857,7 @@ unsafe extern "C" fn find_tocode_cmap(
             reg,
             ord,
         );
-        dpx_warning(
-            b"I tried to load (one of) the following file(s):\x00" as *const u8 as *const i8,
-        );
+        warn!("I tried to load (one of) the following file(s):");
         i = 0i32;
         while i < 5i32 {
             append = known_encodings[select as usize].pdfnames[i as usize];
@@ -866,7 +867,7 @@ unsafe extern "C" fn find_tocode_cmap(
             dpx_message(b" %s-%s-%s\x00" as *const u8 as *const i8, reg, ord, append);
             i += 1
         }
-        dpx_warning(b"Please check if this file exists.\x00" as *const u8 as *const i8);
+        warn!("Please check if this file exists.");
         _tt_abort(b"Cannot continue...\x00" as *const u8 as *const i8);
     }
     CMap_cache_get(cmap_id)
@@ -1542,7 +1543,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     sfont,
                 ) < 0i32
                 {
-                    dpx_warning(b"GSUB feature vrt2/vert not found.\x00" as *const u8 as *const i8);
+                    warn!("GSUB feature vrt2/vert not found.");
                     otl_gsub_release(gsub_list);
                     gsub_list = 0 as *mut otl_gsub
                 } else {
@@ -1642,10 +1643,10 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
             _tt_abort(b"Could not created FontFile stream.\x00" as *const u8 as *const i8);
         }
         if verbose > 1i32 {
-            dpx_message(
-                b"[%u glyphs (Max CID: %u)]\x00" as *const u8 as *const i8,
+            info!(
+                "[{} glyphs (Max CID: {})]",
                 (*glyphs).num_glyphs as i32,
-                last_cid as i32,
+                last_cid as i32
             );
         }
     } else if tt_get_metrics(sfont, glyphs) < 0i32 {
@@ -1707,10 +1708,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         );
     }
     if verbose > 1i32 {
-        dpx_message(
-            b"[%d bytes]\x00" as *const u8 as *const i8,
-            pdf_stream_length(fontfile),
-        );
+        info!("[{} bytes]", pdf_stream_length(fontfile));
     }
     pdf_add_dict(
         (*font).descriptor,
@@ -1892,9 +1890,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
             if strcmp((*(*opt).csi).registry, (*cmap_csi).registry) != 0
                 || strcmp((*(*opt).csi).ordering, (*cmap_csi).ordering) != 0
             {
-                dpx_warning(
-                    b"CID character collection mismatched:\n\x00" as *const u8 as *const i8,
-                );
+                warn!("CID character collection mismatched:\n");
                 dpx_message(
                     b"\tFont: %s-%s-%d\n\x00" as *const u8 as *const i8,
                     (*(*opt).csi).registry,
@@ -1912,10 +1908,8 @@ pub unsafe extern "C" fn CIDFont_type2_open(
                 );
             }
             if (*(*opt).csi).supplement < (*cmap_csi).supplement {
-                dpx_warning(
-                    b"Supplmement value in CIDSystemInfo increased.\x00" as *const u8 as *const i8,
-                );
-                dpx_warning(b"Some characters may not shown.\x00" as *const u8 as *const i8);
+                warn!("Supplmement value in CIDSystemInfo increased.");
+                warn!("Some characters may not shown.");
                 (*(*opt).csi).supplement = (*cmap_csi).supplement
             }
         }

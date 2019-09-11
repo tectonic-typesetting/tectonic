@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -272,10 +274,9 @@ unsafe extern "C" fn readline(
         p = buf.offset(n as isize)
     }
     if n >= buf_len - 1i32 {
-        dpx_warning(
-            b"Possible buffer overflow in reading SFD file (buffer full, size=%d bytes)\x00"
-                as *const u8 as *const i8,
-            buf_len - 1i32,
+        warn!(
+            "Possible buffer overflow in reading SFD file (buffer full, size={} bytes)",
+            buf_len - 1i32
         );
     }
     if c > 0i32 {
@@ -323,10 +324,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
         match *q as i32 {
             58 => {
                 if v1 < 0i32 || v1 > 0xffi32 {
-                    dpx_warning(
-                        b"Invalud value for subfont table offset: %d\x00" as *const u8 as *const i8,
-                        v1,
-                    );
+                    warn!("Invalud value for subfont table offset: {}", v1);
                     return -1i32;
                 }
                 repos = 1i32;
@@ -677,12 +675,12 @@ pub unsafe extern "C" fn sfd_load_record(
     if verbose > 3i32 {
         let mut __i_0: i32 = 0;
         if rec_id >= 0i32 {
-            dpx_message(b" at id=\"%d\"\x00" as *const u8 as *const i8, rec_id);
-            dpx_message(b"\nsubfont>> Content of mapping table:\x00" as *const u8 as *const i8);
+            info!(" at id=\"{}\"", rec_id);
+            info!("\nsubfont>> Content of mapping table:");
             __i_0 = 0i32;
             while __i_0 < 256i32 {
                 if __i_0 % 16i32 == 0i32 {
-                    dpx_message(b"\nsubfont>>  \x00" as *const u8 as *const i8);
+                    info!("\nsubfont>>  ");
                 }
                 dpx_message(
                     b" %04x\x00" as *const u8 as *const i8,
@@ -691,7 +689,7 @@ pub unsafe extern "C" fn sfd_load_record(
                 __i_0 += 1
             }
         }
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
     }
     rec_id
 }

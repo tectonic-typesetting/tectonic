@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white, pdf_color_set_verbose,
@@ -814,7 +816,7 @@ unsafe extern "C" fn pdf_doc_close_catalog(mut p: *mut pdf_doc) {
             );
         } else {
             /* What should I do? */
-            dpx_warning(b"Could not modify ViewerPreferences.\x00" as *const u8 as *const i8);
+            warn!("Could not modify ViewerPreferences.");
             /* Maybe reference */
         }
         pdf_release_obj((*p).root.viewerpref);
@@ -837,7 +839,7 @@ unsafe extern "C" fn pdf_doc_close_catalog(mut p: *mut pdf_doc) {
             pdf_release_obj(tmp);
         } else {
             /* What should I do? */
-            dpx_warning(b"Could not modify PageLabels.\x00" as *const u8 as *const i8);
+            warn!("Could not modify PageLabels.");
         }
         pdf_release_obj((*p).root.pagelabels);
         (*p).root.pagelabels = 0 as *mut pdf_obj
@@ -1156,7 +1158,7 @@ pub unsafe extern "C" fn pdf_doc_add_page_resource(
     let mut resources: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut duplicate: *mut pdf_obj = 0 as *mut pdf_obj;
     if !(!resource_ref.is_null() && pdf_obj_typeof(resource_ref) == 9i32) {
-        dpx_warning(b"Passed non indirect reference...\x00" as *const u8 as *const i8);
+        warn!("Passed non indirect reference...");
         resource_ref = pdf_ref_obj(resource_ref)
         /* leak */
     }
@@ -1170,7 +1172,7 @@ pub unsafe extern "C" fn pdf_doc_add_page_resource(
             category,
             resource_name,
         );
-        dpx_warning(b"Ignoring...\x00" as *const u8 as *const i8);
+        warn!("Ignoring...");
         pdf_release_obj(resource_ref);
     } else {
         pdf_add_dict(resources, pdf_new_name(resource_name), resource_ref);
@@ -1253,7 +1255,7 @@ unsafe extern "C" fn doc_flush_page(
         count = count.wrapping_add(1)
     }
     if count == 0_u32 {
-        dpx_warning(b"Page with empty content found!!!\x00" as *const u8 as *const i8);
+        warn!("Page with empty content found!!!");
     }
     (*page).content_refs[0] = 0 as *mut pdf_obj;
     (*page).content_refs[1] = 0 as *mut pdf_obj;
@@ -1409,34 +1411,22 @@ unsafe extern "C" fn pdf_doc_close_page_tree(mut p: *mut pdf_doc) {
         let mut page: *mut pdf_page = 0 as *mut pdf_page;
         page = doc_get_page_entry(p, page_no);
         if !(*page).page_obj.is_null() {
-            dpx_warning(
-                b"Nonexistent page #%u refered.\x00" as *const u8 as *const i8,
-                page_no,
-            );
+            warn!("Nonexistent page #{} refered.", page_no);
             pdf_release_obj((*page).page_ref);
             (*page).page_ref = 0 as *mut pdf_obj
         }
         if !(*page).page_obj.is_null() {
-            dpx_warning(
-                b"Entry for a nonexistent page #%u created.\x00" as *const u8 as *const i8,
-                page_no,
-            );
+            warn!("Entry for a nonexistent page #{} created.", page_no);
             pdf_release_obj((*page).page_obj);
             (*page).page_obj = 0 as *mut pdf_obj
         }
         if !(*page).annots.is_null() {
-            dpx_warning(
-                b"Annotation attached to a nonexistent page #%u.\x00" as *const u8 as *const i8,
-                page_no,
-            );
+            warn!("Annotation attached to a nonexistent page #{}.", page_no);
             pdf_release_obj((*page).annots);
             (*page).annots = 0 as *mut pdf_obj
         }
         if !(*page).beads.is_null() {
-            dpx_warning(
-                b"Article beads attached to a nonexistent page #%u.\x00" as *const u8 as *const i8,
-                page_no,
-            );
+            warn!("Article beads attached to a nonexistent page #{}.", page_no);
             pdf_release_obj((*page).beads);
             (*page).beads = 0 as *mut pdf_obj
         }
@@ -1626,10 +1616,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
             count = pdf_number_value(tmp) as i32;
             pdf_release_obj(tmp);
             if page_no <= 0i32 || page_no > count {
-                dpx_warning(
-                    b"Page %d does not exist.\x00" as *const u8 as *const i8,
-                    page_no,
-                );
+                warn!("Page {} does not exist.", page_no);
                 current_block = 5059794928954228255;
             } else {
                 /*
@@ -2051,7 +2038,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
     }
     match current_block {
         7715203803291643663 => {
-            dpx_warning(b"Cannot parse document. Broken PDF file?\x00" as *const u8 as *const i8);
+            warn!("Cannot parse document. Broken PDF file?");
         }
         _ => {}
     }
@@ -2177,7 +2164,7 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_up() -> i32 {
     let mut item: *mut pdf_olitem = 0 as *mut pdf_olitem;
     item = (*p).outlines.current;
     if item.is_null() || (*item).parent.is_null() {
-        dpx_warning(b"Can\'t go up above the bookmark root node!\x00" as *const u8 as *const i8);
+        warn!("Can\'t go up above the bookmark root node!");
         return -1i32;
     }
     parent = (*item).parent;
@@ -2205,8 +2192,8 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> i32 {
     if (*item).dict.is_null() {
         let mut tcolor: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut action: *mut pdf_obj = 0 as *mut pdf_obj;
-        dpx_warning(b"Empty bookmark node!\x00" as *const u8 as *const i8);
-        dpx_warning(b"You have tried to jump more than 1 level.\x00" as *const u8 as *const i8);
+        warn!("Empty bookmark node!");
+        warn!("You have tried to jump more than 1 level.");
         (*item).dict = pdf_new_dict();
         pdf_add_dict(
             (*item).dict,
@@ -2562,14 +2549,10 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
     }
     match current_block {
         14825911176647684745 => {
-            dpx_warning(b"Cannot optimize PDF annotations. Output file may be broken. Please restart with option \"-C 0x10\"\n\x00"
-                            as *const u8 as *const i8);
+            warn!("Cannot optimize PDF annotations. Output file may be broken. Please restart with option \"-C 0x10\"\n");
         }
         10743935136377679094 => {
-            dpx_warning(
-                b"Unknown PDF annotation format. Output file may be broken.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("Unknown PDF annotation format. Output file may be broken.");
         }
         _ => {}
     }
@@ -2631,9 +2614,9 @@ unsafe extern "C" fn pdf_doc_close_names(mut p: *mut pdf_doc) {
             } else {
                 name_tree = pdf_names_create_tree(data, &mut count, &mut pdoc.gotos);
                 if verbose != 0 && count < (*data).count {
-                    dpx_message(
-                        b"\nRemoved %d unused PDF destinations\n\x00" as *const u8 as *const i8,
-                        (*data).count - count,
+                    info!(
+                        "\nRemoved {} unused PDF destinations\n",
+                        (*data).count - count
                     );
                 }
                 if count < pdoc.gotos.count {
@@ -2672,7 +2655,7 @@ unsafe extern "C" fn pdf_doc_close_names(mut p: *mut pdf_doc) {
             );
         } else {
             /* What should I do? */
-            dpx_warning(b"Could not modify Names dictionary.\x00" as *const u8 as *const i8);
+            warn!("Could not modify Names dictionary.");
         }
         pdf_release_obj((*p).root.names);
         (*p).root.names = 0 as *mut pdf_obj
@@ -2720,7 +2703,7 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
         || annbox.lly < mediabox.lly
         || annbox.ury > mediabox.ury
     {
-        dpx_warning(b"Annotation out of page boundary.\x00" as *const u8 as *const i8);
+        warn!("Annotation out of page boundary.");
         dpx_warning(
             b"Current page\'s MediaBox: [%g %g %g %g]\x00" as *const u8 as *const i8,
             mediabox.llx,
@@ -2735,7 +2718,7 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
             annbox.urx,
             annbox.ury,
         );
-        dpx_warning(b"Maybe incorrect paper size specified.\x00" as *const u8 as *const i8);
+        warn!("Maybe incorrect paper size specified.");
     }
     if annbox.llx > annbox.urx || annbox.lly > annbox.ury {
         dpx_warning(
@@ -3752,7 +3735,7 @@ pub unsafe extern "C" fn pdf_doc_end_grabbing(mut attrib: *mut pdf_obj) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut fnode: *mut form_list_node = 0 as *mut form_list_node;
     if (*p).pending_forms.is_null() {
-        dpx_warning(b"Tried to close a nonexistent form XOject.\x00" as *const u8 as *const i8);
+        warn!("Tried to close a nonexistent form XOject.");
         return;
     }
     fnode = (*p).pending_forms;

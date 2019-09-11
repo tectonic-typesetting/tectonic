@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -746,10 +749,7 @@ pub unsafe extern "C" fn cff_open(
     /* Name INDEX */
     idx = cff_get_index(cff);
     if n > (*idx).count as i32 - 1i32 {
-        dpx_warning(
-            b"%s: Invalid CFF fontset index number.\x00" as *const u8 as *const i8,
-            b"CFF\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Invalid CFF fontset index number.", "CFF");
         cff_close(cff);
         return 0 as *mut cff_font;
     }
@@ -784,7 +784,7 @@ pub unsafe extern "C" fn cff_open(
             0i32,
         ) != 2i32 as f64
     {
-        dpx_warning(b"Only Type 2 Charstrings supported...\x00" as *const u8 as *const i8);
+        warn!("Only Type 2 Charstrings supported...");
         cff_close(cff);
         return 0 as *mut cff_font;
     }
@@ -793,7 +793,7 @@ pub unsafe extern "C" fn cff_open(
         b"SyntheticBase\x00" as *const u8 as *const i8,
     ) != 0
     {
-        dpx_warning(b"CFF Synthetic font not supported.\x00" as *const u8 as *const i8);
+        warn!("CFF Synthetic font not supported.");
         cff_close(cff);
         return 0 as *mut cff_font;
     }

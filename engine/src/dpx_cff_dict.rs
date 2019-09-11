@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -43,8 +45,6 @@ extern "C" {
         along with this program; if not, write to the Free Software
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -990,10 +990,7 @@ pub unsafe extern "C" fn cff_dict_unpack(
         );
     } else {
         if stack_top != 0i32 {
-            dpx_warning(
-                b"%s: Garbage in CFF DICT data.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Garbage in CFF DICT data.", "CFF");
             stack_top = 0i32
         }
     }

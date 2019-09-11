@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -690,19 +692,10 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
      * Some software generate CFF/OpenType font with incorrect encoding.
      */
     if encoding_id < 0i32 {
-        dpx_warning(b"Built-in encoding used for CFF/OpenType font.\x00" as *const u8 as *const i8);
-        dpx_warning(
-            b"CFF font in OpenType font sometimes have strange built-in encoding.\x00" as *const u8
-                as *const i8,
-        );
-        dpx_warning(
-            b"If you find text is not encoded properly in the generated PDF file,\x00" as *const u8
-                as *const i8,
-        );
-        dpx_warning(
-            b"please specify appropriate \".enc\" file in your fontmap.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("Built-in encoding used for CFF/OpenType font.");
+        warn!("CFF font in OpenType font sometimes have strange built-in encoding.");
+        warn!("If you find text is not encoded properly in the generated PDF file,");
+        warn!("please specify appropriate \".enc\" file in your fontmap.");
     }
     pdf_font_set_subtype(font, 1i32);
     embedding = if pdf_font_get_flag(font, 1i32 << 0i32) != 0 {
@@ -1145,7 +1138,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
      * All Type 1 font requires .notdef glyph to be present.
      */
     if verbose > 2i32 {
-        dpx_message(b"[glyphs:/.notdef\x00" as *const u8 as *const i8);
+        info!("[glyphs:/.notdef");
     }
     size = (*(*cs_idx).offset.offset(1)).wrapping_sub(*(*cs_idx).offset.offset(0)) as i32;
     if size > 65536i32 {
@@ -1237,9 +1230,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
                         *enc_vec.offset(code as isize),
                         fontname,
                     ); /* Set unused for writing correct encoding */
-                    dpx_warning(
-                        b"Maybe incorrect encoding specified.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Maybe incorrect encoding specified.");
                     *usedchars.offset(code as isize) = 0_i8
                 } else {
                     pdf_add_stream(
@@ -1312,7 +1303,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
         /* Prevent duplication. */
     }
     if verbose > 2i32 {
-        dpx_message(b"]\x00" as *const u8 as *const i8);
+        info!("]");
     }
     free(data as *mut libc::c_void);
     /*
@@ -1590,11 +1581,9 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     sfnt_close(sfont);
     ttstub_input_close(handle as rust_input_handle_t);
     if verbose > 1i32 {
-        dpx_message(
-            b"[%u/%u glyphs][%d bytes]\x00" as *const u8 as *const i8,
-            num_glyphs as i32,
-            cs_count as i32,
-            offset,
+        info!(
+            "[{}/{} glyphs][{} bytes]",
+            num_glyphs as i32, cs_count as i32, offset,
         );
     }
     /*

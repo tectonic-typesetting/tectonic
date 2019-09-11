@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -554,7 +556,7 @@ unsafe extern "C" fn read_length(
             }
             free(qq as *mut libc::c_void);
         } else {
-            dpx_warning(b"Missing unit of measure after \"true\"\x00" as *const u8 as *const i8);
+            warn!("Missing unit of measure after \"true\"");
             error = -1i32
         }
     }
@@ -736,7 +738,7 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
                 let mut xo: f64 = 0.;
                 let mut yo: f64 = 0.;
                 let mut lm: i32 = 0;
-                dpx_message(b"[%d\x00" as *const u8 as *const i8, page_no + 1i32);
+                info!("[{}", page_no + 1i32);
                 /* Users want to change page size even after page is started! */
                 page_width = paper_width;
                 page_height = paper_height;
@@ -783,7 +785,7 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
                 }
                 dvi_do_page(page_height, x_offset, y_offset);
                 page_count = page_count.wrapping_add(1);
-                dpx_message(b"]\x00" as *const u8 as *const i8);
+                info!("]");
             }
             if step > 0i32 && page_no >= (*page_ranges.offset(i as isize)).last {
                 break;
@@ -997,7 +999,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     pdf_close_document(); /* pdf_font may depend on fontmap. */
     pdf_close_fontmaps();
     dvi_close();
-    dpx_message(b"\n\x00" as *const u8 as *const i8);
+    info!("\n");
     free(page_ranges as *mut libc::c_void);
     0i32
 }

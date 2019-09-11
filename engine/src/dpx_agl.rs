@@ -7,6 +7,9 @@
     unused_assignments,
     unused_mut
 )]
+
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -927,16 +930,10 @@ pub unsafe extern "C" fn agl_init_map() {
     );
     agl_load_listfile(b"texglyphlist.txt\x00" as *const u8 as *const i8, 0i32);
     if agl_load_listfile(b"pdfglyphlist.txt\x00" as *const u8 as *const i8, 1i32) < 0i32 {
-        dpx_warning(
-            b"Failed to load AGL file \"%s\"...\x00" as *const u8 as *const i8,
-            b"pdfglyphlist.txt\x00" as *const u8 as *const i8,
-        );
+        warn!("Failed to load AGL file \"{}\"...", "pdfglyphlist.txt");
     }
     if agl_load_listfile(b"glyphlist.txt\x00" as *const u8 as *const i8, 0i32) < 0i32 {
-        dpx_warning(
-            b"Failed to load AGL file \"%s\"...\x00" as *const u8 as *const i8,
-            b"glyphlist.txt\x00" as *const u8 as *const i8,
-        );
+        warn!("Failed to load AGL file \"{}\"...", "glyphlist.txt");
     };
 }
 #[no_mangle]
@@ -1030,7 +1027,7 @@ unsafe extern "C" fn agl_load_listfile(mut filename: *const i8, mut is_predef: i
                     || *p.offset(0) as i32 >= 'A' as i32 && *p.offset(0) as i32 <= 'F' as i32)
             {
                 if n_unicodes >= 16i32 {
-                    dpx_warning(b"Too many Unicode values\x00" as *const u8 as *const i8);
+                    warn!("Too many Unicode values");
                     break;
                 } else {
                     let fresh0 = n_unicodes;
@@ -1103,7 +1100,7 @@ unsafe extern "C" fn agl_load_listfile(mut filename: *const i8, mut is_predef: i
                         }
                         i += 1
                     }
-                    dpx_message(b"\n\x00" as *const u8 as *const i8);
+                    info!("\n");
                 }
                 free(name as *mut libc::c_void);
                 count += 1
@@ -1112,7 +1109,7 @@ unsafe extern "C" fn agl_load_listfile(mut filename: *const i8, mut is_predef: i
     }
     ttstub_input_close(handle);
     if verbose != 0 {
-        dpx_message(b">\x00" as *const u8 as *const i8);
+        info!(">");
     }
     count
 }
@@ -1185,9 +1182,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
         return -1i32;
     }
     if strlen(glyphname) > 7i32 as u64 && *glyphname.offset(7) as i32 != '.' as i32 {
-        dpx_warning(
-            b"Mapping to multiple Unicode characters not supported.\x00" as *const u8 as *const i8,
-        );
+        warn!("Mapping to multiple Unicode characters not supported.");
         return -1i32;
     }
     if *glyphname.offset(1) as i32 == 'n' as i32 {

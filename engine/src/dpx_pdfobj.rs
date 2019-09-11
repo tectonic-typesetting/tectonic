@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -1422,10 +1424,7 @@ unsafe extern "C" fn write_array(mut array: *mut pdf_array, mut handle: rust_out
                 type1 = type2;
                 pdf_write_obj(*(*array).values.offset(i as isize), handle);
             } else {
-                dpx_warning(
-                    b"PDF array element %d undefined.\x00" as *const u8 as *const i8,
-                    i,
-                );
+                warn!("PDF array element {} undefined.", i);
             }
             i = i.wrapping_add(1)
         }
@@ -3689,9 +3688,7 @@ unsafe extern "C" fn find_xref(mut handle: rust_input_handle_t, mut file_size: i
     /* Next line of input file should contain actual xref location */
     len = tt_mfreadln(work_buffer.as_mut_ptr(), 1024i32, handle);
     if len <= 0i32 {
-        dpx_warning(
-            b"Reading xref location data failed... Not a PDF file?\x00" as *const u8 as *const i8,
-        );
+        warn!("Reading xref location data failed... Not a PDF file?");
         return 0i32;
     }
     start = work_buffer.as_mut_ptr();
@@ -3729,7 +3726,7 @@ unsafe extern "C" fn parse_trailer(mut pf: *mut pdf_file) -> *mut pdf_obj {
         )
         .is_null()
     {
-        dpx_warning(b"No trailer.  Are you sure this is a PDF file?\x00" as *const u8 as *const i8);
+        warn!("No trailer.  Are you sure this is a PDF file?");
         dpx_warning(
             b"buffer:\n->%s<-\n\x00" as *const u8 as *const i8,
             work_buffer.as_mut_ptr(),
@@ -3844,7 +3841,7 @@ unsafe extern "C" fn pdf_read_object(
         strlen(b"obj\x00" as *const u8 as *const i8),
     ) != 0
     {
-        dpx_warning(b"Didn\'t find \"obj\".\x00" as *const u8 as *const i8);
+        warn!("Didn\'t find \"obj\".");
         free(buffer as *mut libc::c_void);
         return 0 as *mut pdf_obj;
     }
@@ -3857,7 +3854,7 @@ unsafe extern "C" fn pdf_read_object(
         strlen(b"endobj\x00" as *const u8 as *const i8),
     ) != 0
     {
-        dpx_warning(b"Didn\'t find \"endobj\".\x00" as *const u8 as *const i8);
+        warn!("Didn\'t find \"endobj\".");
         pdf_release_obj(result);
         result = 0 as *mut pdf_obj
     }
@@ -3963,7 +3960,7 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: u32) -> *mut pd
             }
         }
     }
-    dpx_warning(b"Cannot parse object stream.\x00" as *const u8 as *const i8);
+    warn!("Cannot parse object stream.");
     free(data as *mut libc::c_void);
     pdf_release_obj(objstm);
     0 as *mut pdf_obj
@@ -4058,9 +4055,7 @@ unsafe extern "C" fn pdf_get_object(
         match current_block {
             13472856163611868459 => {}
             _ => {
-                dpx_warning(
-                    b"Could not read object from object stream.\x00" as *const u8 as *const i8,
-                );
+                warn!("Could not read object from object stream.");
                 return pdf_new_null();
             }
         }
@@ -4155,10 +4150,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
      * seriously.
      */
     if len < 0i32 {
-        dpx_warning(
-            b"Something went wrong while reading xref table...giving up.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("Something went wrong while reading xref table...giving up.");
         return -1i32;
     }
     p = buf.as_mut_ptr();
@@ -4176,7 +4168,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
     p = p.offset(strlen(b"xref\x00" as *const u8 as *const i8) as isize);
     skip_white(&mut p, endptr);
     if p != endptr {
-        dpx_warning(b"Garbage after \"xref\" keyword found.\x00" as *const u8 as *const i8);
+        warn!("Garbage after \"xref\" keyword found.");
         return -1i32;
     }
     loop
@@ -4193,7 +4185,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
         len = tt_mfreadln(buf.as_mut_ptr(), 255i32, (*pf).handle);
         if !(len == 0i32) {
             if len < 0i32 {
-                dpx_warning(b"Reading a line failed in xref table.\x00" as *const u8 as *const i8);
+                warn!("Reading a line failed in xref table.");
                 return -1i32;
             }
             p = buf.as_mut_ptr();
@@ -4226,10 +4218,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                     /* Object number of the first object whithin this xref subsection. */
                     q = parse_unsigned(&mut p, endptr);
                     if q.is_null() {
-                        dpx_warning(
-                            b"An unsigned integer expected but could not find. (xref)\x00"
-                                as *const u8 as *const i8,
-                        );
+                        warn!("An unsigned integer expected but could not find. (xref)");
                         return -1i32;
                     }
                     first = atoi(q) as u32;
@@ -4238,10 +4227,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                     /* Nnumber of objects in this xref subsection. */
                     q = parse_unsigned(&mut p, endptr);
                     if q.is_null() {
-                        dpx_warning(
-                            b"An unsigned integer expected but could not find. (xref)\x00"
-                                as *const u8 as *const i8,
-                        );
+                        warn!("An unsigned integer expected but could not find. (xref)");
                         return -1i32;
                     }
                     size = atoi(q) as u32;
@@ -4249,9 +4235,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                     skip_white(&mut p, endptr);
                     /* Check for unrecognized tokens */
                     if p != endptr {
-                        dpx_warning(
-                            b"Unexpected token found in xref table.\x00" as *const u8 as *const i8,
-                        );
+                        warn!("Unexpected token found in xref table.");
                         return -1i32;
                     }
                     /* The first line of a xref subsection OK. */
@@ -4272,11 +4256,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                         len = tt_mfreadln(buf.as_mut_ptr(), 255i32, (*pf).handle);
                         if !(len == 0i32) {
                             if len < 0i32 {
-                                dpx_warning(
-                                    b"Something went wrong while reading xref subsection...\x00"
-                                        as *const u8
-                                        as *const i8,
-                                );
+                                warn!("Something went wrong while reading xref subsection...");
                                 return -1i32;
                             }
                             p = buf.as_mut_ptr();
@@ -4298,20 +4278,12 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                             /* Offset value -- 10 digits (0 padded) */
                             q_0 = parse_unsigned(&mut p, endptr);
                             if q_0.is_null() {
-                                dpx_warning(
-                                    b"An unsigned integer expected but could not find. (xref)\x00"
-                                        as *const u8
-                                        as *const i8,
-                                );
+                                warn!("An unsigned integer expected but could not find. (xref)");
                                 return -1i32;
                             } else {
                                 if strlen(q_0) != 10i32 as u64 {
                                     /* exactly 10 digits */
-                                    dpx_warning(
-                                        b"Offset must be a 10 digits number. (xref)\x00"
-                                            as *const u8
-                                            as *const i8,
-                                    );
+                                    warn!("Offset must be a 10 digits number. (xref)");
                                     free(q_0 as *mut libc::c_void);
                                     return -1i32;
                                 }
@@ -4323,19 +4295,12 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                             /* Generation number -- 5 digits (0 padded) */
                             q_0 = parse_unsigned(&mut p, endptr);
                             if q_0.is_null() {
-                                dpx_warning(
-                                    b"An unsigned integer expected but could not find. (xref)\x00"
-                                        as *const u8
-                                        as *const i8,
-                                );
+                                warn!("An unsigned integer expected but could not find. (xref)");
                                 return -1i32;
                             } else {
                                 if strlen(q_0) != 5i32 as u64 {
                                     /* exactly 5 digits */
-                                    dpx_warning(
-                                        b"Expecting a 5 digits number. (xref)\x00" as *const u8
-                                            as *const i8,
-                                    );
+                                    warn!("Expecting a 5 digits number. (xref)");
                                     free(q_0 as *mut libc::c_void);
                                     return -1i32;
                                 }
@@ -4354,10 +4319,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                             p = p.offset(1);
                             skip_white(&mut p, endptr);
                             if p < endptr {
-                                dpx_warning(
-                                    b"Garbage in xref subsection entry found...\x00" as *const u8
-                                        as *const i8,
-                                );
+                                warn!("Garbage in xref subsection entry found...");
                                 return -1i32;
                             } else {
                                 if flag as i32 != 'n' as i32 && flag as i32 != 'f' as i32
@@ -4441,9 +4403,7 @@ unsafe extern "C" fn parse_xrefstm_subsec(
         let mut field3: u16 = 0;
         type_0 = parse_xrefstm_field(p, *W.offset(0), 1_u32) as u8;
         if type_0 as i32 > 2i32 {
-            dpx_warning(
-                b"Unknown cross-reference stream entry type.\x00" as *const u8 as *const i8,
-            );
+            warn!("Unknown cross-reference stream entry type.");
         }
         field2 = parse_xrefstm_field(p, *W.offset(1), 0_u32);
         field3 = parse_xrefstm_field(p, *W.offset(2), 0_u32) as u16;
@@ -4565,10 +4525,7 @@ unsafe extern "C" fn parse_xref_stream(
                                 5131529843719913080 => {}
                                 _ => {
                                     if length != 0 {
-                                        dpx_warning(
-                                            b"Garbage in xref stream.\x00" as *const u8
-                                                as *const i8,
-                                        );
+                                        warn!("Garbage in xref stream.");
                                     }
                                     pdf_release_obj(xrefstm);
                                     return 1i32;
@@ -4580,7 +4537,7 @@ unsafe extern "C" fn parse_xref_stream(
             }
         }
     }
-    dpx_warning(b"Cannot parse cross-reference stream.\x00" as *const u8 as *const i8);
+    warn!("Cannot parse cross-reference stream.");
     pdf_release_obj(xrefstm);
     if !(*trailer).is_null() {
         pdf_release_obj(*trailer);
@@ -4631,10 +4588,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
                             {
                                 pdf_release_obj(new_trailer);
                             } else {
-                                dpx_warning(
-                                    b"Skipping hybrid reference section.\x00" as *const u8
-                                        as *const i8,
-                                );
+                                warn!("Skipping hybrid reference section.");
                             }
                             /* Many PDF 1.5 xref streams use DecodeParms, which we cannot
                                parse. This way we can use at least xref tables in hybrid
@@ -4668,7 +4622,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
                 }
             }
             _ => {
-                dpx_warning(b"Error while parsing PDF file.\x00" as *const u8 as *const i8);
+                warn!("Error while parsing PDF file.");
                 pdf_release_obj(trailer);
                 pdf_release_obj(main_trailer);
                 return 0 as *mut pdf_obj;
@@ -4777,7 +4731,7 @@ pub unsafe extern "C" fn pdf_open(
         } else if !pdf_lookup_dict((*pf).trailer, b"Encrypt\x00" as *const u8 as *const i8)
             .is_null()
         {
-            dpx_warning(b"PDF document is encrypted.\x00" as *const u8 as *const i8);
+            warn!("PDF document is encrypted.");
             current_block = 14455231216035570027;
         } else {
             (*pf).catalog = pdf_deref_obj(pdf_lookup_dict(
@@ -4785,10 +4739,7 @@ pub unsafe extern "C" fn pdf_open(
                 b"Root\x00" as *const u8 as *const i8,
             ));
             if !(!(*pf).catalog.is_null() && pdf_obj_typeof((*pf).catalog) == 6i32) {
-                dpx_warning(
-                    b"Cannot read PDF document catalog. Broken PDF file?\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("Cannot read PDF document catalog. Broken PDF file?");
                 current_block = 14455231216035570027;
             } else {
                 new_version = pdf_deref_obj(pdf_lookup_dict(
@@ -4805,10 +4756,7 @@ pub unsafe extern "C" fn pdf_open(
                         ) != 1i32
                     {
                         pdf_release_obj(new_version);
-                        dpx_warning(
-                            b"Illegal Version entry in document catalog. Broken PDF file?\x00"
-                                as *const u8 as *const i8,
-                        );
+                        warn!("Illegal Version entry in document catalog. Broken PDF file?");
                         current_block = 14455231216035570027;
                     } else {
                         if (*pf).version < minor {
@@ -4900,10 +4848,9 @@ pub unsafe extern "C" fn check_for_pdf(mut handle: rust_input_handle_t) -> i32 {
     if version <= pdf_version {
         return 1i32;
     }
-    dpx_warning(
-        b"Version of PDF file (1.%d) is newer than version limit specification.\x00" as *const u8
-            as *const i8,
-        version,
+    warn!(
+        "Version of PDF file (1.{}) is newer than version limit specification.",
+        version
     );
     1i32
 }

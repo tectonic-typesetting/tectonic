@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -245,9 +247,7 @@ pub unsafe extern "C" fn pdf_font_open_pkfont(mut font: *mut pdf_font) -> i32 {
             ident,
             pdf_encoding_get_name(encoding_id),
         );
-        dpx_warning(
-            b">> Assuming this is for glyph name assignment.\x00" as *const u8 as *const i8,
-        );
+        warn!(">> Assuming this is for glyph name assignment.");
     }
     0i32
 }
@@ -288,7 +288,7 @@ unsafe extern "C" fn pk_packed_num(
     let mut nyb: i32 = 0;
     let mut j: i32 = 0;
     if i.wrapping_div(2_u32) == pl {
-        dpx_warning(b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8);
+        warn!("EOD reached while unpacking pk_packed_num.");
         return 0_u32;
     }
     nyb = if i.wrapping_rem(2_u32) != 0 {
@@ -301,9 +301,7 @@ unsafe extern "C" fn pk_packed_num(
         j = 0i32;
         loop {
             if i.wrapping_div(2_u32) == pl {
-                dpx_warning(
-                    b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
-                );
+                warn!("EOD reached while unpacking pk_packed_num.");
                 break;
             } else {
                 nyb = if i.wrapping_rem(2_u32) != 0 {
@@ -326,9 +324,7 @@ unsafe extern "C" fn pk_packed_num(
                 break;
             }
             if i.wrapping_div(2_u32) == pl {
-                dpx_warning(
-                    b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
-                );
+                warn!("EOD reached while unpacking pk_packed_num.");
                 break;
             } else {
                 nyb = if i.wrapping_rem(2_u32) != 0 {
@@ -345,9 +341,7 @@ unsafe extern "C" fn pk_packed_num(
         nmbr = nyb as u32
     } else if nyb < 14i32 {
         if i.wrapping_div(2_u32) == pl {
-            dpx_warning(
-                b"EOD reached while unpacking pk_packed_num.\x00" as *const u8 as *const i8,
-            );
+            warn!("EOD reached while unpacking pk_packed_num.");
             return 0_u32;
         }
         nmbr = ((nyb - dyn_f - 1i32) * 16i32
@@ -428,14 +422,14 @@ unsafe extern "C" fn pk_decode_packed(
             if nyb == 14i32 {
                 /* packed number "repeat_count" follows */
                 if repeat_count != 0_u32 {
-                    dpx_warning(b"Second repeat count for this row!\x00" as *const u8 as *const i8);
+                    warn!("Second repeat count for this row!");
                     /* Consume this nybble */
                 } /* run_count */
                 np = np.wrapping_add(1); /* Consume this nybble */
                 repeat_count = pk_packed_num(&mut np, dyn_f, dp, pl)
             } else if nyb == 15i32 {
                 if repeat_count != 0_u32 {
-                    dpx_warning(b"Second repeat count for this row!\x00" as *const u8 as *const i8);
+                    warn!("Second repeat count for this row!");
                 }
                 np = np.wrapping_add(1);
                 repeat_count = 1_u32
@@ -503,7 +497,7 @@ unsafe extern "C" fn pk_decode_bitmap(
     ];
     assert!(dyn_f == 14i32);
     if run_color != 0i32 {
-        dpx_warning(b"run_color != 0 for bitmap pk data?\x00" as *const u8 as *const i8);
+        warn!("run_color != 0 for bitmap pk data?");
     } else if pl < wd.wrapping_mul(ht).wrapping_add(7_u32).wrapping_div(8_u32) {
         dpx_warning(
             b"Insufficient bitmap pk data. %dbytes expected but only %dbytes read.\x00" as *const u8
@@ -932,10 +926,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                 240 | 241 | 242 | 243 => {
                     let mut len: i32 = get_unsigned_num(fp, (opcode - 240i32) as u8) as i32;
                     if len < 0i32 {
-                        dpx_warning(
-                            b"PK: Special with %d bytes???\x00" as *const u8 as *const i8,
-                            len,
-                        );
+                        warn!("PK: Special with {} bytes???", len);
                     } else {
                         skip_bytes(len as u32, fp);
                     }

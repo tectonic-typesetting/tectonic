@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -763,14 +765,12 @@ pub unsafe extern "C" fn pst_parse_name(
         if c as i32 == '#' as i32 {
             let mut val: i32 = 0;
             if cur.offset(2) >= inbufend {
-                dpx_warning(b"Premature end of input name string.\x00" as *const u8 as *const i8);
+                warn!("Premature end of input name string.");
                 break;
             } else {
                 val = getxpair(&mut cur);
                 if val <= 0i32 {
-                    dpx_warning(
-                        b"Invalid char for name object. (ignored)\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Invalid char for name object. (ignored)");
                     continue;
                 } else {
                     c = val as u8
@@ -786,10 +786,7 @@ pub unsafe extern "C" fn pst_parse_name(
     }
     *p = '\u{0}' as i32 as u8;
     if len > 127i32 {
-        dpx_warning(
-            b"String too long for name object. Output will be truncated.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("String too long for name object. Output will be truncated.");
     }
     *inbuf = cur;
     return pst_new_obj(

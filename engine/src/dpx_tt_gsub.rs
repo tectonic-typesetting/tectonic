@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -621,9 +623,9 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     (*subtab).LookupType = 3_u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as i32 != 1i32 {
-        dpx_warning(
-            b"Unknown GSUB SubstFormat for Alternate: %u\x00" as *const u8 as *const i8,
-            (*subtab).SubstFormat as i32,
+        warn!(
+            "Unknown GSUB SubstFormat for Alternate: {}",
+            (*subtab).SubstFormat as i32
         );
         return -1i32;
     }
@@ -698,9 +700,9 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     (*subtab).LookupType = 4_u16;
     (*subtab).SubstFormat = tt_get_unsigned_pair((*sfont).handle);
     if (*subtab).SubstFormat as i32 != 1i32 {
-        dpx_warning(
-            b"Unknown GSUB SubstFormat for Ligature: %u\x00" as *const u8 as *const i8,
-            (*subtab).SubstFormat as i32,
+        warn!(
+            "Unknown GSUB SubstFormat for Ligature: {}",
+            (*subtab).SubstFormat as i32
         );
         return -1i32;
     }
@@ -1082,7 +1084,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
     ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
     clt_read_number_list(&mut lookup_list, sfont);
     if verbose > 0i32 {
-        dpx_message(b"otl_gsub>> Reading OTL feature(s):\x00" as *const u8 as *const i8);
+        info!("otl_gsub>> Reading OTL feature(s):");
     }
     feat_idx = 0i32;
     while feat_idx < feature_list.count as i32 {
@@ -1148,10 +1150,9 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                     && lookup_table.LookupType as i32 != 7i32
                 {
                     if verbose > 0i32 {
-                        dpx_warning(
-                            b"Skipping unsupported GSUB subtable: LookupType=%d\x00" as *const u8
-                                as *const i8,
-                            lookup_table.LookupType as i32,
+                        warn!(
+                            "Skipping unsupported GSUB subtable: LookupType={}",
+                            lookup_table.LookupType as i32
                         );
                     }
                 } else {
@@ -1179,13 +1180,10 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                     sfont,
                                 );
                                 if r <= 0i32 {
-                                    dpx_warning(
-                                        b"Reading GSUB subtable (single) failed...\x00" as *const u8
-                                            as *const i8,
-                                    );
+                                    warn!("Reading GSUB subtable (single) failed...");
                                 } else {
                                     if verbose > 0i32 {
-                                        dpx_message(b"(single)\x00" as *const u8 as *const i8);
+                                        info!("(single)");
                                     }
                                     n_st += 1
                                 }
@@ -1196,14 +1194,10 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                     sfont,
                                 );
                                 if r <= 0i32 {
-                                    dpx_warning(
-                                        b"Reading GSUB subtable (alternate) failed...\x00"
-                                            as *const u8
-                                            as *const i8,
-                                    );
+                                    warn!("Reading GSUB subtable (alternate) failed...");
                                 } else {
                                     if verbose > 0i32 {
-                                        dpx_message(b"(alternate)\x00" as *const u8 as *const i8);
+                                        info!("(alternate)");
                                     }
                                     n_st += 1
                                 }
@@ -1214,14 +1208,10 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                     sfont,
                                 );
                                 if r <= 0i32 {
-                                    dpx_warning(
-                                        b"Reading GSUB subtable (ligature) failed...\x00"
-                                            as *const u8
-                                            as *const i8,
-                                    );
+                                    warn!("Reading GSUB subtable (ligature) failed...");
                                 } else {
                                     if verbose > 0i32 {
-                                        dpx_message(b"(ligature)\x00" as *const u8 as *const i8);
+                                        info!("(ligature)");
                                     }
                                     n_st += 1
                                 }
@@ -1321,11 +1311,8 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
         feat_idx += 1
     }
     if verbose > 0i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
-        dpx_message(
-            b"otl_gsub>> %d subtable(s) read.\n\x00" as *const u8 as *const i8,
-            num_subtabs as i32,
-        );
+        info!("\n");
+        info!("otl_gsub>> {} subtable(s) read.\n", num_subtabs as i32);
     }
     clt_release_number_list(&mut lookup_list);
     clt_release_record_list(&mut feature_list);
@@ -1506,7 +1493,7 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*gsub).feature, feature);
     if verbose > 0i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
         dpx_message(
             b"otl_gsub>> Reading \"%s.%s.%s\"...\n\x00" as *const u8 as *const i8,
             script,
@@ -1520,7 +1507,7 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
         (*gsub_list).num_gsubs += 1
     } else {
         if verbose > 0i32 {
-            dpx_message(b"otl_gsub>> Failed\n\x00" as *const u8 as *const i8);
+            info!("otl_gsub>> Failed\n");
         }
         free((*gsub).script as *mut libc::c_void);
         free((*gsub).language as *mut libc::c_void);
@@ -1585,7 +1572,7 @@ unsafe extern "C" fn scan_otl_tag(
         strncpy(feature, p, endptr.wrapping_offset_from(p) as i64 as u64);
         p = endptr
     } else {
-        dpx_warning(b"No valid OTL feature tag specified.\x00" as *const u8 as *const i8);
+        warn!("No valid OTL feature tag specified.");
         return -1i32;
     }
     0i32

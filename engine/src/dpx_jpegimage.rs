@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -276,10 +278,7 @@ pub unsafe extern "C" fn jpeg_include_image(
         skipbits: [0; 129],
     };
     if check_for_jpeg(handle) == 0 {
-        dpx_warning(
-            b"%s: Not a JPEG file?\x00" as *const u8 as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Not a JPEG file?", "JPEG");
         ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
         return -1i32;
     }
@@ -287,10 +286,7 @@ pub unsafe extern "C" fn jpeg_include_image(
     pdf_ximage_init_image_info(&mut info);
     JPEG_info_init(&mut j_info);
     if JPEG_scan_file(&mut j_info, handle) < 0i32 {
-        dpx_warning(
-            b"%s: Not a JPEG file?\x00" as *const u8 as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Not a JPEG file?", "JPEG");
         JPEG_info_clear(&mut j_info);
         return -1i32;
     }
@@ -389,7 +385,7 @@ pub unsafe extern "C" fn jpeg_include_image(
     if j_info.flags & 1i32 << 1i32 != 0 && j_info.num_components as i32 == 4i32 {
         let mut decode: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut i: u32 = 0;
-        dpx_warning(b"Adobe CMYK JPEG: Inverted color assumed.\x00" as *const u8 as *const i8);
+        warn!("Adobe CMYK JPEG: Inverted color assumed.");
         decode = pdf_new_array();
         i = 0_u32;
         while i < j_info.num_components as u32 {
@@ -717,9 +713,7 @@ unsafe extern "C" fn read_APP1_Exif(
                 bigendian = 1_i8;
                 current_block = 1109700713171191020;
             } else {
-                dpx_warning(
-                    b"JPEG: Invalid value in Exif TIFF header.\x00" as *const u8 as *const i8,
-                );
+                warn!("JPEG: Invalid value in Exif TIFF header.");
                 current_block = 10568945602212496329;
             }
             match current_block {
@@ -728,10 +722,7 @@ unsafe extern "C" fn read_APP1_Exif(
                     p = p.offset(2);
                     i = read_exif_bytes(&mut p, 2i32, bigendian as i32);
                     if i != 42i32 {
-                        dpx_warning(
-                            b"JPEG: Invalid value in Exif TIFF header.\x00" as *const u8
-                                as *const i8,
-                        );
+                        warn!("JPEG: Invalid value in Exif TIFF header.");
                     } else {
                         i = read_exif_bytes(&mut p, 4i32, bigendian as i32);
                         p = tiff_header.offset(i as isize);
@@ -1375,10 +1366,7 @@ pub unsafe extern "C" fn jpeg_get_bbox(
     };
     JPEG_info_init(&mut j_info);
     if JPEG_scan_file(&mut j_info, handle) < 0i32 {
-        dpx_warning(
-            b"%s: Not a JPEG file?\x00" as *const u8 as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Not a JPEG file?", "JPEG");
         JPEG_info_clear(&mut j_info);
         return -1i32;
     }

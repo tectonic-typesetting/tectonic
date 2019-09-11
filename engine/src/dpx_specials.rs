@@ -7,6 +7,9 @@
     unused_assignments,
     unused_mut
 )]
+
+use crate::warn;
+
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::pdf_obj;
@@ -759,7 +762,7 @@ unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
     }
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
-        dpx_warning(b"Unparsed material at end of special ignored.\x00" as *const u8 as *const i8);
+        warn!("Unparsed material at end of special ignored.");
         dump((*args).curptr, (*args).endptr);
     };
 }

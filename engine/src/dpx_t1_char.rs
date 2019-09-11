@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -403,7 +405,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
                 if op as i32 == 1i32 { 0i32 } else { 1i32 },
             );
             if stem_id < 0i32 {
-                dpx_warning(b"Too many hints...\x00" as *const u8 as *const i8);
+                warn!("Too many hints...");
                 status = -1i32;
                 return;
             }
@@ -899,7 +901,7 @@ unsafe extern "C" fn do_operator2(
                     if op as i32 == 2i32 { 0i32 } else { 1i32 },
                 );
                 if stem_id < 0i32 {
-                    dpx_warning(b"Too many hints...\x00" as *const u8 as *const i8);
+                    warn!("Too many hints...");
                     status = -1i32;
                     return;
                 }
@@ -1241,9 +1243,9 @@ unsafe extern "C" fn t1char_build_charpath(
         status = 0i32
     } else if status == 3i32 && *data < endptr {
         if !(*data == endptr.offset(-1) && **data as i32 == 11i32) {
-            dpx_warning(
-                b"Garbage after endchar. (%d bytes)\x00" as *const u8 as *const i8,
-                endptr.wrapping_offset_from(*data) as i64 as i32,
+            warn!(
+                "Garbage after endchar. ({} bytes)",
+                endptr.wrapping_offset_from(*data) as i64 as i32
             );
         }
     } else if status < 0i32 {
@@ -2015,10 +2017,7 @@ unsafe extern "C" fn t1char_encode_charpath(
         if dst.offset(2) >= endptr {
             _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
         }
-        dpx_warning(
-            b"Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.\x00"
-                as *const u8 as *const i8,
-        );
+        warn!("Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.");
     }
     if dst.offset(1) >= endptr {
         _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);

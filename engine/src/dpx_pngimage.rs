@@ -1,6 +1,8 @@
 use libpng_sys::ffi::*;
 use std::convert::TryInto;
 
+use crate::warn;
+
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
@@ -217,20 +219,14 @@ pub unsafe extern "C" fn png_include_image(
     {
         png
     } else {
-        dpx_warning(
-            b"%s: Creating Libpng read struct failed.\x00" as *const u8 as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Creating Libpng read struct failed.", "PNG");
         return -1i32;
     };
 
     let png_info = if let Some(png_info) = png_create_info_struct(png).as_mut() {
         png_info
     } else {
-        dpx_warning(
-            b"%s: Creating Libpng info struct failed.\x00" as *const u8 as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Creating Libpng info struct failed.", "PNG");
         png_destroy_read_struct(
             &mut (png as *mut _) as *mut *mut _,
             0 as png_infopp,
@@ -253,10 +249,7 @@ pub unsafe extern "C" fn png_include_image(
     if bpc as libc::c_int > 8i32 {
         if pdf_get_version() < 5i32 as libc::c_uint {
             /* Ask libpng to convert down to 8-bpc. */
-            dpx_warning(
-                b"%s: 16-bpc PNG requires PDF version 1.5.\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: 16-bpc PNG requires PDF version 1.5.", "PNG");
             png_set_strip_16(png);
             bpc = 8i32 as png_byte
         }
@@ -422,10 +415,7 @@ pub unsafe extern "C" fn png_include_image(
             );
             pdf_release_obj(mask);
         } else {
-            dpx_warning(
-                b"%s: Unknown transparency type...???\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Unknown transparency type...???", "PNG");
             pdf_release_obj(mask);
         }
     }
@@ -646,10 +636,9 @@ unsafe extern "C" fn check_transparency(
             b"PNG\x00" as *const u8 as *const i8,
         );
         if pdf_version < 3_u32 {
-            dpx_warning(
-                b"%s: Please use -V 3 option to enable binary transparency support.\x00"
-                    as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
+            warn!(
+                "{}: Please use -V 3 option to enable binary transparency support.",
+                "PNG"
             );
         }
         if pdf_version < 4_u32 {
@@ -827,10 +816,7 @@ unsafe extern "C" fn create_cspace_CalRGB(
         || xb < 0.0f64
         || yb < 0.0f64
     {
-        dpx_warning(
-            b"%s: Invalid cHRM chunk parameters found.\x00" as *const u8 as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Invalid cHRM chunk parameters found.", "PNG");
         return 0 as *mut pdf_obj;
     }
     if png_get_valid(png, png_info, 0x1u32) != 0 && png_get_gAMA(png, png_info, &mut G) != 0 {
@@ -890,10 +876,7 @@ unsafe extern "C" fn create_cspace_CalGray(
         || xb < 0.0f64
         || yb < 0.0f64
     {
-        dpx_warning(
-            b"%s: Invalid cHRM chunk parameters found.\x00" as *const u8 as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Invalid cHRM chunk parameters found.", "PNG");
         return 0 as *mut pdf_obj;
     }
     if png_get_valid(png, info, 0x1u32) != 0 && png_get_gAMA(png, info, &mut G) != 0 {
@@ -980,10 +963,7 @@ unsafe extern "C" fn make_param_Cal(
     /* Matrix */
     det = xr * (yg * zb - zg * yb) - xg * (yr * zb - zr * yb) + xb * (yr * zg - zr * yg);
     if (if det < 0i32 as f64 { -det } else { det }) < 1.0e-10f64 {
-        dpx_warning(
-            b"Non invertible matrix: Maybe invalid value(s) specified in cHRM chunk.\x00"
-                as *const u8 as *const i8,
-        );
+        warn!("Non invertible matrix: Maybe invalid value(s) specified in cHRM chunk.");
         return 0 as *mut pdf_obj;
     }
     fr = (Xw * (yg * zb - zg * yb) - xg * (zb - Zw * yb) + xb * (zg - Zw * yg)) / det;
@@ -1121,10 +1101,7 @@ unsafe extern "C" fn create_cspace_Indexed(
     if png_get_valid(png, info, 0x8u32) == 0
         || png_get_PLTE(png, info, &mut plte, &mut num_plte) == 0
     {
-        dpx_warning(
-            b"%s: PNG does not have valid PLTE chunk.\x00" as *const u8 as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: PNG does not have valid PLTE chunk.", "PNG");
         return 0 as *mut pdf_obj;
     }
     /* Order is important. */
@@ -1180,10 +1157,7 @@ unsafe extern "C" fn create_ckey_mask(
     if png_get_valid(png, png_info, 0x10u32) == 0
         || png_get_tRNS(png, png_info, &mut trans, &mut num_trans, &mut colors) == 0
     {
-        dpx_warning(
-            b"%s: PNG does not have valid tRNS chunk!\x00" as *const u8 as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: PNG does not have valid tRNS chunk!", "PNG");
         return 0 as *mut pdf_obj;
     }
     colorkeys = pdf_new_array();
@@ -1196,10 +1170,7 @@ unsafe extern "C" fn create_ckey_mask(
                     pdf_add_array(colorkeys, pdf_new_number(i as f64));
                     pdf_add_array(colorkeys, pdf_new_number(i as f64));
                 } else if *trans.offset(i as isize) as i32 != 0xffi32 {
-                    dpx_warning(
-                        b"%s: You found a bug in pngimage.c.\x00" as *const u8 as *const i8,
-                        b"PNG\x00" as *const u8 as *const i8,
-                    );
+                    warn!("{}: You found a bug in pngimage.c.", "PNG");
                 }
                 i += 1
             }
@@ -1217,10 +1188,7 @@ unsafe extern "C" fn create_ckey_mask(
             pdf_add_array(colorkeys, pdf_new_number((*colors).gray as f64));
         }
         _ => {
-            dpx_warning(
-                b"%s: You found a bug in pngimage.c.\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: You found a bug in pngimage.c.", "PNG");
             pdf_release_obj(colorkeys);
             colorkeys = 0 as *mut pdf_obj
         }
@@ -1357,10 +1325,7 @@ unsafe extern "C" fn strip_soft_mask(
                 .wrapping_mul(::std::mem::size_of::<png_byte>() as libc::c_ulong)
         {
             /* Something wrong */
-            dpx_warning(
-                b"%s: Inconsistent rowbytes value.\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Inconsistent rowbytes value.", "PNG");
             return 0 as *mut pdf_obj;
         }
     } else {
@@ -1370,10 +1335,7 @@ unsafe extern "C" fn strip_soft_mask(
                 .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
         {
             /* Something wrong */
-            dpx_warning(
-                b"%s: Inconsistent rowbytes value.\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Inconsistent rowbytes value.", "PNG");
             return 0 as *mut pdf_obj;
         }
     }
@@ -1489,7 +1451,7 @@ unsafe extern "C" fn strip_soft_mask(
             }
         }
         _ => {
-            dpx_warning(b"You found a bug in pngimage.c!\x00" as *const u8 as *const i8);
+            warn!("You found a bug in pngimage.c!");
             pdf_release_obj(smask);
             free(smask_data_ptr as *mut libc::c_void);
             return 0 as *mut pdf_obj;
@@ -1568,10 +1530,7 @@ pub unsafe extern "C" fn png_get_bbox(
         png_info = png_create_info_struct(png.as_ref().unwrap()).as_mut();
         png_info.is_none()
     } {
-        dpx_warning(
-            b"%s: Creating Libpng read/info struct failed.\x00" as *const u8 as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Creating Libpng read/info struct failed.", "PNG");
         if let Some(png) = png {
             png_destroy_read_struct(
                 &mut (png as *mut _) as *mut *mut _,

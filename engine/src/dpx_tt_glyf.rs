@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -347,10 +349,7 @@ pub unsafe extern "C" fn tt_add_glyph(
         & 1i32 << 7i32 - new_gid as i32 % 8i32
         != 0
     {
-        dpx_warning(
-            b"Slot %u already used.\x00" as *const u8 as *const i8,
-            new_gid as i32,
-        );
+        warn!("Slot {} already used.", new_gid as i32);
     } else {
         if (*g).num_glyphs as i32 + 1i32 >= 65534i32 {
             _tt_abort(b"Too many glyphs.\x00" as *const u8 as *const i8);

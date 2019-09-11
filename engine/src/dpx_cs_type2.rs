@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 extern "C" {
     #[no_mangle]
@@ -277,18 +279,12 @@ unsafe extern "C" fn do_operator1(
                 width = arg_stack[0];
                 clear_stack(dest, limit);
             } else if stack_top == 4i32 || stack_top == 5i32 {
-                dpx_warning(
-                    b"\"seac\" character deprecated in Type 2 charstring.\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("\"seac\" character deprecated in Type 2 charstring.");
                 status = -1i32;
                 return;
             } else {
                 if stack_top > 0i32 {
-                    dpx_warning(
-                        b"%s: Operand stack not empty.\x00" as *const u8 as *const i8,
-                        b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                    );
+                    warn!("{}: Operand stack not empty.", "Type2 Charstring Parser");
                 }
             }
             if limit < (*dest).offset(1) {
@@ -303,10 +299,7 @@ unsafe extern "C" fn do_operator1(
         5 | 6 | 7 | 8 | 24 | 25 | 26 | 27 | 30 | 31 => {
             /* above oprators are candidate for first stack-clearing operator */
             if phase < 2i32 {
-                dpx_warning(
-                    b"%s: Broken Type 2 charstring.\x00" as *const u8 as *const i8,
-                    b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                );
+                warn!("{}: Broken Type 2 charstring.", "Type2 Charstring Parser");
                 status = -1i32;
                 return;
             }
@@ -362,19 +355,13 @@ unsafe extern "C" fn do_operator2(
     match op as i32 {
         0 => {
             /* deprecated */
-            dpx_warning(
-                b"Operator \"dotsection\" deprecated in Type 2 charstring.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("Operator \"dotsection\" deprecated in Type 2 charstring.");
             status = -1i32;
             return;
         }
         34 | 35 | 36 | 37 => {
             if phase < 2i32 {
-                dpx_warning(
-                    b"%s: Broken Type 2 charstring.\x00" as *const u8 as *const i8,
-                    b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                );
+                warn!("{}: Broken Type 2 charstring.", "Type2 Charstring Parser");
                 status = -1i32;
                 return;
             }
@@ -626,9 +613,9 @@ unsafe extern "C" fn do_operator2(
             }
         }
         23 => {
-            dpx_warning(
-                b"%s: Charstring operator \"random\" found.\x00" as *const u8 as *const i8,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
+            warn!(
+                "{}: Charstring operator \"random\" found.",
+                "Type2 Charstring Parser"
             );
             if 48i32 < stack_top + 1i32 {
                 status = -2i32;
@@ -879,10 +866,7 @@ unsafe extern "C" fn do_charstring(
     if status == 2i32 {
         status = 0i32
     } else if status == 3i32 && *data < endptr {
-        dpx_warning(
-            b"%s: Garbage after endchar.\x00" as *const u8 as *const i8,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Garbage after endchar.", "Type2 Charstring Parser");
     } else if status < 0i32 {
         /* error */
         _tt_abort(

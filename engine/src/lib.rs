@@ -10,6 +10,26 @@
     unused_assignments,
     unused_mut
 )]
+
+//use log::{info, warn};
+
+#[macro_export]
+macro_rules! info(
+    ($($arg:tt)*) => {
+        print!($($arg)*);
+        crate::dpx_error::_last_message_type = crate::dpx_error::DPX_MESG_INFO;
+    };
+);
+
+#[macro_export]
+macro_rules! warn(
+    ($($arg:tt)*) => {
+        print!("\nwarning: ");
+        println!($($arg)*);
+        crate::dpx_error::_last_message_type = crate::dpx_error::DPX_MESG_WARN;
+    };
+);
+
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type __ssize_t = i64;
