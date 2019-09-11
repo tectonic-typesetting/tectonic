@@ -169,7 +169,7 @@ pub unsafe extern "C" fn check_for_bmp(mut handle: rust_input_handle_t) -> i32 {
     {
         return 0i32;
     }
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn get_density(
     mut xdensity: *mut f64,
@@ -217,7 +217,7 @@ pub unsafe extern "C" fn bmp_get_bbox(
         hdr.height
     }) as u32;
     get_density(xdensity, ydensity, &mut hdr);
-    return r;
+    r
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -481,7 +481,7 @@ pub unsafe extern "C" fn bmp_include_image(
         &mut info as *mut ximage_info as *mut libc::c_void,
         stream,
     );
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut hdr_info) -> i32 {
     let mut buf: [u8; 142] = [0; 142];
@@ -599,7 +599,7 @@ unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut 
             return -1i32;
         }
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn read_raster_rle8(
     mut data_ptr: *mut u8,
@@ -691,7 +691,7 @@ unsafe extern "C" fn read_raster_rle8(
         }
         v += 1
     }
-    return count;
+    count
 }
 unsafe extern "C" fn read_raster_rle4(
     mut data_ptr: *mut u8,
@@ -820,6 +820,6 @@ unsafe extern "C" fn read_raster_rle4(
         }
         v += 1
     }
-    return count;
+    count
 }
 /* Check for EOL and EOI marker */

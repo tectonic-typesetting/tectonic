@@ -200,7 +200,7 @@ unsafe extern "C" fn read_box_hdr(
             *lbox,
         );
     }
-    return bytesread;
+    bytesread
 }
 unsafe extern "C" fn check_jp___box(mut fp: *mut FILE) -> i32 {
     if get_unsigned_quad(fp) != 0xc_u32 {
@@ -213,7 +213,7 @@ unsafe extern "C" fn check_jp___box(mut fp: *mut FILE) -> i32 {
     if get_unsigned_quad(fp) != 0xd0a870a_u32 {
         return 0i32;
     }
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: u32) -> i32 {
     let mut supported: i32 = 0i32;
@@ -251,7 +251,7 @@ unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: u32) -> i32 {
             supported = 0i32
         }
     }
-    return supported;
+    supported
 }
 unsafe extern "C" fn read_res__data(mut info: *mut ximage_info, mut fp: *mut FILE, mut size: u32) {
     let mut VR_N: u32 = 0;
@@ -312,7 +312,11 @@ unsafe extern "C" fn scan_res_(
             size = size.wrapping_sub(lbox)
         }
     }
-    return if size == 0_u32 { 0i32 } else { -1i32 };
+    if size == 0_u32 {
+        0i32
+    } else {
+        -1i32
+    }
 }
 /* Acrobat seems require Channel Definition box to be defined when image data
  * contains opacity channel. However, OpenJPEG (and maybe most of JPEG 2000 coders?)
@@ -368,7 +372,7 @@ unsafe extern "C" fn scan_cdef(
             b"JPEG2000: Unsupported transparency type. (ignored)\x00" as *const u8 as *const i8,
         );
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn scan_jp2h(
     mut info: *mut ximage_info,
@@ -501,7 +505,7 @@ unsafe extern "C" fn scan_file(
         );
         error = -1i32
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> i32 {
@@ -524,7 +528,7 @@ pub unsafe extern "C" fn check_for_jp2(mut fp: *mut FILE) -> i32 {
     if check_ftyp_data(fp, lbox.wrapping_sub(len)) == 0 {
         return 0i32;
     }
-    return 1i32;
+    1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: *mut FILE) -> i32 {
@@ -597,7 +601,7 @@ pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: 
         &mut info as *mut ximage_info as *mut libc::c_void,
         stream,
     );
-    return 0i32;
+    0i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -647,5 +651,5 @@ pub unsafe extern "C" fn jp2_get_bbox(
     *height = info.height;
     *xdensity = info.xdensity;
     *ydensity = info.ydensity;
-    return r;
+    r
 }

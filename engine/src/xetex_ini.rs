@@ -627,7 +627,7 @@ pub struct UFILE {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* xetex-ini.c: WEB initialization code translated to C
    Copyright 2016-2018 The Tectonic Project
@@ -1682,12 +1682,12 @@ pub unsafe extern "C" fn trie_node(mut p: trie_pointer) -> trie_pointer {
 #[no_mangle]
 pub unsafe extern "C" fn compress_trie(mut p: trie_pointer) -> trie_pointer {
     if p == 0i32 {
-        return 0i32;
+        0i32
     } else {
         *trie_l.offset(p as isize) = compress_trie(*trie_l.offset(p as isize));
         *trie_r.offset(p as isize) = compress_trie(*trie_r.offset(p as isize));
-        return trie_node(p);
-    };
+        trie_node(p)
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
@@ -1708,7 +1708,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
             }
             loop {
                 trie_max += 1;
-                *trie_taken.offset(trie_max as isize) = 0i32 != 0;
+                *trie_taken.offset(trie_max as isize) = false;
                 *trie_trl.offset(trie_max as isize) = trie_max + 1i32;
                 *trie_tro.offset(trie_max as isize) = trie_max - 1i32;
                 if trie_max == h + max_hyph_char {
@@ -1732,7 +1732,7 @@ pub unsafe extern "C" fn first_fit(mut p: trie_pointer) {
         z = *trie_trl.offset(z as isize)
     }
     /*found *//*991: */
-    *trie_taken.offset(h as isize) = 1i32 != 0;
+    *trie_taken.offset(h as isize) = true;
     *trie_hash.offset(p as isize) = h;
     q = p;
     loop {
@@ -1904,7 +1904,7 @@ unsafe extern "C" fn new_patterns() {
         scan_left_brace();
         k = 0_i16;
         hyf[0] = 0_u8;
-        digit_sensed = 0i32 != 0;
+        digit_sensed = false;
         loop {
             get_x_token();
             match cur_cmd as i32 {
@@ -1956,11 +1956,11 @@ unsafe extern "C" fn new_patterns() {
                             k += 1;
                             hc[k as usize] = cur_chr;
                             hyf[k as usize] = 0_u8;
-                            digit_sensed = 0i32 != 0
+                            digit_sensed = false
                         }
                     } else if (k as i32) < max_hyphenatable_length() {
                         hyf[k as usize] = (cur_chr - 48i32) as u8;
-                        digit_sensed = 1i32 != 0
+                        digit_sensed = true
                     }
                 }
                 10 | 2 => {
@@ -1993,11 +1993,11 @@ unsafe extern "C" fn new_patterns() {
                             c = hc[l as usize] as UTF16_code;
                             l += 1;
                             p = *trie_l.offset(q as isize);
-                            first_child = 1i32 != 0;
+                            first_child = true;
                             while p > 0i32 && c as i32 > *trie_c.offset(p as isize) as i32 {
                                 q = p;
                                 p = *trie_r.offset(q as isize);
-                                first_child = 0i32 != 0
+                                first_child = false
                             }
                             if p == 0i32 || (c as i32) < *trie_c.offset(p as isize) as i32 {
                                 /*999:*/
@@ -2039,7 +2039,7 @@ unsafe extern "C" fn new_patterns() {
                     }
                     k = 0_i16;
                     hyf[0] = 0_u8;
-                    digit_sensed = 0i32 != 0
+                    digit_sensed = false
                 }
                 _ => {
                     if file_line_error_style_p != 0 {
@@ -2088,7 +2088,7 @@ unsafe extern "C" fn new_patterns() {
         {
             /*1643:*/
             c = cur_lang as UTF16_code;
-            first_child = 0i32 != 0;
+            first_child = false;
             p = 0i32;
             loop {
                 q = p;
@@ -2117,7 +2117,7 @@ unsafe extern "C" fn new_patterns() {
             }
             q = p;
             p = *trie_l.offset(q as isize);
-            first_child = 1i32 != 0;
+            first_child = true;
             c = 0i32 as UTF16_code;
             while c as i32 <= 255i32 {
                 if (*eqtb.offset(
@@ -2192,7 +2192,7 @@ unsafe extern "C" fn new_patterns() {
                     .s1 as trie_opcode;
                     q = p;
                     p = *trie_r.offset(q as isize);
-                    first_child = 0i32 != 0
+                    first_child = false
                 }
                 c = c.wrapping_add(1)
             }
@@ -2214,7 +2214,7 @@ unsafe extern "C" fn new_patterns() {
         help_line[0] =
             b"All patterns must be given before typesetting begins.\x00" as *const u8 as *const i8;
         error();
-        (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = scan_toks(0i32 != 0, 0i32 != 0);
+        (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = scan_toks(false, false);
         flush_list(def_ref);
     };
 }
@@ -2388,7 +2388,7 @@ pub unsafe extern "C" fn init_trie() {
         }
     }
     *trie_trc.offset(0) = '?' as i32 as u16;
-    trie_not_ready = 0i32 != 0;
+    trie_not_ready = false;
 }
 /*:1001*/
 unsafe extern "C" fn new_hyph_exceptions() {
@@ -3209,7 +3209,7 @@ pub unsafe extern "C" fn prefixed_command() {
                             j = n - 2i32;
                             if j > 3i32 { j = 5i32 }
                             find_sa_element(j as small_number, cur_val,
-                                            1i32 != 0);
+                                            true);
                             let ref mut fresh14 =
                                 (*mem.offset((cur_ptr + 1i32) as
                                                  isize)).b32.s0;
@@ -3394,15 +3394,15 @@ pub unsafe extern "C" fn prefixed_command() {
         }
         72 | 73 => {
             q = cur_cs;
-            e = 0i32 != 0;
+            e = false;
             if cur_cmd as i32 == 72i32 {
                 if cur_chr == 0i32 {
                     scan_register_num();
                     if cur_val > 255i32 {
                         find_sa_element(5i32 as small_number, cur_val,
-                                        1i32 != 0);
+                                        true);
                         cur_chr = cur_ptr;
-                        e = 1i32 != 0
+                        e = true
                     } else {
                         cur_chr =
                             1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32)
@@ -3410,7 +3410,7 @@ pub unsafe extern "C" fn prefixed_command() {
                                 1i32 + 19i32 + 256i32 + 256i32 + 13i32 +
                                 cur_val
                     }
-                } else { e = 1i32 != 0 }
+                } else { e = true }
             } else if cur_chr ==
                           1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) +
                               1i32 + 15000i32 + 12i32 + 9000i32 + 1i32 + 1i32
@@ -3419,9 +3419,9 @@ pub unsafe extern "C" fn prefixed_command() {
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
                 find_sa_element(6i32 as small_number,
-                                cur_ptr * 4096i32 + cur_val, 1i32 != 0);
+                                cur_ptr * 4096i32 + cur_val, true);
                 cur_chr = cur_ptr;
-                e = 1i32 != 0
+                e = true
             }
             p = cur_chr;
             scan_optional_equals();
@@ -3476,7 +3476,7 @@ pub unsafe extern "C" fn prefixed_command() {
                         scan_char_class_not_ignored();
                         find_sa_element(6i32 as small_number,
                                         cur_ptr * 4096i32 + cur_val,
-                                        0i32 != 0);
+                                        false);
                         if cur_ptr == -0xfffffffi32 {
                             q = -0xfffffffi32
                         } else {
@@ -3515,7 +3515,7 @@ pub unsafe extern "C" fn prefixed_command() {
                 _ => {
                     back_input();
                     cur_cs = q;
-                    q = scan_toks(0i32 != 0, 0i32 != 0);
+                    q = scan_toks(false, false);
                     if (*mem.offset(def_ref as isize)).b32.s1 == -0xfffffffi32
                        {
                         if e {
@@ -3568,7 +3568,7 @@ pub unsafe extern "C" fn prefixed_command() {
         75 => {
             p = cur_chr;
             scan_optional_equals();
-            scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+            scan_dimen(false, false, false);
             if a as i32 >= 4i32 {
                 geq_word_define(p, cur_val);
             } else { eq_word_define(p, cur_val); }
@@ -3910,10 +3910,10 @@ pub unsafe extern "C" fn prefixed_command() {
                 (*mem.offset(p as isize)).b32.s0 = n;
                 j = 1i32;
                 while j <= n {
-                    scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+                    scan_dimen(false, false, false);
                     (*mem.offset((p + 2i32 * j - 1i32) as isize)).b32.s1 =
                         cur_val;
-                    scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+                    scan_dimen(false, false, false);
                     (*mem.offset((p + 2i32 * j) as isize)).b32.s1 = cur_val;
                     j += 1
                 }
@@ -3949,7 +3949,7 @@ pub unsafe extern "C" fn prefixed_command() {
             find_font_dimen(1i32 != 0);
             k = cur_val;
             scan_optional_equals();
-            scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+            scan_dimen(false, false, false);
             (*font_info.offset(k as isize)).b32.s1 = cur_val
         }
         79 => {
@@ -8405,17 +8405,17 @@ unsafe extern "C" fn init_io() {
 unsafe extern "C" fn initialize_more_variables() {
     let mut k: i32 = 0;
     let mut z: hyph_pointer = 0;
-    doing_special = 0i32 != 0;
+    doing_special = false;
     native_text_size = 128i32;
     native_text =
         xmalloc((native_text_size as u64).wrapping_mul(::std::mem::size_of::<UTF16_code>() as u64))
             as *mut UTF16_code;
     interaction = 3_u8;
-    deletions_allowed = 1i32 != 0;
-    set_box_allowed = 1i32 != 0;
+    deletions_allowed = true;
+    set_box_allowed = true;
     error_count = 0_i8;
     help_ptr = 0_u8;
-    use_err_help = 0i32 != 0;
+    use_err_help = false;
     nest_ptr = 0i32;
     max_nest_stack = 0i32;
     cur_list.mode = 1_i16;
@@ -8515,7 +8515,7 @@ unsafe extern "C" fn initialize_more_variables() {
                 + (0x10ffffi32 + 1i32))) as usize] = 1_u16;
         k += 1
     }
-    no_new_control_sequence = 1i32 != 0;
+    no_new_control_sequence = true;
     prim[0].s0 = 0i32;
     prim[0].s1 = 0i32;
     k = 1i32;
@@ -8538,7 +8538,7 @@ unsafe extern "C" fn initialize_more_variables() {
     max_save_stack = 0i32;
     mag_set = 0i32;
     expand_depth_count = 0i32;
-    is_in_csname = 0i32 != 0;
+    is_in_csname = false;
     cur_mark[0] = -0xfffffffi32;
     cur_mark[1] = -0xfffffffi32;
     cur_mark[2] = -0xfffffffi32;
@@ -8566,7 +8566,7 @@ unsafe extern "C" fn initialize_more_variables() {
     max_h = 0i32;
     max_push = 0i32;
     last_bop = -1i32;
-    doing_leaders = 0i32 != 0;
+    doing_leaders = false;
     dead_cycles = 0i32;
     adjust_tail = -0xfffffffi32;
     last_badness = 0i32;
@@ -8596,19 +8596,19 @@ unsafe extern "C" fn initialize_more_variables() {
     if hyph_next > hyph_size {
         hyph_next = 607i32
     }
-    output_active = 0i32 != 0;
+    output_active = false;
     insert_penalties = 0i32;
-    ligature_present = 0i32 != 0;
-    cancel_boundary = 0i32 != 0;
-    lft_hit = 0i32 != 0;
-    rt_hit = 0i32 != 0;
-    ins_disc = 0i32 != 0;
+    ligature_present = false;
+    cancel_boundary = false;
+    lft_hit = false;
+    rt_hit = false;
+    ins_disc = false;
     after_token = 0i32;
-    long_help_seen = 0i32 != 0;
+    long_help_seen = false;
     format_ident = 0i32;
     k = 0i32;
     while k <= 17i32 {
-        write_open[k as usize] = 0i32 != 0;
+        write_open[k as usize] = false;
         k += 1
     }
     LR_ptr = -0xfffffffi32;
@@ -8623,7 +8623,7 @@ unsafe extern "C" fn initialize_more_variables() {
     disc_ptr[2] = -0xfffffffi32;
     disc_ptr[3] = -0xfffffffi32;
     edit_name_start = 0i32;
-    stop_at_space = 1i32 != 0;
+    stop_at_space = true;
 }
 unsafe extern "C" fn initialize_more_initex_variables() {
     let mut i: i32 = 0;
@@ -10254,7 +10254,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
     }
     max_op_used = 0i32 as trie_opcode;
     trie_op_ptr = 0i32;
-    trie_not_ready = 1i32 != 0;
+    trie_not_ready = true;
     (*hash.offset(
         (1i32 + (0x10ffffi32 + 1i32) + (0x10ffffi32 + 1i32) + 1i32 + 15000i32 + 0i32) as isize,
     ))
@@ -10320,7 +10320,7 @@ unsafe extern "C" fn initialize_more_initex_variables() {
 /*:1370*/
 /*1371: */
 unsafe extern "C" fn initialize_primitives() {
-    no_new_control_sequence = 0i32 != 0;
+    no_new_control_sequence = false;
     first = 0i32;
     primitive(
         b"lineskip\x00" as *const u8 as *const i8,
@@ -14031,7 +14031,7 @@ unsafe extern "C" fn initialize_primitives() {
             + (0x10ffffi32 + 1i32)
             + 83i32,
     );
-    no_new_control_sequence = 1i32 != 0;
+    no_new_control_sequence = true;
 }
 unsafe extern "C" fn get_strings_started() {
     pool_ptr = 0i32;
@@ -14326,8 +14326,8 @@ pub unsafe extern "C" fn tt_run_engine(
     term_offset = 0i32;
     file_offset = 0i32;
     job_name = 0i32;
-    name_in_progress = 0i32 != 0;
-    log_opened = 0i32 != 0;
+    name_in_progress = false;
+    log_opened = false;
     if semantic_pagination_enabled {
         output_file_extension = b".spx\x00" as *const u8 as *const i8
     } else {
@@ -14344,8 +14344,8 @@ pub unsafe extern "C" fn tt_run_engine(
     *if_stack.offset(0) = -0xfffffffi32;
     param_ptr = 0i32;
     max_param_stack = 0i32;
-    used_tectonic_coda_tokens = 0i32 != 0;
-    gave_char_warning_help = 0i32 != 0;
+    used_tectonic_coda_tokens = false;
+    gave_char_warning_help = false;
     memset(
         buffer as *mut libc::c_void,
         0i32,
@@ -14360,11 +14360,11 @@ pub unsafe extern "C" fn tt_run_engine(
     cur_input.index = 0_u16;
     line = 0i32;
     cur_input.name = 0i32;
-    force_eof = 0i32 != 0;
+    force_eof = false;
     align_state = 1000000i64 as i32;
     init_io();
     if in_initex_mode {
-        no_new_control_sequence = 0i32 != 0;
+        no_new_control_sequence = false;
         primitive(b"XeTeXpicfile\x00" as *const u8 as *const i8, 59_u16, 41i32);
         primitive(b"XeTeXpdffile\x00" as *const u8 as *const i8, 59_u16, 42i32);
         primitive(b"XeTeXglyph\x00" as *const u8 as *const i8, 59_u16, 43i32);
@@ -15360,7 +15360,7 @@ pub unsafe extern "C" fn tt_run_engine(
         max_reg_help_line =
             b"A register number must be between 0 and 32767.\x00" as *const u8 as *const i8
     }
-    no_new_control_sequence = 1i32 != 0;
+    no_new_control_sequence = true;
     if !in_initex_mode {
         if !load_fmt_file() {
             return history;
@@ -15875,7 +15875,7 @@ pub unsafe extern "C" fn tt_run_engine(
             as *mut bool;
     font_k = 0i32;
     while font_k <= font_max {
-        *font_used.offset(font_k as isize) = 0i32 != 0;
+        *font_used.offset(font_k as isize) = false;
         font_k += 1
     }
     if interaction as i32 == 0i32 {
@@ -15993,5 +15993,5 @@ pub unsafe extern "C" fn tt_run_engine(
     trie_trl = mfree(trie_trl as *mut libc::c_void) as *mut trie_pointer;
     trie_tro = mfree(trie_tro as *mut libc::c_void) as *mut trie_pointer;
     trie_trc = mfree(trie_trc as *mut libc::c_void) as *mut u16;
-    return history;
+    history
 }

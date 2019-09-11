@@ -171,7 +171,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 static mut parser_state: C2RustUnnamed_0 = {
     let mut init = C2RustUnnamed_0 { tainted: 0i32 };
@@ -248,7 +248,7 @@ unsafe extern "C" fn parsed_string(mut start: *const i8, mut end: *const i8) -> 
         );
         *result.offset(len as isize) = '\u{0}' as i32 as i8
     }
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_number(mut start: *mut *const i8, mut end: *const i8) -> *mut i8 {
@@ -278,7 +278,7 @@ pub unsafe extern "C" fn parse_number(mut start: *mut *const i8, mut end: *const
     }
     number = parsed_string(*start, p);
     *start = p;
-    return number;
+    number
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_unsigned(mut start: *mut *const i8, mut end: *const i8) -> *mut i8 {
@@ -297,7 +297,7 @@ pub unsafe extern "C" fn parse_unsigned(mut start: *mut *const i8, mut end: *con
     }
     number = parsed_string(*start, p);
     *start = p;
-    return number;
+    number
 }
 unsafe extern "C" fn parse_gen_ident(
     mut start: *mut *const i8,
@@ -316,21 +316,21 @@ unsafe extern "C" fn parse_gen_ident(
     }
     ident = parsed_string(*start, p);
     *start = p;
-    return ident;
+    ident
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_ident(mut start: *mut *const i8, mut end: *const i8) -> *mut i8 {
     static mut valid_chars: *const i8 =
         b"!\"#$&\'*+,-.0123456789:;=?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_`abcdefghijklmnopqrstuvwxyz|~\x00"
             as *const u8 as *const i8;
-    return parse_gen_ident(start, end, valid_chars);
+    parse_gen_ident(start, end, valid_chars)
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_val_ident(mut start: *mut *const i8, mut end: *const i8) -> *mut i8 {
     static mut valid_chars: *const i8 =
         b"!\"#$&\'*+,-./0123456789:;?@ABCDEFGHIJKLMNOPQRSTUVWXYZ\\^_`abcdefghijklmnopqrstuvwxyz|~\x00"
             as *const u8 as *const i8;
-    return parse_gen_ident(start, end, valid_chars);
+    parse_gen_ident(start, end, valid_chars)
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_opt_ident(mut start: *mut *const i8, mut end: *const i8) -> *mut i8 {
@@ -338,7 +338,7 @@ pub unsafe extern "C" fn parse_opt_ident(mut start: *mut *const i8, mut end: *co
         *start = (*start).offset(1);
         return parse_ident(start, end);
     }
-    return 0 as *mut i8;
+    0 as *mut i8
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_number(
@@ -420,7 +420,7 @@ pub unsafe extern "C" fn parse_pdf_number(
         p = p.offset(1)
     }
     *pp = p;
-    return pdf_new_number(sign as f64 * v);
+    pdf_new_number(sign as f64 * v)
 }
 /*
  * PDF Name:
@@ -453,7 +453,7 @@ unsafe extern "C" fn pn_getc(mut pp: *mut *const i8, mut endptr: *const i8) -> i
         ch = *p.offset(0) as i32;
         *pp = (*pp).offset(1)
     }
-    return ch;
+    ch
 }
 static mut sbuf: [i8; 65536] = [0; 65536];
 #[no_mangle]
@@ -518,7 +518,7 @@ pub unsafe extern "C" fn parse_pdf_name(
         return 0 as *mut pdf_obj;
     }
     name[len as usize] = '\u{0}' as i32 as i8;
-    return pdf_new_name(name.as_mut_ptr());
+    pdf_new_name(name.as_mut_ptr())
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_boolean(
@@ -572,7 +572,7 @@ pub unsafe extern "C" fn parse_pdf_boolean(
         }
     }
     dpx_warning(b"Not a boolean object.\x00" as *const u8 as *const i8);
-    return 0 as *mut pdf_obj;
+    0 as *mut pdf_obj
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_null(
@@ -610,7 +610,7 @@ pub unsafe extern "C" fn parse_pdf_null(
         }
     }
     dpx_warning(b"Not a null object.\x00" as *const u8 as *const i8);
-    return 0 as *mut pdf_obj;
+    0 as *mut pdf_obj
 }
 /*
  * PDF Literal String
@@ -683,7 +683,7 @@ unsafe extern "C" fn ps_getescc(mut pp: *mut *const i8, mut endptr: *const i8) -
         }
     }
     *pp = p;
-    return ch;
+    ch
 }
 unsafe extern "C" fn parse_pdf_literal_string(
     mut pp: *mut *const i8,
@@ -779,7 +779,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
         return 0 as *mut pdf_obj;
     }
     *pp = p.offset(1);
-    return pdf_new_string(sbuf.as_mut_ptr() as *const libc::c_void, len as size_t);
+    pdf_new_string(sbuf.as_mut_ptr() as *const libc::c_void, len as size_t)
 }
 /*
  * PDF Hex String
@@ -831,7 +831,7 @@ unsafe extern "C" fn parse_pdf_hex_string(
         }
     }
     *pp = p.offset(1);
-    return pdf_new_string(sbuf.as_mut_ptr() as *const libc::c_void, len as size_t);
+    pdf_new_string(sbuf.as_mut_ptr() as *const libc::c_void, len as size_t)
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_string(
@@ -854,7 +854,7 @@ pub unsafe extern "C" fn parse_pdf_string(
         }
     }
     dpx_warning(b"Could not find a string object.\x00" as *const u8 as *const i8);
-    return 0 as *mut pdf_obj;
+    0 as *mut pdf_obj
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_tainted_dict(
@@ -865,7 +865,7 @@ pub unsafe extern "C" fn parse_pdf_tainted_dict(
     parser_state.tainted = 1i32;
     result = parse_pdf_dict(pp, endptr, 0 as *mut pdf_file);
     parser_state.tainted = 0i32;
-    return result;
+    result
 }
 /* PDF_PARSE_STRICT */
 /* !PDF_PARSE_STRICT */
@@ -926,7 +926,7 @@ pub unsafe extern "C" fn parse_pdf_dict(
         return 0 as *mut pdf_obj;
     }
     *pp = p.offset(2);
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn parse_pdf_array(
@@ -964,7 +964,7 @@ pub unsafe extern "C" fn parse_pdf_array(
         return 0 as *mut pdf_obj;
     }
     *pp = p.offset(1);
-    return result;
+    result
 }
 unsafe extern "C" fn parse_pdf_stream(
     mut pp: *mut *const i8,
@@ -1050,7 +1050,7 @@ unsafe extern "C" fn parse_pdf_stream(
     }
     p = p.offset(9);
     *pp = p;
-    return result;
+    result
 }
 /* PLEASE REMOVE THIS */
 /* This is not PDF indirect reference. */
@@ -1080,7 +1080,7 @@ unsafe extern "C" fn parse_pdf_reference(
         *start = save;
         result = 0 as *mut pdf_obj
     }
-    return result;
+    result
 }
 /* !PDF_PARSE_STRICT */
 unsafe extern "C" fn try_pdf_reference(
@@ -1173,7 +1173,7 @@ unsafe extern "C" fn try_pdf_reference(
     if !endptr.is_null() {
         *endptr = start
     }
-    return pdf_new_indirect(pf, id, gen);
+    pdf_new_indirect(pf, id, gen)
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1259,5 +1259,5 @@ pub unsafe extern "C" fn parse_pdf_object(
             result = 0 as *mut pdf_obj
         }
     }
-    return result;
+    result
 }

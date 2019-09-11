@@ -87,7 +87,7 @@ pub unsafe extern "C" fn get_unsigned_byte(mut file: *mut FILE) -> u8 {
     if ch < 0i32 {
         _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
     }
-    return ch as u8;
+    ch as u8
 }
 #[no_mangle]
 pub unsafe extern "C" fn skip_bytes(mut n: u32, mut file: *mut FILE) {
@@ -107,13 +107,13 @@ pub unsafe extern "C" fn get_signed_byte(mut file: *mut FILE) -> i8 {
     if byte >= 0x80i32 {
         byte -= 0x100i32
     }
-    return byte as i8;
+    byte as i8
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_pair(mut file: *mut FILE) -> u16 {
     let mut pair: u16 = get_unsigned_byte(file) as u16;
     pair = ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as u16;
-    return pair;
+    pair
 }
 #[no_mangle]
 pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> u16 {
@@ -123,13 +123,13 @@ pub unsafe extern "C" fn sget_unsigned_pair(mut s: *mut u8) -> u16 {
     let fresh2 = s;
     s = s.offset(1);
     pair = ((pair as i32) << 8i32 | *fresh2 as i32) as u16;
-    return pair;
+    pair
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_signed_pair(mut file: *mut FILE) -> i16 {
     let mut pair: i16 = get_signed_byte(file) as i16;
     pair = ((pair as i32) << 8i32 | get_unsigned_byte(file) as i32) as i16;
-    return pair;
+    pair
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_triple(mut file: *mut FILE) -> u32 {
@@ -140,7 +140,7 @@ pub unsafe extern "C" fn get_unsigned_triple(mut file: *mut FILE) -> u32 {
         triple = triple << 8i32 | get_unsigned_byte(file) as u32;
         i += 1
     }
-    return triple;
+    triple
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_signed_triple(mut file: *mut FILE) -> i32 {
@@ -151,7 +151,7 @@ pub unsafe extern "C" fn get_signed_triple(mut file: *mut FILE) -> i32 {
         triple = triple << 8i32 | get_unsigned_byte(file) as i32;
         i += 1
     }
-    return triple;
+    triple
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_signed_quad(mut file: *mut FILE) -> i32 {
@@ -162,7 +162,7 @@ pub unsafe extern "C" fn get_signed_quad(mut file: *mut FILE) -> i32 {
         quad = quad << 8i32 | get_unsigned_byte(file) as i32;
         i += 1
     }
-    return quad;
+    quad
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> u32 {
@@ -173,7 +173,7 @@ pub unsafe extern "C" fn get_unsigned_quad(mut file: *mut FILE) -> u32 {
         quad = quad << 8i32 | get_unsigned_byte(file) as u32;
         i += 1
     }
-    return quad;
+    quad
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u32 {
@@ -208,7 +208,7 @@ pub unsafe extern "C" fn get_unsigned_num(mut file: *mut FILE, mut num: u8) -> u
         17819358871496454702 => val = val << 8i32 | get_unsigned_byte(file) as u32,
         _ => {}
     }
-    return val;
+    val
 }
 /* Compute a signed quad that must be positive */
 #[no_mangle]
@@ -226,7 +226,7 @@ pub unsafe extern "C" fn get_positive_quad(
             val,
         );
     }
-    return val as u32;
+    val as u32
 }
 #[no_mangle]
 pub unsafe extern "C" fn sqxfw(mut sq: i32, mut fw: fixword) -> i32 {
@@ -278,7 +278,11 @@ pub unsafe extern "C" fn sqxfw(mut sq: i32, mut fw: fixword) -> i32 {
         >> 4i32) as i32;
     result = (result as u32).wrapping_add(f.wrapping_add(h).wrapping_add(k) << 12i32) as i32 as i32;
     result = (result as u32).wrapping_add(j << 28i32) as i32 as i32;
-    return if sign > 0i32 { result } else { -result };
+    if sign > 0i32 {
+        result
+    } else {
+        -result
+    }
 }
 /* Tectonic-ified versions */
 #[no_mangle]
@@ -299,7 +303,7 @@ pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -
     if ch < 0i32 {
         _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
     }
-    return ch as u8;
+    ch as u8
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> i8 {
@@ -308,19 +312,19 @@ pub unsafe extern "C" fn tt_get_signed_byte(mut handle: rust_input_handle_t) -> 
     if byte >= 0x80i32 {
         byte -= 0x100i32
     }
-    return byte as i8;
+    byte as i8
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_pair(mut handle: rust_input_handle_t) -> u16 {
     let mut pair: u16 = tt_get_unsigned_byte(handle) as u16;
     pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32) as u16;
-    return pair;
+    pair
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_pair(mut handle: rust_input_handle_t) -> i16 {
     let mut pair: i16 = tt_get_signed_byte(handle) as i16;
     pair = ((pair as i32) << 8i32 | tt_get_unsigned_byte(handle) as i32) as i16;
-    return pair;
+    pair
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -> u32 {
@@ -331,7 +335,7 @@ pub unsafe extern "C" fn tt_get_unsigned_quad(mut handle: rust_input_handle_t) -
         quad = quad << 8i32 | tt_get_unsigned_byte(handle) as u32;
         i += 1
     }
-    return quad;
+    quad
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> i32 {
@@ -342,7 +346,7 @@ pub unsafe extern "C" fn tt_get_signed_quad(mut handle: rust_input_handle_t) -> 
         quad = quad << 8i32 | tt_get_unsigned_byte(handle) as i32;
         i += 1
     }
-    return quad;
+    quad
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_unsigned_num(mut handle: rust_input_handle_t, mut num: u8) -> u32 {
@@ -383,7 +387,7 @@ pub unsafe extern "C" fn tt_get_unsigned_num(mut handle: rust_input_handle_t, mu
         }
         _ => {}
     }
-    return val;
+    val
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -431,5 +435,5 @@ pub unsafe extern "C" fn tt_get_positive_quad(
             val,
         );
     }
-    return val as u32;
+    val as u32
 }

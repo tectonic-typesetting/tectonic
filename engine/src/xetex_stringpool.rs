@@ -78,22 +78,22 @@ pub unsafe extern "C" fn load_pool_strings(mut spare_size: i32) -> i32 {
         g = make_string()
         /* Returns 0 on error. */
     }
-    return g;
+    g
 }
 #[no_mangle]
 pub unsafe extern "C" fn length(mut s: str_number) -> i32 {
     if s as i64 >= 65536 {
-        return *str_start.offset(((s + 1i32) as i64 - 65536) as isize)
-            - *str_start.offset((s as i64 - 65536) as isize);
+        *str_start.offset(((s + 1i32) as i64 - 65536) as isize)
+            - *str_start.offset((s as i64 - 65536) as isize)
     } else if s >= 32i32 && s < 127i32 {
-        return 1i32;
+        1
     } else if s <= 127i32 {
-        return 3i32;
+        3
     } else if s < 256i32 {
-        return 4i32;
+        4
     } else {
-        return 8i32;
-    };
+        8
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn make_string() -> str_number {
@@ -105,7 +105,7 @@ pub unsafe extern "C" fn make_string() -> str_number {
     }
     str_ptr += 1;
     *str_start.offset((str_ptr - 65536i32) as isize) = pool_ptr;
-    return str_ptr - 1i32;
+    str_ptr - 1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn append_str(mut s: str_number) {
@@ -135,64 +135,64 @@ pub unsafe extern "C" fn str_eq_buf(mut s: str_number, mut k: i32) -> bool {
             if *str_pool.offset(j as isize) as i64
                 != 55296 + (*buffer.offset(k as isize) as i64 - 65536) / 1024 as i64
             {
-                return 0i32 != 0;
+                return false;
             } else {
                 if *str_pool.offset((j + 1i32) as isize) as i64
                     != 56320 + (*buffer.offset(k as isize) as i64 - 65536) % 1024 as i64
                 {
-                    return 0i32 != 0;
+                    return false;
                 } else {
                     j += 1
                 }
             }
         } else if *str_pool.offset(j as isize) as i32 != *buffer.offset(k as isize) {
-            return 0i32 != 0;
+            return false;
         }
         j += 1;
         k += 1
     }
-    return 1i32 != 0;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn str_eq_str(mut s: str_number, mut t: str_number) -> bool {
     let mut j: pool_pointer = 0;
     let mut k: pool_pointer = 0;
     if length(s) != length(t) {
-        return 0i32 != 0;
+        return false;
     }
     if length(s) == 1i32 {
         if (s as i64) < 65536 {
             if (t as i64) < 65536 {
                 if s != t {
-                    return 0i32 != 0;
+                    return false;
                 }
             } else if s
                 != *str_pool.offset(*str_start.offset((t as i64 - 65536) as isize) as isize) as i32
             {
-                return 0i32 != 0;
+                return false;
             }
         } else if (t as i64) < 65536 {
             if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize) as i32 != t
             {
-                return 0i32 != 0;
+                return false;
             }
         } else if *str_pool.offset(*str_start.offset((s as i64 - 65536) as isize) as isize) as i32
             != *str_pool.offset(*str_start.offset((t as i64 - 65536) as isize) as isize) as i32
         {
-            return 0i32 != 0;
+            return false;
         }
     } else {
         j = *str_start.offset((s as i64 - 65536) as isize);
         k = *str_start.offset((t as i64 - 65536) as isize);
         while j < *str_start.offset(((s + 1i32) as i64 - 65536) as isize) {
             if *str_pool.offset(j as isize) as i32 != *str_pool.offset(k as isize) as i32 {
-                return 0i32 != 0;
+                return false;
             }
             j += 1;
             k += 1
         }
     }
-    return 1i32 != 0;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn search_string(mut search: str_number) -> str_number {
@@ -212,7 +212,7 @@ pub unsafe extern "C" fn search_string(mut search: str_number) -> str_number {
             s -= 1
         }
     }
-    return 0i32;
+    0i32
 }
 /* tectonic/xetex-stringpool.h: preloaded "string pool" constants
    Copyright 2017 the Tectonic Project
@@ -229,5 +229,5 @@ pub unsafe extern "C" fn slow_make_string() -> str_number {
         pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize);
         return s;
     }
-    return t;
+    t
 }

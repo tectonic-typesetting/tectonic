@@ -472,7 +472,7 @@ pub struct CIDSysInfo {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -486,7 +486,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 static mut __verbose: i32 = 0i32;
 #[no_mangle]
@@ -501,7 +501,7 @@ pub unsafe extern "C" fn pdf_font_set_verbose(mut level: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_verbose() -> i32 {
-    return __verbose;
+    __verbose
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_set_dpi(mut font_dpi: i32) {
@@ -568,7 +568,7 @@ pub unsafe extern "C" fn get_unique_time_if_given() -> time_t {
             ret = epoch
         }
     }
-    return ret;
+    ret
 }
 static mut unique_tag_state: i32 = 1i32;
 static mut unique_tags_deterministic: i32 = 0i32;
@@ -764,7 +764,7 @@ pub unsafe extern "C" fn pdf_get_font_reference(mut font_id: i32) -> *mut pdf_ob
             (*font).reference = pdf_ref_obj(pdf_font_get_resource(font))
         }
     }
-    return pdf_link_obj((*font).reference);
+    pdf_link_obj((*font).reference)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_font_usedchars(mut font_id: i32) -> *mut i8 {
@@ -821,7 +821,7 @@ pub unsafe extern "C" fn pdf_get_font_subtype(mut font_id: i32) -> i32 {
         );
     }
     font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
-    return (*font).subtype;
+    (*font).subtype
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_font_encoding(mut font_id: i32) -> i32 {
@@ -833,7 +833,7 @@ pub unsafe extern "C" fn pdf_get_font_encoding(mut font_id: i32) -> i32 {
         );
     }
     font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
-    return (*font).encoding_id;
+    (*font).encoding_id
 }
 /* The rule for ToUnicode creation is:
  *
@@ -892,7 +892,7 @@ unsafe extern "C" fn try_load_ToUnicode_CMap(mut font: *mut pdf_font) -> i32 {
         }
         pdf_release_obj(tounicode);
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_close_fonts() {
@@ -1327,7 +1327,7 @@ pub unsafe extern "C" fn pdf_font_findresource(
             }
         }
     }
-    return font_id;
+    font_id
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_is_in_use(mut font: *mut pdf_font) -> bool {
@@ -1341,22 +1341,22 @@ pub unsafe extern "C" fn pdf_font_is_in_use(mut font: *mut pdf_font) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_index(mut font: *mut pdf_font) -> i32 {
     assert!(!font.is_null());
-    return (*font).index;
+    (*font).index
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_ident(mut font: *mut pdf_font) -> *mut i8 {
     assert!(!font.is_null());
-    return (*font).ident;
+    (*font).ident
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_mapname(mut font: *mut pdf_font) -> *mut i8 {
     assert!(!font.is_null());
-    return (*font).map_name;
+    (*font).map_name
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_fontname(mut font: *mut pdf_font) -> *mut i8 {
     assert!(!font.is_null());
-    return (*font).fontname;
+    (*font).fontname
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_resource(mut font: *mut pdf_font) -> *mut pdf_obj {
@@ -1393,7 +1393,7 @@ pub unsafe extern "C" fn pdf_font_get_resource(mut font: *mut pdf_font) -> *mut 
             _ => {}
         }
     }
-    return (*font).resource;
+    (*font).resource
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_descriptor(mut font: *mut pdf_font) -> *mut pdf_obj {
@@ -1406,17 +1406,17 @@ pub unsafe extern "C" fn pdf_font_get_descriptor(mut font: *mut pdf_font) -> *mu
             pdf_new_name(b"FontDescriptor\x00" as *const u8 as *const i8),
         );
     }
-    return (*font).descriptor;
+    (*font).descriptor
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_usedchars(mut font: *mut pdf_font) -> *mut i8 {
     assert!(!font.is_null());
-    return (*font).usedchars;
+    (*font).usedchars
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_encoding(mut font: *mut pdf_font) -> i32 {
     assert!(!font.is_null());
-    return (*font).encoding_id;
+    (*font).encoding_id
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_flag(mut font: *mut pdf_font, mut mask: i32) -> i32 {
@@ -1436,7 +1436,7 @@ pub unsafe extern "C" fn pdf_font_get_param(mut font: *mut pdf_font, mut param_t
         2 => param = (*font).point_size,
         _ => {}
     }
-    return param;
+    param
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_get_uniqueTag(mut font: *mut pdf_font) -> *mut i8 {
@@ -1444,7 +1444,7 @@ pub unsafe extern "C" fn pdf_font_get_uniqueTag(mut font: *mut pdf_font) -> *mut
     if (*font).uniqueID[0] as i32 == '\u{0}' as i32 {
         pdf_font_make_uniqueTag((*font).uniqueID.as_mut_ptr());
     }
-    return (*font).uniqueID.as_mut_ptr();
+    (*font).uniqueID.as_mut_ptr()
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_set_fontname(
@@ -1461,13 +1461,13 @@ pub unsafe extern "C" fn pdf_font_set_fontname(
     (*font).fontname = new((strlen(fontname).wrapping_add(1i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*font).fontname, fontname);
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_set_subtype(mut font: *mut pdf_font, mut subtype: i32) -> i32 {
     assert!(!font.is_null());
     (*font).subtype = subtype;
-    return 0i32;
+    0i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1502,5 +1502,5 @@ pub unsafe extern "C" fn pdf_font_set_subtype(mut font: *mut pdf_font, mut subty
 pub unsafe extern "C" fn pdf_font_set_flags(mut font: *mut pdf_font, mut flags: i32) -> i32 {
     assert!(!font.is_null());
     (*font).flags |= flags;
-    return 0i32;
+    0i32
 }

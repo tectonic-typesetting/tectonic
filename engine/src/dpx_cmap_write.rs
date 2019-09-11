@@ -284,7 +284,7 @@ unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: i32) -> size_t {
         count = count.wrapping_add(1);
         c += 1
     }
-    return count;
+    count
 }
 unsafe extern "C" fn sputx(mut c: u8, mut s: *mut *mut i8, mut end: *mut i8) -> i32 {
     let mut hi: i8 = (c as i32 >> 4i32) as i8;
@@ -303,7 +303,7 @@ unsafe extern "C" fn sputx(mut c: u8, mut s: *mut *mut i8, mut end: *mut i8) -> 
         lo as i32 + '7' as i32
     }) as i8;
     *s = (*s).offset(2);
-    return 2i32;
+    2i32
 }
 unsafe extern "C" fn write_map(
     mut mtab: *mut mapDef,
@@ -551,7 +551,7 @@ unsafe extern "C" fn write_map(
             strlen(b"endbfrange\n\x00" as *const u8 as *const i8) as i32,
         );
     }
-    return count as i32;
+    count as i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -834,5 +834,5 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     );
     free(codestr as *mut libc::c_void);
     free(wbuf.buf as *mut libc::c_void);
-    return stream;
+    stream
 }

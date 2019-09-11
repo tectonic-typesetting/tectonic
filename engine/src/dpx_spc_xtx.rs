@@ -263,7 +263,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /*  This is xdvipdfmx, an extended version of dvipdfmx,
     an eXtended version of dvipdfm by Mark A. Wicks.
@@ -326,7 +326,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
     pdf_dev_concat(&mut M);
     pdf_dev_get_fixed_point(&mut pt);
     pdf_dev_set_fixed_point(x_user - pt.x, y_user - pt.y);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_xtx_scale(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut values: [f64; 2] = [0.; 2];
@@ -417,7 +417,7 @@ pub unsafe extern "C" fn spc_handler_xtx_gsave(
     mut args: *mut spc_arg,
 ) -> i32 {
     pdf_dev_gsave();
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_handler_xtx_grestore(
@@ -434,7 +434,7 @@ pub unsafe extern "C" fn spc_handler_xtx_grestore(
      */
     pdf_dev_reset_fonts(0i32);
     pdf_dev_reset_color(0i32);
-    return 0i32;
+    0i32
 }
 /* Please remove this.
  * This should be handled before processing pages!
@@ -443,7 +443,7 @@ unsafe extern "C" fn spc_handler_xtx_papersize(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_xtx_backgroundcolor(
     mut spe: *mut spc_env,
@@ -464,7 +464,7 @@ unsafe extern "C" fn spc_handler_xtx_backgroundcolor(
     } else {
         pdf_doc_set_bgcolor(&mut colorspec);
     }
-    return error;
+    error
 }
 /* FIXME: xdv2pdf's x:fontmapline and x:fontmapfile may have slightly different syntax/semantics */
 unsafe extern "C" fn spc_handler_xtx_fontmapline(
@@ -539,7 +539,7 @@ unsafe extern "C" fn spc_handler_xtx_fontmapline(
     if error == 0 {
         (*ap).curptr = (*ap).endptr
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_xtx_fontmapfile(
     mut spe: *mut spc_env,
@@ -573,7 +573,7 @@ unsafe extern "C" fn spc_handler_xtx_fontmapfile(
     } else {
         error = pdf_load_fontmap_file(mapfile, mode)
     }
-    return error;
+    error
 }
 static mut overlay_name: [i8; 256] = [0; 256];
 unsafe extern "C" fn spc_handler_xtx_initoverlay(
@@ -591,7 +591,7 @@ unsafe extern "C" fn spc_handler_xtx_initoverlay(
     );
     overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as i64 as usize] = 0_i8;
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_xtx_clipoverlay(
     mut spe: *mut spc_env,
@@ -617,7 +617,7 @@ unsafe extern "C" fn spc_handler_xtx_clipoverlay(
         pdf_doc_add_page_content(b" 0 0 m W n\x00" as *const u8 as *const i8, 10_u32);
     }
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_xtx_renderingmode(
     mut spe: *mut spc_env,
@@ -653,7 +653,7 @@ unsafe extern "C" fn spc_handler_xtx_renderingmode(
         );
     }
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_xtx_unsupportedcolor(
     mut spe: *mut spc_env,
@@ -663,7 +663,7 @@ unsafe extern "C" fn spc_handler_xtx_unsupportedcolor(
              b"xetex-style \\special{x:%s} is not supported by this driver;\nupdate document or driver to use \\special{color} instead.\x00"
                  as *const u8 as *const i8, (*args).command);
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_xtx_unsupported(
     mut spe: *mut spc_env,
@@ -676,7 +676,7 @@ unsafe extern "C" fn spc_handler_xtx_unsupported(
         (*args).command,
     );
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 static mut xtx_handlers: [spc_handler; 21] = unsafe {
     [
@@ -906,9 +906,9 @@ pub unsafe extern "C" fn spc_xtx_check_special(mut buf: *const i8, mut len: i32)
             strlen(b"x:\x00" as *const u8 as *const i8),
         ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    false
 }
 /*  This is xdvipdfmx, an extended version of dvipdfmx,
     an eXtended version of dvipdfm by Mark A. Wicks.
@@ -985,5 +985,5 @@ pub unsafe extern "C" fn spc_xtx_setup_handler(
         }
         free(q as *mut libc::c_void);
     }
-    return error;
+    error
 }

@@ -979,7 +979,7 @@ unsafe extern "C" fn stringprep_profile(
     *output = new((strlen(input).wrapping_add(1i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(*output, input);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn preproc_password(
     mut passwd: *const i8,
@@ -1042,7 +1042,7 @@ unsafe extern "C" fn preproc_password(
         }
         _ => error = -1i32,
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_set_passwd(
@@ -1401,7 +1401,7 @@ pub unsafe extern "C" fn pdf_encrypt_obj() -> *mut pdf_obj {
             ext,
         );
     }
-    return doc_encrypt;
+    doc_encrypt
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_id_array() -> *mut pdf_obj {
@@ -1415,7 +1415,7 @@ pub unsafe extern "C" fn pdf_enc_id_array() -> *mut pdf_obj {
         id,
         pdf_new_string((*p).ID.as_mut_ptr() as *const libc::c_void, 16i32 as size_t),
     );
-    return id;
+    id
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_set_label(mut label: u32) {

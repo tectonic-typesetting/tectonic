@@ -508,7 +508,7 @@ pub unsafe extern "C" fn _tt_abort(mut format: *const i8, mut args: ...) -> ! {
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_error_message() -> *const i8 {
-    return error_buf.as_mut_ptr();
+    error_buf.as_mut_ptr()
 }
 /* Running the actual engines. Those code needs to be centralized for unified
  * setjmp aborts and error message extraction. */
@@ -526,7 +526,7 @@ pub unsafe extern "C" fn tex_simple_main(
     }
     rv = tt_run_engine(dump_name, input_file_name) as i32;
     tectonic_global_bridge = 0 as *mut tt_bridge_api_t;
-    return rv;
+    rv
 }
 #[no_mangle]
 pub unsafe extern "C" fn dvipdfmx_simple_main(
@@ -547,14 +547,14 @@ pub unsafe extern "C" fn dvipdfmx_simple_main(
         dviname,
         0 as *const i8,
         0i32,
-        0i32 != 0,
+        false,
         compress,
         deterministic_tags,
-        0i32 != 0,
+        false,
         0_u32,
     );
     tectonic_global_bridge = 0 as *mut tt_bridge_api_t;
-    return rv;
+    rv
 }
 #[no_mangle]
 pub unsafe extern "C" fn bibtex_simple_main(
@@ -569,7 +569,7 @@ pub unsafe extern "C" fn bibtex_simple_main(
     }
     rv = bibtex_main(aux_file_name) as i32;
     tectonic_global_bridge = 0 as *const tt_bridge_api_t;
-    return rv;
+    rv
 }
 /* Global symbols that route through the global API variable. Hopefully we
  * will one day eliminate all of the global state and get rid of all of
@@ -667,15 +667,13 @@ pub unsafe extern "C" fn ttstub_fprintf(
     if len >= 0i32 {
         ttstub_output_write(handle, fprintf_buf.as_mut_ptr(), len as size_t);
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_get_file_md5(mut path: *const i8, mut digest: *mut i8) -> i32 {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .get_file_md5
-        .expect("non-null function pointer")(
-        (*tectonic_global_bridge).context, path, digest
-    );
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, path, digest)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_get_data_md5(
@@ -683,36 +681,32 @@ pub unsafe extern "C" fn ttstub_get_data_md5(
     mut len: size_t,
     mut digest: *mut i8,
 ) -> i32 {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .get_data_md5
         .expect("non-null function pointer")(
         (*tectonic_global_bridge).context, data, len, digest
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_output_open(
     mut path: *const i8,
     mut is_gz: i32,
 ) -> rust_output_handle_t {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .output_open
-        .expect("non-null function pointer")(
-        (*tectonic_global_bridge).context, path, is_gz
-    );
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, path, is_gz)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_output_open_stdout() -> rust_output_handle_t {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .output_open_stdout
-        .expect("non-null function pointer")((*tectonic_global_bridge).context);
+        .expect("non-null function pointer")((*tectonic_global_bridge).context)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_output_putc(mut handle: rust_output_handle_t, mut c: i32) -> i32 {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .output_putc
-        .expect("non-null function pointer")(
-        (*tectonic_global_bridge).context, handle, c
-    );
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle, c)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_output_write(
@@ -720,23 +714,23 @@ pub unsafe extern "C" fn ttstub_output_write(
     mut data: *const i8,
     mut len: size_t,
 ) -> size_t {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .output_write
         .expect("non-null function pointer")(
         (*tectonic_global_bridge).context, handle, data, len
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_output_flush(mut handle: rust_output_handle_t) -> i32 {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .output_flush
-        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle);
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_output_close(mut handle: rust_output_handle_t) -> i32 {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .output_close
-        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle);
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_open(
@@ -744,26 +738,23 @@ pub unsafe extern "C" fn ttstub_input_open(
     mut format: tt_input_format_type,
     mut is_gz: i32,
 ) -> rust_input_handle_t {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .input_open
         .expect("non-null function pointer")(
-        (*tectonic_global_bridge).context,
-        path,
-        format,
-        is_gz,
-    );
+        (*tectonic_global_bridge).context, path, format, is_gz
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_open_primary() -> rust_input_handle_t {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .input_open_primary
-        .expect("non-null function pointer")((*tectonic_global_bridge).context);
+        .expect("non-null function pointer")((*tectonic_global_bridge).context)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_get_size(mut handle: rust_input_handle_t) -> size_t {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .input_get_size
-        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle);
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_seek(
@@ -785,7 +776,7 @@ pub unsafe extern "C" fn ttstub_input_seek(
         // Nonzero indicates a serious internal error.
         longjmp(jump_buffer.as_mut_ptr(), 1i32);
     }
-    return rv;
+    rv
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_read(
@@ -793,25 +784,23 @@ pub unsafe extern "C" fn ttstub_input_read(
     mut data: *mut i8,
     mut len: size_t,
 ) -> ssize_t {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .input_read
         .expect("non-null function pointer")(
         (*tectonic_global_bridge).context, handle, data, len
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_getc(mut handle: rust_input_handle_t) -> i32 {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .input_getc
-        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle);
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_ungetc(mut handle: rust_input_handle_t, mut ch: i32) -> i32 {
-    return (*tectonic_global_bridge)
+    (*tectonic_global_bridge)
         .input_ungetc
-        .expect("non-null function pointer")(
-        (*tectonic_global_bridge).context, handle, ch
-    );
+        .expect("non-null function pointer")((*tectonic_global_bridge).context, handle, ch)
 }
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_close(mut handle: rust_input_handle_t) -> i32 {
@@ -823,7 +812,7 @@ pub unsafe extern "C" fn ttstub_input_close(mut handle: rust_input_handle_t) -> 
         // Nonzero return value indicates a serious internal error.
         longjmp(jump_buffer.as_mut_ptr(), 1i32);
     }
-    return 0i32;
+    0i32
 }
 
 extern "C" {
@@ -869,7 +858,7 @@ pub unsafe extern "C" fn xcalloc(mut nelem: size_t, mut elsize: size_t) -> *mut 
             elsize,
         );
     }
-    return new_mem;
+    new_mem
 }
 #[no_mangle]
 pub unsafe extern "C" fn xmalloc(mut size: size_t) -> *mut libc::c_void {
@@ -880,7 +869,7 @@ pub unsafe extern "C" fn xmalloc(mut size: size_t) -> *mut libc::c_void {
             size,
         );
     }
-    return new_mem;
+    new_mem
 }
 #[no_mangle]
 pub unsafe extern "C" fn xrealloc(
@@ -899,7 +888,7 @@ pub unsafe extern "C" fn xrealloc(
             );
         }
     }
-    return new_mem;
+    new_mem
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -908,7 +897,7 @@ pub unsafe extern "C" fn xrealloc(
 #[no_mangle]
 pub unsafe extern "C" fn xstrdup(mut s: *const i8) -> *mut i8 {
     let mut new_string: *mut i8 = xmalloc(strlen(s).wrapping_add(1i32 as u64)) as *mut i8;
-    return strcpy(new_string, s);
+    strcpy(new_string, s)
 }
 
 mod bibtex;

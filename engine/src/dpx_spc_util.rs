@@ -121,7 +121,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -130,7 +130,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -185,7 +185,7 @@ pub unsafe extern "C" fn spc_util_read_numbers(
         skip_blank(&mut (*args).curptr, (*args).endptr);
         count += 1
     }
-    return count;
+    count
 }
 unsafe extern "C" fn rgb_color_from_hsv(
     mut color: *mut pdf_color,
@@ -363,7 +363,7 @@ unsafe extern "C" fn spc_read_color_color(
         }
     }
     free(q as *mut libc::c_void);
-    return error;
+    error
 }
 /* Argument for this is PDF_Number or PDF_Array.
  * But we ignore that since we don't want to add
@@ -432,7 +432,7 @@ unsafe extern "C" fn spc_read_color_pdf(
             (*ap).curptr = (*ap).curptr.offset(1)
         }
     }
-    return error;
+    error
 }
 /* This is for reading *single* color specification. */
 #[no_mangle]
@@ -471,7 +471,7 @@ pub unsafe extern "C" fn spc_util_read_pdfcolor(
         pdf_color_copycolor(colorspec, defaultcolor);
         error = 0i32
     }
-    return error;
+    error
 }
 /* This need to allow 'true' prefix for unit and
  * length value must be divided by current magnification.
@@ -563,7 +563,7 @@ unsafe extern "C" fn spc_util_read_length(
         }
     }
     *vp = v * u;
-    return error;
+    error
 }
 /*
  * Compute a transformation matrix
@@ -736,7 +736,7 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
         }
     }
     make_transmatrix(&mut (*t).matrix, xoffset, yoffset, xscale, yscale, rotate);
-    return error;
+    error
 }
 /* "page" and "pagebox" are not dimension nor transformation nor
  * something acceptable to put into here.
@@ -940,7 +940,7 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
         (*p).flags &= !(1i32 << 3i32)
         /* no clipping needed */
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_util_read_dimtrns(
@@ -1217,7 +1217,7 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
         (*p).flags &= !(1i32 << 3i32)
         /* no clipping needed */
     }
-    return error;
+    error
 }
 static mut colordefs: [colordef_; 69] = [
     {
@@ -2201,5 +2201,5 @@ unsafe extern "C" fn pdf_color_namedcolor(mut color: *mut pdf_color, mut name: *
         }
         i += 1
     }
-    return -1i32;
+    -1i32
 }

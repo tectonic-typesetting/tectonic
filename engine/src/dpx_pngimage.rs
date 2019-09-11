@@ -536,7 +536,7 @@ pub unsafe extern "C" fn png_include_image(
         &mut info as *mut ximage_info as *mut libc::c_void,
         stream,
     );
-    return 0i32;
+    0i32
 }
 /* Transparency */
 /*
@@ -667,7 +667,7 @@ unsafe extern "C" fn check_transparency(
         }
         trans_type = 0i32
     }
-    return trans_type;
+    trans_type
 }
 /*
  * sRGB:
@@ -699,7 +699,7 @@ unsafe extern "C" fn get_rendering_intent(
     } else {
         intent = 0 as *mut pdf_obj
     }
-    return intent;
+    intent
 }
 /* sRGB:
  *
@@ -737,7 +737,7 @@ unsafe extern "C" fn create_cspace_sRGB(mut png: &png_struct, mut info: &png_inf
         _ => {}
     }
     pdf_add_array(colorspace, cal_param);
-    return colorspace;
+    colorspace
 }
 /* ICCBased:
  *
@@ -793,7 +793,7 @@ unsafe extern "C" fn create_cspace_ICCBased(
         }
     }
     /* Rendering intent ... */
-    return colorspace;
+    colorspace
 }
 /* CIE-Based: CalRGB/CalGray */
 /*
@@ -863,7 +863,7 @@ unsafe extern "C" fn create_cspace_CalRGB(
         pdf_new_name(b"CalRGB\x00" as *const u8 as *const i8),
     );
     pdf_add_array(colorspace, cal_param);
-    return colorspace;
+    colorspace
 }
 unsafe extern "C" fn create_cspace_CalGray(
     mut png: &mut png_struct,
@@ -926,7 +926,7 @@ unsafe extern "C" fn create_cspace_CalGray(
         pdf_new_name(b"CalGray\x00" as *const u8 as *const i8),
     );
     pdf_add_array(colorspace, cal_param);
-    return colorspace;
+    colorspace
 }
 unsafe extern "C" fn make_param_Cal(
     mut color_type: png_byte,
@@ -1102,7 +1102,7 @@ unsafe extern "C" fn make_param_Cal(
             pdf_new_number((G / 0.00001f64 + 0.5f64).floor() * 0.00001f64),
         );
     }
-    return cal_param;
+    cal_param
 }
 /* ColorSpace */
 /*
@@ -1164,7 +1164,7 @@ unsafe extern "C" fn create_cspace_Indexed(
     lookup = pdf_new_string(data_ptr as *const libc::c_void, (num_plte * 3i32) as size_t);
     free(data_ptr as *mut libc::c_void);
     pdf_add_array(colorspace, lookup);
-    return colorspace;
+    colorspace
 }
 /* Color-Key Mask */
 /*
@@ -1231,7 +1231,7 @@ unsafe extern "C" fn create_ckey_mask(
             colorkeys = 0 as *mut pdf_obj
         }
     }
-    return colorkeys;
+    colorkeys
 }
 /* Soft Mask:
  *
@@ -1333,7 +1333,7 @@ unsafe extern "C" fn create_soft_mask(
         width.wrapping_mul(height) as i32,
     );
     free(smask_data_ptr as *mut libc::c_void);
-    return smask;
+    smask
 }
 /* bitdepth is always 8 (16 is not supported) */
 unsafe extern "C" fn strip_soft_mask(
@@ -1509,7 +1509,7 @@ unsafe extern "C" fn strip_soft_mask(
             .wrapping_mul(height) as i32,
     );
     free(smask_data_ptr as *mut libc::c_void);
-    return smask;
+    smask
 }
 /* Read image body */
 unsafe extern "C" fn read_image_data(
@@ -1617,5 +1617,5 @@ pub unsafe extern "C" fn png_get_bbox(
         0 as png_infopp,
         0 as png_infopp,
     );
-    return 0i32;
+    0i32
 }

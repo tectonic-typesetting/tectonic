@@ -118,7 +118,7 @@ pub unsafe extern "C" fn pst_new_obj(
     obj = new((1_u64).wrapping_mul(::std::mem::size_of::<pst_obj>() as u64) as u32) as *mut pst_obj;
     (*obj).type_0 = type_0;
     (*obj).data = data;
-    return obj;
+    obj
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_new_mark() -> *mut pst_obj {
@@ -128,7 +128,7 @@ pub unsafe extern "C" fn pst_new_mark() -> *mut pst_obj {
             .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
     ) as *mut i8;
     strcpy(q, pst_const_mark);
-    return pst_new_obj(7i32, q as *mut libc::c_void);
+    pst_new_obj(7i32, q as *mut libc::c_void)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_release_obj(mut obj: *mut pst_obj) {
@@ -164,7 +164,7 @@ pub unsafe extern "C" fn pst_release_obj(mut obj: *mut pst_obj) {
 #[no_mangle]
 pub unsafe extern "C" fn pst_type_of(mut obj: *mut pst_obj) -> pst_type {
     assert!(!obj.is_null());
-    return (*obj).type_0;
+    (*obj).type_0
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_length_of(mut obj: *mut pst_obj) -> i32 {
@@ -189,7 +189,7 @@ pub unsafe extern "C" fn pst_length_of(mut obj: *mut pst_obj) -> i32 {
             );
         }
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_getIV(mut obj: *mut pst_obj) -> i32 {
@@ -219,7 +219,7 @@ pub unsafe extern "C" fn pst_getIV(mut obj: *mut pst_obj) -> i32 {
             );
         }
     }
-    return iv;
+    iv
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> f64 {
@@ -249,7 +249,7 @@ pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> f64 {
             );
         }
     }
-    return rv;
+    rv
 }
 /* Length can be obtained by pst_length_of(). */
 #[no_mangle]
@@ -287,7 +287,7 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut u8 {
             );
         }
     }
-    return sv;
+    sv
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -333,7 +333,7 @@ pub unsafe extern "C" fn pst_data_ptr(mut obj: *mut pst_obj) -> *mut libc::c_voi
             );
         }
     }
-    return p as *mut libc::c_void;
+    p as *mut libc::c_void
 }
 /* BOOLEAN */
 /* BOOLEAN */
@@ -342,7 +342,7 @@ unsafe extern "C" fn pst_boolean_new(mut value: i8) -> *mut pst_boolean {
     obj = new((1_u64).wrapping_mul(::std::mem::size_of::<pst_boolean>() as u64) as u32)
         as *mut pst_boolean;
     (*obj).value = value;
-    return obj;
+    obj
 }
 unsafe extern "C" fn pst_boolean_release(mut obj: *mut pst_boolean) {
     assert!(!obj.is_null());
@@ -350,11 +350,11 @@ unsafe extern "C" fn pst_boolean_release(mut obj: *mut pst_boolean) {
 }
 unsafe extern "C" fn pst_boolean_IV(mut obj: *mut pst_boolean) -> i32 {
     assert!(!obj.is_null());
-    return (*obj).value as i32;
+    (*obj).value as i32
 }
 unsafe extern "C" fn pst_boolean_RV(mut obj: *mut pst_boolean) -> f64 {
     assert!(!obj.is_null());
-    return (*obj).value as f64;
+    (*obj).value as f64
 }
 unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
     let mut str: *mut u8 = 0 as *mut u8;
@@ -376,14 +376,14 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
         );
         *str.offset(5) = '\u{0}' as i32 as u8
     }
-    return str;
+    str
 }
 unsafe extern "C" fn pst_boolean_length() -> u32 {
     _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
 }
 unsafe extern "C" fn pst_boolean_data_ptr(mut obj: *mut pst_boolean) -> *mut libc::c_void {
     assert!(!obj.is_null());
-    return &mut (*obj).value as *mut i8 as *mut libc::c_void;
+    &mut (*obj).value as *mut i8 as *mut libc::c_void
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_parse_boolean(
@@ -495,7 +495,7 @@ unsafe extern "C" fn pst_integer_new(mut value: i32) -> *mut pst_integer {
     obj = new((1_u64).wrapping_mul(::std::mem::size_of::<pst_integer>() as u64) as u32)
         as *mut pst_integer;
     (*obj).value = value;
-    return obj;
+    obj
 }
 unsafe extern "C" fn pst_integer_release(mut obj: *mut pst_integer) {
     assert!(!obj.is_null());
@@ -503,11 +503,11 @@ unsafe extern "C" fn pst_integer_release(mut obj: *mut pst_integer) {
 }
 unsafe extern "C" fn pst_integer_IV(mut obj: *mut pst_integer) -> i32 {
     assert!(!obj.is_null());
-    return (*obj).value;
+    (*obj).value
 }
 unsafe extern "C" fn pst_integer_RV(mut obj: *mut pst_integer) -> f64 {
     assert!(!obj.is_null());
-    return (*obj).value as f64;
+    (*obj).value as f64
 }
 unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut u8 {
     let mut value: *mut i8 = 0 as *mut i8;
@@ -523,11 +523,11 @@ unsafe extern "C" fn pst_integer_SV(mut obj: *mut pst_integer) -> *mut u8 {
         new(((len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
     strcpy(value, fmt_buf.as_mut_ptr());
-    return value as *mut u8;
+    value as *mut u8
 }
 unsafe extern "C" fn pst_integer_data_ptr(mut obj: *mut pst_integer) -> *mut libc::c_void {
     assert!(!obj.is_null());
-    return &mut (*obj).value as *mut i32 as *mut libc::c_void;
+    &mut (*obj).value as *mut i32 as *mut libc::c_void
 }
 unsafe extern "C" fn pst_integer_length() -> u32 {
     _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
@@ -538,7 +538,7 @@ unsafe extern "C" fn pst_real_new(mut value: f64) -> *mut pst_real {
     obj =
         new((1_u64).wrapping_mul(::std::mem::size_of::<pst_real>() as u64) as u32) as *mut pst_real;
     (*obj).value = value;
-    return obj;
+    obj
 }
 unsafe extern "C" fn pst_real_release(mut obj: *mut pst_real) {
     assert!(!obj.is_null());
@@ -546,11 +546,11 @@ unsafe extern "C" fn pst_real_release(mut obj: *mut pst_real) {
 }
 unsafe extern "C" fn pst_real_IV(mut obj: *mut pst_real) -> i32 {
     assert!(!obj.is_null());
-    return (*obj).value as i32;
+    (*obj).value as i32
 }
 unsafe extern "C" fn pst_real_RV(mut obj: *mut pst_real) -> f64 {
     assert!(!obj.is_null());
-    return (*obj).value;
+    (*obj).value
 }
 unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut u8 {
     let mut value: *mut i8 = 0 as *mut i8;
@@ -565,11 +565,11 @@ unsafe extern "C" fn pst_real_SV(mut obj: *mut pst_real) -> *mut u8 {
     value =
         new((len as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(value, fmt_buf.as_mut_ptr());
-    return value as *mut u8;
+    value as *mut u8
 }
 unsafe extern "C" fn pst_real_data_ptr(mut obj: *mut pst_real) -> *mut libc::c_void {
     assert!(!obj.is_null());
-    return &mut (*obj).value as *mut f64 as *mut libc::c_void;
+    &mut (*obj).value as *mut f64 as *mut libc::c_void
 }
 unsafe extern "C" fn pst_real_length() -> u32 {
     _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
@@ -691,7 +691,7 @@ pub unsafe extern "C" fn pst_parse_number(
         }
     }
     /* error */
-    return 0 as *mut pst_obj;
+    0 as *mut pst_obj
 }
 /* NAME */
 /* NAME */
@@ -705,7 +705,7 @@ unsafe extern "C" fn pst_name_new(mut name: *const i8) -> *mut pst_name {
     (*obj).value = new((strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*obj).value, name);
-    return obj;
+    obj
 }
 unsafe extern "C" fn pst_name_release(mut obj: *mut pst_name) {
     assert!(!obj.is_null());
@@ -725,7 +725,7 @@ unsafe extern "C" fn getxpair(mut s: *mut *mut u8) -> i32 {
         return lo;
     }
     *s = (*s).offset(1);
-    return hi << 4i32 | lo;
+    hi << 4i32 | lo
 }
 #[no_mangle]
 pub unsafe extern "C" fn pst_parse_name(
@@ -813,15 +813,15 @@ unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut u8 {
             .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
     ) as *mut i8;
     strcpy(value, (*obj).value);
-    return value as *mut u8;
+    value as *mut u8
 }
 unsafe extern "C" fn pst_name_data_ptr(mut obj: *mut pst_name) -> *mut libc::c_void {
     assert!(!obj.is_null());
-    return (*obj).value as *mut libc::c_void;
+    (*obj).value as *mut libc::c_void
 }
 unsafe extern "C" fn pst_name_length(mut obj: *mut pst_name) -> u32 {
     assert!(!obj.is_null());
-    return strlen((*obj).value) as u32;
+    strlen((*obj).value) as u32
 }
 /* STRING */
 /*
@@ -844,7 +844,7 @@ unsafe extern "C" fn pst_string_new(mut str: *mut u8, mut len: u32) -> *mut pst_
             );
         }
     }
-    return obj;
+    obj
 }
 unsafe extern "C" fn pst_string_release(mut obj: *mut pst_string) {
     assert!(!obj.is_null());
@@ -898,7 +898,7 @@ pub unsafe extern "C" fn pst_parse_string(
             }
         }
     }
-    return 0 as *mut pst_obj;
+    0 as *mut pst_obj
 }
 /* Overflowed value is set to invalid char.  */
 unsafe extern "C" fn ostrtouc(
@@ -921,7 +921,7 @@ unsafe extern "C" fn ostrtouc(
         *valid = 1_u8
     }
     *inbuf = cur;
-    return val as u8;
+    val as u8
 }
 unsafe extern "C" fn esctouc(
     mut inbuf: *mut *mut u8,
@@ -984,7 +984,7 @@ unsafe extern "C" fn esctouc(
             unescaped = ostrtouc(inbuf, inbufend, valid)
         }
     }
-    return unescaped;
+    unescaped
 }
 /* STRING */
 unsafe extern "C" fn pst_string_parse_literal(
@@ -1052,7 +1052,7 @@ unsafe extern "C" fn pst_string_parse_literal(
         return 0 as *mut pst_string;
     }
     *inbuf = cur;
-    return pst_string_new(wbuf.as_mut_ptr(), len as u32);
+    pst_string_new(wbuf.as_mut_ptr(), len as u32)
 }
 unsafe extern "C" fn pst_string_parse_hex(
     mut inbuf: *mut *mut u8,
@@ -1115,10 +1115,10 @@ unsafe extern "C" fn pst_string_parse_hex(
         return 0 as *mut pst_string;
     }
     *inbuf = cur;
-    return pst_string_new(wbuf.as_mut_ptr(), len);
+    pst_string_new(wbuf.as_mut_ptr(), len)
 }
 unsafe extern "C" fn pst_string_IV(mut obj: *mut pst_string) -> i32 {
-    return pst_string_RV(obj) as i32;
+    pst_string_RV(obj) as i32
 }
 unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> f64 {
     let mut nobj: *mut pst_obj = 0 as *mut pst_obj;
@@ -1134,7 +1134,7 @@ unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> f64 {
     }
     rv = pst_getRV(nobj);
     pst_release_obj(nobj);
-    return rv;
+    rv
 }
 unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut u8 {
     let mut str: *mut u8 = 0 as *mut u8;
@@ -1147,13 +1147,13 @@ unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut u8 {
         (*obj).length as u64,
     );
     *str.offset((*obj).length as isize) = '\u{0}' as i32 as u8;
-    return str;
+    str
 }
 unsafe extern "C" fn pst_string_data_ptr(mut obj: *mut pst_string) -> *mut libc::c_void {
     assert!(!obj.is_null());
-    return (*obj).value as *mut libc::c_void;
+    (*obj).value as *mut libc::c_void
 }
 unsafe extern "C" fn pst_string_length(mut obj: *mut pst_string) -> u32 {
     assert!(!obj.is_null());
-    return (*obj).length;
+    (*obj).length
 }

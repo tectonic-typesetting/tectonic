@@ -532,23 +532,23 @@ pub unsafe extern "C" fn spc_warn(mut spe: *mut spc_env, mut fmt: *const i8, mut
 pub unsafe extern "C" fn spc_begin_annot(mut spe: *mut spc_env, mut dict: *mut pdf_obj) -> i32 {
     pdf_doc_begin_annot(dict); /* Tell dvi interpreter to handle line-break. */
     dvi_tag_depth();
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_end_annot(mut spe: *mut spc_env) -> i32 {
     dvi_untag_depth();
     pdf_doc_end_annot();
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_resume_annot(mut spe: *mut spc_env) -> i32 {
     dvi_link_annot(1i32);
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_suspend_annot(mut spe: *mut spc_env) -> i32 {
     dvi_link_annot(0i32);
-    return 0i32;
+    0i32
 }
 static mut named_objects: *mut ht_table = 0 as *const ht_table as *mut ht_table;
 /* reserved keys */
@@ -587,7 +587,7 @@ unsafe extern "C" fn ispageref(mut key: *const i8) -> i32 {
             return 0i32;
         }
     }
-    return 1i32;
+    1i32
 }
 /*
  * The following routine returns copies, not the original object.
@@ -661,7 +661,7 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
             key,
         );
     }
-    return value;
+    value
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
@@ -739,7 +739,7 @@ pub unsafe extern "C" fn spc_clear_objects() {
 unsafe extern "C" fn spc_handler_unknown(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     assert!(!spe.is_null() && !args.is_null());
     (*args).curptr = (*args).endptr;
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn init_special(
     mut special: *mut spc_handler,
@@ -976,7 +976,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_page() -> i32 {
         }
         i = i.wrapping_add(1)
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_at_end_page() -> i32 {
@@ -991,7 +991,7 @@ pub unsafe extern "C" fn spc_exec_at_end_page() -> i32 {
         }
         i = i.wrapping_add(1)
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
@@ -1008,7 +1008,7 @@ pub unsafe extern "C" fn spc_exec_at_begin_document() -> i32 {
         }
         i = i.wrapping_add(1)
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_exec_at_end_document() -> i32 {
@@ -1026,7 +1026,7 @@ pub unsafe extern "C" fn spc_exec_at_end_document() -> i32 {
     if !named_objects.is_null() {
         pdf_delete_name_tree(&mut named_objects);
     }
-    return error;
+    error
 }
 unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut ap: *mut spc_arg) {
     let mut p: *const i8 = 0 as *const i8;
@@ -1216,5 +1216,5 @@ pub unsafe extern "C" fn spc_exec_special(
         }
     }
     check_garbage(&mut args);
-    return error;
+    error
 }

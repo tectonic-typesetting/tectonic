@@ -214,7 +214,7 @@ pub struct char_map {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -228,7 +228,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 static mut verbose: i32 = 0i32;
 unsafe extern "C" fn tfm_font_init(mut tfm: *mut tfm_font) {
@@ -292,7 +292,7 @@ unsafe extern "C" fn lookup_range(mut map: *const range_map, mut charcode: i32) 
         }
         idx -= 1
     }
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn fm_init(mut fm: *mut font_metric) {
     (*fm).tex_name = 0 as *mut i8;
@@ -363,7 +363,7 @@ unsafe extern "C" fn fread_fwords(
         *words.offset(i as isize) = tt_get_signed_quad(handle);
         i = i.wrapping_add(1)
     }
-    return nmemb.wrapping_mul(4_u32) as i32;
+    nmemb.wrapping_mul(4_u32) as i32
 }
 unsafe extern "C" fn fread_uquads(
     mut quads: *mut u32,
@@ -376,7 +376,7 @@ unsafe extern "C" fn fread_uquads(
         *quads.offset(i as isize) = tt_get_unsigned_quad(handle);
         i = i.wrapping_add(1)
     }
-    return nmemb.wrapping_mul(4_u32) as i32;
+    nmemb.wrapping_mul(4_u32) as i32
 }
 /*
  * TFM and JFM
@@ -492,7 +492,7 @@ unsafe extern "C" fn sput_bigendian(mut s: *mut i8, mut v: i32, mut n: i32) -> i
         v >>= 8i32;
         i -= 1
     }
-    return n;
+    n
 }
 unsafe extern "C" fn tfm_unpack_header(mut fm: *mut font_metric, mut tfm: *mut tfm_font) {
     if (*tfm).wlenheader < 12_u32 {
@@ -1040,7 +1040,7 @@ pub unsafe extern "C" fn tfm_open(mut tfm_name: *const i8, mut must_exist: i32) 
     }
     let fresh1 = numfms;
     numfms = numfms.wrapping_add(1);
-    return fresh1 as i32;
+    fresh1 as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn tfm_close_all() {
@@ -1084,7 +1084,7 @@ pub unsafe extern "C" fn tfm_get_fw_width(mut font_id: i32, mut ch: i32) -> fixw
     } else {
         _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
     }
-    return *(*fm).widths.offset(idx as isize);
+    *(*fm).widths.offset(idx as isize)
 }
 #[no_mangle]
 pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: i32, mut ch: i32) -> fixword {
@@ -1116,7 +1116,7 @@ pub unsafe extern "C" fn tfm_get_fw_height(mut font_id: i32, mut ch: i32) -> fix
     } else {
         _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
     }
-    return *(*fm).heights.offset(idx as isize);
+    *(*fm).heights.offset(idx as isize)
 }
 #[no_mangle]
 pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: i32, mut ch: i32) -> fixword {
@@ -1148,7 +1148,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: i32, mut ch: i32) -> fixw
     } else {
         _tt_abort(b"Invalid char: %d\n\x00" as *const u8 as *const i8, ch);
     }
-    return *(*fm).depths.offset(idx as isize);
+    *(*fm).depths.offset(idx as isize)
 }
 /*
  * tfm_get_width returns the width of the font
@@ -1156,7 +1156,7 @@ pub unsafe extern "C" fn tfm_get_fw_depth(mut font_id: i32, mut ch: i32) -> fixw
  */
 #[no_mangle]
 pub unsafe extern "C" fn tfm_get_width(mut font_id: i32, mut ch: i32) -> f64 {
-    return tfm_get_fw_width(font_id, ch) as f64 / (1i32 << 20i32) as f64;
+    tfm_get_fw_width(font_id, ch) as f64 / (1i32 << 20i32) as f64
 }
 /* tfm_string_xxx() do not work for OFM... */
 #[no_mangle]
@@ -1178,7 +1178,7 @@ pub unsafe extern "C" fn tfm_string_width(
         result += tfm_get_fw_width(font_id, *s.offset(i as isize) as i32);
         i = i.wrapping_add(1)
     }
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn tfm_get_design_size(mut font_id: i32) -> f64 {
@@ -1219,12 +1219,12 @@ pub unsafe extern "C" fn tfm_exists(mut tfm_name: *const i8) -> bool {
     handle = ttstub_input_open(tfm_name, TTIF_OFM, 0i32) as *mut rust_input_handle_t;
     if !handle.is_null() {
         ttstub_input_close(handle as rust_input_handle_t);
-        return 1i32 != 0;
+        return true;
     }
     handle = ttstub_input_open(tfm_name, TTIF_TFM, 0i32) as *mut rust_input_handle_t;
     if !handle.is_null() {
         ttstub_input_close(handle as rust_input_handle_t);
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    false
 }

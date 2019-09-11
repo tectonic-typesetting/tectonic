@@ -388,7 +388,7 @@ pub struct list_state_record {
 /* Inlines */
 #[inline]
 unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    return p >= hi_mem_min;
+    p >= hi_mem_min
 }
 static mut null_delimiter: b16x4 = b16x4 {
     s0: 0,
@@ -585,11 +585,8 @@ pub unsafe extern "C" fn init_math() {
                             (*width_base.offset(f as isize)
                                 + (*font_info.offset(
                                     (*char_base.offset(f as isize)
-                                        + effective_char(
-                                            1i32 != 0,
-                                            f,
-                                            (*mem.offset(p as isize)).b16.s0,
-                                        )) as isize,
+                                        + effective_char(true, f, (*mem.offset(p as isize)).b16.s0))
+                                        as isize,
                                 ))
                                 .b16
                                 .s3 as i32) as isize,
@@ -611,7 +608,7 @@ pub unsafe extern "C" fn init_math() {
                                 (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 =
                                     (*mem.offset(p as isize)).b32.s1;
                                 p = 4999999i32 - 12i32;
-                                xtx_ligature_present = 1i32 != 0
+                                xtx_ligature_present = true
                             }
                             11 => {
                                 d = (*mem.offset((p + 1i32) as isize)).b32.s1;
@@ -1664,7 +1661,7 @@ pub unsafe extern "C" fn math_radical() {
     (*mem.offset((cur_list.tail + 1i32) as isize)).b32 = empty;
     (*mem.offset((cur_list.tail + 3i32) as isize)).b32 = empty;
     (*mem.offset((cur_list.tail + 2i32) as isize)).b32 = empty;
-    scan_delimiter(cur_list.tail + 4i32, 1i32 != 0);
+    scan_delimiter(cur_list.tail + 4i32, true);
     scan_math(cur_list.tail + 1i32);
 }
 #[no_mangle]
@@ -1852,7 +1849,7 @@ pub unsafe extern "C" fn fin_mlist(mut p: i32) -> i32 {
         q = (*mem.offset(cur_list.head as isize)).b32.s1
     }
     pop_nest();
-    return q;
+    q
 }
 #[no_mangle]
 pub unsafe extern "C" fn build_choices() {
@@ -1928,11 +1925,11 @@ pub unsafe extern "C" fn math_fraction() {
     if cur_list.aux.b32.s1 != -0xfffffffi32 {
         /*1218:*/
         if c as i32 >= 3i32 {
-            scan_delimiter(4999999i32 - 12i32, 0i32 != 0);
-            scan_delimiter(4999999i32 - 12i32, 0i32 != 0);
+            scan_delimiter(4999999i32 - 12i32, false);
+            scan_delimiter(4999999i32 - 12i32, false);
         }
         if c as i32 % 3i32 == 0i32 {
-            scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+            scan_dimen(false, false, false);
         }
         if file_line_error_style_p != 0 {
             print_file_line();
@@ -1961,12 +1958,12 @@ pub unsafe extern "C" fn math_fraction() {
         (*mem.offset(cur_list.head as isize)).b32.s1 = -0xfffffffi32;
         cur_list.tail = cur_list.head;
         if c as i32 >= 3i32 {
-            scan_delimiter(cur_list.aux.b32.s1 + 4i32, 0i32 != 0);
-            scan_delimiter(cur_list.aux.b32.s1 + 5i32, 0i32 != 0);
+            scan_delimiter(cur_list.aux.b32.s1 + 4i32, false);
+            scan_delimiter(cur_list.aux.b32.s1 + 5i32, false);
         }
         match c as i32 % 3i32 {
             0 => {
-                scan_dimen(0i32 != 0, 0i32 != 0, 0i32 != 0);
+                scan_dimen(false, false, false);
                 (*mem.offset((cur_list.aux.b32.s1 + 1i32) as isize)).b32.s1 = cur_val
             }
             1 => (*mem.offset((cur_list.aux.b32.s1 + 1i32) as isize)).b32.s1 = 0x40000000i32,
@@ -1984,7 +1981,7 @@ pub unsafe extern "C" fn math_left_right() {
     if t as i32 != 30i32 && cur_group as i32 != 16i32 {
         /*1227: */
         if cur_group as i32 == 15i32 {
-            scan_delimiter(4999999i32 - 12i32, 0i32 != 0); /*:1530 */
+            scan_delimiter(4999999i32 - 12i32, false); /*:1530 */
             if file_line_error_style_p != 0 {
                 print_file_line(); /*:1530 */
             } else {
@@ -2009,7 +2006,7 @@ pub unsafe extern "C" fn math_left_right() {
     } else {
         p = new_noad();
         (*mem.offset(p as isize)).b16.s1 = t as u16;
-        scan_delimiter(p + 1i32, 0i32 != 0);
+        scan_delimiter(p + 1i32, false);
         if t as i32 == 1i32 {
             (*mem.offset(p as isize)).b16.s1 = 31_u16;
             (*mem.offset(p as isize)).b16.s0 = 1_u16
@@ -2262,7 +2259,7 @@ pub unsafe extern "C" fn after_math() {
     let mut t: i32 = 0;
     let mut pre_t: i32 = 0;
     let mut j: i32 = -0xfffffffi32;
-    danger = 0i32 != 0;
+    danger = false;
     if cur_list.mode as i32 == 207i32 {
         j = cur_list.eTeX_aux
     }
@@ -2512,7 +2509,7 @@ pub unsafe extern "C" fn after_math() {
             b"the \\fontdimen values needed in math symbol fonts.\x00" as *const u8 as *const i8;
         error();
         flush_math();
-        danger = 1i32 != 0
+        danger = true
     } else if *font_params.offset(
         (*eqtb.offset(
             (1i32
@@ -2759,10 +2756,10 @@ pub unsafe extern "C" fn after_math() {
             b"the \\fontdimen values needed in math extension fonts.\x00" as *const u8 as *const i8;
         error();
         flush_math();
-        danger = 1i32 != 0
+        danger = true
     }
     m = cur_list.mode as i32;
-    l = 0i32 != 0;
+    l = false;
     p = fin_mlist(-0xfffffffi32);
     if cur_list.mode as i32 == -m {
         get_x_token();
@@ -2782,7 +2779,7 @@ pub unsafe extern "C" fn after_math() {
         }
         cur_mlist = p;
         cur_style = 2i32 as small_number;
-        mlist_penalties = 0i32 != 0;
+        mlist_penalties = false;
         mlist_to_hlist();
         a = hpack(
             (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1,
@@ -2793,9 +2790,9 @@ pub unsafe extern "C" fn after_math() {
         unsave();
         save_ptr -= 1;
         if (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 == 1i32 {
-            l = 1i32 != 0
+            l = true
         }
-        danger = 0i32 != 0;
+        danger = false;
         if cur_list.mode as i32 == 207i32 {
             j = cur_list.eTeX_aux
         }
@@ -3046,7 +3043,7 @@ pub unsafe extern "C" fn after_math() {
                 as *const i8;
             error();
             flush_math();
-            danger = 1i32 != 0
+            danger = true
         } else if *font_params.offset(
             (*eqtb.offset(
                 (1i32
@@ -3294,7 +3291,7 @@ pub unsafe extern "C" fn after_math() {
                 as *const u8 as *const i8;
             error();
             flush_math();
-            danger = 1i32 != 0
+            danger = true
         }
         m = cur_list.mode as i32;
         p = fin_mlist(-0xfffffffi32)
@@ -3407,7 +3404,7 @@ pub unsafe extern "C" fn after_math() {
         }
         cur_mlist = p;
         cur_style = 0i32 as small_number;
-        mlist_penalties = 0i32 != 0;
+        mlist_penalties = false;
         mlist_to_hlist();
         p = (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1;
         adjust_tail = 4999999i32 - 5i32;
@@ -3919,7 +3916,7 @@ unsafe extern "C" fn math_x_height(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn math_quad(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -3956,7 +3953,7 @@ unsafe extern "C" fn math_quad(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn num1(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -3993,7 +3990,7 @@ unsafe extern "C" fn num1(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn num2(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4030,7 +4027,7 @@ unsafe extern "C" fn num2(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn num3(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4067,7 +4064,7 @@ unsafe extern "C" fn num3(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn denom1(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4104,7 +4101,7 @@ unsafe extern "C" fn denom1(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn denom2(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4141,7 +4138,7 @@ unsafe extern "C" fn denom2(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn sup1(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4178,7 +4175,7 @@ unsafe extern "C" fn sup1(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn sup2(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4215,7 +4212,7 @@ unsafe extern "C" fn sup2(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn sup3(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4252,7 +4249,7 @@ unsafe extern "C" fn sup3(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn sub1(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4289,7 +4286,7 @@ unsafe extern "C" fn sub1(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn sub2(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4326,7 +4323,7 @@ unsafe extern "C" fn sub2(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn sup_drop(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4363,7 +4360,7 @@ unsafe extern "C" fn sup_drop(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn sub_drop(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4400,7 +4397,7 @@ unsafe extern "C" fn sub_drop(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn delim1(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4437,7 +4434,7 @@ unsafe extern "C" fn delim1(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn delim2(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4474,7 +4471,7 @@ unsafe extern "C" fn delim2(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn axis_height(mut size_code: i32) -> scaled_t {
     let mut f: i32 = 0;
@@ -4511,7 +4508,7 @@ unsafe extern "C" fn axis_height(mut size_code: i32) -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn default_rule_thickness() -> scaled_t {
     let mut f: i32 = 0;
@@ -4548,7 +4545,7 @@ unsafe extern "C" fn default_rule_thickness() -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn big_op_spacing1() -> scaled_t {
     let mut f: i32 = 0;
@@ -4585,7 +4582,7 @@ unsafe extern "C" fn big_op_spacing1() -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn big_op_spacing2() -> scaled_t {
     let mut f: i32 = 0;
@@ -4622,7 +4619,7 @@ unsafe extern "C" fn big_op_spacing2() -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn big_op_spacing3() -> scaled_t {
     let mut f: i32 = 0;
@@ -4659,7 +4656,7 @@ unsafe extern "C" fn big_op_spacing3() -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn big_op_spacing4() -> scaled_t {
     let mut f: i32 = 0;
@@ -4696,7 +4693,7 @@ unsafe extern "C" fn big_op_spacing4() -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn big_op_spacing5() -> scaled_t {
     let mut f: i32 = 0;
@@ -4733,14 +4730,14 @@ unsafe extern "C" fn big_op_spacing5() -> scaled_t {
             .b32
             .s1
     }
-    return rval;
+    rval
 }
 unsafe extern "C" fn fraction_rule(mut t: scaled_t) -> i32 {
     let mut p: i32 = 0;
     p = new_rule();
     (*mem.offset((p + 3i32) as isize)).b32.s1 = t;
     (*mem.offset((p + 2i32) as isize)).b32.s1 = 0i32;
-    return p;
+    p
 }
 unsafe extern "C" fn overbar(mut b: i32, mut k: scaled_t, mut t: scaled_t) -> i32 {
     let mut p: i32 = 0;
@@ -4751,7 +4748,7 @@ unsafe extern "C" fn overbar(mut b: i32, mut k: scaled_t, mut t: scaled_t) -> i3
     (*mem.offset(q as isize)).b32.s1 = p;
     p = new_kern(t);
     (*mem.offset(p as isize)).b32.s1 = q;
-    return vpackage(p, 0i32, 1i32 as small_number, 0x3fffffffi32);
+    vpackage(p, 0i32, 1i32 as small_number, 0x3fffffffi32)
 }
 unsafe extern "C" fn math_glue(mut g: i32, mut m: scaled_t) -> i32 {
     let mut p: i32 = 0;
@@ -4792,7 +4789,7 @@ unsafe extern "C" fn math_glue(mut g: i32, mut m: scaled_t) -> i32 {
     } else {
         (*mem.offset((p + 3i32) as isize)).b32.s1 = (*mem.offset((g + 3i32) as isize)).b32.s1
     }
-    return p;
+    p
 }
 unsafe extern "C" fn math_kern(mut p: i32, mut m: scaled_t) {
     let mut n: i32 = 0;
@@ -4850,7 +4847,7 @@ unsafe extern "C" fn clean_box(mut p: i32, mut s: small_number) -> i32 {
         12209867499936983673 => {
             save_style = cur_style;
             cur_style = s;
-            mlist_penalties = 0i32 != 0;
+            mlist_penalties = false;
             mlist_to_hlist();
             q = (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1;
             cur_style = save_style;
@@ -4887,7 +4884,7 @@ unsafe extern "C" fn clean_box(mut p: i32, mut s: small_number) -> i32 {
             }
         }
     }
-    return x;
+    x
 }
 unsafe extern "C" fn fetch(mut a: i32) {
     cur_c = (*mem.offset(a as isize)).b16.s0 as i32;
@@ -5108,7 +5105,7 @@ unsafe extern "C" fn compute_ot_math_accent_pos(mut p: i32) -> scaled_t {
     } else {
         s = 0x7fffffffi32
     }
-    return s;
+    s
 }
 unsafe extern "C" fn make_math_accent(mut q: i32) {
     let mut p: i32 = 0;
@@ -5313,7 +5310,7 @@ unsafe extern "C" fn make_math_accent(mut q: i32) {
                     ot_assembly_ptr = get_ot_assembly_ptr(f, c, 1i32);
                     if !ot_assembly_ptr.is_null() {
                         free_node(p, 5i32);
-                        p = build_opentype_assembly(f, ot_assembly_ptr, w, 1i32 != 0);
+                        p = build_opentype_assembly(f, ot_assembly_ptr, w, true);
                         (*mem.offset((y + 5i32) as isize)).b32.s1 = p
                     }
                 } else {
@@ -5637,7 +5634,7 @@ unsafe extern "C" fn make_op(mut q: i32) -> scaled_t {
                         ot_assembly_ptr = get_ot_assembly_ptr(cur_f, c as i32, 0i32);
                         if !ot_assembly_ptr.is_null() {
                             free_node(p, 5i32);
-                            p = build_opentype_assembly(cur_f, ot_assembly_ptr, h1, 0i32 != 0);
+                            p = build_opentype_assembly(cur_f, ot_assembly_ptr, h1, false);
                             (*mem.offset((x + 5i32) as isize)).b32.s1 = p;
                             delta = 0i32;
                             current_block_41 = 18116816373875863516;
@@ -5753,7 +5750,7 @@ unsafe extern "C" fn make_op(mut q: i32) -> scaled_t {
         (*mem.offset((q + 1i32) as isize)).b32.s1 = v
     }
     free_ot_assembly(ot_assembly_ptr as *mut GlyphAssembly);
-    return delta;
+    delta
 }
 unsafe extern "C" fn make_ord(mut q: i32) {
     let mut a: i32 = 0;
@@ -5870,7 +5867,7 @@ unsafe extern "C" fn attach_hkern_to_new_hlist(mut q: i32, mut delta: scaled_t) 
         }
         (*mem.offset(y as isize)).b32.s1 = z
     }
-    return (*mem.offset((q + 1i32) as isize)).b32.s1;
+    (*mem.offset((q + 1i32) as isize)).b32.s1
 }
 unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
     let mut p: i32 = 0;
@@ -6400,7 +6397,7 @@ unsafe extern "C" fn make_left_right(
         delta = delta2
     }
     (*mem.offset((q + 1i32) as isize)).b32.s1 = var_delimiter(q + 1i32, cur_size, delta);
-    return ((*mem.offset(q as isize)).b16.s1 as i32 - (30i32 - 20i32)) as small_number;
+    ((*mem.offset(q as isize)).b16.s1 as i32 - (30i32 - 20i32)) as small_number
 }
 unsafe extern "C" fn mlist_to_hlist() {
     let mut current_block: u64;
@@ -6684,7 +6681,7 @@ unsafe extern "C" fn mlist_to_hlist() {
                     3 => {
                         cur_mlist = (*mem.offset((q + 1i32) as isize)).b32.s0;
                         save_style = cur_style;
-                        mlist_penalties = 0i32 != 0;
+                        mlist_penalties = false;
                         mlist_to_hlist();
                         cur_style = save_style;
                         if (cur_style as i32) < 4i32 {
@@ -7043,7 +7040,7 @@ unsafe extern "C" fn var_delimiter(mut d: i32, mut s: i32, mut v: scaled_t) -> i
     let mut large_attempt: bool = false;
     f = 0i32;
     w = 0i32;
-    large_attempt = 0i32 != 0;
+    large_attempt = false;
     z = (*mem.offset(d as isize)).b16.s3 as i32 % 256i32;
     x = ((*mem.offset(d as isize)).b16.s2 as i64
         + ((*mem.offset(d as isize)).b16.s3 as i32 / 256i32) as i64 * 65536) as u16;
@@ -7158,7 +7155,7 @@ unsafe extern "C" fn var_delimiter(mut d: i32, mut s: i32, mut v: scaled_t) -> i
         if large_attempt {
             break;
         }
-        large_attempt = 1i32 != 0;
+        large_attempt = true;
         z = (*mem.offset(d as isize)).b16.s1 as i32 % 256i32;
         x = ((*mem.offset(d as isize)).b16.s0 as i64
             + ((*mem.offset(d as isize)).b16.s1 as i32 / 256i32) as i64 * 65536) as u16
@@ -7258,7 +7255,7 @@ unsafe extern "C" fn var_delimiter(mut d: i32, mut s: i32, mut v: scaled_t) -> i
             }
         /*:736 */
         } else if !ot_assembly_ptr.is_null() {
-            b = build_opentype_assembly(f, ot_assembly_ptr, v, 0i32 != 0)
+            b = build_opentype_assembly(f, ot_assembly_ptr, v, false)
         } else {
             b = new_null_box();
             (*mem.offset(b as isize)).b16.s1 = 1_u16;
@@ -7332,7 +7329,7 @@ unsafe extern "C" fn var_delimiter(mut d: i32, mut s: i32, mut v: scaled_t) -> i
         half((*mem.offset((b + 3i32) as isize)).b32.s1 - (*mem.offset((b + 2i32) as isize)).b32.s1)
             - axis_height(s);
     free_ot_assembly(ot_assembly_ptr as *mut GlyphAssembly);
-    return b;
+    b
 }
 unsafe extern "C" fn char_box(mut f: internal_font_number, mut c: i32) -> i32 {
     let mut q: b16x4 = b16x4 {
@@ -7382,7 +7379,7 @@ unsafe extern "C" fn char_box(mut f: internal_font_number, mut c: i32) -> i32 {
         (*mem.offset(p as isize)).b16.s1 = f as u16
     }
     (*mem.offset((b + 5i32) as isize)).b32.s1 = p;
-    return b;
+    b
 }
 unsafe extern "C" fn stack_into_box(mut b: i32, mut f: internal_font_number, mut c: u16) {
     let mut p: i32 = 0;
@@ -7395,12 +7392,12 @@ unsafe extern "C" fn height_plus_depth(mut f: internal_font_number, mut c: u16) 
     let mut q: b16x4 = (*font_info
         .offset((*char_base.offset(f as isize) + effective_char(1i32 != 0, f, c)) as isize))
     .b16;
-    return (*font_info.offset((*height_base.offset(f as isize) + q.s2 as i32 / 16i32) as isize))
+    (*font_info.offset((*height_base.offset(f as isize) + q.s2 as i32 / 16i32) as isize))
         .b32
         .s1
         + (*font_info.offset((*depth_base.offset(f as isize) + q.s2 as i32 % 16i32) as isize))
             .b32
-            .s1;
+            .s1
 }
 unsafe extern "C" fn stack_glyph_into_box(mut b: i32, mut f: internal_font_number, mut g: i32) {
     let mut p: i32 = 0;
@@ -7494,7 +7491,7 @@ unsafe extern "C" fn build_opentype_assembly(
         (*mem.offset(b as isize)).b16.s1 = 1_u16
     }
     n = -1i32;
-    no_extenders = 1i32 != 0;
+    no_extenders = true;
     min_o = ot_min_connector_overlap(f);
     loop {
         n = n + 1i32;
@@ -7506,7 +7503,7 @@ unsafe extern "C" fn build_opentype_assembly(
         if i <= for_end {
             loop {
                 if ot_part_is_extender(a as *const GlyphAssembly, i) {
-                    no_extenders = 0i32 != 0;
+                    no_extenders = false;
                     let mut for_end_0: i32 = 0;
                     j = 1i32;
                     for_end_0 = n;
@@ -7652,7 +7649,7 @@ unsafe extern "C" fn build_opentype_assembly(
     } else {
         (*mem.offset((b + 3i32) as isize)).b32.s1 = nat
     }
-    return b;
+    b
 }
 unsafe extern "C" fn rebox(mut b: i32, mut w: scaled_t) -> i32 {
     let mut p: i32 = 0;
@@ -7691,9 +7688,9 @@ unsafe extern "C" fn rebox(mut b: i32, mut w: scaled_t) -> i32 {
             p = (*mem.offset(p as isize)).b32.s1
         }
         (*mem.offset(p as isize)).b32.s1 = new_glue(12i32);
-        return hpack(b, w, 0i32 as small_number);
+        hpack(b, w, 0i32 as small_number)
     } else {
         (*mem.offset((b + 1i32) as isize)).b32.s1 = w;
-        return b;
-    };
+        b
+    }
 }

@@ -272,11 +272,11 @@ unsafe extern "C" fn spc_handler_postscriptbox(mut spe: *mut spc_env, mut ap: *m
         return -1i32;
     }
     pdf_dev_put_image(form_id, &mut ti, (*spe).x_user, (*spe).y_user);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_null(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 static mut misc_handlers: [spc_handler; 6] = unsafe {
     [
@@ -363,11 +363,11 @@ pub unsafe extern "C" fn spc_misc_check_special(mut buffer: *const i8, mut size:
                 strlen(misc_handlers[i as usize].key),
             ) == 0
         {
-            return 1i32 != 0;
+            return true;
         }
         i = i.wrapping_add(1)
     }
-    return 0i32 != 0;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -432,5 +432,5 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
         }
         i = i.wrapping_add(1)
     }
-    return -1i32;
+    -1i32
 }

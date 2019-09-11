@@ -199,7 +199,7 @@ pub struct list_state_record {
 }
 #[inline]
 unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    return ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32;
+    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }
 /* tectonic/xetex-pagebuilder.c: the page builder
    Copyright 2017-2018 The Tectonic Project
@@ -625,9 +625,9 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                     r = (*mem.offset(r as isize)).b32.s1
                 }
                 if (*mem.offset((r + 2i32) as isize)).b32.s0 == -0xfffffffi32 {
-                    wait = 1i32 != 0
+                    wait = true
                 } else {
-                    wait = 0i32 != 0;
+                    wait = false;
                     s = (*mem.offset((r + 2i32) as isize)).b32.s1;
                     (*mem.offset(s as isize)).b32.s1 = (*mem.offset((p + 4i32) as isize)).b32.s0;
                     if (*mem.offset((r + 2i32) as isize)).b32.s0 == p {
@@ -661,7 +661,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                                 .s1 = (*mem.offset((p + 4i32) as isize)).b32.s1;
                                 (*mem.offset((p + 4i32) as isize)).b32.s0 = prune_page_top(
                                     (*mem.offset((r + 1i32) as isize)).b32.s1,
-                                    0i32 != 0,
+                                    false,
                                 );
                                 if (*mem.offset((p + 4i32) as isize)).b32.s0 != -0xfffffffi32 {
                                     temp_ptr = vpackage(
@@ -674,7 +674,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                                         (*mem.offset((temp_ptr + 3i32) as isize)).b32.s1
                                             + (*mem.offset((temp_ptr + 2i32) as isize)).b32.s1;
                                     free_node(temp_ptr, 8i32);
-                                    wait = 1i32 != 0
+                                    wait = true
                                 }
                             }
                         }
@@ -774,7 +774,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                 find_sa_element(
                     7i32 as small_number,
                     (*mem.offset((p + 1i32) as isize)).b32.s0,
-                    1i32 != 0,
+                    true,
                 );
                 if (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1 == -0xfffffffi32 {
                     (*mem.offset((cur_ptr + 1i32) as isize)).b32.s1 =
@@ -1158,7 +1158,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
             error();
         } else {
             /*1060: "Fire up the user's output routine and return" */
-            output_active = 1i32 != 0; /* this is `prev_depth` */
+            output_active = true; /* this is `prev_depth` */
             dead_cycles += 1;
             push_nest();
             cur_list.mode = -1_i16;

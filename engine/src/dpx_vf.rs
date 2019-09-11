@@ -255,7 +255,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 static mut verbose: u8 = 0_u8;
 #[no_mangle]
@@ -533,7 +533,7 @@ pub unsafe extern "C" fn vf_locate_font(mut tex_name: *const i8, mut ptsize: spt
         fprintf(stderr, b")\x00" as *const u8 as *const i8);
     }
     ttstub_input_close(vf_handle);
-    return thisfont;
+    thisfont
 }
 unsafe extern "C" fn unsigned_byte(mut start: *mut *mut u8, mut end: *mut u8) -> i32 {
     let mut byte: i32 = 0i32;
@@ -544,7 +544,7 @@ unsafe extern "C" fn unsigned_byte(mut start: *mut *mut u8, mut end: *mut u8) ->
     } else {
         _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
     }
-    return byte;
+    byte
 }
 unsafe extern "C" fn get_pkt_signed_num(
     mut start: *mut *mut u8,
@@ -597,7 +597,7 @@ unsafe extern "C" fn get_pkt_signed_num(
     } else {
         _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
     }
-    return val;
+    val
 }
 unsafe extern "C" fn get_pkt_unsigned_num(
     mut start: *mut *mut u8,
@@ -650,7 +650,7 @@ unsafe extern "C" fn get_pkt_unsigned_num(
     } else {
         _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
     }
-    return val;
+    val
 }
 unsafe extern "C" fn vf_putrule(mut start: *mut *mut u8, mut end: *mut u8, mut ptsize: spt_t) {
     let mut height: i32 = get_pkt_signed_num(start, end, 3_u8);

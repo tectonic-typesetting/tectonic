@@ -501,7 +501,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -532,7 +532,7 @@ pub unsafe extern "C" fn pdf_dev_set_verbose(mut level: i32) {
 /* Not working yet... */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_scale() -> f64 {
-    return 1.0f64;
+    1.0f64
 }
 static mut dev_unit: C2RustUnnamed_0 = {
     let mut init = C2RustUnnamed_0 {
@@ -544,7 +544,7 @@ static mut dev_unit: C2RustUnnamed_0 = {
 };
 #[no_mangle]
 pub unsafe extern "C" fn dev_unit_dviunit() -> f64 {
-    return 1.0f64 / dev_unit.dvi2pts;
+    1.0f64 / dev_unit.dvi2pts
 }
 static mut ten_pow: [u32; 10] = [
     1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000,
@@ -670,7 +670,7 @@ unsafe extern "C" fn p_dtoa(mut value: f64, mut prec: i32, mut buf: *mut i8) -> 
     }
     c = c.offset(1);
     *c = 0_i8;
-    return n;
+    n
 }
 unsafe extern "C" fn dev_sprint_bp(
     mut buf: *mut i8,
@@ -686,7 +686,7 @@ unsafe extern "C" fn dev_sprint_bp(
             - floor(value_in_bp / ten_pow_inv[prec as usize] + 0.5f64) * ten_pow_inv[prec as usize];
         *error = round(error_in_bp / dev_unit.dvi2pts) as spt_t
     }
-    return p_dtoa(value_in_bp, prec, buf);
+    p_dtoa(value_in_bp, prec, buf)
 }
 /* They are affected by precision (set at device initialization). */
 #[no_mangle]
@@ -724,7 +724,7 @@ pub unsafe extern "C" fn pdf_sprint_matrix(mut buf: *mut i8, mut M: *const pdf_t
     *buf.offset(fresh9 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*M).f, prec0, buf.offset(len as isize));
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_rect(mut buf: *mut i8, mut rect: *const pdf_rect) -> i32 {
@@ -743,7 +743,7 @@ pub unsafe extern "C" fn pdf_sprint_rect(mut buf: *mut i8, mut rect: *const pdf_
     *buf.offset(fresh12 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*rect).ury, dev_unit.precision, buf.offset(len as isize));
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_coord(mut buf: *mut i8, mut p: *const pdf_coord) -> i32 {
@@ -754,21 +754,21 @@ pub unsafe extern "C" fn pdf_sprint_coord(mut buf: *mut i8, mut p: *const pdf_co
     *buf.offset(fresh13 as isize) = ' ' as i32 as i8;
     len += p_dtoa((*p).y, dev_unit.precision, buf.offset(len as isize));
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_length(mut buf: *mut i8, mut value: f64) -> i32 {
     let mut len: i32 = 0;
     len = p_dtoa(value, dev_unit.precision, buf);
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_number(mut buf: *mut i8, mut value: f64) -> i32 {
     let mut len: i32 = 0;
     len = p_dtoa(value, 8i32, buf);
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
-    return len;
+    len
 }
 static mut dev_param: C2RustUnnamed_3 = {
     let mut init = C2RustUnnamed_3 {
@@ -1371,7 +1371,7 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
     }
     text_state.bold_param = (*font).bold;
     text_state.font_id = font_id;
-    return 0i32;
+    0i32
 }
 /* Access text state parameters.
  */
@@ -1382,7 +1382,7 @@ pub unsafe extern "C" fn pdf_dev_get_font_wmode(mut font_id: i32) -> i32 {
     if !font.is_null() {
         return (*font).wmode;
     }
-    return 0i32;
+    0i32
 }
 static mut sbuf0: [u8; 4096] = [0; 4096];
 static mut sbuf1: [u8; 4096] = [0; 4096];
@@ -1538,7 +1538,7 @@ unsafe extern "C" fn handle_multibyte_string(
     }
     *str_ptr = p;
     *str_len = length;
-    return 0i32;
+    0i32
 }
 static mut dev_coords: *mut pdf_coord = 0 as *const pdf_coord as *mut pdf_coord;
 static mut num_dev_coords: i32 = 0i32;
@@ -2083,7 +2083,7 @@ pub unsafe extern "C" fn pdf_dev_locate_font(mut font_name: *const i8, mut ptsiz
     }
     let fresh46 = num_dev_fonts;
     num_dev_fonts = num_dev_fonts + 1;
-    return fresh46;
+    fresh46
 }
 /* This does not remember current stroking width. */
 unsafe extern "C" fn dev_sprint_line(
@@ -2146,7 +2146,7 @@ unsafe extern "C" fn dev_sprint_line(
     let fresh58 = len;
     len = len + 1;
     *buf.offset(fresh58 as isize) = 'S' as i32 as i8;
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_set_rule(
@@ -2315,7 +2315,7 @@ pub unsafe extern "C" fn pdf_dev_set_rect(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_get_dirmode() -> i32 {
-    return text_state.dir_mode;
+    text_state.dir_mode
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_set_dirmode(mut text_dir: i32) {
@@ -2396,7 +2396,7 @@ pub unsafe extern "C" fn pdf_dev_get_param(mut param_type: i32) -> i32 {
             );
         }
     }
-    return value;
+    value
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_set_param(mut param_type: i32, mut value: i32) {
@@ -2571,7 +2571,7 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         }
         pdf_doc_expand_box(&mut rect);
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn transform_info_clear(mut info: *mut transform_info) {

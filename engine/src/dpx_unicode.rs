@@ -11,7 +11,7 @@ extern crate libc;
 pub type size_t = u64;
 #[no_mangle]
 pub unsafe extern "C" fn UC_is_valid(mut ucv: i32) -> bool {
-    return !(ucv < 0i32 || ucv as i64 > 0x10ffff || ucv as i64 >= 0xd800 && ucv as i64 <= 0xdfff);
+    !(ucv < 0i32 || ucv as i64 > 0x10ffff || ucv as i64 >= 0xd800 && ucv as i64 <= 0xdfff)
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
@@ -19,28 +19,28 @@ pub unsafe extern "C" fn UC_UTF16BE_is_valid_string(
     mut endptr: *const u8,
 ) -> bool {
     if p.offset(1) >= endptr {
-        return 0i32 != 0;
+        return false;
     }
     while p < endptr {
         let mut ucv: i32 = UC_UTF16BE_decode_char(&mut p, endptr);
         if !UC_is_valid(ucv) {
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF8_is_valid_string(mut p: *const u8, mut endptr: *const u8) -> bool {
     if p.offset(1) >= endptr {
-        return 0i32 != 0;
+        return false;
     }
     while p < endptr {
         let mut ucv: i32 = UC_UTF8_decode_char(&mut p, endptr);
         if !UC_is_valid(ucv) {
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_decode_char(
@@ -71,7 +71,7 @@ pub unsafe extern "C" fn UC_UTF16BE_decode_char(
         ucv = first as i32
     }
     *pp = p;
-    return ucv;
+    ucv
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF16BE_encode_char(
@@ -111,7 +111,7 @@ pub unsafe extern "C" fn UC_UTF16BE_encode_char(
         count = 2i32
     }
     *pp = (*pp).offset(count as isize);
-    return count as size_t;
+    count as size_t
 }
 #[no_mangle]
 pub unsafe extern "C" fn UC_UTF8_decode_char(mut pp: *mut *const u8, mut endptr: *const u8) -> i32 {
@@ -165,7 +165,7 @@ pub unsafe extern "C" fn UC_UTF8_decode_char(mut pp: *mut *const u8, mut endptr:
         ucv = ucv << 6i32 | c as i32 & 0x3fi32
     }
     *pp = p;
-    return ucv;
+    ucv
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -253,5 +253,5 @@ pub unsafe extern "C" fn UC_UTF8_encode_char(
         count = 6i32
     }
     *pp = (*pp).offset(count as isize);
-    return count as size_t;
+    count as size_t
 }

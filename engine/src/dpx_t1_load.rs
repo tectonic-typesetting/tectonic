@@ -358,7 +358,7 @@ pub type pst_type = i32;
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -372,7 +372,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -381,7 +381,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 unsafe extern "C" fn t1_decrypt(
     mut key: u16,
@@ -440,7 +440,7 @@ unsafe extern "C" fn get_next_key(mut start: *mut *mut u8, mut end: *mut u8) -> 
             tok = 0 as *mut pst_obj
         }
     }
-    return key;
+    key
 }
 unsafe extern "C" fn seek_operator(
     mut start: *mut *mut u8,
@@ -470,7 +470,7 @@ unsafe extern "C" fn seek_operator(
         pst_release_obj(tok);
         tok = 0 as *mut pst_obj
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_svalue(
     mut start: *mut *mut u8,
@@ -496,7 +496,7 @@ unsafe extern "C" fn parse_svalue(
         pst_release_obj(tok);
         tok = 0 as *mut pst_obj
     }
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn parse_bvalue(
     mut start: *mut *mut u8,
@@ -522,7 +522,7 @@ unsafe extern "C" fn parse_bvalue(
         pst_release_obj(tok);
         tok = 0 as *mut pst_obj
     }
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn parse_nvalue(
     mut start: *mut *mut u8,
@@ -589,7 +589,7 @@ unsafe extern "C" fn parse_nvalue(
         pst_release_obj(tok);
         tok = 0 as *mut pst_obj
     }
-    return argn;
+    argn
 }
 static mut StandardEncoding: [*const i8; 256] = [
     b".notdef\x00" as *const u8 as *const i8,
@@ -1323,7 +1323,7 @@ unsafe extern "C" fn try_put_or_putinterval(
             return -1i32;
         }
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_encoding(
     mut enc_vec: *mut *mut i8,
@@ -1576,7 +1576,7 @@ unsafe extern "C" fn parse_encoding(
             }
         }
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_subrs(
     mut font: *mut cff_font,
@@ -1848,7 +1848,7 @@ unsafe extern "C" fn parse_subrs(
         free(offsets as *mut libc::c_void);
         free(lengths as *mut libc::c_void);
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_charstrings(
     mut font: *mut cff_font,
@@ -2133,7 +2133,7 @@ unsafe extern "C" fn parse_charstrings(
         *(*charstrings).offset.offset(count as isize) = (offset + 1i32) as l_offset
     }
     (*font).num_glyphs = count as card16;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_part2(
     mut font: *mut cff_font,
@@ -2255,7 +2255,7 @@ unsafe extern "C" fn parse_part2(
          */
         free(key as *mut libc::c_void); /* Macro CHECK_ARGN_XX assume 'argn' is used. */
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_part1(
     mut font: *mut cff_font,
@@ -2455,7 +2455,7 @@ unsafe extern "C" fn parse_part1(
         }
         free(key as *mut libc::c_void);
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
@@ -2471,13 +2471,13 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
         }
         || ch > 3i32
     {
-        return 0i32 != 0;
+        return false;
     }
     i = 0i32;
     while i < 4i32 {
         ch = ttstub_input_getc(handle);
         if ch < 0i32 {
-            return 0i32 != 0;
+            return false;
         }
         i += 1
     }
@@ -2485,7 +2485,7 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
     while i < 14i32 {
         ch = ttstub_input_getc(handle);
         if ch < 0i32 {
-            return 0i32 != 0;
+            return false;
         }
         sig[i as usize] = ch as i8;
         i += 1
@@ -2501,7 +2501,7 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
             11i32 as u64,
         ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
     if memcmp(
         sig.as_mut_ptr() as *const libc::c_void,
@@ -2514,10 +2514,10 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
             b"Ambiguous PostScript resource type: %s\x00" as *const u8 as *const i8,
             sig.as_mut_ptr(),
         );
-        return 1i32 != 0;
+        return true;
     }
     dpx_warning(b"Not a PFB font file?\x00" as *const u8 as *const i8);
-    return 0i32 != 0;
+    false
 }
 unsafe extern "C" fn get_pfb_segment(
     mut handle: rust_input_handle_t,
@@ -2585,14 +2585,14 @@ unsafe extern "C" fn get_pfb_segment(
     if !length.is_null() {
         *length = bytesread
     }
-    return buffer;
+    buffer
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1_get_standard_glyph(mut code: i32) -> *const i8 {
     if StandardEncoding[code as usize].is_null() {
         return 0 as *const i8;
     }
-    return StandardEncoding[code as usize];
+    StandardEncoding[code as usize]
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1_get_fontname(
@@ -2639,7 +2639,7 @@ pub unsafe extern "C" fn t1_get_fontname(
         free(key as *mut libc::c_void);
     }
     free(buffer as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn init_cff_font(mut cff: *mut cff_font) {
     (*cff).handle = 0 as *mut libc::c_void;
@@ -2744,5 +2744,5 @@ pub unsafe extern "C" fn t1_load_font(
     /* Remaining section ignored. */
     free(buffer as *mut libc::c_void);
     cff_update_string(cff);
-    return cff;
+    cff
 }

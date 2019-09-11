@@ -319,7 +319,7 @@ pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *m
         (*table).glyphDataFormat as i32,
         2i32,
     ) as isize);
-    return data;
+    data
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_head_table(mut sfont: *mut sfnt) -> *mut tt_head_table {
@@ -353,7 +353,7 @@ pub unsafe extern "C" fn tt_read_head_table(mut sfont: *mut sfnt) -> *mut tt_hea
     (*table).fontDirectionHint = tt_get_signed_pair((*sfont).handle);
     (*table).indexToLocFormat = tt_get_signed_pair((*sfont).handle);
     (*table).glyphDataFormat = tt_get_signed_pair((*sfont).handle);
-    return table;
+    table
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_pack_maxp_table(mut table: *mut tt_maxp_table) -> *mut i8 {
@@ -414,7 +414,7 @@ pub unsafe extern "C" fn tt_pack_maxp_table(mut table: *mut tt_maxp_table) -> *m
         (*table).maxComponentDepth as i32,
         2i32,
     ) as isize);
-    return data;
+    data
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_maxp_table(mut sfont: *mut sfnt) -> *mut tt_maxp_table {
@@ -437,7 +437,7 @@ pub unsafe extern "C" fn tt_read_maxp_table(mut sfont: *mut sfnt) -> *mut tt_max
     (*table).maxSizeOfInstructions = tt_get_unsigned_pair((*sfont).handle);
     (*table).maxComponentElements = tt_get_unsigned_pair((*sfont).handle);
     (*table).maxComponentDepth = tt_get_unsigned_pair((*sfont).handle);
-    return table;
+    table
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *mut i8 {
@@ -494,7 +494,7 @@ pub unsafe extern "C" fn tt_pack_hhea_table(mut table: *mut tt_hhea_table) -> *m
         (*table).numOfLongHorMetrics as i32,
         2i32,
     ) as isize);
-    return data;
+    data
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhea_table {
@@ -529,7 +529,7 @@ pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhe
     (*table).numOfExSideBearings = len
         .wrapping_sub(((*table).numOfLongHorMetrics as i32 * 4i32) as u32)
         .wrapping_div(2_u32) as u16;
-    return table;
+    table
 }
 /* vhea */
 #[no_mangle]
@@ -562,7 +562,7 @@ pub unsafe extern "C" fn tt_read_vhea_table(mut sfont: *mut sfnt) -> *mut tt_vhe
     (*table).numOfExSideBearings = len
         .wrapping_sub(((*table).numOfLongVerMetrics as i32 * 4i32) as u32)
         .wrapping_div(2_u32) as u16;
-    return table;
+    table
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VORG_table {
@@ -599,7 +599,7 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
     } else {
         vorg = 0 as *mut tt_VORG_table
     }
-    return vorg;
+    vorg
 }
 /*
  * hmtx and vmtx
@@ -633,7 +633,7 @@ pub unsafe extern "C" fn tt_read_longMetrics(
         (*m.offset(gid as isize)).sideBearing = last_esb;
         gid = gid.wrapping_add(1)
     }
-    return m;
+    m
 }
 /* OS/2 table */
 /* this table may not exist */
@@ -719,7 +719,7 @@ pub unsafe extern "C" fn tt_read_os2__table(mut sfont: *mut sfnt) -> *mut tt_os2
             /* All Any */
         }
     }
-    return table;
+    table
 }
 unsafe extern "C" fn tt_get_name(
     mut sfont: *mut sfnt,
@@ -789,7 +789,7 @@ unsafe extern "C" fn tt_get_name(
     if i == num_names as i32 {
         length = 0_u16
     }
-    return length;
+    length
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -865,5 +865,5 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
         */
         namelen = tt_get_name(sfont, dest, destlen, 1_u16, 0_u16, 0_u16, 1_u16)
     }
-    return namelen;
+    namelen
 }

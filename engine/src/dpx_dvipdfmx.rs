@@ -561,7 +561,7 @@ unsafe extern "C" fn read_length(
     }
     *vp = v * u;
     *pp = p;
-    return error;
+    error
 }
 unsafe extern "C" fn select_paper(mut paperspec: *const i8) {
     let mut pi: *const paper = 0 as *const paper;
@@ -856,7 +856,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     mut quiet: bool,
     mut verbose: u32,
 ) -> i32 {
-    let mut enable_object_stream: bool = 1i32 != 0; /* This must come before parsing options... */
+    let mut enable_object_stream: bool = true; /* This must come before parsing options... */
     let mut dvi2pts: f64 = 0.;
     let mut num_page_ranges: u32 = 0_u32;
     let mut page_ranges: *mut PageRange = 0 as *mut PageRange;
@@ -980,7 +980,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     }
     pdf_files_init();
     if opt_flags & 1i32 << 6i32 != 0 {
-        enable_object_stream = 0i32 != 0
+        enable_object_stream = false
     }
     /* Set default paper size here so that all page's can inherite it.
      * annot_grow:    Margin of annotation.
@@ -1020,5 +1020,5 @@ pub unsafe extern "C" fn dvipdfmx_main(
     dvi_close();
     dpx_message(b"\n\x00" as *const u8 as *const i8);
     free(page_ranges as *mut libc::c_void);
-    return 0i32;
+    0i32
 }

@@ -607,7 +607,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -736,7 +736,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
     }
     sfnt_close(sfont);
     ttstub_input_close(handle as rust_input_handle_t);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn add_SimpleMetrics(
     mut font: *mut pdf_font,
@@ -1633,5 +1633,5 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     pdf_add_stream(fontfile, stream_data_ptr as *mut libc::c_void, offset);
     pdf_release_obj(fontfile);
     free(stream_data_ptr as *mut libc::c_void);
-    return 0i32;
+    0i32
 }

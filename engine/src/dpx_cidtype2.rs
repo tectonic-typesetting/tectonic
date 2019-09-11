@@ -479,7 +479,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -872,7 +872,7 @@ unsafe extern "C" fn find_tocode_cmap(
         dpx_warning(b"Please check if this file exists.\x00" as *const u8 as *const i8);
         _tt_abort(b"Cannot continue...\x00" as *const u8 as *const i8);
     }
-    return CMap_cache_get(cmap_id);
+    CMap_cache_get(cmap_id)
 }
 /*
  * CIDFont glyph metrics:
@@ -1156,7 +1156,7 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
             i = i.wrapping_add(1)
         }
     }
-    return alt_code;
+    alt_code
 }
 unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> i32 {
     let mut inbuf: [u8; 2] = [0; 2];
@@ -1202,7 +1202,7 @@ unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> i32 {
             }
         }
     }
-    return 0i32;
+    0i32
 }
 /* #define NO_GHOSTSCRIPT_BUG 1 */
 #[no_mangle]
@@ -2005,5 +2005,5 @@ pub unsafe extern "C" fn CIDFont_type2_open(
      * Don't write fontdict here.
      * /Supplement in /CIDSystemInfo may change.
      */
-    return 0i32;
+    0i32
 }

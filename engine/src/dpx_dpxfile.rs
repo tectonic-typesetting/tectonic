@@ -109,7 +109,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* quasi-hack to get the primary input */
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -153,7 +153,7 @@ unsafe extern "C" fn check_stream_is_truetype(mut handle: rust_input_handle_t) -
     n = ttstub_input_read(handle, _sbuf.as_mut_ptr(), 4i32 as size_t) as i32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     if n != 4i32 {
-        return 0i32 != 0;
+        return false;
     }
     if memcmp(
         _sbuf.as_mut_ptr() as *const libc::c_void,
@@ -167,7 +167,7 @@ unsafe extern "C" fn check_stream_is_truetype(mut handle: rust_input_handle_t) -
         ) == 0
     {
         /* This doesn't help... */
-        return 1i32 != 0;
+        return true;
     }
     if memcmp(
         _sbuf.as_mut_ptr() as *const libc::c_void,
@@ -175,9 +175,9 @@ unsafe extern "C" fn check_stream_is_truetype(mut handle: rust_input_handle_t) -
         4i32 as u64,
     ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    false
 }
 /* "OpenType" is only for ".otf" here */
 unsafe extern "C" fn check_stream_is_opentype(mut handle: rust_input_handle_t) -> bool {
@@ -186,7 +186,7 @@ unsafe extern "C" fn check_stream_is_opentype(mut handle: rust_input_handle_t) -
     n = ttstub_input_read(handle, _sbuf.as_mut_ptr(), 4i32 as size_t) as i32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     if n != 4i32 {
-        return 0i32 != 0;
+        return false;
     }
     if memcmp(
         _sbuf.as_mut_ptr() as *const libc::c_void,
@@ -194,9 +194,9 @@ unsafe extern "C" fn check_stream_is_opentype(mut handle: rust_input_handle_t) -
         4i32 as u64,
     ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    false
 }
 unsafe extern "C" fn check_stream_is_type1(mut handle: rust_input_handle_t) -> bool {
     let mut p: *mut i8 = _sbuf.as_mut_ptr();
@@ -205,13 +205,13 @@ unsafe extern "C" fn check_stream_is_type1(mut handle: rust_input_handle_t) -> b
     n = ttstub_input_read(handle, p, 21i32 as size_t) as i32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     if n != 21i32 {
-        return 0i32 != 0;
+        return false;
     }
     if *p.offset(0) as i32 != 0x80i32 as i8 as i32
         || (*p.offset(1) as i32) < 0i32
         || *p.offset(1) as i32 > 3i32
     {
-        return 0i32 != 0;
+        return false;
     }
     if memcmp(
         p.offset(6) as *const libc::c_void,
@@ -224,7 +224,7 @@ unsafe extern "C" fn check_stream_is_type1(mut handle: rust_input_handle_t) -> b
             11i32 as u64,
         ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
     if memcmp(
         p.offset(6) as *const libc::c_void,
@@ -236,9 +236,9 @@ unsafe extern "C" fn check_stream_is_type1(mut handle: rust_input_handle_t) -> b
          * p[20] = '\0'; p += 6;
          * dpx_warning("Ambiguous PostScript resource type: %s", (char *) p);
          */
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    false
 }
 unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> bool {
     let mut i: i32 = 0;
@@ -258,12 +258,12 @@ unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> b
     while i <= n {
         if tt_get_unsigned_quad(handle) as u64 == 0x73666e74 {
             /* "sfnt" */
-            return 1i32 != 0;
+            return true;
         }
         tt_get_unsigned_quad(handle);
         i += 1
     }
-    return 0i32 != 0;
+    false
 }
 /* ensuresuffix() returns a copy of basename if sfx is "". */
 unsafe extern "C" fn ensuresuffix(mut basename: *const i8, mut sfx: *const i8) -> *mut i8 {
@@ -278,7 +278,7 @@ unsafe extern "C" fn ensuresuffix(mut basename: *const i8, mut sfx: *const i8) -
     if q.is_null() && *sfx.offset(0) as i32 != 0 {
         strcat(p, sfx);
     }
-    return p;
+    p
 }
 /* tmp freed here */
 /* Tectonic-enabled I/O alternatives */
@@ -293,7 +293,7 @@ pub unsafe extern "C" fn dpx_tt_open(
     q = ensuresuffix(filename, suffix);
     handle = ttstub_input_open(q, format, 0i32);
     free(q as *mut libc::c_void);
-    return handle;
+    handle
 }
 /* Search order:
  *   SFDFONTS (TDS 1.1)
@@ -312,7 +312,7 @@ pub unsafe extern "C" fn dpx_open_type1_file(mut filename: *const i8) -> rust_in
         ttstub_input_close(handle);
         return 0 as *mut libc::c_void;
     }
-    return handle;
+    handle
 }
 #[no_mangle]
 pub unsafe extern "C" fn dpx_open_truetype_file(mut filename: *const i8) -> rust_input_handle_t {
@@ -325,7 +325,7 @@ pub unsafe extern "C" fn dpx_open_truetype_file(mut filename: *const i8) -> rust
         ttstub_input_close(handle);
         return 0 as *mut libc::c_void;
     }
-    return handle;
+    handle
 }
 #[no_mangle]
 pub unsafe extern "C" fn dpx_open_opentype_file(mut filename: *const i8) -> rust_input_handle_t {
@@ -341,7 +341,7 @@ pub unsafe extern "C" fn dpx_open_opentype_file(mut filename: *const i8) -> rust
         ttstub_input_close(handle);
         return 0 as *mut libc::c_void;
     }
-    return handle;
+    handle
 }
 #[no_mangle]
 pub unsafe extern "C" fn dpx_open_dfont_file(mut filename: *const i8) -> rust_input_handle_t {
@@ -375,7 +375,7 @@ pub unsafe extern "C" fn dpx_open_dfont_file(mut filename: *const i8) -> rust_in
         ttstub_input_close(handle);
         return 0 as *mut libc::c_void;
     }
-    return handle;
+    handle
 }
 unsafe extern "C" fn dpx_get_tmpdir() -> *mut i8 {
     let mut i: size_t = 0;
@@ -392,7 +392,7 @@ unsafe extern "C" fn dpx_get_tmpdir() -> *mut i8 {
         *ret.offset(i.wrapping_sub(1i32 as u64) as isize) = '\u{0}' as i32 as i8;
         i = i.wrapping_sub(1)
     }
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn dpx_create_temp_file() -> *mut i8 {
@@ -413,7 +413,7 @@ pub unsafe extern "C" fn dpx_create_temp_file() -> *mut i8 {
     } else {
         tmp = mfree(tmp as *mut libc::c_void) as *mut i8
     }
-    return tmp;
+    tmp
 }
 #[no_mangle]
 pub unsafe extern "C" fn dpx_delete_old_cache(mut life: i32) {
@@ -469,5 +469,5 @@ pub unsafe extern "C" fn dpx_file_apply_filter(
     mut version: u8,
 ) -> i32 {
     /* Tectonic: defused */
-    return -1i32;
+    -1i32
 }

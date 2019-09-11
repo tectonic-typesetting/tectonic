@@ -480,7 +480,7 @@ pub struct C2RustUnnamed_3 {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -494,7 +494,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* Force bold at small text sizes */
 unsafe extern "C" fn is_basefont(mut name: *const i8) -> bool {
@@ -518,11 +518,11 @@ unsafe extern "C" fn is_basefont(mut name: *const i8) -> bool {
     i = 0i32;
     while i < 14i32 {
         if streq_ptr(name, basefonts[i as usize]) {
-            return 1i32 != 0;
+            return true;
         }
         i += 1
     }
-    return 0i32 != 0;
+    false
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> i32 {
@@ -558,7 +558,7 @@ pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> i32 {
         pdf_font_set_fontname(font, fontname.as_mut_ptr());
         pdf_font_set_subtype(font, 0i32);
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn get_font_attr(mut font: *mut pdf_font, mut cffont: *mut cff_font) {
     let mut fontname: *mut i8 = 0 as *mut i8;
@@ -1218,7 +1218,7 @@ unsafe extern "C" fn write_fontfile(
         ),
     );
     free(stream_data_ptr as *mut libc::c_void);
-    return offset;
+    offset
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1695,5 +1695,5 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     free(widths as *mut libc::c_void);
     free(GIDMap as *mut libc::c_void);
     /* Maybe writing Charset is recommended for subsetted font. */
-    return 0i32;
+    0i32
 }

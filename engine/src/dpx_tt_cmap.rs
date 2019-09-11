@@ -776,7 +776,7 @@ pub struct tt_maxp_table {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr); /* the number of subHeaders is one plus the max of subHeaderKeys */
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 static mut verbose: i32 = 0i32;
 #[no_mangle]
@@ -796,7 +796,7 @@ unsafe extern "C" fn read_cmap0(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
         (*map).glyphIndexArray[i as usize] = tt_get_unsigned_byte((*sfont).handle);
         i = i.wrapping_add(1)
     }
-    return map;
+    map
 }
 unsafe extern "C" fn release_cmap0(mut map: *mut cmap0) {
     free(map as *mut libc::c_void);
@@ -864,7 +864,7 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
         *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
     }
-    return map;
+    map
 }
 unsafe extern "C" fn release_cmap2(mut map: *mut cmap2) {
     if !map.is_null() {
@@ -897,7 +897,7 @@ unsafe extern "C" fn lookup_cmap2(mut map: *mut cmap2, mut cc: u16) -> u16 {
             idx = (idx as i32 + idDelta as i32 & 0xffffi32) as u16
         }
     }
-    return idx;
+    idx
 }
 unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap4 {
     let mut map: *mut cmap4 = 0 as *mut cmap4;
@@ -963,7 +963,7 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
             i = i.wrapping_add(1)
         }
     }
-    return map;
+    map
 }
 unsafe extern "C" fn release_cmap4(mut map: *mut cmap4) {
     if !map.is_null() {
@@ -1013,7 +1013,7 @@ unsafe extern "C" fn lookup_cmap4(mut map: *mut cmap4, mut cc: u16) -> u16 {
         }
         break;
     }
-    return gid;
+    gid
 }
 unsafe extern "C" fn read_cmap6(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap6 {
     let mut map: *mut cmap6 = 0 as *mut cmap6;
@@ -1032,7 +1032,7 @@ unsafe extern "C" fn read_cmap6(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
         *(*map).glyphIndexArray.offset(i as isize) = tt_get_unsigned_pair((*sfont).handle);
         i = i.wrapping_add(1)
     }
-    return map;
+    map
 }
 unsafe extern "C" fn release_cmap6(mut map: *mut cmap6) {
     if !map.is_null() {
@@ -1046,7 +1046,7 @@ unsafe extern "C" fn lookup_cmap6(mut map: *mut cmap6, mut cc: u16) -> u16 {
     if (idx as i32) < (*map).entryCount as i32 {
         return *(*map).glyphIndexArray.offset(idx as isize);
     }
-    return 0_u16;
+    0_u16
 }
 /* ULONG length */
 unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap12 {
@@ -1067,7 +1067,7 @@ unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: u32) -> *mut cma
         (*(*map).groups.offset(i as isize)).startGlyphID = tt_get_unsigned_quad((*sfont).handle);
         i = i.wrapping_add(1)
     }
-    return map;
+    map
 }
 unsafe extern "C" fn release_cmap12(mut map: *mut cmap12) {
     if !map.is_null() {
@@ -1094,7 +1094,7 @@ unsafe extern "C" fn lookup_cmap12(mut map: *mut cmap12, mut cccc: u32) -> u16 {
             & 0xffff_u32) as u16;
         break;
     }
-    return gid;
+    gid
 }
 /* read cmap */
 #[no_mangle]
@@ -1174,7 +1174,7 @@ pub unsafe extern "C" fn tt_cmap_read(
         tt_cmap_release(cmap);
         cmap = 0 as *mut tt_cmap
     }
-    return cmap;
+    cmap
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_cmap_release(mut cmap: *mut tt_cmap) {
@@ -1231,7 +1231,7 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> 
             );
         }
     }
-    return gid;
+    gid
 }
 static mut wbuf: [u8; 1024] = [0; 1024];
 static mut srange_min: [u8; 2] = [0; 2];
@@ -1560,7 +1560,7 @@ unsafe extern "C" fn handle_CIDFont(
     }
     cff_close(cffont);
     *GIDToCIDMap = map;
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn is_PUA_or_presentation(mut uni: u32) -> bool {
     /* KANGXI RADICALs are commonly double encoded. */
@@ -1582,7 +1582,7 @@ unsafe extern "C" fn sfnt_get_glyphname(
     if name.is_null() && !cffont.is_null() {
         name = cff_get_glyphname(cffont, gid)
     }
-    return name;
+    name
 }
 /*
  * Substituted glyphs:
@@ -1725,7 +1725,7 @@ unsafe extern "C" fn handle_subst_glyphs(
     if !post.is_null() {
         tt_release_post_table(post);
     }
-    return count;
+    count
 }
 unsafe extern "C" fn prepare_CIDFont_from_sfnt(mut sfont: *mut sfnt) -> *mut cff_font {
     let mut cffont: *mut cff_font = 0 as *mut cff_font;
@@ -1741,7 +1741,7 @@ unsafe extern "C" fn prepare_CIDFont_from_sfnt(mut sfont: *mut sfnt) -> *mut cff
         return 0 as *mut cff_font;
     }
     cff_read_charsets(cffont);
-    return cffont;
+    cffont
 }
 unsafe extern "C" fn add_to_cmap_if_used(
     mut cmap: *mut CMap,
@@ -1785,7 +1785,7 @@ unsafe extern "C" fn add_to_cmap_if_used(
         let ref mut fresh5 = *used_chars.offset((cid as i32 / 8i32) as isize);
         *fresh5 = (*fresh5 as i32 & !(1i32 << 7i32 - cid as i32 % 8i32)) as i8
     }
-    return count;
+    count
 }
 unsafe extern "C" fn create_ToUnicode_cmap4(
     mut cmap: *mut CMap,
@@ -1829,7 +1829,7 @@ unsafe extern "C" fn create_ToUnicode_cmap4(
         }
         i = i.wrapping_add(1)
     }
-    return count;
+    count
 }
 unsafe extern "C" fn create_ToUnicode_cmap12(
     mut cmap: *mut CMap,
@@ -1857,7 +1857,7 @@ unsafe extern "C" fn create_ToUnicode_cmap12(
         }
         i = i.wrapping_add(1)
     }
-    return count as u16;
+    count as u16
 }
 unsafe extern "C" fn create_ToUnicode_cmap(
     mut ttcmap: *mut tt_cmap,
@@ -1987,7 +1987,7 @@ unsafe extern "C" fn create_ToUnicode_cmap(
     if !cffont.is_null() {
         cff_close(cffont);
     }
-    return stream;
+    stream
 }
 static mut cmap_plat_encs: [cmap_plat_enc_rec; 5] = [
     {
@@ -2194,7 +2194,7 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
     if !handle.is_null() {
         ttstub_input_close(handle);
     }
-    return cmap_ref;
+    cmap_ref
 }
 unsafe extern "C" fn load_base_CMap(
     mut cmap_name: *const i8,
@@ -2247,7 +2247,7 @@ unsafe extern "C" fn load_base_CMap(
         }
         cmap_id = CMap_cache_add(cmap)
     }
-    return cmap_id;
+    cmap_id
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -2577,5 +2577,5 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
     tt_cmap_release(ttcmap);
     sfnt_close(sfont);
     ttstub_input_close(handle as rust_input_handle_t);
-    return cmap_id;
+    cmap_id
 }

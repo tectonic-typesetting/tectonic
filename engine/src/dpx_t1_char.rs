@@ -176,7 +176,7 @@ pub struct t1_stemgroup {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 static mut status: i32 = -1i32;
 static mut phase: i32 = -1i32;
@@ -223,7 +223,7 @@ unsafe extern "C" fn stem_compare(mut v1: *const libc::c_void, mut v2: *const li
     } else {
         cmp = if (*s1).dir == 0i32 { -1i32 } else { 1i32 }
     }
-    return cmp;
+    cmp
 }
 unsafe extern "C" fn get_stem(mut cd: *mut t1_chardesc, mut stem_id: i32) -> i32 {
     let mut i: i32 = 0;
@@ -234,7 +234,11 @@ unsafe extern "C" fn get_stem(mut cd: *mut t1_chardesc, mut stem_id: i32) -> i32
         }
         i += 1
     }
-    return if i < (*cd).num_stems { i } else { -1i32 };
+    if i < (*cd).num_stems {
+        i
+    } else {
+        -1i32
+    }
 }
 unsafe extern "C" fn add_stem(
     mut cd: *mut t1_chardesc,
@@ -269,7 +273,7 @@ unsafe extern "C" fn add_stem(
         (*cd).stems[i as usize].id = (*cd).num_stems;
         (*cd).num_stems += 1
     }
-    return (*cd).stems[i as usize].id;
+    (*cd).stems[i as usize].id
 }
 unsafe extern "C" fn copy_args(mut args1: *mut f64, mut args2: *mut f64, mut count: i32) {
     loop {
@@ -1731,7 +1735,7 @@ pub unsafe extern "C" fn t1char_get_metrics(
         }
     }
     release_charpath(cd);
-    return 0i32;
+    0i32
 }
 /*
  * Encode Charpath as a Type 2 Charstring
@@ -2027,7 +2031,7 @@ unsafe extern "C" fn t1char_encode_charpath(
     let fresh33 = dst;
     dst = dst.offset(1);
     *fresh33 = 14i32 as card8;
-    return dst.wrapping_offset_from(save) as i64 as i32;
+    dst.wrapping_offset_from(save) as i64 as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1char_convert_charstring(
@@ -2123,5 +2127,5 @@ pub unsafe extern "C" fn t1char_convert_charstring(
         }
     }
     release_charpath(cd);
-    return length;
+    length
 }

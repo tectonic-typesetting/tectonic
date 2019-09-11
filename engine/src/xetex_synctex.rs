@@ -200,7 +200,7 @@ pub type synctex_recorder_t = Option<unsafe extern "C" fn(_: i32) -> ()>;
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 // Initialized in run_static_initializers
 static mut synctex_ctxt: C2RustUnnamed = C2RustUnnamed {
@@ -228,7 +228,7 @@ unsafe extern "C" fn get_current_name() -> *mut i8 {
     if name_of_input_file.is_null() {
         return xstrdup(b"\x00" as *const u8 as *const i8);
     }
-    return xstrdup(name_of_input_file);
+    xstrdup(name_of_input_file)
 }
 /* synctex.h
 
@@ -451,7 +451,7 @@ unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
     free(tmp as *mut libc::c_void);
     free(the_name as *mut libc::c_void);
     synctexabort();
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* *
  *  synctex_record_settings must be called very late,
@@ -470,7 +470,7 @@ unsafe extern "C" fn synctex_prepare_content() -> *mut libc::c_void {
         return synctex_ctxt.file;
     }
     synctexabort();
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /*  Send this message when starting a new input.  */
 /*  Each time TeX opens a file, it sends a synctexstartinput message and enters
@@ -1315,7 +1315,7 @@ unsafe extern "C" fn synctex_record_settings() -> i32 {
         return 0i32;
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_preamble() -> i32 {
@@ -1329,7 +1329,7 @@ unsafe extern "C" fn synctex_record_preamble() -> i32 {
         return 0i32;
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_input(mut tag: i32, mut name: *mut i8) -> i32 {
@@ -1344,7 +1344,7 @@ unsafe extern "C" fn synctex_record_input(mut tag: i32, mut name: *mut i8) -> i3
         return 0i32;
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_anchor() -> i32 {
@@ -1359,7 +1359,7 @@ unsafe extern "C" fn synctex_record_anchor() -> i32 {
         return 0i32;
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_content() -> i32 {
@@ -1372,7 +1372,7 @@ unsafe extern "C" fn synctex_record_content() -> i32 {
         return 0i32;
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_sheet(mut sheet: i32) -> i32 {
@@ -1389,7 +1389,7 @@ unsafe extern "C" fn synctex_record_sheet(mut sheet: i32) -> i32 {
         }
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 /*  Recording a "}..." or a ">" line  */
 #[inline]
@@ -1407,7 +1407,7 @@ unsafe extern "C" fn synctex_record_teehs(mut sheet: i32) -> i32 {
         }
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 /*  Recording the "<..." line.  In pdftex.web, use synctex_pdfxform(p) at
  *  the very beginning of the pdf_ship_out procedure.
@@ -1525,7 +1525,7 @@ unsafe extern "C" fn synctex_record_pdfxform(mut form: i32) -> i32 {
         }
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 /*  Recording a ">" line  */
 #[inline]
@@ -1542,7 +1542,7 @@ unsafe extern "C" fn synctex_record_mrofxfdp() -> i32 {
         }
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 /*  Recording a "f..." line  */
 #[inline]
@@ -1600,7 +1600,7 @@ unsafe extern "C" fn synctex_record_node_pdfrefxform(mut objnum: i32) -> i32
         }
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_node_void_vlist(mut p: i32) {
@@ -1722,7 +1722,7 @@ unsafe extern "C" fn synctex_record_count() -> i32 {
         return 0i32;
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_postamble() -> i32 {
@@ -1746,7 +1746,7 @@ unsafe extern "C" fn synctex_record_postamble() -> i32 {
         }
     }
     synctexabort();
-    return -1i32;
+    -1i32
 }
 #[inline]
 unsafe extern "C" fn synctex_record_node_glue(mut p: i32) {

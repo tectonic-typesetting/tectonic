@@ -30,7 +30,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* engine-interface.c: programmatic interface to control the engine behavior
    Copyright 2016-2018 The Tectonic Project
@@ -54,7 +54,7 @@ pub unsafe extern "C" fn tt_xetex_set_int_variable(mut var_name: *mut i8, mut va
     } else {
         return 1i32;
     } /* Uh oh: unrecognized variable */
-    return 0i32;
+    0i32
     /* success */
 }
 #[no_mangle]
@@ -63,5 +63,5 @@ pub unsafe extern "C" fn tt_xetex_set_string_variable(
     mut value: *mut i8,
 ) -> i32 {
     /* Currently unused; see Git history for how we used to set output_comment */
-    return 1i32;
+    1
 }

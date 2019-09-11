@@ -141,7 +141,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -256,7 +256,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
         i = i.wrapping_add(1)
     }
     free(indices as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_post_table {
@@ -297,7 +297,7 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
             (*post).Version,
         );
     }
-    return post;
+    post
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_lookup_post_table(
@@ -315,7 +315,7 @@ pub unsafe extern "C" fn tt_lookup_post_table(
         }
         gid = gid.wrapping_add(1)
     }
-    return 0_u16;
+    0_u16
 }
 #[no_mangle]
 pub unsafe extern "C" fn tt_get_glyphname(mut post: *mut tt_post_table, mut gid: u16) -> *mut i8 {
@@ -324,7 +324,7 @@ pub unsafe extern "C" fn tt_get_glyphname(mut post: *mut tt_post_table, mut gid:
     {
         return xstrdup(*(*post).glyphNamePtr.offset(gid as isize));
     }
-    return 0 as *mut i8;
+    0 as *mut i8
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

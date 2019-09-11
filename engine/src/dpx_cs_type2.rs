@@ -964,5 +964,5 @@ pub unsafe extern "C" fn cs_copy_charstring(
             (*ginfo).wx = default_width
         }
     }
-    return dst.wrapping_offset_from(save) as i64 as i32;
+    dst.wrapping_offset_from(save) as i64 as i32
 }

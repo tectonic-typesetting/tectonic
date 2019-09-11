@@ -74,7 +74,7 @@ unsafe extern "C" fn _dpx_ensure_output_handle() -> rust_output_handle_t {
     if _dpx_message_handle.is_null() {
         _tt_abort(b"xdvipdfmx cannot get output logging handle?!\x00" as *const u8 as *const i8);
     }
-    return _dpx_message_handle;
+    _dpx_message_handle
 }
 unsafe extern "C" fn _dpx_print_to_stdout(
     mut fmt: *const i8,

@@ -282,7 +282,7 @@ pub unsafe extern "C" fn ttc_read_offset(mut sfont: *mut sfnt, mut ttc_idx: i32)
     }
     ttstub_input_seek((*sfont).handle, (12i32 + ttc_idx * 4i32) as ssize_t, 0i32);
     offset = tt_get_unsigned_quad((*sfont).handle);
-    return offset;
+    offset
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -593,5 +593,5 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     free(head as *mut libc::c_void);
     free(os2 as *mut libc::c_void);
     tt_release_post_table(post);
-    return descriptor;
+    descriptor
 }

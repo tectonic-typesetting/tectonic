@@ -103,7 +103,7 @@ pub struct C2RustUnnamed {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -117,7 +117,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 static mut pdf_resource_categories: [C2RustUnnamed; 9] = [
     {
@@ -268,7 +268,7 @@ unsafe extern "C" fn get_category(mut category: *const i8) -> i32 {
         }
         i = i.wrapping_add(1)
     }
-    return -1i32;
+    -1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_defineresource(
@@ -342,7 +342,7 @@ pub unsafe extern "C" fn pdf_defineresource(
         }
         (*rc).count += 1
     }
-    return cat_id << 16i32 | res_id;
+    cat_id << 16i32 | res_id
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_findresource(mut category: *const i8, mut resname: *const i8) -> i32 {
@@ -367,7 +367,7 @@ pub unsafe extern "C" fn pdf_findresource(mut category: *const i8, mut resname: 
         }
         res_id += 1
     }
-    return -1i32;
+    -1i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -423,5 +423,5 @@ pub unsafe extern "C" fn pdf_get_resource_reference(mut rc_id: i32) -> *mut pdf_
             (*res).reference = pdf_ref_obj((*res).object)
         }
     }
-    return pdf_link_obj((*res).reference);
+    pdf_link_obj((*res).reference)
 }

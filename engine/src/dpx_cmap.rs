@@ -193,7 +193,7 @@ pub struct CMap_cache {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -207,7 +207,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -287,7 +287,7 @@ pub unsafe extern "C" fn CMap_new() -> *mut CMap {
         0i32,
         (65536i32 as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64),
     );
-    return cmap;
+    cmap
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_release(mut cmap: *mut CMap) {
@@ -330,7 +330,7 @@ pub unsafe extern "C" fn CMap_is_valid(mut cmap: *mut CMap) -> bool {
         || (*cmap).codespace.num < 1_u32
         || (*cmap).type_0 != 0i32 && (*cmap).mapTbl.is_null()
     {
-        return 0i32 != 0;
+        return false;
     }
     if !(*cmap).useCMap.is_null() {
         let mut csi1: *mut CIDSysInfo = 0 as *mut CIDSysInfo;
@@ -345,10 +345,10 @@ pub unsafe extern "C" fn CMap_is_valid(mut cmap: *mut CMap) -> bool {
                 CMap_get_name(cmap),
                 CMap_get_name((*cmap).useCMap),
             );
-            return 0i32 != 0;
+            return false;
         }
     }
-    return 1i32 != 0;
+    true
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_profile(mut cmap: *mut CMap, mut type_0: i32) -> i32 {
@@ -367,7 +367,7 @@ pub unsafe extern "C" fn CMap_get_profile(mut cmap: *mut CMap, mut type_0: i32) 
             );
         }
     }
-    return value;
+    value
 }
 /*
  * Put notdef chars for codes not declared in notdef(range|char)
@@ -585,7 +585,7 @@ pub unsafe extern "C" fn CMap_decode(
         CMap_decode_char(cmap, inbuf, inbytesleft, outbuf, outbytesleft);
         count = count.wrapping_add(1)
     }
-    return count;
+    count
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_reverse_decode(mut cmap: *mut CMap, mut cid: CID) -> i32 {
@@ -597,27 +597,27 @@ pub unsafe extern "C" fn CMap_reverse_decode(mut cmap: *mut CMap, mut cid: CID) 
     if ch == 0i32 && !(*cmap).useCMap.is_null() {
         return CMap_reverse_decode((*cmap).useCMap, cid);
     }
-    return ch;
+    ch
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_name(mut cmap: *mut CMap) -> *mut i8 {
     assert!(!cmap.is_null());
-    return (*cmap).name;
+    (*cmap).name
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_type(mut cmap: *mut CMap) -> i32 {
     assert!(!cmap.is_null());
-    return (*cmap).type_0;
+    (*cmap).type_0
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_wmode(mut cmap: *mut CMap) -> i32 {
     assert!(!cmap.is_null());
-    return (*cmap).wmode;
+    (*cmap).wmode
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_get_CIDSysInfo(mut cmap: *mut CMap) -> *mut CIDSysInfo {
     assert!(!cmap.is_null());
-    return (*cmap).CSI;
+    (*cmap).CSI
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const i8) {
@@ -772,7 +772,7 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
     i = 0_u32;
     while i < (*cmap).codespace.num {
         let mut j: size_t = 0;
-        let mut overlap: bool = 1i32 != 0;
+        let mut overlap: bool = true;
         csr = (*cmap).codespace.ranges.offset(i as isize);
         j = 0i32 as size_t;
         while j < (if (*csr).dim < dim { (*csr).dim } else { dim }) && overlap as i32 != 0 {
@@ -781,9 +781,9 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
                 || *codehi.offset(j as isize) as i32 >= *(*csr).codeLo.offset(j as isize) as i32
                     && *codehi.offset(j as isize) as i32 <= *(*csr).codeHi.offset(j as isize) as i32
             {
-                overlap = 1i32 != 0
+                overlap = true
             } else {
-                overlap = 0i32 != 0
+                overlap = false
             }
             j = j.wrapping_add(1)
         }
@@ -825,7 +825,7 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
         dim,
     );
     (*cmap).codespace.num = (*cmap).codespace.num.wrapping_add(1);
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_add_notdefchar(
@@ -834,7 +834,7 @@ pub unsafe extern "C" fn CMap_add_notdefchar(
     mut srcdim: size_t,
     mut dst: CID,
 ) -> i32 {
-    return CMap_add_notdefrange(cmap, src, src, srcdim, dst);
+    CMap_add_notdefrange(cmap, src, src, srcdim, dst)
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_add_notdefrange(
@@ -892,7 +892,7 @@ pub unsafe extern "C" fn CMap_add_notdefrange(
         c += 1
         /* Do not do dst++ for notdefrange  */
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_add_bfchar(
@@ -902,7 +902,7 @@ pub unsafe extern "C" fn CMap_add_bfchar(
     mut dst: *const u8,
     mut dstdim: size_t,
 ) -> i32 {
-    return CMap_add_bfrange(cmap, src, src, srcdim, dst, dstdim);
+    CMap_add_bfrange(cmap, src, src, srcdim, dst, dstdim)
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_add_bfrange(
@@ -973,7 +973,7 @@ pub unsafe extern "C" fn CMap_add_bfrange(
         }
         c += 1
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_add_cidchar(
@@ -982,7 +982,7 @@ pub unsafe extern "C" fn CMap_add_cidchar(
     mut srcdim: size_t,
     mut dst: CID,
 ) -> i32 {
-    return CMap_add_cidrange(cmap, src, src, srcdim, dst);
+    CMap_add_cidrange(cmap, src, src, srcdim, dst)
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_add_cidrange(
@@ -1048,7 +1048,7 @@ pub unsafe extern "C" fn CMap_add_cidrange(
         base = base.wrapping_add(1);
         c = c.wrapping_add(1)
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn mapDef_release(mut t: *mut mapDef) {
     let mut c: i32 = 0;
@@ -1075,7 +1075,7 @@ unsafe extern "C" fn mapDef_new() -> *mut mapDef {
         *fresh5 = 0 as *mut mapDef;
         c += 1
     }
-    return t;
+    t
 }
 unsafe extern "C" fn get_mem(mut cmap: *mut CMap, mut size: i32) -> *mut u8 {
     let mut map: *mut mapData = 0 as *mut mapData;
@@ -1094,7 +1094,7 @@ unsafe extern "C" fn get_mem(mut cmap: *mut CMap, mut size: i32) -> *mut u8 {
     }
     p = (*map).data.offset((*map).pos as isize);
     (*map).pos += size;
-    return p;
+    p
 }
 unsafe extern "C" fn locate_tbl(
     mut cur: *mut *mut mapDef,
@@ -1125,7 +1125,7 @@ unsafe extern "C" fn locate_tbl(
         *cur = (*(*cur).offset(c as isize)).next;
         i += 1
     }
-    return 0i32;
+    0i32
 }
 /* Private funcs. */
 /*
@@ -1184,7 +1184,7 @@ unsafe extern "C" fn bytes_consumed(
             i = i.wrapping_add(1)
         }
     }
-    return bytesconsumed;
+    bytesconsumed
 }
 unsafe extern "C" fn check_range(
     mut cmap: *mut CMap,
@@ -1226,7 +1226,7 @@ unsafe extern "C" fn check_range(
     if dstdim > (*cmap).profile.maxBytesOut {
         (*cmap).profile.maxBytesOut = dstdim
     }
-    return 0i32;
+    0i32
 }
 static mut __cache: *mut CMap_cache = 0 as *const CMap_cache as *mut CMap_cache;
 #[no_mangle]
@@ -1290,7 +1290,7 @@ pub unsafe extern "C" fn CMap_cache_get(mut id: i32) -> *mut CMap {
     if id < 0i32 || id >= (*__cache).num {
         _tt_abort(b"Invalid CMap ID %d\x00" as *const u8 as *const i8, id);
     }
-    return *(*__cache).cmaps.offset(id as isize);
+    *(*__cache).cmaps.offset(id as isize)
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const i8) -> i32 {
@@ -1343,7 +1343,7 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const i8) -> i32 {
     if __verbose != 0 {
         dpx_message(b")\x00" as *const u8 as *const i8);
     }
-    return id;
+    id
 }
 #[no_mangle]
 pub unsafe extern "C" fn CMap_cache_add(mut cmap: *mut CMap) -> i32 {
@@ -1381,7 +1381,7 @@ pub unsafe extern "C" fn CMap_cache_add(mut cmap: *mut CMap) -> i32 {
     (*__cache).num += 1;
     let ref mut fresh10 = *(*__cache).cmaps.offset(id as isize);
     *fresh10 = cmap;
-    return id;
+    id
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

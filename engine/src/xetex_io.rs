@@ -484,7 +484,7 @@ pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: i32) -> rust_input_han
     name_length = strlen(name_of_file) as i32;
     free(name_of_input_file as *mut libc::c_void);
     name_of_input_file = xstrdup(name_of_file);
-    return handle;
+    handle
 }
 /* tables/values used in UTF-8 interpretation -
 code is based on ConvertUTF.[ch] sample code
@@ -593,7 +593,7 @@ pub unsafe extern "C" fn u_open_in(
         }
     }
     set_input_file_encoding(*f, mode, encodingData);
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn buffer_overflow() {
     _tt_abort(
@@ -853,7 +853,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
     {
         last -= 1
     }
-    return 1i32;
+    1i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn u_close(mut f: *mut UFILE) {
@@ -1007,7 +1007,7 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> i32 {
             );
         }
     }
-    return rval;
+    rval
 }
 /* tectonic/xetex-io.h: XeTeX-specific low-level I/O routines
    Copyright 2016-2018 the Tectonic Project
@@ -1205,16 +1205,16 @@ pub unsafe extern "C" fn open_or_close_in() {
         ) != 0
         {
             make_utf16_name();
-            name_in_progress = 1i32 != 0;
+            name_in_progress = true;
             begin_name();
-            stop_at_space = 0i32 != 0;
+            stop_at_space = false;
             k = 0i32;
             while k < name_length16 && more_name(*name_of_file16.offset(k as isize)) as i32 != 0 {
                 k += 1
             }
-            stop_at_space = 1i32 != 0;
+            stop_at_space = true;
             end_name();
-            name_in_progress = 0i32 != 0;
+            name_in_progress = false;
             read_open[n as usize] = 1_u8
         }
     };

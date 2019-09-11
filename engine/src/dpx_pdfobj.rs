@@ -301,7 +301,7 @@ pub struct pdf_boolean {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -315,7 +315,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -324,7 +324,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 static mut pdf_output_handle: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 static mut pdf_output_file_position: i32 = 0i32;
@@ -365,11 +365,11 @@ pub unsafe extern "C" fn pdf_set_version(mut version: u32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_version() -> u32 {
-    return pdf_version;
+    pdf_version
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_obj_get_verbose() -> i32 {
-    return verbose;
+    verbose
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_obj_set_verbose(mut level: i32) {
@@ -469,7 +469,7 @@ pub unsafe extern "C" fn pdf_out_init(
         b"%\xe4\xf0\xed\xf8\n\x00" as *const u8 as *const i8 as *const libc::c_void,
         strlen(b"%\xe4\xf0\xed\xf8\n\x00" as *const u8 as *const i8) as i32,
     );
-    enc_mode = 0i32 != 0;
+    enc_mode = false;
     doc_enc_mode = do_encryption;
 }
 unsafe extern "C" fn dump_xref_table() {
@@ -530,7 +530,7 @@ unsafe extern "C" fn dump_trailer_dict() {
         b"trailer\n\x00" as *const u8 as *const i8 as *const libc::c_void,
         8i32,
     );
-    enc_mode = 0i32 != 0;
+    enc_mode = false;
     write_dict((*trailer_dict).data as *mut pdf_dict, pdf_output_handle);
     pdf_release_obj(trailer_dict);
     pdf_out_char(pdf_output_handle, '\n' as i32 as i8);
@@ -806,14 +806,14 @@ unsafe extern "C" fn pdf_new_obj(mut type_0: i32) -> *mut pdf_obj {
     (*result).generation = 0_u16;
     (*result).refcount = 1_u32;
     (*result).flags = 0i32;
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_obj_typeof(mut object: *mut pdf_obj) -> i32 {
     if object.is_null() || (*object).type_0 <= 0i32 || (*object).type_0 > 10i32 {
         return 0i32;
     }
-    return (*object).type_0;
+    (*object).type_0
 }
 unsafe extern "C" fn pdf_label_obj(mut object: *mut pdf_obj) {
     if object.is_null() || (*object).type_0 <= 0i32 || (*object).type_0 > 10i32 {
@@ -851,7 +851,7 @@ pub unsafe extern "C" fn pdf_link_obj(mut object: *mut pdf_obj) -> *mut pdf_obj 
         _tt_abort(b"pdf_link_obj(): passed invalid object.\x00" as *const u8 as *const i8);
     }
     (*object).refcount = (*object).refcount.wrapping_add(1_u32);
-    return object;
+    object
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ref_obj(mut object: *mut pdf_obj) -> *mut pdf_obj {
@@ -900,14 +900,14 @@ pub unsafe extern "C" fn pdf_new_undefined() -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     result = pdf_new_obj(10i32);
     (*result).data = 0 as *mut libc::c_void;
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_new_null() -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     result = pdf_new_obj(8i32);
     (*result).data = 0 as *mut libc::c_void;
-    return result;
+    result
 }
 unsafe extern "C" fn write_null(mut handle: rust_output_handle_t) {
     pdf_out(
@@ -925,7 +925,7 @@ pub unsafe extern "C" fn pdf_new_boolean(mut value: i8) -> *mut pdf_obj {
         as *mut pdf_boolean;
     (*data).value = value;
     (*result).data = data as *mut libc::c_void;
-    return result;
+    result
 }
 unsafe extern "C" fn release_boolean(mut data: *mut pdf_obj) {
     free(data as *mut libc::c_void);
@@ -961,7 +961,7 @@ pub unsafe extern "C" fn pdf_boolean_value(mut object: *mut pdf_obj) -> i8 {
         );
     }
     data = (*object).data as *mut pdf_boolean;
-    return (*data).value;
+    (*data).value
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_new_number(mut value: f64) -> *mut pdf_obj {
@@ -972,7 +972,7 @@ pub unsafe extern "C" fn pdf_new_number(mut value: f64) -> *mut pdf_obj {
         as *mut pdf_number;
     (*data).value = value;
     (*result).data = data as *mut libc::c_void;
-    return result;
+    result
 }
 unsafe extern "C" fn release_number(mut data: *mut pdf_number) {
     free(data as *mut libc::c_void);
@@ -1020,7 +1020,7 @@ pub unsafe extern "C" fn pdf_number_value(mut object: *mut pdf_obj) -> f64 {
         );
     }
     data = (*object).data as *mut pdf_number;
-    return (*data).value;
+    (*data).value
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_new_string(
@@ -1045,7 +1045,7 @@ pub unsafe extern "C" fn pdf_new_string(
     } else {
         (*data).string = 0 as *mut u8
     }
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_string_value(mut object: *mut pdf_obj) -> *mut libc::c_void {
@@ -1063,7 +1063,7 @@ pub unsafe extern "C" fn pdf_string_value(mut object: *mut pdf_obj) -> *mut libc
         );
     }
     data = (*object).data as *mut pdf_string;
-    return (*data).string as *mut libc::c_void;
+    (*data).string as *mut libc::c_void
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_string_length(mut object: *mut pdf_obj) -> u32 {
@@ -1081,7 +1081,7 @@ pub unsafe extern "C" fn pdf_string_length(mut object: *mut pdf_obj) -> u32 {
         );
     }
     data = (*object).data as *mut pdf_string;
-    return (*data).length as u32;
+    (*data).length as u32
 }
 /*
  * This routine escapes non printable characters and control
@@ -1151,7 +1151,7 @@ pub unsafe extern "C" fn pdfobj_escape_str(
         }
         i = i.wrapping_add(1)
     }
-    return result;
+    result
 }
 unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_output_handle_t) {
     let mut s: *mut u8 = 0 as *mut u8;
@@ -1292,7 +1292,7 @@ pub unsafe extern "C" fn pdf_new_name(mut name: *const i8) -> *mut pdf_obj {
     } else {
         (*data).name = 0 as *mut i8
     }
-    return result;
+    result
 }
 unsafe extern "C" fn write_name(mut name: *mut pdf_name, mut handle: rust_output_handle_t) {
     let mut s: *mut i8 = 0 as *mut i8;
@@ -1368,7 +1368,7 @@ pub unsafe extern "C" fn pdf_name_value(mut object: *mut pdf_obj) -> *mut i8 {
         );
     }
     data = (*object).data as *mut pdf_name;
-    return (*data).name;
+    (*data).name
 }
 /*
  * We do not have pdf_name_length() since '\0' is not allowed
@@ -1385,7 +1385,7 @@ pub unsafe extern "C" fn pdf_new_array() -> *mut pdf_obj {
     (*data).max = 0_u32;
     (*data).size = 0_u32;
     (*result).data = data as *mut libc::c_void;
-    return result;
+    result
 }
 unsafe extern "C" fn write_array(mut array: *mut pdf_array, mut handle: rust_output_handle_t) {
     pdf_out_char(handle, '[' as i32 as i8);
@@ -1437,7 +1437,7 @@ pub unsafe extern "C" fn pdf_get_array(mut array: *mut pdf_obj, mut idx: i32) ->
     } else if (idx as u32) < (*data).size {
         result = *(*data).values.offset(idx as isize)
     }
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_array_length(mut array: *mut pdf_obj) -> u32 {
@@ -1455,7 +1455,7 @@ pub unsafe extern "C" fn pdf_array_length(mut array: *mut pdf_obj) -> u32 {
         );
     }
     data = (*array).data as *mut pdf_array;
-    return (*data).size;
+    (*data).size
 }
 unsafe extern "C" fn release_array(mut data: *mut pdf_array) {
     let mut i: u32 = 0;
@@ -1533,7 +1533,7 @@ pub unsafe extern "C" fn pdf_new_dict() -> *mut pdf_obj {
     (*data).value = 0 as *mut pdf_obj;
     (*data).next = 0 as *mut pdf_dict;
     (*result).data = data as *mut libc::c_void;
-    return result;
+    result
 }
 unsafe extern "C" fn release_dict(mut data: *mut pdf_dict) {
     let mut next: *mut pdf_dict = 0 as *mut pdf_dict;
@@ -1607,7 +1607,7 @@ pub unsafe extern "C" fn pdf_add_dict(
     (*data).next = new_node;
     (*data).key = key;
     (*data).value = value;
-    return 0i32;
+    0i32
 }
 /* pdf_merge_dict makes a link for each item in dict2 before stealing it */
 #[no_mangle]
@@ -1675,7 +1675,7 @@ pub unsafe extern "C" fn pdf_foreach_dict(
         error = proc_0.expect("non-null function pointer")((*data).key, (*data).value, pdata);
         data = (*data).next
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_lookup_dict(
@@ -1703,7 +1703,7 @@ pub unsafe extern "C" fn pdf_lookup_dict(
         }
         data = (*data).next
     }
-    return 0 as *mut pdf_obj;
+    0 as *mut pdf_obj
 }
 /* Returns array of dictionary keys */
 #[no_mangle]
@@ -1731,7 +1731,7 @@ pub unsafe extern "C" fn pdf_dict_keys(mut dict: *mut pdf_obj) -> *mut pdf_obj {
         pdf_add_array(keys, pdf_new_name(pdf_name_value((*data).key)));
         data = (*data).next
     }
-    return keys;
+    keys
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_remove_dict(mut dict: *mut pdf_obj, mut name: *const i8) {
@@ -1791,7 +1791,7 @@ pub unsafe extern "C" fn pdf_new_stream(mut flags: i32) -> *mut pdf_obj {
     (*data).decodeparms.colors = 0i32;
     (*result).data = data as *mut libc::c_void;
     (*result).flags |= 1i32 << 0i32;
-    return result;
+    result
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_stream_set_predictor(
@@ -1920,7 +1920,7 @@ pub unsafe extern "C" fn pdf_stream_dict(mut stream: *mut pdf_obj) -> *mut pdf_o
         );
     }
     data = (*stream).data as *mut pdf_stream;
-    return (*data).dict;
+    (*data).dict
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_stream_dataptr(mut stream: *mut pdf_obj) -> *const libc::c_void {
@@ -1938,7 +1938,7 @@ pub unsafe extern "C" fn pdf_stream_dataptr(mut stream: *mut pdf_obj) -> *const 
         );
     }
     data = (*stream).data as *mut pdf_stream;
-    return (*data).stream as *const libc::c_void;
+    (*data).stream as *const libc::c_void
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_stream_length(mut stream: *mut pdf_obj) -> i32 {
@@ -1956,7 +1956,7 @@ pub unsafe extern "C" fn pdf_stream_length(mut stream: *mut pdf_obj) -> i32 {
         );
     }
     data = (*stream).data as *mut pdf_stream;
-    return (*data).stream_length as i32;
+    (*data).stream_length as i32
 }
 unsafe extern "C" fn set_objstm_data(mut objstm: *mut pdf_obj, mut data: *mut i32) {
     if objstm.is_null() || (*objstm).type_0 != 7i32 {
@@ -1987,7 +1987,7 @@ unsafe extern "C" fn get_objstm_data(mut objstm: *mut pdf_obj) -> *mut i32 {
             2001i32,
         );
     }
-    return (*((*objstm).data as *mut pdf_stream)).objstm_data;
+    (*((*objstm).data as *mut pdf_stream)).objstm_data
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_add_stream(
@@ -2048,7 +2048,7 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
         pdf_add_stream(dst, stream_data as *const libc::c_void, stream_length);
     }
     /* HAVE_ZLIB */
-    return error;
+    error
 }
 unsafe extern "C" fn pdf_stream_uncompress(mut src: *mut pdf_obj) -> *mut pdf_obj {
     let mut dst: *mut pdf_obj = pdf_new_stream(0i32);
@@ -2066,7 +2066,7 @@ unsafe extern "C" fn pdf_stream_uncompress(mut src: *mut pdf_obj) -> *mut pdf_ob
         b"Length\x00" as *const u8 as *const i8,
     );
     pdf_concat_stream(dst, src);
-    return dst;
+    dst
 }
 unsafe extern "C" fn pdf_write_obj(mut object: *mut pdf_obj, mut handle: rust_output_handle_t) {
     if object.is_null() {
@@ -2171,11 +2171,11 @@ unsafe extern "C" fn pdf_add_objstm(mut objstm: *mut pdf_obj, mut object: *mut p
     add_xref_entry((*object).label, 2_u8, (*objstm).label, (pos - 1i32) as u16);
     /* redirect output into objstm */
     output_stream = objstm;
-    enc_mode = 0i32 != 0;
+    enc_mode = false;
     pdf_write_obj(object, pdf_output_handle);
     pdf_out_char(pdf_output_handle, '\n' as i32 as i8);
     output_stream = 0 as *mut pdf_obj;
-    return pos;
+    pos
 }
 unsafe extern "C" fn release_objstm(mut objstm: *mut pdf_obj) {
     let mut data: *mut i32 = get_objstm_data(objstm);
@@ -2352,7 +2352,7 @@ unsafe extern "C" fn tt_mfreadln(
     {
         ttstub_input_ungetc(handle, c);
     }
-    return len;
+    len
 }
 unsafe extern "C" fn backup_line(mut handle: rust_input_handle_t) -> i32 {
     let mut ch: i32 = -1i32;
@@ -2377,7 +2377,7 @@ unsafe extern "C" fn backup_line(mut handle: rust_input_handle_t) -> i32 {
     if ch < 0i32 {
         return 0i32;
     }
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn find_xref(mut handle: rust_input_handle_t, mut file_size: i32) -> i32 {
     let mut xref_pos: i32 = 0i32;
@@ -2434,7 +2434,7 @@ unsafe extern "C" fn find_xref(mut handle: rust_input_handle_t, mut file_size: i
     number = parse_number(&mut start, end);
     xref_pos = atof(number) as i32;
     free(number as *mut libc::c_void);
-    return xref_pos;
+    xref_pos
 }
 /*
  * This routine must be called with the file pointer located
@@ -2476,7 +2476,7 @@ unsafe extern "C" fn parse_trailer(mut pf: *mut pdf_file) -> *mut pdf_obj {
         skip_white(&mut p, work_buffer.as_mut_ptr().offset(nread as isize));
         result = parse_pdf_dict(&mut p, work_buffer.as_mut_ptr().offset(nread as isize), pf)
     }
-    return result;
+    result
 }
 /*
  * This routine tries to estimate an upper bound for character position
@@ -2502,7 +2502,7 @@ unsafe extern "C" fn next_object_offset(mut pf: *mut pdf_file, mut obj_num: u32)
         }
         i += 1
     }
-    return next;
+    next
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_new_indirect(
@@ -2520,7 +2520,7 @@ pub unsafe extern "C" fn pdf_new_indirect(
     (*indirect).generation = obj_gen;
     result = pdf_new_obj(9i32);
     (*result).data = indirect as *mut libc::c_void;
-    return result;
+    result
 }
 unsafe extern "C" fn pdf_read_object(
     mut obj_num: u32,
@@ -2596,7 +2596,7 @@ unsafe extern "C" fn pdf_read_object(
         result = 0 as *mut pdf_obj
     }
     free(buffer as *mut libc::c_void);
-    return result;
+    result
 }
 unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: u32) -> *mut pdf_obj {
     let mut current_block: u64;
@@ -2700,7 +2700,7 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: u32) -> *mut pd
     dpx_warning(b"Cannot parse object stream.\x00" as *const u8 as *const i8);
     free(data as *mut libc::c_void);
     pdf_release_obj(objstm);
-    return 0 as *mut pdf_obj;
+    0 as *mut pdf_obj
 }
 /* Label without corresponding object definition are replaced by the
  * null object, as required by the PDF spec. This is important to parse
@@ -2802,7 +2802,7 @@ unsafe extern "C" fn pdf_get_object(
     /* Make sure the caller doesn't free this object */
     let ref mut fresh27 = (*(*pf).xref_table.offset(obj_num as isize)).direct;
     *fresh27 = pdf_link_obj(result);
-    return result;
+    result
 }
 unsafe extern "C" fn pdf_new_ref(mut object: *mut pdf_obj) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -2812,7 +2812,7 @@ unsafe extern "C" fn pdf_new_ref(mut object: *mut pdf_obj) -> *mut pdf_obj {
     result = pdf_new_indirect(0 as *mut pdf_file, (*object).label, (*object).generation);
     let ref mut fresh28 = (*((*result).data as *mut pdf_indirect)).obj;
     *fresh28 = object;
-    return result;
+    result
 }
 /* pdf_deref_obj always returns a link instead of the original   */
 /* It never return the null object, but the NULL pointer instead */
@@ -3122,7 +3122,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
             }
         }
     }
-    return 1i32;
+    1i32
 }
 unsafe extern "C" fn parse_xrefstm_field(
     mut p: *mut *const i8,
@@ -3144,7 +3144,7 @@ unsafe extern "C" fn parse_xrefstm_field(
         *p = (*p).offset(1);
         val |= *fresh32 as u8 as u32
     }
-    return val;
+    val
 }
 unsafe extern "C" fn parse_xrefstm_subsec(
     mut pf: *mut pdf_file,
@@ -3188,7 +3188,7 @@ unsafe extern "C" fn parse_xrefstm_subsec(
         }
         e = e.offset(1)
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn parse_xref_stream(
     mut pf: *mut pdf_file,
@@ -3320,7 +3320,7 @@ unsafe extern "C" fn parse_xref_stream(
         pdf_release_obj(*trailer);
         *trailer = 0 as *mut pdf_obj
     }
-    return 0i32;
+    0i32
 }
 /* TODO: parse Version entry */
 unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
@@ -3424,7 +3424,7 @@ unsafe extern "C" fn pdf_file_new(mut handle: rust_input_handle_t) -> *mut pdf_f
     (*pf).version = 0_u32;
     (*pf).file_size = ttstub_input_get_size(handle) as i32;
     ttstub_input_seek(handle, 0i32 as ssize_t, 2i32);
-    return pf;
+    pf
 }
 unsafe extern "C" fn pdf_file_free(mut pf: *mut pdf_file) {
     let mut i: u32 = 0;
@@ -3459,17 +3459,17 @@ pub unsafe extern "C" fn pdf_files_init() {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_file_get_version(mut pf: *mut pdf_file) -> u32 {
     assert!(!pf.is_null());
-    return (*pf).version;
+    (*pf).version
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_file_get_trailer(mut pf: *mut pdf_file) -> *mut pdf_obj {
     assert!(!pf.is_null());
-    return pdf_link_obj((*pf).trailer);
+    pdf_link_obj((*pf).trailer)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_file_get_catalog(mut pf: *mut pdf_file) -> *mut pdf_obj {
     assert!(!pf.is_null());
-    return (*pf).catalog;
+    (*pf).catalog
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_open(
@@ -3578,7 +3578,7 @@ pub unsafe extern "C" fn pdf_open(
             }
         }
     }
-    return pf;
+    pf
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_close(mut pf: *mut pdf_file) {
@@ -3620,7 +3620,7 @@ unsafe extern "C" fn parse_pdf_version(
         return -1i32;
     }
     *ret_version = minor;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn check_for_pdf(mut handle: rust_input_handle_t) -> i32 {
@@ -3639,7 +3639,7 @@ pub unsafe extern "C" fn check_for_pdf(mut handle: rust_input_handle_t) -> i32 {
             as *const i8,
         version,
     );
-    return 1i32;
+    1i32
 }
 #[inline]
 unsafe extern "C" fn import_dict(
@@ -3655,7 +3655,7 @@ unsafe extern "C" fn import_dict(
         return -1i32;
     }
     pdf_add_dict(copy, pdf_link_obj(key), tmp);
-    return 0i32;
+    0i32
 }
 static mut loop_marker: pdf_obj = {
     let mut init = pdf_obj {
@@ -3790,7 +3790,7 @@ pub unsafe extern "C" fn pdf_import_object(mut object: *mut pdf_obj) -> *mut pdf
         }
         _ => imported = pdf_link_obj(object),
     }
-    return imported;
+    imported
 }
 /* returns 0 if indirect references point to the same object */
 #[no_mangle]

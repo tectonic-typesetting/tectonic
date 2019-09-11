@@ -650,7 +650,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -659,7 +659,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 static mut _pdf_stat: spc_pdf_ = {
     let mut init = spc_pdf_ {
@@ -701,7 +701,7 @@ unsafe extern "C" fn addresource(
         r as *mut libc::c_void,
     );
     spc_push_object(ident, pdf_ximage_get_reference(res_id));
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn findresource(mut sd: *mut spc_pdf_, mut ident: *const i8) -> i32 {
     let mut r: *mut resource_map = 0 as *mut resource_map;
@@ -713,7 +713,11 @@ unsafe extern "C" fn findresource(mut sd: *mut spc_pdf_, mut ident: *const i8) -
         ident as *const libc::c_void,
         strlen(ident) as i32,
     ) as *mut resource_map;
-    return if !r.is_null() { (*r).res_id } else { -1i32 };
+    if !r.is_null() {
+        (*r).res_id
+    } else {
+        -1i32
+    }
 }
 unsafe extern "C" fn spc_handler_pdfm__init(mut dp: *mut libc::c_void) -> i32 {
     let mut sd: *mut spc_pdf_ = dp as *mut spc_pdf_;
@@ -752,7 +756,7 @@ unsafe extern "C" fn spc_handler_pdfm__init(mut dp: *mut libc::c_void) -> i32 {
         );
         i += 1
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm__clean(mut dp: *mut libc::c_void) -> i32 {
     let mut sd: *mut spc_pdf_ = dp as *mut spc_pdf_;
@@ -769,17 +773,17 @@ unsafe extern "C" fn spc_handler_pdfm__clean(mut dp: *mut libc::c_void) -> i32 {
     (*sd).resourcemap = 0 as *mut ht_table;
     pdf_release_obj((*sd).cd.taintkeys);
     (*sd).cd.taintkeys = 0 as *mut pdf_obj;
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_pdfm_at_begin_document() -> i32 {
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
-    return spc_handler_pdfm__init(sd as *mut libc::c_void);
+    spc_handler_pdfm__init(sd as *mut libc::c_void)
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_pdfm_at_end_document() -> i32 {
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
-    return spc_handler_pdfm__clean(sd as *mut libc::c_void);
+    spc_handler_pdfm__clean(sd as *mut libc::c_void)
 }
 /* Dvipdfm specials */
 unsafe extern "C" fn spc_handler_pdfm_bop(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
@@ -790,7 +794,7 @@ unsafe extern "C" fn spc_handler_pdfm_bop(mut spe: *mut spc_env, mut args: *mut 
         );
     }
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_eop(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     if (*args).curptr < (*args).endptr {
@@ -800,7 +804,7 @@ unsafe extern "C" fn spc_handler_pdfm_eop(mut spe: *mut spc_env, mut args: *mut 
         );
     }
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 /* Why should we have this kind of things? */
 unsafe extern "C" fn safeputresdent(
@@ -819,7 +823,7 @@ unsafe extern "C" fn safeputresdent(
     } else {
         pdf_add_dict(dp as *mut pdf_obj, pdf_link_obj(kp), pdf_link_obj(vp));
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn safeputresdict(
     mut kp: *mut pdf_obj,
@@ -858,7 +862,7 @@ unsafe extern "C" fn safeputresdict(
         );
         return -1i32;
     }
-    return 0i32;
+    0i32
 }
 /* Think what happens if you do
  *
@@ -972,7 +976,7 @@ unsafe extern "C" fn spc_handler_pdfm_put(mut spe: *mut spc_env, mut ap: *mut sp
     }
     pdf_release_obj(obj2);
     free(ident as *mut libc::c_void);
-    return error;
+    error
 }
 /* For pdf:tounicode support
  * This feature is provided for convenience. TeX can't do
@@ -1008,7 +1012,7 @@ unsafe extern "C" fn reencodestring(mut cmap: *mut CMap, mut instring: *mut pdf_
         wbuf.as_mut_ptr(),
         (4096i32 as u64).wrapping_sub(obufleft),
     );
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn maybe_reencode_utf8(mut instring: *mut pdf_obj) -> i32 {
     let mut inbuf: *mut u8 = 0 as *mut u8;
@@ -1073,7 +1077,7 @@ unsafe extern "C" fn maybe_reencode_utf8(mut instring: *mut pdf_obj) -> i32 {
         wbuf.as_mut_ptr(),
         op.wrapping_offset_from(wbuf.as_mut_ptr()) as i64 as size_t,
     );
-    return 0i32;
+    0i32
 }
 /* The purpose of this routine is to check if given string object is
  * surely an object for *text* strings. It does not do a complete check
@@ -1114,7 +1118,7 @@ unsafe extern "C" fn needreencode(
             r = 0i32
         }
     } /* continue */
-    return r;
+    r
 }
 unsafe extern "C" fn modstrings(
     mut kp: *mut pdf_obj,
@@ -1177,7 +1181,7 @@ unsafe extern "C" fn modstrings(
         }
         _ => {}
     }
-    return r;
+    r
 }
 unsafe extern "C" fn parse_pdf_dict_with_tounicode(
     mut pp: *mut *const i8,
@@ -1209,7 +1213,7 @@ unsafe extern "C" fn parse_pdf_dict_with_tounicode(
             cd as *mut libc::c_void,
         );
     }
-    return dict;
+    dict
 }
 unsafe extern "C" fn spc_handler_pdfm_annot(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
@@ -1311,7 +1315,7 @@ unsafe extern "C" fn spc_handler_pdfm_annot(mut spe: *mut spc_env, mut args: *mu
         free(ident as *mut libc::c_void);
     }
     pdf_release_obj(annot_dict);
-    return 0i32;
+    0i32
 }
 /* NOTE: This can't have ident. See "Dvipdfm User's Manual". */
 unsafe extern "C" fn spc_handler_pdfm_bann(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
@@ -1345,7 +1349,7 @@ unsafe extern "C" fn spc_handler_pdfm_bann(mut spe: *mut spc_env, mut args: *mut
         }
     }
     error = spc_begin_annot(spe, (*sd).annot_dict);
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_pdfm_eann(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
@@ -1360,7 +1364,7 @@ unsafe extern "C" fn spc_handler_pdfm_eann(mut spe: *mut spc_env, mut args: *mut
     error = spc_end_annot(spe);
     pdf_release_obj((*sd).annot_dict);
     (*sd).annot_dict = 0 as *mut pdf_obj;
-    return error;
+    error
 }
 /* Color:.... */
 unsafe extern "C" fn spc_handler_pdfm_bcolor(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32 {
@@ -1395,7 +1399,7 @@ unsafe extern "C" fn spc_handler_pdfm_bcolor(mut spe: *mut spc_env, mut ap: *mut
         pdf_color_push(&mut sc, &mut fc);
         /* save currentcolor */
     }
-    return error;
+    error
 }
 /*
  * This special changes the current color without clearing the color stack.
@@ -1432,11 +1436,11 @@ unsafe extern "C" fn spc_handler_pdfm_scolor(mut spe: *mut spc_env, mut ap: *mut
     } else {
         pdf_color_set(&mut sc, &mut fc);
     }
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_pdfm_ecolor(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     pdf_color_pop();
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_btrans(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut M: pdf_tmatrix = pdf_tmatrix {
@@ -1482,7 +1486,7 @@ unsafe extern "C" fn spc_handler_pdfm_btrans(mut spe: *mut spc_env, mut args: *m
     M.f += (1.0f64 - M.d) * (*spe).y_user - M.b * (*spe).x_user;
     pdf_dev_gsave();
     pdf_dev_concat(&mut M);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_etrans(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     pdf_dev_grestore();
@@ -1495,7 +1499,7 @@ unsafe extern "C" fn spc_handler_pdfm_etrans(mut spe: *mut spc_env, mut args: *m
      * starting a new page.
      */
     pdf_dev_reset_color(0i32);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_outline(
     mut spe: *mut spc_env,
@@ -1588,7 +1592,7 @@ unsafe extern "C" fn spc_handler_pdfm_outline(
         }
     }
     pdf_doc_bookmarks_add(item_dict, is_open);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_article(
     mut spe: *mut spc_env,
@@ -1618,7 +1622,7 @@ unsafe extern "C" fn spc_handler_pdfm_article(
     pdf_doc_begin_article(ident, pdf_link_obj(info_dict));
     spc_push_object(ident, info_dict);
     free(ident as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_bead(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
@@ -1726,7 +1730,7 @@ unsafe extern "C" fn spc_handler_pdfm_bead(mut spe: *mut spc_env, mut args: *mut
     page_no = pdf_doc_current_page_number();
     pdf_doc_add_bead(article_name, 0 as *const i8, page_no, &mut rect);
     free(article_name as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_image(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
@@ -1839,7 +1843,7 @@ unsafe extern "C" fn spc_handler_pdfm_image(mut spe: *mut spc_env, mut args: *mu
         free(ident as *mut libc::c_void);
     }
     pdf_release_obj(fspec);
-    return 0i32;
+    0i32
 }
 /* Use do_names instead. */
 unsafe extern "C" fn spc_handler_pdfm_dest(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
@@ -1891,7 +1895,7 @@ unsafe extern "C" fn spc_handler_pdfm_dest(mut spe: *mut spc_env, mut args: *mut
         array,
     );
     pdf_release_obj(name);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_names(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut category: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -2008,7 +2012,7 @@ unsafe extern "C" fn spc_handler_pdfm_names(mut spe: *mut spc_env, mut args: *mu
         }
     }
     pdf_release_obj(category);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_docinfo(
     mut spe: *mut spc_env,
@@ -2028,7 +2032,7 @@ unsafe extern "C" fn spc_handler_pdfm_docinfo(
     docinfo = pdf_doc_get_dictionary(b"Info\x00" as *const u8 as *const i8);
     pdf_merge_dict(docinfo, dict);
     pdf_release_obj(dict);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_docview(
     mut spe: *mut spc_env,
@@ -2057,7 +2061,7 @@ unsafe extern "C" fn spc_handler_pdfm_docview(
     }
     pdf_merge_dict(catalog, dict);
     pdf_release_obj(dict);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_close(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut ident: *mut i8 = 0 as *mut i8;
@@ -2069,7 +2073,7 @@ unsafe extern "C" fn spc_handler_pdfm_close(mut spe: *mut spc_env, mut args: *mu
     } else {
         spc_clear_objects();
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_object(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut ident: *mut i8 = 0 as *mut i8;
@@ -2096,7 +2100,7 @@ unsafe extern "C" fn spc_handler_pdfm_object(mut spe: *mut spc_env, mut args: *m
         spc_push_object(ident, object);
     }
     free(ident as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_content(
     mut spe: *mut spc_env,
@@ -2206,7 +2210,7 @@ unsafe extern "C" fn spc_handler_pdfm_literal(
         }
     }
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_bcontent(
     mut spe: *mut spc_env,
@@ -2232,7 +2236,7 @@ unsafe extern "C" fn spc_handler_pdfm_bcontent(
     M.f = (*spe).y_user - ypos;
     pdf_dev_concat(&mut M);
     pdf_dev_push_coord((*spe).x_user, (*spe).y_user);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_econtent(
     mut spe: *mut spc_env,
@@ -2241,7 +2245,7 @@ unsafe extern "C" fn spc_handler_pdfm_econtent(
     pdf_dev_pop_coord();
     pdf_dev_grestore();
     pdf_dev_reset_color(0i32);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_code(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     skip_white(&mut (*args).curptr, (*args).endptr);
@@ -2253,14 +2257,14 @@ unsafe extern "C" fn spc_handler_pdfm_code(mut spe: *mut spc_env, mut args: *mut
         );
         (*args).curptr = (*args).endptr
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_do_nothing(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_stream_with_type(
     mut spe: *mut spc_env,
@@ -2404,7 +2408,7 @@ unsafe extern "C" fn spc_handler_pdfm_stream_with_type(
     /* Users should explicitly close this. */
     spc_push_object(ident, fstream);
     free(ident as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 /*
  * STREAM: Create a PDF stream object from an input string.
@@ -2412,7 +2416,7 @@ unsafe extern "C" fn spc_handler_pdfm_stream_with_type(
  *  pdf: stream @objname (input_string) [PDF_DICT]
  */
 unsafe extern "C" fn spc_handler_pdfm_stream(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
-    return spc_handler_pdfm_stream_with_type(spe, args, 0i32);
+    spc_handler_pdfm_stream_with_type(spe, args, 0i32)
 }
 /*
  * FSTREAM: Create a PDF stream object from an existing file.
@@ -2423,7 +2427,7 @@ unsafe extern "C" fn spc_handler_pdfm_fstream(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    return spc_handler_pdfm_stream_with_type(spe, args, 1i32);
+    spc_handler_pdfm_stream_with_type(spe, args, 1i32)
 }
 /* Grab page content as follows:
  *
@@ -2527,7 +2531,7 @@ unsafe extern "C" fn spc_handler_pdfm_bform(mut spe: *mut spc_env, mut args: *mu
     }
     spc_push_object(ident, pdf_ximage_get_reference(xobj_id));
     free(ident as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 /* An extra dictionary after exobj must be merged to the form dictionary,
  * not resource dictionary.
@@ -2544,7 +2548,7 @@ unsafe extern "C" fn spc_handler_pdfm_eform(mut spe: *mut spc_env, mut args: *mu
         }
     }
     pdf_doc_end_grabbing(attrib);
-    return 0i32;
+    0i32
 }
 /* Saved XObjects can be used as follows:
  *
@@ -2635,13 +2639,13 @@ unsafe extern "C" fn spc_handler_pdfm_uxobj(mut spe: *mut spc_env, mut args: *mu
     }
     pdf_dev_put_image(xobj_id, &mut ti, (*spe).x_user, (*spe).y_user);
     free(ident as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_link(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
-    return spc_resume_annot(spe);
+    spc_resume_annot(spe)
 }
 unsafe extern "C" fn spc_handler_pdfm_nolink(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
-    return spc_suspend_annot(spe);
+    spc_suspend_annot(spe)
 }
 /* Handled at BOP */
 unsafe extern "C" fn spc_handler_pdfm_pagesize(
@@ -2649,7 +2653,7 @@ unsafe extern "C" fn spc_handler_pdfm_pagesize(
     mut args: *mut spc_arg,
 ) -> i32 {
     (*args).curptr = (*args).endptr;
-    return 0i32;
+    0i32
 }
 /* Please remove this.
  * This should be handled before processing pages!
@@ -2673,7 +2677,7 @@ unsafe extern "C" fn spc_handler_pdfm_bgcolor(
     } else {
         pdf_doc_set_bgcolor(&mut colorspec);
     }
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_pdfm_mapline(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32 {
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
@@ -2741,7 +2745,7 @@ unsafe extern "C" fn spc_handler_pdfm_mapline(mut spe: *mut spc_env, mut ap: *mu
     if error == 0 {
         (*ap).curptr = (*ap).endptr
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_mapfile(
     mut spe: *mut spc_env,
@@ -2776,7 +2780,7 @@ unsafe extern "C" fn spc_handler_pdfm_mapfile(
         error = pdf_load_fontmap_file(mapfile, mode)
     }
     free(mapfile as *mut libc::c_void);
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_pdfm_tounicode(
     mut spe: *mut spc_env,
@@ -2831,7 +2835,7 @@ unsafe extern "C" fn spc_handler_pdfm_tounicode(
         }
     }
     free(cmap_name as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 static mut pdfm_handlers: [spc_handler; 80] = unsafe {
     [
@@ -3651,9 +3655,9 @@ pub unsafe extern "C" fn spc_pdfm_check_special(mut buf: *const i8, mut len: i32
             strlen(b"pdf:\x00" as *const u8 as *const i8),
         ) == 0
     {
-        return 1i32 != 0;
+        return true;
     }
-    return 0i32 != 0;
+    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -3724,5 +3728,5 @@ pub unsafe extern "C" fn spc_pdfm_setup_handler(
         }
         free(q as *mut libc::c_void);
     }
-    return error;
+    error
 }

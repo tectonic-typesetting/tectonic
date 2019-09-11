@@ -262,7 +262,7 @@ pub struct C2RustUnnamed_2 {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -276,7 +276,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_new_dict() -> *mut cff_dict {
@@ -288,7 +288,7 @@ pub unsafe extern "C" fn cff_new_dict() -> *mut cff_dict {
     (*dict).entries = new(((*dict).max as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<cff_dict_entry>() as u64)
         as u32) as *mut cff_dict_entry;
-    return dict;
+    dict
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_release_dict(mut dict: *mut cff_dict) {
@@ -793,7 +793,7 @@ unsafe extern "C" fn get_integer(
     } else {
         *status = -1i32
     }
-    return result as f64;
+    result as f64
 }
 /* Simply uses strtod */
 unsafe extern "C" fn get_real(
@@ -872,7 +872,7 @@ unsafe extern "C" fn get_real(
             *status = -1i32
         }
     }
-    return result;
+    result
 }
 /* operators */
 unsafe extern "C" fn add_dict(
@@ -1002,7 +1002,7 @@ pub unsafe extern "C" fn cff_dict_unpack(
             stack_top = 0i32
         }
     }
-    return dict;
+    dict
 }
 /* Pack DICT data */
 unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut value: i32) -> i32 {
@@ -1064,7 +1064,7 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
         *dest.offset(4) = (value & 0xffi32) as card8;
         len = 5i32
     }
-    return len;
+    len
 }
 unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value: f64) -> i32 {
     let mut i: i32 = 0i32;
@@ -1144,7 +1144,7 @@ unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value
         *dest.offset((pos / 2i32) as isize) = 0xffi32 as card8;
         pos += 2i32
     }
-    return pos / 2i32;
+    pos / 2i32
 }
 unsafe extern "C" fn cff_dict_put_number(
     mut value: f64,
@@ -1180,7 +1180,7 @@ unsafe extern "C" fn cff_dict_put_number(
     } else {
         len = pack_integer(dest, destlen, nearint as i32)
     }
-    return len;
+    len
 }
 unsafe extern "C" fn put_dict_entry(
     mut de: *mut cff_dict_entry,
@@ -1237,7 +1237,7 @@ unsafe extern "C" fn put_dict_entry(
             );
         }
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_pack(
@@ -1274,7 +1274,7 @@ pub unsafe extern "C" fn cff_dict_pack(
         }
         i += 1
     }
-    return len;
+    len
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_add(mut dict: *mut cff_dict, mut key: *const i8, mut count: i32) {
@@ -1363,7 +1363,7 @@ pub unsafe extern "C" fn cff_dict_known(mut dict: *mut cff_dict, mut key: *const
         }
         i += 1
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_get(
@@ -1399,7 +1399,7 @@ pub unsafe extern "C" fn cff_dict_get(
             key,
         );
     }
-    return value;
+    value
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_dict_set(

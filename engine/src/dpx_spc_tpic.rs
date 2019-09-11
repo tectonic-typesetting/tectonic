@@ -241,7 +241,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -250,7 +250,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp;
@@ -280,7 +280,7 @@ unsafe extern "C" fn tpic__clear(mut tp: *mut spc_tpic_) {
     (*tp).points = mfree((*tp).points as *mut libc::c_void) as *mut pdf_coord;
     (*tp).num_points = 0i32;
     (*tp).max_points = 0i32;
-    (*tp).fill_shape = 0i32 != 0;
+    (*tp).fill_shape = false;
     (*tp).fill_color = 0.0f64;
 }
 unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: i32) -> *mut pdf_obj
@@ -304,7 +304,7 @@ unsafe extern "C" fn create_xgstate(mut a: f64, mut f_ais: i32) -> *mut pdf_obj
         pdf_new_name(b"ca\x00" as *const u8 as *const i8),
         pdf_new_number(a),
     );
-    return dict;
+    dict
 }
 unsafe extern "C" fn check_resourcestatus(mut category: *const i8, mut resname: *const i8) -> i32 {
     let mut dict1: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -319,7 +319,7 @@ unsafe extern "C" fn check_resourcestatus(mut category: *const i8, mut resname: 
             return 1i32;
         }
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn set_linestyle(mut pn: f64, mut da: f64) -> i32 {
     let mut dp: [f64; 2] = [0.; 2];
@@ -338,7 +338,7 @@ unsafe extern "C" fn set_linestyle(mut pn: f64, mut da: f64) -> i32 {
     } else {
         pdf_dev_setlinecap(0i32);
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i32 {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -387,7 +387,7 @@ unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i3
     pdf_color_get_current(&mut sc, &mut fc);
     pdf_color_brighten_color(&mut new_fc, fc, g);
     pdf_dev_set_color(&mut new_fc, 0x20_i8, 0i32);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn set_styles(
     mut tp: *mut spc_tpic_,
@@ -486,7 +486,7 @@ unsafe extern "C" fn tpic__polyline(
         pdf_dev_grestore();
     }
     tpic__clear(tp);
-    return error;
+    error
 }
 /*
  * Accroding to
@@ -563,7 +563,7 @@ unsafe extern "C" fn tpic__spline(
         pdf_dev_grestore();
     }
     tpic__clear(tp);
-    return error;
+    error
 }
 unsafe extern "C" fn tpic__arc(
     mut tp: *mut spc_tpic_,
@@ -608,7 +608,7 @@ unsafe extern "C" fn tpic__arc(
         pdf_dev_grestore();
     }
     tpic__clear(tp);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_currentpoint(
     mut spe: *mut spc_env,
@@ -618,7 +618,7 @@ unsafe extern "C" fn spc_currentpoint(
     *pg = 0i32;
     (*cp).x = (*spe).x_user;
     (*cp).y = (*spe).y_user;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic_pn(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -636,7 +636,7 @@ unsafe extern "C" fn spc_handler_tpic_pn(mut spe: *mut spc_env, mut ap: *mut spc
     }
     (*tp).pen_size = atof(q) * (0.072f64 / pdf_dev_scale());
     free(q as *mut libc::c_void);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic_pa(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -679,7 +679,7 @@ unsafe extern "C" fn spc_handler_tpic_pa(mut spe: *mut spc_env, mut ap: *mut spc
     (*(*tp).points.offset((*tp).num_points as isize)).x = v[0] * (0.072f64 / pdf_dev_scale());
     (*(*tp).points.offset((*tp).num_points as isize)).y = v[1] * (0.072f64 / pdf_dev_scale());
     (*tp).num_points += 1i32;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -695,7 +695,7 @@ unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 1i32 != 0, 0.0f64);
+    tpic__polyline(tp, &mut cp, true, 0.0f64)
 }
 unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -711,7 +711,7 @@ unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 0i32 != 0, 0.0f64);
+    tpic__polyline(tp, &mut cp, false, 0.0f64)
 }
 unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -735,7 +735,7 @@ unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 1i32 != 0, da);
+    tpic__polyline(tp, &mut cp, true, da)
 }
 unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -759,7 +759,7 @@ unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__polyline(tp, &mut cp, 1i32 != 0, da);
+    tpic__polyline(tp, &mut cp, true, da)
 }
 unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -783,7 +783,7 @@ unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc
         return -1i32;
     }
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__spline(tp, &mut cp, 1i32 != 0, da);
+    tpic__spline(tp, &mut cp, true, da)
 }
 unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -824,7 +824,7 @@ unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc
     v[4] *= 180.0f64 / 3.14159265358979323846f64;
     v[5] *= 180.0f64 / 3.14159265358979323846f64;
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__arc(tp, &mut cp, 1i32 != 0, 0.0f64, v.as_mut_ptr());
+    tpic__arc(tp, &mut cp, true, 0.0f64, v.as_mut_ptr())
 }
 unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -865,14 +865,14 @@ unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc
     v[4] *= 180.0f64 / 3.14159265358979323846f64;
     v[5] *= 180.0f64 / 3.14159265358979323846f64;
     spc_currentpoint(spe, &mut pg, &mut cp);
-    return tpic__arc(tp, &mut cp, 0i32 != 0, 0.0f64, v.as_mut_ptr());
+    tpic__arc(tp, &mut cp, false, 0.0f64, v.as_mut_ptr())
 }
 unsafe extern "C" fn spc_handler_tpic_sh(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
-    (*tp).fill_shape = 1i32 != 0;
+    (*tp).fill_shape = true;
     (*tp).fill_color = 0.5f64;
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     q = parse_float_decimal(&mut (*ap).curptr, (*ap).endptr);
@@ -889,23 +889,23 @@ unsafe extern "C" fn spc_handler_tpic_sh(mut spe: *mut spc_env, mut ap: *mut spc
             return -1i32;
         }
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic_wh(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
-    (*tp).fill_shape = 1i32 != 0;
+    (*tp).fill_shape = true;
     (*tp).fill_color = 0.0f64;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic_bk(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
-    (*tp).fill_shape = 1i32 != 0;
+    (*tp).fill_shape = true;
     (*tp).fill_color = 1.0f64;
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic_tx(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -915,7 +915,7 @@ unsafe extern "C" fn spc_handler_tpic_tx(mut spe: *mut spc_env, mut ap: *mut spc
         spe,
         b"TPIC command \"tx\" not supported.\x00" as *const u8 as *const i8,
     );
-    return -1i32;
+    -1i32
 }
 unsafe extern "C" fn spc_handler_tpic__init(
     mut spe: *mut spc_env,
@@ -923,7 +923,7 @@ unsafe extern "C" fn spc_handler_tpic__init(
 ) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     (*tp).pen_size = 1.0f64;
-    (*tp).fill_shape = 0i32 != 0;
+    (*tp).fill_shape = false;
     (*tp).fill_color = 0.0f64;
     (*tp).points = 0 as *mut pdf_coord;
     (*tp).num_points = 0i32;
@@ -935,13 +935,13 @@ unsafe extern "C" fn spc_handler_tpic__init(
         );
         (*tp).mode.fill = 0i32
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic__bophook(mut dp: *mut libc::c_void) -> i32 {
     let mut tp: *mut spc_tpic_ = dp as *mut spc_tpic_;
     assert!(!tp.is_null());
     tpic__clear(tp);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic__eophook(
     mut spe: *mut spc_env,
@@ -956,7 +956,7 @@ unsafe extern "C" fn spc_handler_tpic__eophook(
         );
     }
     tpic__clear(tp);
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn spc_handler_tpic__clean(
     mut spe: *mut spc_env,
@@ -971,7 +971,7 @@ unsafe extern "C" fn spc_handler_tpic__clean(
         );
     }
     tpic__clear(tp);
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn tpic_set_fill_mode(mut mode: i32) {
@@ -981,22 +981,22 @@ pub unsafe extern "C" fn tpic_set_fill_mode(mut mode: i32) {
 #[no_mangle]
 pub unsafe extern "C" fn spc_tpic_at_begin_page() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    return spc_handler_tpic__bophook(tp as *mut libc::c_void);
+    spc_handler_tpic__bophook(tp as *mut libc::c_void)
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_tpic_at_end_page() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    return spc_handler_tpic__eophook(0 as *mut spc_env, tp as *mut libc::c_void);
+    spc_handler_tpic__eophook(0 as *mut spc_env, tp as *mut libc::c_void)
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_tpic_at_begin_document() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    return spc_handler_tpic__init(0 as *mut spc_env, tp as *mut libc::c_void);
+    spc_handler_tpic__init(0 as *mut spc_env, tp as *mut libc::c_void)
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_tpic_at_end_document() -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    return spc_handler_tpic__clean(0 as *mut spc_env, tp as *mut libc::c_void);
+    spc_handler_tpic__clean(0 as *mut spc_env, tp as *mut libc::c_void)
 }
 unsafe extern "C" fn spc_parse_kvpairs(mut ap: *mut spc_arg) -> *mut pdf_obj {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -1047,7 +1047,7 @@ unsafe extern "C" fn spc_parse_kvpairs(mut ap: *mut spc_arg) -> *mut pdf_obj {
         pdf_release_obj(dict);
         dict = 0 as *mut pdf_obj
     }
-    return dict;
+    dict
 }
 unsafe extern "C" fn tpic_filter_getopts(
     mut kp: *mut pdf_obj,
@@ -1089,7 +1089,7 @@ unsafe extern "C" fn tpic_filter_getopts(
         );
         error = -1i32
     }
-    return error;
+    error
 }
 unsafe extern "C" fn spc_handler_tpic__setopts(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32 {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
@@ -1120,7 +1120,7 @@ unsafe extern "C" fn spc_handler_tpic__setopts(mut spe: *mut spc_env, mut ap: *m
             (*tp).mode.fill = 0i32
         }
     }
-    return error;
+    error
 }
 /* DEBUG */
 static mut tpic_handlers: [spc_handler; 13] = unsafe {
@@ -1259,8 +1259,8 @@ static mut tpic_handlers: [spc_handler; 13] = unsafe {
 };
 #[no_mangle]
 pub unsafe extern "C" fn spc_tpic_check_special(mut buf: *const i8, mut len: i32) -> bool {
-    let mut istpic: bool = 0i32 != 0;
-    let mut hasnsp: bool = 0i32 != 0;
+    let mut istpic: bool = false;
+    let mut hasnsp: bool = false;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -1276,16 +1276,16 @@ pub unsafe extern "C" fn spc_tpic_check_special(mut buf: *const i8, mut len: i32
         ) == 0
     {
         p = p.offset(strlen(b"tpic:\x00" as *const u8 as *const i8) as isize);
-        hasnsp = 1i32 != 0
+        hasnsp = true
     }
     q = parse_c_ident(&mut p, endptr);
     if q.is_null() {
-        istpic = 0i32 != 0
+        istpic = false
     } else if !q.is_null()
         && hasnsp as i32 != 0
         && streq_ptr(q, b"__setopt__\x00" as *const u8 as *const i8) as i32 != 0
     {
-        istpic = 1i32 != 0;
+        istpic = true;
         free(q as *mut libc::c_void);
     } else {
         i = 0i32 as size_t;
@@ -1294,7 +1294,7 @@ pub unsafe extern "C" fn spc_tpic_check_special(mut buf: *const i8, mut len: i32
                 .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
         {
             if streq_ptr(q, tpic_handlers[i as usize].key) {
-                istpic = 1i32 != 0;
+                istpic = true;
                 break;
             } else {
                 i = i.wrapping_add(1)
@@ -1302,7 +1302,7 @@ pub unsafe extern "C" fn spc_tpic_check_special(mut buf: *const i8, mut len: i32
         }
         free(q as *mut libc::c_void);
     }
-    return istpic;
+    istpic
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1387,5 +1387,5 @@ pub unsafe extern "C" fn spc_tpic_setup_handler(
         }
         free(q as *mut libc::c_void);
     }
-    return error;
+    error
 }

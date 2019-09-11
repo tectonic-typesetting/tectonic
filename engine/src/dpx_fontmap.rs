@@ -248,7 +248,7 @@ pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> (
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* quasi-hack to get the primary input */
 /* tectonic/core-strutils.h: miscellaneous C string utilities
@@ -263,7 +263,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -272,7 +272,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 static mut verbose: i32 = 0i32;
 #[no_mangle]
@@ -325,7 +325,7 @@ unsafe extern "C" fn mstrdup(mut s: *const i8) -> *mut i8 {
     r = new((strlen(s).wrapping_add(1i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(r, s);
-    return r;
+    r
 }
 unsafe extern "C" fn pdf_copy_fontmap_record(
     mut dst: *mut fontmap_rec,
@@ -451,7 +451,7 @@ unsafe extern "C" fn tt_readline(
     if !q.is_null() {
         *q = '\u{0}' as i32 as i8
     }
-    return p;
+    p
 }
 unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp;
@@ -497,7 +497,7 @@ unsafe extern "C" fn parse_string_value(mut pp: *mut *const i8, mut endptr: *con
         *q.offset(n as isize) = '\u{0}' as i32 as i8
     }
     *pp = p;
-    return q;
+    q
 }
 /* no preceeding spaces allowed */
 unsafe extern "C" fn parse_integer_value(
@@ -560,7 +560,7 @@ unsafe extern "C" fn parse_integer_value(
     memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as u64);
     *q.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
-    return q;
+    q
 }
 unsafe extern "C" fn fontmap_parse_mapdef_dpm(
     mut mrec: *mut fontmap_rec,
@@ -896,7 +896,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
         );
         return -1i32;
     }
-    return 0i32;
+    0i32
 }
 /* Parse record line in map file of DVIPS/pdfTeX format. */
 unsafe extern "C" fn fontmap_parse_mapdef_dps(
@@ -1009,7 +1009,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dps(
         );
         return -1i32;
     }
-    return 0i32;
+    0i32
 }
 static mut fontmap: *mut ht_table = 0 as *const ht_table as *mut ht_table;
 unsafe extern "C" fn chop_sfd_name(mut tex_name: *const i8, mut sfd_name: *mut *mut i8) -> *mut i8 {
@@ -1054,7 +1054,7 @@ unsafe extern "C" fn chop_sfd_name(mut tex_name: *const i8, mut sfd_name: *mut *
         n as u64,
     );
     *(*sfd_name).offset(n as isize) = '\u{0}' as i32 as i8;
-    return fontname;
+    fontname
 }
 unsafe extern "C" fn make_subfont_name(
     mut map_name: *const i8,
@@ -1101,7 +1101,7 @@ unsafe extern "C" fn make_subfont_name(
         /* not ending with '@' */
         strcat(tfm_name, q.offset(1));
     }
-    return tfm_name;
+    tfm_name
 }
 /* "foo@A@ ..." is expanded to
  *   fooab ... -m sfd:A,ab
@@ -1189,7 +1189,7 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
     if verbose > 3i32 {
         dpx_message(b"\n\x00" as *const u8 as *const i8);
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> i32 {
@@ -1246,7 +1246,7 @@ pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> i32 {
     if verbose > 3i32 {
         dpx_message(b"\n\x00" as *const u8 as *const i8);
     }
-    return 0i32;
+    0i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_insert_fontmap_record(
@@ -1332,7 +1332,7 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
     if verbose > 3i32 {
         dpx_message(b"\n\x00" as *const u8 as *const i8);
     }
-    return mrec;
+    mrec
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_read_fontmap_line(
@@ -1383,7 +1383,7 @@ pub unsafe extern "C" fn pdf_read_fontmap_line(
         fill_in_defaults(mrec, q);
     }
     free(q as *mut libc::c_void);
-    return error;
+    error
 }
 /* DVIPS/pdfTeX fontmap line if one of the following three cases found:
  *
@@ -1423,7 +1423,11 @@ pub unsafe extern "C" fn is_pdfm_mapline(mut mline: *const i8) -> i32
     }
     /* Two entries: TFM_NAME PS_NAME only (DVIPS format)
      * Otherwise (DVIPDFM format) */
-    return if n == 2_u32 { 0i32 } else { 1i32 };
+    if n == 2_u32 {
+        0i32
+    } else {
+        1i32
+    }
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_load_fontmap_file(mut filename: *const i8, mut mode: i32) -> i32 {
@@ -1517,7 +1521,7 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(mut filename: *const i8, mut mode
     if verbose != 0 {
         dpx_message(b">\x00" as *const u8 as *const i8);
     }
-    return error;
+    error
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
@@ -1578,7 +1582,7 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     if verbose != 0 {
         dpx_message(b">\x00" as *const u8 as *const i8);
     }
-    return ret;
+    ret
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_lookup_fontmap_record(mut tfm_name: *const i8) -> *mut fontmap_rec {
@@ -1590,7 +1594,7 @@ pub unsafe extern "C" fn pdf_lookup_fontmap_record(mut tfm_name: *const i8) -> *
             strlen(tfm_name) as i32,
         ) as *mut fontmap_rec
     }
-    return mrec;
+    mrec
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_init_fontmaps() {
@@ -1668,7 +1672,7 @@ unsafe extern "C" fn substr(mut str: *mut *const i8, mut stop: i8) -> *mut i8 {
     );
     *sstr.offset(endptr.wrapping_offset_from(*str) as i64 as isize) = '\u{0}' as i32 as i8;
     *str = endptr.offset(1);
-    return sstr;
+    sstr
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1806,5 +1810,5 @@ unsafe extern "C" fn strip_options(mut map_name: *const i8, mut opt: *mut fontma
             (*opt).style = 2i32
         }
     }
-    return font_name;
+    font_name
 }

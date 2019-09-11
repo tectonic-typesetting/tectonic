@@ -370,7 +370,7 @@ pub struct ic_ {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -384,7 +384,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     } /* unsafe? */
-    return 0i32 != 0;
+    false
 }
 #[inline]
 unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
@@ -393,7 +393,7 @@ unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *
     if strncmp(s, prefix, length) == 0i32 {
         return s.offset(length as isize);
     }
-    return 0 as *const i8;
+    0 as *const i8
 }
 static mut _opts: opt_ = {
     let mut init = opt_ {
@@ -511,7 +511,7 @@ unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t) -> i32 {
         format = -1i32
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
-    return format;
+    format
 }
 unsafe extern "C" fn load_image(
     mut ident: *const i8,
@@ -725,7 +725,7 @@ pub unsafe extern "C" fn pdf_ximage_findresource(
             ident,
         );
     }
-    return id;
+    id
 }
 /* Reference: PDF Reference 1.5 v6, pp.321--322
  *
@@ -885,7 +885,7 @@ pub unsafe extern "C" fn pdf_ximage_set_form(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_get_page(mut I: *mut pdf_ximage) -> i32 {
-    return (*I).attr.page_no;
+    (*I).attr.page_no
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: i32) -> *mut pdf_obj {
@@ -898,7 +898,7 @@ pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: i32) -> *mut pdf_obj {
     if (*I).reference.is_null() {
         (*I).reference = pdf_ref_obj((*I).resource)
     }
-    return pdf_link_obj((*I).reference);
+    pdf_link_obj((*I).reference)
 }
 /* called from pdfdoc.c only for late binding */
 #[no_mangle]
@@ -953,7 +953,7 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
         }
     }
     (*ic).count += 1;
-    return id;
+    id
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: i32) -> *mut i8 {
@@ -963,7 +963,7 @@ pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: i32) -> *mut i8 {
         _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
-    return (*I).res_name.as_mut_ptr();
+    (*I).res_name.as_mut_ptr()
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_get_subtype(mut id: i32) -> i32 {
@@ -973,7 +973,7 @@ pub unsafe extern "C" fn pdf_ximage_get_subtype(mut id: i32) -> i32 {
         _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
-    return (*I).subtype;
+    (*I).subtype
 }
 /* from spc_pdfm.c */
 #[no_mangle]
@@ -1203,7 +1203,7 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
         }
         _ => {}
     }
-    return 0i32;
+    0i32
 }
 /* Migrated from psimage.c */
 #[no_mangle]
@@ -1249,7 +1249,7 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut i8) {
 /* from pdfximage.c */
 #[no_mangle]
 pub unsafe extern "C" fn get_distiller_template() -> *mut i8 {
-    return _opts.cmdtmpl;
+    _opts.cmdtmpl
 }
 unsafe extern "C" fn check_for_ps(mut handle: rust_input_handle_t) -> i32 {
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
@@ -1262,5 +1262,5 @@ unsafe extern "C" fn check_for_ps(mut handle: rust_input_handle_t) -> i32 {
     {
         return 1i32;
     }
-    return 0i32;
+    0i32
 }

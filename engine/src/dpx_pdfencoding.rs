@@ -369,7 +369,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
         return strcmp(s1, s2) == 0i32;
     }
-    return 0i32 != 0;
+    false
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
@@ -378,7 +378,7 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
-    return 0 as *mut libc::c_void;
+    0 as *mut libc::c_void
 }
 static mut verbose: u8 = 0_u8;
 #[no_mangle]
@@ -528,11 +528,11 @@ unsafe extern "C" fn is_similar_charset(
             }
         {
             /* is 64 a good level? */
-            return 1i32 != 0;
+            return true;
         }
         code += 1
     }
-    return 0i32 != 0;
+    false
 }
 /* Creates a PDF Differences array for the encoding, based on the
  * base encoding baseenc (if not NULL). Only character codes which
@@ -591,7 +591,7 @@ unsafe extern "C" fn make_encoding_differences(
         pdf_release_obj(differences);
         differences = 0 as *mut pdf_obj
     }
-    return differences;
+    differences
 }
 unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> i32 {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
@@ -672,7 +672,7 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> i32 {
     if verbose != 0 {
         dpx_message(b")\x00" as *const u8 as *const i8);
     }
-    return enc_id;
+    enc_id
 }
 static mut enc_cache: C2RustUnnamed = {
     let mut init = C2RustUnnamed {
@@ -805,7 +805,7 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
     if flags & 1i32 << 0i32 != 0 {
         (*encoding).resource = pdf_new_name((*encoding).enc_name)
     }
-    return enc_id;
+    enc_id
 }
 /* Creates Encoding resource and ToUnicode CMap
  * for all non-predefined encodings.
@@ -884,7 +884,7 @@ pub unsafe extern "C" fn pdf_encoding_findresource(mut enc_name: *const i8) -> i
         }
         enc_id += 1
     }
-    return load_encoding_file(enc_name);
+    load_encoding_file(enc_name)
 }
 /*
  * Pointer will change if other encoding is loaded...
@@ -899,7 +899,7 @@ pub unsafe extern "C" fn pdf_encoding_get_encoding(mut enc_id: i32) -> *mut *mut
         );
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
-    return (*encoding).glyphs.as_mut_ptr();
+    (*encoding).glyphs.as_mut_ptr()
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: i32) -> *mut pdf_obj {
@@ -911,7 +911,7 @@ pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: i32) -> *mut pdf_obj {
         );
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
-    return (*encoding).resource;
+    (*encoding).resource
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: i32) -> i32 {
@@ -951,7 +951,7 @@ pub unsafe extern "C" fn pdf_encoding_get_name(mut enc_id: i32) -> *mut i8 {
         );
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
-    return (*encoding).enc_name;
+    (*encoding).enc_name
 }
 static mut wbuf: [u8; 1024] = [0; 1024];
 static mut range_min: [u8; 1] = [0u32 as u8];
@@ -986,7 +986,7 @@ pub unsafe extern "C" fn pdf_encoding_get_tounicode(mut encoding_id: i32) -> *mu
             encoding_id,
         );
     }
-    return (*enc_cache.encodings.offset(encoding_id as isize)).tounicode;
+    (*enc_cache.encodings.offset(encoding_id as isize)).tounicode
 }
 /* Creates a ToUnicode CMap. An empty CMap is replaced by NULL.
  *
@@ -1075,7 +1075,7 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
     };
     CMap_release(cmap);
     free(cmap_name as *mut libc::c_void);
-    return stream;
+    stream
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -1156,7 +1156,7 @@ pub unsafe extern "C" fn pdf_load_ToUnicode_stream(mut ident: *const i8) -> *mut
     }
     CMap_release(cmap);
     ttstub_input_close(handle);
-    return stream;
+    stream
 }
 static mut MacRomanEncoding: [*const i8; 256] = [
     b".notdef\x00" as *const u8 as *const i8,

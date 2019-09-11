@@ -856,7 +856,7 @@ unsafe extern "C" fn _gcry_bswap32(mut x: u32) -> u32 {
         as u32;
 }
 unsafe extern "C" fn _gcry_bswap64(mut x: u64) -> u64 {
-    return (_gcry_bswap32(x as u32) as u64) << 32i32 | _gcry_bswap32((x >> 32i32) as u32) as u64;
+    (_gcry_bswap32(x as u32) as u64) << 32i32 | _gcry_bswap32((x >> 32i32) as u32) as u64
 }
 /* Endian dependent byte swap operations.  */
 unsafe extern "C" fn buf_get_be32(mut _buf: *const libc::c_void) -> u32 {
@@ -1100,7 +1100,7 @@ unsafe extern "C" fn _SHA256_transform(mut hd: *mut SHA256_CONTEXT, mut data: *c
     (*hd).h5 = ((*hd).h5 as u32).wrapping_add(f) as u32;
     (*hd).h6 = ((*hd).h6 as u32).wrapping_add(g) as u32;
     (*hd).h7 = ((*hd).h7 as u32).wrapping_add(h) as u32;
-    return (74i32 * 4i32 + 32i32) as u32;
+    (74i32 * 4i32 + 32i32) as u32
 }
 #[no_mangle]
 pub unsafe extern "C" fn SHA256_write(
@@ -3934,7 +3934,7 @@ unsafe extern "C" fn rijndaelSetupEncrypt(
             rk = rk.offset(8)
         }
     }
-    return 0i32;
+    0i32
 }
 unsafe extern "C" fn rijndaelEncrypt(
     mut rk: *const u32,
