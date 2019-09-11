@@ -6,15 +6,13 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use libc::free;
 extern "C" {
-    pub type pdf_obj;
-    pub type pdf_file;
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -28,8 +29,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     pub type otl_opt;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

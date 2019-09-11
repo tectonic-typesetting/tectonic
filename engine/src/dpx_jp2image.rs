@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -34,7 +35,6 @@ extern "C" {
     */
     /* Here is the complete list of PDF object types */
     /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
     pub type pdf_ximage_;
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;

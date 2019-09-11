@@ -6,11 +6,10 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn getenv(__name: *const i8) -> *mut i8;
     #[no_mangle]

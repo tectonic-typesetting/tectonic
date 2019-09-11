@@ -7,8 +7,8 @@
          unused_mut)]
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
+use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    pub type pdf_obj;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
@@ -763,7 +763,7 @@ unsafe extern "C" fn check_garbage(mut args: *mut spc_arg) {
         dump((*args).curptr, (*args).endptr);
     };
 }
-static mut known_specials: [C2RustUnnamed_0; 9] = unsafe {
+static mut known_specials: [C2RustUnnamed_0; 9] = {
     [
         {
             let mut init = C2RustUnnamed_0 {

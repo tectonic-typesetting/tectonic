@@ -7,8 +7,9 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
-    pub type pdf_obj;
     pub type CIDFont;
     #[no_mangle]
     fn pdf_add_stream(
@@ -50,8 +51,6 @@ extern "C" {
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn CIDFont_get_fontname(font: *mut CIDFont) -> *mut i8;
     #[no_mangle]

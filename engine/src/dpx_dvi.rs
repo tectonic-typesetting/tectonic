@@ -7,6 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -33,8 +35,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     /* Here is the complete list of PDF object types */
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -47,8 +47,6 @@ extern "C" {
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */

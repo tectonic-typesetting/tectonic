@@ -7,8 +7,9 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
-    pub type pdf_obj;
     pub type pdf_ximage_;
     #[no_mangle]
     fn pdf_ximage_set_image(
@@ -72,8 +73,6 @@ extern "C" {
     fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
     #[no_mangle]
     fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

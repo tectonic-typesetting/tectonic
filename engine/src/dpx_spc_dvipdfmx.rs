@@ -7,9 +7,8 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
@@ -106,7 +105,7 @@ unsafe extern "C" fn spc_handler_null(mut spe: *mut spc_env, mut args: *mut spc_
     (*args).curptr = (*args).endptr;
     0i32
 }
-static mut dvipdfmx_handlers: [spc_handler; 1] = unsafe {
+static mut dvipdfmx_handlers: [spc_handler; 1] = {
     [{
         let mut init = spc_handler {
             key: b"config\x00" as *const u8 as *const i8,

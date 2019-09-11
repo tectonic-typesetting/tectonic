@@ -7,11 +7,12 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
     pub type _IO_marker;
-    pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
     fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> i32;
@@ -63,8 +64,6 @@ extern "C" {
     fn fclose(__stream: *mut FILE) -> i32;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

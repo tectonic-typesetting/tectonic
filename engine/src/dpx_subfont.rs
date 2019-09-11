@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -51,8 +52,6 @@ extern "C" {
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;

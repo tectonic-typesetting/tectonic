@@ -7,9 +7,11 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 use super::dpx_pdfdraw::{
     pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_dtransform, pdf_dev_idtransform,
 };
+use libc::free;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -36,17 +38,12 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     /* Here is the complete list of PDF object types */
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
-    pub type pdf_file;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]

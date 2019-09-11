@@ -6,6 +6,7 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -13,8 +14,6 @@ extern "C" {
     fn malloc(_: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn realloc(_: *mut libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
 }
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

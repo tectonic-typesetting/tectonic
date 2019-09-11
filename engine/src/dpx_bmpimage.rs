@@ -7,12 +7,13 @@
          unused_mut)]
 
 extern crate libc;
+
+use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
+
 extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
     pub type pdf_ximage_;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

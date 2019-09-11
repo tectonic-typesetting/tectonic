@@ -7,16 +7,15 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
-    pub type pdf_obj;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn rand() -> i32;
     #[no_mangle]
     fn srand(__seed: u32);
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]

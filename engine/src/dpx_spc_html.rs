@@ -7,17 +7,15 @@
          unused_mut)]
 extern crate libc;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
+use crate::dpx_pdfobj::pdf_obj;
+use libc::free;
 extern "C" {
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    pub type pdf_obj;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn tan(_: f64) -> f64;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

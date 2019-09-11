@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     pub type pst_obj;
     #[no_mangle]
@@ -67,8 +68,6 @@ extern "C" {
     fn CMap_set_type(cmap: *mut CMap, type_0: i32);
     #[no_mangle]
     fn CMap_set_name(cmap: *mut CMap, name: *const i8);
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

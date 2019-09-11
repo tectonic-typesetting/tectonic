@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -18,8 +19,6 @@ extern "C" {
     fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
     fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn abs(_: libc::c_int) -> libc::c_int;
     #[no_mangle]
@@ -366,7 +365,6 @@ pub unsafe extern "C" fn pdf_set_compression(mut level: i32) {
             b"You don\'t have compression compiled in. Possibly libz wasn\'t found by configure.\x00"
                 as *const u8 as *const i8,
         );
-        return;
     }
     if cfg!(feature = "legacy-libz") && level != 0i32 {
         dpx_warning(
@@ -2508,11 +2506,11 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                 (filtered_length as libc::c_ulong)
                     .wrapping_sub(buffer_length)
                     .wrapping_sub(
-                        (if !filters.is_null() {
+                        if !filters.is_null() {
                             strlen(b"/FlateDecode \x00" as *const u8 as *const libc::c_char)
                         } else {
                             strlen(b"/Filter/FlateDecode\n\x00" as *const u8 as *const libc::c_char)
-                        }),
+                        },
                     ),
             ) as libc::c_int as libc::c_int;
             filtered = buffer;

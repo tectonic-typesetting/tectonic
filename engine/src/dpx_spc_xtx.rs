@@ -7,9 +7,8 @@
          unused_mut)]
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_concat;
+use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
@@ -661,7 +660,7 @@ unsafe extern "C" fn spc_handler_xtx_unsupported(
     (*args).curptr = (*args).endptr;
     0i32
 }
-static mut xtx_handlers: [spc_handler; 21] = unsafe {
+static mut xtx_handlers: [spc_handler; 21] = {
     [
         {
             let mut init = spc_handler {

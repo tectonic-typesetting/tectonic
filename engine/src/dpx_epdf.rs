@@ -7,13 +7,13 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
+use libc::free;
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
     pub type _IO_marker;
-    pub type pdf_obj;
-    pub type pdf_file;
     pub type pdf_ximage_;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
@@ -67,8 +67,6 @@ extern "C" {
     fn pdf_new_array() -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_number_value(number: *mut pdf_obj) -> f64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]

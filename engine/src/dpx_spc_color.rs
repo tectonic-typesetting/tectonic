@@ -7,11 +7,10 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]

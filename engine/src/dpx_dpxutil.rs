@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use libc::free;
 extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
@@ -14,8 +15,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

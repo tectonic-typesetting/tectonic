@@ -7,9 +7,9 @@
          unused_mut)]
 
 extern crate libc;
+use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use libc::free;
 extern "C" {
-    pub type pdf_obj;
-    pub type pdf_file;
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
@@ -56,8 +56,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn cff_release_charsets(charset: *mut cff_charsets);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
