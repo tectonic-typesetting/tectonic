@@ -35,8 +35,6 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
-    static mut stderr: *mut FILE;
-    #[no_mangle]
     fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> i32;
     /* Tectonic enabled */
     #[no_mangle]
@@ -274,10 +272,7 @@ unsafe extern "C" fn read_header(mut vf_handle: rust_input_handle_t, mut thisfon
     if tt_get_unsigned_byte(vf_handle) as i32 != 247i32
         || tt_get_unsigned_byte(vf_handle) as i32 != 202i32
     {
-        fprintf(
-            stderr,
-            b"VF file may be corrupt\n\x00" as *const u8 as *const i8,
-        );
+        eprintln!("VF file may be corrupt");
         return;
     }
     /* skip comment */
@@ -454,18 +449,14 @@ unsafe extern "C" fn process_vf_file(mut vf_handle: rust_input_handle_t, mut thi
                     if ch_0 < 0x1000000u32 {
                         read_a_char_def(vf_handle, thisfont, pkt_len, ch_0);
                     } else {
-                        fprintf(stderr, b"char=%u\n\x00" as *const u8 as *const i8, ch_0);
+                        eprintln!("char={}", ch_0);
                         _tt_abort(b"Long character (>24 bits) in VF file.\nI can\'t handle long characters!\n\x00"
                                       as *const u8 as *const i8);
                     }
                 } else if code == 248i32 {
                     eof = 1i32
                 } else {
-                    fprintf(
-                        stderr,
-                        b"Quitting on code=%d\n\x00" as *const u8 as *const i8,
-                        code,
-                    );
+                    eprintln!("Quitting on code={}", code);
                     eof = 1i32
                 }
             }
@@ -507,7 +498,9 @@ pub unsafe extern "C" fn vf_locate_font(mut tex_name: *const i8, mut ptsize: spt
         return -1i32;
     }
     if verbose as i32 == 1i32 {
-        fprintf(stderr, b"(VF:%s\x00" as *const u8 as *const i8, tex_name);
+        use std::ffi::CStr;
+        let tex_name = CStr::from_ptr(tex_name);
+        eprint!("(VF:{}", tex_name.to_string_lossy());
     }
     if num_vf_fonts >= max_vf_fonts {
         resize_vf_fonts(max_vf_fonts.wrapping_add(16u32) as i32);
@@ -529,7 +522,7 @@ pub unsafe extern "C" fn vf_locate_font(mut tex_name: *const i8, mut ptsize: spt
     read_header(vf_handle, thisfont);
     process_vf_file(vf_handle, thisfont);
     if verbose != 0 {
-        fprintf(stderr, b")\x00" as *const u8 as *const i8);
+        eprint!(")");
     }
     ttstub_input_close(vf_handle);
     thisfont
@@ -685,11 +678,7 @@ unsafe extern "C" fn vf_fnt(mut font_id: i32, mut vf_font: i32) {
             .dev_id,
         );
     } else {
-        fprintf(
-            stderr,
-            b"Font_id: %d not found in VF\n\x00" as *const u8 as *const i8,
-            font_id,
-        );
+        eprintln!("Font_id: {} not found in VF", font_id);
     };
 }
 /* identical to do_xxx in dvi.c */
@@ -749,17 +738,8 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                 .offset(ch as isize);
             start.is_null()
         } {
-            fprintf(
-                stderr,
-                b"\nchar=0x%x(%d)\n\x00" as *const u8 as *const i8,
-                ch,
-                ch,
-            );
-            fprintf(
-                stderr,
-                b"Tried to set a nonexistent character in a virtual font\x00" as *const u8
-                    as *const i8,
-            );
+            eprint!("\nchar=0x{ch:x}({ch})\n", ch = ch);
+            eprint!("Tried to set a nonexistent character in a virtual font");
             end = 0 as *mut u8;
             start = end
         } else {
@@ -888,11 +868,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                     } else if opcode as i32 >= 171i32 && opcode as i32 <= 234i32 {
                         vf_fnt(opcode as i32 - 171i32, vf_font);
                     } else {
-                        fprintf(
-                            stderr,
-                            b"Unexpected opcode: %d\n\x00" as *const u8 as *const i8,
-                            opcode as i32,
-                        );
+                        eprintln!("Unexpected opcode: {}", opcode as i32);
                         _tt_abort(b"Unexpected opcode in vf file\n\x00" as *const u8 as *const i8);
                     }
                 }
@@ -900,11 +876,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
         }
         dvi_vf_finish();
     } else {
-        fprintf(
-            stderr,
-            b"vf_set_char: font: %d\x00" as *const u8 as *const i8,
-            vf_font,
-        );
+        eprint!("vf_set_char: font: {}", vf_font);
         _tt_abort(b"Font not loaded\n\x00" as *const u8 as *const i8);
     };
 }

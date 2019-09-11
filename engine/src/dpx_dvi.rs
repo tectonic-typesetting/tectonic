@@ -74,8 +74,6 @@ extern "C" {
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    static mut stderr: *mut FILE;
-    #[no_mangle]
     fn fprintf(_: *mut FILE, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
@@ -2641,11 +2639,7 @@ pub unsafe extern "C" fn dvi_rule(mut width: i32, mut height: i32) {
 #[no_mangle]
 pub unsafe extern "C" fn dvi_dirchg(mut dir: u8) {
     if verbose != 0 {
-        fprintf(
-            stderr,
-            b"  > dvi_dirchg %d\n\x00" as *const u8 as *const i8,
-            dir as i32,
-        );
+        eprintln!("  > dvi_dirchg {}", dir as i32);
     }
     dvi_state.d = dir as u32;
     pdf_dev_set_dirmode(dvi_state.d as i32);

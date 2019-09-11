@@ -354,13 +354,15 @@ pub unsafe extern "C" fn dumppaperinfo() {
         } else {
             0.0f64
         };
-        fprintf(
-            stdout,
-            b"%s: %.2f %.2f (%.2fmm %.2fmm)\n\x00" as *const u8 as *const i8,
+        println!(
+            "{}: {:.2} {:.2} ({:.2}mm {:.2}mm)",
             if !ppinfo.is_null() && !(*ppinfo).name.is_null() {
-                (*ppinfo).name
+                use std::ffi::CStr;
+                let name = CStr::from_ptr((*ppinfo).name);
+                name.to_string_lossy()
             } else {
-                0 as *const i8
+                use std::borrow::Cow;
+                Cow::Borrowed("(null)")
             },
             wd,
             ht,
