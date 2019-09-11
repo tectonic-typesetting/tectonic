@@ -9,8 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn abs(_: i32) -> i32;
-    #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
@@ -953,7 +951,7 @@ pub unsafe extern "C" fn print_file_line() {
 /*:1660*/
 #[no_mangle]
 pub unsafe extern "C" fn print_two(mut n: i32) {
-    n = abs(n) % 100i32;
+    n = n.abs() % 100i32;
     print_char('0' as i32 + n / 10i32);
     print_char('0' as i32 + n % 10i32);
 }

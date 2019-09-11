@@ -34,10 +34,6 @@ extern "C" {
     pub type pdf_obj;
     pub type pdf_font;
     #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
@@ -809,7 +805,7 @@ unsafe extern "C" fn add_SimpleMetrics(
                     let mut diff: f64 = 0.;
                     width = 1000.0f64 * tfm_get_width(tfm_id, code);
                     diff = width - scaling * *widths.offset(code as isize);
-                    if fabs(diff) > 1.0f64 {
+                    if diff.abs() > 1.0f64 {
                         dpx_warning(
                             b"Glyph width mismatch for TFM and font (%s)\x00" as *const u8
                                 as *const i8,
@@ -823,7 +819,7 @@ unsafe extern "C" fn add_SimpleMetrics(
                     }
                     pdf_add_array(
                         tmp_array,
-                        pdf_new_number(floor(width / 0.1f64 + 0.5f64) * 0.1f64),
+                        pdf_new_number((width / 0.1f64 + 0.5f64).floor() * 0.1f64),
                     );
                 }
             } else {

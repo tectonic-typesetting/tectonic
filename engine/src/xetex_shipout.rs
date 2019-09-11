@@ -11,8 +11,6 @@ extern "C" {
     #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
-    fn abs(_: i32) -> i32;
-    #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn strerror(_: i32) -> *mut i8;
@@ -3647,12 +3645,12 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
         }
         _ => {
             (*mem.offset(q as isize)).b32.s0 = 3i32;
-            if abs(w) >= 0x800000i32 {
+            if w.abs() >= 0x800000i32 {
                 dvi_out((o as i32 + 3i32) as eight_bits);
                 dvi_four(w);
                 return;
             }
-            if abs(w) >= 0x8000i32 {
+            if w.abs() >= 0x8000i32 {
                 dvi_out((o as i32 + 2i32) as eight_bits);
                 if w < 0i32 {
                     w = w + 0x1000000i32
@@ -3660,7 +3658,7 @@ unsafe extern "C" fn movement(mut w: scaled_t, mut o: eight_bits) {
                 dvi_out((w / 0x10000i32) as eight_bits);
                 w = w % 0x10000i32;
                 current_block = 14567512515169274304;
-            } else if abs(w) >= 128i32 {
+            } else if w.abs() >= 128i32 {
                 dvi_out((o as i32 + 1i32) as eight_bits);
                 if w < 0i32 {
                     w = w + 0x10000i32

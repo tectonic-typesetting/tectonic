@@ -9,8 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn abs(_: i32) -> i32;
-    #[no_mangle]
     fn measure_native_node(node: *mut libc::c_void, use_glyph_metrics: i32);
     #[no_mangle]
     static mut eqtb: *mut memory_word;
@@ -691,7 +689,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
             .s1;
             second_indent = 0i32
         } else {
-            last_special_line = abs((*eqtb.offset(
+            last_special_line = (*eqtb.offset(
                 (1i32
                     + (0x10ffffi32 + 1i32)
                     + (0x10ffffi32 + 1i32)
@@ -719,7 +717,8 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                     + 41i32) as isize,
             ))
             .b32
-            .s1);
+            .s1
+            .abs();
             if (*eqtb.offset(
                 (1i32
                     + (0x10ffffi32 + 1i32)
@@ -781,7 +780,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         + 3i32) as isize,
                 ))
                 .b32
-                .s1 - abs((*eqtb.offset(
+                .s1 - (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
                         + (0x10ffffi32 + 1i32)
@@ -812,7 +811,8 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         + 17i32) as isize,
                 ))
                 .b32
-                .s1);
+                .s1
+                .abs();
                 if (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -979,7 +979,7 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         + 3i32) as isize,
                 ))
                 .b32
-                .s1 - abs((*eqtb.offset(
+                .s1 - (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
                         + (0x10ffffi32 + 1i32)
@@ -1010,7 +1010,8 @@ pub unsafe extern "C" fn line_break(mut d: bool) {
                         + 17i32) as isize,
                 ))
                 .b32
-                .s1);
+                .s1
+                .abs();
                 if (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -3757,7 +3758,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
     if semantic_pagination_enabled as i32 != 0 && cur_p != -0xfffffffi32 {
         return;
     }
-    if abs(pi) >= 10000i32 {
+    if pi.abs() >= 10000i32 {
         if pi > 0i32 {
             return;
         }
@@ -4052,7 +4053,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                         prev_r = q
                     }
                     /* ... resuming 865 ... */
-                    if abs((*eqtb.offset(
+                    if (*eqtb.offset(
                         (1i32
                             + (0x10ffffi32 + 1i32)
                             + (0x10ffffi32 + 1i32)
@@ -4080,12 +4081,14 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                             + 16i32) as isize,
                     ))
                     .b32
-                    .s1) >= 0x3fffffffi32 - minimum_demerits
+                    .s1
+                    .abs()
+                        >= 0x3fffffffi32 - minimum_demerits
                     {
                         minimum_demerits = 0x3fffffffi32 - 1i32
                     } else {
                         minimum_demerits = minimum_demerits
-                            + abs((*eqtb.offset(
+                            + (*eqtb.offset(
                                 (1i32
                                     + (0x10ffffi32 + 1i32)
                                     + (0x10ffffi32 + 1i32)
@@ -4113,7 +4116,8 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                     + 16i32) as isize,
                             ))
                             .b32
-                            .s1)
+                            .s1
+                            .abs()
                     }
                     fit_class = 0_u8;
                     while fit_class as i32 <= 3i32 {
@@ -4591,7 +4595,7 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                         ))
                         .b32
                         .s1 + b; /* algorithmic constant */
-                        if abs(d) >= 10000i32 {
+                        if d.abs() >= 10000i32 {
                             d = 100000000 as i32
                         } else {
                             d = d * d
@@ -4672,7 +4676,8 @@ unsafe extern "C" fn try_break(mut pi: i32, mut break_type: small_number) {
                                     .s1
                             }
                         }
-                        if abs(fit_class as i32 - (*mem.offset(r as isize)).b16.s0 as i32) > 1i32 {
+                        if (fit_class as i32 - (*mem.offset(r as isize)).b16.s0 as i32).abs() > 1i32
+                        {
                             d = d
                                 + (*eqtb.offset(
                                     (1i32

@@ -32,8 +32,6 @@ extern "C" {
     #[no_mangle]
     fn Type0Font_set_ToUnicode(font: *mut Type0Font, cmap_ref: *mut pdf_obj);
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -1071,12 +1069,12 @@ unsafe extern "C" fn add_CIDHMetrics(
     let mut prev: i32 = 0i32;
     let mut defaultAdvanceWidth: f64 = 0.;
     let mut empty: i32 = 1i32;
-    defaultAdvanceWidth = floor(
-        1000.0f64 * (*hmtx.offset(0)).advance as i32 as f64
-            / (*head).unitsPerEm as i32 as f64
-            / 1i32 as f64
-            + 0.5f64,
-    ) * 1i32 as f64;
+    defaultAdvanceWidth = (1000.0f64 * (*hmtx.offset(0)).advance as i32 as f64
+        / (*head).unitsPerEm as i32 as f64
+        / 1i32 as f64
+        + 0.5f64)
+        .floor()
+        * 1i32 as f64;
     /*
      * We alway use format:
      *  c [w_1 w_2 ... w_n]
@@ -1093,12 +1091,12 @@ unsafe extern "C" fn add_CIDHMetrics(
             cid
         }) as u16;
         if !(gid as i32 >= (*maxp).numGlyphs as i32 || cid != 0i32 && gid as i32 == 0i32) {
-            advanceWidth = floor(
-                1000.0f64 * (*hmtx.offset(gid as isize)).advance as i32 as f64
-                    / (*head).unitsPerEm as i32 as f64
-                    / 1i32 as f64
-                    + 0.5f64,
-            ) * 1i32 as f64;
+            advanceWidth = (1000.0f64 * (*hmtx.offset(gid as isize)).advance as i32 as f64
+                / (*head).unitsPerEm as i32 as f64
+                / 1i32 as f64
+                + 0.5f64)
+                .floor()
+                * 1i32 as f64;
             if advanceWidth == defaultAdvanceWidth {
                 if !an_array.is_null() {
                     pdf_add_array(w_array, pdf_new_number(start as f64));
@@ -1173,12 +1171,12 @@ unsafe extern "C" fn add_CIDVMetrics(
         return;
     }
     vorg = tt_read_VORG_table(sfont);
-    defaultVertOriginY = floor(
-        1000.0f64 * (*vorg).defaultVertOriginY as i32 as f64
-            / (*head).unitsPerEm as i32 as f64
-            / 1i32 as f64
-            + 0.5f64,
-    ) * 1i32 as f64;
+    defaultVertOriginY = (1000.0f64 * (*vorg).defaultVertOriginY as i32 as f64
+        / (*head).unitsPerEm as i32 as f64
+        / 1i32 as f64
+        + 0.5f64)
+        .floor()
+        * 1i32 as f64;
     if sfnt_find_table_pos(sfont, b"vhea\x00" as *const u8 as *const i8) > 0_u32 {
         vhea = tt_read_vhea_table(sfont)
     }
@@ -1196,18 +1194,19 @@ unsafe extern "C" fn add_CIDVMetrics(
         let mut os2: *mut tt_os2__table = 0 as *mut tt_os2__table;
         /* OpenType font must have OS/2 table. */
         os2 = tt_read_os2__table(sfont);
-        defaultVertOriginY = floor(
-            1000.0f64 * (*os2).sTypoAscender as i32 as f64
-                / (*head).unitsPerEm as i32 as f64
-                / 1i32 as f64
-                + 0.5f64,
-        ) * 1i32 as f64;
-        defaultAdvanceHeight = floor(
-            1000.0f64 * ((*os2).sTypoAscender as i32 - (*os2).sTypoDescender as i32) as f64
-                / (*head).unitsPerEm as i32 as f64
-                / 1i32 as f64
-                + 0.5f64,
-        ) * 1i32 as f64;
+        defaultVertOriginY = (1000.0f64 * (*os2).sTypoAscender as i32 as f64
+            / (*head).unitsPerEm as i32 as f64
+            / 1i32 as f64
+            + 0.5f64)
+            .floor()
+            * 1i32 as f64;
+        defaultAdvanceHeight = (1000.0f64
+            * ((*os2).sTypoAscender as i32 - (*os2).sTypoDescender as i32) as f64
+            / (*head).unitsPerEm as i32 as f64
+            / 1i32 as f64
+            + 0.5f64)
+            .floor()
+            * 1i32 as f64;
         free(os2 as *mut libc::c_void);
     } else {
         /* Some TrueType fonts used in Macintosh does not have OS/2 table. */
@@ -1229,21 +1228,22 @@ unsafe extern "C" fn add_CIDVMetrics(
         }) as u16;
         if !(gid as i32 >= (*maxp).numGlyphs as i32 || cid != 0i32 && gid as i32 == 0i32) {
             advanceHeight = if !vmtx.is_null() {
-                floor(
-                    1000.0f64 * (*vmtx.offset(gid as isize)).advance as i32 as f64
-                        / (*head).unitsPerEm as i32 as f64
-                        / 1i32 as f64
-                        + 0.5f64,
-                ) * 1i32 as f64
+                (1000.0f64 * (*vmtx.offset(gid as isize)).advance as i32 as f64
+                    / (*head).unitsPerEm as i32 as f64
+                    / 1i32 as f64
+                    + 0.5f64)
+                    .floor()
+                    * 1i32 as f64
             } else {
                 defaultAdvanceHeight
             };
-            vertOriginX = floor(
-                1000.0f64 * ((*hmtx.offset(gid as isize)).advance as i32 as f64 * 0.5f64)
-                    / (*head).unitsPerEm as i32 as f64
-                    / 1i32 as f64
-                    + 0.5f64,
-            ) * 1i32 as f64;
+            vertOriginX = (1000.0f64
+                * ((*hmtx.offset(gid as isize)).advance as i32 as f64 * 0.5f64)
+                / (*head).unitsPerEm as i32 as f64
+                / 1i32 as f64
+                + 0.5f64)
+                .floor()
+                * 1i32 as f64;
             vertOriginY = defaultVertOriginY;
             i = 0_u16;
             while (i as i32) < (*vorg).numVertOriginYMetrics as i32
@@ -1251,14 +1251,14 @@ unsafe extern "C" fn add_CIDVMetrics(
             {
                 if gid as i32 == (*(*vorg).vertOriginYMetrics.offset(i as isize)).glyphIndex as i32
                 {
-                    vertOriginY = floor(
-                        1000.0f64
-                            * (*(*vorg).vertOriginYMetrics.offset(i as isize)).vertOriginY as i32
-                                as f64
-                            / (*head).unitsPerEm as i32 as f64
-                            / 1i32 as f64
-                            + 0.5f64,
-                    ) * 1i32 as f64
+                    vertOriginY = (1000.0f64
+                        * (*(*vorg).vertOriginYMetrics.offset(i as isize)).vertOriginY as i32
+                            as f64
+                        / (*head).unitsPerEm as i32 as f64
+                        / 1i32 as f64
+                        + 0.5f64)
+                        .floor()
+                        * 1i32 as f64
                 }
                 i = i.wrapping_add(1)
             }
@@ -3231,7 +3231,10 @@ unsafe extern "C" fn add_metrics(
             b"FontBBox\x00" as *const u8 as *const i8,
             i,
         );
-        pdf_add_array(tmp, pdf_new_number(floor(val / 1.0f64 + 0.5f64) * 1.0f64));
+        pdf_add_array(
+            tmp,
+            pdf_new_number((val / 1.0f64 + 0.5f64).floor() * 1.0f64),
+        );
         i += 1
     }
     pdf_add_dict(
@@ -3270,7 +3273,9 @@ unsafe extern "C" fn add_metrics(
                 pdf_add_array(tmp, pdf_new_number(cid as f64));
                 pdf_add_array(
                     tmp,
-                    pdf_new_number(floor(*widths.offset(gid as isize) / 1.0f64 + 0.5f64) * 1.0f64),
+                    pdf_new_number(
+                        (*widths.offset(gid as isize) / 1.0f64 + 0.5f64).floor() * 1.0f64,
+                    ),
                 );
             }
         }

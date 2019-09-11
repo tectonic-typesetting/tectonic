@@ -9,12 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn cos(_: f64) -> f64;
-    #[no_mangle]
-    fn sin(_: f64) -> f64;
-    #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
     fn graphics_mode();
     #[no_mangle]
     fn pdf_dev_reset_fonts(newpage: i32);
@@ -187,7 +181,7 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 unsafe extern "C" fn inversematrix(mut W: *mut pdf_tmatrix, mut M: *const pdf_tmatrix) -> i32 {
     let mut det: f64 = 0.;
     det = (*M).a * (*M).d - (*M).b * (*M).c;
-    if fabs(det) < 2.5e-16f64 {
+    if det.abs() < 2.5e-16f64 {
         dpx_warning(b"Inverting matrix with zero determinant...\x00" as *const u8 as *const i8);
         return -1i32;
     }
@@ -200,7 +194,7 @@ unsafe extern "C" fn inversematrix(mut W: *mut pdf_tmatrix, mut M: *const pdf_tm
     0i32
 }
 unsafe extern "C" fn pdf_coord__equal(mut p1: *const pdf_coord, mut p2: *const pdf_coord) -> i32 {
-    if fabs((*p1).x - (*p2).x) < 1.0e-7f64 && fabs((*p1).y - (*p2).y) < 1.0e-7f64 {
+    if ((*p1).x - (*p2).x).abs() < 1.0e-7f64 && ((*p1).y - (*p2).y).abs() < 1.0e-7f64 {
         return 1i32;
     }
     0i32
@@ -264,7 +258,7 @@ pub unsafe extern "C" fn pdf_invertmatrix(mut M: *mut pdf_tmatrix) {
     let mut det: f64 = 0.;
     assert!(!M.is_null());
     det = (*M).a * (*M).d - (*M).b * (*M).c;
-    if fabs(det) < 2.5e-16f64 {
+    if det.abs() < 2.5e-16f64 {
         dpx_warning(b"Inverting matrix with zero determinant...\x00" as *const u8 as *const i8);
         W.a = 1.0f64;
         W.c = 0.0f64;
@@ -621,7 +615,7 @@ unsafe extern "C" fn pdf_path__elliptarc(
     let mut n_c: i32 = 0;
     let mut i: i32 = 0;
     let mut error: i32 = 0i32;
-    if fabs(r_x) < 2.5e-16f64 || fabs(r_y) < 2.5e-16f64 {
+    if r_x.abs() < 2.5e-16f64 || r_y.abs() < 2.5e-16f64 {
         return -1i32;
     }
     if a_d < 0i32 {
@@ -635,29 +629,31 @@ unsafe extern "C" fn pdf_path__elliptarc(
     }
     d_a = a_1 - a_0;
     n_c = 1i32;
-    while fabs(d_a) > 90.0f64 * n_c as f64 {
+    while d_a.abs() > 90.0f64 * n_c as f64 {
         n_c += 1
     }
     d_a /= n_c as f64;
-    if fabs(d_a) < 2.5e-16f64 {
+    if d_a.abs() < 2.5e-16f64 {
         return -1i32;
     }
-    a_0 *= 3.14159265358979323846f64 / 180.0f64;
-    a_1 *= 3.14159265358979323846f64 / 180.0f64;
-    d_a *= 3.14159265358979323846f64 / 180.0f64;
-    xar *= 3.14159265358979323846f64 / 180.0f64;
-    T.a = cos(xar);
-    T.c = -sin(xar);
-    T.b = -T.c;
-    T.d = T.a;
-    T.e = 0.0f64;
-    T.f = 0.0f64;
+    a_0 *= core::f64::consts::PI / 180.;
+    a_1 *= core::f64::consts::PI / 180.;
+    d_a *= core::f64::consts::PI / 180.;
+    xar *= core::f64::consts::PI / 180.;
+    let (s, c) = xar.sin_cos();
+    T.a = c;
+    T.b = s;
+    T.c = -s;
+    T.d = c;
+    T.e = 0.;
+    T.f = 0.;
     /* A parameter that controls cb-curve (off-curve) points */
-    b = 4.0f64 * (1.0f64 - cos(0.5f64 * d_a)) / (3.0f64 * sin(0.5f64 * d_a));
+    b = 4.0f64 * (1.0f64 - (0.5f64 * d_a).cos()) / (3.0f64 * (0.5f64 * d_a).sin());
     b_x = r_x * b;
     b_y = r_y * b;
-    p0.x = r_x * cos(a_0);
-    p0.y = r_y * sin(a_0);
+    let (s, c) = a_0.sin_cos();
+    p0.x = r_x * c;
+    p0.y = r_y * s;
     pdf_coord__transform(&mut p0, &mut T);
     p0.x += (*ca).x;
     p0.y += (*ca).y;
@@ -670,10 +666,12 @@ unsafe extern "C" fn pdf_path__elliptarc(
     i = 0i32;
     while error == 0 && i < n_c {
         q = a_0 + i as f64 * d_a;
-        e0.x = cos(q);
-        e0.y = sin(q);
-        e1.x = cos(q + d_a);
-        e1.y = sin(q + d_a);
+        let (s, c) = q.sin_cos();
+        e0.x = c;
+        e0.y = s;
+        let (s, c) = (q + d_a).sin_cos();
+        e1.x = c;
+        e1.y = s;
         /* Condition for tangent vector requirs
          *  d1 = p1 - p0 = f ( sin a, -cos a)
          *  d2 = p2 - p3 = g ( sin b, -cos b)
@@ -793,7 +791,7 @@ unsafe extern "C" fn pdf_path__isarect(mut pa: *mut pdf_path, mut f_ir: i32) -> 
 /* Path Painting */
 /* F is obsoleted */
 unsafe extern "C" fn INVERTIBLE_MATRIX(mut M: *const pdf_tmatrix) -> i32 {
-    if fabs((*M).a * (*M).d - (*M).b * (*M).c) < 2.5e-16f64 {
+    if ((*M).a * (*M).d - (*M).b * (*M).c).abs() < 2.5e-16f64 {
         dpx_warning(b"Transformation matrix not invertible.\x00" as *const u8 as *const i8);
         dpx_warning(
             b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
@@ -1384,7 +1382,7 @@ pub unsafe extern "C" fn pdf_dev_concat(mut M: *const pdf_tmatrix) -> i32 {
     /* Adobe Reader erases page content if there are
      * non invertible transformation.
      */
-    if fabs((*M).a * (*M).d - (*M).b * (*M).c) < 2.5e-16f64 {
+    if ((*M).a * (*M).d - (*M).b * (*M).c).abs() < 2.5e-16f64 {
         dpx_warning(b"Transformation matrix not invertible.\x00" as *const u8 as *const i8); /* op: cm */
         dpx_warning(
             b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
@@ -1397,12 +1395,12 @@ pub unsafe extern "C" fn pdf_dev_concat(mut M: *const pdf_tmatrix) -> i32 {
         );
         return -1i32;
     }
-    if fabs((*M).a - 1.0f64) > 2.5e-16f64
-        || fabs((*M).b) > 2.5e-16f64
-        || fabs((*M).c) > 2.5e-16f64
-        || fabs((*M).d - 1.0f64) > 2.5e-16f64
-        || fabs((*M).e) > 2.5e-16f64
-        || fabs((*M).f) > 2.5e-16f64
+    if ((*M).a - 1.0f64).abs() > 2.5e-16f64
+        || (*M).b.abs() > 2.5e-16f64
+        || (*M).c.abs() > 2.5e-16f64
+        || ((*M).d - 1.0f64).abs() > 2.5e-16f64
+        || (*M).e.abs() > 2.5e-16f64
+        || (*M).f.abs() > 2.5e-16f64
     {
         let fresh45 = len;
         len = len + 1;

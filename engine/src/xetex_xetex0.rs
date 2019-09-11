@@ -10,11 +10,7 @@ extern crate libc;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
     #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
-    #[no_mangle]
-    fn abs(_: i32) -> i32;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -2170,7 +2166,7 @@ pub unsafe extern "C" fn show_node_list(mut p: i32) {
                             if (*mem.offset((p + 5i32) as isize)).b16.s1 as i32 == 2i32 {
                                 print_cstr(b"- \x00" as *const u8 as *const i8);
                             }
-                            if fabs(g) > 20000.0f64 {
+                            if g.abs() > 20000.0f64 {
                                 if g > 0.0f64 {
                                     print_char('>' as i32);
                                 } else {
@@ -3142,7 +3138,7 @@ pub unsafe extern "C" fn show_activities() {
             print_nl_cstr(b"### \x00" as *const u8 as *const i8);
             print_mode(m as i32);
             print_cstr(b" entered at line \x00" as *const u8 as *const i8);
-            print_int(abs((*nest.offset(p as isize)).mode_line));
+            print_int((*nest.offset(p as isize)).mode_line.abs());
             if m as i32 == 104i32 {
                 if (*nest.offset(p as isize)).prev_graf != 0x830000i32 {
                     print_cstr(b" (language\x00" as *const u8 as *const i8);
@@ -3276,7 +3272,7 @@ pub unsafe extern "C" fn show_activities() {
                     .b32
                     .s1,
             );
-            match abs(m as i32) / (102i32 + 1i32) {
+            match (m as i32).abs() / (102i32 + 1i32) {
                 0 => {
                     print_nl_cstr(b"prevdepth \x00" as *const u8 as *const i8);
                     if a.b32.s1 <= -65536000i32 {
@@ -11353,7 +11349,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
             cur_val_level = 3_u8
         }
         80 => {
-            if abs(cur_list.mode as i32) != m {
+            if (cur_list.mode as i32).abs() != m {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
@@ -11393,7 +11389,7 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
             } else {
                 *nest.offset(nest_ptr as isize) = cur_list;
                 p = nest_ptr;
-                while abs((*nest.offset(p as isize)).mode as i32) != 1i32 {
+                while ((*nest.offset(p as isize)).mode as i32).abs() != 1i32 {
                     p -= 1
                 }
                 cur_val = (*nest.offset(p as isize)).prev_graf;
@@ -13460,7 +13456,7 @@ pub unsafe extern "C" fn xetex_scan_dimen(
         }
         _ => {}
     }
-    if arith_error as i32 != 0 || abs(cur_val) >= 0x40000000i32 {
+    if arith_error as i32 != 0 || cur_val.abs() >= 0x40000000i32 {
         /*479:*/
         if file_line_error_style_p != 0 {
             print_file_line();
@@ -13822,13 +13818,13 @@ pub unsafe extern "C" fn scan_expr() {
                         f = 0i32
                     }
                 } else if l as i32 == 1i32 {
-                    if abs(f) > 0x3fffffffi32 {
+                    if f.abs() > 0x3fffffffi32 {
                         arith_error = true;
                         f = 0i32
                     }
-                } else if abs((*mem.offset((f + 1i32) as isize)).b32.s1) > 0x3fffffffi32
-                    || abs((*mem.offset((f + 2i32) as isize)).b32.s1) > 0x3fffffffi32
-                    || abs((*mem.offset((f + 3i32) as isize)).b32.s1) > 0x3fffffffi32
+                } else if ((*mem.offset((f + 1i32) as isize)).b32.s1).abs() > 0x3fffffffi32
+                    || ((*mem.offset((f + 2i32) as isize)).b32.s1).abs() > 0x3fffffffi32
+                    || ((*mem.offset((f + 3i32) as isize)).b32.s1).abs() > 0x3fffffffi32
                 {
                     arith_error = true;
                     delete_glue_ref(f);
@@ -15513,15 +15509,15 @@ pub unsafe extern "C" fn conditional() {
             current_block = 16915215315900843183;
         }
         5 => {
-            b = abs(cur_list.mode as i32) == 1i32;
+            b = (cur_list.mode as i32).abs() == 1i32;
             current_block = 16915215315900843183;
         }
         6 => {
-            b = abs(cur_list.mode as i32) == 104i32;
+            b = (cur_list.mode as i32).abs() == 104i32;
             current_block = 16915215315900843183;
         }
         7 => {
-            b = abs(cur_list.mode as i32) == 207i32;
+            b = (cur_list.mode as i32).abs() == 207i32;
             current_block = 16915215315900843183;
         }
         8 => {
@@ -20721,7 +20717,7 @@ pub unsafe extern "C" fn hpack(mut p: i32, mut w: scaled_t, mut m: small_number)
                         } else {
                             print_cstr(b") in alignment at lines \x00" as *const u8 as *const i8);
                         }
-                        print_int(abs(pack_begin_line));
+                        print_int(pack_begin_line.abs());
                         print_cstr(b"--\x00" as *const u8 as *const i8);
                     } else {
                         print_cstr(b") detected at line \x00" as *const u8 as *const i8);
@@ -21177,7 +21173,7 @@ pub unsafe extern "C" fn vpackage(
                 } else {
                     if pack_begin_line != 0i32 {
                         print_cstr(b") in alignment at lines \x00" as *const u8 as *const i8);
-                        print_int(abs(pack_begin_line));
+                        print_int(pack_begin_line.abs());
                         print_cstr(b"--\x00" as *const u8 as *const i8);
                     } else {
                         print_cstr(b") detected at line \x00" as *const u8 as *const i8);
@@ -22854,7 +22850,7 @@ pub unsafe extern "C" fn show_save_groups() {
                 i = (*save_stack.offset((save_ptr - 4i32) as isize)).b32.s1;
                 if i != 0i32 {
                     if i < 0x40000000i32 {
-                        if abs((*nest.offset(p as isize)).mode as i32) == 1i32 {
+                        if ((*nest.offset(p as isize)).mode as i32).abs() == 1i32 {
                             j = 21_u16
                         } else {
                             j = 22_u16
@@ -22864,7 +22860,7 @@ pub unsafe extern "C" fn show_save_groups() {
                         } else {
                             print_cmd_chr(j, 1i32);
                         }
-                        print_scaled(abs(i));
+                        print_scaled(i.abs());
                         print_cstr(b"pt\x00" as *const u8 as *const i8);
                     } else if i < 0x40010000i32 {
                         if i >= 0x40008000i32 {
@@ -24407,7 +24403,7 @@ pub unsafe extern "C" fn box_end(mut box_context: i32) {
         /*1111:*/
         if cur_box != -0xfffffffi32 {
             (*mem.offset((cur_box + 4i32) as isize)).b32.s1 = box_context;
-            if abs(cur_list.mode as i32) == 1i32 {
+            if (cur_list.mode as i32).abs() == 1i32 {
                 if pre_adjust_tail != -0xfffffffi32 {
                     if 4999999i32 - 14i32 != pre_adjust_tail {
                         (*mem.offset(cur_list.tail as isize)).b32.s1 =
@@ -24429,7 +24425,7 @@ pub unsafe extern "C" fn box_end(mut box_context: i32) {
                     build_page();
                 }
             } else {
-                if abs(cur_list.mode as i32) == 104i32 {
+                if (cur_list.mode as i32).abs() == 104i32 {
                     cur_list.aux.b32.s0 = 1000i32
                 } else {
                     p = new_noad();
@@ -24510,8 +24506,8 @@ pub unsafe extern "C" fn box_end(mut box_context: i32) {
                     break;
                 }
             }
-            if cur_cmd as i32 == 26i32 && abs(cur_list.mode as i32) != 1i32
-                || cur_cmd as i32 == 27i32 && abs(cur_list.mode as i32) == 1i32
+            if cur_cmd as i32 == 26i32 && (cur_list.mode as i32).abs() != 1i32
+                || cur_cmd as i32 == 27i32 && (cur_list.mode as i32).abs() == 1i32
             {
                 append_glue();
                 (*mem.offset(cur_list.tail as isize)).b16.s0 =
@@ -24647,7 +24643,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: i32) {
         }
         2 => {
             cur_box = -0xfffffffi32;
-            if abs(cur_list.mode as i32) == 207i32 {
+            if (cur_list.mode as i32).abs() == 207i32 {
                 you_cant();
                 help_ptr = 1_u8;
                 help_line[0] = b"Sorry; this \\lastbox will be void.\x00" as *const u8 as *const i8;
@@ -24760,7 +24756,7 @@ pub unsafe extern "C" fn begin_box(mut box_context: i32) {
             k = cur_chr - 4i32;
             (*save_stack.offset((save_ptr + 0i32) as isize)).b32.s1 = box_context;
             if k == 104i32 {
-                if box_context < 0x40000000i32 && abs(cur_list.mode as i32) == 1i32 {
+                if box_context < 0x40000000i32 && (cur_list.mode as i32).abs() == 1i32 {
                     scan_spec(3i32 as group_code, true);
                 } else {
                     scan_spec(2i32 as group_code, true);
@@ -25379,7 +25375,7 @@ pub unsafe extern "C" fn indent_in_hmode() {
         ))
         .b32
         .s1;
-        if abs(cur_list.mode as i32) == 104i32 {
+        if (cur_list.mode as i32).abs() == 104i32 {
             cur_list.aux.b32.s0 = 1000i32
         } else {
             q = new_noad();
@@ -25640,9 +25636,10 @@ pub unsafe extern "C" fn unpackage() {
         if p == -0xfffffffi32 {
             return;
         }
-        if abs(cur_list.mode as i32) == 207i32
-            || abs(cur_list.mode as i32) == 1i32 && (*mem.offset(p as isize)).b16.s1 as i32 != 1i32
-            || abs(cur_list.mode as i32) == 104i32
+        if (cur_list.mode as i32).abs() == 207i32
+            || (cur_list.mode as i32).abs() == 1i32
+                && (*mem.offset(p as isize)).b16.s1 as i32 != 1i32
+            || (cur_list.mode as i32).abs() == 104i32
                 && (*mem.offset(p as isize)).b16.s1 as i32 != 0i32
         {
             if file_line_error_style_p != 0 {
@@ -25883,7 +25880,7 @@ pub unsafe extern "C" fn build_discretionary() {
         0 => (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s0 = p,
         1 => (*mem.offset((cur_list.tail + 1i32) as isize)).b32.s1 = p,
         2 => {
-            if n > 0i32 && abs(cur_list.mode as i32) == 207i32 {
+            if n > 0i32 && (cur_list.mode as i32).abs() == 207i32 {
                 if file_line_error_style_p != 0 {
                     print_file_line();
                 } else {
@@ -26091,7 +26088,7 @@ pub unsafe extern "C" fn make_accent() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn align_error() {
-    if abs(align_state) > 2i32 {
+    if align_state.abs() > 2i32 {
         /*1163: */
         if file_line_error_style_p != 0 {
             print_file_line();
@@ -27395,7 +27392,7 @@ pub unsafe extern "C" fn do_register_command(mut a: small_number) {
 #[no_mangle]
 pub unsafe extern "C" fn alter_aux() {
     let mut c: i32 = 0;
-    if cur_chr != abs(cur_list.mode as i32) {
+    if cur_chr != (cur_list.mode as i32).abs() {
         report_illegal_case();
     } else {
         c = cur_chr;
@@ -27427,7 +27424,7 @@ pub unsafe extern "C" fn alter_prev_graf() {
     let mut p: i32 = 0;
     *nest.offset(nest_ptr as isize) = cur_list;
     p = nest_ptr;
-    while abs((*nest.offset(p as isize)).mode as i32) != 1i32 {
+    while ((*nest.offset(p as isize)).mode as i32).abs() != 1i32 {
         p -= 1
     }
     scan_optional_equals();
@@ -28097,7 +28094,7 @@ pub unsafe extern "C" fn do_extension() {
             }
         }
         5 => {
-            if abs(cur_list.mode as i32) != 104i32 {
+            if (cur_list.mode as i32).abs() != 104i32 {
                 report_illegal_case();
             } else {
                 new_whatsit(4i32 as small_number, 2i32 as small_number);
@@ -28175,24 +28172,24 @@ pub unsafe extern "C" fn do_extension() {
             }
         }
         41 => {
-            if abs(cur_list.mode as i32) == 207i32 {
+            if (cur_list.mode as i32).abs() == 207i32 {
                 report_illegal_case();
             } else {
                 load_picture(false);
             }
         }
         42 => {
-            if abs(cur_list.mode as i32) == 207i32 {
+            if (cur_list.mode as i32).abs() == 207i32 {
                 report_illegal_case();
             } else {
                 load_picture(1i32 != 0);
             }
         }
         43 => {
-            if abs(cur_list.mode as i32) == 1i32 {
+            if (cur_list.mode as i32).abs() == 1i32 {
                 back_input();
                 new_graf(1i32 != 0);
-            } else if abs(cur_list.mode as i32) == 207i32 {
+            } else if (cur_list.mode as i32).abs() == 207i32 {
                 report_illegal_case();
             } else if *font_area.offset(
                 (*eqtb.offset(
@@ -29126,7 +29123,7 @@ pub unsafe extern "C" fn main_control() {
             {
                 show_cur_cmd_chr(); /*:1490 */
             }
-            match abs(cur_list.mode as i32) + cur_cmd as i32 {
+            match (cur_list.mode as i32).abs() + cur_cmd as i32 {
                 115 | 116 | 172 => {}
                 120 => {
                     scan_usv_num();
@@ -29144,7 +29141,7 @@ pub unsafe extern "C" fn main_control() {
                     continue;
                 }
                 _ => {
-                    if abs(cur_list.mode as i32) == 104i32 {
+                    if (cur_list.mode as i32).abs() == 104i32 {
                         if (*eqtb.offset(
                             (1i32
                                 + (0x10ffffi32 + 1i32)
@@ -29201,7 +29198,7 @@ pub unsafe extern "C" fn main_control() {
                             }
                         }
                     }
-                    match abs(cur_list.mode as i32) + cur_cmd as i32 {
+                    match (cur_list.mode as i32).abs() + cur_cmd as i32 {
                         114 => {
                             if cur_list.aux.b32.s0 == 1000i32 {
                                 current_block = 1496671425652391013;
@@ -29264,9 +29261,9 @@ pub unsafe extern "C" fn main_control() {
                         37 | 139 | 242 => {
                             (*mem.offset(cur_list.tail as isize)).b32.s1 = scan_rule_spec();
                             cur_list.tail = (*mem.offset(cur_list.tail as isize)).b32.s1;
-                            if abs(cur_list.mode as i32) == 1i32 {
+                            if (cur_list.mode as i32).abs() == 1i32 {
                                 cur_list.aux.b32.s1 = -65536000i32
-                            } else if abs(cur_list.mode as i32) == 104i32 {
+                            } else if (cur_list.mode as i32).abs() == 104i32 {
                                 cur_list.aux.b32.s0 = 1000i32
                             }
                             continue 'c_125208;

@@ -11,8 +11,6 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
@@ -611,13 +609,13 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
             cp.x = dvi_dev_xpos();
             cp.y = 0.0f64;
             pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
-            value = pdf_new_number(floor(cp.x / 0.01f64 + 0.5f64) * 0.01f64)
+            value = pdf_new_number((cp.x / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         1 => {
             cp.x = 0.0f64;
             cp.y = dvi_dev_ypos();
             pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
-            value = pdf_new_number(floor(cp.y / 0.01f64 + 0.5f64) * 0.01f64)
+            value = pdf_new_number((cp.y / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         2 => value = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8),
         3 => value = pdf_doc_get_reference(b"@PREVPAGE\x00" as *const u8 as *const i8),
@@ -681,13 +679,13 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
             cp.x = dvi_dev_xpos();
             cp.y = 0.0f64;
             pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
-            value = pdf_new_number(floor(cp.x / 0.01f64 + 0.5f64) * 0.01f64)
+            value = pdf_new_number((cp.x / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         1 => {
             cp.x = 0.0f64;
             cp.y = dvi_dev_ypos();
             pdf_dev_transform(&mut cp, 0 as *const pdf_tmatrix);
-            value = pdf_new_number(floor(cp.y / 0.01f64 + 0.5f64) * 0.01f64)
+            value = pdf_new_number((cp.y / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         2 => value = pdf_doc_get_dictionary(b"@THISPAGE\x00" as *const u8 as *const i8),
         6 => value = pdf_doc_get_dictionary(b"Pages\x00" as *const u8 as *const i8),

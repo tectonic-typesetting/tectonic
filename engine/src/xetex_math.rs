@@ -10,8 +10,6 @@ extern crate libc;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
     #[no_mangle]
-    fn abs(_: i32) -> i32;
-    #[no_mangle]
     static mut eqtb: *mut memory_word;
     #[no_mangle]
     static mut file_line_error_style_p: i32;
@@ -995,7 +993,7 @@ pub unsafe extern "C" fn init_math() {
                         + 3i32) as isize,
                 ))
                 .b32
-                .s1 - abs((*eqtb.offset(
+                .s1 - (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
                         + (0x10ffffi32 + 1i32)
@@ -1026,7 +1024,8 @@ pub unsafe extern "C" fn init_math() {
                         + 17i32) as isize,
                 ))
                 .b32
-                .s1);
+                .s1
+                .abs();
                 if (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -5048,10 +5047,10 @@ unsafe extern "C" fn make_radical(mut q: i32) {
             clr = get_ot_math_constant(f, 49i32)
         }
     } else if (cur_style as i32) < 2i32 {
-        clr = rule_thickness + abs(math_x_height(cur_size)) / 4i32
+        clr = rule_thickness + math_x_height(cur_size).abs() / 4i32
     } else {
         clr = rule_thickness;
-        clr = clr + abs(clr) / 4i32
+        clr = clr + clr.abs() / 4i32
     }
     y = var_delimiter(
         q + 4i32,
@@ -5961,7 +5960,7 @@ unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
             clr = (*mem.offset((x + 3i32) as isize)).b32.s1 - get_ot_math_constant(cur_f, 9i32)
         } else {
             clr = (*mem.offset((x + 3i32) as isize)).b32.s1
-                - abs(math_x_height(cur_size) * 4i32) / 5i32
+                - (math_x_height(cur_size) * 4i32).abs() / 5i32
         }
         if shift_down < clr {
             shift_down = clr
@@ -6070,7 +6069,7 @@ unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
         {
             clr = (*mem.offset((x + 2i32) as isize)).b32.s1 + get_ot_math_constant(cur_f, 13i32)
         } else {
-            clr = (*mem.offset((x + 2i32) as isize)).b32.s1 + abs(math_x_height(cur_size)) / 4i32
+            clr = (*mem.offset((x + 2i32) as isize)).b32.s1 + math_x_height(cur_size).abs() / 4i32
         }
         if shift_up < clr {
             shift_up = clr
@@ -6194,7 +6193,7 @@ unsafe extern "C" fn make_scripts(mut q: i32, mut delta: scaled_t) {
                     clr = get_ot_math_constant(cur_f, 16i32)
                         - (shift_up - (*mem.offset((x + 2i32) as isize)).b32.s1)
                 } else {
-                    clr = abs(math_x_height(cur_size) * 4i32) / 5i32
+                    clr = (math_x_height(cur_size) * 4i32).abs() / 5i32
                         - (shift_up - (*mem.offset((x + 2i32) as isize)).b32.s1)
                 }
                 if clr > 0i32 {

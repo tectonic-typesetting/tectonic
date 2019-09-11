@@ -9,12 +9,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn sqrt(_: f64) -> f64;
-    #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -83,7 +77,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
         let mut ivalue: i32 = 0;
         value = arg_stack[i as usize];
         /* Nearest integer value */
-        ivalue = floor(value + 0.5f64) as i32;
+        ivalue = (value + 0.5f64).floor() as i32;
         if value >= 0x8000i64 as f64 || value <= (-0x8000 - 1 as i64) as f64 {
             /*
              * This number cannot be represented as a single operand.
@@ -94,7 +88,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
             );
         } else {
-            if fabs(value - ivalue as f64) > 3.0e-5f64 {
+            if (value - ivalue as f64).abs() > 3.0e-5f64 {
                 /* 16.16-bit signed fixed value  */
                 if limit < (*dest).offset(5) {
                     status = -3i32;
@@ -104,7 +98,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 *dest = (*dest).offset(1);
                 *fresh0 = 255i32 as card8;
                 /* Everything else are integers. */
-                ivalue = floor(value) as i32; /* mantissa */
+                ivalue = value.floor() as i32; /* mantissa */
                 let fresh1 = *dest; /* fraction */
                 *dest = (*dest).offset(1); /* Shouldn't come here */
                 *fresh1 = (ivalue >> 8i32 & 0xffi32) as card8;
@@ -438,7 +432,7 @@ unsafe extern "C" fn do_operator2(
                 status = -2i32;
                 return;
             }
-            arg_stack[(stack_top - 1i32) as usize] = fabs(arg_stack[(stack_top - 1i32) as usize])
+            arg_stack[(stack_top - 1i32) as usize] = (arg_stack[(stack_top - 1i32) as usize]).abs()
         }
         10 => {
             if stack_top < 2i32 {
@@ -541,7 +535,7 @@ unsafe extern "C" fn do_operator2(
                 status = -2i32;
                 return;
             }
-            arg_stack[(stack_top - 1i32) as usize] = sqrt(arg_stack[(stack_top - 1i32) as usize])
+            arg_stack[(stack_top - 1i32) as usize] = (arg_stack[(stack_top - 1i32) as usize]).sqrt()
         }
         27 => {
             if stack_top < 1i32 {

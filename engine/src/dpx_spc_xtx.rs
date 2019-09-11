@@ -8,12 +8,6 @@
 extern crate libc;
 extern "C" {
     #[no_mangle]
-    fn cos(_: f64) -> f64;
-    #[no_mangle]
-    fn sin(_: f64) -> f64;
-    #[no_mangle]
-    fn fabs(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
@@ -361,7 +355,7 @@ unsafe extern "C" fn spc_handler_xtx_bscale(mut spe: *mut spc_env, mut args: *mu
     if spc_util_read_numbers(&mut *values.as_mut_ptr().offset(0), 2i32, args) < 2i32 {
         return -1i32;
     }
-    if fabs(values[0]) < 1.0e-7f64 || fabs(values[1]) < 1.0e-7f64 {
+    if values[0].abs() < 1.0e-7f64 || values[1].abs() < 1.0e-7f64 {
         return -1i32;
     }
     (*scaleFactors.offset(scaleFactorCount as isize)).x = 1i32 as f64 / values[0];
@@ -400,16 +394,17 @@ unsafe extern "C" fn spc_handler_xtx_rotate(mut spe: *mut spc_env, mut args: *mu
         return -1i32;
     }
     (*args).curptr = (*args).endptr;
-    return spc_handler_xtx_do_transform(
+    let (s, c) = (value * core::f64::consts::PI / 180.).sin_cos();
+    spc_handler_xtx_do_transform(
         (*spe).x_user,
         (*spe).y_user,
-        cos(value * 3.14159265358979323846f64 / 180i32 as f64),
-        sin(value * 3.14159265358979323846f64 / 180i32 as f64),
-        -sin(value * 3.14159265358979323846f64 / 180i32 as f64),
-        cos(value * 3.14159265358979323846f64 / 180i32 as f64),
+        c,
+        s,
+        -s,
+        c,
         0i32 as f64,
         0i32 as f64,
-    );
+    )
 }
 #[no_mangle]
 pub unsafe extern "C" fn spc_handler_xtx_gsave(

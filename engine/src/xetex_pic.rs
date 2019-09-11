@@ -11,10 +11,6 @@ extern "C" {
     pub type pdf_file;
     pub type pdf_obj;
     #[no_mangle]
-    fn cos(_: f64) -> f64;
-    #[no_mangle]
-    fn sin(_: f64) -> f64;
-    #[no_mangle]
     fn free(__ptr: *mut libc::c_void);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -644,12 +640,13 @@ unsafe extern "C" fn make_translation(mut t: *mut transform_t, mut dx: f64, mut 
     (*t).y = dy;
 }
 unsafe extern "C" fn make_rotation(mut t: *mut transform_t, mut a: f64) {
-    (*t).a = cos(a);
-    (*t).b = sin(a);
-    (*t).c = -sin(a);
-    (*t).d = cos(a);
-    (*t).x = 0.0f64;
-    (*t).y = 0.0f64;
+    let (s, c) = a.sin_cos();
+    (*t).a = c;
+    (*t).b = s;
+    (*t).c = -s;
+    (*t).d = c;
+    (*t).x = 0.;
+    (*t).y = 0.;
 }
 unsafe extern "C" fn transform_concat(mut t1: *mut transform_t, mut t2: *const transform_t) {
     let mut r: transform_t = transform_t {

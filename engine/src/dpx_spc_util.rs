@@ -13,10 +13,6 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn cos(_: f64) -> f64;
-    #[no_mangle]
-    fn sin(_: f64) -> f64;
-    #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
     fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
@@ -578,10 +574,7 @@ unsafe extern "C" fn make_transmatrix(
     mut yscale: f64,
     mut rotate: f64,
 ) {
-    let mut c: f64 = 0.;
-    let mut s: f64 = 0.;
-    c = cos(rotate);
-    s = sin(rotate);
+    let (s, c) = rotate.sin_cos();
     (*M).a = xscale * c;
     (*M).b = xscale * s;
     (*M).c = -yscale * s;

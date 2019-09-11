@@ -79,8 +79,6 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn floor(_: f64) -> f64;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -885,10 +883,10 @@ unsafe extern "C" fn read_APP1_Exif(
                                     (*info).xdpi = exifxdpi;
                                     (*info).ydpi = exifydpi
                                 } else {
-                                    let mut xxx1: f64 = floor(exifxdpi + 0.5f64);
-                                    let mut xxx2: f64 = floor((*info).xdpi + 0.5f64);
-                                    let mut yyy1: f64 = floor(exifydpi + 0.5f64);
-                                    let mut yyy2: f64 = floor((*info).ydpi + 0.5f64);
+                                    let mut xxx1: f64 = (exifxdpi + 0.5f64).floor();
+                                    let mut xxx2: f64 = ((*info).xdpi + 0.5f64).floor();
+                                    let mut yyy1: f64 = (exifydpi + 0.5f64).floor();
+                                    let mut yyy2: f64 = ((*info).ydpi + 0.5f64).floor();
                                     if xxx1 != xxx2 || yyy1 != yyy2 {
                                         dpx_warning(b"JPEG: Inconsistent resolution may have been specified in Exif and JFIF: %gx%g - %gx%g\x00"
                                                         as *const u8 as
