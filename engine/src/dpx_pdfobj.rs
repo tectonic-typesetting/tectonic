@@ -12,20 +12,11 @@ extern "C" {
     #[no_mangle]
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
-    fn floor(_: libc::c_double) -> libc::c_double;
-    #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
     fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn abs(_: libc::c_int) -> libc::c_int;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: libc::c_ulong)
-        -> *mut libc::c_void;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
     #[no_mangle]
@@ -1070,7 +1061,7 @@ pub unsafe extern "C" fn pdf_new_string(
         (*data).string = new((length.wrapping_add(1i32 as u64) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
             as *mut u8;
-        memcpy((*data).string as *mut libc::c_void, str, length);
+        libc::memcpy((*data).string as *mut libc::c_void, str, length as usize);
         /* Shouldn't assume NULL terminated. */
         *(*data).string.offset(length as isize) = '\u{0}' as i32 as u8
     } else {
@@ -1288,10 +1279,10 @@ pub unsafe extern "C" fn pdf_set_string(
         (*data).string = new((length.wrapping_add(1i32 as u64) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
             as *mut u8;
-        memcpy(
+        libc::memcpy(
             (*data).string as *mut libc::c_void,
             str as *const libc::c_void,
-            length,
+            length as usize,
         );
         *(*data).string.offset(length as isize) = '\u{0}' as i32 as u8
     } else {
@@ -1314,10 +1305,10 @@ pub unsafe extern "C" fn pdf_new_name(mut name: *const i8) -> *mut pdf_obj {
         (*data).name = new((length.wrapping_add(1_u32) as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
-        memcpy(
+        libc::memcpy(
             (*data).name as *mut libc::c_void,
             name as *const libc::c_void,
-            length as u64,
+            length as usize,
         );
         *(*data).name.offset(length as isize) = '\u{0}' as i32 as i8
     } else {
@@ -1559,11 +1550,11 @@ unsafe extern "C" fn pdf_unshift_array(mut array: *mut pdf_obj, mut object: *mut
                 as u32,
         ) as *mut *mut pdf_obj
     }
-    memmove(
+    libc::memmove(
         &mut *(*data).values.offset(1) as *mut *mut pdf_obj as *mut libc::c_void,
         (*data).values as *const libc::c_void,
-        ((*data).size as libc::c_ulong)
-            .wrapping_mul(::std::mem::size_of::<*mut pdf_obj>() as libc::c_ulong),
+        ((*data).size as usize)
+            .wrapping_mul(::std::mem::size_of::<*mut pdf_obj>() as usize),
     );
     let ref mut fresh14 = *(*data).values.offset(0);
     *fresh14 = object;
@@ -1959,33 +1950,33 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
                 as u32 as u32;
             /* Type 1 -- Sub */
             sum[1] = (sum[1] as libc::c_uint)
-                .wrapping_add(abs(*p.offset(i as isize) as libc::c_int - left) as libc::c_uint)
+                .wrapping_add((*p.offset(i as isize) as libc::c_int - left).abs() as libc::c_uint)
                 as u32 as u32;
             /* Type 2 -- Up */
             sum[2] = (sum[2] as libc::c_uint)
-                .wrapping_add(abs(*p.offset(i as isize) as libc::c_int - up) as libc::c_uint)
+                .wrapping_add((*p.offset(i as isize) as libc::c_int - up).abs() as libc::c_uint)
                 as u32 as u32;
             /* Type 3 -- Average */
-            let mut tmp: libc::c_int = floor(((up + left) / 2i32) as libc::c_double) as libc::c_int;
+            let mut tmp: libc::c_int = (((up + left) / 2i32) as libc::c_double).floor() as libc::c_int;
             sum[3] = (sum[3] as libc::c_uint)
-                .wrapping_add(abs(*p.offset(i as isize) as libc::c_int - tmp) as libc::c_uint)
+                .wrapping_add((*p.offset(i as isize) as libc::c_int - tmp).abs() as libc::c_uint)
                 as u32 as u32;
             /* Type 4 -- Peath */
             let mut q: libc::c_int = left + up - uplft;
-            let mut qa: libc::c_int = abs(q - left);
-            let mut qb: libc::c_int = abs(q - up);
-            let mut qc: libc::c_int = abs(q - uplft);
+            let mut qa: libc::c_int = (q - left).abs();
+            let mut qb: libc::c_int = (q - up).abs();
+            let mut qc: libc::c_int = (q - uplft).abs();
             if qa <= qb && qa <= qc {
                 sum[4] = (sum[4] as libc::c_uint)
-                    .wrapping_add(abs(*p.offset(i as isize) as libc::c_int - left) as libc::c_uint)
+                    .wrapping_add((*p.offset(i as isize) as libc::c_int - left).abs() as libc::c_uint)
                     as u32 as u32
             } else if qb <= qc {
                 sum[4] = (sum[4] as libc::c_uint)
-                    .wrapping_add(abs(*p.offset(i as isize) as libc::c_int - up) as libc::c_uint)
+                    .wrapping_add((*p.offset(i as isize) as libc::c_int - up).abs() as libc::c_uint)
                     as u32 as u32
             } else {
                 sum[4] = (sum[4] as libc::c_uint)
-                    .wrapping_add(abs(*p.offset(i as isize) as libc::c_int - uplft) as libc::c_uint)
+                    .wrapping_add((*p.offset(i as isize) as libc::c_int - uplft).abs() as libc::c_uint)
                     as u32 as u32
             }
             i += 1
@@ -2005,10 +1996,10 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
         *pp.offset(0) = type_0 as libc::c_uchar;
         match type_0 {
             0 => {
-                memcpy(
+                libc::memcpy(
                     pp.offset(1) as *mut libc::c_void,
                     p as *const libc::c_void,
-                    rowbytes as libc::c_ulong,
+                    rowbytes as usize,
                 );
             }
             1 => {
@@ -2051,7 +2042,7 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
                         0i32
                     };
                     let mut tmp_0: libc::c_int =
-                        floor(((up_1 + left_1) / 2i32) as libc::c_double) as libc::c_int;
+                        (((up_1 + left_1) / 2i32) as libc::c_double).floor() as libc::c_int;
                     *pp.offset((i + 1i32) as isize) =
                         (*p.offset(i as isize) as libc::c_int - tmp_0) as libc::c_uchar;
                     i += 1
@@ -2084,9 +2075,9 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
                         0i32
                     };
                     let mut q_0: libc::c_int = left_2 + up_2 - uplft_0;
-                    let mut qa_0: libc::c_int = abs(q_0 - left_2);
-                    let mut qb_0: libc::c_int = abs(q_0 - up_2);
-                    let mut qc_0: libc::c_int = abs(q_0 - uplft_0);
+                    let mut qa_0: libc::c_int = (q_0 - left_2).abs();
+                    let mut qb_0: libc::c_int = (q_0 - up_2).abs();
+                    let mut qc_0: libc::c_int = (q_0 - uplft_0).abs();
                     if qa_0 <= qb_0 && qa_0 <= qc_0 {
                         *pp.offset((i + 1i32) as isize) =
                             (*p.offset(i as isize) as libc::c_int - left_2) as libc::c_uchar
@@ -2225,10 +2216,10 @@ unsafe extern "C" fn filter_TIFF2_apply_filter(
     dst = new(((rowbytes * rows) as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong) as u32)
         as *mut libc::c_uchar;
-    memcpy(
+    libc::memcpy(
         dst as *mut libc::c_void,
         raster as *const libc::c_void,
-        (rowbytes * rows) as libc::c_ulong,
+        (rowbytes * rows) as usize,
     );
     *length = rowbytes * rows;
     match bpc as libc::c_int {
@@ -2349,10 +2340,10 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
     filtered = new(
         ((*stream).stream_length as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32,
     ) as *mut u8;
-    memcpy(
+    libc::memcpy(
         filtered as *mut libc::c_void,
         (*stream).stream as *const libc::c_void,
-        (*stream).stream_length as u64,
+        (*stream).stream_length as usize,
     );
     filtered_length = (*stream).stream_length;
     /* PDF/A requires Metadata to be not filtered. */
@@ -2505,7 +2496,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                         strlen(b"/FlateDecode \x00" as *const u8 as *const libc::c_char)
                     } else {
                         strlen(b"/Filter/FlateDecode\n\x00" as *const u8 as *const libc::c_char)
-                    }),
+                    }) as libc::c_ulong,
             ) as libc::c_int as libc::c_int;
             filtered = buffer;
             filtered_length = buffer_length as libc::c_uint
@@ -2686,10 +2677,10 @@ pub unsafe extern "C" fn pdf_add_stream(
             ((*data).max_length as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32,
         ) as *mut u8
     }
-    memcpy(
+    libc::memcpy(
         (*data).stream.offset((*data).stream_length as isize) as *mut libc::c_void,
         stream_data,
-        length as u64,
+        length as usize,
     );
     (*data).stream_length = (*data).stream_length.wrapping_add(length as u32);
 }
@@ -3043,10 +3034,10 @@ unsafe extern "C" fn filter_decoded(
                 match type_0 {
                     0 => {
                         /* Do nothing just skip first byte */
-                        memcpy(
+                        libc::memcpy(
                             buf as *mut libc::c_void,
                             p as *const libc::c_void,
-                            length as libc::c_ulong,
+                            length as usize,
                         ); /* left */
                     }
                     1 => {
@@ -3083,7 +3074,7 @@ unsafe extern "C" fn filter_decoded(
                                 0i32
                             };
                             let mut tmp: libc::c_int =
-                                floor(((up + left) / 2i32) as libc::c_double) as libc::c_int;
+                                (((up + left) / 2i32) as libc::c_double).floor() as libc::c_int;
                             *buf.offset(i as isize) = (*p.offset(i as isize) as libc::c_int + tmp
                                 & 0xffi32)
                                 as libc::c_uchar;
@@ -3138,10 +3129,10 @@ unsafe extern "C" fn filter_decoded(
                 }
                 if error == 0 {
                     pdf_add_stream(dst, buf as *const libc::c_void, length);
-                    memcpy(
+                    libc::memcpy(
                         prev as *mut libc::c_void,
                         buf as *const libc::c_void,
-                        length as libc::c_ulong,
+                        length as usize,
                     );
                     p = p.offset(length as isize)
                 }
@@ -3930,10 +3921,10 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: u32) -> *mut pd
                             data = new(((first + 1i32) as u32 as u64)
                                 .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                                 as u32) as *mut i8;
-                            memcpy(
+                            libc::memcpy(
                                 data as *mut libc::c_void,
                                 pdf_stream_dataptr(objstm),
-                                first as u64,
+                                first as usize,
                             );
                             *data.offset(first as isize) = 0_i8;
                             p = data;

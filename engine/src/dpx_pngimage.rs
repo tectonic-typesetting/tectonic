@@ -4,11 +4,6 @@ use std::convert::TryInto;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
-    pub type pdf_ximage_;
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -128,7 +123,7 @@ pub struct ximage_info {
     pub xdensity: f64,
     pub ydensity: f64,
 }
-pub type pdf_ximage = pdf_ximage_;
+use crate::dpx_pdfximage::pdf_ximage;
 pub type png_byte = u8;
 pub type png_infopp = *mut *mut png_info;
 pub type png_const_charp = *const libc::c_char;
@@ -172,7 +167,7 @@ unsafe extern "C" fn _png_read(mut png_ptr: *mut png_struct, mut outbytes: *mut 
     let mut handle: rust_input_handle_t = png_get_io_ptr(png);
     let mut r: ssize_t = 0;
     r = ttstub_input_read(handle, outbytes as *mut libc::c_char, n.try_into().unwrap());
-    if r < 0i32 as libc::c_long || r as size_t != n.try_into().unwrap() {
+    if r < 0i32 as ssize_t || r as size_t != n.try_into().unwrap() {
         _tt_abort(b"error reading PNG\x00" as *const u8 as *const libc::c_char);
     };
 }
@@ -452,10 +447,10 @@ pub unsafe extern "C" fn png_include_image(
         num_text = png_get_text(png, png_info, &mut text_ptr, &mut 0);
         i = 0i32;
         while i < num_text {
-            if memcmp(
+            if libc::memcmp(
                 (*text_ptr.offset(i as isize)).key as *const libc::c_void,
                 b"XML:com.adobe.xmp\x00" as *const u8 as *const i8 as *const libc::c_void,
-                17i32 as u64,
+                17usize,
             ) == 0
             {
                 /* XMP found */
@@ -1424,12 +1419,12 @@ unsafe extern "C" fn strip_soft_mask(
             if bpc as i32 == 8i32 {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
-                    memmove(
+                    libc::memmove(
                         image_data_ptr.offset((3_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
                         image_data_ptr.offset((4_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
-                        3i32 as u64,
+                        3usize,
                     );
                     *smask_data_ptr.offset(i as isize) = *image_data_ptr
                         .offset((4_u32).wrapping_mul(i).wrapping_add(3_u32) as isize);
@@ -1441,12 +1436,12 @@ unsafe extern "C" fn strip_soft_mask(
             } else {
                 i = 0i32 as png_uint_32;
                 while i < width.wrapping_mul(height) {
-                    memmove(
+                    libc::memmove(
                         image_data_ptr.offset((6_u32).wrapping_mul(i) as isize)
                             as *mut libc::c_void,
                         image_data_ptr.offset((8_u32).wrapping_mul(i) as isize)
                             as *const libc::c_void,
-                        6i32 as u64,
+                        6usize,
                     );
                     *smask_data_ptr.offset((2_u32).wrapping_mul(i) as isize) = *image_data_ptr
                         .offset((8_u32).wrapping_mul(i).wrapping_add(6_u32) as isize);

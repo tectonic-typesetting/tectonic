@@ -10,7 +10,6 @@ extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
-    pub type pdf_ximage_;
     #[no_mangle]
     fn pdf_ximage_set_image(
         ximage: *mut pdf_ximage,
@@ -121,7 +120,7 @@ pub struct ximage_info {
     pub xdensity: f64,
     pub ydensity: f64,
 }
-pub type pdf_ximage = pdf_ximage_;
+use crate::dpx_pdfximage::pdf_ximage;
 pub const JM_SOI: JPEG_marker = 216;
 #[derive(Copy, Clone)]
 #[repr(C)]

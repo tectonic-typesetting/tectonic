@@ -204,7 +204,7 @@ pub struct load_options {
     pub bbox_type: i32,
     pub dict: *mut pdf_obj,
 }
-pub type pdf_ximage = pdf_ximage_;
+use crate::dpx_pdfximage::pdf_ximage;
 pub const OP_CURVETO2: C2RustUnnamed_0 = 15;
 pub const OP_CURVETO1: C2RustUnnamed_0 = 14;
 pub const OP_GRESTORE: C2RustUnnamed_0 = 13;
