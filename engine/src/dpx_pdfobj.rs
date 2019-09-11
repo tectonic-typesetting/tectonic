@@ -160,9 +160,9 @@ extern "C" {
     fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
 }
 
-use libz_sys as libz;
-use libz::{compress, compress2, inflateInit_, inflate, inflateEnd};
+use libz::{compress, compress2, inflate, inflateEnd, inflateInit_};
 use libz::{z_stream, z_streamp};
+use libz_sys as libz;
 
 pub type __ssize_t = i64;
 pub type C2RustUnnamed = u32;
@@ -1913,8 +1913,8 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
     assert!(!raster.is_null() && !length.is_null());
     /* Result */
     dst = new((((rowbytes + 1i32) * rows) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong) as u32)
+        as *mut libc::c_uchar;
     *length = (rowbytes + 1i32) * rows;
     j = 0i32;
     while j < rows {
@@ -2128,8 +2128,7 @@ unsafe extern "C" fn apply_filter_TIFF2_1_2_4(
     mut bpc: i8,
     mut num_comp: i8,
 ) {
-    let mut rowbytes: i32 =
-        (bpc as libc::c_int * num_comp as libc::c_int * width + 7i32) / 8i32;
+    let mut rowbytes: i32 = (bpc as libc::c_int * num_comp as libc::c_int * width + 7i32) / 8i32;
     let mut mask: u8 = ((1i32 << bpc as libc::c_int) - 1i32) as u8;
     let mut prev: *mut u16 = 0 as *mut u16;
     let mut i: i32 = 0;
@@ -2137,8 +2136,7 @@ unsafe extern "C" fn apply_filter_TIFF2_1_2_4(
     assert!(!raster.is_null());
     assert!(bpc as libc::c_int > 0i32 && bpc as libc::c_int <= 8i32);
     prev = new((num_comp as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<u16>() as libc::c_ulong)
-        as u32) as *mut u16;
+        .wrapping_mul(::std::mem::size_of::<u16>() as libc::c_ulong) as u32) as *mut u16;
     /* Generic routine for 1 to 16 bit.
      * It supports, e.g., 7 bpc images too.
      * Actually, it is not necessary to have 16 bit inbuf and outbuf
@@ -2156,8 +2154,7 @@ unsafe extern "C" fn apply_filter_TIFF2_1_2_4(
         memset(
             prev as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<u16>() as libc::c_ulong)
-                .wrapping_mul(num_comp as libc::c_ulong),
+            (::std::mem::size_of::<u16>() as libc::c_ulong).wrapping_mul(num_comp as libc::c_ulong),
         );
         outbuf = 0i32 as u16;
         inbuf = outbuf;
@@ -2188,8 +2185,8 @@ unsafe extern "C" fn apply_filter_TIFF2_1_2_4(
                     sub = (sub as libc::c_int + (1i32 << bpc as libc::c_int)) as i8
                 }
                 /* Append newly filtered component value */
-                outbuf = ((outbuf as libc::c_int) << bpc as libc::c_int | sub as libc::c_int)
-                    as u16;
+                outbuf =
+                    ((outbuf as libc::c_int) << bpc as libc::c_int | sub as libc::c_int) as u16;
                 outbits += bpc as libc::c_int;
                 /* flush */
                 if outbits >= 8i32 {
@@ -2221,14 +2218,13 @@ unsafe extern "C" fn filter_TIFF2_apply_filter(
 ) -> *mut libc::c_uchar {
     let mut dst: *mut libc::c_uchar = 0 as *mut libc::c_uchar;
     let mut prev: *mut u16 = 0 as *mut u16;
-    let mut rowbytes: i32 =
-        (bpc as libc::c_int * colors as libc::c_int * columns + 7i32) / 8i32;
+    let mut rowbytes: i32 = (bpc as libc::c_int * colors as libc::c_int * columns + 7i32) / 8i32;
     let mut i: i32 = 0;
     let mut j: i32 = 0;
     assert!(!raster.is_null() && !length.is_null());
     dst = new(((rowbytes * rows) as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong) as u32)
+        as *mut libc::c_uchar;
     memcpy(
         dst as *mut libc::c_void,
         raster as *const libc::c_void,
@@ -2475,7 +2471,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                     filter_name,
                 );
             }
-            
+
             #[cfg(not(feature = "legacy-libz"))]
             {
                 if libz::compress2(
@@ -2483,7 +2479,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                     &mut buffer_length,
                     filtered,
                     filtered_length as libz::uLong,
-                    compression_level as libc::c_int
+                    compression_level as libc::c_int,
                 ) != 0
                 {
                     _tt_abort(b"Zlib error\x00" as *const u8 as *const libc::c_char);
@@ -2505,13 +2501,11 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
             compression_saved = (compression_saved as libc::c_ulong).wrapping_add(
                 (filtered_length as libc::c_ulong)
                     .wrapping_sub(buffer_length)
-                    .wrapping_sub(
-                        if !filters.is_null() {
-                            strlen(b"/FlateDecode \x00" as *const u8 as *const libc::c_char)
-                        } else {
-                            strlen(b"/Filter/FlateDecode\n\x00" as *const u8 as *const libc::c_char)
-                        },
-                    ),
+                    .wrapping_sub(if !filters.is_null() {
+                        strlen(b"/FlateDecode \x00" as *const u8 as *const libc::c_char)
+                    } else {
+                        strlen(b"/Filter/FlateDecode\n\x00" as *const u8 as *const libc::c_char)
+                    }),
             ) as libc::c_int as libc::c_int;
             filtered = buffer;
             filtered_length = buffer_length as libc::c_uint
@@ -2839,8 +2833,8 @@ unsafe extern "C" fn filter_row_TIFF2(
     let mut inbits: libc::c_int = 0;
     let mut outbits: libc::c_int = 0;
     col = new(((*parms).colors as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong) as u32)
+        as *mut libc::c_uchar;
     memset(
         col as *mut libc::c_void,
         0i32,
@@ -2914,8 +2908,8 @@ unsafe extern "C" fn filter_decoded(
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
         as u32) as *mut libc::c_uchar;
     buf = new((length as u32 as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong)
-        as u32) as *mut libc::c_uchar;
+        .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong) as u32)
+        as *mut libc::c_uchar;
     memset(prev as *mut libc::c_void, 0i32, length as libc::c_ulong);
     let mut current_block_77: u64;
     match (*parms).predictor {
@@ -3237,7 +3231,7 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
     stream_data = pdf_stream_dataptr(src) as *const i8;
     stream_length = pdf_stream_length(src);
     stream_dict = pdf_stream_dict(src);
-    filter = pdf_lookup_dict(stream_dict, b"Filter\x00" as *const u8 as *const i8);    
+    filter = pdf_lookup_dict(stream_dict, b"Filter\x00" as *const u8 as *const i8);
     if filter.is_null() {
         pdf_add_stream(dst, stream_data as *const libc::c_void, stream_length);
     } else {
@@ -3274,7 +3268,8 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                 }
                 if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 6i32) {
                     dpx_warning(
-                        b"PDF dict expected for DecodeParms...\x00" as *const u8 as *const libc::c_char,
+                        b"PDF dict expected for DecodeParms...\x00" as *const u8
+                            as *const libc::c_char,
                     );
                     return -1i32;
                 }
@@ -3290,7 +3285,8 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
             if !filter.is_null() && pdf_obj_typeof(filter) == 5i32 {
                 if pdf_array_length(filter) > 1i32 as libc::c_uint {
                     dpx_warning(
-                        b"Multiple DecodeFilter not supported.\x00" as *const u8 as *const libc::c_char,
+                        b"Multiple DecodeFilter not supported.\x00" as *const u8
+                            as *const libc::c_char,
                     );
                     return -1i32;
                 }
@@ -3310,12 +3306,16 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                             &mut parms,
                         )
                     } else {
-                        error =
-                            pdf_add_stream_flate(dst, stream_data as *const libc::c_void, stream_length)
+                        error = pdf_add_stream_flate(
+                            dst,
+                            stream_data as *const libc::c_void,
+                            stream_length,
+                        )
                     }
                 } else {
                     dpx_warning(
-                        b"DecodeFilter \"%s\" not supported.\x00" as *const u8 as *const libc::c_char,
+                        b"DecodeFilter \"%s\" not supported.\x00" as *const u8
+                            as *const libc::c_char,
                         filter_name,
                     );
                     error = -1i32

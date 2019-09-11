@@ -7,6 +7,9 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set};
+use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
+use super::dpx_spc_util::spc_util_read_colorspec;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -17,29 +20,12 @@ extern "C" {
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
     fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    /* Color special
-     * See remark in spc_color.c.
-     */
-    #[no_mangle]
-    fn pdf_color_set(sc: *mut pdf_color, fc: *mut pdf_color);
-    #[no_mangle]
-    fn pdf_color_push(sc: *mut pdf_color, fc: *mut pdf_color);
-    #[no_mangle]
-    fn pdf_color_pop();
-    /* Color stack
-     */
-    #[no_mangle]
-    fn pdf_color_clear_stack();
-    #[no_mangle]
-    fn spc_util_read_colorspec(
-        spe: *mut spc_env,
-        colorspec: *mut pdf_color,
-        args: *mut spc_arg,
-        syntax: i32,
-    ) -> i32;
-    /* Similar to bop_content */
-    #[no_mangle]
-    fn pdf_doc_set_bgcolor(color: *const pdf_color);
+/* Color special
+ * See remark in spc_color.c.
+ */
+/* Color stack
+ */
+/* Similar to bop_content */
 }
 pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;
@@ -54,22 +40,9 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -77,13 +50,9 @@ pub struct spc_handler {
     pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+
+pub use super::dpx_pdfcolor::pdf_color;
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -134,7 +103,8 @@ unsafe extern "C" fn spc_handler_color_push(mut spe: *mut spc_env, mut args: *mu
     };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
     if error == 0 {
-        pdf_color_push(&mut colorspec, &mut colorspec);
+        let color_clone = colorspec.clone();
+        pdf_color_push(&mut colorspec, &color_clone);
     }
     error
 }
@@ -158,21 +128,21 @@ unsafe extern "C" fn spc_handler_color_default(
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
     if error == 0 {
         pdf_color_clear_stack();
-        pdf_color_set(&mut colorspec, &mut colorspec);
+        pdf_color_set(&colorspec, &colorspec);
     }
     error
 }
 /* This is from color special? */
 unsafe extern "C" fn spc_handler_background(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0;
-    let mut colorspec: pdf_color = pdf_color {
+    let mut colorspec = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
         values: [0.; 4],
     };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
     if error == 0 {
-        pdf_doc_set_bgcolor(&mut colorspec);
+        pdf_doc_set_bgcolor(Some(&colorspec));
     }
     error
 }

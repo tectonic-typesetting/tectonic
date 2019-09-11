@@ -7,6 +7,10 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfcolor::{
+    pdf_color_cmykcolor, pdf_color_copycolor, pdf_color_graycolor, pdf_color_rgbcolor,
+    pdf_color_spotcolor,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -15,16 +19,6 @@ extern "C" {
     fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
-    #[no_mangle]
-    fn pdf_color_spotcolor(color: *mut pdf_color, color_name: *mut i8, c: f64) -> i32;
-    #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> i32;
-    #[no_mangle]
-    fn pdf_color_cmykcolor(color: *mut pdf_color, c: f64, m: f64, y: f64, k: f64) -> i32;
-    #[no_mangle]
-    fn pdf_color_rgbcolor(color: *mut pdf_color, r: f64, g: f64, b: f64) -> i32;
     #[no_mangle]
     fn strcasecmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -53,13 +47,8 @@ pub const _ISdigit: C2RustUnnamed = 2048;
 pub const _ISalpha: C2RustUnnamed = 1024;
 pub const _ISlower: C2RustUnnamed = 512;
 pub const _ISupper: C2RustUnnamed = 256;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+
+pub use super::dpx_pdfcolor::pdf_color;
 
 use super::dpx_pdfdev::pdf_tmatrix;
 
@@ -81,22 +70,9 @@ pub struct transform_info {
     pub bbox: pdf_rect,
     pub flags: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 /* Color names */
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -175,16 +151,10 @@ pub unsafe extern "C" fn spc_util_read_numbers(
     }
     count
 }
-unsafe extern "C" fn rgb_color_from_hsv(
-    mut color: *mut pdf_color,
-    mut h: f64,
-    mut s: f64,
-    mut v: f64,
-) {
+unsafe extern "C" fn rgb_color_from_hsv(color: &mut pdf_color, mut h: f64, mut s: f64, mut v: f64) {
     let mut r: f64 = 0.;
     let mut g: f64 = 0.;
     let mut b: f64 = 0.;
-    assert!(!color.is_null());
     b = v;
     g = b;
     r = g;
@@ -244,7 +214,7 @@ unsafe extern "C" fn rgb_color_from_hsv(
 }
 unsafe extern "C" fn spc_read_color_color(
     mut spe: *mut spc_env,
-    mut colorspec: *mut pdf_color,
+    colorspec: &mut pdf_color,
     mut ap: *mut spc_arg,
 ) -> i32 {
     let mut q: *mut i8 = 0 as *mut i8;
@@ -361,7 +331,7 @@ unsafe extern "C" fn spc_read_color_color(
  */
 unsafe extern "C" fn spc_read_color_pdf(
     mut spe: *mut spc_env,
-    mut colorspec: *mut pdf_color,
+    colorspec: &mut pdf_color,
     mut ap: *mut spc_arg,
 ) -> i32 {
     let mut cv: [f64; 4] = [0.; 4]; /* at most four */
@@ -426,11 +396,11 @@ unsafe extern "C" fn spc_read_color_pdf(
 #[no_mangle]
 pub unsafe extern "C" fn spc_util_read_colorspec(
     mut spe: *mut spc_env,
-    mut colorspec: *mut pdf_color,
+    colorspec: &mut pdf_color,
     mut ap: *mut spc_arg,
     mut syntax: i32,
 ) -> i32 {
-    assert!(!colorspec.is_null() && !spe.is_null() && !ap.is_null());
+    assert!(!spe.is_null() && !ap.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     if (*ap).curptr >= (*ap).endptr {
         return -1i32;
@@ -444,12 +414,12 @@ pub unsafe extern "C" fn spc_util_read_colorspec(
 #[no_mangle]
 pub unsafe extern "C" fn spc_util_read_pdfcolor(
     mut spe: *mut spc_env,
-    mut colorspec: *mut pdf_color,
+    colorspec: &mut pdf_color,
     mut ap: *mut spc_arg,
     mut defaultcolor: *mut pdf_color,
 ) -> i32 {
     let mut error: i32 = 0i32;
-    assert!(!colorspec.is_null() && !spe.is_null() && !ap.is_null());
+    assert!(!spe.is_null() && !ap.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     if (*ap).curptr >= (*ap).endptr {
         return -1i32;
@@ -2173,7 +2143,7 @@ static mut colordefs: [colordef_; 69] = [
     },
 ];
 /* From pdfcolor.c */
-unsafe extern "C" fn pdf_color_namedcolor(mut color: *mut pdf_color, mut name: *const i8) -> i32 {
+unsafe extern "C" fn pdf_color_namedcolor(color: &mut pdf_color, mut name: *const i8) -> i32 {
     let mut i: i32 = 0;
     i = 0i32;
     while !colordefs[i as usize].key.is_null() {

@@ -6,7 +6,7 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
-use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
     #[no_mangle]

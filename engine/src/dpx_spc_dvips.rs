@@ -6,8 +6,8 @@
          unused_assignments,
          unused_mut)]
 extern crate libc;
-use crate::dpx_pdfobj::pdf_obj;
 use super::dpx_pdfdraw::pdf_dev_concat;
+use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -185,23 +185,9 @@ pub type rust_input_handle_t = *mut libc::c_void;
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_env {
-    pub x_user: f64,
-    pub y_user: f64,
-    pub mag: f64,
-    pub pg: i32,
-    /* current page in PDF */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_arg {
-    pub curptr: *const i8,
-    pub endptr: *const i8,
-    pub base: *const i8,
-    pub command: *const i8,
-}
+
+use super::dpx_specials::{spc_arg, spc_env};
+
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -661,110 +647,109 @@ unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mu
     pdf_dev_grestore();
     error
 }
-static mut dvips_handlers: [spc_handler; 10] = {
-    [
-        {
-            let mut init = spc_handler {
-                key: b"header\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_header
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"PSfile\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_file
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"psfile\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_file
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"ps: plotfile \x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_plotfile
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"PS: plotfile \x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_plotfile
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"PS:\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_literal
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"ps:\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_literal
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"PST:\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_trickscmd
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"pst:\x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_tricksobj
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-        {
-            let mut init = spc_handler {
-                key: b"\" \x00" as *const u8 as *const i8,
-                exec: Some(
-                    spc_handler_ps_default
-                        as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
-                ),
-            };
-            init
-        },
-    ]
-};
+static mut dvips_handlers: [spc_handler; 10] = [
+    {
+        let mut init = spc_handler {
+            key: b"header\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_header
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"PSfile\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_file
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"psfile\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_file
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"ps: plotfile \x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_plotfile
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"PS: plotfile \x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_plotfile
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"PS:\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_literal
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"ps:\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_literal
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"PST:\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_trickscmd
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"pst:\x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_tricksobj
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+    {
+        let mut init = spc_handler {
+            key: b"\" \x00" as *const u8 as *const i8,
+            exec: Some(
+                spc_handler_ps_default
+                    as unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32,
+            ),
+        };
+        init
+    },
+];
+
 #[no_mangle]
 pub unsafe extern "C" fn spc_dvips_at_begin_document() -> i32 {
     /* This function used to start the global_defs temp file. */

@@ -7,8 +7,8 @@
          unused_mut)]
 
 extern crate libc;
-use crate::dpx_pdfobj::{pdf_obj, pdf_file};
 use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
+use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
     pub type _IO_wide_data;

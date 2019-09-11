@@ -7,8 +7,12 @@
          unused_mut)]
 
 extern crate libc;
+use super::dpx_pdfcolor::{
+    pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white, pdf_color_set_verbose,
+};
 use super::dpx_pdfdev::pdf_dev_bop;
-use crate::dpx_pdfobj::{pdf_obj, pdf_file};
+use super::dpx_pdfdraw::pdf_dev_set_color;
+use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -54,8 +58,6 @@ extern "C" {
         along with this program; if not, write to the Free Software
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
-    #[no_mangle]
-    fn pdf_color_set_verbose(level: i32);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -206,15 +208,9 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_get_coord(xpos: *mut f64, ypos: *mut f64);
     #[no_mangle]
-    fn pdf_color_graycolor(color: *mut pdf_color, g: f64) -> i32;
-    #[no_mangle]
-    fn pdf_color_copycolor(color1: *mut pdf_color, color2: *const pdf_color);
-    #[no_mangle]
     fn pdf_close_colors();
     #[no_mangle]
     fn pdf_init_colors();
-    #[no_mangle]
-    fn pdf_color_is_white(color: *const pdf_color) -> bool;
     #[no_mangle]
     fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
     #[no_mangle]
@@ -363,8 +359,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_dev_grestore_to(depth: i32);
     #[no_mangle]
-    fn pdf_dev_set_color(color: *const pdf_color, mask: i8, force: i32);
-    #[no_mangle]
     fn pdf_enc_id_array() -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_encrypt_obj() -> *mut pdf_obj;
@@ -489,13 +483,8 @@ pub struct tm {
     pub tm_gmtoff: i64,
     pub tm_zone: *const i8,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_color {
-    pub num_components: i32,
-    pub spot_color_name: *mut i8,
-    pub values: [f64; 4],
-}
+
+pub use super::dpx_pdfcolor::pdf_color;
 
 use super::dpx_pdfdev::pdf_tmatrix;
 
@@ -3396,9 +3385,9 @@ static mut bgcolor: pdf_color = {
 /* Manual thumbnail */
 /* Similar to bop_content */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_doc_set_bgcolor(mut color: *const pdf_color) {
-    if !color.is_null() {
-        pdf_color_copycolor(&mut bgcolor, color);
+pub unsafe extern "C" fn pdf_doc_set_bgcolor(color: Option<&pdf_color>) {
+    if let Some(c) = color {
+        pdf_color_copycolor(&mut bgcolor, c);
     } else {
         /* as clear... */
         pdf_color_graycolor(&mut bgcolor, 1.0f64);
@@ -3516,7 +3505,7 @@ pub unsafe extern "C" fn pdf_open_document(
     pdf_doc_init_articles(p);
     pdf_doc_init_names(p, check_gotos);
     pdf_doc_init_page_tree(p, media_width, media_height);
-    pdf_doc_set_bgcolor(0 as *const pdf_color);
+    pdf_doc_set_bgcolor(None);
     if enable_encrypt {
         let mut encrypt: *mut pdf_obj = pdf_encrypt_obj();
         pdf_set_encrypt(encrypt);
