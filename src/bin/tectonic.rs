@@ -77,7 +77,7 @@ struct Opt {
     #[structopt(long = "print", short)]
     print_stdout: bool,
     /// The directory in which to place output files [default: the directory containing INPUT]
-    #[structopt(name = "OUTDIR", short, parse(from_os_str))]
+    #[structopt(name = "OUTDIR", short, long, parse(from_os_str))]
     outdir: Option<PathBuf>,
 }
 fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<()> {
@@ -137,8 +137,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
         }
     }
 
-    if let Some(dir) = args.value_of_os("outdir") {
-        let output_dir = Path::new(dir);
+    if let Some(output_dir) = args.outdir {
         if !output_dir.is_dir() {
             return Err(errmsg!(
                 "output directory \"{}\" does not exist",
@@ -150,22 +149,22 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
 
     // Set up the rest of I/O.
 
-    sess_builder.print_stdout(args.is_present("print_stdout"));
+    sess_builder.print_stdout(args.print_stdout);
 
-    if let Some(items) = args.values_of_os("hide") {
+    if let Some(items) = args.hide {
         for v in items {
             sess_builder.hide(v);
         }
     }
 
-    let only_cached = args.is_present("only_cached");
+    let only_cached = args.only_cached;
     if only_cached {
         tt_note!(status, "using only cached resource files");
     }
-    if let Some(p) = args.value_of("bundle") {
-        let zb = ctry!(ZipBundle::<File>::open(Path::new(&p)); "error opening bundle");
+    if let Some(p) = args.bundle {
+        let zb = ctry!(ZipBundle::<File>::open(&p); "error opening bundle");
         sess_builder.bundle(Box::new(zb));
-    } else if let Some(u) = args.value_of("web_bundle") {
+    } else if let Some(u) = args.web_bundle {
         sess_builder.bundle(Box::new(config.make_cached_url_provider(
             &u,
             only_cached,
