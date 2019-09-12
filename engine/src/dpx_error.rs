@@ -61,7 +61,7 @@ pub type _message_type = u32;
 pub const DPX_MESG_WARN: _message_type = 1;
 pub const DPX_MESG_INFO: _message_type = 0;
 pub static mut _last_message_type: message_type_t = DPX_MESG_INFO;
-static mut _dpx_quietness: i32 = 0i32;
+pub static mut _dpx_quietness: i32 = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn shut_up(mut quietness: i32) {
     _dpx_quietness = quietness;
