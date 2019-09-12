@@ -9,6 +9,7 @@ use structopt::StructOpt;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process;
+use std::str::FromStr;
 
 use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
@@ -18,6 +19,7 @@ use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::{ChatterLevel, StatusBackend};
 
 use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
+
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
@@ -52,7 +54,7 @@ struct Opt {
     outfmt: String,
     /// Write Makefile-format rules expressing the dependencies of this run to <DEST_PATH>
     #[structopt(long, name = "DEST_PATH")]
-    makefile_rules: Option<String>,
+    makefile_rules: Option<PathBuf>,
     /// Which engines to run
     #[structopt(long, default_value = "default", possible_values(&["default", "tex", "bibtex_first"]))]
     pass: String,
@@ -88,15 +90,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
         .format_cache_path(config.format_cache_path()?)
         .synctex(args.synctex);
 
-    let output_format = match &args.outfmt {
-        "aux" => OutputFormat::Aux,
-        "html" => OutputFormat::Html,
-        "xdv" => OutputFormat::Xdv,
-        "pdf" => OutputFormat::Pdf,
-        "format" => OutputFormat::Format,
-        _ => unreachable!(),
-    };
-    sess_builder.output_format(output_format);
+    sess_builder.output_format(OutputFormat::from_str(&args.outfmt).unwrap());
 
     let pass = match args.pass {
         "default" => PassSetting::Default,
@@ -110,7 +104,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
         sess_builder.reruns(usize::from_str_radix(s, 10)?);
     }
 
-    if let Some(p) = args.value_of_os("makefile_rules") {
+    if let Some(p) = args.makefile_rules {
         sess_builder.makefile_output_path(p);
     }
 

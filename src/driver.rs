@@ -17,10 +17,12 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
+use std::str::FromStr;
 
 use crate::digest::DigestData;
 use crate::engines::IoEventBackend;
 use crate::errors::{ErrorKind, Result, ResultExt};
+use std::result::Result as StdResult;
 use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use crate::status::StatusBackend;
 use crate::{ctry, errmsg, tt_error, tt_note, tt_warning};
@@ -210,6 +212,22 @@ pub enum OutputFormat {
     Format,
 }
 
+impl FromStr for OutputFormat {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> StdResult<Self, Self::Err> {
+        let actual = match s {
+            "aux" => OutputFormat::Aux,
+            "html" => OutputFormat::Html,
+            "xdv" => OutputFormat::Xdv,
+            "pdf" => OutputFormat::Pdf,
+            "fmt" => OutputFormat::Format,
+            _    => unreachable!()
+        };
+
+        Ok(actual)
+    }
+}
 impl Default for OutputFormat {
     fn default() -> OutputFormat {
         OutputFormat::Pdf
