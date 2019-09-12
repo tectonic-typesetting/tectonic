@@ -1991,7 +1991,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
     if verbose > 1i32 {
         info!(
             "[{}/{} glyphs][{} bytes]",
-            num_glyphs as i32, cs_count as i32, destlen,
+            num_glyphs, cs_count, destlen,
         );
     }
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
@@ -2662,7 +2662,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
     free(CIDToGIDMap as *mut libc::c_void);
     CIDFontInfo_close(&mut info);
     if verbose > 1i32 {
-        info!("[{} glyphs][{} bytes]", num_glyphs as i32, destlen);
+        info!("[{} glyphs][{} bytes]", num_glyphs, destlen);
     }
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
 }

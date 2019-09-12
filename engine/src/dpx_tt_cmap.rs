@@ -1633,7 +1633,7 @@ unsafe extern "C" fn handle_subst_glyphs(
                                     name,
                                 );
                             } else {
-                                info!("No Unicode mapping available: GID={}\n", gid as i32);
+                                info!("No Unicode mapping available: GID={}\n", gid);
                             }
                         } else {
                             /* the Unicode characters go into wbuf[2] and following, in UTF16BE */

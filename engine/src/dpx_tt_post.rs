@@ -187,7 +187,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
                 We show a warning only once, instead of thousands of times */
                 static mut warning_issued: i8 = 0_i8;
                 if warning_issued == 0 {
-                    warn!("TrueType post table name index {} > 32767", idx as i32);
+                    warn!("TrueType post table name index {} > 32767", idx);
                     warning_issued = 1_i8
                 }
                 /* In a real-life large font, (x)dvipdfmx crashes if we use

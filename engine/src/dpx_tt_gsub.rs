@@ -625,7 +625,7 @@ unsafe extern "C" fn otl_gsub_read_alternate(
     if (*subtab).SubstFormat as i32 != 1i32 {
         warn!(
             "Unknown GSUB SubstFormat for Alternate: {}",
-            (*subtab).SubstFormat as i32
+            (*subtab).SubstFormat
         );
         return -1i32;
     }
@@ -702,7 +702,7 @@ unsafe extern "C" fn otl_gsub_read_ligature(
     if (*subtab).SubstFormat as i32 != 1i32 {
         warn!(
             "Unknown GSUB SubstFormat for Ligature: {}",
-            (*subtab).SubstFormat as i32
+            (*subtab).SubstFormat
         );
         return -1i32;
     }

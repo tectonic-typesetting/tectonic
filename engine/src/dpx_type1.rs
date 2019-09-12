@@ -1671,7 +1671,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     add_metrics(font, cffont, enc_vec, widths, num_glyphs as i32);
     offset = write_fontfile(font, cffont, pdfcharset);
     if verbose > 1i32 {
-        info!("[{} glyphs][{} bytes]", num_glyphs as i32, offset);
+        info!("[{} glyphs][{} bytes]", num_glyphs, offset);
     }
     pdf_release_obj(pdfcharset);
     cff_close(cffont);

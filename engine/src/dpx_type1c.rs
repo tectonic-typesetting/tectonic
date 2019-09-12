@@ -1583,7 +1583,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     if verbose > 1i32 {
         info!(
             "[{}/{} glyphs][{} bytes]",
-            num_glyphs as i32, cs_count as i32, offset,
+            num_glyphs, cs_count, offset,
         );
     }
     /*

@@ -1645,8 +1645,8 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         if verbose > 1i32 {
             info!(
                 "[{} glyphs (Max CID: {})]",
-                (*glyphs).num_glyphs as i32,
-                last_cid as i32
+                (*glyphs).num_glyphs,
+                last_cid
             );
         }
     } else if tt_get_metrics(sfont, glyphs) < 0i32 {
