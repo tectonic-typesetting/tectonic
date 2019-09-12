@@ -20,7 +20,6 @@ use tectonic::status::{ChatterLevel, StatusBackend};
 
 use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 
-
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
 struct Opt {

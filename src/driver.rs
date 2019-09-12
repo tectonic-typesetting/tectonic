@@ -228,6 +228,7 @@ impl FromStr for OutputFormat {
         Ok(actual)
     }
 }
+
 impl Default for OutputFormat {
     fn default() -> OutputFormat {
         OutputFormat::Pdf
