@@ -10,6 +10,8 @@
 
 extern crate libc;
 use libc::free;
+use std::ptr;
+
 extern "C" {
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
@@ -155,7 +157,7 @@ bitflags::bitflags! {
 /*  Here are all the local variables gathered in one "synchronization context"  */
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed {
+pub struct Context {
     pub file: rust_output_handle_t,
     pub root_name: *mut i8,
     pub count: i32,
@@ -195,31 +197,33 @@ pub struct C2RustUnnamed {
  *  for dvi mode, we'll have to record the 1in offset in both directions,
  *  eventually modified by the magnification.
  */
-pub type synctex_recorder_t = Option<unsafe extern "C" fn(_: i32) -> ()>;
+type synctex_recorder_t = Option<unsafe extern "C" fn(_: i32) -> ()>;
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
     0 as *mut libc::c_void
 }
-// Initialized in run_static_initializers
-static mut synctex_ctxt: C2RustUnnamed = C2RustUnnamed {
-    file: 0 as *const libc::c_void as *mut libc::c_void,
-    root_name: 0 as *const i8 as *mut i8,
-    count: 0,
-    node: 0,
+
+const default_synctex_ctxt: Context = Context {
+    file: ptr::null_mut(),
+    root_name: ptr::null_mut(),
+    count: 0i32,
+    node: 0i32,
     recorder: None,
-    tag: 0,
-    line: 0,
-    curh: 0,
-    curv: 0,
-    magnification: 0,
-    unit: 0,
-    total_length: 0,
-    lastv: 0,
-    form_depth: 0,
-    synctex_tag_counter: 0,
+    tag: 0i32,
+    line: 0i32,
+    curh: 0i32,
+    curv: 0i32,
+    magnification: 0i32,
+    unit: 0i32,
+    total_length: 0i32,
+    lastv: -1i32,
+    form_depth: 0i32,
+    synctex_tag_counter: 0_u32,
     flags: Flags::empty(),
 };
+static mut synctex_ctxt: Context = default_synctex_ctxt;
+
 unsafe extern "C" fn get_current_name() -> *mut i8 {
     /* This used to always make the pathname absolute but I'm getting rid of
      * that since it ends up adding dependencies on a bunch of functions I
@@ -277,22 +281,7 @@ pub unsafe extern "C" fn synctex_init_command() {
     /* In the web2c implementations this dealt with the -synctex command line
      * argument. */
     /* Reset state */
-    synctex_ctxt.file = 0 as *mut libc::c_void;
-    synctex_ctxt.root_name = 0 as *mut i8;
-    synctex_ctxt.count = 0i32;
-    synctex_ctxt.node = 0i32;
-    synctex_ctxt.recorder = None;
-    synctex_ctxt.tag = 0i32;
-    synctex_ctxt.line = 0i32;
-    synctex_ctxt.curh = 0i32;
-    synctex_ctxt.curv = 0i32;
-    synctex_ctxt.magnification = 0i32;
-    synctex_ctxt.unit = 0i32;
-    synctex_ctxt.total_length = 0i32;
-    synctex_ctxt.lastv = -1i32;
-    synctex_ctxt.form_depth = 0i32;
-    synctex_ctxt.synctex_tag_counter = 0_u32;
-    synctex_ctxt.flags = Flags::empty();
+    synctex_ctxt = default_synctex_ctxt;
     if synctex_enabled != 0 {
         (*eqtb.offset(
             (1i32
@@ -1822,34 +1811,7 @@ unsafe extern "C" fn synctex_record_node_math(mut p: i32) {
         synctexabort();
     };
 }
-unsafe extern "C" fn run_static_initializers() {
-    synctex_ctxt = {
-        let mut init = C2RustUnnamed {
-            file: 0 as *mut libc::c_void,
-            root_name: 0 as *mut i8,
-            count: 0i32,
-            node: 0i32,
-            recorder: None,
-            tag: 0i32,
-            line: 0i32,
-            curh: 0i32,
-            curv: 0i32,
-            magnification: 0i32,
-            unit: 0i32,
-            total_length: 0i32,
-            lastv: -1i32,
-            form_depth: 0i32,
-            synctex_tag_counter: 0_u32,
-            flags: Flags::empty(),
-        };
-        init
-    }
-}
-#[used]
-#[cfg_attr(target_os = "linux", link_section = ".init_array")]
-#[cfg_attr(target_os = "windows", link_section = ".CRT$XIB")]
-#[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
-static INIT_ARRAY: [unsafe extern "C" fn(); 1] = [run_static_initializers];
+
 /*
 License:
 --------
