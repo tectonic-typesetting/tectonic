@@ -7,6 +7,7 @@
          unused_mut)]
 
 extern crate libc;
+use super::xetex_texmfmp::get_date_and_time;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -42,8 +43,6 @@ extern "C" {
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn get_date_and_time(_: *mut i32, _: *mut i32, _: *mut i32, _: *mut i32);
     #[no_mangle]
     fn get_avail() -> i32;
     #[no_mangle]
@@ -15286,74 +15285,74 @@ pub unsafe extern "C" fn tt_run_engine(
         primitive(
             b"interlinepenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 0i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 0,
         );
         primitive(
             b"clubpenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 1i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 1,
         );
         primitive(
             b"widowpenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 2i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 2,
         );
         primitive(
             b"displaywidowpenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 3i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 3,
         );
         max_reg_num = 32767i32;
         max_reg_help_line =
@@ -15367,59 +15366,59 @@ pub unsafe extern "C" fn tt_run_engine(
     }
     if (*eqtb.offset(
         (1i32
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + 1i32
-            + 15000i32
-            + 12i32
-            + 9000i32
-            + 1i32
-            + 1i32
-            + 19i32
-            + 256i32
-            + 256i32
-            + 13i32
-            + 256i32
-            + 4i32
-            + 256i32
-            + 1i32
-            + 3i32 * 256i32
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + 48i32) as isize,
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + 1
+            + 15000
+            + 12
+            + 9000
+            + 1
+            + 1
+            + 19
+            + 256
+            + 256
+            + 13
+            + 256
+            + 4
+            + 256
+            + 1
+            + 3 * 256
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + 48) as isize,
     ))
     .b32
     .s1 < 0i32
         || (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 48i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 48) as isize,
         ))
         .b32
         .s1 > 0xffffi32
@@ -15428,30 +15427,30 @@ pub unsafe extern "C" fn tt_run_engine(
     } else {
         *buffer.offset(cur_input.limit as isize) = (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 48i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 48) as isize,
         ))
         .b32
         .s1
@@ -15461,239 +15460,238 @@ pub unsafe extern "C" fn tt_run_engine(
          * reproducibility we do this: */
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 20i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 20) as isize,
         ))
         .b32
         .s1 = 0i32; /*:79*/
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 21i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 21) as isize,
         ))
         .b32
         .s1 = 0i32;
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 22i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 22) as isize,
         ))
         .b32
         .s1 = 0i32;
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 23i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 23) as isize,
         ))
         .b32
         .s1 = 0i32
     } else {
-        get_date_and_time(
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 20i32) as isize,
-            ))
-            .b32
-            .s1,
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 21i32) as isize,
-            ))
-            .b32
-            .s1,
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 22i32) as isize,
-            ))
-            .b32
-            .s1,
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 23i32) as isize,
-            ))
-            .b32
-            .s1,
-        );
+        let (minutes, day, month, year) = get_date_and_time();
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 20) as isize,
+        ))
+        .b32
+        .s1 = minutes;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 21) as isize,
+        ))
+        .b32
+        .s1 = day;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 22) as isize,
+        ))
+        .b32
+        .s1 = month;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 23) as isize,
+        ))
+        .b32
+        .s1 = year;
     }
     if trie_not_ready {
         trie_trl = xmalloc(

@@ -1,4 +1,3 @@
-
 macro_rules! no_mangle_extern_fn {
     ($(
         $(#[$meta:meta])*

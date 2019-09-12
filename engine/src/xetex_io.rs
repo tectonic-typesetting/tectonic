@@ -5,8 +5,8 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-use crate::stub_icu as icu;
 use crate::stub_errno as errno;
+use crate::stub_icu as icu;
 use libc::free;
 extern "C" {
     pub type Opaque_TECkit_Converter;

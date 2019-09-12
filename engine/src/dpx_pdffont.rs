@@ -6,8 +6,8 @@
          unused_assignments,
          unused_mut)]
 
-use crate::{info, warn};
 use crate::stub_errno as errno;
+use crate::{info, warn};
 extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_dict, pdf_new_name, pdf_obj,

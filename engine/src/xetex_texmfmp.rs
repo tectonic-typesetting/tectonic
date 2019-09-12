@@ -38,10 +38,6 @@ extern "C" {
     static bytesFromUTF8: [u8; 256];
     #[no_mangle]
     fn make_string() -> str_number;
-    #[no_mangle]
-    fn time(__timer: *mut time_t) -> time_t;
-    #[no_mangle]
-    fn localtime(__timer: *const time_t) -> *mut tm;
 }
 pub type __time_t = i64;
 pub type size_t = u64;
@@ -75,20 +71,14 @@ This file is public domain.  */
 /* For `struct tm'.  Moved here for Visual Studio 2005.  */
 static mut last_source_name: *mut i8 = 0 as *const i8 as *mut i8;
 static mut last_lineno: i32 = 0;
-#[no_mangle]
-pub unsafe extern "C" fn get_date_and_time(
-    mut minutes: *mut i32,
-    mut day: *mut i32,
-    mut month: *mut i32,
-    mut year: *mut i32,
-) {
-    let mut tmptr: *mut tm = 0 as *mut tm; /* in the XeTeX case, this may be more than enough */
-    let mut myclock: time_t = time(0 as *mut time_t);
-    tmptr = localtime(&mut myclock);
-    *minutes = (*tmptr).tm_hour * 60i32 + (*tmptr).tm_min;
-    *day = (*tmptr).tm_mday;
-    *month = (*tmptr).tm_mon + 1i32;
-    *year = (*tmptr).tm_year + 1900i32;
+pub fn get_date_and_time() -> (i32, i32, i32, i32) {
+    use datetime::{DatePiece, TimePiece};
+    let tm = datetime::LocalDateTime::now();
+    let minutes = (tm.hour() as i32) * 60 + (tm.minute() as i32);
+    let day = tm.day() as i32;
+    let month = (tm.month().months_from_january() as i32) + 1;
+    let year = tm.year() as i32;
+    (minutes, day, month, year)
 }
 unsafe extern "C" fn checkpool_pointer(mut pool_ptr_0: pool_pointer, mut len: size_t) {
     if (pool_ptr_0 as u64).wrapping_add(len) >= pool_size as u64 {
