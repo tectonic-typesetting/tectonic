@@ -6,7 +6,12 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use super::xetex_ini::{history, old_setting, selector};
+use super::xetex_io::{tt_xetex_open_input, u_open_in};
+use crate::{
+    ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
+    ttstub_output_flush, ttstub_output_open, ttstub_output_putc,
+};
 use libc::free;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
@@ -24,20 +29,6 @@ extern "C" {
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
-    #[no_mangle]
-    fn ttstub_issue_warning(format: *const i8, _: ...);
-    #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
-    #[no_mangle]
-    fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -129,8 +120,6 @@ extern "C" {
     #[no_mangle]
     static mut log_file: rust_output_handle_t;
     #[no_mangle]
-    static mut selector: selector_t;
-    #[no_mangle]
     static mut dig: [u8; 23];
     #[no_mangle]
     static mut tally: i32;
@@ -158,8 +147,6 @@ extern "C" {
     static mut deletions_allowed: bool;
     #[no_mangle]
     static mut set_box_allowed: bool;
-    #[no_mangle]
-    static mut history: tt_history_t;
     #[no_mangle]
     static mut error_count: i8;
     #[no_mangle]
@@ -206,8 +193,6 @@ extern "C" {
     static mut cur_list: list_state_record;
     #[no_mangle]
     static mut shown_mode: i16;
-    #[no_mangle]
-    static mut old_setting: u8;
     #[no_mangle]
     static mut hash: *mut b32x2;
     #[no_mangle]
@@ -452,19 +437,9 @@ extern "C" {
     #[no_mangle]
     fn input_line(f: *mut UFILE) -> i32;
     #[no_mangle]
-    fn u_open_in(
-        f: *mut *mut UFILE,
-        filefmt: i32,
-        fopen_mode: *const i8,
-        mode: i32,
-        encodingData: i32,
-    ) -> i32;
-    #[no_mangle]
     fn u_close(f: *mut UFILE);
     #[no_mangle]
     fn set_input_file_encoding(f: *mut UFILE, mode: i32, encodingData: i32);
-    #[no_mangle]
-    fn tt_xetex_open_input(filefmt: i32) -> rust_input_handle_t;
     #[no_mangle]
     static bytesFromUTF8: [u8; 256];
     #[no_mangle]
@@ -917,53 +892,17 @@ pub type size_t = u64;
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-/* Both XeTeX and bibtex use this enum: */
-pub type tt_history_t = u32;
-pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
-pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
-pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
-pub const HISTORY_SPOTLESS: tt_history_t = 0;
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::{TTHistory, TTInputFormat};
+
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
 pub type Fixed = scaled_t;
 pub type CFDictionaryRef = *mut libc::c_void;
-pub type selector_t = u32;
-pub const SELECTOR_NEW_STRING: selector_t = 21;
-pub const SELECTOR_PSEUDO: selector_t = 20;
-pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
-pub const SELECTOR_LOG_ONLY: selector_t = 18;
-pub const SELECTOR_TERM_ONLY: selector_t = 17;
-pub const SELECTOR_NO_PRINT: selector_t = 16;
-pub const SELECTOR_FILE_15: selector_t = 15;
-pub const SELECTOR_FILE_0: selector_t = 0;
+
+use super::xetex_ini::Selector;
+
 pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
 pub type UInt16 = u16;
 pub type UInt32 = u32;
@@ -1235,15 +1174,9 @@ pub struct input_state_t {
     pub name: i32,
     pub synctex_tag: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct UFILE {
-    pub handle: rust_input_handle_t,
-    pub savedChar: i64,
-    pub skipNextLF: i16,
-    pub encodingMode: i16,
-    pub conversionData: *mut libc::c_void,
-}
+
+pub use super::xetex_io::UFILE;
+
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
@@ -3571,7 +3504,7 @@ pub unsafe extern "C" fn print_param(mut n: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn begin_diagnostic() {
-    old_setting = selector as u8;
+    old_setting = selector;
     if (*eqtb.offset(
         (1i32
             + (0x10ffffi32 + 1i32)
@@ -3601,11 +3534,11 @@ pub unsafe extern "C" fn begin_diagnostic() {
     ))
     .b32
     .s1 <= 0i32
-        && selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32
+        && selector == Selector::TERM_AND_LOG
     {
-        selector -= 1;
-        if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
-            history = HISTORY_WARNING_ISSUED
+        selector = (u8::from(selector) - 1).into();
+        if history == TTHistory::SPOTLESS {
+            history = TTHistory::WARNING_ISSUED
         }
     };
 }
@@ -3615,7 +3548,7 @@ pub unsafe extern "C" fn end_diagnostic(mut blank_line: bool) {
     if blank_line {
         print_ln();
     }
-    selector = old_setting as selector_t;
+    selector = old_setting;
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_length_param(mut n: i32) {
@@ -6061,8 +5994,8 @@ pub unsafe extern "C" fn group_warning() {
         {
             show_context();
         }
-        if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
-            history = HISTORY_WARNING_ISSUED
+        if history == TTHistory::SPOTLESS {
+            history = TTHistory::WARNING_ISSUED
         }
     };
 }
@@ -6158,8 +6091,8 @@ pub unsafe extern "C" fn if_warning() {
         {
             show_context();
         }
-        if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
-            history = HISTORY_WARNING_ISSUED
+        if history == TTHistory::SPOTLESS {
+            history = TTHistory::WARNING_ISSUED
         }
     };
 }
@@ -6241,8 +6174,8 @@ pub unsafe extern "C" fn file_warning() {
     {
         show_context();
     }
-    if history as u32 == HISTORY_SPOTLESS as i32 as u32 {
-        history = HISTORY_WARNING_ISSUED
+    if history == TTHistory::SPOTLESS {
+        history = TTHistory::WARNING_ISSUED
     };
 }
 #[no_mangle]
@@ -7207,7 +7140,6 @@ pub unsafe extern "C" fn show_cur_cmd_chr() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn show_context() {
-    let mut old_setting_0: u8 = 0;
     let mut nn: i32 = 0;
     let mut bottom_line: bool = false;
     let mut i: i32 = 0;
@@ -7268,7 +7200,7 @@ pub unsafe extern "C" fn show_context() {
                 || cur_input.loc != -0xfffffffi32
             {
                 tally = 0i32;
-                old_setting_0 = selector as u8;
+                let old_setting_0 = selector;
                 if cur_input.state as i32 != 0i32 {
                     if cur_input.name <= 17i32 {
                         if cur_input.name == 0i32 {
@@ -7297,7 +7229,7 @@ pub unsafe extern "C" fn show_context() {
                     print_char(' ' as i32);
                     l = tally;
                     tally = 0i32;
-                    selector = SELECTOR_PSEUDO;
+                    selector = Selector::PSEUDO;
                     trick_count = 1000000i64 as i32;
                     if *buffer.offset(cur_input.limit as isize)
                         == (*eqtb.offset(
@@ -7423,7 +7355,7 @@ pub unsafe extern "C" fn show_context() {
                     }
                     l = tally;
                     tally = 0i32;
-                    selector = SELECTOR_PSEUDO;
+                    selector = Selector::PSEUDO;
                     trick_count = 1000000i64 as i32;
                     if (cur_input.index as i32) < 6i32 {
                         show_token_list(cur_input.start, cur_input.loc, 100000i64 as i32);
@@ -7435,7 +7367,7 @@ pub unsafe extern "C" fn show_context() {
                         );
                     }
                 }
-                selector = old_setting_0 as selector_t;
+                selector = old_setting_0;
                 if trick_count as i64 == 1000000 {
                     first_count = tally;
                     trick_count = tally + 1i32 + error_line - half_error_line;
@@ -8719,7 +8651,7 @@ pub unsafe extern "C" fn get_next() {
                                 );
                                 continue;
                             } else {
-                                if (selector as u32) < SELECTOR_LOG_ONLY as i32 as u32 {
+                                if u8::from(selector) < u8::from(Selector::LOG_ONLY) {
                                     open_log_file();
                                 }
                                 fatal_error(
@@ -14117,7 +14049,6 @@ pub unsafe extern "C" fn scan_general_text() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pseudo_start() {
-    let mut old_setting_0: u8 = 0;
     let mut s: str_number = 0;
     let mut l: pool_pointer = 0;
     let mut m: pool_pointer = 0;
@@ -14133,10 +14064,10 @@ pub unsafe extern "C" fn pseudo_start() {
     let mut nl: i32 = 0;
     let mut sz: i32 = 0;
     scan_general_text();
-    old_setting_0 = selector as u8;
-    selector = SELECTOR_NEW_STRING;
+    let old_setting_0 = selector;
+    selector = Selector::NEW_STRING;
     token_show(4999999i32 - 3i32);
-    selector = old_setting_0 as selector_t;
+    selector = old_setting_0;
     flush_list((*mem.offset((4999999i32 - 3i32) as isize)).b32.s1);
     if pool_ptr + 1i32 > pool_size {
         overflow(
@@ -14334,7 +14265,6 @@ pub unsafe extern "C" fn str_toks(mut b: pool_pointer) -> i32 {
 }
 #[no_mangle]
 pub unsafe extern "C" fn the_toks() -> i32 {
-    let mut old_setting_0: u8 = 0;
     let mut p: i32 = 0;
     let mut q: i32 = 0;
     let mut r: i32 = 0;
@@ -14346,14 +14276,14 @@ pub unsafe extern "C" fn the_toks() -> i32 {
         if c as i32 == 1i32 {
             return cur_val;
         } else {
-            old_setting_0 = selector as u8;
-            selector = SELECTOR_NEW_STRING;
+            let old_setting_0 = selector;
+            selector = Selector::NEW_STRING;
             b = pool_ptr;
             p = get_avail();
             (*mem.offset(p as isize)).b32.s1 = (*mem.offset((4999999i32 - 3i32) as isize)).b32.s1;
             token_show(p);
             flush_list(p);
-            selector = old_setting_0 as selector_t;
+            selector = old_setting_0;
             return str_toks(b);
         }
     }
@@ -14386,8 +14316,8 @@ pub unsafe extern "C" fn the_toks() -> i32 {
         }
         return p;
     } else {
-        old_setting_0 = selector as u8;
-        selector = SELECTOR_NEW_STRING;
+        let old_setting_0 = selector;
+        selector = Selector::NEW_STRING;
         b = pool_ptr;
         match cur_val_level as i32 {
             0 => {
@@ -14407,7 +14337,7 @@ pub unsafe extern "C" fn the_toks() -> i32 {
             }
             _ => {}
         }
-        selector = old_setting_0 as selector_t;
+        selector = old_setting_0;
         return str_toks(b);
     };
 }
@@ -14418,7 +14348,6 @@ pub unsafe extern "C" fn ins_the_toks() {
 }
 #[no_mangle]
 pub unsafe extern "C" fn conv_toks() {
-    let mut old_setting_0: u8 = 0;
     let mut save_warning_index: i32 = 0;
     let mut save_def_ref: i32 = 0;
     let mut boolvar: bool = false;
@@ -14508,21 +14437,21 @@ pub unsafe extern "C" fn conv_toks() {
             }
             boolvar = scan_keyword(b"file\x00" as *const u8 as *const i8);
             scan_pdf_ext_toks();
-            if selector as u32 == SELECTOR_NEW_STRING as i32 as u32 {
+            if selector == Selector::NEW_STRING {
                 pdf_error(
                     b"tokens\x00" as *const u8 as *const i8,
                     b"tokens_to_string() called while selector = new_string\x00" as *const u8
                         as *const i8,
                 );
             }
-            old_setting_0 = selector as u8;
-            selector = SELECTOR_NEW_STRING;
+            let old_setting_0 = selector;
+            selector = Selector::NEW_STRING;
             show_token_list(
                 (*mem.offset(def_ref as isize)).b32.s1,
                 -0xfffffffi32,
                 pool_size - pool_ptr,
             );
-            selector = old_setting_0 as selector_t;
+            selector = old_setting_0;
             s = make_string();
             delete_token_ref(def_ref);
             def_ref = save_def_ref;
@@ -14642,8 +14571,8 @@ pub unsafe extern "C" fn conv_toks() {
         }
         5 | 6 | _ => {}
     }
-    old_setting_0 = selector as u8;
-    selector = SELECTOR_NEW_STRING;
+    let old_setting_0 = selector;
+    selector = Selector::NEW_STRING;
     b = pool_ptr;
     match c as i32 {
         0 => {
@@ -14830,7 +14759,7 @@ pub unsafe extern "C" fn conv_toks() {
         }
         _ => {}
     }
-    selector = old_setting_0 as selector_t;
+    selector = old_setting_0;
     (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = str_toks_cat(b, cat);
     begin_token_list((*mem.offset((4999999i32 - 3i32) as isize)).b32.s1, 5_u16);
 }
@@ -16101,10 +16030,9 @@ pub unsafe extern "C" fn pack_job_name(mut s: *const i8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn open_log_file() {
-    let mut old_setting_0: u8 = 0;
     let mut k: i32 = 0;
     let mut l: i32 = 0;
-    old_setting_0 = selector as u8;
+    let old_setting_0 = selector;
     if job_name == 0i32 {
         job_name = maketexstring(b"texput\x00" as *const u8 as *const i8)
     }
@@ -16117,7 +16045,7 @@ pub unsafe extern "C" fn open_log_file() {
         );
     }
     texmf_log_name = make_name_string();
-    selector = SELECTOR_LOG_ONLY;
+    selector = Selector::LOG_ONLY;
     log_opened = true;
     *input_stack.offset(input_ptr as isize) = cur_input;
     /* Here we catch the log file up with anything that has already been
@@ -16163,11 +16091,11 @@ pub unsafe extern "C" fn open_log_file() {
         k += 1
     }
     print_ln();
-    selector = (old_setting_0 as i32 + 2i32) as selector_t;
+    selector = (u8::from(old_setting_0) + 2).into();
 }
 #[no_mangle]
 pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
-    let mut format: tt_input_format_type = TTIF_TEX;
+    let mut format = TTInputFormat::TEX;
     let mut temp_str: str_number = 0;
     if !primary_input_name.is_null() {
         /* If this is the case, we're opening the primary input file, and the
@@ -16175,7 +16103,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
          * us. We emulate the hacks used below to fill in cur_name, etc., from
          * a UTF-8 C string. It looks like the `cur_{name,area,ext}` strings
          * are hardly used so it'd be nice to get rid of them someday. */
-        format = TTIF_TECTONIC_PRIMARY;
+        format = TTInputFormat::TECTONIC_PRIMARY;
         name_in_progress = true;
         begin_name();
         stop_at_space = false;
@@ -16311,7 +16239,7 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
     begin_file_reading();
     if u_open_in(
         &mut *input_file.offset(cur_input.index as isize),
-        format as i32,
+        format,
         b"rb\x00" as *const u8 as *const i8,
         (*eqtb.offset(
             (1i32
@@ -16695,9 +16623,9 @@ pub unsafe extern "C" fn char_warning(mut f: internal_font_number, mut c: i32) {
     }
     let mut fn_0: *mut i8 = gettexstring(*font_name.offset(f as isize));
     let mut chr: *mut i8 = 0 as *mut i8;
-    let mut prev_selector: selector_t = selector;
+    let prev_selector = selector;
     let mut s: i32 = 0;
-    selector = SELECTOR_NEW_STRING;
+    selector = Selector::NEW_STRING;
     if c < 0x10000i32 {
         print(c);
     } else {
@@ -17715,7 +17643,7 @@ pub unsafe extern "C" fn read_font_info(
             } else {
                 pack_file_name(nom, aire, (65536 + 1i32 as i64) as str_number);
                 check_for_tfm_font_mapping();
-                tfm_file = tt_xetex_open_input(TTIF_TFM as i32);
+                tfm_file = tt_xetex_open_input(TTInputFormat::TFM);
                 if tfm_file.is_null() {
                     if !quoted_filename {
                         g = load_native_font(u, nom, aire, s);
@@ -27530,7 +27458,6 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
     let mut s: scaled_t = 0;
     let mut f: internal_font_number = 0;
     let mut t: str_number = 0;
-    let mut old_setting_0: u8 = 0;
     if job_name == 0i32 {
         open_log_file();
     }
@@ -27545,11 +27472,11 @@ pub unsafe extern "C" fn new_font(mut a: small_number) {
             t = u - (1i32 + (0x10ffffi32 + 1i32))
         }
     } else {
-        old_setting_0 = selector as u8;
-        selector = SELECTOR_NEW_STRING;
+        let old_setting_0 = selector;
+        selector = Selector::NEW_STRING;
         print_cstr(b"FONT\x00" as *const u8 as *const i8);
         print(u - 1i32);
-        selector = old_setting_0 as selector_t;
+        selector = old_setting_0;
         if pool_ptr + 1i32 > pool_size {
             overflow(
                 b"pool size\x00" as *const u8 as *const i8,
@@ -27691,25 +27618,24 @@ pub unsafe extern "C" fn new_interaction() {
     print_ln();
     interaction = cur_chr as u8;
     if interaction as i32 == 0i32 {
-        selector = SELECTOR_NO_PRINT
+        selector = Selector::NO_PRINT
     } else {
-        selector = SELECTOR_TERM_ONLY
+        selector = Selector::TERM_ONLY
     }
     if log_opened {
-        selector = (selector as u32).wrapping_add(2_u32) as selector_t
+        selector = (u8::from(selector)).wrapping_add(2).into()
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn issue_message() {
-    let mut old_setting_0: u8 = 0;
     let mut c: u8 = 0;
     let mut s: str_number = 0;
     c = cur_chr as u8;
     (*mem.offset((4999999i32 - 12i32) as isize)).b32.s1 = scan_toks(false, true);
-    old_setting_0 = selector as u8;
-    selector = SELECTOR_NEW_STRING;
+    let old_setting_0 = selector;
+    selector = Selector::NEW_STRING;
     token_show(def_ref);
-    selector = old_setting_0 as selector_t;
+    selector = old_setting_0;
     flush_list(def_ref);
     if pool_ptr + 1i32 > pool_size {
         overflow(
@@ -27933,7 +27859,7 @@ pub unsafe extern "C" fn show_whatever() {
                 print_nl_cstr(b"! \x00" as *const u8 as *const i8);
             }
             print_cstr(b"OK\x00" as *const u8 as *const i8);
-            if selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32 {
+            if selector == Selector::TERM_AND_LOG {
                 if (*eqtb.offset(
                     (1i32
                         + (0x10ffffi32 + 1i32)
@@ -27964,9 +27890,9 @@ pub unsafe extern "C" fn show_whatever() {
                 .b32
                 .s1 <= 0i32
                 {
-                    selector = SELECTOR_TERM_ONLY;
+                    selector = Selector::TERM_ONLY;
                     print_cstr(b" (see the transcript file)\x00" as *const u8 as *const i8);
-                    selector = SELECTOR_TERM_AND_LOG
+                    selector = Selector::TERM_AND_LOG
                 }
             }
         }
@@ -31906,8 +31832,8 @@ pub unsafe extern "C" fn close_files_and_terminate() {
     if log_opened {
         ttstub_output_putc(log_file, '\n' as i32);
         ttstub_output_close(log_file);
-        selector = (selector as u32).wrapping_sub(2_u32) as selector_t;
-        if selector as u32 == SELECTOR_TERM_ONLY as i32 as u32 {
+        selector = u8::from(selector).wrapping_sub(2).into();
+        if selector == Selector::TERM_ONLY {
             print_nl_cstr(b"Transcript written on \x00" as *const u8 as *const i8);
             print(texmf_log_name);
             print_char('.' as i32);
@@ -31924,20 +31850,20 @@ pub unsafe extern "C" fn flush_str(mut s: str_number) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn tokens_to_string(mut p: i32) -> str_number {
-    if selector as u32 == SELECTOR_NEW_STRING as i32 as u32 {
+    if selector == Selector::NEW_STRING {
         pdf_error(
             b"tokens\x00" as *const u8 as *const i8,
             b"tokens_to_string() called while selector = new_string\x00" as *const u8 as *const i8,
         );
     }
-    old_setting = selector as u8;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector;
+    selector = Selector::NEW_STRING;
     show_token_list(
         (*mem.offset(p as isize)).b32.s1,
         -0xfffffffi32,
         pool_size - pool_ptr,
     );
-    selector = old_setting as selector_t;
+    selector = old_setting;
     make_string()
 }
 #[no_mangle]

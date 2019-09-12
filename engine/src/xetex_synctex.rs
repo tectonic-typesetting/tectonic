@@ -8,7 +8,10 @@
     unused_mut
 )]
 
-extern crate libc;
+use crate::{
+    ttstub_fprintf, ttstub_issue_error, ttstub_issue_warning, ttstub_output_close,
+    ttstub_output_open,
+};
 use libc::free;
 use std::ptr;
 
@@ -22,16 +25,6 @@ extern "C" {
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
-    #[no_mangle]
-    fn ttstub_issue_warning(format: *const i8, _: ...);
-    #[no_mangle]
-    fn ttstub_issue_error(format: *const i8, _: ...);
-    #[no_mangle]
-    fn ttstub_fprintf(handle: rust_output_handle_t, format: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.

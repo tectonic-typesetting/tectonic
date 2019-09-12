@@ -7,6 +7,10 @@
          unused_mut)]
 use crate::stub_errno as errno;
 use crate::stub_icu as icu;
+use crate::{
+    ttstub_input_close, ttstub_input_getc, ttstub_input_open, ttstub_input_open_primary,
+    ttstub_input_seek, ttstub_input_ungetc,
+};
 use libc::free;
 extern "C" {
     pub type Opaque_TECkit_Converter;
@@ -15,22 +19,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_open_primary() -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: i32) -> i32;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -141,33 +129,9 @@ extern "C" {
 }
 
 use crate::*;
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTInputFormat;
+
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type UErrorCode = i32;
 pub const U_ERROR_LIMIT: UErrorCode = 66818;
@@ -468,12 +432,12 @@ unsafe extern "C" fn print_c_string(mut str: *const i8) {
 #[no_mangle]
 pub static mut name_of_input_file: *mut i8 = 0 as *const i8 as *mut i8;
 #[no_mangle]
-pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: i32) -> rust_input_handle_t {
+pub unsafe extern "C" fn tt_xetex_open_input(mut filefmt: TTInputFormat) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    if filefmt == TTIF_TECTONIC_PRIMARY as i32 {
+    if filefmt == TTInputFormat::TECTONIC_PRIMARY {
         handle = ttstub_input_open_primary()
     } else {
-        handle = ttstub_input_open(name_of_file, filefmt as tt_input_format_type, 0i32)
+        handle = ttstub_input_open(name_of_file, filefmt as TTInputFormat, 0i32)
     }
     if handle.is_null() {
         return 0 as *mut libc::c_void;
@@ -546,7 +510,7 @@ pub unsafe extern "C" fn set_input_file_encoding(
 #[no_mangle]
 pub unsafe extern "C" fn u_open_in(
     mut f: *mut *mut UFILE,
-    mut filefmt: i32,
+    mut filefmt: TTInputFormat,
     mut fopen_mode: *const i8,
     mut mode: i32,
     mut encodingData: i32,
@@ -1139,7 +1103,7 @@ pub unsafe extern "C" fn open_or_close_in() {
         pack_file_name(cur_name, cur_area, cur_ext);
         if u_open_in(
             &mut *read_file.as_mut_ptr().offset(n as isize),
-            TTIF_TEX as i32,
+            TTInputFormat::TEX,
             b"rb\x00" as *const u8 as *const i8,
             (*eqtb.offset(
                 (1i32

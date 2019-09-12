@@ -6,7 +6,6 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
 extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;

@@ -6,7 +6,7 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use crate::{ttstub_get_data_md5, ttstub_get_file_md5};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -14,10 +14,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_get_file_md5(path: *const i8, digest: *mut i8) -> i32;
-    #[no_mangle]
-    fn ttstub_get_data_md5(data: *const i8, len: size_t, digest: *mut i8) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]

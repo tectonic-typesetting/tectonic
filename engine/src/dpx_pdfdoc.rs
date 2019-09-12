@@ -8,7 +8,6 @@
 
 use crate::{info, warn};
 
-extern crate libc;
 use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white, pdf_color_set_verbose,
 };
@@ -22,6 +21,7 @@ use crate::dpx_pdfobj::{
     pdf_release_obj, pdf_remove_dict, pdf_set_encrypt, pdf_set_id, pdf_set_info, pdf_set_root,
     pdf_stream_dict, pdf_stream_length, pdf_string_length, pdf_string_value,
 };
+use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -82,14 +82,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -383,33 +375,9 @@ extern "C" {
 pub type __time_t = i64;
 pub type size_t = u64;
 pub type time_t = __time_t;
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTInputFormat;
+
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -642,7 +610,8 @@ unsafe extern "C" fn read_thumbnail(mut thumb_filename: *const i8) -> *mut pdf_o
         };
         init
     };
-    handle = ttstub_input_open(thumb_filename, TTIF_PICT, 0i32) as *mut rust_input_handle_t;
+    handle =
+        ttstub_input_open(thumb_filename, TTInputFormat::PICT, 0i32) as *mut rust_input_handle_t;
     if handle.is_null() {
         dpx_warning(
             b"Could not open thumbnail file \"%s\"\x00" as *const u8 as *const i8,

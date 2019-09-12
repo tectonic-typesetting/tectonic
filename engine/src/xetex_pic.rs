@@ -6,23 +6,15 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::{pdf_close, pdf_file, pdf_obj, pdf_open, pdf_release_obj};
+use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
 extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -236,33 +228,9 @@ extern "C" {
         ydensity: *mut f64,
     ) -> i32;
 }
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTInputFormat;
+
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
 pub type Fixed = scaled_t;
@@ -400,7 +368,7 @@ pub unsafe extern "C" fn count_pdf_file_pages() -> i32 {
     let mut pages: i32 = 0;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
-    handle = ttstub_input_open(name_of_file, TTIF_PICT, 0i32);
+    handle = ttstub_input_open(name_of_file, TTInputFormat::PICT, 0i32);
     if handle.is_null() {
         return 0i32;
     }
@@ -568,7 +536,7 @@ unsafe extern "C" fn find_pic_file(
 ) -> i32 {
     let mut err: i32 = -1i32;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    handle = ttstub_input_open(name_of_file, TTIF_PICT, 0i32);
+    handle = ttstub_input_open(name_of_file, TTInputFormat::PICT, 0i32);
     (*bounds).ht = 0.0f64 as f32;
     (*bounds).wd = (*bounds).ht;
     (*bounds).y = (*bounds).wd;

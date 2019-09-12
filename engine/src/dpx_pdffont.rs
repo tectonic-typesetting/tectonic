@@ -8,7 +8,7 @@
 
 use crate::stub_errno as errno;
 use crate::{info, warn};
-extern crate libc;
+
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_dict, pdf_new_name, pdf_obj,
     pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,

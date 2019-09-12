@@ -6,8 +6,6 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
-
 pub type size_t = u64;
 #[no_mangle]
 pub unsafe extern "C" fn UC_is_valid(mut ucv: i32) -> bool {

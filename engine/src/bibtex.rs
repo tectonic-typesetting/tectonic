@@ -6,7 +6,10 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use crate::{
+    ttstub_input_close, ttstub_input_getc, ttstub_input_open, ttstub_output_close,
+    ttstub_output_open, ttstub_output_open_stdout, ttstub_output_putc, ttstub_output_write,
+};
 use libc::free;
 extern "C" {
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
@@ -26,26 +29,6 @@ extern "C" {
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
-    #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
-    #[no_mangle]
-    fn ttstub_output_open_stdout() -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -79,34 +62,11 @@ pub type size_t = u64;
 pub struct __sigset_t {
     pub __val: [u64; 16],
 }
-pub type tt_history_t = u32;
-pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
-pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
-pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
-pub const HISTORY_SPOTLESS: tt_history_t = 0;
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTHistory;
+
+use crate::TTInputFormat;
+
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type str_number = i32;
@@ -152,7 +112,7 @@ pub type pds_type = *const i8;
 pub type blt_in_range = i32;
 unsafe extern "C" fn peekable_open(
     mut path: *const i8,
-    mut format: tt_input_format_type,
+    mut format: TTInputFormat,
 ) -> *mut peekable_input_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut peekable: *mut peekable_input_t = 0 as *mut peekable_input_t;
@@ -255,7 +215,7 @@ static mut end_of_def: i32 = 0;
 static mut undefined: i32 = 0;
 static mut bad: i32 = 0;
 /*fatal_message */
-static mut history: u8 = 0;
+static mut history: TTHistory = TTHistory::SPOTLESS;
 static mut err_count: i32 = 0;
 static mut lex_class: [lex_type; 256] = [0; 256];
 static mut id_class: [id_type; 256] = [0; 256];
@@ -544,23 +504,23 @@ unsafe extern "C" fn printf_log(mut fmt: *const i8, mut args: ...) {
     puts_log(fmt_buf.as_mut_ptr());
 }
 unsafe extern "C" fn mark_warning() {
-    if history as i32 == HISTORY_WARNING_ISSUED as i32 {
+    if history == TTHistory::WARNING_ISSUED {
         err_count += 1
-    } else if history as i32 == HISTORY_SPOTLESS as i32 {
-        history = HISTORY_WARNING_ISSUED as i32 as u8;
+    } else if history == TTHistory::SPOTLESS {
+        history = TTHistory::WARNING_ISSUED;
         err_count = 1i32
     };
 }
 unsafe extern "C" fn mark_error() {
-    if (history as i32) < HISTORY_ERROR_ISSUED as i32 {
-        history = HISTORY_ERROR_ISSUED as i32 as u8;
+    if (history as i32) < (TTHistory::ERROR_ISSUED as i32) {
+        history = TTHistory::ERROR_ISSUED;
         err_count = 1i32
     } else {
         err_count += 1
     };
 }
 unsafe extern "C" fn mark_fatal() {
-    history = HISTORY_FATAL_ERROR as i32 as u8;
+    history = TTHistory::FATAL_ERROR;
 }
 unsafe extern "C" fn print_overflow() {
     puts_log(b"Sorry---you\'ve exceeded BibTeX\'s \x00" as *const u8 as *const i8);
@@ -11181,7 +11141,7 @@ unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name: *const i
     name_length = aux_name_length;
     /* this code used to auto-add the .aux extension if needed; we don't */
     aux_ptr = 0i32; // preserve pascal-style string semantics
-    aux_file[aux_ptr as usize] = peekable_open(name_of_file as *mut i8, TTIF_TEX);
+    aux_file[aux_ptr as usize] = peekable_open(name_of_file as *mut i8, TTInputFormat::TEX);
     if aux_file[aux_ptr as usize].is_null() {
         sam_wrong_file_name_print();
         return 1i32;
@@ -11277,7 +11237,7 @@ unsafe extern "C" fn aux_bib_data_command() {
         }
         start_name(*bib_list.offset(bib_ptr as isize));
         let ref mut fresh9 = *bib_file.offset(bib_ptr as isize);
-        *fresh9 = peekable_open(name_of_file as *mut i8, TTIF_BIB);
+        *fresh9 = peekable_open(name_of_file as *mut i8, TTInputFormat::BIB);
         if (*fresh9).is_null() {
             puts_log(b"I couldn\'t open database file \x00" as *const u8 as *const i8);
             print_bib_name();
@@ -11321,7 +11281,7 @@ unsafe extern "C" fn aux_bib_style_command() {
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     start_name(bst_str);
-    bst_file = peekable_open(name_of_file as *mut i8, TTIF_BST);
+    bst_file = peekable_open(name_of_file as *mut i8, TTInputFormat::BST);
     if bst_file.is_null() {
         puts_log(b"I couldn\'t open style file \x00" as *const u8 as *const i8);
         print_bst_name();
@@ -11501,7 +11461,7 @@ unsafe extern "C" fn aux_input_command() {
     start_name(aux_list[aux_ptr as usize]);
     name_ptr = name_length;
     *name_of_file.offset(name_ptr as isize) = 0i32 as u8;
-    aux_file[aux_ptr as usize] = peekable_open(name_of_file as *mut i8, TTIF_TEX);
+    aux_file[aux_ptr as usize] = peekable_open(name_of_file as *mut i8, TTInputFormat::TEX);
     if aux_file[aux_ptr as usize].is_null() {
         puts_log(b"I couldn\'t open auxiliary file \x00" as *const u8 as *const i8);
         print_aux_name();
@@ -13105,7 +13065,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> i32 {
     if bad != 0 {
         return 1i32;
     }
-    history = HISTORY_SPOTLESS as i32 as u8;
+    history = TTHistory::SPOTLESS;
     i = 0i32;
     while i <= 127i32 {
         lex_class[i as usize] = 5i32 as lex_type;
@@ -13307,7 +13267,7 @@ unsafe extern "C" fn initialize(mut aux_file_name: *const i8) -> i32 {
    Licensed under the MIT License.
 */
 #[no_mangle]
-pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history_t {
+pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> TTHistory {
     pool_size = 65000 as i32;
     buf_size = 20000i32;
     max_bib_files = 20i32;
@@ -13318,7 +13278,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
     lit_stk_size = 100i32;
     standard_output = ttstub_output_open_stdout();
     if standard_output.is_null() {
-        return HISTORY_FATAL_ERROR;
+        return TTHistory::FATAL_ERROR;
     }
     setup_params();
     entry_ints = 0 as *mut i32;
@@ -13402,7 +13362,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
     compute_hash_prime();
     if initialize(aux_file_name) != 0 {
         /* TODO: log initialization or get_the_..() error */
-        return HISTORY_FATAL_ERROR;
+        return TTHistory::FATAL_ERROR;
     }
     if !(_setjmp(error_jmpbuf.as_mut_ptr()) == 1i32) {
         if verbose != 0 {
@@ -13467,9 +13427,9 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
         );
         print_bib_name();
     }
-    match history as i32 {
-        0 => {}
-        1 => {
+    match history {
+        TTHistory::SPOTLESS => {}
+        TTHistory::WARNING_ISSUED => {
             if err_count == 1i32 {
                 puts_log(b"(There was 1 warning)\n\x00" as *const u8 as *const i8);
             } else {
@@ -13479,7 +13439,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
                 );
             }
         }
-        2 => {
+        TTHistory::ERROR_ISSUED => {
             if err_count == 1i32 {
                 puts_log(b"(There was 1 error message)\n\x00" as *const u8 as *const i8);
             } else {
@@ -13489,14 +13449,10 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
                 );
             }
         }
-        3 => {
+        TTHistory::FATAL_ERROR => {
             puts_log(b"(That was a fatal error)\n\x00" as *const u8 as *const i8);
-        }
-        _ => {
-            puts_log(b"History is bunk\x00" as *const u8 as *const i8);
-            print_confusion();
         }
     }
     ttstub_output_close(log_file);
-    history as tt_history_t
+    history
 }

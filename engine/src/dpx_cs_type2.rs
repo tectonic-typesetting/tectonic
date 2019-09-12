@@ -8,7 +8,6 @@
 
 use crate::warn;
 
-extern crate libc;
 extern "C" {
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;

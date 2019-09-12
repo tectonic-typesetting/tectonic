@@ -6,7 +6,6 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_link_obj, pdf_lookup_dict, pdf_new_array,
     pdf_new_dict, pdf_new_name, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj,

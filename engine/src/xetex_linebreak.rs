@@ -6,7 +6,6 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
 extern "C" {
     #[no_mangle]
     fn measure_native_node(node: *mut libc::c_void, use_glyph_metrics: i32);

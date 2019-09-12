@@ -8,7 +8,7 @@
 
 use crate::warn;
 
-extern crate libc;
+use crate::{ttstub_input_get_size, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
     pub type pst_obj;
@@ -87,12 +87,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn CMap_is_valid(cmap: *mut CMap) -> bool;
     #[no_mangle]

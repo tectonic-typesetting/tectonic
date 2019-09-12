@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-extern crate libc;
+
 use libc::free;
 extern "C" {
     #[no_mangle]

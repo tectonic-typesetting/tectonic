@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-extern crate libc;
+use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -22,18 +22,6 @@ extern "C" {
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -77,33 +65,9 @@ extern "C" {
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTInputFormat;
+
 pub type rust_input_handle_t = *mut libc::c_void;
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
@@ -285,7 +249,7 @@ unsafe extern "C" fn ensuresuffix(mut basename: *const i8, mut sfx: *const i8) -
 pub unsafe extern "C" fn dpx_tt_open(
     mut filename: *const i8,
     mut suffix: *const i8,
-    mut format: tt_input_format_type,
+    mut format: TTInputFormat,
 ) -> rust_input_handle_t {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
@@ -303,7 +267,7 @@ pub unsafe extern "C" fn dpx_tt_open(
 #[no_mangle]
 pub unsafe extern "C" fn dpx_open_type1_file(mut filename: *const i8) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    handle = ttstub_input_open(filename, TTIF_TYPE1, 0i32);
+    handle = ttstub_input_open(filename, TTInputFormat::TYPE1, 0i32);
     if handle.is_null() {
         return 0 as *mut libc::c_void;
     }
@@ -316,7 +280,7 @@ pub unsafe extern "C" fn dpx_open_type1_file(mut filename: *const i8) -> rust_in
 #[no_mangle]
 pub unsafe extern "C" fn dpx_open_truetype_file(mut filename: *const i8) -> rust_input_handle_t {
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-    handle = ttstub_input_open(filename, TTIF_TRUETYPE, 0i32);
+    handle = ttstub_input_open(filename, TTInputFormat::TRUETYPE, 0i32);
     if handle.is_null() {
         return 0 as *mut libc::c_void;
     }
@@ -331,7 +295,7 @@ pub unsafe extern "C" fn dpx_open_opentype_file(mut filename: *const i8) -> rust
     let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
     let mut q: *mut i8 = 0 as *mut i8;
     q = ensuresuffix(filename, b".otf\x00" as *const u8 as *const i8);
-    handle = ttstub_input_open(q, TTIF_OPENTYPE, 0i32);
+    handle = ttstub_input_open(q, TTInputFormat::OPENTYPE, 0i32);
     free(q as *mut libc::c_void);
     if handle.is_null() {
         return 0 as *mut libc::c_void;
@@ -365,7 +329,7 @@ pub unsafe extern "C" fn dpx_open_dfont_file(mut filename: *const i8) -> rust_in
     } else {
         q = xstrdup(filename)
     }
-    handle = ttstub_input_open(q, TTIF_TRUETYPE, 0i32);
+    handle = ttstub_input_open(q, TTInputFormat::TRUETYPE, 0i32);
     free(q as *mut libc::c_void);
     if handle.is_null() {
         return 0 as *mut libc::c_void;
