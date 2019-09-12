@@ -1016,7 +1016,10 @@ mod xetex_synctex;
 mod xetex_texmfmp;
 mod xetex_xetex0;
 
+#[macro_use]
+mod macro_stub;
 mod stub_icu;
+mod stub_errno;
 
 pub use xetex_engine_interface::tt_xetex_set_int_variable;
 

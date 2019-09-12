@@ -6,13 +6,11 @@
          unused_assignments,
          unused_mut)]
 
+use crate::stub_errno as errno;
 use crate::warn;
-
-extern crate libc;
 use libc::free;
+
 extern "C" {
-    #[no_mangle]
-    fn __errno_location() -> *mut i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -863,7 +861,7 @@ unsafe extern "C" fn get_real(
     } else {
         let mut s: *mut i8 = 0 as *mut i8;
         result = strtod(work_buffer.as_mut_ptr(), &mut s);
-        if *s as i32 != 0i32 || *__errno_location() == 34i32 {
+        if *s as i32 != 0i32 || errno::errno() == errno::ERANGE {
             *status = -1i32
         }
     }

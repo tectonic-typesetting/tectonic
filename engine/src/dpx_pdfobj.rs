@@ -153,8 +153,6 @@ extern "C" {
     fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
 }
 
-use libz::{compress, compress2, inflate, inflateEnd, inflateInit_};
-use libz::{z_stream, z_streamp};
 use libz_sys as libz;
 
 pub type __ssize_t = i64;
@@ -2673,7 +2671,7 @@ pub unsafe extern "C" fn pdf_add_stream_flate(
     mut data: *const libc::c_void,
     mut len: libc::c_int,
 ) -> libc::c_int {
-    let mut z: z_stream = std::mem::zeroed();
+    let mut z: libz::z_stream = std::mem::zeroed();
     let mut wbuf: [libz::Bytef; 4096] = [0; 4096];
     // FIXME: Bug in libpng-sys
     // z.zalloc = null_mut();
@@ -2683,10 +2681,10 @@ pub unsafe extern "C" fn pdf_add_stream_flate(
     z.avail_in = len as libz::uInt;
     z.next_out = wbuf.as_mut_ptr();
     z.avail_out = 4096i32 as libz::uInt;
-    if inflateInit_(
+    if libz::inflateInit_(
         &mut z,
         b"1.2.11\x00" as *const u8 as *const i8,
-        ::std::mem::size_of::<z_stream>() as libc::c_ulong as libc::c_int,
+        ::std::mem::size_of::<libz::z_stream>() as libc::c_ulong as libc::c_int,
     ) != 0i32
     {
         warn!("inflateInit() failed.");
@@ -2694,13 +2692,13 @@ pub unsafe extern "C" fn pdf_add_stream_flate(
     }
     loop {
         let mut status: libc::c_int = 0;
-        status = inflate(&mut z, 0i32);
+        status = libz::inflate(&mut z, 0i32);
         if status == 1i32 {
             break;
         }
         if status != 0i32 {
             warn!("inflate() failed. Broken PDF file?");
-            inflateEnd(&mut z);
+            libz::inflateEnd(&mut z);
             return -1i32;
         }
         if z.avail_out == 0i32 as libc::c_uint {
@@ -2716,7 +2714,7 @@ pub unsafe extern "C" fn pdf_add_stream_flate(
             (4096i32 as libc::c_uint).wrapping_sub(z.avail_out) as libc::c_int,
         );
     }
-    return if inflateEnd(&mut z) == 0i32 {
+    return if libz::inflateEnd(&mut z) == 0i32 {
         0i32
     } else {
         -1i32
@@ -3122,7 +3120,7 @@ unsafe extern "C" fn pdf_add_stream_flate_filtered(
     mut parms: *mut decode_parms,
 ) -> libc::c_int {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut z: z_stream = std::mem::zeroed();
+    let mut z: libz::z_stream = std::mem::zeroed();
     let mut wbuf: [libz::Bytef; 4096] = [0; 4096];
     let mut error: libc::c_int = 0;
     // FIXME: Bug in libpng-sys
@@ -3133,10 +3131,10 @@ unsafe extern "C" fn pdf_add_stream_flate_filtered(
     z.avail_in = len as libz::uInt;
     z.next_out = wbuf.as_mut_ptr();
     z.avail_out = 4096i32 as libz::uInt;
-    if inflateInit_(
+    if libz::inflateInit_(
         &mut z,
         b"1.2.11\x00" as *const u8 as *const i8,
-        ::std::mem::size_of::<z_stream>() as libc::c_ulong as libc::c_int,
+        ::std::mem::size_of::<libz::z_stream>() as libc::c_ulong as libc::c_int,
     ) != 0i32
     {
         warn!("inflateInit() failed.");
@@ -3145,13 +3143,13 @@ unsafe extern "C" fn pdf_add_stream_flate_filtered(
     tmp = pdf_new_stream(0i32);
     loop {
         let mut status: libc::c_int = 0;
-        status = inflate(&mut z, 0i32);
+        status = libz::inflate(&mut z, 0i32);
         if status == 1i32 {
             break;
         }
         if status != 0i32 {
             warn!("inflate() failed. Broken PDF file?");
-            inflateEnd(&mut z);
+            libz::inflateEnd(&mut z);
             return -1i32;
         }
         if z.avail_out == 0i32 as libc::c_uint {
@@ -3169,7 +3167,7 @@ unsafe extern "C" fn pdf_add_stream_flate_filtered(
     }
     error = filter_decoded(dst, pdf_stream_dataptr(tmp), pdf_stream_length(tmp), parms);
     pdf_release_obj(tmp);
-    return if error == 0 && inflateEnd(&mut z) == 0i32 {
+    return if error == 0 && libz::inflateEnd(&mut z) == 0i32 {
         0i32
     } else {
         -1i32
