@@ -2658,7 +2658,7 @@ pub unsafe extern "C" fn pdf_doc_begin_article(
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut article: *mut pdf_article = 0 as *mut pdf_article;
     if article_id.is_null() || strlen(article_id) == 0i32 as u64 {
-        _tt_abort(b"Article thread without internal identifier.\x00" as *const u8 as *const i8);
+        panic!("Article thread without internal identifier.");
     }
     if (*p).articles.num_entries >= (*p).articles.max_entries {
         (*p).articles.max_entries = (*p).articles.max_entries.wrapping_add(16_u32);
@@ -2711,7 +2711,7 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
     let mut bead: *mut pdf_bead = 0 as *mut pdf_bead;
     let mut i: u32 = 0;
     if article_id.is_null() {
-        _tt_abort(b"No article identifier specified.\x00" as *const u8 as *const i8);
+        panic!("No article identifier specified.");
     }
     article = 0 as *mut pdf_article;
     i = 0_u32;
@@ -2724,7 +2724,7 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
         }
     }
     if article.is_null() {
-        _tt_abort(b"Specified article thread that doesn\'t exist.\x00" as *const u8 as *const i8);
+        panic!("Specified article thread that doesn\'t exist.");
     }
     bead = if !bead_id.is_null() {
         find_bead(article, bead_id)
@@ -3085,10 +3085,7 @@ pub unsafe extern "C" fn pdf_doc_get_reference(mut category: *const i8) -> *mut 
         ref_0 = pdf_doc_ref_page(page_no as u32)
     } else if streq_ptr(category, b"@PREVPAGE\x00" as *const u8 as *const i8) {
         if page_no <= 1i32 {
-            _tt_abort(
-                b"Reference to previous page, but no pages have been completed yet.\x00"
-                    as *const u8 as *const i8,
-            );
+            panic!("Reference to previous page, but no pages have been completed yet.");
         }
         ref_0 = pdf_doc_ref_page((page_no - 1i32) as u32)
     } else if streq_ptr(category, b"@NEXTPAGE\x00" as *const u8 as *const i8) {
@@ -3126,7 +3123,7 @@ unsafe extern "C" fn pdf_doc_new_page(mut p: *mut pdf_doc) {
 unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
     let mut currentpage: *mut pdf_page = 0 as *mut pdf_page;
     if !(*p).pending_forms.is_null() {
-        _tt_abort(b"A pending form XObject at the end of page.\x00" as *const u8 as *const i8);
+        panic!("A pending form XObject at the end of page.");
     }
     currentpage = &mut *(*p).pages.entries.offset((*p).pages.num_entries as isize) as *mut pdf_page;
     if (*currentpage).page_obj.is_null() {
@@ -3464,7 +3461,7 @@ unsafe extern "C" fn pdf_doc_make_xform(
         pdf_new_number(1.0f64),
     );
     if bbox.is_null() {
-        _tt_abort(b"No BoundingBox supplied.\x00" as *const u8 as *const i8);
+        panic!("No BoundingBox supplied.");
     }
     tmp = pdf_new_array();
     pdf_add_array(

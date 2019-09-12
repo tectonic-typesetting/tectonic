@@ -609,22 +609,13 @@ unsafe extern "C" fn CIDFont_flush(mut font: *mut CIDFont) {
 unsafe extern "C" fn CIDFont_release(mut font: *mut CIDFont) {
     if !font.is_null() {
         if !(*font).indirect.is_null() {
-            _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
-                b"CIDFont\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Object not flushed.", "CIDFont",);
         }
         if !(*font).fontdict.is_null() {
-            _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
-                b"CIDFont\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Object not flushed.", "CIDFont",);
         }
         if !(*font).descriptor.is_null() {
-            _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
-                b"CIDFont\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Object not flushed.", "CIDFont",);
         }
         free((*font).fontname as *mut libc::c_void);
         free((*font).name as *mut libc::c_void);
@@ -683,10 +674,7 @@ pub unsafe extern "C" fn CIDFont_get_CIDSysInfo(mut font: *mut CIDFont) -> *mut 
 pub unsafe extern "C" fn CIDFont_get_parent_id(mut font: *mut CIDFont, mut wmode: i32) -> i32 {
     assert!(!font.is_null());
     if wmode < 0i32 || wmode > 1i32 {
-        _tt_abort(
-            b"%s: Invalid wmode value.\x00" as *const u8 as *const i8,
-            b"CIDFont\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Invalid wmode value.", "CIDFont",);
     }
     (*font).parent[wmode as usize]
 }
@@ -709,10 +697,7 @@ pub unsafe extern "C" fn CIDFont_attach_parent(
 ) {
     assert!(!font.is_null());
     if wmode < 0i32 || wmode > 1i32 {
-        _tt_abort(
-            b"%s: Invalid wmode value.\x00" as *const u8 as *const i8,
-            b"CIDFont\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Invalid wmode value.", "CIDFont",);
     }
     if (*font).parent[wmode as usize] >= 0i32 {
         warn!("{}: CIDFont already have a parent Type1 font.", "CIDFont");
@@ -724,10 +709,7 @@ pub unsafe extern "C" fn CIDFont_is_ACCFont(mut font: *mut CIDFont) -> bool {
     let mut i: i32 = 0;
     assert!(!font.is_null());
     if (*font).csi.is_null() {
-        _tt_abort(
-            b"%s: CIDSystemInfo undefined.\x00" as *const u8 as *const i8,
-            b"CIDFont\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: CIDSystemInfo undefined.", "CIDFont",);
     }
     i = 1i32;
     while i <= 4i32 {
@@ -1252,10 +1234,7 @@ unsafe extern "C" fn CIDFont_base_open(
 static mut __cache: *mut FontCache = 0 as *const FontCache as *mut FontCache;
 unsafe extern "C" fn CIDFont_cache_init() {
     if !__cache.is_null() {
-        _tt_abort(
-            b"%s: Already initialized.\x00" as *const u8 as *const i8,
-            b"CIDFont\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Already initialized.", "CIDFont",);
     }
     __cache = new((1_u64).wrapping_mul(::std::mem::size_of::<FontCache>() as u64) as u32)
         as *mut FontCache;
@@ -1268,17 +1247,10 @@ unsafe extern "C" fn CIDFont_cache_init() {
 #[no_mangle]
 pub unsafe extern "C" fn CIDFont_cache_get(mut font_id: i32) -> *mut CIDFont {
     if __cache.is_null() {
-        _tt_abort(
-            b"%s: CIDFont cache not initialized.\x00" as *const u8 as *const i8,
-            b"CIDFont\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: CIDFont cache not initialized.", "CIDFont",);
     }
     if font_id < 0i32 || font_id >= (*__cache).num {
-        _tt_abort(
-            b"%s: Invalid ID %d\x00" as *const u8 as *const i8,
-            b"CIDFont\x00" as *const u8 as *const i8,
-            font_id,
-        );
+        panic!("{}: Invalid ID {}", "CIDFont", font_id,);
     }
     *(*__cache).fonts.offset(font_id as isize)
 }

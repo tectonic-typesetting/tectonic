@@ -669,9 +669,9 @@ pub unsafe extern "C" fn linebreak_start(
         brkLocaleStrNum = localeStrNum
     }
     if brkIter.is_null() {
-        _tt_abort(
-            b"failed to create linebreak iterator, status=%d\x00" as *const u8 as *const i8,
-            status as i32,
+        panic!(
+            "failed to create linebreak iterator, status={}",
+            status as i32
         );
     }
     icu::ubrk_setText(brkIter, text as *mut icu::UChar, textLength, &mut status);
@@ -1902,7 +1902,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
         embolden = getEmboldenFactor(engine);
         size = D2Fix(getPointSize(engine) as f64)
     } else {
-        _tt_abort(b"bad native font flag in `make_font_def`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `make_font_def`");
     }
     filenameLen = strlen(filename) as u8;
     /* parameters after internal font ID:
@@ -2052,9 +2052,7 @@ pub unsafe extern "C" fn get_native_char_height_depth(
         let mut gid: i32 = mapCharToGlyph(engine, ch as u32) as i32;
         getGlyphHeightDepth(engine, gid as u32, &mut ht, &mut dp);
     } else {
-        _tt_abort(
-            b"bad native font flag in `get_native_char_height_depth`\x00" as *const u8 as *const i8,
-        );
+        panic!("bad native font flag in `get_native_char_height_depth`");
     }
     *height = D2Fix(ht as f64);
     *depth = D2Fix(dp as f64);
@@ -2109,10 +2107,7 @@ pub unsafe extern "C" fn get_native_char_sidebearings(
         let mut gid: i32 = mapCharToGlyph(engine, ch as u32) as i32;
         getGlyphSidebearings(engine, gid as u32, &mut l, &mut r);
     } else {
-        _tt_abort(
-            b"bad native font flag in `get_native_char_side_bearings`\x00" as *const u8
-                as *const i8,
-        );
+        panic!("bad native font flag in `get_native_char_side_bearings`");
     }
     *lsb = D2Fix(l as f64);
     *rsb = D2Fix(r as f64);
@@ -2131,7 +2126,7 @@ pub unsafe extern "C" fn get_glyph_bounds(mut font: i32, mut edge: i32, mut gid:
             getGlyphHeightDepth(engine, gid as u32, &mut a, &mut b);
         }
     } else {
-        _tt_abort(b"bad native font flag in `get_glyph_bounds`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `get_glyph_bounds`");
     }
     D2Fix((if edge <= 2i32 { a } else { b }) as f64)
 }
@@ -2156,7 +2151,7 @@ pub unsafe extern "C" fn getnativecharwd(mut f: i32, mut c: i32) -> scaled_t {
         let mut gid: i32 = mapCharToGlyph(engine, c as u32) as i32;
         wd = D2Fix(getGlyphWidthFromEngine(engine, gid as u32) as f64)
     } else {
-        _tt_abort(b"bad native font flag in `get_native_char_wd`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `get_native_char_wd`");
     }
     wd
 }
@@ -2425,7 +2420,7 @@ pub unsafe extern "C" fn measure_native_node(
         }
         free(glyphAdvances as *mut libc::c_void);
     } else {
-        _tt_abort(b"bad native font flag in `measure_native_node`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `measure_native_node`");
     }
     if use_glyph_metrics == 0i32 || (*node.offset(4)).b16.s0 as i32 == 0i32 {
         /* for efficiency, height and depth are the font's ascent/descent,
@@ -2529,7 +2524,7 @@ pub unsafe extern "C" fn measure_native_glyph(
             getGlyphHeightDepth(engine, gid as u32, &mut ht, &mut dp);
         }
     } else {
-        _tt_abort(b"bad native font flag in `measure_native_glyph`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `measure_native_glyph`");
     }
     if use_glyph_metrics != 0 {
         (*node.offset(3)).b32.s1 = D2Fix(ht as f64);
@@ -2550,7 +2545,7 @@ pub unsafe extern "C" fn map_char_to_glyph(mut font: i32, mut ch: i32) -> i32 {
             ch as u32,
         ) as i32;
     } else {
-        _tt_abort(b"bad native font flag in `map_char_to_glyph`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `map_char_to_glyph`");
     };
 }
 #[no_mangle]
@@ -2562,7 +2557,7 @@ pub unsafe extern "C" fn map_glyph_to_index(mut font: i32) -> i32
             name_of_file,
         );
     } else {
-        _tt_abort(b"bad native font flag in `map_glyph_to_index`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `map_glyph_to_index`");
     };
 }
 #[no_mangle]
@@ -2573,7 +2568,7 @@ pub unsafe extern "C" fn get_font_char_range(mut font: i32, mut first: i32) -> i
             first,
         );
     } else {
-        _tt_abort(b"bad native font flag in `get_font_char_range\'`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `get_font_char_range\'`");
     };
 }
 #[no_mangle]
@@ -2647,7 +2642,7 @@ pub unsafe extern "C" fn print_glyph_name(mut font: i32, mut gid: i32) {
             *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
         s = getGlyphName(getFont(engine), gid as u16, &mut len)
     } else {
-        _tt_abort(b"bad native font flag in `print_glyph_name`\x00" as *const u8 as *const i8);
+        panic!("bad native font flag in `print_glyph_name`");
     }
     loop {
         let fresh33 = len;

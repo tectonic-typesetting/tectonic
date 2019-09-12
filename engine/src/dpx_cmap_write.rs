@@ -272,7 +272,7 @@ unsafe extern "C" fn sputx(mut c: u8, mut s: *mut *mut i8, mut end: *mut i8) -> 
     let mut hi: i8 = (c as i32 >> 4i32) as i8;
     let mut lo: i8 = (c as i32 & 0xfi32) as i8;
     if (*s).offset(2) > end {
-        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+        panic!("Buffer overflow.");
     }
     **s = (if (hi as i32) < 10i32 {
         hi as i32 + '0' as i32
@@ -370,16 +370,13 @@ unsafe extern "C" fn write_map(
                     }
                 }
                 2 => {
-                    _tt_abort(
-                        b"%s: Unexpected error...\x00" as *const u8 as *const i8,
-                        b"CMap\x00" as *const u8 as *const i8,
-                    );
+                    panic!("{}: Unexpected error...", "CMap",);
                 }
                 8 => {}
                 _ => {
-                    _tt_abort(
-                        b"%s: Unknown mapping type: %d\x00" as *const u8 as *const i8,
-                        b"CMap\x00" as *const u8 as *const i8,
+                    panic!(
+                        "{}: Unknown mapping type: {}",
+                        "CMap",
                         (*mtab.offset(c as isize)).flag & 0xfi32,
                     );
                 }
@@ -639,7 +636,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
      * Predefined CMaps need not to be embedded.
      */
     if !(*cmap).useCMap.is_null() {
-        _tt_abort(b"UseCMap found (not supported yet)...\x00" as *const u8 as *const i8);
+        panic!("UseCMap found (not supported yet)...");
     }
     wbuf.buf = new((4096_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     codestr = new(((*cmap).profile.maxBytesIn as u32 as u64)

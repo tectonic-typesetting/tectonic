@@ -87,9 +87,6 @@ extern "C" {
     fn strstr(_: *const i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn CMap_is_valid(cmap: *mut CMap) -> bool;
     #[no_mangle]
@@ -335,7 +332,7 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         if ttstub_input_read((*reader).handle, (*reader).endptr as *mut i8, bytesread) as u64
             != bytesread
         {
-            _tt_abort(b"Reading file failed.\x00" as *const u8 as *const i8);
+            panic!("Reading file failed.");
         }
         (*reader).endptr = (*reader).endptr.offset(bytesread as isize);
         (*reader).unread = ((*reader).unread as u64).wrapping_sub(bytesread) as size_t as size_t;
@@ -451,7 +448,7 @@ unsafe extern "C" fn handle_codearray(
 ) -> i32 {
     let mut tok: *mut pst_obj = 0 as *mut pst_obj;
     if dim < 1i32 {
-        _tt_abort(b"Invalid code range.\x00" as *const u8 as *const i8);
+        panic!("Invalid code range.");
     }
     loop {
         let fresh1 = count;
@@ -472,15 +469,9 @@ unsafe extern "C" fn handle_codearray(
                     pst_length_of(tok) as size_t,
                 );
             } else if pst_type_of(tok) == 7i32 || !(pst_type_of(tok) == 6i32) {
-                _tt_abort(
-                    b"%s: Invalid CMap mapping record.\x00" as *const u8 as *const i8,
-                    b"CMap_parse:\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Invalid CMap mapping record.", "CMap_parse:",);
             } else {
-                _tt_abort(
-                    b"%s: Mapping to charName not supported.\x00" as *const u8 as *const i8,
-                    b"CMap_parse:\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Mapping to charName not supported.", "CMap_parse:",);
             }
         }
         pst_release_obj(tok);
@@ -731,10 +722,7 @@ unsafe extern "C" fn do_bfchar(
                 pst_length_of(tok2) as size_t,
             );
         } else if pst_type_of(tok2) == 6i32 {
-            _tt_abort(
-                b"%s: Mapping to charName not supported.\x00" as *const u8 as *const i8,
-                b"CMap_parse:\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Mapping to charName not supported.", "CMap_parse:",);
         } else {
             warn!("{}: Invalid CMap mapping record. (ignored)", "CMap_parse:");
         }

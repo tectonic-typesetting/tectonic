@@ -973,11 +973,7 @@ pub unsafe extern "C" fn cff_dict_unpack(
         }
     }
     if status != 0i32 {
-        _tt_abort(
-            b"%s: Parsing CFF DICT failed. (error=%d)\x00" as *const u8 as *const i8,
-            b"CFF\x00" as *const u8 as *const i8,
-            status,
-        );
+        panic!("{}: Parsing CFF DICT failed. (error={})", "CFF", status,);
     } else {
         if stack_top != 0i32 {
             warn!("{}: Garbage in CFF DICT data.", "CFF");
@@ -991,19 +987,13 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
     let mut len: i32 = 0i32; /* longint */
     if value >= -107i32 && value <= 107i32 {
         if destlen < 1i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         *dest.offset(0) = (value + 139i32 & 0xffi32) as card8;
         len = 1i32
     } else if value >= 108i32 && value <= 1131i32 {
         if destlen < 2i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         value = 0xf700u32.wrapping_add(value as u32).wrapping_sub(108_u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
@@ -1011,10 +1001,7 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
         len = 2i32
     } else if value >= -1131i32 && value <= -108i32 {
         if destlen < 2i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         value = 0xfb00u32.wrapping_sub(value as u32).wrapping_sub(108_u32) as i32;
         *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
@@ -1023,10 +1010,7 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
     } else if value >= -32768i32 && value <= 32767i32 {
         /* shortint */
         if destlen < 3i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         *dest.offset(0) = 28i32 as card8;
         *dest.offset(1) = (value >> 8i32 & 0xffi32) as card8;
@@ -1034,10 +1018,7 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
         len = 3i32
     } else {
         if destlen < 5i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         *dest.offset(0) = 29i32 as card8;
         *dest.offset(1) = (value >> 24i32 & 0xffi32) as card8;
@@ -1053,10 +1034,7 @@ unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value
     let mut pos: i32 = 2i32;
     let mut buffer: [i8; 32] = [0; 32];
     if destlen < 2i32 {
-        _tt_abort(
-            b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-            b"CFF\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Buffer overflow.", "CFF",);
     }
     *dest.offset(0) = 30i32 as card8;
     if value == 0.0f64 {
@@ -1092,16 +1070,10 @@ unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value
                 0xbi32
             }) as u8
         } else {
-            _tt_abort(
-                b"%s: Invalid character.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Invalid character.", "CFF",);
         }
         if destlen < pos / 2i32 + 1i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         if pos % 2i32 != 0 {
             let ref mut fresh15 = *dest.offset((pos / 2i32) as isize);
@@ -1118,10 +1090,7 @@ unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value
         pos += 1
     } else {
         if destlen < pos / 2i32 + 1i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         *dest.offset((pos / 2i32) as isize) = 0xffi32 as card8;
         pos += 2i32
@@ -1142,10 +1111,7 @@ unsafe extern "C" fn cff_dict_put_number(
         let mut lvalue: i32 = 0; /* integer */
         lvalue = value as i32;
         if destlen < 5i32 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CFF",);
         }
         *dest.offset(0) = 29i32 as card8;
         *dest.offset(1) = (lvalue >> 24i32 & 0xffi32) as card8;
@@ -1194,17 +1160,14 @@ unsafe extern "C" fn put_dict_entry(
         }
         if id >= 0i32 && id < 22i32 {
             if len + 1i32 > destlen {
-                _tt_abort(
-                    b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                    b"CFF\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Buffer overflow.", "CFF",);
             }
             let fresh17 = len;
             len = len + 1;
             *dest.offset(fresh17 as isize) = id as card8
         } else if id >= 0i32 && id < 22i32 + 39i32 {
             if len + 2i32 > destlen {
-                _tt_abort(b"in cff_dict_pack(): Buffer overflow\x00" as *const u8 as *const i8);
+                panic!("in cff_dict_pack(): Buffer overflow");
             }
             let fresh18 = len;
             len = len + 1;
@@ -1213,10 +1176,7 @@ unsafe extern "C" fn put_dict_entry(
             len = len + 1;
             *dest.offset(fresh19 as isize) = (id - 22i32) as card8
         } else {
-            _tt_abort(
-                b"%s: Invalid CFF DICT operator ID.\x00" as *const u8 as *const i8,
-                b"CFF\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Invalid CFF DICT operator ID.", "CFF",);
         }
     }
     len
@@ -1273,19 +1233,13 @@ pub unsafe extern "C" fn cff_dict_add(mut dict: *mut cff_dict, mut key: *const i
         id += 1
     }
     if id == 22i32 + 39i32 {
-        _tt_abort(
-            b"%s: Unknown CFF DICT operator.\x00" as *const u8 as *const i8,
-            b"CFF\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Unknown CFF DICT operator.", "CFF",);
     }
     i = 0i32;
     while i < (*dict).count {
         if (*(*dict).entries.offset(i as isize)).id == id {
             if (*(*dict).entries.offset(i as isize)).count != count {
-                _tt_abort(
-                    b"%s: Inconsistent DICT argument number.\x00" as *const u8 as *const i8,
-                    b"CFF\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Inconsistent DICT argument number.", "CFF",);
             }
             return;
         }
@@ -1364,10 +1318,7 @@ pub unsafe extern "C" fn cff_dict_get(
                     .values
                     .offset(idx as isize)
             } else {
-                _tt_abort(
-                    b"%s: Invalid index number.\x00" as *const u8 as *const i8,
-                    b"CFF\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Invalid index number.", "CFF",);
             }
             break;
         } else {
@@ -1400,10 +1351,7 @@ pub unsafe extern "C" fn cff_dict_set(
                     .values
                     .offset(idx as isize) = value
             } else {
-                _tt_abort(
-                    b"%s: Invalid index number.\x00" as *const u8 as *const i8,
-                    b"CFF\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Invalid index number.", "CFF",);
             }
             break;
         } else {

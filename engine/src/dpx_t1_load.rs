@@ -75,9 +75,6 @@ extern "C" {
     fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: i32) -> s_SID;
     #[no_mangle]
     fn cff_get_sid(cff: *mut cff_font, str: *const i8) -> i32;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -2459,7 +2456,7 @@ unsafe extern "C" fn get_pfb_segment(
             break;
         }
         if ch != 128i32 {
-            _tt_abort(b"Not a pfb file?\x00" as *const u8 as *const i8);
+            panic!("Not a pfb file?");
         }
         ch = ttstub_input_getc(handle);
         if ch < 0i32 || ch != expected_type {
@@ -2498,7 +2495,7 @@ unsafe extern "C" fn get_pfb_segment(
         }
     }
     if bytesread == 0i32 {
-        _tt_abort(b"PFB segment length zero?\x00" as *const u8 as *const i8);
+        panic!("PFB segment length zero?");
     }
     buffer = renew(
         buffer as *mut libc::c_void,
@@ -2531,7 +2528,7 @@ pub unsafe extern "C" fn t1_get_fontname(
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     buffer = get_pfb_segment(handle, 1i32, &mut length);
     if buffer.is_null() || length == 0i32 {
-        _tt_abort(b"Reading PFB (ASCII part) file failed.\x00" as *const u8 as *const i8);
+        panic!("Reading PFB (ASCII part) file failed.");
     }
     start = buffer;
     end = buffer.offset(length as isize);
@@ -2635,7 +2632,7 @@ pub unsafe extern "C" fn t1_load_font(
     /* ASCII section */
     buffer = get_pfb_segment(handle, 1i32, &mut length);
     if buffer.is_null() || length == 0i32 {
-        _tt_abort(b"Reading PFB (ASCII part) file failed.\x00" as *const u8 as *const i8);
+        panic!("Reading PFB (ASCII part) file failed.");
     }
     cff =
         new((1_u64).wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32) as *mut cff_font;
@@ -2645,7 +2642,7 @@ pub unsafe extern "C" fn t1_load_font(
     if parse_part1(cff, enc_vec, &mut start, end) < 0i32 {
         cff_close(cff);
         free(buffer as *mut libc::c_void);
-        _tt_abort(b"Reading PFB (ASCII part) file failed.\x00" as *const u8 as *const i8);
+        panic!("Reading PFB (ASCII part) file failed.");
     }
     free(buffer as *mut libc::c_void);
     /* Binary section */
@@ -2653,7 +2650,7 @@ pub unsafe extern "C" fn t1_load_font(
     if buffer.is_null() || length == 0i32 {
         cff_close(cff);
         free(buffer as *mut libc::c_void);
-        _tt_abort(b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const i8);
+        panic!("Reading PFB (BINARY part) file failed.");
     } else {
         t1_decrypt(55665_u16, buffer, buffer, 0i32, length);
     }
@@ -2662,7 +2659,7 @@ pub unsafe extern "C" fn t1_load_font(
     if parse_part2(cff, &mut start, end, mode) < 0i32 {
         cff_close(cff);
         free(buffer as *mut libc::c_void);
-        _tt_abort(b"Reading PFB (BINARY part) file failed.\x00" as *const u8 as *const i8);
+        panic!("Reading PFB (BINARY part) file failed.");
     }
     /* Remaining section ignored. */
     free(buffer as *mut libc::c_void);

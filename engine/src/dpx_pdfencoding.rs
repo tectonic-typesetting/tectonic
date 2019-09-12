@@ -410,7 +410,7 @@ unsafe extern "C" fn pdf_clean_encoding_struct(mut encoding: *mut pdf_encoding) 
     let mut code: i32 = 0;
     assert!(!encoding.is_null());
     if !(*encoding).resource.is_null() {
-        _tt_abort(b"Object not flushed.\x00" as *const u8 as *const i8);
+        panic!("Object not flushed.");
     }
     pdf_release_obj((*encoding).tounicode);
     free((*encoding).ident as *mut libc::c_void);
@@ -835,10 +835,7 @@ pub unsafe extern "C" fn pdf_encoding_findresource(mut enc_name: *const i8) -> i
 pub unsafe extern "C" fn pdf_encoding_get_encoding(mut enc_id: i32) -> *mut *mut i8 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
-        _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
-            enc_id,
-        );
+        panic!("Invalid encoding id: {}", enc_id);
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     (*encoding).glyphs.as_mut_ptr()
@@ -847,10 +844,7 @@ pub unsafe extern "C" fn pdf_encoding_get_encoding(mut enc_id: i32) -> *mut *mut
 pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: i32) -> *mut pdf_obj {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
-        _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
-            enc_id,
-        );
+        panic!("Invalid encoding id: {}", enc_id);
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     (*encoding).resource
@@ -859,10 +853,7 @@ pub unsafe extern "C" fn pdf_get_encoding_obj(mut enc_id: i32) -> *mut pdf_obj {
 pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: i32) -> i32 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
-        _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
-            enc_id,
-        );
+        panic!("Invalid encoding id: {}", enc_id);
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     return if (*encoding).flags & 1i32 << 0i32 != 0 {
@@ -875,10 +866,7 @@ pub unsafe extern "C" fn pdf_encoding_is_predefined(mut enc_id: i32) -> i32 {
 pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: i32) {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
-        _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
-            enc_id,
-        );
+        panic!("Invalid encoding id: {}", enc_id);
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     (*encoding).flags |= 1i32 << 1i32;
@@ -887,10 +875,7 @@ pub unsafe extern "C" fn pdf_encoding_used_by_type3(mut enc_id: i32) {
 pub unsafe extern "C" fn pdf_encoding_get_name(mut enc_id: i32) -> *mut i8 {
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     if enc_id < 0i32 || enc_id >= enc_cache.count {
-        _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
-            enc_id,
-        );
+        panic!("Invalid encoding id: {}", enc_id);
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     (*encoding).enc_name
@@ -903,10 +888,7 @@ pub unsafe extern "C" fn pdf_encoding_add_usedchars(mut encoding_id: i32, mut is
     let mut encoding: *mut pdf_encoding = 0 as *mut pdf_encoding;
     let mut code: i32 = 0;
     if encoding_id < 0i32 || encoding_id >= enc_cache.count {
-        _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
-            encoding_id,
-        );
+        panic!("Invalid encoding id: {}", encoding_id);
     }
     if is_used.is_null() || pdf_encoding_is_predefined(encoding_id) != 0 {
         return;
@@ -923,10 +905,7 @@ pub unsafe extern "C" fn pdf_encoding_add_usedchars(mut encoding_id: i32, mut is
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_get_tounicode(mut encoding_id: i32) -> *mut pdf_obj {
     if encoding_id < 0i32 || encoding_id >= enc_cache.count {
-        _tt_abort(
-            b"Invalid encoding id: %d\x00" as *const u8 as *const i8,
-            encoding_id,
-        );
+        panic!("Invalid encoding id: {}", encoding_id);
     }
     (*enc_cache.encodings.offset(encoding_id as isize)).tounicode
 }

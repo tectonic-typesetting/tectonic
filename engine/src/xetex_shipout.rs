@@ -4044,14 +4044,14 @@ pub unsafe extern "C" fn finalize_dvi_file() {
 }
 unsafe extern "C" fn write_to_dvi(mut a: i32, mut b: i32) {
     let mut n: i32 = b - a + 1i32;
-    if ttstub_output_write(
-        dvi_file,
-        &mut *dvi_buf.offset(a as isize) as *mut eight_bits as *mut i8,
-        n as size_t,
-    ) != n as u64
-    {
-        _tt_abort(b"failed to write data to XDV file\x00" as *const u8 as *const i8);
-    };
+    assert!(
+        ttstub_output_write(
+            dvi_file,
+            &mut *dvi_buf.offset(a as isize) as *mut eight_bits as *mut i8,
+            n as size_t,
+        ) == n as size_t,
+        "failed to write data to XDV file"
+    );
 }
 unsafe extern "C" fn dvi_swap() {
     if dvi_ptr > 0x7fffffffi32 - dvi_offset {

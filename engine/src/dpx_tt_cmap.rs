@@ -782,7 +782,7 @@ unsafe extern "C" fn read_cmap0(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     let mut map: *mut cmap0 = 0 as *mut cmap0;
     let mut i: u32 = 0;
     if len < 256_u32 {
-        _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const i8);
+        panic!("invalid cmap subtable");
     }
     map = new((1_u64).wrapping_mul(::std::mem::size_of::<cmap0>() as u64) as u32) as *mut cmap0;
     i = 0_u32;
@@ -807,7 +807,7 @@ unsafe extern "C" fn read_cmap2(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     let mut i: u16 = 0;
     let mut n: u16 = 0;
     if len < 512_u32 {
-        _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const i8);
+        panic!("invalid cmap subtable");
     }
     map = new((1_u64).wrapping_mul(::std::mem::size_of::<cmap2>() as u64) as u32) as *mut cmap2;
     i = 0_u16;
@@ -899,7 +899,7 @@ unsafe extern "C" fn read_cmap4(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     let mut n: u16 = 0;
     let mut segCount: u16 = 0;
     if len < 8_u32 {
-        _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const i8);
+        panic!("invalid cmap subtable");
     }
     map = new((1_u64).wrapping_mul(::std::mem::size_of::<cmap4>() as u64) as u32) as *mut cmap4;
     segCount = tt_get_unsigned_pair((*sfont).handle);
@@ -1013,7 +1013,7 @@ unsafe extern "C" fn read_cmap6(mut sfont: *mut sfnt, mut len: u32) -> *mut cmap
     let mut map: *mut cmap6 = 0 as *mut cmap6;
     let mut i: u16 = 0;
     if len < 4_u32 {
-        _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const i8);
+        panic!("invalid cmap subtable");
     }
     map = new((1_u64).wrapping_mul(::std::mem::size_of::<cmap6>() as u64) as u32) as *mut cmap6;
     (*map).firstCode = tt_get_unsigned_pair((*sfont).handle);
@@ -1047,7 +1047,7 @@ unsafe extern "C" fn read_cmap12(mut sfont: *mut sfnt, mut len: u32) -> *mut cma
     let mut map: *mut cmap12 = 0 as *mut cmap12;
     let mut i: u32 = 0;
     if len < 4_u32 {
-        _tt_abort(b"invalid cmap subtable\x00" as *const u8 as *const i8);
+        panic!("invalid cmap subtable");
     }
     map = new((1_u64).wrapping_mul(::std::mem::size_of::<cmap12>() as u64) as u32) as *mut cmap12;
     (*map).nGroups = tt_get_unsigned_quad((*sfont).handle);
@@ -1189,10 +1189,7 @@ pub unsafe extern "C" fn tt_cmap_release(mut cmap: *mut tt_cmap) {
                     release_cmap12((*cmap).map as *mut cmap12);
                 }
                 _ => {
-                    _tt_abort(
-                        b"Unrecognized OpenType/TrueType cmap format.\x00" as *const u8
-                            as *const i8,
-                    );
+                    panic!("Unrecognized OpenType/TrueType cmap format.");
                 }
             }
         }
@@ -1214,10 +1211,7 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> 
         6 => gid = lookup_cmap6((*cmap).map as *mut cmap6, cc as u16),
         12 => gid = lookup_cmap12((*cmap).map as *mut cmap12, cc),
         _ => {
-            _tt_abort(
-                b"Unrecognized OpenType/TrueType cmap subtable format\x00" as *const u8
-                    as *const i8,
-            );
+            panic!("Unrecognized OpenType/TrueType cmap subtable format");
         }
     }
     gid
@@ -1410,11 +1404,11 @@ unsafe extern "C" fn handle_CIDFont(
     num_glyphs = (*maxp).numGlyphs;
     free(maxp as *mut libc::c_void);
     if (num_glyphs as i32) < 1i32 {
-        _tt_abort(b"No glyph contained in this font...\x00" as *const u8 as *const i8);
+        panic!("No glyph contained in this font...");
     }
     cffont = cff_open((*sfont).handle, offset, 0i32);
     if cffont.is_null() {
-        _tt_abort(b"Could not open CFF font...\x00" as *const u8 as *const i8);
+        panic!("Could not open CFF font...");
     }
     if (*cffont).flag & 1i32 << 0i32 == 0 {
         cff_close(cffont);
@@ -1424,7 +1418,7 @@ unsafe extern "C" fn handle_CIDFont(
         return 0i32;
     }
     if cff_dict_known((*cffont).topdict, b"ROS\x00" as *const u8 as *const i8) == 0 {
-        _tt_abort(b"No CIDSystemInfo???\x00" as *const u8 as *const i8);
+        panic!("No CIDSystemInfo???");
     } else {
         let mut reg: card16 = 0;
         let mut ord: card16 = 0;
@@ -1449,7 +1443,7 @@ unsafe extern "C" fn handle_CIDFont(
     cff_read_charsets(cffont);
     charset = (*cffont).charsets;
     if charset.is_null() {
-        _tt_abort(b"No CFF charset data???\x00" as *const u8 as *const i8);
+        panic!("No CFF charset data???");
     }
     map = new(((num_glyphs as i32 * 2i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
@@ -1532,9 +1526,9 @@ unsafe extern "C" fn handle_CIDFont(
         }
         _ => {
             map = mfree(map as *mut libc::c_void) as *mut u8;
-            _tt_abort(
-                b"Unknown CFF charset format...: %d\x00" as *const u8 as *const i8,
-                (*charset).format as i32,
+            panic!(
+                "Unknown CFF charset format...: {}",
+                (*charset).format as i32
             );
         }
     }
@@ -2087,15 +2081,13 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
         16 => {
             offset = ttc_read_offset(sfont, ttc_index);
             if offset == 0_u32 {
-                _tt_abort(b"Invalid TTC index\x00" as *const u8 as *const i8);
+                panic!("Invalid TTC index");
             }
         }
         _ => offset = 0_u32,
     }
     if sfnt_read_table_directory(sfont, offset) < 0i32 {
-        _tt_abort(
-            b"Could not read OpenType/TrueType table directory.\x00" as *const u8 as *const i8,
-        );
+        panic!("Could not read OpenType/TrueType table directory.");
     }
     code_to_cid_cmap = CMap_cache_get(cmap_id);
     cmap_type = CMap_get_type(code_to_cid_cmap);
@@ -2309,7 +2301,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         16 => {
             offset = ttc_read_offset(sfont, ttc_index);
             if offset == 0_u32 {
-                _tt_abort(b"Invalid TTC index\x00" as *const u8 as *const i8);
+                panic!("Invalid TTC index");
             }
         }
         1 | 4 => offset = 0_u32,
@@ -2322,9 +2314,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         }
     }
     if sfnt_read_table_directory(sfont, offset) < 0i32 {
-        _tt_abort(
-            b"Could not read OpenType/TrueType table directory.\x00" as *const u8 as *const i8,
-        );
+        panic!("Could not read OpenType/TrueType table directory.");
     }
     base_name = new((strlen(map_name)
         .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const i8))
@@ -2451,10 +2441,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         if ttcmap.is_null() {
             ttcmap = tt_cmap_read(sfont, 0_u16, 3_u16);
             if ttcmap.is_null() {
-                _tt_abort(
-                    b"Unable to read OpenType/TrueType Unicode cmap table.\x00" as *const u8
-                        as *const i8,
-                );
+                panic!("Unable to read OpenType/TrueType Unicode cmap table.");
             }
         }
     }
@@ -2526,7 +2513,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         ttcmap,
     );
     if cmap_id < 0i32 {
-        _tt_abort(b"Failed to read OpenType/TrueType cmap table.\x00" as *const u8 as *const i8);
+        panic!("Failed to read OpenType/TrueType cmap table.");
     }
     if !gsub_vert.is_null() {
         otl_gsub_release(gsub_vert);

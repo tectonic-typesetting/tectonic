@@ -12,8 +12,6 @@ extern "C" {
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
 }
 pub type card8 = u8;
@@ -84,9 +82,9 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
              * This number cannot be represented as a single operand.
              * We must use `a b mul ...' or `a c div' to represent large values.
              */
-            _tt_abort(
-                b"%s: Argument value too large. (This is bug)\x00" as *const u8 as *const i8,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
+            panic!(
+                "{}: Argument value too large. (This is bug)",
+                "Type2 Charstring Parser",
             );
         } else {
             if (value - ivalue as f64).abs() > 3.0e-5f64 {
@@ -161,10 +159,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 *dest = (*dest).offset(1);
                 *fresh12 = (ivalue & 0xffi32) as card8
             } else {
-                _tt_abort(
-                    b"%s: Unexpected error.\x00" as *const u8 as *const i8,
-                    b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Unexpected error.", "Type2 Charstring Parser",);
             }
         }
         i += 1
@@ -314,9 +309,9 @@ unsafe extern "C" fn do_operator1(
         11 | 29 | 10 => {
             /* all operotors above are stack-clearing operator */
             /* no output */
-            _tt_abort(
-                b"%s: Unexpected call(g)subr/return\x00" as *const u8 as *const i8,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
+            panic!(
+                "{}: Unexpected call(g)subr/return",
+                "Type2 Charstring Parser",
             );
         }
         _ => {
@@ -733,9 +728,9 @@ unsafe extern "C" fn get_subr(
 ) {
     let mut count: card16 = 0;
     if subr_idx.is_null() {
-        _tt_abort(
-            b"%s: Subroutine called but no subroutine found.\x00" as *const u8 as *const i8,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
+        panic!(
+            "{}: Subroutine called but no subroutine found.",
+            "Type2 Charstring Parser",
         );
     }
     count = (*subr_idx).count;
@@ -748,11 +743,9 @@ unsafe extern "C" fn get_subr(
         id += 32768i32
     }
     if id > count as i32 {
-        _tt_abort(
-            b"%s: Invalid Subr index: %d (max=%u)\x00" as *const u8 as *const i8,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-            id,
-            count as i32,
+        panic!(
+            "{}: Invalid Subr index: {} (max={})",
+            "Type2 Charstring Parser", id, count,
         );
     }
     *len = (*(*subr_idx).offset.offset((id + 1i32) as isize))
@@ -780,9 +773,9 @@ unsafe extern "C" fn do_charstring(
     let mut subr: *mut card8 = 0 as *mut card8;
     let mut len: i32 = 0;
     if nest > 10i32 {
-        _tt_abort(
-            b"%s: Subroutine nested too deeply.\x00" as *const u8 as *const i8,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
+        panic!(
+            "{}: Subroutine nested too deeply.",
+            "Type2 Charstring Parser",
         );
     }
     nest += 1;
@@ -805,10 +798,7 @@ unsafe extern "C" fn do_charstring(
                     arg_stack[stack_top as usize] as i32,
                 );
                 if (*dest).offset(len as isize) > limit {
-                    _tt_abort(
-                        b"%s: Possible buffer overflow.\x00" as *const u8 as *const i8,
-                        b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                    );
+                    panic!("{}: Possible buffer overflow.", "Type2 Charstring Parser",);
                 }
                 do_charstring(
                     dest,
@@ -832,10 +822,7 @@ unsafe extern "C" fn do_charstring(
                     arg_stack[stack_top as usize] as i32,
                 );
                 if limit < (*dest).offset(len as isize) {
-                    _tt_abort(
-                        b"%s: Possible buffer overflow.\x00" as *const u8 as *const i8,
-                        b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                    );
+                    panic!("{}: Possible buffer overflow.", "Type2 Charstring Parser",);
                 }
                 do_charstring(
                     dest,
@@ -866,11 +853,9 @@ unsafe extern "C" fn do_charstring(
         warn!("{}: Garbage after endchar.", "Type2 Charstring Parser");
     } else if status < 0i32 {
         /* error */
-        _tt_abort(
-            b"%s: Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8 as *const i8,
-            b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-            status,
-            stack_top,
+        panic!(
+            "{}: Parsing charstring failed: (status={}, stack={})",
+            "Type2 Charstring Parser", status, stack_top,
         );
     }
     nest -= 1;

@@ -321,11 +321,7 @@ pub unsafe extern "C" fn CMap_get_profile(mut cmap: *mut CMap, mut type_0: i32) 
         2 => value = (*cmap).profile.maxBytesOut as i32,
         3 => value = (*cmap).profile.maxBytesOut as i32,
         _ => {
-            _tt_abort(
-                b"%s: Unrecognized profile type %d.\x00" as *const u8 as *const i8,
-                b"CMap\x00" as *const u8 as *const i8,
-                type_0,
-            );
+            panic!("{}: Unrecognized profile type {}.", "CMap", type_0,);
         }
     }
     value
@@ -342,10 +338,7 @@ unsafe extern "C" fn handle_undefined(
 ) {
     let mut len: size_t = 0i32 as size_t;
     if *outbytesleft < 2i32 as u64 {
-        _tt_abort(
-            b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-            b"CMap\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Buffer overflow.", "CMap",);
     }
     match (*cmap).type_0 {
         1 => {
@@ -397,16 +390,10 @@ pub unsafe extern "C" fn CMap_decode_char(
      */
     if (*cmap).type_0 == 0i32 {
         if (*inbytesleft).wrapping_rem(2i32 as u64) != 0 {
-            _tt_abort(
-                b"%s: Invalid/truncated input string.\x00" as *const u8 as *const i8,
-                b"CMap\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Invalid/truncated input string.", "CMap",);
         }
         if *outbytesleft < 2i32 as u64 {
-            _tt_abort(
-                b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                b"CMap\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Buffer overflow.", "CMap",);
         }
         memcpy(
             *outbuf as *mut libc::c_void,
@@ -445,10 +432,7 @@ pub unsafe extern "C" fn CMap_decode_char(
     }
     if (*t.offset(c as isize)).flag & 1i32 << 4i32 != 0 {
         /* need more bytes */
-        _tt_abort(
-            b"%s: Premature end of input string.\x00" as *const u8 as *const i8,
-            b"CMap\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Premature end of input string.", "CMap",);
     } else {
         if if (*t.offset(c as isize)).flag & 0xfi32 != 0i32 {
             1i32
@@ -487,16 +471,10 @@ pub unsafe extern "C" fn CMap_decode_char(
                 }
                 1 | 4 => {}
                 2 => {
-                    _tt_abort(
-                        b"%s: CharName mapping not supported.\x00" as *const u8 as *const i8,
-                        b"CMap\x00" as *const u8 as *const i8,
-                    );
+                    panic!("{}: CharName mapping not supported.", "CMap",);
                 }
                 _ => {
-                    _tt_abort(
-                        b"%s: Unknown mapping type.\x00" as *const u8 as *const i8,
-                        b"CMap\x00" as *const u8 as *const i8,
-                    );
+                    panic!("{}: Unknown mapping type.", "CMap",);
                 }
             }
             /* continue */
@@ -507,10 +485,7 @@ pub unsafe extern "C" fn CMap_decode_char(
                     (*t.offset(c as isize)).len,
                 );
             } else {
-                _tt_abort(
-                    b"%s: Buffer overflow.\x00" as *const u8 as *const i8,
-                    b"CMap\x00" as *const u8 as *const i8,
-                );
+                panic!("{}: Buffer overflow.", "CMap",);
             }
             *outbuf = (*outbuf).offset((*t.offset(c as isize)).len as isize);
             *outbytesleft = (*outbytesleft as u64).wrapping_sub((*t.offset(c as isize)).len)
@@ -639,10 +614,7 @@ pub unsafe extern "C" fn CMap_set_usecmap(mut cmap: *mut CMap, mut ucmap: *mut C
     }
     /* Check if ucmap have neccesary information. */
     if !CMap_is_valid(ucmap) {
-        _tt_abort(
-            b"%s: Invalid CMap.\x00" as *const u8 as *const i8,
-            b"CMap\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Invalid CMap.", "CMap",);
     }
     /*
      *  CMapName of cmap can be undefined when usecmap is executed in CMap parsing.
@@ -1184,10 +1156,7 @@ pub unsafe extern "C" fn CMap_cache_init() {
     static mut range_min: [u8; 2] = [0; 2];
     static mut range_max: [u8; 2] = [0xff_u8, 0xff_u8];
     if !__cache.is_null() {
-        _tt_abort(
-            b"%s: Already initialized.\x00" as *const u8 as *const i8,
-            b"CMap\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Already initialized.", "CMap",);
     }
     __cache = new((1_u64).wrapping_mul(::std::mem::size_of::<CMap_cache>() as u64) as u32)
         as *mut CMap_cache;
@@ -1232,13 +1201,10 @@ pub unsafe extern "C" fn CMap_cache_init() {
 #[no_mangle]
 pub unsafe extern "C" fn CMap_cache_get(mut id: i32) -> *mut CMap {
     if __cache.is_null() {
-        _tt_abort(
-            b"%s: CMap cache not initialized.\x00" as *const u8 as *const i8,
-            b"CMap\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: CMap cache not initialized.", "CMap",);
     }
     if id < 0i32 || id >= (*__cache).num {
-        _tt_abort(b"Invalid CMap ID %d\x00" as *const u8 as *const i8, id);
+        panic!("Invalid CMap ID {}", id);
     }
     *(*__cache).cmaps.offset(id as isize)
 }
@@ -1284,10 +1250,7 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const i8) -> i32 {
     let ref mut fresh9 = *(*__cache).cmaps.offset(id as isize);
     *fresh9 = CMap_new();
     if CMap_parse(*(*__cache).cmaps.offset(id as isize), handle) < 0i32 {
-        _tt_abort(
-            b"%s: Parsing CMap file failed.\x00" as *const u8 as *const i8,
-            b"CMap\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Parsing CMap file failed.", "CMap",);
     }
     ttstub_input_close(handle);
     if __verbose != 0 {
@@ -1301,10 +1264,7 @@ pub unsafe extern "C" fn CMap_cache_add(mut cmap: *mut CMap) -> i32 {
     let mut cmap_name0: *mut i8 = 0 as *mut i8;
     let mut cmap_name1: *mut i8 = 0 as *mut i8;
     if !CMap_is_valid(cmap) {
-        _tt_abort(
-            b"%s: Invalid CMap.\x00" as *const u8 as *const i8,
-            b"CMap\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Invalid CMap.", "CMap",);
     }
     id = 0i32;
     while id < (*__cache).num {

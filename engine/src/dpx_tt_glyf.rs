@@ -25,9 +25,6 @@ extern "C" {
     fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
@@ -296,7 +293,7 @@ unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> u16 {
         gid = gid.wrapping_add(1)
     }
     if gid as i32 == 65534i32 {
-        _tt_abort(b"No empty glyph slot available.\x00" as *const u8 as *const i8);
+        panic!("No empty glyph slot available.");
     }
     gid
 }
@@ -346,7 +343,7 @@ pub unsafe extern "C" fn tt_add_glyph(
         warn!("Slot {} already used.", new_gid);
     } else {
         if (*g).num_glyphs as i32 + 1i32 >= 65534i32 {
-            _tt_abort(b"Too many glyphs.\x00" as *const u8 as *const i8);
+            panic!("Too many glyphs.");
         }
         if (*g).num_glyphs as i32 >= (*g).max_glyphs as i32 {
             (*g).max_glyphs = ((*g).max_glyphs as i32 + 256i32) as u16;
@@ -446,16 +443,16 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
     let mut w_stat: *mut u16 = 0 as *mut u16;
     assert!(!g.is_null());
     if sfont.is_null() || (*sfont).handle.is_null() {
-        _tt_abort(b"File not opened.\x00" as *const u8 as *const i8);
+        panic!("File not opened.");
     }
     if (*sfont).type_0 != 1i32 << 0i32
         && (*sfont).type_0 != 1i32 << 4i32
         && (*sfont).type_0 != 1i32 << 8i32
     {
-        _tt_abort(b"Invalid font type\x00" as *const u8 as *const i8);
+        panic!("Invalid font type");
     }
     if (*g).num_glyphs as i32 > 65534i32 {
-        _tt_abort(b"Too many glyphs.\x00" as *const u8 as *const i8);
+        panic!("Too many glyphs.");
     }
     /*
      * Read head, hhea, maxp, loca:
@@ -469,7 +466,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
     hhea = tt_read_hhea_table(sfont);
     maxp = tt_read_maxp_table(sfont);
     if (*hhea).metricDataFormat as i32 != 0i32 {
-        _tt_abort(b"Unknown metricDataFormat.\x00" as *const u8 as *const i8);
+        panic!("Unknown metricDataFormat.");
     }
     (*g).emsize = (*head).unitsPerEm;
     sfnt_locate_table(sfont, b"hmtx\x00" as *const u8 as *const i8);
@@ -515,7 +512,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
             i += 1
         }
     } else {
-        _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const i8);
+        panic!("Unknown IndexToLocFormat.");
     }
     w_stat = new((((*g).emsize as i32 + 2i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32) as *mut u16;
@@ -548,10 +545,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
         }
         gid = (*(*g).gd.offset(i as isize)).ogid;
         if gid as i32 >= (*maxp).numGlyphs as i32 {
-            _tt_abort(
-                b"Invalid glyph index (gid %u)\x00" as *const u8 as *const i8,
-                gid as i32,
-            );
+            panic!("Invalid glyph index (gid {})", gid);
         }
         loc = *location.offset(gid as isize);
         len = (*location.offset((gid as i32 + 1i32) as isize)).wrapping_sub(loc);
@@ -577,10 +571,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
         }
         if !(len == 0_u32) {
             if len < 10_u32 {
-                _tt_abort(
-                    b"Invalid TrueType glyph data (gid %u).\x00" as *const u8 as *const i8,
-                    gid as i32,
-                );
+                panic!("Invalid TrueType glyph data (gid {}).", gid);
             }
             p = new((len as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
                 as *mut u8;
@@ -640,12 +631,7 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
                 let mut new_gid: u16 = 0;
                 loop {
                     if p >= endptr {
-                        _tt_abort(
-                            b"Invalid TrueType glyph data (gid %u): %u bytes\x00" as *const u8
-                                as *const i8,
-                            gid as i32,
-                            len,
-                        );
+                        panic!("Invalid TrueType glyph data (gid {}): {} bytes", gid, len);
                     }
                     /*
                      * Flags and gid of component glyph are both u16.
@@ -654,12 +640,11 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
                     p = p.offset(2);
                     cgid = ((*p as i32) << 8i32 | *p.offset(1) as i32) as u16;
                     if cgid as i32 >= (*maxp).numGlyphs as i32 {
-                        _tt_abort(
-                            b"Invalid gid (%u > %u) in composite glyph %u.\x00" as *const u8
-                                as *const i8,
-                            cgid as i32,
-                            (*maxp).numGlyphs as i32,
-                            gid as i32,
+                        panic!(
+                            "Invalid gid ({} > {}) in composite glyph {}.",
+                            cgid,
+                            (*maxp).numGlyphs,
+                            gid,
                         );
                     }
                     new_gid = tt_find_glyph(g, cgid);
@@ -944,13 +929,13 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
     let mut w_stat: *mut u16 = 0 as *mut u16;
     assert!(!g.is_null());
     if sfont.is_null() || (*sfont).handle.is_null() {
-        _tt_abort(b"File not opened.\x00" as *const u8 as *const i8);
+        panic!("File not opened.");
     }
     if (*sfont).type_0 != 1i32 << 0i32
         && (*sfont).type_0 != 1i32 << 4i32
         && (*sfont).type_0 != 1i32 << 8i32
     {
-        _tt_abort(b"Invalid font type\x00" as *const u8 as *const i8);
+        panic!("Invalid font type");
     }
     /*
      * Read head, hhea, maxp, loca:
@@ -964,7 +949,7 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
     hhea = tt_read_hhea_table(sfont);
     maxp = tt_read_maxp_table(sfont);
     if (*hhea).metricDataFormat as i32 != 0i32 {
-        _tt_abort(b"Unknown metricDataFormat.\x00" as *const u8 as *const i8);
+        panic!("Unknown metricDataFormat.");
     }
     (*g).emsize = (*head).unitsPerEm;
     sfnt_locate_table(sfont, b"hmtx\x00" as *const u8 as *const i8);
@@ -1008,7 +993,7 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
             i = i.wrapping_add(1)
         }
     } else {
-        _tt_abort(b"Unknown IndexToLocFormat.\x00" as *const u8 as *const i8);
+        panic!("Unknown IndexToLocFormat.");
     }
     w_stat = new((((*g).emsize as i32 + 2i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32) as *mut u16;
@@ -1028,10 +1013,7 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
         let mut len: u32 = 0;
         gid = (*(*g).gd.offset(i as isize)).ogid;
         if gid as i32 >= (*maxp).numGlyphs as i32 {
-            _tt_abort(
-                b"Invalid glyph index (gid %u)\x00" as *const u8 as *const i8,
-                gid as i32,
-            );
+            panic!("Invalid glyph index (gid {})", gid);
         }
         loc = *location.offset(gid as isize);
         len = (*location.offset((gid as i32 + 1i32) as isize)).wrapping_sub(loc);
@@ -1057,10 +1039,7 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
         }
         if !(len == 0_u32) {
             if len < 10_u32 {
-                _tt_abort(
-                    b"Invalid TrueType glyph data (gid %u).\x00" as *const u8 as *const i8,
-                    gid as i32,
-                );
+                panic!("Invalid TrueType glyph data (gid {}).", gid);
             }
             ttstub_input_seek((*sfont).handle, offset.wrapping_add(loc) as ssize_t, 0i32);
             tt_get_signed_pair((*sfont).handle);

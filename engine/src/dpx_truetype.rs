@@ -584,7 +584,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     if tmp.is_null() {
         sfnt_close(sfont);
         ttstub_input_close(handle as rust_input_handle_t);
-        _tt_abort(b"Could not obtain necessary font info.\x00" as *const u8 as *const i8);
+        panic!("Could not obtain necessary font info.");
     }
     assert!(pdf_obj_typeof(tmp) == 6i32);
     pdf_merge_dict(descriptor, tmp);
@@ -592,10 +592,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     if embedding == 0 {
         if encoding_id >= 0i32 && pdf_encoding_is_predefined(encoding_id) == 0 {
             sfnt_close(sfont);
-            _tt_abort(
-                b"Custom encoding not allowed for non-embedded TrueType font.\x00" as *const u8
-                    as *const i8,
-            );
+            panic!("Custom encoding not allowed for non-embedded TrueType font.");
         } else {
             /* There are basically no guarantee for font substitution
              * can work with "symblic" fonts. At least all glyphs
@@ -919,7 +916,7 @@ unsafe extern "C" fn agl_decompose_glyphname(
             break;
         }
         if n >= size {
-            _tt_abort(b"Uh ah...\x00" as *const u8 as *const i8);
+            panic!("Uh ah...");
         }
         *p = '\u{0}' as i32 as i8;
         p = p.offset(1);

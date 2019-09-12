@@ -686,13 +686,13 @@ unsafe extern "C" fn pdf_clean_font_struct(mut font: *mut pdf_font) {
         free((*font).fontname as *mut libc::c_void);
         free((*font).usedchars as *mut libc::c_void);
         if !(*font).reference.is_null() {
-            _tt_abort(b"pdf_font>> Object not flushed.\x00" as *const u8 as *const i8);
+            panic!("pdf_font>> Object not flushed.");
         }
         if !(*font).resource.is_null() {
-            _tt_abort(b"pdf_font> Object not flushed.\x00" as *const u8 as *const i8);
+            panic!("pdf_font> Object not flushed.");
         }
         if !(*font).descriptor.is_null() {
-            _tt_abort(b"pdf_font>> Object not flushed.\x00" as *const u8 as *const i8);
+            panic!("pdf_font>> Object not flushed.");
         }
         (*font).ident = 0 as *mut i8;
         (*font).map_name = 0 as *mut i8;
@@ -725,10 +725,7 @@ pub unsafe extern "C" fn pdf_init_fonts() {
 pub unsafe extern "C" fn pdf_get_font_reference(mut font_id: i32) -> *mut pdf_obj {
     let mut font: *mut pdf_font = 0 as *mut pdf_font;
     if font_id < 0i32 || font_id >= font_cache.count {
-        _tt_abort(
-            b"Invalid font ID: %d\x00" as *const u8 as *const i8,
-            font_id,
-        );
+        panic!("Invalid font ID: {}", font_id);
     }
     font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
     if (*font).subtype == 4i32 {
@@ -746,10 +743,7 @@ pub unsafe extern "C" fn pdf_get_font_reference(mut font_id: i32) -> *mut pdf_ob
 pub unsafe extern "C" fn pdf_get_font_usedchars(mut font_id: i32) -> *mut i8 {
     let mut font: *mut pdf_font = 0 as *mut pdf_font;
     if font_id < 0i32 || font_id >= font_cache.count {
-        _tt_abort(
-            b"Invalid font ID: %d\x00" as *const u8 as *const i8,
-            font_id,
-        );
+        panic!("Invalid font ID: {}", font_id);
     }
     font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
     if (*font).subtype == 4i32 {
@@ -773,10 +767,7 @@ pub unsafe extern "C" fn pdf_get_font_usedchars(mut font_id: i32) -> *mut i8 {
 pub unsafe extern "C" fn pdf_get_font_wmode(mut font_id: i32) -> i32 {
     let mut font: *mut pdf_font = 0 as *mut pdf_font;
     if font_id < 0i32 || font_id >= font_cache.count {
-        _tt_abort(
-            b"Invalid font ID: %d\x00" as *const u8 as *const i8,
-            font_id,
-        );
+        panic!("Invalid font ID: {}", font_id);
     }
     font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
     if (*font).subtype == 4i32 {
@@ -791,10 +782,7 @@ pub unsafe extern "C" fn pdf_get_font_wmode(mut font_id: i32) -> i32 {
 pub unsafe extern "C" fn pdf_get_font_subtype(mut font_id: i32) -> i32 {
     let mut font: *mut pdf_font = 0 as *mut pdf_font;
     if font_id < 0i32 || font_id >= font_cache.count {
-        _tt_abort(
-            b"Invalid font ID: %d\x00" as *const u8 as *const i8,
-            font_id,
-        );
+        panic!("Invalid font ID: {}", font_id);
     }
     font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
     (*font).subtype
@@ -803,10 +791,7 @@ pub unsafe extern "C" fn pdf_get_font_subtype(mut font_id: i32) -> i32 {
 pub unsafe extern "C" fn pdf_get_font_encoding(mut font_id: i32) -> i32 {
     let mut font: *mut pdf_font = 0 as *mut pdf_font;
     if font_id < 0i32 || font_id >= font_cache.count {
-        _tt_abort(
-            b"Invalid font ID: %d\x00" as *const u8 as *const i8,
-            font_id,
-        );
+        panic!("Invalid font ID: {}", font_id);
     }
     font = &mut *font_cache.fonts.offset(font_id as isize) as *mut pdf_font;
     (*font).encoding_id
@@ -847,8 +832,7 @@ unsafe extern "C" fn try_load_ToUnicode_CMap(mut font: *mut pdf_font) -> i32 {
         );
     } else if !tounicode.is_null() {
         if pdf_obj_typeof(tounicode) != 7i32 {
-            _tt_abort(b"Object returned by pdf_load_ToUnicode_stream() not stream object! (This must be bug)\x00"
-                          as *const u8 as *const i8);
+            panic!("Object returned by pdf_load_ToUnicode_stream() not stream object! (This must be bug)");
         } else {
             if pdf_stream_length(tounicode) > 0i32 {
                 pdf_add_dict(
@@ -939,10 +923,7 @@ pub unsafe extern "C" fn pdf_close_fonts() {
             }
             4 => {}
             _ => {
-                _tt_abort(
-                    b"Unknown font type: %d\x00" as *const u8 as *const i8,
-                    (*font).subtype,
-                );
+                panic!("Unknown font type: {}", (*font).subtype);
             }
         }
         if (*font).encoding_id >= 0i32 && (*font).subtype != 4i32 {
@@ -1094,9 +1075,7 @@ pub unsafe extern "C" fn pdf_font_findresource(
                     )
                 }
                 if cmap_id < 0i32 {
-                    _tt_abort(
-                        b"Failed to read UCS2/UCS4 TrueType cmap...\x00" as *const u8 as *const i8,
-                    );
+                    panic!("Failed to read UCS2/UCS4 TrueType cmap...");
                 }
             }
         }
@@ -1215,10 +1194,7 @@ pub unsafe extern "C" fn pdf_font_findresource(
                 }
                 4 => {}
                 _ => {
-                    _tt_abort(
-                        b"Unknown font type: %d\x00" as *const u8 as *const i8,
-                        (*font).subtype,
-                    );
+                    panic!("Unknown font type: {}", (*font).subtype);
                 }
             }
             if found_0 != 0 {
@@ -1426,7 +1402,7 @@ pub unsafe extern "C" fn pdf_font_set_fontname(
 ) -> i32 {
     assert!(!font.is_null() && !fontname.is_null());
     if strlen(fontname) > 127i32 as u64 {
-        _tt_abort(b"Unexpected error...\x00" as *const u8 as *const i8);
+        panic!("Unexpected error...");
     }
     if !(*font).fontname.is_null() {
         free((*font).fontname as *mut libc::c_void);

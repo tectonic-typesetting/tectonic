@@ -11,9 +11,6 @@ extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
     pub type _IO_marker;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
 }
 use libc::{fgetc, fseek, ftell, rewind, ungetc, FILE};
 pub type __off_t = i64;
@@ -42,7 +39,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 unsafe extern "C" fn os_error() {
-    _tt_abort(b"io:  An OS command failed that should not have.\n\x00" as *const u8 as *const i8);
+    panic!("io:  An OS command failed that should not have.\n");
 }
 #[no_mangle]
 pub unsafe extern "C" fn seek_relative(mut file: *mut FILE, mut pos: i32) {
@@ -61,10 +58,7 @@ unsafe extern "C" fn tell_position(mut file: *mut FILE) -> i32 {
         os_error();
     }
     if size as i64 > 0x7fffffffi32 as i64 {
-        _tt_abort(
-            b"ftell: file size %ld exceeds 0x7fffffff.\n\x00" as *const u8 as *const i8,
-            size,
-        );
+        panic!("ftell: file size {} exceeds 0x7fffffff.\n", size);
     }
     size as i32
 }

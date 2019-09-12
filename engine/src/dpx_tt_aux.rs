@@ -39,9 +39,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     static mut always_embed: i32;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     /* Name does not include the / */
     /* pdf_add_dict requires key but pdf_add_array does not.
      * pdf_add_array always append elements to array.
@@ -251,17 +248,17 @@ pub unsafe extern "C" fn ttc_read_offset(mut sfont: *mut sfnt, mut ttc_idx: i32)
     let mut offset: u32 = 0_u32;
     let mut num_dirs: u32 = 0_u32;
     if sfont.is_null() || (*sfont).handle.is_null() {
-        _tt_abort(b"file not opened\x00" as *const u8 as *const i8);
+        panic!("file not opened");
     }
     if (*sfont).type_0 != 1i32 << 4i32 {
-        _tt_abort(b"ttc_read_offset(): invalid font type\x00" as *const u8 as *const i8);
+        panic!("ttc_read_offset(): invalid font type");
     }
     ttstub_input_seek((*sfont).handle, 4i32 as ssize_t, 0i32);
     /* version = */
     tt_get_unsigned_quad((*sfont).handle);
     num_dirs = tt_get_unsigned_quad((*sfont).handle);
     if ttc_idx < 0i32 || ttc_idx as u32 > num_dirs.wrapping_sub(1_u32) {
-        _tt_abort(b"Invalid TTC index number\x00" as *const u8 as *const i8);
+        panic!("Invalid TTC index number");
     }
     ttstub_input_seek((*sfont).handle, (12i32 + ttc_idx * 4i32) as ssize_t, 0i32);
     offset = tt_get_unsigned_quad((*sfont).handle);
@@ -306,7 +303,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     let mut os2: *mut tt_os2__table = 0 as *mut tt_os2__table;
     let mut post: *mut tt_post_table = 0 as *mut tt_post_table;
     if sfont.is_null() {
-        _tt_abort(b"font file not opened\x00" as *const u8 as *const i8);
+        panic!("font file not opened");
     }
     os2 = tt_read_os2__table(sfont);
     head = tt_read_head_table(sfont);

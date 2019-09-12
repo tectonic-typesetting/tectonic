@@ -388,22 +388,16 @@ pub unsafe extern "C" fn pdf_get_resource_reference(mut rc_id: i32) -> *mut pdf_
             >= (::std::mem::size_of::<[C2RustUnnamed; 9]>() as u64)
                 .wrapping_div(::std::mem::size_of::<C2RustUnnamed>() as u64)
     {
-        _tt_abort(
-            b"Invalid category ID: %d\x00" as *const u8 as *const i8,
-            cat_id,
-        );
+        panic!("Invalid category ID: {}", cat_id);
     }
     rc = &mut *resources.as_mut_ptr().offset(cat_id as isize) as *mut res_cache;
     if res_id < 0i32 || res_id >= (*rc).count {
-        _tt_abort(
-            b"Invalid resource ID: %d\x00" as *const u8 as *const i8,
-            res_id,
-        );
+        panic!("Invalid resource ID: {}", res_id);
     }
     res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
     if (*res).reference.is_null() {
         if (*res).object.is_null() {
-            _tt_abort(b"Undefined object...\x00" as *const u8 as *const i8);
+            panic!("Undefined object...");
         } else {
             (*res).reference = pdf_ref_obj((*res).object)
         }
