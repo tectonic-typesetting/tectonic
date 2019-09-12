@@ -10,11 +10,13 @@
 
 use super::xetex_ini::{history, old_setting, selector};
 use super::xetex_io::{tt_xetex_open_input, u_open_in};
+use crate::is_char_node;
+use crate::mfree;
+use crate::xetex_ini::hi_mem_min;
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_putc,
 };
-use crate::mfree;
 use libc::free;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
@@ -168,8 +170,6 @@ extern "C" {
     static mut mem: *mut memory_word;
     #[no_mangle]
     static mut lo_mem_max: i32;
-    #[no_mangle]
-    static mut hi_mem_min: i32;
     #[no_mangle]
     static mut avail: i32;
     #[no_mangle]
@@ -1177,33 +1177,12 @@ pub struct input_state_t {
     pub name: i32,
     pub synctex_tag: i32,
 }
-<<<<<<< HEAD
 
 pub use super::xetex_io::UFILE;
 
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-=======
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct UFILE {
-    pub handle: rust_input_handle_t,
-    pub savedChar: i64,
-    pub skipNextLF: i16,
-    pub encodingMode: i16,
-    pub conversionData: *mut libc::c_void,
->>>>>>> 979ea0d1... gather mfree
-}
 /* xetex-pagebuilder */
 /* xetex-scaledmath */
 /* xetex-shipout */
-/* Inlines */
-#[inline]
-unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    p >= hi_mem_min
-}
 /* Strings printed this way will end up in the .log as well
  * as the terminal output. */
 #[inline]

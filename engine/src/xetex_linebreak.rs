@@ -1,10 +1,15 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
+
+use crate::is_char_node;
+use crate::xetex_ini::hi_mem_min;
 
 extern "C" {
     #[no_mangle]
@@ -27,8 +32,6 @@ extern "C" {
     static mut temp_ptr: i32;
     #[no_mangle]
     static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut hi_mem_min: i32;
     #[no_mangle]
     static mut avail: i32;
     #[no_mangle]
@@ -255,10 +258,6 @@ pub struct list_state_record {
     pub prev_graf: i32,
     pub mode_line: i32,
     pub aux: memory_word,
-}
-#[inline]
-unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    p >= hi_mem_min
 }
 #[inline]
 unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {

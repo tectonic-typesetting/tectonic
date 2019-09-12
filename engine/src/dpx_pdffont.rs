@@ -14,10 +14,7 @@ use crate::dpx_pdfobj::{
 };
 use crate::mfree;
 use crate::streq_ptr;
-use crate::streq_ptr;
 use crate::stub_errno as errno;
-use crate::stub_errno as errno;
-use crate::{info, warn};
 use crate::{info, warn};
 use libc::free;
 extern "C" {

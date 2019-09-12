@@ -1058,3 +1058,8 @@ pub(crate) unsafe extern "C" fn mfree(ptr: *mut libc::c_void) -> *mut libc::c_vo
     libc::free(ptr);
     std::ptr::null_mut()
 }
+
+#[inline]
+pub(crate) unsafe extern "C" fn is_char_node(p: i32) -> bool {
+    p >= xetex_ini::hi_mem_min
+}
