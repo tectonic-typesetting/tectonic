@@ -1,11 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::is_non_discardable_node;
 extern "C" {
     /* Needed here for UFILE */
     /* variables! */
@@ -195,10 +198,6 @@ pub struct list_state_record {
     pub prev_graf: i32,
     pub mode_line: i32,
     pub aux: memory_word,
-}
-#[inline]
-unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }
 /* tectonic/xetex-pagebuilder.c: the page builder
    Copyright 2017-2018 The Tectonic Project

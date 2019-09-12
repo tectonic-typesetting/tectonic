@@ -8,8 +8,8 @@
     unused_mut
 )]
 
-use crate::is_char_node;
 use crate::xetex_ini::hi_mem_min;
+use crate::{is_char_node, is_non_discardable_node};
 
 extern "C" {
     #[no_mangle]
@@ -258,10 +258,6 @@ pub struct list_state_record {
     pub prev_graf: i32,
     pub mode_line: i32,
     pub aux: memory_word,
-}
-#[inline]
-unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }
 static mut passive: i32 = 0;
 static mut cur_active_width: [scaled_t; 7] = [0; 7];

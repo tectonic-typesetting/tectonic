@@ -10,10 +10,10 @@
 
 use super::xetex_ini::{history, old_setting, selector};
 use super::xetex_io::{tt_xetex_open_input, u_open_in};
-use crate::is_char_node;
 use crate::mfree;
 use crate::print_c_string;
 use crate::xetex_ini::hi_mem_min;
+use crate::{is_char_node, is_non_discardable_node};
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_putc,
@@ -1190,10 +1190,6 @@ pub use super::xetex_io::UFILE;
 unsafe extern "C" fn cur_length() -> pool_pointer {
     /*41: The length of the current string in the pool */
     pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize)
-}
-#[inline]
-unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }
 /* xetex-xetex0.c: bulk of the WEB code translated to C
    Copyright 2016-2018 The Tectonic Project

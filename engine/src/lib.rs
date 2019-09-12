@@ -1072,3 +1072,9 @@ unsafe extern "C" fn print_c_string(mut str: *const i8) {
         xetex_output::print_char(*fresh0 as i32);
     }
 }
+
+#[inline]
+unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
+    use xetex_ini::mem;
+    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
+}
