@@ -233,7 +233,8 @@ fn main() {
     // something I'd be relatively OK with since it'd only affect the progam
     // UI, not the processing results).
 
-    let mut status = TermcolorStatusBackend::new(ChatterLevel::from_str(&args.chatter_level).unwrap());
+    let mut status =
+        TermcolorStatusBackend::new(ChatterLevel::from_str(&args.chatter_level).unwrap());
 
     // For now ...
 

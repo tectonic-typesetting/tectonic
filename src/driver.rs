@@ -22,11 +22,11 @@ use std::str::FromStr;
 use crate::digest::DigestData;
 use crate::engines::IoEventBackend;
 use crate::errors::{ErrorKind, Result, ResultExt};
-use std::result::Result as StdResult;
 use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use crate::status::StatusBackend;
 use crate::{ctry, errmsg, tt_error, tt_note, tt_warning};
 use crate::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
+use std::result::Result as StdResult;
 
 /// Different patterns with which files may have been accessed by the
 /// underlying engines. Once a file is marked as ReadThenWritten or
@@ -222,7 +222,7 @@ impl FromStr for OutputFormat {
             "xdv" => OutputFormat::Xdv,
             "pdf" => OutputFormat::Pdf,
             "fmt" => OutputFormat::Format,
-            _    => unreachable!()
+            _ => unreachable!(),
         };
 
         Ok(actual)
@@ -254,16 +254,14 @@ impl Default for PassSetting {
 }
 
 impl FromStr for PassSetting {
-
     type Err = &'static str;
 
     fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
-
         let actual = match a_str {
             "default" => PassSetting::Default,
             "bibtex_first" => PassSetting::BibtexFirst,
             "tex" => PassSetting::Tex,
-            _    => unreachable!()
+            _ => unreachable!(),
         };
 
         Ok(actual)

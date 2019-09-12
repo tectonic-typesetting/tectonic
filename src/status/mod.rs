@@ -8,8 +8,8 @@ pub mod termcolor;
 
 use std::cmp;
 use std::fmt::Arguments;
-use std::str::FromStr;
 use std::result::Result as StdResult;
+use std::str::FromStr;
 
 use crate::errors::Error;
 
@@ -21,15 +21,13 @@ pub enum ChatterLevel {
 }
 
 impl FromStr for ChatterLevel {
-
     type Err = &'static str;
 
     fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
-
         let actual = match a_str {
             "default" => ChatterLevel::Normal,
             "minimal" => ChatterLevel::Minimal,
-            _    => unreachable!()
+            _ => unreachable!(),
         };
 
         Ok(actual)
