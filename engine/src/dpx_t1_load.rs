@@ -8,8 +8,8 @@
     unused_mut
 )]
 
-use crate::strstartswith;
 use crate::warn;
+use crate::{streq_ptr, strstartswith};
 
 use crate::{ttstub_input_getc, ttstub_input_read, ttstub_input_seek};
 use libc::free;
@@ -365,13 +365,6 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 unsafe extern "C" fn t1_decrypt(
     mut key: u16,
     mut dst: *mut u8,

@@ -9,8 +9,8 @@
 )]
 
 use crate::dpx_pdfparse::parse_pdf_dict;
-use crate::strstartswith;
 use crate::{info, warn};
+use crate::{streq_ptr, strstartswith};
 
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_file, pdf_link_obj, pdf_lookup_dict, pdf_name_value, pdf_new_name,
@@ -326,13 +326,6 @@ pub struct C2RustUnnamed_3 {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

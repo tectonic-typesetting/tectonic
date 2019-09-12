@@ -1044,3 +1044,11 @@ pub(crate) unsafe extern "C" fn strstartswith(s: *const i8, prefix: *const i8) -
     }
     0 as *const i8
 }
+
+#[inline]
+pub(crate) unsafe extern "C" fn streq_ptr(s1: *const i8, s2: *const i8) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return libc::strcmp(s1, s2) == 0i32;
+    }
+    false
+}

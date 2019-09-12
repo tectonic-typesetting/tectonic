@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::streq_ptr;
 use crate::{info, warn};
 
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_seek};
@@ -132,13 +133,6 @@ pub struct sfd_file_ {
 pub struct sfd_rec_ {
     pub vector: [u16; 256],
     /* 0 for undefined */
-}
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

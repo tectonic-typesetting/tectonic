@@ -11,6 +11,7 @@
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set};
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_spc_util::spc_util_read_colorspec;
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -46,13 +47,6 @@ pub use super::dpx_pdfcolor::pdf_color;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

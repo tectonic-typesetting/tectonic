@@ -14,6 +14,7 @@ use crate::dpx_pdfobj::{
     pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string, pdf_obj,
     pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_string_value,
 };
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -220,13 +221,6 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 static mut _html_state: spc_html_ = {
     let mut init = spc_html_ {
         opts: {

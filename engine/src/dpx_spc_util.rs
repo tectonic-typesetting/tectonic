@@ -12,6 +12,7 @@ use super::dpx_pdfcolor::{
     pdf_color_cmykcolor, pdf_color_copycolor, pdf_color_graycolor, pdf_color_rgbcolor,
     pdf_color_spotcolor,
 };
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -65,13 +66,6 @@ use super::dpx_specials::{spc_arg, spc_env};
 pub struct colordef_ {
     pub key: *const i8,
     pub color: pdf_color,
-}
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
 }
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project

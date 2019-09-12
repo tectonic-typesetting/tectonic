@@ -9,8 +9,8 @@
 )]
 
 use crate::dpx_pdfparse::parse_number;
-use crate::strstartswith;
 use crate::warn;
+use crate::{streq_ptr, strstartswith};
 
 use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
 use super::dpx_pdfdraw::{
@@ -429,13 +429,6 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,

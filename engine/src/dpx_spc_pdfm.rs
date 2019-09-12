@@ -8,8 +8,8 @@
     unused_mut
 )]
 
-use crate::strstartswith;
 use crate::warn;
+use crate::{streq_ptr, strstartswith};
 
 use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
@@ -520,13 +520,6 @@ use super::dpx_pdfdev::pdf_coord;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 static mut _pdf_stat: spc_pdf_ = {
     let mut init = spc_pdf_ {
         annot_dict: 0 as *const pdf_obj as *mut pdf_obj,
