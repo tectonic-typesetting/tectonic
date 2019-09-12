@@ -1035,3 +1035,12 @@ pub use xetex_engine_interface::tt_xetex_set_int_variable;
 pub(crate) fn isblank(c: libc::c_int) -> libc::c_int {
     (c == ' ' as _ || c == '\t' as _) as _
 }
+
+#[inline]
+pub(crate) unsafe extern "C" fn strstartswith(s: *const i8, prefix: *const i8) -> *const i8 {
+    let length = libc::strlen(prefix);
+    if libc::strncmp(s, prefix, length) == 0i32 {
+        return s.offset(length as isize);
+    }
+    0 as *const i8
+}

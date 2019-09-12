@@ -9,6 +9,7 @@
 )]
 
 use crate::dpx_pdfparse::parse_ident;
+use crate::strstartswith;
 use crate::{info, warn};
 
 use crate::ttstub_input_close;
@@ -191,15 +192,6 @@ unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
         return strcmp(s1, s2) == 0i32;
     } /* Acutesmall, Gravesmall, etc */
     false
-}
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
 }
 static mut verbose: i32 = 0i32;
 #[no_mangle]

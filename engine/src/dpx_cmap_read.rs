@@ -1,11 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::strstartswith;
 use crate::warn;
 
 use crate::{ttstub_input_get_size, ttstub_input_read, ttstub_input_seek};
@@ -252,15 +255,6 @@ pub struct ifreader {
     pub unread: size_t,
 }
 pub type pst_type = i32;
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

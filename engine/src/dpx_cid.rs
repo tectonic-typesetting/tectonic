@@ -9,6 +9,7 @@
 )]
 
 use crate::dpx_pdfparse::parse_pdf_dict;
+use crate::strstartswith;
 use crate::{info, warn};
 
 use crate::dpx_pdfobj::{
@@ -325,15 +326,6 @@ pub struct C2RustUnnamed_3 {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
-}
 #[inline]
 unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
     if !s1.is_null() && !s2.is_null() {
