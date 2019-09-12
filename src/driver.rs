@@ -252,6 +252,23 @@ impl Default for PassSetting {
     }
 }
 
+impl FromStr for PassSetting {
+
+    type Err = &'static str;
+
+    fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
+
+        let actual = match a_str {
+            "default" => PassSetting::Default,
+            "bibtex_first" => PassSetting::BibtexFirst,
+            "tex" => PassSetting::Tex,
+            _    => unreachable!()
+        };
+
+        Ok(actual)
+    }
+}
+
 /// Different places from which the "primary input" might originate.
 #[derive(Clone, Debug, Eq, PartialEq)]
 enum PrimaryInputMode {

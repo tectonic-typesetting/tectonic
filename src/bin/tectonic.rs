@@ -92,12 +92,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
 
     sess_builder.output_format(OutputFormat::from_str(&args.outfmt).unwrap());
 
-    let pass = match args.pass {
-        "default" => PassSetting::Default,
-        "bibtex_first" => PassSetting::BibtexFirst,
-        "tex" => PassSetting::Tex,
-        _ => unreachable!(),
-    };
+    let pass = PassSetting::from_str(&args.pass).unwrap();
     sess_builder.pass(pass);
 
     if let Some(s) = args.reruns {
