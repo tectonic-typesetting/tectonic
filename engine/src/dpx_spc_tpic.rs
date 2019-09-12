@@ -13,7 +13,12 @@ use crate::warn;
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color};
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{
+    pdf_add_dict, pdf_lookup_dict, pdf_name_value, pdf_new_boolean, pdf_new_dict, pdf_new_name,
+    pdf_new_number, pdf_new_string, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
+    pdf_string_value,
+};
+use crate::dpx_pdfparse::parse_val_ident;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -24,30 +29,6 @@ extern "C" {
         >,
         pdata: *mut libc::c_void,
     ) -> i32;
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_boolean(value: i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_get_version() -> u32;
     #[no_mangle]
@@ -146,8 +127,6 @@ extern "C" {
     ) -> i32;
     #[no_mangle]
     fn pdf_dev_bspline(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> i32;
-    #[no_mangle]
-    fn parse_val_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
 }
 pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;

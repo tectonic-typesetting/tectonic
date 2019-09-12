@@ -9,28 +9,14 @@
 use crate::{info, warn};
 use crate::stub_errno as errno;
 extern crate libc;
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{
+    pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_dict, pdf_new_name, pdf_obj,
+    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,
+};
 use libc::free;
 extern "C" {
     pub type Type0Font;
     #[no_mangle]
-    fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn strtoll(_: *const i8, _: *mut *mut i8, _: i32) -> libc::c_longlong;
     #[no_mangle]

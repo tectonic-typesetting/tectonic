@@ -14,7 +14,14 @@ use super::dpx_pdfcolor::{
 };
 use super::dpx_pdfdev::pdf_dev_bop;
 use super::dpx_pdfdraw::pdf_dev_set_color;
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_compare_reference,
+    pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_get_array, pdf_link_obj, pdf_lookup_dict,
+    pdf_merge_dict, pdf_name_value, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
+    pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj,
+    pdf_release_obj, pdf_remove_dict, pdf_set_encrypt, pdf_set_id, pdf_set_info, pdf_set_root,
+    pdf_stream_dict, pdf_stream_length, pdf_string_length, pdf_string_value,
+};
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -101,50 +108,12 @@ extern "C" {
     fn pdf_out_init(filename: *const i8, enable_encrypt: bool, enable_object_stream: bool);
     #[no_mangle]
     fn pdf_out_flush();
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> f64;
-    #[no_mangle]
-    fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> u32;
     /* Name does not include the / */
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
-    #[no_mangle]
-    fn pdf_new_array() -> *mut pdf_obj;
     /* pdf_add_dict requires key but pdf_add_array does not.
      * pdf_add_array always append elements to array.
      * They should be pdf_put_array(array, idx, element) and
      * pdf_put_dict(dict, key, value)
      */
-    #[no_mangle]
-    fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> u32;
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_remove_dict(dict: *mut pdf_obj, key: *const i8);
-    #[no_mangle]
-    fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
      * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
      * key. This strange difference seems come from pdfdoc that first allocate
@@ -152,36 +121,8 @@ extern "C" {
      * pdf_link_obj() it rather than allocate/free-ing them each time. But I
      * already removed that.
      */
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_stream(
-        stream: *mut pdf_obj,
-        stream_data_ptr: *const libc::c_void,
-        stream_data_len: i32,
-    );
-    #[no_mangle]
-    fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
     /* Compare label of two indirect reference object.
      */
-    #[no_mangle]
-    fn pdf_compare_reference(ref1: *mut pdf_obj, ref2: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_set_info(obj: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_set_root(obj: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_set_id(id: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_set_encrypt(encrypt: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_file_get_catalog(pf: *mut pdf_file) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_deref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn get_unique_time_if_given() -> time_t;
     /* Accessor to various device parameters.

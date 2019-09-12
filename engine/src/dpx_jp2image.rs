@@ -9,7 +9,10 @@
 use crate::warn;
 
 extern crate libc;
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{
+    pdf_add_dict, pdf_add_stream, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_obj,
+    pdf_stream_dict,
+};
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -96,11 +99,7 @@ extern "C" {
     static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn pdf_get_version() -> u32;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     /* Name does not include the / */
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
      * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
      * key. This strange difference seems come from pdfdoc that first allocate
@@ -108,18 +107,6 @@ extern "C" {
      * pdf_link_obj() it rather than allocate/free-ing them each time. But I
      * already removed that.
      */
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_stream(
-        stream: *mut pdf_obj,
-        stream_data_ptr: *const libc::c_void,
-        stream_data_len: i32,
-    );
-    #[no_mangle]
-    fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_ximage_init_image_info(info: *mut ximage_info);
     #[no_mangle]

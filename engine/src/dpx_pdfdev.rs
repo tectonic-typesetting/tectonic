@@ -11,7 +11,7 @@ use crate::{info, warn};
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color, pdf_dev_transform};
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_release_obj};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -27,10 +27,6 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     /* Color stack
      */
     #[no_mangle]

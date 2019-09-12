@@ -12,12 +12,8 @@ use crate::warn;
 
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{pdf_new_number, pdf_obj, pdf_ref_obj};
 extern "C" {
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]

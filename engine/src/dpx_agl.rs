@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::dpx_pdfparse::parse_ident;
 use crate::{info, warn};
 
 extern crate libc;
@@ -110,8 +111,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     /* Please remove this */
-    #[no_mangle]
-    fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

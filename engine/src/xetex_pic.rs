@@ -8,7 +8,7 @@
 
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{pdf_close, pdf_file, pdf_obj, pdf_open, pdf_release_obj};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -148,8 +148,6 @@ extern "C" {
     fn min4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
     #[no_mangle]
     fn max4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -186,10 +184,6 @@ extern "C" {
         matrix: *mut pdf_tmatrix,
         resources_p: *mut *mut pdf_obj,
     ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_open(ident: *const i8, handle: rust_input_handle_t) -> *mut pdf_file;
-    #[no_mangle]
-    fn pdf_close(pf: *mut pdf_file);
     #[no_mangle]
     fn check_for_png(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
