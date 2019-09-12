@@ -680,7 +680,7 @@ impl IoProvider for CachedITarBundle {
             Err(e) => return OpenResult::Err(e.into()),
         };
 
-        OpenResult::Ok(InputHandle::new(
+        OpenResult::Ok(InputHandle::new_read_only(
             name,
             BufReader::new(f),
             InputOrigin::Other,
