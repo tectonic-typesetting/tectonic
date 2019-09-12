@@ -6,19 +6,33 @@
 
 pub mod termcolor;
 
-use clap::arg_enum;
 use std::cmp;
 use std::fmt::Arguments;
-use structopt::StructOpt;
+use std::str::FromStr;
+use std::result::Result as StdResult;
 
 use crate::errors::Error;
 
-arg_enum! {
-    #[repr(usize)]
-    #[derive(Clone, Copy, Eq, Debug, StructOpt)]
-    pub enum ChatterLevel {
-        Minimal = 0,
-        Normal,
+#[repr(usize)]
+#[derive(Clone, Copy, Eq, Debug)]
+pub enum ChatterLevel {
+    Minimal = 0,
+    Normal,
+}
+
+impl FromStr for ChatterLevel {
+
+    type Err = &'static str;
+
+    fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
+
+        let actual = match a_str {
+            "default" => ChatterLevel::Normal,
+            "minimal" => ChatterLevel::Minimal,
+            _    => unreachable!()
+        };
+
+        Ok(actual)
     }
 }
 
