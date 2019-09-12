@@ -25,8 +25,8 @@ use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
 struct Opt {
     /// The file to process, or "-" to process the standard input stream"
-    #[structopt(name = "INPUT", parse(from_os_str))]
-    input: PathBuf,
+    #[structopt(name = "INPUT")]
+    input: String,
     /// The name of the "format" file used to initialize the TeX engine
     #[structopt(long, short, name = "PATH", default_value = "latex")]
     format: String,
@@ -60,7 +60,7 @@ struct Opt {
     pass: String,
     /// Rerun the TeX engine exactly this many times after the first
     #[structopt(name = "count", long = "reruns", short = "r")]
-    reruns: Option<f64>,
+    reruns: Option<usize>,
     /// Keep the intermediate files generated during processing
     #[structopt(short, long)]
     keep_intermediates: bool,
@@ -96,7 +96,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
     sess_builder.pass(pass);
 
     if let Some(s) = args.reruns {
-        sess_builder.reruns(usize::from_str_radix(s, 10)?);
+        sess_builder.reruns(s);
     }
 
     if let Some(p) = args.makefile_rules {
@@ -105,7 +105,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
 
     // Input and path setup
 
-    let input_path = args.value_of_os("INPUT").unwrap();
+    let input_path = args.input;
     if input_path == "-" {
         // Don't provide an input path to the ProcessingSession, so it will default to stdin.
         sess_builder.tex_input_name("texput.tex");
@@ -115,7 +115,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
             "reading from standard input; outputs will appear under the base name \"texput\""
         );
     } else {
-        let input_path = Path::new(input_path);
+        let input_path = Path::new(&input_path);
         sess_builder.primary_input_path(input_path);
 
         if let Some(fname) = input_path.file_name() {
