@@ -2493,7 +2493,7 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
                         strlen(b"/FlateDecode \x00" as *const u8 as *const libc::c_char)
                     } else {
                         strlen(b"/Filter/FlateDecode\n\x00" as *const u8 as *const libc::c_char)
-                    }) as libc::c_ulong,
+                    } as libc::c_ulong),
             ) as libc::c_int as libc::c_int;
             filtered = buffer;
             filtered_length = buffer_length as libc::c_uint
