@@ -8,34 +8,17 @@
     unused_mut
 )]
 
+use crate::dpx_pdfparse::parse_pdf_dict;
 use crate::{info, warn};
 
 extern crate libc;
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{
+    pdf_add_dict, pdf_file, pdf_link_obj, pdf_lookup_dict, pdf_name_value, pdf_new_name,
+    pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_remove_dict,
+    pdf_string_value,
+};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_remove_dict(dict: *mut pdf_obj, key: *const i8);
-    #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> f64;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_get_version() -> u32;
     #[no_mangle]
@@ -179,8 +162,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn parse_pdf_dict(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
 }
 pub type C2RustUnnamed = u32;
 pub const _ISalnum: C2RustUnnamed = 8;

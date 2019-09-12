@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::dpx_pdfparse::parse_number;
 use crate::warn;
 
 extern crate libc;
@@ -16,7 +17,15 @@ use super::dpx_pdfdraw::{
     pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_currentpoint, pdf_dev_dtransform,
     pdf_dev_idtransform, pdf_dev_set_color,
 };
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{
+    pdf_add_dict, pdf_array_length, pdf_file, pdf_get_array, pdf_lookup_dict, pdf_name_value,
+    pdf_new_dict, pdf_new_name, pdf_new_number, pdf_number_value, pdf_obj, pdf_obj_typeof,
+    pdf_release_obj, pdf_set_number, pdf_string_length, pdf_string_value,
+};
+use crate::dpx_pdfparse::{
+    parse_ident, parse_pdf_array, parse_pdf_dict, parse_pdf_name, parse_pdf_string,
+    pdfparse_skip_line,
+};
 use libc::free;
 extern "C" {
     pub type _IO_wide_data;
@@ -69,33 +78,7 @@ extern "C" {
     fn rewind(__stream: *mut FILE);
     #[no_mangle]
     fn file_size(file: *mut FILE) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_set_number(object: *mut pdf_obj, value: f64);
-    #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> f64;
-    #[no_mangle]
-    fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> u32;
     /* Name does not include the / */
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
-    #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> u32;
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
      * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
      * key. This strange difference seems come from pdfdoc that first allocate
@@ -103,8 +86,6 @@ extern "C" {
      * pdf_link_obj() it rather than allocate/free-ing them each time. But I
      * already removed that.
      */
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
     /* returns 1.0/unit_conv */
@@ -297,21 +278,7 @@ extern "C" {
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);
     #[no_mangle]
-    fn pdfparse_skip_line(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_number(start: *mut *const i8, end: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_pdf_name(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn parse_pdf_string(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn parse_pdf_dict(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
-    #[no_mangle]
-    fn parse_pdf_array(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
     fn lookup_sfd_record(rec_id: i32, code: u8) -> u16;
     #[no_mangle]

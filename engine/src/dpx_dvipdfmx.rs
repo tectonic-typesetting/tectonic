@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::dpx_pdfparse::parse_unsigned;
 use crate::{info, warn};
 
 extern crate libc;
@@ -282,8 +283,6 @@ extern "C" {
     fn pdf_font_set_deterministic_unique_tags(value: i32);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_unsigned(start: *mut *const i8, end: *const i8) -> *mut i8;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

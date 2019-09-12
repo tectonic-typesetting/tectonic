@@ -12,7 +12,14 @@ use crate::warn;
 
 extern crate libc;
 use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{
+    pdf_add_array, pdf_add_dict, pdf_array_length, pdf_boolean_value, pdf_close, pdf_concat_stream,
+    pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_file_get_trailer, pdf_get_array,
+    pdf_import_object, pdf_lookup_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
+    pdf_new_stream, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_open, pdf_release_obj,
+    pdf_stream_dataptr, pdf_stream_dict, pdf_stream_length,
+};
+use crate::dpx_pdfparse::{parse_ident, parse_pdf_array};
 use libc::free;
 extern "C" {
     pub type _IO_wide_data;
@@ -29,45 +36,7 @@ extern "C" {
     #[no_mangle]
     fn pdf_ximage_init_form_info(info: *mut xform_info);
     #[no_mangle]
-    fn pdf_import_object(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_deref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_file_get_catalog(pf: *mut pdf_file) -> *mut pdf_obj;
-    #[no_mangle]
     fn pdf_file_get_version(pf: *mut pdf_file) -> u32;
-    #[no_mangle]
-    fn pdf_file_get_trailer(pf: *mut pdf_file) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_close(pf: *mut pdf_file);
-    #[no_mangle]
-    fn pdf_open(ident: *const i8, handle: rust_input_handle_t) -> *mut pdf_file;
-    #[no_mangle]
-    fn pdf_stream_dataptr(stream: *mut pdf_obj) -> *const libc::c_void;
-    #[no_mangle]
-    fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_concat_stream(dst: *mut pdf_obj, src: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> u32;
-    #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_new_array() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> f64;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
@@ -78,16 +47,6 @@ extern "C" {
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_get_version() -> u32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_boolean_value(object: *mut pdf_obj) -> i8;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_doc_get_page(
         pf: *mut pdf_file,
@@ -118,10 +77,6 @@ extern "C" {
     fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_pdf_array(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;

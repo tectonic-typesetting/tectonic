@@ -10,7 +10,10 @@ use crate::{info, warn};
 
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{
+    pdf_add_dict, pdf_link_obj, pdf_merge_dict, pdf_new_name, pdf_new_number, pdf_obj,
+    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_dict,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -38,21 +41,7 @@ extern "C" {
     fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
     /* Name does not include the / */
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
     /* pdf_add_dict() want pdf_obj as key, however, key must always be name
      * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
      * key. This strange difference seems come from pdfdoc that first allocate
@@ -60,10 +49,6 @@ extern "C" {
      * pdf_link_obj() it rather than allocate/free-ing them each time. But I
      * already removed that.
      */
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn check_for_pdf(handle: rust_input_handle_t) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

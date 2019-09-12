@@ -11,35 +11,12 @@
 use crate::{info, warn};
 
 extern crate libc;
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_link_obj, pdf_new_array, pdf_new_name,
+    pdf_new_number, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dict,
+};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_stream(
-        stream: *mut pdf_obj,
-        stream_data_ptr: *const libc::c_void,
-        stream_data_len: i32,
-    );
-    #[no_mangle]
-    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_new_array() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_get_version() -> u32;
     #[no_mangle]

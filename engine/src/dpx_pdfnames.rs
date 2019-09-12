@@ -11,15 +11,15 @@
 use crate::warn;
 
 extern crate libc;
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{
+    pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_new_array, pdf_new_dict, pdf_new_name,
+    pdf_new_null, pdf_new_string, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
+    pdf_string_length, pdf_string_value,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -51,31 +51,9 @@ extern "C" {
     #[no_mangle]
     fn ht_iter_next(iter: *mut ht_iter) -> i32;
     #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
     fn pdf_transfer_label(dst: *mut pdf_obj, src: *mut pdf_obj);
     #[no_mangle]
     fn pdf_new_undefined() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_null() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> u32;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_array() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]

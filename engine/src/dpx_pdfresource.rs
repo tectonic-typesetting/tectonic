@@ -9,7 +9,7 @@
 use crate::warn;
 
 extern crate libc;
-use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_ref_obj, pdf_release_obj};
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -43,12 +43,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_ref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

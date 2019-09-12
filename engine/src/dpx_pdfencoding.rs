@@ -9,29 +9,13 @@
 use crate::info;
 
 extern crate libc;
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{
+    pdf_add_array, pdf_add_dict, pdf_file, pdf_get_array, pdf_link_obj, pdf_name_value,
+    pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_obj, pdf_release_obj,
+};
+use crate::dpx_pdfparse::{parse_pdf_array, parse_pdf_name, pdfparse_skip_line};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_new_array() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn pdf_get_version() -> u32;
     #[no_mangle]
@@ -133,13 +117,7 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdfparse_skip_line(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_pdf_name(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn parse_pdf_array(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
     fn agl_sput_UTF16BE(
         name: *const i8,

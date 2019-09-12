@@ -16,7 +16,15 @@ use super::dpx_pdfdev::pdf_sprint_matrix;
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 use super::dpx_spc_util::spc_util_read_pdfcolor;
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_file, pdf_get_array,
+    pdf_link_obj, pdf_lookup_dict, pdf_merge_dict, pdf_name_value, pdf_new_array, pdf_new_dict,
+    pdf_new_name, pdf_new_stream, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj,
+    pdf_remove_dict, pdf_set_string, pdf_stream_dict, pdf_string_length, pdf_string_value,
+};
+use crate::dpx_pdfparse::{
+    parse_ident, parse_opt_ident, parse_pdf_dict, parse_pdf_object, parse_val_ident,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -36,16 +44,6 @@ extern "C" {
     #[no_mangle]
     fn spc_lookup_object(ident: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_stream(
-        stream: *mut pdf_obj,
-        stream_data_ptr: *const libc::c_void,
-        stream_data_len: i32,
-    );
-    #[no_mangle]
-    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
-    #[no_mangle]
     fn pdf_foreach_dict(
         dict: *mut pdf_obj,
         proc_0: Option<
@@ -53,42 +51,6 @@ extern "C" {
         >,
         pdata: *mut libc::c_void,
     ) -> i32;
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_remove_dict(dict: *mut pdf_obj, key: *const i8);
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_array_length(array: *mut pdf_obj) -> u32;
-    #[no_mangle]
-    fn pdf_get_array(array: *mut pdf_obj, idx: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_new_array() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_name_value(object: *mut pdf_obj) -> *mut i8;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_string_length(object: *mut pdf_obj) -> u32;
-    #[no_mangle]
-    fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_set_string(object: *mut pdf_obj, str: *mut u8, length: size_t);
-    #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> f64;
-    #[no_mangle]
-    fn pdf_link_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
@@ -286,16 +248,6 @@ extern "C" {
     fn pdf_dev_grestore() -> i32;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_val_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_opt_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_pdf_dict(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
-    #[no_mangle]
-    fn parse_pdf_object(pp: *mut *const i8, endptr: *const i8, pf: *mut pdf_file) -> *mut pdf_obj;
     #[no_mangle]
     fn parse_pdf_tainted_dict(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
     #[no_mangle]

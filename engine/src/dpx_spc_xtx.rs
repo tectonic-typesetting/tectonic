@@ -9,6 +9,7 @@ extern crate libc;
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_set_fixed_point};
 use super::dpx_spc_util::spc_util_read_colorspec;
+use crate::dpx_pdfparse::{parse_ident, parse_val_ident};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -98,10 +99,6 @@ extern "C" {
     fn pdf_dev_grestore() -> i32;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_val_ident(start: *mut *const i8, end: *const i8) -> *mut i8;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

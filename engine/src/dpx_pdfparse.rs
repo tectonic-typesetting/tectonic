@@ -11,7 +11,12 @@
 use crate::{info, warn};
 
 extern crate libc;
-use crate::dpx_pdfobj::{pdf_file, pdf_obj};
+use crate::dpx_pdfobj::{
+    pdf_add_array, pdf_add_dict, pdf_deref_obj, pdf_file, pdf_lookup_dict, pdf_merge_dict,
+    pdf_new_array, pdf_new_boolean, pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number,
+    pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj,
+    pdf_stream_dict,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -23,45 +28,11 @@ extern "C" {
     #[no_mangle]
     fn pdf_new_indirect(pf: *mut pdf_file, label: u32, generation: u16) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_deref_obj(object: *mut pdf_obj) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_null() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_boolean(value: i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_number(value: f64) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> f64;
-    #[no_mangle]
-    fn pdf_new_string(str: *const libc::c_void, length: size_t) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_name(name: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_new_array() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_array(array: *mut pdf_obj, object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_new_dict() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_merge_dict(dict1: *mut pdf_obj, dict2: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_lookup_dict(dict: *mut pdf_obj, key: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_new_stream(flags: i32) -> *mut pdf_obj;
-    #[no_mangle]
     fn pdf_add_stream(
         stream: *mut pdf_obj,
         stream_data_ptr: *const libc::c_void,
         stream_data_len: i32,
     );
-    #[no_mangle]
-    fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]

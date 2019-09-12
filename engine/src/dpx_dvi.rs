@@ -10,7 +10,10 @@ use crate::warn;
 
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
-use crate::dpx_pdfobj::pdf_obj;
+use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
+use crate::dpx_pdfobj::{
+    pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj, pdf_string_value,
+};
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -96,14 +99,6 @@ extern "C" {
         -> u32;
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
-    #[no_mangle]
-    fn pdf_release_obj(object: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_obj_typeof(object: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn pdf_number_value(number: *mut pdf_obj) -> f64;
-    #[no_mangle]
-    fn pdf_string_value(object: *mut pdf_obj) -> *mut libc::c_void;
     /* Draw texts and rules:
      *
      * xpos, ypos, width, and height are all fixed-point numbers
@@ -271,10 +266,6 @@ extern "C" {
     fn dump(start: *const i8, end: *const i8);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_pdf_number(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn parse_pdf_string(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
     #[no_mangle]
     fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
     #[no_mangle]
