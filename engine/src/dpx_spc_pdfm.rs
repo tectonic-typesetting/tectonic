@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::warn;
+
 extern crate libc;
 use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
@@ -712,7 +715,7 @@ unsafe extern "C" fn spc_handler_pdfm__init(mut dp: *mut libc::c_void) -> i32 {
 unsafe extern "C" fn spc_handler_pdfm__clean(mut dp: *mut libc::c_void) -> i32 {
     let mut sd: *mut spc_pdf_ = dp as *mut spc_pdf_;
     if !(*sd).annot_dict.is_null() {
-        dpx_warning(b"Unbalanced bann and eann found.\x00" as *const u8 as *const i8);
+        warn!("Unbalanced bann and eann found.");
         pdf_release_obj((*sd).annot_dict);
     }
     (*sd).lowest_level = 255i32;
@@ -1097,9 +1100,7 @@ unsafe extern "C" fn modstrings(
             }
             if r < 0i32 {
                 /* error occured... */
-                dpx_warning(
-                    b"Failed to convert input string to UTF16...\x00" as *const u8 as *const i8,
-                );
+                warn!("Failed to convert input string to UTF16...");
             }
         }
         6 => {
@@ -2113,8 +2114,7 @@ unsafe extern "C" fn spc_handler_pdfm_literal(
             && !strstartswith((*args).curptr, b"reverse\x00" as *const u8 as *const i8).is_null()
         {
             (*args).curptr = (*args).curptr.offset(7);
-            dpx_warning(b"The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.\x00"
-                            as *const u8 as *const i8);
+            warn!("The special \"pdf:literal reverse ...\" is no longer supported.\nIgnore the \"reverse\" option.");
         } else {
             if !((*args).curptr.offset(6) <= (*args).endptr
                 && !strstartswith((*args).curptr, b"direct\x00" as *const u8 as *const i8)

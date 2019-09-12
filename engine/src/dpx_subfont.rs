@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -272,10 +274,9 @@ unsafe extern "C" fn readline(
         p = buf.offset(n as isize)
     }
     if n >= buf_len - 1i32 {
-        dpx_warning(
-            b"Possible buffer overflow in reading SFD file (buffer full, size=%d bytes)\x00"
-                as *const u8 as *const i8,
-            buf_len - 1i32,
+        warn!(
+            "Possible buffer overflow in reading SFD file (buffer full, size={} bytes)",
+            buf_len - 1i32
         );
     }
     if c > 0i32 {
@@ -323,10 +324,7 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
         match *q as i32 {
             58 => {
                 if v1 < 0i32 || v1 > 0xffi32 {
-                    dpx_warning(
-                        b"Invalud value for subfont table offset: %d\x00" as *const u8 as *const i8,
-                        v1,
-                    );
+                    warn!("Invalud value for subfont table offset: {}", v1);
                     return -1i32;
                 }
                 repos = 1i32;
@@ -337,11 +335,9 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
                 v2 = strtol(p, &mut r, 0i32) as i32;
                 q = r;
                 if v1 < 0i32 || v1 as i64 > 0xffff || v2 < 0i32 || v2 as i64 > 0xffff {
-                    dpx_warning(
-                        b"Invalid value in subfont mapping table: 0x%x_0x%x\x00" as *const u8
-                            as *const i8,
-                        v1,
-                        v2,
+                    warn!(
+                        "Invalid value in subfont mapping table: 0x{:x}_0x{:x}",
+                        v1, v2,
                     );
                     return -1i32;
                 } else {
@@ -357,9 +353,8 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
             }
             _ => {
                 if v1 < 0i32 || v1 as i64 > 0xffff {
-                    dpx_warning(
-                        b"Invalid character code in subfont mapping table: 0x%x\x00" as *const u8
-                            as *const i8,
+                    warn!(
+                        "Invalid character code in subfont mapping table: 0x{:x}",
                         v1,
                     );
                     return -1i32;
@@ -371,17 +366,15 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
             curpos = v1
         } else {
             if v2 < v1 || curpos + (v2 - v1) > 0xffi32 {
-                dpx_warning(b"Invalid range in subfont mapping: curpos=\"0x%02x\" range=\"0x%04x,0x%04x\"\x00"
-                                as *const u8 as *const i8, curpos,
+                warn!("Invalid range in subfont mapping: curpos=\"0x{:02x}\" range=\"0x{:04x},0x{:04x}\"", curpos,
                             v1, v2);
                 return -1i32;
             }
             c = v1;
             while c <= v2 {
                 if (*rec).vector[curpos as usize] as i32 != 0i32 {
-                    dpx_warning(
-                        b"Subfont mapping for slot=\"0x%02x\" already defined...\x00" as *const u8
-                            as *const i8,
+                    warn!(
+                        "Subfont mapping for slot=\"0x{:02x}\" already defined...",
                         curpos,
                     );
                     return -1i32;
@@ -677,21 +670,21 @@ pub unsafe extern "C" fn sfd_load_record(
     if verbose > 3i32 {
         let mut __i_0: i32 = 0;
         if rec_id >= 0i32 {
-            dpx_message(b" at id=\"%d\"\x00" as *const u8 as *const i8, rec_id);
-            dpx_message(b"\nsubfont>> Content of mapping table:\x00" as *const u8 as *const i8);
+            info!(" at id=\"{}\"", rec_id);
+            info!("\nsubfont>> Content of mapping table:");
             __i_0 = 0i32;
             while __i_0 < 256i32 {
                 if __i_0 % 16i32 == 0i32 {
-                    dpx_message(b"\nsubfont>>  \x00" as *const u8 as *const i8);
+                    info!("\nsubfont>>  ");
                 }
-                dpx_message(
-                    b" %04x\x00" as *const u8 as *const i8,
+                info!(
+                    " {:04x}",
                     (*sfd_record.offset(rec_id as isize)).vector[__i_0 as usize] as i32,
                 );
                 __i_0 += 1
             }
         }
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
     }
     rec_id
 }

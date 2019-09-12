@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -70,8 +72,6 @@ extern "C" {
     */
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -410,14 +410,13 @@ unsafe extern "C" fn tfm_check_size(mut tfm: *mut tfm_font, mut tfm_file_size: o
     expected_size = (expected_size as u32).wrapping_add((*tfm).nextens) as u32;
     expected_size = (expected_size as u32).wrapping_add((*tfm).nfonparm) as u32;
     if expected_size != (*tfm).wlenfile {
-        dpx_warning(
-            b"TFM file size is expected to be %ld bytes but it says it is %ldbytes!\x00"
-                as *const u8 as *const i8,
+        warn!(
+            "TFM file size is expected to be {} bytes but it says it is {}bytes!",
             expected_size as i64 * 4i32 as i64,
             (*tfm).wlenfile as i64 * 4i32 as i64,
         );
         if tfm_file_size > expected_size as i64 * 4i32 as i64 {
-            dpx_warning(b"Proceeding nervously...\x00" as *const u8 as *const i8);
+            warn!("Proceeding nervously...");
         } else {
             _tt_abort(b"Can\'t proceed...\x00" as *const u8 as *const i8);
         }
@@ -621,9 +620,7 @@ unsafe extern "C" fn ofm_get_sizes(
         b"fontdir\x00" as *const u8 as *const i8,
     );
     if (*tfm).fontdir != 0 {
-        dpx_warning(
-            b"I may be interpreting a font direction incorrectly.\x00" as *const u8 as *const i8,
-        );
+        warn!("I may be interpreting a font direction incorrectly.");
     }
     if (*tfm).level == 0i32 {
         ofm_check_size_one(tfm, ofm_file_size);
@@ -1035,7 +1032,7 @@ pub unsafe extern "C" fn tfm_open(mut tfm_name: *const i8, mut must_exist: i32) 
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy((*fms.offset(numfms as isize)).tex_name, tfm_name);
     if verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const i8);
+        info!(")");
     }
     let fresh1 = numfms;
     numfms = numfms.wrapping_add(1);

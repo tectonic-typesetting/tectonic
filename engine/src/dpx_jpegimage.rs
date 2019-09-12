@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -276,10 +278,7 @@ pub unsafe extern "C" fn jpeg_include_image(
         skipbits: [0; 129],
     };
     if check_for_jpeg(handle) == 0 {
-        dpx_warning(
-            b"%s: Not a JPEG file?\x00" as *const u8 as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Not a JPEG file?", "JPEG");
         ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
         return -1i32;
     }
@@ -287,10 +286,7 @@ pub unsafe extern "C" fn jpeg_include_image(
     pdf_ximage_init_image_info(&mut info);
     JPEG_info_init(&mut j_info);
     if JPEG_scan_file(&mut j_info, handle) < 0i32 {
-        dpx_warning(
-            b"%s: Not a JPEG file?\x00" as *const u8 as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Not a JPEG file?", "JPEG");
         JPEG_info_clear(&mut j_info);
         return -1i32;
     }
@@ -299,10 +295,9 @@ pub unsafe extern "C" fn jpeg_include_image(
         3 => colortype = -3i32,
         4 => colortype = -4i32,
         _ => {
-            dpx_warning(
-                b"%s: Unknown color space (num components: %d)\x00" as *const u8 as *const i8,
-                b"JPEG\x00" as *const u8 as *const i8,
-                info.num_components,
+            warn!(
+                "{}: Unknown color space (num components: {})",
+                "JPEG", info.num_components,
             );
             JPEG_info_clear(&mut j_info);
             return -1i32;
@@ -389,7 +384,7 @@ pub unsafe extern "C" fn jpeg_include_image(
     if j_info.flags & 1i32 << 1i32 != 0 && j_info.num_components as i32 == 4i32 {
         let mut decode: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut i: u32 = 0;
-        dpx_warning(b"Adobe CMYK JPEG: Inverted color assumed.\x00" as *const u8 as *const i8);
+        warn!("Adobe CMYK JPEG: Inverted color assumed.");
         decode = pdf_new_array();
         i = 0_u32;
         while i < j_info.num_components as u32 {
@@ -523,8 +518,8 @@ unsafe extern "C" fn JPEG_get_iccp(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
                 || num_icc_seg != (*icc).num_chunks as i32
                 || (*icc).seq_id as i32 > (*icc).num_chunks as i32
             {
-                dpx_warning(
-                    b"Invalid JPEG ICC chunk: %d (p:%d, n:%d)\x00" as *const u8 as *const i8,
+                warn!(
+                    "Invalid JPEG ICC chunk: {} (p:{}, n:{})",
                     (*icc).seq_id as i32,
                     prev_id,
                     (*icc).num_chunks as i32,
@@ -581,10 +576,9 @@ unsafe extern "C" fn JPEG_get_XMP(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
         i += 1
     }
     if count > 1i32 {
-        dpx_warning(
-            b"%s: Multiple XMP segments found in JPEG file. (untested)\x00" as *const u8
-                as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
+        warn!(
+            "{}: Multiple XMP segments found in JPEG file. (untested)",
+            "JPEG",
         );
     }
     XMP_stream
@@ -717,9 +711,7 @@ unsafe extern "C" fn read_APP1_Exif(
                 bigendian = 1_i8;
                 current_block = 1109700713171191020;
             } else {
-                dpx_warning(
-                    b"JPEG: Invalid value in Exif TIFF header.\x00" as *const u8 as *const i8,
-                );
+                warn!("JPEG: Invalid value in Exif TIFF header.");
                 current_block = 10568945602212496329;
             }
             match current_block {
@@ -728,10 +720,7 @@ unsafe extern "C" fn read_APP1_Exif(
                     p = p.offset(2);
                     i = read_exif_bytes(&mut p, 2i32, bigendian as i32);
                     if i != 42i32 {
-                        dpx_warning(
-                            b"JPEG: Invalid value in Exif TIFF header.\x00" as *const u8
-                                as *const i8,
-                        );
+                        warn!("JPEG: Invalid value in Exif TIFF header.");
                     } else {
                         i = read_exif_bytes(&mut p, 4i32, bigendian as i32);
                         p = tiff_header.offset(i as isize);
@@ -806,11 +795,9 @@ unsafe extern "C" fn read_APP1_Exif(
                                 20753 => {
                                     /* PixelPerUnitX */
                                     if type_0 != 4i32 || count != 1i32 {
-                                        dpx_warning(
-                                            b"%s: Invalid data for PixelPerUnitX in Exif chunk.\x00"
-                                                as *const u8
-                                                as *const i8,
-                                            b"JPEG\x00" as *const u8 as *const i8,
+                                        warn!(
+                                            "{}: Invalid data for PixelPerUnitX in Exif chunk.",
+                                            "JPEG",
                                         );
                                         current_block = 10568945602212496329;
                                         break;
@@ -823,11 +810,9 @@ unsafe extern "C" fn read_APP1_Exif(
                                 20754 => {
                                     /* PixelPerUnitY */
                                     if type_0 != 4i32 || count != 1i32 {
-                                        dpx_warning(
-                                            b"%s: Invalid data for PixelPerUnitY in Exif chunk.\x00"
-                                                as *const u8
-                                                as *const i8,
-                                            b"JPEG\x00" as *const u8 as *const i8,
+                                        warn!(
+                                            "{}: Invalid data for PixelPerUnitY in Exif chunk.",
+                                            "JPEG",
                                         );
                                         current_block = 10568945602212496329;
                                         break;
@@ -843,12 +828,7 @@ unsafe extern "C" fn read_APP1_Exif(
                             }
                             /* PixelUnit */
                             if type_0 != 1i32 || count != 1i32 {
-                                dpx_warning(
-                                    b"%s: Invalid data for ResolutionUnit in Exif chunk.\x00"
-                                        as *const u8
-                                        as *const i8,
-                                    b"JPEG\x00" as *const u8 as *const i8,
-                                ); /* Unit is meter */
+                                warn!("{}: Invalid data for ResolutionUnit in Exif chunk.", "JPEG",); /* Unit is meter */
                                 current_block = 10568945602212496329;
                                 break;
                             } else {
@@ -886,9 +866,7 @@ unsafe extern "C" fn read_APP1_Exif(
                                     let mut yyy1: f64 = (exifydpi + 0.5f64).floor();
                                     let mut yyy2: f64 = ((*info).ydpi + 0.5f64).floor();
                                     if xxx1 != xxx2 || yyy1 != yyy2 {
-                                        dpx_warning(b"JPEG: Inconsistent resolution may have been specified in Exif and JFIF: %gx%g - %gx%g\x00"
-                                                        as *const u8 as
-                                                        *const i8,
+                                        warn!("JPEG: Inconsistent resolution may have been specified in Exif and JFIF: {}x{} - {}x{}",
                                                     xres * res_unit,
                                                     yres * res_unit,
                                                     (*info).xdpi,
@@ -1375,10 +1353,7 @@ pub unsafe extern "C" fn jpeg_get_bbox(
     };
     JPEG_info_init(&mut j_info);
     if JPEG_scan_file(&mut j_info, handle) < 0i32 {
-        dpx_warning(
-            b"%s: Not a JPEG file?\x00" as *const u8 as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
-        );
+        warn!("{}: Not a JPEG file?", "JPEG");
         JPEG_info_clear(&mut j_info);
         return -1i32;
     }

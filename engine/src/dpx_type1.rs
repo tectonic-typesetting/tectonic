@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -929,7 +931,7 @@ unsafe extern "C" fn add_metrics(
             code += 1
         }
         if firstchar > lastchar {
-            dpx_warning(b"No glyphs actually used???\x00" as *const u8 as *const i8);
+            warn!("No glyphs actually used???");
             pdf_release_obj(tmp_array);
             return;
         }
@@ -962,8 +964,8 @@ unsafe extern "C" fn add_metrics(
                                 as *const i8,
                             pdf_font_get_mapname(font),
                         );
-                        dpx_warning(
-                            b"TFM: %g vs. Type1 font: %g\x00" as *const u8 as *const i8,
+                        warn!(
+                            "TFM: {} vs. Type1 font: {}",
                             width,
                             *widths
                                 .offset(cff_glyph_lookup(cffont, *enc_vec.offset(code as isize))
@@ -1390,7 +1392,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     }
     *GIDMap.offset(0) = gid as card16;
     if verbose > 2i32 {
-        dpx_message(b"[glyphs:/.notdef\x00" as *const u8 as *const i8);
+        info!("[glyphs:/.notdef");
     }
     num_glyphs = 1i32 as card16;
     prev = -2i32;
@@ -1660,7 +1662,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     cff_release_charsets((*cffont).charsets);
     (*cffont).charsets = charset;
     if verbose > 2i32 {
-        dpx_message(b"]\x00" as *const u8 as *const i8);
+        info!("]");
     }
     /* Now we can update the String Index */
     cff_dict_update((*cffont).topdict, cffont);
@@ -1669,11 +1671,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     add_metrics(font, cffont, enc_vec, widths, num_glyphs as i32);
     offset = write_fontfile(font, cffont, pdfcharset);
     if verbose > 1i32 {
-        dpx_message(
-            b"[%u glyphs][%d bytes]\x00" as *const u8 as *const i8,
-            num_glyphs as i32,
-            offset,
-        );
+        info!("[{} glyphs][{} bytes]", num_glyphs, offset);
     }
     pdf_release_obj(pdfcharset);
     cff_close(cffont);

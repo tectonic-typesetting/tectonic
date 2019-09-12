@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -84,8 +87,6 @@ extern "C" {
         along with this program; if not, write to the Free Software
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -589,7 +590,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     let mut j: size_t = 0;
     let mut count: size_t = 0i32 as size_t;
     if cmap.is_null() || !CMap_is_valid(cmap) {
-        dpx_warning(b"Invalid CMap\x00" as *const u8 as *const i8);
+        warn!("Invalid CMap");
         return 0 as *mut pdf_obj;
     }
     if (*cmap).type_0 == 0i32 {

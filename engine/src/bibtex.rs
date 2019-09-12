@@ -111,7 +111,6 @@ pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type str_number = i32;
 /*22: */
-pub type ASCII_code = u8;
 pub type pool_pointer = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -132,7 +131,7 @@ pub struct peekable_input_t {
 }
 pub type buf_pointer = i32;
 pub type lex_type = u8;
-pub type buf_type = *mut ASCII_code;
+pub type buf_type = *mut u8;
 pub type hash_loc = i32;
 pub type fn_class = u8;
 pub type str_ilk = u8;
@@ -262,18 +261,18 @@ static mut lex_class: [lex_type; 256] = [0; 256];
 static mut id_class: [id_type; 256] = [0; 256];
 static mut char_width: [i32; 256] = [0; 256];
 static mut string_width: i32 = 0;
-static mut name_of_file: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
+static mut name_of_file: *mut u8 = 0 as *const u8 as *mut u8;
 static mut name_length: i32 = 0;
 static mut name_ptr: i32 = 0;
 static mut buf_size: i32 = 0;
-static mut buffer: buf_type = 0 as *const ASCII_code as *mut ASCII_code;
+static mut buffer: buf_type = 0 as *const u8 as *mut u8;
 static mut last: buf_pointer = 0;
-static mut sv_buffer: buf_type = 0 as *const ASCII_code as *mut ASCII_code;
+static mut sv_buffer: buf_type = 0 as *const u8 as *mut u8;
 static mut sv_ptr1: buf_pointer = 0;
 static mut sv_ptr2: buf_pointer = 0;
 static mut tmp_ptr: i32 = 0;
 static mut tmp_end_ptr: i32 = 0;
-static mut str_pool: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
+static mut str_pool: *mut u8 = 0 as *const u8 as *mut u8;
 static mut str_start: *mut pool_pointer = 0 as *const pool_pointer as *mut pool_pointer;
 static mut pool_ptr: pool_pointer = 0;
 static mut str_ptr: str_number = 0;
@@ -343,11 +342,11 @@ static mut int_ent_ptr: int_ent_loc = 0;
 static mut entry_ints: *mut i32 = 0 as *const i32 as *mut i32;
 static mut num_ent_ints: int_ent_loc = 0;
 static mut str_ent_ptr: str_ent_loc = 0;
-static mut entry_strs: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
+static mut entry_strs: *mut u8 = 0 as *const u8 as *mut u8;
 static mut num_ent_strs: str_ent_loc = 0;
 static mut str_glb_ptr: i32 = 0;
 static mut glb_str_ptr: *mut str_number = 0 as *const str_number as *mut str_number;
-static mut global_strs: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
+static mut global_strs: *mut u8 = 0 as *const u8 as *mut u8;
 static mut glb_str_end: *mut i32 = 0 as *const i32 as *mut i32;
 static mut num_glb_strs: i32 = 0;
 static mut field_ptr: field_loc = 0;
@@ -375,8 +374,8 @@ static mut field_name_loc: hash_loc = 0;
 static mut field_val_loc: hash_loc = 0;
 static mut store_field: bool = false;
 static mut store_token: bool = false;
-static mut right_outer_delim: ASCII_code = 0;
-static mut right_str_delim: ASCII_code = 0;
+static mut right_outer_delim: u8 = 0;
+static mut right_str_delim: u8 = 0;
 static mut at_bib_command: bool = false;
 static mut cur_macro_loc: hash_loc = 0;
 static mut cite_info: *mut str_number = 0 as *const str_number as *mut str_number;
@@ -390,10 +389,10 @@ static mut lit_stk_ptr: lit_stk_loc = 0;
 static mut cmd_str_ptr: str_number = 0;
 static mut ent_chr_ptr: i32 = 0;
 static mut glob_chr_ptr: i32 = 0;
-static mut ex_buf: buf_type = 0 as *const ASCII_code as *mut ASCII_code;
+static mut ex_buf: buf_type = 0 as *const u8 as *mut u8;
 static mut ex_buf_ptr: buf_pointer = 0;
 static mut ex_buf_length: buf_pointer = 0;
-static mut out_buf: buf_type = 0 as *const ASCII_code as *mut ASCII_code;
+static mut out_buf: buf_type = 0 as *const u8 as *mut u8;
 static mut out_buf_ptr: buf_pointer = 0;
 static mut out_buf_length: buf_pointer = 0;
 static mut mess_with_entries: bool = false;
@@ -465,7 +464,7 @@ static mut name_bf_xptr: buf_pointer = 0;
 static mut name_bf_yptr: buf_pointer = 0;
 static mut nm_brace_level: i32 = 0;
 static mut name_tok: *mut buf_pointer = 0 as *const buf_pointer as *mut buf_pointer;
-static mut name_sep_char: *mut ASCII_code = 0 as *const ASCII_code as *mut ASCII_code;
+static mut name_sep_char: *mut u8 = 0 as *const u8 as *mut u8;
 static mut num_tokens: buf_pointer = 0;
 static mut token_starting: bool = false;
 static mut alpha_found: bool = false;
@@ -575,24 +574,20 @@ unsafe extern "C" fn print_confusion() {
 unsafe extern "C" fn buffer_overflow() {
     buffer = xrealloc(
         buffer as *mut libc::c_void,
-        ((buf_size + 20000i32 + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+        ((buf_size + 20000i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     sv_buffer = xrealloc(
         sv_buffer as *mut libc::c_void,
-        ((buf_size + 20000i32 + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+        ((buf_size + 20000i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     ex_buf = xrealloc(
         ex_buf as *mut libc::c_void,
-        ((buf_size + 20000i32 + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+        ((buf_size + 20000i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     out_buf = xrealloc(
         out_buf as *mut libc::c_void,
-        ((buf_size + 20000i32 + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+        ((buf_size + 20000i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     name_tok = xrealloc(
         name_tok as *mut libc::c_void,
         ((buf_size + 20000i32 + 1i32) as u64)
@@ -600,9 +595,8 @@ unsafe extern "C" fn buffer_overflow() {
     ) as *mut buf_pointer;
     name_sep_char = xrealloc(
         name_sep_char as *mut libc::c_void,
-        ((buf_size + 20000i32 + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+        ((buf_size + 20000i32 + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     buf_size = buf_size + 20000i32;
 }
 unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
@@ -614,7 +608,7 @@ unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
         if last >= buf_size {
             buffer_overflow();
         }
-        *buffer.offset(last as isize) = peekable_getc(peekable) as ASCII_code;
+        *buffer.offset(last as isize) = peekable_getc(peekable) as u8;
         last += 1
     }
     peekable_getc(peekable);
@@ -651,8 +645,8 @@ unsafe extern "C" fn pool_overflow() {
     str_pool = xrealloc(
         str_pool as *mut libc::c_void,
         ((pool_size as i64 + 65000 + 1i32 as i64) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     pool_size = (pool_size as i64 + 65000) as i32;
 }
 unsafe extern "C" fn out_token(mut handle: rust_output_handle_t) {
@@ -995,7 +989,7 @@ unsafe extern "C" fn eat_bib_print() {
     puts_log(b"Illegal end of database file\x00" as *const u8 as *const i8);
     bib_err_print();
 }
-unsafe extern "C" fn bib_one_of_two_print(mut char1: ASCII_code, mut char2: ASCII_code) {
+unsafe extern "C" fn bib_one_of_two_print(mut char1: u8, mut char2: u8) {
     printf_log(
         b"I was expecting a `%c\' or a `%c\'\x00" as *const u8 as *const i8,
         char1 as i32,
@@ -1207,8 +1201,8 @@ unsafe extern "C" fn start_name(mut file_name: str_number) {
         ((*str_start.offset((file_name + 1i32) as isize) - *str_start.offset(file_name as isize)
             + 1i32
             + 1i32) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     name_ptr = 0i32;
     p_ptr = *str_start.offset(file_name as isize);
     while p_ptr < *str_start.offset((file_name + 1i32) as isize) {
@@ -1218,7 +1212,7 @@ unsafe extern "C" fn start_name(mut file_name: str_number) {
     }
     name_length =
         *str_start.offset((file_name + 1i32) as isize) - *str_start.offset(file_name as isize);
-    *name_of_file.offset(name_length as isize) = 0i32 as ASCII_code;
+    *name_of_file.offset(name_length as isize) = 0i32 as u8;
 }
 unsafe extern "C" fn add_extension(mut ext: str_number) {
     let mut p_ptr: pool_pointer = 0;
@@ -1230,7 +1224,7 @@ unsafe extern "C" fn add_extension(mut ext: str_number) {
         p_ptr += 1
     }
     name_length += *str_start.offset((ext + 1i32) as isize) - *str_start.offset(ext as isize);
-    *name_of_file.offset(name_length as isize) = 0i32 as ASCII_code;
+    *name_of_file.offset(name_length as isize) = 0i32 as u8;
 }
 unsafe extern "C" fn make_string() -> str_number {
     if str_ptr == max_strings {
@@ -1295,7 +1289,7 @@ unsafe extern "C" fn lower_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut 
                 if *buf.offset(i as isize) as i32 >= 'A' as i32
                     && *buf.offset(i as isize) as i32 <= 'Z' as i32
                 {
-                    *buf.offset(i as isize) = (*buf.offset(i as isize) as i32 + 32i32) as ASCII_code
+                    *buf.offset(i as isize) = (*buf.offset(i as isize) as i32 + 32i32) as u8
                 }
                 let fresh4 = i;
                 i = i + 1;
@@ -1317,7 +1311,7 @@ unsafe extern "C" fn upper_case(mut buf: buf_type, mut bf_ptr: buf_pointer, mut 
                 if *buf.offset(i as isize) as i32 >= 'a' as i32
                     && *buf.offset(i as isize) as i32 <= 'z' as i32
                 {
-                    *buf.offset(i as isize) = (*buf.offset(i as isize) as i32 - 32i32) as ASCII_code
+                    *buf.offset(i as isize) = (*buf.offset(i as isize) as i32 - 32i32) as u8
                 }
                 let fresh5 = i;
                 i = i + 1;
@@ -1431,14 +1425,14 @@ unsafe extern "C" fn int_to_ASCII(
 ) {
     let mut int_ptr: buf_pointer = 0;
     let mut int_xptr: buf_pointer = 0;
-    let mut int_tmp_val: ASCII_code = 0;
+    let mut int_tmp_val: u8 = 0;
     int_ptr = int_begin;
     if the_int < 0i32 {
         if int_ptr == buf_size {
             buffer_overflow();
         }
         /* str_found */
-        *int_buf.offset(int_ptr as isize) = 45i32 as ASCII_code; /*minus_sign */
+        *int_buf.offset(int_ptr as isize) = 45i32 as u8; /*minus_sign */
         int_ptr = int_ptr + 1i32;
         the_int = -the_int
     }
@@ -1447,7 +1441,7 @@ unsafe extern "C" fn int_to_ASCII(
         if int_ptr == buf_size {
             buffer_overflow();
         }
-        *int_buf.offset(int_ptr as isize) = ('0' as i32 + the_int % 10i32) as ASCII_code;
+        *int_buf.offset(int_ptr as isize) = ('0' as i32 + the_int % 10i32) as u8;
         int_ptr = int_ptr + 1i32;
         the_int = the_int / 10i32;
         if the_int == 0i32 {
@@ -1513,8 +1507,8 @@ unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number) -> 
     let mut char_ptr: i32 = 0;
     let mut ptr1: str_ent_loc = 0;
     let mut ptr2: str_ent_loc = 0;
-    let mut char1: ASCII_code = 0;
-    let mut char2: ASCII_code = 0;
+    let mut char1: u8 = 0;
+    let mut char2: u8 = 0;
     ptr1 = arg1 * num_ent_strs + sort_key_num;
     ptr2 = arg2 * num_ent_strs + sort_key_num;
     char_ptr = 0i32;
@@ -2155,14 +2149,14 @@ unsafe extern "C" fn pre_def_certain_strings() {
     *fn_type.offset(pre_def_loc as isize) = 7i32 as fn_class;
     *ilk_info.offset(pre_def_loc as isize) = glob_str_size;
 }
-unsafe extern "C" fn scan1(mut char1: ASCII_code) -> bool {
+unsafe extern "C" fn scan1(mut char1: u8) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32 {
         buf_ptr2 = buf_ptr2 + 1i32
     }
     buf_ptr2 < last
 }
-unsafe extern "C" fn scan1_white(mut char1: ASCII_code) -> bool {
+unsafe extern "C" fn scan1_white(mut char1: u8) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
         && lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 1i32
@@ -2172,7 +2166,7 @@ unsafe extern "C" fn scan1_white(mut char1: ASCII_code) -> bool {
     }
     buf_ptr2 < last
 }
-unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
+unsafe extern "C" fn scan2(mut char1: u8, mut char2: u8) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
         && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
@@ -2182,7 +2176,7 @@ unsafe extern "C" fn scan2(mut char1: ASCII_code, mut char2: ASCII_code) -> bool
     }
     buf_ptr2 < last
 }
-unsafe extern "C" fn scan2_white(mut char1: ASCII_code, mut char2: ASCII_code) -> bool {
+unsafe extern "C" fn scan2_white(mut char1: u8, mut char2: u8) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
         && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
@@ -2193,11 +2187,7 @@ unsafe extern "C" fn scan2_white(mut char1: ASCII_code, mut char2: ASCII_code) -
     }
     buf_ptr2 < last
 }
-unsafe extern "C" fn scan3(
-    mut char1: ASCII_code,
-    mut char2: ASCII_code,
-    mut char3: ASCII_code,
-) -> bool {
+unsafe extern "C" fn scan3(mut char1: u8, mut char2: u8, mut char3: u8) -> bool {
     buf_ptr1 = buf_ptr2;
     while buf_ptr2 < last
         && *buffer.offset(buf_ptr2 as isize) as i32 != char1 as i32
@@ -2215,11 +2205,7 @@ unsafe extern "C" fn scan_alpha() -> bool {
     }
     buf_ptr2 - buf_ptr1 != 0i32
 }
-unsafe extern "C" fn scan_identifier(
-    mut char1: ASCII_code,
-    mut char2: ASCII_code,
-    mut char3: ASCII_code,
-) {
+unsafe extern "C" fn scan_identifier(mut char1: u8, mut char2: u8, mut char3: u8) {
     buf_ptr1 = buf_ptr2;
     if lex_class[*buffer.offset(buf_ptr2 as isize) as usize] as i32 != 3i32 {
         /*numeric */
@@ -2299,7 +2285,7 @@ unsafe extern "C" fn skip_token_print() {
     putc_log('-' as i32);
     bst_ln_num_print();
     mark_error();
-    scan2_white(125i32 as ASCII_code, 37i32 as ASCII_code);
+    scan2_white(125i32 as u8, 37i32 as u8);
 }
 unsafe extern "C" fn print_recursion_illegal() {
     puts_log(b"Curse you, wizard, before you recurse me:\n\x00" as *const u8 as *const i8);
@@ -2387,7 +2373,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 }
                 34 => {
                     buf_ptr2 = buf_ptr2 + 1i32;
-                    if !scan1(34i32 as ASCII_code) {
+                    if !scan1(34i32 as u8) {
                         printf_log(b"No `\"\' to end string literal\x00" as *const u8 as *const i8);
                         skip_token_print();
                     } else {
@@ -2423,7 +2409,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 }
                 39 => {
                     buf_ptr2 = buf_ptr2 + 1i32;
-                    scan2_white(125i32 as ASCII_code, 37i32 as ASCII_code);
+                    scan2_white(125i32 as u8, 37i32 as u8);
                     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
                     fn_loc = str_lookup(
                         buffer,
@@ -2460,7 +2446,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                     }
                 }
                 123 => {
-                    *ex_buf.offset(0) = 39i32 as ASCII_code;
+                    *ex_buf.offset(0) = 39i32 as u8;
                     int_to_ASCII(impl_fn_num, ex_buf, 1i32, &mut end_of_num);
                     impl_fn_loc = str_lookup(ex_buf, 0i32, end_of_num, 11i32 as str_ilk, true);
                     if hash_found {
@@ -2496,7 +2482,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                     scan_fn_def(impl_fn_loc);
                 }
                 _ => {
-                    scan2_white(125i32 as ASCII_code, 37i32 as ASCII_code);
+                    scan2_white(125i32 as u8, 37i32 as u8);
                     lower_case(buffer, buf_ptr1, buf_ptr2 - buf_ptr1);
                     fn_loc = str_lookup(
                         buffer,
@@ -2583,7 +2569,7 @@ unsafe extern "C" fn compress_bib_white() -> bool {
         bib_field_too_long_print();
         return false;
     } else {
-        *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
+        *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as u8;
         ex_buf_ptr = ex_buf_ptr + 1i32
     }
     while !scan_white_space() {
@@ -2623,7 +2609,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         bib_field_too_long_print(); /*right_brace */
                         return false;
                     } else {
-                        *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code; /*left_brace */
+                        *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as u8; /*left_brace */
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
                     buf_ptr2 = buf_ptr2 + 1i32;
@@ -2642,7 +2628,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     bib_field_too_long_print();
                                     return false;
                                 } else {
-                                    *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as u8;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
@@ -2664,7 +2650,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                                     bib_field_too_long_print();
                                     return false;
                                 } else {
-                                    *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as u8;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 buf_ptr2 = buf_ptr2 + 1i32;
@@ -2752,7 +2738,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                         }
                     } else {
                         buf_ptr2 = buf_ptr2 + 1i32;
-                        if !scan2(125i32 as ASCII_code, 123i32 as ASCII_code) {
+                        if !scan2(125i32 as u8, 123i32 as u8) {
                             if !eat_bib_white_space() {
                                 eat_bib_print();
                                 return false;
@@ -2766,7 +2752,7 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
                 return false;
             } else {
                 buf_ptr2 = buf_ptr2 + 1i32; /*double_quote */
-                if !scan3(right_str_delim, 123i32 as ASCII_code, 125i32 as ASCII_code) {
+                if !scan3(right_str_delim, 123i32 as u8, 125i32 as u8) {
                     if !eat_bib_white_space() {
                         eat_bib_print();
                         return false;
@@ -2781,13 +2767,13 @@ unsafe extern "C" fn scan_balanced_braces() -> bool {
 unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
     match *buffer.offset(buf_ptr2 as isize) as i32 {
         123 => {
-            right_str_delim = 125i32 as ASCII_code;
+            right_str_delim = 125i32 as u8;
             if !scan_balanced_braces() {
                 return false;
             }
         }
         34 => {
-            right_str_delim = 34i32 as ASCII_code;
+            right_str_delim = 34i32 as u8;
             if !scan_balanced_braces() {
                 return false;
             }
@@ -2813,7 +2799,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
             }
         }
         _ => {
-            scan_identifier(44i32 as ASCII_code, right_outer_delim, 35i32 as ASCII_code);
+            scan_identifier(44i32 as u8, right_outer_delim, 35i32 as u8);
             if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
             } else {
                 bib_id_print();
@@ -2861,7 +2847,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                                 bib_field_too_long_print();
                                 return false;
                             } else {
-                                *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
+                                *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as u8;
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
                             tmp_ptr = tmp_ptr + 1i32;
@@ -2890,7 +2876,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
                                 bib_field_too_long_print(); /*space */
                                 return false;
                             } else {
-                                *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
+                                *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as u8;
                                 ex_buf_ptr = ex_buf_ptr + 1i32
                             }
                         }
@@ -3418,11 +3404,9 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                             if ex_buf_ptr + 2i32 > buf_size {
                                                 buffer_overflow(); /*left_brace */
                                             } /*backslash */
-                                            *ex_buf.offset(ex_buf_ptr as isize) =
-                                                123i32 as ASCII_code;
+                                            *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as u8;
                                             ex_buf_ptr = ex_buf_ptr + 1i32;
-                                            *ex_buf.offset(ex_buf_ptr as isize) =
-                                                92i32 as ASCII_code;
+                                            *ex_buf.offset(ex_buf_ptr as isize) = 92i32 as u8;
                                             ex_buf_ptr = ex_buf_ptr + 1i32;
                                             name_bf_ptr = name_bf_ptr + 2i32;
                                             nm_brace_level = 1i32;
@@ -3464,7 +3448,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow(); /*period */
                                     }
-                                    *ex_buf.offset(ex_buf_ptr as isize) = 46i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 46i32 as u8;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                                 if lex_class[*name_sep_char.offset(cur_token as isize) as usize]
@@ -3483,13 +3467,13 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow();
                                     }
-                                    *ex_buf.offset(ex_buf_ptr as isize) = 126i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 126i32 as u8;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 } else {
                                     if ex_buf_ptr == buf_size {
                                         buffer_overflow();
                                     }
-                                    *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
+                                    *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as u8;
                                     ex_buf_ptr = ex_buf_ptr + 1i32
                                 }
                             } else {
@@ -3517,7 +3501,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                         if ex_buf_ptr == buf_size {
                             buffer_overflow();
                         }
-                        *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as ASCII_code;
+                        *ex_buf.offset(ex_buf_ptr as isize) = 125i32 as u8;
                         ex_buf_ptr = ex_buf_ptr + 1i32
                     }
                 } else if *str_pool.offset(sp_ptr as isize) as i32 == 123i32 {
@@ -3527,7 +3511,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                     if ex_buf_ptr == buf_size {
                         buffer_overflow();
                     }
-                    *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as ASCII_code;
+                    *ex_buf.offset(ex_buf_ptr as isize) = 123i32 as u8;
                     ex_buf_ptr = ex_buf_ptr + 1i32
                 } else {
                     if ex_buf_ptr == buf_size {
@@ -3547,7 +3531,7 @@ unsafe extern "C" fn figure_out_the_formatted_name() {
                         if !enough_text_chars(3i32) {
                             ex_buf_ptr = ex_buf_ptr + 1i32
                         } else {
-                            *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as ASCII_code;
+                            *ex_buf.offset(ex_buf_ptr as isize) = 32i32 as u8;
                             ex_buf_ptr = ex_buf_ptr + 1i32
                         }
                     }
@@ -3763,8 +3747,8 @@ unsafe extern "C" fn add_out_pool(mut p_str: str_number) {
             out_buf_length = out_buf_ptr; /*space */
             break_ptr = out_buf_length + 1i32;
             output_bbl_line();
-            *out_buf.offset(0) = 32i32 as ASCII_code;
-            *out_buf.offset(1) = 32i32 as ASCII_code;
+            *out_buf.offset(0) = 32i32 as u8;
+            *out_buf.offset(1) = 32i32 as u8;
             out_buf_ptr = 2i32;
             tmp_ptr = break_ptr;
             while tmp_ptr < end_ptr {
@@ -4038,7 +4022,7 @@ unsafe extern "C" fn x_gets() {
                     }
                     *entry_strs
                         .offset((str_ent_ptr * (ent_str_size + 1i32) + ent_chr_ptr) as isize) =
-                        127i32 as ASCII_code
+                        127i32 as u8
                     /*end_of_string */
                 }
             }
@@ -4144,7 +4128,7 @@ unsafe extern "C" fn x_add_period() {
                         pool_overflow();
                     }
                 }
-                *str_pool.offset(pool_ptr as isize) = 46i32 as ASCII_code;
+                *str_pool.offset(pool_ptr as isize) = 46i32 as u8;
                 pool_ptr = pool_ptr + 1i32;
                 push_lit_stk(make_string(), 1i32 as stk_type);
             }
@@ -4571,7 +4555,7 @@ unsafe extern "C" fn x_format_name() {
                         } else {
                             comma2 = num_tokens
                         }
-                        *name_sep_char.offset(num_tokens as isize) = 44i32 as ASCII_code
+                        *name_sep_char.offset(num_tokens as isize) = 44i32 as u8
                         /*comma */
                     }
                     ex_buf_xptr = ex_buf_xptr + 1i32;
@@ -4619,7 +4603,7 @@ unsafe extern "C" fn x_format_name() {
                 _ => match lex_class[*ex_buf.offset(ex_buf_xptr as isize) as usize] as i32 {
                     1 => {
                         if !token_starting {
-                            *name_sep_char.offset(num_tokens as isize) = 32i32 as ASCII_code
+                            *name_sep_char.offset(num_tokens as isize) = 32i32 as u8
                         }
                         ex_buf_xptr = ex_buf_xptr + 1i32;
                         token_starting = true
@@ -4735,7 +4719,7 @@ unsafe extern "C" fn x_int_to_chr() {
         while pool_ptr + 1i32 > pool_size {
             pool_overflow();
         }
-        *str_pool.offset(pool_ptr as isize) = pop_lit1 as ASCII_code;
+        *str_pool.offset(pool_ptr as isize) = pop_lit1 as u8;
         pool_ptr = pool_ptr + 1i32;
         push_lit_stk(make_string(), 1i32 as stk_type);
     };
@@ -4812,7 +4796,7 @@ unsafe extern "C" fn x_purify() {
         while ex_buf_ptr < ex_buf_length {
             match lex_class[*ex_buf.offset(ex_buf_ptr as isize) as usize] as i32 {
                 1 | 4 => {
-                    *ex_buf.offset(ex_buf_xptr as isize) = 32i32 as ASCII_code;
+                    *ex_buf.offset(ex_buf_xptr as isize) = 32i32 as u8;
                     ex_buf_xptr = ex_buf_xptr + 1i32
                 }
                 2 | 3 => {
@@ -4910,7 +4894,7 @@ unsafe extern "C" fn x_quote() {
     while pool_ptr + 1i32 > pool_size {
         pool_overflow();
     }
-    *str_pool.offset(pool_ptr as isize) = 34i32 as ASCII_code;
+    *str_pool.offset(pool_ptr as isize) = 34i32 as u8;
     pool_ptr = pool_ptr + 1i32;
     push_lit_stk(make_string(), 1i32 as stk_type);
 }
@@ -5121,7 +5105,7 @@ unsafe extern "C" fn x_text_prefix() {
             }
         }
         while sp_brace_level > 0i32 {
-            *str_pool.offset(pool_ptr as isize) = 125i32 as ASCII_code;
+            *str_pool.offset(pool_ptr as isize) = 125i32 as u8;
             pool_ptr = pool_ptr + 1i32;
             sp_brace_level = sp_brace_level - 1i32
         }
@@ -11189,8 +11173,8 @@ unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name: *const i
         strlen(aux_file_name)
             .wrapping_add(1i32 as u64)
             .wrapping_add(1i32 as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     strcpy(name_of_file as *mut i8, aux_file_name);
     aux_name_length = strlen(name_of_file as *mut i8) as i32;
     aux_name_length -= 4i32;
@@ -11244,7 +11228,7 @@ unsafe extern "C" fn aux_bib_data_command() {
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
         buf_ptr2 = buf_ptr2 + 1i32;
-        if !scan2_white(125i32 as ASCII_code, 44i32 as ASCII_code) {
+        if !scan2_white(125i32 as u8, 44i32 as u8) {
             aux_err_no_right_brace_print();
             aux_err_print();
             return;
@@ -11311,7 +11295,7 @@ unsafe extern "C" fn aux_bib_style_command() {
     }
     bst_seen = true;
     buf_ptr2 = buf_ptr2 + 1i32;
-    if !scan1_white(125i32 as ASCII_code) {
+    if !scan1_white(125i32 as u8) {
         aux_err_no_right_brace_print();
         aux_err_print();
         return;
@@ -11359,7 +11343,7 @@ unsafe extern "C" fn aux_citation_command() {
         let mut current_block_56: u64;
         /*right_brace */
         buf_ptr2 = buf_ptr2 + 1i32;
-        if !scan2_white(125i32 as ASCII_code, 44i32 as ASCII_code) {
+        if !scan2_white(125i32 as u8, 44i32 as u8) {
             aux_err_no_right_brace_print();
             aux_err_print();
             return;
@@ -11452,7 +11436,7 @@ unsafe extern "C" fn aux_citation_command() {
 unsafe extern "C" fn aux_input_command() {
     let mut aux_extension_ok: bool = false;
     buf_ptr2 = buf_ptr2 + 1i32;
-    if !scan1_white(125i32 as ASCII_code) {
+    if !scan1_white(125i32 as u8) {
         aux_err_no_right_brace_print();
         aux_err_print();
         return;
@@ -11516,7 +11500,7 @@ unsafe extern "C" fn aux_input_command() {
     }
     start_name(aux_list[aux_ptr as usize]);
     name_ptr = name_length;
-    *name_of_file.offset(name_ptr as isize) = 0i32 as ASCII_code;
+    *name_of_file.offset(name_ptr as isize) = 0i32 as u8;
     aux_file[aux_ptr as usize] = peekable_open(name_of_file as *mut i8, TTIF_TEX);
     if aux_file[aux_ptr as usize].is_null() {
         puts_log(b"I couldn\'t open auxiliary file \x00" as *const u8 as *const i8);
@@ -11543,7 +11527,7 @@ unsafe extern "C" fn pop_the_aux_stack() -> i32 {
 }
 unsafe extern "C" fn get_aux_command_and_process() {
     buf_ptr2 = 0i32;
-    if !scan1(123i32 as ASCII_code) {
+    if !scan1(123i32 as u8) {
         return;
     }
     command_num = *ilk_info.offset(str_lookup(
@@ -11635,11 +11619,7 @@ unsafe extern "C" fn bst_entry_command() {
     }
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
-        scan_identifier(
-            125i32 as ASCII_code,
-            37i32 as ASCII_code,
-            37i32 as ASCII_code,
-        ); /*field */
+        scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8); /*field */
         if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
@@ -11696,11 +11676,7 @@ unsafe extern "C" fn bst_entry_command() {
     }
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
-        scan_identifier(
-            125i32 as ASCII_code,
-            37i32 as ASCII_code,
-            37i32 as ASCII_code,
-        ); /*int_entry_var */
+        scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8); /*int_entry_var */
         if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
@@ -11753,11 +11729,7 @@ unsafe extern "C" fn bst_entry_command() {
     }
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
-        scan_identifier(
-            125i32 as ASCII_code,
-            37i32 as ASCII_code,
-            37i32 as ASCII_code,
-        ); /*str_entry_var */
+        scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8); /*str_entry_var */
         if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
@@ -11842,11 +11814,7 @@ unsafe extern "C" fn bst_execute_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    scan_identifier(
-        125i32 as ASCII_code,
-        37i32 as ASCII_code,
-        37i32 as ASCII_code,
-    );
+    scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8);
     if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
@@ -11897,11 +11865,7 @@ unsafe extern "C" fn bst_function_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    scan_identifier(
-        125i32 as ASCII_code,
-        37i32 as ASCII_code,
-        37i32 as ASCII_code,
-    );
+    scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8);
     if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
@@ -11978,11 +11942,7 @@ unsafe extern "C" fn bst_integers_command() {
     }
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
-        scan_identifier(
-            125i32 as ASCII_code,
-            37i32 as ASCII_code,
-            37i32 as ASCII_code,
-        ); /*int_global_var */
+        scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8); /*int_global_var */
         if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bst_id_print();
@@ -12039,11 +11999,7 @@ unsafe extern "C" fn bst_iterate_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    scan_identifier(
-        125i32 as ASCII_code,
-        37i32 as ASCII_code,
-        37i32 as ASCII_code,
-    );
+    scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8);
     if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
@@ -12104,11 +12060,7 @@ unsafe extern "C" fn bst_macro_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    scan_identifier(
-        125i32 as ASCII_code,
-        37i32 as ASCII_code,
-        37i32 as ASCII_code,
-    );
+    scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8);
     if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
@@ -12172,7 +12124,7 @@ unsafe extern "C" fn bst_macro_command() {
         return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
-    if !scan1(34i32 as ASCII_code) {
+    if !scan1(34i32 as u8) {
         puts_log(b"There\'s no `\"\' to end macro definition\x00" as *const u8 as *const i8);
         bst_err_print_and_look_for_blank_line();
         return;
@@ -12199,7 +12151,7 @@ unsafe extern "C" fn bst_macro_command() {
 unsafe extern "C" fn get_bib_command_or_entry_and_process() {
     let mut current_block: u64;
     at_bib_command = false;
-    while !scan1(64i32 as ASCII_code) {
+    while !scan1(64i32 as u8) {
         if !input_ln(*bib_file.offset(bib_ptr as isize)) {
             return;
         }
@@ -12217,11 +12169,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         eat_bib_print();
         return;
     }
-    scan_identifier(
-        123i32 as ASCII_code,
-        40i32 as ASCII_code,
-        40i32 as ASCII_code,
-    );
+    scan_identifier(123i32 as u8, 40i32 as u8, 40i32 as u8);
     if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bib_id_print();
@@ -12267,13 +12215,13 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
                     /*left_brace */
-                    right_outer_delim = 125i32 as ASCII_code
+                    right_outer_delim = 125i32 as u8
                 } else if *buffer.offset(buf_ptr2 as isize) as i32 == 40i32 {
                     /*right_brace */
                     /*left_paren */
-                    right_outer_delim = 41i32 as ASCII_code
+                    right_outer_delim = 41i32 as u8
                 } else {
-                    bib_one_of_two_print(123i32 as ASCII_code, 40i32 as ASCII_code); /*right_paren */
+                    bib_one_of_two_print(123i32 as u8, 40i32 as u8); /*right_paren */
                     return;
                 }
                 buf_ptr2 = buf_ptr2 + 1i32;
@@ -12303,13 +12251,13 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
                     /*left_brace */
-                    right_outer_delim = 125i32 as ASCII_code
+                    right_outer_delim = 125i32 as u8
                 } else if *buffer.offset(buf_ptr2 as isize) as i32 == 40i32 {
                     /*right_brace */
                     /*left_paren */
-                    right_outer_delim = 41i32 as ASCII_code
+                    right_outer_delim = 41i32 as u8
                 } else {
-                    bib_one_of_two_print(123i32 as ASCII_code, 40i32 as ASCII_code); /*right_paren */
+                    bib_one_of_two_print(123i32 as u8, 40i32 as u8); /*right_paren */
                     return;
                 }
                 buf_ptr2 = buf_ptr2 + 1i32;
@@ -12317,11 +12265,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     eat_bib_print();
                     return;
                 }
-                scan_identifier(
-                    61i32 as ASCII_code,
-                    61i32 as ASCII_code,
-                    61i32 as ASCII_code,
-                );
+                scan_identifier(61i32 as u8, 61i32 as u8, 61i32 as u8);
                 if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
                 } else {
                     bib_id_print();
@@ -12392,13 +12336,13 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
     }
     if *buffer.offset(buf_ptr2 as isize) as i32 == 123i32 {
         /*left_brace */
-        right_outer_delim = 125i32 as ASCII_code
+        right_outer_delim = 125i32 as u8
     } else if *buffer.offset(buf_ptr2 as isize) as i32 == 40i32 {
         /*right_brace */
         /*left_paren */
-        right_outer_delim = 41i32 as ASCII_code
+        right_outer_delim = 41i32 as u8
     } else {
-        bib_one_of_two_print(123i32 as ASCII_code, 40i32 as ASCII_code); /*right_paren */
+        bib_one_of_two_print(123i32 as u8, 40i32 as u8); /*right_paren */
         return;
     }
     buf_ptr2 = buf_ptr2 + 1i32;
@@ -12408,9 +12352,9 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
     }
     if right_outer_delim as i32 == 41i32 {
         /*right_paren */
-        scan1_white(44i32 as ASCII_code);
+        scan1_white(44i32 as u8);
     } else {
-        scan2_white(44i32 as ASCII_code, 125i32 as ASCII_code);
+        scan2_white(44i32 as u8, 125i32 as u8);
     }
     tmp_ptr = buf_ptr1;
     while tmp_ptr < buf_ptr2 {
@@ -12554,7 +12498,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
     while *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
         if *buffer.offset(buf_ptr2 as isize) as i32 != 44i32 {
             /*comma */
-            bib_one_of_two_print(44i32 as ASCII_code, right_outer_delim);
+            bib_one_of_two_print(44i32 as u8, right_outer_delim);
             return;
         }
         buf_ptr2 = buf_ptr2 + 1i32;
@@ -12565,11 +12509,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         if *buffer.offset(buf_ptr2 as isize) as i32 == right_outer_delim as i32 {
             break;
         }
-        scan_identifier(
-            61i32 as ASCII_code,
-            61i32 as ASCII_code,
-            61i32 as ASCII_code,
-        );
+        scan_identifier(61i32 as u8, 61i32 as u8, 61i32 as u8);
         if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
         } else {
             bib_id_print();
@@ -12836,12 +12776,11 @@ unsafe extern "C" fn bst_read_command() {
     }
     entry_strs = xmalloc(
         (((num_ent_strs + 1i32) * (num_cites + 1i32) * (ent_str_size + 1i32)) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     str_ent_ptr = 0i32;
     while str_ent_ptr < num_ent_strs * num_cites {
-        *entry_strs.offset((str_ent_ptr * (ent_str_size + 1i32) + 0i32) as isize) =
-            127i32 as ASCII_code;
+        *entry_strs.offset((str_ent_ptr * (ent_str_size + 1i32) + 0i32) as isize) = 127i32 as u8;
         str_ent_ptr = str_ent_ptr + 1i32
     }
     cite_ptr = 0i32;
@@ -12884,11 +12823,7 @@ unsafe extern "C" fn bst_reverse_command() {
         bst_err_print_and_look_for_blank_line();
         return;
     }
-    scan_identifier(
-        125i32 as ASCII_code,
-        37i32 as ASCII_code,
-        37i32 as ASCII_code,
-    );
+    scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8);
     if scan_result as i32 == 3i32 || scan_result as i32 == 1i32 {
     } else {
         bst_id_print();
@@ -12961,11 +12896,7 @@ unsafe extern "C" fn bst_strings_command() {
     }
     while *buffer.offset(buf_ptr2 as isize) as i32 != 125i32 {
         /*right_brace */
-        scan_identifier(
-            125i32 as ASCII_code,
-            37i32 as ASCII_code,
-            37i32 as ASCII_code,
-        );
+        scan_identifier(125i32 as u8, 37i32 as u8, 37i32 as u8);
         if scan_result as i32 != 3i32 && scan_result as i32 != 1i32 {
             /*specified_char_adjacent */
             bst_id_print(); /*str_global_var */
@@ -12996,8 +12927,8 @@ unsafe extern "C" fn bst_strings_command() {
             global_strs = xrealloc(
                 global_strs as *mut libc::c_void,
                 (((max_glob_strs + 10i32) * (glob_str_size + 1i32)) as u64)
-                    .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-            ) as *mut ASCII_code;
+                    .wrapping_mul(::std::mem::size_of::<u8>() as u64),
+            ) as *mut u8;
             glb_str_end = xrealloc(
                 glb_str_end as *mut libc::c_void,
                 ((max_glob_strs + 10i32 + 1i32) as u64)
@@ -13391,7 +13322,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
     }
     setup_params();
     entry_ints = 0 as *mut i32;
-    entry_strs = 0 as *mut ASCII_code;
+    entry_strs = 0 as *mut u8;
     bib_file = xmalloc(
         ((max_bib_files + 1i32) as u64)
             .wrapping_mul(::std::mem::size_of::<*mut peekable_input_t>() as u64),
@@ -13408,34 +13339,29 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> tt_history
     s_preamble = xmalloc(
         ((max_bib_files + 1i32) as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64),
     ) as *mut str_number;
-    str_pool = xmalloc(
-        ((pool_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
-    buffer = xmalloc(
-        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as buf_type;
-    sv_buffer = xmalloc(
-        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as buf_type;
-    ex_buf = xmalloc(
-        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as buf_type;
-    out_buf = xmalloc(
-        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as buf_type;
+    str_pool = xmalloc(((pool_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64))
+        as *mut u8;
+    buffer = xmalloc(((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64))
+        as buf_type;
+    sv_buffer = xmalloc(((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64))
+        as buf_type;
+    ex_buf = xmalloc(((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64))
+        as buf_type;
+    out_buf = xmalloc(((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64))
+        as buf_type;
     name_tok = xmalloc(
         ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<buf_pointer>() as u64),
     ) as *mut buf_pointer;
-    name_sep_char = xmalloc(
-        ((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+    name_sep_char =
+        xmalloc(((buf_size + 1i32) as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64))
+            as *mut u8;
     glb_str_ptr =
         xmalloc((max_glob_strs as u64).wrapping_mul(::std::mem::size_of::<str_number>() as u64))
             as *mut str_number;
     global_strs = xmalloc(
         ((max_glob_strs * (glob_str_size + 1i32)) as u64)
-            .wrapping_mul(::std::mem::size_of::<ASCII_code>() as u64),
-    ) as *mut ASCII_code;
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64),
+    ) as *mut u8;
     glb_str_end = xmalloc((max_glob_strs as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64))
         as *mut i32;
     cite_list = xmalloc(

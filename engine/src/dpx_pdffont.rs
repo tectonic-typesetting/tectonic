@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -925,7 +927,7 @@ pub unsafe extern "C" fn pdf_close_fonts() {
                             pdf_encoding_get_name(pdf_font_get_encoding(font)),
                         );
                     } else {
-                        dpx_message(b"[built-in]\x00" as *const u8 as *const i8);
+                        info!("[built-in]");
                     }
                 }
             }
@@ -936,7 +938,7 @@ pub unsafe extern "C" fn pdf_close_fonts() {
         match (*font).subtype {
             0 => {
                 if __verbose != 0 {
-                    dpx_message(b"[Type1]\x00" as *const u8 as *const i8);
+                    info!("[Type1]");
                 }
                 if pdf_font_get_flag(font, 1i32 << 2i32) == 0 {
                     pdf_font_load_type1(font);
@@ -944,19 +946,19 @@ pub unsafe extern "C" fn pdf_close_fonts() {
             }
             1 => {
                 if __verbose != 0 {
-                    dpx_message(b"[Type1C]\x00" as *const u8 as *const i8);
+                    info!("[Type1C]");
                 }
                 pdf_font_load_type1c(font);
             }
             3 => {
                 if __verbose != 0 {
-                    dpx_message(b"[TrueType]\x00" as *const u8 as *const i8);
+                    info!("[TrueType]");
                 }
                 pdf_font_load_truetype(font);
             }
             2 => {
                 if __verbose != 0 {
-                    dpx_message(b"[Type3/PK]\x00" as *const u8 as *const i8);
+                    info!("[Type3/PK]");
                 }
                 pdf_font_load_pkfont(font);
             }
@@ -973,7 +975,7 @@ pub unsafe extern "C" fn pdf_close_fonts() {
         }
         if __verbose != 0 {
             if (*font).subtype != 4i32 {
-                dpx_message(b")\x00" as *const u8 as *const i8);
+                info!(")");
             }
         }
         font_id += 1
@@ -1072,17 +1074,14 @@ pub unsafe extern "C" fn pdf_font_findresource(
                  * Check for output encoding.
                  */
                 if cmap_type != 0i32 && cmap_type != 1i32 && cmap_type != 2i32 {
-                    dpx_warning(
-                        b"Only 16-bit encoding supported for output encoding.\x00" as *const u8
-                            as *const i8,
-                    );
+                    warn!("Only 16-bit encoding supported for output encoding.");
                 }
                 /*
                  * Turn on map option.
                  */
                 if minbytes == 2i32 && (*mrec).opt.mapc < 0i32 {
                     if __verbose != 0 {
-                        dpx_message(b"\n\x00" as *const u8 as *const i8);
+                        info!("\n");
                         dpx_message(
                             b"pdf_font>> Input encoding \"%s\" requires at least 2 bytes.\n\x00"
                                 as *const u8 as *const i8,

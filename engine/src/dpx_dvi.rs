@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
 use crate::dpx_pdfobj::pdf_obj;
@@ -1528,7 +1530,7 @@ unsafe extern "C" fn find_post() -> i32 {
         || current == 0i32
         || !(ch == 2i32 || ch == 3i32 || ch == 7i32 || ch == 6i32)
     {
-        dpx_message(b"DVI ID = %d\n\x00" as *const u8 as *const i8, ch);
+        info!("DVI ID = {}\n", ch);
         _tt_abort(invalid_signature.as_ptr());
     }
     post_id_byte = ch;
@@ -1539,20 +1541,14 @@ unsafe extern "C" fn find_post() -> i32 {
     ttstub_input_seek(dvi_handle, current as ssize_t, 0i32);
     ch = ttstub_input_getc(dvi_handle);
     if ch != 249i32 {
-        dpx_message(
-            b"Found %d where post_post opcode should be\n\x00" as *const u8 as *const i8,
-            ch,
-        );
+        info!("Found {} where post_post opcode should be\n", ch);
         _tt_abort(invalid_signature.as_ptr());
     }
     current = tt_get_signed_quad(dvi_handle);
     ttstub_input_seek(dvi_handle, current as ssize_t, 0i32);
     ch = ttstub_input_getc(dvi_handle);
     if ch != 248i32 {
-        dpx_message(
-            b"Found %d where post_post opcode should be\n\x00" as *const u8 as *const i8,
-            ch,
-        );
+        info!("Found {} where post_post opcode should be\n", ch);
         _tt_abort(invalid_signature.as_ptr());
     }
     /* Finally check the ID byte in the preamble */
@@ -1560,15 +1556,12 @@ unsafe extern "C" fn find_post() -> i32 {
     ttstub_input_seek(dvi_handle, 0i32 as ssize_t, 0i32);
     ch = tt_get_unsigned_byte(dvi_handle) as i32;
     if ch != 247i32 {
-        dpx_message(
-            b"Found %d where PRE was expected\n\x00" as *const u8 as *const i8,
-            ch,
-        );
+        info!("Found {} where PRE was expected\n", ch);
         _tt_abort(invalid_signature.as_ptr());
     }
     ch = tt_get_unsigned_byte(dvi_handle) as i32;
     if !(ch == 2i32 || ch == 7i32 || ch == 6i32) {
-        dpx_message(b"DVI ID = %d\n\x00" as *const u8 as *const i8, ch);
+        info!("DVI ID = {}\n", ch);
         _tt_abort(invalid_signature.as_ptr());
     }
     pre_id_byte = ch;
@@ -1583,10 +1576,7 @@ unsafe extern "C" fn get_page_info(mut post_location: i32) {
         _tt_abort(b"Page count is 0!\x00" as *const u8 as *const i8);
     }
     if verbose > 2i32 {
-        dpx_message(
-            b"Page count:\t %4d\n\x00" as *const u8 as *const i8,
-            num_pages,
-        );
+        info!("Page count:\t {:4}\n", num_pages,);
     }
     page_loc = new((num_pages as u64).wrapping_mul(::std::mem::size_of::<u32>() as u64) as u32)
         as *mut u32;
@@ -1634,39 +1624,17 @@ unsafe extern "C" fn get_dvi_info(mut post_location: i32) {
     dvi_info.media_width = tt_get_unsigned_quad(dvi_handle);
     dvi_info.stackdepth = tt_get_unsigned_pair(dvi_handle) as u32;
     if dvi_info.stackdepth > 256u32 {
-        dpx_warning(
-            b"DVI need stack depth of %d,\x00" as *const u8 as *const i8,
-            dvi_info.stackdepth,
-        );
-        dpx_warning(
-            b"but DVI_STACK_DEPTH_MAX is %d.\x00" as *const u8 as *const i8,
-            256u32,
-        );
+        warn!("DVI need stack depth of {},", dvi_info.stackdepth);
+        warn!("but DVI_STACK_DEPTH_MAX is {}.", 256u32);
         _tt_abort(b"Capacity exceeded.\x00" as *const u8 as *const i8);
     }
     if verbose > 2i32 {
-        dpx_message(b"DVI File Info\n\x00" as *const u8 as *const i8);
-        dpx_message(
-            b"Unit: %u / %u\n\x00" as *const u8 as *const i8,
-            dvi_info.unit_num,
-            dvi_info.unit_den,
-        );
-        dpx_message(
-            b"Magnification: %u\n\x00" as *const u8 as *const i8,
-            dvi_info.mag,
-        );
-        dpx_message(
-            b"Media Height: %u\n\x00" as *const u8 as *const i8,
-            dvi_info.media_height,
-        );
-        dpx_message(
-            b"Media Width: %u\n\x00" as *const u8 as *const i8,
-            dvi_info.media_width,
-        );
-        dpx_message(
-            b"Stack Depth: %u\n\x00" as *const u8 as *const i8,
-            dvi_info.stackdepth,
-        );
+        info!("DVI File Info\n");
+        info!("Unit: {} / {}\n", dvi_info.unit_num, dvi_info.unit_den);
+        info!("Magnification: {}\n", dvi_info.mag);
+        info!("Media Height: {}\n", dvi_info.media_height);
+        info!("Media Width: {}\n", dvi_info.media_width);
+        info!("Stack Depth: {}\n", dvi_info.stackdepth);
     };
 }
 #[no_mangle]
@@ -1808,18 +1776,15 @@ unsafe extern "C" fn get_dvi_fonts(mut post_location: i32) {
                 read_native_font_record(tt_get_signed_quad(dvi_handle) as u32);
             }
             _ => {
-                dpx_message(
-                    b"Unexpected op code: %3d\n\x00" as *const u8 as *const i8,
-                    code,
-                );
+                info!("Unexpected op code: {:3}\n", code,);
                 _tt_abort(invalid_signature.as_ptr());
             }
         }
     }
     if verbose > 2i32 {
         let mut i: u32 = 0;
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
-        dpx_message(b"DVI file font info\n\x00" as *const u8 as *const i8);
+        info!("\n");
+        info!("DVI file font info\n");
         i = 0_u32;
         while i < num_def_fonts {
             dpx_message(
@@ -1827,14 +1792,14 @@ unsafe extern "C" fn get_dvi_fonts(mut post_location: i32) {
                 (*def_fonts.offset(i as isize)).font_name,
                 (*def_fonts.offset(i as isize)).tex_id,
             );
-            dpx_message(
-                b"size=%5.2fpt (scaled %4.1f%%)\x00" as *const u8 as *const i8,
+            info!(
+                "size={:5.2}pt (scaled {:4.1}%)",
                 (*def_fonts.offset(i as isize)).point_size as f64 * dvi2pts,
                 100.0f64
                     * ((*def_fonts.offset(i as isize)).point_size as f64
                         / (*def_fonts.offset(i as isize)).design_size as f64),
             );
-            dpx_message(b"\n\x00" as *const u8 as *const i8);
+            info!("\n");
             i = i.wrapping_add(1)
         }
     };
@@ -2030,7 +1995,7 @@ pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: sp
             (*loaded_fonts.offset(cur_id as isize)).type_0 = 2i32;
             (*loaded_fonts.offset(cur_id as isize)).font_id = font_id;
             if verbose != 0 {
-                dpx_message(b"(VF)>\x00" as *const u8 as *const i8);
+                info!("(VF)>");
             }
             return cur_id;
         }
@@ -2062,7 +2027,7 @@ pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: sp
                 (*loaded_fonts.offset(cur_id as isize)).type_0 = 2i32;
                 (*loaded_fonts.offset(cur_id as isize)).font_id = font_id;
                 if verbose != 0 {
-                    dpx_message(b"(OVF)>\x00" as *const u8 as *const i8);
+                    info!("(OVF)>");
                 }
                 return cur_id;
             }
@@ -2126,10 +2091,7 @@ pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: sp
                 (*mrec).font_name,
             );
         } else {
-            dpx_warning(
-                b">> There are no valid font mapping entry for this font.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!(">> There are no valid font mapping entry for this font.");
             dpx_warning(
                 b">> Font file name \"%s\" was assumed but failed to locate that font.\x00"
                     as *const u8 as *const i8,
@@ -2144,7 +2106,7 @@ pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: sp
     (*loaded_fonts.offset(cur_id as isize)).type_0 = 1i32;
     (*loaded_fonts.offset(cur_id as isize)).font_id = font_id;
     if verbose != 0 {
-        dpx_message(b">\x00" as *const u8 as *const i8);
+        info!(">");
     }
     cur_id
 }
@@ -2240,9 +2202,7 @@ unsafe extern "C" fn dvi_locate_native_font(
         /*if (!is_pfb(fp))
          *  _tt_abort("Failed to read Type 1 font \"%s\".", filename);
          */
-        dpx_warning(
-            b"skipping PFB sanity check -- needs Tectonic I/O update\x00" as *const u8 as *const i8,
-        );
+        warn!("skipping PFB sanity check -- needs Tectonic I/O update");
         memset(
             enc_vec.as_mut_ptr() as *mut libc::c_void,
             0i32,
@@ -2328,7 +2288,7 @@ unsafe extern "C" fn dvi_locate_native_font(
     (*loaded_fonts.offset(cur_id as isize)).slant = (*mrec).opt.slant as f32;
     (*loaded_fonts.offset(cur_id as isize)).embolden = (*mrec).opt.bold as f32;
     if verbose != 0 {
-        dpx_message(b">\x00" as *const u8 as *const i8);
+        info!(">");
     }
     cur_id
 }
@@ -3096,7 +3056,7 @@ unsafe extern "C" fn check_postamble() {
         || post_id_byte == 7i32
         || post_id_byte == 6i32)
     {
-        dpx_message(b"DVI ID = %d\n\x00" as *const u8 as *const i8, post_id_byte);
+        info!("DVI ID = {}\n", post_id_byte);
         _tt_abort(invalid_signature.as_ptr());
     }
     check_id_bytes();
@@ -3255,10 +3215,7 @@ pub unsafe extern "C" fn dvi_do_page(
                     /* Specials */
                     let mut size: i32 = get_buffered_unsigned_num((opcode as i32 - 239i32) as u8);
                     if size < 0i32 {
-                        dpx_warning(
-                            b"DVI: Special with %d bytes???\x00" as *const u8 as *const i8,
-                            size,
-                        );
+                        warn!("DVI: Special with {} bytes???", size);
                     } else {
                         do_xxx(size);
                     }
@@ -3529,7 +3486,7 @@ unsafe extern "C" fn read_length(
             }
             free(qq as *mut libc::c_void);
         } else {
-            dpx_warning(b"Missing unit of measure after \"true\"\x00" as *const u8 as *const i8);
+            warn!("Missing unit of measure after \"true\"");
             error = -1i32
         }
     }
@@ -3755,10 +3712,7 @@ unsafe extern "C" fn scan_special(
         } else if ns_dvipdfmx != 0
             && streq_ptr(q, b"config\x00" as *const u8 as *const i8) as i32 != 0
         {
-            dpx_warning(
-                b"Tectonic does not support `config\' special. Ignored.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("Tectonic does not support `config\' special. Ignored.");
         }
         free(q as *mut libc::c_void);
     }
@@ -3824,9 +3778,8 @@ pub unsafe extern "C" fn dvi_scan_specials(
                         .wrapping_mul(0x100u32)
                         .wrapping_add(get_and_buffer_unsigned_byte(dvi_handle) as u32);
                     if size > 0x7fff_u32 {
-                        dpx_warning(
-                            b"Unsigned number starting with %x exceeds 0x7fffffff\x00" as *const u8
-                                as *const i8,
+                        warn!(
+                            "Unsigned number starting with {:x} exceeds 0x7fffffff",
                             size,
                         );
                     }

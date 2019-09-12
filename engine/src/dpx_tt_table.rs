@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::warn;
+
 extern crate libc;
 extern "C" {
     /* The internal, C/C++ interface: */
@@ -32,8 +35,6 @@ extern "C" {
     fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -761,10 +762,9 @@ unsafe extern "C" fn tt_get_name(
             && n_id as i32 == name_id as i32
         {
             if length as i32 > destlen as i32 - 1i32 {
-                dpx_warning(
-                    b"Name string too long (%u), truncating to %u\x00" as *const u8 as *const i8,
-                    length as i32,
-                    destlen as i32,
+                warn!(
+                    "Name string too long ({}), truncating to {}",
+                    length, destlen,
                 );
                 length = (destlen as i32 - 1i32) as u16
             }
@@ -851,7 +851,7 @@ pub unsafe extern "C" fn tt_get_ps_fontname(
     {
         return namelen;
     }
-    dpx_warning(b"No valid PostScript name available\x00" as *const u8 as *const i8);
+    warn!("No valid PostScript name available");
     /*
       Workaround for some bad TTfonts:
       Language ID value 0xffffu for `accept any language ID'

@@ -5,6 +5,9 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
+
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -814,10 +817,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                     let mut len: i32 =
                         get_pkt_unsigned_num(&mut start, end, (opcode as i32 - 239i32) as u8);
                     if len < 0i32 {
-                        dpx_warning(
-                            b"VF: Special with %d bytes???\x00" as *const u8 as *const i8,
-                            len,
-                        );
+                        warn!("VF: Special with {} bytes???", len);
                     } else {
                         vf_xxx(len, &mut start, end);
                     }

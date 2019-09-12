@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::info;
+
 extern crate libc;
 use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
@@ -668,7 +670,7 @@ unsafe extern "C" fn load_encoding_file(mut filename: *const i8) -> i32 {
     }
     pdf_release_obj(encoding_array);
     if verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const i8);
+        info!(")");
     }
     enc_id
 }

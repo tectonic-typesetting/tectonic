@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::warn;
+
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
 use super::dpx_pdfdraw::{
@@ -3108,10 +3110,10 @@ unsafe extern "C" fn pop_get_numbers(mut values: *mut f64, mut count: i32) -> i3
             0 as *mut pdf_obj
         };
         if tmp.is_null() {
-            dpx_warning(b"mpost: Stack underflow.\x00" as *const u8 as *const i8);
+            warn!("mpost: Stack underflow.");
             break;
         } else if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
-            dpx_warning(b"mpost: Not a number!\x00" as *const u8 as *const i8);
+            warn!("mpost: Not a number!");
             pdf_release_obj(tmp);
             break;
         } else {
@@ -3127,7 +3129,7 @@ unsafe extern "C" fn cvr_array(
     mut count: i32,
 ) -> i32 {
     if !(!array.is_null() && pdf_obj_typeof(array) == 5i32) {
-        dpx_warning(b"mpost: Not an array!\x00" as *const u8 as *const i8);
+        warn!("mpost: Not an array!");
     } else {
         let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
         loop {
@@ -3138,7 +3140,7 @@ unsafe extern "C" fn cvr_array(
             }
             tmp = pdf_get_array(array, count);
             if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
-                dpx_warning(b"mpost: Not a number!\x00" as *const u8 as *const i8);
+                warn!("mpost: Not a number!");
                 break;
             } else {
                 *values.offset(count as isize) = pdf_number_value(tmp)
@@ -3220,10 +3222,7 @@ unsafe extern "C" fn do_findfont() -> i32 {
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh3 as usize] = font_dict
             } else {
-                dpx_warning(
-                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("PS stack overflow including MetaPost file or inline PS code");
                 pdf_release_obj(font_dict);
                 error = 1i32
             }
@@ -3258,10 +3257,7 @@ unsafe extern "C" fn do_scalefont() -> i32 {
             top_stack = top_stack.wrapping_add(1);
             stack[fresh4 as usize] = font_dict
         } else {
-            dpx_warning(
-                b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("PS stack overflow including MetaPost file or inline PS code");
             pdf_release_obj(font_dict);
             error = 1i32
         }
@@ -3311,7 +3307,7 @@ unsafe extern "C" fn do_currentfont() -> i32 {
         &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font
     };
     if font.is_null() {
-        dpx_warning(b"Currentfont undefined...\x00" as *const u8 as *const i8);
+        warn!("Currentfont undefined...");
         return 1i32;
     } else {
         font_dict = pdf_new_dict();
@@ -3335,7 +3331,7 @@ unsafe extern "C" fn do_currentfont() -> i32 {
             top_stack = top_stack.wrapping_add(1);
             stack[fresh5 as usize] = font_dict
         } else {
-            dpx_warning(b"PS stack overflow...\x00" as *const u8 as *const i8);
+            warn!("PS stack overflow...");
             pdf_release_obj(font_dict);
             error = 1i32
         }
@@ -3355,7 +3351,7 @@ unsafe extern "C" fn do_show() -> i32 {
         &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font
     };
     if font.is_null() {
-        dpx_warning(b"Currentfont not set.\x00" as *const u8 as *const i8);
+        warn!("Currentfont not set.");
         return 1i32;
     }
     pdf_dev_currentpoint(&mut cp);
@@ -3370,7 +3366,7 @@ unsafe extern "C" fn do_show() -> i32 {
         return 1i32;
     }
     if (*font).font_id < 0i32 {
-        dpx_warning(b"mpost: not set.\x00" as *const u8 as *const i8);
+        warn!("mpost: not set.");
         pdf_release_obj(text_str);
         return 1i32;
     }
@@ -3381,7 +3377,7 @@ unsafe extern "C" fn do_show() -> i32 {
             b"mpost: TFM not found for \"%s\".\x00" as *const u8 as *const i8,
             (*font).font_name,
         );
-        dpx_warning(b"mpost: Text width not calculated...\x00" as *const u8 as *const i8);
+        warn!("mpost: Text width not calculated...");
     }
     text_width = 0.0f64;
     if (*font).subfont_id >= 0i32 {
@@ -3565,10 +3561,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh6 as usize] = pdf_new_number(values[0] + values[1])
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             }
@@ -3581,10 +3574,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh7 as usize] = pdf_new_number(values[0] * values[1])
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             }
@@ -3597,10 +3587,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh8 as usize] = pdf_new_number(-values[0])
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             }
@@ -3613,10 +3600,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh9 as usize] = pdf_new_number(values[0] - values[1])
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             }
@@ -3629,10 +3613,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh10 as usize] = pdf_new_number(values[0] / values[1])
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             }
@@ -3650,10 +3631,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                         values[0].ceil()
                     })
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             }
@@ -3757,7 +3735,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             error = cvr_array(tmp, values.as_mut_ptr(), 6i32);
             tmp = 0 as *mut pdf_obj;
             if error != 0 {
-                dpx_warning(b"Missing array before \"concat\".\x00" as *const u8 as *const i8);
+                warn!("Missing array before \"concat\".");
             } else {
                 matrix.a = values[0];
                 matrix.b = values[1];
@@ -3846,7 +3824,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                 } else {
                     num_dashes = pdf_array_length(pattern) as i32;
                     if num_dashes > 16i32 {
-                        dpx_warning(b"Too many dashes...\x00" as *const u8 as *const i8);
+                        warn!("Too many dashes...");
                         pdf_release_obj(pattern);
                         error = 1i32
                     } else {
@@ -3931,17 +3909,11 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                         top_stack = top_stack.wrapping_add(1);
                         stack[fresh13 as usize] = pdf_new_number(cp.y)
                     } else {
-                        dpx_warning(
-                            b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                as *const u8 as *const i8,
-                        );
+                        warn!("PS stack overflow including MetaPost file or inline PS code");
                         error = 1i32
                     }
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             }
@@ -4011,15 +3983,13 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                                     top_stack = top_stack.wrapping_add(1);
                                     stack[fresh15 as usize] = pdf_new_number(cp.y)
                                 } else {
-                                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                    as *const u8 as
-                                                    *const i8);
+                                    warn!("PS stack overflow including MetaPost file or inline PS code");
                                     error = 1i32
                                 }
                             } else {
-                                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                as *const u8 as
-                                                *const i8);
+                                warn!(
+                                    "PS stack overflow including MetaPost file or inline PS code"
+                                );
                                 error = 1i32
                             }
                         }
@@ -4092,15 +4062,13 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                                     top_stack = top_stack.wrapping_add(1);
                                     stack[fresh17 as usize] = pdf_new_number(cp.y)
                                 } else {
-                                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                    as *const u8 as
-                                                    *const i8);
+                                    warn!("PS stack overflow including MetaPost file or inline PS code");
                                     error = 1i32
                                 }
                             } else {
-                                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                as *const u8 as
-                                                *const i8);
+                                warn!(
+                                    "PS stack overflow including MetaPost file or inline PS code"
+                                );
                                 error = 1i32
                             }
                         }
@@ -4174,10 +4142,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                     top_stack = top_stack.wrapping_add(1);
                     stack[fresh18 as usize] = pdf_new_name(token)
                 } else {
-                    dpx_warning(
-                        b"PS stack overflow including MetaPost file or inline PS code\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("PS stack overflow including MetaPost file or inline PS code");
                     error = 1i32
                 }
             } else {
@@ -4232,7 +4197,7 @@ unsafe extern "C" fn mp_parse_body(
                 && strchr(b"<([{/%\x00" as *const u8 as *const i8, *next as i32).is_null()
                 && libc::isspace(*next as _) == 0
             {
-                dpx_warning(b"Unkown PostScript operator.\x00" as *const u8 as *const i8);
+                warn!("Unkown PostScript operator.");
                 dump(*start, next);
                 error = 1i32
             } else if top_stack < 1024_u32 {
@@ -4241,10 +4206,7 @@ unsafe extern "C" fn mp_parse_body(
                 stack[fresh19 as usize] = pdf_new_number(value);
                 *start = next
             } else {
-                dpx_warning(
-                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("PS stack overflow including MetaPost file or inline PS code");
                 error = 1i32;
                 break;
             }
@@ -4261,10 +4223,7 @@ unsafe extern "C" fn mp_parse_body(
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh20 as usize] = obj
             } else {
-                dpx_warning(
-                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("PS stack overflow including MetaPost file or inline PS code");
                 error = 1i32;
                 break;
             }
@@ -4281,10 +4240,7 @@ unsafe extern "C" fn mp_parse_body(
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh21 as usize] = obj
             } else {
-                dpx_warning(
-                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("PS stack overflow including MetaPost file or inline PS code");
                 error = 1i32;
                 break;
             }
@@ -4297,10 +4253,7 @@ unsafe extern "C" fn mp_parse_body(
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh22 as usize] = obj
             } else {
-                dpx_warning(
-                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("PS stack overflow including MetaPost file or inline PS code");
                 error = 1i32;
                 break;
             }
@@ -4313,10 +4266,7 @@ unsafe extern "C" fn mp_parse_body(
                 top_stack = top_stack.wrapping_add(1);
                 stack[fresh23 as usize] = obj
             } else {
-                dpx_warning(
-                    b"PS stack overflow including MetaPost file or inline PS code\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("PS stack overflow including MetaPost file or inline PS code");
                 error = 1i32;
                 break;
             }
@@ -4410,7 +4360,7 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
     rewind(image_file);
     size = file_size(image_file);
     if size == 0i32 {
-        dpx_warning(b"Can\'t read any byte in the MPS file.\x00" as *const u8 as *const i8);
+        warn!("Can\'t read any byte in the MPS file.");
         return -1i32;
     }
     buffer =
@@ -4427,10 +4377,7 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
     end = buffer.offset(size as isize);
     error = mps_scan_bbox(&mut start, end, &mut bbox);
     if error != 0 {
-        dpx_warning(
-            b"Error occured while scanning MetaPost file headers: Could not find BoundingBox.\x00"
-                as *const u8 as *const i8,
-        );
+        warn!("Error occured while scanning MetaPost file headers: Could not find BoundingBox.");
         free(buffer as *mut libc::c_void);
         return -1i32;
     }
@@ -4442,9 +4389,7 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
     skip_prolog(&mut start, end);
     error = mp_parse_body(&mut start, end, 0.0f64, 0.0f64);
     if error != 0 {
-        dpx_warning(
-            b"Errors occured while interpreting MetaPost file.\x00" as *const u8 as *const i8,
-        );
+        warn!("Errors occured while interpreting MetaPost file.");
     }
     pdf_dev_set_param(1i32, 1i32);
     pdf_dev_set_dirmode(dir_mode);

@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 
 use crate::dpx_pdfobj::pdf_obj;
@@ -322,11 +324,9 @@ pub unsafe extern "C" fn bmp_include_image(
         return -1i32;
     }
     if info.width == 0i32 || info.height == 0i32 || num_palette < 1i32 {
-        dpx_warning(
-            b"Invalid BMP file: width=%u, height=%d, #palette=%d\x00" as *const u8 as *const i8,
-            info.width,
-            info.height,
-            num_palette,
+        warn!(
+            "Invalid BMP file: width={}, height={}, #palette={}",
+            info.width, info.height, num_palette,
         );
         return -1i32;
     }
@@ -345,7 +345,7 @@ pub unsafe extern "C" fn bmp_include_image(
             if ttstub_input_read(handle, bgrq.as_mut_ptr() as *mut i8, hdr.psize as size_t)
                 != hdr.psize as i64
             {
-                dpx_warning(b"Reading file failed...\x00" as *const u8 as *const i8);
+                warn!("Reading file failed...");
                 free(palette as *mut libc::c_void);
                 return -1i32;
             }
@@ -404,7 +404,7 @@ pub unsafe extern "C" fn bmp_include_image(
             if ttstub_input_read(handle, p as *mut i8, dib_rowbytes as size_t)
                 != dib_rowbytes as i64
             {
-                dpx_warning(b"Reading BMP raster data failed...\x00" as *const u8 as *const i8);
+                warn!("Reading BMP raster data failed...");
                 pdf_release_obj(stream);
                 free(stream_data_ptr as *mut libc::c_void);
                 return -1i32;
@@ -416,7 +416,7 @@ pub unsafe extern "C" fn bmp_include_image(
             .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
             as *mut u8;
         if read_raster_rle8(stream_data_ptr, info.width, info.height, handle) < 0i32 {
-            dpx_warning(b"Reading BMP raster data failed...\x00" as *const u8 as *const i8);
+            warn!("Reading BMP raster data failed...");
             pdf_release_obj(stream);
             free(stream_data_ptr as *mut libc::c_void);
             return -1i32;
@@ -426,15 +426,15 @@ pub unsafe extern "C" fn bmp_include_image(
             .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
             as *mut u8;
         if read_raster_rle4(stream_data_ptr, info.width, info.height, handle) < 0i32 {
-            dpx_warning(b"Reading BMP raster data failed...\x00" as *const u8 as *const i8);
+            warn!("Reading BMP raster data failed...");
             pdf_release_obj(stream);
             free(stream_data_ptr as *mut libc::c_void);
             return -1i32;
         }
     } else {
-        dpx_warning(
-            b"Unknown/Unsupported compression type for BMP image: %d\x00" as *const u8 as *const i8,
-            hdr.compression,
+        warn!(
+            "Unknown/Unsupported compression type for BMP image: {}",
+            hdr.compression
         );
         pdf_release_obj(stream);
         return -1i32;
@@ -492,13 +492,11 @@ unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut 
         (14i32 + 4i32) as size_t,
     ) != (14i32 + 4i32) as i64
     {
-        dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
+        warn!("Could not read BMP file header...");
         return -1i32;
     }
     if *p.offset(0) as i32 != 'B' as i32 || *p.offset(1) as i32 != 'M' as i32 {
-        dpx_warning(
-            b"File not starting with \'B\' \'M\'... Not a BMP file?\x00" as *const u8 as *const i8,
-        );
+        warn!("File not starting with \'B\' \'M\'... Not a BMP file?");
         return -1i32;
     }
     p = p.offset(2);
@@ -510,7 +508,7 @@ unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut 
         + ((*p.offset(3) as i32) << 24i32)
         != 0i32
     {
-        dpx_warning(b"Not a BMP file???\x00" as *const u8 as *const i8);
+        warn!("Not a BMP file???");
         return -1i32;
     }
     p = p.offset(4);
@@ -531,7 +529,7 @@ unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut 
         (*hdr).hsize.wrapping_sub(4_u32) as size_t,
     ) != (*hdr).hsize.wrapping_sub(4_u32) as i64
     {
-        dpx_warning(b"Could not read BMP file header...\x00" as *const u8 as *const i8);
+        warn!("Could not read BMP file header...");
         return -1i32;
     }
     match (*hdr).hsize {
@@ -543,9 +541,7 @@ unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut 
             (*hdr).x_pix_per_meter = 0_u32;
             (*hdr).y_pix_per_meter = 0_u32;
             if *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32) != 1i32 {
-                dpx_warning(
-                    b"Unknown bcPlanes value in BMP COREHEADER.\x00" as *const u8 as *const i8,
-                );
+                warn!("Unknown bcPlanes value in BMP COREHEADER.");
                 return -1i32;
             }
             p = p.offset(2);
@@ -566,9 +562,7 @@ unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut 
                 + ((*p.offset(3) as i32) << 24i32);
             p = p.offset(4);
             if *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32) != 1i32 {
-                dpx_warning(
-                    b"Unknown biPlanes value in BMP INFOHEADER.\x00" as *const u8 as *const i8,
-                );
+                warn!("Unknown biPlanes value in BMP INFOHEADER.");
                 return -1i32;
             }
             p = p.offset(2);
@@ -594,7 +588,7 @@ unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut 
             (*hdr).psize = 4i32
         }
         _ => {
-            dpx_warning(b"Unknown BMP header type.\x00" as *const u8 as *const i8);
+            warn!("Unknown BMP header type.");
             return -1i32;
         }
     }
@@ -650,7 +644,7 @@ unsafe extern "C" fn read_raster_rle8(
                     _ => {
                         h += b1 as i32;
                         if h > width {
-                            dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
+                            warn!("RLE decode failed...");
                             return -1i32;
                         }
                         if ttstub_input_read(handle, p as *mut i8, b1 as size_t) != b1 as i64 {
@@ -666,7 +660,7 @@ unsafe extern "C" fn read_raster_rle8(
             } else {
                 h += b0 as i32;
                 if h > width {
-                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
+                    warn!("RLE decode failed...");
                     return -1i32;
                 }
                 memset(p as *mut libc::c_void, b1 as i32, b0 as u64);
@@ -677,13 +671,13 @@ unsafe extern "C" fn read_raster_rle8(
             b0 = tt_get_unsigned_byte(handle);
             b1 = tt_get_unsigned_byte(handle);
             if b0 as i32 != 0i32 {
-                dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
+                warn!("RLE decode failed...");
                 return -1i32;
             } else {
                 if b1 as i32 == 0x1i32 {
                     eoi = 1i32
                 } else if b1 as i32 != 0i32 {
-                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
+                    warn!("RLE decode failed...");
                     return -1i32;
                 }
             }
@@ -747,7 +741,7 @@ unsafe extern "C" fn read_raster_rle4(
                     }
                     _ => {
                         if h + b1 as i32 > width {
-                            dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
+                            warn!("RLE decode failed...");
                             return -1i32;
                         }
                         nbytes = (b1 as i32 + 1i32) / 2i32;
@@ -777,7 +771,7 @@ unsafe extern "C" fn read_raster_rle4(
                 }
             } else {
                 if h + b0 as i32 > width {
-                    dpx_warning(b"RLE decode failed...\x00" as *const u8 as *const i8);
+                    warn!("RLE decode failed...");
                     return -1i32;
                 }
                 if h % 2i32 != 0 {
@@ -802,17 +796,13 @@ unsafe extern "C" fn read_raster_rle4(
             b0 = tt_get_unsigned_byte(handle);
             b1 = tt_get_unsigned_byte(handle);
             if b0 as i32 != 0i32 {
-                dpx_warning(
-                    b"No EOL/EOI marker. RLE decode failed...\x00" as *const u8 as *const i8,
-                );
+                warn!("No EOL/EOI marker. RLE decode failed...");
                 return -1i32;
             } else {
                 if b1 as i32 == 0x1i32 {
                     eoi = 1i32
                 } else if b1 as i32 != 0i32 {
-                    dpx_warning(
-                        b"No EOL/EOI marker. RLE decode failed...\x00" as *const u8 as *const i8,
-                    );
+                    warn!("No EOL/EOI marker. RLE decode failed...");
                     return -1i32;
                 }
             }

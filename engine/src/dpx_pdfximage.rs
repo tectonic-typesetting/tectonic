@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::pdf_obj;
@@ -491,9 +493,7 @@ unsafe extern "C" fn source_image_type(mut handle: rust_input_handle_t) -> i32 {
     } else if check_for_ps(handle) != 0 {
         format = 5i32
     } else {
-        dpx_warning(
-            b"Tectonic was unable to detect an image\'s format\x00" as *const u8 as *const i8,
-        );
+        warn!("Tectonic was unable to detect an image\'s format");
         format = -1i32
     }
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
@@ -541,7 +541,7 @@ unsafe extern "C" fn load_image(
     match format {
         1 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[JPEG]\x00" as *const u8 as *const i8);
+                info!("[JPEG]");
             }
             if jpeg_include_image(I, handle) < 0i32 {
                 current_block = 15386155914718490365;
@@ -552,17 +552,17 @@ unsafe extern "C" fn load_image(
         }
         7 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[JP2]\x00" as *const u8 as *const i8);
+                info!("[JP2]");
             }
             /*if (jp2_include_image(I, fp) < 0)*/
-            dpx_warning(b"Tectonic: JP2 not yet supported\x00" as *const u8 as *const i8);
+            warn!("Tectonic: JP2 not yet supported");
             current_block = 15386155914718490365;
         }
         2 => {
             /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
             break;*/
             if _opts.verbose != 0 {
-                dpx_message(b"[PNG]\x00" as *const u8 as *const i8);
+                info!("[PNG]");
             }
             if png_include_image(I, handle) < 0i32 {
                 current_block = 15386155914718490365;
@@ -573,7 +573,7 @@ unsafe extern "C" fn load_image(
         }
         6 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[BMP]\x00" as *const u8 as *const i8);
+                info!("[BMP]");
             }
             if bmp_include_image(I, handle) < 0i32 {
                 current_block = 15386155914718490365;
@@ -584,7 +584,7 @@ unsafe extern "C" fn load_image(
         }
         0 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[PDF]\x00" as *const u8 as *const i8);
+                info!("[PDF]");
             }
             let mut result: i32 = pdf_include_page(I, handle, fullname, options);
             /* Tectonic: this used to try ps_include_page() */
@@ -592,7 +592,7 @@ unsafe extern "C" fn load_image(
                 current_block = 15386155914718490365;
             } else {
                 if _opts.verbose != 0 {
-                    dpx_message(b",Page:%d\x00" as *const u8 as *const i8, (*I).attr.page_no);
+                    info!(",Page:{}", (*I).attr.page_no);
                 }
                 (*I).subtype = 0i32;
                 current_block = 14945149239039849694;
@@ -600,19 +600,15 @@ unsafe extern "C" fn load_image(
         }
         5 => {
             if _opts.verbose != 0 {
-                dpx_message(b"[EPS]\x00" as *const u8 as *const i8);
+                info!("[EPS]");
             }
-            dpx_warning(
-                b"sorry, PostScript images are not supported by Tectonic\x00" as *const u8
-                    as *const i8,
-            );
-            dpx_warning(b"for details, please see https://github.com/tectonic-typesetting/tectonic/issues/27\x00"
-                            as *const u8 as *const i8);
+            warn!("sorry, PostScript images are not supported by Tectonic");
+            warn!("for details, please see https://github.com/tectonic-typesetting/tectonic/issues/27");
             current_block = 15386155914718490365;
         }
         _ => {
             if _opts.verbose != 0 {
-                dpx_message(b"[UNKNOWN]\x00" as *const u8 as *const i8);
+                info!("[UNKNOWN]");
             }
             current_block = 15386155914718490365;
         }
@@ -703,7 +699,7 @@ pub unsafe extern "C" fn pdf_ximage_findresource(
     id = load_image(ident, ident, format, handle, options);
     ttstub_input_close(handle);
     if _opts.verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const i8);
+        info!(")");
     }
     if id < 0i32 {
         dpx_warning(
@@ -1024,11 +1020,11 @@ unsafe extern "C" fn scale_to_fit_I(
         d_y = 0.0f64
     }
     if wd0 == 0.0f64 {
-        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const i8);
+        warn!("Image width=0.0!");
         wd0 = 1.0f64
     }
     if ht0 == 0.0f64 {
-        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const i8);
+        warn!("Image height=0.0!");
         ht0 = 1.0f64
     }
     if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {
@@ -1079,11 +1075,11 @@ unsafe extern "C" fn scale_to_fit_F(
         d_y = 0.0f64
     }
     if wd0 == 0.0f64 {
-        dpx_warning(b"Image width=0.0!\x00" as *const u8 as *const i8);
+        warn!("Image width=0.0!");
         wd0 = 1.0f64
     }
     if ht0 == 0.0f64 {
-        dpx_warning(b"Image height=0.0!\x00" as *const u8 as *const i8);
+        warn!("Image height=0.0!");
         ht0 = 1.0f64
     }
     if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {

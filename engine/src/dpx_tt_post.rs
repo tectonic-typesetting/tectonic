@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -50,8 +52,6 @@ extern "C" {
         along with this program; if not, write to the Free Software
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -185,10 +185,7 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
                 We show a warning only once, instead of thousands of times */
                 static mut warning_issued: i8 = 0_i8;
                 if warning_issued == 0 {
-                    dpx_warning(
-                        b"TrueType post table name index %u > 32767\x00" as *const u8 as *const i8,
-                        idx as i32,
-                    );
+                    warn!("TrueType post table name index {} > 32767", idx);
                     warning_issued = 1_i8
                 }
                 /* In a real-life large font, (x)dvipdfmx crashes if we use
@@ -244,10 +241,10 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
             let ref mut fresh3 = *(*post).glyphNamePtr.offset(i as isize);
             *fresh3 = *(*post).names.offset((idx as i32 - 258i32) as isize)
         } else {
-            dpx_warning(
-                b"Invalid glyph name index number: %u (>= %u)\x00" as *const u8 as *const i8,
-                idx as i32,
-                (*post).count as i32 + 258i32,
+            warn!(
+                "Invalid glyph name index number: {} (>= {})",
+                idx,
+                (*post).count + 258,
             );
             free(indices as *mut libc::c_void);
             return -1i32;
@@ -281,18 +278,16 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
         (*post).numberOfGlyphs = 258_u16;
         (*post).glyphNamePtr = macglyphorder.as_mut_ptr()
     } else if (*post).Version as u64 == 0x28000 {
-        dpx_warning(
-            b"TrueType \'post\' version 2.5 found (deprecated)\x00" as *const u8 as *const i8,
-        );
+        warn!("TrueType \'post\' version 2.5 found (deprecated)");
     } else if (*post).Version as u64 == 0x20000 {
         if read_v2_post_names(post, sfont) < 0i32 {
-            dpx_warning(b"Invalid version 2.0 \'post\' table\x00" as *const u8 as *const i8);
+            warn!("Invalid version 2.0 \'post\' table");
             tt_release_post_table(post);
             post = 0 as *mut tt_post_table
         }
     } else if !((*post).Version as u64 == 0x30000 || (*post).Version as u64 == 0x40000) {
-        dpx_warning(
-            b"Unknown \'post\' version: %08X, assuming version 3.0\x00" as *const u8 as *const i8,
+        warn!(
+            "Unknown \'post\' version: {:08X}, assuming version 3.0",
             (*post).Version,
         );
     }

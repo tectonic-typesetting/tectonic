@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -157,7 +159,7 @@ unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -
                         return 0 as *mut bt_node;
                     }
                     if **pp as i32 != ')' as i32 {
-                        dpx_warning(b"Syntax error: Unbalanced ()\n\x00" as *const u8 as *const i8);
+                        warn!("Syntax error: Unbalanced ()\n");
                         return 0 as *mut bt_node;
                     }
                     (*curr).left = (*expr).left;
@@ -169,7 +171,7 @@ unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -
                     );
                     free(expr as *mut libc::c_void);
                 } else {
-                    dpx_warning(b"Syntax error: Unbalanced ()\n\x00" as *const u8 as *const i8);
+                    warn!("Syntax error: Unbalanced ()\n");
                     bt_release_tree(root);
                     return 0 as *mut bt_node;
                 }

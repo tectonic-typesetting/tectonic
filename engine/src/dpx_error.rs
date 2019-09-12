@@ -60,8 +60,8 @@ pub type message_type_t = _message_type;
 pub type _message_type = u32;
 pub const DPX_MESG_WARN: _message_type = 1;
 pub const DPX_MESG_INFO: _message_type = 0;
-static mut _last_message_type: message_type_t = DPX_MESG_INFO;
-static mut _dpx_quietness: i32 = 0i32;
+pub static mut _last_message_type: message_type_t = DPX_MESG_INFO;
+pub static mut _dpx_quietness: i32 = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn shut_up(mut quietness: i32) {
     _dpx_quietness = quietness;
@@ -106,6 +106,7 @@ unsafe extern "C" fn _dpx_print_to_stdout(
         n as size_t,
     );
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn dpx_message(mut fmt: *const i8, mut args: ...) {
     let mut argp: ::std::ffi::VaListImpl;

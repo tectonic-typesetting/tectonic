@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use super::dpx_pdfcolor::{
     pdf_color_compare, pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_valid,
@@ -28,8 +30,6 @@ extern "C" {
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -155,7 +155,7 @@ unsafe extern "C" fn inversematrix(mut W: &mut pdf_tmatrix, mut M: &pdf_tmatrix)
     let mut det: f64 = 0.;
     det = M.a * M.d - M.b * M.c;
     if det.abs() < 2.5e-16f64 {
-        dpx_warning(b"Inverting matrix with zero determinant...\x00" as *const u8 as *const i8);
+        warn!("Inverting matrix with zero determinant...");
         return -1i32;
     }
     W.a = M.d / det;
@@ -220,7 +220,7 @@ pub unsafe extern "C" fn pdf_invertmatrix(M: &mut pdf_tmatrix) {
     let mut det: f64 = 0.;
     det = M.a * M.d - M.b * M.c;
     if det.abs() < 2.5e-16f64 {
-        dpx_warning(b"Inverting matrix with zero determinant...\x00" as *const u8 as *const i8);
+        warn!("Inverting matrix with zero determinant...");
         W.a = 1.0f64;
         W.c = 0.0f64;
         W.b = 0.0f64;
@@ -748,16 +748,8 @@ unsafe extern "C" fn pdf_path__isarect(mut pa: *mut pdf_path, mut f_ir: i32) -> 
 /* F is obsoleted */
 unsafe extern "C" fn INVERTIBLE_MATRIX(M: &pdf_tmatrix) -> i32 {
     if (M.a * M.d - M.b * M.c).abs() < 2.5e-16f64 {
-        dpx_warning(b"Transformation matrix not invertible.\x00" as *const u8 as *const i8);
-        dpx_warning(
-            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
-            M.a,
-            M.b,
-            M.c,
-            M.d,
-            M.e,
-            M.f,
-        );
+        warn!("Transformation matrix not invertible.");
+        warn!("--- M = [{} {} {} {} {} {}]", M.a, M.b, M.c, M.d, M.e, M.f,);
         return -1i32;
     }
     0i32
@@ -1146,9 +1138,7 @@ pub unsafe extern "C" fn pdf_dev_clear_gstates() {
     let mut gs: *mut pdf_gstate = 0 as *mut pdf_gstate;
     if gs_stack.size > 1i32 {
         /* at least 1 elem. */
-        dpx_warning(
-            b"GS stack depth is not zero at the end of the document.\x00" as *const u8 as *const i8,
-        ); /* op: q */
+        warn!("GS stack depth is not zero at the end of the document."); /* op: q */
     }
     loop {
         gs = m_stack_pop(&mut gs_stack) as *mut pdf_gstate;
@@ -1177,7 +1167,7 @@ pub unsafe extern "C" fn pdf_dev_grestore() -> i32 {
     let mut gs: *mut pdf_gstate = 0 as *mut pdf_gstate;
     if gs_stack.size <= 1i32 {
         /* Initial state at bottom */
-        dpx_warning(b"Too many grestores.\x00" as *const u8 as *const i8); /* op: Q */
+        warn!("Too many grestores."); /* op: Q */
         return -1i32;
     }
     gs = m_stack_pop(&mut gs_stack) as *mut pdf_gstate;
@@ -1203,7 +1193,7 @@ pub unsafe extern "C" fn pdf_dev_pop_gstate() -> i32 {
     let mut gs: *mut pdf_gstate = 0 as *mut pdf_gstate;
     if (*gss).size <= 1i32 {
         /* Initial state at bottom */
-        dpx_warning(b"Too many grestores.\x00" as *const u8 as *const i8);
+        warn!("Too many grestores.");
         return -1i32;
     }
     gs = m_stack_pop(gss) as *mut pdf_gstate;
@@ -1222,10 +1212,7 @@ pub unsafe extern "C" fn pdf_dev_grestore_to(mut depth: i32) {
     let mut gs: *mut pdf_gstate = 0 as *mut pdf_gstate;
     assert!(depth >= 0i32);
     if (*gss).size > depth + 1i32 {
-        dpx_warning(
-            b"Closing pending transformations at end of page/XObject.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("Closing pending transformations at end of page/XObject.");
     }
     while (*gss).size > depth + 1i32 {
         pdf_doc_add_page_content(b" Q\x00" as *const u8 as *const i8, 2_u32);
@@ -1331,16 +1318,8 @@ pub unsafe extern "C" fn pdf_dev_concat(M: &pdf_tmatrix) -> i32 {
      * non invertible transformation.
      */
     if (M.a * M.d - M.b * M.c).abs() < 2.5e-16f64 {
-        dpx_warning(b"Transformation matrix not invertible.\x00" as *const u8 as *const i8); /* op: cm */
-        dpx_warning(
-            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
-            M.a,
-            M.b,
-            M.c,
-            M.d,
-            M.e,
-            M.f,
-        );
+        warn!("Transformation matrix not invertible."); /* op: cm */
+        warn!("--- M = [{} {} {} {} {} {}]", M.a, M.b, M.c, M.d, M.e, M.f,);
         return -1i32;
     }
     if (M.a - 1.0f64).abs() > 2.5e-16f64

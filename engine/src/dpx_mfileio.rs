@@ -19,7 +19,7 @@ extern "C" {
     #[no_mangle]
     fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: i32) -> i32;
 }
-use libc::{fgetc, ungetc, fseek, ftell, rewind, FILE};
+use libc::{fgetc, fseek, ftell, rewind, ungetc, FILE};
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;

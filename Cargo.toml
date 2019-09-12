@@ -50,6 +50,7 @@ tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
 toml = "^0.5"
 zip = { version = "^0.5", default-features = false, features = ["deflate"] }
+#env_logger = "0.6.2"
 
 [features]
 default = ["serialization"]

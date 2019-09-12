@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -36,8 +38,6 @@ extern "C" {
     fn tt_get_signed_pair(handle: rust_input_handle_t) -> i16;
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -347,10 +347,7 @@ pub unsafe extern "C" fn tt_add_glyph(
         & 1i32 << 7i32 - new_gid as i32 % 8i32
         != 0
     {
-        dpx_warning(
-            b"Slot %u already used.\x00" as *const u8 as *const i8,
-            new_gid as i32,
-        );
+        warn!("Slot {} already used.", new_gid);
     } else {
         if (*g).num_glyphs as i32 + 1i32 >= 65534i32 {
             _tt_abort(b"Too many glyphs.\x00" as *const u8 as *const i8);

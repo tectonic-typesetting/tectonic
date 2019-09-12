@@ -7,6 +7,9 @@
     unused_assignments,
     unused_mut
 )]
+
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
@@ -179,16 +182,16 @@ static mut save: *const i8 = 0 as *const i8;
 #[no_mangle]
 pub unsafe extern "C" fn dump(mut start: *const i8, mut end: *const i8) {
     let mut p: *const i8 = start;
-    dpx_message(b"\nCurrent input buffer is -->\x00" as *const u8 as *const i8);
+    info!("\nCurrent input buffer is -->");
     while p < end && p < start.offset(50) {
         let fresh0 = p;
         p = p.offset(1);
         dpx_message(b"%c\x00" as *const u8 as *const i8, *fresh0 as i32);
     }
     if p == start.offset(50) {
-        dpx_message(b"...\x00" as *const u8 as *const i8);
+        info!("...");
     }
-    dpx_message(b"<--\n\x00" as *const u8 as *const i8);
+    info!("<--\n");
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdfparse_skip_line(mut start: *mut *const i8, mut end: *const i8) {
@@ -345,19 +348,19 @@ pub unsafe extern "C" fn parse_pdf_number(
             && *p.offset(0) as i32 != '+' as i32
             && *p.offset(0) as i32 != '-' as i32
     {
-        dpx_warning(b"Could not find a numeric object.\x00" as *const u8 as *const i8);
+        warn!("Could not find a numeric object.");
         return 0 as *mut pdf_obj;
     }
     if *p.offset(0) as i32 == '-' as i32 {
         if p.offset(1) >= endptr {
-            dpx_warning(b"Could not find a numeric object.\x00" as *const u8 as *const i8);
+            warn!("Could not find a numeric object.");
             return 0 as *mut pdf_obj;
         }
         sign = -1i32;
         p = p.offset(1)
     } else if *p.offset(0) as i32 == '+' as i32 {
         if p.offset(1) >= endptr {
-            dpx_warning(b"Could not find a numeric object.\x00" as *const u8 as *const i8);
+            warn!("Could not find a numeric object.");
             return 0 as *mut pdf_obj;
         }
         sign = 1i32;
@@ -382,7 +385,7 @@ pub unsafe extern "C" fn parse_pdf_number(
         if *p.offset(0) as i32 == '.' as i32 {
             if has_dot != 0 {
                 /* Two dots */
-                dpx_warning(b"Could not find a numeric object.\x00" as *const u8 as *const i8);
+                warn!("Could not find a numeric object.");
                 return 0 as *mut pdf_obj;
             } else {
                 has_dot = 1i32
@@ -396,7 +399,7 @@ pub unsafe extern "C" fn parse_pdf_number(
                 v = v * 10.0f64 + *p.offset(0) as i32 as f64 - '0' as i32 as f64
             }
         } else {
-            dpx_warning(b"Could not find a numeric object.\x00" as *const u8 as *const i8);
+            warn!("Could not find a numeric object.");
             return 0 as *mut pdf_obj;
         }
         p = p.offset(1)
@@ -442,7 +445,7 @@ pub unsafe extern "C" fn parse_pdf_name(
     let mut len: i32 = 0i32;
     skip_white(pp, endptr);
     if *pp >= endptr || **pp as i32 != '/' as i32 {
-        dpx_warning(b"Could not find a name object.\x00" as *const u8 as *const i8);
+        warn!("Could not find a name object.");
         return 0 as *mut pdf_obj;
     }
     *pp = (*pp).offset(1);
@@ -464,33 +467,25 @@ pub unsafe extern "C" fn parse_pdf_name(
     {
         ch = pn_getc(pp, endptr);
         if ch < 0i32 || ch > 0xffi32 {
-            dpx_warning(
-                b"Invalid char in PDF name object. (ignored)\x00" as *const u8 as *const i8,
-            );
+            warn!("Invalid char in PDF name object. (ignored)");
         } else if ch == 0i32 {
-            dpx_warning(
-                b"Null char not allowed in PDF name object. (ignored)\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("Null char not allowed in PDF name object. (ignored)");
         } else if len < 65535i32 + 1i32 {
             if len == 128i32 {
-                dpx_warning(
-                    b"PDF name length too long. (>= %d bytes)\x00" as *const u8 as *const i8,
-                    128i32,
-                );
+                warn!("PDF name length too long. (>= {} bytes)", 128i32);
             }
             let fresh1 = len;
             len = len + 1;
             name[fresh1 as usize] = ch as i8
         } else {
-            dpx_warning(
-                b"PDF name length too long. (>= %d bytes, truncated)\x00" as *const u8 as *const i8,
-                65535i32 + 1i32,
+            warn!(
+                "PDF name length too long. (>= {} bytes, truncated)",
+                65535 + 1
             );
         }
     }
     if len < 1i32 {
-        dpx_warning(b"No valid name object found.\x00" as *const u8 as *const i8);
+        warn!("No valid name object found.");
         return 0 as *mut pdf_obj;
     }
     name[len as usize] = '\u{0}' as i32 as i8;
@@ -547,7 +542,7 @@ pub unsafe extern "C" fn parse_pdf_boolean(
             return pdf_new_boolean(0_i8);
         }
     }
-    dpx_warning(b"Not a boolean object.\x00" as *const u8 as *const i8);
+    warn!("Not a boolean object.");
     0 as *mut pdf_obj
 }
 #[no_mangle]
@@ -557,7 +552,7 @@ pub unsafe extern "C" fn parse_pdf_null(
 ) -> *mut pdf_obj {
     skip_white(pp, endptr);
     if (*pp).offset(4) > endptr {
-        dpx_warning(b"Not a null object.\x00" as *const u8 as *const i8);
+        warn!("Not a null object.");
         return 0 as *mut pdf_obj;
     } else {
         if (*pp).offset(4) < endptr
@@ -576,7 +571,7 @@ pub unsafe extern "C" fn parse_pdf_null(
                     || *(*pp).offset(4) as i32 == ']' as i32
                     || *(*pp).offset(4) as i32 == '%' as i32))
         {
-            dpx_warning(b"Not a null object.\x00" as *const u8 as *const i8);
+            warn!("Not a null object.");
             return 0 as *mut pdf_obj;
         } else {
             if !strstartswith(*pp, b"null\x00" as *const u8 as *const i8).is_null() {
@@ -585,7 +580,7 @@ pub unsafe extern "C" fn parse_pdf_null(
             }
         }
     }
-    dpx_warning(b"Not a null object.\x00" as *const u8 as *const i8);
+    warn!("Not a null object.");
     0 as *mut pdf_obj
 }
 /*
@@ -693,10 +688,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
         if parser_state.tainted != 0 {
             if p.offset(1) < endptr && ch & 0x80i32 != 0 {
                 if len + 2i32 >= 65535i32 {
-                    dpx_warning(
-                        b"PDF string length too long. (limit: %d)\x00" as *const u8 as *const i8,
-                        65535i32,
-                    );
+                    warn!("PDF string length too long. (limit: {})", 65535i32);
                     return 0 as *mut pdf_obj;
                 }
                 let fresh2 = len;
@@ -711,10 +703,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
         }
         /* !PDF_PARSE_STRICT */
         if len + 1i32 >= 65535i32 {
-            dpx_warning(
-                b"PDF string length too long. (limit: %d)\x00" as *const u8 as *const i8,
-                65535i32,
-            );
+            warn!("PDF string length too long. (limit: {})", 65535i32);
             return 0 as *mut pdf_obj;
         }
         match ch {
@@ -749,9 +738,7 @@ unsafe extern "C" fn parse_pdf_literal_string(
         }
     }
     if op_count > 0i32 || p >= endptr || *p.offset(0) as i32 != ')' as i32 {
-        dpx_warning(
-            b"Unbalanced parens/truncated PDF literal string.\x00" as *const u8 as *const i8,
-        );
+        warn!("Unbalanced parens/truncated PDF literal string.");
         return 0 as *mut pdf_obj;
     }
     *pp = p.offset(1);
@@ -795,14 +782,11 @@ unsafe extern "C" fn parse_pdf_hex_string(
         sbuf[fresh7 as usize] = (ch & 0xffi32) as i8
     }
     if p >= endptr {
-        dpx_warning(b"Premature end of input hex string.\x00" as *const u8 as *const i8);
+        warn!("Premature end of input hex string.");
         return 0 as *mut pdf_obj;
     } else {
         if *p.offset(0) as i32 != '>' as i32 {
-            dpx_warning(
-                b"PDF string length too long. (limit: %d)\x00" as *const u8 as *const i8,
-                65535i32,
-            );
+            warn!("PDF string length too long. (limit: {})", 65535i32);
             return 0 as *mut pdf_obj;
         }
     }
@@ -827,7 +811,7 @@ pub unsafe extern "C" fn parse_pdf_string(
             }
         }
     }
-    dpx_warning(b"Could not find a string object.\x00" as *const u8 as *const i8);
+    warn!("Could not find a string object.");
     0 as *mut pdf_obj
 }
 #[no_mangle]
@@ -869,9 +853,7 @@ pub unsafe extern "C" fn parse_pdf_dict(
         skip_white(&mut p, endptr);
         key = parse_pdf_name(&mut p, endptr);
         if key.is_null() {
-            dpx_warning(
-                b"Could not find a key in dictionary object.\x00" as *const u8 as *const i8,
-            );
+            warn!("Could not find a key in dictionary object.");
             pdf_release_obj(result);
             return 0 as *mut pdf_obj;
         }
@@ -881,9 +863,7 @@ pub unsafe extern "C" fn parse_pdf_dict(
             pdf_release_obj(key);
             pdf_release_obj(value);
             pdf_release_obj(result);
-            dpx_warning(
-                b"Could not find a value in dictionary object.\x00" as *const u8 as *const i8,
-            );
+            warn!("Could not find a value in dictionary object.");
             return 0 as *mut pdf_obj;
         }
         pdf_add_dict(result, key, value);
@@ -893,9 +873,7 @@ pub unsafe extern "C" fn parse_pdf_dict(
         || *p.offset(0) as i32 != '>' as i32
         || *p.offset(1) as i32 != '>' as i32
     {
-        dpx_warning(
-            b"Syntax error: Dictionary object ended prematurely.\x00" as *const u8 as *const i8,
-        );
+        warn!("Syntax error: Dictionary object ended prematurely.");
         pdf_release_obj(result);
         return 0 as *mut pdf_obj;
     }
@@ -913,7 +891,7 @@ pub unsafe extern "C" fn parse_pdf_array(
     p = *pp;
     skip_white(&mut p, endptr);
     if p.offset(2) > endptr || *p.offset(0) as i32 != '[' as i32 {
-        dpx_warning(b"Could not find an array object.\x00" as *const u8 as *const i8);
+        warn!("Could not find an array object.");
         return 0 as *mut pdf_obj;
     }
     result = pdf_new_array();
@@ -924,16 +902,14 @@ pub unsafe extern "C" fn parse_pdf_array(
         elem = parse_pdf_object(&mut p, endptr, pf);
         if elem.is_null() {
             pdf_release_obj(result);
-            dpx_warning(
-                b"Could not find a valid object in array object.\x00" as *const u8 as *const i8,
-            );
+            warn!("Could not find a valid object in array object.");
             return 0 as *mut pdf_obj;
         }
         pdf_add_array(result, elem);
         skip_white(&mut p, endptr);
     }
     if p >= endptr || *p.offset(0) as i32 != ']' as i32 {
-        dpx_warning(b"Array object ended prematurely.\x00" as *const u8 as *const i8);
+        warn!("Array object ended prematurely.");
         pdf_release_obj(result);
         return 0 as *mut pdf_obj;
     }
@@ -1049,7 +1025,7 @@ unsafe extern "C" fn parse_pdf_reference(
         }
         free(name as *mut libc::c_void);
     } else {
-        dpx_warning(b"Could not find a reference name.\x00" as *const u8 as *const i8);
+        warn!("Could not find a reference name.");
         dump(save, end);
         *start = save;
         result = 0 as *mut pdf_obj
@@ -1166,7 +1142,7 @@ pub unsafe extern "C" fn parse_pdf_object(
     let mut nextptr: *const i8 = 0 as *const i8;
     skip_white(pp, endptr);
     if *pp >= endptr {
-        dpx_warning(b"Could not find any valid object.\x00" as *const u8 as *const i8);
+        warn!("Could not find any valid object.");
         return 0 as *mut pdf_obj;
     }
     match **pp as i32 {
@@ -1213,7 +1189,7 @@ pub unsafe extern "C" fn parse_pdf_object(
         }
         64 => result = parse_pdf_reference(pp, endptr),
         _ => {
-            dpx_warning(b"Unknown PDF object type.\x00" as *const u8 as *const i8);
+            warn!("Unknown PDF object type.");
             result = 0 as *mut pdf_obj
         }
     }

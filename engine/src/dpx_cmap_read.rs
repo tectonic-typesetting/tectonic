@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -93,8 +95,6 @@ extern "C" {
     fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     #[no_mangle]
     fn CMap_is_valid(cmap: *mut CMap) -> bool;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -352,11 +352,9 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         (*reader).endptr = (*reader).endptr.offset(bytesread as isize);
         (*reader).unread = ((*reader).unread as u64).wrapping_sub(bytesread) as size_t as size_t;
         if __verbose != 0 {
-            dpx_message(
-                b"Reading more %zu bytes (%zu bytes remains in buffer)...\n\x00" as *const u8
-                    as *const i8,
-                bytesread,
-                bytesrem,
+            info!(
+                "Reading more {} bytes ({} bytes remains in buffer)...\n",
+                bytesread, bytesrem,
             );
         }
     }
@@ -548,10 +546,7 @@ unsafe extern "C" fn do_notdefrange(
                 );
             }
         } else {
-            dpx_warning(
-                b"%s: Invalid CMap mapping record. (ignored)\x00" as *const u8 as *const i8,
-                b"CMap_parse:\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Invalid CMap mapping record. (ignored)", "CMap_parse:");
         }
         pst_release_obj(tok);
     }
@@ -612,10 +607,7 @@ unsafe extern "C" fn do_bfrange(
                 return -1i32;
             }
         } else {
-            dpx_warning(
-                b"%s: Invalid CMap mapping record. (ignored)\x00" as *const u8 as *const i8,
-                b"CMap_parse:\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Invalid CMap mapping record. (ignored)", "CMap_parse:");
         }
         pst_release_obj(tok);
     }
@@ -666,10 +658,7 @@ unsafe extern "C" fn do_cidrange(
                 );
             }
         } else {
-            dpx_warning(
-                b"%s: Invalid CMap mapping record. (ignored)\x00" as *const u8 as *const i8,
-                b"CMap_parse:\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Invalid CMap mapping record. (ignored)", "CMap_parse:");
         }
         pst_release_obj(tok);
     }
@@ -712,10 +701,7 @@ unsafe extern "C" fn do_notdefchar(
                 );
             }
         } else {
-            dpx_warning(
-                b"%s: Invalid CMap mapping record. (ignored)\x00" as *const u8 as *const i8,
-                b"CMap_parse:\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Invalid CMap mapping record. (ignored)", "CMap_parse:");
         }
         pst_release_obj(tok1);
         pst_release_obj(tok2);
@@ -762,10 +748,7 @@ unsafe extern "C" fn do_bfchar(
                 b"CMap_parse:\x00" as *const u8 as *const i8,
             );
         } else {
-            dpx_warning(
-                b"%s: Invalid CMap mapping record. (ignored)\x00" as *const u8 as *const i8,
-                b"CMap_parse:\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Invalid CMap mapping record. (ignored)", "CMap_parse:");
         }
         pst_release_obj(tok1);
         pst_release_obj(tok2);
@@ -809,10 +792,7 @@ unsafe extern "C" fn do_cidchar(
                 );
             }
         } else {
-            dpx_warning(
-                b"%s: Invalid CMap mapping record. (ignored)\x00" as *const u8 as *const i8,
-                b"CMap_parse:\x00" as *const u8 as *const i8,
-            );
+            warn!("{}: Invalid CMap mapping record. (ignored)", "CMap_parse:");
         }
         pst_release_obj(tok1);
         pst_release_obj(tok2);

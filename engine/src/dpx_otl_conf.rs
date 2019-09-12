@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::info;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -316,21 +318,15 @@ unsafe extern "C" fn add_rule(
             pdf_add_array(glyph1, pdf_new_number(unicodes[i as usize] as f64));
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
-                    dpx_message(
-                        b" U+%04X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:04X}", unicodes[i as usize],);
                 } else {
-                    dpx_message(
-                        b" U+%06X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:06X}", unicodes[i as usize],);
                 }
             }
             i += 1
         }
         if verbose > 0i32 {
-            dpx_message(b"\n\x00" as *const u8 as *const i8);
+            info!("\n");
         }
     }
     if *second.offset(0) as i32 == '@' as i32 {
@@ -380,15 +376,9 @@ unsafe extern "C" fn add_rule(
             pdf_add_array(glyph2, pdf_new_number(unicodes[i as usize] as f64));
             if verbose > 0i32 {
                 if unicodes[i as usize] < 0x10000i32 {
-                    dpx_message(
-                        b" U+%04X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:04X}", unicodes[i as usize],);
                 } else {
-                    dpx_message(
-                        b" U+%06X\x00" as *const u8 as *const i8,
-                        unicodes[i as usize],
-                    );
+                    info!(" U+{:06X}", unicodes[i as usize],);
                 }
             }
             i += 1
@@ -676,7 +666,7 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     }
     size = ttstub_input_get_size(handle as rust_input_handle_t) as i32;
     if verbose > 0i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
         dpx_message(
             b"otl_conf>> Layout config. \"%s\" found: file=\"%s\" (%d bytes)\n\x00" as *const u8
                 as *const i8,

@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -1144,7 +1146,7 @@ pub unsafe extern "C" fn tt_cmap_read(
     /* language (Mac) */
     } else if tt_get_unsigned_pair((*sfont).handle) as i32 != 0i32 {
         /* reverved - 0 */
-        dpx_warning(b"Unrecognized cmap subtable format.\x00" as *const u8 as *const i8);
+        warn!("Unrecognized cmap subtable format.");
         tt_cmap_release(cmap);
         return 0 as *mut tt_cmap;
     } else {
@@ -1161,9 +1163,7 @@ pub unsafe extern "C" fn tt_cmap_read(
             (*cmap).map = read_cmap12(sfont, length) as *mut libc::c_void
         }
         _ => {
-            dpx_warning(
-                b"Unrecognized OpenType/TrueType cmap format.\x00" as *const u8 as *const i8,
-            );
+            warn!("Unrecognized OpenType/TrueType cmap format.");
             tt_cmap_release(cmap);
             return 0 as *mut tt_cmap;
         }
@@ -1210,10 +1210,7 @@ pub unsafe extern "C" fn tt_cmap_lookup(mut cmap: *mut tt_cmap, mut cc: u32) -> 
     let mut gid: u16 = 0_u16;
     assert!(!cmap.is_null());
     if cc as i64 > 0xffff && ((*cmap).format as i32) < 12i32 {
-        dpx_warning(
-            b"Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.\x00"
-                as *const u8 as *const i8,
-        );
+        warn!("Four bytes charcode not supported in OpenType/TrueType cmap format 0...6.");
         return 0_u16;
     }
     match (*cmap).format as i32 {
@@ -1289,12 +1286,7 @@ unsafe extern "C" fn load_cmap4(
                         | *GIDToCIDMap.offset((2i32 * gid as i32 + 1i32) as isize) as i32)
                         as u16;
                     if cid as i32 == 0i32 {
-                        dpx_warning(
-                            b"GID %u does not have corresponding CID %u.\x00" as *const u8
-                                as *const i8,
-                            gid as i32,
-                            cid as i32,
-                        );
+                        warn!("GID {} does not have corresponding CID {}.", gid, cid,);
                     }
                 } else {
                     cid = gid
@@ -1361,11 +1353,7 @@ unsafe extern "C" fn load_cmap12(
                     | *GIDToCIDMap.offset((2i32 * gid as i32 + 1i32) as isize) as i32)
                     as u16;
                 if cid as i32 == 0i32 {
-                    dpx_warning(
-                        b"GID %u does not have corresponding CID %u.\x00" as *const u8 as *const i8,
-                        gid as i32,
-                        cid as i32,
-                    );
+                    warn!("GID {} does not have corresponding CID {}.", gid, cid,);
                 }
             } else {
                 cid = gid
@@ -1636,11 +1624,7 @@ unsafe extern "C" fn handle_subst_glyphs(
                                     name,
                                 );
                             } else {
-                                dpx_message(
-                                    b"No Unicode mapping available: GID=%u\n\x00" as *const u8
-                                        as *const i8,
-                                    gid as i32,
-                                );
+                                info!("No Unicode mapping available: GID={}\n", gid);
                             }
                         } else {
                             /* the Unicode characters go into wbuf[2] and following, in UTF16BE */
@@ -1683,7 +1667,7 @@ unsafe extern "C" fn handle_subst_glyphs(
                             &mut outbytesleft,
                         );
                         if inbytesleft != 0i32 as u64 {
-                            dpx_warning(b"CMap conversion failed...\x00" as *const u8 as *const i8);
+                            warn!("CMap conversion failed...");
                         } else {
                             len = ((1024i32 - 2i32) as u64).wrapping_sub(outbytesleft);
                             CMap_add_bfchar(
@@ -1696,21 +1680,19 @@ unsafe extern "C" fn handle_subst_glyphs(
                             count = count.wrapping_add(1);
                             if verbose > 0i32 {
                                 let mut _i: size_t = 0;
-                                dpx_message(
-                                    b"otf_cmap>> Additional ToUnicode mapping: <%04X> <\x00"
-                                        as *const u8
-                                        as *const i8,
+                                info!(
+                                    "otf_cmap>> Additional ToUnicode mapping: <{:04X}> <",
                                     gid as i32,
                                 );
                                 _i = 0i32 as size_t;
                                 while _i < len {
-                                    dpx_message(
-                                        b"%02X\x00" as *const u8 as *const i8,
+                                    info!(
+                                        "{:02X}",
                                         wbuf[(2i32 as u64).wrapping_add(_i) as usize] as i32,
                                     );
                                     _i = _i.wrapping_add(1)
                                 }
-                                dpx_message(b">\n\x00" as *const u8 as *const i8);
+                                info!(">\n");
                             }
                         }
                     }
@@ -2079,7 +2061,7 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
         return cmap_ref;
     }
     if verbose > 0i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
         dpx_message(
             b"otf_cmap>> Creating ToUnicode CMap for \"%s\"...\n\x00" as *const u8 as *const i8,
             font_name,
@@ -2170,9 +2152,7 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
         i = i.wrapping_add(1)
     }
     if cmap_obj.is_null() {
-        dpx_warning(
-            b"Unable to read OpenType/TrueType Unicode cmap table.\x00" as *const u8 as *const i8,
-        );
+        warn!("Unable to read OpenType/TrueType Unicode cmap table.");
     }
     tt_cmap_release(ttcmap);
     CMap_set_silent(0i32);
@@ -2447,7 +2427,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         is_cidfont = 0i32
     }
     if verbose > 0i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
         dpx_message(
             b"otf_cmap>> Unicode charmap for font=\"%s\" layout=\"%s\"\n\x00" as *const u8
                 as *const i8,
@@ -2467,10 +2447,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         sfnt_close(sfont);
         ttstub_input_close(handle as rust_input_handle_t);
         if verbose > 0i32 {
-            dpx_message(
-                b"otf_cmap>> Found at cmap_id=%d.\n\x00" as *const u8 as *const i8,
-                cmap_id,
-            );
+            info!("otf_cmap>> Found at cmap_id={}.\n", cmap_id);
         }
         return cmap_id;
     }
@@ -2505,7 +2482,7 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
                 sfont,
             ) < 0i32
             {
-                dpx_warning(b"GSUB feature vrt2/vert not found.\x00" as *const u8 as *const i8);
+                warn!("GSUB feature vrt2/vert not found.");
                 otl_gsub_release(gsub_vert);
                 gsub_vert = 0 as *mut otl_gsub
             } else {

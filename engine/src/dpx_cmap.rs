@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -401,12 +403,11 @@ unsafe extern "C" fn handle_undefined(
             );
         }
         _ => {
-            dpx_warning(
-                b"Cannot handle undefined mapping for this type of CMap mapping: %d\x00"
-                    as *const u8 as *const i8,
-                (*cmap).type_0,
+            warn!(
+                "Cannot handle undefined mapping for this type of CMap mapping: {}",
+                (*cmap).type_0
             );
-            dpx_warning(b"<0000> is used for .notdef char.\x00" as *const u8 as *const i8);
+            warn!("<0000> is used for .notdef char.");
             memset(*outbuf as *mut libc::c_void, 0i32, 2i32 as u64);
         }
     }
@@ -464,9 +465,7 @@ pub unsafe extern "C" fn CMap_decode_char(
                 return;
             } else {
                 /* no mapping available in this CMap */
-                dpx_warning(
-                    b"No mapping available for this character.\x00" as *const u8 as *const i8,
-                );
+                warn!("No mapping available for this character.");
                 handle_undefined(cmap, inbuf, inbytesleft, outbuf, outbytesleft);
                 return;
             }
@@ -502,18 +501,18 @@ pub unsafe extern "C" fn CMap_decode_char(
                 return;
             } else {
                 /* no mapping available in this CMap */
-                dpx_warning(b"No character mapping available.\x00" as *const u8 as *const i8);
+                warn!("No character mapping available.");
                 dpx_message(
                     b" CMap name: %s\n\x00" as *const u8 as *const i8,
                     CMap_get_name(cmap),
                 );
-                dpx_message(b" input str: \x00" as *const u8 as *const i8);
-                dpx_message(b"<\x00" as *const u8 as *const i8);
+                info!(" input str: ");
+                info!("<");
                 while save < p {
-                    dpx_message(b"%02x\x00" as *const u8 as *const i8, *save as i32);
+                    info!("{:02x}", *save as i32);
                     save = save.offset(1)
                 }
-                dpx_message(b">\n\x00" as *const u8 as *const i8);
+                info!(">\n");
                 /*
                  * We know partial match found up to `count' bytes,
                  * but we will not use this information for the sake of simplicity.
@@ -524,9 +523,7 @@ pub unsafe extern "C" fn CMap_decode_char(
         } else {
             match (*t.offset(c as isize)).flag & 0xfi32 {
                 8 => {
-                    dpx_warning(
-                        b"Character mapped to .notdef found.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Character mapped to .notdef found.");
                 }
                 1 | 4 => {}
                 2 => {
@@ -659,7 +656,7 @@ pub unsafe extern "C" fn CMap_set_CIDSysInfo(mut cmap: *mut CMap, mut csi: *cons
         strcpy((*(*cmap).CSI).ordering, (*csi).ordering);
         (*(*cmap).CSI).supplement = (*csi).supplement
     } else {
-        dpx_warning(b"Invalid CIDSystemInfo.\x00" as *const u8 as *const i8);
+        warn!("Invalid CIDSystemInfo.");
         (*cmap).CSI = 0 as *mut CIDSysInfo
     };
 }
@@ -787,7 +784,7 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
             j = j.wrapping_add(1)
         }
         if overlap {
-            dpx_warning(b"Overlapping codespace found. (ingored)\x00" as *const u8 as *const i8);
+            warn!("Overlapping codespace found. (ingored)");
             return -1i32;
         }
         i = i.wrapping_add(1)
@@ -875,10 +872,7 @@ pub unsafe extern "C" fn CMap_add_notdefrange(
         } != 0
         {
             if __silent == 0 {
-                dpx_warning(
-                    b"Trying to redefine already defined code mapping. (ignored)\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("Trying to redefine already defined code mapping. (ignored)");
             }
         } else {
             (*cur.offset(c as isize)).flag = 0i32 | 1i32 << 3i32;
@@ -1027,10 +1021,7 @@ pub unsafe extern "C" fn CMap_add_cidrange(
     while c <= *srchi.offset(srcdim.wrapping_sub(1i32 as u64) as isize) as u64 {
         if (*cur.offset(c as isize)).flag != 0i32 {
             if __silent == 0 {
-                dpx_warning(
-                    b"Trying to redefine already defined CID mapping. (ignored)\x00" as *const u8
-                        as *const i8,
-                );
+                warn!("Trying to redefine already defined CID mapping. (ignored)");
             }
         } else {
             (*cur.offset(c as isize)).flag = 0i32 | 1i32 << 0i32;
@@ -1042,7 +1033,7 @@ pub unsafe extern "C" fn CMap_add_cidrange(
             *(*cmap).reverseMap.offset(base as isize) = (v << 8i32).wrapping_add(c) as i32
         }
         if base as i32 >= 65535i32 {
-            dpx_warning(b"CID number too large.\x00" as *const u8 as *const i8);
+            warn!("CID number too large.");
         }
         base = base.wrapping_add(1);
         c = c.wrapping_add(1)
@@ -1112,7 +1103,7 @@ unsafe extern "C" fn locate_tbl(
             0i32
         } != 0
         {
-            dpx_warning(b"Ambiguous CMap entry.\x00" as *const u8 as *const i8);
+            warn!("Ambiguous CMap entry.");
             return -1i32;
         }
         if (*(*cur).offset(c as isize)).next.is_null() {
@@ -1204,13 +1195,13 @@ unsafe extern "C" fn check_range(
         || *srclo.offset(srcdim.wrapping_sub(1i32 as u64) as isize) as i32
             > *srchi.offset(srcdim.wrapping_sub(1i32 as u64) as isize) as i32
     {
-        dpx_warning(b"Invalid CMap mapping entry. (ignored)\x00" as *const u8 as *const i8);
+        warn!("Invalid CMap mapping entry. (ignored)");
         return -1i32;
     }
     if CMap_match_codespace(cmap, srclo, srcdim) < 0i32
         || CMap_match_codespace(cmap, srchi, srcdim) < 0i32
     {
-        dpx_warning(b"Invalid CMap mapping entry. (ignored)\x00" as *const u8 as *const i8);
+        warn!("Invalid CMap mapping entry. (ignored)");
         return -1i32;
     }
     if srcdim < (*cmap).profile.minBytesIn {
@@ -1340,7 +1331,7 @@ pub unsafe extern "C" fn CMap_cache_find(mut cmap_name: *const i8) -> i32 {
     }
     ttstub_input_close(handle);
     if __verbose != 0 {
-        dpx_message(b")\x00" as *const u8 as *const i8);
+        info!(")");
     }
     id
 }

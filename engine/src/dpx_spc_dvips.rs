@@ -7,6 +7,9 @@
     unused_assignments,
     unused_mut
 )]
+
+use crate::warn;
+
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_concat;
 use crate::dpx_pdfobj::pdf_obj;
@@ -62,8 +65,6 @@ extern "C" {
     fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
@@ -577,7 +578,7 @@ unsafe extern "C" fn spc_handler_ps_trickscmd(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    dpx_warning(b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8);
+    warn!("PSTricks commands are disallowed in Tectonic");
     (*args).curptr = (*args).endptr;
     -1i32
 }
@@ -585,7 +586,7 @@ unsafe extern "C" fn spc_handler_ps_tricksobj(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    dpx_warning(b"PSTricks commands are disallowed in Tectonic\x00" as *const u8 as *const i8);
+    warn!("PSTricks commands are disallowed in Tectonic");
     (*args).curptr = (*args).endptr;
     -1i32
 }

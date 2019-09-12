@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
@@ -160,10 +162,7 @@ unsafe extern "C" fn read_box_hdr(
         *lbox = get_unsigned_quad(fp);
         bytesread = bytesread.wrapping_add(8_u32)
     } else if *lbox > 1_u32 && *lbox < 8_u32 {
-        dpx_warning(
-            b"JPEG2000: Unknown LBox value %u in JP2 file!\x00" as *const u8 as *const i8,
-            *lbox,
-        );
+        warn!("JPEG2000: Unknown LBox value {} in JP2 file!", *lbox);
     }
     bytesread
 }
@@ -207,10 +206,7 @@ unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: u32) -> i32 {
             }
         }
         _ => {
-            dpx_warning(
-                b"JPEG2000: Unknown JPEG 2000 File Type box Brand field value.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("JPEG2000: Unknown JPEG 2000 File Type box Brand field value.");
             seek_relative(fp, size as i32);
             size = 0_u32;
             supported = 0i32
@@ -248,10 +244,7 @@ unsafe extern "C" fn scan_res_(
     while size > 0_u32 {
         len = read_box_hdr(fp, &mut lbox, &mut tbox);
         if lbox == 0_u32 {
-            dpx_warning(
-                b"JPEG2000: Unexpected lbox value 0 in JP2 Resolution box.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("JPEG2000: Unexpected lbox value 0 in JP2 Resolution box.");
             break;
         } else {
             match tbox {
@@ -267,10 +260,7 @@ unsafe extern "C" fn scan_res_(
                     have_resd = 1i32
                 }
                 _ => {
-                    dpx_warning(
-                        b"JPEG2000: Unknown JPEG 2000 box type in Resolution box.\x00" as *const u8
-                            as *const i8,
-                    );
+                    warn!("JPEG2000: Unknown JPEG 2000 box type in Resolution box.");
                     seek_relative(fp, lbox.wrapping_sub(len) as i32);
                 }
             }
@@ -303,10 +293,7 @@ unsafe extern "C" fn scan_cdef(
     *smask = 0i32;
     N = get_unsigned_pair(fp) as u32;
     if size < N.wrapping_mul(6_u32).wrapping_add(2_u32) {
-        dpx_warning(
-            b"JPEG2000: Inconsistent N value in Channel Definition box.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("JPEG2000: Inconsistent N value in Channel Definition box.");
         return -1i32;
     }
     i = 0_u32;
@@ -315,10 +302,7 @@ unsafe extern "C" fn scan_cdef(
         Typ = get_unsigned_pair(fp) as u32;
         Asoc = get_unsigned_pair(fp) as u32;
         if Cn > N {
-            dpx_warning(
-                b"JPEG2000: Invalid Cn value in Channel Definition box.\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("JPEG2000: Invalid Cn value in Channel Definition box.");
         }
         if Typ == 1_u32 {
             if Asoc == 0_u32 {
@@ -333,9 +317,7 @@ unsafe extern "C" fn scan_cdef(
     if opacity_channels == 1i32 {
         *smask = if have_type0 != 0 { 1i32 } else { 0i32 }
     } else if opacity_channels > 1i32 {
-        dpx_warning(
-            b"JPEG2000: Unsupported transparency type. (ignored)\x00" as *const u8 as *const i8,
-        );
+        warn!("JPEG2000: Unsupported transparency type. (ignored)");
     }
     0i32
 }
@@ -353,10 +335,7 @@ unsafe extern "C" fn scan_jp2h(
     while size > 0_u32 && error == 0 {
         len = read_box_hdr(fp, &mut lbox, &mut tbox);
         if lbox == 0_u32 {
-            dpx_warning(
-                b"JPEG2000: Unexpected lbox value 0 in JP2 Header box...\x00" as *const u8
-                    as *const i8,
-            );
+            warn!("JPEG2000: Unexpected lbox value 0 in JP2 Header box...");
             error = -1i32;
             break;
         } else {
@@ -381,10 +360,7 @@ unsafe extern "C" fn scan_jp2h(
                     seek_relative(fp, lbox.wrapping_sub(len) as i32);
                 }
                 _ => {
-                    dpx_warning(
-                        b"JPEG2000: Unknown JPEG 2000 box in JP2 Header box.\x00" as *const u8
-                            as *const i8,
-                    );
+                    warn!("JPEG2000: Unknown JPEG 2000 box in JP2 Header box.");
                     seek_relative(fp, lbox.wrapping_sub(len) as i32);
                     error = -1i32
                 }
@@ -393,10 +369,7 @@ unsafe extern "C" fn scan_jp2h(
         }
     }
     if have_ihdr == 0 {
-        dpx_warning(
-            b"JPEG2000: Expecting JPEG 2000 Image Header box but could not find.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("JPEG2000: Expecting JPEG 2000 Image Header box but could not find.");
     }
     return if error == 0 && have_ihdr != 0 && size == 0_u32 {
         0i32
@@ -445,10 +418,7 @@ unsafe extern "C" fn scan_file(
             1785737827 => {
                 /* JP2 requires JP2H appears before JP2C. */
                 if have_jp2h == 0 {
-                    dpx_warning(
-                        b"JPEG2000: JPEG 2000 Codestream box found before JP2 Header box.\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("JPEG2000: JPEG 2000 Codestream box found before JP2 Header box.");
                 }
                 seek_relative(fp, lbox.wrapping_sub(len) as i32);
             }
@@ -464,10 +434,7 @@ unsafe extern "C" fn scan_file(
      * Codestream Header box, and Compositing Layer Header box. ...
      */
     if have_jp2h == 0 && error == 0 {
-        dpx_warning(
-            b"JPEG2000: No JP2 Header box found. Not a JP2/JPX baseline file?\x00" as *const u8
-                as *const i8,
-        );
+        warn!("JPEG2000: No JP2 Header box found. Not a JP2/JPX baseline file?");
         error = -1i32
     }
     error
@@ -513,10 +480,9 @@ pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: 
     };
     pdf_version = pdf_get_version();
     if pdf_version < 5_u32 {
-        dpx_warning(
-            b"JPEG 2000 support requires PDF version >= 1.5 (Current setting 1.%d)\n\x00"
-                as *const u8 as *const i8,
-            pdf_version,
+        warn!(
+            "JPEG 2000 support requires PDF version >= 1.5 (Current setting 1.{})\n",
+            pdf_version
         );
         return -1i32;
     }
@@ -525,7 +491,7 @@ pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: 
     stream = stream_dict;
     rewind(fp);
     if scan_file(&mut info, &mut smask, fp) < 0i32 {
-        dpx_warning(b"JPEG2000: Reading JPEG 2000 file failed.\x00" as *const u8 as *const i8);
+        warn!("JPEG2000: Reading JPEG 2000 file failed.");
         return -1i32;
     }
     stream = pdf_new_stream(0i32);

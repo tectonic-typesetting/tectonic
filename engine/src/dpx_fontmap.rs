@@ -7,6 +7,9 @@
     unused_assignments,
     unused_mut
 )]
+
+use crate::{info, warn};
+
 extern crate libc;
 use libc::free;
 extern "C" {
@@ -611,9 +614,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 /* Slant option */
                 q = parse_float_decimal(&mut p, endptr);
                 if q.is_null() {
-                    dpx_warning(
-                        b"Missing a number value for \'s\' option.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Missing a number value for \'s\' option.");
                     return -1i32;
                 }
                 (*mrec).opt.slant = atof(q);
@@ -623,9 +624,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 /* Extend option */
                 q = parse_float_decimal(&mut p, endptr);
                 if q.is_null() {
-                    dpx_warning(
-                        b"Missing a number value for \'e\' option.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Missing a number value for \'e\' option.");
                     return -1i32;
                 }
                 (*mrec).opt.extend = atof(q);
@@ -642,9 +641,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 /* Fake-bold option */
                 q = parse_float_decimal(&mut p, endptr);
                 if q.is_null() {
-                    dpx_warning(
-                        b"Missing a number value for \'b\' option.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Missing a number value for \'b\' option.");
                     return -1i32;
                 }
                 (*mrec).opt.bold = atof(q);
@@ -662,7 +659,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 /* TTC index */
                 q = parse_integer_value(&mut p, endptr, 10i32);
                 if q.is_null() {
-                    dpx_warning(b"Missing TTC index number...\x00" as *const u8 as *const i8);
+                    warn!("Missing TTC index number...");
                     return -1i32;
                 }
                 (*mrec).opt.index = atoi(q);
@@ -679,9 +676,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 /* UCS plane: just for testing */
                 q = parse_integer_value(&mut p, endptr, 0i32);
                 if q.is_null() {
-                    dpx_warning(
-                        b"Missing a number for \'p\' option.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Missing a number for \'p\' option.");
                     return -1i32;
                 }
                 v = strtol(q, 0 as *mut *mut i8, 0i32) as i32;
@@ -701,9 +696,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 if !q.is_null() {
                     (*mrec).opt.tounicode = q
                 } else {
-                    dpx_warning(
-                        b"Missing string value for option \'u\'.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Missing string value for option \'u\'.");
                     return -1i32;
                 }
             }
@@ -711,9 +704,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 /* StemV */
                 q = parse_integer_value(&mut p, endptr, 10i32);
                 if q.is_null() {
-                    dpx_warning(
-                        b"Missing a number for \'v\' option.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Missing a number for \'v\' option.");
                     return -1i32;
                 }
                 (*mrec).opt.stemv = strtol(q, 0 as *mut *mut i8, 0i32) as i32;
@@ -725,9 +716,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 if !q.is_null() {
                     (*mrec).opt.otl_tags = q
                 } else {
-                    dpx_warning(
-                        b"Missing string value for option \'l\'.\x00" as *const u8 as *const i8,
-                    );
+                    warn!("Missing string value for option \'l\'.");
                     return -1i32;
                 }
             }
@@ -743,9 +732,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     p = p.offset(1);
                     q = parse_integer_value(&mut p, endptr, 16i32);
                     if q.is_null() {
-                        dpx_warning(
-                            b"Invalid value for option \'m\'.\x00" as *const u8 as *const i8,
-                        );
+                        warn!("Invalid value for option \'m\'.");
                         return -1i32;
                     } else {
                         if p < endptr && *p as i32 != '>' as i32 {
@@ -775,9 +762,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     skip_blank(&mut p, endptr);
                     q = parse_string_value(&mut p, endptr);
                     if q.is_null() {
-                        dpx_warning(
-                            b"Missing value for option \'m\'.\x00" as *const u8 as *const i8,
-                        );
+                        warn!("Missing value for option \'m\'.");
                         return -1i32;
                     }
                     r = strchr(q, ',' as i32);
@@ -815,9 +800,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     skip_blank(&mut p, endptr);
                     q = parse_integer_value(&mut p, endptr, 16i32);
                     if q.is_null() {
-                        dpx_warning(
-                            b"Invalid value for option \'m\'.\x00" as *const u8 as *const i8,
-                        );
+                        warn!("Invalid value for option \'m\'.");
                         return -1i32;
                     } else {
                         if p < endptr && libc::isspace(*p as _) == 0 {
@@ -833,7 +816,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                     (*mrec).opt.mapc = ((v << 8i32) as i64 & 0xff00) as i32;
                     free(q as *mut libc::c_void);
                 } else {
-                    dpx_warning(b"Invalid value for option \'m\'.\x00" as *const u8 as *const i8);
+                    warn!("Invalid value for option \'m\'.");
                     return -1i32;
                 }
             }
@@ -842,15 +825,12 @@ unsafe extern "C" fn fontmap_parse_mapdef_dpm(
                 if (*mrec).enc_name.is_null()
                     || strcmp((*mrec).enc_name, b"unicode\x00" as *const u8 as *const i8) != 0
                 {
-                    dpx_warning(
-                        b"Fontmap option \'w\' meaningless for encoding other than \"unicode\".\x00"
-                            as *const u8 as *const i8,
-                    );
+                    warn!("Fontmap option \'w\' meaningless for encoding other than \"unicode\".");
                     return -1i32;
                 }
                 q = parse_integer_value(&mut p, endptr, 10i32);
                 if q.is_null() {
-                    dpx_warning(b"Missing wmode value...\x00" as *const u8 as *const i8);
+                    warn!("Missing wmode value...");
                     return -1i32;
                 }
                 if atoi(q) == 1i32 {
@@ -901,7 +881,7 @@ unsafe extern "C" fn fontmap_parse_mapdef_dps(
             free(q as *mut libc::c_void);
             skip_blank(&mut p, endptr);
         } else {
-            dpx_warning(b"Missing a PostScript font name.\x00" as *const u8 as *const i8);
+            warn!("Missing a PostScript font name.");
             return -1i32;
         }
     }
@@ -1104,7 +1084,7 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
     let mut fnt_name: *mut i8 = 0 as *mut i8; /* link to this entry */
     let mut sfd_name: *mut i8 = 0 as *mut i8;
     if kp.is_null() || (vp.is_null() || (*vp).map_name.is_null() || (*vp).font_name.is_null()) {
-        dpx_warning(b"Invalid fontmap record...\x00" as *const u8 as *const i8);
+        warn!("Invalid fontmap record...");
         return -1i32;
     }
     if verbose > 3i32 {
@@ -1173,7 +1153,7 @@ pub unsafe extern "C" fn pdf_append_fontmap_record(
         );
     }
     if verbose > 3i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
     }
     0i32
 }
@@ -1230,7 +1210,7 @@ pub unsafe extern "C" fn pdf_remove_fontmap_record(mut kp: *const i8) -> i32 {
     }
     ht_remove_table(fontmap, kp as *const libc::c_void, strlen(kp) as i32);
     if verbose > 3i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
     }
     0i32
 }
@@ -1243,7 +1223,7 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
     let mut fnt_name: *mut i8 = 0 as *mut i8;
     let mut sfd_name: *mut i8 = 0 as *mut i8;
     if kp.is_null() || (vp.is_null() || (*vp).map_name.is_null() || (*vp).font_name.is_null()) {
-        dpx_warning(b"Invalid fontmap record...\x00" as *const u8 as *const i8);
+        warn!("Invalid fontmap record...");
         return 0 as *mut fontmap_rec;
     }
     if verbose > 3i32 {
@@ -1316,7 +1296,7 @@ pub unsafe extern "C" fn pdf_insert_fontmap_record(
         mrec as *mut libc::c_void,
     );
     if verbose > 3i32 {
-        dpx_message(b"\n\x00" as *const u8 as *const i8);
+        info!("\n");
     }
     mrec
 }
@@ -1423,7 +1403,7 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(mut filename: *const i8, mut mode
     assert!(!filename.is_null());
     assert!(!fontmap.is_null());
     if verbose != 0 {
-        dpx_message(b"<FONTMAP:\x00" as *const u8 as *const i8);
+        info!("<FONTMAP:");
     }
     handle = dpx_tt_open(
         filename,
@@ -1500,7 +1480,7 @@ pub unsafe extern "C" fn pdf_load_fontmap_file(mut filename: *const i8, mut mode
     }
     ttstub_input_close(handle);
     if verbose != 0 {
-        dpx_message(b">\x00" as *const u8 as *const i8);
+        info!(">");
     }
     error
 }
@@ -1561,7 +1541,7 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     pdf_clear_fontmap_record(mrec);
     free(mrec as *mut libc::c_void);
     if verbose != 0 {
-        dpx_message(b">\x00" as *const u8 as *const i8);
+        info!(">");
     }
     ret
 }

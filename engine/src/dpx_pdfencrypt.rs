@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use crate::warn;
+
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
@@ -76,8 +78,6 @@ extern "C" {
         cipher: *mut *mut u8,
         cipher_len: *mut size_t,
     );
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -938,21 +938,14 @@ unsafe extern "C" fn compute_user_password_V5(mut p: *mut pdf_sec, mut uplain: *
 }
 unsafe extern "C" fn check_version(mut p: *mut pdf_sec, mut version: i32) {
     if (*p).V > 2i32 && version < 4i32 {
-        dpx_warning(
-            b"Current encryption setting requires PDF version >= 1.4.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("Current encryption setting requires PDF version >= 1.4.");
         (*p).V = 1i32;
         (*p).key_size = 5i32
     } else if (*p).V == 4i32 && version < 5i32 {
-        dpx_warning(
-            b"Current encryption setting requires PDF version >= 1.5.\x00" as *const u8
-                as *const i8,
-        );
+        warn!("Current encryption setting requires PDF version >= 1.5.");
         (*p).V = 2i32
     } else if (*p).V == 5i32 && version < 7i32 {
-        dpx_warning(b"Current encryption setting requires PDF version >= 1.7 (plus Adobe Extension Level 3).\x00"
-                        as *const u8 as *const i8);
+        warn!("Current encryption setting requires PDF version >= 1.7 (plus Adobe Extension Level 3).");
         (*p).V = 4i32
     };
 }
@@ -997,10 +990,7 @@ unsafe extern "C" fn preproc_password(
                 if (*passwd.offset(i as isize) as i32) < 0x20i32
                     || *passwd.offset(i as isize) as i32 > 0x7ei32
                 {
-                    dpx_warning(
-                        b"Non-ASCII-printable character found in password.\x00" as *const u8
-                            as *const i8,
-                    );
+                    warn!("Non-ASCII-printable character found in password.");
                 }
                 i = i.wrapping_add(1)
             }
@@ -1070,10 +1060,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     } else if (*p).key_size == 32i32 {
         (*p).V = 5i32
     } else {
-        dpx_warning(
-            b"Key length %d unsupported.\x00" as *const u8 as *const i8,
-            bits,
-        );
+        warn!("Key length {} unsupported.", bits);
         (*p).key_size = 5i32;
         (*p).V = 2i32
     }
@@ -1098,10 +1085,10 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     );
     /* Password must be preprocessed. */
     if preproc_password(oplain, opasswd.as_mut_ptr(), (*p).V) < 0i32 {
-        dpx_warning(b"Invaid UTF-8 string for password.\x00" as *const u8 as *const i8);
+        warn!("Invaid UTF-8 string for password.");
     }
     if preproc_password(uplain, upasswd.as_mut_ptr(), (*p).V) < 0i32 {
-        dpx_warning(b"Invalid UTF-8 string for passowrd.\x00" as *const u8 as *const i8);
+        warn!("Invalid UTF-8 string for passowrd.");
     }
     if (*p).R >= 3i32 {
         (*p).P = ((*p).P as u32 | 0xfffff000u32) as i32
