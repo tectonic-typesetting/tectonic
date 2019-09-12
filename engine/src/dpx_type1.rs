@@ -964,8 +964,8 @@ unsafe extern "C" fn add_metrics(
                                 as *const i8,
                             pdf_font_get_mapname(font),
                         );
-                        dpx_warning(
-                            b"TFM: %g vs. Type1 font: %g\x00" as *const u8 as *const i8,
+                        warn!(
+                            "TFM: {} vs. Type1 font: {}",
                             width,
                             *widths
                                 .offset(cff_glyph_lookup(cffont, *enc_vec.offset(code as isize))

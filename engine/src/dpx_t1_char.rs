@@ -558,10 +558,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
         }
         _ => {
             /* no-op ? */
-            dpx_warning(
-                b"Unknown charstring operator: 0x%02x\x00" as *const u8 as *const i8,
-                op as i32,
-            );
+            warn!("Unknown charstring operator: 0x{:02x}", op as i32,);
             status = -1i32
         }
     };
@@ -985,10 +982,7 @@ unsafe extern "C" fn do_operator2(
         }
         _ => {
             /* no-op ? */
-            dpx_warning(
-                b"Unknown charstring operator: 0x0c%02x\x00" as *const u8 as *const i8,
-                op as i32,
-            );
+            warn!("Unknown charstring operator: 0x0c{:02x}", op as i32,);
             status = -1i32
         }
     };
@@ -1707,11 +1701,7 @@ pub unsafe extern "C" fn t1char_get_metrics(
     cs_stack_top = 0i32;
     t1char_build_charpath(cd, &mut src, src.offset(srclen as isize), subrs);
     if cs_stack_top != 0i32 || ps_stack_top != 0i32 {
-        dpx_warning(
-            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const i8,
-            cs_stack_top,
-            ps_stack_top,
-        );
+        warn!("Stack not empty. ({}, {})", cs_stack_top, ps_stack_top,);
     }
     do_postproc(cd);
     if !ginfo.is_null() {
@@ -2080,11 +2070,7 @@ pub unsafe extern "C" fn t1char_convert_charstring(
     cs_stack_top = 0i32;
     t1char_build_charpath(cd, &mut src, src.offset(srclen as isize), subrs);
     if cs_stack_top != 0i32 || ps_stack_top != 0i32 {
-        dpx_warning(
-            b"Stack not empty. (%d, %d)\x00" as *const u8 as *const i8,
-            cs_stack_top,
-            ps_stack_top,
-        );
+        warn!("Stack not empty. ({}, {})", cs_stack_top, ps_stack_top,);
     }
     do_postproc(cd);
     qsort(

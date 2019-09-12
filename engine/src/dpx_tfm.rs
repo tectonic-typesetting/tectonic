@@ -72,8 +72,6 @@ extern "C" {
     */
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -412,9 +410,8 @@ unsafe extern "C" fn tfm_check_size(mut tfm: *mut tfm_font, mut tfm_file_size: o
     expected_size = (expected_size as u32).wrapping_add((*tfm).nextens) as u32;
     expected_size = (expected_size as u32).wrapping_add((*tfm).nfonparm) as u32;
     if expected_size != (*tfm).wlenfile {
-        dpx_warning(
-            b"TFM file size is expected to be %ld bytes but it says it is %ldbytes!\x00"
-                as *const u8 as *const i8,
+        warn!(
+            "TFM file size is expected to be {} bytes but it says it is {}bytes!",
             expected_size as i64 * 4i32 as i64,
             (*tfm).wlenfile as i64 * 4i32 as i64,
         );

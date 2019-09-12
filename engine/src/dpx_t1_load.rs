@@ -2160,11 +2160,7 @@ unsafe extern "C" fn parse_part2(
         } else if streq_ptr(key, b"lenIV\x00" as *const u8 as *const i8) {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2181,11 +2177,7 @@ unsafe extern "C" fn parse_part2(
              */
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 127i32);
             if argn < 0i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    0i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 0i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2221,11 +2213,7 @@ unsafe extern "C" fn parse_part2(
              */
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2234,11 +2222,7 @@ unsafe extern "C" fn parse_part2(
         } else if streq_ptr(key, b"ForceBold\x00" as *const u8 as *const i8) {
             argn = parse_bvalue(start, end, &mut *argv.as_mut_ptr().offset(0));
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2284,11 +2268,7 @@ unsafe extern "C" fn parse_part1(
         } else if streq_ptr(key, b"FontName\x00" as *const u8 as *const i8) {
             argn = parse_svalue(start, end, &mut strval);
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2305,11 +2285,7 @@ unsafe extern "C" fn parse_part1(
         } else if streq_ptr(key, b"FontType\x00" as *const u8 as *const i8) {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2324,11 +2300,7 @@ unsafe extern "C" fn parse_part1(
         {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2341,11 +2313,7 @@ unsafe extern "C" fn parse_part1(
         {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 1i32);
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2354,11 +2322,7 @@ unsafe extern "C" fn parse_part1(
         } else if streq_ptr(key, b"FontBBox\x00" as *const u8 as *const i8) {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 4i32);
             if argn != 4i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    4i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 4i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2374,11 +2338,7 @@ unsafe extern "C" fn parse_part1(
         } else if streq_ptr(key, b"FontMatrix\x00" as *const u8 as *const i8) {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 6i32);
             if argn != 6i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    6i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 6i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2411,11 +2371,7 @@ unsafe extern "C" fn parse_part1(
              */
             argn = parse_svalue(start, end, &mut strval); /* FIXME */
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
@@ -2434,11 +2390,7 @@ unsafe extern "C" fn parse_part1(
         } else if streq_ptr(key, b"IsFixedPitch\x00" as *const u8 as *const i8) {
             argn = parse_bvalue(start, end, &mut *argv.as_mut_ptr().offset(0));
             if argn != 1i32 {
-                dpx_warning(
-                    b"%d values expected but only %d read.\x00" as *const u8 as *const i8,
-                    1i32,
-                    argn,
-                );
+                warn!("{} values expected but only {} read.", 1i32, argn,);
                 free(key as *mut libc::c_void);
                 return -1i32;
             }

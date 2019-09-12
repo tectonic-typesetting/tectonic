@@ -1031,11 +1031,9 @@ unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut
             (*ap).command,
             name,
         );
-        dpx_warning(
-            b">> at page=\"%d\" position=\"(%g, %g)\" (in PDF)\x00" as *const u8 as *const i8,
-            pg,
-            c.x,
-            c.y,
+        warn!(
+            ">> at page=\"{}\" position=\"({}, {})\" (in PDF)",
+            pg, c.x, c.y,
         );
     }
     i = 0i32;

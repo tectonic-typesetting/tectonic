@@ -1488,11 +1488,9 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                         if alt_code != code {
                             gid = tt_cmap_lookup(ttcmap, alt_code as u32);
                             if gid as i32 != 0i32 {
-                                dpx_warning(
-                                    b"Unicode char U+%04x replaced with U+%04x.\x00" as *const u8
-                                        as *const i8,
-                                    code,
-                                    alt_code,
+                                warn!(
+                                    "Unicode char U+{:04x} replaced with U+{:04x}.",
+                                    code, alt_code,
                                 );
                             }
                         }
@@ -1500,12 +1498,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                     /* FIX_CJK_UNIOCDE_SYMBOLS */
                 }
                 if gid as i32 == 0i32 {
-                    dpx_warning(
-                        b"Glyph missing in font. (CID=%u, code=0x%04x)\x00" as *const u8
-                            as *const i8,
-                        cid as i32,
-                        code,
-                    );
+                    warn!("Glyph missing in font. (CID={}, code=0x{:04x})", cid, code,);
                 }
                 /* TODO: duplicated glyph */
                 gid = tt_add_glyph(glyphs, gid, cid);
@@ -1592,12 +1585,9 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                             if alt_code_0 != code_0 {
                                 gid_0 = tt_cmap_lookup(ttcmap, alt_code_0 as u32);
                                 if gid_0 as i32 != 0i32 {
-                                    dpx_warning(
-                                        b"Unicode char U+%04x replaced with U+%04x.\x00"
-                                            as *const u8
-                                            as *const i8,
-                                        code_0,
-                                        alt_code_0,
+                                    warn!(
+                                        "Unicode char U+{:04x} replaced with U+{:04x}.",
+                                        code_0, alt_code_0,
                                     );
                                 }
                             }
@@ -1605,11 +1595,9 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                         /* FIX_CJK_UNIOCDE_SYMBOLS */
                     }
                     if gid_0 as i32 == 0i32 {
-                        dpx_warning(
-                            b"Glyph missing in font. (CID=%u, code=0x%04x)\x00" as *const u8
-                                as *const i8,
-                            cid as i32,
-                            code_0,
+                        warn!(
+                            "Glyph missing in font. (CID={}, code=0x{:04x})",
+                            cid, code_0,
                         );
                     } else if !gsub_list.is_null() {
                         otl_gsub_apply(gsub_list, &mut gid_0);
@@ -1643,11 +1631,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
             _tt_abort(b"Could not created FontFile stream.\x00" as *const u8 as *const i8);
         }
         if verbose > 1i32 {
-            info!(
-                "[{} glyphs (Max CID: {})]",
-                (*glyphs).num_glyphs,
-                last_cid
-            );
+            info!("[{} glyphs (Max CID: {})]", (*glyphs).num_glyphs, last_cid);
         }
     } else if tt_get_metrics(sfont, glyphs) < 0i32 {
         _tt_abort(b"Reading glyph metrics failed...\x00" as *const u8 as *const i8);

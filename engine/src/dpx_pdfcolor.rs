@@ -914,11 +914,7 @@ unsafe extern "C" fn iccp_unpack_header(
         | *p.offset(3) as i32;
     if check_size != 0 {
         if (*icch).size != proflen {
-            dpx_warning(
-                b"ICC Profile size: %d(header) != %d\x00" as *const u8 as *const i8,
-                (*icch).size,
-                proflen,
-            );
+            warn!("ICC Profile size: {}(header) != {}", (*icch).size, proflen,);
             return -1i32;
         }
     }
@@ -1003,9 +999,8 @@ unsafe extern "C" fn iccp_unpack_header(
     /* 28 bytes reserved - must be set to zeros */
     while p < endptr {
         if *p as i32 != '\u{0}' as i32 {
-            dpx_warning(
-                b"Reserved pad not zero: %02x (at offset %d in ICC profile header.)\x00"
-                    as *const u8 as *const i8,
+            warn!(
+                "Reserved pad not zero: {:02x} (at offset {} in ICC profile header.)",
                 *p as i32,
                 128i32 - endptr.wrapping_offset_from(p) as i64 as i32,
             );
@@ -1364,8 +1359,7 @@ pub unsafe extern "C" fn iccp_load_profile(
         icch.version >> 16i32 & 0xffi32,
     ) == 0
     {
-        dpx_warning(b"ICC profile format spec. version %d.%01d.%01d not supported in current PDF version setting.\x00"
-                        as *const u8 as *const i8,
+        warn!("ICC profile format spec. version {}.{:01}.{:01} not supported in current PDF version setting.",
                     icch.version >> 24i32 & 0xffi32,
                     icch.version >> 20i32 & 0xfi32,
                     icch.version >> 16i32 & 0xfi32);

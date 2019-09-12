@@ -1286,12 +1286,7 @@ unsafe extern "C" fn load_cmap4(
                         | *GIDToCIDMap.offset((2i32 * gid as i32 + 1i32) as isize) as i32)
                         as u16;
                     if cid as i32 == 0i32 {
-                        dpx_warning(
-                            b"GID %u does not have corresponding CID %u.\x00" as *const u8
-                                as *const i8,
-                            gid as i32,
-                            cid as i32,
-                        );
+                        warn!("GID {} does not have corresponding CID {}.", gid, cid,);
                     }
                 } else {
                     cid = gid
@@ -1358,11 +1353,7 @@ unsafe extern "C" fn load_cmap12(
                     | *GIDToCIDMap.offset((2i32 * gid as i32 + 1i32) as isize) as i32)
                     as u16;
                 if cid as i32 == 0i32 {
-                    dpx_warning(
-                        b"GID %u does not have corresponding CID %u.\x00" as *const u8 as *const i8,
-                        gid as i32,
-                        cid as i32,
-                    );
+                    warn!("GID {} does not have corresponding CID {}.", gid, cid,);
                 }
             } else {
                 cid = gid

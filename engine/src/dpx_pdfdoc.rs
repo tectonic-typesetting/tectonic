@@ -287,8 +287,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn pdf_ximage_set_verbose(level: i32);
@@ -370,6 +368,8 @@ extern "C" {
     fn pdf_close_fonts();
     #[no_mangle]
     fn pdf_font_set_verbose(level: i32);
+    #[no_mangle]
+    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -1950,20 +1950,12 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                 {
                                                     let mut deg: f64 = pdf_number_value(rotate);
                                                     if deg - deg as i32 as f64 != 0.0f64 {
-                                                        dpx_warning(b"Invalid value specified for /Rotate: %f\x00"
-                                                                        as
-                                                                        *const u8
-                                                                        as
-                                                                        *const i8,
+                                                        warn!("Invalid value specified for /Rotate: {}",
                                                                     deg);
                                                     } else if deg != 0.0f64 {
                                                         let mut rot: i32 = deg as i32;
                                                         if (rot % 90i32) as f64 != 0.0f64 {
-                                                            dpx_warning(b"Invalid value specified for /Rotate: %f\x00"
-                                                                            as
-                                                                            *const u8
-                                                                            as
-                                                                            *const i8,
+                                                            warn!("Invalid value specified for /Rotate: {}",
                                                                         deg);
                                                         } else {
                                                             rot = rot % 360i32;
@@ -2704,29 +2696,20 @@ pub unsafe extern "C" fn pdf_doc_add_annot(
         || annbox.ury > mediabox.ury
     {
         warn!("Annotation out of page boundary.");
-        dpx_warning(
-            b"Current page\'s MediaBox: [%g %g %g %g]\x00" as *const u8 as *const i8,
-            mediabox.llx,
-            mediabox.lly,
-            mediabox.urx,
-            mediabox.ury,
+        warn!(
+            "Current page\'s MediaBox: [{} {} {} {}]",
+            mediabox.llx, mediabox.lly, mediabox.urx, mediabox.ury,
         );
-        dpx_warning(
-            b"Annotation: [%g %g %g %g]\x00" as *const u8 as *const i8,
-            annbox.llx,
-            annbox.lly,
-            annbox.urx,
-            annbox.ury,
+        warn!(
+            "Annotation: [{} {} {} {}]",
+            annbox.llx, annbox.lly, annbox.urx, annbox.ury,
         );
         warn!("Maybe incorrect paper size specified.");
     }
     if annbox.llx > annbox.urx || annbox.lly > annbox.ury {
-        dpx_warning(
-            b"Rectangle with negative width/height: [%g %g %g %g]\x00" as *const u8 as *const i8,
-            annbox.llx,
-            annbox.lly,
-            annbox.urx,
-            annbox.ury,
+        warn!(
+            "Rectangle with negative width/height: [{} {} {} {}]",
+            annbox.llx, annbox.lly, annbox.urx, annbox.ury,
         );
     }
     rect_array = pdf_new_array();

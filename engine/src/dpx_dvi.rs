@@ -3778,9 +3778,8 @@ pub unsafe extern "C" fn dvi_scan_specials(
                         .wrapping_mul(0x100u32)
                         .wrapping_add(get_and_buffer_unsigned_byte(dvi_handle) as u32);
                     if size > 0x7fff_u32 {
-                        dpx_warning(
-                            b"Unsigned number starting with %x exceeds 0x7fffffff\x00" as *const u8
-                                as *const i8,
+                        warn!(
+                            "Unsigned number starting with {:x} exceeds 0x7fffffff",
                             size,
                         );
                     }

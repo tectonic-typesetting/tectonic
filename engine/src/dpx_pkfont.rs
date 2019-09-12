@@ -144,8 +144,8 @@ extern "C" {
 }
 
 use crate::dpx_numbers::{
-    get_unsigned_byte, skip_bytes, get_signed_byte, get_unsigned_pair, get_signed_pair,
-    get_unsigned_triple, get_signed_quad, get_unsigned_num, get_positive_quad
+    get_positive_quad, get_signed_byte, get_signed_pair, get_signed_quad, get_unsigned_byte,
+    get_unsigned_num, get_unsigned_pair, get_unsigned_triple, skip_bytes,
 };
 
 pub type __off_t = i64;
@@ -499,9 +499,8 @@ unsafe extern "C" fn pk_decode_bitmap(
     if run_color != 0i32 {
         warn!("run_color != 0 for bitmap pk data?");
     } else if pl < wd.wrapping_mul(ht).wrapping_add(7_u32).wrapping_div(8_u32) {
-        dpx_warning(
-            b"Insufficient bitmap pk data. %dbytes expected but only %dbytes read.\x00" as *const u8
-                as *const i8,
+        warn!(
+            "Insufficient bitmap pk data. {}bytes expected but only {}bytes read.",
             wd.wrapping_mul(ht).wrapping_add(7_u32).wrapping_div(8_u32),
             pl,
         );
@@ -607,9 +606,8 @@ unsafe extern "C" fn read_pk_char_header(
         0i32
     };
     if (*h).chrcode as u32 > 0xff_u32 {
-        dpx_warning(
-            b"Unable to handle long characters in PK files: code=0x%04x\x00" as *const u8
-                as *const i8,
+        warn!(
+            "Unable to handle long characters in PK files: code=0x{:04x}",
             (*h).chrcode,
         );
         return -1i32;

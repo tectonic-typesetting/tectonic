@@ -30,8 +30,6 @@ extern "C" {
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -751,15 +749,7 @@ unsafe extern "C" fn pdf_path__isarect(mut pa: *mut pdf_path, mut f_ir: i32) -> 
 unsafe extern "C" fn INVERTIBLE_MATRIX(M: &pdf_tmatrix) -> i32 {
     if (M.a * M.d - M.b * M.c).abs() < 2.5e-16f64 {
         warn!("Transformation matrix not invertible.");
-        dpx_warning(
-            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
-            M.a,
-            M.b,
-            M.c,
-            M.d,
-            M.e,
-            M.f,
-        );
+        warn!("--- M = [{} {} {} {} {} {}]", M.a, M.b, M.c, M.d, M.e, M.f,);
         return -1i32;
     }
     0i32
@@ -1329,15 +1319,7 @@ pub unsafe extern "C" fn pdf_dev_concat(M: &pdf_tmatrix) -> i32 {
      */
     if (M.a * M.d - M.b * M.c).abs() < 2.5e-16f64 {
         warn!("Transformation matrix not invertible."); /* op: cm */
-        dpx_warning(
-            b"--- M = [%g %g %g %g %g %g]\x00" as *const u8 as *const i8,
-            M.a,
-            M.b,
-            M.c,
-            M.d,
-            M.e,
-            M.f,
-        );
+        warn!("--- M = [{} {} {} {} {} {}]", M.a, M.b, M.c, M.d, M.e, M.f,);
         return -1i32;
     }
     if (M.a - 1.0f64).abs() > 2.5e-16f64

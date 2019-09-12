@@ -1204,15 +1204,9 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
     }
     if !UC_is_valid(ucv) {
         if ucv < 0x10000i32 {
-            dpx_warning(
-                b"Invalid Unicode code value U+%04X.\x00" as *const u8 as *const i8,
-                ucv,
-            );
+            warn!("Invalid Unicode code value U+{:04X}.", ucv,);
         } else {
-            dpx_warning(
-                b"Invalid Unicode code value U+%06X.\x00" as *const u8 as *const i8,
-                ucv,
-            );
+            warn!("Invalid Unicode code value U+{:06X}.", ucv,);
         }
         ucv = -1i32
     }

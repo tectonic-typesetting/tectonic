@@ -38,8 +38,6 @@ extern "C" {
     fn tt_get_signed_pair(handle: rust_input_handle_t) -> i16;
     #[no_mangle]
     fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

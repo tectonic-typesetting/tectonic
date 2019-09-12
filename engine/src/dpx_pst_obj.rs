@@ -36,8 +36,6 @@ extern "C" {
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -1074,8 +1072,8 @@ unsafe extern "C" fn pst_string_parse_hex(
         cur = cur.offset(1);
         hi = xtoi(*fresh8 as i8);
         if hi < 0i32 {
-            dpx_warning(
-                b"Invalid char for hex string <%x> treated as <0>.\x00" as *const u8 as *const i8,
+            warn!(
+                "Invalid char for hex string <{:x}> treated as <0>.",
                 *cur.offset(-1) as i32,
             );
             hi = 0i32
@@ -1093,8 +1091,8 @@ unsafe extern "C" fn pst_string_parse_hex(
             0i32
         };
         if lo < 0i32 {
-            dpx_warning(
-                b"Invalid char for hex string <%x> treated as <0>.\x00" as *const u8 as *const i8,
+            warn!(
+                "Invalid char for hex string <{:x}> treated as <0>.",
                 *cur.offset(-1) as i32,
             );
             lo = 0i32

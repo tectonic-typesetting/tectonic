@@ -802,8 +802,8 @@ unsafe extern "C" fn add_SimpleMetrics(
                                 as *const i8,
                             pdf_font_get_mapname(font),
                         );
-                        dpx_warning(
-                            b"TFM: %g vs. CFF font: %g\x00" as *const u8 as *const i8,
+                        warn!(
+                            "TFM: {} vs. CFF font: {}",
                             width,
                             *widths.offset(code as isize),
                         );
@@ -1581,10 +1581,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     sfnt_close(sfont);
     ttstub_input_close(handle as rust_input_handle_t);
     if verbose > 1i32 {
-        info!(
-            "[{}/{} glyphs][{} bytes]",
-            num_glyphs, cs_count, offset,
-        );
+        info!("[{}/{} glyphs][{} bytes]", num_glyphs, cs_count, offset,);
     }
     /*
      * CharSet

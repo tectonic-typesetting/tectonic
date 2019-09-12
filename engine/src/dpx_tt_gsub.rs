@@ -1237,10 +1237,9 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                                 sfont,
                                             );
                                             if r <= 0i32 {
-                                                dpx_warning(b"Reading GSUB subtable (ext:single) failed...\x00"
-                                                                as *const u8
-                                                                as
-                                                                *const i8);
+                                                warn!(
+                                                    "Reading GSUB subtable (ext:single) failed..."
+                                                );
                                             } else {
                                                 if verbose > 0i32 {
                                                     info!("(ext:single)",);
@@ -1255,10 +1254,9 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                                 sfont,
                                             );
                                             if r <= 0i32 {
-                                                dpx_warning(b"Reading GSUB subtable (alternate) failed...\x00"
-                                                                as *const u8
-                                                                as
-                                                                *const i8);
+                                                warn!(
+                                                    "Reading GSUB subtable (alternate) failed..."
+                                                );
                                             } else {
                                                 if verbose > 0i32 {
                                                     info!("(alternate)",);
@@ -1273,10 +1271,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                                                 sfont,
                                             );
                                             if r <= 0i32 {
-                                                dpx_warning(b"Reading GSUB subtable (ext:ligature) failed...\x00"
-                                                                as *const u8
-                                                                as
-                                                                *const i8);
+                                                warn!("Reading GSUB subtable (ext:ligature) failed...");
                                             } else {
                                                 if verbose > 0i32 {
                                                     info!("(ext:ligature)",);

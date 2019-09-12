@@ -2173,11 +2173,7 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
          *  "Details of Graphics State Parameters", p. 185.
          */
         if height < dev_unit.min_bp_val {
-            dpx_warning(
-                b"Too thin line: height=%d (%g bp)\x00" as *const u8 as *const i8,
-                height,
-                width_in_bp,
-            );
+            warn!("Too thin line: height={} ({} bp)", height, width_in_bp,);
             warn!("Please consider using \"-d\" option.");
         }
         len += dev_sprint_line(
@@ -2190,11 +2186,7 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
         )
     } else {
         if width < dev_unit.min_bp_val {
-            dpx_warning(
-                b"Too thin line: width=%d (%g bp)\x00" as *const u8 as *const i8,
-                width,
-                width_in_bp,
-            );
+            warn!("Too thin line: width={} ({} bp)", width, width_in_bp,);
             warn!("Please consider using \"-d\" option.");
         }
         len += dev_sprint_line(

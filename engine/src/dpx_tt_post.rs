@@ -52,8 +52,6 @@ extern "C" {
         along with this program; if not, write to the Free Software
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -243,10 +241,10 @@ unsafe extern "C" fn read_v2_post_names(mut post: *mut tt_post_table, mut sfont:
             let ref mut fresh3 = *(*post).glyphNamePtr.offset(i as isize);
             *fresh3 = *(*post).names.offset((idx as i32 - 258i32) as isize)
         } else {
-            dpx_warning(
-                b"Invalid glyph name index number: %u (>= %u)\x00" as *const u8 as *const i8,
-                idx as i32,
-                (*post).count as i32 + 258i32,
+            warn!(
+                "Invalid glyph name index number: {} (>= {})",
+                idx,
+                (*post).count + 258,
             );
             free(indices as *mut libc::c_void);
             return -1i32;
@@ -288,8 +286,8 @@ pub unsafe extern "C" fn tt_read_post_table(mut sfont: *mut sfnt) -> *mut tt_pos
             post = 0 as *mut tt_post_table
         }
     } else if !((*post).Version as u64 == 0x30000 || (*post).Version as u64 == 0x40000) {
-        dpx_warning(
-            b"Unknown \'post\' version: %08X, assuming version 3.0\x00" as *const u8 as *const i8,
+        warn!(
+            "Unknown \'post\' version: {:08X}, assuming version 3.0",
             (*post).Version,
         );
     }

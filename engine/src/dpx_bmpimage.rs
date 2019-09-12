@@ -324,11 +324,9 @@ pub unsafe extern "C" fn bmp_include_image(
         return -1i32;
     }
     if info.width == 0i32 || info.height == 0i32 || num_palette < 1i32 {
-        dpx_warning(
-            b"Invalid BMP file: width=%u, height=%d, #palette=%d\x00" as *const u8 as *const i8,
-            info.width,
-            info.height,
-            num_palette,
+        warn!(
+            "Invalid BMP file: width={}, height={}, #palette={}",
+            info.width, info.height, num_palette,
         );
         return -1i32;
     }

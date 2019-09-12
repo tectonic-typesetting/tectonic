@@ -295,10 +295,9 @@ pub unsafe extern "C" fn jpeg_include_image(
         3 => colortype = -3i32,
         4 => colortype = -4i32,
         _ => {
-            dpx_warning(
-                b"%s: Unknown color space (num components: %d)\x00" as *const u8 as *const i8,
-                b"JPEG\x00" as *const u8 as *const i8,
-                info.num_components,
+            warn!(
+                "{}: Unknown color space (num components: {})",
+                "JPEG", info.num_components,
             );
             JPEG_info_clear(&mut j_info);
             return -1i32;
@@ -519,8 +518,8 @@ unsafe extern "C" fn JPEG_get_iccp(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
                 || num_icc_seg != (*icc).num_chunks as i32
                 || (*icc).seq_id as i32 > (*icc).num_chunks as i32
             {
-                dpx_warning(
-                    b"Invalid JPEG ICC chunk: %d (p:%d, n:%d)\x00" as *const u8 as *const i8,
+                warn!(
+                    "Invalid JPEG ICC chunk: {} (p:{}, n:{})",
                     (*icc).seq_id as i32,
                     prev_id,
                     (*icc).num_chunks as i32,
@@ -577,10 +576,9 @@ unsafe extern "C" fn JPEG_get_XMP(mut j_info: *mut JPEG_info) -> *mut pdf_obj {
         i += 1
     }
     if count > 1i32 {
-        dpx_warning(
-            b"%s: Multiple XMP segments found in JPEG file. (untested)\x00" as *const u8
-                as *const i8,
-            b"JPEG\x00" as *const u8 as *const i8,
+        warn!(
+            "{}: Multiple XMP segments found in JPEG file. (untested)",
+            "JPEG",
         );
     }
     XMP_stream
@@ -797,11 +795,9 @@ unsafe extern "C" fn read_APP1_Exif(
                                 20753 => {
                                     /* PixelPerUnitX */
                                     if type_0 != 4i32 || count != 1i32 {
-                                        dpx_warning(
-                                            b"%s: Invalid data for PixelPerUnitX in Exif chunk.\x00"
-                                                as *const u8
-                                                as *const i8,
-                                            b"JPEG\x00" as *const u8 as *const i8,
+                                        warn!(
+                                            "{}: Invalid data for PixelPerUnitX in Exif chunk.",
+                                            "JPEG",
                                         );
                                         current_block = 10568945602212496329;
                                         break;
@@ -814,11 +810,9 @@ unsafe extern "C" fn read_APP1_Exif(
                                 20754 => {
                                     /* PixelPerUnitY */
                                     if type_0 != 4i32 || count != 1i32 {
-                                        dpx_warning(
-                                            b"%s: Invalid data for PixelPerUnitY in Exif chunk.\x00"
-                                                as *const u8
-                                                as *const i8,
-                                            b"JPEG\x00" as *const u8 as *const i8,
+                                        warn!(
+                                            "{}: Invalid data for PixelPerUnitY in Exif chunk.",
+                                            "JPEG",
                                         );
                                         current_block = 10568945602212496329;
                                         break;
@@ -834,12 +828,7 @@ unsafe extern "C" fn read_APP1_Exif(
                             }
                             /* PixelUnit */
                             if type_0 != 1i32 || count != 1i32 {
-                                dpx_warning(
-                                    b"%s: Invalid data for ResolutionUnit in Exif chunk.\x00"
-                                        as *const u8
-                                        as *const i8,
-                                    b"JPEG\x00" as *const u8 as *const i8,
-                                ); /* Unit is meter */
+                                warn!("{}: Invalid data for ResolutionUnit in Exif chunk.", "JPEG",); /* Unit is meter */
                                 current_block = 10568945602212496329;
                                 break;
                             } else {
@@ -877,9 +866,7 @@ unsafe extern "C" fn read_APP1_Exif(
                                     let mut yyy1: f64 = (exifydpi + 0.5f64).floor();
                                     let mut yyy2: f64 = ((*info).ydpi + 0.5f64).floor();
                                     if xxx1 != xxx2 || yyy1 != yyy2 {
-                                        dpx_warning(b"JPEG: Inconsistent resolution may have been specified in Exif and JFIF: %gx%g - %gx%g\x00"
-                                                        as *const u8 as
-                                                        *const i8,
+                                        warn!("JPEG: Inconsistent resolution may have been specified in Exif and JFIF: {}x{} - {}x{}",
                                                     xres * res_unit,
                                                     yres * res_unit,
                                                     (*info).xdpi,

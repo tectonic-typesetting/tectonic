@@ -379,11 +379,7 @@ pub unsafe extern "C" fn png_include_image(
             info.num_components = 1i32
         }
         _ => {
-            dpx_warning(
-                b"%s: Unknown PNG colortype %d.\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-                color_type as i32,
-            );
+            warn!("{}: Unknown PNG colortype {}.", "PNG", color_type as i32,);
         }
     }
     pdf_add_dict(
@@ -447,16 +443,14 @@ pub unsafe extern "C" fn png_include_image(
                 if (*text_ptr.offset(i as isize)).compression != 1i32
                     || (*text_ptr.offset(i as isize)).itxt_length == 0
                 {
-                    dpx_warning(
-                        b"%s: Invalid value(s) in iTXt chunk for XMP Metadata.\x00" as *const u8
-                            as *const i8,
-                        b"PNG\x00" as *const u8 as *const i8,
+                    warn!(
+                        "{}: Invalid value(s) in iTXt chunk for XMP Metadata.",
+                        "PNG",
                     );
                 } else if have_XMP != 0 {
-                    dpx_warning(
-                        b"%s: Multiple XMP Metadata. Don\'t know how to treat it.\x00" as *const u8
-                            as *const i8,
-                        b"PNG\x00" as *const u8 as *const i8,
+                    warn!(
+                        "{}: Multiple XMP Metadata. Don\'t know how to treat it.",
+                        "PNG",
                     );
                 } else {
                     /* We compress XMP metadata for included images here.
@@ -630,10 +624,9 @@ unsafe extern "C" fn check_transparency(
         bg.gray = 255i32 as png_uint_16;
         bg.index = 0i32 as png_byte;
         png_set_background(png, &mut bg as *mut png_color_16, 1i32, 0i32, 1.0f64);
-        dpx_warning(
-            b"%s: Transparency will be ignored. (no support in PDF ver. < 1.3)\x00" as *const u8
-                as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
+        warn!(
+            "{}: Transparency will be ignored. (no support in PDF ver. < 1.3)",
+            "PNG",
         );
         if pdf_version < 3_u32 {
             warn!(
@@ -642,10 +635,9 @@ unsafe extern "C" fn check_transparency(
             );
         }
         if pdf_version < 4_u32 {
-            dpx_warning(
-                b"%s: Please use -V 4 option to enable full alpha channel support.\x00" as *const u8
-                    as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
+            warn!(
+                "{}: Please use -V 4 option to enable full alpha channel support.",
+                "PNG",
             );
         }
         trans_type = 0i32
@@ -671,10 +663,9 @@ unsafe extern "C" fn get_rendering_intent(
             3 => intent = pdf_new_name(b"AbsoluteColorimetric\x00" as *const u8 as *const i8),
             1 => intent = pdf_new_name(b"RelativeColorimetric\x00" as *const u8 as *const i8),
             _ => {
-                dpx_warning(
-                    b"%s: Invalid value in PNG sRGB chunk: %d\x00" as *const u8 as *const i8,
-                    b"PNG\x00" as *const u8 as *const i8,
-                    srgb_intent,
+                warn!(
+                    "{}: Invalid value in PNG sRGB chunk: {}",
+                    "PNG", srgb_intent,
                 );
                 intent = 0 as *mut pdf_obj
             }
@@ -821,11 +812,7 @@ unsafe extern "C" fn create_cspace_CalRGB(
     }
     if png_get_valid(png, png_info, 0x1u32) != 0 && png_get_gAMA(png, png_info, &mut G) != 0 {
         if G < 1.0e-2f64 {
-            dpx_warning(
-                b"%s: Unusual Gamma value: 1.0 / %g\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-                G,
-            );
+            warn!("{}: Unusual Gamma value: 1.0 / {}", "PNG", G,);
             return 0 as *mut pdf_obj;
         }
         G = 1.0f64 / G
@@ -881,11 +868,7 @@ unsafe extern "C" fn create_cspace_CalGray(
     }
     if png_get_valid(png, info, 0x1u32) != 0 && png_get_gAMA(png, info, &mut G) != 0 {
         if G < 1.0e-2f64 {
-            dpx_warning(
-                b"%s: Unusual Gamma value: 1.0 / %g\x00" as *const u8 as *const i8,
-                b"PNG\x00" as *const u8 as *const i8,
-                G,
-            );
+            warn!("{}: Unusual Gamma value: 1.0 / {}", "PNG", G,);
             return 0 as *mut pdf_obj;
         }
         G = 1.0f64 / G
@@ -1234,10 +1217,9 @@ unsafe extern "C" fn create_soft_mask(
             0 as *mut *mut png_color_16,
         ) == 0
     {
-        dpx_warning(
-            b"%s: PNG does not have valid tRNS chunk but tRNS is requested.\x00" as *const u8
-                as *const i8,
-            b"PNG\x00" as *const u8 as *const i8,
+        warn!(
+            "{}: PNG does not have valid tRNS chunk but tRNS is requested.",
+            "PNG",
         );
         return 0 as *mut pdf_obj;
     }

@@ -322,10 +322,9 @@ unsafe extern "C" fn do_operator1(
         }
         _ => {
             /* no-op ? */
-            dpx_warning(
-                b"%s: Unknown charstring operator: 0x%02x\x00" as *const u8 as *const i8,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                op as i32,
+            warn!(
+                "{}: Unknown charstring operator: 0x{:02x}",
+                "Type2 Charstring Parser", op,
             );
             status = -1i32
         }
@@ -627,10 +626,9 @@ unsafe extern "C" fn do_operator2(
         }
         _ => {
             /* no-op ? */
-            dpx_warning(
-                b"%s: Unknown charstring operator: 0x0c%02x\x00" as *const u8 as *const i8,
-                b"Type2 Charstring Parser\x00" as *const u8 as *const i8,
-                op as i32,
+            warn!(
+                "{}: Unknown charstring operator: 0x0c{:02x}",
+                "Type2 Charstring Parser", op,
             );
             status = -1i32
         }

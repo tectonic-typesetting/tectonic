@@ -3983,15 +3983,13 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                                     top_stack = top_stack.wrapping_add(1);
                                     stack[fresh15 as usize] = pdf_new_number(cp.y)
                                 } else {
-                                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                    as *const u8 as
-                                                    *const i8);
+                                    warn!("PS stack overflow including MetaPost file or inline PS code");
                                     error = 1i32
                                 }
                             } else {
-                                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                as *const u8 as
-                                                *const i8);
+                                warn!(
+                                    "PS stack overflow including MetaPost file or inline PS code"
+                                );
                                 error = 1i32
                             }
                         }
@@ -4064,15 +4062,13 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                                     top_stack = top_stack.wrapping_add(1);
                                     stack[fresh17 as usize] = pdf_new_number(cp.y)
                                 } else {
-                                    dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                    as *const u8 as
-                                                    *const i8);
+                                    warn!("PS stack overflow including MetaPost file or inline PS code");
                                     error = 1i32
                                 }
                             } else {
-                                dpx_warning(b"PS stack overflow including MetaPost file or inline PS code\x00"
-                                                as *const u8 as
-                                                *const i8);
+                                warn!(
+                                    "PS stack overflow including MetaPost file or inline PS code"
+                                );
                                 error = 1i32
                             }
                         }

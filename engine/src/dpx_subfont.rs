@@ -335,11 +335,9 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
                 v2 = strtol(p, &mut r, 0i32) as i32;
                 q = r;
                 if v1 < 0i32 || v1 as i64 > 0xffff || v2 < 0i32 || v2 as i64 > 0xffff {
-                    dpx_warning(
-                        b"Invalid value in subfont mapping table: 0x%x_0x%x\x00" as *const u8
-                            as *const i8,
-                        v1,
-                        v2,
+                    warn!(
+                        "Invalid value in subfont mapping table: 0x{:x}_0x{:x}",
+                        v1, v2,
                     );
                     return -1i32;
                 } else {
@@ -355,9 +353,8 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
             }
             _ => {
                 if v1 < 0i32 || v1 as i64 > 0xffff {
-                    dpx_warning(
-                        b"Invalid character code in subfont mapping table: 0x%x\x00" as *const u8
-                            as *const i8,
+                    warn!(
+                        "Invalid character code in subfont mapping table: 0x{:x}",
                         v1,
                     );
                     return -1i32;
@@ -369,17 +366,15 @@ unsafe extern "C" fn read_sfd_record(mut rec: *mut sfd_rec_, mut lbuf: *const i8
             curpos = v1
         } else {
             if v2 < v1 || curpos + (v2 - v1) > 0xffi32 {
-                dpx_warning(b"Invalid range in subfont mapping: curpos=\"0x%02x\" range=\"0x%04x,0x%04x\"\x00"
-                                as *const u8 as *const i8, curpos,
+                warn!("Invalid range in subfont mapping: curpos=\"0x{:02x}\" range=\"0x{:04x},0x{:04x}\"", curpos,
                             v1, v2);
                 return -1i32;
             }
             c = v1;
             while c <= v2 {
                 if (*rec).vector[curpos as usize] as i32 != 0i32 {
-                    dpx_warning(
-                        b"Subfont mapping for slot=\"0x%02x\" already defined...\x00" as *const u8
-                            as *const i8,
+                    warn!(
+                        "Subfont mapping for slot=\"0x{:02x}\" already defined...",
                         curpos,
                     );
                     return -1i32;

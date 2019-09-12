@@ -1989,10 +1989,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
     destlen = write_fontfile(font, cffont);
     CIDFontInfo_close(&mut info);
     if verbose > 1i32 {
-        info!(
-            "[{}/{} glyphs][{} bytes]",
-            num_glyphs, cs_count, destlen,
-        );
+        info!("[{}/{} glyphs][{} bytes]", num_glyphs, cs_count, destlen,);
     }
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
 }
@@ -2890,10 +2887,9 @@ unsafe extern "C" fn create_ToUnicode_stream(
         cid = cid.wrapping_add(1)
     }
     if total_fail_count != 0i32 && total_fail_count >= glyph_count / 10i32 {
-        dpx_warning(
-            b"%d glyph names (out of %d) missing Unicode mapping.\x00" as *const u8 as *const i8,
-            total_fail_count,
-            glyph_count,
+        warn!(
+            "{} glyph names (out of {}) missing Unicode mapping.",
+            total_fail_count, glyph_count,
         );
         dpx_warning(
             b"ToUnicode CMap \"%s-UTF16\" removed.\x00" as *const u8 as *const i8,
