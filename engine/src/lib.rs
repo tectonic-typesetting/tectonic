@@ -1063,3 +1063,12 @@ pub(crate) unsafe extern "C" fn mfree(ptr: *mut libc::c_void) -> *mut libc::c_vo
 pub(crate) unsafe extern "C" fn is_char_node(p: i32) -> bool {
     p >= xetex_ini::hi_mem_min
 }
+
+#[inline]
+unsafe extern "C" fn print_c_string(mut str: *const i8) {
+    while *str != 0 {
+        let fresh0 = str;
+        str = str.offset(1);
+        xetex_output::print_char(*fresh0 as i32);
+    }
+}

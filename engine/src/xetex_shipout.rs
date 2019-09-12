@@ -9,7 +9,7 @@
 )]
 
 use super::xetex_ini::selector;
-use crate::is_char_node;
+use crate::{is_char_node, print_c_string};
 use crate::{ttstub_output_close, ttstub_output_flush, ttstub_output_open, ttstub_output_write};
 use libc::free;
 
@@ -563,14 +563,6 @@ pub struct list_state_record {
     pub prev_graf: i32,
     pub mode_line: i32,
     pub aux: memory_word,
-}
-#[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        print_char(*fresh0 as i32);
-    }
 }
 #[inline]
 unsafe extern "C" fn cur_length() -> pool_pointer {

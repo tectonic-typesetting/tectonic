@@ -9,6 +9,7 @@
 )]
 
 use crate::mfree;
+use crate::print_c_string;
 use crate::stub_icu as icu;
 use crate::{streq_ptr, strstartswith};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
@@ -566,17 +567,6 @@ unsafe extern "C" fn SWAP32(p: u32) -> u32 {
         .wrapping_add(p << 24i32)
 }
 /* xetex-shipout */
-/* Inlines */
-#[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    /* Strings printed this way will end up in the .log as well
-     * as the terminal output. */
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        print_char(*fresh0 as i32);
-    }
-}
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International

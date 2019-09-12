@@ -12,6 +12,7 @@ use super::xetex_ini::{history, old_setting, selector};
 use super::xetex_io::{tt_xetex_open_input, u_open_in};
 use crate::is_char_node;
 use crate::mfree;
+use crate::print_c_string;
 use crate::xetex_ini::hi_mem_min;
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
@@ -1193,14 +1194,6 @@ unsafe extern "C" fn cur_length() -> pool_pointer {
 #[inline]
 unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
     ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
-}
-#[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        print_char(*fresh0 as i32);
-    }
 }
 /* xetex-xetex0.c: bulk of the WEB code translated to C
    Copyright 2016-2018 The Tectonic Project
