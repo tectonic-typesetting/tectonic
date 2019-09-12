@@ -7,6 +7,37 @@
 #include <unicode/ubrk.h>
 #include <unicode/ucnv.h>
 
+/* first pass to make c compiler happy */
+UBiDi * tt_ubidi_open(void);
+void tt_ubidi_close(UBiDi *pBiDi);
+void tt_ubidi_setPara(UBiDi *pBiDi, const UChar *text, int32_t length,
+              UBiDiLevel paraLevel, UBiDiLevel *embeddingLevels,
+              UErrorCode *pErrorCode);
+UBiDiDirection tt_ubidi_getDirection(const UBiDi *pBiDi);
+UBiDiDirection tt_ubidi_getVisualRun(UBiDi *pBiDi, int32_t runIndex,
+                   int32_t *pLogicalStart, int32_t *pLength);
+int32_t tt_ubidi_countRuns(UBiDi *pBiDi, UErrorCode *pErrorCode);
+UBreakIterator* tt_ubrk_open(UBreakIteratorType type,
+      const char *locale,
+      const UChar *text,
+      int32_t textLength,
+      UErrorCode *status);
+int32_t tt_ubrk_next(UBreakIterator *bi);
+void tt_ubrk_close(UBreakIterator *bi);
+void tt_ubrk_setText(UBreakIterator* bi,
+             const UChar*    text,
+             int32_t         textLength,
+             UErrorCode*     status);
+UConverter* tt_ucnv_open(const char *converterName, UErrorCode *err);
+void tt_ucnv_close(UConverter * converter);
+int32_t tt_ucnv_toAlgorithmic(UConverterType algorithmicType,
+                   UConverter *cnv,
+                   char *target, int32_t targetCapacity,
+                   const char *source, int32_t sourceLength,
+                   UErrorCode *pErrorCode);
+
+/* stubs */
+
 UBiDi * tt_ubidi_open(void) {
     return ubidi_open();
 }

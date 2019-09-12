@@ -7,14 +7,12 @@
          unused_mut)]
 
 use crate::{info, warn};
-
+use crate::stub_errno as errno;
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
     pub type Type0Font;
-    #[no_mangle]
-    fn __errno_location() -> *mut i32;
     #[no_mangle]
     fn pdf_stream_length(stream: *mut pdf_obj) -> i32;
     #[no_mangle]
@@ -563,9 +561,9 @@ pub unsafe extern "C" fn get_unique_time_if_given() -> time_t {
     source_date_epoch = getenv(b"SOURCE_DATE_EPOCH\x00" as *const u8 as *const i8);
     got_it = (source_date_epoch != 0 as *mut libc::c_void as *const i8) as i32;
     if got_it != 0 {
-        *__errno_location() = 0i32;
+        errno::set_errno(errno::ZERO);
         epoch = strtoll(source_date_epoch, &mut endptr, 10i32) as i64;
-        if !(*endptr as i32 != '\u{0}' as i32 || *__errno_location() != 0i32) {
+        if !(*endptr as i32 != '\u{0}' as i32 || errno::errno() != errno::ZERO) {
             ret = epoch
         }
     }

@@ -5,13 +5,11 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-extern crate libc;
 use crate::stub_icu as icu;
+use crate::stub_errno as errno;
 use libc::free;
 extern "C" {
     pub type Opaque_TECkit_Converter;
-    #[no_mangle]
-    fn __errno_location() -> *mut i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
@@ -702,7 +700,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                 *byteBuffer.offset(fresh2 as isize) = i as i8
             }
         }
-        if i == -1i32 && *__errno_location() != 4i32 && bytesRead == 0_u32 {
+        if i == -1i32 && errno::errno() != errno::EINTR && bytesRead == 0_u32 {
             return 0i32;
         }
         if i != -1i32 && i != '\n' as i32 && i != '\r' as i32 {
@@ -796,7 +794,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                         *utf32Buf.offset(fresh4 as isize) = i as u32
                     }
                 }
-                if i == -1i32 && *__errno_location() != 4i32 && tmpLen == 0i32 {
+                if i == -1i32 && errno::errno() != errno::EINTR && tmpLen == 0i32 {
                     return 0i32;
                 }
                 /* We didn't get the whole line because our buffer was too small.  */
@@ -826,7 +824,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
                         *buffer.offset(fresh6 as isize) = i
                     }
                 }
-                if i == -1i32 && *__errno_location() != 4i32 && last == first {
+                if i == -1i32 && errno::errno() != errno::EINTR && last == first {
                     return 0i32;
                 }
                 /* We didn't get the whole line because our buffer was too small.  */

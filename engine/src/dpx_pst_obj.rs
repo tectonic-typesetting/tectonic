@@ -9,12 +9,10 @@
 )]
 
 use crate::warn;
+use crate::stub_errno as errno;
 
-extern crate libc;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __errno_location() -> *mut i32;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
     #[no_mangle]
@@ -583,24 +581,24 @@ pub unsafe extern "C" fn pst_parse_number(
     let mut cur: *mut u8 = 0 as *mut u8;
     let mut lval: i32 = 0;
     let mut dval: f64 = 0.;
-    *__errno_location() = 0i32;
+    errno::set_errno(errno::ZERO);
     lval = strtol(
         *inbuf as *mut i8,
         &mut cur as *mut *mut u8 as *mut libc::c_void as *mut *mut i8,
         10i32,
     ) as i32;
-    if *__errno_location() != 0
+    if errno::errno() != errno::ZERO
         || *cur as i32 == '.' as i32
         || *cur as i32 == 'e' as i32
         || *cur as i32 == 'E' as i32
     {
         /* real */
-        *__errno_location() = 0i32;
+        errno::set_errno(errno::ZERO);
         dval = strtod(
             *inbuf as *mut i8,
             &mut cur as *mut *mut u8 as *mut libc::c_void as *mut *mut i8,
         );
-        if *__errno_location() == 0
+        if errno::errno() == errno::ZERO
             && (cur == inbufend
                 || (*cur as i32 == '(' as i32
                     || *cur as i32 == ')' as i32
@@ -657,13 +655,13 @@ pub unsafe extern "C" fn pst_parse_number(
         {
             /* integer with radix */
             /* Can the base have a (plus) sign? I think yes. */
-            *__errno_location() = 0i32;
+            errno::set_errno(errno::ZERO);
             lval = strtol(
                 cur as *mut i8,
                 &mut cur as *mut *mut u8 as *mut libc::c_void as *mut *mut i8,
                 lval,
             ) as i32;
-            if *__errno_location() == 0
+            if errno::errno() == errno::ZERO
                 && (cur == inbufend
                     || (*cur as i32 == '(' as i32
                         || *cur as i32 == ')' as i32
