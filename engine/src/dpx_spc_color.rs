@@ -8,7 +8,6 @@
     unused_mut
 )]
 
-extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set};
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_spc_util::spc_util_read_colorspec;
@@ -27,19 +26,6 @@ extern "C" {
  */
 /* Similar to bop_content */
 }
-pub type C2RustUnnamed = u32;
-pub const _ISalnum: C2RustUnnamed = 8;
-pub const _ISpunct: C2RustUnnamed = 4;
-pub const _IScntrl: C2RustUnnamed = 2;
-pub const _ISblank: C2RustUnnamed = 1;
-pub const _ISgraph: C2RustUnnamed = 32768;
-pub const _ISprint: C2RustUnnamed = 16384;
-pub const _ISspace: C2RustUnnamed = 8192;
-pub const _ISxdigit: C2RustUnnamed = 4096;
-pub const _ISdigit: C2RustUnnamed = 2048;
-pub const _ISalpha: C2RustUnnamed = 1024;
-pub const _ISlower: C2RustUnnamed = 512;
-pub const _ISupper: C2RustUnnamed = 256;
 
 use super::dpx_specials::{spc_arg, spc_env};
 

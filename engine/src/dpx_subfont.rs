@@ -10,7 +10,6 @@
 
 use crate::{info, warn};
 
-extern crate libc;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -109,19 +108,6 @@ extern "C" {
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
 pub type __ssize_t = i64;
-pub type C2RustUnnamed = u32;
-pub const _ISalnum: C2RustUnnamed = 8;
-pub const _ISpunct: C2RustUnnamed = 4;
-pub const _IScntrl: C2RustUnnamed = 2;
-pub const _ISblank: C2RustUnnamed = 1;
-pub const _ISgraph: C2RustUnnamed = 32768;
-pub const _ISprint: C2RustUnnamed = 16384;
-pub const _ISspace: C2RustUnnamed = 8192;
-pub const _ISxdigit: C2RustUnnamed = 4096;
-pub const _ISdigit: C2RustUnnamed = 2048;
-pub const _ISalpha: C2RustUnnamed = 1024;
-pub const _ISlower: C2RustUnnamed = 512;
-pub const _ISupper: C2RustUnnamed = 256;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type tt_input_format_type = u32;

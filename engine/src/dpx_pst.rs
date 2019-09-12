@@ -8,7 +8,6 @@
     unused_mut
 )]
 
-extern crate libc;
 extern "C" {
     pub type pst_obj;
     #[no_mangle]
@@ -77,19 +76,7 @@ extern "C" {
     #[no_mangle]
     fn pst_parse_string(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
 }
-pub type C2RustUnnamed = u32;
-pub const _ISalnum: C2RustUnnamed = 8;
-pub const _ISpunct: C2RustUnnamed = 4;
-pub const _IScntrl: C2RustUnnamed = 2;
-pub const _ISblank: C2RustUnnamed = 1;
-pub const _ISgraph: C2RustUnnamed = 32768;
-pub const _ISprint: C2RustUnnamed = 16384;
-pub const _ISspace: C2RustUnnamed = 8192;
-pub const _ISxdigit: C2RustUnnamed = 4096;
-pub const _ISdigit: C2RustUnnamed = 2048;
-pub const _ISalpha: C2RustUnnamed = 1024;
-pub const _ISlower: C2RustUnnamed = 512;
-pub const _ISupper: C2RustUnnamed = 256;
+
 pub type pst_type = i32;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

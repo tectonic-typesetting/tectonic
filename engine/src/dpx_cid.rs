@@ -11,7 +11,6 @@
 use crate::dpx_pdfparse::parse_pdf_dict;
 use crate::{info, warn};
 
-extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_file, pdf_link_obj, pdf_lookup_dict, pdf_name_value, pdf_new_name,
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_remove_dict,
@@ -163,19 +162,6 @@ extern "C" {
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
 }
-pub type C2RustUnnamed = u32;
-pub const _ISalnum: C2RustUnnamed = 8;
-pub const _ISpunct: C2RustUnnamed = 4;
-pub const _IScntrl: C2RustUnnamed = 2;
-pub const _ISblank: C2RustUnnamed = 1;
-pub const _ISgraph: C2RustUnnamed = 32768;
-pub const _ISprint: C2RustUnnamed = 16384;
-pub const _ISspace: C2RustUnnamed = 8192;
-pub const _ISxdigit: C2RustUnnamed = 4096;
-pub const _ISdigit: C2RustUnnamed = 2048;
-pub const _ISalpha: C2RustUnnamed = 1024;
-pub const _ISlower: C2RustUnnamed = 512;
-pub const _ISupper: C2RustUnnamed = 256;
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
