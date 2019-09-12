@@ -1,10 +1,12 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_concat;
 use crate::dpx_pdfobj::pdf_obj;
@@ -32,8 +34,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     /* Here is the complete list of PDF object types */
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -839,11 +839,7 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
     assert!(!handle.is_null() && !spe.is_null() && !args.is_null());
     skip_white(&mut (*args).curptr, (*args).endptr);
     key = (*args).curptr;
-    while (*args).curptr < (*args).endptr
-        && *(*__ctype_b_loc()).offset(*(*args).curptr.offset(0) as u8 as i32 as isize) as i32
-            & _ISalpha as i32 as u16 as i32
-            != 0
-    {
+    while (*args).curptr < (*args).endptr && libc::isalpha(*(*args).curptr.offset(0) as _) != 0 {
         (*args).curptr = (*args).curptr.offset(1)
     }
     /* Test for "ps:". The "ps::" special is subsumed under this case.  */

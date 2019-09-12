@@ -1,16 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
@@ -1193,10 +1193,7 @@ unsafe extern "C" fn write_string(mut str: *mut pdf_string, mut handle: rust_out
      */
     i = 0i32 as size_t;
     while i < len {
-        if *(*__ctype_b_loc()).offset(*s.offset(i as isize) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        {
+        if libc::isprint(*s.offset(i as isize) as _) == 0 {
             nescc += 1
         }
         i = i.wrapping_add(1)
@@ -1553,8 +1550,7 @@ unsafe extern "C" fn pdf_unshift_array(mut array: *mut pdf_obj, mut object: *mut
     libc::memmove(
         &mut *(*data).values.offset(1) as *mut *mut pdf_obj as *mut libc::c_void,
         (*data).values as *const libc::c_void,
-        ((*data).size as usize)
-            .wrapping_mul(::std::mem::size_of::<*mut pdf_obj>() as usize),
+        ((*data).size as usize).wrapping_mul(::std::mem::size_of::<*mut pdf_obj>() as usize),
     );
     let ref mut fresh14 = *(*data).values.offset(0);
     *fresh14 = object;
@@ -1957,7 +1953,8 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
                 .wrapping_add((*p.offset(i as isize) as libc::c_int - up).abs() as libc::c_uint)
                 as u32 as u32;
             /* Type 3 -- Average */
-            let mut tmp: libc::c_int = (((up + left) / 2i32) as libc::c_double).floor() as libc::c_int;
+            let mut tmp: libc::c_int =
+                (((up + left) / 2i32) as libc::c_double).floor() as libc::c_int;
             sum[3] = (sum[3] as libc::c_uint)
                 .wrapping_add((*p.offset(i as isize) as libc::c_int - tmp).abs() as libc::c_uint)
                 as u32 as u32;
@@ -1967,17 +1964,17 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
             let mut qb: libc::c_int = (q - up).abs();
             let mut qc: libc::c_int = (q - uplft).abs();
             if qa <= qb && qa <= qc {
-                sum[4] = (sum[4] as libc::c_uint)
-                    .wrapping_add((*p.offset(i as isize) as libc::c_int - left).abs() as libc::c_uint)
-                    as u32 as u32
+                sum[4] = (sum[4] as libc::c_uint).wrapping_add(
+                    (*p.offset(i as isize) as libc::c_int - left).abs() as libc::c_uint,
+                ) as u32 as u32
             } else if qb <= qc {
                 sum[4] = (sum[4] as libc::c_uint)
                     .wrapping_add((*p.offset(i as isize) as libc::c_int - up).abs() as libc::c_uint)
                     as u32 as u32
             } else {
-                sum[4] = (sum[4] as libc::c_uint)
-                    .wrapping_add((*p.offset(i as isize) as libc::c_int - uplft).abs() as libc::c_uint)
-                    as u32 as u32
+                sum[4] = (sum[4] as libc::c_uint).wrapping_add(
+                    (*p.offset(i as isize) as libc::c_int - uplft).abs() as libc::c_uint,
+                ) as u32 as u32
             }
             i += 1
         }

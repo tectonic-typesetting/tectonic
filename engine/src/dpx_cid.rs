@@ -1,17 +1,17 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use crate::dpx_pdfobj::{pdf_file, pdf_obj};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_add_dict(dict: *mut pdf_obj, key: *mut pdf_obj, value: *mut pdf_obj) -> i32;
     #[no_mangle]
@@ -1600,10 +1600,7 @@ unsafe extern "C" fn get_cidsysinfo(
             );
         }
         q = q.offset(1);
-        if *(*__ctype_b_loc()).offset(*q.offset(0) as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            == 0
-        {
+        if libc::isdigit(*q.offset(0) as _) == 0 {
             _tt_abort(
                 b"%s: String can\'t be converted to REGISTRY-ORDERING-SUPPLEMENT: %s\x00"
                     as *const u8 as *const i8,

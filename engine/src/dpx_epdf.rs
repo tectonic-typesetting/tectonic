@@ -1,10 +1,12 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
@@ -17,8 +19,6 @@ extern "C" {
     pub type pdf_ximage_;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_ximage_set_form(
         ximage: *mut pdf_ximage,
@@ -1218,9 +1218,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
         } else if *clip_path as i32 == '-' as i32
             || *clip_path as i32 == '+' as i32
             || *clip_path as i32 == '.' as i32
-            || *(*__ctype_b_loc()).offset(*clip_path as u8 as i32 as isize) as i32
-                & _ISdigit as i32 as u16 as i32
-                != 0
+            || libc::isdigit(*clip_path as _) != 0
         {
             top += 1;
             stack[top as usize] = strtod(clip_path, &mut temp);

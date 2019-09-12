@@ -1,16 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_stream_dict(stream: *mut pdf_obj) -> *mut pdf_obj;
     #[no_mangle]
@@ -1085,19 +1085,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"CMM Type\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).CMMType >> 24i32 & 0xff_u32) as i32 as isize)
-        as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).CMMType >> 16i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).CMMType >> 8i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).CMMType & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).CMMType >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).CMMType >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).CMMType >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).CMMType & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,
@@ -1124,19 +1115,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"Device Class\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).devClass >> 24i32 & 0xff_u32) as i32 as isize)
-        as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devClass >> 16i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devClass >> 8i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devClass & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).devClass >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devClass >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devClass >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devClass & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,
@@ -1157,21 +1139,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"Color Space\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).colorSpace >> 24i32 & 0xff_u32) as i32 as isize)
-        as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).colorSpace >> 16i32 & 0xff_u32) as i32 as isize)
-            as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).colorSpace >> 8i32 & 0xff_u32) as i32 as isize)
-            as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).colorSpace & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).colorSpace >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).colorSpace >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).colorSpace >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).colorSpace & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,
@@ -1192,18 +1163,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"Connection Space\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).PCS >> 24i32 & 0xff_u32) as i32 as isize) as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).PCS >> 16i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).PCS >> 8i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).PCS & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).PCS >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).PCS >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).PCS >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).PCS & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,
@@ -1242,19 +1205,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"Primary Platform\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).platform >> 24i32 & 0xff_u32) as i32 as isize)
-        as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).platform >> 16i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).platform >> 8i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).platform & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).platform >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).platform >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).platform >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).platform & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,
@@ -1282,19 +1236,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"Device Mnfct\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).devMnfct >> 24i32 & 0xff_u32) as i32 as isize)
-        as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devMnfct >> 16i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devMnfct >> 8i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devMnfct & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).devMnfct >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devMnfct >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devMnfct >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devMnfct & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,
@@ -1315,19 +1260,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"Device Model\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).devModel >> 24i32 & 0xff_u32) as i32 as isize)
-        as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devModel >> 16i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devModel >> 8i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).devModel & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).devModel >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devModel >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devModel >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).devModel & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,
@@ -1384,19 +1320,10 @@ unsafe extern "C" fn print_iccp_header(mut icch: *mut iccHeader, mut checksum: *
             b"pdf_color>> %s:\t(null)\n\x00" as *const u8 as *const i8,
             b"Creator\x00" as *const u8 as *const i8,
         );
-    } else if *(*__ctype_b_loc()).offset(((*icch).creator >> 24i32 & 0xff_u32) as i32 as isize)
-        as i32
-        & _ISprint as i32 as u16 as i32
-        == 0
-        || *(*__ctype_b_loc()).offset(((*icch).creator >> 16i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).creator >> 8i32 & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
-        || *(*__ctype_b_loc()).offset(((*icch).creator & 0xff_u32) as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            == 0
+    } else if libc::isprint(((*icch).creator >> 24i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).creator >> 16i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).creator >> 8i32 & 0xff_u32) as _) == 0
+        || libc::isprint(((*icch).creator & 0xff_u32) as _) == 0
     {
         dpx_message(
             b"pdf_color>> %s:\t(invalid)\n\x00" as *const u8 as *const i8,

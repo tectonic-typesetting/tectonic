@@ -1,17 +1,17 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -554,10 +554,7 @@ unsafe extern "C" fn parse_block(
                     memset(tmp as *mut libc::c_void, 0i32, (len + 1i32) as u64);
                     i = 0i32;
                     while i < len {
-                        if *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
-                            & _ISspace as i32 as u16 as i32
-                            == 0
-                        {
+                        if libc::isspace(**pp as _) == 0 {
                             *tmp.offset(i as isize) = **pp
                         }
                         *pp = (*pp).offset(1);

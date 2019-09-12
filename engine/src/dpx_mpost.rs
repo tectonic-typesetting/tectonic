@@ -1,10 +1,12 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 extern crate libc;
 use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
@@ -40,8 +42,6 @@ extern "C" {
         Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
     */
     /* Here is the complete list of PDF object types */
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
@@ -2467,11 +2467,7 @@ pub unsafe extern "C" fn mps_scan_bbox(
     let mut values: [f64; 4] = [0.; 4];
     let mut i: i32 = 0;
     /* skip_white() skips lines starting '%'... */
-    while *pp < endptr
-        && *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
-            & _ISspace as i32 as u16 as i32
-            != 0
-    {
+    while *pp < endptr && libc::isspace(**pp as _) != 0 {
         *pp = (*pp).offset(1)
     }
     /* Scan for bounding box record */
@@ -2514,11 +2510,7 @@ pub unsafe extern "C" fn mps_scan_bbox(
             }
         }
         pdfparse_skip_line(pp, endptr);
-        while *pp < endptr
-            && *(*__ctype_b_loc()).offset(**pp as u8 as i32 as isize) as i32
-                & _ISspace as i32 as u16 as i32
-                != 0
-        {
+        while *pp < endptr && libc::isspace(**pp as _) != 0 {
             *pp = (*pp).offset(1)
         }
     }
@@ -4261,9 +4253,7 @@ unsafe extern "C" fn mp_parse_body(
     let mut error: i32 = 0i32;
     skip_white(start, end);
     while *start < end && error == 0 {
-        if *(*__ctype_b_loc()).offset(**start as u8 as i32 as isize) as i32
-            & _ISdigit as i32 as u16 as i32
-            != 0
+        if libc::isdigit(**start as _) != 0
             || *start < end.offset(-1)
                 && (**start as i32 == '+' as i32
                     || **start as i32 == '-' as i32
@@ -4274,9 +4264,7 @@ unsafe extern "C" fn mp_parse_body(
             value = strtod(*start, &mut next);
             if next < end as *mut i8
                 && strchr(b"<([{/%\x00" as *const u8 as *const i8, *next as i32).is_null()
-                && *(*__ctype_b_loc()).offset(*next as u8 as i32 as isize) as i32
-                    & _ISspace as i32 as u16 as i32
-                    == 0
+                && libc::isspace(*next as _) == 0
             {
                 dpx_warning(b"Unkown PostScript operator.\x00" as *const u8 as *const i8);
                 dump(*start, next);

@@ -1,16 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 extern crate libc;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::pdf_obj;
 extern "C" {
-    #[no_mangle]
-    fn __ctype_b_loc() -> *mut *const u16;
     #[no_mangle]
     fn pdf_new_number(value: f64) -> *mut pdf_obj;
     #[no_mangle]
@@ -1038,10 +1038,7 @@ unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut
     i = 0i32;
     p = (*ap).base;
     while i < 63i32 && p < (*ap).endptr {
-        if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-            & _ISprint as i32 as u16 as i32
-            != 0
-        {
+        if libc::isprint(*p as _) != 0 {
             let fresh0 = i;
             i = i + 1;
             ebuf[fresh0 as usize] = *p
@@ -1076,10 +1073,7 @@ unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut
         i = 0i32;
         p = (*ap).curptr;
         while i < 63i32 && p < (*ap).endptr {
-            if *(*__ctype_b_loc()).offset(*p as u8 as i32 as isize) as i32
-                & _ISprint as i32 as u16 as i32
-                != 0
-            {
+            if libc::isprint(*p as _) != 0 {
                 let fresh2 = i;
                 i = i + 1;
                 ebuf[fresh2 as usize] = *p

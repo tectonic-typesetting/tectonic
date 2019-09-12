@@ -992,3 +992,7 @@ mod xetex_xetex0;
 mod stub_icu;
 
 pub use xetex_engine_interface::tt_xetex_set_int_variable;
+
+pub(crate) fn isblank(c: libc::c_int) -> libc::c_int {
+    (c == ' ' as _ || c == '\t' as _) as _
+}
