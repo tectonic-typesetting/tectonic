@@ -1,10 +1,12 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use super::xetex_ini::{history, old_setting, selector};
 use super::xetex_io::{tt_xetex_open_input, u_open_in};
@@ -12,6 +14,7 @@ use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_putc,
 };
+use crate::mfree;
 use libc::free;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
@@ -1174,6 +1177,7 @@ pub struct input_state_t {
     pub name: i32,
     pub synctex_tag: i32,
 }
+<<<<<<< HEAD
 
 pub use super::xetex_io::UFILE;
 
@@ -1181,6 +1185,16 @@ pub use super::xetex_io::UFILE;
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
     0 as *mut libc::c_void
+=======
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct UFILE {
+    pub handle: rust_input_handle_t,
+    pub savedChar: i64,
+    pub skipNextLF: i16,
+    pub encodingMode: i16,
+    pub conversionData: *mut libc::c_void,
+>>>>>>> 979ea0d1... gather mfree
 }
 /* xetex-pagebuilder */
 /* xetex-scaledmath */

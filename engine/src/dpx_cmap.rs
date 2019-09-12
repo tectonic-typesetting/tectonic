@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
@@ -161,11 +162,6 @@ pub struct CMap_cache {
     pub num: i32,
     pub max: i32,
     pub cmaps: *mut *mut CMap,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

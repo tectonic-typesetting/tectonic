@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::stub_icu as icu;
 use crate::{streq_ptr, strstartswith};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
@@ -515,11 +516,6 @@ pub struct b16x4_le_t {
     pub s3: u16,
 }
 pub type UniChar = UInt16;
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

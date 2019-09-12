@@ -1052,3 +1052,9 @@ pub(crate) unsafe extern "C" fn streq_ptr(s1: *const i8, s2: *const i8) -> bool 
     }
     false
 }
+
+#[inline]
+pub(crate) unsafe extern "C" fn mfree(ptr: *mut libc::c_void) -> *mut libc::c_void {
+    libc::free(ptr);
+    std::ptr::null_mut()
+}

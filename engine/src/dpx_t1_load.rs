@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::warn;
 use crate::{streq_ptr, strstartswith};
 
@@ -353,11 +354,6 @@ pub struct cff_font {
     pub is_notdef_notzero: i32,
 }
 pub type pst_type = i32;
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

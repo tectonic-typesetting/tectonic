@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
@@ -286,11 +287,6 @@ pub struct clt_langsys_table {
     pub LookupOrder: Offset,
     pub ReqFeatureIndex: u16,
     pub FeatureIndex: clt_number_list,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

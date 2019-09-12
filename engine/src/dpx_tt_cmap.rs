@@ -1,14 +1,17 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::{info, warn};
 
 use crate::dpx_pdfobj::pdf_obj;
+use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_seek};
 use libc::free;
 extern "C" {
@@ -768,11 +771,6 @@ pub struct tt_maxp_table {
     pub maxSizeOfInstructions: u16,
     pub maxComponentElements: u16,
     pub maxComponentDepth: u16,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr); /* the number of subHeaders is one plus the max of subHeaderKeys */
-    0 as *mut libc::c_void
 }
 static mut verbose: i32 = 0i32;
 #[no_mangle]

@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
@@ -571,11 +572,6 @@ pub struct C2RustUnnamed_4 {
     pub broken: i32,
     pub annot_dict: *mut pdf_obj,
     pub rect: pdf_rect,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* quasi-hack to get the primary input */
 /* tectonic/core-strutils.h: miscellaneous C string utilities

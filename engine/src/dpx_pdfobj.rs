@@ -9,6 +9,7 @@
 )]
 
 use crate::dpx_pdfparse::{parse_number, parse_pdf_dict, parse_pdf_object, parse_unsigned};
+use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 use std::ffi::CStr;
@@ -268,11 +269,6 @@ pub struct pdf_number {
 #[repr(C)]
 pub struct pdf_boolean {
     pub value: i8,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

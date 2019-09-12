@@ -12,8 +12,12 @@ use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_dict, pdf_new_name, pdf_obj,
     pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,
 };
+use crate::mfree;
+use crate::streq_ptr;
 use crate::streq_ptr;
 use crate::stub_errno as errno;
+use crate::stub_errno as errno;
+use crate::{info, warn};
 use crate::{info, warn};
 use libc::free;
 extern "C" {
@@ -455,11 +459,6 @@ pub struct CIDSysInfo {
     pub registry: *mut i8,
     pub ordering: *mut i8,
     pub supplement: i32,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

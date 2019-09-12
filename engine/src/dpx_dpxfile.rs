@@ -1,10 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
+
+use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
@@ -69,11 +73,6 @@ pub type ssize_t = __ssize_t;
 use crate::TTInputFormat;
 
 pub type rust_input_handle_t = *mut libc::c_void;
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* quasi-hack to get the primary input */
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,

@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
@@ -209,11 +210,6 @@ pub struct ht_entry {
     pub next: *mut ht_entry,
 }
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* quasi-hack to get the primary input */
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

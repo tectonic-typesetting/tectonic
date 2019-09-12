@@ -12,6 +12,7 @@ use super::dpx_pdfcolor::{
     pdf_color_cmykcolor, pdf_color_copycolor, pdf_color_graycolor, pdf_color_rgbcolor,
     pdf_color_spotcolor,
 };
+use crate::mfree;
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
@@ -71,11 +72,6 @@ pub struct colordef_ {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,

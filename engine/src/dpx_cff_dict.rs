@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::streq_ptr;
 use crate::stub_errno as errno;
 use crate::warn;
@@ -254,11 +255,6 @@ pub struct cff_font {
 pub struct C2RustUnnamed_2 {
     pub opname: *const i8,
     pub argtype: i32,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

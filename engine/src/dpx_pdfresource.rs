@@ -12,6 +12,7 @@ use crate::streq_ptr;
 use crate::warn;
 
 use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_ref_obj, pdf_release_obj};
+use crate::mfree;
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -95,11 +96,6 @@ pub struct res_cache {
 pub struct C2RustUnnamed {
     pub name: *const i8,
     pub cat_id: i32,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

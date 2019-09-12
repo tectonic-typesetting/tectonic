@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
@@ -308,11 +309,6 @@ pub struct ic_ {
     pub count: i32,
     pub capacity: i32,
     pub ximages: *mut pdf_ximage,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

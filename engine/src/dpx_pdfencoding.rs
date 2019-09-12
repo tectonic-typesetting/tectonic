@@ -15,6 +15,7 @@ use crate::dpx_pdfobj::{
     pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_obj, pdf_release_obj,
 };
 use crate::dpx_pdfparse::{parse_pdf_array, parse_pdf_name, pdfparse_skip_line};
+use crate::mfree;
 use crate::streq_ptr;
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
 use libc::free;
@@ -317,11 +318,6 @@ pub struct agl_name {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 static mut verbose: u8 = 0_u8;
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encoding_set_verbose(mut level: i32) {

@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::strstartswith;
 use crate::warn;
 
@@ -179,11 +180,6 @@ pub struct load_options {
     pub page_no: i32,
     pub bbox_type: i32,
     pub dict: *mut pdf_obj,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

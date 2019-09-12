@@ -1,16 +1,19 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use super::xetex_texmfmp::get_date_and_time;
 use crate::{
     ttstub_input_close, ttstub_input_open, ttstub_input_read, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_open_stdout, ttstub_output_write,
 };
+use crate::mfree;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -605,6 +608,7 @@ pub struct input_state_t {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
+<<<<<<< HEAD
 
 pub use super::xetex_io::UFILE;
 
@@ -612,6 +616,16 @@ pub use super::xetex_io::UFILE;
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
     0 as *mut libc::c_void
+=======
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct UFILE {
+    pub handle: rust_input_handle_t,
+    pub savedChar: i64,
+    pub skipNextLF: i16,
+    pub encodingMode: i16,
+    pub conversionData: *mut libc::c_void,
+>>>>>>> 979ea0d1... gather mfree
 }
 /* xetex-ini.c: WEB initialization code translated to C
    Copyright 2016-2018 The Tectonic Project
