@@ -440,36 +440,9 @@ pub struct cid_opt {
     pub stemv: i32,
     pub cff_charsets: *mut libc::c_void,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-    /* table data */
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cs_ginfo {
@@ -679,27 +652,7 @@ pub struct CIDType0Info {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_head_table {
-    pub version: Fixed,
-    pub fontRevision: Fixed,
-    pub checkSumAdjustment: u32,
-    pub magicNumber: u32,
-    pub flags: u16,
-    pub unitsPerEm: u16,
-    pub created: [u8; 8],
-    pub modified: [u8; 8],
-    pub xMin: FWord,
-    pub yMin: FWord,
-    pub xMax: FWord,
-    pub yMax: FWord,
-    pub macStyle: u16,
-    pub lowestRecPPEM: u16,
-    pub fontDirectionHint: i16,
-    pub indexToLocFormat: i16,
-    pub glyphDataFormat: i16,
-}
+use super::dpx_tt_table::{tt_head_table, tt_hhea_table, tt_maxp_table, tt_os2__table};
 /* 16.16-bit signed fixed-point number */
 pub type FWord = i16;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -723,45 +676,7 @@ pub type FWord = i16;
 */
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_maxp_table {
-    pub version: Fixed,
-    pub numGlyphs: u16,
-    pub maxPoints: u16,
-    pub maxContours: u16,
-    pub maxComponentPoints: u16,
-    pub maxComponentContours: u16,
-    pub maxZones: u16,
-    pub maxTwilightPoints: u16,
-    pub maxStorage: u16,
-    pub maxFunctionDefs: u16,
-    pub maxInstructionDefs: u16,
-    pub maxStackElements: u16,
-    pub maxSizeOfInstructions: u16,
-    pub maxComponentElements: u16,
-    pub maxComponentDepth: u16,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_hhea_table {
-    pub version: Fixed,
-    pub ascent: FWord,
-    pub descent: FWord,
-    pub lineGap: FWord,
-    pub advanceWidthMax: uFWord,
-    pub minLeftSideBearing: FWord,
-    pub minRightSideBearing: FWord,
-    pub xMaxExtent: FWord,
-    pub caretSlopeRise: i16,
-    pub caretSlopeRun: i16,
-    pub caretOffset: FWord,
-    pub reserved: [i16; 4],
-    pub metricDataFormat: i16,
-    pub numOfLongHorMetrics: u16,
-    pub numOfExSideBearings: u16,
-    /* extra information */
-}
+
 pub type uFWord = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -775,47 +690,6 @@ pub struct tt_VORG_table {
 pub struct tt_vertOriginYMetrics {
     pub glyphIndex: u16,
     pub vertOriginY: i16,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_os2__table {
-    pub version: u16,
-    pub xAvgCharWidth: i16,
-    pub usWeightClass: u16,
-    pub usWidthClass: u16,
-    pub fsType: i16,
-    pub ySubscriptXSize: i16,
-    pub ySubscriptYSize: i16,
-    pub ySubscriptXOffset: i16,
-    pub ySubscriptYOffset: i16,
-    pub ySuperscriptXSize: i16,
-    pub ySuperscriptYSize: i16,
-    pub ySuperscriptXOffset: i16,
-    pub ySuperscriptYOffset: i16,
-    pub yStrikeoutSize: i16,
-    pub yStrikeoutPosition: i16,
-    pub sFamilyClass: i16,
-    pub panose: [u8; 10],
-    pub ulUnicodeRange1: u32,
-    pub ulUnicodeRange2: u32,
-    pub ulUnicodeRange3: u32,
-    pub ulUnicodeRange4: u32,
-    pub achVendID: [i8; 4],
-    pub fsSelection: u16,
-    pub usFirstCharIndex: u16,
-    pub usLastCharIndex: u16,
-    pub sTypoAscender: i16,
-    pub sTypoDescender: i16,
-    pub sTypoLineGap: i16,
-    pub usWinAscent: u16,
-    pub usWinDescent: u16,
-    pub ulCodePageRange1: u32,
-    pub ulCodePageRange2: u32,
-    pub sxHeight: i16,
-    pub sCapHeight: i16,
-    pub usDefaultChar: u16,
-    pub usBreakChar: u16,
-    pub usMaxContext: u16,
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

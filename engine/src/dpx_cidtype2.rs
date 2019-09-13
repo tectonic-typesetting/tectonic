@@ -326,35 +326,9 @@ pub struct rangeDef {
     pub codeLo: *mut u8,
     pub codeHi: *mut u8,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 pub type CID = u16;
 /*
  * PDF viewer applications use following tables (CIDFontType 2)
@@ -383,19 +357,6 @@ pub struct C2RustUnnamed_1 {
     pub name: *const i8,
     pub must_exist: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_glyphs {
-    pub num_glyphs: u16,
-    pub max_glyphs: u16,
-    pub last_gid: u16,
-    pub emsize: u16,
-    pub dw: u16,
-    pub default_advh: u16,
-    pub default_tsb: i16,
-    pub gd: *mut tt_glyph_desc,
-    pub used_slot: *mut u8,
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -415,22 +376,9 @@ pub struct tt_glyphs {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_glyph_desc {
-    pub gid: u16,
-    pub ogid: u16,
-    pub advw: u16,
-    pub advh: u16,
-    pub lsb: i16,
-    pub tsb: i16,
-    pub llx: i16,
-    pub lly: i16,
-    pub urx: i16,
-    pub ury: i16,
-    pub length: u32,
-    pub data: *mut u8,
-}
+
+use super::dpx_tt_glyf::{tt_glyph_desc, tt_glyphs};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {

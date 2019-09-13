@@ -10,6 +10,10 @@
 
 use crate::{info, warn};
 
+use super::dpx_numbers::{
+    tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair, tt_get_unsigned_quad,
+};
+use super::dpx_tt_post::{tt_read_post_table, tt_release_post_table};
 use crate::dpx_pdfobj::pdf_obj;
 use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_seek};
@@ -51,14 +55,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn tt_get_signed_pair(handle: rust_input_handle_t) -> i16;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
     #[no_mangle]
@@ -273,10 +269,6 @@ extern "C" {
     #[no_mangle]
     fn otl_gsub_set_chain(gsub_list: *mut otl_gsub, otl_tags: *const i8) -> i32;
     #[no_mangle]
-    fn tt_read_post_table(sfont: *mut sfnt) -> *mut tt_post_table;
-    #[no_mangle]
-    fn tt_release_post_table(post: *mut tt_post_table);
-    #[no_mangle]
     fn tt_get_glyphname(post: *mut tt_post_table, gid: u16) -> *mut i8;
     #[no_mangle]
     fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
@@ -331,37 +323,9 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub type Fixed = u32;
 /* 16.16-bit signed fixed-point number */
 pub type FWord = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-    /* table data */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-/* sfnt resource */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_cmap {
@@ -573,24 +537,9 @@ pub struct cff_header {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_post_table {
-    pub Version: Fixed,
-    pub italicAngle: Fixed,
-    pub underlinePosition: FWord,
-    pub underlineThickness: FWord,
-    pub isFixedPitch: u32,
-    pub minMemType42: u32,
-    pub maxMemType42: u32,
-    pub minMemType1: u32,
-    pub maxMemType1: u32,
-    pub numberOfGlyphs: u16,
-    pub glyphNamePtr: *mut *const i8,
-    pub names: *mut *mut i8,
-    pub count: u16,
-    /* Number of glyph names in names[] */
-}
+
+use super::dpx_tt_post::tt_post_table;
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -753,25 +702,7 @@ pub struct cmap_plat_enc_rec {
     pub platform: i16,
     pub encoding: i16,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_maxp_table {
-    pub version: Fixed,
-    pub numGlyphs: u16,
-    pub maxPoints: u16,
-    pub maxContours: u16,
-    pub maxComponentPoints: u16,
-    pub maxComponentContours: u16,
-    pub maxZones: u16,
-    pub maxTwilightPoints: u16,
-    pub maxStorage: u16,
-    pub maxFunctionDefs: u16,
-    pub maxInstructionDefs: u16,
-    pub maxStackElements: u16,
-    pub maxSizeOfInstructions: u16,
-    pub maxComponentElements: u16,
-    pub maxComponentDepth: u16,
-}
+use super::dpx_tt_table::tt_maxp_table;
 static mut verbose: i32 = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn otf_cmap_set_verbose(mut level: i32) {

@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use super::dpx_numbers::tt_get_unsigned_quad;
+use super::dpx_tt_post::{tt_read_post_table, tt_release_post_table};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
     pdf_new_string, pdf_obj,
@@ -53,13 +55,7 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn tt_read_post_table(sfont: *mut sfnt) -> *mut tt_post_table;
-    #[no_mangle]
-    fn tt_release_post_table(post: *mut tt_post_table);
     #[no_mangle]
     fn tt_read_head_table(sfont: *mut sfnt) -> *mut tt_head_table;
     /* OS/2 table */
@@ -72,35 +68,9 @@ pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type Fixed = u32;
 pub type FWord = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -120,65 +90,9 @@ pub struct sfnt {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_post_table {
-    pub Version: Fixed,
-    pub italicAngle: Fixed,
-    pub underlinePosition: FWord,
-    pub underlineThickness: FWord,
-    pub isFixedPitch: u32,
-    pub minMemType42: u32,
-    pub maxMemType42: u32,
-    pub minMemType1: u32,
-    pub maxMemType1: u32,
-    pub numberOfGlyphs: u16,
-    pub glyphNamePtr: *mut *const i8,
-    pub names: *mut *mut i8,
-    pub count: u16,
-    /* Number of glyph names in names[] */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_os2__table {
-    pub version: u16,
-    pub xAvgCharWidth: i16,
-    pub usWeightClass: u16,
-    pub usWidthClass: u16,
-    pub fsType: i16,
-    pub ySubscriptXSize: i16,
-    pub ySubscriptYSize: i16,
-    pub ySubscriptXOffset: i16,
-    pub ySubscriptYOffset: i16,
-    pub ySuperscriptXSize: i16,
-    pub ySuperscriptYSize: i16,
-    pub ySuperscriptXOffset: i16,
-    pub ySuperscriptYOffset: i16,
-    pub yStrikeoutSize: i16,
-    pub yStrikeoutPosition: i16,
-    pub sFamilyClass: i16,
-    pub panose: [u8; 10],
-    pub ulUnicodeRange1: u32,
-    pub ulUnicodeRange2: u32,
-    pub ulUnicodeRange3: u32,
-    pub ulUnicodeRange4: u32,
-    pub achVendID: [i8; 4],
-    pub fsSelection: u16,
-    pub usFirstCharIndex: u16,
-    pub usLastCharIndex: u16,
-    pub sTypoAscender: i16,
-    pub sTypoDescender: i16,
-    pub sTypoLineGap: i16,
-    pub usWinAscent: u16,
-    pub usWinDescent: u16,
-    pub ulCodePageRange1: u32,
-    pub ulCodePageRange2: u32,
-    pub sxHeight: i16,
-    pub sCapHeight: i16,
-    pub usDefaultChar: u16,
-    pub usBreakChar: u16,
-    pub usMaxContext: u16,
-}
+use super::dpx_tt_post::tt_post_table;
+
+use super::dpx_tt_table::tt_os2__table;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -198,27 +112,7 @@ pub struct tt_os2__table {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_head_table {
-    pub version: Fixed,
-    pub fontRevision: Fixed,
-    pub checkSumAdjustment: u32,
-    pub magicNumber: u32,
-    pub flags: u16,
-    pub unitsPerEm: u16,
-    pub created: [u8; 8],
-    pub modified: [u8; 8],
-    pub xMin: FWord,
-    pub yMin: FWord,
-    pub xMax: FWord,
-    pub yMax: FWord,
-    pub macStyle: u16,
-    pub lowestRecPPEM: u16,
-    pub fontDirectionHint: i16,
-    pub indexToLocFormat: i16,
-    pub glyphDataFormat: i16,
-}
+use super::dpx_tt_table::tt_head_table;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
