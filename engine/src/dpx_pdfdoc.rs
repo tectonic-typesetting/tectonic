@@ -17,6 +17,10 @@ use super::dpx_pdfcolor::{
 };
 use super::dpx_pdfdev::pdf_dev_bop;
 use super::dpx_pdfdraw::pdf_dev_set_color;
+use super::dpx_pdfximage::{
+    pdf_close_images, pdf_init_images, pdf_ximage_defineresource, pdf_ximage_findresource,
+    pdf_ximage_get_reference, pdf_ximage_init_form_info, pdf_ximage_set_verbose,
+};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_compare_reference,
     pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_get_array, pdf_link_obj, pdf_lookup_dict,
@@ -226,29 +230,6 @@ extern "C" {
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn pdf_ximage_set_verbose(level: i32);
-    #[no_mangle]
-    fn pdf_init_images();
-    #[no_mangle]
-    fn pdf_close_images();
-    #[no_mangle]
-    fn pdf_ximage_get_reference(xobj_id: i32) -> *mut pdf_obj;
-    /* Please use different interface than findresource...
-     * This is not intended to be used for specifying page number and others.
-     * Only pdf:image special in spc_pdfm.c want optinal dict!
-     */
-    #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
-    #[no_mangle]
-    fn pdf_ximage_defineresource(
-        ident: *const i8,
-        subtype: i32,
-        cdata: *mut libc::c_void,
-        resource: *mut pdf_obj,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_ximage_init_form_info(info: *mut xform_info);
-    #[no_mangle]
     fn check_for_jpeg(handle: rust_input_handle_t) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -401,16 +382,7 @@ pub struct tm {
 
 pub use super::dpx_pdfcolor::pdf_color;
 
-use super::dpx_pdfdev::pdf_tmatrix;
-
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
+use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct form_list_node {
@@ -551,20 +523,8 @@ pub struct ht_iter {
     pub curr: *mut libc::c_void,
     pub hash: *mut ht_table,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct load_options {
-    pub page_no: i32,
-    pub bbox_type: i32,
-    pub dict: *mut pdf_obj,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct xform_info {
-    pub flags: i32,
-    pub bbox: pdf_rect,
-    pub matrix: pdf_tmatrix,
-}
+
+use crate::dpx_pdfximage::{load_options, xform_info};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_4 {

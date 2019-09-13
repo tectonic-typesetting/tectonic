@@ -345,32 +345,7 @@ pub use super::dpx_pdfcolor::pdf_color;
 */
 pub type spt_t = i32;
 
-use super::dpx_pdfdev::pdf_tmatrix;
-
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
-
-use super::dpx_pdfdev::pdf_coord;
-
-/* The name transform_info is misleading.
- * I'll put this here for a moment...
- */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct transform_info {
-    pub width: f64,
-    pub height: f64,
-    pub depth: f64,
-    pub matrix: pdf_tmatrix,
-    pub bbox: pdf_rect,
-    pub flags: i32,
-}
+use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix, transform_info};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_rec {

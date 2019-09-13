@@ -6,6 +6,9 @@
          unused_assignments,
          unused_mut)]
 
+use super::dpx_sfnt::{
+    sfnt_close, sfnt_find_table_pos, sfnt_locate_table, sfnt_open, sfnt_read_table_directory,
+};
 use crate::{info, warn};
 
 use crate::dpx_pdfobj::{
@@ -293,17 +296,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_font_make_uniqueTag(tag: *mut i8);
     #[no_mangle]
-    fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
-    #[no_mangle]
-    fn sfnt_close(sfont: *mut sfnt);
-    /* table directory */
-    #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
-    #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
     fn t1char_get_metrics(
         src: *mut card8,
         srclen: i32,
@@ -441,7 +433,7 @@ pub struct cid_opt {
     pub cff_charsets: *mut libc::c_void,
 }
 
-use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+use super::dpx_sfnt::sfnt;
 
 #[derive(Copy, Clone)]
 #[repr(C)]

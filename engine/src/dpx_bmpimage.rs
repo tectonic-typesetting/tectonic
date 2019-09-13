@@ -15,6 +15,7 @@ use crate::dpx_pdfobj::{
 use libc::free;
 
 use super::dpx_numbers::tt_get_unsigned_byte;
+use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 
 use crate::{ttstub_input_read, ttstub_input_seek};
 extern "C" {
@@ -40,14 +41,6 @@ extern "C" {
         columns: i32,
         bpc: i32,
         colors: i32,
-    );
-    #[no_mangle]
-    fn pdf_ximage_init_image_info(info: *mut ximage_info);
-    #[no_mangle]
-    fn pdf_ximage_set_image(
-        ximage: *mut pdf_ximage,
-        info: *mut libc::c_void,
-        resource: *mut pdf_obj,
     );
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -100,19 +93,8 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ximage_info {
-    pub flags: i32,
-    pub width: i32,
-    pub height: i32,
-    pub bits_per_component: i32,
-    pub num_components: i32,
-    pub min_dpi: i32,
-    pub xdensity: f64,
-    pub ydensity: f64,
-}
-use crate::dpx_pdfximage::pdf_ximage;
+
+use crate::dpx_pdfximage::{pdf_ximage, ximage_info};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct hdr_info {

@@ -8,6 +8,10 @@
     unused_mut
 )]
 
+use super::dpx_sfnt::{
+    dfont_open, sfnt_close, sfnt_find_table_pos, sfnt_locate_table, sfnt_open,
+    sfnt_read_table_directory,
+};
 use crate::mfree;
 use crate::streq_ptr;
 use crate::warn;
@@ -246,19 +250,6 @@ extern "C" {
     fn dump(start: *const i8, end: *const i8);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
-    #[no_mangle]
-    fn dfont_open(handle: rust_input_handle_t, index: i32) -> *mut sfnt;
-    #[no_mangle]
-    fn sfnt_close(sfont: *mut sfnt);
-    /* table directory */
-    #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
-    #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     /* This should not use pdf_. */
     #[no_mangle]
     fn spc_set_verbose(level: i32);
@@ -466,14 +457,7 @@ pub use super::dpx_pdfcolor::pdf_color;
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 pub type spt_t = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
+use super::dpx_pdfdev::pdf_rect;
 /*
  * The section below this line deals with the actual processing of the
  * dvi file.

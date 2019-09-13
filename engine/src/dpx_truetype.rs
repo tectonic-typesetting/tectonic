@@ -8,6 +8,10 @@
     unused_mut
 )]
 
+use super::dpx_sfnt::{
+    dfont_open, sfnt_close, sfnt_create_FontFile_stream, sfnt_open, sfnt_read_table_directory,
+    sfnt_require_table, sfnt_set_table,
+};
 use crate::streq_ptr;
 use crate::{info, warn};
 
@@ -153,21 +157,6 @@ extern "C" {
     /* sfnt resource */
     /* Convert sfnt "fixed" type to double */
     /* get_***_*** from numbers.h */
-    #[no_mangle]
-    fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
-    #[no_mangle]
-    fn sfnt_close(sfont: *mut sfnt);
-    /* table directory */
-    #[no_mangle]
-    fn sfnt_set_table(sfont: *mut sfnt, tag: *const i8, data: *mut libc::c_void, length: u32);
-    #[no_mangle]
-    fn sfnt_require_table(sfont: *mut sfnt, tag: *const i8, must_exist: i32) -> i32;
-    #[no_mangle]
-    fn sfnt_create_FontFile_stream(sfont: *mut sfnt) -> *mut pdf_obj;
-    #[no_mangle]
-    fn dfont_open(handle: rust_input_handle_t, index: i32) -> *mut sfnt;
-    #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
     #[no_mangle]
     fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
     #[no_mangle]

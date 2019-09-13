@@ -9,6 +9,7 @@
 use crate::warn;
 
 use super::dpx_numbers::{tt_get_signed_pair, tt_get_unsigned_pair, tt_get_unsigned_quad};
+use super::dpx_sfnt::{sfnt_find_table_pos, sfnt_locate_table, sfnt_set_table};
 use super::dpx_tt_table::{
     tt_head_table, tt_hhea_table, tt_maxp_table, tt_os2__table, tt_pack_head_table,
     tt_pack_hhea_table, tt_pack_maxp_table, tt_read_head_table, tt_read_hhea_table,
@@ -23,12 +24,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn sfnt_set_table(sfont: *mut sfnt, tag: *const i8, data: *mut libc::c_void, length: u32);
-    #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

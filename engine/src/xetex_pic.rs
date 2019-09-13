@@ -328,16 +328,7 @@ pub struct real_rect {
     pub wd: f32,
     pub ht: f32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
-
-use super::dpx_pdfdev::pdf_coord;
+use super::dpx_pdfdev::{pdf_coord, pdf_rect};
 
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

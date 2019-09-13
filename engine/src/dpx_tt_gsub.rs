@@ -11,6 +11,7 @@
 use super::dpx_numbers::{
     tt_get_signed_byte, tt_get_signed_pair, tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
+use super::dpx_sfnt::sfnt_find_table_pos;
 use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
@@ -58,8 +59,6 @@ extern "C" {
     fn otl_parse_optstring(opt: *mut otl_opt, optstr: *const i8) -> i32;
     #[no_mangle]
     fn otl_match_optrule(opt: *mut otl_opt, tag: *const i8) -> i32;
-    #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]

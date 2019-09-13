@@ -13,6 +13,7 @@ use crate::strstartswith;
 use crate::warn;
 
 use super::dpx_pdfdraw::pdf_dev_concat;
+use super::dpx_pdfximage::pdf_ximage_findresource;
 use crate::dpx_pdfobj::pdf_obj;
 use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
@@ -63,8 +64,6 @@ extern "C" {
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
-    #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -154,33 +153,9 @@ pub struct spc_handler {
     pub exec: spc_handler_fn_ptr,
 }
 
-use super::dpx_pdfdev::pdf_tmatrix;
+use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info};
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct transform_info {
-    pub width: f64,
-    pub height: f64,
-    pub depth: f64,
-    pub matrix: pdf_tmatrix,
-    pub bbox: pdf_rect,
-    pub flags: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct load_options {
-    pub page_no: i32,
-    pub bbox_type: i32,
-    pub dict: *mut pdf_obj,
-}
+use crate::dpx_pdfximage::load_options;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

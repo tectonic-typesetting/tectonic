@@ -63,18 +63,7 @@ extern "C" {
 
 pub use super::dpx_pdfcolor::pdf_color;
 
-use super::dpx_pdfdev::pdf_tmatrix;
-
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
-
-use super::dpx_pdfdev::pdf_coord;
+use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix};
 
 /* Graphics State */
 pub type pdf_gstate = pdf_gstate_;
