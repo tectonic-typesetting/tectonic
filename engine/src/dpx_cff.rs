@@ -11,6 +11,7 @@
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
 use crate::{ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
@@ -18,10 +19,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]

@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use super::dpx_numbers::{tt_get_unsigned_pair, tt_get_unsigned_quad};
 use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read, ttstub_input_seek};
 use libc::free;
@@ -22,10 +23,6 @@ extern "C" {
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.

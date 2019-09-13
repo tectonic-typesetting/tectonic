@@ -8,6 +8,10 @@
     unused_mut
 )]
 
+use super::dpx_numbers::{
+    tt_get_positive_quad, tt_get_signed_quad, tt_get_unsigned_byte, tt_get_unsigned_pair,
+    tt_get_unsigned_quad,
+};
 use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
@@ -15,17 +19,6 @@ use crate::{info, warn};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn tt_get_positive_quad(handle: rust_input_handle_t, type_0: *const i8, name: *const i8)
-        -> u32;
-    #[no_mangle]
-    fn tt_get_signed_quad(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn tt_skip_bytes(n: u32, handle: rust_input_handle_t);
     #[no_mangle]
