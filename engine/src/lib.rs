@@ -1014,6 +1014,7 @@ mod xetex_ext;
 mod xetex_ini;
 mod xetex_io;
 mod xetex_linebreak;
+mod xetex_macos;
 mod xetex_math;
 mod xetex_output;
 mod xetex_pagebuilder;
