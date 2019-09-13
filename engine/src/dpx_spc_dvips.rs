@@ -16,6 +16,11 @@ use super::dpx_pdfdraw::pdf_dev_concat;
 use super::dpx_pdfximage::pdf_ximage_findresource;
 use crate::dpx_pdfobj::pdf_obj;
 use crate::{ttstub_input_close, ttstub_input_open};
+
+use super::dpx_pdfdev::{
+    pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
+};
+use super::dpx_spc_util::spc_util_read_dimtrns;
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -56,10 +61,6 @@ extern "C" {
     fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
-    #[no_mangle]
-    fn transform_info_clear(info: *mut transform_info);
     /* Please use different interface than findresource...
      * This is not intended to be used for specifying page number and others.
      * Only pdf:image special in spc_pdfm.c want optinal dict!
@@ -107,13 +108,6 @@ extern "C" {
     fn pdf_dev_grestore_to(depth: i32);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn spc_util_read_dimtrns(
-        spe: *mut spc_env,
-        dimtrns: *mut transform_info,
-        args: *mut spc_arg,
-        syntax: i32,
-    ) -> i32;
 }
 pub type size_t = u64;
 
@@ -152,8 +146,6 @@ pub struct spc_handler {
     pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
-
-use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info};
 
 use crate::dpx_pdfximage::load_options;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -274,26 +266,7 @@ unsafe extern "C" fn parse_filename(mut pp: *mut *const i8, mut endptr: *const i
 unsafe extern "C" fn spc_handler_ps_file(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut form_id: i32 = 0;
     let mut filename: *mut i8 = 0 as *mut i8;
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut ti = transform_info::new();
     let mut options: load_options = {
         let mut init = load_options {
             page_no: 1i32,
@@ -345,26 +318,7 @@ unsafe extern "C" fn spc_handler_ps_plotfile(mut spe: *mut spc_env, mut args: *m
     let mut error: i32 = 0i32; /* xscale = 1.0, yscale = -1.0 */
     let mut form_id: i32 = 0;
     let mut filename: *mut i8 = 0 as *mut i8;
-    let mut p: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut p = transform_info::new();
     let mut options: load_options = {
         let mut init = load_options {
             page_no: 1i32,
@@ -517,14 +471,7 @@ unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mu
     pdf_dev_gsave();
     st_depth = mps_stack_depth();
     gs_depth = pdf_dev_current_depth();
-    let mut M: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
+    let mut M = pdf_tmatrix::new();
     M.d = 1.0f64;
     M.a = M.d;
     M.c = 0.0f64;

@@ -230,7 +230,7 @@ extern "C" {
 }
 pub type rust_input_handle_t = *mut libc::c_void;
 
-use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+use super::dpx_sfnt::sfnt;
 
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -284,7 +284,7 @@ pub struct NameTable {
     pub name: *const i8,
     pub must_exist: i32,
 }
-use super::dpx_tt_glyf::{tt_glyph_desc, tt_glyphs};
+use super::dpx_tt_glyf::tt_glyphs;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

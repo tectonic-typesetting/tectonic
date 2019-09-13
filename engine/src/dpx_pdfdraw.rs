@@ -15,7 +15,7 @@ use super::dpx_pdfcolor::{
     pdf_color_compare, pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_valid,
     pdf_color_to_string, pdf_color_type,
 };
-use super::dpx_pdfdev::{pdf_sprint_coord, pdf_sprint_matrix};
+use super::dpx_pdfdev::{pdf_sprint_coord, pdf_sprint_matrix, pdf_sprint_rect};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -26,8 +26,6 @@ extern "C" {
     fn pdf_dev_get_param(param_type: i32) -> i32;
     #[no_mangle]
     fn pdf_sprint_length(buf: *mut i8, value: f64) -> i32;
-    #[no_mangle]
-    fn pdf_sprint_rect(buf: *mut i8, p: *const pdf_rect) -> i32;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -173,14 +171,7 @@ extern "C" fn pdf_coord__dtransform(p: &mut pdf_coord, M: &pdf_tmatrix) -> i32 {
     0i32
 }
 unsafe extern "C" fn pdf_coord__idtransform(p: &mut pdf_coord, M: &pdf_tmatrix) -> i32 {
-    let mut W: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
+    let mut W = pdf_tmatrix::new();
     let mut x: f64 = 0.;
     let mut y: f64 = 0.;
     let mut error: i32 = 0;
@@ -195,14 +186,7 @@ unsafe extern "C" fn pdf_coord__idtransform(p: &mut pdf_coord, M: &pdf_tmatrix) 
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_invertmatrix(M: &mut pdf_tmatrix) {
-    let mut W = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
+    let mut W = pdf_tmatrix::new();
     let mut det: f64 = 0.;
     det = M.a * M.d - M.b * M.c;
     if det.abs() < 2.5e-16f64 {
@@ -542,20 +526,13 @@ unsafe extern "C" fn pdf_path__elliptarc(
     let mut b_y: f64 = 0.;
     let mut d_a: f64 = 0.;
     let mut q: f64 = 0.;
-    let mut p0: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p1: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut e0: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut e1: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut T: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
+    let mut p0: pdf_coord = pdf_coord::new();
+    let mut p1: pdf_coord = pdf_coord::new();
+    let mut p2: pdf_coord = pdf_coord::new();
+    let mut p3: pdf_coord = pdf_coord::new();
+    let mut e0: pdf_coord = pdf_coord::new();
+    let mut e1: pdf_coord = pdf_coord::new();
+    let mut T = pdf_tmatrix::new();
     let mut n_c: i32 = 0;
     let mut i: i32 = 0;
     let mut error: i32 = 0i32;
@@ -753,26 +730,25 @@ unsafe extern "C" fn INVERTIBLE_MATRIX(M: &pdf_tmatrix) -> i32 {
  *  current graphcs state parameter.
  */
 unsafe extern "C" fn pdf_dev__rectshape(
-    mut r: *const pdf_rect,
+    r: &pdf_rect,
     M: Option<&pdf_tmatrix>,
     mut opchr: i8,
 ) -> i32 {
     let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     let mut len: i32 = 0i32;
     let mut isclip: i32 = 0i32;
-    let mut p: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut p: pdf_coord = pdf_coord::new();
     let mut wd: f64 = 0.;
     let mut ht: f64 = 0.;
     assert!(
-        !r.is_null()
-            && (opchr as i32 == 'f' as i32
-                || opchr as i32 == 'F' as i32
-                || opchr as i32 == 's' as i32
-                || opchr as i32 == 'S' as i32
-                || opchr as i32 == 'b' as i32
-                || opchr as i32 == 'B' as i32
-                || opchr as i32 == 'W' as i32
-                || opchr as i32 == ' ' as i32)
+        (opchr as i32 == 'f' as i32
+            || opchr as i32 == 'F' as i32
+            || opchr as i32 == 's' as i32
+            || opchr as i32 == 'S' as i32
+            || opchr as i32 == 'b' as i32
+            || opchr as i32 == 'B' as i32
+            || opchr as i32 == 'W' as i32
+            || opchr as i32 == ' ' as i32)
     );
     isclip = if opchr as i32 == 'W' as i32 || opchr as i32 == ' ' as i32 {
         1i32
@@ -816,10 +792,10 @@ unsafe extern "C" fn pdf_dev__rectshape(
     let fresh17 = len;
     len = len + 1;
     *buf.offset(fresh17 as isize) = 'n' as i32 as i8;
-    p.x = (*r).llx;
-    p.y = (*r).lly;
-    wd = (*r).urx - (*r).llx;
-    ht = (*r).ury - (*r).lly;
+    p.x = r.llx;
+    p.y = r.lly;
+    wd = r.urx - r.llx;
+    ht = r.ury - r.lly;
     let fresh18 = len;
     len = len + 1;
     *buf.offset(fresh18 as isize) = ' ' as i32 as i8;
@@ -870,12 +846,7 @@ unsafe extern "C" fn pdf_dev__flushpath(
     let mut pe1: *mut pa_elem = 0 as *mut pa_elem; /* width...  */
     let mut b: *mut i8 = fmt_buf.as_mut_ptr(); /* height... */
     let mut b_len: i32 = 1024i32; /* op: re */
-    let mut r: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    }; /* op: m l c v y h */
+    let mut r = pdf_rect::new(); /* op: m l c v y h */
     let mut pt: *mut pdf_coord = 0 as *mut pdf_coord; /* op: m l c v y h */
     let mut n_pts: i32 = 0; /* op: f F s S b B W f* F* s* S* b* B* W* */
     let mut n_seg: i32 = 0; /* default to 1 in PDF */
@@ -916,7 +887,7 @@ unsafe extern "C" fn pdf_dev__flushpath(
         let fresh28 = len;
         len = len + 1;
         *b.offset(fresh28 as isize) = ' ' as i32 as i8;
-        len += pdf_sprint_rect(b.offset(len as isize), &mut r);
+        len += pdf_sprint_rect(b.offset(len as isize), &r);
         let fresh29 = len;
         len = len + 1;
         *b.offset(fresh29 as isize) = ' ' as i32 as i8;
@@ -1287,17 +1258,7 @@ pub unsafe extern "C" fn pdf_dev_concat(M: &pdf_tmatrix) -> i32 {
     let mut cpa: *mut pdf_path = &mut (*gs).path;
     let cpt = &mut (*gs).cp;
     let mut CTM = &mut (*gs).matrix;
-    let mut W: pdf_tmatrix = {
-        let mut init = pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        };
-        init
-    };
+    let mut W = pdf_tmatrix::new();
     let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     let mut len: i32 = 0i32;
     /* Adobe Reader erases page content if there are
@@ -1504,7 +1465,7 @@ pub unsafe extern "C" fn pdf_dev_moveto(mut x: f64, mut y: f64) -> i32 {
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut cpa: *mut pdf_path = &mut (*gs).path;
     let mut cpt: *mut pdf_coord = &mut (*gs).cp;
-    let mut p: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut p: pdf_coord = pdf_coord::new();
     p.x = x;
     p.y = y;
     return pdf_path__moveto(cpa, cpt, &mut p);
@@ -1713,44 +1674,32 @@ pub unsafe extern "C" fn pdf_dev_bspline(
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_rectfill(x: f64, y: f64, w: f64, h: f64) -> i32 {
-    let mut r: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
+    let mut r = pdf_rect {
+        llx: x,
+        lly: y,
+        urx: x + w,
+        ury: y + h,
     };
-    r.llx = x;
-    r.lly = y;
-    r.urx = x + w;
-    r.ury = y + h;
     pdf_dev__rectshape(&mut r, None, 'f' as i32 as i8)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_rectclip(x: f64, y: f64, w: f64, h: f64) -> i32 {
-    let mut r: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
+    let mut r = pdf_rect {
+        llx: x,
+        lly: y,
+        urx: x + w,
+        ury: y + h,
     };
-    r.llx = x;
-    r.lly = y;
-    r.urx = x + w;
-    r.ury = y + h;
     pdf_dev__rectshape(&mut r, None, 'W' as i32 as i8)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_rectadd(x: f64, y: f64, w: f64, h: f64) -> i32 {
-    let mut r: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
+    let mut r = pdf_rect {
+        llx: x,
+        lly: y,
+        urx: x + w,
+        ury: y + h,
     };
-    r.llx = x;
-    r.lly = y;
-    r.urx = x + w;
-    r.ury = y + h;
     path_added = 1i32;
     pdf_dev__rectshape(&mut r, None, ' ' as i32 as i8)
 }

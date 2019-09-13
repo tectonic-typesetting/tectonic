@@ -219,7 +219,7 @@ use crate::TTInputFormat;
 pub type rust_input_handle_t = *mut libc::c_void;
 
 use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix, transform_info};
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct ximage_info {
     pub flags: i32,
@@ -231,7 +231,7 @@ pub struct ximage_info {
     pub xdensity: f64,
     pub ydensity: f64,
 }
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct xform_info {
     pub flags: i32,
@@ -630,18 +630,18 @@ pub unsafe extern "C" fn pdf_ximage_findresource(
  *                Default value: the identity matrix [1 0 0 1 0 0].
  */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_init_form_info(mut info: *mut xform_info) {
-    (*info).flags = 0i32;
-    (*info).bbox.llx = 0i32 as f64;
-    (*info).bbox.lly = 0i32 as f64;
-    (*info).bbox.urx = 0i32 as f64;
-    (*info).bbox.ury = 0i32 as f64;
-    (*info).matrix.a = 1.0f64;
-    (*info).matrix.b = 0.0f64;
-    (*info).matrix.c = 0.0f64;
-    (*info).matrix.d = 1.0f64;
-    (*info).matrix.e = 0.0f64;
-    (*info).matrix.f = 0.0f64;
+pub extern "C" fn pdf_ximage_init_form_info(info: &mut xform_info) {
+    info.flags = 0;
+    info.bbox.llx = 0.;
+    info.bbox.lly = 0.;
+    info.bbox.urx = 0.;
+    info.bbox.ury = 0.;
+    info.matrix.a = 1.;
+    info.matrix.b = 0.;
+    info.matrix.c = 0.;
+    info.matrix.d = 1.;
+    info.matrix.e = 0.;
+    info.matrix.f = 0.;
 }
 /* Reference: PDF Reference 1.5 v6, pp.303--306
  *
@@ -674,32 +674,32 @@ pub unsafe extern "C" fn pdf_ximage_init_form_info(mut info: *mut xform_info) {
  *                determined in the process of decoding the JPEG2000 image.
  */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_ximage_init_image_info(mut info: *mut ximage_info) {
-    (*info).flags = 0i32; /* The width of the image, in samples */
-    (*info).width = 0i32; /* The height of the image, in samples */
-    (*info).height = 0i32;
-    (*info).bits_per_component = 0i32;
-    (*info).num_components = 0i32;
-    (*info).min_dpi = 0i32;
-    (*info).ydensity = 1.0f64;
-    (*info).xdensity = (*info).ydensity;
+pub extern "C" fn pdf_ximage_init_image_info(info: &mut ximage_info) {
+    info.flags = 0; /* The width of the image, in samples */
+    info.width = 0; /* The height of the image, in samples */
+    info.height = 0;
+    info.bits_per_component = 0;
+    info.num_components = 0;
+    info.min_dpi = 0;
+    info.ydensity = 1.;
+    info.xdensity = info.ydensity;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_set_image(
     mut I: *mut pdf_ximage,
-    mut image_info: *mut libc::c_void,
+    image_info: &mut ximage_info,
     mut resource: *mut pdf_obj,
 ) {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut info: *mut ximage_info = image_info as *mut ximage_info;
+    let info = image_info;
     if !(!resource.is_null() && pdf_obj_typeof(resource) == 7i32) {
         panic!("Image XObject must be of stream type.");
     }
     (*I).subtype = 1i32;
-    (*I).attr.width = (*info).width;
-    (*I).attr.height = (*info).height;
-    (*I).attr.xdensity = (*info).xdensity;
-    (*I).attr.ydensity = (*info).ydensity;
+    (*I).attr.width = info.width;
+    (*I).attr.height = info.height;
+    (*I).attr.xdensity = info.xdensity;
+    (*I).attr.ydensity = info.ydensity;
     (*I).reference = pdf_ref_obj(resource);
     dict = pdf_stream_dict(resource);
     pdf_add_dict(
@@ -739,30 +739,30 @@ pub unsafe extern "C" fn pdf_ximage_set_image(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_set_form(
     mut I: *mut pdf_ximage,
-    mut form_info: *mut libc::c_void,
+    form_info: &mut xform_info,
     mut resource: *mut pdf_obj,
 ) {
-    let mut info: *mut xform_info = form_info as *mut xform_info;
-    let mut p1: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p4: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let info = form_info;
+    let mut p1: pdf_coord = pdf_coord::new();
+    let mut p2: pdf_coord = pdf_coord::new();
+    let mut p3: pdf_coord = pdf_coord::new();
+    let mut p4: pdf_coord = pdf_coord::new();
     (*I).subtype = 0i32;
     /* Image's attribute "bbox" here is affected by /Rotate entry of included
      * PDF page.
      */
-    p1.x = (*info).bbox.llx; /* Caller don't know we are using reference. */
-    p1.y = (*info).bbox.lly;
-    pdf_dev_transform(&mut p1, Some(&(*info).matrix));
-    p2.x = (*info).bbox.urx;
-    p1.y = (*info).bbox.lly;
-    pdf_dev_transform(&mut p2, Some(&(*info).matrix));
-    p3.x = (*info).bbox.urx;
-    p3.y = (*info).bbox.ury;
-    pdf_dev_transform(&mut p3, Some(&(*info).matrix));
-    p4.x = (*info).bbox.llx;
-    p4.y = (*info).bbox.ury;
-    pdf_dev_transform(&mut p4, Some(&(*info).matrix));
+    p1.x = info.bbox.llx; /* Caller don't know we are using reference. */
+    p1.y = info.bbox.lly;
+    pdf_dev_transform(&mut p1, Some(&info.matrix));
+    p2.x = info.bbox.urx;
+    p1.y = info.bbox.lly;
+    pdf_dev_transform(&mut p2, Some(&info.matrix));
+    p3.x = info.bbox.urx;
+    p3.y = info.bbox.ury;
+    pdf_dev_transform(&mut p3, Some(&info.matrix));
+    p4.x = info.bbox.llx;
+    p4.y = info.bbox.ury;
+    pdf_dev_transform(&mut p4, Some(&info.matrix));
     (*I).attr.bbox.llx = min4(p1.x, p2.x, p3.x, p4.x);
     (*I).attr.bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);
     (*I).attr.bbox.urx = max4(p1.x, p2.x, p3.x, p4.x);
@@ -788,12 +788,18 @@ pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: i32) -> *mut pdf_obj {
     }
     pdf_link_obj((*I).reference)
 }
+
+#[derive(Clone)]
+pub enum XInfo {
+    Form(Box<xform_info>),
+    Image(Box<ximage_info>),
+}
+
 /* called from pdfdoc.c only for late binding */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_defineresource(
     mut ident: *const i8,
-    mut subtype: i32,
-    mut info: *mut libc::c_void,
+    info: XInfo,
     mut resource: *mut pdf_obj,
 ) -> i32 {
     let mut ic: *mut ic_ = &mut _ic;
@@ -816,25 +822,22 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
             as *mut i8;
         strcpy((*I).ident, ident);
     }
-    match subtype {
-        1 => {
-            pdf_ximage_set_image(I, info, resource);
+    match info {
+        XInfo::Image(mut info) => {
+            pdf_ximage_set_image(I, &mut info, resource);
             sprintf(
                 (*I).res_name.as_mut_ptr(),
                 b"Im%d\x00" as *const u8 as *const i8,
                 id,
             );
         }
-        0 => {
-            pdf_ximage_set_form(I, info, resource);
+        XInfo::Form(mut info) => {
+            pdf_ximage_set_form(I, &mut info, resource);
             sprintf(
                 (*I).res_name.as_mut_ptr(),
                 b"Fm%d\x00" as *const u8 as *const i8,
                 id,
             );
-        }
-        _ => {
-            panic!("Unknown XObject subtype: {}", subtype);
         }
     }
     (*ic).count += 1;
@@ -894,8 +897,8 @@ pub unsafe extern "C" fn pdf_ximage_set_attr(
  * This part contains incompatibile behaviour than dvipdfm!
  */
 unsafe extern "C" fn scale_to_fit_I(
-    mut T: *mut pdf_tmatrix,
-    mut p: *mut transform_info,
+    T: &mut pdf_tmatrix,
+    p: &mut transform_info,
     mut I: *mut pdf_ximage,
 ) {
     let mut s_x: f64 = 0.;
@@ -907,13 +910,13 @@ unsafe extern "C" fn scale_to_fit_I(
     let mut dp: f64 = 0.;
     let mut xscale: f64 = 0.;
     let mut yscale: f64 = 0.;
-    if (*p).flags & 1i32 << 0i32 != 0 {
-        wd0 = (*p).bbox.urx - (*p).bbox.llx;
-        ht0 = (*p).bbox.ury - (*p).bbox.lly;
+    if p.flags & 1i32 << 0i32 != 0 {
+        wd0 = p.bbox.urx - p.bbox.llx;
+        ht0 = p.bbox.ury - p.bbox.lly;
         xscale = (*I).attr.width as f64 * (*I).attr.xdensity / wd0;
         yscale = (*I).attr.height as f64 * (*I).attr.ydensity / ht0;
-        d_x = -(*p).bbox.llx / wd0;
-        d_y = -(*p).bbox.lly / ht0
+        d_x = -p.bbox.llx / wd0;
+        d_y = -p.bbox.lly / ht0
     } else {
         wd0 = (*I).attr.width as f64 * (*I).attr.xdensity;
         ht0 = (*I).attr.height as f64 * (*I).attr.ydensity;
@@ -930,33 +933,33 @@ unsafe extern "C" fn scale_to_fit_I(
         warn!("Image height=0.0!");
         ht0 = 1.0f64
     }
-    if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {
-        s_x = (*p).width * xscale;
-        s_y = ((*p).height + (*p).depth) * yscale;
-        dp = (*p).depth * yscale
-    } else if (*p).flags & 1i32 << 1i32 != 0 {
-        s_x = (*p).width * xscale;
+    if p.flags & 1i32 << 1i32 != 0 && p.flags & 1i32 << 2i32 != 0 {
+        s_x = p.width * xscale;
+        s_y = (p.height + p.depth) * yscale;
+        dp = p.depth * yscale
+    } else if p.flags & 1i32 << 1i32 != 0 {
+        s_x = p.width * xscale;
         s_y = s_x * ((*I).attr.height as f64 / (*I).attr.width as f64);
         dp = 0.0f64
-    } else if (*p).flags & 1i32 << 2i32 != 0 {
-        s_y = ((*p).height + (*p).depth) * yscale;
+    } else if p.flags & 1i32 << 2i32 != 0 {
+        s_y = (p.height + p.depth) * yscale;
         s_x = s_y * ((*I).attr.width as f64 / (*I).attr.height as f64);
-        dp = (*p).depth * yscale
+        dp = p.depth * yscale
     } else {
         s_x = wd0;
         s_y = ht0;
         dp = 0.0f64
     }
-    (*T).a = s_x;
-    (*T).c = 0.0f64;
-    (*T).b = 0.0f64;
-    (*T).d = s_y;
-    (*T).e = d_x * s_x / xscale;
-    (*T).f = d_y * s_y / yscale - dp;
+    T.a = s_x;
+    T.c = 0.0f64;
+    T.b = 0.0f64;
+    T.d = s_y;
+    T.e = d_x * s_x / xscale;
+    T.f = d_y * s_y / yscale - dp;
 }
 unsafe extern "C" fn scale_to_fit_F(
-    mut T: *mut pdf_tmatrix,
-    mut p: *mut transform_info,
+    T: &mut pdf_tmatrix,
+    p: &mut transform_info,
     mut I: *mut pdf_ximage,
 ) {
     let mut s_x: f64 = 0.;
@@ -966,11 +969,11 @@ unsafe extern "C" fn scale_to_fit_F(
     let mut wd0: f64 = 0.;
     let mut ht0: f64 = 0.;
     let mut dp: f64 = 0.;
-    if (*p).flags & 1i32 << 0i32 != 0 {
-        wd0 = (*p).bbox.urx - (*p).bbox.llx;
-        ht0 = (*p).bbox.ury - (*p).bbox.lly;
-        d_x = -(*p).bbox.llx;
-        d_y = -(*p).bbox.lly
+    if p.flags & 1i32 << 0i32 != 0 {
+        wd0 = p.bbox.urx - p.bbox.llx;
+        ht0 = p.bbox.ury - p.bbox.lly;
+        d_x = -p.bbox.llx;
+        d_y = -p.bbox.lly
     } else {
         wd0 = (*I).attr.bbox.urx - (*I).attr.bbox.llx;
         ht0 = (*I).attr.bbox.ury - (*I).attr.bbox.lly;
@@ -985,37 +988,37 @@ unsafe extern "C" fn scale_to_fit_F(
         warn!("Image height=0.0!");
         ht0 = 1.0f64
     }
-    if (*p).flags & 1i32 << 1i32 != 0 && (*p).flags & 1i32 << 2i32 != 0 {
-        s_x = (*p).width / wd0;
-        s_y = ((*p).height + (*p).depth) / ht0;
-        dp = (*p).depth
-    } else if (*p).flags & 1i32 << 1i32 != 0 {
-        s_x = (*p).width / wd0;
+    if p.flags & 1i32 << 1i32 != 0 && p.flags & 1i32 << 2i32 != 0 {
+        s_x = p.width / wd0;
+        s_y = (p.height + p.depth) / ht0;
+        dp = p.depth
+    } else if p.flags & 1i32 << 1i32 != 0 {
+        s_x = p.width / wd0;
         s_y = s_x;
         dp = 0.0f64
-    } else if (*p).flags & 1i32 << 2i32 != 0 {
-        s_y = ((*p).height + (*p).depth) / ht0;
+    } else if p.flags & 1i32 << 2i32 != 0 {
+        s_y = (p.height + p.depth) / ht0;
         s_x = s_y;
-        dp = (*p).depth
+        dp = p.depth
     } else {
         s_y = 1.0f64;
         s_x = s_y;
         dp = 0.0f64
     }
-    (*T).a = s_x;
-    (*T).c = 0.0f64;
-    (*T).b = 0.0f64;
-    (*T).d = s_y;
-    (*T).e = s_x * d_x;
-    (*T).f = s_y * d_y - dp;
+    T.a = s_x;
+    T.c = 0.0f64;
+    T.b = 0.0f64;
+    T.d = s_y;
+    T.e = s_x * d_x;
+    T.f = s_y * d_y - dp;
 }
 /* called from pdfdev.c and spc_html.c */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ximage_scale_image(
-    mut id: i32,
-    mut M: *mut pdf_tmatrix,
-    mut r: *mut pdf_rect,
-    mut p: *mut transform_info,
+    id: i32,
+    M: &mut pdf_tmatrix,
+    r: &mut pdf_rect,
+    p: &mut transform_info,
 ) -> i32
 /* argument from specials */ {
     let mut ic: *mut ic_ = &mut _ic;
@@ -1024,12 +1027,12 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
         panic!("Invalid XObject ID: {}", id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
-    (*M).a = 1.0f64;
-    (*M).b = 0.0f64;
-    (*M).c = 0.0f64;
-    (*M).d = 1.0f64;
-    (*M).e = 0.0f64;
-    (*M).f = 0.0f64;
+    M.a = 1.;
+    M.b = 0.;
+    M.c = 0.;
+    M.d = 1.;
+    M.e = 0.;
+    M.f = 0.;
     match (*I).subtype {
         1 => {
             /* Reference: PDF Reference 1.5 v6, p.302
@@ -1058,32 +1061,32 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
              * way as pdfTeX. Furthermore, it takes care of density information too.
              */
             scale_to_fit_I(M, p, I);
-            if (*p).flags & 1i32 << 0i32 != 0 {
-                (*r).llx = (*p).bbox.llx / ((*I).attr.width as f64 * (*I).attr.xdensity);
-                (*r).lly = (*p).bbox.lly / ((*I).attr.height as f64 * (*I).attr.ydensity);
-                (*r).urx = (*p).bbox.urx / ((*I).attr.width as f64 * (*I).attr.xdensity);
-                (*r).ury = (*p).bbox.ury / ((*I).attr.height as f64 * (*I).attr.ydensity)
+            if p.flags & 1i32 << 0i32 != 0 {
+                r.llx = p.bbox.llx / ((*I).attr.width as f64 * (*I).attr.xdensity);
+                r.lly = p.bbox.lly / ((*I).attr.height as f64 * (*I).attr.ydensity);
+                r.urx = p.bbox.urx / ((*I).attr.width as f64 * (*I).attr.xdensity);
+                r.ury = p.bbox.ury / ((*I).attr.height as f64 * (*I).attr.ydensity)
             } else {
-                (*r).llx = 0.0f64;
-                (*r).lly = 0.0f64;
-                (*r).urx = 1.0f64;
-                (*r).ury = 1.0f64
+                r.llx = 0.0f64;
+                r.lly = 0.0f64;
+                r.urx = 1.0f64;
+                r.ury = 1.0f64
             }
         }
         0 => {
             /* User-defined transformation and clipping are controlled by
              * the cm operator and W operator, explicitly */
             scale_to_fit_F(M, p, I); /* I->attr.bbox from the image bounding box */
-            if (*p).flags & 1i32 << 0i32 != 0 {
-                (*r).llx = (*p).bbox.llx;
-                (*r).lly = (*p).bbox.lly;
-                (*r).urx = (*p).bbox.urx;
-                (*r).ury = (*p).bbox.ury
+            if p.flags & 1i32 << 0i32 != 0 {
+                r.llx = p.bbox.llx;
+                r.lly = p.bbox.lly;
+                r.urx = p.bbox.urx;
+                r.ury = p.bbox.ury
             } else {
-                (*r).llx = (*I).attr.bbox.llx;
-                (*r).lly = (*I).attr.bbox.lly;
-                (*r).urx = (*I).attr.bbox.urx;
-                (*r).ury = (*I).attr.bbox.ury
+                r.llx = (*I).attr.bbox.llx;
+                r.lly = (*I).attr.bbox.lly;
+                r.urx = (*I).attr.bbox.urx;
+                r.ury = (*I).attr.bbox.ury
             }
         }
         _ => {}

@@ -11,6 +11,7 @@
 use crate::{info, warn};
 
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
+use super::dpx_pdfdoc::pdf_doc_expand_box;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color, pdf_dev_transform};
 use super::dpx_pdfximage::{
     pdf_ximage_get_reference, pdf_ximage_get_resname, pdf_ximage_scale_image,
@@ -131,8 +132,6 @@ extern "C" {
         resource_name: *const i8,
         resources: *mut pdf_obj,
     );
-    #[no_mangle]
-    fn pdf_doc_expand_box(rect: *const pdf_rect);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -216,7 +215,7 @@ pub type size_t = u64;
 pub use super::dpx_pdfcolor::pdf_color;
 
 pub type spt_t = i32;
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct pdf_tmatrix {
     pub a: f64,
@@ -226,7 +225,19 @@ pub struct pdf_tmatrix {
     pub e: f64,
     pub f: f64,
 }
-#[derive(Copy, Clone)]
+impl pdf_tmatrix {
+    pub const fn new() -> Self {
+        Self {
+            a: 0.,
+            b: 0.,
+            c: 0.,
+            d: 0.,
+            e: 0.,
+            f: 0.,
+        }
+    }
+}
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct pdf_rect {
     pub llx: f64,
@@ -234,13 +245,28 @@ pub struct pdf_rect {
     pub urx: f64,
     pub ury: f64,
 }
-#[derive(Copy, Clone)]
+impl pdf_rect {
+    pub const fn new() -> Self {
+        Self {
+            llx: 0.,
+            lly: 0.,
+            urx: 0.,
+            ury: 0.,
+        }
+    }
+}
+#[derive(Copy, Clone, Default, PartialEq)]
 #[repr(C)]
 pub struct pdf_coord {
     pub x: f64,
     pub y: f64,
 }
-#[derive(Copy, Clone)]
+impl pdf_coord {
+    pub const fn new() -> Self {
+        Self { x: 0., y: 0. }
+    }
+}
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct transform_info {
     pub width: f64,
@@ -249,6 +275,18 @@ pub struct transform_info {
     pub matrix: pdf_tmatrix,
     pub bbox: pdf_rect,
     pub flags: i32,
+}
+impl transform_info {
+    pub const fn new() -> Self {
+        Self {
+            width: 0.,
+            height: 0.,
+            depth: 0.,
+            matrix: pdf_tmatrix::new(),
+            bbox: pdf_rect::new(),
+            flags: 0,
+        }
+    }
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -690,21 +728,21 @@ pub unsafe extern "C" fn pdf_sprint_matrix(mut buf: *mut i8, M: &pdf_tmatrix) ->
     len
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_sprint_rect(mut buf: *mut i8, mut rect: *const pdf_rect) -> i32 {
+pub unsafe extern "C" fn pdf_sprint_rect(mut buf: *mut i8, rect: &pdf_rect) -> i32 {
     let mut len: i32 = 0;
-    len = p_dtoa((*rect).llx, dev_unit.precision, buf);
+    len = p_dtoa(rect.llx, dev_unit.precision, buf);
     let fresh10 = len;
     len = len + 1;
     *buf.offset(fresh10 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*rect).lly, dev_unit.precision, buf.offset(len as isize));
+    len += p_dtoa(rect.lly, dev_unit.precision, buf.offset(len as isize));
     let fresh11 = len;
     len = len + 1;
     *buf.offset(fresh11 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*rect).urx, dev_unit.precision, buf.offset(len as isize));
+    len += p_dtoa(rect.urx, dev_unit.precision, buf.offset(len as isize));
     let fresh12 = len;
     len = len + 1;
     *buf.offset(fresh12 as isize) = ' ' as i32 as i8;
-    len += p_dtoa((*rect).ury, dev_unit.precision, buf.offset(len as isize));
+    len += p_dtoa(rect.ury, dev_unit.precision, buf.offset(len as isize));
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     len
 }
@@ -776,14 +814,7 @@ unsafe extern "C" fn dev_set_text_matrix(
     mut extend: f64,
     mut rotate: i32,
 ) {
-    let mut tm: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
+    let mut tm = pdf_tmatrix::new();
     let mut len: i32 = 0i32;
     /* slant is negated for vertical font so that right-side
      * is always lower. */
@@ -2114,17 +2145,12 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
     /* Don't use too thick line. */
     width_in_bp = (if width < height { width } else { height }) as f64 * dev_unit.dvi2pts;
     if width_in_bp < 0.0f64 || width_in_bp > 5.0f64 {
-        let mut rect: pdf_rect = pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        };
+        let mut rect = pdf_rect::new();
         rect.llx = dev_unit.dvi2pts * xpos as f64;
         rect.lly = dev_unit.dvi2pts * ypos as f64;
         rect.urx = dev_unit.dvi2pts * width as f64;
         rect.ury = dev_unit.dvi2pts * height as f64;
-        len += pdf_sprint_rect(format_buffer.as_mut_ptr().offset(len as isize), &mut rect);
+        len += pdf_sprint_rect(format_buffer.as_mut_ptr().offset(len as isize), &rect);
         let fresh62 = len;
         len = len + 1;
         format_buffer[fresh62 as usize] = ' ' as i32 as i8;
@@ -2184,7 +2210,7 @@ pub unsafe extern "C" fn pdf_dev_set_rule(
 /* Rectangle in device space coordinate. */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_set_rect(
-    mut rect: *mut pdf_rect,
+    rect: &mut pdf_rect,
     mut x_user: spt_t,
     mut y_user: spt_t,
     mut width: spt_t,
@@ -2193,10 +2219,10 @@ pub unsafe extern "C" fn pdf_dev_set_rect(
 ) {
     let mut dev_x: f64 = 0.; /* currentmatrix */
     let mut dev_y: f64 = 0.; /* 0 for B&W */
-    let mut p0: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p1: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut p0: pdf_coord = pdf_coord::new();
+    let mut p1: pdf_coord = pdf_coord::new();
+    let mut p2: pdf_coord = pdf_coord::new();
+    let mut p3: pdf_coord = pdf_coord::new();
     let mut min_x: f64 = 0.;
     let mut min_y: f64 = 0.;
     let mut max_x: f64 = 0.;
@@ -2238,10 +2264,10 @@ pub unsafe extern "C" fn pdf_dev_set_rect(
     max_y = if p0.y > p1.y { p0.y } else { p1.y };
     max_y = if max_y > p2.y { max_y } else { p2.y };
     max_y = if max_y > p3.y { max_y } else { p3.y };
-    (*rect).llx = min_x;
-    (*rect).lly = min_y;
-    (*rect).urx = max_x;
-    (*rect).ury = max_y;
+    rect.llx = min_x;
+    rect.lly = min_y;
+    rect.urx = max_x;
+    rect.ury = max_y;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_get_dirmode() -> i32 {
@@ -2340,44 +2366,25 @@ pub unsafe extern "C" fn pdf_dev_set_param(mut param_type: i32, mut value: i32) 
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_put_image(
     mut id: i32,
-    mut p: *mut transform_info,
+    p: &mut transform_info,
     mut ref_x: f64,
     mut ref_y: f64,
 ) -> i32 {
     let mut res_name: *mut i8 = 0 as *mut i8;
-    let mut M: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
-    let mut M1: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
-    let mut r: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
+    let mut M = pdf_tmatrix::new();
+    let mut M1 = pdf_tmatrix::new();
+    let mut r = pdf_rect::new();
     let mut len: i32 = 0i32;
     if num_dev_coords > 0i32 {
         ref_x -= (*dev_coords.offset((num_dev_coords - 1i32) as isize)).x;
         ref_y -= (*dev_coords.offset((num_dev_coords - 1i32) as isize)).y
     }
-    M.a = (*p).matrix.a;
-    M.b = (*p).matrix.b;
-    M.c = (*p).matrix.c;
-    M.d = (*p).matrix.d;
-    M.e = (*p).matrix.e;
-    M.f = (*p).matrix.f;
+    M.a = p.matrix.a;
+    M.b = p.matrix.b;
+    M.c = p.matrix.c;
+    M.d = p.matrix.d;
+    M.e = p.matrix.e;
+    M.f = p.matrix.f;
     M.e += ref_x;
     M.f += ref_y;
     /* Just rotate by -90, but not tested yet. Any problem if M has scaling? */
@@ -2409,7 +2416,7 @@ pub unsafe extern "C" fn pdf_dev_put_image(
     M.f += M1.e * _tmp_b + M1.f * _tmp_d;
     pdf_dev_concat(&mut M);
     /* Clip */
-    if (*p).flags & 1i32 << 3i32 != 0 {
+    if p.flags & 1i32 << 3i32 != 0 {
         pdf_dev_rectclip(r.llx, r.lly, r.urx - r.llx, r.ury - r.lly); /* op: Do */
     }
     res_name = pdf_ximage_get_resname(id);
@@ -2426,22 +2433,10 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         pdf_ximage_get_reference(id),
     );
     if dvi_is_tracking_boxes() {
-        let mut P: pdf_tmatrix = pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        };
+        let mut P = pdf_tmatrix::new();
         let mut i: u32 = 0;
-        let mut rect: pdf_rect = pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        };
-        let mut corner: [pdf_coord; 4] = [pdf_coord { x: 0., y: 0. }; 4];
+        let mut rect = pdf_rect::new();
+        let mut corner: [pdf_coord; 4] = [pdf_coord::new(); 4];
         pdf_dev_set_rect(
             &mut rect,
             (65536i32 as f64 * ref_x) as spt_t,
@@ -2458,12 +2453,12 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         corner[2].y = rect.ury;
         corner[3].x = rect.urx;
         corner[3].y = rect.lly;
-        P.a = (*p).matrix.a;
-        P.b = (*p).matrix.b;
-        P.c = (*p).matrix.c;
-        P.d = (*p).matrix.d;
-        P.e = (*p).matrix.e;
-        P.f = (*p).matrix.f;
+        P.a = p.matrix.a;
+        P.b = p.matrix.b;
+        P.c = p.matrix.c;
+        P.d = p.matrix.d;
+        P.e = p.matrix.e;
+        P.f = p.matrix.f;
         i = 0_u32;
         while i < 4_u32 {
             corner[i as usize].x -= rect.llx;
@@ -2498,23 +2493,23 @@ pub unsafe extern "C" fn pdf_dev_put_image(
     0i32
 }
 #[no_mangle]
-pub unsafe extern "C" fn transform_info_clear(mut info: *mut transform_info) {
+pub unsafe extern "C" fn transform_info_clear(info: &mut transform_info) {
     /* Physical dimensions */
-    (*info).width = 0.0f64;
-    (*info).height = 0.0f64;
-    (*info).depth = 0.0f64;
-    (*info).bbox.llx = 0.0f64;
-    (*info).bbox.lly = 0.0f64;
-    (*info).bbox.urx = 0.0f64;
-    (*info).bbox.ury = 0.0f64;
+    info.width = 0.;
+    info.height = 0.;
+    info.depth = 0.;
+    info.bbox.llx = 0.;
+    info.bbox.lly = 0.;
+    info.bbox.urx = 0.;
+    info.bbox.ury = 0.;
     /* Transformation matrix */
-    (*info).matrix.a = 1.0f64;
-    (*info).matrix.b = 0.0f64;
-    (*info).matrix.c = 0.0f64;
-    (*info).matrix.d = 1.0f64;
-    (*info).matrix.e = 0.0f64;
-    (*info).matrix.f = 0.0f64;
-    (*info).flags = 0i32;
+    info.matrix.a = 1.;
+    info.matrix.b = 0.;
+    info.matrix.c = 0.;
+    info.matrix.d = 1.;
+    info.matrix.e = 0.;
+    info.matrix.f = 0.;
+    info.flags = 0;
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_begin_actualtext(mut unicodes: *mut u16, mut count: i32) {

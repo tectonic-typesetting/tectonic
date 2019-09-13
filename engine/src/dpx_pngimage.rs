@@ -142,16 +142,7 @@ pub unsafe extern "C" fn png_include_image(
     let mut intent: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_data_ptr: png_bytep = 0 as *mut png_byte;
     let mut trans_type: i32 = 0;
-    let mut info: ximage_info = ximage_info {
-        flags: 0,
-        width: 0,
-        height: 0,
-        bits_per_component: 0,
-        num_components: 0,
-        min_dpi: 0,
-        xdensity: 0.,
-        ydensity: 0.,
-    };
+    let mut info = ximage_info::default();
     /* Libpng stuff */
     let mut bpc: png_byte = 0;
     let mut color_type: png_byte = 0;
@@ -466,11 +457,7 @@ pub unsafe extern "C" fn png_include_image(
             info.num_components,
         );
     }
-    pdf_ximage_set_image(
-        ximage,
-        &mut info as *mut ximage_info as *mut libc::c_void,
-        stream,
-    );
+    pdf_ximage_set_image(ximage, &mut info, stream);
     0i32
 }
 /* Transparency */

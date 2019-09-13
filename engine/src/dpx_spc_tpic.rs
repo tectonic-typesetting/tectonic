@@ -305,20 +305,14 @@ unsafe extern "C" fn set_styles(
     mut pn: f64,
     mut da: f64,
 ) {
-    let mut M: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
+    let mut M = pdf_tmatrix {
+        a: 1.,
         b: 0.,
         c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
+        d: -1.,
+        e: (*c).x,
+        f: (*c).y,
     };
-    M.a = 1.0f64;
-    M.b = 0.0f64;
-    M.c = 0.0f64;
-    M.d = -1.0f64;
-    M.e = (*c).x;
-    M.f = (*c).y;
     pdf_dev_concat(&mut M);
     if f_vp {
         set_linestyle(pn, da);
@@ -592,7 +586,7 @@ unsafe extern "C" fn spc_handler_tpic_pa(mut spe: *mut spc_env, mut ap: *mut spc
 unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     if (*tp).num_points <= 1i32 {
@@ -608,7 +602,7 @@ unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc
 unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     if (*tp).num_points <= 1i32 {
@@ -626,7 +620,7 @@ unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -650,7 +644,7 @@ unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -674,7 +668,7 @@ unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -697,7 +691,7 @@ unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: i32 = 0;
@@ -738,7 +732,7 @@ unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: i32 = 0;

@@ -249,17 +249,10 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
     mut f: f64,
 ) -> i32 {
     let mut M: pdf_tmatrix = {
-        let mut init = pdf_tmatrix {
-            a: 0i32 as f64,
-            b: 0i32 as f64,
-            c: 0i32 as f64,
-            d: 0i32 as f64,
-            e: 0i32 as f64,
-            f: 0i32 as f64,
-        };
+        let mut init = pdf_tmatrix::new();
         init
     };
-    let mut pt: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut pt: pdf_coord = pdf_coord::new();
     /* Create transformation matrix */
     M.a = a;
     M.b = b;

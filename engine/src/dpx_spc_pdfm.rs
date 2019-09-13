@@ -15,10 +15,15 @@ use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
 };
 use super::dpx_pdfdev::pdf_sprint_matrix;
+use super::dpx_pdfdev::{
+    pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
+};
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
+use super::dpx_pdfdoc::{pdf_doc_add_annot, pdf_doc_add_bead, pdf_doc_begin_grabbing};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
 use super::dpx_pdfximage::{pdf_ximage_findresource, pdf_ximage_get_reference};
 use super::dpx_spc_util::spc_util_read_pdfcolor;
+use super::dpx_spc_util::{spc_util_read_blahblah, spc_util_read_dimtrns};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_file, pdf_get_array,
     pdf_link_obj, pdf_lookup_dict, pdf_merge_dict, pdf_name_value, pdf_new_array, pdf_new_dict,
@@ -163,11 +168,6 @@ extern "C" {
      * See remark in spc_color.c.
      */
     #[no_mangle]
-    fn transform_info_clear(info: *mut transform_info);
-    /* Place XObject */
-    #[no_mangle]
-    fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
-    #[no_mangle]
     fn pdf_dev_reset_color(force: i32);
     #[no_mangle]
     fn pdf_dev_get_coord(xpos: *mut f64, ypos: *mut f64);
@@ -201,13 +201,6 @@ extern "C" {
     /* Article thread */
     #[no_mangle]
     fn pdf_doc_begin_article(article_id: *const i8, info: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_doc_add_bead(
-        article_id: *const i8,
-        bead_id: *const i8,
-        page_no: i32,
-        rect: *const pdf_rect,
-    );
     /* Bookmarks */
     #[no_mangle]
     fn pdf_doc_bookmarks_up() -> i32;
@@ -217,24 +210,8 @@ extern "C" {
     fn pdf_doc_bookmarks_add(dict: *mut pdf_obj, is_open: i32);
     #[no_mangle]
     fn pdf_doc_bookmarks_depth() -> i32;
-    /* Returns xobj_id of started xform. */
-    #[no_mangle]
-    fn pdf_doc_begin_grabbing(
-        ident: *const i8,
-        ref_x: f64,
-        ref_y: f64,
-        cropbox: *const pdf_rect,
-    ) -> i32;
     #[no_mangle]
     fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
-    /* Annotation */
-    #[no_mangle]
-    fn pdf_doc_add_annot(
-        page_no: u32,
-        rect: *const pdf_rect,
-        annot_dict: *mut pdf_obj,
-        new_annot: i32,
-    );
     /* Similar to bop_content */
     #[no_mangle]
     fn pdf_dev_gsave() -> i32;
@@ -244,21 +221,6 @@ extern "C" {
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]
     fn parse_pdf_tainted_dict(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn spc_util_read_dimtrns(
-        spe: *mut spc_env,
-        dimtrns: *mut transform_info,
-        args: *mut spc_arg,
-        syntax: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_util_read_blahblah(
-        spe: *mut spc_env,
-        dimtrns: *mut transform_info,
-        page_no: *mut i32,
-        bbox_type: *mut i32,
-        args: *mut spc_arg,
-    ) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -355,8 +317,6 @@ pub struct ht_entry {
 }
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 
-use super::dpx_pdfdev::pdf_tmatrix;
-
 pub use super::dpx_pdfcolor::pdf_color;
 
 #[derive(Copy, Clone)]
@@ -391,7 +351,6 @@ pub struct C2RustUnnamed {
     pub sfd_name: *mut i8,
     pub subfont_id: *mut i8,
 }
-use super::dpx_pdfdev::{pdf_rect, transform_info};
 
 use crate::dpx_pdfximage::load_options;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -1046,34 +1005,10 @@ unsafe extern "C" fn parse_pdf_dict_with_tounicode(
 unsafe extern "C" fn spc_handler_pdfm_annot(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
     let mut annot_dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut rect: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
+    let mut rect = pdf_rect::new();
     let mut ident: *mut i8 = 0 as *mut i8;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut cp: pdf_coord = pdf_coord::new();
+    let mut ti = transform_info::new();
     skip_white(&mut (*args).curptr, (*args).endptr);
     if *(*args).curptr.offset(0) as i32 == '@' as i32 {
         ident = parse_opt_ident(&mut (*args).curptr, (*args).endptr);
@@ -1267,45 +1202,13 @@ unsafe extern "C" fn spc_handler_pdfm_ecolor(mut spe: *mut spc_env, mut args: *m
     0i32
 }
 unsafe extern "C" fn spc_handler_pdfm_btrans(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
-    let mut M: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut ti = transform_info::new();
     transform_info_clear(&mut ti);
     if spc_util_read_dimtrns(spe, &mut ti, args, 0i32) < 0i32 {
         return -1i32;
     }
     /* Create transformation matrix */
-    M.a = ti.matrix.a;
-    M.b = ti.matrix.b;
-    M.c = ti.matrix.c;
-    M.d = ti.matrix.d;
-    M.e = ti.matrix.e;
-    M.f = ti.matrix.f;
+    let mut M = ti.matrix.clone();
     M.e += (1.0f64 - M.a) * (*spe).x_user - M.c * (*spe).y_user;
     M.f += (1.0f64 - M.d) * (*spe).y_user - M.b * (*spe).x_user;
     pdf_dev_gsave();
@@ -1453,34 +1356,10 @@ unsafe extern "C" fn spc_handler_pdfm_bead(mut spe: *mut spc_env, mut args: *mut
     let mut article: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut article_info: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut article_name: *mut i8 = 0 as *mut i8;
-    let mut rect: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
+    let mut rect = pdf_rect::new();
     let mut page_no: i32 = 0;
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut ti = transform_info::new();
+    let mut cp: pdf_coord = pdf_coord::new();
     skip_white(&mut (*args).curptr, (*args).endptr);
     if *(*args).curptr.offset(0) as i32 != '@' as i32 {
         spc_warn(
@@ -1561,26 +1440,7 @@ unsafe extern "C" fn spc_handler_pdfm_image(mut spe: *mut spc_env, mut args: *mu
     let mut xobj_id: i32 = 0;
     let mut ident: *mut i8 = 0 as *mut i8;
     let mut fspec: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut ti = transform_info::new();
     let mut options: load_options = {
         let mut init = load_options {
             page_no: 1i32,
@@ -1933,20 +1793,14 @@ unsafe extern "C" fn spc_handler_pdfm_content(
     let mut len: i32 = 0i32;
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
-        let mut M: pdf_tmatrix = pdf_tmatrix {
-            a: 0.,
+        let mut M = pdf_tmatrix {
+            a: 1.,
             b: 0.,
             c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
+            d: 1.,
+            e: (*spe).x_user,
+            f: (*spe).y_user,
         };
-        M.a = 1.0f64;
-        M.b = 0.0f64;
-        M.c = 0.0f64;
-        M.d = 1.0f64;
-        M.e = (*spe).x_user;
-        M.f = (*spe).y_user;
         let fresh4 = len;
         len = len + 1;
         *work_buffer.as_mut_ptr().offset(fresh4 as isize) = ' ' as i32 as i8;
@@ -2004,14 +1858,7 @@ unsafe extern "C" fn spc_handler_pdfm_literal(
         skip_white(&mut (*args).curptr, (*args).endptr);
     }
     if (*args).curptr < (*args).endptr {
-        let mut M: pdf_tmatrix = pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        };
+        let mut M = pdf_tmatrix::new();
         if direct == 0 {
             M.d = 1.0f64;
             M.a = M.d;
@@ -2039,24 +1886,18 @@ unsafe extern "C" fn spc_handler_pdfm_bcontent(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    let mut M: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
     let mut xpos: f64 = 0.;
     let mut ypos: f64 = 0.;
     pdf_dev_gsave();
     pdf_dev_get_coord(&mut xpos, &mut ypos);
-    M.a = 1.0f64;
-    M.b = 0.0f64;
-    M.c = 0.0f64;
-    M.d = 1.0f64;
-    M.e = (*spe).x_user - xpos;
-    M.f = (*spe).y_user - ypos;
+    let mut M = pdf_tmatrix {
+        a: 1.,
+        b: 0.,
+        c: 0.,
+        d: 1.,
+        e: (*spe).x_user - xpos,
+        f: (*spe).y_user - ypos,
+    };
     pdf_dev_concat(&mut M);
     pdf_dev_push_coord((*spe).x_user, (*spe).y_user);
     0i32
@@ -2272,32 +2113,8 @@ unsafe extern "C" fn spc_handler_pdfm_fstream(
 unsafe extern "C" fn spc_handler_pdfm_bform(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut xobj_id: i32 = 0;
     let mut ident: *mut i8 = 0 as *mut i8;
-    let mut cropbox: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut cropbox = pdf_rect::new();
+    let mut ti = transform_info::new();
     skip_white(&mut (*args).curptr, (*args).endptr);
     ident = parse_opt_ident(&mut (*args).curptr, (*args).endptr);
     if ident.is_null() {
@@ -2400,26 +2217,7 @@ unsafe extern "C" fn spc_handler_pdfm_uxobj(mut spe: *mut spc_env, mut args: *mu
     let mut sd: *mut spc_pdf_ = &mut _pdf_stat;
     let mut xobj_id: i32 = 0;
     let mut ident: *mut i8 = 0 as *mut i8;
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut ti = transform_info::new();
     let mut options: load_options = {
         let mut init = load_options {
             page_no: 1i32,

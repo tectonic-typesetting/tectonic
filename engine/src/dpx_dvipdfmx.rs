@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use super::dpx_pdfdoc::pdf_doc_set_mediabox;
 use crate::dpx_pdfparse::parse_unsigned;
 use crate::{info, warn};
 
@@ -245,8 +246,6 @@ extern "C" {
     /* PDF document metadata */
     #[no_mangle]
     fn pdf_doc_set_creator(creator: *const i8);
-    #[no_mangle]
-    fn pdf_doc_set_mediabox(page_no: u32, mediabox: *const pdf_rect);
     /*
 
         This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -680,12 +679,7 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
     let mut page_height: f64 = 0.;
     let mut init_paper_width: f64 = 0.;
     let mut init_paper_height: f64 = 0.;
-    let mut mediabox: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
+    let mut mediabox = pdf_rect::new();
     spc_exec_at_begin_document();
     page_width = paper_width;
     init_paper_width = page_width;

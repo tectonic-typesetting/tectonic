@@ -205,16 +205,7 @@ pub unsafe extern "C" fn bmp_include_image(
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut colorspace: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut info: ximage_info = ximage_info {
-        flags: 0,
-        width: 0,
-        height: 0,
-        bits_per_component: 0,
-        num_components: 0,
-        min_dpi: 0,
-        xdensity: 0.,
-        ydensity: 0.,
-    };
+    let mut info = ximage_info::default();
     let mut hdr: hdr_info = {
         let mut init = hdr_info {
             offset: 0_u32,
@@ -431,11 +422,7 @@ pub unsafe extern "C" fn bmp_include_image(
             info.num_components,
         );
     }
-    pdf_ximage_set_image(
-        ximage,
-        &mut info as *mut ximage_info as *mut libc::c_void,
-        stream,
-    );
+    pdf_ximage_set_image(ximage, &mut info, stream);
     0i32
 }
 unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut hdr_info) -> i32 {

@@ -718,12 +718,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
     let mut encoding: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut tmp_array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut widths: [f64; 256] = [0.; 256];
-    let mut bbox: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
+    let mut bbox = pdf_rect::new();
     let mut charavail: [i8; 256] = [0; 256];
     let mut encoding_id: i32 = 0;
     let mut enc_vec: *mut *mut i8 = 0 as *mut *mut i8;

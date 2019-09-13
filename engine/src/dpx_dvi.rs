@@ -21,6 +21,8 @@ use super::dpx_numbers::{
     tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
 use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
+use super::dpx_pdfdev::pdf_dev_set_rect;
+use super::dpx_pdfdoc::pdf_doc_expand_box;
 use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
 use crate::dpx_pdfobj::{
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj, pdf_string_value,
@@ -115,15 +117,6 @@ extern "C" {
     /* Set rect to rectangle in device space.
      * Unit conversion spt_t to bp and transformation applied within it.
      */
-    #[no_mangle]
-    fn pdf_dev_set_rect(
-        rect: *mut pdf_rect,
-        x_pos: spt_t,
-        y_pos: spt_t,
-        width: spt_t,
-        height: spt_t,
-        depth: spt_t,
-    );
     /* Text is normal and line art is not normal in dvipdfmx. So we don't have
      * begin_text (BT in PDF) and end_text (ET), but instead we have graphics_mode()
      * to terminate text section. pdf_dev_flushpath() and others call this.
@@ -222,8 +215,6 @@ extern "C" {
     fn pdf_doc_end_page();
     #[no_mangle]
     fn pdf_doc_break_annot();
-    #[no_mangle]
-    fn pdf_doc_expand_box(rect: *const pdf_rect);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -727,7 +718,7 @@ pub struct C2RustUnnamed_4 {
     pub achar: card8,
 }
 
-use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+use super::dpx_sfnt::sfnt;
 
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -2245,12 +2236,7 @@ pub unsafe extern "C" fn dvi_set(mut ch: i32) {
                 );
             }
             if dvi_is_tracking_boxes() {
-                let mut rect: pdf_rect = pdf_rect {
-                    llx: 0.,
-                    lly: 0.,
-                    urx: 0.,
-                    ury: 0.,
-                };
+                let mut rect = pdf_rect::new();
                 height = tfm_get_fw_height((*font).tfm_id, ch);
                 depth = tfm_get_fw_depth((*font).tfm_id, ch);
                 height = sqxfw((*font).size, height);
@@ -2342,12 +2328,7 @@ pub unsafe extern "C" fn dvi_put(mut ch: i32) {
                 );
             }
             if dvi_is_tracking_boxes() {
-                let mut rect: pdf_rect = pdf_rect {
-                    llx: 0.,
-                    lly: 0.,
-                    urx: 0.,
-                    ury: 0.,
-                };
+                let mut rect = pdf_rect::new();
                 height = tfm_get_fw_height((*font).tfm_id, ch);
                 depth = tfm_get_fw_depth((*font).tfm_id, ch);
                 height = sqxfw((*font).size, height);
@@ -2803,12 +2784,7 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: i32) {
                 ((*font).size as f64 * advance as f64 / (*font).unitsPerEm as f64) as spt_t;
             glyph_width = (glyph_width as f32 * (*font).extend) as spt_t;
             if dvi_is_tracking_boxes() {
-                let mut rect: pdf_rect = pdf_rect {
-                    llx: 0.,
-                    lly: 0.,
-                    urx: 0.,
-                    ury: 0.,
-                };
+                let mut rect = pdf_rect::new();
                 height = ((*font).size as f64 * ascent / (*font).unitsPerEm as f64) as spt_t;
                 depth = ((*font).size as f64 * -descent / (*font).unitsPerEm as f64) as spt_t;
                 pdf_dev_set_rect(
