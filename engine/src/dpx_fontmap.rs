@@ -10,7 +10,6 @@
 
 use crate::{info, warn};
 
-extern crate libc;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -157,19 +156,6 @@ extern "C" {
     #[no_mangle]
     fn sfd_get_subfont_ids(sfd_name: *const i8, num_subfonts: *mut i32) -> *mut *mut i8;
 }
-pub type C2RustUnnamed = u32;
-pub const _ISalnum: C2RustUnnamed = 8;
-pub const _ISpunct: C2RustUnnamed = 4;
-pub const _IScntrl: C2RustUnnamed = 2;
-pub const _ISblank: C2RustUnnamed = 1;
-pub const _ISgraph: C2RustUnnamed = 32768;
-pub const _ISprint: C2RustUnnamed = 16384;
-pub const _ISspace: C2RustUnnamed = 8192;
-pub const _ISxdigit: C2RustUnnamed = 4096;
-pub const _ISdigit: C2RustUnnamed = 2048;
-pub const _ISalpha: C2RustUnnamed = 1024;
-pub const _ISlower: C2RustUnnamed = 512;
-pub const _ISupper: C2RustUnnamed = 256;
 pub type size_t = u64;
 /* The weird enum values are historical and could be rationalized. But it is
  * good to write them explicitly since they must be kept in sync with
