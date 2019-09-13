@@ -22,9 +22,6 @@ extern "C" {
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -1581,11 +1578,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
     let mut text_xorigin: spt_t = 0;
     let mut text_yorigin: spt_t = 0;
     if font_id < 0i32 || font_id >= num_dev_fonts {
-        _tt_abort(
-            b"Invalid font: %d (%d)\x00" as *const u8 as *const i8,
-            font_id,
-            num_dev_fonts,
-        );
+        panic!("Invalid font: {} ({})", font_id, num_dev_fonts);
     }
     if font_id != text_state.font_id {
         dev_set_font(font_id);
@@ -1596,7 +1589,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
         &mut *dev_fonts.offset(text_state.font_id as isize) as *mut dev_font
     };
     if font.is_null() {
-        _tt_abort(b"Currentfont not set.\x00" as *const u8 as *const i8);
+        panic!("Currentfont not set.");
     }
     if (*font).real_font_index >= 0i32 {
         real_font = &mut *dev_fonts.offset((*font).real_font_index as isize) as *mut dev_font
@@ -1609,7 +1602,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
     length = instr_len;
     if (*font).format == 3i32 {
         if handle_multibyte_string(font, &mut str_ptr, &mut length, ctype) < 0i32 {
-            _tt_abort(b"Error in converting input string...\x00" as *const u8 as *const i8);
+            panic!("Error in converting input string...");
         }
         if !(*real_font).used_chars.is_null() {
             i = 0i32 as size_t;
@@ -1728,7 +1721,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
     }
     if text_state.is_mb != 0 {
         if (4096i32 as u64).wrapping_sub(len) < (2i32 as u64).wrapping_mul(length) {
-            _tt_abort(b"Buffer overflow...\x00" as *const u8 as *const i8);
+            panic!("Buffer overflow...");
         }
         i = 0i32 as size_t;
         while i < length {
@@ -1935,9 +1928,7 @@ pub unsafe extern "C" fn pdf_dev_locate_font(mut font_name: *const i8, mut ptsiz
         return -1i32;
     }
     if ptsize == 0i32 {
-        _tt_abort(
-            b"pdf_dev_locate_font() called with the zero ptsize.\x00" as *const u8 as *const i8,
-        );
+        panic!("pdf_dev_locate_font() called with the zero ptsize.");
     }
     i = 0i32;
     while i < num_dev_fonts {
@@ -2337,10 +2328,7 @@ pub unsafe extern "C" fn pdf_dev_get_param(mut param_type: i32) -> i32 {
         1 => value = dev_param.autorotate,
         2 => value = dev_param.colormode,
         _ => {
-            _tt_abort(
-                b"Unknown device parameter: %d\x00" as *const u8 as *const i8,
-                param_type,
-            );
+            panic!("Unknown device parameter: {}", param_type);
         }
     }
     value
@@ -2353,10 +2341,7 @@ pub unsafe extern "C" fn pdf_dev_set_param(mut param_type: i32, mut value: i32) 
         }
         2 => dev_param.colormode = value,
         _ => {
-            _tt_abort(
-                b"Unknown device parameter: %d\x00" as *const u8 as *const i8,
-                param_type,
-            );
+            panic!("Unknown device parameter: {}", param_type);
         }
     };
 }

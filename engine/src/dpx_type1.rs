@@ -801,7 +801,7 @@ unsafe extern "C" fn add_metrics(
      * much as possible.
      */
     if cff_dict_known((*cffont).topdict, b"FontBBox\x00" as *const u8 as *const i8) == 0 {
-        _tt_abort(b"No FontBBox?\x00" as *const u8 as *const i8);
+        panic!("No FontBBox?");
     }
     /* The widhts array in the font dictionary must be given relative
      * to the default scaling of 1000:1, not relative to the scaling
@@ -1204,7 +1204,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     fontname = pdf_font_get_fontname(font);
     uniqueTag = pdf_font_get_uniqueTag(font);
     if usedchars.is_null() || ident.is_null() || fontname.is_null() {
-        _tt_abort(b"Type1: Unexpected error.\x00" as *const u8 as *const i8);
+        panic!("Type1: Unexpected error.");
     }
     handle = ttstub_input_open(ident, TTInputFormat::TYPE1, 0i32);
     if handle.is_null() {
@@ -1319,7 +1319,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
         new((1024_u64).wrapping_mul(::std::mem::size_of::<s_SID>() as u64) as u32) as *mut s_SID;
     gid = cff_glyph_lookup(cffont, b".notdef\x00" as *const u8 as *const i8) as i32;
     if gid < 0i32 {
-        _tt_abort(b"Type 1 font with no \".notdef\" glyph???\x00" as *const u8 as *const i8);
+        panic!("Type 1 font with no \".notdef\" glyph???");
     }
     *GIDMap.offset(0) = gid as card16;
     if verbose > 2i32 {

@@ -12,9 +12,6 @@ extern "C" {
     pub type pst_obj;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn skip_white_spaces(s: *mut *mut u8, endptr: *mut u8);
     #[no_mangle]
@@ -215,9 +212,7 @@ pub unsafe extern "C" fn pst_get_token(
         40 => obj = pst_parse_string(inbuf, inbufend),
         62 => {
             if (*inbuf).offset(1) >= inbufend || *(*inbuf).offset(1) as i32 != '>' as i32 {
-                _tt_abort(
-                    b"Unexpected end of ASCII hex string marker.\x00" as *const u8 as *const i8,
-                );
+                panic!("Unexpected end of ASCII hex string marker.");
             } else {
                 let mut mark: *mut i8 = 0 as *mut i8;
                 mark =

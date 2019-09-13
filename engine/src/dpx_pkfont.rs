@@ -157,7 +157,7 @@ static mut base_dpi: u32 = 600u32;
 #[no_mangle]
 pub unsafe extern "C" fn PKFont_set_dpi(mut dpi: i32) {
     if dpi <= 0i32 {
-        _tt_abort(b"Invalid DPI: %d\n\x00" as *const u8 as *const i8, dpi);
+        panic!("Invalid DPI: {}\n", dpi);
     }
     base_dpi = dpi as u32;
 }
@@ -517,10 +517,7 @@ unsafe extern "C" fn do_preamble(mut fp: *mut FILE) {
         is the file wethink it is */
         skip_bytes(16_u32, fp);
     } else {
-        _tt_abort(
-            b"embed_pk_font: PK ID byte is incorrect.  Are you sure this is a PK file?\x00"
-                as *const u8 as *const i8,
-        );
+        panic!("embed_pk_font: PK ID byte is incorrect.  Are you sure this is a PK file?");
     };
 }
 unsafe extern "C" fn read_pk_char_header(
@@ -798,7 +795,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
             };
             error = read_pk_char_header(&mut pkh, opcode as u8, fp);
             if error != 0 {
-                _tt_abort(b"Error in reading PK character header.\x00" as *const u8 as *const i8);
+                panic!("Error in reading PK character header.");
             } else {
                 if charavail[(pkh.chrcode & 0xffi32) as usize] != 0 {
                     dpx_warning(
@@ -866,7 +863,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                     create_pk_CharProc_stream(&mut pkh, charwidth, pkt_ptr, bytesread as u32);
                 free(pkt_ptr as *mut libc::c_void);
                 if charproc.is_null() {
-                    _tt_abort(b"Unpacking PK character data failed.\x00" as *const u8 as *const i8);
+                    panic!("Unpacking PK character data failed.");
                 }
                 if encoding_id >= 0i32 && !enc_vec.is_null() {
                     charname = *enc_vec.offset((pkh.chrcode & 0xffi32) as isize);
@@ -1010,10 +1007,9 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
     }
     if firstchar > lastchar {
         pdf_release_obj(tmp_array);
-        _tt_abort(
-            b"Unexpected error: firstchar > lastchar (%d %d)\x00" as *const u8 as *const i8,
-            firstchar,
-            lastchar,
+        panic!(
+            "Unexpected error: firstchar > lastchar ({} {})",
+            firstchar, lastchar
         );
     }
     if encoding_id < 0i32 || enc_vec.is_null() {

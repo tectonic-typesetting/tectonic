@@ -125,7 +125,7 @@ pub unsafe extern "C" fn error() {
         print_nl_cstr(b"(That makes 100 errors; please try again.)\x00" as *const u8 as *const i8);
         history = TTHistory::FATAL_ERROR;
         post_error_message(0i32);
-        _tt_abort(b"halted after 100 potentially-recoverable errors\x00" as *const u8 as *const i8);
+        panic!("halted after 100 potentially-recoverable errors");
     }
     if interaction as i32 > 0i32 {
         selector = (u8::from(selector) - 1).into()
@@ -166,7 +166,7 @@ pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: i32) -> ! {
     help_line[1] = b"If you really absolutely need more capacity,\x00" as *const u8 as *const i8;
     help_line[0] = b"you can ask a wizard to enlarge me.\x00" as *const u8 as *const i8;
     post_error_message(1i32);
-    _tt_abort(b"halted on overflow()\x00" as *const u8 as *const i8);
+    panic!("halted on overflow()");
 }
 #[no_mangle]
 pub unsafe extern "C" fn confusion(mut s: *const i8) -> ! {
@@ -187,7 +187,7 @@ pub unsafe extern "C" fn confusion(mut s: *const i8) -> ! {
             as *const u8 as *const i8
     }
     post_error_message(1i32);
-    _tt_abort(b"halted on confusion()\x00" as *const u8 as *const i8);
+    panic!("halted on confusion()");
 }
 /* xetex-errors */
 #[no_mangle]
@@ -202,5 +202,5 @@ pub unsafe extern "C" fn pdf_error(mut t: *const i8, mut p: *const i8) -> ! {
     print_cstr(b": \x00" as *const u8 as *const i8);
     print_cstr(p);
     post_error_message(1i32);
-    _tt_abort(b"halted on pdf_error()\x00" as *const u8 as *const i8);
+    panic!("halted on pdf_error()");
 }

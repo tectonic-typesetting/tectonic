@@ -21,8 +21,6 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
@@ -301,22 +299,13 @@ unsafe extern "C" fn Type0Font_init_font_struct(mut font: *mut Type0Font) {
 unsafe extern "C" fn Type0Font_clean(mut font: *mut Type0Font) {
     if !font.is_null() {
         if !(*font).fontdict.is_null() {
-            _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
-                b"Type0\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Object not flushed.", "Type0",);
         }
         if !(*font).indirect.is_null() {
-            _tt_abort(
-                b"%s: Object not flushed.\x00" as *const u8 as *const i8,
-                b"Type0\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: Object not flushed.", "Type0",);
         }
         if !(*font).descriptor.is_null() {
-            _tt_abort(
-                b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8 as *const i8,
-                b"Type0\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: FontDescriptor unexpected for Type0 font.", "Type0",);
         }
         if (*font).flags & 1i32 << 0i32 == 0 && !(*font).used_chars.is_null() {
             free((*font).used_chars as *mut libc::c_void);
@@ -388,10 +377,7 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
      */
     cidfont = (*font).descendant;
     if cidfont.is_null() {
-        _tt_abort(
-            b"%s: No descendant CID-keyed font.\x00" as *const u8 as *const i8,
-            b"Type0\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: No descendant CID-keyed font.", "Type0",);
     }
     if CIDFont_is_ACCFont(cidfont) {
         /* No need to embed ToUnicode */
@@ -499,10 +485,7 @@ unsafe extern "C" fn Type0Font_flush(mut font: *mut Type0Font) {
         pdf_release_obj((*font).indirect);
         (*font).indirect = 0 as *mut pdf_obj;
         if !(*font).descriptor.is_null() {
-            _tt_abort(
-                b"%s: FontDescriptor unexpected for Type0 font.\x00" as *const u8 as *const i8,
-                b"Type0\x00" as *const u8 as *const i8,
-            );
+            panic!("{}: FontDescriptor unexpected for Type0 font.", "Type0",);
         }
         (*font).descriptor = 0 as *mut pdf_obj
     };
@@ -547,10 +530,7 @@ static mut __cache: font_cache = {
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_cache_init() {
     if !__cache.fonts.is_null() {
-        _tt_abort(
-            b"%s: Already initialized.\x00" as *const u8 as *const i8,
-            b"Type0\x00" as *const u8 as *const i8,
-        );
+        panic!("{}: Already initialized.", "Type0",);
     }
     __cache.count = 0i32;
     __cache.capacity = 0i32;
@@ -559,11 +539,7 @@ pub unsafe extern "C" fn Type0Font_cache_init() {
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_cache_get(mut id: i32) -> *mut Type0Font {
     if id < 0i32 || id >= __cache.count {
-        _tt_abort(
-            b"%s: Invalid ID %d\x00" as *const u8 as *const i8,
-            b"Type0\x00" as *const u8 as *const i8,
-            id,
-        );
+        panic!("{}: Invalid ID {}", "Type0", id,);
     }
     &mut *__cache.fonts.offset(id as isize) as *mut Type0Font
 }
@@ -757,7 +733,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
             (*font).used_chars = new_used_chars2()
         }
         _ => {
-            _tt_abort(b"Unrecognized CIDFont Type\x00" as *const u8 as *const i8);
+            panic!("Unrecognized CIDFont Type");
         }
     }
     pdf_add_dict(

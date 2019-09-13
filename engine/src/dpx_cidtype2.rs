@@ -624,7 +624,7 @@ unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: i32) {
         }
     }
     if len < 1i32 {
-        _tt_abort(b"No valid character found in fontname string.\x00" as *const u8 as *const i8);
+        panic!("No valid character found in fontname string.");
     };
 }
 static mut known_encodings: [C2RustUnnamed_3; 11] = [
@@ -793,7 +793,7 @@ unsafe extern "C" fn find_tocode_cmap(
     let mut cmap_name: *mut i8 = 0 as *mut i8;
     let mut append: *const i8 = 0 as *const i8;
     if reg.is_null() || ord.is_null() || select < 0i32 || select > 9i32 {
-        _tt_abort(b"Character set unknown.\x00" as *const u8 as *const i8);
+        panic!("Character set unknown.");
     }
     if streq_ptr(ord, b"UCS\x00" as *const u8 as *const i8) as i32 != 0 && select <= 1i32 {
         return 0 as *mut CMap;
@@ -838,7 +838,7 @@ unsafe extern "C" fn find_tocode_cmap(
             i += 1
         }
         warn!("Please check if this file exists.");
-        _tt_abort(b"Cannot continue...\x00" as *const u8 as *const i8);
+        panic!("Cannot continue...");
     }
     CMap_cache_get(cmap_id)
 }
@@ -1350,7 +1350,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
                 (*(*font).csi).registry,
                 (*(*font).csi).ordering,
             );
-            _tt_abort(b"Cannot continue without this...\x00" as *const u8 as *const i8);
+            panic!("Cannot continue without this...");
         } else {
             if i <= 1i32 {
                 unicode_cmap = 1i32
@@ -1383,7 +1383,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         v_used_chars = Type0Font_get_usedchars(parent)
     }
     if h_used_chars.is_null() && v_used_chars.is_null() {
-        _tt_abort(b"Unexpected error.\x00" as *const u8 as *const i8);
+        panic!("Unexpected error.");
     }
     /*
      * Quick check of max CID.
@@ -1425,7 +1425,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         }
     }
     if last_cid as u32 >= 0xffffu32 {
-        _tt_abort(b"CID count > 65535\x00" as *const u8 as *const i8);
+        panic!("CID count > 65535");
     }
     cidtogidmap = 0 as *mut u8;
     /* !NO_GHOSTSCRIPT_BUG */
@@ -1593,18 +1593,18 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         }
     }
     if used_chars.is_null() {
-        _tt_abort(b"Unexpected error.\x00" as *const u8 as *const i8);
+        panic!("Unexpected error.");
     }
     tt_cmap_release(ttcmap);
     if CIDFont_get_embedding(font) != 0 {
         if tt_build_tables(sfont, glyphs) < 0i32 {
-            _tt_abort(b"Could not created FontFile stream.\x00" as *const u8 as *const i8);
+            panic!("Could not created FontFile stream.");
         }
         if verbose > 1i32 {
             info!("[{} glyphs (Max CID: {})]", (*glyphs).num_glyphs, last_cid);
         }
     } else if tt_get_metrics(sfont, glyphs) < 0i32 {
-        _tt_abort(b"Reading glyph metrics failed...\x00" as *const u8 as *const i8);
+        panic!("Reading glyph metrics failed...");
     }
     /*
      * DW, W, DW2, and W2
@@ -1781,7 +1781,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
         }
     }
     if sfnt_read_table_directory(sfont, offset) < 0i32 {
-        _tt_abort(b"Reading TrueType table directory failed.\x00" as *const u8 as *const i8);
+        panic!("Reading TrueType table directory failed.");
     }
     /* Ignore TrueType Collection with CFF table. */
     if (*sfont).type_0 == 1i32 << 4i32
@@ -1857,9 +1857,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
                     (*cmap_csi).ordering,
                     (*cmap_csi).supplement,
                 );
-                _tt_abort(
-                    b"Incompatible CMap specified for this font.\x00" as *const u8 as *const i8,
-                );
+                panic!("Incompatible CMap specified for this font.");
             }
             if (*(*opt).csi).supplement < (*cmap_csi).supplement {
                 warn!("Supplmement value in CIDSystemInfo increased.");
@@ -1922,7 +1920,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     );
     (*font).descriptor = tt_get_fontdesc(sfont, &mut (*opt).embed, (*opt).stemv, 0i32, name);
     if (*font).descriptor.is_null() {
-        _tt_abort(b"Could not obtain necessary font info.\x00" as *const u8 as *const i8);
+        panic!("Could not obtain necessary font info.");
     }
     if (*opt).embed != 0 {
         memmove(

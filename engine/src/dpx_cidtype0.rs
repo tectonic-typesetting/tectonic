@@ -1529,11 +1529,11 @@ unsafe extern "C" fn CIDFont_type0_get_used_chars(mut font: *mut CIDFont) -> *mu
         parent_id = CIDFont_get_parent_id(font, 1i32);
         parent_id < 0i32
     } {
-        _tt_abort(b"No parent Type 0 font !\x00" as *const u8 as *const i8);
+        panic!("No parent Type 0 font !");
     }
     used_chars = Type0Font_get_usedchars(Type0Font_cache_get(parent_id));
     if used_chars.is_null() {
-        _tt_abort(b"Unexpected error: Font not actually used???\x00" as *const u8 as *const i8);
+        panic!("Unexpected error: Font not actually used???");
     }
     used_chars
 }
@@ -1817,7 +1817,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
     offset = ttstub_input_seek((*cffont).handle, 0i32 as ssize_t, 1i32) as i32;
     cs_count = (*idx).count;
     if (cs_count as i32) < 2i32 {
-        _tt_abort(b"No valid charstring data found.\x00" as *const u8 as *const i8);
+        panic!("No valid charstring data found.");
     }
     /* New Charsets data */
     charset = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
@@ -1859,10 +1859,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
             size = (*(*idx).offset.offset((gid_org as i32 + 1i32) as isize))
                 .wrapping_sub(*(*idx).offset.offset(gid_org as isize)) as i32;
             if size > 65536i32 {
-                _tt_abort(
-                    b"Charstring too long: gid=%u\x00" as *const u8 as *const i8,
-                    gid_org as i32,
-                );
+                panic!("Charstring too long: gid={}", gid_org);
             }
             if charstring_len + 65536i32 >= max_len {
                 max_len = charstring_len + 2i32 * 65536i32;
@@ -1919,7 +1916,7 @@ pub unsafe extern "C" fn CIDFont_type0_dofont(mut font: *mut CIDFont) {
         cid += 1
     }
     if gid as i32 != num_glyphs as i32 {
-        _tt_abort(b"Unexpeced error: ?????\x00" as *const u8 as *const i8);
+        panic!("Unexpeced error: ?????");
     }
     free(data as *mut libc::c_void);
     cff_release_index(idx);
@@ -2027,7 +2024,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         }
         cffont = cff_open((*sfont).handle, offset as i32, 0i32);
         if cffont.is_null() {
-            _tt_abort(b"Cannot read CFF font data\x00" as *const u8 as *const i8);
+            panic!("Cannot read CFF font data");
         }
         is_cid_font = (*cffont).flag & 1i32 << 0i32;
         if expect_cid_font != is_cid_font {
@@ -2108,7 +2105,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
                 (*cmap_csi).ordering,
                 (*cmap_csi).supplement,
             );
-            _tt_abort(b"Inconsistent CMap specified for this font.\x00" as *const u8 as *const i8);
+            panic!("Inconsistent CMap specified for this font.");
         }
         if (*csi).supplement < (*cmap_csi).supplement {
             warn!("CMap have higher supplmement number.");
@@ -2119,7 +2116,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
     let mut fontname_len: i32 = 8i32;
     shortname = cff_get_name(cffont);
     if shortname.is_null() {
-        _tt_abort(b"No valid FontName found.\x00" as *const u8 as *const i8);
+        panic!("No valid FontName found.");
     }
     /*
      * Mangled name requires more 7 bytes.
@@ -2198,7 +2195,7 @@ pub unsafe extern "C" fn CIDFont_type0_open(
         /* getting font info. from TrueType tables */
         (*font).descriptor = tt_get_fontdesc(sfont, &mut (*opt).embed, (*opt).stemv, 0i32, name);
         if (*font).descriptor.is_null() {
-            _tt_abort(b"Could not obtain necessary font info.\x00" as *const u8 as *const i8);
+            panic!("Could not obtain necessary font info.");
         }
     }
     pdf_add_dict(
@@ -2482,7 +2479,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
     /* offset is now absolute offset ... bad */
     offset = ttstub_input_seek((*cffont).handle, 0i32 as ssize_t, 1i32) as i32;
     if ((*idx).count as i32) < 2i32 {
-        _tt_abort(b"No valid charstring data found.\x00" as *const u8 as *const i8);
+        panic!("No valid charstring data found.");
     }
     /* New CharStrings INDEX */
     charstrings = cff_new_index((num_glyphs as i32 + 1i32) as card16);
@@ -2500,10 +2497,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
             size = (*(*idx).offset.offset((cid + 1i32) as isize))
                 .wrapping_sub(*(*idx).offset.offset(cid as isize)) as i32;
             if size > 65536i32 {
-                _tt_abort(
-                    b"Charstring too long: gid=%u\x00" as *const u8 as *const i8,
-                    cid,
-                );
+                panic!("Charstring too long: gid={}", cid);
             }
             if charstring_len + 65536i32 >= max_len {
                 max_len = charstring_len + 2i32 * 65536i32;
@@ -2538,7 +2532,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1cdofont(mut font: *mut CIDFont) {
         cid += 1
     }
     if gid as i32 != num_glyphs as i32 {
-        _tt_abort(b"Unexpeced error: ?????\x00" as *const u8 as *const i8);
+        panic!("Unexpeced error: ?????");
     }
     free(data as *mut libc::c_void);
     cff_release_index(idx);
@@ -3173,7 +3167,7 @@ unsafe extern "C" fn add_metrics(
      * much as possible.
      */
     if cff_dict_known((*cffont).topdict, b"FontBBox\x00" as *const u8 as *const i8) == 0 {
-        _tt_abort(b"No FontBBox?\x00" as *const u8 as *const i8);
+        panic!("No FontBBox?");
     }
     tmp = pdf_new_array();
     i = 0i32;
@@ -3199,11 +3193,11 @@ unsafe extern "C" fn add_metrics(
         parent_id = CIDFont_get_parent_id(font, 1i32);
         parent_id < 0i32
     } {
-        _tt_abort(b"No parent Type 0 font !\x00" as *const u8 as *const i8);
+        panic!("No parent Type 0 font !");
     }
     used_chars = Type0Font_get_usedchars(Type0Font_cache_get(parent_id));
     if used_chars.is_null() {
-        _tt_abort(b"Unexpected error: Font not actually used???\x00" as *const u8 as *const i8);
+        panic!("Unexpected error: Font not actually used???");
     }
     /* FIXME:
      * This writes "CID CID width".
@@ -3292,15 +3286,15 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
     );
     handle = dpx_open_type1_file((*font).ident);
     if handle.is_null() {
-        _tt_abort(b"Type1: Could not open Type1 font.\x00" as *const u8 as *const i8);
+        panic!("Type1: Could not open Type1 font.");
     }
     cffont = t1_load_font(0 as *mut *mut i8, 0i32, handle);
     if cffont.is_null() {
-        _tt_abort(b"Could not read Type 1 font...\x00" as *const u8 as *const i8);
+        panic!("Could not read Type 1 font...");
     }
     ttstub_input_close(handle);
     if (*font).fontname.is_null() {
-        _tt_abort(b"Fontname undefined...\x00" as *const u8 as *const i8);
+        panic!("Fontname undefined...");
     }
     let mut hparent: *mut Type0Font = 0 as *mut Type0Font;
     let mut vparent: *mut Type0Font = 0 as *mut Type0Font;
@@ -3310,7 +3304,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
     hparent_id = CIDFont_get_parent_id(font, 0i32);
     vparent_id = CIDFont_get_parent_id(font, 1i32);
     if hparent_id < 0i32 && vparent_id < 0i32 {
-        _tt_abort(b"No parent Type 0 font !\x00" as *const u8 as *const i8);
+        panic!("No parent Type 0 font !");
     }
     /* usedchars is same for h and v */
     if hparent_id < 0i32 {
@@ -3326,7 +3320,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         used_chars = Type0Font_get_usedchars(vparent)
     }
     if used_chars.is_null() {
-        _tt_abort(b"Unexpected error: Font not actually used???\x00" as *const u8 as *const i8);
+        panic!("Unexpected error: Font not actually used???");
     }
     tounicode = create_ToUnicode_stream(cffont, (*font).fontname, used_chars);
     if !hparent.is_null() {
@@ -3592,10 +3586,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
             );
             *(*cstring).offset.offset((gid as i32 + 1i32) as isize) = (offset + 1i32) as l_offset;
             if gm.use_seac != 0 {
-                _tt_abort(
-                    b"This font using the \"seac\" command for accented characters...\x00"
-                        as *const u8 as *const i8,
-                );
+                panic!("This font using the \"seac\" command for accented characters...");
             }
             *widths.offset(gid as isize) = gm.wx;
             if gm.wx >= 0.0f64 && gm.wx <= 1000.0f64 {

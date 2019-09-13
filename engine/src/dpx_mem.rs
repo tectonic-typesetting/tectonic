@@ -9,8 +9,6 @@
 use libc::free;
 extern "C" {
     #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
     fn malloc(_: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn realloc(_: *mut libc::c_void, _: u64) -> *mut libc::c_void;
@@ -41,10 +39,7 @@ pub type size_t = u64;
 pub unsafe extern "C" fn new(mut size: u32) -> *mut libc::c_void {
     let mut result: *mut libc::c_void = malloc(size as size_t);
     if result.is_null() {
-        _tt_abort(
-            b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const i8,
-            size,
-        );
+        panic!("Out of memory - asked for {} bytes\n", size);
     }
     result
 }
@@ -74,10 +69,7 @@ pub unsafe extern "C" fn renew(mut mem: *mut libc::c_void, mut size: u32) -> *mu
     if size != 0 {
         let mut result: *mut libc::c_void = realloc(mem, size as size_t);
         if result.is_null() {
-            _tt_abort(
-                b"Out of memory - asked for %u bytes\n\x00" as *const u8 as *const i8,
-                size,
-            );
+            panic!("Out of memory - asked for {} bytes\n", size);
         }
         return result;
     } else {

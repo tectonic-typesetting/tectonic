@@ -14991,37 +14991,36 @@ pub unsafe extern "C" fn read_toks(mut n: i32, mut r: i32, mut j: i32) {
         /*502:*/
         begin_file_reading();
         cur_input.name = m as i32 + 1i32;
-        if read_open[m as usize] as i32 == 2i32 {
+        assert!(
+            read_open[m as usize] as i32 != 2,
             /*503:*/
-            _tt_abort(b"terminal input forbidden\x00" as *const u8 as *const i8);
+            "terminal input forbidden"
+        );
         /*505:*/
-        } else {
-            if read_open[m as usize] as i32 == 1i32 {
-                /*504:*/
-                if input_line(read_file[m as usize]) != 0 {
-                    read_open[m as usize] = 0_u8
-                } else {
-                    u_close(read_file[m as usize]);
-                    read_open[m as usize] = 2_u8
-                }
-            } else if input_line(read_file[m as usize]) == 0 {
+        if read_open[m as usize] as i32 == 1i32 {
+            /*504:*/
+            if input_line(read_file[m as usize]) != 0 {
+                read_open[m as usize] = 0_u8
+            } else {
                 u_close(read_file[m as usize]);
-                read_open[m as usize] = 2_u8;
-                if align_state as i64 != 1000000 {
-                    runaway();
-                    if file_line_error_style_p != 0 {
-                        print_file_line();
-                    } else {
-                        print_nl_cstr(b"! \x00" as *const u8 as *const i8);
-                    }
-                    print_cstr(b"File ended within \x00" as *const u8 as *const i8);
-                    print_esc_cstr(b"read\x00" as *const u8 as *const i8);
-                    help_ptr = 1_u8;
-                    help_line[0] =
-                        b"This \\read has unbalanced braces.\x00" as *const u8 as *const i8;
-                    align_state = 1000000i64 as i32;
-                    error();
+                read_open[m as usize] = 2_u8
+            }
+        } else if input_line(read_file[m as usize]) == 0 {
+            u_close(read_file[m as usize]);
+            read_open[m as usize] = 2_u8;
+            if align_state as i64 != 1000000 {
+                runaway();
+                if file_line_error_style_p != 0 {
+                    print_file_line();
+                } else {
+                    print_nl_cstr(b"! \x00" as *const u8 as *const i8);
                 }
+                print_cstr(b"File ended within \x00" as *const u8 as *const i8);
+                print_esc_cstr(b"read\x00" as *const u8 as *const i8);
+                help_ptr = 1_u8;
+                help_line[0] = b"This \\read has unbalanced braces.\x00" as *const u8 as *const i8;
+                align_state = 1000000i64 as i32;
+                error();
             }
         }
         cur_input.limit = last;
@@ -16090,14 +16089,12 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
         begin_name();
         stop_at_space = false;
         let mut cp: *const u8 = primary_input_name as *const u8;
-        if (pool_ptr as u64).wrapping_add(strlen(primary_input_name).wrapping_mul(2i32 as u64))
-            >= pool_size as u64
-        {
-            _tt_abort(
-                b"string pool overflow [%i bytes]\x00" as *const u8 as *const i8,
-                pool_size,
-            );
-        }
+        assert!(
+            !((pool_ptr as u64).wrapping_add(strlen(primary_input_name).wrapping_mul(2i32 as u64))
+                >= pool_size as u64),
+            "string pool overflow [{} bytes]",
+            pool_size,
+        );
         let mut rval: UInt32 = 0;
         loop {
             let fresh39 = cp;
@@ -17754,16 +17751,9 @@ pub unsafe extern "C" fn read_font_info(
                                                                             if np < 7i32 {
                                                                                 lf = lf + 7i32 - np
                                                                             }
-                                                                            if font_ptr == font_max
+                                                                            assert!(!(font_ptr == font_max
                                                                                 || fmem_ptr + lf
-                                                                                    > font_mem_size
-                                                                            {
-                                                                                _tt_abort(b"not enough memory to load another font\x00"
-                                                                                              as
-                                                                                              *const u8
-                                                                                              as
-                                                                                              *const i8);
-                                                                            }
+                                                                                    > font_mem_size), "not enough memory to load another font");
                                                                             f = font_ptr + 1i32;
                                                                             *char_base.offset(
                                                                                 f as isize,

@@ -134,9 +134,7 @@ unsafe extern "C" fn parse_uc_coverage(
             _ => {
                 glyphname = parse_c_ident(pp, endptr);
                 if glyphname.is_null() {
-                    _tt_abort(
-                        b"Invalid Unicode character specified.\x00" as *const u8 as *const i8,
-                    );
+                    panic!("Invalid Unicode character specified.");
                 }
                 skip_white(pp, endptr);
                 if (*pp).offset(1) < endptr && **pp as i32 == '-' as i32 {
@@ -362,7 +360,7 @@ unsafe extern "C" fn parse_substrule(
                 skip_white(pp, endptr);
                 first = parse_c_ident(pp, endptr);
                 if first.is_null() {
-                    _tt_abort(b"Syntax error (1)\x00" as *const u8 as *const i8);
+                    panic!("Syntax error (1)");
                 }
                 skip_white(pp, endptr);
                 tmp = parse_c_ident(pp, endptr);
@@ -374,7 +372,7 @@ unsafe extern "C" fn parse_substrule(
                 skip_white(pp, endptr);
                 second = parse_c_ident(pp, endptr);
                 if second.is_null() {
-                    _tt_abort(b"Syntax error (3)\x00" as *const u8 as *const i8);
+                    panic!("Syntax error (3)");
                 }
                 /* (assign|substitute) tag dst src */
                 pdf_add_array(substrule, pdf_new_name(token)); /* = */
@@ -517,7 +515,7 @@ unsafe extern "C" fn parse_block(
                 }
                 skip_white(pp, endptr);
                 if *pp >= endptr || **pp as i32 != '{' as i32 {
-                    _tt_abort(b"Syntax error (1)\x00" as *const u8 as *const i8);
+                    panic!("Syntax error (1)");
                 }
                 rule_block = parse_substrule(gclass, pp, endptr);
                 subst = pdf_lookup_dict(rule, b"rule\x00" as *const u8 as *const i8);
@@ -544,7 +542,7 @@ unsafe extern "C" fn parse_block(
                 }
                 coverage = parse_uc_coverage(gclass, pp, endptr);
                 if coverage.is_null() {
-                    _tt_abort(b"No valid Unicode characters...\x00" as *const u8 as *const i8);
+                    panic!("No valid Unicode characters...");
                 }
                 pdf_add_dict(gclass, pdf_new_name(&mut *token.offset(1)), coverage);
             }

@@ -4002,7 +4002,7 @@ unsafe extern "C" fn store_fmt_file() {
         history = TTHistory::FATAL_ERROR;
         close_files_and_terminate();
         ttstub_output_flush(rust_stdout);
-        _tt_abort(b"\\dump inside a group\x00" as *const u8 as *const i8);
+        panic!("\\dump inside a group");
     }
     selector = Selector::NEW_STRING;
     print_cstr(b" (preloaded format=\x00" as *const u8 as *const i8);
@@ -5559,10 +5559,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                             ); /*:1345 */
                             if !(x < 0i32) {
                                 if x as i64 > 40000000 - pool_free as i64 {
-                                    _tt_abort(
-                                        b"must increase string_pool_size\x00" as *const u8
-                                            as *const i8,
-                                    );
+                                    panic!("must increase string_pool_size");
                                 }
                                 pool_ptr = x;
                                 if pool_size < pool_ptr + pool_free {
@@ -5576,10 +5573,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                 );
                                 if !(x < 0i32) {
                                     if x as i64 > 2097151 - strings_free as i64 {
-                                        _tt_abort(
-                                            b"must increase sup_strings\x00" as *const u8
-                                                as *const i8,
-                                        );
+                                        panic!("must increase sup_strings");
                                     }
                                     str_ptr = x;
                                     if max_strings < str_ptr + strings_free {
@@ -5606,21 +5600,17 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                 .offset(i as isize)
                                                 > pool_ptr
                                         {
-                                            _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
-                                                          as *const u8 as
-                                                          *const i8,
-                                                      i,
-                                                      *(&mut *str_start.offset(0)
-                                                            as
-                                                            *mut pool_pointer).offset(i
-                                                                                          as
-                                                                                          isize)
-                                                          as uintptr_t,
-                                                      &mut *str_start.offset(0)
-                                                          as *mut pool_pointer
-                                                          as uintptr_t,
-                                                      0i32 as uintptr_t,
-                                                      pool_ptr as uintptr_t);
+                                            panic!(
+                                                "item {} (={}) of .fmt array at {:x} <{} or >{}",
+                                                i,
+                                                *(&mut *str_start.offset(0) as *mut pool_pointer)
+                                                    .offset(i as isize)
+                                                    as uintptr_t,
+                                                &mut *str_start.offset(0) as *mut pool_pointer
+                                                    as uintptr_t,
+                                                0i32 as uintptr_t,
+                                                pool_ptr as uintptr_t
+                                            );
                                         }
                                         i += 1
                                     }
@@ -6460,11 +6450,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                            >
                                                                                                            147483647
                                                                                                        {
-                                                                                                        _tt_abort(b"must increase font_mem_size\x00"
-                                                                                                                      as
-                                                                                                                      *const u8
-                                                                                                                      as
-                                                                                                                      *const i8);
+                                                                                                        panic!("must increase font_mem_size");
                                                                                                     }
                                                                                                     fmem_ptr
                                                                                                         =
@@ -6522,11 +6508,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                    +
                                                                                                                    9000i32
                                                                                                            {
-                                                                                                            _tt_abort(b"must increase font_max\x00"
-                                                                                                                          as
-                                                                                                                          *const u8
-                                                                                                                          as
-                                                                                                                          *const i8);
+                                                                                                            panic!("must increase font_max");
                                                                                                         }
                                                                                                         font_ptr
                                                                                                             =
@@ -6933,11 +6915,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                        >
                                                                                                                        0x3fffffffi32
                                                                                                                {
-                                                                                                                _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8,
+                                                                                                                panic!("item {} (={}) of .fmt array at {:x} <{} or >{}",
                                                                                                                           i_0,
                                                                                                                           *(&mut *font_params.offset(0)
                                                                                                                                 as
@@ -7024,11 +7002,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                    >
                                                                                                                    str_ptr
                                                                                                                {
-                                                                                                                _tt_abort(b"Item %u (=%ld) of .fmt array at %lx >%ld\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8,
+                                                                                                                panic!("Item {} (={}) of .fmt array at {:x} >{}",
                                                                                                                           i_1,
                                                                                                                           *(&mut *font_name.offset(0)
                                                                                                                                 as
@@ -7084,11 +7058,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                    >
                                                                                                                    str_ptr
                                                                                                                {
-                                                                                                                _tt_abort(b"Item %u (=%ld) of .fmt array at %lx >%ld\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8,
+                                                                                                                panic!("Item {} (={}) of .fmt array at {:x} >{}",
                                                                                                                           i_2,
                                                                                                                           *(&mut *font_area.offset(0)
                                                                                                                                 as
@@ -7306,11 +7276,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                        >
                                                                                                                        lo_mem_max
                                                                                                                {
-                                                                                                                _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8,
+                                                                                                                panic!("item {} (={}) of .fmt array at {:x} <{} or >{}",
                                                                                                                           i_3,
                                                                                                                           *(&mut *font_glue.offset(0)
                                                                                                                                 as
@@ -7379,11 +7345,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                            -
                                                                                                                            1i32
                                                                                                                {
-                                                                                                                _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8,
+                                                                                                                panic!("item {} (={}) of .fmt array at {:x} <{} or >{}",
                                                                                                                           i_4,
                                                                                                                           *(&mut *bchar_label.offset(0)
                                                                                                                                 as
@@ -7452,11 +7414,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                        >
                                                                                                                        65536i32
                                                                                                                {
-                                                                                                                _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8,
+                                                                                                                panic!("item {} (={}) of .fmt array at {:x} <{} or >{}",
                                                                                                                           i_5,
                                                                                                                           *(&mut *font_bchar.offset(0)
                                                                                                                                 as
@@ -7523,11 +7481,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                        >
                                                                                                                        65536i32
                                                                                                                {
-                                                                                                                _tt_abort(b"item %u (=%ld) of .fmt array at %lx <%ld or >%ld\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8,
+                                                                                                                panic!("item {} (={}) of .fmt array at {:x} <{} or >{}",
                                                                                                                           i_6,
                                                                                                                           *(&mut *font_false_bchar.offset(0)
                                                                                                                                 as
@@ -7573,11 +7527,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                    >
                                                                                                                    hyph_size
                                                                                                                {
-                                                                                                                _tt_abort(b"must increase hyph_size\x00"
-                                                                                                                              as
-                                                                                                                              *const u8
-                                                                                                                              as
-                                                                                                                              *const i8);
+                                                                                                                panic!("must increase hyph_size");
                                                                                                             }
                                                                                                             hyph_count
                                                                                                                 =
@@ -7602,11 +7552,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                        >
                                                                                                                        hyph_size
                                                                                                                    {
-                                                                                                                    _tt_abort(b"must increase hyph_size\x00"
-                                                                                                                                  as
-                                                                                                                                  *const u8
-                                                                                                                                  as
-                                                                                                                                  *const i8);
+                                                                                                                    panic!("must increase hyph_size");
                                                                                                                 }
                                                                                                                 hyph_next
                                                                                                                     =
@@ -7829,11 +7775,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                    >
                                                                                                                                    trie_size
                                                                                                                                {
-                                                                                                                                _tt_abort(b"must increase trie_size\x00"
-                                                                                                                                              as
-                                                                                                                                              *const u8
-                                                                                                                                              as
-                                                                                                                                              *const i8);
+                                                                                                                                panic!("must increase trie_size");
                                                                                                                             }
                                                                                                                             j
                                                                                                                                 =
@@ -7988,11 +7930,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                            >
                                                                                                                                            35111
                                                                                                                                        {
-                                                                                                                                        _tt_abort(b"must increase TRIE_OP_SIZE\x00"
-                                                                                                                                                      as
-                                                                                                                                                      *const u8
-                                                                                                                                                      as
-                                                                                                                                                      *const i8);
+                                                                                                                                        panic!("must increase TRIE_OP_SIZE");
                                                                                                                                     }
                                                                                                                                     j
                                                                                                                                         =
@@ -8056,11 +7994,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
                                                                                                                                                >
                                                                                                                                                65535
                                                                                                                                            {
-                                                                                                                                            _tt_abort(b"Item %u (=%ld) of .fmt array at %lx >%ld\x00"
-                                                                                                                                                          as
-                                                                                                                                                          *const u8
-                                                                                                                                                          as
-                                                                                                                                                          *const i8,
+                                                                                                                                            panic!("Item {} (={}) of .fmt array at {:x} >{}",
                                                                                                                                                       i_7,
                                                                                                                                                       *(&mut *hyf_next.as_mut_ptr().offset(1)
                                                                                                                                                             as
@@ -8262,7 +8196,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
             }
         }
     }
-    _tt_abort(b"fatal format file error\x00" as *const u8 as *const i8);
+    panic!("fatal format file error");
 }
 unsafe extern "C" fn final_cleanup() {
     let mut c: small_number = 0;
@@ -14022,7 +13956,7 @@ unsafe extern "C" fn get_strings_started() {
     *str_start.offset(0) = 0i32;
     str_ptr = 65536i32;
     if load_pool_strings(pool_size - string_vacancies) == 0i32 {
-        _tt_abort(b"must increase pool_size\x00" as *const u8 as *const i8);
+        panic!("must increase pool_size");
     };
 }
 /* xetex-errors */
@@ -14285,11 +14219,8 @@ pub unsafe extern "C" fn tt_run_engine(
     if 2i32 * 0x3fffffffi32 < 4999999i32 {
         bad = 41i32
     }
-    if bad > 0i32 {
-        _tt_abort(
-            b"failed internal consistency check #%d\x00" as *const u8 as *const i8,
-            bad,
-        );
+    if bad > 0 {
+        panic!("failed internal consistency check #{}", bad,);
     }
     /* OK, ready to keep on initializing. */
     initialize_more_variables();
