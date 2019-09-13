@@ -113,7 +113,9 @@ pub unsafe extern "C" fn error() {
     if halt_on_error_p != 0 {
         history = TTHistory::FATAL_ERROR;
         post_error_message(0i32);
-        panic!("halted on potentially-recoverable error as specified");
+        _tt_abort(
+            b"halted on potentially-recoverable error as specified\x00" as *const u8 as *const i8,
+        );
     }
     /* This used to be where there was a bunch of code if "interaction ==
      * error_stop_mode" that would let the use interactively try to solve the
