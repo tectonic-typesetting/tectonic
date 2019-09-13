@@ -1029,6 +1029,7 @@ mod xetex_xetex0;
 mod macro_stub;
 mod stub_errno;
 mod stub_icu;
+mod xetex_xetexd;
 
 pub use xetex_engine_interface::tt_xetex_set_int_variable;
 
@@ -1057,24 +1058,4 @@ pub(crate) unsafe extern "C" fn streq_ptr(s1: *const i8, s2: *const i8) -> bool 
 pub(crate) unsafe extern "C" fn mfree(ptr: *mut libc::c_void) -> *mut libc::c_void {
     libc::free(ptr);
     std::ptr::null_mut()
-}
-
-#[inline]
-pub(crate) unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    p >= xetex_ini::hi_mem_min
-}
-
-#[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        xetex_output::print_char(*fresh0 as i32);
-    }
-}
-
-#[inline]
-unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    use xetex_ini::mem;
-    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
 }

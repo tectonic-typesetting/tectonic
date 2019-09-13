@@ -9,8 +9,8 @@
 )]
 
 use crate::mfree;
-use crate::print_c_string;
 use crate::stub_icu as icu;
+use crate::xetex_xetexd::print_c_string;
 use crate::{streq_ptr, strstartswith};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
 use libc::free;

@@ -8,9 +8,9 @@
     unused_mut
 )]
 
-use crate::print_c_string;
 use crate::stub_errno as errno;
 use crate::stub_icu as icu;
+use crate::xetex_xetexd::print_c_string;
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_input_open, ttstub_input_open_primary,
     ttstub_input_seek, ttstub_input_ungetc,

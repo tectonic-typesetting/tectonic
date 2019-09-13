@@ -8,7 +8,7 @@
     unused_mut
 )]
 
-use crate::is_char_node;
+use crate::xetex_xetexd::is_char_node;
 
 extern "C" {
     pub type XeTeXLayoutEngine_rec;

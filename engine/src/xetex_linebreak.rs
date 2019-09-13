@@ -9,7 +9,7 @@
 )]
 
 use crate::xetex_ini::hi_mem_min;
-use crate::{is_char_node, is_non_discardable_node};
+use crate::xetex_xetexd::{is_char_node, is_non_discardable_node};
 
 extern "C" {
     #[no_mangle]

@@ -8,7 +8,7 @@
     unused_mut
 )]
 
-use crate::is_non_discardable_node;
+use crate::xetex_xetexd::is_non_discardable_node;
 extern "C" {
     /* Needed here for UFILE */
     /* variables! */

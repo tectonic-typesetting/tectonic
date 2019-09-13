@@ -11,9 +11,9 @@
 use super::xetex_ini::{history, old_setting, selector};
 use super::xetex_io::{tt_xetex_open_input, u_open_in};
 use crate::mfree;
-use crate::print_c_string;
 use crate::xetex_ini::hi_mem_min;
-use crate::{is_char_node, is_non_discardable_node};
+use crate::xetex_xetexd::print_c_string;
+use crate::xetex_xetexd::{is_char_node, is_non_discardable_node};
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_putc,

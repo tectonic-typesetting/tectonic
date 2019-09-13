@@ -9,7 +9,7 @@
 )]
 
 use super::xetex_ini::selector;
-use crate::{is_char_node, print_c_string};
+use crate::xetex_xetexd::{is_char_node, print_c_string};
 use crate::{ttstub_output_close, ttstub_output_flush, ttstub_output_open, ttstub_output_write};
 use libc::free;
 
