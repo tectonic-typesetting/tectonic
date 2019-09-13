@@ -11,6 +11,7 @@
 use crate::warn;
 
 use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
+use super::dpx_pdfximage::{pdf_ximage_init_form_info, pdf_ximage_set_form};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_boolean_value, pdf_close, pdf_concat_stream,
     pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_file_get_trailer, pdf_get_array,
@@ -27,14 +28,6 @@ extern "C" {
     pub type _IO_marker;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn pdf_ximage_set_form(
-        ximage: *mut pdf_ximage,
-        info: *mut libc::c_void,
-        resource: *mut pdf_obj,
-    );
-    #[no_mangle]
-    fn pdf_ximage_init_form_info(info: *mut xform_info);
     #[no_mangle]
     fn pdf_file_get_version(pf: *mut pdf_file) -> u32;
     #[no_mangle]
@@ -84,32 +77,11 @@ pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 use super::dpx_pdfdev::pdf_tmatrix;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
+use super::dpx_pdfdev::pdf_rect;
 
 use super::dpx_pdfdev::pdf_coord;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct xform_info {
-    pub flags: i32,
-    pub bbox: pdf_rect,
-    pub matrix: pdf_tmatrix,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct load_options {
-    pub page_no: i32,
-    pub bbox_type: i32,
-    pub dict: *mut pdf_obj,
-}
-use crate::dpx_pdfximage::pdf_ximage;
+use crate::dpx_pdfximage::{load_options, pdf_ximage, xform_info};
 pub const OP_CURVETO2: C2RustUnnamed_0 = 15;
 pub const OP_CURVETO1: C2RustUnnamed_0 = 14;
 pub const OP_GRESTORE: C2RustUnnamed_0 = 13;

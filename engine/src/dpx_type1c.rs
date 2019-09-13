@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use super::dpx_sfnt::{sfnt_close, sfnt_find_table_pos, sfnt_open, sfnt_read_table_directory};
 use crate::streq_ptr;
 use crate::{info, warn};
 
@@ -291,15 +292,6 @@ extern "C" {
         enc_vec: *mut *mut i8,
         is_used: *const i8,
     ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
-    #[no_mangle]
-    fn sfnt_close(sfont: *mut sfnt);
-    /* table directory */
-    #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
-    #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
     fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
     #[no_mangle]

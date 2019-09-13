@@ -12,16 +12,11 @@ use super::dpx_numbers::{
 };
 use crate::warn;
 
+use super::dpx_sfnt::{sfnt_find_table_len, sfnt_find_table_pos, sfnt_locate_table};
 use crate::{ttstub_input_read, ttstub_input_seek};
 extern "C" {
     #[no_mangle]
     fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
-    #[no_mangle]
-    fn sfnt_find_table_len(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

@@ -8,6 +8,7 @@
 
 use crate::warn;
 
+use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_obj,
     pdf_stream_dict,
@@ -41,12 +42,6 @@ extern "C" {
     /* A deeper object hierarchy will be considered as (illegal) loop. */
     #[no_mangle]
     fn pow(_: f64, _: f64) -> f64;
-    #[no_mangle]
-    fn pdf_ximage_set_image(
-        ximage: *mut pdf_ximage,
-        info: *mut libc::c_void,
-        resource: *mut pdf_obj,
-    );
     #[no_mangle]
     fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
@@ -95,16 +90,6 @@ extern "C" {
     static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn pdf_get_version() -> u32;
-    /* Name does not include the / */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    #[no_mangle]
-    fn pdf_ximage_init_image_info(info: *mut ximage_info);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
 }
@@ -112,19 +97,8 @@ pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;
 use libc::FILE;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ximage_info {
-    pub flags: i32,
-    pub width: i32,
-    pub height: i32,
-    pub bits_per_component: i32,
-    pub num_components: i32,
-    pub min_dpi: i32,
-    pub xdensity: f64,
-    pub ydensity: f64,
-}
-use crate::dpx_pdfximage::pdf_ximage;
+
+use crate::dpx_pdfximage::{pdf_ximage, ximage_info};
 /* Label */
 unsafe extern "C" fn read_box_hdr(
     mut fp: *mut FILE,

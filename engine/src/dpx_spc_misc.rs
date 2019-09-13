@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use super::dpx_pdfximage::pdf_ximage_findresource;
 use crate::dpx_pdfobj::pdf_obj;
 use crate::{ttstub_input_close, ttstub_input_open};
 extern "C" {
@@ -31,8 +32,6 @@ extern "C" {
      * Only pdf:image special in spc_pdfm.c want optinal dict!
      */
     #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
-    #[no_mangle]
     fn mps_scan_bbox(pp: *mut *const i8, endptr: *const i8, bbox: *mut pdf_rect) -> i32;
     #[no_mangle]
     fn transform_info_clear(info: *mut transform_info);
@@ -55,34 +54,10 @@ pub struct spc_handler {
     pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct transform_info {
-    pub width: f64,
-    pub height: f64,
-    pub depth: f64,
-    pub matrix: pdf_tmatrix,
-    pub bbox: pdf_rect,
-    pub flags: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
+use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info};
 
-use super::dpx_pdfdev::pdf_tmatrix;
+use crate::dpx_pdfximage::load_options;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct load_options {
-    pub page_no: i32,
-    pub bbox_type: i32,
-    pub dict: *mut pdf_obj,
-}
 /* quasi-hack to get the primary input */
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

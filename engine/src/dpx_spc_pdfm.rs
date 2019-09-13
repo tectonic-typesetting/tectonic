@@ -17,6 +17,7 @@ use super::dpx_pdfcolor::{
 use super::dpx_pdfdev::pdf_sprint_matrix;
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
+use super::dpx_pdfximage::{pdf_ximage_findresource, pdf_ximage_get_reference};
 use super::dpx_spc_util::spc_util_read_pdfcolor;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_file, pdf_get_array,
@@ -244,14 +245,6 @@ extern "C" {
     #[no_mangle]
     fn parse_pdf_tainted_dict(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
     #[no_mangle]
-    fn pdf_ximage_get_reference(xobj_id: i32) -> *mut pdf_obj;
-    /* Please use different interface than findresource...
-     * This is not intended to be used for specifying page number and others.
-     * Only pdf:image special in spc_pdfm.c want optinal dict!
-     */
-    #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
-    #[no_mangle]
     fn spc_util_read_dimtrns(
         spe: *mut spc_env,
         dimtrns: *mut transform_info,
@@ -398,31 +391,9 @@ pub struct C2RustUnnamed {
     pub sfd_name: *mut i8,
     pub subfont_id: *mut i8,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct transform_info {
-    pub width: f64,
-    pub height: f64,
-    pub depth: f64,
-    pub matrix: pdf_tmatrix,
-    pub bbox: pdf_rect,
-    pub flags: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct load_options {
-    pub page_no: i32,
-    pub bbox_type: i32,
-    pub dict: *mut pdf_obj,
-}
+use super::dpx_pdfdev::{pdf_rect, transform_info};
+
+use crate::dpx_pdfximage::load_options;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,

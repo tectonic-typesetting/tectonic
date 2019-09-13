@@ -8,6 +8,10 @@
     unused_mut
 )]
 
+use super::dpx_sfnt::{
+    dfont_open, sfnt_close, sfnt_create_FontFile_stream, sfnt_find_table_pos, sfnt_open,
+    sfnt_read_table_directory, sfnt_require_table,
+};
 use crate::streq_ptr;
 use crate::{info, warn};
 
@@ -155,21 +159,6 @@ extern "C" {
     fn CMap_cache_get(id: i32) -> *mut CMap;
     #[no_mangle]
     fn CMap_cache_find(cmap_name: *const i8) -> i32;
-    #[no_mangle]
-    fn sfnt_open(handle: rust_input_handle_t) -> *mut sfnt;
-    #[no_mangle]
-    fn dfont_open(handle: rust_input_handle_t, index: i32) -> *mut sfnt;
-    #[no_mangle]
-    fn sfnt_close(sfont: *mut sfnt);
-    /* table directory */
-    #[no_mangle]
-    fn sfnt_read_table_directory(sfont: *mut sfnt, offset: u32) -> i32;
-    #[no_mangle]
-    fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn sfnt_require_table(sfont: *mut sfnt, tag: *const i8, must_exist: i32) -> i32;
-    #[no_mangle]
-    fn sfnt_create_FontFile_stream(sfont: *mut sfnt) -> *mut pdf_obj;
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
@@ -327,7 +316,7 @@ pub struct rangeDef {
     pub codeHi: *mut u8,
 }
 
-use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+use super::dpx_sfnt::sfnt;
 
 pub type CID = u16;
 /*

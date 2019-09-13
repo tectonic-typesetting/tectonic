@@ -18,7 +18,6 @@ use crate::dpx_pdfobj::{
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_remove_dict,
     pdf_string_value,
 };
-use crate::{ttstub_input_get_size, ttstub_input_seek};
 use libc::free;
 extern "C" {
     #[no_mangle]

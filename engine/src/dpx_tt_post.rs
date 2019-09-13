@@ -11,6 +11,7 @@
 use super::dpx_numbers::{
     tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
+use super::dpx_sfnt::sfnt_locate_table;
 use crate::streq_ptr;
 use crate::warn;
 
@@ -19,8 +20,6 @@ use libc::free;
 extern "C" {
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.

@@ -9,6 +9,10 @@
 )]
 
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
+use super::dpx_pdfximage::{
+    pdf_ximage_findresource, pdf_ximage_get_reference, pdf_ximage_get_resname,
+    pdf_ximage_scale_image,
+};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_array, pdf_new_boolean,
     pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string, pdf_obj,
@@ -116,23 +120,6 @@ extern "C" {
     fn pdf_dev_gsave() -> i32;
     #[no_mangle]
     fn pdf_dev_grestore() -> i32;
-    #[no_mangle]
-    fn pdf_ximage_get_resname(xobj_id: i32) -> *mut i8;
-    #[no_mangle]
-    fn pdf_ximage_get_reference(xobj_id: i32) -> *mut pdf_obj;
-    /* Please use different interface than findresource...
-     * This is not intended to be used for specifying page number and others.
-     * Only pdf:image special in spc_pdfm.c want optinal dict!
-     */
-    #[no_mangle]
-    fn pdf_ximage_findresource(ident: *const i8, options: load_options) -> i32;
-    #[no_mangle]
-    fn pdf_ximage_scale_image(
-        id: i32,
-        M: *mut pdf_tmatrix,
-        r: *mut pdf_rect,
-        p: *mut transform_info,
-    ) -> i32;
 }
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -180,33 +167,9 @@ pub struct C2RustUnnamed_0 {
     pub extensions: i32,
 }
 
-use super::dpx_pdfdev::pdf_tmatrix;
+use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info};
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct pdf_rect {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct transform_info {
-    pub width: f64,
-    pub height: f64,
-    pub depth: f64,
-    pub matrix: pdf_tmatrix,
-    pub bbox: pdf_rect,
-    pub flags: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct load_options {
-    pub page_no: i32,
-    pub bbox_type: i32,
-    pub dict: *mut pdf_obj,
-}
+use crate::dpx_pdfximage::load_options;
 
 use super::dpx_pdfdev::pdf_coord;
 

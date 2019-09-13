@@ -12,6 +12,7 @@ use crate::mfree;
 use crate::warn;
 
 use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
+use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_name, pdf_new_number,
     pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dataptr, pdf_stream_dict,
@@ -20,14 +21,6 @@ use crate::dpx_pdfobj::{
 use crate::{ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn pdf_ximage_set_image(
-        ximage: *mut pdf_ximage,
-        info: *mut libc::c_void,
-        resource: *mut pdf_obj,
-    );
-    #[no_mangle]
-    fn pdf_ximage_init_image_info(info: *mut ximage_info);
     #[no_mangle]
     fn pdf_get_colorspace_reference(cspc_id: i32) -> *mut pdf_obj;
     #[no_mangle]
@@ -78,19 +71,8 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ximage_info {
-    pub flags: i32,
-    pub width: i32,
-    pub height: i32,
-    pub bits_per_component: i32,
-    pub num_components: i32,
-    pub min_dpi: i32,
-    pub xdensity: f64,
-    pub ydensity: f64,
-}
-use crate::dpx_pdfximage::pdf_ximage;
+
+use crate::dpx_pdfximage::{pdf_ximage, ximage_info};
 pub const JM_SOI: JPEG_marker = 216;
 #[derive(Copy, Clone)]
 #[repr(C)]

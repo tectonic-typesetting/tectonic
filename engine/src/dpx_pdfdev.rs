@@ -12,6 +12,9 @@ use crate::{info, warn};
 
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color, pdf_dev_transform};
+use super::dpx_pdfximage::{
+    pdf_ximage_get_reference, pdf_ximage_get_resname, pdf_ximage_scale_image,
+};
 use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_release_obj};
 use crate::streq_ptr;
 use libc::free;
@@ -186,17 +189,6 @@ extern "C" {
     fn pdf_get_font_encoding(font_id: i32) -> i32;
     #[no_mangle]
     fn pdf_get_font_wmode(font_id: i32) -> i32;
-    #[no_mangle]
-    fn pdf_ximage_get_resname(xobj_id: i32) -> *mut i8;
-    #[no_mangle]
-    fn pdf_ximage_get_reference(xobj_id: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_ximage_scale_image(
-        id: i32,
-        M: *mut pdf_tmatrix,
-        r: *mut pdf_rect,
-        p: *mut transform_info,
-    ) -> i32;
 }
 pub type size_t = u64;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
