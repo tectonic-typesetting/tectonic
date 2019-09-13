@@ -532,7 +532,25 @@ createFeatureSettingDictionary(CFNumberRef featureTypeIdentifier, CFNumberRef fe
                               &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 }
 
-const CFStringRef kXeTeXEmboldenAttributeName = CFSTR("XeTeXEmbolden");
+// CFSTR causes undefined builtin errors with c2rust
+#define CreateCFString(x) CFStringCreateWithCString(NULL, (x), kCFStringEncodingUTF8)
+
+static CFStringRef kXeTeXEmboldenAttributeName = NULL;
+static CFStringRef kLastResort = NULL;
+
+CFStringRef getkXeTeXEmboldenAttributeName(void){
+    if (kXeTeXEmboldenAttributeName == NULL) {
+        kXeTeXEmboldenAttributeName = CFStringCreateWithCString(NULL, "XeTeXEmbolden", kCFStringEncodingUTF8);
+    }
+    return kXeTeXEmboldenAttributeName;
+}
+
+CFStringRef getLastResort(void){
+    if (kLastResort == NULL) {
+        kLastResort = CFStringCreateWithCString(NULL, "LastResort", kCFStringEncodingUTF8);
+    }
+    return kLastResort;
+}
 
 void*
 loadAATfont(CTFontDescriptorRef descriptor, int32_t scaled_size, const char* cp1)
@@ -715,7 +733,7 @@ loadAATfont(CTFontDescriptorRef descriptor, int32_t scaled_size, const char* cp1
         CFNumberRef emboldenNumber;
         embolden = embolden * Fix2D(scaled_size) / 100.0;
         emboldenNumber = CFNumberCreate(NULL, kCFNumberFloatType, &embolden);
-        CFDictionaryAddValue(stringAttributes, kXeTeXEmboldenAttributeName, emboldenNumber);
+        CFDictionaryAddValue(stringAttributes, getkXeTeXEmboldenAttributeName(), emboldenNumber);
         CFRelease(emboldenNumber);
     }
 
@@ -725,7 +743,7 @@ loadAATfont(CTFontDescriptorRef descriptor, int32_t scaled_size, const char* cp1
     // Disable Core Text font fallback (cascading) with only the last resort font
     // in the cascade list.
     cascadeList = CFArrayCreateMutable(NULL, 1, &kCFTypeArrayCallBacks);
-    lastResort = CTFontDescriptorCreateWithNameAndSize(CFSTR("LastResort"), 0);
+    lastResort = CTFontDescriptorCreateWithNameAndSize(getLastResort(), 0);
     CFArrayAppendValue(cascadeList, lastResort);
     CFRelease(lastResort);
     CFDictionaryAddValue(attributes, kCTFontCascadeListAttribute, cascadeList);
