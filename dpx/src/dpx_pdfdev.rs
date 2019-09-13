@@ -151,7 +151,7 @@ impl pdf_rect {
         }
     }
 }
-#[derive(Copy, Clone, Default, PartialEq)]
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct pdf_coord {
     pub x: f64,
@@ -162,6 +162,12 @@ impl pdf_coord {
         Self { x: 0., y: 0. }
     }
 }
+impl PartialEq for pdf_coord {
+    fn eq(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() < 1e-7 && (self.y - other.y).abs() < 1e-7
+    }
+}
+
 #[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct transform_info {
@@ -1959,10 +1965,10 @@ pub unsafe extern "C" fn pdf_dev_set_rect(
 ) {
     let mut dev_x: f64 = 0.; /* currentmatrix */
     let mut dev_y: f64 = 0.; /* 0 for B&W */
-    let mut p0: pdf_coord = pdf_coord::new();
-    let mut p1: pdf_coord = pdf_coord::new();
-    let mut p2: pdf_coord = pdf_coord::new();
-    let mut p3: pdf_coord = pdf_coord::new();
+    let mut p0 = pdf_coord::new();
+    let mut p1 = pdf_coord::new();
+    let mut p2 = pdf_coord::new();
+    let mut p3 = pdf_coord::new();
     let mut min_x: f64 = 0.;
     let mut min_y: f64 = 0.;
     let mut max_x: f64 = 0.;

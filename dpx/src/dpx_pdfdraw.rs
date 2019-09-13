@@ -64,10 +64,9 @@ pub use super::dpx_pdfcolor::pdf_color;
 use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix};
 
 /* Graphics State */
-pub type pdf_gstate = pdf_gstate_;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct pdf_gstate_ {
+pub struct pdf_gstate {
     pub cp: pdf_coord,
     pub matrix: pdf_tmatrix,
     pub strokecolor: pdf_color,
@@ -82,10 +81,9 @@ pub struct pdf_gstate_ {
     pub flags: i32,
     pub pt_fixee: pdf_coord,
 }
-pub type pdf_path = pdf_path_;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct pdf_path_ {
+pub struct pdf_path {
     pub num_paths: u32,
     pub max_paths: u32,
     pub path: *mut pa_elem,
@@ -101,11 +99,10 @@ pub struct pdf_path_ {
     /* bookkeeping the origin of the last transform applied */
     /* _PDF_DRAW_H_ */
 }
-pub type pa_elem = pa_elem_;
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct pa_elem_ {
-    pub type_0: i32,
+pub struct pa_elem {
+    pub typ: PeType,
     pub p: [pdf_coord; 3],
 }
 #[derive(Copy, Clone)]
@@ -150,12 +147,7 @@ unsafe extern "C" fn inversematrix(mut W: &mut pdf_tmatrix, mut M: &pdf_tmatrix)
     W.f = M.b * M.e - M.a * M.f;
     0i32
 }
-extern "C" fn pdf_coord__equal(p1: &pdf_coord, p2: &pdf_coord) -> i32 {
-    if (p1.x - p2.x).abs() < 1.0e-7f64 && (p1.y - p2.y).abs() < 1.0e-7f64 {
-        return 1i32;
-    }
-    0i32
-}
+
 extern "C" fn pdf_coord__transform(p: &mut pdf_coord, M: &pdf_tmatrix) -> i32 {
     let pdf_coord { x, y } = *p;
     p.x = x * M.a + y * M.c + M.e;
@@ -214,146 +206,111 @@ pub unsafe extern "C" fn pdf_invertmatrix(M: &mut pdf_tmatrix) {
     M.e = W.e;
     M.f = W.f;
 }
-static mut petypes: [C2RustUnnamed_0; 7] = [
-    {
-        let mut init = C2RustUnnamed_0 {
-            opchr: 'm' as i32 as i8,
-            n_pts: 1i32,
-            strkey: b"moveto\x00" as *const u8 as *const i8,
-        };
-        init
-    },
-    {
-        let mut init = C2RustUnnamed_0 {
-            opchr: 'l' as i32 as i8,
-            n_pts: 1i32,
-            strkey: b"lineto\x00" as *const u8 as *const i8,
-        };
-        init
-    },
-    {
-        let mut init = C2RustUnnamed_0 {
-            opchr: 'c' as i32 as i8,
-            n_pts: 3i32,
-            strkey: b"curveto\x00" as *const u8 as *const i8,
-        };
-        init
-    },
-    {
-        let mut init = C2RustUnnamed_0 {
-            opchr: 'v' as i32 as i8,
-            n_pts: 2i32,
-            strkey: b"vcurveto\x00" as *const u8 as *const i8,
-        };
-        init
-    },
-    {
-        let mut init = C2RustUnnamed_0 {
-            opchr: 'y' as i32 as i8,
-            n_pts: 2i32,
-            strkey: b"ycurveto\x00" as *const u8 as *const i8,
-        };
-        init
-    },
-    {
-        let mut init = C2RustUnnamed_0 {
-            opchr: 'h' as i32 as i8,
-            n_pts: 0i32,
-            strkey: b"closepath\x00" as *const u8 as *const i8,
-        };
-        init
-    },
-    {
-        let mut init = C2RustUnnamed_0 {
-            opchr: ' ' as i32 as i8,
-            n_pts: 0i32,
-            strkey: 0 as *const i8,
-        };
-        init
-    },
-];
+
+#[derive(Clone,Copy,Debug,PartialEq)]
+pub enum PeType {
+    MOVETO = 0,
+    LINETO = 1,
+    CURVETO = 2,
+    CURVETO_V = 3,
+    CURVETO_Y = 4,
+    CLOSEPATH = 5,
+    TERMINATE = 6,
+}
+
+impl PeType {
+    pub fn opchr(&self) -> i8 {
+        use PeType::*;
+        (match *self {
+            MOVETO => b'm',
+            LINETO => b'l',
+            CURVETO => b'c',
+            CURVETO_V => b'v',
+            CURVETO_Y => b'y',
+            CLOSEPATH => b'h',
+            TERMINATE => b' ',
+        }) as i8
+    }
+    pub fn n_pts(&self) -> usize {
+        use PeType::*;
+        match *self {
+            MOVETO => 1,
+            LINETO => 1,
+            CURVETO => 3,
+            CURVETO_V => 2,
+            CURVETO_Y => 2,
+            CLOSEPATH => 0,
+            TERMINATE => 0,
+        }
+    }
+}
+
 static mut fmt_buf: [i8; 1024] = [0; 1024];
-unsafe extern "C" fn init_a_path(mut p: *mut pdf_path) {
-    assert!(!p.is_null());
-    (*p).num_paths = 0_u32;
-    (*p).max_paths = 0_u32;
-    (*p).path = 0 as *mut pa_elem;
+unsafe extern "C" fn init_a_path(p: &mut pdf_path) {
+    p.num_paths = 0_u32;
+    p.max_paths = 0_u32;
+    p.path = 0 as *mut pa_elem;
 }
-unsafe extern "C" fn pdf_path__clearpath(mut p: *mut pdf_path) {
-    assert!(!p.is_null());
-    (*p).num_paths = 0_u32;
+extern "C" fn pdf_path__clearpath(mut p: &mut pdf_path) {
+    p.num_paths = 0_u32;
 }
-unsafe extern "C" fn pdf_path__growpath(mut p: *mut pdf_path, mut max_pe: u32) -> i32 {
-    if max_pe < (*p).max_paths {
+unsafe extern "C" fn pdf_path__growpath(p: &mut pdf_path, mut max_pe: u32) -> i32 {
+    if max_pe < p.max_paths {
         return 0i32;
     }
-    (*p).max_paths = if (*p).max_paths.wrapping_add(8_u32) > max_pe {
-        (*p).max_paths.wrapping_add(8_u32)
+    p.max_paths = if p.max_paths + 8 > max_pe {
+        p.max_paths + 8_u32
     } else {
         max_pe
     };
-    (*p).path = renew(
-        (*p).path as *mut libc::c_void,
-        ((*p).max_paths as u64).wrapping_mul(::std::mem::size_of::<pa_elem>() as u64) as u32,
+    p.path = renew(
+        p.path as *mut libc::c_void,
+        (p.max_paths as u64).wrapping_mul(::std::mem::size_of::<pa_elem>() as u64) as u32,
     ) as *mut pa_elem;
     0i32
 }
-unsafe extern "C" fn clear_a_path(mut p: *mut pdf_path) {
-    assert!(!p.is_null());
-    (*p).path = mfree((*p).path as *mut libc::c_void) as *mut pa_elem;
-    (*p).num_paths = 0_u32;
-    (*p).max_paths = 0_u32;
+unsafe extern "C" fn clear_a_path(p: &mut pdf_path) {
+    p.path = mfree(p.path as *mut libc::c_void) as *mut pa_elem;
+    p.num_paths = 0_u32;
+    p.max_paths = 0_u32;
 }
-unsafe extern "C" fn pdf_path__copypath(mut p1: *mut pdf_path, mut p0: *const pdf_path) -> i32 {
-    let mut pe0: *mut pa_elem = 0 as *mut pa_elem;
-    let mut pe1: *mut pa_elem = 0 as *mut pa_elem;
+unsafe extern "C" fn pdf_path__copypath(p1: &mut pdf_path, p0: &pdf_path) -> i32 {
     let mut i: u32 = 0;
-    pdf_path__growpath(p1, (*p0).num_paths);
+    pdf_path__growpath(p1, p0.num_paths);
     i = 0_u32;
-    while i < (*p0).num_paths {
-        pe1 = &mut *(*p1).path.offset(i as isize) as *mut pa_elem;
-        pe0 = &mut *(*p0).path.offset(i as isize) as *mut pa_elem;
+    while i < p0.num_paths {
+        let pe1 = &mut *(*p1).path.offset(i as isize);
+        let pe0 = &mut *p0.path.offset(i as isize);
         /* FIXME */
-        (*pe1).type_0 = (*pe0).type_0;
-        (*pe1).p[0].x = (*pe0).p[0].x;
-        (*pe1).p[0].y = (*pe0).p[0].y;
-        (*pe1).p[1].x = (*pe0).p[1].x;
-        (*pe1).p[1].y = (*pe0).p[1].y;
-        (*pe1).p[2].x = (*pe0).p[2].x;
-        (*pe1).p[2].y = (*pe0).p[2].y;
-        i = i.wrapping_add(1)
+        *pe1 = *pe0;
+        i = i + 1
     }
-    (*p1).num_paths = (*p0).num_paths;
+    p1.num_paths = p0.num_paths;
     0i32
 }
 /* start new subpath */
 unsafe extern "C" fn pdf_path__moveto(
-    mut pa: *mut pdf_path,
-    mut cp: *mut pdf_coord,
-    mut p0: *const pdf_coord,
+    pa: &mut pdf_path,
+    cp: &mut pdf_coord,
+    p0: &pdf_coord,
 ) -> i32 {
-    let mut pe: *mut pa_elem = 0 as *mut pa_elem;
-    pdf_path__growpath(pa, (*pa).num_paths.wrapping_add(1_u32));
-    if (*pa).num_paths > 0_u32 {
-        pe = &mut *(*pa)
+    pdf_path__growpath(pa, pa.num_paths + 1);
+    if pa.num_paths > 0_u32 {
+        let pe = &mut *(*pa)
             .path
-            .offset((*pa).num_paths.wrapping_sub(1_u32) as isize) as *mut pa_elem;
-        if (*pe).type_0 == 0i32 {
-            (*cp).x = (*p0).x;
-            (*pe).p[0].x = (*cp).x;
-            (*cp).y = (*p0).y;
-            (*pe).p[0].y = (*cp).y;
+            .offset((pa.num_paths - 1) as isize);
+        if pe.typ == PeType::MOVETO {
+            *cp = *p0;
+            pe.p[0] = *cp;
             return 0i32;
         }
     }
-    let fresh0 = (*pa).num_paths;
-    (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-    pe = &mut *(*pa).path.offset(fresh0 as isize) as *mut pa_elem;
-    (*pe).type_0 = 0i32;
-    (*cp).x = (*p0).x;
-    (*pe).p[0].x = (*cp).x;
-    (*cp).y = (*p0).y;
-    (*pe).p[0].y = (*cp).y;
+    let fresh0 = pa.num_paths;
+    pa.num_paths += 1;
+    let pe = &mut *pa.path.offset(fresh0 as isize);
+    pe.typ = PeType::MOVETO;
+    *cp = *p0;
+    pe.p[0] = *cp;
     0i32
 }
 /* Do 'compression' of path while adding new path elements.
@@ -364,153 +321,140 @@ unsafe extern "C" fn pdf_path__moveto(
  * 'moveto' must be used to enforce starting new path.
  * This affects how 'closepath' is treated.
  */
-unsafe extern "C" fn pdf_path__next_pe(mut pa: *mut pdf_path, cp: &pdf_coord) -> *mut pa_elem {
+unsafe extern "C" fn pdf_path__next_pe<'a>(pa: &'a mut pdf_path, cp: &pdf_coord) -> &'a mut pa_elem {
     let mut pe: *mut pa_elem = 0 as *mut pa_elem;
-    pdf_path__growpath(pa, (*pa).num_paths.wrapping_add(2_u32));
-    if (*pa).num_paths == 0_u32 {
-        let fresh1 = (*pa).num_paths;
-        (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-        pe = &mut *(*pa).path.offset(fresh1 as isize) as *mut pa_elem;
-        (*pe).type_0 = 0i32;
-        (*pe).p[0].x = cp.x;
-        (*pe).p[0].y = cp.y;
-        let fresh2 = (*pa).num_paths;
-        (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-        return &mut *(*pa).path.offset(fresh2 as isize) as *mut pa_elem;
+    pdf_path__growpath(pa, pa.num_paths + 2);
+    if pa.num_paths == 0_u32 {
+        let fresh1 = pa.num_paths;
+        pa.num_paths += 1;
+        let pe = &mut *pa.path.offset(fresh1 as isize);
+        pe.typ = PeType::MOVETO;
+        pe.p[0].x = cp.x;
+        pe.p[0].y = cp.y;
+        let fresh2 = pa.num_paths;
+        pa.num_paths += 1;
+        return &mut *pa.path.offset(fresh2 as isize);
     }
-    pe = &mut *(*pa)
+    let mut pe = &mut *(*pa)
         .path
-        .offset((*pa).num_paths.wrapping_sub(1_u32) as isize) as *mut pa_elem;
-    match (*pe).type_0 {
-        0 => {
-            (*pe).p[0].x = cp.x;
-            (*pe).p[0].y = cp.y
+        .offset((pa.num_paths - 1) as isize);
+    match pe.typ {
+        PeType::MOVETO => {
+            pe.p[0].x = cp.x;
+            pe.p[0].y = cp.y
         }
-        1 => {
-            if pdf_coord__equal(&mut *(*pe).p.as_mut_ptr().offset(0), cp) == 0 {
-                let fresh3 = (*pa).num_paths;
-                (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-                pe = &mut *(*pa).path.offset(fresh3 as isize) as *mut pa_elem;
-                (*pe).type_0 = 0i32;
-                (*pe).p[0].x = cp.x;
-                (*pe).p[0].y = cp.y
+        PeType::LINETO => {
+            if &mut *pe.p.as_mut_ptr().offset(0) != cp {
+                let fresh3 = pa.num_paths;
+                pa.num_paths += 1;
+                pe = &mut *pa.path.offset(fresh3 as isize);
+                pe.typ = PeType::MOVETO;
+                pe.p[0].x = cp.x;
+                pe.p[0].y = cp.y
             }
         }
-        2 => {
-            if pdf_coord__equal(&mut *(*pe).p.as_mut_ptr().offset(2), cp) == 0 {
-                let fresh4 = (*pa).num_paths;
-                (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-                pe = &mut *(*pa).path.offset(fresh4 as isize) as *mut pa_elem;
-                (*pe).type_0 = 0i32;
-                (*pe).p[0].x = cp.x;
-                (*pe).p[0].y = cp.y
+        PeType::CURVETO => {
+            if &mut *pe.p.as_mut_ptr().offset(2) != cp {
+                let fresh4 = pa.num_paths;
+                pa.num_paths += 1;
+                pe = &mut *pa.path.offset(fresh4 as isize);
+                pe.typ = PeType::MOVETO;
+                pe.p[0].x = cp.x;
+                pe.p[0].y = cp.y
             }
         }
-        4 | 3 => {
-            if pdf_coord__equal(&mut *(*pe).p.as_mut_ptr().offset(1), cp) == 0 {
-                let fresh5 = (*pa).num_paths;
-                (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-                pe = &mut *(*pa).path.offset(fresh5 as isize) as *mut pa_elem;
-                (*pe).type_0 = 0i32;
-                (*pe).p[0].x = cp.x;
-                (*pe).p[0].y = cp.y
+        PeType::CURVETO_Y | PeType::CURVETO_V => {
+            if &mut *pe.p.as_mut_ptr().offset(1) != cp {
+                let fresh5 = pa.num_paths;
+                pa.num_paths += 1;
+                pe = &mut *pa.path.offset(fresh5 as isize);
+                pe.typ = PeType::MOVETO;
+                pe.p[0].x = cp.x;
+                pe.p[0].y = cp.y
             }
         }
-        5 => {
-            let fresh6 = (*pa).num_paths;
-            (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-            pe = &mut *(*pa).path.offset(fresh6 as isize) as *mut pa_elem;
-            (*pe).type_0 = 0i32;
-            (*pe).p[0].x = cp.x;
-            (*pe).p[0].y = cp.y
+        PeType::CLOSEPATH => {
+            let fresh6 = pa.num_paths;
+            pa.num_paths += 1;
+            pe = &mut *pa.path.offset(fresh6 as isize);
+            pe.typ = PeType::MOVETO;
+            pe.p[0].x = cp.x;
+            pe.p[0].y = cp.y
         }
         _ => {}
     }
-    let fresh7 = (*pa).num_paths;
-    (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-    &mut *(*pa).path.offset(fresh7 as isize) as *mut pa_elem
+    let fresh7 = pa.num_paths;
+    pa.num_paths += 1;
+    &mut *pa.path.offset(fresh7 as isize)
 }
-unsafe extern "C" fn pdf_path__transform(mut pa: *mut pdf_path, M: &pdf_tmatrix) -> i32 {
+unsafe extern "C" fn pdf_path__transform(pa: &mut pdf_path, M: &pdf_tmatrix) -> i32 {
     let mut pe: *mut pa_elem = 0 as *mut pa_elem;
     let mut n: u32 = 0_u32;
     let mut i: u32 = 0;
-    assert!(!pa.is_null());
     i = 0_u32;
-    while i < (*pa).num_paths {
-        pe = &mut *(*pa).path.offset(i as isize) as *mut pa_elem;
-        n = (if !pe.is_null() && (*pe).type_0 > -1i32 && (*pe).type_0 < 6i32 {
-            petypes[(*pe).type_0 as usize].n_pts
+    while i < pa.num_paths {
+        let pe = &mut *pa.path.offset(i as isize);
+        n = (if pe.typ != PeType::TERMINATE {
+            (*pe).typ.n_pts() as i32
         } else {
             0i32
         }) as u32;
         loop {
             let fresh8 = n;
-            n = n.wrapping_sub(1);
+            n += 1;
             if !(fresh8 > 0_u32) {
                 break;
             }
             pdf_coord__transform(&mut *(*pe).p.as_mut_ptr().offset(n as isize), M);
         }
-        i = i.wrapping_add(1)
+        i += 1
     }
     0i32
 }
 /* Path Construction */
 unsafe extern "C" fn pdf_path__lineto(
-    mut pa: *mut pdf_path,
+    pa: &mut pdf_path,
     cp: &mut pdf_coord,
     p0: &pdf_coord,
 ) -> i32 {
-    let mut pe: *mut pa_elem = 0 as *mut pa_elem;
-    pe = pdf_path__next_pe(pa, cp);
-    (*pe).type_0 = 1i32;
+    let pe = pdf_path__next_pe(pa, cp);
+    pe.typ = PeType::LINETO;
     cp.x = p0.x;
-    (*pe).p[0].x = cp.x;
+    pe.p[0].x = cp.x;
     cp.y = p0.y;
-    (*pe).p[0].y = cp.y;
+    pe.p[0].y = cp.y;
     0i32
 }
 unsafe extern "C" fn pdf_path__curveto(
-    mut pa: *mut pdf_path,
+    pa: &mut pdf_path,
     cp: &mut pdf_coord,
     p0: &pdf_coord,
     p1: &pdf_coord,
     p2: &pdf_coord,
 ) -> i32 {
-    let mut pe: *mut pa_elem = 0 as *mut pa_elem;
-    pe = pdf_path__next_pe(pa, cp);
-    if pdf_coord__equal(cp, p0) != 0 {
-        (*pe).type_0 = 3i32;
-        (*pe).p[0].x = p1.x;
-        (*pe).p[0].y = p1.y;
-        cp.x = p2.x;
-        (*pe).p[1].x = cp.x;
-        cp.y = p2.y;
-        (*pe).p[1].y = cp.y
-    } else if pdf_coord__equal(p1, p2) != 0 {
-        (*pe).type_0 = 4i32;
-        (*pe).p[0].x = p0.x;
-        (*pe).p[0].y = p0.y;
-        cp.x = p1.x;
-        (*pe).p[1].x = cp.x;
-        cp.y = p1.y;
-        (*pe).p[1].y = cp.y
+    let pe = pdf_path__next_pe(pa, cp);
+    if cp == p0 {
+        pe.typ = PeType::CURVETO_V;
+        pe.p[0] = *p1;
+        *cp = *p2;
+        pe.p[1] = *cp;
+    } else if p1 == p2 {
+        pe.typ = PeType::CURVETO_Y;
+        pe.p[0] = *p0;
+        *cp = *p1;
+        pe.p[1] = *cp;
     } else {
-        (*pe).type_0 = 2i32;
-        (*pe).p[0].x = p0.x;
-        (*pe).p[0].y = p0.y;
-        (*pe).p[1].x = p1.x;
-        (*pe).p[1].y = p1.y;
-        cp.x = p2.x;
-        (*pe).p[2].x = cp.x;
-        cp.y = p2.y;
-        (*pe).p[2].y = cp.y
+        pe.typ = PeType::CURVETO;
+        pe.p[0] = *p0;
+        pe.p[1] = *p1;
+        *cp = *p2;
+        pe.p[2] = *cp;
     }
     0i32
 }
 /* This isn't specified as cp to somewhere. */
 unsafe extern "C" fn pdf_path__elliptarc(
-    mut pa: *mut pdf_path,
+    pa: &mut pdf_path,
     cp: &mut pdf_coord,
     ca: &pdf_coord,
     mut r_x: f64,
@@ -526,12 +470,12 @@ unsafe extern "C" fn pdf_path__elliptarc(
     let mut b_y: f64 = 0.;
     let mut d_a: f64 = 0.;
     let mut q: f64 = 0.;
-    let mut p0: pdf_coord = pdf_coord::new();
-    let mut p1: pdf_coord = pdf_coord::new();
-    let mut p2: pdf_coord = pdf_coord::new();
-    let mut p3: pdf_coord = pdf_coord::new();
-    let mut e0: pdf_coord = pdf_coord::new();
-    let mut e1: pdf_coord = pdf_coord::new();
+    let mut p0 = pdf_coord::new();
+    let mut p1 = pdf_coord::new();
+    let mut p2 = pdf_coord::new();
+    let mut p3 = pdf_coord::new();
+    let mut e0 = pdf_coord::new();
+    let mut e1 = pdf_coord::new();
     let mut T = pdf_tmatrix::new();
     let mut n_c: i32 = 0;
     let mut i: i32 = 0;
@@ -578,9 +522,9 @@ unsafe extern "C" fn pdf_path__elliptarc(
     pdf_coord__transform(&mut p0, &mut T);
     p0.x += ca.x;
     p0.y += ca.y;
-    if (*pa).num_paths == 0_u32 {
+    if pa.num_paths == 0_u32 {
         pdf_path__moveto(pa, cp, &mut p0);
-    } else if pdf_coord__equal(cp, &p0) == 0 {
+    } else if cp != &p0 {
         pdf_path__lineto(pa, cp, &mut p0);
         /* add line seg */
     }
@@ -625,15 +569,15 @@ unsafe extern "C" fn pdf_path__elliptarc(
     }
     error
 }
-unsafe extern "C" fn pdf_path__closepath(mut pa: *mut pdf_path, cp: &mut pdf_coord) -> i32
+unsafe extern "C" fn pdf_path__closepath(pa: &mut pdf_path, cp: &mut pdf_coord) -> i32
 /* no arg */ {
     let mut pe: *mut pa_elem = 0 as *mut pa_elem;
     let mut i: i32 = 0;
     /* search for start point of the last subpath */
-    i = (*pa).num_paths.wrapping_sub(1_u32) as i32; /* No path or no start point(!) */
+    i = (pa.num_paths - 1) as i32; /* No path or no start point(!) */
     while i >= 0i32 {
-        pe = &mut *(*pa).path.offset(i as isize) as *mut pa_elem;
-        if (*pe).type_0 == 0i32 {
+        pe = &mut *pa.path.offset(i as isize) as *mut pa_elem;
+        if (*pe).typ == PeType::MOVETO {
             break;
         }
         i -= 1
@@ -642,17 +586,17 @@ unsafe extern "C" fn pdf_path__closepath(mut pa: *mut pdf_path, cp: &mut pdf_coo
         return -1i32;
     }
     *cp = (*pe).p[0].clone();
-    pdf_path__growpath(pa, (*pa).num_paths.wrapping_add(1_u32));
+    pdf_path__growpath(pa, pa.num_paths + 1);
     /* NOTE:
      *  Manually closed path without closepath is not
      *  affected by linejoin. A path with coincidental
      *  starting and ending point is not the same as
      *  'closed' path.
      */
-    let fresh9 = (*pa).num_paths;
-    (*pa).num_paths = (*pa).num_paths.wrapping_add(1);
-    pe = &mut *(*pa).path.offset(fresh9 as isize) as *mut pa_elem;
-    (*pe).type_0 = 5i32;
+    let fresh9 = pa.num_paths;
+    pa.num_paths += 1;
+    pe = &mut *pa.path.offset(fresh9 as isize) as *mut pa_elem;
+    (*pe).typ = PeType::CLOSEPATH;
     0i32
 }
 /*
@@ -667,39 +611,34 @@ unsafe extern "C" fn pdf_path__closepath(mut pa: *mut pdf_path, cp: &mut pdf_coo
  *  h
  */
 /* Just for quick test */
-unsafe extern "C" fn pdf_path__isarect(mut pa: *mut pdf_path, mut f_ir: i32) -> i32
+unsafe extern "C" fn pdf_path__isarect(pa: &mut pdf_path, mut f_ir: i32) -> i32
 /* fill-rule is ignorable */ {
-    let mut pe0: *mut pa_elem = 0 as *mut pa_elem;
-    let mut pe1: *mut pa_elem = 0 as *mut pa_elem;
-    let mut pe2: *mut pa_elem = 0 as *mut pa_elem;
-    let mut pe3: *mut pa_elem = 0 as *mut pa_elem;
-    let mut pe4: *mut pa_elem = 0 as *mut pa_elem;
-    if (*pa).num_paths == 5_u32 {
-        pe0 = &mut *(*pa).path.offset(0) as *mut pa_elem;
-        pe1 = &mut *(*pa).path.offset(1) as *mut pa_elem;
-        pe2 = &mut *(*pa).path.offset(2) as *mut pa_elem;
-        pe3 = &mut *(*pa).path.offset(3) as *mut pa_elem;
-        pe4 = &mut *(*pa).path.offset(4) as *mut pa_elem;
-        if (*pe0).type_0 == 0i32
-            && (*pe1).type_0 == 1i32
-            && (*pe2).type_0 == 1i32
-            && (*pe3).type_0 == 1i32
-            && (*pe4).type_0 == 5i32
+    if pa.num_paths == 5_u32 {
+        let pe0 = &mut *pa.path.offset(0);
+        let pe1 = &mut *pa.path.offset(1);
+        let pe2 = &mut *pa.path.offset(2);
+        let pe3 = &mut *pa.path.offset(3);
+        let pe4 = &mut *pa.path.offset(4);
+        if pe0.typ == PeType::MOVETO
+            && pe1.typ == PeType::LINETO
+            && pe2.typ == PeType::LINETO
+            && pe3.typ == PeType::LINETO
+            && pe4.typ == PeType::CLOSEPATH
         {
-            if (*pe1).p[0].y - (*pe0).p[0].y == 0i32 as f64
-                && (*pe2).p[0].x - (*pe1).p[0].x == 0i32 as f64
-                && (*pe3).p[0].y - (*pe2).p[0].y == 0i32 as f64
+            if pe1.p[0].y - pe0.p[0].y == 0.
+                && pe2.p[0].x - pe1.p[0].x == 0.
+                && pe3.p[0].y - pe2.p[0].y == 0.
             {
-                if (*pe1).p[0].x - (*pe0).p[0].x == (*pe2).p[0].x - (*pe3).p[0].x {
+                if pe1.p[0].x - pe0.p[0].x == pe2.p[0].x - pe3.p[0].x {
                     return 1i32;
                 }
             /* Winding number is different but ignore it here. */
             } else if f_ir != 0
-                && (*pe1).p[0].x - (*pe0).p[0].x == 0i32 as f64
-                && (*pe2).p[0].y - (*pe1).p[0].y == 0i32 as f64
-                && (*pe3).p[0].x - (*pe2).p[0].x == 0i32 as f64
+                && pe1.p[0].x - pe0.p[0].x == 0.
+                && pe2.p[0].y - pe1.p[0].y == 0.
+                && pe3.p[0].x - pe2.p[0].x == 0.
             {
-                if (*pe1).p[0].y - (*pe0).p[0].y == (*pe2).p[0].y - (*pe3).p[0].y {
+                if pe1.p[0].y - pe0.p[0].y == pe2.p[0].y - pe3.p[0].y {
                     return 1i32;
                 }
             }
@@ -737,7 +676,7 @@ unsafe extern "C" fn pdf_dev__rectshape(
     let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     let mut len: i32 = 0i32;
     let mut isclip: i32 = 0i32;
-    let mut p: pdf_coord = pdf_coord::new();
+    let mut p = pdf_coord::new();
     let mut wd: f64 = 0.;
     let mut ht: f64 = 0.;
     assert!(
@@ -837,7 +776,7 @@ unsafe extern "C" fn pdf_dev__rectshape(
 static mut path_added: i32 = 0i32;
 /* FIXME */
 unsafe extern "C" fn pdf_dev__flushpath(
-    mut pa: *mut pdf_path,
+    pa: &mut pdf_path,
     mut opchr: i8,
     mut rule: i32,
     mut ignore_rule: i32,
@@ -855,9 +794,7 @@ unsafe extern "C" fn pdf_dev__flushpath(
     let mut isrect: i32 = 0;
     let mut i: i32 = 0;
     let mut j: i32 = 0;
-    assert!(
-        !pa.is_null()
-            && (opchr as i32 == 'f' as i32
+    assert!((opchr as i32 == 'f' as i32
                 || opchr as i32 == 'F' as i32
                 || opchr as i32 == 's' as i32
                 || opchr as i32 == 'S' as i32
@@ -871,15 +808,15 @@ unsafe extern "C" fn pdf_dev__flushpath(
     } else {
         0i32
     };
-    if (*pa).num_paths <= 0_u32 && path_added == 0i32 {
+    if pa.num_paths <= 0_u32 && path_added == 0i32 {
         return 0i32;
     }
     path_added = 0i32;
     graphics_mode();
     isrect = pdf_path__isarect(pa, ignore_rule);
     if isrect != 0 {
-        pe = &mut *(*pa).path.offset(0) as *mut pa_elem;
-        pe1 = &mut *(*pa).path.offset(2) as *mut pa_elem;
+        pe = &mut *pa.path.offset(0) as *mut pa_elem;
+        pe1 = &mut *pa.path.offset(2) as *mut pa_elem;
         r.llx = (*pe).p[0].x;
         r.lly = (*pe).p[0].y;
         r.urx = (*pe1).p[0].x - (*pe).p[0].x;
@@ -900,13 +837,13 @@ unsafe extern "C" fn pdf_dev__flushpath(
         pdf_doc_add_page_content(b, len as u32);
         len = 0i32
     } else {
-        n_seg = (*pa).num_paths as i32;
+        n_seg = pa.num_paths as i32;
         i = 0i32;
         len = 0i32;
-        pe = &mut *(*pa).path.offset(0) as *mut pa_elem;
+        pe = &mut *pa.path.offset(0) as *mut pa_elem;
         while i < n_seg {
-            n_pts = if !pe.is_null() && (*pe).type_0 > -1i32 && (*pe).type_0 < 6i32 {
-                petypes[(*pe).type_0 as usize].n_pts
+            n_pts = if !pe.is_null() && (*pe).typ != PeType::TERMINATE {
+                (*pe).typ.n_pts() as i32
             } else {
                 0i32
             };
@@ -926,11 +863,11 @@ unsafe extern "C" fn pdf_dev__flushpath(
             let fresh34 = len;
             len = len + 1;
             *b.offset(fresh34 as isize) =
-                (if !pe.is_null() && (*pe).type_0 > -1i32 && (*pe).type_0 < 6i32 {
-                    petypes[(*pe).type_0 as usize].opchr as i32
+                if !pe.is_null() && (*pe).typ != PeType::TERMINATE {
+                    (*pe).typ.opchr()
                 } else {
-                    ' ' as i32
-                }) as i8;
+                    b' ' as i8
+                };
             if len + 128i32 > b_len {
                 pdf_doc_add_page_content(b, len as u32);
                 len = 0i32
@@ -1255,7 +1192,7 @@ pub unsafe extern "C" fn pdf_dev_set_color(color: &pdf_color, mut mask: i8, mut 
 pub unsafe extern "C" fn pdf_dev_concat(M: &pdf_tmatrix) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let cpt = &mut (*gs).cp;
     let mut CTM = &mut (*gs).matrix;
     let mut W = pdf_tmatrix::new();
@@ -1422,21 +1359,21 @@ pub unsafe extern "C" fn pdf_dev_setdash(
 pub unsafe extern "C" fn pdf_dev_clip() -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     pdf_dev__flushpath(cpa, 'W' as i32 as i8, 0i32, 0i32)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_eoclip() -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     pdf_dev__flushpath(cpa, 'W' as i32 as i8, 1i32, 0i32)
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_flushpath(mut p_op: i8, mut fill_rule: i32) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut error: i32 = 0i32;
     /* last arg 'ignore_rule' is only for single object
      * that can be converted to a rect where fill rule
@@ -1451,8 +1388,8 @@ pub unsafe extern "C" fn pdf_dev_flushpath(mut p_op: i8, mut fill_rule: i32) -> 
 pub unsafe extern "C" fn pdf_dev_newpath() -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut p: *mut pdf_path = &mut (*gs).path;
-    if (*p).num_paths > 0_u32 {
+    let mut p = &mut (*gs).path;
+    if p.num_paths > 0_u32 {
         pdf_path__clearpath(p);
     }
     /* The following is required for "newpath" operator in mpost.c. */
@@ -1463,9 +1400,9 @@ pub unsafe extern "C" fn pdf_dev_newpath() -> i32 {
 pub unsafe extern "C" fn pdf_dev_moveto(mut x: f64, mut y: f64) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
-    let mut cpt: *mut pdf_coord = &mut (*gs).cp;
-    let mut p: pdf_coord = pdf_coord::new();
+    let mut cpa = &mut (*gs).path;
+    let mut cpt = &mut (*gs).cp;
+    let mut p = pdf_coord::new();
     p.x = x;
     p.y = y;
     return pdf_path__moveto(cpa, cpt, &mut p);
@@ -1475,7 +1412,7 @@ pub unsafe extern "C" fn pdf_dev_moveto(mut x: f64, mut y: f64) -> i32 {
 pub unsafe extern "C" fn pdf_dev_rmoveto(mut x: f64, mut y: f64) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let p = pdf_coord {
         x: cpt.x + x,
@@ -1488,7 +1425,7 @@ pub unsafe extern "C" fn pdf_dev_rmoveto(mut x: f64, mut y: f64) -> i32 {
 pub unsafe extern "C" fn pdf_dev_lineto(mut x: f64, mut y: f64) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let p0 = pdf_coord { x, y };
     pdf_path__lineto(cpa, cpt, &p0)
@@ -1497,7 +1434,7 @@ pub unsafe extern "C" fn pdf_dev_lineto(mut x: f64, mut y: f64) -> i32 {
 pub unsafe extern "C" fn pdf_dev_rlineto(mut x: f64, mut y: f64) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let mut p0 = pdf_coord {
         x: x + cpt.x,
@@ -1516,7 +1453,7 @@ pub unsafe extern "C" fn pdf_dev_curveto(
 ) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let p0 = pdf_coord { x: x0, y: y0 };
     let p1 = pdf_coord { x: x1, y: y1 };
@@ -1532,7 +1469,7 @@ pub unsafe extern "C" fn pdf_dev_vcurveto(
 ) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let cpt_clone = cpt.clone();
     let p0 = pdf_coord { x: x0, y: y0 };
@@ -1548,7 +1485,7 @@ pub unsafe extern "C" fn pdf_dev_ycurveto(
 ) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let p0 = pdf_coord { x: x0, y: y0 };
     let p1 = pdf_coord { x: x1, y: y1 };
@@ -1565,7 +1502,7 @@ pub unsafe extern "C" fn pdf_dev_rcurveto(
 ) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let p0 = pdf_coord {
         x: x0 + cpt.x,
@@ -1586,7 +1523,7 @@ pub unsafe extern "C" fn pdf_dev_closepath() -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut cpt = &mut (*gs).cp;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     pdf_path__closepath(cpa, cpt)
 }
 #[no_mangle]
@@ -1614,9 +1551,9 @@ pub unsafe extern "C" fn pdf_dev_transform(p: &mut pdf_coord, M: Option<&pdf_tma
 pub unsafe extern "C" fn pdf_dev_arc(c_x: f64, c_y: f64, r: f64, a_0: f64, a_1: f64) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
-    let mut c: pdf_coord = pdf_coord { x: c_x, y: c_y };
+    let mut c = pdf_coord { x: c_x, y: c_y };
     pdf_path__elliptarc(cpa, cpt, &mut c, r, r, 0.0f64, a_0, a_1, 1i32)
 }
 /* *negative* arc */
@@ -1624,7 +1561,7 @@ pub unsafe extern "C" fn pdf_dev_arc(c_x: f64, c_y: f64, r: f64, a_0: f64, a_1: 
 pub unsafe extern "C" fn pdf_dev_arcn(c_x: f64, c_y: f64, r: f64, a_0: f64, a_1: f64) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let mut c = pdf_coord { x: c_x, y: c_y };
     pdf_path__elliptarc(cpa, cpt, &mut c, r, r, 0.0f64, a_0, a_1, -1i32)
@@ -1642,7 +1579,7 @@ pub unsafe extern "C" fn pdf_dev_arcx(
 ) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let mut c = pdf_coord { x: c_x, y: c_y };
     pdf_path__elliptarc(cpa, cpt, &mut c, r_x, r_y, xar, a_0, a_1, a_d)
@@ -1659,7 +1596,7 @@ pub unsafe extern "C" fn pdf_dev_bspline(
 ) -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
-    let mut cpa: *mut pdf_path = &mut (*gs).path;
+    let mut cpa = &mut (*gs).path;
     let mut cpt = &mut (*gs).cp;
     let p1 = pdf_coord {
         x: x0 + 2. * (x1 - x0) / 3.,

@@ -379,10 +379,10 @@ unsafe extern "C" fn pdf_get_rect(
     let mut page: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut bbox = pdf_rect::new();
     let mut matrix = pdf_tmatrix::new();
-    let mut p1: pdf_coord = pdf_coord::new();
-    let mut p2: pdf_coord = pdf_coord::new();
-    let mut p3: pdf_coord = pdf_coord::new();
-    let mut p4: pdf_coord = pdf_coord::new();
+    let mut p1 = pdf_coord::new();
+    let mut p2 = pdf_coord::new();
+    let mut p3 = pdf_coord::new();
+    let mut p4 = pdf_coord::new();
     pf = pdf_open(filename, handle);
     if pf.is_null() {
         /* TODO: issue warning */

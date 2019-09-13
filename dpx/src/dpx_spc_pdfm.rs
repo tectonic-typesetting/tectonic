@@ -825,7 +825,7 @@ unsafe extern "C" fn spc_handler_pdfm_annot(mut spe: *mut spc_env, mut args: *mu
     let mut annot_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut rect = pdf_rect::new();
     let mut ident: *mut i8 = 0 as *mut i8;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut ti = transform_info::new();
     skip_white(&mut (*args).curptr, (*args).endptr);
     if *(*args).curptr.offset(0) as i32 == '@' as i32 {
@@ -1177,7 +1177,7 @@ unsafe extern "C" fn spc_handler_pdfm_bead(mut spe: *mut spc_env, mut args: *mut
     let mut rect = pdf_rect::new();
     let mut page_no: i32 = 0;
     let mut ti = transform_info::new();
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     skip_white(&mut (*args).curptr, (*args).endptr);
     if *(*args).curptr.offset(0) as i32 != '@' as i32 {
         spc_warn(

@@ -39,7 +39,7 @@ use crate::dpx_pdfobj::pdf_obj;
 use crate::{ttstub_input_close, ttstub_input_open};
 
 use super::dpx_pdfdev::{
-    pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
+    pdf_dev_put_image, pdf_tmatrix, transform_info, transform_info_clear,
 };
 use super::dpx_spc_util::spc_util_read_dimtrns;
 use libc::free;

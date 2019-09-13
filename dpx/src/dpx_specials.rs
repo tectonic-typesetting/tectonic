@@ -329,7 +329,7 @@ unsafe extern "C" fn ispageref(mut key: *const i8) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_obj {
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut k: i32 = 0;
     assert!(!named_objects.is_null());
     if key.is_null() {
@@ -400,7 +400,7 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
 #[no_mangle]
 pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut k: i32 = 0;
     assert!(!named_objects.is_null());
     if key.is_null() {
@@ -767,7 +767,7 @@ unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut
     let mut ebuf: [i8; 64] = [0; 64];
     let mut i: i32 = 0;
     let mut pg: i32 = (*spe).pg;
-    let mut c: pdf_coord = pdf_coord::new();
+    let mut c = pdf_coord::new();
     c.x = (*spe).x_user;
     c.y = (*spe).y_user;
     pdf_dev_transform(&mut c, None);

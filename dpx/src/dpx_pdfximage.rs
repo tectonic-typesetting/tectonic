@@ -637,10 +637,10 @@ pub unsafe extern "C" fn pdf_ximage_set_form(
     mut resource: *mut pdf_obj,
 ) {
     let info = form_info;
-    let mut p1: pdf_coord = pdf_coord::new();
-    let mut p2: pdf_coord = pdf_coord::new();
-    let mut p3: pdf_coord = pdf_coord::new();
-    let mut p4: pdf_coord = pdf_coord::new();
+    let mut p1 = pdf_coord::new();
+    let mut p2 = pdf_coord::new();
+    let mut p3 = pdf_coord::new();
+    let mut p4 = pdf_coord::new();
     (*I).subtype = 0i32;
     /* Image's attribute "bbox" here is affected by /Rotate entry of included
      * PDF page.

@@ -145,7 +145,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
         let mut init = pdf_tmatrix::new();
         init
     };
-    let mut pt: pdf_coord = pdf_coord::new();
+    let mut pt = pdf_coord::new();
     /* Create transformation matrix */
     M.a = a;
     M.b = b;
