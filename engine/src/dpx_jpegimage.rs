@@ -8,12 +8,12 @@
 
 use crate::warn;
 
-extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_name, pdf_new_number,
     pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dataptr, pdf_stream_dict,
     pdf_stream_length,
 };
+use crate::{ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -42,14 +42,6 @@ extern "C" {
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
-    #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]

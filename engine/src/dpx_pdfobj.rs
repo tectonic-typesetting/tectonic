@@ -10,7 +10,13 @@
 
 use crate::dpx_pdfparse::{parse_number, parse_pdf_dict, parse_pdf_object, parse_unsigned};
 use crate::{info, warn};
+use std::ffi::CStr;
 
+use crate::{
+    ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek,
+    ttstub_input_ungetc, ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout,
+    ttstub_output_putc, ttstub_output_write,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -32,26 +38,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_open_stdout() -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
-    #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
-    #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_get_size(handle: rust_input_handle_t) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
-    #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: i32) -> i32;
     #[no_mangle]
     fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
     #[no_mangle]
@@ -3215,8 +3201,8 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                 filter = pdf_get_array(filter, 0i32)
             }
             if !filter.is_null() && pdf_obj_typeof(filter) == 4i32 {
-                let mut filter_name: *mut i8 = pdf_name_value(filter);
-                if streq_ptr(filter_name, b"FlateDecode\x00" as *const u8 as *const i8) {
+                let filter_name = CStr::from_ptr(pdf_name_value(filter)).to_str().unwrap();
+                if filter_name == "FlateDecode" {
                     if have_parms != 0 {
                         error = pdf_add_stream_flate_filtered(
                             dst,
@@ -3232,10 +3218,7 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                         )
                     }
                 } else {
-                    dpx_warning(
-                        b"DecodeFilter \"%s\" not supported.\x00" as *const u8 as *const i8,
-                        filter_name,
-                    );
+                    warn!("DecodeFilter \"{}\" not supported.", filter_name,);
                     error = -1i32
                 }
             } else {

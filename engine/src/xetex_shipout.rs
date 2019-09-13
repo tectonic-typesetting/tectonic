@@ -6,8 +6,10 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use crate::{ttstub_output_close, ttstub_output_flush, ttstub_output_open, ttstub_output_write};
 use libc::free;
+
+use super::xetex_ini::selector;
 extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
@@ -16,14 +18,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
-    #[no_mangle]
-    fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     /* Needed here for UFILE */
@@ -51,8 +45,6 @@ extern "C" {
     static mut init_pool_ptr: pool_pointer;
     #[no_mangle]
     static mut rust_stdout: rust_output_handle_t;
-    #[no_mangle]
-    static mut selector: selector_t;
     #[no_mangle]
     static mut term_offset: i32;
     #[no_mangle]
@@ -319,15 +311,9 @@ extern "C" {
 pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
-pub type selector_t = u32;
-pub const SELECTOR_NEW_STRING: selector_t = 21;
-pub const SELECTOR_PSEUDO: selector_t = 20;
-pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
-pub const SELECTOR_LOG_ONLY: selector_t = 18;
-pub const SELECTOR_TERM_ONLY: selector_t = 17;
-pub const SELECTOR_NO_PRINT: selector_t = 16;
-pub const SELECTOR_FILE_15: selector_t = 15;
-pub const SELECTOR_FILE_0: selector_t = 0;
+
+use super::xetex_ini::Selector;
+
 /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
    Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
@@ -645,7 +631,6 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
     let mut j: u8 = 0;
     let mut k: u8 = 0;
     let mut s: pool_pointer = 0;
-    let mut old_setting: u8 = 0;
     let mut l: u8 = 0;
     let mut output_comment: *const i8 = b"tectonic\x00" as *const u8 as *const i8;
     synctex_sheet(
@@ -1442,8 +1427,8 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
         dvi_four(last_bop);
         last_bop = page_loc;
         /* Generate a PDF pagesize special unilaterally */
-        old_setting = selector as u8;
-        selector = SELECTOR_NEW_STRING;
+        let old_setting = selector;
+        selector = Selector::NEW_STRING;
         print_cstr(b"pdf:pagesize \x00" as *const u8 as *const i8);
         if (*eqtb.offset(
             (1i32
@@ -1588,7 +1573,7 @@ pub unsafe extern "C" fn ship_out(mut p: i32) {
             );
             print_cstr(b"pt\x00" as *const u8 as *const i8);
         }
-        selector = old_setting as selector_t;
+        selector = old_setting;
         dvi_out(239i32 as eight_bits);
         dvi_out(cur_length() as eight_bits);
         s = *str_start.offset((str_ptr - 65536i32) as isize);
@@ -3317,7 +3302,6 @@ pub unsafe extern "C" fn new_edge(mut s: small_number, mut w: scaled_t) -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn out_what(mut p: i32) {
     let mut j: small_number = 0;
-    let mut old_setting: u8 = 0;
     match (*mem.offset(p as isize)).b16.s0 as i32 {
         0 | 1 | 2 => {
             if !doing_leaders {
@@ -3347,7 +3331,7 @@ pub unsafe extern "C" fn out_what(mut p: i32) {
                         }
                         write_open[j as usize] = true;
                         if log_opened {
-                            old_setting = selector as u8;
+                            let old_setting = selector;
                             if (*eqtb.offset(
                                 (1i32
                                     + (0x10ffffi32 + 1i32)
@@ -3378,9 +3362,9 @@ pub unsafe extern "C" fn out_what(mut p: i32) {
                             .b32
                             .s1 <= 0i32
                             {
-                                selector = SELECTOR_LOG_ONLY
+                                selector = Selector::LOG_ONLY
                             } else {
-                                selector = SELECTOR_TERM_AND_LOG
+                                selector = Selector::TERM_AND_LOG
                             }
                             print_nl_cstr(b"\\openout\x00" as *const u8 as *const i8);
                             print_int(j as i32);
@@ -3389,7 +3373,7 @@ pub unsafe extern "C" fn out_what(mut p: i32) {
                             print_cstr(b"\'.\x00" as *const u8 as *const i8);
                             print_nl_cstr(b"\x00" as *const u8 as *const i8);
                             print_ln();
-                            selector = old_setting as selector_t
+                            selector = old_setting
                         }
                     }
                 }
@@ -3701,7 +3685,6 @@ unsafe extern "C" fn prune_movements(mut l: i32) {
     }
 }
 unsafe extern "C" fn special_out(mut p: i32) {
-    let mut old_setting: u8 = 0;
     let mut k: pool_pointer = 0;
     if cur_h != dvi_h {
         movement(cur_h - dvi_h, 143i32 as eight_bits);
@@ -3712,8 +3695,8 @@ unsafe extern "C" fn special_out(mut p: i32) {
         dvi_v = cur_v
     }
     doing_special = true;
-    old_setting = selector as u8;
-    selector = SELECTOR_NEW_STRING;
+    let old_setting = selector;
+    selector = Selector::NEW_STRING;
     show_token_list(
         (*mem.offset((*mem.offset((p + 1i32) as isize)).b32.s1 as isize))
             .b32
@@ -3721,7 +3704,7 @@ unsafe extern "C" fn special_out(mut p: i32) {
         -0xfffffffi32,
         pool_size - pool_ptr,
     );
-    selector = old_setting as selector_t;
+    selector = old_setting;
     if pool_ptr + 1i32 > pool_size {
         overflow(
             b"pool size\x00" as *const u8 as *const i8,
@@ -3752,7 +3735,6 @@ unsafe extern "C" fn special_out(mut p: i32) {
     doing_special = false;
 }
 unsafe extern "C" fn write_out(mut p: i32) {
-    let mut old_setting: u8 = 0;
     let mut old_mode: i32 = 0;
     let mut j: small_number = 0;
     let mut q: i32 = 0;
@@ -3802,15 +3784,15 @@ unsafe extern "C" fn write_out(mut p: i32) {
     }
     cur_list.mode = old_mode as i16;
     end_token_list();
-    old_setting = selector as u8;
+    let old_setting = selector;
     j = (*mem.offset((p + 1i32) as isize)).b32.s0 as small_number;
-    if j as i32 == 18i32 {
-        selector = SELECTOR_NEW_STRING
+    if j == 18 {
+        selector = Selector::NEW_STRING
     } else if write_open[j as usize] {
-        selector = j as selector_t
+        selector = (j as u8).into()
     } else {
-        if j as i32 == 17i32 && selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32 {
-            selector = SELECTOR_LOG_ONLY
+        if j == 17 && (selector == Selector::TERM_AND_LOG) {
+            selector = Selector::LOG_ONLY
         }
         print_nl_cstr(b"\x00" as *const u8 as *const i8);
     }
@@ -3848,12 +3830,12 @@ unsafe extern "C" fn write_out(mut p: i32) {
         .b32
         .s1 <= 0i32
         {
-            selector = SELECTOR_LOG_ONLY
+            selector = Selector::LOG_ONLY
         } else {
-            selector = SELECTOR_TERM_AND_LOG
+            selector = Selector::TERM_AND_LOG
         }
         if !log_opened {
-            selector = SELECTOR_TERM_ONLY
+            selector = Selector::TERM_ONLY
         }
         print_nl_cstr(b"runsystem(\x00" as *const u8 as *const i8);
         d = 0i32;
@@ -3871,10 +3853,9 @@ unsafe extern "C" fn write_out(mut p: i32) {
         print_ln();
         pool_ptr = *str_start.offset((str_ptr - 65536i32) as isize)
     }
-    selector = old_setting as selector_t;
+    selector = old_setting;
 }
 unsafe extern "C" fn pic_out(mut p: i32) {
-    let mut old_setting: u8 = 0;
     let mut i: i32 = 0;
     let mut k: pool_pointer = 0;
     if cur_h != dvi_h {
@@ -3885,8 +3866,8 @@ unsafe extern "C" fn pic_out(mut p: i32) {
         movement(cur_v - dvi_v, 157i32 as eight_bits);
         dvi_v = cur_v
     }
-    old_setting = selector as u8;
-    selector = SELECTOR_NEW_STRING;
+    let old_setting = selector;
+    selector = Selector::NEW_STRING;
     print_cstr(b"pdf:image \x00" as *const u8 as *const i8);
     print_cstr(b"matrix \x00" as *const u8 as *const i8);
     print_scaled((*mem.offset((p + 5i32) as isize)).b32.s0);
@@ -3933,7 +3914,7 @@ unsafe extern "C" fn pic_out(mut p: i32) {
         i += 1
     }
     print(')' as i32);
-    selector = old_setting as selector_t;
+    selector = old_setting;
     if cur_length() < 256i32 {
         dvi_out(239i32 as eight_bits);
         dvi_out(cur_length() as eight_bits);

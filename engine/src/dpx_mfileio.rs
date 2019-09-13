@@ -6,7 +6,7 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use crate::{ttstub_input_getc, ttstub_input_ungetc};
 extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
@@ -14,10 +14,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_input_getc(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_ungetc(handle: rust_input_handle_t, ch: i32) -> i32;
 }
 use libc::{fgetc, fseek, ftell, rewind, ungetc, FILE};
 pub type __off_t = i64;

@@ -8,7 +8,6 @@
 
 use crate::warn;
 
-extern crate libc;
 use libc::free;
 extern "C" {
     #[no_mangle]

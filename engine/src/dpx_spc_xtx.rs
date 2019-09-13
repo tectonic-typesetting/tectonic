@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-extern crate libc;
+
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_set_fixed_point};
 use super::dpx_spc_util::spc_util_read_colorspec;

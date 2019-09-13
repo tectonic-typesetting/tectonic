@@ -56,7 +56,7 @@ extern "C" {
        Licensed under the MIT License.
     */
     #[no_mangle]
-    fn bibtex_main(aux_file_name: *const i8) -> tt_history_t;
+    fn bibtex_main(aux_file_name: *const i8) -> TTHistory;
     /*  DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
         Copyright (C) 2002-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
@@ -336,7 +336,7 @@ extern "C" {
     /*41: The length of the current string in the pool */
     /* Tectonic related functions */
     #[no_mangle]
-    fn tt_run_engine(dump_name: *const i8, input_file_name: *const i8) -> tt_history_t;
+    fn tt_run_engine(dump_name: *const i8, input_file_name: *const i8) -> TTHistory;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]
@@ -353,34 +353,43 @@ pub type va_list = __builtin_va_list;
 pub struct __sigset_t {
     pub __val: [u64; 16],
 }
-pub type tt_history_t = u32;
-pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
-pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
-pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
-pub const HISTORY_SPOTLESS: tt_history_t = 0;
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+#[repr(C)]
+#[derive(Clone, Copy, PartialEq)]
+pub enum TTHistory {
+    SPOTLESS = 0,
+    WARNING_ISSUED = 1,
+    ERROR_ISSUED = 2,
+    FATAL_ERROR = 3,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, PartialEq)]
+pub enum TTInputFormat {
+    TFM = 3,
+    AFM = 4,
+    BIB = 6,
+    BST = 7,
+    CNF = 8,
+    FORMAT = 10,
+    FONTMAP = 11,
+    OFM = 20,
+    OVF = 23,
+    PICT = 25,
+    TEX = 26,
+    TEX_PS_HEADER = 30,
+    TYPE1 = 32,
+    VF = 33,
+    TRUETYPE = 36,
+    BINARY = 40,
+    MISCFONTS = 41,
+    ENC = 44,
+    CMAP = 45,
+    SFD = 46,
+    OPENTYPE = 47,
+    TECTONIC_PRIMARY = 59, /* quasi-hack to get the primary input */
+}
+
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
@@ -417,7 +426,7 @@ pub struct tt_bridge_api_t {
         unsafe extern "C" fn(
             _: *mut libc::c_void,
             _: *const i8,
-            _: tt_input_format_type,
+            _: TTInputFormat,
             _: i32,
         ) -> rust_input_handle_t,
     >,
@@ -549,7 +558,7 @@ pub unsafe extern "C" fn tex_simple_main(
     tectonic_global_bridge = api;
     if _setjmp(jump_buffer.as_mut_ptr()) != 0 {
         tectonic_global_bridge = 0 as *mut tt_bridge_api_t;
-        return HISTORY_FATAL_ERROR as i32;
+        return TTHistory::FATAL_ERROR as i32;
     }
     rv = tt_run_engine(dump_name, input_file_name) as i32;
     tectonic_global_bridge = 0 as *mut tt_bridge_api_t;
@@ -762,7 +771,7 @@ pub unsafe extern "C" fn ttstub_output_close(mut handle: rust_output_handle_t) -
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_input_open(
     mut path: *const i8,
-    mut format: tt_input_format_type,
+    mut format: TTInputFormat,
     mut is_gz: i32,
 ) -> rust_input_handle_t {
     (*tectonic_global_bridge)
@@ -1018,8 +1027,8 @@ mod xetex_xetex0;
 
 #[macro_use]
 mod macro_stub;
-mod stub_icu;
 mod stub_errno;
+mod stub_icu;
 
 pub use xetex_engine_interface::tt_xetex_set_int_variable;
 

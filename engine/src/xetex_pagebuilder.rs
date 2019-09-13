@@ -6,7 +6,6 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
 extern "C" {
     /* Needed here for UFILE */
     /* variables! */

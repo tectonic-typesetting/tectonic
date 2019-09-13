@@ -8,7 +8,6 @@
 
 use crate::warn;
 
-extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_new_stream,
     pdf_new_string, pdf_obj, pdf_stream_dict,

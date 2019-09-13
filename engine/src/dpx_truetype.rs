@@ -10,11 +10,11 @@
 
 use crate::{info, warn};
 
-extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_merge_dict, pdf_new_array, pdf_new_name,
     pdf_new_number, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,
 };
+use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -78,8 +78,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     /* Name does not include the / */

@@ -8,4 +8,3 @@ pub const ZERO: libc::c_int = 0;
 // FIXME: Are these same on all platforms?
 pub const EINTR: libc::c_int = 4;
 pub const ERANGE: libc::c_int = 34;
-

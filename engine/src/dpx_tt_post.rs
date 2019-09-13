@@ -8,15 +8,13 @@
 
 use crate::warn;
 
-extern crate libc;
+use crate::ttstub_input_read;
 use libc::free;
 extern "C" {
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn sfnt_locate_table(sfont: *mut sfnt, tag: *const i8) -> u32;
-    #[no_mangle]
-    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.

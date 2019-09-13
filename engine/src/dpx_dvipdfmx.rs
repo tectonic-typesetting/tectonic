@@ -11,7 +11,6 @@
 use crate::dpx_pdfparse::parse_unsigned;
 use crate::{info, warn};
 
-extern crate libc;
 use libc::free;
 extern "C" {
     #[no_mangle]

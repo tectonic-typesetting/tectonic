@@ -12,6 +12,7 @@ use crate::warn;
 
 use super::dpx_pdfdraw::pdf_dev_concat;
 use crate::dpx_pdfobj::pdf_obj;
+use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -46,14 +47,6 @@ extern "C" {
     fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
@@ -122,33 +115,9 @@ extern "C" {
     ) -> i32;
 }
 pub type size_t = u64;
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTInputFormat;
+
 pub type rust_input_handle_t = *mut libc::c_void;
 /* quasi-hack to get the primary input */
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -273,7 +242,8 @@ unsafe extern "C" fn spc_handler_ps_header(mut spe: *mut spc_env, mut args: *mut
         (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
     );
     *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as i64 as isize) = 0_i8;
-    ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0i32) as *mut rust_input_handle_t;
+    ps_header =
+        ttstub_input_open(pro, TTInputFormat::TEX_PS_HEADER, 0i32) as *mut rust_input_handle_t;
     if ps_header.is_null() {
         spc_warn(
             spe,

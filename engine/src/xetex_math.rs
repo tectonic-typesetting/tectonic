@@ -6,7 +6,6 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
     #[no_mangle]

@@ -8,7 +8,6 @@
 
 use crate::warn;
 
-extern crate libc;
 use super::dpx_pdfcolor::{
     pdf_color_compare, pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_valid,
     pdf_color_to_string, pdf_color_type,

@@ -8,8 +8,8 @@
 
 use crate::{info, warn};
 
-extern crate libc;
 use crate::dpx_pdfobj::pdf_obj;
+use crate::{ttstub_input_close, ttstub_input_seek};
 use libc::free;
 extern "C" {
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -48,10 +48,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]

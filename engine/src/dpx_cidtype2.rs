@@ -8,12 +8,12 @@
 
 use crate::{info, warn};
 
-extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_dict, pdf_new_name,
     pdf_new_number, pdf_new_stream, pdf_new_string, pdf_obj, pdf_ref_obj, pdf_release_obj,
     pdf_stream_length,
 };
+use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
     pub type Type0Font;
@@ -35,8 +35,6 @@ extern "C" {
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

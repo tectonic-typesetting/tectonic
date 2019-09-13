@@ -6,13 +6,12 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use crate::ttstub_output_flush;
+use crate::xetex_ini::{history, selector};
 extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
     #[no_mangle]
     static mut file_line_error_style_p: i32;
     #[no_mangle]
@@ -20,11 +19,7 @@ extern "C" {
     #[no_mangle]
     static mut rust_stdout: rust_output_handle_t;
     #[no_mangle]
-    static mut selector: selector_t;
-    #[no_mangle]
     static mut interaction: u8;
-    #[no_mangle]
-    static mut history: tt_history_t;
     #[no_mangle]
     static mut error_count: i8;
     #[no_mangle]
@@ -64,22 +59,13 @@ extern "C" {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-/* Both XeTeX and bibtex use this enum: */
-pub type tt_history_t = u32;
-pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
-pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
-pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
-pub const HISTORY_SPOTLESS: tt_history_t = 0;
+
+use crate::TTHistory;
+
 pub type rust_output_handle_t = *mut libc::c_void;
-pub type selector_t = u32;
-pub const SELECTOR_NEW_STRING: selector_t = 21;
-pub const SELECTOR_PSEUDO: selector_t = 20;
-pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
-pub const SELECTOR_LOG_ONLY: selector_t = 18;
-pub const SELECTOR_TERM_ONLY: selector_t = 17;
-pub const SELECTOR_NO_PRINT: selector_t = 16;
-pub const SELECTOR_FILE_15: selector_t = 15;
-pub const SELECTOR_FILE_0: selector_t = 0;
+
+use super::xetex_ini::Selector;
+
 pub type str_number = i32;
 /* tectonic/errors.c -- error handling
  * Copyright 2016 the Tectonic Project
@@ -89,15 +75,15 @@ pub type str_number = i32;
 unsafe extern "C" fn pre_error_message() {
     /* FKA normalize_selector(): */
     if log_opened {
-        selector = SELECTOR_TERM_AND_LOG
+        selector = Selector::TERM_AND_LOG
     } else {
-        selector = SELECTOR_TERM_ONLY
+        selector = Selector::TERM_ONLY
     }
     if job_name == 0i32 {
         open_log_file();
     }
     if interaction as i32 == 0i32 {
-        selector -= 1
+        selector = (u8::from(selector) - 1).into()
     }
     if file_line_error_style_p != 0 {
         print_file_line();
@@ -113,19 +99,19 @@ unsafe extern "C" fn post_error_message(mut need_to_print_it: i32) {
     if need_to_print_it != 0 && log_opened as i32 != 0 {
         error();
     }
-    history = HISTORY_FATAL_ERROR;
+    history = TTHistory::FATAL_ERROR;
     close_files_and_terminate();
     ttstub_output_flush(rust_stdout);
 }
 #[no_mangle]
 pub unsafe extern "C" fn error() {
-    if (history as u32) < HISTORY_ERROR_ISSUED as i32 as u32 {
-        history = HISTORY_ERROR_ISSUED
+    if (history as u32) < (TTHistory::ERROR_ISSUED as u32) {
+        history = TTHistory::ERROR_ISSUED
     }
     print_char('.' as i32);
     show_context();
     if halt_on_error_p != 0 {
-        history = HISTORY_FATAL_ERROR;
+        history = TTHistory::FATAL_ERROR;
         post_error_message(0i32);
         _tt_abort(
             b"halted on potentially-recoverable error as specified\x00" as *const u8 as *const i8,
@@ -137,12 +123,12 @@ pub unsafe extern "C" fn error() {
     error_count += 1;
     if error_count as i32 == 100i32 {
         print_nl_cstr(b"(That makes 100 errors; please try again.)\x00" as *const u8 as *const i8);
-        history = HISTORY_FATAL_ERROR;
+        history = TTHistory::FATAL_ERROR;
         post_error_message(0i32);
         _tt_abort(b"halted after 100 potentially-recoverable errors\x00" as *const u8 as *const i8);
     }
     if interaction as i32 > 0i32 {
-        selector -= 1
+        selector = (u8::from(selector) - 1).into()
     }
     if use_err_help {
         print_ln();
@@ -155,7 +141,7 @@ pub unsafe extern "C" fn error() {
     }
     print_ln();
     if interaction as i32 > 0i32 {
-        selector += 1
+        selector = (u8::from(selector) + 1).into()
     }
     print_ln();
 }
@@ -185,7 +171,7 @@ pub unsafe extern "C" fn overflow(mut s: *const i8, mut n: i32) -> ! {
 #[no_mangle]
 pub unsafe extern "C" fn confusion(mut s: *const i8) -> ! {
     pre_error_message();
-    if (history as u32) < HISTORY_ERROR_ISSUED as i32 as u32 {
+    if (history as u32) < (TTHistory::ERROR_ISSUED as u32) {
         print_cstr(b"This can\'t happen (\x00" as *const u8 as *const i8);
         print_cstr(s);
         print_char(')' as i32);

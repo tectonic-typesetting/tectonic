@@ -25,6 +25,7 @@ vcpkg = "0.2.7"
 
 [dependencies]
 bitflags = "1.1.0"
+datetime = "0.4"
 libc = "0.2"
 libpng-sys = "1"
 libz-sys = { version = "1", optional = true}

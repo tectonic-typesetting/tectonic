@@ -5,7 +5,7 @@
          non_upper_case_globals,
          unused_assignments,
          unused_mut)]
-extern crate libc;
+
 extern "C" {
     #[no_mangle]
     fn rand() -> i32;

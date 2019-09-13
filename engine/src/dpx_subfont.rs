@@ -10,6 +10,7 @@
 
 use crate::{info, warn};
 
+use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_seek};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -31,16 +32,6 @@ extern "C" {
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_seek(handle: rust_input_handle_t, offset: ssize_t, whence: i32) -> size_t;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -110,29 +101,9 @@ extern "C" {
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTInputFormat;
+
 pub type rust_input_handle_t = *mut libc::c_void;
 /* Don't forget fontmap reading now requires information
  * from SFD files. You must initialize at least sfd_file_
@@ -492,7 +463,8 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const i8) -> i32 {
             .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
         strcpy((*sfd).ident, sfd_name);
-        handle = ttstub_input_open((*sfd).ident, TTIF_SFD, 0i32) as *mut rust_input_handle_t;
+        handle =
+            ttstub_input_open((*sfd).ident, TTInputFormat::SFD, 0i32) as *mut rust_input_handle_t;
         if handle.is_null() {
             clean_sfd_file_(sfd);
             return -1i32;
@@ -581,7 +553,7 @@ pub unsafe extern "C" fn sfd_load_record(
         );
     }
     /* reopen */
-    handle = ttstub_input_open((*sfd).ident, TTIF_SFD, 0i32) as *mut rust_input_handle_t;
+    handle = ttstub_input_open((*sfd).ident, TTInputFormat::SFD, 0i32) as *mut rust_input_handle_t;
     if handle.is_null() {
         return -1i32;
         /* _tt_abort("Could not open SFD file \"%s\"", sfd_name); */

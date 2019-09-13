@@ -8,12 +8,12 @@
 
 use crate::{info, warn};
 
-extern crate libc;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_lookup_dict, pdf_new_array,
     pdf_new_name, pdf_new_number, pdf_new_stream, pdf_new_string, pdf_obj, pdf_ref_obj,
     pdf_release_obj, pdf_stream_dataptr, pdf_stream_dict, pdf_stream_length,
 };
+use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
 extern "C" {
     pub type pdf_font;
@@ -56,14 +56,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn cff_close(cff: *mut cff_font);
     #[no_mangle]
@@ -223,33 +215,9 @@ extern "C" {
     fn tfm_get_width(font_id: i32, ch: i32) -> f64;
 }
 pub type size_t = u64;
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::TTInputFormat;
+
 pub type rust_input_handle_t = *mut libc::c_void;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -503,7 +471,7 @@ pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> i32 {
         pdf_font_set_flags(font, 1i32 << 0i32 | 1i32 << 2i32);
     } else {
         let mut handle: rust_input_handle_t = 0 as *mut libc::c_void;
-        handle = ttstub_input_open(ident, TTIF_TYPE1, 0i32);
+        handle = ttstub_input_open(ident, TTInputFormat::TYPE1, 0i32);
         /* NOTE: skipping qcheck_filetype() call in dpx_find_type1_file but we
          * call is_pfb() in just a second anyway.
          */
@@ -1245,7 +1213,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
     if usedchars.is_null() || ident.is_null() || fontname.is_null() {
         _tt_abort(b"Type1: Unexpected error.\x00" as *const u8 as *const i8);
     }
-    handle = ttstub_input_open(ident, TTIF_TYPE1, 0i32);
+    handle = ttstub_input_open(ident, TTInputFormat::TYPE1, 0i32);
     if handle.is_null() {
         _tt_abort(
             b"Type1: Could not open Type1 font: %s\x00" as *const u8 as *const i8,

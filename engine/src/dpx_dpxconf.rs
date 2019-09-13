@@ -6,7 +6,6 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
 extern "C" {
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;

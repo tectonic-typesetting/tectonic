@@ -6,7 +6,7 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use crate::{ttstub_issue_warning, ttstub_output_open_stdout, ttstub_output_write};
 extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
@@ -14,12 +14,6 @@ extern "C" {
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
-    #[no_mangle]
-    fn ttstub_issue_warning(format: *const i8, _: ...);
-    #[no_mangle]
-    fn ttstub_output_open_stdout() -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
     #[no_mangle]
     fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
 }

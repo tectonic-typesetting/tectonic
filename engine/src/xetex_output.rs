@@ -6,12 +6,11 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use super::xetex_ini::selector;
+use crate::ttstub_output_putc;
 extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn ttstub_output_putc(handle: rust_output_handle_t, c: i32) -> i32;
     /* Needed here for UFILE */
     /* variables! */
     /* All the following variables are defined in xetexini.c */
@@ -35,8 +34,6 @@ extern "C" {
     static mut rust_stdout: rust_output_handle_t;
     #[no_mangle]
     static mut log_file: rust_output_handle_t;
-    #[no_mangle]
-    static mut selector: selector_t;
     #[no_mangle]
     static mut dig: [u8; 23];
     #[no_mangle]
@@ -70,15 +67,9 @@ extern "C" {
 }
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
-pub type selector_t = u32;
-pub const SELECTOR_NEW_STRING: selector_t = 21;
-pub const SELECTOR_PSEUDO: selector_t = 20;
-pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
-pub const SELECTOR_LOG_ONLY: selector_t = 18;
-pub const SELECTOR_TERM_ONLY: selector_t = 17;
-pub const SELECTOR_NO_PRINT: selector_t = 16;
-pub const SELECTOR_FILE_15: selector_t = 15;
-pub const SELECTOR_FILE_0: selector_t = 0;
+
+use super::xetex_ini::Selector;
+
 /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
    Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
@@ -156,31 +147,31 @@ pub union memory_word {
 */
 #[no_mangle]
 pub unsafe extern "C" fn print_ln() {
-    match selector as u32 {
-        19 => {
+    match selector {
+        Selector::TERM_AND_LOG => {
             ttstub_output_putc(rust_stdout, '\n' as i32);
             ttstub_output_putc(log_file, '\n' as i32);
             term_offset = 0i32;
             file_offset = 0i32
         }
-        18 => {
+        Selector::LOG_ONLY => {
             ttstub_output_putc(log_file, '\n' as i32);
             file_offset = 0i32
         }
-        17 => {
+        Selector::TERM_ONLY => {
             ttstub_output_putc(rust_stdout, '\n' as i32);
             term_offset = 0i32
         }
-        16 | 20 | 21 => {}
+        Selector::NO_PRINT | Selector::PSEUDO | Selector::NEW_STRING => {}
         _ => {
-            ttstub_output_putc(write_file[selector as usize], '\n' as i32);
+            ttstub_output_putc(write_file[u8::from(selector) as usize], '\n' as i32);
         }
     };
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool) {
-    match selector as u32 {
-        19 => {
+    match selector {
+        Selector::TERM_AND_LOG => {
             ttstub_output_putc(rust_stdout, s as i32);
             ttstub_output_putc(log_file, s as i32);
             if incr_offset {
@@ -196,7 +187,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
                 file_offset = 0i32
             }
         }
-        18 => {
+        Selector::LOG_ONLY => {
             ttstub_output_putc(log_file, s as i32);
             if incr_offset {
                 file_offset += 1
@@ -205,7 +196,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
                 print_ln();
             }
         }
-        17 => {
+        Selector::TERM_ONLY => {
             ttstub_output_putc(rust_stdout, s as i32);
             if incr_offset {
                 term_offset += 1
@@ -214,20 +205,20 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
                 print_ln();
             }
         }
-        16 => {}
-        20 => {
+        Selector::NO_PRINT => {}
+        Selector::PSEUDO => {
             if tally < trick_count {
                 trick_buf[(tally % error_line) as usize] = s
             }
         }
-        21 => {
+        Selector::NEW_STRING => {
             if pool_ptr < pool_size {
                 *str_pool.offset(pool_ptr as isize) = s;
                 pool_ptr += 1
             }
         }
         _ => {
-            ttstub_output_putc(write_file[selector as usize], s as i32);
+            ttstub_output_putc(write_file[u8::from(selector) as usize], s as i32);
         }
     }
     tally += 1;
@@ -235,7 +226,7 @@ pub unsafe extern "C" fn print_raw_char(mut s: UTF16_code, mut incr_offset: bool
 #[no_mangle]
 pub unsafe extern "C" fn print_char(mut s: i32) {
     let mut l: small_number = 0;
-    if selector as u32 > SELECTOR_PSEUDO as i32 as u32 && !doing_special {
+    if (u8::from(selector) > u8::from(Selector::PSEUDO)) && !doing_special {
         if s >= 0x10000i32 {
             print_raw_char((0xd800i32 + (s - 0x10000i32) / 1024i32) as UTF16_code, true);
             print_raw_char((0xdc00i32 + (s - 0x10000i32) % 1024i32) as UTF16_code, true);
@@ -275,7 +266,7 @@ pub unsafe extern "C" fn print_char(mut s: i32) {
     .s1
     {
         /*:252 */
-        if (selector as u32) < SELECTOR_PSEUDO as i32 as u32 {
+        if u8::from(selector) < u8::from(Selector::PSEUDO) {
             print_ln();
             return;
         }
@@ -333,7 +324,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
             if s < 0i32 {
                 return print_cstr(b"???\x00" as *const u8 as *const i8);
             } else {
-                if selector as u32 > SELECTOR_PSEUDO as i32 as u32 {
+                if u8::from(selector) > u8::from(Selector::PSEUDO) {
                     print_char(s);
                     return;
                 }
@@ -368,7 +359,7 @@ pub unsafe extern "C" fn print(mut s: i32) {
                 .s1
                 {
                     /*:252 */
-                    if (selector as u32) < SELECTOR_PSEUDO as i32 as u32 {
+                    if u8::from(selector) < u8::from(Selector::PSEUDO) {
                         print_ln();
                         return;
                     }
@@ -497,8 +488,8 @@ pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl(mut s: str_number) {
-    if term_offset > 0i32 && selector as u32 & 1_u32 != 0
-        || file_offset > 0i32 && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
+    if term_offset > 0i32 && u8::from(selector) & 1 != 0
+        || file_offset > 0i32 && (u8::from(selector) >= u8::from(Selector::LOG_ONLY))
     {
         print_ln();
     }
@@ -506,8 +497,8 @@ pub unsafe extern "C" fn print_nl(mut s: str_number) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_nl_cstr(mut str: *const i8) {
-    if term_offset > 0i32 && selector as u32 & 1_u32 != 0
-        || file_offset > 0i32 && selector as u32 >= SELECTOR_LOG_ONLY as i32 as u32
+    if term_offset > 0i32 && u8::from(selector) & 1 != 0
+        || file_offset > 0i32 && (u8::from(selector) >= u8::from(Selector::LOG_ONLY))
     {
         print_ln();
     }

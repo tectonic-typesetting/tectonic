@@ -6,7 +6,11 @@
          unused_assignments,
          unused_mut)]
 
-extern crate libc;
+use super::xetex_texmfmp::get_date_and_time;
+use crate::{
+    ttstub_input_close, ttstub_input_open, ttstub_input_read, ttstub_output_close,
+    ttstub_output_flush, ttstub_output_open, ttstub_output_open_stdout, ttstub_output_write,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -19,31 +23,9 @@ extern "C" {
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    fn ttstub_output_open(path: *const i8, is_gz: i32) -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_open_stdout() -> rust_output_handle_t;
-    #[no_mangle]
-    fn ttstub_output_write(handle: rust_output_handle_t, data: *const i8, len: size_t) -> size_t;
-    #[no_mangle]
-    fn ttstub_output_flush(handle: rust_output_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_output_close(handle: rust_output_handle_t) -> i32;
-    #[no_mangle]
-    fn ttstub_input_open(
-        path: *const i8,
-        format: tt_input_format_type,
-        is_gz: i32,
-    ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ttstub_input_read(handle: rust_input_handle_t, data: *mut i8, len: size_t) -> ssize_t;
-    #[no_mangle]
-    fn ttstub_input_close(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn get_date_and_time(_: *mut i32, _: *mut i32, _: *mut i32, _: *mut i32);
     #[no_mangle]
     fn get_avail() -> i32;
     #[no_mangle]
@@ -288,39 +270,9 @@ pub type ssize_t = __ssize_t;
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-/* Both XeTeX and bibtex use this enum: */
-pub type tt_history_t = u32;
-pub const HISTORY_FATAL_ERROR: tt_history_t = 3;
-pub const HISTORY_ERROR_ISSUED: tt_history_t = 2;
-pub const HISTORY_WARNING_ISSUED: tt_history_t = 1;
-pub const HISTORY_SPOTLESS: tt_history_t = 0;
-/* The weird enum values are historical and could be rationalized. But it is
- * good to write them explicitly since they must be kept in sync with
- * `src/engines/mod.rs`.
- */
-pub type tt_input_format_type = u32;
-pub const TTIF_TECTONIC_PRIMARY: tt_input_format_type = 59;
-pub const TTIF_OPENTYPE: tt_input_format_type = 47;
-pub const TTIF_SFD: tt_input_format_type = 46;
-pub const TTIF_CMAP: tt_input_format_type = 45;
-pub const TTIF_ENC: tt_input_format_type = 44;
-pub const TTIF_MISCFONTS: tt_input_format_type = 41;
-pub const TTIF_BINARY: tt_input_format_type = 40;
-pub const TTIF_TRUETYPE: tt_input_format_type = 36;
-pub const TTIF_VF: tt_input_format_type = 33;
-pub const TTIF_TYPE1: tt_input_format_type = 32;
-pub const TTIF_TEX_PS_HEADER: tt_input_format_type = 30;
-pub const TTIF_TEX: tt_input_format_type = 26;
-pub const TTIF_PICT: tt_input_format_type = 25;
-pub const TTIF_OVF: tt_input_format_type = 23;
-pub const TTIF_OFM: tt_input_format_type = 20;
-pub const TTIF_FONTMAP: tt_input_format_type = 11;
-pub const TTIF_FORMAT: tt_input_format_type = 10;
-pub const TTIF_CNF: tt_input_format_type = 8;
-pub const TTIF_BST: tt_input_format_type = 7;
-pub const TTIF_BIB: tt_input_format_type = 6;
-pub const TTIF_AFM: tt_input_format_type = 4;
-pub const TTIF_TFM: tt_input_format_type = 3;
+
+use crate::{TTHistory, TTInputFormat};
+
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type rust_input_handle_t = *mut libc::c_void;
 /* quasi-hack to get the primary input */
@@ -335,15 +287,56 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* Endianness foo */
 /* our typedefs */
 pub type scaled_t = i32;
-pub type selector_t = u32;
-pub const SELECTOR_NEW_STRING: selector_t = 21;
-pub const SELECTOR_PSEUDO: selector_t = 20;
-pub const SELECTOR_TERM_AND_LOG: selector_t = 19;
-pub const SELECTOR_LOG_ONLY: selector_t = 18;
-pub const SELECTOR_TERM_ONLY: selector_t = 17;
-pub const SELECTOR_NO_PRINT: selector_t = 16;
-pub const SELECTOR_FILE_15: selector_t = 15;
-pub const SELECTOR_FILE_0: selector_t = 0;
+
+#[repr(C)]
+#[derive(Clone, Copy, PartialEq)]
+pub enum Selector {
+    FILE_0,
+    FILE_15,
+    NO_PRINT,
+    TERM_ONLY,
+    LOG_ONLY,
+    TERM_AND_LOG,
+    PSEUDO,
+    NEW_STRING,
+    // Looks like bug in `write_out`, should be deleted after oxidize
+    Other(u8),
+}
+
+impl From<Selector> for u8 {
+    fn from(u: Selector) -> Self {
+        use Selector::*;
+        match u {
+            FILE_0 => 0,
+            FILE_15 => 15,
+            NO_PRINT => 16,
+            TERM_ONLY => 17,
+            LOG_ONLY => 18,
+            TERM_AND_LOG => 19,
+            PSEUDO => 20,
+            NEW_STRING => 21,
+            Other(u) => u,
+        }
+    }
+}
+
+impl From<u8> for Selector {
+    fn from(u: u8) -> Self {
+        use Selector::*;
+        match u {
+            0 => FILE_0,
+            15 => FILE_15,
+            16 => NO_PRINT,
+            17 => TERM_ONLY,
+            18 => LOG_ONLY,
+            19 => TERM_AND_LOG,
+            20 => PSEUDO,
+            21 => NEW_STRING,
+            n => Other(n),
+        }
+    }
+}
+
 /*18: */
 pub type UTF16_code = u16;
 pub type UTF8_code = u8;
@@ -612,15 +605,9 @@ pub struct input_state_t {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct UFILE {
-    pub handle: rust_input_handle_t,
-    pub savedChar: i64,
-    pub skipNextLF: i16,
-    pub encodingMode: i16,
-    pub conversionData: *mut libc::c_void,
-}
+
+pub use super::xetex_io::UFILE;
+
 #[inline]
 unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
     free(ptr);
@@ -723,7 +710,7 @@ pub static mut rust_stdout: rust_output_handle_t = 0 as *const libc::c_void as *
 #[no_mangle]
 pub static mut log_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 #[no_mangle]
-pub static mut selector: selector_t = SELECTOR_FILE_0;
+pub static mut selector: Selector = Selector::FILE_0;
 #[no_mangle]
 pub static mut dig: [u8; 23] = [0; 23];
 #[no_mangle]
@@ -755,7 +742,7 @@ pub static mut deletions_allowed: bool = false;
 #[no_mangle]
 pub static mut set_box_allowed: bool = false;
 #[no_mangle]
-pub static mut history: tt_history_t = HISTORY_SPOTLESS;
+pub static mut history: TTHistory = TTHistory::SPOTLESS;
 #[no_mangle]
 pub static mut error_count: i8 = 0;
 #[no_mangle]
@@ -826,7 +813,7 @@ pub static mut cur_list: list_state_record = list_state_record {
 #[no_mangle]
 pub static mut shown_mode: i16 = 0;
 #[no_mangle]
-pub static mut old_setting: u8 = 0;
+pub static mut old_setting: Selector = Selector::FILE_0;
 #[no_mangle]
 pub static mut hash: *mut b32x2 = 0 as *const b32x2 as *mut b32x2;
 #[no_mangle]
@@ -4015,12 +4002,12 @@ unsafe extern "C" fn store_fmt_file() {
         if log_opened {
             error();
         }
-        history = HISTORY_FATAL_ERROR;
+        history = TTHistory::FATAL_ERROR;
         close_files_and_terminate();
         ttstub_output_flush(rust_stdout);
         _tt_abort(b"\\dump inside a group\x00" as *const u8 as *const i8);
     }
-    selector = SELECTOR_NEW_STRING;
+    selector = Selector::NEW_STRING;
     print_cstr(b" (preloaded format=\x00" as *const u8 as *const i8);
     print(job_name);
     print_char(' ' as i32);
@@ -4121,9 +4108,9 @@ unsafe extern "C" fn store_fmt_file() {
     );
     print_char(')' as i32);
     if interaction as i32 == 0i32 {
-        selector = SELECTOR_LOG_ONLY
+        selector = Selector::LOG_ONLY
     } else {
-        selector = SELECTOR_TERM_AND_LOG
+        selector = Selector::TERM_AND_LOG
     }
     if pool_ptr + 1i32 > pool_size {
         overflow(
@@ -5303,7 +5290,7 @@ unsafe extern "C" fn load_fmt_file() -> bool {
     /* This is where a first line starting with "&" used to
      * trigger code that would change the format file. */
     pack_buffered_name((format_default_length - 4i32) as small_number, 1i32, 0i32);
-    fmt_in = ttstub_input_open(name_of_file, TTIF_FORMAT, 0i32);
+    fmt_in = ttstub_input_open(name_of_file, TTInputFormat::FORMAT, 0i32);
     if fmt_in.is_null() {
         _tt_abort(
             b"cannot open the format file \"%s\"\x00" as *const u8 as *const i8,
@@ -8321,15 +8308,15 @@ unsafe extern "C" fn final_cleanup() {
         cond_ptr = (*mem.offset(cond_ptr as isize)).b32.s1;
         free_node(temp_ptr, 2i32);
     }
-    if history as u32 != HISTORY_SPOTLESS as i32 as u32 {
-        if history as u32 == HISTORY_WARNING_ISSUED as i32 as u32 || (interaction as i32) < 3i32 {
-            if selector as u32 == SELECTOR_TERM_AND_LOG as i32 as u32 {
-                selector = SELECTOR_TERM_ONLY;
+    if history != TTHistory::SPOTLESS {
+        if history == TTHistory::WARNING_ISSUED || (interaction as i32) < 3i32 {
+            if selector == Selector::TERM_AND_LOG {
+                selector = Selector::TERM_ONLY;
                 print_nl_cstr(
                     b"(see the transcript file for additional information)\x00" as *const u8
                         as *const i8,
                 );
-                selector = SELECTOR_TERM_AND_LOG
+                selector = Selector::TERM_AND_LOG
             }
         }
     }
@@ -14057,7 +14044,7 @@ unsafe extern "C" fn get_strings_started() {
 pub unsafe extern "C" fn tt_run_engine(
     mut dump_name: *mut i8,
     mut input_file_name: *mut i8,
-) -> tt_history_t {
+) -> TTHistory {
     let mut font_k: i32 = 0;
     /* Miscellaneous initializations that were mostly originally done in the
      * main() driver routines. */
@@ -14221,7 +14208,7 @@ pub unsafe extern "C" fn tt_run_engine(
         ) as *mut memory_word
     }
     /* Sanity-check various invariants. */
-    history = HISTORY_FATAL_ERROR;
+    history = TTHistory::FATAL_ERROR;
     bad = 0i32;
     if half_error_line < 30i32 || half_error_line > error_line - 15i32 {
         bad = 1i32
@@ -14320,7 +14307,7 @@ pub unsafe extern "C" fn tt_run_engine(
     initialize_math_variables();
     initialize_pagebuilder_variables();
     initialize_shipout_variables();
-    selector = SELECTOR_TERM_ONLY;
+    selector = Selector::TERM_ONLY;
     tally = 0i32;
     term_offset = 0i32;
     file_offset = 0i32;
@@ -15286,74 +15273,74 @@ pub unsafe extern "C" fn tt_run_engine(
         primitive(
             b"interlinepenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 0i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 0,
         );
         primitive(
             b"clubpenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 1i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 1,
         );
         primitive(
             b"widowpenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 2i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 2,
         );
         primitive(
             b"displaywidowpenalties\x00" as *const u8 as *const i8,
             85_u16,
-            1i32 + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 3i32,
+            1i32 + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 3,
         );
         max_reg_num = 32767i32;
         max_reg_help_line =
@@ -15367,59 +15354,59 @@ pub unsafe extern "C" fn tt_run_engine(
     }
     if (*eqtb.offset(
         (1i32
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + 1i32
-            + 15000i32
-            + 12i32
-            + 9000i32
-            + 1i32
-            + 1i32
-            + 19i32
-            + 256i32
-            + 256i32
-            + 13i32
-            + 256i32
-            + 4i32
-            + 256i32
-            + 1i32
-            + 3i32 * 256i32
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + (0x10ffffi32 + 1i32)
-            + 48i32) as isize,
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + 1
+            + 15000
+            + 12
+            + 9000
+            + 1
+            + 1
+            + 19
+            + 256
+            + 256
+            + 13
+            + 256
+            + 4
+            + 256
+            + 1
+            + 3 * 256
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + (0x10ffff + 1)
+            + 48) as isize,
     ))
     .b32
     .s1 < 0i32
         || (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 48i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 48) as isize,
         ))
         .b32
         .s1 > 0xffffi32
@@ -15428,30 +15415,30 @@ pub unsafe extern "C" fn tt_run_engine(
     } else {
         *buffer.offset(cur_input.limit as isize) = (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 48i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 48) as isize,
         ))
         .b32
         .s1
@@ -15461,239 +15448,238 @@ pub unsafe extern "C" fn tt_run_engine(
          * reproducibility we do this: */
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 20i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 20) as isize,
         ))
         .b32
         .s1 = 0i32; /*:79*/
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 21i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 21) as isize,
         ))
         .b32
         .s1 = 0i32;
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 22i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 22) as isize,
         ))
         .b32
         .s1 = 0i32;
         (*eqtb.offset(
             (1i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 1i32
-                + 15000i32
-                + 12i32
-                + 9000i32
-                + 1i32
-                + 1i32
-                + 19i32
-                + 256i32
-                + 256i32
-                + 13i32
-                + 256i32
-                + 4i32
-                + 256i32
-                + 1i32
-                + 3i32 * 256i32
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + (0x10ffffi32 + 1i32)
-                + 23i32) as isize,
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 23) as isize,
         ))
         .b32
         .s1 = 0i32
     } else {
-        get_date_and_time(
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 20i32) as isize,
-            ))
-            .b32
-            .s1,
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 21i32) as isize,
-            ))
-            .b32
-            .s1,
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 22i32) as isize,
-            ))
-            .b32
-            .s1,
-            &mut (*eqtb.offset(
-                (1i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 1i32
-                    + 15000i32
-                    + 12i32
-                    + 9000i32
-                    + 1i32
-                    + 1i32
-                    + 19i32
-                    + 256i32
-                    + 256i32
-                    + 13i32
-                    + 256i32
-                    + 4i32
-                    + 256i32
-                    + 1i32
-                    + 3i32 * 256i32
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + (0x10ffffi32 + 1i32)
-                    + 23i32) as isize,
-            ))
-            .b32
-            .s1,
-        );
+        let (minutes, day, month, year) = get_date_and_time();
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 20) as isize,
+        ))
+        .b32
+        .s1 = minutes;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 21) as isize,
+        ))
+        .b32
+        .s1 = day;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 22) as isize,
+        ))
+        .b32
+        .s1 = month;
+        (*eqtb.offset(
+            (1i32
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 1
+                + 15000
+                + 12
+                + 9000
+                + 1
+                + 1
+                + 19
+                + 256
+                + 256
+                + 13
+                + 256
+                + 4
+                + 256
+                + 1
+                + 3 * 256
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + (0x10ffff + 1)
+                + 23) as isize,
+        ))
+        .b32
+        .s1 = year;
     }
     if trie_not_ready {
         trie_trl = xmalloc(
@@ -15878,9 +15864,9 @@ pub unsafe extern "C" fn tt_run_engine(
         font_k += 1
     }
     if interaction as i32 == 0i32 {
-        selector = SELECTOR_NO_PRINT
+        selector = Selector::NO_PRINT
     } else {
-        selector = SELECTOR_TERM_ONLY
+        selector = Selector::TERM_ONLY
     }
     if semantic_pagination_enabled {
         (*eqtb.offset(
@@ -15916,7 +15902,7 @@ pub unsafe extern "C" fn tt_run_engine(
     pdf_files_init();
     synctex_init_command();
     start_input(input_file_name);
-    history = HISTORY_SPOTLESS;
+    history = TTHistory::SPOTLESS;
     main_control();
     final_cleanup();
     close_files_and_terminate();
