@@ -366,7 +366,7 @@ pub struct C2RustUnnamed_1 {
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-use super::dpx_tt_glyf::{tt_glyph_desc, tt_glyphs};
+use super::dpx_tt_glyf::tt_glyphs;
 
 #[derive(Copy, Clone)]
 #[repr(C)]

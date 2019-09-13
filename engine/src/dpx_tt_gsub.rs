@@ -95,7 +95,7 @@ pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type Fixed = u32;
 
-use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+use super::dpx_sfnt::sfnt;
 
 #[derive(Copy, Clone)]
 #[repr(C)]

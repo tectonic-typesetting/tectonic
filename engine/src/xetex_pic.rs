@@ -6,6 +6,7 @@
          unused_assignments,
          unused_mut)]
 
+use super::dpx_pdfdoc::pdf_doc_get_page;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::{pdf_close, pdf_file, pdf_obj, pdf_open, pdf_release_obj};
 use crate::{ttstub_input_close, ttstub_input_open};
@@ -167,15 +168,6 @@ extern "C" {
      */
     #[no_mangle]
     fn pdf_doc_get_page_count(pf: *mut pdf_file) -> i32;
-    #[no_mangle]
-    fn pdf_doc_get_page(
-        pf: *mut pdf_file,
-        page_no: i32,
-        options: i32,
-        bbox: *mut pdf_rect,
-        matrix: *mut pdf_tmatrix,
-        resources_p: *mut *mut pdf_obj,
-    ) -> *mut pdf_obj;
     #[no_mangle]
     fn check_for_png(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -385,24 +377,12 @@ unsafe extern "C" fn pdf_get_rect(
     let mut dpx_options: i32 = 0;
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
     let mut page: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut bbox: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
-    let mut matrix: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
-    let mut p1: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
-    let mut p4: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut bbox = pdf_rect::new();
+    let mut matrix = pdf_tmatrix::new();
+    let mut p1: pdf_coord = pdf_coord::new();
+    let mut p2: pdf_coord = pdf_coord::new();
+    let mut p3: pdf_coord = pdf_coord::new();
+    let mut p4: pdf_coord = pdf_coord::new();
     pf = pdf_open(filename, handle);
     if pf.is_null() {
         /* TODO: issue warning */

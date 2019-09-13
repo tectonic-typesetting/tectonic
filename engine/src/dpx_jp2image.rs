@@ -168,7 +168,7 @@ unsafe extern "C" fn check_ftyp_data(mut fp: *mut FILE, mut size: u32) -> i32 {
     }
     supported
 }
-unsafe extern "C" fn read_res__data(mut info: *mut ximage_info, mut fp: *mut FILE, mut size: u32) {
+unsafe extern "C" fn read_res__data(info: &mut ximage_info, mut fp: *mut FILE, mut size: u32) {
     let mut VR_N: u32 = 0;
     let mut VR_D: u32 = 0;
     let mut HR_N: u32 = 0;
@@ -181,16 +181,10 @@ unsafe extern "C" fn read_res__data(mut info: *mut ximage_info, mut fp: *mut FIL
     HR_D = get_unsigned_pair(fp) as u32;
     VR_E = get_unsigned_byte(fp);
     HR_E = get_unsigned_byte(fp);
-    (*info).xdensity =
-        72.0f64 / (HR_N as f64 / HR_D as f64 * pow(10.0f64, HR_E as f64) * 0.0254f64);
-    (*info).ydensity =
-        72.0f64 / (VR_N as f64 / VR_D as f64 * pow(10.0f64, VR_E as f64) * 0.0254f64);
+    info.xdensity = 72.0f64 / (HR_N as f64 / HR_D as f64 * pow(10.0f64, HR_E as f64) * 0.0254f64);
+    info.ydensity = 72.0f64 / (VR_N as f64 / VR_D as f64 * pow(10.0f64, VR_E as f64) * 0.0254f64);
 }
-unsafe extern "C" fn scan_res_(
-    mut info: *mut ximage_info,
-    mut fp: *mut FILE,
-    mut size: u32,
-) -> i32 {
+unsafe extern "C" fn scan_res_(info: &mut ximage_info, mut fp: *mut FILE, mut size: u32) -> i32 {
     let mut len: u32 = 0;
     let mut lbox: u32 = 0;
     let mut tbox: u32 = 0;
@@ -232,7 +226,7 @@ unsafe extern "C" fn scan_res_(
  * does not write Channel Definition box so transparency will be ignored.
  */
 unsafe extern "C" fn scan_cdef(
-    mut info: *mut ximage_info,
+    info: &mut ximage_info,
     mut smask: *mut i32,
     mut fp: *mut FILE,
     mut size: u32,
@@ -276,7 +270,7 @@ unsafe extern "C" fn scan_cdef(
     0i32
 }
 unsafe extern "C" fn scan_jp2h(
-    mut info: *mut ximage_info,
+    info: &mut ximage_info,
     mut smask: *mut i32,
     mut fp: *mut FILE,
     mut size: u32,
@@ -295,9 +289,9 @@ unsafe extern "C" fn scan_jp2h(
         } else {
             match tbox {
                 1768449138 => {
-                    (*info).height = get_unsigned_quad(fp) as i32;
-                    (*info).width = get_unsigned_quad(fp) as i32;
-                    (*info).num_components = get_unsigned_pair(fp) as i32;
+                    info.height = get_unsigned_quad(fp) as i32;
+                    info.width = get_unsigned_quad(fp) as i32;
+                    info.num_components = get_unsigned_pair(fp) as i32;
                     /* c = */
                     get_unsigned_byte(fp); /* BPC - 1 */
                     /* c = */
@@ -332,7 +326,7 @@ unsafe extern "C" fn scan_jp2h(
     };
 }
 unsafe extern "C" fn scan_file(
-    mut info: *mut ximage_info,
+    info: &mut ximage_info,
     mut smask: *mut i32,
     mut fp: *mut FILE,
 ) -> i32 {
@@ -422,16 +416,7 @@ pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: 
     let mut smask: i32 = 0i32;
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut info: ximage_info = ximage_info {
-        flags: 0,
-        width: 0,
-        height: 0,
-        bits_per_component: 0,
-        num_components: 0,
-        min_dpi: 0,
-        xdensity: 0.,
-        ydensity: 0.,
-    };
+    let mut info = ximage_info::default();
     pdf_version = pdf_get_version();
     if pdf_version < 5_u32 {
         warn!(
@@ -481,11 +466,7 @@ pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: 
             nb_read,
         );
     }
-    pdf_ximage_set_image(
-        ximage,
-        &mut info as *mut ximage_info as *mut libc::c_void,
-        stream,
-    );
+    pdf_ximage_set_image(ximage, &mut info, stream);
     0i32
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -519,16 +500,7 @@ pub unsafe extern "C" fn jp2_get_bbox(
 ) -> i32 {
     let mut r: i32 = 0;
     let mut smask: i32 = 0i32;
-    let mut info: ximage_info = ximage_info {
-        flags: 0,
-        width: 0,
-        height: 0,
-        bits_per_component: 0,
-        num_components: 0,
-        min_dpi: 0,
-        xdensity: 0.,
-        ydensity: 0.,
-    };
+    let mut info = ximage_info::default();
     pdf_ximage_init_image_info(&mut info);
     rewind(fp);
     r = scan_file(&mut info, &mut smask, fp);

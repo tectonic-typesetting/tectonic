@@ -38,7 +38,7 @@ extern "C" {
 
 pub use super::dpx_pdfcolor::pdf_color;
 
-use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info};
+use super::dpx_pdfdev::{pdf_tmatrix, transform_info};
 
 use super::dpx_specials::{spc_arg, spc_env};
 
@@ -498,7 +498,7 @@ extern "C" fn make_transmatrix(
 }
 unsafe extern "C" fn spc_read_dimtrns_dvips(
     mut spe: *mut spc_env,
-    mut t: *mut transform_info,
+    t: &mut transform_info,
     mut ap: *mut spc_arg,
 ) -> i32 {
     static mut _dtkeys: [*const i8; 15] = [
@@ -554,7 +554,7 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
         } else {
             skip_blank(&mut (*ap).curptr, (*ap).endptr);
             if k == 7i32 {
-                (*t).flags |= 1i32 << 3i32;
+                t.flags |= 1i32 << 3i32;
                 free(kp as *mut libc::c_void);
             /* not key-value */
             } else {
@@ -601,39 +601,39 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
                     0 => xoffset = atof(vp),
                     1 => yoffset = atof(vp),
                     2 => {
-                        (*t).width = atof(vp);
-                        (*t).flags |= 1i32 << 1i32
+                        t.width = atof(vp);
+                        t.flags |= 1i32 << 1i32
                     }
                     3 => {
-                        (*t).height = atof(vp);
-                        (*t).flags |= 1i32 << 2i32
+                        t.height = atof(vp);
+                        t.flags |= 1i32 << 2i32
                     }
                     4 => xscale = atof(vp) / 100.0f64,
                     5 => yscale = atof(vp) / 100.0f64,
                     6 => rotate = 3.14159265358979323846f64 * atof(vp) / 180.0f64,
                     8 => {
-                        (*t).bbox.llx = atof(vp);
-                        (*t).flags |= 1i32 << 0i32
+                        t.bbox.llx = atof(vp);
+                        t.flags |= 1i32 << 0i32
                     }
                     9 => {
-                        (*t).bbox.lly = atof(vp);
-                        (*t).flags |= 1i32 << 0i32
+                        t.bbox.lly = atof(vp);
+                        t.flags |= 1i32 << 0i32
                     }
                     10 => {
-                        (*t).bbox.urx = atof(vp);
-                        (*t).flags |= 1i32 << 0i32
+                        t.bbox.urx = atof(vp);
+                        t.flags |= 1i32 << 0i32
                     }
                     11 => {
-                        (*t).bbox.ury = atof(vp);
-                        (*t).flags |= 1i32 << 0i32
+                        t.bbox.ury = atof(vp);
+                        t.flags |= 1i32 << 0i32
                     }
                     12 => {
-                        (*t).width = atof(vp) / 10.0f64;
-                        (*t).flags |= 1i32 << 1i32
+                        t.width = atof(vp) / 10.0f64;
+                        t.flags |= 1i32 << 1i32
                     }
                     13 => {
-                        (*t).height = atof(vp) / 10.0f64;
-                        (*t).flags |= 1i32 << 2i32
+                        t.height = atof(vp) / 10.0f64;
+                        t.flags |= 1i32 << 2i32
                     }
                     _ => {}
                 }
@@ -642,7 +642,7 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
             }
         }
     }
-    make_transmatrix(&mut (*t).matrix, xoffset, yoffset, xscale, yscale, rotate);
+    make_transmatrix(&mut t.matrix, xoffset, yoffset, xscale, yscale, rotate);
     error
 }
 /* "page" and "pagebox" are not dimension nor transformation nor
@@ -651,7 +651,7 @@ unsafe extern "C" fn spc_read_dimtrns_dvips(
  */
 unsafe extern "C" fn spc_read_dimtrns_pdfm(
     mut spe: *mut spc_env,
-    mut p: *mut transform_info,
+    p: &mut transform_info,
     mut ap: *mut spc_arg,
 ) -> i32 {
     let mut has_scale: i32 = 0; /* default: do clipping */
@@ -685,8 +685,8 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
     yscale = 1.0f64;
     xscale = yscale;
     rotate = 0.0f64;
-    (*p).flags |= 1i32 << 3i32;
-    (*p).flags &= !(1i32 << 4i32);
+    p.flags |= 1i32 << 3i32;
+    p.flags &= !(1i32 << 4i32);
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     while error == 0 && (*ap).curptr < (*ap).endptr {
         let mut kp: *mut i8 = 0 as *mut i8;
@@ -703,16 +703,16 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
         }
         match k {
             0 => {
-                error = spc_util_read_length(spe, &mut (*p).width, ap);
-                (*p).flags |= 1i32 << 1i32
+                error = spc_util_read_length(spe, &mut p.width, ap);
+                p.flags |= 1i32 << 1i32
             }
             1 => {
-                error = spc_util_read_length(spe, &mut (*p).height, ap);
-                (*p).flags |= 1i32 << 2i32
+                error = spc_util_read_length(spe, &mut p.height, ap);
+                p.flags |= 1i32 << 2i32
             }
             2 => {
-                error = spc_util_read_length(spe, &mut (*p).depth, ap);
-                (*p).flags |= 1i32 << 2i32
+                error = spc_util_read_length(spe, &mut p.depth, ap);
+                p.flags |= 1i32 << 2i32
             }
             3 => {
                 vp = parse_float_decimal(&mut (*ap).curptr, (*ap).endptr);
@@ -760,11 +760,11 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
                 if spc_util_read_numbers(v.as_mut_ptr(), 4i32, ap) != 4i32 {
                     error = -1i32
                 } else {
-                    (*p).bbox.llx = v[0];
-                    (*p).bbox.lly = v[1];
-                    (*p).bbox.urx = v[2];
-                    (*p).bbox.ury = v[3];
-                    (*p).flags |= 1i32 << 0i32
+                    p.bbox.llx = v[0];
+                    p.bbox.lly = v[1];
+                    p.bbox.urx = v[2];
+                    p.bbox.ury = v[3];
+                    p.flags |= 1i32 << 0i32
                 }
             }
             8 => {
@@ -772,12 +772,12 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
                 if spc_util_read_numbers(v_0.as_mut_ptr(), 6i32, ap) != 6i32 {
                     error = -1i32
                 } else {
-                    (*p).matrix.a = v_0[0];
-                    (*p).matrix.b = v_0[1];
-                    (*p).matrix.c = v_0[2];
-                    (*p).matrix.d = v_0[3];
-                    (*p).matrix.e = v_0[4];
-                    (*p).matrix.f = v_0[5];
+                    p.matrix.a = v_0[0];
+                    p.matrix.b = v_0[1];
+                    p.matrix.c = v_0[2];
+                    p.matrix.d = v_0[3];
+                    p.matrix.e = v_0[4];
+                    p.matrix.f = v_0[5];
                     has_matrix = 1i32
                 }
             }
@@ -787,14 +787,14 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
                     error = -1i32
                 } else {
                     if atof(vp) != 0. {
-                        (*p).flags |= 1i32 << 3i32
+                        p.flags |= 1i32 << 3i32
                     } else {
-                        (*p).flags &= !(1i32 << 3i32)
+                        p.flags &= !(1i32 << 3i32)
                     }
                     free(vp as *mut libc::c_void);
                 }
             }
-            10 => (*p).flags |= 1i32 << 4i32,
+            10 => p.flags |= 1i32 << 4i32,
             _ => error = -1i32,
         }
         if error != 0 {
@@ -811,14 +811,14 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
     }
     if error == 0 {
         /* Check consistency */
-        if has_xscale != 0 && (*p).flags & 1i32 << 1i32 != 0 {
+        if has_xscale != 0 && p.flags & 1i32 << 1i32 != 0 {
             spc_warn(
                 spe,
                 b"Can\'t supply both width and xscale. Ignore xscale.\x00" as *const u8
                     as *const i8,
             );
             xscale = 1.0f64
-        } else if has_yscale != 0 && (*p).flags & 1i32 << 2i32 != 0 {
+        } else if has_yscale != 0 && p.flags & 1i32 << 2i32 != 0 {
             spc_warn(
                 spe,
                 b"Can\'t supply both height/depth and yscale. Ignore yscale.\x00" as *const u8
@@ -841,10 +841,10 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
         }
     }
     if has_matrix == 0 {
-        make_transmatrix(&mut (*p).matrix, 0.0f64, 0.0f64, xscale, yscale, rotate);
+        make_transmatrix(&mut p.matrix, 0.0f64, 0.0f64, xscale, yscale, rotate);
     }
-    if (*p).flags & 1i32 << 0i32 == 0 {
-        (*p).flags &= !(1i32 << 3i32)
+    if p.flags & 1i32 << 0i32 == 0 {
+        p.flags &= !(1i32 << 3i32)
         /* no clipping needed */
     }
     error
@@ -852,11 +852,11 @@ unsafe extern "C" fn spc_read_dimtrns_pdfm(
 #[no_mangle]
 pub unsafe extern "C" fn spc_util_read_dimtrns(
     mut spe: *mut spc_env,
-    mut ti: *mut transform_info,
+    ti: &mut transform_info,
     mut args: *mut spc_arg,
     mut syntax: i32,
 ) -> i32 {
-    if ti.is_null() || spe.is_null() || args.is_null() {
+    if spe.is_null() || args.is_null() {
         return -1i32;
     }
     if syntax != 0 {
@@ -894,7 +894,7 @@ pub unsafe extern "C" fn spc_util_read_dimtrns(
 #[no_mangle]
 pub unsafe extern "C" fn spc_util_read_blahblah(
     mut spe: *mut spc_env,
-    mut p: *mut transform_info,
+    p: &mut transform_info,
     mut page_no: *mut i32,
     mut bbox_type: *mut i32,
     mut ap: *mut spc_arg,
@@ -932,8 +932,8 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
     yscale = 1.0f64;
     xscale = yscale;
     rotate = 0.0f64;
-    (*p).flags |= 1i32 << 3i32;
-    (*p).flags &= !(1i32 << 4i32);
+    p.flags |= 1i32 << 3i32;
+    p.flags &= !(1i32 << 4i32);
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
     while error == 0 && (*ap).curptr < (*ap).endptr {
         let mut kp: *mut i8 = 0 as *mut i8;
@@ -950,16 +950,16 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
         }
         match k {
             0 => {
-                error = spc_util_read_length(spe, &mut (*p).width, ap);
-                (*p).flags |= 1i32 << 1i32
+                error = spc_util_read_length(spe, &mut p.width, ap);
+                p.flags |= 1i32 << 1i32
             }
             1 => {
-                error = spc_util_read_length(spe, &mut (*p).height, ap);
-                (*p).flags |= 1i32 << 2i32
+                error = spc_util_read_length(spe, &mut p.height, ap);
+                p.flags |= 1i32 << 2i32
             }
             2 => {
-                error = spc_util_read_length(spe, &mut (*p).depth, ap);
-                (*p).flags |= 1i32 << 2i32
+                error = spc_util_read_length(spe, &mut p.depth, ap);
+                p.flags |= 1i32 << 2i32
             }
             3 => {
                 vp = parse_float_decimal(&mut (*ap).curptr, (*ap).endptr);
@@ -1007,11 +1007,11 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                 if spc_util_read_numbers(v.as_mut_ptr(), 4i32, ap) != 4i32 {
                     error = -1i32
                 } else {
-                    (*p).bbox.llx = v[0];
-                    (*p).bbox.lly = v[1];
-                    (*p).bbox.urx = v[2];
-                    (*p).bbox.ury = v[3];
-                    (*p).flags |= 1i32 << 0i32
+                    p.bbox.llx = v[0];
+                    p.bbox.lly = v[1];
+                    p.bbox.urx = v[2];
+                    p.bbox.ury = v[3];
+                    p.flags |= 1i32 << 0i32
                 }
             }
             8 => {
@@ -1019,12 +1019,12 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                 if spc_util_read_numbers(v_0.as_mut_ptr(), 6i32, ap) != 6i32 {
                     error = -1i32
                 } else {
-                    (*p).matrix.a = v_0[0];
-                    (*p).matrix.b = v_0[1];
-                    (*p).matrix.c = v_0[2];
-                    (*p).matrix.d = v_0[3];
-                    (*p).matrix.e = v_0[4];
-                    (*p).matrix.f = v_0[5];
+                    p.matrix.a = v_0[0];
+                    p.matrix.b = v_0[1];
+                    p.matrix.c = v_0[2];
+                    p.matrix.d = v_0[3];
+                    p.matrix.e = v_0[4];
+                    p.matrix.f = v_0[5];
                     has_matrix = 1i32
                 }
             }
@@ -1034,9 +1034,9 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                     error = -1i32
                 } else {
                     if atof(vp) != 0. {
-                        (*p).flags |= 1i32 << 3i32
+                        p.flags |= 1i32 << 3i32
                     } else {
-                        (*p).flags &= !(1i32 << 3i32)
+                        p.flags &= !(1i32 << 3i32)
                     }
                     free(vp as *mut libc::c_void);
                 }
@@ -1049,7 +1049,7 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
                     error = -1i32
                 }
             }
-            10 => (*p).flags |= 1i32 << 4i32,
+            10 => p.flags |= 1i32 << 4i32,
             12 => {
                 let mut q: *mut i8 = 0 as *mut i8;
                 q = parse_c_ident(&mut (*ap).curptr, (*ap).endptr);
@@ -1088,14 +1088,14 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
     }
     if error == 0 {
         /* Check consistency */
-        if has_xscale != 0 && (*p).flags & 1i32 << 1i32 != 0 {
+        if has_xscale != 0 && p.flags & 1i32 << 1i32 != 0 {
             spc_warn(
                 spe,
                 b"Can\'t supply both width and xscale. Ignore xscale.\x00" as *const u8
                     as *const i8,
             );
             xscale = 1.0f64
-        } else if has_yscale != 0 && (*p).flags & 1i32 << 2i32 != 0 {
+        } else if has_yscale != 0 && p.flags & 1i32 << 2i32 != 0 {
             spc_warn(
                 spe,
                 b"Can\'t supply both height/depth and yscale. Ignore yscale.\x00" as *const u8
@@ -1118,10 +1118,10 @@ pub unsafe extern "C" fn spc_util_read_blahblah(
         }
     }
     if has_matrix == 0 {
-        make_transmatrix(&mut (*p).matrix, 0.0f64, 0.0f64, xscale, yscale, rotate);
+        make_transmatrix(&mut p.matrix, 0.0f64, 0.0f64, xscale, yscale, rotate);
     }
-    if (*p).flags & 1i32 << 0i32 == 0 {
-        (*p).flags &= !(1i32 << 3i32)
+    if p.flags & 1i32 << 0i32 == 0 {
+        p.flags &= !(1i32 << 3i32)
         /* no clipping needed */
     }
     error

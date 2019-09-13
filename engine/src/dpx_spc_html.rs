@@ -13,6 +13,8 @@ use super::dpx_pdfximage::{
     pdf_ximage_findresource, pdf_ximage_get_reference, pdf_ximage_get_resname,
     pdf_ximage_scale_image,
 };
+
+use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info, transform_info_clear};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_array, pdf_new_boolean,
     pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string, pdf_obj,
@@ -89,8 +91,6 @@ extern "C" {
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn transform_info_clear(info: *mut transform_info);
-    #[no_mangle]
     fn graphics_mode();
     #[no_mangle]
     fn pdf_doc_get_reference(category: *const i8) -> *mut pdf_obj;
@@ -166,8 +166,6 @@ pub struct spc_html_ {
 pub struct C2RustUnnamed_0 {
     pub extensions: i32,
 }
-
-use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info};
 
 use crate::dpx_pdfximage::load_options;
 
@@ -520,7 +518,7 @@ unsafe extern "C" fn html_open_dest(
     let mut error: i32 = 0;
     let mut array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut page_ref: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     cp.x = (*spe).x_user;
     cp.y = (*spe).y_user;
     pdf_dev_transform(&mut cp, None);
@@ -749,26 +747,7 @@ unsafe extern "C" fn check_resourcestatus(mut category: *const i8, mut resname: 
 unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut pdf_obj) -> i32 {
     let mut src: *mut pdf_obj = 0 as *mut pdf_obj; /* meaning fully opaque */
     let mut obj: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut ti = transform_info::new();
     let mut options: load_options = {
         let mut init = load_options {
             page_no: 1i32,
@@ -781,28 +760,15 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
     let mut error: i32 = 0i32;
     let mut alpha: f64 = 1.0f64;
     /* ENABLE_HTML_SVG_OPACITY */
+    let mut M1 = pdf_tmatrix::new();
     let mut M: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
+        a: 1.,
         b: 0.,
         c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
+        d: 1.,
+        e: (*spe).x_user,
+        f: (*spe).y_user,
     };
-    let mut M1: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
-    M.a = 1.0f64;
-    M.b = 0.0f64;
-    M.c = 0.0f64;
-    M.d = 1.0f64;
-    M.e = (*spe).x_user;
-    M.f = (*spe).y_user;
     /* ENABLE_HTML_SVG_TRANSFORM */
     spc_warn(
         spe,
@@ -843,24 +809,17 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
     obj = pdf_lookup_dict(attr, b"svg:transform\x00" as *const u8 as *const i8);
     if !obj.is_null() {
         let mut p: *const i8 = pdf_string_value(obj) as *const i8;
-        let mut N: pdf_tmatrix = pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        };
+        let mut N = pdf_tmatrix::new();
         while *p as i32 != 0 && libc::isspace(*p as _) != 0 {
             p = p.offset(1)
         }
         while *p as i32 != 0 && error == 0 {
-            N.a = 1.0f64;
-            N.b = 0.0f64;
-            N.c = 0.0f64;
-            N.d = 1.0f64;
-            N.e = 0.0f64;
-            N.f = 0.0f64;
+            N.a = 1.;
+            N.b = 0.;
+            N.c = 0.;
+            N.d = 1.;
+            N.e = 0.;
+            N.f = 0.;
             error = cvt_a_to_tmatrix(&mut N, p, &mut p);
             if error == 0 {
                 N.f = -N.f;
@@ -908,12 +867,7 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
         error = -1i32
     } else {
         let mut res_name: *mut i8 = 0 as *mut i8;
-        let mut r: pdf_rect = pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        };
+        let mut r = pdf_rect::new();
         graphics_mode();
         pdf_dev_gsave();
         let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -1033,7 +987,7 @@ unsafe extern "C" fn spc_handler_html_default(mut spe: *mut spc_env, mut ap: *mu
 }
 /* translate wsp* '(' wsp* number (comma-wsp number)? wsp* ')' */
 unsafe extern "C" fn cvt_a_to_tmatrix(
-    mut M: *mut pdf_tmatrix,
+    M: &mut pdf_tmatrix,
     mut ptr: *const i8,
     mut nextptr: *mut *const i8,
 ) -> i32 {
@@ -1106,64 +1060,64 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
             if n != 6i32 {
                 return -1i32;
             }
-            (*M).a = v[0];
-            (*M).c = v[1];
-            (*M).b = v[2];
-            (*M).d = v[3];
-            (*M).e = v[4];
-            (*M).f = v[5]
+            M.a = v[0];
+            M.c = v[1];
+            M.b = v[2];
+            M.d = v[3];
+            M.e = v[4];
+            M.f = v[5]
         }
         1 => {
             if n != 1i32 && n != 2i32 {
                 return -1i32;
             }
-            (*M).d = 1.;
-            (*M).a = (*M).d;
-            (*M).b = 0.;
-            (*M).c = (*M).b;
-            (*M).e = v[0];
-            (*M).f = if n == 2i32 { v[1] } else { 0. }
+            M.d = 1.;
+            M.a = M.d;
+            M.b = 0.;
+            M.c = M.b;
+            M.e = v[0];
+            M.f = if n == 2i32 { v[1] } else { 0. }
         }
         2 => {
             if n != 1i32 && n != 2i32 {
                 return -1i32;
             }
-            (*M).a = v[0];
-            (*M).d = if n == 2i32 { v[1] } else { v[0] };
-            (*M).b = 0.;
-            (*M).c = (*M).b;
-            (*M).f = 0.;
-            (*M).e = (*M).f
+            M.a = v[0];
+            M.d = if n == 2i32 { v[1] } else { v[0] };
+            M.b = 0.;
+            M.c = M.b;
+            M.f = 0.;
+            M.e = M.f
         }
         3 => {
             if n != 1i32 && n != 3i32 {
                 return -1i32;
             }
             let (s, c) = (v[0] * core::f64::consts::PI / 180.).sin_cos();
-            (*M).a = c;
-            (*M).c = s;
-            (*M).b = -s;
-            (*M).d = c;
-            (*M).e = if n == 3i32 { v[1] } else { 0.0f64 };
-            (*M).f = if n == 3i32 { v[2] } else { 0.0f64 }
+            M.a = c;
+            M.c = s;
+            M.b = -s;
+            M.d = c;
+            M.e = if n == 3i32 { v[1] } else { 0.0f64 };
+            M.f = if n == 3i32 { v[2] } else { 0.0f64 }
         }
         4 => {
             if n != 1i32 {
                 return -1i32;
             }
-            (*M).d = 1.;
-            (*M).a = (*M).d;
-            (*M).c = 0.;
-            (*M).b = tan(v[0] * core::f64::consts::PI / 180.)
+            M.d = 1.;
+            M.a = M.d;
+            M.c = 0.;
+            M.b = tan(v[0] * core::f64::consts::PI / 180.)
         }
         5 => {
             if n != 1i32 {
                 return -1i32;
             }
-            (*M).d = 1.;
-            (*M).a = (*M).d;
-            (*M).c = tan(v[0] * core::f64::consts::PI / 180.);
-            (*M).b = 0.
+            M.d = 1.;
+            M.a = M.d;
+            M.c = tan(v[0] * core::f64::consts::PI / 180.);
+            M.b = 0.
         }
         _ => {}
     }

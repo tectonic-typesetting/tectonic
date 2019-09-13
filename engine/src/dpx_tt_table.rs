@@ -49,7 +49,7 @@ pub type Fixed = u32;
 pub type FWord = i16;
 pub type uFWord = u16;
 
-use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+use super::dpx_sfnt::sfnt;
 
 #[derive(Copy, Clone)]
 #[repr(C)]

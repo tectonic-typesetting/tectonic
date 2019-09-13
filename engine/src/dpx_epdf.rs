@@ -10,7 +10,10 @@
 
 use crate::warn;
 
-use super::dpx_pdfdraw::{pdf_dev_currentmatrix, pdf_dev_transform, pdf_invertmatrix};
+use super::dpx_pdfdoc::pdf_doc_get_page;
+use super::dpx_pdfdraw::{
+    pdf_dev_currentmatrix, pdf_dev_moveto, pdf_dev_transform, pdf_invertmatrix,
+};
 use super::dpx_pdfximage::{pdf_ximage_init_form_info, pdf_ximage_set_form};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_boolean_value, pdf_close, pdf_concat_stream,
@@ -41,19 +44,8 @@ extern "C" {
     #[no_mangle]
     fn pdf_get_version() -> u32;
     #[no_mangle]
-    fn pdf_doc_get_page(
-        pf: *mut pdf_file,
-        page_no: i32,
-        options: i32,
-        bbox: *mut pdf_rect,
-        matrix: *mut pdf_tmatrix,
-        resources_p: *mut *mut pdf_obj,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
     fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
     /* Path Construction */
-    #[no_mangle]
-    fn pdf_dev_moveto(x: f64, y: f64) -> i32;
     #[no_mangle]
     fn pdf_dev_closepath() -> i32;
     #[no_mangle]
@@ -75,11 +67,8 @@ pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
-use super::dpx_pdfdev::pdf_tmatrix;
 
-use super::dpx_pdfdev::pdf_rect;
-
-use super::dpx_pdfdev::pdf_coord;
+use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix};
 
 use crate::dpx_pdfximage::{load_options, pdf_ximage, xform_info};
 pub const OP_CURVETO2: C2RustUnnamed_0 = 15;
@@ -502,23 +491,7 @@ pub unsafe extern "C" fn pdf_include_page(
 ) -> i32 {
     let mut current_block: u64;
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
-    let mut info: xform_info = xform_info {
-        flags: 0,
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-    };
+    let mut info = xform_info::default();
     let mut contents: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut catalog: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut page: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -683,11 +656,7 @@ pub unsafe extern "C" fn pdf_include_page(
                         );
                         pdf_release_obj(resources);
                         pdf_close(pf);
-                        pdf_ximage_set_form(
-                            ximage,
-                            &mut info as *mut xform_info as *mut libc::c_void,
-                            contents,
-                        );
+                        pdf_ximage_set_form(ximage, &mut info, contents);
                         return 0i32;
                     }
                 }
@@ -1014,14 +983,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
     let mut end_path: *const i8 = 0 as *const i8;
     let mut save_path: *mut i8 = 0 as *mut i8;
     let mut temp: *mut i8 = 0 as *mut i8;
-    let mut M: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
+    let mut M = pdf_tmatrix::new();
     let mut stack: [f64; 6] = [0.; 6];
     let mut pf: *mut pdf_file = 0 as *mut pdf_file;
     pf = pdf_open(0 as *const i8, image_file as rust_input_handle_t);
@@ -1134,18 +1096,11 @@ pub unsafe extern "C" fn pdf_copy_clip(
             }
         } else {
             let mut j: u32 = 0;
-            let mut T: pdf_tmatrix = pdf_tmatrix {
-                a: 0.,
-                b: 0.,
-                c: 0.,
-                d: 0.,
-                e: 0.,
-                f: 0.,
-            };
-            let mut p0: pdf_coord = pdf_coord { x: 0., y: 0. };
-            let mut p1: pdf_coord = pdf_coord { x: 0., y: 0. };
-            let mut p2: pdf_coord = pdf_coord { x: 0., y: 0. };
-            let mut p3: pdf_coord = pdf_coord { x: 0., y: 0. };
+            let mut T = pdf_tmatrix::new();
+            let mut p0: pdf_coord = pdf_coord::new();
+            let mut p1: pdf_coord = pdf_coord::new();
+            let mut p2: pdf_coord = pdf_coord::new();
+            let mut p3: pdf_coord = pdf_coord::new();
             token = parse_ident(&mut clip_path, end_path);
             j = 0_u32;
             while (j as u64)
@@ -1245,20 +1200,14 @@ pub unsafe extern "C" fn pdf_copy_clip(
                     top = top - 1;
                     p0.x = stack[fresh9 as usize];
                     if M.b == 0i32 as f64 && M.c == 0i32 as f64 {
-                        let mut M0: pdf_tmatrix = pdf_tmatrix {
-                            a: 0.,
-                            b: 0.,
-                            c: 0.,
-                            d: 0.,
+                        let mut M0 = pdf_tmatrix {
+                            a: M.a,
+                            b: M.b,
+                            c: M.c,
+                            d: M.d,
                             e: 0.,
                             f: 0.,
                         };
-                        M0.a = M.a;
-                        M0.b = M.b;
-                        M0.c = M.c;
-                        M0.d = M.d;
-                        M0.e = 0i32 as f64;
-                        M0.f = 0i32 as f64;
                         pdf_dev_transform(&mut p0, Some(&M));
                         pdf_dev_transform(&mut p1, Some(&M0));
                         pdf_dev_rectadd(p0.x, p0.y, p1.x, p1.y);

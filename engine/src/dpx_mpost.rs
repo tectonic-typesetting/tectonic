@@ -14,6 +14,10 @@ use crate::warn;
 use crate::{streq_ptr, strstartswith};
 
 use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
+use super::dpx_pdfdev::{
+    pdf_coord, pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
+};
+use super::dpx_pdfdoc::{pdf_doc_begin_grabbing, pdf_doc_set_mediabox};
 use super::dpx_pdfdraw::{
     pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_currentpoint, pdf_dev_dtransform,
     pdf_dev_idtransform, pdf_dev_set_color,
@@ -87,8 +91,6 @@ extern "C" {
      * pdf_link_obj() it rather than allocate/free-ing them each time. But I
      * already removed that.
      */
-    #[no_mangle]
-    fn transform_info_clear(info: *mut transform_info);
     /* returns 1.0/unit_conv */
     #[no_mangle]
     fn dev_unit_dviunit() -> f64;
@@ -113,9 +115,6 @@ extern "C" {
         font_id: i32,
         ctype: i32,
     );
-    /* Place XObject */
-    #[no_mangle]
-    fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
     /* The design_size and ptsize required by PK font support...
      */
     #[no_mangle]
@@ -200,16 +199,7 @@ extern "C" {
     fn pdf_doc_begin_page(scale: f64, x_origin: f64, y_origin: f64);
     #[no_mangle]
     fn pdf_doc_end_page();
-    #[no_mangle]
-    fn pdf_doc_set_mediabox(page_no: u32, mediabox: *const pdf_rect);
     /* Returns xobj_id of started xform. */
-    #[no_mangle]
-    fn pdf_doc_begin_grabbing(
-        ident: *const i8,
-        ref_x: f64,
-        ref_y: f64,
-        cropbox: *const pdf_rect,
-    ) -> i32;
     #[no_mangle]
     fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
     #[no_mangle]
@@ -345,7 +335,6 @@ pub use super::dpx_pdfcolor::pdf_color;
 */
 pub type spt_t = i32;
 
-use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix, transform_info};
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct fontmap_rec {
@@ -2338,7 +2327,7 @@ unsafe extern "C" fn is_fontname(mut token: *const i8) -> bool {
 pub unsafe extern "C" fn mps_scan_bbox(
     mut pp: *mut *const i8,
     mut endptr: *const i8,
-    mut bbox: *mut pdf_rect,
+    bbox: &mut pdf_rect,
 ) -> i32 {
     let mut number: *mut i8 = 0 as *mut i8;
     let mut values: [f64; 4] = [0.; 4];
@@ -2369,17 +2358,17 @@ pub unsafe extern "C" fn mps_scan_bbox(
             } else {
                 /* The new xetex.def and dvipdfmx.def require bbox->llx = bbox->lly = 0.  */
                 if translate_origin != 0 {
-                    (*bbox).llx = 0i32 as f64;
-                    (*bbox).lly = 0i32 as f64;
-                    (*bbox).urx = values[2] - values[0];
-                    (*bbox).ury = values[3] - values[1];
+                    bbox.llx = 0i32 as f64;
+                    bbox.lly = 0i32 as f64;
+                    bbox.urx = values[2] - values[0];
+                    bbox.ury = values[3] - values[1];
                     Xorigin = values[0];
                     Yorigin = values[1]
                 } else {
-                    (*bbox).llx = values[0];
-                    (*bbox).lly = values[1];
-                    (*bbox).urx = values[2];
-                    (*bbox).ury = values[3];
+                    bbox.llx = values[0];
+                    bbox.lly = values[1];
+                    bbox.urx = values[2];
+                    bbox.ury = values[3];
                     Xorigin = 0.0f64;
                     Yorigin = 0.0f64
                 }
@@ -3249,7 +3238,7 @@ unsafe extern "C" fn do_currentfont() -> i32 {
 }
 unsafe extern "C" fn do_show() -> i32 {
     let mut font: *mut mp_font = 0 as *mut mp_font;
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut text_str: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut length: i32 = 0;
     let mut strptr: *mut u8 = 0 as *mut u8;
@@ -3356,26 +3345,7 @@ unsafe extern "C" fn do_mpost_bind_def(
     error
 }
 unsafe extern "C" fn do_texfig_operator(mut opcode: i32, mut x_user: f64, mut y_user: f64) -> i32 {
-    static mut fig_p: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    static mut fig_p: transform_info = transform_info::new();
     static mut in_tfig: i32 = 0i32;
     static mut xobj_id: i32 = -1i32;
     static mut count: i32 = 0i32;
@@ -3425,12 +3395,12 @@ unsafe extern "C" fn do_texfig_operator(mut opcode: i32, mut x_user: f64, mut y_
 }
 unsafe extern "C" fn ps_dev_CTM(M: &mut pdf_tmatrix) -> i32 {
     pdf_dev_currentmatrix(M);
-    M.a *= 1000i32 as f64;
-    M.b *= 1000i32 as f64;
-    M.c *= 1000i32 as f64;
-    M.d *= 1000i32 as f64;
-    M.e *= 1000i32 as f64;
-    M.f *= 1000i32 as f64;
+    M.a *= 1000.;
+    M.b *= 1000.;
+    M.c *= 1000.;
+    M.d *= 1000.;
+    M.e *= 1000.;
+    M.f *= 1000.;
     0i32
 }
 /*
@@ -3442,15 +3412,8 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
     let mut opcode: i32 = 0i32;
     let mut values: [f64; 12] = [0.; 12];
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut matrix: pdf_tmatrix = pdf_tmatrix {
-        a: 0.,
-        b: 0.,
-        c: 0.,
-        d: 0.,
-        e: 0.,
-        f: 0.,
-    };
-    let mut cp: pdf_coord = pdf_coord { x: 0., y: 0. };
+    let mut matrix = pdf_tmatrix::new();
+    let mut cp: pdf_coord = pdf_coord::new();
     let mut color: pdf_color = pdf_color {
         num_components: 0,
         spot_color_name: 0 as *mut i8,
@@ -4255,12 +4218,7 @@ pub unsafe extern "C" fn mps_exec_inline(
 #[no_mangle]
 pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
     let mut error: i32 = 0i32; /* scale, xorig, yorig */
-    let mut bbox: pdf_rect = pdf_rect {
-        llx: 0.,
-        lly: 0.,
-        urx: 0.,
-        ury: 0.,
-    };
+    let mut bbox = pdf_rect::new();
     let mut buffer: *mut i8 = 0 as *mut i8;
     let mut start: *const i8 = 0 as *const i8;
     let mut end: *const i8 = 0 as *const i8;

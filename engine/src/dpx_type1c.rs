@@ -424,7 +424,7 @@ pub struct cff_range2 {
     pub n_left: card16,
 }
 
-use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+use super::dpx_sfnt::sfnt;
 
 #[derive(Copy, Clone)]
 #[repr(C)]

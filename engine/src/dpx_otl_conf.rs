@@ -11,9 +11,9 @@
 use crate::info;
 
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_array_length, pdf_dict_keys, pdf_get_array, pdf_link_obj,
-    pdf_lookup_dict, pdf_name_value, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_null,
-    pdf_new_number, pdf_new_string, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_string_value,
+    pdf_add_array, pdf_add_dict, pdf_array_length, pdf_get_array, pdf_link_obj, pdf_lookup_dict,
+    pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string,
+    pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_string_value,
 };
 use crate::streq_ptr;
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};

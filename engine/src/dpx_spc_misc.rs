@@ -8,6 +8,10 @@
     unused_mut
 )]
 
+use super::dpx_mpost::mps_scan_bbox;
+use super::dpx_pdfdev::{
+    pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
+};
 use super::dpx_pdfximage::pdf_ximage_findresource;
 use crate::dpx_pdfobj::pdf_obj;
 use crate::{ttstub_input_close, ttstub_input_open};
@@ -25,16 +29,6 @@ extern "C" {
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
-    #[no_mangle]
-    fn pdf_dev_put_image(xobj_id: i32, p: *mut transform_info, ref_x: f64, ref_y: f64) -> i32;
-    /* Please use different interface than findresource...
-     * This is not intended to be used for specifying page number and others.
-     * Only pdf:image special in spc_pdfm.c want optinal dict!
-     */
-    #[no_mangle]
-    fn mps_scan_bbox(pp: *mut *const i8, endptr: *const i8, bbox: *mut pdf_rect) -> i32;
-    #[no_mangle]
-    fn transform_info_clear(info: *mut transform_info);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
@@ -54,7 +48,6 @@ pub struct spc_handler {
     pub key: *const i8,
     pub exec: spc_handler_fn_ptr,
 }
-use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info};
 
 use crate::dpx_pdfximage::load_options;
 
@@ -83,26 +76,7 @@ use crate::dpx_pdfximage::load_options;
 unsafe extern "C" fn spc_handler_postscriptbox(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32 {
     let mut form_id: i32 = 0;
     let mut len: i32 = 0;
-    let mut ti: transform_info = transform_info {
-        width: 0.,
-        height: 0.,
-        depth: 0.,
-        matrix: pdf_tmatrix {
-            a: 0.,
-            b: 0.,
-            c: 0.,
-            d: 0.,
-            e: 0.,
-            f: 0.,
-        },
-        bbox: pdf_rect {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        flags: 0,
-    };
+    let mut ti = transform_info::new();
     let mut options: load_options = {
         let mut init = load_options {
             page_no: 1i32,
