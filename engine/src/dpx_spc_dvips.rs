@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::mfree;
+use crate::strstartswith;
 use crate::warn;
 
 use super::dpx_pdfdraw::pdf_dev_concat;
@@ -178,20 +180,6 @@ pub struct load_options {
     pub page_no: i32,
     pub bbox_type: i32,
     pub dict: *mut pdf_obj,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 

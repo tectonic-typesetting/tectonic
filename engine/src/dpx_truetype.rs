@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::streq_ptr;
 use crate::{info, warn};
 
 use crate::dpx_pdfobj::{
@@ -458,13 +459,6 @@ pub struct agl_name {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,

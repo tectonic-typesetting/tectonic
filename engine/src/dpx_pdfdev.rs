@@ -1,16 +1,19 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::{info, warn};
 
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color, pdf_dev_transform};
 use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_release_obj};
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -473,13 +476,6 @@ pub struct C2RustUnnamed_6 {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,

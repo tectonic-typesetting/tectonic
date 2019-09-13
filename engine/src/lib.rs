@@ -1029,9 +1029,33 @@ mod xetex_xetex0;
 mod macro_stub;
 mod stub_errno;
 mod stub_icu;
+mod xetex_xetexd;
 
 pub use xetex_engine_interface::tt_xetex_set_int_variable;
 
 pub(crate) fn isblank(c: libc::c_int) -> libc::c_int {
     (c == ' ' as _ || c == '\t' as _) as _
+}
+
+#[inline]
+pub(crate) unsafe extern "C" fn strstartswith(s: *const i8, prefix: *const i8) -> *const i8 {
+    let length = libc::strlen(prefix);
+    if libc::strncmp(s, prefix, length) == 0i32 {
+        return s.offset(length as isize);
+    }
+    0 as *const i8
+}
+
+#[inline]
+pub(crate) unsafe extern "C" fn streq_ptr(s1: *const i8, s2: *const i8) -> bool {
+    if !s1.is_null() && !s2.is_null() {
+        return libc::strcmp(s1, s2) == 0i32;
+    }
+    false
+}
+
+#[inline]
+pub(crate) unsafe extern "C" fn mfree(ptr: *mut libc::c_void) -> *mut libc::c_void {
+    libc::free(ptr);
+    std::ptr::null_mut()
 }

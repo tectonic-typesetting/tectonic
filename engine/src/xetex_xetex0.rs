@@ -1,13 +1,19 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use super::xetex_ini::{history, old_setting, selector};
 use super::xetex_io::{tt_xetex_open_input, u_open_in};
+use crate::mfree;
+use crate::xetex_ini::hi_mem_min;
+use crate::xetex_xetexd::print_c_string;
+use crate::xetex_xetexd::{is_char_node, is_non_discardable_node};
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_putc,
@@ -165,8 +171,6 @@ extern "C" {
     static mut mem: *mut memory_word;
     #[no_mangle]
     static mut lo_mem_max: i32;
-    #[no_mangle]
-    static mut hi_mem_min: i32;
     #[no_mangle]
     static mut avail: i32;
     #[no_mangle]
@@ -1177,37 +1181,15 @@ pub struct input_state_t {
 
 pub use super::xetex_io::UFILE;
 
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* xetex-pagebuilder */
 /* xetex-scaledmath */
 /* xetex-shipout */
-/* Inlines */
-#[inline]
-unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    p >= hi_mem_min
-}
 /* Strings printed this way will end up in the .log as well
  * as the terminal output. */
 #[inline]
 unsafe extern "C" fn cur_length() -> pool_pointer {
     /*41: The length of the current string in the pool */
     pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize)
-}
-#[inline]
-unsafe extern "C" fn is_non_discardable_node(p: i32) -> bool {
-    ((*mem.offset(p as isize)).b16.s1 as i32) < 9i32
-}
-#[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        print_char(*fresh0 as i32);
-    }
 }
 /* xetex-xetex0.c: bulk of the WEB code translated to C
    Copyright 2016-2018 The Tectonic Project

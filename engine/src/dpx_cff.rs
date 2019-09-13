@@ -1,11 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::streq_ptr;
 use crate::warn;
 
 use crate::{ttstub_input_read, ttstub_input_seek};
@@ -268,13 +271,6 @@ pub struct cff_font {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 static mut cff_stdstr: [*const i8; 391] = [
     b".notdef\x00" as *const u8 as *const i8,
     b"space\x00" as *const u8 as *const i8,

@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -67,11 +68,6 @@ pub struct ht_iter {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,

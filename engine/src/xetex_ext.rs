@@ -1,11 +1,17 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
+
+use crate::mfree;
 use crate::stub_icu as icu;
+use crate::xetex_xetexd::print_c_string;
+use crate::{streq_ptr, strstartswith};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
 use libc::free;
 
@@ -511,11 +517,6 @@ pub struct b16x4_le_t {
     pub s3: u16,
 }
 pub type UniChar = UInt16;
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -523,22 +524,6 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
-}
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International
@@ -582,17 +567,6 @@ unsafe extern "C" fn SWAP32(p: u32) -> u32 {
         .wrapping_add(p << 24i32)
 }
 /* xetex-shipout */
-/* Inlines */
-#[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    /* Strings printed this way will end up in the .log as well
-     * as the terminal output. */
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        print_char(*fresh0 as i32);
-    }
-}
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International

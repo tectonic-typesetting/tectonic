@@ -1,12 +1,16 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::mfree;
 use crate::{info, warn};
+use crate::{streq_ptr, strstartswith};
 
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::{
@@ -306,11 +310,6 @@ pub struct ic_ {
     pub capacity: i32,
     pub ximages: *mut pdf_ximage,
 }
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -318,22 +317,6 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    } /* unsafe? */
-    false
-}
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
-}
 static mut _opts: opt_ = {
     let mut init = opt_ {
         verbose: 0i32,

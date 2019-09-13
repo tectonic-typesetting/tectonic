@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::strstartswith;
 use crate::{info, warn};
 
 use crate::dpx_pdfobj::{
@@ -122,15 +123,6 @@ pub type size_t = u64;
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
     pub tainted: i32,
-}
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
 }
 static mut parser_state: C2RustUnnamed_0 = {
     let mut init = C2RustUnnamed_0 { tainted: 0i32 };

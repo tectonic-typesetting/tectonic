@@ -1,15 +1,18 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_obj,
     pdf_release_obj, pdf_stream_dict,
 };
+use crate::mfree;
 use crate::{ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
@@ -82,11 +85,6 @@ pub struct sfnt {
     pub directory: *mut sfnt_table_directory,
     pub handle: rust_input_handle_t,
     pub offset: u32,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr); /* tag name */
-    return 0 as *mut libc::c_void; /* typefaces number */
 }
 #[no_mangle]
 pub unsafe extern "C" fn sfnt_open(mut handle: rust_input_handle_t) -> *mut sfnt {

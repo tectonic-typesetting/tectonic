@@ -1,17 +1,22 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
+
 use crate::stub_errno as errno;
 use crate::stub_icu as icu;
+use crate::xetex_xetexd::print_c_string;
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_input_open, ttstub_input_open_primary,
     ttstub_input_seek, ttstub_input_ungetc,
 };
 use libc::free;
+
 extern "C" {
     pub type Opaque_TECkit_Converter;
     #[no_mangle]
@@ -417,14 +422,6 @@ pub struct UFILE {
     pub conversionData: *mut libc::c_void,
 }
 
-#[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        print_char(*fresh0 as i32);
-    }
-}
 /* tectonic/xetex-io.c: low-level input/output functions tied to the XeTeX engine
    Copyright 2016-2019 The Tectonic Project
    Licensed under the MIT License.

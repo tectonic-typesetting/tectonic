@@ -8,6 +8,8 @@
     unused_mut
 )]
 
+use crate::mfree;
+use crate::streq_ptr;
 use crate::warn;
 
 use super::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
@@ -161,22 +163,10 @@ pub use super::dpx_pdfcolor::pdf_color;
 
 use super::dpx_pdfdev::pdf_tmatrix;
 
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 unsafe extern "C" fn skip_blank(mut pp: *mut *const i8, mut endptr: *const i8) {
     let mut p: *const i8 = *pp;
     while p < endptr && (*p as i32 & !0x7fi32 == 0i32 && crate::isblank(*p as _) != 0) {

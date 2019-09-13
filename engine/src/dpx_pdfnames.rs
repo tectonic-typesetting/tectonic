@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::warn;
 
 use crate::dpx_pdfobj::{
@@ -145,11 +146,6 @@ pub struct named_object {
     pub key: *mut i8,
     pub keylen: i32,
     pub value: *mut pdf_obj,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 unsafe extern "C" fn printable_key(mut key: *const i8, mut keylen: i32) -> *mut i8 {
     static mut pkey: [i8; 36] = [0; 36];

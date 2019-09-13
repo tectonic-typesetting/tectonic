@@ -1,11 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::mfree;
 use crate::warn;
 
 use crate::dpx_pdfobj::{
@@ -195,11 +198,6 @@ pub struct JPEG_APPn_JFIF {
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 #[no_mangle]
 pub unsafe extern "C" fn check_for_jpeg(mut handle: rust_input_handle_t) -> i32 {
     let mut jpeg_sig: [u8; 2] = [0; 2];

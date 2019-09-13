@@ -9,7 +9,9 @@
 )]
 
 use crate::dpx_pdfparse::parse_number;
+use crate::mfree;
 use crate::warn;
+use crate::{streq_ptr, strstartswith};
 
 use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
 use super::dpx_pdfdraw::{
@@ -416,11 +418,6 @@ pub struct operators {
     pub token: *const i8,
     pub opcode: i32,
 }
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -428,22 +425,6 @@ unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,

@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use crate::mfree;
 use crate::{
     ttstub_fprintf, ttstub_issue_error, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_open,
@@ -191,11 +192,6 @@ pub struct Context {
  *  eventually modified by the magnification.
  */
 type synctex_recorder_t = Option<unsafe extern "C" fn(_: i32) -> ()>;
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 
 const default_synctex_ctxt: Context = Context {
     file: ptr::null_mut(),

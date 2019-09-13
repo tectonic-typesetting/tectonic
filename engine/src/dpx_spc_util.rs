@@ -12,6 +12,8 @@ use super::dpx_pdfcolor::{
     pdf_color_cmykcolor, pdf_color_copycolor, pdf_color_graycolor, pdf_color_rgbcolor,
     pdf_color_spotcolor,
 };
+use crate::mfree;
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -66,22 +68,10 @@ pub struct colordef_ {
     pub key: *const i8,
     pub color: pdf_color,
 }
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,

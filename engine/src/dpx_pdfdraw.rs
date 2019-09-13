@@ -1,11 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::mfree;
 use crate::warn;
 
 use super::dpx_pdfcolor::{
@@ -144,11 +147,6 @@ pub struct C2RustUnnamed_0 {
     pub opchr: i8,
     pub n_pts: i32,
     pub strkey: *const i8,
-}
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
 }
 unsafe extern "C" fn inversematrix(mut W: &mut pdf_tmatrix, mut M: &pdf_tmatrix) -> i32 {
     let mut det: f64 = 0.;

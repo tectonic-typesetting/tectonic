@@ -19,6 +19,7 @@ use crate::dpx_pdfobj::{
     pdf_stream_dataptr, pdf_stream_dict, pdf_stream_length,
 };
 use crate::dpx_pdfparse::{parse_ident, parse_pdf_array};
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     pub type _IO_wide_data;
@@ -139,13 +140,6 @@ pub const OP_UNKNOWN: C2RustUnnamed_0 = 16;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,

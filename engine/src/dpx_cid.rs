@@ -9,7 +9,9 @@
 )]
 
 use crate::dpx_pdfparse::parse_pdf_dict;
+use crate::mfree;
 use crate::{info, warn};
+use crate::{streq_ptr, strstartswith};
 
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_file, pdf_link_obj, pdf_lookup_dict, pdf_name_value, pdf_new_name,
@@ -325,31 +327,10 @@ pub struct C2RustUnnamed_3 {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn strstartswith(mut s: *const i8, mut prefix: *const i8) -> *const i8 {
-    let mut length: size_t = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    0 as *const i8
-}
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
 */
-#[inline]
-unsafe extern "C" fn mfree(mut ptr: *mut libc::c_void) -> *mut libc::c_void {
-    free(ptr);
-    0 as *mut libc::c_void
-}
 static mut CIDFont_stdcc_def: [C2RustUnnamed_0; 7] = [
     {
         let mut init = C2RustUnnamed_0 {

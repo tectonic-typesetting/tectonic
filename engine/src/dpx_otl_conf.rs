@@ -15,6 +15,7 @@ use crate::dpx_pdfobj::{
     pdf_lookup_dict, pdf_name_value, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_null,
     pdf_new_number, pdf_new_string, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_string_value,
 };
+use crate::streq_ptr;
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
 use libc::free;
 extern "C" {
@@ -80,13 +81,6 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 static mut verbose: i32 = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn otl_conf_set_verbose(mut level: i32) {

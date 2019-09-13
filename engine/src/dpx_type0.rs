@@ -1,15 +1,18 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_link_obj, pdf_lookup_dict, pdf_new_array,
     pdf_new_dict, pdf_new_name, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj,
 };
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     pub type CIDFont;
@@ -269,13 +272,6 @@ pub struct rangeDef {
     pub dim: size_t,
     pub codeLo: *mut u8,
     pub codeHi: *mut u8,
-}
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
 }
 static mut __verbose: i32 = 0i32;
 #[no_mangle]

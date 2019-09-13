@@ -1,15 +1,18 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_set_fixed_point};
 use super::dpx_spc_util::spc_util_read_colorspec;
 use crate::dpx_pdfparse::{parse_ident, parse_val_ident};
+use crate::streq_ptr;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -206,13 +209,6 @@ pub use super::dpx_pdfcolor::pdf_color;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe extern "C" fn streq_ptr(mut s1: *const i8, mut s2: *const i8) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
 /*  This is xdvipdfmx, an extended version of dvipdfmx,
     an eXtended version of dvipdfm by Mark A. Wicks.
 

@@ -1,15 +1,18 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use super::xetex_ini::selector;
+use crate::xetex_xetexd::{is_char_node, print_c_string};
 use crate::{ttstub_output_close, ttstub_output_flush, ttstub_output_open, ttstub_output_write};
 use libc::free;
 
-use super::xetex_ini::selector;
 extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
@@ -59,8 +62,6 @@ extern "C" {
     static mut temp_ptr: i32;
     #[no_mangle]
     static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut hi_mem_min: i32;
     #[no_mangle]
     static mut avail: i32;
     #[no_mangle]
@@ -564,20 +565,8 @@ pub struct list_state_record {
     pub aux: memory_word,
 }
 #[inline]
-unsafe extern "C" fn print_c_string(mut str: *const i8) {
-    while *str != 0 {
-        let fresh0 = str;
-        str = str.offset(1);
-        print_char(*fresh0 as i32);
-    }
-}
-#[inline]
 unsafe extern "C" fn cur_length() -> pool_pointer {
     pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize)
-}
-#[inline]
-unsafe extern "C" fn is_char_node(p: i32) -> bool {
-    p >= hi_mem_min
 }
 /* DVI code */
 static mut dvi_file: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
