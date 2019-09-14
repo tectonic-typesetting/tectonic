@@ -13,13 +13,6 @@
 #include "core-bridge.h"
 #include "xetex-constants.h"
 
-#ifdef XETEX_MAC
-/* include this here to avoid conflict between clang's emmintrin.h and
- * texmfmem.h. Should be removed once a fixed clang is widely available
- * http://llvm.org/bugs/show_bug.cgi?id=14964 */
-#include <ApplicationServices/ApplicationServices.h>
-#endif
-
 #define odd(x) ((x) & 1)
 
 /* Extra stuff used in various change files for various reasons.  */

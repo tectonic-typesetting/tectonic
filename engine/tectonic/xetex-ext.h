@@ -96,7 +96,7 @@ authorization from the copyright holders.
 /* For Unicode encoding form interpretation... */
 
 #ifdef XETEX_MAC
-extern const CFStringRef kXeTeXEmboldenAttributeName;
+extern CFStringRef getkXeTeXEmboldenAttributeName(void);
 #endif
 
 BEGIN_EXTERN_C

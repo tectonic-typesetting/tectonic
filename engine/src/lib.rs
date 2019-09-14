@@ -1007,6 +1007,7 @@ mod xetex_ext;
 mod xetex_ini;
 mod xetex_io;
 mod xetex_linebreak;
+mod xetex_aatfont;
 mod xetex_math;
 mod xetex_output;
 mod xetex_pagebuilder;
