@@ -98,12 +98,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 use super::dpx_specials::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_handler {
-    pub key: *const i8,
-    pub exec: spc_handler_fn_ptr,
-}
+use super::dpx_specials::spc_handler;
 
 use crate::dpx_pdfximage::load_options;
 static mut block_pending: i32 = 0i32;

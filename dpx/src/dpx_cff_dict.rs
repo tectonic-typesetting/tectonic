@@ -29,6 +29,8 @@
     unused_mut
 )]
 
+use super::dpx_cff::{cff_add_string, cff_get_string};
+use super::dpx_mfileio::work_buffer;
 use crate::mfree;
 use crate::streq_ptr;
 use crate::stub_errno as errno;
@@ -51,13 +53,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
-    /* String */
-    #[no_mangle]
-    fn cff_get_string(cff: *mut cff_font, id: s_SID) -> *mut i8;
-    #[no_mangle]
-    fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: i32) -> s_SID;
 }
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type card8 = u8;
@@ -75,141 +70,10 @@ pub type s_SID = u16;
 of an Offset field or fields, range 1-4 */
 /* 1, 2, 3, or 4-byte offset */
 /* 2-byte string identifier  */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_index {
-    pub count: card16,
-    pub offsize: c_offsize,
-    pub offset: *mut l_offset,
-    pub data: *mut card8,
-    /* Object data                       */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_header {
-    pub major: card8,
-    pub minor: card8,
-    pub hdr_size: card8,
-    pub offsize: c_offsize,
-    /* Absolute offset (0) size             */
-}
-/* Dictionary */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict_entry {
-    pub id: i32,
-    pub key: *const i8,
-    pub count: i32,
-    pub values: *mut f64,
-    /* values                                  */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict {
-    pub max: i32,
-    pub count: i32,
-    pub entries: *mut cff_dict_entry,
-}
-/* Encoding, Charset and FDSelect */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range1 {
-    pub first: s_SID,
-    pub n_left: card8,
-    /* no. of remaining gids/codes in this range */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range2 {
-    pub first: s_SID,
-    pub n_left: card16,
-    /* card16-version of range1 */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_map {
-    pub code: card8,
-    pub glyph: s_SID,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_encoding {
-    pub format: card8,
-    pub num_entries: card8,
-    pub data: C2RustUnnamed,
-    pub num_supps: card8,
-    pub supp: *mut cff_map,
-    /* supplement */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub codes: *mut card8,
-    pub range1: *mut cff_range1,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_charsets {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed_0,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub glyphs: *mut s_SID,
-    pub range1: *mut cff_range1,
-    pub range2: *mut cff_range2,
-}
+use super::dpx_cff::cff_dict;
+use super::dpx_cff::cff_dict_entry;
 /* CID-Keyed font specific */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range3 {
-    pub first: card16,
-    pub fd: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_fdselect {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed_1,
-    /* card16 sentinel; */
-    /* format 3 only, must be equals to num_glyphs */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_1 {
-    pub fds: *mut card8,
-    pub ranges: *mut cff_range3,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_font {
-    pub fontname: *mut i8,
-    pub header: cff_header,
-    pub name: *mut cff_index,
-    pub topdict: *mut cff_dict,
-    pub string: *mut cff_index,
-    pub gsubr: *mut cff_index,
-    pub encoding: *mut cff_encoding,
-    pub charsets: *mut cff_charsets,
-    pub fdselect: *mut cff_fdselect,
-    pub cstrings: *mut cff_index,
-    pub fdarray: *mut *mut cff_dict,
-    pub private: *mut *mut cff_dict,
-    pub subrs: *mut *mut cff_index,
-    pub offset: l_offset,
-    pub gsubr_offset: l_offset,
-    pub num_glyphs: card16,
-    pub num_fds: card8,
-    pub _string: *mut cff_index,
-    pub handle: rust_input_handle_t,
-    pub filter: i32,
-    pub index: i32,
-    pub flag: i32,
-    pub is_notdef_notzero: i32,
-}
+use super::dpx_cff::cff_font;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_2 {

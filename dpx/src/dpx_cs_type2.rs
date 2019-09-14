@@ -39,14 +39,8 @@ pub type card8 = u8;
 pub type card16 = u16;
 pub type c_offsize = u8;
 pub type l_offset = u32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_index {
-    pub count: card16,
-    pub offsize: c_offsize,
-    pub offset: *mut l_offset,
-    pub data: *mut card8,
-}
+
+use super::dpx_cff::cff_index;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cs_ginfo {

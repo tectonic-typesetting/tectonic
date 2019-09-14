@@ -29,7 +29,14 @@
     unused_mut
 )]
 
+use super::dpx_dvi::{
+    dvi_close, dvi_comment, dvi_do_page, dvi_init, dvi_npages, dvi_reset_global_state,
+    dvi_scan_specials, dvi_set_verbose,
+};
 use super::dpx_pdfdoc::pdf_doc_set_mediabox;
+use super::dpx_pdffont::{
+    pdf_font_reset_unique_tag_state, pdf_font_set_deterministic_unique_tags, pdf_font_set_dpi,
+};
 use crate::dpx_pdfparse::parse_unsigned;
 use crate::{info, warn};
 
@@ -122,45 +129,15 @@ extern "C" {
     #[no_mangle]
     fn shut_up(quietness: i32);
     #[no_mangle]
-    fn dvi_set_verbose(level: i32);
-    #[no_mangle]
     fn pdf_dev_set_verbose(level: i32);
     #[no_mangle]
-    fn dvi_reset_global_state();
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dvi_init(dvi_filename: *const i8, mag_0: f64) -> f64;
     #[no_mangle]
     fn pdf_init_device(unit_conv: f64, precision: i32, is_bw: i32);
     #[no_mangle]
     fn pdf_close_device();
     #[no_mangle]
-    fn dvi_close();
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dvi_comment() -> *const i8;
-    #[no_mangle]
-    fn dvi_npages() -> u32;
-    #[no_mangle]
-    fn dvi_do_page(paper_height_0: f64, x_offset_0: f64, y_offset_0: f64);
-    #[no_mangle]
-    fn dvi_scan_specials(
-        page_no: i32,
-        width: *mut f64,
-        height: *mut f64,
-        x_offset_0: *mut f64,
-        y_offset_0: *mut f64,
-        landscape: *mut i32,
-        majorversion: *mut i32,
-        minorversion: *mut i32,
-        do_enc: *mut i32,
-        keybits: *mut i32,
-        perm: *mut i32,
-        opasswd: *mut i8,
-        upasswd: *mut i8,
-    );
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
@@ -189,12 +166,6 @@ extern "C" {
     fn pdf_enc_compute_id_string(dviname: *const i8, pdfname: *const i8);
     #[no_mangle]
     fn pdf_enc_set_passwd(size: u32, perm: u32, owner: *const i8, user: *const i8);
-    #[no_mangle]
-    fn pdf_font_set_dpi(font_dpi_0: i32);
-    #[no_mangle]
-    fn pdf_font_reset_unique_tag_state();
-    #[no_mangle]
-    fn pdf_font_set_deterministic_unique_tags(value: i32);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]

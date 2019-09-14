@@ -32,6 +32,8 @@
 use crate::warn;
 use crate::{streq_ptr, strstartswith};
 
+use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode};
+use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
 };
@@ -93,8 +95,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
     #[no_mangle]
@@ -208,18 +208,6 @@ extern "C" {
     fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
     #[no_mangle]
     fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> i32;
-    #[no_mangle]
-    fn CMap_decode(
-        cmap: *mut CMap,
-        inbuf: *mut *const u8,
-        inbytesleft: *mut size_t,
-        outbuf: *mut *mut u8,
-        outbytesleft: *mut size_t,
-    ) -> size_t;
-    #[no_mangle]
-    fn CMap_cache_get(id: i32) -> *mut CMap;
-    #[no_mangle]
-    fn CMap_cache_find(cmap_name: *const i8) -> i32;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -232,12 +220,7 @@ pub type rust_input_handle_t = *mut libc::c_void;
 use super::dpx_specials::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_handler {
-    pub key: *const i8,
-    pub exec: spc_handler_fn_ptr,
-}
+use super::dpx_specials::spc_handler;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_pdf_ {
@@ -256,57 +239,14 @@ pub struct tounicode {
     pub taintkeys: *mut pdf_obj,
     /* An array of PDF names. */
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_table {
-    pub count: i32,
-    pub hval_free_fn: hval_free_func,
-    pub table: [*mut ht_entry; 503],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_entry {
-    pub key: *mut i8,
-    pub keylen: i32,
-    pub value: *mut libc::c_void,
-    pub next: *mut ht_entry,
-}
+
+use super::dpx_dpxutil::ht_table;
+
+use super::dpx_dpxutil::ht_entry;
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 
+use super::dpx_fontmap::fontmap_rec;
 pub use super::dpx_pdfcolor::pdf_color;
-
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_rec {
-    pub map_name: *mut i8,
-    pub font_name: *mut i8,
-    pub enc_name: *mut i8,
-    pub charmap: C2RustUnnamed,
-    pub opt: fontmap_opt,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_opt {
-    pub slant: f64,
-    pub extend: f64,
-    pub bold: f64,
-    pub mapc: i32,
-    pub flags: i32,
-    pub otl_tags: *mut i8,
-    pub tounicode: *mut i8,
-    pub cff_charsets: *mut libc::c_void,
-    pub design_size: f64,
-    pub charcoll: *mut i8,
-    pub index: i32,
-    pub style: i32,
-    pub stemv: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub sfd_name: *mut i8,
-    pub subfont_id: *mut i8,
-}
 
 use crate::dpx_pdfximage::load_options;
 
@@ -317,65 +257,7 @@ pub struct resource_map {
     pub type_0: i32,
     pub res_id: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_1,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed_0,
-    pub reverseMap: *mut i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_0 {
-    pub minBytesIn: size_t,
-    pub maxBytesIn: size_t,
-    pub minBytesOut: size_t,
-    pub maxBytesOut: size_t,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_1 {
-    pub num: u32,
-    pub max: u32,
-    pub ranges: *mut rangeDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
+use super::dpx_cmap::CMap;
 
 use super::dpx_pdfdev::pdf_coord;
 

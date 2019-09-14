@@ -36,6 +36,10 @@ use super::dpx_sfnt::{
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode_char};
+use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_truetype_file};
+use super::dpx_pdffont::pdf_font_make_uniqueTag;
+use super::dpx_type0::{Type0Font, Type0Font_cache_get, Type0Font_get_usedchars};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_dict, pdf_new_name,
     pdf_new_number, pdf_new_stream, pdf_new_string, pdf_obj, pdf_ref_obj, pdf_release_obj,
@@ -44,7 +48,6 @@ use crate::dpx_pdfobj::{
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
-    pub type Type0Font;
     pub type otl_gsub;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
        Copyright 2016-2018 the Tectonic Project
@@ -84,10 +87,6 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn dpx_open_truetype_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
-    fn dpx_open_dfont_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
@@ -101,8 +100,6 @@ extern "C" {
      */
     /* Each font drivers use the followings. */
     /* without unique tag */
-    #[no_mangle]
-    fn pdf_font_make_uniqueTag(tag: *mut i8);
     /* Name does not include the / */
     /* pdf_add_dict requires key but pdf_add_array does not.
      * pdf_add_array always append elements to array.
@@ -117,27 +114,11 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn Type0Font_get_usedchars(font: *mut Type0Font) -> *mut i8;
-    #[no_mangle]
-    fn Type0Font_cache_get(id: i32) -> *mut Type0Font;
-    #[no_mangle]
     fn CIDFont_get_embedding(font: *mut CIDFont) -> i32;
     #[no_mangle]
     fn CIDFont_get_parent_id(font: *mut CIDFont, wmode: i32) -> i32;
     #[no_mangle]
     fn CIDFont_is_BaseFont(font: *mut CIDFont) -> bool;
-    #[no_mangle]
-    fn CMap_decode_char(
-        cmap: *mut CMap,
-        inbuf: *mut *const u8,
-        inbytesleft: *mut size_t,
-        outbuf: *mut *mut u8,
-        outbytesleft: *mut size_t,
-    );
-    #[no_mangle]
-    fn CMap_cache_get(id: i32) -> *mut CMap;
-    #[no_mangle]
-    fn CMap_cache_find(cmap_name: *const i8) -> i32;
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
@@ -196,63 +177,11 @@ extern "C" {
 }
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDFont {
-    pub ident: *mut i8,
-    pub name: *mut i8,
-    pub fontname: *mut i8,
-    pub subtype: i32,
-    pub flags: i32,
-    pub parent: [i32; 2],
-    pub csi: *mut CIDSysInfo,
-    pub options: *mut cid_opt,
-    pub indirect: *mut pdf_obj,
-    pub fontdict: *mut pdf_obj,
-    pub descriptor: *mut pdf_obj,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cid_opt {
-    pub name: *mut i8,
-    pub csi: *mut CIDSysInfo,
-    pub index: i32,
-    pub style: i32,
-    pub embed: i32,
-    pub stemv: i32,
-    pub cff_charsets: *mut libc::c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_cmap {
-    pub format: u16,
-    pub platform: u16,
-    pub encoding: u16,
-    pub language: u32,
-    pub map: *mut libc::c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_0,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed,
-    pub reverseMap: *mut i32,
-}
+
+use super::dpx_cid::{cid_opt, CIDFont, CIDSysInfo};
+
+use super::dpx_cmap::CMap;
+use super::dpx_tt_cmap::tt_cmap;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
@@ -264,22 +193,7 @@ pub struct C2RustUnnamed {
 /* 2 for CID, variable for Code..  */
 /* CID (as 16-bit BE), Code ...    */
 /* Next Subtbl for LOOKUP_CONTINUE */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-    /* Position of next free data segment */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-}
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
@@ -287,13 +201,7 @@ pub struct C2RustUnnamed_0 {
     pub max: u32,
     pub ranges: *mut rangeDef,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-}
+use super::dpx_cmap::rangeDef;
 
 use super::dpx_sfnt::sfnt;
 

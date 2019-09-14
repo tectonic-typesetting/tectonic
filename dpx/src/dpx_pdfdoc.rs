@@ -38,6 +38,7 @@ use super::dpx_pdfcolor::{
 };
 use super::dpx_pdfdev::pdf_dev_bop;
 use super::dpx_pdfdraw::pdf_dev_set_color;
+use super::dpx_pdffont::pdf_font_set_verbose;
 use super::dpx_pdfximage::{
     pdf_close_images, pdf_init_images, pdf_ximage_defineresource, pdf_ximage_findresource,
     pdf_ximage_get_reference, pdf_ximage_init_form_info, pdf_ximage_set_verbose, XInfo,
@@ -199,8 +200,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_close_fonts();
     #[no_mangle]
-    fn pdf_font_set_verbose(level: i32);
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* Hash */
     /* Not actually tree... */
@@ -271,21 +270,9 @@ pub struct pdf_form {
     pub resources: *mut pdf_obj,
     pub contents: *mut pdf_obj,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_table {
-    pub count: i32,
-    pub hval_free_fn: hval_free_func,
-    pub table: [*mut ht_entry; 503],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_entry {
-    pub key: *mut i8,
-    pub keylen: i32,
-    pub value: *mut libc::c_void,
-    pub next: *mut ht_entry,
-}
+
+use super::dpx_dpxutil::ht_entry;
+use super::dpx_dpxutil::ht_table;
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -388,13 +375,7 @@ pub struct C2RustUnnamed_3 {
     pub names: *mut pdf_obj,
     pub threads: *mut pdf_obj,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_iter {
-    pub index: i32,
-    pub curr: *mut libc::c_void,
-    pub hash: *mut ht_table,
-}
+use super::dpx_dpxutil::ht_iter;
 
 use crate::dpx_pdfximage::{load_options, xform_info};
 #[derive(Copy, Clone)]

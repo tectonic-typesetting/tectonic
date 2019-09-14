@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_mfileio::work_buffer;
 use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
@@ -69,8 +70,6 @@ extern "C" {
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
     /* Tectonic-enabled versions */
     #[no_mangle]
     fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
@@ -152,21 +151,8 @@ pub struct C2RustUnnamed_0 {
     pub sfd_name: *mut i8,
     pub subfont_id: *mut i8,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_table {
-    pub count: i32,
-    pub hval_free_fn: hval_free_func,
-    pub table: [*mut ht_entry; 503],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_entry {
-    pub key: *mut i8,
-    pub keylen: i32,
-    pub value: *mut libc::c_void,
-    pub next: *mut ht_entry,
-}
+
+use super::dpx_dpxutil::ht_table;
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 /* quasi-hack to get the primary input */
 /* tectonic/core-strutils.h: miscellaneous C string utilities

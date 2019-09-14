@@ -32,6 +32,7 @@
 use crate::mfree;
 use crate::warn;
 
+use super::dpx_mfileio::work_buffer;
 use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
 use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
@@ -52,8 +53,6 @@ extern "C" {
     fn iccp_get_rendering_intent(profile: *const libc::c_void, proflen: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_get_version() -> u32;
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]

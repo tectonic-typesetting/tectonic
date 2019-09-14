@@ -29,6 +29,11 @@
 
 use crate::warn;
 
+use super::dpx_mfileio::work_buffer;
+use super::dpx_pdffont::{
+    pdf_font, pdf_font_get_encoding, pdf_font_get_ident, pdf_font_get_param, pdf_font_get_resource,
+    pdf_font_get_usedchars, pdf_font_is_in_use, pdf_font_set_fontname,
+};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_dict, pdf_new_name,
     pdf_new_number, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj,
@@ -38,21 +43,6 @@ extern "C" {
     pub type _IO_wide_data;
     pub type _IO_codecvt;
     pub type _IO_marker;
-    pub type pdf_font;
-    #[no_mangle]
-    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_font_get_param(font: *mut pdf_font, type_0: i32) -> f64;
-    #[no_mangle]
-    fn pdf_font_get_encoding(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_get_usedchars(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_get_resource(font: *mut pdf_font) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_font_get_ident(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_is_in_use(font: *mut pdf_font) -> bool;
     #[no_mangle]
     fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
@@ -80,8 +70,6 @@ extern "C" {
        Four byte numbers from JPEG2000, OpenType, or TrueType files are
        mostly unsigned (u32) and occasionally signed (i32).
     */
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
     #[no_mangle]

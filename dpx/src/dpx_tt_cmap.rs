@@ -35,6 +35,18 @@ use super::dpx_sfnt::{
 };
 use crate::{info, warn};
 
+use super::dpx_cff::{
+    cff_charsets_lookup_inverse, cff_close, cff_get_glyphname, cff_get_string, cff_open,
+    cff_read_charsets,
+};
+use super::dpx_cff_dict::{cff_dict_get, cff_dict_known};
+use super::dpx_cmap::{
+    CMap_add_bfchar, CMap_add_cidchar, CMap_add_codespacerange, CMap_cache_add, CMap_cache_find,
+    CMap_cache_get, CMap_decode, CMap_get_type, CMap_new, CMap_release, CMap_reverse_decode,
+    CMap_set_CIDSysInfo, CMap_set_name, CMap_set_silent, CMap_set_type, CMap_set_wmode,
+};
+use super::dpx_cmap_write::CMap_create_stream;
+use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_opentype_file, dpx_open_truetype_file};
 use super::dpx_numbers::{
     tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
@@ -65,63 +77,6 @@ extern "C" {
     static mut CSI_IDENTITY: CIDSysInfo;
     #[no_mangle]
     static mut CSI_UNICODE: CIDSysInfo;
-    #[no_mangle]
-    fn CMap_set_silent(value: i32);
-    #[no_mangle]
-    fn CMap_add_cidchar(cmap: *mut CMap, src: *const u8, srcdim: size_t, dest: CID) -> i32;
-    #[no_mangle]
-    fn CMap_release(cmap: *mut CMap);
-    #[no_mangle]
-    fn CMap_get_type(cmap: *mut CMap) -> i32;
-    #[no_mangle]
-    fn CMap_add_bfchar(
-        cmap: *mut CMap,
-        src: *const u8,
-        srcdim: size_t,
-        dest: *const u8,
-        destdim: size_t,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_new() -> *mut CMap;
-    #[no_mangle]
-    fn CMap_set_name(cmap: *mut CMap, name: *const i8);
-    #[no_mangle]
-    fn CMap_set_wmode(cmap: *mut CMap, wmode: i32);
-    #[no_mangle]
-    fn CMap_set_type(cmap: *mut CMap, type_0: i32);
-    #[no_mangle]
-    fn CMap_set_CIDSysInfo(cmap: *mut CMap, csi: *const CIDSysInfo);
-    #[no_mangle]
-    fn CMap_add_codespacerange(
-        cmap: *mut CMap,
-        codelo: *const u8,
-        codehi: *const u8,
-        dim: size_t,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_decode(
-        cmap: *mut CMap,
-        inbuf: *mut *const u8,
-        inbytesleft: *mut size_t,
-        outbuf: *mut *mut u8,
-        outbytesleft: *mut size_t,
-    ) -> size_t;
-    #[no_mangle]
-    fn CMap_reverse_decode(cmap: *mut CMap, cid: CID) -> i32;
-    #[no_mangle]
-    fn CMap_cache_get(id: i32) -> *mut CMap;
-    #[no_mangle]
-    fn CMap_cache_find(cmap_name: *const i8) -> i32;
-    #[no_mangle]
-    fn CMap_cache_add(cmap: *mut CMap) -> i32;
-    #[no_mangle]
-    fn CMap_create_stream(cmap: *mut CMap) -> *mut pdf_obj;
-    #[no_mangle]
-    fn dpx_open_truetype_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
-    fn dpx_open_opentype_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
-    fn dpx_open_dfont_file(filename: *const i8) -> rust_input_handle_t;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -182,26 +137,6 @@ extern "C" {
     #[no_mangle]
     fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
     #[no_mangle]
-    fn cff_open(handle: rust_input_handle_t, offset: i32, idx: i32) -> *mut cff_font;
-    #[no_mangle]
-    fn cff_close(cff: *mut cff_font);
-    /* Charsets */
-    #[no_mangle]
-    fn cff_read_charsets(cff: *mut cff_font) -> i32;
-    /* Return PS name of "gid" */
-    #[no_mangle]
-    fn cff_get_glyphname(cff: *mut cff_font, gid: card16) -> *mut i8;
-    /* Returns SID or CID */
-    #[no_mangle]
-    fn cff_charsets_lookup_inverse(cff: *mut cff_font, gid: card16) -> card16;
-    /* String */
-    #[no_mangle]
-    fn cff_get_string(cff: *mut cff_font, id: s_SID) -> *mut i8;
-    #[no_mangle]
-    fn cff_dict_get(dict: *mut cff_dict, key: *const i8, idx: i32) -> f64;
-    #[no_mangle]
-    fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> i32;
-    #[no_mangle]
     fn tt_read_maxp_table(sfont: *mut sfnt) -> *mut tt_maxp_table;
 }
 pub type __ssize_t = i64;
@@ -225,106 +160,16 @@ pub struct tt_cmap {
     pub language: u32,
     pub map: *mut libc::c_void,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_font {
-    pub fontname: *mut i8,
-    pub header: cff_header,
-    pub name: *mut cff_index,
-    pub topdict: *mut cff_dict,
-    pub string: *mut cff_index,
-    pub gsubr: *mut cff_index,
-    pub encoding: *mut cff_encoding,
-    pub charsets: *mut cff_charsets,
-    pub fdselect: *mut cff_fdselect,
-    pub cstrings: *mut cff_index,
-    pub fdarray: *mut *mut cff_dict,
-    pub private: *mut *mut cff_dict,
-    pub subrs: *mut *mut cff_index,
-    pub offset: l_offset,
-    pub gsubr_offset: l_offset,
-    pub num_glyphs: card16,
-    pub num_fds: card8,
-    pub _string: *mut cff_index,
-    pub handle: rust_input_handle_t,
-    pub filter: i32,
-    pub index: i32,
-    pub flag: i32,
-    pub is_notdef_notzero: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_index {
-    pub count: card16,
-    pub offsize: c_offsize,
-    pub offset: *mut l_offset,
-    pub data: *mut card8,
-}
+
+use super::dpx_cid::CIDSysInfo;
+
+use super::dpx_cff::cff_font;
 pub type card8 = u8;
 pub type l_offset = u32;
 pub type c_offsize = u8;
 pub type card16 = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict {
-    pub max: i32,
-    pub count: i32,
-    pub entries: *mut cff_dict_entry,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict_entry {
-    pub id: i32,
-    pub key: *const i8,
-    pub count: i32,
-    pub values: *mut f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_fdselect {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub fds: *mut card8,
-    pub ranges: *mut cff_range3,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range3 {
-    pub first: card16,
-    pub fd: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_charsets {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed_0,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub glyphs: *mut s_SID,
-    pub range1: *mut cff_range1,
-    pub range2: *mut cff_range2,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range2 {
-    pub first: s_SID,
-    pub n_left: card16,
-}
+use super::dpx_cff::cff_charsets;
+use super::dpx_cff::cff_range2;
 /* CFF Data Types */
 /* SID SID number */
 /* offset(0) */
@@ -335,21 +180,7 @@ pub struct cff_range2 {
 of an Offset field or fields, range 1-4 */
 /* 1, 2, 3, or 4-byte offset */
 pub type s_SID = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range1 {
-    pub first: s_SID,
-    pub n_left: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_encoding {
-    pub format: card8,
-    pub num_entries: card8,
-    pub data: C2RustUnnamed_1,
-    pub num_supps: card8,
-    pub supp: *mut cff_map,
-}
+use super::dpx_cff::cff_range1;
 /* 2-byte string identifier  */
 /* number of objects stored in INDEX */
 /* Offset array element size, 1-4    */
@@ -369,26 +200,6 @@ pub struct cff_encoding {
 /* no. of remaining gids/codes in this range */
 /* SID or CID (card16)      */
 /* card16-version of range1 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_map {
-    pub code: card8,
-    pub glyph: s_SID,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_1 {
-    pub codes: *mut card8,
-    pub range1: *mut cff_range1,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_header {
-    pub major: card8,
-    pub minor: card8,
-    pub hdr_size: card8,
-    pub offsize: c_offsize,
-}
 
 use super::dpx_tt_post::tt_post_table;
 
@@ -405,58 +216,7 @@ use super::dpx_tt_post::tt_post_table;
 /* CID, Code... MEM_ALLOC_SIZE bytes  */
 /* Previous mapData data segment      */
 /* Position of next free data segment */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_3,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed_2,
-    pub reverseMap: *mut i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub minBytesIn: size_t,
-    pub maxBytesIn: size_t,
-    pub minBytesOut: size_t,
-    pub maxBytesOut: size_t,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_3 {
-    pub num: u32,
-    pub max: u32,
-    pub ranges: *mut rangeDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-}
+use super::dpx_cmap::CMap;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cmap12 {

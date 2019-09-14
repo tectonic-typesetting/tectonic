@@ -32,6 +32,7 @@
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_cff_dict::{cff_dict_get, cff_dict_known, cff_dict_unpack, cff_release_dict};
 use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
 use crate::{ttstub_input_read, ttstub_input_seek};
 use libc::free;
@@ -48,15 +49,6 @@ extern "C" {
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn cff_release_dict(dict: *mut cff_dict);
-    #[no_mangle]
-    fn cff_dict_get(dict: *mut cff_dict, key: *const i8, idx: i32) -> f64;
-    #[no_mangle]
-    fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> i32;
-    /* decode/encode DICT */
-    #[no_mangle]
-    fn cff_dict_unpack(data: *mut card8, endptr: *mut card8) -> *mut cff_dict;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]

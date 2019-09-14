@@ -73,8 +73,8 @@ use super::dpx_sfnt::sfnt;
 
 use super::dpx_tt_post::tt_post_table;
 
-use super::dpx_tt_table::tt_os2__table;
 use super::dpx_tt_table::tt_head_table;
+use super::dpx_tt_table::tt_os2__table;
 static mut verbose: i32 = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn tt_aux_set_verbose(mut level: i32) {

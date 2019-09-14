@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_set_fixed_point};
 use super::dpx_spc_util::spc_util_read_colorspec;
@@ -77,8 +78,6 @@ extern "C" {
     fn is_pdfm_mapline(mline: *const i8) -> i32;
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
     /* Text composition mode is ignored (always same as font's
      * writing mode) and glyph rotation is not enabled if
      * auto_rotate is unset.
@@ -115,44 +114,8 @@ pub type size_t = u64;
 use super::dpx_specials::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_handler {
-    pub key: *const i8,
-    pub exec: spc_handler_fn_ptr,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_rec {
-    pub map_name: *mut i8,
-    pub font_name: *mut i8,
-    pub enc_name: *mut i8,
-    pub charmap: C2RustUnnamed,
-    pub opt: fontmap_opt,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_opt {
-    pub slant: f64,
-    pub extend: f64,
-    pub bold: f64,
-    pub mapc: i32,
-    pub flags: i32,
-    pub otl_tags: *mut i8,
-    pub tounicode: *mut i8,
-    pub cff_charsets: *mut libc::c_void,
-    pub design_size: f64,
-    pub charcoll: *mut i8,
-    pub index: i32,
-    pub style: i32,
-    pub stemv: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub sfd_name: *mut i8,
-    pub subfont_id: *mut i8,
-}
+use super::dpx_fontmap::fontmap_rec;
+use super::dpx_specials::spc_handler;
 
 use super::dpx_pdfdev::pdf_coord;
 

@@ -36,6 +36,12 @@ use super::dpx_sfnt::{
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_truetype_file};
+use super::dpx_pdffont::{
+    pdf_font, pdf_font_get_descriptor, pdf_font_get_encoding, pdf_font_get_ident,
+    pdf_font_get_index, pdf_font_get_mapname, pdf_font_get_resource, pdf_font_get_usedchars,
+    pdf_font_get_verbose, pdf_font_is_in_use, pdf_font_set_fontname,
+};
 use super::dpx_tt_post::{tt_lookup_post_table, tt_read_post_table, tt_release_post_table};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_merge_dict, pdf_new_array, pdf_new_name,
@@ -45,7 +51,6 @@ use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
     /* Here is the complete list of PDF object types */
-    pub type pdf_font;
     pub type otl_gsub;
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
@@ -61,26 +66,6 @@ extern "C" {
     fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_font_get_index(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_get_encoding(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_get_usedchars(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_get_descriptor(font: *mut pdf_font) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_font_get_resource(font: *mut pdf_font) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_font_get_mapname(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_get_ident(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_is_in_use(font: *mut pdf_font) -> bool;
-    #[no_mangle]
-    fn pdf_font_get_verbose() -> i32;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -113,10 +98,6 @@ extern "C" {
     fn agl_suffix_to_otltag(suffix: *const i8) -> *const i8;
     #[no_mangle]
     fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
-    #[no_mangle]
-    fn dpx_open_truetype_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
-    fn dpx_open_dfont_file(filename: *const i8) -> rust_input_handle_t;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -215,15 +196,7 @@ use super::dpx_tt_post::tt_post_table;
 
 pub type FWord = i16;
 pub type Fixed = u32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_cmap {
-    pub format: u16,
-    pub platform: u16,
-    pub encoding: u16,
-    pub language: u32,
-    pub map: *mut libc::c_void,
-}
+use super::dpx_tt_cmap::tt_cmap;
 /*
  * The 'name' table should be preserved since it contains copyright
  * information, but it might cause problem when there are invalid
@@ -258,16 +231,7 @@ pub struct glyph_mapper {
     pub sfont: *mut sfnt,
     pub nametogid: *mut tt_post_table,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct agl_name {
-    pub name: *mut i8,
-    pub suffix: *mut i8,
-    pub n_components: i32,
-    pub unicodes: [i32; 16],
-    pub alternate: *mut agl_name,
-    pub is_predef: i32,
-}
+use super::dpx_agl::agl_name;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

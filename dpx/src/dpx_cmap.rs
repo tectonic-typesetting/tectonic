@@ -33,6 +33,7 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_cmap_read::{CMap_parse, CMap_parse_check_sig};
 use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
 extern "C" {
@@ -61,23 +62,15 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn CMap_parse_check_sig(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn CMap_parse(cmap: *mut CMap, handle: rust_input_handle_t) -> i32;
 }
 pub type size_t = u64;
 
 use crate::TTInputFormat;
 
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
+
+use super::dpx_cid::CIDSysInfo;
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct rangeDef {

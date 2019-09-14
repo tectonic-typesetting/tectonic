@@ -29,6 +29,7 @@
 
 use crate::warn;
 
+use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_obj,
@@ -65,8 +66,6 @@ extern "C" {
     fn seek_relative(file: *mut FILE, pos: i32);
     #[no_mangle]
     fn file_size(file: *mut FILE) -> i32;
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
     #[no_mangle]
     fn pdf_get_version() -> u32;
     #[no_mangle]

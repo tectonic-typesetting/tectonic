@@ -29,6 +29,7 @@
 
 use crate::warn;
 
+use super::dpx_cmap::{CMap_get_CIDSysInfo, CMap_is_valid};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_new_stream,
     pdf_new_string, pdf_obj, pdf_stream_dict,
@@ -40,16 +41,6 @@ extern "C" {
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn CMap_get_CIDSysInfo(cmap: *mut CMap) -> *mut CIDSysInfo;
-    #[no_mangle]
-    fn CMap_get_wmode(cmap: *mut CMap) -> i32;
-    #[no_mangle]
-    fn CMap_get_name(cmap: *mut CMap) -> *mut i8;
-    #[no_mangle]
-    fn CMap_is_Identity(cmap: *mut CMap) -> bool;
-    #[no_mangle]
-    fn CMap_is_valid(cmap: *mut CMap) -> bool;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -85,55 +76,11 @@ extern "C" {
 }
 pub type size_t = u64;
 
-/* CIDFont types */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
-/* Codespacerange */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-    /* Upper bounds of valid input code */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-    /* Next Subtbl for LOOKUP_CONTINUE */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-    /* Position of next free data segment */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_0,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed,
-    pub reverseMap: *mut i32,
-}
+use super::dpx_cid::CIDSysInfo;
+
+use super::dpx_cmap::mapDef;
+use super::dpx_cmap::rangeDef;
+use super::dpx_cmap::CMap;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {

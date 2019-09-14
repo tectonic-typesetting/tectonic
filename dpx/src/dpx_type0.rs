@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_cmap::{CMap_cache_get, CMap_get_CIDSysInfo, CMap_get_wmode, CMap_is_Identity};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_link_obj, pdf_lookup_dict, pdf_new_array,
     pdf_new_dict, pdf_new_name, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj,
@@ -86,14 +87,6 @@ extern "C" {
     #[no_mangle]
     fn CIDFont_cache_close();
     #[no_mangle]
-    fn CMap_is_Identity(cmap: *mut CMap) -> bool;
-    #[no_mangle]
-    fn CMap_get_wmode(cmap: *mut CMap) -> i32;
-    #[no_mangle]
-    fn CMap_get_CIDSysInfo(cmap: *mut CMap) -> *mut CIDSysInfo;
-    #[no_mangle]
-    fn CMap_cache_get(id: i32) -> *mut CMap;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
@@ -148,30 +141,9 @@ pub struct Type0Font {
     pub descriptor: *mut pdf_obj,
     /* _TYPE0_H_ */
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_opt {
-    pub slant: f64,
-    pub extend: f64,
-    pub bold: f64,
-    pub mapc: i32,
-    pub flags: i32,
-    pub otl_tags: *mut i8,
-    pub tounicode: *mut i8,
-    pub cff_charsets: *mut libc::c_void,
-    pub design_size: f64,
-    pub charcoll: *mut i8,
-    pub index: i32,
-    pub style: i32,
-    pub stemv: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
+use super::dpx_fontmap::fontmap_opt;
+
+use super::dpx_cid::CIDSysInfo;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct font_cache {
@@ -179,21 +151,7 @@ pub struct font_cache {
     pub capacity: i32,
     pub fonts: *mut Type0Font,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_0,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed,
-    pub reverseMap: *mut i32,
-}
+use super::dpx_cmap::CMap;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
@@ -202,35 +160,7 @@ pub struct C2RustUnnamed {
     pub minBytesOut: size_t,
     pub maxBytesOut: size_t,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_0 {
-    pub num: u32,
-    pub max: u32,
-    pub ranges: *mut rangeDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-}
+
 static mut __verbose: i32 = 0i32;
 #[no_mangle]
 pub unsafe extern "C" fn Type0Font_set_verbose(mut level: i32) {

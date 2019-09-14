@@ -29,6 +29,20 @@
     unused_mut
 )]
 
+use super::dpx_cmap::{
+    CMap_cache_close, CMap_cache_find, CMap_cache_get, CMap_cache_init, CMap_get_name,
+    CMap_get_profile, CMap_get_type, CMap_set_verbose,
+};
+use super::dpx_pkfont::{pdf_font_load_pkfont, pdf_font_open_pkfont, PKFont_set_dpi};
+use super::dpx_truetype::{pdf_font_load_truetype, pdf_font_open_truetype};
+use super::dpx_tt_cmap::{otf_cmap_set_verbose, otf_load_Unicode_CMap};
+use super::dpx_type0::{
+    Type0Font, Type0Font_cache_close, Type0Font_cache_find, Type0Font_cache_get,
+    Type0Font_cache_init, Type0Font_get_resource, Type0Font_get_usedchars, Type0Font_get_wmode,
+    Type0Font_set_verbose,
+};
+use super::dpx_type1::{pdf_font_load_type1, pdf_font_open_type1};
+use super::dpx_type1c::{pdf_font_load_type1c, pdf_font_open_type1c};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_dict, pdf_new_name, pdf_obj,
     pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,
@@ -39,7 +53,6 @@ use crate::stub_errno as errno;
 use crate::{info, warn};
 use libc::free;
 extern "C" {
-    pub type Type0Font;
     #[no_mangle]
     #[no_mangle]
     fn strtoll(_: *const i8, _: *mut *mut i8, _: i32) -> libc::c_longlong;
@@ -78,43 +91,9 @@ extern "C" {
     fn agl_close_map();
     #[no_mangle]
     fn CIDFont_set_verbose(level: i32);
-    /* ******************************* CACHE ********************************/
-    #[no_mangle]
-    fn Type0Font_cache_find(map_name: *const i8, cmap_id: i32, fmap_opt: *mut fontmap_opt) -> i32;
-    #[no_mangle]
-    fn Type0Font_set_verbose(level: i32);
-    #[no_mangle]
-    fn Type0Font_get_wmode(font: *mut Type0Font) -> i32;
-    #[no_mangle]
-    fn Type0Font_get_usedchars(font: *mut Type0Font) -> *mut i8;
-    #[no_mangle]
-    fn Type0Font_get_resource(font: *mut Type0Font) -> *mut pdf_obj;
-    #[no_mangle]
-    fn Type0Font_cache_init();
-    #[no_mangle]
-    fn Type0Font_cache_get(id: i32) -> *mut Type0Font;
-    #[no_mangle]
-    fn Type0Font_cache_close();
     /* Type1 --> CFF CIDFont */
     #[no_mangle]
     fn t1_load_UnicodeCMap(font_name: *const i8, otl_tags: *const i8, wmode: i32) -> i32;
-    /* ************************* CMAP_MAIN **************************/
-    #[no_mangle]
-    fn CMap_set_verbose(level: i32);
-    #[no_mangle]
-    fn CMap_get_profile(cmap: *mut CMap, type_0: i32) -> i32;
-    #[no_mangle]
-    fn CMap_get_name(cmap: *mut CMap) -> *mut i8;
-    #[no_mangle]
-    fn CMap_get_type(cmap: *mut CMap) -> i32;
-    #[no_mangle]
-    fn CMap_cache_init();
-    #[no_mangle]
-    fn CMap_cache_get(id: i32) -> *mut CMap;
-    #[no_mangle]
-    fn CMap_cache_find(cmap_name: *const i8) -> i32;
-    #[no_mangle]
-    fn CMap_cache_close();
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -160,72 +139,12 @@ extern "C" {
      */
     #[no_mangle]
     fn pdf_load_ToUnicode_stream(ident: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_font_open_pkfont(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_load_pkfont(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn PKFont_set_dpi(dpi: i32);
-    #[no_mangle]
-    fn pdf_font_open_truetype(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_load_truetype(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn otf_cmap_set_verbose(level: i32);
-    /* CMap ID */
-    #[no_mangle]
-    fn otf_load_Unicode_CMap(
-        map_name: *const i8,
-        ttc_index: i32,
-        otl_opts: *const i8,
-        wmode: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_font_open_type1(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_load_type1(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_open_type1c(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_load_type1c(font: *mut pdf_font) -> i32;
 }
 pub type __time_t = i64;
 pub type size_t = u64;
 pub type time_t = __time_t;
 /* Options */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_opt {
-    pub slant: f64,
-    pub extend: f64,
-    pub bold: f64,
-    pub mapc: i32,
-    pub flags: i32,
-    pub otl_tags: *mut i8,
-    pub tounicode: *mut i8,
-    pub cff_charsets: *mut libc::c_void,
-    pub design_size: f64,
-    pub charcoll: *mut i8,
-    pub index: i32,
-    pub style: i32,
-    pub stemv: i32,
-    /* StemV value especially for CJK fonts */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_rec {
-    pub map_name: *mut i8,
-    pub font_name: *mut i8,
-    pub enc_name: *mut i8,
-    pub charmap: C2RustUnnamed,
-    pub opt: fontmap_opt,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub sfd_name: *mut i8,
-    pub subfont_id: *mut i8,
-}
+use super::dpx_fontmap::fontmap_rec;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_font {
@@ -253,65 +172,8 @@ pub struct C2RustUnnamed_0 {
     pub capacity: i32,
     pub fonts: *mut pdf_font,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_2,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed_1,
-    pub reverseMap: *mut i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_1 {
-    pub minBytesIn: size_t,
-    pub maxBytesIn: size_t,
-    pub minBytesOut: size_t,
-    pub maxBytesOut: size_t,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub num: u32,
-    pub max: u32,
-    pub ranges: *mut rangeDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
+use super::dpx_cmap::CMap;
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

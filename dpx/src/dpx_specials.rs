@@ -31,6 +31,7 @@
 
 use crate::warn;
 
+use super::dpx_dvi::{dvi_dev_xpos, dvi_dev_ypos, dvi_link_annot, dvi_tag_depth, dvi_untag_depth};
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::{pdf_new_number, pdf_obj, pdf_ref_obj};
 extern "C" {
@@ -50,16 +51,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dvi_dev_xpos() -> f64;
-    #[no_mangle]
-    fn dvi_dev_ypos() -> f64;
-    #[no_mangle]
-    fn dvi_untag_depth();
-    #[no_mangle]
-    fn dvi_tag_depth();
-    #[no_mangle]
-    fn dvi_link_annot(flag: i32);
     /* They just return PDF dictionary object.
      * Callers are completely responsible for doing right thing...
      */
@@ -237,21 +228,8 @@ pub struct spc_handler {
     pub exec: spc_handler_fn_ptr,
 }
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_table {
-    pub count: i32,
-    pub hval_free_fn: hval_free_func,
-    pub table: [*mut ht_entry; 503],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_entry {
-    pub key: *mut i8,
-    pub keylen: i32,
-    pub value: *mut libc::c_void,
-    pub next: *mut ht_entry,
-}
+use super::dpx_dpxutil::ht_entry;
+use super::dpx_dpxutil::ht_table;
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 
 use super::dpx_pdfdev::pdf_coord;

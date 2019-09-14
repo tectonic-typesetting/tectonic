@@ -88,29 +88,11 @@ extern "C" {
 pub type size_t = u64;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_entry {
-    pub key: *mut i8,
-    pub keylen: i32,
-    pub value: *mut libc::c_void,
-    pub next: *mut ht_entry,
-}
+
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_table {
-    pub count: i32,
-    pub hval_free_fn: hval_free_func,
-    pub table: [*mut ht_entry; 503],
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ht_iter {
-    pub index: i32,
-    pub curr: *mut libc::c_void,
-    pub hash: *mut ht_table,
-}
+
+use super::dpx_dpxutil::ht_iter;
+use super::dpx_dpxutil::ht_table;
 /* Hash */
 #[derive(Copy, Clone)]
 #[repr(C)]

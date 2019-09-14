@@ -34,6 +34,7 @@ use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
+use super::dpx_cff::cff_release_charsets;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_file, pdf_link_obj, pdf_lookup_dict, pdf_name_value, pdf_new_name,
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_remove_dict,
@@ -63,8 +64,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn cff_release_charsets(charset: *mut cff_charsets);
     #[no_mangle]
     fn CIDFont_type0_set_verbose(level: i32);
     #[no_mangle]
@@ -139,23 +138,7 @@ pub struct cid_opt {
     pub stemv: i32,
     pub cff_charsets: *mut libc::c_void,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_opt {
-    pub slant: f64,
-    pub extend: f64,
-    pub bold: f64,
-    pub mapc: i32,
-    pub flags: i32,
-    pub otl_tags: *mut i8,
-    pub tounicode: *mut i8,
-    pub cff_charsets: *mut libc::c_void,
-    pub design_size: f64,
-    pub charcoll: *mut i8,
-    pub index: i32,
-    pub style: i32,
-    pub stemv: i32,
-}
+use super::dpx_fontmap::fontmap_opt;
 /*
  * Unicode and PDF Standard Character Collections.
  *
@@ -176,13 +159,7 @@ pub struct FontCache {
     pub max: i32,
     pub fonts: *mut *mut CIDFont,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_charsets {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed_1,
-}
+use super::dpx_cff::cff_charsets;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub union C2RustUnnamed_1 {
@@ -190,20 +167,10 @@ pub union C2RustUnnamed_1 {
     pub range1: *mut cff_range1,
     pub range2: *mut cff_range2,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range2 {
-    pub first: s_SID,
-    pub n_left: card16,
-}
+use super::dpx_cff::cff_range2;
 pub type card16 = u16;
 pub type s_SID = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range1 {
-    pub first: s_SID,
-    pub n_left: card8,
-}
+use super::dpx_cff::cff_range1;
 pub type card8 = u8;
 /* PLEASE SEND INFORMATION ON FONTS
  *

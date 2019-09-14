@@ -31,6 +31,12 @@
 
 use crate::info;
 
+use super::dpx_cmap::{
+    CMap_add_bfchar, CMap_add_codespacerange, CMap_new, CMap_release, CMap_set_CIDSysInfo,
+    CMap_set_name, CMap_set_type, CMap_set_wmode,
+};
+use super::dpx_cmap_read::{CMap_parse, CMap_parse_check_sig};
+use super::dpx_cmap_write::CMap_create_stream;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_file, pdf_get_array, pdf_link_obj, pdf_name_value,
     pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_obj, pdf_release_obj,
@@ -100,40 +106,6 @@ extern "C" {
     fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
     #[no_mangle]
     static mut CSI_UNICODE: CIDSysInfo;
-    #[no_mangle]
-    fn CMap_new() -> *mut CMap;
-    #[no_mangle]
-    fn CMap_release(cmap: *mut CMap);
-    #[no_mangle]
-    fn CMap_set_name(cmap: *mut CMap, name: *const i8);
-    #[no_mangle]
-    fn CMap_set_type(cmap: *mut CMap, type_0: i32);
-    #[no_mangle]
-    fn CMap_set_wmode(cmap: *mut CMap, wmode: i32);
-    #[no_mangle]
-    fn CMap_set_CIDSysInfo(cmap: *mut CMap, csi: *const CIDSysInfo);
-    /* charName not supported */
-    #[no_mangle]
-    fn CMap_add_bfchar(
-        cmap: *mut CMap,
-        src: *const u8,
-        srcdim: size_t,
-        dest: *const u8,
-        destdim: size_t,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_add_codespacerange(
-        cmap: *mut CMap,
-        codelo: *const u8,
-        codehi: *const u8,
-        dim: size_t,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_parse_check_sig(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn CMap_parse(cmap: *mut CMap, handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn CMap_create_stream(cmap: *mut CMap) -> *mut pdf_obj;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -161,75 +133,9 @@ pub struct C2RustUnnamed {
     pub capacity: i32,
     pub encodings: *mut pdf_encoding,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_1,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed_0,
-    pub reverseMap: *mut i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_0 {
-    pub minBytesIn: size_t,
-    pub maxBytesIn: size_t,
-    pub minBytesOut: size_t,
-    pub maxBytesOut: size_t,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_1 {
-    pub num: u32,
-    pub max: u32,
-    pub ranges: *mut rangeDef,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct agl_name {
-    pub name: *mut i8,
-    pub suffix: *mut i8,
-    pub n_components: i32,
-    pub unicodes: [i32; 16],
-    pub alternate: *mut agl_name,
-    pub is_predef: i32,
-}
+use super::dpx_agl::agl_name;
+use super::dpx_cid::CIDSysInfo;
+use super::dpx_cmap::CMap;
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

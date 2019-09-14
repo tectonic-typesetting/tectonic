@@ -35,6 +35,11 @@ use super::dpx_numbers::{
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_dvi::{
+    dpx_dvi_pop, dvi_dirchg, dvi_do_special, dvi_down, dvi_locate_font, dvi_push, dvi_put,
+    dvi_right, dvi_rule, dvi_set, dvi_set_font, dvi_vf_finish, dvi_vf_init, dvi_w, dvi_w0, dvi_x,
+    dvi_x0, dvi_y, dvi_y0, dvi_z, dvi_z0,
+};
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
 use libc::free;
 extern "C" {
@@ -57,49 +62,7 @@ extern "C" {
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
     #[no_mangle]
-    fn dvi_set_font(font_id: i32);
-    #[no_mangle]
-    fn dvi_set(ch: i32);
-    #[no_mangle]
-    fn dvi_put(ch: i32);
-    #[no_mangle]
-    fn dvi_dirchg(dir: u8);
-    #[no_mangle]
-    fn dvi_do_special(buffer: *const libc::c_void, size: i32);
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dvi_z(ch: i32);
-    #[no_mangle]
-    fn dvi_z0();
-    #[no_mangle]
-    fn dvi_vf_init(dev_font_id: i32);
-    #[no_mangle]
-    fn dvi_y(ch: i32);
-    #[no_mangle]
-    fn dvi_push();
-    #[no_mangle]
-    fn dpx_dvi_pop();
-    #[no_mangle]
-    fn dvi_y0();
-    #[no_mangle]
-    fn dvi_locate_font(name: *const i8, ptsize: spt_t) -> u32;
-    #[no_mangle]
-    fn dvi_vf_finish();
-    #[no_mangle]
-    fn dvi_down(y: i32);
-    #[no_mangle]
-    fn dvi_right(x: i32);
-    #[no_mangle]
-    fn dvi_x(ch: i32);
-    #[no_mangle]
-    fn dvi_w0();
-    #[no_mangle]
-    fn dvi_x0();
-    #[no_mangle]
-    fn dvi_rule(width: i32, height: i32);
-    #[no_mangle]
-    fn dvi_w(ch: i32);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
