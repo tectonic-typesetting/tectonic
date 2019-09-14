@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -94,77 +115,14 @@ extern "C" {
     fn CMap_cache_find(cmap_name: *const i8) -> i32;
     #[no_mangle]
     fn CMap_cache_close();
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn pdf_encoding_set_verbose(level: i32);
     #[no_mangle]
@@ -202,77 +160,16 @@ extern "C" {
      */
     #[no_mangle]
     fn pdf_load_ToUnicode_stream(ident: *const i8) -> *mut pdf_obj;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn pdf_font_open_pkfont(font: *mut pdf_font) -> i32;
     #[no_mangle]
     fn pdf_font_load_pkfont(font: *mut pdf_font) -> i32;
     #[no_mangle]
     fn PKFont_set_dpi(dpi: i32);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn pdf_font_open_truetype(font: *mut pdf_font) -> i32;
     #[no_mangle]
     fn pdf_font_load_truetype(font: *mut pdf_font) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn otf_cmap_set_verbose(level: i32);
     /* CMap ID */
@@ -283,52 +180,10 @@ extern "C" {
         otl_opts: *const i8,
         wmode: i32,
     ) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn pdf_font_open_type1(font: *mut pdf_font) -> i32;
     #[no_mangle]
     fn pdf_font_load_type1(font: *mut pdf_font) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn pdf_font_open_type1c(font: *mut pdf_font) -> i32;
     #[no_mangle]
@@ -483,27 +338,6 @@ pub unsafe extern "C" fn pdf_font_get_verbose() -> i32 {
 pub unsafe extern "C" fn pdf_font_set_dpi(mut font_dpi: i32) {
     PKFont_set_dpi(font_dpi);
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /* Here is the complete list of PDF object types */
 /* A deeper object hierarchy will be considered as (illegal) loop. */
 /* External interface to pdf routines */
@@ -1418,27 +1252,6 @@ pub unsafe extern "C" fn pdf_font_set_subtype(mut font: *mut pdf_font, mut subty
     (*font).subtype = subtype;
     0i32
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /* pdf_open_document() call them. */
 /* font_name is used when mrec is NULL.
  * font_scale (point size) used by PK font.

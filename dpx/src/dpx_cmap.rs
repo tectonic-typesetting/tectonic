@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -36,52 +57,10 @@ extern "C" {
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn CMap_parse_check_sig(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
@@ -170,25 +149,6 @@ pub struct CMap_cache {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-   the dvipdfmx project team.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /*
  * References:
  *
@@ -1293,25 +1253,6 @@ pub unsafe extern "C" fn CMap_cache_add(mut cmap: *mut CMap) -> i32 {
     *fresh10 = cmap;
     id
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /* Limits */
 /*
  * TYPE_IDENTITY and TYPE_CID_TO_CODE is not defined in the CMap spec.
