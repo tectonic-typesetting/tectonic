@@ -18,6 +18,10 @@ use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_putc,
 };
+
+#[cfg(target_os="macos")]
+use crate::xetex_aatfont as aat;
+
 use libc::free;
 extern "C" {
     pub type XeTeXLayoutEngine_rec;
@@ -494,27 +498,6 @@ extern "C" {
     /* For Unicode encoding form interpretation... */
     /* single-purpose metrics accessors */
     /* the metrics params here are really TeX 'scaled' (or MacOS 'Fixed') values, but that typedef isn't available every place this is included */
-    #[no_mangle]
-    fn aat_get_font_metrics(
-        attrs: CFDictionaryRef,
-        ascent: *mut i32,
-        descent: *mut i32,
-        xheight: *mut i32,
-        capheight: *mut i32,
-        slant: *mut i32,
-    );
-    #[no_mangle]
-    fn aat_print_font_name(what: i32, attrs: CFDictionaryRef, param1: i32, param2: i32);
-    #[no_mangle]
-    fn aat_font_get_named_1(what: i32, attrs: CFDictionaryRef, param: i32) -> i32;
-    #[no_mangle]
-    fn aat_font_get_named(what: i32, attrs: CFDictionaryRef) -> i32;
-    #[no_mangle]
-    fn aat_font_get_2(what: i32, attrs: CFDictionaryRef, param1: i32, param2: i32) -> i32;
-    #[no_mangle]
-    fn aat_font_get_1(what: i32, attrs: CFDictionaryRef, param: i32) -> i32;
-    #[no_mangle]
-    fn aat_font_get(what: i32, attrs: CFDictionaryRef) -> i32;
     #[no_mangle]
     fn apply_tfm_font_mapping(mapping: *mut libc::c_void, c: i32) -> i32;
     #[no_mangle]
@@ -11983,32 +11966,48 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         15 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
-                                cur_val =
-                                    aat_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
-                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32 {
-                                cur_val =
-                                    ot_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
-                            } else {
-                                cur_val = 0i32
+                            match *font_area.offset(n as isize) as u32 {
+                                #[cfg(target_os="macos")]
+                                0xffffu32 => {
+                                    cur_val =
+                                        aat::aat_font_get(m - 14i32, (*font_layout_engine.offset(n as isize)) as _)
+                                },
+                                0xfffeu32 => {
+                                    cur_val =
+                                        ot_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
+                                },
+                                _ => {
+                                    cur_val = 0i32
+                                },
                             }
                         }
                         22 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
-                                cur_val =
-                                    aat_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
-                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
-                                && usingGraphite(
-                                    *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
-                                ) as i32
-                                    != 0
-                            {
-                                cur_val =
-                                    ot_font_get(m - 14i32, *font_layout_engine.offset(n as isize))
-                            } else {
-                                cur_val = 0i32
+                            match *font_area.offset(n as isize) as u32 {
+                                #[cfg(target_os="macos")]
+                                0xffffu32 => {
+                                    cur_val =
+                                        aat::aat_font_get(m - 14i32, (*font_layout_engine.offset(n as isize)) as _)
+                                },
+                                #[cfg(not(target_os="macos"))]
+                                0xffffu32 => {
+                                    cur_val = -1;
+                                },
+                                0xfffeu32 => {
+                                    if usingGraphite(
+                                            *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
+                                        ) as i32 != 0
+                                    {
+                                        cur_val =
+                                            ot_font_get(m - 14i32, *font_layout_engine.offset(n as isize));
+                                    } else {
+                                        cur_val = 0;
+                                    }
+                                },
+                                _ => {
+                                    cur_val = 0;
+                                },
                             }
                         }
                         17 | 19 | 20 | 21 | 16 => {
@@ -12019,133 +12018,203 @@ pub unsafe extern "C" fn scan_something_internal(mut level: small_number, mut ne
                         23 | 25 | 26 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
-                                scan_int();
-                                k = cur_val;
-                                cur_val = aat_font_get_1(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                    k,
-                                )
-                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
-                                && usingGraphite(
-                                    *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
-                                ) as i32
-                                    != 0
-                            {
-                                scan_int();
-                                k = cur_val;
-                                cur_val = ot_font_get_1(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                    k,
-                                )
-                            } else {
-                                not_aat_gr_font_error(71i32, m, n);
-                                cur_val = -1i32
-                            }
+                            match *font_area.offset(n as isize) as u32 {
+                                #[cfg(target_os="macos")]
+                                0xffffu32 => {
+                                    scan_int();
+                                    k = cur_val;
+                                    cur_val = aat::aat_font_get_1(
+                                        m - 14i32,
+                                        (*font_layout_engine.offset(n as isize)) as _,
+                                        k,
+                                    )
+                                },
+                                #[cfg(not(target_os="macos"))]
+                                0xffffu32 => {
+                                    scan_int();
+                                    k = cur_val;
+                                    cur_val = -1;
+                                },
+                                0xfffeu32 => {
+                                    if usingGraphite(
+                                            *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
+                                        ) as i32
+                                            != 0
+                                    {
+                                        scan_int();
+                                        k = cur_val;
+                                        cur_val = ot_font_get_1(
+                                            m - 14i32,
+                                            *font_layout_engine.offset(n as isize),
+                                            k,
+                                        )
+                                    } else {
+                                        not_aat_gr_font_error(71i32, m, n);
+                                        cur_val = -1i32
+                                    }
+                                },
+                                _ => {
+                                    not_aat_gr_font_error(71i32, m, n);
+                                    cur_val = -1i32
+                                },
+                            }                            
                         }
                         27 | 29 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
-                                scan_int();
-                                k = cur_val;
-                                scan_int();
-                                cur_val = aat_font_get_2(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                    k,
-                                    cur_val,
-                                )
-                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
-                                && usingGraphite(
-                                    *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
-                                ) as i32
-                                    != 0
-                            {
-                                scan_int();
-                                k = cur_val;
-                                scan_int();
-                                cur_val = ot_font_get_2(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                    k,
-                                    cur_val,
-                                )
-                            } else {
-                                not_aat_gr_font_error(71i32, m, n);
-                                cur_val = -1i32
-                            }
+                            match *font_area.offset(n as isize) as u32 {
+                                #[cfg(target_os="macos")]
+                                0xffffu32 => {
+                                    scan_int();
+                                    k = cur_val;
+                                    scan_int();
+                                    cur_val = aat::aat_font_get_2(
+                                        m - 14i32,
+                                        (*font_layout_engine.offset(n as isize)) as _,
+                                        k,
+                                        cur_val,
+                                    )
+                                },
+                                #[cfg(not(target_os="macos"))]
+                                0xffffu32 => {
+                                    scan_int();
+                                    k = cur_val;
+                                    scan_int();
+                                    cur_val = -1;
+                                },
+                                0xfffeu32 => {
+                                    if usingGraphite(
+                                            *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
+                                        ) as i32
+                                            != 0
+                                    {
+                                        scan_int();
+                                        k = cur_val;
+                                        scan_int();
+                                        cur_val = ot_font_get_2(
+                                            m - 14i32,
+                                            *font_layout_engine.offset(n as isize),
+                                            k,
+                                            cur_val,
+                                        )
+                                    } else {
+                                        not_aat_gr_font_error(71i32, m, n);
+                                        cur_val = -1i32
+                                    }
+                                },
+                                _ => {
+                                    not_aat_gr_font_error(71i32, m, n);
+                                    cur_val = -1i32
+                                },
+                            }                            
                         }
                         18 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
-                                scan_and_pack_name();
-                                cur_val = aat_font_get_named(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                )
-                            } else {
-                                not_aat_font_error(71i32, m, n);
-                                cur_val = -1i32
+                            match *font_area.offset(n as isize) as u32 {
+                                #[cfg(target_os="macos")]
+                                0xffffu32 => {
+                                    scan_and_pack_name();
+                                    cur_val = aat::aat_font_get_named(
+                                        m - 14i32,
+                                        (*font_layout_engine.offset(n as isize)) as _,
+                                    );
+                                },
+                                #[cfg(not(target_os="macos"))]
+                                0xffffu32 => {
+                                    scan_and_pack_name();
+                                    cur_val = -1;
+                                },
+                                _ => {
+                                    not_aat_font_error(71i32, m, n);
+                                    cur_val = -1i32
+                                },
                             }
                         }
                         24 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
-                                scan_and_pack_name();
-                                cur_val = aat_font_get_named(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                )
-                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
-                                && usingGraphite(
-                                    *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
-                                ) as i32
-                                    != 0
-                            {
-                                scan_and_pack_name();
-                                cur_val = gr_font_get_named(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                )
-                            } else {
-                                not_aat_gr_font_error(71i32, m, n);
-                                cur_val = -1i32
+                            match *font_area.offset(n as isize) as u32 {
+                                #[cfg(target_os="macos")]
+                                0xffffu32 => {
+                                    scan_and_pack_name();
+                                    cur_val = aat::aat_font_get_named(
+                                        m - 14i32,
+                                        (*font_layout_engine.offset(n as isize)) as _,
+                                    );
+                                },
+                                #[cfg(not(target_os="macos"))]
+                                    0xffffu32 => {
+                                    scan_and_pack_name();
+                                    cur_val = -1;
+                                },
+                                0xfffeu32 => {
+                                    if usingGraphite(
+                                            *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
+                                        ) as i32
+                                            != 0
+                                    {
+                                        scan_and_pack_name();
+                                        cur_val = gr_font_get_named(
+                                            m - 14i32,
+                                            *font_layout_engine.offset(n as isize),
+                                        )
+                                    } else {
+                                        not_aat_gr_font_error(71i32, m, n);
+                                        cur_val = -1i32
+                                    }
+                                },
+                                _ => {
+                                    not_aat_gr_font_error(71i32, m, n);
+                                    cur_val = -1i32
+                                },
                             }
                         }
                         28 => {
                             scan_font_ident();
                             n = cur_val;
-                            if *font_area.offset(n as isize) as u32 == 0xffffu32 {
-                                scan_int();
-                                k = cur_val;
-                                scan_and_pack_name();
-                                cur_val = aat_font_get_named_1(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                    k,
-                                )
-                            } else if *font_area.offset(n as isize) as u32 == 0xfffeu32
-                                && usingGraphite(
-                                    *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
-                                ) as i32
-                                    != 0
-                            {
-                                scan_int();
-                                k = cur_val;
-                                scan_and_pack_name();
-                                cur_val = gr_font_get_named_1(
-                                    m - 14i32,
-                                    *font_layout_engine.offset(n as isize),
-                                    k,
-                                )
-                            } else {
-                                not_aat_gr_font_error(71i32, m, n);
-                                cur_val = -1i32
+                            match *font_area.offset(n as isize) as u32 {
+                                #[cfg(target_os="macos")]
+                                0xffffu32 => {
+                                    scan_int();
+                                    k = cur_val;
+                                    scan_and_pack_name();
+                                    cur_val = aat::aat_font_get_named_1(
+                                        m - 14i32,
+                                        (*font_layout_engine.offset(n as isize)) as _,
+                                        k,
+                                    );
+                                },
+                                #[cfg(not(target_os="macos"))]
+                                0xffffu32 => {
+                                    scan_int();
+                                    k = cur_val;
+                                    scan_and_pack_name();
+                                    cur_val = -1;
+                                },
+                                0xfffeu32 => {
+                                    if usingGraphite(
+                                            *font_layout_engine.offset(n as isize) as XeTeXLayoutEngine
+                                        ) as i32
+                                            != 0
+                                    {
+                                        scan_int();
+                                        k = cur_val;
+                                        scan_and_pack_name();
+                                        cur_val = gr_font_get_named_1(
+                                            m - 14i32,
+                                            *font_layout_engine.offset(n as isize),
+                                            k,
+                                        )
+                                    } else {
+                                        not_aat_gr_font_error(71i32, m, n);
+                                        cur_val = -1i32
+                                    }
+                                },
+                                _ => {
+                                    not_aat_gr_font_error(71i32, m, n);
+                                    cur_val = -1i32                                    
+                                },
                             }
                         }
                         30 => {
@@ -14575,27 +14644,28 @@ pub unsafe extern "C" fn conv_toks() {
         }
         4 => {
             font_name_str = *font_name.offset(cur_val as isize);
-            if *font_area.offset(cur_val as isize) as u32 == 0xffffu32
-                || *font_area.offset(cur_val as isize) as u32 == 0xfffeu32
-            {
-                quote_char = '\"' as i32 as UTF16_code;
-                i = 0i32 as small_number;
-                while i as i32 <= length(font_name_str) - 1i32 {
-                    if *str_pool.offset(
-                        (*str_start.offset((font_name_str as i64 - 65536) as isize) + i as i32)
-                            as isize,
-                    ) as i32
-                        == '\"' as i32
-                    {
-                        quote_char = '\'' as i32 as UTF16_code
+            match *font_area.offset(cur_val as isize) as u32 {
+                0xffffu32 | 0xfffeu32 => {
+                    quote_char = '\"' as i32 as UTF16_code;
+                    i = 0i32 as small_number;
+                    while i as i32 <= length(font_name_str) - 1i32 {
+                        if *str_pool.offset(
+                            (*str_start.offset((font_name_str as i64 - 65536) as isize) + i as i32)
+                                as isize,
+                        ) as i32
+                            == '\"' as i32
+                        {
+                            quote_char = '\'' as i32 as UTF16_code
+                        }
+                        i += 1
                     }
-                    i += 1
-                }
-                print_char(quote_char as i32);
-                print(font_name_str);
-                print_char(quote_char as i32);
-            } else {
-                print(font_name_str);
+                    print_char(quote_char as i32);
+                    print(font_name_str);
+                    print_char(quote_char as i32);
+                },
+                _ => {
+                    print(font_name_str);
+                },
             }
             if *font_size.offset(cur_val as isize) != *font_dsize.offset(cur_val as isize) {
                 print_cstr(b" at \x00" as *const u8 as *const i8);
@@ -14616,41 +14686,61 @@ pub unsafe extern "C" fn conv_toks() {
             print_cstr(b".99998\x00" as *const u8 as *const i8);
         }
         7 => {
-            if *font_area.offset(fnt as isize) as u32 == 0xffffu32 {
-                aat_print_font_name(
-                    c as i32,
-                    *font_layout_engine.offset(fnt as isize),
-                    arg1,
-                    arg2,
-                );
+            match *font_area.offset(fnt as isize) as u32 {
+                #[cfg(target_os="macos")]
+                0xffffu32 => {
+                    aat::aat_print_font_name(
+                        c as i32,
+                        (*font_layout_engine.offset(fnt as isize)) as _,
+                        arg1,
+                        arg2,
+                    );
+                },
+                #[cfg(not(target_os="macos"))]
+                0xffffu32 => {
+                    // do nothing
+                },
+                _ => {
+                    // do nothing
+                },
             }
         }
         8 | 9 => {
-            if *font_area.offset(fnt as isize) as u32 == 0xffffu32 {
-                aat_print_font_name(
-                    c as i32,
-                    *font_layout_engine.offset(fnt as isize),
-                    arg1,
-                    arg2,
-                );
-            } else if *font_area.offset(fnt as isize) as u32 == 0xfffeu32
-                && usingGraphite(*font_layout_engine.offset(fnt as isize) as XeTeXLayoutEngine)
-                    as i32
-                    != 0
-            {
-                gr_print_font_name(
-                    c as i32,
-                    *font_layout_engine.offset(fnt as isize),
-                    arg1,
-                    arg2,
-                );
+            match *font_area.offset(fnt as isize) as u32 {
+                #[cfg(target_os="macos")]
+                0xffffu32 => {
+                    aat::aat_print_font_name(
+                        c as i32,
+                        (*font_layout_engine.offset(fnt as isize)) as _,
+                        arg1,
+                        arg2,
+                    );
+                },
+                #[cfg(not(target_os="macos"))]
+                0xffffu32 => {
+                    // do nothing
+                },
+                0xfffeu32 => {
+                    if usingGraphite(*font_layout_engine.offset(fnt as isize) as XeTeXLayoutEngine)
+                            as i32 != 0
+                    {
+                        gr_print_font_name(
+                            c as i32,
+                            *font_layout_engine.offset(fnt as isize),
+                            arg1,
+                            arg2,
+                        );
+                    }
+                },
+                _ => {},
             }
         }
         10 => {
-            if *font_area.offset(fnt as isize) as u32 == 0xffffu32
-                || *font_area.offset(fnt as isize) as u32 == 0xfffeu32
-            {
-                print_glyph_name(fnt, arg1);
+            match *font_area.offset(fnt as isize) as u32 {
+                0xffffu32 | 0xfffeu32 => {
+                    print_glyph_name(fnt, arg1);
+                },
+                _ => {},
             }
         }
         11 => {
@@ -17028,24 +17118,32 @@ pub unsafe extern "C" fn load_native_font(
     *font_glue.offset(font_ptr as isize) = -0xfffffffi32;
     *font_dsize.offset(font_ptr as isize) = loaded_font_design_size;
     *font_size.offset(font_ptr as isize) = actual_size;
-    if native_font_type_flag as u32 == 0xffffu32 {
-        aat_get_font_metrics(
-            font_engine,
-            &mut ascent,
-            &mut descent,
-            &mut x_ht,
-            &mut cap_ht,
-            &mut font_slant,
-        );
-    } else {
-        ot_get_font_metrics(
-            font_engine,
-            &mut ascent,
-            &mut descent,
-            &mut x_ht,
-            &mut cap_ht,
-            &mut font_slant,
-        );
+    match native_font_type_flag as u32 {
+        #[cfg(target_os="macos")]
+        0xffffu32 => {
+            aat::aat_get_font_metrics(
+                font_engine as _,
+                &mut ascent,
+                &mut descent,
+                &mut x_ht,
+                &mut cap_ht,
+                &mut font_slant,
+            );
+        },
+        #[cfg(not(target_os="macos"))]
+        0xffffu32 => {
+            // do nothing
+        },
+        _ => {
+            ot_get_font_metrics(
+                font_engine,
+                &mut ascent,
+                &mut descent,
+                &mut x_ht,
+                &mut cap_ht,
+                &mut font_slant,
+            );
+        }
     }
     *height_base.offset(font_ptr as isize) = ascent;
     *depth_base.offset(font_ptr as isize) = -descent;

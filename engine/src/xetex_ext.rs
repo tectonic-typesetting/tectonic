@@ -59,7 +59,7 @@ extern "C" {
     #[no_mangle]
     fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
-    fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
+    pub fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn hb_tag_from_string(str: *const i8, len: i32) -> hb_tag_t;
     #[no_mangle]
@@ -256,9 +256,9 @@ extern "C" {
     #[no_mangle]
     fn gettexstring(_: str_number) -> *mut i8;
     #[no_mangle]
-    static mut name_of_file: *mut i8;
+    pub static mut name_of_file: *mut i8;
     #[no_mangle]
-    static mut name_length: i32;
+    pub static mut name_length: i32;
     #[no_mangle]
     static mut font_info: *mut memory_word;
     #[no_mangle]
@@ -326,8 +326,6 @@ extern "C" {
 #[cfg(target_os="macos")]
 extern "C" {
     /* Macs provide Fixed and FixedPoint */
-    #[no_mangle]
-    fn CFBooleanGetValue(boolean: CFBooleanRef) -> Boolean;
     #[no_mangle]
     static kCTFontAttributeName: CFStringRef;
 
@@ -401,8 +399,6 @@ extern "C" {
     #[no_mangle]
     fn CFStringGetLength(theString: CFStringRef) -> CFIndex;
     #[no_mangle]
-    fn CFStringGetCharacters(theString: CFStringRef, range: CFRange, buffer: *mut UniChar);
-    #[no_mangle]
     fn CFArrayGetValueAtIndex(theArray: CFArrayRef, idx: CFIndex) -> *const libc::c_void;
     #[no_mangle]
     fn CFDictionaryGetValue(
@@ -414,60 +410,7 @@ extern "C" {
     #[no_mangle]
     fn CTFontGetMatrix(font: CTFontRef) -> CGAffineTransform;
     #[no_mangle]
-    fn CFDictionaryGetValueIfPresent(
-        theDict: CFDictionaryRef,
-        key: *const libc::c_void,
-        value: *mut *const libc::c_void,
-    ) -> Boolean;
-    #[no_mangle]
     fn CFRelease(cf: CFTypeRef);
-    #[no_mangle]
-    fn CTFontGetAscent(font: CTFontRef) -> CGFloat;
-    #[no_mangle]
-    fn CTFontGetDescent(font: CTFontRef) -> CGFloat;
-    #[no_mangle]
-    fn CTFontGetGlyphCount(font: CTFontRef) -> CFIndex;
-    #[no_mangle]
-    fn CTFontGetSlantAngle(font: CTFontRef) -> CGFloat;
-    #[no_mangle]
-    fn CTFontGetCapHeight(font: CTFontRef) -> CGFloat;
-    #[no_mangle]
-    fn CTFontGetXHeight(font: CTFontRef) -> CGFloat;
-    #[no_mangle]
-    static kCTFontFeatureTypeIdentifierKey: CFStringRef;
-    #[no_mangle]
-    static kCTFontFeatureTypeNameKey: CFStringRef;
-    #[no_mangle]
-    static kCTFontFeatureTypeExclusiveKey: CFStringRef;
-    #[no_mangle]
-    static kCTFontFeatureTypeSelectorsKey: CFStringRef;
-    #[no_mangle]
-    static kCTFontFeatureSelectorIdentifierKey: CFStringRef;
-    #[no_mangle]
-    static kCTFontFeatureSelectorNameKey: CFStringRef;
-    #[no_mangle]
-    static kCTFontFeatureSelectorDefaultKey: CFStringRef;
-    #[no_mangle]
-    fn CTFontCopyFeatures(font: CTFontRef) -> CFArrayRef;
-    #[no_mangle]
-    fn findSelectorByName(
-        feature: CFDictionaryRef,
-        name: *const libc::c_char,
-        nameLength: libc::c_int,
-    ) -> CFNumberRef;
-    #[no_mangle]
-    fn findDictionaryInArray(
-        array: CFArrayRef,
-        nameKey: *const libc::c_void,
-        name: *const libc::c_char,
-        nameLength: libc::c_int,
-    ) -> CFDictionaryRef;
-    #[no_mangle]
-    fn findDictionaryInArrayWithIdentifier(
-        array: CFArrayRef,
-        identifierKey: *const libc::c_void,
-        identifier: libc::c_int,
-    ) -> CFDictionaryRef;
 }
 
 #[cfg(target_os="macos")]
@@ -3075,312 +3018,7 @@ pub unsafe extern "C" fn D2Fix(mut d: f64) -> Fixed {
 pub unsafe extern "C" fn Fix2D(mut f: Fixed) -> f64 {
     f as f64 / 65536.
 }
-/* the metrics params here are really TeX 'scaled' (or MacOS 'Fixed') values, but that typedef isn't available every place this is included */
-/* these are here, not XeTeX_mac.c, because we need stubs on other platforms */
-#[no_mangle]
-#[cfg(target_os="macos")]
-pub unsafe extern "C" fn aat_get_font_metrics(
-    mut attributes: CFDictionaryRef,
-    mut ascent: *mut i32,
-    mut descent: *mut i32,
-    mut xheight: *mut i32,
-    mut capheight: *mut i32,
-    mut slant: *mut i32,
-) {
-    let mut font: CTFontRef = fontFromAttributes(attributes);
-    *ascent = D2Fix(CTFontGetAscent(font));
-    *descent = D2Fix(CTFontGetDescent(font));
-    *xheight = D2Fix(CTFontGetXHeight(font));
-    *capheight = D2Fix(CTFontGetCapHeight(font));
-    *slant = D2Fix((-CTFontGetSlantAngle(font)
-        * 3.14159265358979323846264338327950288f64
-        / 180.0f64).tan());
-}
-#[no_mangle]
-#[cfg(target_os="macos")]
-pub unsafe extern "C" fn aat_font_get(mut what: i32, mut attributes: CFDictionaryRef) -> i32 {
-    let mut rval: libc::c_int = -1i32;
-    let mut font: CTFontRef = fontFromAttributes(attributes);
-    let mut list: CFArrayRef = 0 as *const __CFArray;
-    match what {
-        1 => rval = CTFontGetGlyphCount(font) as libc::c_int,
-        8 => {
-            list = CTFontCopyFeatures(font);
-            if !list.is_null() {
-                rval = CFArrayGetCount(list) as libc::c_int;
-                CFRelease(list as CFTypeRef);
-            }
-        }
-        _ => {}
-    }
-    return rval;
-}
-#[no_mangle]
-#[cfg(target_os="macos")]
-pub unsafe extern "C" fn aat_font_get_1(
-    mut what: i32,
-    mut attributes: CFDictionaryRef,
-    mut param: i32,
-) -> i32 {
-    let mut rval: libc::c_int = -1i32;
-    let mut font: CTFontRef = fontFromAttributes(attributes);
-    match what {
-        9 => {
-            let mut features: CFArrayRef = CTFontCopyFeatures(font);
-            if !features.is_null() {
-                if CFArrayGetCount(features) > param as libc::c_long {
-                    let mut feature: CFDictionaryRef =
-                        CFArrayGetValueAtIndex(features, param as CFIndex) as CFDictionaryRef;
-                    let mut identifier: CFNumberRef = CFDictionaryGetValue(
-                        feature,
-                        kCTFontFeatureTypeIdentifierKey as *const libc::c_void,
-                    ) as CFNumberRef;
-                    if !identifier.is_null() {
-                        CFNumberGetValue(
-                            identifier,
-                            kCFNumberIntType as libc::c_int as CFNumberType,
-                            &mut rval as *mut libc::c_int as *mut libc::c_void,
-                        );
-                    }
-                }
-                CFRelease(features as CFTypeRef);
-            }
-        }
-        11 => {
-            let mut features_0: CFArrayRef = CTFontCopyFeatures(font);
-            if !features_0.is_null() {
-                let mut value: CFBooleanRef = 0 as *const __CFBoolean;
-                let mut feature_0: CFDictionaryRef = findDictionaryInArrayWithIdentifier(
-                    features_0,
-                    kCTFontFeatureTypeIdentifierKey as *const libc::c_void,
-                    param,
-                );
-                let mut found: Boolean = CFDictionaryGetValueIfPresent(
-                    feature_0,
-                    kCTFontFeatureTypeExclusiveKey as *const libc::c_void,
-                    &mut value as *mut CFBooleanRef as *mut *const libc::c_void,
-                );
-                if found != 0 {
-                    rval = CFBooleanGetValue(value) as libc::c_int
-                }
-                CFRelease(features_0 as CFTypeRef);
-            }
-        }
-        12 => {
-            let mut features_1: CFArrayRef = CTFontCopyFeatures(font);
-            if !features_1.is_null() {
-                let mut feature_1: CFDictionaryRef = findDictionaryInArrayWithIdentifier(
-                    features_1,
-                    kCTFontFeatureTypeIdentifierKey as *const libc::c_void,
-                    param,
-                );
-                if !feature_1.is_null() {
-                    let mut selectors: CFArrayRef = CFDictionaryGetValue(
-                        feature_1,
-                        kCTFontFeatureTypeSelectorsKey as *const libc::c_void,
-                    ) as CFArrayRef;
-                    if !selectors.is_null() {
-                        rval = CFArrayGetCount(selectors) as libc::c_int
-                    }
-                }
-                CFRelease(features_1 as CFTypeRef);
-            }
-        }
-        _ => {}
-    }
-    return rval;
-}
-#[no_mangle]
-#[cfg(target_os="macos")]
-pub unsafe extern "C" fn aat_font_get_2(
-    mut what: i32,
-    mut attributes: CFDictionaryRef,
-    mut param1: i32,
-    mut param2: i32,
-) -> i32 {
-    let mut rval: libc::c_int = -1i32;
-    let mut font: CTFontRef = fontFromAttributes(attributes);
-    let mut features: CFArrayRef = CTFontCopyFeatures(font);
-    if !features.is_null() {
-        let mut feature: CFDictionaryRef = findDictionaryInArrayWithIdentifier(
-            features,
-            kCTFontFeatureTypeIdentifierKey as *const libc::c_void,
-            param1,
-        );
-        if !feature.is_null() {
-            let mut selectors: CFArrayRef = CFDictionaryGetValue(
-                feature,
-                kCTFontFeatureTypeSelectorsKey as *const libc::c_void,
-            ) as CFArrayRef;
-            if !selectors.is_null() {
-                let mut selector: CFDictionaryRef = 0 as *const __CFDictionary;
-                match what {
-                    13 => {
-                        if CFArrayGetCount(selectors) > param2 as libc::c_long {
-                            let mut identifier: CFNumberRef = 0 as *const __CFNumber;
-                            selector = CFArrayGetValueAtIndex(selectors, param2 as CFIndex)
-                                as CFDictionaryRef;
-                            identifier = CFDictionaryGetValue(
-                                selector,
-                                kCTFontFeatureSelectorIdentifierKey as *const libc::c_void,
-                            ) as CFNumberRef;
-                            if !identifier.is_null() {
-                                CFNumberGetValue(
-                                    identifier,
-                                    kCFNumberIntType as libc::c_int as CFNumberType,
-                                    &mut rval as *mut libc::c_int as *mut libc::c_void,
-                                );
-                            }
-                        }
-                    }
-                    15 => {
-                        selector = findDictionaryInArrayWithIdentifier(
-                            selectors,
-                            kCTFontFeatureSelectorIdentifierKey as *const libc::c_void,
-                            param2,
-                        );
-                        if !selector.is_null() {
-                            let mut isDefault: CFBooleanRef = 0 as *const __CFBoolean;
-                            let mut found: Boolean = CFDictionaryGetValueIfPresent(
-                                selector,
-                                kCTFontFeatureSelectorDefaultKey as *const libc::c_void,
-                                &mut isDefault as *mut CFBooleanRef as *mut *const libc::c_void,
-                            );
-                            if found != 0 {
-                                rval = CFBooleanGetValue(isDefault) as libc::c_int
-                            }
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        }
-        CFRelease(features as CFTypeRef);
-    }
-    return rval;
-}
-#[no_mangle]
-#[cfg(target_os="macos")]
-pub unsafe extern "C" fn aat_font_get_named(
-    mut what: libc::c_int,
-    mut attributes: CFDictionaryRef,
-) -> libc::c_int {
-    let mut rval: libc::c_int = -1i32;
-    if what == 10i32 {
-        let mut font: CTFontRef = fontFromAttributes(attributes);
-        let mut features: CFArrayRef = CTFontCopyFeatures(font);
-        if !features.is_null() {
-            let mut feature: CFDictionaryRef = findDictionaryInArray(
-                features,
-                kCTFontFeatureTypeNameKey as *const libc::c_void,
-                name_of_file,
-                name_length,
-            );
-            if !feature.is_null() {
-                let mut identifier: CFNumberRef = CFDictionaryGetValue(
-                    feature,
-                    kCTFontFeatureTypeIdentifierKey as *const libc::c_void,
-                ) as CFNumberRef;
-                CFNumberGetValue(
-                    identifier,
-                    kCFNumberIntType as libc::c_int as CFNumberType,
-                    &mut rval as *mut libc::c_int as *mut libc::c_void,
-                );
-            }
-            CFRelease(features as CFTypeRef);
-        }
-    }
-    return rval;
-}
-#[no_mangle]
-#[cfg(target_os="macos")]
-pub unsafe extern "C" fn aat_font_get_named_1(
-    mut what: i32,
-    mut attributes: CFDictionaryRef,
-    mut param: i32,
-) -> i32 {
-    let mut rval: libc::c_int = -1i32;
-    let mut font: CTFontRef = fontFromAttributes(attributes);
-    if what == 14i32 {
-        let mut features: CFArrayRef = CTFontCopyFeatures(font);
-        if !features.is_null() {
-            let mut feature: CFDictionaryRef = findDictionaryInArrayWithIdentifier(
-                features,
-                kCTFontFeatureTypeIdentifierKey as *const libc::c_void,
-                param,
-            );
-            if !feature.is_null() {
-                let mut selector: CFNumberRef =
-                    findSelectorByName(feature, name_of_file, name_length);
-                if !selector.is_null() {
-                    CFNumberGetValue(
-                        selector,
-                        kCFNumberIntType as libc::c_int as CFNumberType,
-                        &mut rval as *mut libc::c_int as *mut libc::c_void,
-                    );
-                }
-            }
-            CFRelease(features as CFTypeRef);
-        }
-    }
-    return rval;
-}
-#[no_mangle]
-#[cfg(target_os="macos")]
-pub unsafe extern "C" fn aat_print_font_name(
-    mut what: i32,
-    mut attributes: CFDictionaryRef,
-    mut param1: i32,
-    mut param2: i32,
-) {
-    let mut name: CFStringRef = 0 as CFStringRef;
-    if what == 8i32 || what == 9i32 {
-        let mut font: CTFontRef = fontFromAttributes(attributes);
-        let mut features: CFArrayRef = CTFontCopyFeatures(font);
-        if !features.is_null() {
-            let mut feature: CFDictionaryRef = findDictionaryInArrayWithIdentifier(
-                features,
-                kCTFontFeatureTypeIdentifierKey as *const libc::c_void,
-                param1,
-            );
-            if !feature.is_null() {
-                if what == 8i32 {
-                    name = CFDictionaryGetValue(
-                        feature,
-                        kCTFontFeatureTypeNameKey as *const libc::c_void,
-                    ) as CFStringRef
-                } else {
-                    let mut selectors: CFArrayRef = CFDictionaryGetValue(
-                        feature,
-                        kCTFontFeatureTypeSelectorsKey as *const libc::c_void,
-                    ) as CFArrayRef;
-                    let mut selector: CFDictionaryRef = findDictionaryInArrayWithIdentifier(
-                        selectors,
-                        kCTFontFeatureSelectorIdentifierKey as *const libc::c_void,
-                        param2,
-                    );
-                    if !selector.is_null() {
-                        name = CFDictionaryGetValue(
-                            selector,
-                            kCTFontFeatureSelectorNameKey as *const libc::c_void,
-                        ) as CFStringRef
-                    }
-                }
-            }
-            CFRelease(features as CFTypeRef);
-        }
-    }
-    if !name.is_null() {
-        let mut len: CFIndex = CFStringGetLength(name);
-        let mut buf: *mut UniChar = xcalloc(
-            len as size_t,
-            ::std::mem::size_of::<UniChar>() as libc::c_ulong,
-        ) as *mut UniChar;
-        CFStringGetCharacters(name, CFRangeMake(0i32 as CFIndex, len), buf);
-        print_chars(buf, len as libc::c_int);
-        free(buf as *mut libc::c_void);
-    };
-}
+
 #[no_mangle]
 pub unsafe extern "C" fn print_glyph_name(mut font: i32, mut gid: i32) {
     let mut s: *const i8 = 0 as *const i8;
