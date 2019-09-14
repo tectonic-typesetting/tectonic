@@ -15,11 +15,28 @@ use crate::{streq_ptr, strstartswith};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
 use libc::free;
 
-#[cfg(not(target_os="macos"))]
+#[cfg(not(target_os = "macos"))]
 extern "C" {
     pub type _FcPattern;
 }
+#[cfg(not(target_os = "macos"))]
+pub type FcPattern = _FcPattern;
 
+/// PlatformFontRef matches C++
+#[cfg(not(target_os = "macos"))]
+pub type PlatformFontRef = *mut FcPattern;
+#[cfg(target_os = "macos")]
+pub type PlatformFontRef = CTFontDescriptorRef;
+
+#[cfg(target_os = "macos")]
+use super::xetex_aatfont as aat;
+use super::xetex_aatfont::cf_prelude::{
+    kCFNumberFloatType, kCTFontAttributeName, kCTForegroundColorAttributeName,
+    kCTVerticalFormsAttributeName, CFBooleanRef, CFDictionaryGetValue, CFDictionaryRef,
+    CFNumberGetValue, CFNumberRef, CFNumberType, CFRelease, CFTypeRef, CGAffineTransform,
+    CGColorGetComponents, CGColorRef, CGFloat, CTFontDescriptorRef, CTFontGetMatrix, CTFontGetSize,
+    CTFontRef,
+};
 
 extern "C" {
     pub type XeTeXFont_rec;
@@ -322,161 +339,6 @@ extern "C" {
     fn xn_over_d(x: scaled_t, n: i32, d: i32) -> scaled_t;
 }
 
-
-#[cfg(target_os="macos")]
-extern "C" {
-    /* Macs provide Fixed and FixedPoint */
-    #[no_mangle]
-    static kCTFontAttributeName: CFStringRef;
-
-    /* functions in XeTeX_mac.c */
-    #[no_mangle]
-    fn loadAATfont(
-        descriptor: CTFontDescriptorRef,
-        scaled_size: i32,
-        cp1: *const libc::c_char,
-    ) -> *mut libc::c_void;
-    #[no_mangle]
-    fn DoAATLayout(node: *mut libc::c_void, justify: libc::c_int);
-    #[no_mangle]
-    fn GetGlyphBBox_AAT(fontAttrs: CFDictionaryRef, gid: u16, bbox: *mut GlyphBBox);
-    #[no_mangle]
-    fn GetGlyphWidth_AAT(fontAttrs: CFDictionaryRef, gid: u16) -> libc::c_double;
-    #[no_mangle]
-    fn GetGlyphHeightDepth_AAT(
-        fontAttrs: CFDictionaryRef,
-        gid: u16,
-        ht: *mut libc::c_float,
-        dp: *mut libc::c_float,
-    );
-    #[no_mangle]
-    fn GetGlyphSidebearings_AAT(
-        fontAttrs: CFDictionaryRef,
-        gid: u16,
-        lsb: *mut libc::c_float,
-        rsb: *mut libc::c_float,
-    );
-    #[no_mangle]
-    fn GetGlyphItalCorr_AAT(fontAttrs: CFDictionaryRef, gid: u16) -> libc::c_double;
-    #[no_mangle]
-    fn MapCharToGlyph_AAT(fontAttrs: CFDictionaryRef, ch: UInt32) -> libc::c_int;
-    #[no_mangle]
-    fn MapGlyphToIndex_AAT(
-        attributes: CFDictionaryRef,
-        glyphName: *const libc::c_char,
-    ) -> libc::c_int;
-
-    #[no_mangle]
-    fn getkXeTeXEmboldenAttributeName() -> CFStringRef;
-    #[no_mangle]
-    fn getFileNameFromCTFont(ctFontRef: CTFontRef, index: *mut u32) -> *mut libc::c_char;
-    #[no_mangle]
-    fn GetFontCharRange_AAT(fontAttrs: CFDictionaryRef, reqFirst: libc::c_int) -> libc::c_int;
-    #[no_mangle]
-    fn fontFromInteger(font: i32) -> CTFontRef;
-    #[no_mangle]
-    fn GetGlyphNameFromCTFont(
-        ctFontRef: CTFontRef,
-        gid: u16,
-        len: *mut libc::c_int,
-    ) -> *mut libc::c_char;
-    #[no_mangle]
-    fn fontFromAttributes(fontAttrs: CFDictionaryRef) -> CTFontRef;
-    #[no_mangle]
-    fn CFNumberGetValue(
-        number: CFNumberRef,
-        theType: CFNumberType,
-        valuePtr: *mut libc::c_void,
-    ) -> Boolean;
-    #[no_mangle]
-    fn CGColorGetComponents(color: CGColorRef) -> *const CGFloat;
-    #[no_mangle]
-    static kCTForegroundColorAttributeName: CFStringRef;
-    #[no_mangle]
-    static kCTVerticalFormsAttributeName: CFStringRef;
-    #[no_mangle]
-    fn CFArrayGetCount(theArray: CFArrayRef) -> CFIndex;
-    #[no_mangle]
-    fn CFStringGetLength(theString: CFStringRef) -> CFIndex;
-    #[no_mangle]
-    fn CFArrayGetValueAtIndex(theArray: CFArrayRef, idx: CFIndex) -> *const libc::c_void;
-    #[no_mangle]
-    fn CFDictionaryGetValue(
-        theDict: CFDictionaryRef,
-        key: *const libc::c_void,
-    ) -> *const libc::c_void;
-    #[no_mangle]
-    fn CTFontGetSize(font: CTFontRef) -> CGFloat;
-    #[no_mangle]
-    fn CTFontGetMatrix(font: CTFontRef) -> CGAffineTransform;
-    #[no_mangle]
-    fn CFRelease(cf: CFTypeRef);
-}
-
-#[cfg(target_os="macos")]
-mod macos_def {
-    extern "C" {
-        pub type __CFArray;
-        pub type __CFBoolean;
-        pub type __CFNumber;
-        pub type __CFDictionary;
-        pub type __CTFontDescriptor;
-        pub type __CTFont;
-        pub type __CFString;
-        pub type CGColor;
-    }
-    pub type CFIndex = libc::c_long;
-    pub type CFTypeRef = *const libc::c_void;
-    #[derive(Copy, Clone)]
-    #[repr(C)]
-    pub struct CFRange {
-        pub location: CFIndex,
-        pub length: CFIndex,
-    }
-    pub type CFArrayRef = *const __CFArray;
-    pub type CFBooleanRef = *const __CFBoolean;
-    pub type CFNumberType = CFIndex;
-    pub type C2RustUnnamed = libc::c_uint;
-    pub const kCFNumberMaxType: C2RustUnnamed = 16;
-    pub const kCFNumberCGFloatType: C2RustUnnamed = 16;
-    pub const kCFNumberNSIntegerType: C2RustUnnamed = 15;
-    pub const kCFNumberCFIndexType: C2RustUnnamed = 14;
-    pub const kCFNumberDoubleType: C2RustUnnamed = 13;
-    pub const kCFNumberFloatType: C2RustUnnamed = 12;
-    pub const kCFNumberLongLongType: C2RustUnnamed = 11;
-    pub const kCFNumberLongType: C2RustUnnamed = 10;
-    pub const kCFNumberIntType: C2RustUnnamed = 9;
-    pub const kCFNumberShortType: C2RustUnnamed = 8;
-    pub const kCFNumberCharType: C2RustUnnamed = 7;
-    pub const kCFNumberFloat64Type: C2RustUnnamed = 6;
-    pub const kCFNumberFloat32Type: C2RustUnnamed = 5;
-    pub const kCFNumberSInt64Type: C2RustUnnamed = 4;
-    pub const kCFNumberSInt32Type: C2RustUnnamed = 3;
-    pub const kCFNumberSInt16Type: C2RustUnnamed = 2;
-    pub const kCFNumberSInt8Type: C2RustUnnamed = 1;
-    pub type CFNumberRef = *const __CFNumber;
-    pub type CGFloat = libc::c_double;
-    #[derive(Copy, Clone)]
-    #[repr(C)]
-    pub struct CGAffineTransform {
-        pub a: CGFloat,
-        pub b: CGFloat,
-        pub c: CGFloat,
-        pub d: CGFloat,
-        pub tx: CGFloat,
-        pub ty: CGFloat,
-    }
-    pub type CGColorRef = *mut CGColor;
-    pub type CTFontDescriptorRef = *const __CTFontDescriptor;
-    pub type CTFontRef = *const __CTFont;
-    pub type CFStringRef = *const __CFString;
-    pub type CFDictionaryRef = *const __CFDictionary;
-}
-
-#[cfg(target_os="macos")]
-use self::macos_def::*;
-
-
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -496,14 +358,14 @@ pub struct hb_feature_t {
 pub type scaled_t = i32;
 pub type SInt32 = i32;
 
-#[cfg(not(target_os="macos"))]
+#[cfg(not(target_os = "macos"))]
 pub type Fixed = scaled_t;
-#[cfg(target_os="macos")]
+#[cfg(target_os = "macos")]
 pub type Fixed = SInt32;
 
 #[derive(Copy, Clone)]
-#[cfg_attr(not(target_os="macos"), repr(C))]
-#[cfg_attr(target_os="macos", repr(C, packed(2)))]
+#[cfg_attr(not(target_os = "macos"), repr(C))]
+#[cfg_attr(target_os = "macos", repr(C, packed(2)))]
 pub struct FixedPoint {
     pub x: Fixed,
     pub y: Fixed,
@@ -523,12 +385,6 @@ pub struct GlyphBBox {
     pub xMax: f32,
     pub yMax: f32,
 }
-#[cfg(not(target_os="macos"))]
-pub type FcPattern = _FcPattern;
-#[cfg(not(target_os="macos"))]
-pub type PlatformFontRef = *mut FcPattern;
-#[cfg(target_os="macos")]
-pub type PlatformFontRef = CTFontDescriptorRef;
 
 pub type XeTeXFont = *mut XeTeXFont_rec;
 pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
@@ -632,6 +488,7 @@ History:
 
 pub type UInt16 = u16;
 pub type UInt32 = u32;
+
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
  * in memory.
@@ -689,6 +546,7 @@ pub struct b16x4_le_t {
     pub s3: u16,
 }
 pub type UniChar = UInt16;
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -696,6 +554,7 @@ pub type UniChar = UInt16;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
+
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International
@@ -727,10 +586,12 @@ shall not be used in advertising or otherwise to promote the sale,
 use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
+
 #[inline]
 unsafe extern "C" fn SWAP16(p: u16) -> u16 {
     ((p as i32 >> 8i32) + ((p as i32) << 8i32)) as u16
 }
+
 #[inline]
 unsafe extern "C" fn SWAP32(p: u32) -> u32 {
     (p >> 24i32)
@@ -738,6 +599,7 @@ unsafe extern "C" fn SWAP32(p: u32) -> u32 {
         .wrapping_add(p << 8i32 & 0xff0000_u32)
         .wrapping_add(p << 24i32)
 }
+
 /* xetex-shipout */
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
@@ -776,10 +638,12 @@ authorization from the copyright holders.
  * additional plain C extensions for XeTeX - mostly platform-neutral
  */
 /* for fabs() */
+
 /* OT-related constants we need */
 static mut brkIter: *mut icu::UBreakIterator =
     0 as *const icu::UBreakIterator as *mut icu::UBreakIterator;
 static mut brkLocaleStrNum: i32 = 0i32;
+
 /* info for each glyph is location (FixedPoint) + glyph ID (u16) */
 /* glyph ID field in a glyph_node */
 /* For Unicode encoding form interpretation... */
@@ -848,6 +712,7 @@ pub unsafe extern "C" fn linebreak_start(
     }
     icu::ubrk_setText(brkIter, text as *mut icu::UChar, textLength, &mut status);
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn linebreak_next() -> i32 {
     if !brkIter.is_null() {
@@ -856,6 +721,7 @@ pub unsafe extern "C" fn linebreak_next() -> i32 {
         findNextGraphiteBreak()
     }
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn get_encoding_mode_and_info(mut info: *mut i32) -> i32 {
     /* \XeTeXinputencoding "enc-name"
@@ -900,33 +766,36 @@ pub unsafe extern "C" fn get_encoding_mode_and_info(mut info: *mut i32) -> i32 {
         5i32
     }
 }
+
 #[no_mangle]
-pub unsafe extern "C" fn print_utf8_str(mut str: *const u8, mut len: i32) {
+pub unsafe extern "C" fn print_utf8_str(mut string: *const u8, mut len: i32) {
     loop {
         let fresh1 = len;
         len = len - 1;
         if !(fresh1 > 0i32) {
             break;
         }
-        let fresh2 = str;
-        str = str.offset(1);
+        let fresh2 = string;
+        string = string.offset(1);
         print_raw_char(*fresh2 as UTF16_code, true);
     }
     /* bypass utf-8 encoding done in print_char() */
 }
+
 #[no_mangle]
-pub unsafe extern "C" fn print_chars(mut str: *const u16, mut len: i32) {
+pub unsafe extern "C" fn print_chars(mut string: *const u16, mut len: i32) {
     loop {
         let fresh3 = len;
         len = len - 1;
         if !(fresh3 > 0i32) {
             break;
         }
-        let fresh4 = str;
-        str = str.offset(1);
+        let fresh4 = string;
+        string = string.offset(1);
         print_char(*fresh4 as i32);
     }
 }
+
 unsafe extern "C" fn load_mapping_file(
     mut s: *const i8,
     mut e: *const i8,
@@ -1584,17 +1453,7 @@ unsafe extern "C" fn loadOTfont(
     }
     engine as *mut libc::c_void
 }
-#[inline(always)]
-#[cfg(target_os="macos")]
-unsafe extern "C" fn CFRangeMake(mut loc: CFIndex, mut len: CFIndex) -> CFRange {
-    let mut range: CFRange = CFRange {
-        location: 0,
-        length: 0,
-    };
-    range.location = loc;
-    range.length = len;
-    return range;
-}
+
 unsafe extern "C" fn splitFontName(
     mut name: *mut i8,
     mut var: *mut *mut i8,
@@ -1663,10 +1522,7 @@ pub unsafe extern "C" fn find_native_font(
     let mut name: *mut i8 = uname;
     let mut varString: *mut i8 = 0 as *mut i8;
     let mut featString: *mut i8 = 0 as *mut i8;
-    #[cfg(not(target_os="macos"))]
-    let mut fontRef: PlatformFontRef = 0 as *mut FcPattern;
-    #[cfg(target_os="macos")]
-    let mut fontRef: PlatformFontRef = 0 as *const __CTFontDescriptor;
+    let mut fontRef: PlatformFontRef = 0 as PlatformFontRef;
     let mut font: XeTeXFont = 0 as XeTeXFont;
     let mut index: i32 = 0i32;
     loaded_font_mapping = 0 as *mut libc::c_void;
@@ -1775,18 +1631,18 @@ pub unsafe extern "C" fn find_native_font(
             }
             font = createFont(fontRef, scaled_size);
             if !font.is_null() {
-                #[cfg(not(target_os="macos"))]
+                #[cfg(not(target_os = "macos"))]
                 {
                     rval = loadOTfont(fontRef, font, scaled_size, featString);
                     if rval.is_null() {
                         deleteFont(font);
                     }
                 }
-                #[cfg(target_os="macos")]
+                #[cfg(target_os = "macos")]
                 {
                     /* decide whether to use AAT or OpenType rendering with this font */
                     if getReqEngine() as libc::c_int == 'A' as i32 {
-                        rval = loadAATfont(fontRef, scaled_size, featString);
+                        rval = aat::loadAATfont(fontRef, scaled_size, featString);
                         if rval.is_null() {
                             deleteFont(font);
                         }
@@ -1814,7 +1670,7 @@ pub unsafe extern "C" fn find_native_font(
                         }
                         /* loadOTfont failed or the above check was false */
                         if rval.is_null() {
-                            rval = loadAATfont(fontRef, scaled_size, featString)
+                            rval = aat::loadAATfont(fontRef, scaled_size, featString)
                         }
                         if rval.is_null() {
                             deleteFont(font);
@@ -1842,13 +1698,13 @@ pub unsafe extern "C" fn find_native_font(
 #[no_mangle]
 pub unsafe extern "C" fn release_font_engine(mut engine: *mut libc::c_void, mut type_flag: i32) {
     match type_flag as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             CFRelease(engine as CFDictionaryRef as CFTypeRef);
-        },
+        }
         0xfffeu32 => {
             deleteLayoutEngine(engine as XeTeXLayoutEngine);
-        },
+        }
         _ => {}
     }
 }
@@ -2025,7 +1881,7 @@ pub unsafe extern "C" fn gr_font_get_named_1(
     }
     rval as i32
 }
-#[cfg(target_os="macos")]
+#[cfg(target_os = "macos")]
 unsafe extern "C" fn cgColorToRGBA32(mut color: CGColorRef) -> UInt32 {
     let mut components: *const CGFloat = CGColorGetComponents(color);
     let mut rval: UInt32 = (*components.offset(0) * 255.0f64 + 0.5f64) as UInt8 as UInt32;
@@ -2127,6 +1983,7 @@ pub unsafe extern "C" fn makeXDVGlyphArrayData(mut pNode: *mut libc::c_void) -> 
 }
 #[no_mangle]
 pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
+    // XXX: seems like a good idea to make a struct FontDef
     let mut flags: u16 = 0_u16;
     let mut rgba: u32 = 0;
     let mut size: Fixed = 0;
@@ -2140,11 +1997,11 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
     let mut slant: f32 = 0.0f64 as f32;
     let mut embolden: f32 = 0.0f64 as f32;
     match *font_area.offset(f as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             let mut attributes: CFDictionaryRef = 0 as CFDictionaryRef;
-            let mut font: CTFontRef = 0 as *const __CTFont;
-            let mut color: CGColorRef = 0 as *mut CGColor;
+            let mut font: CTFontRef = 0 as CTFontRef;
+            let mut color: CGColorRef = 0 as CGColorRef;
             let mut t: CGAffineTransform = CGAffineTransform {
                 a: 0.,
                 b: 0.,
@@ -2153,17 +2010,18 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
                 tx: 0.,
                 ty: 0.,
             };
-            let mut emboldenNumber: CFNumberRef = 0 as *const __CFNumber;
+            let mut emboldenNumber: CFNumberRef = 0 as CFNumberRef;
             let mut fSize: CGFloat = 0.;
             attributes = *font_layout_engine.offset(f as isize) as CFDictionaryRef;
             font = CFDictionaryGetValue(attributes, kCTFontAttributeName as *const libc::c_void)
                 as CTFontRef;
-            filename = getFileNameFromCTFont(font, &mut index);
+            filename = aat::getFileNameFromCTFont(font, &mut index);
             assert!(!filename.is_null());
             if !CFDictionaryGetValue(
                 attributes,
                 kCTVerticalFormsAttributeName as *const libc::c_void,
-            ).is_null()
+            )
+            .is_null()
             {
                 flags = (flags as libc::c_int | 0x100i32) as u16
             }
@@ -2179,7 +2037,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
             slant = t.c as libc::c_float;
             emboldenNumber = CFDictionaryGetValue(
                 attributes,
-                getkXeTeXEmboldenAttributeName() as *const libc::c_void,
+                aat::getkXeTeXEmboldenAttributeName() as *const libc::c_void,
             ) as CFNumberRef;
             if !emboldenNumber.is_null() {
                 CFNumberGetValue(
@@ -2190,7 +2048,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
             }
             fSize = CTFontGetSize(font);
             size = D2Fix(fSize);
-        },
+        }
         0xfffeu32 => {
             let mut engine: XeTeXLayoutEngine = 0 as *mut XeTeXLayoutEngine_rec;
             engine = *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
@@ -2206,10 +2064,10 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
             slant = getSlantFactor(engine);
             embolden = getEmboldenFactor(engine);
             size = D2Fix(getPointSize(engine) as f64)
-        },
+        }
         _ => {
             panic!("bad native font flag in `make_font_def`");
-        },
+        }
     }
     filenameLen = strlen(filename) as u8;
     /* parameters after internal font ID:
@@ -2354,22 +2212,22 @@ pub unsafe extern "C" fn get_native_char_height_depth(
     let mut dp: f32 = 0.0f64 as f32;
     let mut fuzz: Fixed = 0;
     match *font_area.offset(font as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef;
-            let mut gid: libc::c_int = MapCharToGlyph_AAT(attributes, ch as UInt32);
-            GetGlyphHeightDepth_AAT(attributes, gid as u16, &mut ht, &mut dp);
-        },
+            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, ch as UInt32);
+            aat::GetGlyphHeightDepth_AAT(attributes, gid as u16, &mut ht, &mut dp);
+        }
         0xfffeu32 => {
             let mut engine: XeTeXLayoutEngine =
                 *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
             let mut gid: i32 = mapCharToGlyph(engine, ch as u32) as i32;
             getGlyphHeightDepth(engine, gid as u32, &mut ht, &mut dp);
-        },
+        }
         _ => {
             panic!("bad native font flag in `get_native_char_height_depth`");
-        },
+        }
     }
     *height = D2Fix(ht as f64);
     *depth = D2Fix(dp as f64);
@@ -2419,22 +2277,22 @@ pub unsafe extern "C" fn get_native_char_sidebearings(
     let mut l: f32 = 0.;
     let mut r: f32 = 0.;
     match *font_area.offset(font as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef;
-            let mut gid: libc::c_int = MapCharToGlyph_AAT(attributes, ch as UInt32);
-            GetGlyphSidebearings_AAT(attributes, gid as u16, &mut l, &mut r);
-        },
+            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, ch as UInt32);
+            aat::GetGlyphSidebearings_AAT(attributes, gid as u16, &mut l, &mut r);
+        }
         0xfffeu32 => {
             let mut engine: XeTeXLayoutEngine =
                 *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
             let mut gid: i32 = mapCharToGlyph(engine, ch as u32) as i32;
             getGlyphSidebearings(engine, gid as u32, &mut l, &mut r);
-        },
+        }
         _ => {
             panic!("bad native font flag in `get_native_char_side_bearings`");
-        },
+        }
     }
     *lsb = D2Fix(l as f64);
     *rsb = D2Fix(r as f64);
@@ -2445,16 +2303,16 @@ pub unsafe extern "C" fn get_glyph_bounds(mut font: i32, mut edge: i32, mut gid:
     let mut a: f32 = 0.;
     let mut b: f32 = 0.;
     match *font_area.offset(font as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef;
             if edge & 1i32 != 0 {
-                GetGlyphSidebearings_AAT(attributes, gid as u16, &mut a, &mut b);
+                aat::GetGlyphSidebearings_AAT(attributes, gid as u16, &mut a, &mut b);
             } else {
-                GetGlyphHeightDepth_AAT(attributes, gid as u16, &mut a, &mut b);
+                aat::GetGlyphHeightDepth_AAT(attributes, gid as u16, &mut a, &mut b);
             }
-        },
+        }
         0xfffeu32 => {
             let mut engine: XeTeXLayoutEngine =
                 *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
@@ -2463,10 +2321,10 @@ pub unsafe extern "C" fn get_glyph_bounds(mut font: i32, mut edge: i32, mut gid:
             } else {
                 getGlyphHeightDepth(engine, gid as u32, &mut a, &mut b);
             }
-        },
+        }
         _ => {
             _tt_abort(b"bad native font flag in `get_glyph_bounds`\x00" as *const u8 as *const i8);
-        },
+        }
     }
     D2Fix((if edge <= 2i32 { a } else { b }) as f64)
 }
@@ -2486,23 +2344,23 @@ pub unsafe extern "C" fn getnativecharic(mut f: i32, mut c: i32) -> scaled_t {
 pub unsafe extern "C" fn getnativecharwd(mut f: i32, mut c: i32) -> scaled_t {
     let mut wd: scaled_t = 0i32;
     match *font_area.offset(f as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(f as isize) as CFDictionaryRef;
-            let mut gid: libc::c_int = MapCharToGlyph_AAT(attributes, c as UInt32);
-            wd = D2Fix(GetGlyphWidth_AAT(attributes, gid as u16))
-        },
+            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, c as UInt32);
+            wd = D2Fix(aat::GetGlyphWidth_AAT(attributes, gid as u16))
+        }
         0xfffeu32 => {
             let mut engine: XeTeXLayoutEngine =
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
             let mut gid: i32 = mapCharToGlyph(engine, c as u32) as i32;
             wd = D2Fix(getGlyphWidthFromEngine(engine, gid as u32) as f64)
-        },
+        }
         _ => {
             panic!("bad native font flag in `get_native_char_wd`");
-        },
-    }    
+        }
+    }
     wd
 }
 #[no_mangle]
@@ -2525,12 +2383,12 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
     let mut node: *mut memory_word = pNode as *mut memory_word;
     let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
     match *font_area.offset(f as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             /* separate Mac-only codepath for AAT fonts */
-            DoAATLayout(node as *mut libc::c_void, 1i32);
+            aat::do_aat_layout(node as *mut libc::c_void, 1i32);
             return;
-        },
+        }
         _ => {
             /* FIXME: 0xfffeu32 case, but the original code wrote it this way */
             /* save desired width */
@@ -2579,7 +2437,7 @@ pub unsafe extern "C" fn store_justified_native_glyphs(mut pNode: *mut libc::c_v
                 }
                 (*node.offset(1)).b32.s1 = savedWidth
             };
-        },
+        }
     }
 }
 #[no_mangle]
@@ -2809,23 +2667,22 @@ pub unsafe extern "C" fn measure_native_node(
             };
             if getCachedGlyphBBox(f as u16, *glyphIDs_0.offset(i_2 as isize), &mut bbox) == 0i32 {
                 match *font_area.offset(f as isize) as u32 {
-                    #[cfg(target_os="macos")]
+                    #[cfg(target_os = "macos")]
                     0xffffu32 => {
-                        GetGlyphBBox_AAT(
+                        aat::GetGlyphBBox_AAT(
                             *font_layout_engine.offset(f as isize) as CFDictionaryRef,
                             *glyphIDs_0.offset(i_2 as isize),
                             &mut bbox,
                         );
-                    },
+                    }
                     0xfffeu32 => {
                         getGlyphBounds(
                             *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
                             *glyphIDs_0.offset(i_2 as isize) as u32,
                             &mut bbox,
                         );
-                    },
-                    _ => {
-                    },
+                    }
+                    _ => {}
                 }
                 cacheGlyphBBox(f as u16, *glyphIDs_0.offset(i_2 as isize), &mut bbox);
             }
@@ -2852,23 +2709,21 @@ pub unsafe extern "C" fn real_get_native_italic_correction(mut pNode: *mut libc:
         let mut locations: *mut FixedPoint = (*node.offset(5)).ptr as *mut FixedPoint;
         let mut glyphIDs: *mut u16 = locations.offset(n as isize) as *mut u16;
         match *font_area.offset(f as isize) as u32 {
-            #[cfg(target_os="macos")]
+            #[cfg(target_os = "macos")]
             0xffffu32 => {
-                return D2Fix(GetGlyphItalCorr_AAT(
+                return D2Fix(aat::GetGlyphItalCorr_AAT(
                     *font_layout_engine.offset(f as isize) as CFDictionaryRef,
                     *glyphIDs.offset(n.wrapping_sub(1i32 as libc::c_uint) as isize),
                 )) + *font_letter_space.offset(f as isize);
-            },
+            }
             0xfffeu32 => {
                 return D2Fix(getGlyphItalCorr(
                     *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
                     *glyphIDs.offset(n.wrapping_sub(1_u32) as isize) as u32,
                 ) as f64)
                     + *font_letter_space.offset(f as isize);
-            },
-            _ => {
-                0i32
-            },
+            }
+            _ => 0i32,
         }
     } else {
         0i32
@@ -2882,23 +2737,23 @@ pub unsafe extern "C" fn real_get_native_glyph_italic_correction(
     let mut gid: u16 = (*node.offset(4)).b16.s1;
     let mut f: u32 = (*node.offset(4)).b16.s2 as u32;
     match *font_area.offset(f as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
-            return D2Fix(GetGlyphItalCorr_AAT(
+            return D2Fix(aat::GetGlyphItalCorr_AAT(
                 *font_layout_engine.offset(f as isize) as CFDictionaryRef,
                 gid,
             ));
-        },
+        }
         0xfffeu32 => {
             return D2Fix(getGlyphItalCorr(
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine,
                 gid as u32,
             ) as f64);
-        },
+        }
         _ => {
             0i32
             /* can't actually happen */
-        },
+        }
     }
 }
 #[no_mangle]
@@ -2912,15 +2767,15 @@ pub unsafe extern "C" fn measure_native_glyph(
     let mut ht: f32 = 0.0f64 as f32;
     let mut dp: f32 = 0.0f64 as f32;
     match *font_area.offset(f as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(f as isize) as CFDictionaryRef;
-            (*node.offset(1)).b32.s1 = D2Fix(GetGlyphWidth_AAT(attributes, gid));
+            (*node.offset(1)).b32.s1 = D2Fix(aat::GetGlyphWidth_AAT(attributes, gid));
             if use_glyph_metrics != 0 {
-                GetGlyphHeightDepth_AAT(attributes, gid, &mut ht, &mut dp);
+                aat::GetGlyphHeightDepth_AAT(attributes, gid, &mut ht, &mut dp);
             }
-        },
+        }
         0xfffeu32 => {
             let mut engine: XeTeXLayoutEngine =
                 *font_layout_engine.offset(f as isize) as XeTeXLayoutEngine;
@@ -2929,10 +2784,10 @@ pub unsafe extern "C" fn measure_native_glyph(
             if use_glyph_metrics != 0 {
                 getGlyphHeightDepth(engine, gid as u32, &mut ht, &mut dp);
             }
-        },
+        }
         _ => {
             panic!("bad native font flag in `measure_native_glyph`");
-        },
+        }
     }
     if use_glyph_metrics != 0 {
         (*node.offset(3)).b32.s1 = D2Fix(ht as f64);
@@ -2948,65 +2803,65 @@ pub unsafe extern "C" fn map_char_to_glyph(mut font: i32, mut ch: i32) -> i32 {
         return 0i32;
     }
     match *font_area.offset(font as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
-            return MapCharToGlyph_AAT(
+            return aat::MapCharToGlyph_AAT(
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef,
                 ch as UInt32,
             );
-        },
+        }
         0xfffeu32 => {
             return mapCharToGlyph(
                 *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine,
                 ch as u32,
             ) as i32;
-        },
+        }
         _ => {
             panic!("bad native font flag in `map_char_to_glyph`");
-        },
+        }
     }
 }
 #[no_mangle]
 pub unsafe extern "C" fn map_glyph_to_index(mut font: i32) -> i32
 /* glyph name is at name_of_file */ {
     match *font_area.offset(font as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
-            return MapGlyphToIndex_AAT(
+            return aat::MapGlyphToIndex_AAT(
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef,
                 name_of_file,
             );
-        },
+        }
         0xfffeu32 => {
             return mapGlyphToIndex(
                 *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine,
                 name_of_file,
             );
-        },
+        }
         _ => {
             panic!("bad native font flag in `map_glyph_to_index`");
-        },
+        }
     }
 }
 #[no_mangle]
 pub unsafe extern "C" fn get_font_char_range(mut font: i32, mut first: i32) -> i32 {
     match *font_area.offset(font as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
-            return GetFontCharRange_AAT(
+            return aat::GetFontCharRange_AAT(
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef,
                 first,
             );
-        },
+        }
         0xfffeu32 => {
             return getFontCharRange(
                 *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine,
                 first,
             );
-        },
+        }
         _ => {
             panic!("bad native font flag in `get_font_char_range\'`");
-        },
+        }
     }
 }
 #[no_mangle]
@@ -3024,18 +2879,18 @@ pub unsafe extern "C" fn print_glyph_name(mut font: i32, mut gid: i32) {
     let mut s: *const i8 = 0 as *const i8;
     let mut len: i32 = 0i32;
     match *font_area.offset(font as isize) as u32 {
-        #[cfg(target_os="macos")]
+        #[cfg(target_os = "macos")]
         0xffffu32 => {
-            s = GetGlyphNameFromCTFont(fontFromInteger(font), gid as u16, &mut len);
-        },
+            s = aat::GetGlyphNameFromCTFont(aat::font_from_integer(font), gid as u16, &mut len);
+        }
         0xfffeu32 => {
             let mut engine: XeTeXLayoutEngine =
                 *font_layout_engine.offset(font as isize) as XeTeXLayoutEngine;
             s = getGlyphName(getFont(engine), gid as u16, &mut len);
-        },
+        }
         _ => {
             panic!("bad native font flag in `print_glyph_name`");
-        },
+        }
     }
     loop {
         let fresh33 = len;
