@@ -952,19 +952,19 @@ unsafe extern "C" fn spc_handler_pdfm_bcolor(mut spe: *mut spc_env, mut ap: *mut
     let mut error: i32 = 0;
     let mut fc: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     let mut sc: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     let (psc, pfc) = pdf_color_get_current();
-    error = spc_util_read_pdfcolor(spe, &mut fc, ap, pfc);
+    error = spc_util_read_pdfcolor(spe, &mut fc, ap, Some(pfc));
     if error == 0 {
         if (*ap).curptr < (*ap).endptr {
-            error = spc_util_read_pdfcolor(spe, &mut sc, ap, psc)
+            error = spc_util_read_pdfcolor(spe, &mut sc, ap, Some(psc))
         } else {
             pdf_color_copycolor(&mut sc, &mut fc);
         }
@@ -988,19 +988,19 @@ unsafe extern "C" fn spc_handler_pdfm_scolor(mut spe: *mut spc_env, mut ap: *mut
     let mut error: i32 = 0;
     let mut fc: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     let mut sc: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     let (psc, pfc) = pdf_color_get_current();
-    error = spc_util_read_pdfcolor(spe, &mut fc, ap, pfc);
+    error = spc_util_read_pdfcolor(spe, &mut fc, ap, Some(pfc));
     if error == 0 {
         if (*ap).curptr < (*ap).endptr {
-            error = spc_util_read_pdfcolor(spe, &mut sc, ap, psc)
+            error = spc_util_read_pdfcolor(spe, &mut sc, ap, Some(psc))
         } else {
             pdf_color_copycolor(&mut sc, &mut fc);
         }
@@ -2105,10 +2105,10 @@ unsafe extern "C" fn spc_handler_pdfm_bgcolor(
     let mut error: i32 = 0;
     let mut colorspec = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
-    error = spc_util_read_pdfcolor(spe, &mut colorspec, args, 0 as *mut pdf_color);
+    error = spc_util_read_pdfcolor(spe, &mut colorspec, args, None);
     if error != 0 {
         spc_warn(
             spe,

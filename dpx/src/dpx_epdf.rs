@@ -89,7 +89,7 @@ pub type __off64_t = i64;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 
-use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix};
+use super::dpx_pdfdev::{pdf_coord, pdf_tmatrix};
 
 use crate::dpx_pdfximage::{load_options, pdf_ximage, xform_info};
 pub const OP_CURVETO2: C2RustUnnamed_0 = 15;

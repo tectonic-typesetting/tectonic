@@ -3259,7 +3259,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
     let mut cp = pdf_coord::new();
     let mut color: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     opcode = get_opcode(token);

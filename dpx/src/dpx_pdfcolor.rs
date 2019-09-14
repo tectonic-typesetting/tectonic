@@ -76,12 +76,24 @@ extern "C" {
     fn MD5_final(outbuf: *mut u8, ctx: *mut MD5_CONTEXT);
 }
 pub type size_t = u64;
-#[derive(Copy, Clone)]
+
+use std::ffi::{CStr, CString};
+
+#[derive(Clone)]
 #[repr(C)]
 pub struct pdf_color {
     pub num_components: i32,
-    pub spot_color_name: *mut i8,
+    pub spot_color_name: Option<CString>,
     pub values: [f64; 4],
+}
+impl pdf_color {
+    pub const fn new() -> Self {
+        Self {
+            num_components: 0,
+            spot_color_name: None,
+            values: [0.; 4],
+        }
+    }
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -160,9 +172,9 @@ pub struct C2RustUnnamed_1 {
     pub major: i32,
     pub minor: i32,
 }
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_2 {
+pub struct ColorStack {
     pub current: i32,
     pub stroke: [pdf_color; 128],
     pub fill: [pdf_color; 128],
@@ -204,7 +216,7 @@ pub unsafe extern "C" fn pdf_color_rgbcolor(color: &mut pdf_color, r: f64, g: f6
     color.values[1] = g;
     color.values[2] = b;
     color.num_components = 3i32;
-    color.spot_color_name = 0 as *mut i8;
+    color.spot_color_name = None;
     0i32
 }
 #[no_mangle]
@@ -236,20 +248,32 @@ pub unsafe extern "C" fn pdf_color_cmykcolor(
     color.values[2] = y;
     color.values[3] = k;
     color.num_components = 4i32;
-    color.spot_color_name = 0 as *mut i8;
+    color.spot_color_name = None;
     0i32
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_color_graycolor(color: &mut pdf_color, mut g: f64) -> i32 {
+pub unsafe extern "C" fn pdf_color_graycolor(color: &mut pdf_color, g: f64) -> i32 {
     if g < 0.0f64 || g > 1.0f64 {
         warn!("Invalid color value specified: gray={}", g);
         return -1i32;
     }
     color.values[0] = g;
     color.num_components = 1i32;
-    color.spot_color_name = 0 as *mut i8;
+    color.spot_color_name = None;
     0i32
 }
+pub fn pdf_color_graycolor_new(g: f64) -> Result<pdf_color, i32> {
+    if g < 0. || g > 1. {
+        warn!("Invalid color value specified: gray={}", g);
+        return Err(-1);
+    }
+    Ok(pdf_color {
+        values: [g, 0., 0., 0.],
+        num_components: 1,
+        spot_color_name: None,
+    })
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_spotcolor(
     color: &mut pdf_color,
@@ -263,20 +287,12 @@ pub unsafe extern "C" fn pdf_color_spotcolor(
     color.values[0] = c;
     color.values[1] = 0.0f64;
     color.num_components = 2i32;
-    color.spot_color_name = name;
+    color.spot_color_name = Some(CStr::from_ptr(name).to_owned());
     0i32
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_color_copycolor(
-    mut color1: *mut pdf_color,
-    mut color2: *const pdf_color,
-) {
-    assert!(!color1.is_null() && !color2.is_null());
-    memcpy(
-        color1 as *mut libc::c_void,
-        color2 as *const libc::c_void,
-        ::std::mem::size_of::<pdf_color>() as u64,
-    );
+pub unsafe extern "C" fn pdf_color_copycolor(color1: &mut pdf_color, color2: &pdf_color) {
+    *color1 = color2.clone();
 }
 /* Brighten up a color. f == 0 means no change, f == 1 means white. */
 #[no_mangle]
@@ -346,7 +362,7 @@ pub unsafe extern "C" fn pdf_color_to_string(
         len = sprintf(
             buffer,
             b" /%s %c%c %g %c%c\x00" as *const u8 as *const i8,
-            color.spot_color_name,
+            color.spot_color_name.as_ref().unwrap().as_ptr(),
             'C' as i32 | mask as i32,
             'S' as i32 | mask as i32,
             (color.values[0] / 0.001f64 + 0.5f64).floor() * 0.001f64,
@@ -417,8 +433,11 @@ pub unsafe extern "C" fn pdf_color_compare(color1: &pdf_color, color2: &pdf_colo
             return -1i32;
         }
     }
-    if !color1.spot_color_name.is_null() && !color2.spot_color_name.is_null() {
-        return strcmp(color1.spot_color_name, color2.spot_color_name);
+    if color1.spot_color_name.is_some() && color2.spot_color_name.is_some() {
+        return strcmp(
+            color1.spot_color_name.as_ref().unwrap().as_ptr(),
+            color2.spot_color_name.as_ref().unwrap().as_ptr(),
+        );
     }
     0i32
 }
@@ -469,8 +488,8 @@ pub unsafe extern "C" fn pdf_color_is_valid(color: &pdf_color) -> bool {
         }
     }
     if pdf_color_type(color) == -2i32 {
-        if color.spot_color_name.is_null()
-            || *color.spot_color_name.offset(0) as i32 == '\u{0}' as i32
+        if color.spot_color_name.is_none()
+            || *color.spot_color_name.as_ref().unwrap().as_ptr().offset(0) as i32 == '\u{0}' as i32
         {
             warn!("Invalid spot color: empty name");
             return false;
@@ -478,19 +497,14 @@ pub unsafe extern "C" fn pdf_color_is_valid(color: &pdf_color) -> bool {
     }
     true
 }
-static mut color_stack: C2RustUnnamed_2 = C2RustUnnamed_2 {
+/*static mut color_stack: ColorStack = ColorStack {
     current: 0,
-    stroke: [pdf_color {
-        num_components: 0,
-        spot_color_name: 0 as *const i8 as *mut i8,
-        values: [0.; 4],
-    }; 128],
-    fill: [pdf_color {
-        num_components: 0,
-        spot_color_name: 0 as *const i8 as *mut i8,
-        values: [0.; 4],
-    }; 128],
-};
+    stroke: unsafe { core::mem::zeroed() },//[pdf_color::new(); 128],
+    fill: unsafe { core::mem::zeroed() },//[pdf_color::new(); 128],
+};*/
+static mut color_stack: ColorStack =
+    unsafe { std::mem::transmute([0u8; std::mem::size_of::<ColorStack>()]) };
+
 #[no_mangle]
 pub unsafe extern "C" fn pdf_color_clear_stack() {
     if color_stack.current > 0 {
@@ -502,8 +516,8 @@ pub unsafe extern "C" fn pdf_color_clear_stack() {
         if !(fresh4 != 0) {
             break;
         }
-        free(color_stack.stroke[color_stack.current as usize].spot_color_name as *mut libc::c_void);
-        free(color_stack.fill[color_stack.current as usize].spot_color_name as *mut libc::c_void);
+        //        free(color_stack.stroke[color_stack.current as usize].spot_color_name as *mut libc::c_void);
+        //        free(color_stack.fill[color_stack.current as usize].spot_color_name as *mut libc::c_void);
     }
     color_stack.current = 0;
     pdf_color_graycolor(&mut color_stack.stroke[0], 0.0f64);

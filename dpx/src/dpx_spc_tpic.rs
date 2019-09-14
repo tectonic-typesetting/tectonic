@@ -284,7 +284,7 @@ unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i3
     } /* get stroking and fill colors */
     let mut new_fc: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     let (sc, fc) = pdf_color_get_current();

@@ -1,6 +1,8 @@
 #![feature(extern_types)]
 #![feature(ptr_wrapping_offset_from)]
 #![feature(c_variadic)]
+#![feature(const_transmute)]
+#![allow(unused_unsafe)]
 
 extern crate tectonic_bridge as bridge;
 use bridge::*;
@@ -8,9 +10,9 @@ use bridge::*;
 #[macro_export]
 macro_rules! info(
     ($($arg:tt)*) => {
-        if !(crate::dpx_error::_dpx_quietness > 0) {
+        if !(unsafe{crate::dpx_error::_dpx_quietness} > 0) {
             print!($($arg)*);
-            crate::dpx_error::_last_message_type = crate::dpx_error::DPX_MESG_INFO;
+            unsafe{crate::dpx_error::_last_message_type = crate::dpx_error::DPX_MESG_INFO;}
         }
     };
 );
@@ -18,13 +20,13 @@ macro_rules! info(
 #[macro_export]
 macro_rules! warn(
     ($($arg:tt)*) => {
-        if !(crate::dpx_error::_dpx_quietness > 1) {
-            if crate::dpx_error::_last_message_type as u32 == crate::dpx_error::DPX_MESG_INFO as u32 {
+        if !(unsafe{crate::dpx_error::_dpx_quietness} > 1) {
+            if unsafe{crate::dpx_error::_last_message_type as u32 == crate::dpx_error::DPX_MESG_INFO as u32} {
                 println!("");
             }
             print!("warning: ");
             println!($($arg)*);
-            crate::dpx_error::_last_message_type = crate::dpx_error::DPX_MESG_WARN;
+            unsafe{crate::dpx_error::_last_message_type = crate::dpx_error::DPX_MESG_WARN;}
         }
     };
 );

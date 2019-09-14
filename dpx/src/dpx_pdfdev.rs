@@ -132,6 +132,16 @@ impl pdf_tmatrix {
             f: 0.,
         }
     }
+    pub const fn identity() -> Self {
+        Self {
+            a: 1.,
+            b: 0.,
+            c: 0.,
+            d: 1.,
+            e: 0.,
+            f: 0.,
+        }
+    }
 }
 #[derive(Copy, Clone, Default)]
 #[repr(C)]

@@ -3034,8 +3034,8 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
 static mut bgcolor: pdf_color = {
     let mut init = pdf_color {
         num_components: 1i32,
-        spot_color_name: 0 as *const i8 as *mut i8,
-        values: [1.0f64, 0., 0., 0.],
+        spot_color_name: None,
+        values: [1., 0., 0., 0.],
     };
     init
 };

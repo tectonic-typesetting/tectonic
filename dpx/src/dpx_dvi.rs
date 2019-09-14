@@ -2306,7 +2306,7 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: i32) {
     if (*font).rgba_color != 0xffffffffu32 {
         let mut color: pdf_color = pdf_color {
             num_components: 0,
-            spot_color_name: 0 as *mut i8,
+            spot_color_name: None,
             values: [0.; 4],
         };
         pdf_color_rgbcolor(
