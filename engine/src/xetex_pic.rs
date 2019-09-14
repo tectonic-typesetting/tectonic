@@ -6,10 +6,10 @@
          unused_assignments,
          unused_mut)]
 
-use super::dpx_pdfdoc::pdf_doc_get_page;
-use super::dpx_pdfdraw::pdf_dev_transform;
-use crate::dpx_pdfobj::{pdf_close, pdf_file, pdf_obj, pdf_open, pdf_release_obj};
 use crate::{ttstub_input_close, ttstub_input_open};
+use dpx::dpx_pdfdoc::pdf_doc_get_page;
+use dpx::dpx_pdfdraw::pdf_dev_transform;
+use dpx::dpx_pdfobj::{pdf_close, pdf_file, pdf_obj, pdf_open, pdf_release_obj};
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -320,7 +320,7 @@ pub struct real_rect {
     pub wd: f32,
     pub ht: f32,
 }
-use super::dpx_pdfdev::{pdf_coord, pdf_rect};
+use dpx::dpx_pdfdev::{pdf_coord, pdf_rect};
 
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
@@ -344,7 +344,7 @@ use super::dpx_pdfdev::{pdf_coord, pdf_rect};
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-use super::dpx_pdfdev::pdf_tmatrix;
+use dpx::dpx_pdfdev::pdf_tmatrix;
 
 #[no_mangle]
 pub unsafe extern "C" fn count_pdf_file_pages() -> i32 {

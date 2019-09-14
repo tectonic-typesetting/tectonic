@@ -13973,8 +13973,8 @@ unsafe extern "C" fn get_strings_started() {
 /*:1001*/
 #[no_mangle]
 pub unsafe extern "C" fn tt_run_engine(
-    mut dump_name: *mut i8,
-    mut input_file_name: *mut i8,
+    mut dump_name: *const i8,
+    mut input_file_name: *const i8,
 ) -> TTHistory {
     let mut font_k: i32 = 0;
     /* Miscellaneous initializations that were mostly originally done in the

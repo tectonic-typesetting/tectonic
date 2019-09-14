@@ -1322,11 +1322,11 @@ unsafe extern "C" fn need_pTeX(mut c: i32) {
     has_ptex = 1i32;
 }
 unsafe extern "C" fn find_post() -> i32 {
-    let mut dvi_size: off_t = 0;
+    let mut dvi_size: libc::off_t = 0;
     let mut current: i32 = 0;
     let mut ch: i32 = 0;
-    dvi_size = ttstub_input_get_size(dvi_handle) as off_t;
-    if dvi_size > 0x7fffffffi32 as i64 {
+    dvi_size = ttstub_input_get_size(dvi_handle) as libc::off_t;
+    if dvi_size > 0x7fffffffi32 as libc::off_t {
         panic!("DVI file size exceeds 31-bit");
     }
     dvi_file_size = dvi_size as u32;

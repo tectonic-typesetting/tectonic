@@ -10,6 +10,7 @@
 
 use crate::stub_errno as errno;
 use crate::stub_icu as icu;
+use crate::stub_teckit as teckit;
 use crate::xetex_xetexd::print_c_string;
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_input_open, ttstub_input_open_primary,
@@ -18,7 +19,6 @@ use crate::{
 use libc::free;
 
 extern "C" {
-    pub type Opaque_TECkit_Converter;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
@@ -32,29 +32,6 @@ extern "C" {
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
-    /*
-        Convert text from a buffer in memory
-    */
-    #[no_mangle]
-    fn TECkit_ConvertBuffer(
-        converter: TECkit_Converter,
-        inBuffer: *const Byte,
-        inLength: UInt32,
-        inUsed: *mut UInt32,
-        outBuffer: *mut Byte,
-        outLength: UInt32,
-        outUsed: *mut UInt32,
-        inputIsComplete: Byte,
-    ) -> TECkit_Status;
-    #[no_mangle]
-    fn TECkit_CreateConverter(
-        mapping: *mut Byte,
-        mappingSize: UInt32,
-        mapForward: Byte,
-        sourceForm: UInt16,
-        targetForm: UInt16,
-        converter: *mut TECkit_Converter,
-    ) -> TECkit_Status;
     #[no_mangle]
     fn gettexstring(_: str_number) -> *mut i8;
     /* Needed here for UFILE */
@@ -300,48 +277,10 @@ pub const U_USING_DEFAULT_WARNING: UErrorCode = -127;
 pub const U_ERROR_WARNING_START: UErrorCode = -128;
 pub const U_USING_FALLBACK_WARNING: UErrorCode = -128;
 /* quasi-hack to get the primary input */
-/*------------------------------------------------------------------------
-Copyright (C) 2002-2016 SIL International. All rights reserved.
-
-Distributable under the terms of either the Common Public License or the
-GNU Lesser General Public License, as specified in the LICENSING.txt file.
-
-File: TECkit_Common.h
-Responsibility: Jonathan Kew
-Last reviewed: Not yet.
-
-Description:
-    Public definitions used by TECkit engine and compiler
--------------------------------------------------------------------------*/
-/*
-    Common types and defines for the engine and compiler
-
-History:
-    16-Sep-2006		jk	updated version to 2.4 (adding new compiler APIs for Bob E)
-    23-May-2005		jk	patch for 64-bit architectures (thanks to Ulrik P)
-    18-Mar-2005		jk	updated minor version for 2.3 (engine unchanged, XML option in compiler)
-    23-Sep-2003		jk	updated for version 2.1 - extended status values
-    xx-xxx-2002		jk	version 2.0 initial release
-*/
 /* 16.16 version number */
 /* these are all predefined if using a Mac prefix */
-pub type UInt8 = u8;
-pub type UInt16 = u16;
-pub type UInt32 = u32;
 /* NB: assumes int is 4 bytes */
 /* n.b. if also using zlib.h, it must precede TECkit headers */
-pub type Byte = UInt8;
-/*
-    all public functions return a status code
-*/
-pub type TECkit_Status = i64;
-/*
-    end of text value for TECkit_DataSource functions to return
-*/
-/*
-    A converter object is an opaque pointer
-*/
-pub type TECkit_Converter = *mut Opaque_TECkit_Converter;
 /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
    Copyright 2016-2018 The Tectonic Project
    Licensed under the MIT License.
@@ -566,22 +505,21 @@ unsafe extern "C" fn conversion_error(mut errcode: i32) {
     end_diagnostic(1i32 != 0);
 }
 unsafe extern "C" fn apply_normalization(mut buf: *mut u32, mut len: i32, mut norm: i32) {
-    static mut normalizers: [TECkit_Converter; 2] = [
-        0 as *const Opaque_TECkit_Converter as TECkit_Converter,
-        0 as *const Opaque_TECkit_Converter as TECkit_Converter,
-    ];
-    let mut status: TECkit_Status = 0;
-    let mut inUsed: UInt32 = 0;
-    let mut outUsed: UInt32 = 0;
-    let mut normPtr: *mut TECkit_Converter =
-        &mut *normalizers.as_mut_ptr().offset((norm - 1i32) as isize) as *mut TECkit_Converter;
+    static mut normalizers: [teckit::TECkit_Converter; 2] =
+        [0 as teckit::TECkit_Converter, 0 as teckit::TECkit_Converter];
+    let mut status: teckit::TECkit_Status = 0;
+    let mut inUsed: u32 = 0;
+    let mut outUsed: u32 = 0;
+    let mut normPtr: *mut teckit::TECkit_Converter =
+        &mut *normalizers.as_mut_ptr().offset((norm - 1i32) as isize)
+            as *mut teckit::TECkit_Converter;
     if (*normPtr).is_null() {
-        status = TECkit_CreateConverter(
-            0 as *mut Byte,
-            0i32 as UInt32,
-            1i32 as Byte,
-            6i32 as UInt16,
-            (6i32 | (if norm == 1i32 { 0x100i32 } else { 0x200i32 })) as UInt16,
+        status = teckit::TECkit_CreateConverter(
+            0 as *mut u8,
+            0i32 as u32,
+            1i32 as u8,
+            6i32 as u16,
+            (6i32 | (if norm == 1i32 { 0x100i32 } else { 0x200i32 })) as u16,
             normPtr,
         );
         if status != 0i32 as i64 {
@@ -591,16 +529,16 @@ unsafe extern "C" fn apply_normalization(mut buf: *mut u32, mut len: i32, mut no
             );
         }
     }
-    status = TECkit_ConvertBuffer(
+    status = teckit::TECkit_ConvertBuffer(
         *normPtr,
-        buf as *mut Byte,
-        (len as u64).wrapping_mul(::std::mem::size_of::<UInt32>() as u64) as UInt32,
+        buf as *mut u8,
+        (len as u64).wrapping_mul(::std::mem::size_of::<u32>() as u64) as u32,
         &mut inUsed,
-        &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut Byte,
+        &mut *buffer.offset(first as isize) as *mut UnicodeScalar as *mut u8,
         (::std::mem::size_of::<UnicodeScalar>() as u64).wrapping_mul((buf_size - first) as u64)
-            as UInt32,
+            as u32,
         &mut outUsed,
-        1i32 as Byte,
+        1i32 as u8,
     );
     if status != 0i32 as i64 {
         buffer_overflow();

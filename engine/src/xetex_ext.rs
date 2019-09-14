@@ -10,6 +10,7 @@
 
 use crate::mfree;
 use crate::stub_icu as icu;
+use crate::stub_teckit as teckit;
 use crate::xetex_xetexd::print_c_string;
 use crate::{streq_ptr, strstartswith};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
@@ -42,7 +43,6 @@ use super::xetex_aatfont::cf_prelude::{
 extern "C" {
     pub type XeTeXFont_rec;
     pub type XeTeXLayoutEngine_rec;
-    pub type Opaque_TECkit_Converter;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -250,26 +250,6 @@ extern "C" {
         Create a converter object from a compiled mapping
     */
     #[no_mangle]
-    fn TECkit_CreateConverter(
-        mapping: *mut Byte,
-        mappingSize: UInt32,
-        mapForward: Byte,
-        sourceForm: UInt16,
-        targetForm: UInt16,
-        converter: *mut TECkit_Converter,
-    ) -> TECkit_Status;
-    #[no_mangle]
-    fn TECkit_ConvertBuffer(
-        converter: TECkit_Converter,
-        inBuffer: *const Byte,
-        inLength: UInt32,
-        inUsed: *mut UInt32,
-        outBuffer: *mut Byte,
-        outLength: UInt32,
-        outUsed: *mut UInt32,
-        inputIsComplete: Byte,
-    ) -> TECkit_Status;
-    #[no_mangle]
     fn gr_label_destroy(label: *mut libc::c_void);
     #[no_mangle]
     fn gettexstring(_: str_number) -> *mut i8;
@@ -389,106 +369,11 @@ pub struct GlyphBBox {
 
 pub type XeTeXFont = *mut XeTeXFont_rec;
 pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
-pub type Byte = UInt8;
-pub type UInt8 = u8;
-/*------------------------------------------------------------------------
-Copyright (C) 2002-2014 SIL International. All rights reserved.
-
-Distributable under the terms of either the Common Public License or the
-GNU Lesser General Public License, as specified in the LICENSING.txt file.
-
-File: TECkit_Engine.h
-Responsibility: Jonathan Kew
-Last reviewed: Not yet.
-
-Description:
-    Public API to the TECkit conversion engine.
--------------------------------------------------------------------------*/
-/*
-    TECkit_Engine.h
-
-    Public API to the TECkit encoding conversion library.
-
-    18-Jan-2008     jk  added EXPORTED to declarations, for mingw32 cross-build
-    18-Mar-2005     jk  moved version number to TECkit_Common.h as it is shared with the compiler
-    19-Mar-2004     jk  updated minor version for 2.2 engine (improved matching functionality)
-    23-Sep-2003     jk  updated for version 2.1 - new "...Opt" APIs
-     5-Jul-2002     jk  corrected placement of WINAPI to keep MS compiler happy
-    14-May-2002     jk  added WINAPI to function declarations
-    22-Dec-2001     jk  initial version
-*/
-/* formFlags bits for normalization; if none are set, then this side of the mapping is normalization-form-agnostic on input, and may generate an unspecified mixture */
-/* expects fully composed text (NC) */
-/* expects fully decomposed text (NCD) */
-/* generates fully composed text (NC) */
-/* generates fully decomposed text (NCD) */
-/* if VisualOrder is set, this side of the mapping deals with visual-order rather than logical-order text (only relevant for bidi scripts) */
-/* visual rather than logical order */
-/* if Unicode is set, the encoding is Unicode on this side of the mapping */
-/* this is Unicode rather than a byte encoding */
-/* required names */
-/* "source" or LHS encoding name, e.g. "SIL-EEG_URDU-2001" */
-/* "destination" or RHS encoding name, e.g. "UNICODE-3-1" */
-/* source encoding description, e.g. "SIL East Eurasia Group Extended Urdu (Mac OS)" */
-/* destination description, e.g. "Unicode 3.1" */
-/* additional recommended names (parallel to UTR-22) */
-/* "1.0b1" */
-/* "mailto:nrsi@sil.org" */
-/* "SIL International" */
-/* "Greek (Galatia)" */
-/* "(c)2002 SIL International" */
-/* additional name IDs may be defined in the future */
-/*
-    encoding form options for TECkit_CreateConverter
-*/
-/*
-    end of text value for TECkit_DataSource functions to return
-*/
-/*
-    A converter object is an opaque pointer
-*/
-pub type TECkit_Converter = *mut Opaque_TECkit_Converter;
 pub type str_number = i32;
-/* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
-   Copyright 2016-2018 The Tectonic Project
-   Licensed under the MIT License.
-*/
-/* Extra stuff used in various change files for various reasons.  */
-/* Array allocations. Add 1 to size to account for Pascal indexing convention. */
-/*11:*/
-/*18: */
+
 pub type UTF16_code = u16;
-/*
-    all public functions return a status code
-*/
-pub type TECkit_Status = i64;
-/*------------------------------------------------------------------------
-Copyright (C) 2002-2016 SIL International. All rights reserved.
 
-Distributable under the terms of either the Common Public License or the
-GNU Lesser General Public License, as specified in the LICENSING.txt file.
-
-File: TECkit_Common.h
-Responsibility: Jonathan Kew
-Last reviewed: Not yet.
-
-Description:
-    Public definitions used by TECkit engine and compiler
--------------------------------------------------------------------------*/
-/*
-    Common types and defines for the engine and compiler
-
-History:
-    16-Sep-2006     jk  updated version to 2.4 (adding new compiler APIs for Bob E)
-    23-May-2005     jk  patch for 64-bit architectures (thanks to Ulrik P)
-    18-Mar-2005     jk  updated minor version for 2.3 (engine unchanged, XML option in compiler)
-    23-Sep-2003     jk  updated for version 2.1 - extended status values
-    xx-xxx-2002     jk  version 2.0 initial release
-*/
 /* 16.16 version number */
-
-pub type UInt16 = u16;
-pub type UInt32 = u32;
 
 /* The annoying `memory_word` type. We have to make sure the byte-swapping
  * that the (un)dumping routines do suffices to put things in the right place
@@ -546,7 +431,7 @@ pub struct b16x4_le_t {
     pub s2: u16,
     pub s3: u16,
 }
-pub type UniChar = UInt16;
+pub type UniChar = u16;
 
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -802,7 +687,7 @@ unsafe extern "C" fn load_mapping_file(
     mut e: *const i8,
     mut byteMapping: i8,
 ) -> *mut libc::c_void {
-    let mut cnv: TECkit_Converter = 0 as TECkit_Converter;
+    let mut cnv = 0 as teckit::TECkit_Converter;
     let mut buffer: *mut i8 =
         xmalloc((e.wrapping_offset_from(s) as i64 + 5i32 as i64) as size_t) as *mut i8;
     let mut map: rust_input_handle_t = 0 as *mut libc::c_void;
@@ -812,7 +697,7 @@ unsafe extern "C" fn load_mapping_file(
     map = ttstub_input_open(buffer, TTInputFormat::MISCFONTS, 0i32);
     if !map.is_null() {
         let mut mappingSize: size_t = ttstub_input_get_size(map);
-        let mut mapping: *mut Byte = xmalloc(mappingSize) as *mut Byte;
+        let mut mapping: *mut u8 = xmalloc(mappingSize) as *mut u8;
         let mut r: ssize_t = ttstub_input_read(map, mapping as *mut i8, mappingSize);
         if r < 0i32 as i64 || r as size_t != mappingSize {
             _tt_abort(
@@ -822,21 +707,21 @@ unsafe extern "C" fn load_mapping_file(
         }
         ttstub_input_close(map);
         if byteMapping as i32 != 0i32 {
-            TECkit_CreateConverter(
+            teckit::TECkit_CreateConverter(
                 mapping,
-                mappingSize as UInt32,
-                0i32 as Byte,
-                4i32 as UInt16,
-                1i32 as UInt16,
+                mappingSize as u32,
+                0i32 as u8,
+                4i32 as u16,
+                1i32 as u16,
                 &mut cnv,
             );
         } else {
-            TECkit_CreateConverter(
+            teckit::TECkit_CreateConverter(
                 mapping,
-                mappingSize as UInt32,
-                1i32 as Byte,
-                4i32 as UInt16,
-                4i32 as UInt16,
+                mappingSize as u32,
+                1i32 as u8,
+                4i32 as u16,
+                4i32 as u16,
                 &mut cnv,
             );
         }
@@ -886,20 +771,20 @@ pub unsafe extern "C" fn load_tfm_font_mapping() -> *mut libc::c_void {
 #[no_mangle]
 pub unsafe extern "C" fn apply_tfm_font_mapping(mut cnv: *mut libc::c_void, mut c: i32) -> i32 {
     let mut in_0: UniChar = c as UniChar;
-    let mut out: [Byte; 2] = [0; 2];
-    let mut inUsed: UInt32 = 0;
-    let mut outUsed: UInt32 = 0;
+    let mut out: [u8; 2] = [0; 2];
+    let mut inUsed: u32 = 0;
+    let mut outUsed: u32 = 0;
     /* TECkit_Status status; */
     /* status = */
-    TECkit_ConvertBuffer(
-        cnv as TECkit_Converter,
-        &mut in_0 as *mut UniChar as *const Byte,
-        ::std::mem::size_of::<UniChar>() as u64 as UInt32,
+    teckit::TECkit_ConvertBuffer(
+        cnv as teckit::TECkit_Converter,
+        &mut in_0 as *mut UniChar as *const u8,
+        ::std::mem::size_of::<UniChar>() as u64 as u32,
         &mut inUsed,
         out.as_mut_ptr(),
-        ::std::mem::size_of::<[Byte; 2]>() as u64 as UInt32,
+        ::std::mem::size_of::<[u8; 2]>() as u64 as u32,
         &mut outUsed,
-        1i32 as Byte,
+        1i32 as u8,
     );
     if outUsed < 1_u32 {
         0i32
@@ -1883,21 +1768,21 @@ pub unsafe extern "C" fn gr_font_get_named_1(
     rval as i32
 }
 #[cfg(target_os = "macos")]
-unsafe extern "C" fn cgColorToRGBA32(mut color: CGColorRef) -> UInt32 {
+unsafe extern "C" fn cgColorToRGBA32(mut color: CGColorRef) -> u32 {
     let mut components: *const CGFloat = CGColorGetComponents(color);
-    let mut rval: UInt32 = (*components.offset(0) * 255.0f64 + 0.5f64) as UInt8 as UInt32;
+    let mut rval: u32 = (*components.offset(0) * 255.0f64 + 0.5f64) as u8 as u32;
     rval <<= 8i32;
     rval = (rval as libc::c_uint)
-        .wrapping_add((*components.offset(1) * 255.0f64 + 0.5f64) as UInt8 as libc::c_uint)
-        as UInt32 as UInt32;
+        .wrapping_add((*components.offset(1) * 255.0f64 + 0.5f64) as u8 as libc::c_uint)
+        as u32 as u32;
     rval <<= 8i32;
     rval = (rval as libc::c_uint)
-        .wrapping_add((*components.offset(2) * 255.0f64 + 0.5f64) as UInt8 as libc::c_uint)
-        as UInt32 as UInt32;
+        .wrapping_add((*components.offset(2) * 255.0f64 + 0.5f64) as u8 as libc::c_uint)
+        as u32 as u32;
     rval <<= 8i32;
     rval = (rval as libc::c_uint)
-        .wrapping_add((*components.offset(3) * 255.0f64 + 0.5f64) as UInt8 as libc::c_uint)
-        as UInt32 as UInt32;
+        .wrapping_add((*components.offset(3) * 255.0f64 + 0.5f64) as u8 as libc::c_uint)
+        as u32 as u32;
     return rval;
 }
 static mut xdvBufSize: i32 = 0i32;
@@ -2143,11 +2028,11 @@ pub unsafe extern "C" fn apply_mapping(
     mut txtPtr: *mut u16,
     mut txtLen: i32,
 ) -> i32 {
-    let mut cnv: TECkit_Converter = pCnv as TECkit_Converter;
-    let mut inUsed: UInt32 = 0;
-    let mut outUsed: UInt32 = 0;
-    let mut status: TECkit_Status = 0;
-    static mut outLength: UInt32 = 0i32 as UInt32;
+    let mut cnv = pCnv as teckit::TECkit_Converter;
+    let mut inUsed: u32 = 0;
+    let mut outUsed: u32 = 0;
+    let mut status: teckit::TECkit_Status = 0;
+    static mut outLength: u32 = 0i32 as u32;
     /* allocate outBuffer if not big enough */
     if (outLength as u64)
         < (txtLen as u64)
@@ -2157,21 +2042,21 @@ pub unsafe extern "C" fn apply_mapping(
         free(mapped_text as *mut libc::c_void);
         outLength = (txtLen as u64)
             .wrapping_mul(::std::mem::size_of::<UniChar>() as u64)
-            .wrapping_add(32i32 as u64) as UInt32;
+            .wrapping_add(32i32 as u64) as u32;
         mapped_text = xmalloc(outLength as size_t) as *mut UTF16_code
     }
     loop
     /* try the mapping */
     {
-        status = TECkit_ConvertBuffer(
+        status = teckit::TECkit_ConvertBuffer(
             cnv,
-            txtPtr as *mut Byte,
-            (txtLen as u64).wrapping_mul(::std::mem::size_of::<UniChar>() as u64) as UInt32,
+            txtPtr as *mut u8,
+            (txtLen as u64).wrapping_mul(::std::mem::size_of::<UniChar>() as u64) as u32,
             &mut inUsed,
-            mapped_text as *mut Byte,
+            mapped_text as *mut u8,
             outLength,
             &mut outUsed,
-            1i32 as Byte,
+            1i32 as u8,
         );
         match status {
             0 => {
@@ -2184,7 +2069,7 @@ pub unsafe extern "C" fn apply_mapping(
                     (txtLen as u64)
                         .wrapping_mul(::std::mem::size_of::<UniChar>() as u64)
                         .wrapping_add(32i32 as u64),
-                ) as UInt32 as UInt32;
+                ) as u32 as u32;
                 free(mapped_text as *mut libc::c_void);
                 mapped_text = xmalloc(outLength as size_t) as *mut UTF16_code
             }
@@ -2217,7 +2102,7 @@ pub unsafe extern "C" fn get_native_char_height_depth(
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef;
-            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, ch as UInt32);
+            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, ch as u32);
             aat::GetGlyphHeightDepth_AAT(attributes, gid as u16, &mut ht, &mut dp);
         }
         0xfffeu32 => {
@@ -2282,7 +2167,7 @@ pub unsafe extern "C" fn get_native_char_sidebearings(
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef;
-            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, ch as UInt32);
+            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, ch as u32);
             aat::GetGlyphSidebearings_AAT(attributes, gid as u16, &mut l, &mut r);
         }
         0xfffeu32 => {
@@ -2349,7 +2234,7 @@ pub unsafe extern "C" fn getnativecharwd(mut f: i32, mut c: i32) -> scaled_t {
         0xffffu32 => {
             let mut attributes: CFDictionaryRef =
                 *font_layout_engine.offset(f as isize) as CFDictionaryRef;
-            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, c as UInt32);
+            let mut gid: libc::c_int = aat::MapCharToGlyph_AAT(attributes, c as u32);
             wd = D2Fix(aat::GetGlyphWidth_AAT(attributes, gid as u16))
         }
         0xfffeu32 => {
@@ -2808,7 +2693,7 @@ pub unsafe extern "C" fn map_char_to_glyph(mut font: i32, mut ch: i32) -> i32 {
         0xffffu32 => {
             return aat::MapCharToGlyph_AAT(
                 *font_layout_engine.offset(font as isize) as CFDictionaryRef,
-                ch as UInt32,
+                ch as u32,
             );
         }
         0xfffeu32 => {

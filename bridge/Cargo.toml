@@ -1,0 +1,11 @@
+[package]
+name = "tectonic_bridge"
+version = "0.0.1-dev"
+authors = ["Peter Williams <peter@newton.cx>"]
+edition = "2018"
+
+[build-dependencies]
+cc = "^1.0"
+
+[dependencies]
+libc = "0.2"

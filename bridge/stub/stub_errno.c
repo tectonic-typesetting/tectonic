@@ -2,7 +2,7 @@
 
 /* first pass to make c compiler happy */
 
-int tt_errno();
+int tt_errno(void);
 void tt_set_errno(int newval);
 
 /* stubs */
