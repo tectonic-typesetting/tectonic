@@ -14,12 +14,12 @@ use crate::dpx_pdfobj::{
 };
 use libc::free;
 
+use super::dpx_numbers::tt_get_unsigned_byte;
+
 use crate::{ttstub_input_read, ttstub_input_seek};
 extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     /* Name does not include the / */
     /* pdf_add_dict requires key but pdf_add_array does not.
      * pdf_add_array always append elements to array.

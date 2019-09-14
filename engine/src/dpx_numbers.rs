@@ -44,7 +44,7 @@ pub unsafe extern "C" fn get_unsigned_byte(mut file: *mut FILE) -> u8 {
     let mut ch: i32 = 0;
     ch = fgetc(file);
     if ch < 0i32 {
-        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
+        panic!("File ended prematurely\n");
     }
     ch as u8
 }
@@ -260,7 +260,7 @@ pub unsafe extern "C" fn tt_get_unsigned_byte(mut handle: rust_input_handle_t) -
     let mut ch: i32 = 0;
     ch = ttstub_input_getc(handle);
     if ch < 0i32 {
-        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
+        panic!("File ended prematurely\n");
     }
     ch as u8
 }

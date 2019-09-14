@@ -11,6 +11,7 @@
 use crate::mfree;
 use crate::warn;
 
+use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_name, pdf_new_number,
     pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dataptr, pdf_stream_dict,
@@ -39,10 +40,6 @@ extern "C" {
     fn pdf_get_version() -> u32;
     #[no_mangle]
     static mut work_buffer: [i8; 0];
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]

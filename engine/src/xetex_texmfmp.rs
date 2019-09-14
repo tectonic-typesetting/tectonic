@@ -13,8 +13,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
     #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
@@ -77,12 +75,11 @@ pub fn get_date_and_time() -> (i32, i32, i32, i32) {
     (minutes, day, month, year)
 }
 unsafe extern "C" fn checkpool_pointer(mut pool_ptr_0: pool_pointer, mut len: size_t) {
-    if (pool_ptr_0 as u64).wrapping_add(len) >= pool_size as u64 {
-        _tt_abort(
-            b"string pool overflow [%i bytes]\x00" as *const u8 as *const i8,
-            pool_size,
-        );
-    };
+    assert!(
+        !((pool_ptr_0 as u64).wrapping_add(len) >= pool_size as u64),
+        "string pool overflow [{} bytes]",
+        pool_size,
+    );
 }
 #[no_mangle]
 pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
@@ -348,13 +345,13 @@ pub unsafe extern "C" fn make_src_special(
         b"src:%d \x00" as *const u8 as *const i8,
         lineno,
     );
-    if (pool_ptr as u64)
-        .wrapping_add(strlen(buf.as_mut_ptr()))
-        .wrapping_add(strlen(filename))
-        >= pool_size as size_t
-    {
-        _tt_abort(b"string pool overflow\x00" as *const u8 as *const i8);
-    }
+    assert!(
+        !((pool_ptr as u64)
+            .wrapping_add(strlen(buf.as_mut_ptr()))
+            .wrapping_add(strlen(filename))
+            >= pool_size as size_t),
+        "string pool overflow"
+    );
     s = buf.as_mut_ptr();
     while *s != 0 {
         let fresh9 = s;

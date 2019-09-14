@@ -16,8 +16,6 @@ extern "C" {
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
     #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
@@ -551,7 +549,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
         }
         11 => {}
         10 => {
-            _tt_abort(b"Unexpected callsubr.\x00" as *const u8 as *const i8);
+            panic!("Unexpected callsubr.");
         }
         _ => {
             /* no-op ? */
@@ -835,10 +833,7 @@ unsafe extern "C" fn do_callothersubr(mut cd: *mut t1_chardesc) {
             do_othersubr13(cd);
         }
         _ => {
-            _tt_abort(
-                b"Unknown othersubr #%d.\x00" as *const u8 as *const i8,
-                subrno,
-            );
+            panic!("Unknown othersubr #{}.", subrno);
         }
     };
 }
@@ -1012,7 +1007,7 @@ unsafe extern "C" fn put_numbers(
              * This number cannot be represented as a single operand.
              * We must use `a b mul ...' or `a c div' to represent large values.
              */
-            _tt_abort(b"Argument value too large. (This is bug)\x00" as *const u8 as *const i8);
+            panic!("Argument value too large. (This is bug)");
         } else {
             if (value - ivalue as f64).abs() > 3.0e-5f64 {
                 /* 16.16-bit signed fixed value  */
@@ -1086,7 +1081,7 @@ unsafe extern "C" fn put_numbers(
                 *dest = (*dest).offset(1);
                 *fresh20 = (ivalue & 0xffi32) as card8
             } else {
-                _tt_abort(b"Unexpected error.\x00" as *const u8 as *const i8);
+                panic!("Unexpected error.");
             }
         }
         i += 1
@@ -1187,7 +1182,7 @@ unsafe extern "C" fn t1char_build_charpath(
     let mut subr: *mut card8 = 0 as *mut card8;
     let mut len: i32 = 0;
     if nest > 10i32 {
-        _tt_abort(b"Subroutine nested too deeply.\x00" as *const u8 as *const i8);
+        panic!("Subroutine nested too deeply.");
     }
     nest += 1;
     while *data < endptr && status == 0i32 {
@@ -1205,7 +1200,7 @@ unsafe extern "C" fn t1char_build_charpath(
                 cs_stack_top -= 1;
                 idx = cs_arg_stack[cs_stack_top as usize] as i32;
                 if subrs.is_null() || idx >= (*subrs).count as i32 {
-                    _tt_abort(b"Invalid Subr#.\x00" as *const u8 as *const i8);
+                    panic!("Invalid Subr#.");
                 }
                 subr = (*subrs)
                     .data
@@ -1241,10 +1236,9 @@ unsafe extern "C" fn t1char_build_charpath(
         }
     } else if status < 0i32 {
         /* error */
-        _tt_abort(
-            b"Parsing charstring failed: (status=%d, stack=%d)\x00" as *const u8 as *const i8,
-            status,
-            cs_stack_top,
+        panic!(
+            "Parsing charstring failed: (status={}, stack={})",
+            status, cs_stack_top
         );
     }
     nest -= 1;
@@ -1629,10 +1623,7 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
             }
             -1 | 20 => {}
             _ => {
-                _tt_abort(
-                    b"Unexpected Type 2 charstring command %d.\x00" as *const u8 as *const i8,
-                    (*cur).type_0,
-                );
+                panic!("Unexpected Type 2 charstring command {}.", (*cur).type_0);
             }
         }
         if !cur.is_null() {
@@ -1748,10 +1739,7 @@ unsafe extern "C" fn t1char_encode_charpath(
         let mut wx: f64 = (*cd).sbw.wx - nominal_width;
         put_numbers(&mut wx, 1i32, &mut dst, endptr);
         if status != 0i32 {
-            _tt_abort(
-                b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
-                status,
-            );
+            panic!("Charstring encoder error: {}", status);
         }
     }
     /*
@@ -1774,15 +1762,12 @@ unsafe extern "C" fn t1char_encode_charpath(
         stem[1] = (*cd).stems[i as usize].del;
         put_numbers(stem.as_mut_ptr(), 2i32, &mut dst, endptr);
         if status != 0i32 {
-            _tt_abort(
-                b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
-                status,
-            );
+            panic!("Charstring encoder error: {}", status);
         }
         reset = 0i32;
         if 2i32 * num_hstems > 48i32 - 3i32 {
             if dst.offset(1) >= endptr {
-                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+                panic!("Buffer overflow.");
             }
             let fresh23 = dst;
             dst = dst.offset(1);
@@ -1797,7 +1782,7 @@ unsafe extern "C" fn t1char_encode_charpath(
     }
     if reset == 0i32 {
         if dst.offset(1) >= endptr {
-            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+            panic!("Buffer overflow.");
         }
         let fresh24 = dst;
         dst = dst.offset(1);
@@ -1821,15 +1806,12 @@ unsafe extern "C" fn t1char_encode_charpath(
             stem[1] = (*cd).stems[i as usize].del;
             put_numbers(stem.as_mut_ptr(), 2i32, &mut dst, endptr);
             if status != 0i32 {
-                _tt_abort(
-                    b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
-                    status,
-                );
+                panic!("Charstring encoder error: {}", status);
             }
             reset = 0i32;
             if 2i32 * num_vstems > 48i32 - 3i32 {
                 if dst.offset(1) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+                    panic!("Buffer overflow.");
                 }
                 let fresh25 = dst;
                 dst = dst.offset(1);
@@ -1844,7 +1826,7 @@ unsafe extern "C" fn t1char_encode_charpath(
         }
         if reset == 0i32 {
             if dst.offset(1) >= endptr {
-                _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+                panic!("Buffer overflow.");
             }
             if (*cd).flags & 1i32 << 0i32 != 0 || (*cd).flags & 1i32 << 1i32 != 0 {
                 /*
@@ -1887,7 +1869,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 }
                 if (*cd).flags & 1i32 << 0i32 != 0 {
                     if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as isize) >= endptr {
-                        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+                        panic!("Buffer overflow.");
                     }
                     let fresh28 = dst;
                     dst = dst.offset(1);
@@ -1919,7 +1901,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                     i_0 += 1
                 }
                 if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as isize) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+                    panic!("Buffer overflow.");
                 }
                 let fresh29 = dst;
                 dst = dst.offset(1);
@@ -1940,13 +1922,10 @@ unsafe extern "C" fn t1char_encode_charpath(
                     endptr,
                 );
                 if status != 0i32 {
-                    _tt_abort(
-                        b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
-                        status,
-                    );
+                    panic!("Charstring encoder error: {}", status);
                 }
                 if dst.offset(1) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+                    panic!("Buffer overflow.");
                 }
                 let fresh30 = dst;
                 dst = dst.offset(1);
@@ -1961,13 +1940,10 @@ unsafe extern "C" fn t1char_encode_charpath(
                     endptr,
                 );
                 if status != 0i32 {
-                    _tt_abort(
-                        b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
-                        status,
-                    );
+                    panic!("Charstring encoder error: {}", status);
                 }
                 if dst.offset(2) >= endptr {
-                    _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+                    panic!("Buffer overflow.");
                 }
                 let fresh31 = dst;
                 dst = dst.offset(1);
@@ -1978,10 +1954,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 curr = (*curr).next
             }
             _ => {
-                _tt_abort(
-                    b"Unknown Type 2 charstring command: %d\x00" as *const u8 as *const i8,
-                    (*curr).type_0,
-                );
+                panic!("Unknown Type 2 charstring command: {}", (*curr).type_0);
             }
         }
     }
@@ -1996,18 +1969,15 @@ unsafe extern "C" fn t1char_encode_charpath(
         seac[3] = (*cd).seac.achar as f64;
         put_numbers(seac.as_mut_ptr(), 4i32, &mut dst, endptr);
         if status != 0i32 {
-            _tt_abort(
-                b"Charstring encoder error: %d\x00" as *const u8 as *const i8,
-                status,
-            );
+            panic!("Charstring encoder error: {}", status);
         }
         if dst.offset(2) >= endptr {
-            _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+            panic!("Buffer overflow.");
         }
         warn!("Obsolete four arguments of \"endchar\" will be used for Type 1 \"seac\" operator.");
     }
     if dst.offset(1) >= endptr {
-        _tt_abort(b"Buffer overflow.\x00" as *const u8 as *const i8);
+        panic!("Buffer overflow.");
     }
     let fresh33 = dst;
     dst = dst.offset(1);

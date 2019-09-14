@@ -34,8 +34,6 @@ extern "C" {
      * will one day eliminate all of the global state and get rid of all of
      * these. */
     #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
@@ -644,10 +642,7 @@ pub unsafe extern "C" fn sfd_load_record(
 #[no_mangle]
 pub unsafe extern "C" fn lookup_sfd_record(mut rec_id: i32, mut c: u8) -> u16 {
     if sfd_record.is_null() || rec_id < 0i32 || rec_id >= num_sfd_records {
-        _tt_abort(
-            b"Invalid subfont_id: %d\x00" as *const u8 as *const i8,
-            rec_id,
-        );
+        panic!("Invalid subfont_id: {}", rec_id);
     }
     (*sfd_record.offset(rec_id as isize)).vector[c as usize]
 }

@@ -22,8 +22,6 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     /* tectonic/core-memory.h: basic dynamic memory helpers
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -554,8 +552,8 @@ pub unsafe extern "C" fn u_open_in(
     1i32
 }
 unsafe extern "C" fn buffer_overflow() {
-    _tt_abort(
-        b"unable to read an entire line (buf_size=%u)\x00" as *const u8 as *const i8,
+    panic!(
+        "unable to read an entire line (buf_size={})",
         buf_size as u32,
     );
 }
@@ -587,8 +585,8 @@ unsafe extern "C" fn apply_normalization(mut buf: *mut u32, mut len: i32, mut no
             normPtr,
         );
         if status != 0i32 as i64 {
-            _tt_abort(
-                b"failed to create normalizer: error code = %d\x00" as *const u8 as *const i8,
+            panic!(
+                "failed to create normalizer: error code = {}",
                 status as i32,
             );
         }
@@ -620,10 +618,7 @@ pub unsafe extern "C" fn input_line(mut f: *mut UFILE) -> i32 {
     let mut norm: i32 = get_input_normalization_state();
     if (*f).handle.is_null() {
         /* NULL 'handle' means this: */
-        _tt_abort(
-            b"reads from synthetic \"terminal\" file #0 should never happen\x00" as *const u8
-                as *const i8,
-        );
+        panic!("reads from synthetic \"terminal\" file #0 should never happen");
     }
     last = first;
     if (*f).encodingMode as i32 == 5i32 {
@@ -959,8 +954,8 @@ pub unsafe extern "C" fn get_uni_c(mut f: *mut UFILE) -> i32 {
         }
         4 => rval = ttstub_input_getc((*f).handle),
         _ => {
-            _tt_abort(
-                b"internal error; file input mode=%d\x00" as *const u8 as *const i8,
+            panic!(
+                "internal error; file input mode={}",
                 (*f).encodingMode as i32,
             );
         }

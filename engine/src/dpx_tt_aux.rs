@@ -6,6 +6,8 @@
          unused_assignments,
          unused_mut)]
 
+use super::dpx_numbers::tt_get_unsigned_quad;
+use super::dpx_tt_post::{tt_read_post_table, tt_release_post_table};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
     pdf_new_string, pdf_obj,
@@ -39,9 +41,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     static mut always_embed: i32;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     /* Name does not include the / */
     /* pdf_add_dict requires key but pdf_add_array does not.
      * pdf_add_array always append elements to array.
@@ -56,13 +55,7 @@ extern "C" {
      * already removed that.
      */
     #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn tt_read_post_table(sfont: *mut sfnt) -> *mut tt_post_table;
-    #[no_mangle]
-    fn tt_release_post_table(post: *mut tt_post_table);
     #[no_mangle]
     fn tt_read_head_table(sfont: *mut sfnt) -> *mut tt_head_table;
     /* OS/2 table */
@@ -75,35 +68,9 @@ pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type Fixed = u32;
 pub type FWord = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -123,65 +90,9 @@ pub struct sfnt {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_post_table {
-    pub Version: Fixed,
-    pub italicAngle: Fixed,
-    pub underlinePosition: FWord,
-    pub underlineThickness: FWord,
-    pub isFixedPitch: u32,
-    pub minMemType42: u32,
-    pub maxMemType42: u32,
-    pub minMemType1: u32,
-    pub maxMemType1: u32,
-    pub numberOfGlyphs: u16,
-    pub glyphNamePtr: *mut *const i8,
-    pub names: *mut *mut i8,
-    pub count: u16,
-    /* Number of glyph names in names[] */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_os2__table {
-    pub version: u16,
-    pub xAvgCharWidth: i16,
-    pub usWeightClass: u16,
-    pub usWidthClass: u16,
-    pub fsType: i16,
-    pub ySubscriptXSize: i16,
-    pub ySubscriptYSize: i16,
-    pub ySubscriptXOffset: i16,
-    pub ySubscriptYOffset: i16,
-    pub ySuperscriptXSize: i16,
-    pub ySuperscriptYSize: i16,
-    pub ySuperscriptXOffset: i16,
-    pub ySuperscriptYOffset: i16,
-    pub yStrikeoutSize: i16,
-    pub yStrikeoutPosition: i16,
-    pub sFamilyClass: i16,
-    pub panose: [u8; 10],
-    pub ulUnicodeRange1: u32,
-    pub ulUnicodeRange2: u32,
-    pub ulUnicodeRange3: u32,
-    pub ulUnicodeRange4: u32,
-    pub achVendID: [i8; 4],
-    pub fsSelection: u16,
-    pub usFirstCharIndex: u16,
-    pub usLastCharIndex: u16,
-    pub sTypoAscender: i16,
-    pub sTypoDescender: i16,
-    pub sTypoLineGap: i16,
-    pub usWinAscent: u16,
-    pub usWinDescent: u16,
-    pub ulCodePageRange1: u32,
-    pub ulCodePageRange2: u32,
-    pub sxHeight: i16,
-    pub sCapHeight: i16,
-    pub usDefaultChar: u16,
-    pub usBreakChar: u16,
-    pub usMaxContext: u16,
-}
+use super::dpx_tt_post::tt_post_table;
+
+use super::dpx_tt_table::tt_os2__table;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -201,27 +112,7 @@ pub struct tt_os2__table {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_head_table {
-    pub version: Fixed,
-    pub fontRevision: Fixed,
-    pub checkSumAdjustment: u32,
-    pub magicNumber: u32,
-    pub flags: u16,
-    pub unitsPerEm: u16,
-    pub created: [u8; 8],
-    pub modified: [u8; 8],
-    pub xMin: FWord,
-    pub yMin: FWord,
-    pub xMax: FWord,
-    pub yMax: FWord,
-    pub macStyle: u16,
-    pub lowestRecPPEM: u16,
-    pub fontDirectionHint: i16,
-    pub indexToLocFormat: i16,
-    pub glyphDataFormat: i16,
-}
+use super::dpx_tt_table::tt_head_table;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -251,17 +142,17 @@ pub unsafe extern "C" fn ttc_read_offset(mut sfont: *mut sfnt, mut ttc_idx: i32)
     let mut offset: u32 = 0_u32;
     let mut num_dirs: u32 = 0_u32;
     if sfont.is_null() || (*sfont).handle.is_null() {
-        _tt_abort(b"file not opened\x00" as *const u8 as *const i8);
+        panic!("file not opened");
     }
     if (*sfont).type_0 != 1i32 << 4i32 {
-        _tt_abort(b"ttc_read_offset(): invalid font type\x00" as *const u8 as *const i8);
+        panic!("ttc_read_offset(): invalid font type");
     }
     ttstub_input_seek((*sfont).handle, 4i32 as ssize_t, 0i32);
     /* version = */
     tt_get_unsigned_quad((*sfont).handle);
     num_dirs = tt_get_unsigned_quad((*sfont).handle);
     if ttc_idx < 0i32 || ttc_idx as u32 > num_dirs.wrapping_sub(1_u32) {
-        _tt_abort(b"Invalid TTC index number\x00" as *const u8 as *const i8);
+        panic!("Invalid TTC index number");
     }
     ttstub_input_seek((*sfont).handle, (12i32 + ttc_idx * 4i32) as ssize_t, 0i32);
     offset = tt_get_unsigned_quad((*sfont).handle);
@@ -306,7 +197,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
     let mut os2: *mut tt_os2__table = 0 as *mut tt_os2__table;
     let mut post: *mut tt_post_table = 0 as *mut tt_post_table;
     if sfont.is_null() {
-        _tt_abort(b"font file not opened\x00" as *const u8 as *const i8);
+        panic!("font file not opened");
     }
     os2 = tt_read_os2__table(sfont);
     head = tt_read_head_table(sfont);

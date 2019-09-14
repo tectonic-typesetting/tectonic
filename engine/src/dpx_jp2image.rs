@@ -47,9 +47,6 @@ extern "C" {
         info: *mut libc::c_void,
         resource: *mut pdf_obj,
     );
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
@@ -140,10 +137,7 @@ unsafe extern "C" fn read_box_hdr(
     bytesread = bytesread.wrapping_add(8_u32);
     if *lbox == 1_u32 {
         if get_unsigned_quad(fp) != 0_u32 {
-            _tt_abort(
-                b"JPEG2000: LBox value in JP2 file >32 bits.\nI can\'t handle this!\x00"
-                    as *const u8 as *const i8,
-            );
+            panic!("JPEG2000: LBox value in JP2 file >32 bits.\nI can\'t handle this!");
         }
         *lbox = get_unsigned_quad(fp);
         bytesread = bytesread.wrapping_add(8_u32)

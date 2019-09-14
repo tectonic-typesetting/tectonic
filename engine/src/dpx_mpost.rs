@@ -2341,7 +2341,7 @@ unsafe extern "C" fn restore_font() {
     if !current.is_null() {
         (*current).font_name = mfree((*current).font_name as *mut libc::c_void) as *mut i8
     } else {
-        _tt_abort(b"No currentfont...\x00" as *const u8 as *const i8);
+        panic!("No currentfont...");
     }
     currentfont -= 1;
 }
@@ -3438,7 +3438,7 @@ unsafe extern "C" fn do_texfig_operator(mut opcode: i32, mut x_user: f64, mut y_
         }
         1003 => {
             if in_tfig == 0 {
-                _tt_abort(b"endTexFig without valid startTexFig!.\x00" as *const u8 as *const i8);
+                panic!("endTexFig without valid startTexFig!.");
             }
             pdf_doc_end_grabbing(0 as *mut pdf_obj);
             pdf_dev_put_image(xobj_id, &mut fig_p, x_user, y_user);

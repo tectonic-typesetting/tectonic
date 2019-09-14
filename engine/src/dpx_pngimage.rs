@@ -10,9 +10,6 @@ use crate::dpx_pdfobj::{
 use crate::{ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -148,7 +145,7 @@ unsafe extern "C" fn _png_read(mut png_ptr: *mut png_struct, mut outbytes: *mut 
     let mut r: ssize_t = 0;
     r = ttstub_input_read(handle, outbytes as *mut i8, n.try_into().unwrap());
     if r < 0i32 as ssize_t || r as size_t != n.try_into().unwrap() {
-        _tt_abort(b"error reading PNG\x00" as *const u8 as *const i8);
+        panic!("error reading PNG");
     };
 }
 #[no_mangle]

@@ -35,8 +35,6 @@ extern "C" {
     #[no_mangle]
     fn localtime(__timer: *const time_t) -> *mut tm;
     #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
     fn MD5_init(ctx: *mut MD5_CONTEXT);
     #[no_mangle]
     fn MD5_write(ctx: *mut MD5_CONTEXT, inbuf: *const u8, inlen: u32);
@@ -610,7 +608,7 @@ unsafe extern "C" fn compute_user_password(mut p: *mut pdf_sec, mut uplain: *con
             );
         }
         _ => {
-            _tt_abort(b"Invalid revision number.\x00" as *const u8 as *const i8);
+            panic!("Invalid revision number.");
         }
     }
     memcpy(
@@ -1195,10 +1193,7 @@ pub unsafe extern "C" fn pdf_encrypt_data(
             );
         }
         _ => {
-            _tt_abort(
-                b"pdfencrypt: Unexpected V value: %d\x00" as *const u8 as *const i8,
-                (*p).V,
-            );
+            panic!("pdfencrypt: Unexpected V value: {}", (*p).V);
         }
     };
 }

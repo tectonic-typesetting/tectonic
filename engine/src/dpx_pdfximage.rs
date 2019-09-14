@@ -30,9 +30,6 @@ extern "C" {
     fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     /* Name does not include the / */
@@ -571,10 +568,7 @@ unsafe extern "C" fn load_image(
                     );
                 }
                 _ => {
-                    _tt_abort(
-                        b"Unknown XObject subtype: %d\x00" as *const u8 as *const i8,
-                        (*I).subtype,
-                    );
+                    panic!("Unknown XObject subtype: {}", (*I).subtype);
                 }
             }
             (*ic).count += 1;
@@ -721,7 +715,7 @@ pub unsafe extern "C" fn pdf_ximage_set_image(
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut info: *mut ximage_info = image_info as *mut ximage_info;
     if !(!resource.is_null() && pdf_obj_typeof(resource) == 7i32) {
-        _tt_abort(b"Image XObject must be of stream type.\x00" as *const u8 as *const i8);
+        panic!("Image XObject must be of stream type.");
     }
     (*I).subtype = 1i32;
     (*I).attr.width = (*info).width;
@@ -808,7 +802,7 @@ pub unsafe extern "C" fn pdf_ximage_get_reference(mut id: i32) -> *mut pdf_obj {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
+        panic!("Invalid XObject ID: {}", id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     if (*I).reference.is_null() {
@@ -862,10 +856,7 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
             );
         }
         _ => {
-            _tt_abort(
-                b"Unknown XObject subtype: %d\x00" as *const u8 as *const i8,
-                subtype,
-            );
+            panic!("Unknown XObject subtype: {}", subtype);
         }
     }
     (*ic).count += 1;
@@ -876,7 +867,7 @@ pub unsafe extern "C" fn pdf_ximage_get_resname(mut id: i32) -> *mut i8 {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
+        panic!("Invalid XObject ID: {}", id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*I).res_name.as_mut_ptr()
@@ -886,7 +877,7 @@ pub unsafe extern "C" fn pdf_ximage_get_subtype(mut id: i32) -> i32 {
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
+        panic!("Invalid XObject ID: {}", id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*I).subtype
@@ -907,7 +898,7 @@ pub unsafe extern "C" fn pdf_ximage_set_attr(
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
+        panic!("Invalid XObject ID: {}", id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*I).attr.width = width;
@@ -1052,7 +1043,7 @@ pub unsafe extern "C" fn pdf_ximage_scale_image(
     let mut ic: *mut ic_ = &mut _ic;
     let mut I: *mut pdf_ximage = 0 as *mut pdf_ximage;
     if id < 0i32 || id >= (*ic).count {
-        _tt_abort(b"Invalid XObject ID: %d\x00" as *const u8 as *const i8, id);
+        panic!("Invalid XObject ID: {}", id);
     }
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     (*M).a = 1.0f64;

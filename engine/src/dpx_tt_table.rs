@@ -6,23 +6,14 @@
          unused_assignments,
          unused_mut)]
 
+use super::dpx_numbers::{
+    tt_get_signed_byte, tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair,
+    tt_get_unsigned_quad,
+};
 use crate::warn;
 
 use crate::{ttstub_input_read, ttstub_input_seek};
 extern "C" {
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
-    #[no_mangle]
-    fn tt_get_signed_byte(handle: rust_input_handle_t) -> i8;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn tt_get_signed_pair(handle: rust_input_handle_t) -> i16;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
     #[no_mangle]
@@ -62,35 +53,9 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub type Fixed = u32;
 pub type FWord = i16;
 pub type uFWord = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_head_table {
@@ -261,7 +226,7 @@ pub unsafe extern "C" fn tt_pack_head_table(mut table: *mut tt_head_table) -> *m
     let mut p: *mut i8 = 0 as *mut i8;
     let mut data: *mut i8 = 0 as *mut i8;
     if table.is_null() {
-        _tt_abort(b"passed NULL pointer\n\x00" as *const u8 as *const i8);
+        panic!("passed NULL pointer\n");
     }
     data = new((54u64 as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
         as *mut i8;
@@ -519,7 +484,7 @@ pub unsafe extern "C" fn tt_read_hhea_table(mut sfont: *mut sfnt) -> *mut tt_hhe
     }
     (*table).metricDataFormat = tt_get_signed_pair((*sfont).handle);
     if (*table).metricDataFormat as i32 != 0i32 {
-        _tt_abort(b"unknown metricDataFormat\x00" as *const u8 as *const i8);
+        panic!("unknown metricDataFormat");
     }
     (*table).numOfLongHorMetrics = tt_get_unsigned_pair((*sfont).handle);
     len = sfnt_find_table_len(sfont, b"hmtx\x00" as *const u8 as *const i8);
@@ -574,7 +539,7 @@ pub unsafe extern "C" fn tt_read_VORG_table(mut sfont: *mut sfnt) -> *mut tt_VOR
         if tt_get_unsigned_pair((*sfont).handle) as i32 != 1i32
             || tt_get_unsigned_pair((*sfont).handle) as i32 != 0i32
         {
-            _tt_abort(b"Unsupported VORG version.\x00" as *const u8 as *const i8);
+            panic!("Unsupported VORG version.");
         }
         (*vorg).defaultVertOriginY = tt_get_signed_pair((*sfont).handle);
         (*vorg).numVertOriginYMetrics = tt_get_unsigned_pair((*sfont).handle);
@@ -734,7 +699,7 @@ unsafe extern "C" fn tt_get_name(
     let mut i: i32 = 0;
     name_offset = sfnt_locate_table(sfont, b"name\x00" as *const u8 as *const i8);
     if tt_get_unsigned_pair((*sfont).handle) != 0 {
-        _tt_abort(b"Expecting zero\x00" as *const u8 as *const i8);
+        panic!("Expecting zero");
     }
     num_names = tt_get_unsigned_pair((*sfont).handle);
     string_offset = tt_get_unsigned_pair((*sfont).handle);

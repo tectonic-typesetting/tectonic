@@ -8,6 +8,9 @@
     unused_mut
 )]
 
+use super::dpx_numbers::{
+    tt_get_signed_byte, tt_get_signed_pair, tt_get_unsigned_pair, tt_get_unsigned_quad,
+};
 use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
@@ -47,9 +50,6 @@ extern "C" {
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn otl_new_opt() -> *mut otl_opt;
     #[no_mangle]
@@ -58,14 +58,6 @@ extern "C" {
     fn otl_parse_optstring(opt: *mut otl_opt, optstr: *const i8) -> i32;
     #[no_mangle]
     fn otl_match_optrule(opt: *mut otl_opt, tag: *const i8) -> i32;
-    #[no_mangle]
-    fn tt_get_signed_byte(handle: rust_input_handle_t) -> i8;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn tt_get_signed_pair(handle: rust_input_handle_t) -> i16;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn sfnt_find_table_pos(sfont: *mut sfnt, tag: *const i8) -> u32;
     #[no_mangle]
@@ -103,37 +95,9 @@ pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type Fixed = u32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-    /* table data */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-/* sfnt resource */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct otl_gsub {
@@ -481,7 +445,7 @@ unsafe extern "C" fn clt_read_coverage(mut cov: *mut clt_coverage, mut sfont: *m
             (*cov).list = 0 as *mut GlyphID
         }
         _ => {
-            _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
+            panic!("Unknown coverage format");
         }
     }
     len
@@ -492,7 +456,7 @@ unsafe extern "C" fn clt_release_coverage(mut cov: *mut clt_coverage) {
             1 => (*cov).list = mfree((*cov).list as *mut libc::c_void) as *mut GlyphID,
             2 => (*cov).range = mfree((*cov).range as *mut libc::c_void) as *mut clt_range,
             _ => {
-                _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
+                panic!("Unknown coverage format");
             }
         }
     }
@@ -529,7 +493,7 @@ unsafe extern "C" fn clt_lookup_coverage(mut cov: *mut clt_coverage, mut gid: u1
             }
         }
         _ => {
-            _tt_abort(b"Unknown coverage format\x00" as *const u8 as *const i8);
+            panic!("Unknown coverage format");
         }
     }
     -1i32
@@ -590,7 +554,7 @@ unsafe extern "C" fn otl_gsub_read_single(
         );
         len += clt_read_coverage(&mut (*data_0).coverage, sfont)
     } else {
-        _tt_abort(b"unexpected SubstFormat\x00" as *const u8 as *const i8);
+        panic!("unexpected SubstFormat");
     }
     len
 }
@@ -806,7 +770,7 @@ unsafe extern "C" fn otl_gsub_release_single(mut subtab: *mut otl_gsub_subtab) {
                 (*subtab).table.single2 = 0 as *mut otl_gsub_single2
             }
             _ => {
-                _tt_abort(b"Unknown format for single substitution\x00" as *const u8 as *const i8);
+                panic!("Unknown format for single substitution");
             }
         }
     };
@@ -1109,7 +1073,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
             ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
             clt_read_feature_table(&mut feature_table, sfont);
             if feature_table.FeatureParams as i32 != 0i32 {
-                _tt_abort(b"unrecognized FeatureParams\x00" as *const u8 as *const i8);
+                panic!("unrecognized FeatureParams");
             }
             i = 0i32;
             while i < feature_table.LookupListIndex.count as i32 {
@@ -1127,7 +1091,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
                 let mut n_st: i32 = 0;
                 ll_idx = *feature_table.LookupListIndex.value.offset(i as isize) as i32;
                 if ll_idx >= lookup_list.count as i32 {
-                    _tt_abort(b"invalid Lookup index.\x00" as *const u8 as *const i8);
+                    panic!("invalid Lookup index.");
                 }
                 offset = gsub_offset
                     .wrapping_add(head.LookupList as u32)
@@ -1444,7 +1408,7 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
     let mut i: i32 = 0;
     let mut gsub: *mut otl_gsub_tab = 0 as *mut otl_gsub_tab;
     if (*gsub_list).num_gsubs > 32i32 {
-        _tt_abort(b"Too many GSUB features...\x00" as *const u8 as *const i8);
+        panic!("Too many GSUB features...");
     }
     i = 0i32;
     while i < (*gsub_list).num_gsubs {
@@ -1582,7 +1546,7 @@ pub unsafe extern "C" fn otl_gsub_release(mut gsub_list: *mut otl_gsub) {
                     otl_gsub_release_ligature(subtab);
                 }
                 _ => {
-                    _tt_abort(b"???\x00" as *const u8 as *const i8);
+                    panic!("???");
                 }
             }
             j += 1
@@ -1605,7 +1569,7 @@ pub unsafe extern "C" fn otl_gsub_apply(mut gsub_list: *mut otl_gsub, mut gid: *
     }
     i = (*gsub_list).select;
     if i < 0i32 || i >= (*gsub_list).num_gsubs {
-        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const i8);
+        panic!("GSUB not selected...");
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     j = 0i32;
@@ -1635,7 +1599,7 @@ pub unsafe extern "C" fn otl_gsub_apply_alt(
     }
     i = (*gsub_list).select;
     if i < 0i32 || i >= (*gsub_list).num_gsubs {
-        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const i8);
+        panic!("GSUB not selected...");
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     j = 0i32;
@@ -1666,7 +1630,7 @@ pub unsafe extern "C" fn otl_gsub_apply_lig(
     }
     i = (*gsub_list).select;
     if i < 0i32 || i >= (*gsub_list).num_gsubs {
-        _tt_abort(b"GSUB not selected...\x00" as *const u8 as *const i8);
+        panic!("GSUB not selected...");
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
     j = 0i32;

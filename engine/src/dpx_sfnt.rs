@@ -8,6 +8,7 @@
     unused_mut
 )]
 
+use super::dpx_numbers::{tt_get_unsigned_pair, tt_get_unsigned_quad};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_obj,
     pdf_release_obj, pdf_stream_dict,
@@ -21,10 +22,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -153,10 +150,7 @@ pub unsafe extern "C" fn dfont_open(mut handle: rust_input_handle_t, mut index: 
     }
     ttstub_input_seek((*sfont).handle, types_pos as ssize_t, 0i32);
     if index > types_num as i32 {
-        _tt_abort(
-            b"Invalid index %d for dfont.\x00" as *const u8 as *const i8,
-            index,
-        );
+        panic!("Invalid index {} for dfont.", index);
     }
     i = 0_u16;
     while i as i32 <= types_num as i32 {
@@ -354,7 +348,7 @@ pub unsafe extern "C" fn sfnt_locate_table(mut sfont: *mut sfnt, mut tag: *const
     assert!(!sfont.is_null() && !tag.is_null());
     offset = sfnt_find_table_pos(sfont, tag);
     if offset == 0_u32 {
-        _tt_abort(b"sfnt: table not found...\x00" as *const u8 as *const i8);
+        panic!("sfnt: table not found...");
     }
     ttstub_input_seek((*sfont).handle, offset as ssize_t, 0i32);
     offset
@@ -547,9 +541,7 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
             if (*(*td).tables.offset(i as isize)).data.is_null() {
                 if (*sfont).handle.is_null() {
                     pdf_release_obj(stream);
-                    _tt_abort(
-                        b"Font file not opened or already closed...\x00" as *const u8 as *const i8,
-                    );
+                    panic!("Font file not opened or already closed...");
                 }
                 length = (*(*td).tables.offset(i as isize)).length as i32;
                 ttstub_input_seek(
@@ -565,7 +557,7 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
                     ) as i32;
                     if nb_read < 0i32 {
                         pdf_release_obj(stream);
-                        _tt_abort(b"Reading file failed...\x00" as *const u8 as *const i8);
+                        panic!("Reading file failed...");
                     } else {
                         if nb_read > 0i32 {
                             pdf_add_stream(

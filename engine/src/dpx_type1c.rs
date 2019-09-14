@@ -431,36 +431,9 @@ pub struct cff_range2 {
     pub first: s_SID,
     pub n_left: card16,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-    /* table data */
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cff_font {
@@ -620,17 +593,15 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
         || (*sfont).type_0 != 1i32 << 2i32
         || sfnt_read_table_directory(sfont, 0_u32) < 0i32
     {
-        _tt_abort(b"Not a CFF/OpenType font (9)?\x00" as *const u8 as *const i8);
+        panic!("Not a CFF/OpenType font (9)?");
     }
     offset = sfnt_find_table_pos(sfont, b"CFF \x00" as *const u8 as *const i8);
     if offset < 1_u32 {
-        _tt_abort(
-            b"No \"CFF \" table found; not a CFF/OpenType font (10)?\x00" as *const u8 as *const i8,
-        );
+        panic!("No \"CFF \" table found; not a CFF/OpenType font (10)?");
     }
     cffont = cff_open((*sfont).handle, offset as i32, 0i32);
     if cffont.is_null() {
-        _tt_abort(b"Could not read CFF font data\x00" as *const u8 as *const i8);
+        panic!("Could not read CFF font data");
     }
     if (*cffont).flag & 1i32 << 0i32 != 0 {
         cff_close(cffont);
@@ -640,7 +611,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
     }
     fontname = cff_get_name(cffont);
     if fontname.is_null() {
-        _tt_abort(b"No valid FontName found in CFF/OpenType font.\x00" as *const u8 as *const i8);
+        panic!("No valid FontName found in CFF/OpenType font.");
     }
     pdf_font_set_fontname(font, fontname);
     free(fontname as *mut libc::c_void);
@@ -668,10 +639,7 @@ pub unsafe extern "C" fn pdf_font_open_type1c(mut font: *mut pdf_font) -> i32 {
      */
     tmp = tt_get_fontdesc(sfont, &mut embedding, -1i32, 1i32, fontname); /* copy */
     if tmp.is_null() {
-        _tt_abort(
-            b"Could not obtain neccesary font info from OpenType table.\x00" as *const u8
-                as *const i8,
-        );
+        panic!("Could not obtain neccesary font info from OpenType table.");
     }
     pdf_merge_dict(descriptor, tmp);
     pdf_release_obj(tmp);
@@ -740,7 +708,7 @@ unsafe extern "C" fn add_SimpleMetrics(
         }
         if firstchar > lastchar {
             pdf_release_obj(tmp_array);
-            _tt_abort(b"No glyphs used at all!\x00" as *const u8 as *const i8);
+            panic!("No glyphs used at all!");
         }
         tfm_id = tfm_open(pdf_font_get_mapname(font), 0i32);
         code = firstchar;
@@ -880,16 +848,14 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
         return 0i32;
     }
     if pdf_font_get_flag(font, 1i32 << 0i32) != 0 {
-        _tt_abort(
-            b"Only embedded font supported for CFF/OpenType font.\x00" as *const u8 as *const i8,
-        );
+        panic!("Only embedded font supported for CFF/OpenType font.");
     }
     usedchars = pdf_font_get_usedchars(font);
     fontname = pdf_font_get_fontname(font);
     ident = pdf_font_get_ident(font);
     uniqueTag = pdf_font_get_uniqueTag(font);
     if usedchars.is_null() || fontname.is_null() || ident.is_null() {
-        _tt_abort(b"Unexpected error....\x00" as *const u8 as *const i8);
+        panic!("Unexpected error....");
     }
     fontdict = pdf_font_get_resource(font);
     descriptor = pdf_font_get_descriptor(font);
@@ -918,14 +884,14 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
         offset = sfnt_find_table_pos(sfont, b"CFF \x00" as *const u8 as *const i8) as i32;
         offset == 0i32
     } {
-        _tt_abort(b"Not a CFF/OpenType font (11)?\x00" as *const u8 as *const i8);
+        panic!("Not a CFF/OpenType font (11)?");
     }
     cffont = cff_open(handle as rust_input_handle_t, offset, 0i32);
     if cffont.is_null() {
-        _tt_abort(b"Could not open CFF font.\x00" as *const u8 as *const i8);
+        panic!("Could not open CFF font.");
     }
     if (*cffont).flag & 1i32 << 0i32 != 0 {
-        _tt_abort(b"This is CIDFont...\x00" as *const u8 as *const i8);
+        panic!("This is CIDFont...");
     }
     fullname = new((strlen(fontname).wrapping_add(8i32 as u64) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
@@ -1029,7 +995,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     offset = ttstub_input_seek((*cffont).handle, 0i32 as ssize_t, 1i32) as i32;
     cs_count = (*cs_idx).count;
     if (cs_count as i32) < 2i32 {
-        _tt_abort(b"No valid charstring data found.\x00" as *const u8 as *const i8);
+        panic!("No valid charstring data found.");
     }
     /* New CharStrings INDEX */
     charstrings = cff_new_index(257i32 as card16); /* 256 + 1 for ".notdef" glyph */
@@ -1100,11 +1066,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     }
     size = (*(*cs_idx).offset.offset(1)).wrapping_sub(*(*cs_idx).offset.offset(0)) as i32;
     if size > 65536i32 {
-        _tt_abort(
-            b"Charstring too long: gid=%u, %d bytes\x00" as *const u8 as *const i8,
-            0i32,
-            size,
-        );
+        panic!("Charstring too long: gid={}, {} bytes", 0, size);
     }
     *(*charstrings).offset.offset(0) = (charstring_len + 1i32) as l_offset;
     ttstub_input_seek(
@@ -1211,11 +1173,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
                         .wrapping_sub(*(*cs_idx).offset.offset(gid_0 as isize))
                         as i32;
                     if size > 65536i32 {
-                        _tt_abort(
-                            b"Charstring too long: gid=%u, %d bytes\x00" as *const u8 as *const i8,
-                            gid_0 as i32,
-                            size,
-                        );
+                        panic!("Charstring too long: gid={}, {} bytes", gid_0, size);
                     }
                     if charstring_len + 65536i32 >= max_len {
                         max_len = charstring_len + 2i32 * 65536i32;

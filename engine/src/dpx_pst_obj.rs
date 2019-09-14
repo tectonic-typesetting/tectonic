@@ -23,9 +23,6 @@ extern "C" {
     fn xtoi(c: i8) -> i32;
     #[no_mangle]
     fn skip_white_spaces(s: *mut *mut u8, endptr: *mut u8);
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -138,10 +135,7 @@ pub unsafe extern "C" fn pst_release_obj(mut obj: *mut pst_obj) {
             free((*obj).data);
         }
         _ => {
-            _tt_abort(
-                b"Unrecognized object type: %d\x00" as *const u8 as *const i8,
-                (*obj).type_0,
-            );
+            panic!("Unrecognized object type: {}", (*obj).type_0);
         }
     }
     free(obj as *mut libc::c_void);
@@ -162,16 +156,11 @@ pub unsafe extern "C" fn pst_length_of(mut obj: *mut pst_obj) -> i32 {
         6 => len = pst_name_length((*obj).data as *mut pst_name) as i32,
         5 => len = pst_string_length((*obj).data as *mut pst_string) as i32,
         0 | 7 => {
-            _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-            );
+            panic!("Operation not defined for this type of object.");
         }
         -1 => len = strlen((*obj).data as *const i8) as i32,
         _ => {
-            _tt_abort(
-                b"Unrecognized object type: %d\x00" as *const u8 as *const i8,
-                (*obj).type_0,
-            );
+            panic!("Unrecognized object type: {}", (*obj).type_0);
         }
     }
     len
@@ -187,21 +176,13 @@ pub unsafe extern "C" fn pst_getIV(mut obj: *mut pst_obj) -> i32 {
         6 => iv = pst_name_IV(),
         5 => iv = pst_string_IV((*obj).data as *mut pst_string),
         0 | 7 => {
-            _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-            );
+            panic!("Operation not defined for this type of object.");
         }
         -1 => {
-            _tt_abort(
-                b"Cannot convert object of type UNKNOWN to integer value.\x00" as *const u8
-                    as *const i8,
-            );
+            panic!("Cannot convert object of type UNKNOWN to integer value.");
         }
         _ => {
-            _tt_abort(
-                b"Unrecognized object type: %d\x00" as *const u8 as *const i8,
-                (*obj).type_0,
-            );
+            panic!("Unrecognized object type: {}", (*obj).type_0);
         }
     }
     iv
@@ -217,21 +198,13 @@ pub unsafe extern "C" fn pst_getRV(mut obj: *mut pst_obj) -> f64 {
         6 => rv = pst_name_RV(),
         5 => rv = pst_string_RV((*obj).data as *mut pst_string),
         0 | 7 => {
-            _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-            );
+            panic!("Operation not defined for this type of object.");
         }
         -1 => {
-            _tt_abort(
-                b"Cannot convert object of type UNKNOWN to real value.\x00" as *const u8
-                    as *const i8,
-            );
+            panic!("Cannot convert object of type UNKNOWN to real value.");
         }
         _ => {
-            _tt_abort(
-                b"Unrecognized object type: %d\x00" as *const u8 as *const i8,
-                (*obj).type_0,
-            );
+            panic!("Unrecognized object type: {}", (*obj).type_0);
         }
     }
     rv
@@ -248,9 +221,7 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut u8 {
         6 => sv = pst_name_SV((*obj).data as *mut pst_name),
         5 => sv = pst_string_SV((*obj).data as *mut pst_string),
         0 | 7 => {
-            _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-            );
+            panic!("Operation not defined for this type of object.");
         }
         -1 => {
             let mut len: i32 = 0;
@@ -266,10 +237,7 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut u8 {
             }
         }
         _ => {
-            _tt_abort(
-                b"Unrecognized object type: %d\x00" as *const u8 as *const i8,
-                (*obj).type_0,
-            );
+            panic!("Unrecognized object type: {}", (*obj).type_0);
         }
     }
     sv
@@ -306,16 +274,11 @@ pub unsafe extern "C" fn pst_data_ptr(mut obj: *mut pst_obj) -> *mut libc::c_voi
         6 => p = pst_name_data_ptr((*obj).data as *mut pst_name) as *mut i8,
         5 => p = pst_string_data_ptr((*obj).data as *mut pst_string) as *mut i8,
         0 | 7 => {
-            _tt_abort(
-                b"Operation not defined for this type of object.\x00" as *const u8 as *const i8,
-            );
+            panic!("Operation not defined for this type of object.");
         }
         -1 => p = (*obj).data as *mut i8,
         _ => {
-            _tt_abort(
-                b"Unrecognized object type: %d\x00" as *const u8 as *const i8,
-                (*obj).type_0,
-            );
+            panic!("Unrecognized object type: {}", (*obj).type_0);
         }
     }
     p as *mut libc::c_void
@@ -364,7 +327,7 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
     str
 }
 unsafe extern "C" fn pst_boolean_length() -> u32 {
-    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
+    panic!("Operation not defined for this type of object.");
 }
 unsafe extern "C" fn pst_boolean_data_ptr(mut obj: *mut pst_boolean) -> *mut libc::c_void {
     assert!(!obj.is_null());
@@ -515,7 +478,7 @@ unsafe extern "C" fn pst_integer_data_ptr(mut obj: *mut pst_integer) -> *mut lib
     &mut (*obj).value as *mut i32 as *mut libc::c_void
 }
 unsafe extern "C" fn pst_integer_length() -> u32 {
-    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
+    panic!("Operation not defined for this type of object.");
 }
 /* REAL */
 unsafe extern "C" fn pst_real_new(mut value: f64) -> *mut pst_real {
@@ -557,7 +520,7 @@ unsafe extern "C" fn pst_real_data_ptr(mut obj: *mut pst_real) -> *mut libc::c_v
     &mut (*obj).value as *mut f64 as *mut libc::c_void
 }
 unsafe extern "C" fn pst_real_length() -> u32 {
-    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
+    panic!("Operation not defined for this type of object.");
 }
 /* NOTE: the input buffer must be null-terminated, i.e., *inbufend == 0 */
 /* leading white-space is ignored */
@@ -779,10 +742,10 @@ pub unsafe extern "C" fn pst_parse_name(
     );
 }
 unsafe extern "C" fn pst_name_IV() -> i32 {
-    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
+    panic!("Operation not defined for this type of object.");
 }
 unsafe extern "C" fn pst_name_RV() -> f64 {
-    _tt_abort(b"Operation not defined for this type of object.\x00" as *const u8 as *const i8);
+    panic!("Operation not defined for this type of object.");
 }
 unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut u8 {
     let mut value: *mut i8 = 0 as *mut i8;
@@ -865,7 +828,7 @@ pub unsafe extern "C" fn pst_parse_string(
             );
         } else {
             if **inbuf as i32 == '<' as i32 && *(*inbuf).offset(1) as i32 == '~' as i32 {
-                _tt_abort(b"ASCII85 string not supported yet.\x00" as *const u8 as *const i8);
+                panic!("ASCII85 string not supported yet.");
             } else {
                 if **inbuf as i32 == '<' as i32 {
                     return pst_new_obj(
@@ -1108,7 +1071,7 @@ unsafe extern "C" fn pst_string_RV(mut obj: *mut pst_string) -> f64 {
     end = p.offset((*obj).length as isize);
     nobj = pst_parse_number(&mut p, end);
     if nobj.is_null() || p != end {
-        _tt_abort(b"Cound not convert string to real value.\x00" as *const u8 as *const i8);
+        panic!("Cound not convert string to real value.");
     }
     rv = pst_getRV(nobj);
     pst_release_obj(nobj);

@@ -784,7 +784,7 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
         i = i.wrapping_add(1)
     }
     if page_count < 1_u32 {
-        _tt_abort(b"No pages fall in range!\x00" as *const u8 as *const i8);
+        panic!("No pages fall in range!");
     }
     spc_exec_at_end_document();
 }
@@ -895,7 +895,7 @@ pub unsafe extern "C" fn dvipdfmx_main(
     /* Dependency between DVI and PDF side is rather complicated... */
     dvi2pts = dvi_init(dvi_filename, mag);
     if dvi2pts == 0.0f64 {
-        _tt_abort(b"dvi_init() failed!\x00" as *const u8 as *const i8);
+        panic!("dvi_init() failed!");
     }
     pdf_doc_set_creator(dvi_comment());
     dvi_scan_specials(
@@ -920,16 +920,10 @@ pub unsafe extern "C" fn dvipdfmx_main(
         if !(key_bits >= 40i32 && key_bits <= 128i32 && key_bits % 8i32 == 0i32)
             && key_bits != 256i32
         {
-            _tt_abort(
-                b"Invalid encryption key length specified: %u\x00" as *const u8 as *const i8,
-                key_bits,
-            );
+            panic!("Invalid encryption key length specified: {}", key_bits);
         } else {
             if key_bits > 40i32 && pdf_get_version() < 4_u32 {
-                _tt_abort(
-                    b"Chosen key length requires at least PDF 1.4. Use \"-V 4\" to change.\x00"
-                        as *const u8 as *const i8,
-                );
+                panic!("Chosen key length requires at least PDF 1.4. Use \"-V 4\" to change.");
             }
         }
         do_encryption = 1i32;

@@ -11,6 +11,7 @@
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_tt_post::{tt_lookup_post_table, tt_read_post_table, tt_release_post_table};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_merge_dict, pdf_new_array, pdf_new_name,
     pdf_new_number, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,
@@ -234,46 +235,14 @@ extern "C" {
         num_gids: u16,
         gid_out: *mut u16,
     ) -> i32;
-    #[no_mangle]
-    fn tt_read_post_table(sfont: *mut sfnt) -> *mut tt_post_table;
-    #[no_mangle]
-    fn tt_release_post_table(post: *mut tt_post_table);
-    #[no_mangle]
-    fn tt_lookup_post_table(post: *mut tt_post_table, glyphname: *const i8) -> u16;
     /* name table */
     #[no_mangle]
     fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: u16) -> u16;
 }
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -293,24 +262,9 @@ pub struct sfnt_table {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_post_table {
-    pub Version: Fixed,
-    pub italicAngle: Fixed,
-    pub underlinePosition: FWord,
-    pub underlineThickness: FWord,
-    pub isFixedPitch: u32,
-    pub minMemType42: u32,
-    pub maxMemType42: u32,
-    pub minMemType1: u32,
-    pub maxMemType1: u32,
-    pub numberOfGlyphs: u16,
-    pub glyphNamePtr: *mut *const i8,
-    pub names: *mut *mut i8,
-    pub count: u16,
-    /* Number of glyph names in names[] */
-}
+
+use super::dpx_tt_post::tt_post_table;
+
 pub type FWord = i16;
 pub type Fixed = u32;
 #[derive(Copy, Clone)]
@@ -341,19 +295,7 @@ pub struct NameTable {
     pub name: *const i8,
     pub must_exist: i32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_glyphs {
-    pub num_glyphs: u16,
-    pub max_glyphs: u16,
-    pub last_gid: u16,
-    pub emsize: u16,
-    pub dw: u16,
-    pub default_advh: u16,
-    pub default_tsb: i16,
-    pub gd: *mut tt_glyph_desc,
-    pub used_slot: *mut u8,
-}
+use super::dpx_tt_glyf::{tt_glyph_desc, tt_glyphs};
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -373,22 +315,7 @@ pub struct tt_glyphs {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_glyph_desc {
-    pub gid: u16,
-    pub ogid: u16,
-    pub advw: u16,
-    pub advh: u16,
-    pub lsb: i16,
-    pub tsb: i16,
-    pub llx: i16,
-    pub lly: i16,
-    pub urx: i16,
-    pub ury: i16,
-    pub length: u32,
-    pub data: *mut u8,
-}
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -584,7 +511,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     if tmp.is_null() {
         sfnt_close(sfont);
         ttstub_input_close(handle as rust_input_handle_t);
-        _tt_abort(b"Could not obtain necessary font info.\x00" as *const u8 as *const i8);
+        panic!("Could not obtain necessary font info.");
     }
     assert!(pdf_obj_typeof(tmp) == 6i32);
     pdf_merge_dict(descriptor, tmp);
@@ -592,10 +519,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     if embedding == 0 {
         if encoding_id >= 0i32 && pdf_encoding_is_predefined(encoding_id) == 0 {
             sfnt_close(sfont);
-            _tt_abort(
-                b"Custom encoding not allowed for non-embedded TrueType font.\x00" as *const u8
-                    as *const i8,
-            );
+            panic!("Custom encoding not allowed for non-embedded TrueType font.");
         } else {
             /* There are basically no guarantee for font substitution
              * can work with "symblic" fonts. At least all glyphs
@@ -919,7 +843,7 @@ unsafe extern "C" fn agl_decompose_glyphname(
             break;
         }
         if n >= size {
-            _tt_abort(b"Uh ah...\x00" as *const u8 as *const i8);
+            panic!("Uh ah...");
         }
         *p = '\u{0}' as i32 as i8;
         p = p.offset(1);

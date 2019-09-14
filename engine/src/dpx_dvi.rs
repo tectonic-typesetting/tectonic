@@ -12,6 +12,10 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_numbers::{
+    tt_get_positive_quad, tt_get_signed_quad, tt_get_unsigned_byte, tt_get_unsigned_num,
+    tt_get_unsigned_pair, tt_get_unsigned_quad,
+};
 use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
 use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
 use crate::dpx_pdfobj::{
@@ -73,19 +77,6 @@ extern "C" {
     /* Tectonic enabled */
     #[no_mangle]
     fn tt_skip_bytes(n: u32, handle: rust_input_handle_t);
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
-    #[no_mangle]
-    fn tt_get_unsigned_pair(handle: rust_input_handle_t) -> u16;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
-    fn tt_get_signed_quad(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn tt_get_unsigned_num(handle: rust_input_handle_t, num: u8) -> u32;
-    #[no_mangle]
-    fn tt_get_positive_quad(handle: rust_input_handle_t, type_0: *const i8, name: *const i8)
-        -> u32;
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
     /* Draw texts and rules:
@@ -751,36 +742,9 @@ pub struct C2RustUnnamed_4 {
     pub bchar: card8,
     pub achar: card8,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt {
-    pub type_0: i32,
-    pub directory: *mut sfnt_table_directory,
-    pub handle: rust_input_handle_t,
-    pub offset: u32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table_directory {
-    pub version: u32,
-    pub num_tables: u16,
-    pub search_range: u16,
-    pub entry_selector: u16,
-    pub range_shift: u16,
-    pub num_kept_tables: u16,
-    pub flags: *mut i8,
-    pub tables: *mut sfnt_table,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct sfnt_table {
-    pub tag: [i8; 4],
-    pub check_sum: u32,
-    pub offset: u32,
-    pub length: u32,
-    pub data: *mut i8,
-    /* table data */
-}
+
+use super::dpx_sfnt::{sfnt, sfnt_table, sfnt_table_directory};
+
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
     Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
@@ -800,27 +764,7 @@ pub struct sfnt_table {
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_head_table {
-    pub version: Fixed,
-    pub fontRevision: Fixed,
-    pub checkSumAdjustment: u32,
-    pub magicNumber: u32,
-    pub flags: u16,
-    pub unitsPerEm: u16,
-    pub created: [u8; 8],
-    pub modified: [u8; 8],
-    pub xMin: FWord,
-    pub yMin: FWord,
-    pub xMax: FWord,
-    pub yMax: FWord,
-    pub macStyle: u16,
-    pub lowestRecPPEM: u16,
-    pub fontDirectionHint: i16,
-    pub indexToLocFormat: i16,
-    pub glyphDataFormat: i16,
-}
+use super::dpx_tt_table::{tt_head_table, tt_hhea_table, tt_maxp_table};
 /* 16.16-bit signed fixed-point number */
 pub type FWord = i16;
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
@@ -845,45 +789,7 @@ pub type FWord = i16;
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
 pub type Fixed = u32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_maxp_table {
-    pub version: Fixed,
-    pub numGlyphs: u16,
-    pub maxPoints: u16,
-    pub maxContours: u16,
-    pub maxComponentPoints: u16,
-    pub maxComponentContours: u16,
-    pub maxZones: u16,
-    pub maxTwilightPoints: u16,
-    pub maxStorage: u16,
-    pub maxFunctionDefs: u16,
-    pub maxInstructionDefs: u16,
-    pub maxStackElements: u16,
-    pub maxSizeOfInstructions: u16,
-    pub maxComponentElements: u16,
-    pub maxComponentDepth: u16,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_hhea_table {
-    pub version: Fixed,
-    pub ascent: FWord,
-    pub descent: FWord,
-    pub lineGap: FWord,
-    pub advanceWidthMax: uFWord,
-    pub minLeftSideBearing: FWord,
-    pub minRightSideBearing: FWord,
-    pub xMaxExtent: FWord,
-    pub caretSlopeRise: i16,
-    pub caretSlopeRun: i16,
-    pub caretOffset: FWord,
-    pub reserved: [i16; 4],
-    pub metricDataFormat: i16,
-    pub numOfLongHorMetrics: u16,
-    pub numOfExSideBearings: u16,
-    /* extra information */
-}
+
 pub type uFWord = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -1240,7 +1146,7 @@ unsafe extern "C" fn get_and_buffer_unsigned_byte(mut handle: rust_input_handle_
     let mut ch: i32 = 0;
     ch = ttstub_input_getc(handle);
     if ch < 0i32 {
-        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
+        panic!("File ended prematurely\n");
     }
     if dvi_page_buf_index >= dvi_page_buf_size {
         dvi_page_buf_size = dvi_page_buf_size.wrapping_add(0x10000u32);
@@ -1275,7 +1181,7 @@ unsafe extern "C" fn get_and_buffer_bytes(mut handle: rust_input_handle_t, mut c
         count as size_t,
     ) != count as i64
     {
-        _tt_abort(b"File ended prematurely\n\x00" as *const u8 as *const i8);
+        panic!("File ended prematurely\n");
     }
     dvi_page_buf_index = dvi_page_buf_index.wrapping_add(count);
 }
@@ -1423,27 +1329,20 @@ static mut is_ptex: i32 = 0i32;
 static mut has_ptex: i32 = 0i32;
 unsafe extern "C" fn check_id_bytes() {
     if pre_id_byte != post_id_byte && (pre_id_byte != 2i32 || post_id_byte != 3i32) {
-        _tt_abort(
-            b"Inconsistent DVI id_bytes %d (pre) and %d (post)\x00" as *const u8 as *const i8,
-            pre_id_byte,
-            post_id_byte,
+        panic!(
+            "Inconsistent DVI id_bytes {} (pre) and {} (post)",
+            pre_id_byte, post_id_byte
         );
     };
 }
 unsafe extern "C" fn need_XeTeX(mut c: i32) {
     if is_xdv == 0 {
-        _tt_abort(
-            b"DVI opcode %i only valid for XeTeX\x00" as *const u8 as *const i8,
-            c,
-        );
+        panic!("DVI opcode {} only valid for XeTeX", c,);
     };
 }
 unsafe extern "C" fn need_pTeX(mut c: i32) {
     if is_ptex == 0 {
-        _tt_abort(
-            b"DVI opcode %i only valid for Ascii pTeX\x00" as *const u8 as *const i8,
-            c,
-        );
+        panic!("DVI opcode {} only valid for Ascii pTeX", c,);
     }
     has_ptex = 1i32;
 }
@@ -1453,7 +1352,7 @@ unsafe extern "C" fn find_post() -> i32 {
     let mut ch: i32 = 0;
     dvi_size = ttstub_input_get_size(dvi_handle) as off_t;
     if dvi_size > 0x7fffffffi32 as i64 {
-        _tt_abort(b"DVI file size exceeds 31-bit\x00" as *const u8 as *const i8);
+        panic!("DVI file size exceeds 31-bit");
     }
     dvi_file_size = dvi_size as u32;
     ttstub_input_seek(dvi_handle, 0i32 as ssize_t, 2i32);
@@ -1517,7 +1416,7 @@ unsafe extern "C" fn get_page_info(mut post_location: i32) {
     ttstub_input_seek(dvi_handle, (post_location + 27i32) as ssize_t, 0i32);
     num_pages = tt_get_unsigned_pair(dvi_handle) as u32;
     if num_pages == 0_u32 {
-        _tt_abort(b"Page count is 0!\x00" as *const u8 as *const i8);
+        panic!("Page count is 0!");
     }
     if verbose > 2i32 {
         info!("Page count:\t {:4}\n", num_pages,);
@@ -1570,7 +1469,7 @@ unsafe extern "C" fn get_dvi_info(mut post_location: i32) {
     if dvi_info.stackdepth > 256u32 {
         warn!("DVI need stack depth of {},", dvi_info.stackdepth);
         warn!("but DVI_STACK_DEPTH_MAX is {}.", 256u32);
-        _tt_abort(b"Capacity exceeded.\x00" as *const u8 as *const i8);
+        panic!("Capacity exceeded.");
     }
     if verbose > 2i32 {
         info!("DVI File Info\n");
@@ -2042,10 +1941,7 @@ pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: sp
                 tfm_name,
             );
         }
-        _tt_abort(
-            b"Cannot proceed without .vf or \"physical\" font for PDF output...\x00" as *const u8
-                as *const i8,
-        );
+        panic!("Cannot proceed without .vf or \"physical\" font for PDF output...");
     }
     (*loaded_fonts.offset(cur_id as isize)).type_0 = 1i32;
     (*loaded_fonts.offset(cur_id as isize)).font_id = font_id;
@@ -2289,7 +2185,7 @@ pub unsafe extern "C" fn dvi_set(mut ch: i32) {
     let mut depth: spt_t = 0;
     let mut wbuf: [u8; 4] = [0; 4];
     if current_font < 0i32 {
-        _tt_abort(b"No font selected!\x00" as *const u8 as *const i8);
+        panic!("No font selected!");
     }
     /* The division by dvi2pts seems strange since we actually know the
      * "dvi" size of the fonts contained in the DVI file.  In other
@@ -2396,7 +2292,7 @@ pub unsafe extern "C" fn dvi_put(mut ch: i32) {
     let mut depth: spt_t = 0;
     let mut wbuf: [u8; 4] = [0; 4];
     if current_font < 0i32 {
-        _tt_abort(b"No font selected!\x00" as *const u8 as *const i8);
+        panic!("No font selected!");
     }
     font = &mut *loaded_fonts.offset(current_font as isize) as *mut loaded_font;
     match (*font).type_0 {
@@ -2546,7 +2442,7 @@ unsafe extern "C" fn do_putrule() {
 #[no_mangle]
 pub unsafe extern "C" fn dvi_push() {
     if dvi_stack_depth as u32 >= 256u32 {
-        _tt_abort(b"DVI stack exceeded limit.\x00" as *const u8 as *const i8);
+        panic!("DVI stack exceeded limit.");
     }
     let fresh21 = dvi_stack_depth;
     dvi_stack_depth = dvi_stack_depth + 1;
@@ -2555,7 +2451,7 @@ pub unsafe extern "C" fn dvi_push() {
 #[no_mangle]
 pub unsafe extern "C" fn dpx_dvi_pop() {
     if dvi_stack_depth <= 0i32 {
-        _tt_abort(b"Tried to pop an empty stack.\x00" as *const u8 as *const i8);
+        panic!("Tried to pop an empty stack.");
     }
     dvi_stack_depth -= 1;
     dvi_state = dvi_stack[dvi_stack_depth as usize];
@@ -2631,10 +2527,9 @@ unsafe extern "C" fn do_fnt(mut tex_id: u32) {
         i = i.wrapping_add(1)
     }
     if i == num_def_fonts {
-        _tt_abort(
-            b"Tried to select a font that hasn\'t been defined: id=%d\x00" as *const u8
-                as *const i8,
-            tex_id,
+        panic!(
+            "Tried to select a font that hasn\'t been defined: id={}",
+            tex_id
         );
     }
     if (*def_fonts.offset(i as isize)).used == 0 {
@@ -2675,7 +2570,7 @@ unsafe extern "C" fn do_xxx(mut size: i32) {
 unsafe extern "C" fn do_bop() {
     let mut i: u32 = 0;
     if processing_page != 0 {
-        _tt_abort(b"Got a bop in the middle of a page!\x00" as *const u8 as *const i8);
+        panic!("Got a bop in the middle of a page!");
     }
     /* For now, ignore TeX's count registers */
     i = 0_u32;
@@ -2695,7 +2590,7 @@ unsafe extern "C" fn do_bop() {
 unsafe extern "C" fn do_eop() {
     processing_page = 0i32;
     if dvi_stack_depth != 0i32 {
-        _tt_abort(b"DVI stack depth is not zero at end of page\x00" as *const u8 as *const i8);
+        panic!("DVI stack depth is not zero at end of page");
     }
     spc_exec_at_end_page();
     pdf_doc_end_page();
@@ -2707,7 +2602,7 @@ unsafe extern "C" fn do_dir() {
 }
 unsafe extern "C" fn lr_width_push() {
     if lr_width_stack_depth >= 256u32 {
-        _tt_abort(b"Segment width stack exceeded limit.\x00" as *const u8 as *const i8);
+        panic!("Segment width stack exceeded limit.");
         /* must precede dvi_right */
     }
     let fresh22 = lr_width_stack_depth;
@@ -2716,7 +2611,7 @@ unsafe extern "C" fn lr_width_push() {
 }
 unsafe extern "C" fn lr_width_pop() {
     if lr_width_stack_depth <= 0_u32 {
-        _tt_abort(b"Tried to pop an empty segment width stack.\x00" as *const u8 as *const i8);
+        panic!("Tried to pop an empty segment width stack.");
     }
     lr_width_stack_depth = lr_width_stack_depth.wrapping_sub(1);
     lr_width = lr_width_stack[lr_width_stack_depth as usize];
@@ -2806,7 +2701,7 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: i32) {
     let mut glyph_id: u32 = 0;
     let mut slen: u32 = 0_u32;
     if current_font < 0i32 {
-        _tt_abort(b"No font selected!\x00" as *const u8 as *const i8);
+        panic!("No font selected!");
     }
     font = &mut *loaded_fonts.offset(current_font as isize) as *mut loaded_font;
     if do_actual_text != 0 {
@@ -2986,10 +2881,7 @@ unsafe extern "C" fn check_postamble() {
                 skip_native_font_def();
             }
             _ => {
-                _tt_abort(
-                    b"Unexpected op code (%u) in postamble\x00" as *const u8 as *const i8,
-                    code,
-                );
+                panic!("Unexpected op code ({}) in postamble", code);
             }
         }
     }
@@ -3005,10 +2897,7 @@ unsafe extern "C" fn check_postamble() {
     }
     check_id_bytes();
     if has_ptex != 0 && post_id_byte != 3i32 {
-        _tt_abort(
-            b"Saw opcode %i in DVI file not for Ascii pTeX\x00" as *const u8 as *const i8,
-            255i32,
-        );
+        panic!("Saw opcode {} in DVI file not for Ascii pTeX", 255i32,);
     }
     num_pages = 0_u32;
     /* force loop to terminate */
@@ -3044,10 +2933,7 @@ pub unsafe extern "C" fn dvi_do_page(
                     current_block_59 = 6471821049853688503;
                 }
                 131 => {
-                    _tt_abort(
-                        b"Multibyte (>24 bits) character not supported!\x00" as *const u8
-                            as *const i8,
-                    );
+                    panic!("Multibyte (>24 bits) character not supported!");
                 }
                 132 => {
                     do_setrule();
@@ -3058,10 +2944,7 @@ pub unsafe extern "C" fn dvi_do_page(
                     current_block_59 = 6471821049853688503;
                 }
                 136 => {
-                    _tt_abort(
-                        b"Multibyte (>24 bits) character not supported!\x00" as *const u8
-                            as *const i8,
-                    );
+                    panic!("Multibyte (>24 bits) character not supported!");
                 }
                 137 => {
                     do_putrule();
@@ -3212,20 +3095,14 @@ pub unsafe extern "C" fn dvi_do_page(
                     current_block_59 = 17253953464124104480;
                 }
                 _ => {
-                    _tt_abort(
-                        b"Unexpected opcode or DVI file ended prematurely\x00" as *const u8
-                            as *const i8,
-                    );
+                    panic!("Unexpected opcode or DVI file ended prematurely");
                 }
             }
             match current_block_59 {
                 17253953464124104480 =>
                 /* else fall through to error case */
                 {
-                    _tt_abort(
-                        b"Unexpected preamble or postamble in dvi file\x00" as *const u8
-                            as *const i8,
-                    );
+                    panic!("Unexpected preamble or postamble in dvi file");
                 }
                 _ =>
                     /* These should not occur - processed during pre-scanning */
@@ -3238,7 +3115,7 @@ pub unsafe extern "C" fn dvi_do_page(
 pub unsafe extern "C" fn dvi_init(mut dvi_filename: *const i8, mut mag: f64) -> f64 {
     let mut post_location: i32 = 0;
     if dvi_filename.is_null() {
-        _tt_abort(b"filename must be specified\x00" as *const u8 as *const i8);
+        panic!("filename must be specified");
     }
     dvi_handle = ttstub_input_open(dvi_filename, TTInputFormat::BINARY, 0i32);
     if dvi_handle.is_null() {
@@ -3332,7 +3209,7 @@ pub unsafe extern "C" fn dvi_vf_init(mut dev_font_id: i32) {
         num_saved_fonts = num_saved_fonts.wrapping_add(1);
         saved_dvi_font[fresh26 as usize] = current_font
     } else {
-        _tt_abort(b"Virtual fonts nested too deeply!\x00" as *const u8 as *const i8);
+        panic!("Virtual fonts nested too deeply!");
     }
     current_font = dev_font_id;
 }
@@ -3344,7 +3221,7 @@ pub unsafe extern "C" fn dvi_vf_finish() {
         num_saved_fonts = num_saved_fonts.wrapping_sub(1);
         current_font = saved_dvi_font[num_saved_fonts as usize]
     } else {
-        _tt_abort(b"Tried to pop an empty font stack\x00" as *const u8 as *const i8);
+        panic!("Tried to pop an empty font stack");
     };
 }
 /* Scan various specials */
@@ -3693,10 +3570,7 @@ pub unsafe extern "C" fn dvi_scan_specials(
     dvi_page_buf_index = 0_u32;
     if linear == 0 {
         if page_no as u32 >= num_pages {
-            _tt_abort(
-                b"Invalid page number: %u\x00" as *const u8 as *const i8,
-                page_no,
-            );
+            panic!("Invalid page number: {}", page_no);
         }
         offset = *page_loc.offset(page_no as isize);
         ttstub_input_seek(dvi_handle, offset as ssize_t, 0i32);
@@ -3772,7 +3646,7 @@ pub unsafe extern "C" fn dvi_scan_specials(
                 size as size_t,
             ) != size as i64
             {
-                _tt_abort(b"Reading DVI file failed!\x00" as *const u8 as *const i8);
+                panic!("Reading DVI file failed!");
             }
             if scan_special(
                 page_width,
@@ -3882,10 +3756,7 @@ pub unsafe extern "C" fn dvi_scan_specials(
                 /* else fall through to error case */
                 /* case PRE: case POST_POST: and others */
                 {
-                    _tt_abort(
-                        b"Unexpected opcode %d\x00" as *const u8 as *const i8,
-                        opcode as i32,
-                    );
+                    panic!("Unexpected opcode {}", opcode as i32);
                 }
                 _ => {}
             }

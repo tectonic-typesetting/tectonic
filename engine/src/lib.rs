@@ -888,10 +888,9 @@ pub unsafe extern "C" fn xcalloc(mut nelem: size_t, mut elsize: size_t) -> *mut 
         if elsize != 0 { elsize } else { 1i32 as u64 },
     );
     if new_mem.is_null() {
-        _tt_abort(
-            b"xcalloc request for %lu elements of size %lu failed\x00" as *const u8 as *const i8,
-            nelem,
-            elsize,
+        panic!(
+            "xcalloc request for {} elements of size {} failed",
+            nelem, elsize,
         );
     }
     new_mem
@@ -900,10 +899,7 @@ pub unsafe extern "C" fn xcalloc(mut nelem: size_t, mut elsize: size_t) -> *mut 
 pub unsafe extern "C" fn xmalloc(mut size: size_t) -> *mut libc::c_void {
     let mut new_mem: *mut libc::c_void = malloc(if size != 0 { size } else { 1i32 as u64 });
     if new_mem.is_null() {
-        _tt_abort(
-            b"xmalloc request for %lu bytes failed\x00" as *const u8 as *const i8,
-            size,
-        );
+        panic!("xmalloc request for {} bytes failed", size,);
     }
     new_mem
 }
@@ -918,10 +914,7 @@ pub unsafe extern "C" fn xrealloc(
     } else {
         new_mem = realloc(old_ptr, if size != 0 { size } else { 1i32 as u64 });
         if new_mem.is_null() {
-            _tt_abort(
-                b"xrealloc() to %lu bytes failed\x00" as *const u8 as *const i8,
-                size,
-            );
+            panic!("xrealloc() to {} bytes failed", size,);
         }
     }
     new_mem

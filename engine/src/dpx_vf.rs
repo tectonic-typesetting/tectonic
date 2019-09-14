@@ -8,6 +8,9 @@
     unused_mut
 )]
 
+use super::dpx_numbers::{
+    tt_get_positive_quad, tt_get_unsigned_byte, tt_get_unsigned_num, tt_get_unsigned_quad,
+};
 use crate::streq_ptr;
 use crate::warn;
 
@@ -27,21 +30,9 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     /* Tectonic enabled */
     #[no_mangle]
     fn tt_skip_bytes(n: u32, handle: rust_input_handle_t);
-    #[no_mangle]
-    fn tt_get_unsigned_byte(handle: rust_input_handle_t) -> u8;
-    #[no_mangle]
-    fn tt_get_unsigned_quad(handle: rust_input_handle_t) -> u32;
-    #[no_mangle]
-    fn tt_get_unsigned_num(handle: rust_input_handle_t, num: u8) -> u32;
-    #[no_mangle]
-    fn tt_get_positive_quad(handle: rust_input_handle_t, type_0: *const i8, name: *const i8)
-        -> u32;
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
     #[no_mangle]
@@ -273,7 +264,7 @@ unsafe extern "C" fn read_a_char_def(
         pkt = new((pkt_len as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
             as *mut u8;
         if ttstub_input_read(vf_handle, pkt as *mut i8, pkt_len as size_t) != pkt_len as i64 {
-            _tt_abort(b"VF file ended prematurely.\x00" as *const u8 as *const i8);
+            panic!("VF file ended prematurely.");
         }
         let ref mut fresh2 = *(*vf_fonts.offset(thisfont as isize))
             .ch_pkt
@@ -327,12 +318,12 @@ unsafe extern "C" fn read_a_font_def(
     if ttstub_input_read(vf_handle, (*dev_font).directory, dir_length as size_t)
         != dir_length as i64
     {
-        _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
+        panic!("directory read failed");
     }
     (*dev_font).name = new(((name_length + 1i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     if ttstub_input_read(vf_handle, (*dev_font).name, name_length as size_t) != name_length as i64 {
-        _tt_abort(b"directory read failed\x00" as *const u8 as *const i8);
+        panic!("directory read failed");
     }
     *(*dev_font).directory.offset(dir_length as isize) = 0_i8;
     *(*dev_font).name.offset(name_length as isize) = 0_i8;
@@ -378,8 +369,7 @@ unsafe extern "C" fn process_vf_file(mut vf_handle: rust_input_handle_t, mut thi
                         read_a_char_def(vf_handle, thisfont, pkt_len, ch_0);
                     } else {
                         eprintln!("char={}", ch_0);
-                        _tt_abort(b"Long character (>24 bits) in VF file.\nI can\'t handle long characters!\n\x00"
-                                      as *const u8 as *const i8);
+                        panic!("Long character (>24 bits) in VF file.\nI can\'t handle long characters!\n");
                     }
                 } else if code == 248i32 {
                     eof = 1i32
@@ -462,7 +452,7 @@ unsafe extern "C" fn unsigned_byte(mut start: *mut *mut u8, mut end: *mut u8) ->
         *start = (*start).offset(1);
         byte = *fresh10 as i32
     } else {
-        _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
+        panic!("Premature end of DVI byte stream in VF font\n");
     }
     byte
 }
@@ -515,7 +505,7 @@ unsafe extern "C" fn get_pkt_signed_num(
             _ => {}
         }
     } else {
-        _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
+        panic!("Premature end of DVI byte stream in VF font\n");
     }
     val
 }
@@ -568,7 +558,7 @@ unsafe extern "C" fn get_pkt_unsigned_num(
             _ => {}
         }
     } else {
-        _tt_abort(b"Premature end of DVI byte stream in VF font\n\x00" as *const u8 as *const i8);
+        panic!("Premature end of DVI byte stream in VF font\n");
     }
     val
 }
@@ -642,7 +632,7 @@ unsafe extern "C" fn vf_xxx(mut len: i32, mut start: *mut *mut u8, mut end: *mut
         }
         free(buffer as *mut libc::c_void);
     } else {
-        _tt_abort(b"Premature end of DVI byte stream in VF font.\x00" as *const u8 as *const i8);
+        panic!("Premature end of DVI byte stream in VF font.");
     }
     *start = (*start).offset(len as isize);
 }
@@ -690,10 +680,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                     ));
                 }
                 131 => {
-                    _tt_abort(
-                        b"Multibyte (>24 bits) character in VF packet.\nI can\'t handle this!\x00"
-                            as *const u8 as *const i8,
-                    );
+                    panic!("Multibyte (>24 bits) character in VF packet.\nI can\'t handle this!");
                 }
                 132 => {
                     vf_setrule(&mut start, end, ptsize);
@@ -706,10 +693,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                     ));
                 }
                 136 => {
-                    _tt_abort(
-                        b"Multibyte (>24 bits) character in VF packet.\nI can\'t handle this!\x00"
-                            as *const u8 as *const i8,
-                    );
+                    panic!("Multibyte (>24 bits) character in VF packet.\nI can\'t handle this!");
                 }
                 137 => {
                     vf_putrule(&mut start, end, ptsize);
@@ -794,7 +778,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
                         vf_fnt(opcode as i32 - 171i32, vf_font);
                     } else {
                         eprintln!("Unexpected opcode: {}", opcode as i32);
-                        _tt_abort(b"Unexpected opcode in vf file\n\x00" as *const u8 as *const i8);
+                        panic!("Unexpected opcode in vf file\n");
                     }
                 }
             }
@@ -802,7 +786,7 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
         dvi_vf_finish();
     } else {
         eprint!("vf_set_char: font: {}", vf_font);
-        _tt_abort(b"Font not loaded\n\x00" as *const u8 as *const i8);
+        panic!("Font not loaded\n");
     };
 }
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.

@@ -8,9 +8,6 @@
 
 use crate::{ttstub_issue_warning, ttstub_output_open_stdout, ttstub_output_write};
 extern "C" {
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
     /* Global symbols that route through the global API variable. Hopefully we
      * will one day eliminate all of the global state and get rid of all of
      * these. */
@@ -66,7 +63,7 @@ static mut _dpx_message_buf: [i8; 1024] = [0; 1024];
 unsafe extern "C" fn _dpx_ensure_output_handle() -> rust_output_handle_t {
     _dpx_message_handle = ttstub_output_open_stdout();
     if _dpx_message_handle.is_null() {
-        _tt_abort(b"xdvipdfmx cannot get output logging handle?!\x00" as *const u8 as *const i8);
+        panic!("xdvipdfmx cannot get output logging handle?!");
     }
     _dpx_message_handle
 }
