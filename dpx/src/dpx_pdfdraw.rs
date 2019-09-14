@@ -64,7 +64,7 @@ pub use super::dpx_pdfcolor::pdf_color;
 use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix};
 
 /* Graphics State */
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct pdf_gstate {
     pub cp: pdf_coord,
@@ -81,12 +81,9 @@ pub struct pdf_gstate {
     pub flags: i32,
     pub pt_fixee: pdf_coord,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
+#[derive(Clone)]
 pub struct pdf_path {
-    pub num_paths: u32,
-    pub max_paths: u32,
-    pub path: *mut pa_elem,
+    pub path: Vec<pa_elem>
     /* cm,  - */
     /* colorspace here */
     /* d,  D  */
@@ -99,7 +96,19 @@ pub struct pdf_path {
     /* bookkeeping the origin of the last transform applied */
     /* _PDF_DRAW_H_ */
 }
-#[derive(Copy, Clone)]
+
+impl pdf_path {
+    pub fn new() -> Self {
+        Self {
+            path: vec![]
+        }
+    }
+    pub fn len(&self) -> usize {
+        self.path.len()
+    }
+}
+
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct pa_elem {
     pub typ: PeType,
@@ -199,12 +208,7 @@ pub unsafe extern "C" fn pdf_invertmatrix(M: &mut pdf_tmatrix) {
         W.e /= det;
         W.f /= det
     }
-    M.a = W.a;
-    M.b = W.b;
-    M.c = W.c;
-    M.d = W.d;
-    M.e = W.e;
-    M.f = W.f;
+    *M = W;
 }
 
 #[derive(Clone,Copy,Debug,PartialEq)]
@@ -216,6 +220,12 @@ pub enum PeType {
     CURVETO_Y = 4,
     CLOSEPATH = 5,
     TERMINATE = 6,
+}
+
+impl Default for PeType {
+    fn default() -> Self {
+        PeType::MOVETO
+    }
 }
 
 impl PeType {
@@ -246,7 +256,7 @@ impl PeType {
 }
 
 static mut fmt_buf: [i8; 1024] = [0; 1024];
-unsafe extern "C" fn init_a_path(p: &mut pdf_path) {
+/*fn init_a_path(p: &mut pdf_path) {
     p.num_paths = 0_u32;
     p.max_paths = 0_u32;
     p.path = 0 as *mut pa_elem;
@@ -268,13 +278,14 @@ unsafe extern "C" fn pdf_path__growpath(p: &mut pdf_path, mut max_pe: u32) -> i3
         (p.max_paths as u64).wrapping_mul(::std::mem::size_of::<pa_elem>() as u64) as u32,
     ) as *mut pa_elem;
     0i32
-}
-unsafe extern "C" fn clear_a_path(p: &mut pdf_path) {
-    p.path = mfree(p.path as *mut libc::c_void) as *mut pa_elem;
+}*/
+fn clear_a_path(p: &mut pdf_path) {
+    p.path = vec![];
+    /*p.path = mfree(p.path as *mut libc::c_void) as *mut pa_elem;
     p.num_paths = 0_u32;
-    p.max_paths = 0_u32;
+    p.max_paths = 0_u32;*/
 }
-unsafe extern "C" fn pdf_path__copypath(p1: &mut pdf_path, p0: &pdf_path) -> i32 {
+/*unsafe extern "C" fn pdf_path__copypath(p1: &mut pdf_path, p0: &pdf_path) -> i32 {
     let mut i: u32 = 0;
     pdf_path__growpath(p1, p0.num_paths);
     i = 0_u32;
@@ -287,30 +298,28 @@ unsafe extern "C" fn pdf_path__copypath(p1: &mut pdf_path, p0: &pdf_path) -> i32
     }
     p1.num_paths = p0.num_paths;
     0i32
-}
+}*/
 /* start new subpath */
 unsafe extern "C" fn pdf_path__moveto(
     pa: &mut pdf_path,
     cp: &mut pdf_coord,
     p0: &pdf_coord,
 ) -> i32 {
-    pdf_path__growpath(pa, pa.num_paths + 1);
-    if pa.num_paths > 0_u32 {
-        let pe = &mut *(*pa)
-            .path
-            .offset((pa.num_paths - 1) as isize);
+    if !pa.path.is_empty() {
+        let len = pa.len();
+        let pe = &mut pa.path[len - 1];
         if pe.typ == PeType::MOVETO {
             *cp = *p0;
             pe.p[0] = *cp;
             return 0i32;
         }
     }
-    let fresh0 = pa.num_paths;
-    pa.num_paths += 1;
-    let pe = &mut *pa.path.offset(fresh0 as isize);
-    pe.typ = PeType::MOVETO;
     *cp = *p0;
-    pe.p[0] = *cp;
+    let pe = pa_elem {
+        typ: PeType::MOVETO,
+        p: [*cp, pdf_coord::new(), pdf_coord::new()],
+    };
+    pa.path.push(pe);
     0i32
 }
 /* Do 'compression' of path while adding new path elements.
@@ -322,90 +331,69 @@ unsafe extern "C" fn pdf_path__moveto(
  * This affects how 'closepath' is treated.
  */
 unsafe extern "C" fn pdf_path__next_pe<'a>(pa: &'a mut pdf_path, cp: &pdf_coord) -> &'a mut pa_elem {
-    let mut pe: *mut pa_elem = 0 as *mut pa_elem;
-    pdf_path__growpath(pa, pa.num_paths + 2);
-    if pa.num_paths == 0_u32 {
-        let fresh1 = pa.num_paths;
-        pa.num_paths += 1;
-        let pe = &mut *pa.path.offset(fresh1 as isize);
-        pe.typ = PeType::MOVETO;
-        pe.p[0].x = cp.x;
-        pe.p[0].y = cp.y;
-        let fresh2 = pa.num_paths;
-        pa.num_paths += 1;
-        return &mut *pa.path.offset(fresh2 as isize);
+    if pa.path.is_empty() {
+        let mut pe = pa_elem::default();
+        pe.p[0] = *cp;
+        pa.path.push(pe);
+        pa.path.push(pa_elem::default());
+        let len = pa.len();
+        return &mut pa.path[len-1];
     }
-    let mut pe = &mut *(*pa)
-        .path
-        .offset((pa.num_paths - 1) as isize);
+    let len = pa.len();
+    let mut pe = &mut pa.path[len-1];
     match pe.typ {
         PeType::MOVETO => {
-            pe.p[0].x = cp.x;
-            pe.p[0].y = cp.y
+            pe.p[0] = *cp;
         }
         PeType::LINETO => {
-            if &mut *pe.p.as_mut_ptr().offset(0) != cp {
-                let fresh3 = pa.num_paths;
-                pa.num_paths += 1;
-                pe = &mut *pa.path.offset(fresh3 as isize);
-                pe.typ = PeType::MOVETO;
-                pe.p[0].x = cp.x;
-                pe.p[0].y = cp.y
+            if  &pe.p[0] != cp {
+                let mut pe = pa_elem::default();
+                pe.p[0] = *cp;
+                pa.path.push(pe);
             }
         }
         PeType::CURVETO => {
-            if &mut *pe.p.as_mut_ptr().offset(2) != cp {
-                let fresh4 = pa.num_paths;
-                pa.num_paths += 1;
-                pe = &mut *pa.path.offset(fresh4 as isize);
-                pe.typ = PeType::MOVETO;
-                pe.p[0].x = cp.x;
-                pe.p[0].y = cp.y
+            if &pe.p[2] != cp {
+                let mut pe = pa_elem::default();
+                pe.p[0] = *cp;
+                pa.path.push(pe);
             }
         }
         PeType::CURVETO_Y | PeType::CURVETO_V => {
-            if &mut *pe.p.as_mut_ptr().offset(1) != cp {
-                let fresh5 = pa.num_paths;
-                pa.num_paths += 1;
-                pe = &mut *pa.path.offset(fresh5 as isize);
-                pe.typ = PeType::MOVETO;
-                pe.p[0].x = cp.x;
-                pe.p[0].y = cp.y
+            if &pe.p[1] != cp {
+                let mut pe = pa_elem::default();
+                pe.p[0] = *cp;
+                pa.path.push(pe);
             }
         }
         PeType::CLOSEPATH => {
-            let fresh6 = pa.num_paths;
-            pa.num_paths += 1;
-            pe = &mut *pa.path.offset(fresh6 as isize);
-            pe.typ = PeType::MOVETO;
-            pe.p[0].x = cp.x;
-            pe.p[0].y = cp.y
+            let mut pe = pa_elem::default();
+            pe.p[0] = *cp;
+            pa.path.push(pe);
         }
         _ => {}
     }
-    let fresh7 = pa.num_paths;
-    pa.num_paths += 1;
-    &mut *pa.path.offset(fresh7 as isize)
+    pa.path.push(pa_elem::default());
+    let len = pa.len();
+    return &mut pa.path[len-1];
 }
 unsafe extern "C" fn pdf_path__transform(pa: &mut pdf_path, M: &pdf_tmatrix) -> i32 {
-    let mut pe: *mut pa_elem = 0 as *mut pa_elem;
-    let mut n: u32 = 0_u32;
-    let mut i: u32 = 0;
-    i = 0_u32;
-    while i < pa.num_paths {
-        let pe = &mut *pa.path.offset(i as isize);
-        n = (if pe.typ != PeType::TERMINATE {
-            (*pe).typ.n_pts() as i32
+    let mut n = 0;
+    let mut i = 0;
+    while i < pa.len() {
+        let pe = &mut pa.path[i];
+        n = if pe.typ != PeType::TERMINATE {
+            (*pe).typ.n_pts()
         } else {
-            0i32
-        }) as u32;
+            0
+        };
         loop {
             let fresh8 = n;
             n += 1;
-            if !(fresh8 > 0_u32) {
+            if !(fresh8 > 0) {
                 break;
             }
-            pdf_coord__transform(&mut *(*pe).p.as_mut_ptr().offset(n as isize), M);
+            pdf_coord__transform(&mut pe.p[n], M);
         }
         i += 1
     }
@@ -522,7 +510,7 @@ unsafe extern "C" fn pdf_path__elliptarc(
     pdf_coord__transform(&mut p0, &mut T);
     p0.x += ca.x;
     p0.y += ca.y;
-    if pa.num_paths == 0_u32 {
+    if pa.path.is_empty() {
         pdf_path__moveto(pa, cp, &mut p0);
     } else if cp != &p0 {
         pdf_path__lineto(pa, cp, &mut p0);
@@ -572,32 +560,24 @@ unsafe extern "C" fn pdf_path__elliptarc(
 unsafe extern "C" fn pdf_path__closepath(pa: &mut pdf_path, cp: &mut pdf_coord) -> i32
 /* no arg */ {
     let mut pe: *mut pa_elem = 0 as *mut pa_elem;
-    let mut i: i32 = 0;
     /* search for start point of the last subpath */
-    i = (pa.num_paths - 1) as i32; /* No path or no start point(!) */
-    while i >= 0i32 {
-        pe = &mut *pa.path.offset(i as isize) as *mut pa_elem;
-        if (*pe).typ == PeType::MOVETO {
-            break;
-        }
-        i -= 1
+    let pe = pa.path.iter().rev().find(|pe| pe.typ == PeType::MOVETO);
+
+    if let Some(pe) = pe {
+        *cp = (*pe).p[0].clone();
+        /* NOTE:
+         *  Manually closed path without closepath is not
+         *  affected by linejoin. A path with coincidental
+         *  starting and ending point is not the same as
+         *  'closed' path.
+         */
+        let mut pe = pa_elem::default();
+        pe.typ = PeType::CLOSEPATH;
+        pa.path.push(pe);
+        0i32
+    } else {
+        -1i32
     }
-    if pe.is_null() || i < 0i32 {
-        return -1i32;
-    }
-    *cp = (*pe).p[0].clone();
-    pdf_path__growpath(pa, pa.num_paths + 1);
-    /* NOTE:
-     *  Manually closed path without closepath is not
-     *  affected by linejoin. A path with coincidental
-     *  starting and ending point is not the same as
-     *  'closed' path.
-     */
-    let fresh9 = pa.num_paths;
-    pa.num_paths += 1;
-    pe = &mut *pa.path.offset(fresh9 as isize) as *mut pa_elem;
-    (*pe).typ = PeType::CLOSEPATH;
-    0i32
 }
 /*
  *  x y width height re
@@ -613,12 +593,12 @@ unsafe extern "C" fn pdf_path__closepath(pa: &mut pdf_path, cp: &mut pdf_coord) 
 /* Just for quick test */
 unsafe extern "C" fn pdf_path__isarect(pa: &mut pdf_path, mut f_ir: i32) -> i32
 /* fill-rule is ignorable */ {
-    if pa.num_paths == 5_u32 {
-        let pe0 = &mut *pa.path.offset(0);
-        let pe1 = &mut *pa.path.offset(1);
-        let pe2 = &mut *pa.path.offset(2);
-        let pe3 = &mut *pa.path.offset(3);
-        let pe4 = &mut *pa.path.offset(4);
+    if pa.len() == 5 {
+        let pe0 = &pa.path[0];
+        let pe1 = &pa.path[1];
+        let pe2 = &pa.path[2];
+        let pe3 = &pa.path[3];
+        let pe4 = &pa.path[4];
         if pe0.typ == PeType::MOVETO
             && pe1.typ == PeType::LINETO
             && pe2.typ == PeType::LINETO
@@ -808,19 +788,19 @@ unsafe extern "C" fn pdf_dev__flushpath(
     } else {
         0i32
     };
-    if pa.num_paths <= 0_u32 && path_added == 0i32 {
+    if /*pa.num_paths <= 0_u32 &&*/ path_added == 0i32 {
         return 0i32;
     }
     path_added = 0i32;
     graphics_mode();
     isrect = pdf_path__isarect(pa, ignore_rule);
     if isrect != 0 {
-        pe = &mut *pa.path.offset(0) as *mut pa_elem;
-        pe1 = &mut *pa.path.offset(2) as *mut pa_elem;
-        r.llx = (*pe).p[0].x;
-        r.lly = (*pe).p[0].y;
-        r.urx = (*pe1).p[0].x - (*pe).p[0].x;
-        r.ury = (*pe1).p[0].y - (*pe).p[0].y;
+        let pe = &pa.path[0];
+        let pe1 = &pa.path[2];
+        r.llx = pe.p[0].x;
+        r.lly = pe.p[0].y;
+        r.urx = pe1.p[0].x - pe.p[0].x;
+        r.ury = pe1.p[0].y - pe.p[0].y;
         let fresh28 = len;
         len = len + 1;
         *b.offset(fresh28 as isize) = ' ' as i32 as i8;
@@ -837,25 +817,17 @@ unsafe extern "C" fn pdf_dev__flushpath(
         pdf_doc_add_page_content(b, len as u32);
         len = 0i32
     } else {
-        n_seg = pa.num_paths as i32;
-        i = 0i32;
-        len = 0i32;
-        pe = &mut *pa.path.offset(0) as *mut pa_elem;
-        while i < n_seg {
-            n_pts = if !pe.is_null() && (*pe).typ != PeType::TERMINATE {
-                (*pe).typ.n_pts() as i32
+        for pe in pa.path.iter_mut() {
+            n_pts = if /* !pe.is_null() &&*/ pe.typ != PeType::TERMINATE {
+                pe.typ.n_pts() as i32
             } else {
                 0i32
             };
-            j = 0i32;
-            pt = &mut *(*pe).p.as_mut_ptr().offset(0) as *mut pdf_coord;
-            while j < n_pts {
+            for (j, pt) in (0..n_pts).zip(pe.p.iter_mut()) {
                 let fresh32 = len;
                 len = len + 1;
                 *b.offset(fresh32 as isize) = ' ' as i32 as i8;
                 len += pdf_sprint_coord(b.offset(len as isize), &mut *pt);
-                j += 1;
-                pt = pt.offset(1)
             }
             let fresh33 = len;
             len = len + 1;
@@ -863,8 +835,8 @@ unsafe extern "C" fn pdf_dev__flushpath(
             let fresh34 = len;
             len = len + 1;
             *b.offset(fresh34 as isize) =
-                if !pe.is_null() && (*pe).typ != PeType::TERMINATE {
-                    (*pe).typ.opchr()
+                if /* !pe.is_null() &&*/ pe.typ != PeType::TERMINATE {
+                    pe.typ.opchr()
                 } else {
                     b' ' as i8
                 };
@@ -872,8 +844,6 @@ unsafe extern "C" fn pdf_dev__flushpath(
                 pdf_doc_add_page_content(b, len as u32);
                 len = 0i32
             }
-            pe = pe.offset(1);
-            i += 1
         }
         if len > 0i32 {
             pdf_doc_add_page_content(b, len as u32);
@@ -972,7 +942,7 @@ unsafe extern "C" fn init_a_gstate(mut gs: *mut pdf_gstate) {
     (*gs).flatness = 1i32;
     /* Internal variables */
     (*gs).flags = 0i32;
-    init_a_path(&mut (*gs).path);
+    (*gs).path = pdf_path::new();
     (*gs).pt_fixee.x = 0i32 as f64;
     (*gs).pt_fixee.y = 0i32 as f64;
 }
@@ -987,20 +957,14 @@ unsafe extern "C" fn clear_a_gstate(mut gs: *mut pdf_gstate) {
 unsafe extern "C" fn copy_a_gstate(mut gs1: *mut pdf_gstate, mut gs2: *mut pdf_gstate) {
     let mut i: i32 = 0;
     assert!(!gs1.is_null() && !gs2.is_null());
-    (*gs1).cp.x = (*gs2).cp.x;
-    (*gs1).cp.y = (*gs2).cp.y;
-    (*gs1).matrix.a = (*gs2).matrix.a;
-    (*gs1).matrix.b = (*gs2).matrix.b;
-    (*gs1).matrix.c = (*gs2).matrix.c;
-    (*gs1).matrix.d = (*gs2).matrix.d;
-    (*gs1).matrix.e = (*gs2).matrix.e;
-    (*gs1).matrix.f = (*gs2).matrix.f;
+    (*gs1).cp = (*gs2).cp;
+    (*gs1).matrix = (*gs2).matrix;
     /* TODO:
      * Path should be linked list and gsave only
      * record starting point within path rather than
      * copying whole path.
      */
-    pdf_path__copypath(&mut (*gs1).path, &mut (*gs2).path); /* Initial state */
+    (*gs1).path = (*gs2).path.clone(); /* Initial state */
     (*gs1).linedash.num_dash = (*gs2).linedash.num_dash;
     i = 0i32;
     while i < (*gs2).linedash.num_dash {
@@ -1380,7 +1344,7 @@ pub unsafe extern "C" fn pdf_dev_flushpath(mut p_op: i8, mut fill_rule: i32) -> 
      * is inessential.
      */
     error = pdf_dev__flushpath(cpa, p_op, fill_rule, 1i32);
-    pdf_path__clearpath(cpa);
+    cpa.path.clear();
     (*gs).flags &= !(1i32 << 0i32);
     error
 }
@@ -1389,8 +1353,8 @@ pub unsafe extern "C" fn pdf_dev_newpath() -> i32 {
     let mut gss: *mut m_stack = &mut gs_stack;
     let mut gs: *mut pdf_gstate = m_stack_top(gss) as *mut pdf_gstate;
     let mut p = &mut (*gs).path;
-    if p.num_paths > 0_u32 {
-        pdf_path__clearpath(p);
+    if !p.path.is_empty() {
+        p.path.clear();
     }
     /* The following is required for "newpath" operator in mpost.c. */
     pdf_doc_add_page_content(b" n\x00" as *const u8 as *const i8, 2_u32); /* op: n */
