@@ -25,7 +25,7 @@ travis-ci = { repository = "tectonic-typesetting/tectonic" }
 codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 
 [workspace]
-members = ["engine", "xdv"]
+members = ["engine", "dpx", "bridge", "xdv"]
 
 [lib]
 name = "tectonic"

@@ -1,3 +1,4 @@
+#[macro_export]
 macro_rules! no_mangle_extern_fn {
     ($(
         $(#[$meta:meta])*
@@ -13,7 +14,7 @@ macro_rules! no_mangle_extern_fn {
         }
     };
 }
-
+#[macro_export]
 macro_rules! forward_stub_fn {
     ($(
         $(#[$meta:meta])*
@@ -29,6 +30,7 @@ macro_rules! forward_stub_fn {
         )*
     };
 }
+#[macro_export]
 macro_rules! extern_and_forward_stub {
     ($(
         $(#[$meta:meta])*

@@ -1,0 +1,18 @@
+[package]
+name = "tectonic_dvipdfmx"
+version = "0.0.1-dev"
+authors = ["Peter Williams <peter@newton.cx>"]
+edition = "2018"
+license = "GPL"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tectonic_bridge = { version = "0.0.1-dev", path = "../bridge" }
+libc = "0.2"
+libpng-sys = "1"
+libz-sys = { version = "1", optional = true}
+
+
+[features]
+default = ['libz-sys']
+legacy-libz = ['libz-sys']
