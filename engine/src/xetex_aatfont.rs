@@ -1,3 +1,4 @@
+#![cfg(target_os = "macos")]
 #![allow(
     dead_code,
     mutable_transmutes,

@@ -30,6 +30,7 @@ pub type PlatformFontRef = CTFontDescriptorRef;
 
 #[cfg(target_os = "macos")]
 use super::xetex_aatfont as aat;
+#[cfg(target_os = "macos")]
 use super::xetex_aatfont::cf_prelude::{
     kCFNumberFloatType, kCTFontAttributeName, kCTForegroundColorAttributeName,
     kCTVerticalFormsAttributeName, CFBooleanRef, CFDictionaryGetValue, CFDictionaryRef,
