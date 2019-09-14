@@ -55,9 +55,6 @@ extern "C" {
     fn strdup(_: *const libc::c_char) -> *mut libc::c_char;
     #[no_mangle]
     fn free(_: *mut libc::c_void);
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const libc::c_char, _: ...) -> !;
     /* Macs provide Fixed and FixedPoint */
     /* Misc */
     /* gFreeTypeLibrary is defined in xetex-XeTeXFontInst_FT2.cpp,
@@ -1039,6 +1036,7 @@ pub unsafe extern "C" fn fontFromInteger(mut font: int32_t) -> CTFontRef {
         *font_layout_engine.offset(font as isize) as CFDictionaryRef;
     return fontFromAttributes(attributes);
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn DoAATLayout(mut p: *mut libc::c_void, mut justify: libc::c_int) {
     let mut glyphRuns: CFArrayRef = 0 as *const __CFArray;
@@ -1061,7 +1059,7 @@ pub unsafe extern "C" fn DoAATLayout(mut p: *mut libc::c_void, mut justify: libc
     let mut node: *mut memory_word = p as *mut memory_word;
     let mut f: libc::c_uint = (*node.offset(4)).b16.s2 as libc::c_uint;
     if *font_area.offset(f as isize) as libc::c_uint != 0xffffu32 {
-        _tt_abort(b"DoAATLayout called for non-AAT font\x00" as *const u8 as *const libc::c_char);
+        panic!("DoAATLayout called for non-AAT font");
     }
     txtLen = (*node.offset(4)).b16.s1 as libc::c_long;
     txtPtr = node.offset(6) as *mut UniChar;
@@ -1536,11 +1534,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
             if gFreeTypeLibrary.is_null() {
                 error = FT_Init_FreeType(&mut gFreeTypeLibrary);
                 if error != 0 {
-                    _tt_abort(
-                        b"FreeType initialization failed; error %d\x00" as *const u8
-                            as *const libc::c_char,
-                        error,
-                    );
+                    panic!("FreeType initialization failed; error {}\x00", error);
                 }
             }
             error = FT_New_Face(
