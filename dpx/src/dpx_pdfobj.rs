@@ -35,6 +35,7 @@ use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 use std::ffi::CStr;
 
+use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
 use super::dpx_mfileio::work_buffer;
 use crate::{
     ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek,
@@ -62,23 +63,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
-    #[no_mangle]
-    fn ht_clear_table(ht: *mut ht_table);
-    #[no_mangle]
-    fn ht_lookup_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> *mut libc::c_void;
-    #[no_mangle]
-    fn ht_append_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-        value: *mut libc::c_void,
-    );
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -125,13 +109,49 @@ use super::dpx_dpxutil::ht_table;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_obj {
-    pub type_0: i32,
+    pub typ: i32,
     pub label: u32,
     pub generation: u16,
     pub refcount: u32,
     pub flags: i32,
     pub data: *mut libc::c_void,
 }
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum PdfObjType {
+    BOOLEAN = 1,
+    NUMBER = 2,
+    STRING = 3,
+    NAME = 4,
+    ARRAY = 5,
+    DICT = 6,
+    STREAM = 7,
+    NULL = 8,
+    INDIRECT = 9,
+    UNDEFINED = 10,
+    OBJ_INVALID = 0,
+}
+
+impl From<i32> for PdfObjType {
+    fn from(t: i32) -> Self {
+        use PdfObjType::*;
+        match t {
+            1 => BOOLEAN,
+            2 => NUMBER,
+            3 => STRING,
+            4 => NAME,
+            5 => ARRAY,
+            6 => DICT,
+            7 => STREAM,
+            8 => NULL,
+            9 => INDIRECT,
+            10 => UNDEFINED,
+            0 => OBJ_INVALID,
+            _ => panic!("Invalid object type: {}", t),
+        }
+    }
+}
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_file {
@@ -168,7 +188,7 @@ pub struct pdf_file {
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct xref_entry {
-    pub type_0: u8,
+    pub typ: u8,
     pub field2: u32,
     pub field3: u16,
     pub direct: *mut pdf_obj,
@@ -303,12 +323,7 @@ pub unsafe extern "C" fn pdf_obj_set_verbose(mut level: i32) {
 }
 static mut current_objstm: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
 static mut do_objstm: i32 = 0;
-unsafe extern "C" fn add_xref_entry(
-    mut label: u32,
-    mut type_0: u8,
-    mut field2: u32,
-    mut field3: u16,
-) {
+unsafe extern "C" fn add_xref_entry(mut label: u32, mut typ: u8, mut field2: u32, mut field3: u16) {
     if label >= pdf_max_ind_objects {
         pdf_max_ind_objects = label
             .wrapping_div(512_u32)
@@ -320,7 +335,7 @@ unsafe extern "C" fn add_xref_entry(
                 as u32,
         ) as *mut xref_entry
     }
-    (*output_xref.offset(label as isize)).type_0 = type_0;
+    (*output_xref.offset(label as isize)).typ = typ;
     (*output_xref.offset(label as isize)).field2 = field2;
     (*output_xref.offset(label as isize)).field3 = field3;
     let ref mut fresh0 = (*output_xref.offset(label as isize)).direct;
@@ -424,11 +439,11 @@ unsafe extern "C" fn dump_xref_table() {
      */
     i = 0_u32;
     while i < next_label {
-        let mut type_0: u8 = (*output_xref.offset(i as isize)).type_0;
-        if type_0 as i32 > 1i32 {
+        let mut typ: u8 = (*output_xref.offset(i as isize)).typ;
+        if typ as i32 > 1i32 {
             _tt_abort(
                 b"object type %c not allowed in xref table\x00" as *const u8 as *const i8,
-                type_0 as i32,
+                typ as i32,
             );
         }
         length = sprintf(
@@ -436,7 +451,7 @@ unsafe extern "C" fn dump_xref_table() {
             b"%010u %05hu %c \n\x00" as *const u8 as *const i8,
             (*output_xref.offset(i as isize)).field2,
             (*output_xref.offset(i as isize)).field3 as i32,
-            if type_0 as i32 != 0 {
+            if typ as i32 != 0 {
                 'n' as i32
             } else {
                 'f' as i32
@@ -496,7 +511,7 @@ unsafe extern "C" fn dump_xref_stream() {
     while i < next_label {
         let mut j: u32 = 0;
         let mut f3: u16 = 0;
-        buf[0] = (*output_xref.offset(i as isize)).type_0;
+        buf[0] = (*output_xref.offset(i as isize)).typ;
         pos = (*output_xref.offset(i as isize)).field2;
         j = poslen;
         loop {
@@ -716,14 +731,12 @@ unsafe extern "C" fn pdf_out_white(mut handle: rust_output_handle_t) {
         pdf_out_char(handle, ' ' as i32 as i8);
     };
 }
-unsafe extern "C" fn pdf_new_obj(mut type_0: i32) -> *mut pdf_obj {
+unsafe extern "C" fn pdf_new_obj(mut typ: i32) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
-    if type_0 > 10i32 || type_0 < 0i32 {
-        panic!("Invalid object type: {}", type_0);
-    }
+    assert!(typ >= 0 && typ <= 10, "Invalid object type: {}", typ);
     result =
         new((1_u64).wrapping_mul(::std::mem::size_of::<pdf_obj>() as u64) as u32) as *mut pdf_obj;
-    (*result).type_0 = type_0;
+    (*result).typ = typ;
     (*result).data = 0 as *mut libc::c_void;
     (*result).label = 0_u32;
     (*result).generation = 0_u16;
@@ -732,14 +745,15 @@ unsafe extern "C" fn pdf_new_obj(mut type_0: i32) -> *mut pdf_obj {
     result
 }
 #[no_mangle]
-pub unsafe extern "C" fn pdf_obj_typeof(mut object: *mut pdf_obj) -> i32 {
-    if object.is_null() || (*object).type_0 <= 0i32 || (*object).type_0 > 10i32 {
-        return 0i32;
+pub unsafe extern "C" fn pdf_obj_typeof(object: *mut pdf_obj) -> PdfObjType {
+    if (*object).typ <= 0i32 || (*object).typ > 10i32 {
+        PdfObjType::OBJ_INVALID
+    } else {
+        PdfObjType::from((*object).typ)
     }
-    (*object).type_0
 }
 unsafe extern "C" fn pdf_label_obj(mut object: *mut pdf_obj) {
-    if object.is_null() || (*object).type_0 <= 0i32 || (*object).type_0 > 10i32 {
+    if object.is_null() || (*object).typ <= 0i32 || (*object).typ > 10i32 {
         panic!("pdf_label_obj(): passed invalid object.");
     }
     /*
@@ -770,7 +784,7 @@ pub unsafe extern "C" fn pdf_transfer_label(mut dst: *mut pdf_obj, mut src: *mut
  */
 #[no_mangle]
 pub unsafe extern "C" fn pdf_link_obj(mut object: *mut pdf_obj) -> *mut pdf_obj {
-    if object.is_null() || (*object).type_0 <= 0i32 || (*object).type_0 > 10i32 {
+    if object.is_null() || (*object).typ <= 0i32 || (*object).typ > 10i32 {
         panic!("pdf_link_obj(): passed invalid object.");
     }
     (*object).refcount = (*object).refcount.wrapping_add(1_u32);
@@ -778,7 +792,7 @@ pub unsafe extern "C" fn pdf_link_obj(mut object: *mut pdf_obj) -> *mut pdf_obj 
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_ref_obj(mut object: *mut pdf_obj) -> *mut pdf_obj {
-    if object.is_null() || (*object).type_0 <= 0i32 || (*object).type_0 > 10i32 {
+    if object.is_null() || (*object).typ <= 0i32 || (*object).typ > 10i32 {
         panic!("pdf_ref_obj(): passed invalid object.");
     }
     if (*object).refcount == 0_u32 {
@@ -786,7 +800,7 @@ pub unsafe extern "C" fn pdf_ref_obj(mut object: *mut pdf_obj) -> *mut pdf_obj {
         pdf_write_obj(object, ttstub_output_open_stdout());
         panic!("Cannot continue...");
     }
-    if !object.is_null() && pdf_obj_typeof(object) == 9i32 {
+    if !object.is_null() && pdf_obj_typeof(object) == PdfObjType::INDIRECT {
         return pdf_link_obj(object);
     } else {
         return pdf_new_ref(object);
@@ -869,11 +883,11 @@ unsafe extern "C" fn write_boolean(mut data: *mut pdf_boolean, mut handle: rust_
 #[no_mangle]
 pub unsafe extern "C" fn pdf_boolean_value(mut object: *mut pdf_obj) -> i8 {
     let mut data: *mut pdf_boolean = 0 as *mut pdf_boolean;
-    if object.is_null() || (*object).type_0 != 1i32 {
+    if object.is_null() || PdfObjType::from((*object).typ) != PdfObjType::BOOLEAN {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !object.is_null() {
-                (*object).type_0
+                (*object).typ
             } else {
                 -1i32
             },
@@ -910,11 +924,11 @@ unsafe extern "C" fn write_number(mut number: *mut pdf_number, mut handle: rust_
 #[no_mangle]
 pub unsafe extern "C" fn pdf_set_number(mut object: *mut pdf_obj, mut value: f64) {
     let mut data: *mut pdf_number = 0 as *mut pdf_number;
-    if object.is_null() || (*object).type_0 != 2i32 {
+    if object.is_null() || PdfObjType::from((*object).typ) != PdfObjType::NUMBER {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !object.is_null() {
-                (*object).type_0
+                (*object).typ
             } else {
                 -1i32
             },
@@ -928,11 +942,11 @@ pub unsafe extern "C" fn pdf_set_number(mut object: *mut pdf_obj, mut value: f64
 #[no_mangle]
 pub unsafe extern "C" fn pdf_number_value(mut object: *mut pdf_obj) -> f64 {
     let mut data: *mut pdf_number = 0 as *mut pdf_number;
-    if object.is_null() || (*object).type_0 != 2i32 {
+    if object.is_null() || PdfObjType::from((*object).typ) != PdfObjType::NUMBER {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !object.is_null() {
-                (*object).type_0
+                (*object).typ
             } else {
                 -1i32
             },
@@ -971,11 +985,11 @@ pub unsafe extern "C" fn pdf_new_string(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_string_value(mut object: *mut pdf_obj) -> *mut libc::c_void {
     let mut data: *mut pdf_string = 0 as *mut pdf_string;
-    if object.is_null() || (*object).type_0 != 3i32 {
+    if object.is_null() || PdfObjType::from((*object).typ) != PdfObjType::STRING {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !object.is_null() {
-                (*object).type_0
+                (*object).typ
             } else {
                 -1i32
             },
@@ -989,11 +1003,11 @@ pub unsafe extern "C" fn pdf_string_value(mut object: *mut pdf_obj) -> *mut libc
 #[no_mangle]
 pub unsafe extern "C" fn pdf_string_length(mut object: *mut pdf_obj) -> u32 {
     let mut data: *mut pdf_string = 0 as *mut pdf_string;
-    if object.is_null() || (*object).type_0 != 3i32 {
+    if object.is_null() || PdfObjType::from((*object).typ) != PdfObjType::STRING {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !object.is_null() {
-                (*object).type_0
+                (*object).typ
             } else {
                 -1i32
             },
@@ -1154,11 +1168,11 @@ pub unsafe extern "C" fn pdf_set_string(
     mut length: size_t,
 ) {
     let mut data: *mut pdf_string = 0 as *mut pdf_string;
-    if object.is_null() || (*object).type_0 != 3i32 {
+    if object.is_null() || PdfObjType::from((*object).typ) != PdfObjType::STRING {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !object.is_null() {
-                (*object).type_0
+                (*object).typ
             } else {
                 -1i32
             },
@@ -1273,11 +1287,11 @@ unsafe extern "C" fn release_name(mut data: *mut pdf_name) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_name_value(mut object: *mut pdf_obj) -> *mut i8 {
     let mut data: *mut pdf_name = 0 as *mut pdf_name;
-    if object.is_null() || (*object).type_0 != 4i32 {
+    if object.is_null() || PdfObjType::from((*object).typ) != PdfObjType::NAME {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !object.is_null() {
-                (*object).type_0
+                (*object).typ
             } else {
                 -1i32
             },
@@ -1314,7 +1328,7 @@ unsafe extern "C" fn write_array(mut array: *mut pdf_array, mut handle: rust_out
         i = 0_u32;
         while i < (*array).size {
             if !(*(*array).values.offset(i as isize)).is_null() {
-                type2 = (**(*array).values.offset(i as isize)).type_0;
+                type2 = (**(*array).values.offset(i as isize)).typ;
                 if type1 != 10i32 && pdf_need_white(type1, type2) != 0 {
                     pdf_out_white(handle);
                 }
@@ -1332,11 +1346,11 @@ unsafe extern "C" fn write_array(mut array: *mut pdf_array, mut handle: rust_out
 pub unsafe extern "C" fn pdf_get_array(mut array: *mut pdf_obj, mut idx: i32) -> *mut pdf_obj {
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_array = 0 as *mut pdf_array;
-    if array.is_null() || (*array).type_0 != 5i32 {
+    if array.is_null() || PdfObjType::from((*array).typ) != PdfObjType::ARRAY {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !array.is_null() {
-                (*array).type_0
+                (*array).typ
             } else {
                 -1i32
             },
@@ -1357,11 +1371,11 @@ pub unsafe extern "C" fn pdf_get_array(mut array: *mut pdf_obj, mut idx: i32) ->
 #[no_mangle]
 pub unsafe extern "C" fn pdf_array_length(mut array: *mut pdf_obj) -> u32 {
     let mut data: *mut pdf_array = 0 as *mut pdf_array;
-    if array.is_null() || (*array).type_0 != 5i32 {
+    if array.is_null() || PdfObjType::from((*array).typ) != PdfObjType::ARRAY {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !array.is_null() {
-                (*array).type_0
+                (*array).typ
             } else {
                 -1i32
             },
@@ -1393,11 +1407,11 @@ unsafe extern "C" fn release_array(mut data: *mut pdf_array) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_add_array(mut array: *mut pdf_obj, mut object: *mut pdf_obj) {
     let mut data: *mut pdf_array = 0 as *mut pdf_array;
-    if array.is_null() || (*array).type_0 != 5i32 {
+    if array.is_null() || PdfObjType::from((*array).typ) != PdfObjType::ARRAY {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !array.is_null() {
-                (*array).type_0
+                (*array).typ
             } else {
                 -1i32
             },
@@ -1420,11 +1434,11 @@ pub unsafe extern "C" fn pdf_add_array(mut array: *mut pdf_obj, mut object: *mut
 /* Prepend an object to an array */
 unsafe extern "C" fn pdf_unshift_array(mut array: *mut pdf_obj, mut object: *mut pdf_obj) {
     let mut data: *mut pdf_array = 0 as *mut pdf_array;
-    if array.is_null() || (*array).type_0 != 5i32 {
+    if array.is_null() || PdfObjType::from((*array).typ) != PdfObjType::ARRAY {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !array.is_null() {
-                (*array).type_0
+                (*array).typ
             } else {
                 -1i32
             },
@@ -1459,7 +1473,7 @@ unsafe extern "C" fn write_dict(mut dict: *mut pdf_dict, mut handle: rust_output
     );
     while !(*dict).key.is_null() {
         pdf_write_obj((*dict).key, handle);
-        if pdf_need_white(4i32, (*(*dict).value).type_0) != 0 {
+        if pdf_need_white(4i32, (*(*dict).value).typ) != 0 {
             pdf_out_white(handle);
         }
         pdf_write_obj((*dict).value, handle);
@@ -1507,28 +1521,24 @@ pub unsafe extern "C" fn pdf_add_dict(
 ) -> i32 {
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
     let mut new_node: *mut pdf_dict = 0 as *mut pdf_dict;
-    if dict.is_null() || (*dict).type_0 != 6i32 {
+    if dict.is_null() || PdfObjType::from((*dict).typ) != PdfObjType::DICT {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !dict.is_null() {
-                (*dict).type_0
-            } else {
-                -1i32
-            },
+            if !dict.is_null() { (*dict).typ } else { -1i32 },
             6i32,
             1313i32,
         );
     }
-    if key.is_null() || (*key).type_0 != 4i32 {
+    if key.is_null() || PdfObjType::from((*key).typ) != PdfObjType::NAME {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !key.is_null() { (*key).type_0 } else { -1i32 },
+            if !key.is_null() { (*key).typ } else { -1i32 },
             4i32,
             1314i32,
         );
     }
     /* It seems that NULL is sometimes used for null object... */
-    if !value.is_null() && (value.is_null() || (*value).type_0 <= 0i32 || (*value).type_0 > 10i32) {
+    if !value.is_null() && (value.is_null() || (*value).typ <= 0i32 || (*value).typ > 10i32) {
         panic!("pdf_add_dict(): Passed invalid value");
     }
     /* If this key already exists, simply replace the value */
@@ -1562,11 +1572,11 @@ pub unsafe extern "C" fn pdf_add_dict(
 #[no_mangle]
 pub unsafe extern "C" fn pdf_merge_dict(mut dict1: *mut pdf_obj, mut dict2: *mut pdf_obj) {
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
-    if dict1.is_null() || (*dict1).type_0 != 6i32 {
+    if dict1.is_null() || PdfObjType::from((*dict1).typ) != PdfObjType::DICT {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !dict1.is_null() {
-                (*dict1).type_0
+                (*dict1).typ
             } else {
                 -1i32
             },
@@ -1574,11 +1584,11 @@ pub unsafe extern "C" fn pdf_merge_dict(mut dict1: *mut pdf_obj, mut dict2: *mut
             1352i32,
         );
     }
-    if dict2.is_null() || (*dict2).type_0 != 6i32 {
+    if dict2.is_null() || PdfObjType::from((*dict2).typ) != PdfObjType::DICT {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !dict2.is_null() {
-                (*dict2).type_0
+                (*dict2).typ
             } else {
                 -1i32
             },
@@ -1607,14 +1617,10 @@ pub unsafe extern "C" fn pdf_foreach_dict(
     let mut error: i32 = 0i32;
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
     assert!(proc_0.is_some());
-    if dict.is_null() || (*dict).type_0 != 6i32 {
+    if dict.is_null() || PdfObjType::from((*dict).typ) != PdfObjType::DICT {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !dict.is_null() {
-                (*dict).type_0
-            } else {
-                -1i32
-            },
+            if !dict.is_null() { (*dict).typ } else { -1i32 },
             6i32,
             1371i32,
         );
@@ -1633,14 +1639,10 @@ pub unsafe extern "C" fn pdf_lookup_dict(
 ) -> *mut pdf_obj {
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
     assert!(!name.is_null());
-    if dict.is_null() || (*dict).type_0 != 6i32 {
+    if dict.is_null() || PdfObjType::from((*dict).typ) != PdfObjType::DICT {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !dict.is_null() {
-                (*dict).type_0
-            } else {
-                -1i32
-            },
+            if !dict.is_null() { (*dict).typ } else { -1i32 },
             6i32,
             1391i32,
         );
@@ -1659,14 +1661,10 @@ pub unsafe extern "C" fn pdf_lookup_dict(
 pub unsafe extern "C" fn pdf_dict_keys(mut dict: *mut pdf_obj) -> *mut pdf_obj {
     let mut keys: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
-    if dict.is_null() || (*dict).type_0 != 6i32 {
+    if dict.is_null() || PdfObjType::from((*dict).typ) != PdfObjType::DICT {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !dict.is_null() {
-                (*dict).type_0
-            } else {
-                -1i32
-            },
+            if !dict.is_null() { (*dict).typ } else { -1i32 },
             6i32,
             1411i32,
         );
@@ -1686,14 +1684,10 @@ pub unsafe extern "C" fn pdf_dict_keys(mut dict: *mut pdf_obj) -> *mut pdf_obj {
 pub unsafe extern "C" fn pdf_remove_dict(mut dict: *mut pdf_obj, mut name: *const i8) {
     let mut data: *mut pdf_dict = 0 as *mut pdf_dict;
     let mut data_p: *mut *mut pdf_dict = 0 as *mut *mut pdf_dict;
-    if dict.is_null() || (*dict).type_0 != 6i32 {
+    if dict.is_null() || PdfObjType::from((*dict).typ) != PdfObjType::DICT {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !dict.is_null() {
-                (*dict).type_0
-            } else {
-                -1i32
-            },
+            if !dict.is_null() { (*dict).typ } else { -1i32 },
             6i32,
             1430i32,
         );
@@ -1751,7 +1745,7 @@ pub unsafe extern "C" fn pdf_stream_set_predictor(
     mut colors: i32,
 ) {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
-    if pdf_obj_typeof(stream) != 7i32 {
+    if pdf_obj_typeof(stream) != PdfObjType::STREAM {
         return;
     } else {
         if columns < 0i32 || bpc < 0i32 || colors < 0i32 {
@@ -1800,7 +1794,7 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
     *length = (rowbytes + 1i32) * rows;
     j = 0i32;
     while j < rows {
-        let mut type_0: libc::c_int = 0i32;
+        let mut typ: libc::c_int = 0i32;
         let mut pp: *mut libc::c_uchar = dst.offset((j * (rowbytes + 1i32)) as isize);
         let mut p: *mut libc::c_uchar = raster.offset((j * rowbytes) as isize);
         let mut sum: [u32; 5] = [
@@ -1848,8 +1842,7 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
                 .wrapping_add((*p.offset(i as isize) as libc::c_int - up).abs() as libc::c_uint)
                 as u32 as u32;
             /* Type 3 -- Average */
-            let mut tmp: libc::c_int =
-                (((up + left) / 2i32) as f64).floor() as libc::c_int;
+            let mut tmp: libc::c_int = (((up + left) / 2i32) as f64).floor() as libc::c_int;
             sum[3] = (sum[3] as libc::c_uint)
                 .wrapping_add((*p.offset(i as isize) as libc::c_int - tmp).abs() as libc::c_uint)
                 as u32 as u32;
@@ -1883,10 +1876,10 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
             }
             i += 1
         }
-        type_0 = min_idx;
+        typ = min_idx;
         /* Now we actually apply filter. */
-        *pp.offset(0) = type_0 as libc::c_uchar;
-        match type_0 {
+        *pp.offset(0) = typ as libc::c_uchar;
+        match typ {
             0 => {
                 libc::memcpy(
                     pp.offset(1) as *mut libc::c_void,
@@ -2239,12 +2232,12 @@ unsafe extern "C" fn write_stream(mut stream: *mut pdf_stream, mut handle: rust_
     );
     filtered_length = (*stream).stream_length;
     /* PDF/A requires Metadata to be not filtered. */
-    let mut type_0: *mut pdf_obj = 0 as *mut pdf_obj;
-    type_0 = pdf_lookup_dict((*stream).dict, b"Type\x00" as *const u8 as *const i8);
-    if !type_0.is_null()
+    let mut typ: *mut pdf_obj = 0 as *mut pdf_obj;
+    typ = pdf_lookup_dict((*stream).dict, b"Type\x00" as *const u8 as *const i8);
+    if !typ.is_null()
         && streq_ptr(
             b"Metadata\x00" as *const u8 as *const i8,
-            pdf_name_value(type_0),
+            pdf_name_value(typ),
         ) as i32
             != 0
     {
@@ -2448,11 +2441,11 @@ unsafe extern "C" fn release_stream(mut stream: *mut pdf_stream) {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_stream_dict(mut stream: *mut pdf_obj) -> *mut pdf_obj {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
-    if stream.is_null() || (*stream).type_0 != 7i32 {
+    if stream.is_null() || PdfObjType::from((*stream).typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !stream.is_null() {
-                (*stream).type_0
+                (*stream).typ
             } else {
                 -1i32
             },
@@ -2466,11 +2459,11 @@ pub unsafe extern "C" fn pdf_stream_dict(mut stream: *mut pdf_obj) -> *mut pdf_o
 #[no_mangle]
 pub unsafe extern "C" fn pdf_stream_dataptr(mut stream: *mut pdf_obj) -> *const libc::c_void {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
-    if stream.is_null() || (*stream).type_0 != 7i32 {
+    if stream.is_null() || PdfObjType::from((*stream).typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !stream.is_null() {
-                (*stream).type_0
+                (*stream).typ
             } else {
                 -1i32
             },
@@ -2484,11 +2477,11 @@ pub unsafe extern "C" fn pdf_stream_dataptr(mut stream: *mut pdf_obj) -> *const 
 #[no_mangle]
 pub unsafe extern "C" fn pdf_stream_length(mut stream: *mut pdf_obj) -> i32 {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
-    if stream.is_null() || (*stream).type_0 != 7i32 {
+    if stream.is_null() || PdfObjType::from((*stream).typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !stream.is_null() {
-                (*stream).type_0
+                (*stream).typ
             } else {
                 -1i32
             },
@@ -2500,11 +2493,11 @@ pub unsafe extern "C" fn pdf_stream_length(mut stream: *mut pdf_obj) -> i32 {
     (*data).stream_length as i32
 }
 unsafe extern "C" fn set_objstm_data(mut objstm: *mut pdf_obj, mut data: *mut i32) {
-    if objstm.is_null() || (*objstm).type_0 != 7i32 {
+    if objstm.is_null() || PdfObjType::from((*objstm).typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !objstm.is_null() {
-                (*objstm).type_0
+                (*objstm).typ
             } else {
                 -1i32
             },
@@ -2515,20 +2508,14 @@ unsafe extern "C" fn set_objstm_data(mut objstm: *mut pdf_obj, mut data: *mut i3
     let ref mut fresh14 = (*((*objstm).data as *mut pdf_stream)).objstm_data;
     *fresh14 = data;
 }
-unsafe extern "C" fn get_objstm_data(mut objstm: *mut pdf_obj) -> *mut i32 {
-    if objstm.is_null() || (*objstm).type_0 != 7i32 {
+unsafe extern "C" fn get_objstm_data(objstm: &pdf_obj) -> *mut i32 {
+    if PdfObjType::from(objstm.typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !objstm.is_null() {
-                (*objstm).type_0
-            } else {
-                -1i32
-            },
-            7i32,
-            2001i32,
+            objstm.typ, 7i32, 2001i32,
         );
     }
-    (*((*objstm).data as *mut pdf_stream)).objstm_data
+    (*(objstm.data as *mut pdf_stream)).objstm_data
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_add_stream(
@@ -2537,11 +2524,11 @@ pub unsafe extern "C" fn pdf_add_stream(
     mut length: i32,
 ) {
     let mut data: *mut pdf_stream = 0 as *mut pdf_stream;
-    if stream.is_null() || (*stream).type_0 != 7i32 {
+    if stream.is_null() || PdfObjType::from((*stream).typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
             if !stream.is_null() {
-                (*stream).type_0
+                (*stream).typ
             } else {
                 -1i32
             },
@@ -2633,7 +2620,7 @@ unsafe extern "C" fn get_decode_parms(
 ) -> libc::c_int {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     assert!(!dict.is_null());
-    assert!(!dict.is_null() && pdf_obj_typeof(dict) == 6i32);
+    assert!(!dict.is_null() && pdf_obj_typeof(dict) == PdfObjType::DICT);
     /* Fill with default values */
     parms.predictor = 1i32;
     parms.colors = 1i32;
@@ -2898,16 +2885,16 @@ unsafe extern "C" fn filter_decoded(
         /* PNG Paeth on all rows */
         /* PNG optimun: prediction algorithm can change from line to line. */
         {
-            let mut type_0: libc::c_int = parms.predictor - 10i32;
+            let mut typ: libc::c_int = parms.predictor - 10i32;
             while error == 0 && p.offset(length as isize) < endptr {
                 if parms.predictor == 15i32 {
-                    type_0 = *p as libc::c_int
-                } else if *p as libc::c_int != type_0 {
+                    typ = *p as libc::c_int
+                } else if *p as libc::c_int != typ {
                     warn!("Mismatched Predictor type in data stream.",);
                     error = -1i32
                 }
                 p = p.offset(1);
-                match type_0 {
+                match typ {
                     0 => {
                         /* Do nothing just skip first byte */
                         libc::memcpy(
@@ -2995,7 +2982,7 @@ unsafe extern "C" fn filter_decoded(
                         }
                     }
                     _ => {
-                        warn!("Unknown PNG predictor type: {}", type_0,);
+                        warn!("Unknown PNG predictor type: {}", typ,);
                         error = -1i32
                     }
                 }
@@ -3084,8 +3071,8 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
     let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut filter: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut error: i32 = 0i32;
-    if !(!dst.is_null() && pdf_obj_typeof(dst) == 7i32)
-        || !(!src.is_null() && pdf_obj_typeof(src) == 7i32)
+    if !(!dst.is_null() && pdf_obj_typeof(dst) == PdfObjType::STREAM)
+        || !(!src.is_null() && pdf_obj_typeof(src) == PdfObjType::STREAM)
     {
         panic!("Invalid type.");
     }
@@ -3113,14 +3100,14 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                     stream_dict,
                     b"DecodeParms\x00" as *const u8 as *const i8,
                 ));
-                if !tmp.is_null() && pdf_obj_typeof(tmp) == 5i32 {
+                if !tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::ARRAY {
                     if pdf_array_length(tmp) > 1i32 as libc::c_uint {
                         warn!("Unexpected size for DecodeParms array.");
                         return -1i32;
                     }
                     tmp = pdf_deref_obj(pdf_get_array(tmp, 0i32))
                 }
-                if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 6i32) {
+                if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::DICT) {
                     warn!("PDF dict expected for DecodeParms...");
                     return -1i32;
                 }
@@ -3130,14 +3117,14 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
                 }
                 have_parms = 1i32
             }
-            if !filter.is_null() && pdf_obj_typeof(filter) == 5i32 {
+            if !filter.is_null() && pdf_obj_typeof(filter) == PdfObjType::ARRAY {
                 if pdf_array_length(filter) > 1i32 as libc::c_uint {
                     warn!("Multiple DecodeFilter not supported.");
                     return -1i32;
                 }
                 filter = pdf_get_array(filter, 0i32)
             }
-            if !filter.is_null() && pdf_obj_typeof(filter) == 4i32 {
+            if !filter.is_null() && pdf_obj_typeof(filter) == PdfObjType::NAME {
                 let filter_name = CStr::from_ptr(pdf_name_value(filter)).to_str().unwrap();
                 if filter_name == "FlateDecode" {
                     if have_parms != 0 {
@@ -3168,10 +3155,10 @@ pub unsafe extern "C" fn pdf_concat_stream(mut dst: *mut pdf_obj, mut src: *mut 
 }
 unsafe extern "C" fn pdf_stream_uncompress(mut src: *mut pdf_obj) -> *mut pdf_obj {
     let mut dst: *mut pdf_obj = pdf_new_stream(0i32);
-    if src.is_null() || (*src).type_0 != 7i32 {
+    if src.is_null() || PdfObjType::from((*src).typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !src.is_null() { (*src).type_0 } else { -1i32 },
+            if !src.is_null() { (*src).typ } else { -1i32 },
             7i32,
             2420i32,
         );
@@ -3190,16 +3177,13 @@ unsafe extern "C" fn pdf_write_obj(mut object: *mut pdf_obj, mut handle: rust_ou
         return;
     }
     if object.is_null()
-        || (*object).type_0 <= 0i32
-        || (*object).type_0 > 10i32
-        || !object.is_null() && pdf_obj_typeof(object) == 10i32
+        || (*object).typ <= 0i32
+        || (*object).typ > 10i32
+        || !object.is_null() && pdf_obj_typeof(object) == PdfObjType::UNDEFINED
     {
-        panic!(
-            "pdf_write_obj: Invalid object, type = {}\n",
-            (*object).type_0
-        );
+        panic!("pdf_write_obj: Invalid object, type = {}\n", (*object).typ);
     }
-    match (*object).type_0 {
+    match (*object).typ {
         1 => {
             write_boolean((*object).data as *mut pdf_boolean, handle);
         }
@@ -3263,22 +3247,18 @@ unsafe extern "C" fn pdf_flush_obj(mut object: *mut pdf_obj, mut handle: rust_ou
         8i32,
     );
 }
-unsafe extern "C" fn pdf_add_objstm(mut objstm: *mut pdf_obj, mut object: *mut pdf_obj) -> i32 {
+unsafe extern "C" fn pdf_add_objstm(objstm: *mut pdf_obj, mut object: *mut pdf_obj) -> i32 {
     let mut data: *mut i32 = 0 as *mut i32;
     let mut pos: i32 = 0;
-    if objstm.is_null() || (*objstm).type_0 != 7i32 {
+    if PdfObjType::from((*objstm).typ) != PdfObjType::STREAM {
         panic!(
             "typecheck: Invalid object type: {} {} (line {})",
-            if !objstm.is_null() {
-                (*objstm).type_0
-            } else {
-                -1i32
-            },
+            (*objstm).typ,
             7i32,
             2497i32,
         );
     }
-    data = get_objstm_data(objstm);
+    data = get_objstm_data(&*objstm);
     let ref mut fresh15 = *data.offset(0);
     *fresh15 += 1;
     pos = *fresh15;
@@ -3293,8 +3273,8 @@ unsafe extern "C" fn pdf_add_objstm(mut objstm: *mut pdf_obj, mut object: *mut p
     output_stream = 0 as *mut pdf_obj;
     pos
 }
-unsafe extern "C" fn release_objstm(mut objstm: *mut pdf_obj) {
-    let mut data: *mut i32 = get_objstm_data(objstm);
+unsafe extern "C" fn release_objstm(objstm: *mut pdf_obj) {
+    let mut data: *mut i32 = get_objstm_data(&*objstm);
     let mut pos: i32 = *data.offset(0);
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut stream: *mut pdf_stream = 0 as *mut pdf_stream;
@@ -3355,14 +3335,14 @@ pub unsafe extern "C" fn pdf_release_obj(mut object: *mut pdf_obj) {
         return;
     }
     if object.is_null()
-        || (*object).type_0 <= 0i32
-        || (*object).type_0 > 10i32
+        || (*object).typ <= 0i32
+        || (*object).typ > 10i32
         || (*object).refcount <= 0_u32
     {
         dpx_message(
             b"\npdf_release_obj: object=%p, type=%d, refcount=%d\n\x00" as *const u8 as *const i8,
             object,
-            (*object).type_0,
+            (*object).typ,
             (*object).refcount,
         );
         pdf_write_obj(object, ttstub_output_open_stdout());
@@ -3399,35 +3379,35 @@ pub unsafe extern "C" fn pdf_release_obj(mut object: *mut pdf_obj) {
                 }
             }
         }
-        match (*object).type_0 {
-            1 => {
+        match PdfObjType::from((*object).typ) {
+            PdfObjType::BOOLEAN => {
                 release_boolean((*object).data as *mut pdf_obj);
             }
-            2 => {
+            PdfObjType::NUMBER => {
                 release_number((*object).data as *mut pdf_number);
             }
-            3 => {
+            PdfObjType::STRING => {
                 release_string((*object).data as *mut pdf_string);
             }
-            4 => {
+            PdfObjType::NAME => {
                 release_name((*object).data as *mut pdf_name);
             }
-            5 => {
+            PdfObjType::ARRAY => {
                 release_array((*object).data as *mut pdf_array);
             }
-            6 => {
+            PdfObjType::DICT => {
                 release_dict((*object).data as *mut pdf_dict);
             }
-            7 => {
+            PdfObjType::STREAM => {
                 release_stream((*object).data as *mut pdf_stream);
             }
-            9 => {
+            PdfObjType::INDIRECT => {
                 release_indirect((*object).data as *mut pdf_indirect);
             }
-            8 | _ => {}
+            PdfObjType::NULL | _ => {}
         }
         /* This might help detect freeing already freed objects */
-        (*object).type_0 = -1i32;
+        (*object).typ = -1i32;
         (*object).data = 0 as *mut libc::c_void;
         free(object as *mut libc::c_void);
     };
@@ -3608,7 +3588,7 @@ unsafe extern "C" fn next_object_offset(mut pf: *mut pdf_file, mut obj_num: u32)
     /* Check all other type 1 objects to find next one */
     i = 0i32;
     while i < (*pf).num_obj {
-        if (*(*pf).xref_table.offset(i as isize)).type_0 as i32 == 1i32
+        if (*(*pf).xref_table.offset(i as isize)).typ as i32 == 1i32
             && (*(*pf).xref_table.offset(i as isize)).field2 > curr as u32
             && (*(*pf).xref_table.offset(i as isize)).field2 < next as u32
         {
@@ -3727,28 +3707,25 @@ unsafe extern "C" fn read_objstm(mut pf: *mut pdf_file, mut num: u32) -> *mut pd
     let mut i: i32 = 0;
     let mut objstm: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut type_0: *mut pdf_obj = 0 as *mut pdf_obj;
+    let mut typ: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut n_obj: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut first_obj: *mut pdf_obj = 0 as *mut pdf_obj;
     objstm = pdf_read_object(num, gen, pf, offset as i32, limit);
-    if !objstm.is_null() && pdf_obj_typeof(objstm) == 7i32 {
+    if !objstm.is_null() && pdf_obj_typeof(objstm) == PdfObjType::STREAM {
         let mut tmp: *mut pdf_obj = pdf_stream_uncompress(objstm);
         if !tmp.is_null() {
             pdf_release_obj(objstm);
             objstm = tmp;
             dict = pdf_stream_dict(objstm);
-            type_0 = pdf_lookup_dict(dict, b"Type\x00" as *const u8 as *const i8);
-            if !(!(!type_0.is_null() && pdf_obj_typeof(type_0) == 4i32)
-                || strcmp(
-                    pdf_name_value(type_0),
-                    b"ObjStm\x00" as *const u8 as *const i8,
-                ) != 0)
+            typ = pdf_lookup_dict(dict, b"Type\x00" as *const u8 as *const i8);
+            if !(!(!typ.is_null() && pdf_obj_typeof(typ) == PdfObjType::NAME)
+                || strcmp(pdf_name_value(typ), b"ObjStm\x00" as *const u8 as *const i8) != 0)
             {
                 n_obj = pdf_lookup_dict(dict, b"N\x00" as *const u8 as *const i8);
-                if !n_obj.is_null() && pdf_obj_typeof(n_obj) == 2i32 {
+                if !n_obj.is_null() && pdf_obj_typeof(n_obj) == PdfObjType::NUMBER {
                     n = pdf_number_value(n_obj) as i32;
                     first_obj = pdf_lookup_dict(dict, b"First\x00" as *const u8 as *const i8);
-                    if !first_obj.is_null() && pdf_obj_typeof(first_obj) == 2i32 {
+                    if !first_obj.is_null() && pdf_obj_typeof(first_obj) == PdfObjType::NUMBER {
                         first = pdf_number_value(first_obj) as i32;
                         /* reject object streams without object data */
                         if !(first >= pdf_stream_length(objstm)) {
@@ -3829,9 +3806,9 @@ unsafe extern "C" fn pdf_get_object(
     let mut result: *mut pdf_obj = 0 as *mut pdf_obj;
     if !(obj_num > 0_u32
         && obj_num < (*pf).num_obj as u32
-        && ((*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 1i32
+        && ((*(*pf).xref_table.offset(obj_num as isize)).typ as i32 == 1i32
             && (*(*pf).xref_table.offset(obj_num as isize)).field3 as i32 == obj_gen as i32
-            || (*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 2i32 && obj_gen == 0))
+            || (*(*pf).xref_table.offset(obj_num as isize)).typ as i32 == 2i32 && obj_gen == 0))
     {
         dpx_warning(
             b"Trying to read nonexistent or deleted object: %u %hu\x00" as *const u8 as *const i8,
@@ -3844,7 +3821,7 @@ unsafe extern "C" fn pdf_get_object(
     if !result.is_null() {
         return pdf_link_obj(result);
     }
-    if (*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 1i32 {
+    if (*(*pf).xref_table.offset(obj_num as isize)).typ as i32 == 1i32 {
         /* type == 1 */
         let mut offset: u32 = 0;
         let mut limit: i32 = 0;
@@ -3863,7 +3840,7 @@ unsafe extern "C" fn pdf_get_object(
         let mut p: *const i8 = 0 as *const i8;
         let mut q: *const i8 = 0 as *const i8;
         if objstm_num >= (*pf).num_obj as u32
-            || (*(*pf).xref_table.offset(objstm_num as isize)).type_0 as i32 != 1i32
+            || (*(*pf).xref_table.offset(objstm_num as isize)).typ as i32 != 1i32
             || {
                 objstm = (*(*pf).xref_table.offset(objstm_num as isize)).direct;
                 !(!objstm.is_null() || {
@@ -3874,7 +3851,7 @@ unsafe extern "C" fn pdf_get_object(
         {
             current_block = 17536737673648832705;
         } else {
-            data = get_objstm_data(objstm);
+            data = get_objstm_data(&*objstm);
             let fresh25 = data;
             data = data.offset(1);
             n = *fresh25;
@@ -3934,7 +3911,7 @@ pub unsafe extern "C" fn pdf_deref_obj(mut obj: *mut pdf_obj) -> *mut pdf_obj {
     if !obj.is_null() {
         obj = pdf_link_obj(obj)
     }
-    while !obj.is_null() && pdf_obj_typeof(obj) == 9i32 && {
+    while !obj.is_null() && pdf_obj_typeof(obj) == PdfObjType::INDIRECT && {
         count -= 1;
         count != 0
     } {
@@ -3956,7 +3933,7 @@ pub unsafe extern "C" fn pdf_deref_obj(mut obj: *mut pdf_obj) -> *mut pdf_obj {
     if count == 0 {
         panic!("Loop in object hierarchy detected. Broken PDF file?");
     }
-    if !obj.is_null() && pdf_obj_typeof(obj) == 8i32 {
+    if !obj.is_null() && pdf_obj_typeof(obj) == PdfObjType::NULL {
         pdf_release_obj(obj);
         return 0 as *mut pdf_obj;
     } else {
@@ -3975,7 +3952,7 @@ unsafe extern "C" fn extend_xref(mut pf: *mut pdf_file, mut new_size: i32) {
         *fresh29 = 0 as *mut pdf_obj;
         let ref mut fresh30 = (*(*pf).xref_table.offset(i as isize)).indirect;
         *fresh30 = 0 as *mut pdf_obj;
-        (*(*pf).xref_table.offset(i as isize)).type_0 = 0_u8;
+        (*(*pf).xref_table.offset(i as isize)).typ = 0_u8;
         (*(*pf).xref_table.offset(i as isize)).field3 = 0_u16;
         (*(*pf).xref_table.offset(i as isize)).field2 = 0i64 as u32;
         i = i.wrapping_add(1)
@@ -4185,7 +4162,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                             }
                             /* Everything seems to be OK. */
                             if (*(*pf).xref_table.offset(i as isize)).field2 == 0 {
-                                (*(*pf).xref_table.offset(i as isize)).type_0 =
+                                (*(*pf).xref_table.offset(i as isize)).typ =
                                     (flag as i32 == 'n' as i32) as i32 as u8; /* TODO: change! why? */
                                 (*(*pf).xref_table.offset(i as isize)).field2 = offset;
                                 (*(*pf).xref_table.offset(i as isize)).field3 = obj_gen as u16
@@ -4230,7 +4207,6 @@ unsafe extern "C" fn parse_xrefstm_subsec(
     mut first: i32,
     mut size: i32,
 ) -> i32 {
-    let mut e: *mut xref_entry = 0 as *mut xref_entry;
     *length -= wsum * size;
     if *length < 0i32 {
         return -1i32;
@@ -4238,24 +4214,24 @@ unsafe extern "C" fn parse_xrefstm_subsec(
     if (*pf).num_obj < first + size {
         extend_xref(pf, first + size);
     }
-    e = (*pf).xref_table.offset(first as isize);
+    let mut e: *mut xref_entry = 0 as *mut xref_entry;
     loop {
         let fresh33 = size;
         size = size - 1;
         if !(fresh33 != 0) {
             break;
         }
-        let mut type_0: u8 = 0;
+        let mut typ: u8 = 0;
         let mut field2: u32 = 0;
         let mut field3: u16 = 0;
-        type_0 = parse_xrefstm_field(p, *W.offset(0), 1_u32) as u8;
-        if type_0 as i32 > 2i32 {
+        typ = parse_xrefstm_field(p, *W.offset(0), 1_u32) as u8;
+        if typ as i32 > 2i32 {
             warn!("Unknown cross-reference stream entry type.");
         }
         field2 = parse_xrefstm_field(p, *W.offset(1), 0_u32);
         field3 = parse_xrefstm_field(p, *W.offset(2), 0_u32) as u16;
         if (*e).field2 == 0 {
-            (*e).type_0 = type_0;
+            (*e).typ = typ;
             (*e).field2 = field2;
             (*e).field3 = field3
         }
@@ -4280,18 +4256,18 @@ unsafe extern "C" fn parse_xref_stream(
     let mut wsum: i32 = 0i32;
     let mut p: *const i8 = 0 as *const i8;
     xrefstm = pdf_read_object(0_u32, 0_u16, pf, xref_pos, (*pf).file_size);
-    if !xrefstm.is_null() && pdf_obj_typeof(xrefstm) == 7i32 {
+    if !xrefstm.is_null() && pdf_obj_typeof(xrefstm) == PdfObjType::STREAM {
         let mut tmp: *mut pdf_obj = pdf_stream_uncompress(xrefstm);
         if !tmp.is_null() {
             pdf_release_obj(xrefstm);
             xrefstm = tmp;
             *trailer = pdf_link_obj(pdf_stream_dict(xrefstm));
             size_obj = pdf_lookup_dict(*trailer, b"Size\x00" as *const u8 as *const i8);
-            if !size_obj.is_null() && pdf_obj_typeof(size_obj) == 2i32 {
+            if !size_obj.is_null() && pdf_obj_typeof(size_obj) == PdfObjType::NUMBER {
                 size = pdf_number_value(size_obj) as u32;
                 length = pdf_stream_length(xrefstm);
                 W_obj = pdf_lookup_dict(*trailer, b"W\x00" as *const u8 as *const i8);
-                if !(!(!W_obj.is_null() && pdf_obj_typeof(W_obj) == 5i32)
+                if !(!(!W_obj.is_null() && pdf_obj_typeof(W_obj) == PdfObjType::ARRAY)
                     || pdf_array_length(W_obj) != 3_u32)
                 {
                     i = 0i32;
@@ -4301,7 +4277,7 @@ unsafe extern "C" fn parse_xref_stream(
                             break;
                         }
                         let mut tmp_0: *mut pdf_obj = pdf_get_array(W_obj, i);
-                        if !(!tmp_0.is_null() && pdf_obj_typeof(tmp_0) == 2i32) {
+                        if !(!tmp_0.is_null() && pdf_obj_typeof(tmp_0) == PdfObjType::NUMBER) {
                             current_block = 5131529843719913080;
                             break;
                         }
@@ -4317,10 +4293,13 @@ unsafe extern "C" fn parse_xref_stream(
                                 pdf_lookup_dict(*trailer, b"Index\x00" as *const u8 as *const i8);
                             if !index_obj.is_null() {
                                 let mut index_len: u32 = 0;
-                                if !(!index_obj.is_null() && pdf_obj_typeof(index_obj) == 5i32) || {
-                                    index_len = pdf_array_length(index_obj);
-                                    index_len.wrapping_rem(2_u32) != 0
-                                } {
+                                if !(!index_obj.is_null()
+                                    && pdf_obj_typeof(index_obj) == PdfObjType::ARRAY)
+                                    || {
+                                        index_len = pdf_array_length(index_obj);
+                                        index_len.wrapping_rem(2_u32) != 0
+                                    }
+                                {
                                     current_block = 5131529843719913080;
                                 } else {
                                     i = 0i32;
@@ -4336,9 +4315,10 @@ unsafe extern "C" fn parse_xref_stream(
                                         let fresh35 = i;
                                         i = i + 1;
                                         size_obj = pdf_get_array(index_obj, fresh35);
-                                        if !(!first.is_null() && pdf_obj_typeof(first) == 2i32)
+                                        if !(!first.is_null()
+                                            && pdf_obj_typeof(first) == PdfObjType::NUMBER)
                                             || !(!size_obj.is_null()
-                                                && pdf_obj_typeof(size_obj) == 2i32)
+                                                && pdf_obj_typeof(size_obj) == PdfObjType::NUMBER)
                                             || parse_xrefstm_subsec(
                                                 pf,
                                                 &mut p,
@@ -4426,7 +4406,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
                         if !xrefstm.is_null() {
                             let mut new_trailer: *mut pdf_obj = 0 as *mut pdf_obj;
                             if !xrefstm.is_null()
-                                && pdf_obj_typeof(xrefstm) == 2i32
+                                && pdf_obj_typeof(xrefstm) == PdfObjType::NUMBER
                                 && parse_xref_stream(
                                     pf,
                                     pdf_number_value(xrefstm) as i32,
@@ -4454,7 +4434,7 @@ unsafe extern "C" fn read_xref(mut pf: *mut pdf_file) -> *mut pdf_obj {
                     }
                     prev = pdf_lookup_dict(trailer, b"Prev\x00" as *const u8 as *const i8);
                     if !prev.is_null() {
-                        if !(!prev.is_null() && pdf_obj_typeof(prev) == 2i32) {
+                        if !(!prev.is_null() && pdf_obj_typeof(prev) == PdfObjType::NUMBER) {
                             current_block = 13794981049891343809;
                             continue;
                         }
@@ -4582,7 +4562,7 @@ pub unsafe extern "C" fn pdf_open(
                 (*pf).trailer,
                 b"Root\x00" as *const u8 as *const i8,
             ));
-            if !(!(*pf).catalog.is_null() && pdf_obj_typeof((*pf).catalog) == 6i32) {
+            if !(!(*pf).catalog.is_null() && pdf_obj_typeof((*pf).catalog) == PdfObjType::DICT) {
                 warn!("Cannot read PDF document catalog. Broken PDF file?");
                 current_block = 14455231216035570027;
             } else {
@@ -4592,7 +4572,7 @@ pub unsafe extern "C" fn pdf_open(
                 ));
                 if !new_version.is_null() {
                     let mut minor: u32 = 0;
-                    if !(!new_version.is_null() && pdf_obj_typeof(new_version) == 4i32)
+                    if !(!new_version.is_null() && pdf_obj_typeof(new_version) == PdfObjType::NAME)
                         || sscanf(
                             pdf_name_value(new_version),
                             b"1.%u\x00" as *const u8 as *const i8,
@@ -4716,7 +4696,7 @@ unsafe extern "C" fn import_dict(
 }
 static mut loop_marker: pdf_obj = {
     let mut init = pdf_obj {
-        type_0: 0i32,
+        typ: 0i32,
         label: 0_u32,
         generation: 0_u16,
         refcount: 0_u32,
@@ -4733,9 +4713,9 @@ unsafe extern "C" fn pdf_import_indirect(mut object: *mut pdf_obj) -> *mut pdf_o
     assert!(!pf.is_null());
     if !(obj_num > 0_u32
         && obj_num < (*pf).num_obj as u32
-        && ((*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 1i32
+        && ((*(*pf).xref_table.offset(obj_num as isize)).typ as i32 == 1i32
             && (*(*pf).xref_table.offset(obj_num as isize)).field3 as i32 == obj_gen as i32
-            || (*(*pf).xref_table.offset(obj_num as isize)).type_0 as i32 == 2i32 && obj_gen == 0))
+            || (*(*pf).xref_table.offset(obj_num as isize)).typ as i32 == 2i32 && obj_gen == 0))
     {
         warn!("Can\'t resolve object: {} {}", obj_num, obj_gen as i32,);
         return pdf_new_null();
@@ -4779,14 +4759,14 @@ pub unsafe extern "C" fn pdf_import_object(mut object: *mut pdf_obj) -> *mut pdf
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut i: u32 = 0;
     match pdf_obj_typeof(object) {
-        9 => {
+        PdfObjType::INDIRECT => {
             if !(*((*object).data as *mut pdf_indirect)).pf.is_null() {
                 imported = pdf_import_indirect(object)
             } else {
                 imported = pdf_link_obj(object)
             }
         }
-        7 => {
+        PdfObjType::STREAM => {
             let mut stream_dict: *mut pdf_obj = 0 as *mut pdf_obj;
             tmp = pdf_import_object(pdf_stream_dict(object));
             if tmp.is_null() {
@@ -4802,7 +4782,7 @@ pub unsafe extern "C" fn pdf_import_object(mut object: *mut pdf_obj) -> *mut pdf
                 pdf_stream_length(object),
             );
         }
-        6 => {
+        PdfObjType::DICT => {
             imported = pdf_new_dict();
             if pdf_foreach_dict(
                 object,
@@ -4821,7 +4801,7 @@ pub unsafe extern "C" fn pdf_import_object(mut object: *mut pdf_obj) -> *mut pdf
                 return 0 as *mut pdf_obj;
             }
         }
-        5 => {
+        PdfObjType::ARRAY => {
             imported = pdf_new_array();
             i = 0_u32;
             while i < pdf_array_length(object) {
@@ -4848,8 +4828,8 @@ pub unsafe extern "C" fn pdf_compare_reference(
     let mut data2: *mut pdf_indirect = 0 as *mut pdf_indirect;
     assert!(
         !ref1.is_null()
-            && pdf_obj_typeof(ref1) == 9i32
-            && (!ref2.is_null() && pdf_obj_typeof(ref2) == 9i32)
+            && pdf_obj_typeof(ref1) == PdfObjType::INDIRECT
+            && (!ref2.is_null() && pdf_obj_typeof(ref2) == PdfObjType::INDIRECT)
     );
     data1 = (*ref1).data as *mut pdf_indirect;
     data2 = (*ref2).data as *mut pdf_indirect;

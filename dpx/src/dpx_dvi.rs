@@ -51,7 +51,7 @@ use super::dpx_pdfdev::pdf_dev_set_rect;
 use super::dpx_pdfdoc::pdf_doc_expand_box;
 use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
 use crate::dpx_pdfobj::{
-    pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj, pdf_string_value,
+    pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj, pdf_string_value, PdfObjType,
 };
 use crate::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_getc, ttstub_input_open,
@@ -3022,7 +3022,9 @@ unsafe extern "C" fn scan_special(
                     }
                 } else if streq_ptr(kp_0, b"length\x00" as *const u8 as *const i8) {
                     obj = parse_pdf_number(&mut p, endptr);
-                    if !obj.is_null() && (!obj.is_null() && pdf_obj_typeof(obj) == 2i32) {
+                    if !obj.is_null()
+                        && (!obj.is_null() && pdf_obj_typeof(obj) == PdfObjType::NUMBER)
+                    {
                         *key_bits = pdf_number_value(obj) as u32 as i32
                     } else {
                         error = -1i32
@@ -3030,7 +3032,9 @@ unsafe extern "C" fn scan_special(
                     pdf_release_obj(obj);
                 } else if streq_ptr(kp_0, b"perm\x00" as *const u8 as *const i8) {
                     obj = parse_pdf_number(&mut p, endptr);
-                    if !obj.is_null() && (!obj.is_null() && pdf_obj_typeof(obj) == 2i32) {
+                    if !obj.is_null()
+                        && (!obj.is_null() && pdf_obj_typeof(obj) == PdfObjType::NUMBER)
+                    {
                         *permission = pdf_number_value(obj) as u32 as i32
                     } else {
                         error = -1i32

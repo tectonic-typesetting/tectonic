@@ -38,7 +38,7 @@ use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_lookup_dict, pdf_name_value, pdf_new_boolean, pdf_new_dict, pdf_new_name,
     pdf_new_number, pdf_new_string, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
-    pdf_string_value,
+    pdf_string_value, PdfObjType,
 };
 use crate::dpx_pdfparse::parse_val_ident;
 use libc::free;
@@ -219,7 +219,7 @@ unsafe extern "C" fn check_resourcestatus(mut category: *const i8, mut resname: 
         return 0i32;
     }
     dict2 = pdf_lookup_dict(dict1, category);
-    if !dict2.is_null() && pdf_obj_typeof(dict2) == 6i32 {
+    if !dict2.is_null() && pdf_obj_typeof(dict2) == PdfObjType::DICT {
         if !pdf_lookup_dict(dict2, resname).is_null() {
             return 1i32;
         }
@@ -955,7 +955,7 @@ unsafe extern "C" fn tpic_filter_getopts(
     assert!(!kp.is_null() && !vp.is_null() && !tp.is_null());
     k = pdf_name_value(kp);
     if streq_ptr(k, b"fill-mode\x00" as *const u8 as *const i8) {
-        if pdf_obj_typeof(vp) != 3i32 {
+        if pdf_obj_typeof(vp) != PdfObjType::STRING {
             warn!("Invalid value for TPIC option fill-mode...");
             error = -1i32
         } else {

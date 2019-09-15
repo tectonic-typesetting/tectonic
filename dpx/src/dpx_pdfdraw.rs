@@ -125,7 +125,7 @@ pub struct LineDash {
 }
 
 fn pdf_coord__equal(p1: &pdf_coord, p2: &pdf_coord) -> bool {
-  ((p1.x - p2.x).abs() < 1e-7) && ((p1.y - p2.y).abs() < 1e-7)
+    ((p1.x - p2.x).abs() < 1e-7) && ((p1.y - p2.y).abs() < 1e-7)
 }
 
 unsafe extern "C" fn inversematrix(mut W: &mut pdf_tmatrix, mut M: &pdf_tmatrix) -> i32 {
@@ -741,13 +741,13 @@ unsafe extern "C" fn pdf_dev__flushpath(
     } else {
         for pe in pa.path.iter_mut() {
             /* op: f F s S b B W f* F* s* S* b* B* W* */
-            let n_pts = if
-            pe.typ != PeType::TERMINATE {
+            let n_pts = if pe.typ != PeType::TERMINATE {
                 pe.typ.n_pts() as i32
             } else {
                 0i32
             };
-            for (_j, pt) in (0..n_pts).zip(pe.p.iter_mut()) { /* op: m l c v y h */
+            for (_j, pt) in (0..n_pts).zip(pe.p.iter_mut()) {
+                /* op: m l c v y h */
                 let fresh32 = len;
                 len = len + 1;
                 *b.offset(fresh32 as isize) = ' ' as i32 as i8;
@@ -817,7 +817,7 @@ impl pdf_gstate {
             strokecolor: pdf_color_graycolor_new(0.).unwrap(),
             fillcolor: pdf_color_graycolor_new(0.).unwrap(),
             linedash: LineDash::default(),
-            linecap: 0, // TODO make enum
+            linecap: 0,  // TODO make enum
             linejoin: 0, // TODO make enum
             linewidth: 1.,
             miterlimit: 10.,

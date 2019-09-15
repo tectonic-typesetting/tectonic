@@ -33,12 +33,19 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_dpxutil::{
+    ht_append_table, ht_clear_iter, ht_clear_table, ht_init_table, ht_iter_getkey, ht_iter_next,
+    ht_lookup_table, ht_set_iter, ht_table_size,
+};
 use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white, pdf_color_set_verbose,
 };
 use super::dpx_pdfdev::pdf_dev_bop;
 use super::dpx_pdfdraw::pdf_dev_set_color;
 use super::dpx_pdffont::pdf_font_set_verbose;
+use super::dpx_pdfnames::{
+    pdf_delete_name_tree, pdf_names_add_object, pdf_names_create_tree, pdf_new_name_tree,
+};
 use super::dpx_pdfximage::{
     pdf_close_images, pdf_init_images, pdf_ximage_defineresource, pdf_ximage_findresource,
     pdf_ximage_get_reference, pdf_ximage_init_form_info, pdf_ximage_set_verbose, XInfo,
@@ -49,7 +56,7 @@ use crate::dpx_pdfobj::{
     pdf_merge_dict, pdf_name_value, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
     pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj,
     pdf_release_obj, pdf_remove_dict, pdf_set_encrypt, pdf_set_id, pdf_set_info, pdf_set_root,
-    pdf_stream_dict, pdf_stream_length, pdf_string_length, pdf_string_value,
+    pdf_stream_dict, pdf_stream_length, pdf_string_length, pdf_string_value, PdfObjType,
 };
 use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
@@ -135,33 +142,6 @@ extern "C" {
     #[no_mangle]
     fn pdf_init_colors();
     #[no_mangle]
-    fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
-    #[no_mangle]
-    fn ht_clear_table(ht: *mut ht_table);
-    #[no_mangle]
-    fn ht_table_size(ht: *mut ht_table) -> i32;
-    #[no_mangle]
-    fn ht_lookup_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> *mut libc::c_void;
-    #[no_mangle]
-    fn ht_append_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-        value: *mut libc::c_void,
-    );
-    #[no_mangle]
-    fn ht_set_iter(ht: *mut ht_table, iter: *mut ht_iter) -> i32;
-    #[no_mangle]
-    fn ht_clear_iter(iter: *mut ht_iter);
-    #[no_mangle]
-    fn ht_iter_getkey(iter: *mut ht_iter, keylen: *mut i32) -> *mut i8;
-    #[no_mangle]
-    fn ht_iter_next(iter: *mut ht_iter) -> i32;
-    #[no_mangle]
     static mut is_xdv: i32;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
@@ -201,26 +181,6 @@ extern "C" {
     fn pdf_close_fonts();
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    /* Hash */
-    /* Not actually tree... */
-    #[no_mangle]
-    fn pdf_new_name_tree() -> *mut ht_table;
-    #[no_mangle]
-    fn pdf_delete_name_tree(names: *mut *mut ht_table);
-    #[no_mangle]
-    fn pdf_names_add_object(
-        names: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-        object: *mut pdf_obj,
-    ) -> i32;
-    /* Really create name tree... */
-    #[no_mangle]
-    fn pdf_names_create_tree(
-        names: *mut ht_table,
-        count: *mut i32,
-        filter: *mut ht_table,
-    ) -> *mut pdf_obj;
     #[no_mangle]
     fn pdf_init_resources();
     #[no_mangle]
@@ -517,7 +477,7 @@ unsafe extern "C" fn pdf_doc_close_catalog(mut p: *mut pdf_doc) {
                 pdf_new_name(b"ViewerPreferences\x00" as *const u8 as *const i8),
                 pdf_ref_obj((*p).root.viewerpref),
             );
-        } else if !tmp.is_null() && pdf_obj_typeof(tmp) == 6i32 {
+        } else if !tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::DICT {
             pdf_merge_dict((*p).root.viewerpref, tmp);
             pdf_add_dict(
                 (*p).root.dict,
@@ -780,7 +740,7 @@ unsafe extern "C" fn pdf_doc_close_docinfo(mut p: *mut pdf_doc) {
     while !keys[i as usize].is_null() {
         value = pdf_lookup_dict(docinfo, keys[i as usize]);
         if !value.is_null() {
-            if !(!value.is_null() && pdf_obj_typeof(value) == 3i32) {
+            if !(!value.is_null() && pdf_obj_typeof(value) == PdfObjType::STRING) {
                 dpx_warning(
                     b"\"%s\" in DocInfo dictionary not string type.\x00" as *const u8 as *const i8,
                     keys[i as usize],
@@ -867,7 +827,7 @@ pub unsafe extern "C" fn pdf_doc_add_page_resource(
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut resources: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut duplicate: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !(!resource_ref.is_null() && pdf_obj_typeof(resource_ref) == 9i32) {
+    if !(!resource_ref.is_null() && pdf_obj_typeof(resource_ref) == PdfObjType::INDIRECT) {
         warn!("Passed non indirect reference...");
         resource_ref = pdf_ref_obj(resource_ref)
         /* leak */
@@ -1220,14 +1180,14 @@ pub unsafe extern "C" fn pdf_doc_get_page_count(mut pf: *mut pdf_file) -> i32 {
         catalog,
         b"Pages\x00" as *const u8 as *const i8,
     ));
-    if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == 6i32) {
+    if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == PdfObjType::DICT) {
         return 0i32;
     }
     let mut tmp: *mut pdf_obj = pdf_deref_obj(pdf_lookup_dict(
         page_tree,
         b"Count\x00" as *const u8 as *const i8,
     ));
-    if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+    if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
         pdf_release_obj(tmp);
         return 0i32;
     }
@@ -1311,7 +1271,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
         catalog,
         b"Pages\x00" as *const u8 as *const i8,
     ));
-    if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == 6i32) {
+    if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == PdfObjType::DICT) {
         current_block = 7715203803291643663;
     } else {
         let mut count: i32 = 0;
@@ -1319,7 +1279,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
             page_tree,
             b"Count\x00" as *const u8 as *const i8,
         ));
-        if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+        if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
             pdf_release_obj(tmp);
             current_block = 7715203803291643663;
         } else {
@@ -1414,7 +1374,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                         current_block = 13707613154239713890;
                         break;
                     }
-                    if !(!kids.is_null() && pdf_obj_typeof(kids) == 5i32) {
+                    if !(!kids.is_null() && pdf_obj_typeof(kids) == PdfObjType::ARRAY) {
                         pdf_release_obj(kids);
                         current_block = 7715203803291643663;
                         break;
@@ -1425,7 +1385,9 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                             let mut count_0: i32 = 0;
                             pdf_release_obj(page_tree);
                             page_tree = pdf_deref_obj(pdf_get_array(kids, i));
-                            if !(!page_tree.is_null() && pdf_obj_typeof(page_tree) == 6i32) {
+                            if !(!page_tree.is_null()
+                                && pdf_obj_typeof(page_tree) == PdfObjType::DICT)
+                            {
                                 current_block = 7715203803291643663;
                                 break 's_83;
                             }
@@ -1433,7 +1395,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                 page_tree,
                                 b"Count\x00" as *const u8 as *const i8,
                             ));
-                            if !tmp_0.is_null() && pdf_obj_typeof(tmp_0) == 2i32 {
+                            if !tmp_0.is_null() && pdf_obj_typeof(tmp_0) == PdfObjType::NUMBER {
                                 /* Pages object */
                                 count_0 = pdf_number_value(tmp_0) as i32;
                                 pdf_release_obj(tmp_0);
@@ -1559,9 +1521,10 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                 }
                             }
                             medbox = media_box;
-                            if !(!(!box_0.is_null() && pdf_obj_typeof(box_0) == 5i32)
+                            if !(!(!box_0.is_null() && pdf_obj_typeof(box_0) == PdfObjType::ARRAY)
                                 || pdf_array_length(box_0) != 4_u32
-                                || !(!resources.is_null() && pdf_obj_typeof(resources) == 6i32))
+                                || !(!resources.is_null()
+                                    && pdf_obj_typeof(resources) == PdfObjType::DICT))
                             {
                                 let mut i_0: i32 = 0;
                                 i_0 = 4i32;
@@ -1575,7 +1538,9 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                     let mut x: f64 = 0.;
                                     let mut tmp_1: *mut pdf_obj =
                                         pdf_deref_obj(pdf_get_array(box_0, i_0));
-                                    if !(!tmp_1.is_null() && pdf_obj_typeof(tmp_1) == 2i32) {
+                                    if !(!tmp_1.is_null()
+                                        && pdf_obj_typeof(tmp_1) == PdfObjType::NUMBER)
+                                    {
                                         pdf_release_obj(tmp_1);
                                         current_block = 7715203803291643663;
                                         break;
@@ -1609,7 +1574,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                 let mut tmp_2: *mut pdf_obj =
                                                     pdf_deref_obj(pdf_get_array(medbox, i_0));
                                                 if !(!tmp_2.is_null()
-                                                    && pdf_obj_typeof(tmp_2) == 2i32)
+                                                    && pdf_obj_typeof(tmp_2) == PdfObjType::NUMBER)
                                                 {
                                                     pdf_release_obj(tmp_2);
                                                     current_block = 7715203803291643663;
@@ -1656,7 +1621,7 @@ pub unsafe extern "C" fn pdf_doc_get_page(
                                                 matrix.f = 0.0f64;
                                                 matrix.e = matrix.f;
                                                 if !rotate.is_null()
-                                                    && pdf_obj_typeof(rotate) == 2i32
+                                                    && pdf_obj_typeof(rotate) == PdfObjType::NUMBER
                                                 {
                                                     let mut deg: f64 = pdf_number_value(rotate);
                                                     if deg - deg as i32 as f64 != 0.0f64 {
@@ -2138,9 +2103,9 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
         b"Subtype\x00" as *const u8 as *const i8,
     ));
     if !subtype.is_null() {
-        if !subtype.is_null() && pdf_obj_typeof(subtype) == 10i32 {
+        if !subtype.is_null() && pdf_obj_typeof(subtype) == PdfObjType::UNDEFINED {
             current_block = 14825911176647684745;
-        } else if !(!subtype.is_null() && pdf_obj_typeof(subtype) == 4i32) {
+        } else if !(!subtype.is_null() && pdf_obj_typeof(subtype) == PdfObjType::NAME) {
             current_block = 10743935136377679094;
         } else if strcmp(
             pdf_name_value(subtype),
@@ -2159,7 +2124,7 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
             dict = annot_dict;
             key = b"Dest\x00" as *const u8 as *const i8;
             D = pdf_deref_obj(pdf_lookup_dict(annot_dict, key));
-            if !D.is_null() && pdf_obj_typeof(D) == 10i32 {
+            if !D.is_null() && pdf_obj_typeof(D) == PdfObjType::UNDEFINED {
                 current_block = 14825911176647684745;
             } else {
                 A = pdf_deref_obj(pdf_lookup_dict(
@@ -2167,15 +2132,17 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
                     b"A\x00" as *const u8 as *const i8,
                 ));
                 if !A.is_null() {
-                    if !A.is_null() && pdf_obj_typeof(A) == 10i32 {
+                    if !A.is_null() && pdf_obj_typeof(A) == PdfObjType::UNDEFINED {
                         current_block = 14825911176647684745;
-                    } else if !D.is_null() || !(!A.is_null() && pdf_obj_typeof(A) == 6i32) {
+                    } else if !D.is_null()
+                        || !(!A.is_null() && pdf_obj_typeof(A) == PdfObjType::DICT)
+                    {
                         current_block = 10743935136377679094;
                     } else {
                         S = pdf_deref_obj(pdf_lookup_dict(A, b"S\x00" as *const u8 as *const i8));
-                        if !S.is_null() && pdf_obj_typeof(S) == 10i32 {
+                        if !S.is_null() && pdf_obj_typeof(S) == PdfObjType::UNDEFINED {
                             current_block = 14825911176647684745;
-                        } else if !(!S.is_null() && pdf_obj_typeof(S) == 4i32) {
+                        } else if !(!S.is_null() && pdf_obj_typeof(S) == PdfObjType::NAME) {
                             current_block = 10743935136377679094;
                         } else if strcmp(pdf_name_value(S), b"GoTo\x00" as *const u8 as *const i8)
                             != 0
@@ -2196,7 +2163,7 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
                     10743935136377679094 => {}
                     6401626691277551363 => {}
                     _ => {
-                        if !D.is_null() && pdf_obj_typeof(D) == 3i32 {
+                        if !D.is_null() && pdf_obj_typeof(D) == PdfObjType::STRING {
                             dest = pdf_string_value(D) as *mut i8;
                             destlen = pdf_string_length(D) as i32;
                             D_new = ht_lookup_table(
@@ -2230,9 +2197,9 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
                                 pdf_release_obj(key_obj);
                             }
                             current_block = 6401626691277551363;
-                        } else if !D.is_null() && pdf_obj_typeof(D) == 5i32 {
+                        } else if !D.is_null() && pdf_obj_typeof(D) == PdfObjType::ARRAY {
                             current_block = 6401626691277551363;
-                        } else if !D.is_null() && pdf_obj_typeof(D) == 10i32 {
+                        } else if !D.is_null() && pdf_obj_typeof(D) == PdfObjType::UNDEFINED {
                             current_block = 14825911176647684745;
                         } else {
                             current_block = 10743935136377679094;
@@ -2342,7 +2309,7 @@ unsafe extern "C" fn pdf_doc_close_names(mut p: *mut pdf_doc) {
                 pdf_new_name(b"Names\x00" as *const u8 as *const i8),
                 pdf_ref_obj((*p).root.names),
             );
-        } else if !tmp.is_null() && pdf_obj_typeof(tmp) == 6i32 {
+        } else if !tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::DICT {
             pdf_merge_dict((*p).root.names, tmp);
             pdf_add_dict(
                 (*p).root.dict,

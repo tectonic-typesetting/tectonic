@@ -678,9 +678,9 @@ unsafe extern "C" fn create_cspace_ICCBased(
         -1i32
     };
     if iccp_check_colorspace(colortype, profile as *const libc::c_void, proflen as i32) < 0i32 {
-        0 as *mut pdf_obj/* Manual page for libpng does not
-                                                           * clarify whether profile data is inflated by libpng.
-                                                           */
+        0 as *mut pdf_obj /* Manual page for libpng does not
+                           * clarify whether profile data is inflated by libpng.
+                           */
     } else {
         let csp_id = iccp_load_profile(
             name as *const i8,
@@ -1237,8 +1237,8 @@ unsafe extern "C" fn strip_soft_mask(
     let mut smask_data_ptr = new((((bpc as i32 / 8i32) as u32)
         .wrapping_mul(width)
         .wrapping_mul(height) as u64)
-        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64) as u32)
-        as *mut png_byte;
+        .wrapping_mul(::std::mem::size_of::<png_byte>() as u64)
+        as u32) as *mut png_byte;
     match color_type as i32 {
         6 => {
             if bpc as i32 == 8i32 {
@@ -1339,8 +1339,8 @@ unsafe extern "C" fn read_image_data(
 ) {
     let mut i: png_uint_32 = 0;
     let mut rows_p = new((height as libc::c_ulong)
-        .wrapping_mul(::std::mem::size_of::<png_bytep>() as libc::c_ulong) as u32)
-        as *mut png_bytep;
+        .wrapping_mul(::std::mem::size_of::<png_bytep>() as libc::c_ulong)
+        as u32) as *mut png_bytep;
     i = 0i32 as png_uint_32;
     while i < height {
         let ref mut fresh1 = *rows_p.offset(i as isize);

@@ -448,7 +448,6 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     let mut charstrings: *mut cff_index = 0 as *mut cff_index;
     let mut topdict: *mut cff_index = 0 as *mut cff_index;
     let mut cs_idx: *mut cff_index = 0 as *mut cff_index;
-    let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
     let mut encoding: *mut cff_encoding = 0 as *mut cff_encoding;
     let mut topdict_offset: i32 = 0;
     let mut private_size: i32 = 0;
@@ -537,11 +536,12 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     /* FIXME */
     (*cffont)._string = cff_new_index(0i32 as card16);
     /* New Charsets data */
-    charset = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
-        as *mut cff_charsets;
-    (*charset).format = 0i32 as card8;
-    (*charset).num_entries = 0i32 as card16;
-    (*charset).data.glyphs =
+    let mut charset =
+        &mut *(new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
+            as *mut cff_charsets);
+    charset.format = 0i32 as card8;
+    charset.num_entries = 0i32 as card16;
+    charset.data.glyphs =
         new((256_u64).wrapping_mul(::std::mem::size_of::<s_SID>() as u64) as u32) as *mut s_SID;
     /*
      * Encoding related things.

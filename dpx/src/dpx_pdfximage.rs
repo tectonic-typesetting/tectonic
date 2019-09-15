@@ -37,7 +37,7 @@ use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_link_obj, pdf_merge_dict, pdf_new_name, pdf_new_number, pdf_obj,
-    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_dict,
+    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_dict, PdfObjType,
 };
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_seek};
 use libc::free;
@@ -586,7 +586,7 @@ pub unsafe extern "C" fn pdf_ximage_set_image(
 ) {
     let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
     let info = image_info;
-    if !(!resource.is_null() && pdf_obj_typeof(resource) == 7i32) {
+    if !(!resource.is_null() && pdf_obj_typeof(resource) == PdfObjType::STREAM) {
         panic!("Image XObject must be of stream type.");
     }
     (*I).subtype = 1i32;

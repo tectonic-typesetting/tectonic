@@ -46,6 +46,7 @@ use super::dpx_tt_post::{tt_lookup_post_table, tt_read_post_table, tt_release_po
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_merge_dict, pdf_new_array, pdf_new_name,
     pdf_new_number, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,
+    PdfObjType,
 };
 use crate::ttstub_input_close;
 use libc::free;
@@ -348,7 +349,7 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
         ttstub_input_close(handle as rust_input_handle_t);
         panic!("Could not obtain necessary font info.");
     }
-    assert!(pdf_obj_typeof(tmp) == 6i32);
+    assert!(pdf_obj_typeof(tmp) == PdfObjType::DICT);
     pdf_merge_dict(descriptor, tmp);
     pdf_release_obj(tmp);
     if embedding == 0 {

@@ -46,7 +46,7 @@ use super::dpx_pdfdraw::{
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_array_length, pdf_file, pdf_get_array, pdf_lookup_dict, pdf_name_value,
     pdf_new_dict, pdf_new_name, pdf_new_number, pdf_number_value, pdf_obj, pdf_obj_typeof,
-    pdf_release_obj, pdf_set_number, pdf_string_length, pdf_string_value,
+    pdf_release_obj, pdf_set_number, pdf_string_length, pdf_string_value, PdfObjType,
 };
 use crate::dpx_pdfparse::{
     parse_ident, parse_pdf_array, parse_pdf_dict, parse_pdf_name, parse_pdf_string,
@@ -2853,7 +2853,7 @@ unsafe extern "C" fn pop_get_numbers(mut values: *mut f64, mut count: i32) -> i3
         if tmp.is_null() {
             warn!("mpost: Stack underflow.");
             break;
-        } else if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+        } else if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
             warn!("mpost: Not a number!");
             pdf_release_obj(tmp);
             break;
@@ -2869,7 +2869,7 @@ unsafe extern "C" fn cvr_array(
     mut values: *mut f64,
     mut count: i32,
 ) -> i32 {
-    if !(!array.is_null() && pdf_obj_typeof(array) == 5i32) {
+    if !(!array.is_null() && pdf_obj_typeof(array) == PdfObjType::ARRAY) {
         warn!("mpost: Not an array!");
     } else {
         let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
@@ -2880,7 +2880,7 @@ unsafe extern "C" fn cvr_array(
                 break;
             }
             tmp = pdf_get_array(array, count);
-            if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+            if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
                 warn!("mpost: Not a number!");
                 break;
             } else {
@@ -2893,22 +2893,22 @@ unsafe extern "C" fn cvr_array(
 }
 unsafe extern "C" fn is_fontdict(mut dict: *mut pdf_obj) -> bool {
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    if !(!dict.is_null() && pdf_obj_typeof(dict) == 6i32) {
+    if !(!dict.is_null() && pdf_obj_typeof(dict) == PdfObjType::DICT) {
         return false;
     }
     tmp = pdf_lookup_dict(dict, b"Type\x00" as *const u8 as *const i8);
     if tmp.is_null()
-        || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 4i32)
+        || !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NAME)
         || strcmp(pdf_name_value(tmp), b"Font\x00" as *const u8 as *const i8) != 0
     {
         return false;
     }
     tmp = pdf_lookup_dict(dict, b"FontName\x00" as *const u8 as *const i8);
-    if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 4i32) {
+    if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NAME) {
         return false;
     }
     tmp = pdf_lookup_dict(dict, b"FontScale\x00" as *const u8 as *const i8);
-    if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+    if tmp.is_null() || !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
         return false;
     }
     true
@@ -2926,8 +2926,8 @@ unsafe extern "C" fn do_findfont() -> i32 {
     if font_name.is_null() {
         return 1i32;
     } else {
-        if !font_name.is_null() && pdf_obj_typeof(font_name) == 3i32
-            || !font_name.is_null() && pdf_obj_typeof(font_name) == 4i32
+        if !font_name.is_null() && pdf_obj_typeof(font_name) == PdfObjType::STRING
+            || !font_name.is_null() && pdf_obj_typeof(font_name) == PdfObjType::NAME
         {
             /* Do not check the existence...
              * The reason for this is that we cannot locate PK font without
@@ -2939,7 +2939,7 @@ unsafe extern "C" fn do_findfont() -> i32 {
                 pdf_new_name(b"Type\x00" as *const u8 as *const i8),
                 pdf_new_name(b"Font\x00" as *const u8 as *const i8),
             );
-            if !font_name.is_null() && pdf_obj_typeof(font_name) == 3i32 {
+            if !font_name.is_null() && pdf_obj_typeof(font_name) == PdfObjType::STRING {
                 pdf_add_dict(
                     font_dict,
                     pdf_new_name(b"FontName\x00" as *const u8 as *const i8),
@@ -3102,7 +3102,7 @@ unsafe extern "C" fn do_show() -> i32 {
     } else {
         0 as *mut pdf_obj
     };
-    if !(!text_str.is_null() && pdf_obj_typeof(text_str) == 3i32) {
+    if !(!text_str.is_null() && pdf_obj_typeof(text_str) == PdfObjType::STRING) {
         pdf_release_obj(text_str);
         return 1i32;
     }
@@ -3533,7 +3533,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                 } else {
                     0 as *mut pdf_obj
                 };
-                if !(!pattern.is_null() && pdf_obj_typeof(pattern) == 5i32) {
+                if !(!pattern.is_null() && pdf_obj_typeof(pattern) == PdfObjType::ARRAY) {
                     pdf_release_obj(pattern);
                     error = 1i32
                 } else {
@@ -3546,7 +3546,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                         i = 0i32;
                         while i < num_dashes && error == 0 {
                             dash = pdf_get_array(pattern, i);
-                            if !(!dash.is_null() && pdf_obj_typeof(dash) == 2i32) {
+                            if !(!dash.is_null() && pdf_obj_typeof(dash) == PdfObjType::NUMBER) {
                                 error = 1i32
                             } else {
                                 dash_values[i as usize] = pdf_number_value(dash)
@@ -3641,7 +3641,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             } else {
                 0 as *mut pdf_obj
             };
-            if !tmp.is_null() && pdf_obj_typeof(tmp) == 5i32 {
+            if !tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::ARRAY {
                 error = cvr_array(tmp, values.as_mut_ptr(), 6i32);
                 tmp = 0 as *mut pdf_obj;
                 if error != 0 {
@@ -3668,7 +3668,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             match current_block_294 {
                 9125367800366194000 => {}
                 _ => {
-                    if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+                    if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
                         error = 1i32
                     } else {
                         cp.y = pdf_number_value(tmp);
@@ -3679,7 +3679,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                         } else {
                             0 as *mut pdf_obj
                         };
-                        if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+                        if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
                             error = 1i32
                         } else {
                             cp.x = pdf_number_value(tmp);
@@ -3720,7 +3720,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             } else {
                 0 as *mut pdf_obj
             };
-            if !tmp.is_null() && pdf_obj_typeof(tmp) == 5i32 {
+            if !tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::ARRAY {
                 error = cvr_array(tmp, values.as_mut_ptr(), 6i32);
                 tmp = 0 as *mut pdf_obj;
                 if error != 0 {
@@ -3747,7 +3747,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
             match current_block_294 {
                 9125367800366194000 => {}
                 _ => {
-                    if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+                    if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
                         error = 1i32
                     } else {
                         cp.y = pdf_number_value(tmp);
@@ -3758,7 +3758,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
                         } else {
                             0 as *mut pdf_obj
                         };
-                        if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 2i32) {
+                        if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::NUMBER) {
                             error = 1i32
                         } else {
                             cp.x = pdf_number_value(tmp);

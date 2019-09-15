@@ -33,6 +33,7 @@ use crate::dpx_pdfparse::parse_ident;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
+use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
@@ -65,23 +66,6 @@ extern "C" {
         suffix: *const i8,
         format: TTInputFormat,
     ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
-    #[no_mangle]
-    fn ht_clear_table(ht: *mut ht_table);
-    #[no_mangle]
-    fn ht_lookup_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> *mut libc::c_void;
-    #[no_mangle]
-    fn ht_append_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-        value: *mut libc::c_void,
-    );
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]

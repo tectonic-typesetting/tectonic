@@ -34,6 +34,9 @@ use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
+use super::dpx_dpxutil::{
+    ht_clear_table, ht_init_table, ht_insert_table, ht_lookup_table, ht_remove_table,
+};
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
@@ -80,25 +83,6 @@ extern "C" {
         suffix: *const i8,
         format: TTInputFormat,
     ) -> rust_input_handle_t;
-    #[no_mangle]
-    fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
-    #[no_mangle]
-    fn ht_clear_table(ht: *mut ht_table);
-    #[no_mangle]
-    fn ht_lookup_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> *mut libc::c_void;
-    #[no_mangle]
-    fn ht_remove_table(ht: *mut ht_table, key: *const libc::c_void, keylen: i32) -> i32;
-    #[no_mangle]
-    fn ht_insert_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-        value: *mut libc::c_void,
-    );
     #[no_mangle]
     fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]

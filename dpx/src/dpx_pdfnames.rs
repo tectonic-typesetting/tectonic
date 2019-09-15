@@ -32,10 +32,14 @@
 use crate::mfree;
 use crate::warn;
 
+use super::dpx_dpxutil::{
+    ht_append_table, ht_clear_iter, ht_clear_table, ht_init_table, ht_iter_getkey, ht_iter_getval,
+    ht_iter_next, ht_lookup_table, ht_set_iter,
+};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_new_array, pdf_new_dict, pdf_new_name,
     pdf_new_null, pdf_new_string, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
-    pdf_string_length, pdf_string_value,
+    pdf_string_length, pdf_string_value, PdfObjType,
 };
 use libc::free;
 extern "C" {
@@ -44,33 +48,6 @@ extern "C" {
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn ht_init_table(ht: *mut ht_table, hval_free_fn: hval_free_func);
-    #[no_mangle]
-    fn ht_clear_table(ht: *mut ht_table);
-    #[no_mangle]
-    fn ht_lookup_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> *mut libc::c_void;
-    #[no_mangle]
-    fn ht_append_table(
-        ht: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-        value: *mut libc::c_void,
-    );
-    #[no_mangle]
-    fn ht_set_iter(ht: *mut ht_table, iter: *mut ht_iter) -> i32;
-    #[no_mangle]
-    fn ht_clear_iter(iter: *mut ht_iter);
-    #[no_mangle]
-    fn ht_iter_getkey(iter: *mut ht_iter, keylen: *mut i32) -> *mut i8;
-    #[no_mangle]
-    fn ht_iter_getval(iter: *mut ht_iter) -> *mut libc::c_void;
-    #[no_mangle]
-    fn ht_iter_next(iter: *mut ht_iter) -> i32;
     #[no_mangle]
     fn pdf_transfer_label(dst: *mut pdf_obj, src: *mut pdf_obj);
     #[no_mangle]
@@ -182,7 +159,9 @@ unsafe extern "C" fn check_objects_defined(mut ht_tab: *mut ht_table) {
             key = ht_iter_getkey(&mut iter, &mut keylen);
             value = ht_iter_getval(&mut iter) as *mut obj_data;
             assert!(!(*value).object.is_null());
-            if !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
+            if !(*value).object.is_null()
+                && pdf_obj_typeof((*value).object) == PdfObjType::UNDEFINED
+            {
                 pdf_names_add_object(ht_tab, key as *const libc::c_void, keylen, pdf_new_null());
                 dpx_warning(
                     b"Object @%s used, but not defined. Replaced by null.\x00" as *const u8
@@ -226,7 +205,7 @@ pub unsafe extern "C" fn pdf_names_add_object(
         ht_append_table(names, key, keylen, value as *mut libc::c_void);
     } else {
         assert!(!(*value).object.is_null());
-        if !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
+        if !(*value).object.is_null() && pdf_obj_typeof((*value).object) == PdfObjType::UNDEFINED {
             pdf_transfer_label(object, (*value).object);
             pdf_release_obj((*value).object);
             (*value).object = object
@@ -276,7 +255,9 @@ pub unsafe extern "C" fn pdf_names_lookup_object(
     let mut value: *mut obj_data = 0 as *mut obj_data;
     assert!(!names.is_null());
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;
-    if value.is_null() || !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
+    if value.is_null()
+        || !(*value).object.is_null() && pdf_obj_typeof((*value).object) == PdfObjType::UNDEFINED
+    {
         return 0 as *mut pdf_obj;
     }
     assert!(!(*value).object.is_null());
@@ -291,7 +272,9 @@ pub unsafe extern "C" fn pdf_names_close_object(
     let mut value: *mut obj_data = 0 as *mut obj_data;
     assert!(!names.is_null());
     value = ht_lookup_table(names, key, keylen) as *mut obj_data;
-    if value.is_null() || !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
+    if value.is_null()
+        || !(*value).object.is_null() && pdf_obj_typeof((*value).object) == PdfObjType::UNDEFINED
+    {
         dpx_warning(
             b"Cannot close undefined object @%s.\x00" as *const u8 as *const i8,
             printable_key(key as *const i8, keylen),
@@ -390,10 +373,10 @@ unsafe extern "C" fn build_name_tree(
                 pdf_new_string((*cur).key as *const libc::c_void, (*cur).keylen as size_t),
             );
             match pdf_obj_typeof((*cur).value) {
-                5 | 6 | 7 | 3 => {
+                PdfObjType::ARRAY | PdfObjType::DICT | PdfObjType::STREAM | PdfObjType::STRING => {
                     pdf_add_array(names, pdf_ref_obj((*cur).value));
                 }
-                0 => {
+                PdfObjType::OBJ_INVALID => {
                     _tt_abort(
                         b"Invalid object...: %s\x00" as *const u8 as *const i8,
                         printable_key((*cur).key, (*cur).keylen),
@@ -477,7 +460,9 @@ unsafe extern "C" fn flat_table(
                 12800627514080957624 => {
                     value = ht_iter_getval(&mut iter) as *mut obj_data;
                     assert!(!(*value).object.is_null());
-                    if !(*value).object.is_null() && pdf_obj_typeof((*value).object) == 10i32 {
+                    if !(*value).object.is_null()
+                        && pdf_obj_typeof((*value).object) == PdfObjType::UNDEFINED
+                    {
                         dpx_warning(
                             b"Object @%s\" not defined. Replaced by null.\x00" as *const u8
                                 as *const i8,
