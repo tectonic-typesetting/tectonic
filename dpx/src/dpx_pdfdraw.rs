@@ -114,6 +114,10 @@ pub struct LineDash {
     pub offset: f64,
 }
 
+fn pdf_coord__equal(p1: &pdf_coord, p2: &pdf_coord) -> bool {
+  ((p1.x - p2.x).abs() < 1e-7) && ((p1.y - p2.y).abs() < 1e-7)
+}
+
 unsafe extern "C" fn inversematrix(mut W: &mut pdf_tmatrix, mut M: &pdf_tmatrix) -> i32 {
     let mut det: f64 = 0.;
     det = M.a * M.d - M.b * M.c;
@@ -283,21 +287,21 @@ unsafe extern "C" fn pdf_path__next_pe<'a>(
             pe.p[0] = *cp;
         }
         PeType::LINETO => {
-            if &pe.p[0] != cp {
+            if !pdf_coord__equal(&pe.p[0], cp) {
                 let mut pe = pa_elem::default();
                 pe.p[0] = *cp;
                 pa.path.push(pe);
             }
         }
         PeType::CURVETO => {
-            if &pe.p[2] != cp {
+            if !pdf_coord__equal(&pe.p[2], cp) {
                 let mut pe = pa_elem::default();
                 pe.p[0] = *cp;
                 pa.path.push(pe);
             }
         }
         PeType::CURVETO_Y | PeType::CURVETO_V => {
-            if &pe.p[1] != cp {
+            if !pdf_coord__equal(&pe.p[1], cp) {
                 let mut pe = pa_elem::default();
                 pe.p[0] = *cp;
                 pa.path.push(pe);
@@ -358,12 +362,12 @@ unsafe extern "C" fn pdf_path__curveto(
     p2: &pdf_coord,
 ) -> i32 {
     let pe = pdf_path__next_pe(pa, cp);
-    if cp == p0 {
+    if pdf_coord__equal(cp, p0) {
         pe.typ = PeType::CURVETO_V;
         pe.p[0] = *p1;
         *cp = *p2;
         pe.p[1] = *cp;
-    } else if p1 == p2 {
+    } else if pdf_coord__equal(p1, p2) {
         pe.typ = PeType::CURVETO_Y;
         pe.p[0] = *p0;
         *cp = *p1;
@@ -449,7 +453,7 @@ unsafe extern "C" fn pdf_path__elliptarc(
     p0.y += ca.y;
     if pa.path.is_empty() {
         pdf_path__moveto(pa, cp, &mut p0);
-    } else if cp != &p0 {
+    } else if !pdf_coord__equal(cp, &p0) {
         pdf_path__lineto(pa, cp, &mut p0);
         /* add line seg */
     }
@@ -823,8 +827,8 @@ impl pdf_gstate {
             strokecolor: pdf_color_graycolor_new(0.).unwrap(),
             fillcolor: pdf_color_graycolor_new(0.).unwrap(),
             linedash: LineDash::default(),
-            linecap: 0,
-            linejoin: 0,
+            linecap: 0, // TODO make enum
+            linejoin: 0, // TODO make enum
             linewidth: 1.,
             miterlimit: 10.,
             flatness: 1,

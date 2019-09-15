@@ -172,11 +172,6 @@ impl pdf_coord {
         Self { x: 0., y: 0. }
     }
 }
-impl PartialEq for pdf_coord {
-    fn eq(&self, other: &Self) -> bool {
-        (self.x - other.x).abs() < 1e-7 && (self.y - other.y).abs() < 1e-7
-    }
-}
 
 #[derive(Copy, Clone, Default)]
 #[repr(C)]
