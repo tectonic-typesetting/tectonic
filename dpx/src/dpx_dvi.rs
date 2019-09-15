@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -16,6 +37,11 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_cff::cff_close;
+use super::dpx_cff_dict::{cff_dict_get, cff_dict_known};
+use super::dpx_dpxfile::{
+    dpx_open_dfont_file, dpx_open_opentype_file, dpx_open_truetype_file, dpx_open_type1_file,
+};
 use super::dpx_numbers::{
     tt_get_positive_quad, tt_get_signed_quad, tt_get_unsigned_byte, tt_get_unsigned_num,
     tt_get_unsigned_pair, tt_get_unsigned_quad,
@@ -33,27 +59,6 @@ use crate::{
 };
 use libc::free;
 extern "C" {
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     /* Here is the complete list of PDF object types */
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
@@ -134,43 +139,6 @@ extern "C" {
     #[no_mangle]
     static mut landscape_mode: i32;
     #[no_mangle]
-    fn cff_close(cff: *mut cff_font);
-    #[no_mangle]
-    fn cff_dict_get(dict: *mut cff_dict, key: *const i8, idx: i32) -> f64;
-    #[no_mangle]
-    fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> i32;
-    #[no_mangle]
-    fn dpx_open_type1_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
-    fn dpx_open_truetype_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
-    fn dpx_open_opentype_file(filename: *const i8) -> rust_input_handle_t;
-    #[no_mangle]
-    fn dpx_open_dfont_file(filename: *const i8) -> rust_input_handle_t;
-    /*  DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
-        the DVIPDFMx project team.
-
-        Copyright (c) 2006 SIL. (xdvipdfmx extensions for XeTeX support)
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
-    #[no_mangle]
     static mut is_xdv: i32;
     #[no_mangle]
     fn pdf_lookup_fontmap_record(kp: *const i8) -> *mut fontmap_rec;
@@ -183,27 +151,6 @@ extern "C" {
         slant: i32,
         embolden: i32,
     ) -> *mut fontmap_rec;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
@@ -215,27 +162,6 @@ extern "C" {
     fn pdf_doc_end_page();
     #[no_mangle]
     fn pdf_doc_break_annot();
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     /* Please remove this */
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);
@@ -250,25 +176,6 @@ extern "C" {
     fn spc_exec_at_end_page() -> i32;
     #[no_mangle]
     fn spc_exec_special(p: *const i8, size: i32, x_user: f64, y_user: f64, mag: f64) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn subfont_set_verbose(level: i32);
     #[no_mangle]
@@ -282,53 +189,9 @@ extern "C" {
         subrs: *mut cff_index,
         ginfo: *mut t1_ginfo,
     ) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 2012-2015 by Khaled Hosny <khaledhosny@eglug.org>
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn t1_load_font(enc_vec: *mut *mut i8, mode: i32, handle: rust_input_handle_t)
         -> *mut cff_font;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn tfm_set_verbose(level: i32);
     #[no_mangle]
@@ -361,27 +224,6 @@ extern "C" {
         numLongMetrics: u16,
         numExSideBearings: u16,
     ) -> *mut tt_longMetrics;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn vf_set_verbose(level: i32);
     #[no_mangle]
@@ -402,51 +244,9 @@ use crate::TTInputFormat;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type fixword = i32;
 /* quasi-hack to get the primary input */
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 
 pub use super::dpx_pdfcolor::pdf_color;
 
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 pub type spt_t = i32;
 use super::dpx_pdfdev::pdf_rect;
 /*
@@ -504,135 +304,16 @@ pub struct loaded_font {
     pub slant: f32,
     pub embolden: f32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_font {
-    pub fontname: *mut i8,
-    pub header: cff_header,
-    pub name: *mut cff_index,
-    pub topdict: *mut cff_dict,
-    pub string: *mut cff_index,
-    pub gsubr: *mut cff_index,
-    pub encoding: *mut cff_encoding,
-    pub charsets: *mut cff_charsets,
-    pub fdselect: *mut cff_fdselect,
-    pub cstrings: *mut cff_index,
-    pub fdarray: *mut *mut cff_dict,
-    pub private: *mut *mut cff_dict,
-    pub subrs: *mut *mut cff_index,
-    pub offset: l_offset,
-    pub gsubr_offset: l_offset,
-    pub num_glyphs: card16,
-    pub num_fds: card8,
-    pub _string: *mut cff_index,
-    pub handle: rust_input_handle_t,
-    pub filter: i32,
-    pub index: i32,
-    pub flag: i32,
-    pub is_notdef_notzero: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_index {
-    pub count: card16,
-    pub offsize: c_offsize,
-    pub offset: *mut l_offset,
-    pub data: *mut card8,
-}
+
+use super::dpx_cff::cff_font;
+
+use super::dpx_cff::cff_index;
 pub type card8 = u8;
 pub type l_offset = u32;
 pub type c_offsize = u8;
 pub type card16 = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict {
-    pub max: i32,
-    pub count: i32,
-    pub entries: *mut cff_dict_entry,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict_entry {
-    pub id: i32,
-    pub key: *const i8,
-    pub count: i32,
-    pub values: *mut f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_fdselect {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub fds: *mut card8,
-    pub ranges: *mut cff_range3,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range3 {
-    pub first: card16,
-    pub fd: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_charsets {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed_0,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub glyphs: *mut s_SID,
-    pub range1: *mut cff_range1,
-    pub range2: *mut cff_range2,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range2 {
-    pub first: s_SID,
-    pub n_left: card16,
-}
+
 pub type s_SID = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range1 {
-    pub first: s_SID,
-    pub n_left: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_encoding {
-    pub format: card8,
-    pub num_entries: card8,
-    pub data: C2RustUnnamed_1,
-    pub num_supps: card8,
-    pub supp: *mut cff_map,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_map {
-    pub code: card8,
-    pub glyph: s_SID,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_1 {
-    pub codes: *mut card8,
-    pub range1: *mut cff_range1,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_header {
-    pub major: card8,
-    pub minor: card8,
-    pub hdr_size: card8,
-    pub offsize: c_offsize,
-}
 /* hmtx and vmtx */
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -640,38 +321,7 @@ pub struct tt_longMetrics {
     pub advance: u16,
     pub sideBearing: i16,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_rec {
-    pub map_name: *mut i8,
-    pub font_name: *mut i8,
-    pub enc_name: *mut i8,
-    pub charmap: C2RustUnnamed_2,
-    pub opt: fontmap_opt,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_opt {
-    pub slant: f64,
-    pub extend: f64,
-    pub bold: f64,
-    pub mapc: i32,
-    pub flags: i32,
-    pub otl_tags: *mut i8,
-    pub tounicode: *mut i8,
-    pub cff_charsets: *mut libc::c_void,
-    pub design_size: f64,
-    pub charcoll: *mut i8,
-    pub index: i32,
-    pub style: i32,
-    pub stemv: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub sfd_name: *mut i8,
-    pub subfont_id: *mut i8,
-}
+use super::dpx_fontmap::fontmap_rec;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct dvi_header {
@@ -719,73 +369,16 @@ pub struct C2RustUnnamed_4 {
 }
 
 use super::dpx_sfnt::sfnt;
-
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 use super::dpx_tt_table::{tt_head_table, tt_hhea_table, tt_maxp_table};
 /* 16.16-bit signed fixed-point number */
 pub type FWord = i16;
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-   the dvipdfmx project team.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /* Acoid conflict with CHAR ... from <winnt.h>.  */
 /* Data Types as described in Apple's TTRefMan */
 pub type Fixed = u32;
 
 pub type uFWord = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_vhea_table {
-    pub version: Fixed,
-    pub vertTypoAscender: i16,
-    pub vertTypoDescender: i16,
-    pub vertTypoLineGap: i16,
-    pub advanceHeightMax: i16,
-    pub minTopSideBearing: i16,
-    pub minBottomSideBearing: i16,
-    pub yMaxExtent: i16,
-    pub caretSlopeRise: i16,
-    pub caretSlopeRun: i16,
-    pub caretOffset: i16,
-    pub reserved: [i16; 4],
-    pub metricDataFormat: i16,
-    pub numOfLongVerMetrics: u16,
-    pub numOfExSideBearings: u16,
-    /* extra information */
-}
+
+use super::dpx_tt_table::tt_vhea_table;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -3723,27 +3316,6 @@ pub unsafe extern "C" fn dvi_scan_specials(
         }
     }
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /* spt_t */
 /* instantiated in dvipdfmx.c */
 #[no_mangle]

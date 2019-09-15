@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -12,6 +33,25 @@ use super::dpx_sfnt::{sfnt_close, sfnt_find_table_pos, sfnt_open, sfnt_read_tabl
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_cff::{
+    cff_add_string, cff_charsets_lookup, cff_charsets_lookup_inverse, cff_close,
+    cff_encoding_lookup, cff_get_index_header, cff_get_name, cff_get_sid, cff_get_string,
+    cff_index_size, cff_new_index, cff_open, cff_pack_charsets, cff_pack_encoding, cff_pack_index,
+    cff_put_header, cff_read_charsets, cff_read_encoding, cff_read_private, cff_read_subrs,
+    cff_release_charsets, cff_release_encoding, cff_release_index, cff_set_name, cff_update_string,
+};
+use super::dpx_cff_dict::{
+    cff_dict_add, cff_dict_get, cff_dict_known, cff_dict_pack, cff_dict_remove, cff_dict_set,
+    cff_dict_update,
+};
+use super::dpx_dpxfile::dpx_open_opentype_file;
+use super::dpx_mfileio::work_buffer;
+use super::dpx_pdffont::{
+    pdf_font, pdf_font_get_descriptor, pdf_font_get_encoding, pdf_font_get_flag,
+    pdf_font_get_fontname, pdf_font_get_ident, pdf_font_get_mapname, pdf_font_get_resource,
+    pdf_font_get_uniqueTag, pdf_font_get_usedchars, pdf_font_get_verbose, pdf_font_is_in_use,
+    pdf_font_set_flags, pdf_font_set_fontname, pdf_font_set_subtype,
+};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_lookup_dict, pdf_merge_dict,
     pdf_new_array, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_new_string, pdf_obj,
@@ -20,29 +60,7 @@ use crate::dpx_pdfobj::{
 use crate::{ttstub_input_close, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     /* Here is the complete list of PDF object types */
-    pub type pdf_font;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
@@ -65,55 +83,6 @@ extern "C" {
      * pdf_link_obj() it rather than allocate/free-ing them each time. But I
      * already removed that.
      */
-    #[no_mangle]
-    fn pdf_font_get_verbose() -> i32;
-    /* Each font drivers use the followings. */
-    #[no_mangle]
-    fn pdf_font_is_in_use(font: *mut pdf_font) -> bool;
-    #[no_mangle]
-    fn pdf_font_get_ident(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_get_mapname(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_get_fontname(font: *mut pdf_font) -> *mut i8;
-    /* without unique tag */
-    #[no_mangle]
-    fn pdf_font_get_uniqueTag(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_get_resource(font: *mut pdf_font) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_font_get_descriptor(font: *mut pdf_font) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_font_get_usedchars(font: *mut pdf_font) -> *mut i8;
-    #[no_mangle]
-    fn pdf_font_get_encoding(font: *mut pdf_font) -> i32;
-    #[no_mangle]
-    fn pdf_font_get_flag(font: *mut pdf_font, mask: i32) -> i32;
-    #[no_mangle]
-    fn pdf_font_set_fontname(font: *mut pdf_font, fontname: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_font_set_flags(font: *mut pdf_font, flags: i32) -> i32;
-    #[no_mangle]
-    fn pdf_font_set_subtype(font: *mut pdf_font, subtype: i32) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-       Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-       the dvipdfmx project team.
-
-       This program is free software; you can redistribute it and/or modify
-       it under the terms of the GNU General Public License as published by
-       the Free Software Foundation; either version 2 of the License, or
-       (at your option) any later version.
-
-       This program is distributed in the hope that it will be useful,
-       but WITHOUT ANY WARRANTY; without even the implied warranty of
-       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-       GNU General Public License for more details.
-
-       You should have received a copy of the GNU General Public License
-       along with this program; if not, write to the Free Software
-       Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     /* Flag */
     /* FontName */
     /* - CFF structure - */
@@ -144,78 +113,6 @@ extern "C" {
     /* CFF INDEX */
     /* Name INDEX */
     #[no_mangle]
-    fn cff_get_name(cff: *mut cff_font) -> *mut i8;
-    #[no_mangle]
-    fn cff_open(handle: rust_input_handle_t, offset: i32, idx: i32) -> *mut cff_font;
-    #[no_mangle]
-    fn cff_close(cff: *mut cff_font);
-    #[no_mangle]
-    fn cff_release_index(idx: *mut cff_index);
-    #[no_mangle]
-    fn cff_index_size(idx: *mut cff_index) -> i32;
-    #[no_mangle]
-    fn cff_pack_index(idx: *mut cff_index, dest: *mut card8, destlen: i32) -> i32;
-    #[no_mangle]
-    fn cff_put_header(cff: *mut cff_font, dest: *mut card8, destlen: i32) -> i32;
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
-    #[no_mangle]
-    fn cff_new_index(count: card16) -> *mut cff_index;
-    #[no_mangle]
-    fn cff_get_index_header(cff: *mut cff_font) -> *mut cff_index;
-    #[no_mangle]
-    fn cff_pack_charsets(cff: *mut cff_font, dest: *mut card8, destlen: i32) -> i32;
-    #[no_mangle]
-    fn cff_pack_encoding(cff: *mut cff_font, dest: *mut card8, destlen: i32) -> i32;
-    #[no_mangle]
-    fn cff_release_encoding(encoding: *mut cff_encoding);
-    #[no_mangle]
-    fn cff_set_name(cff: *mut cff_font, name: *mut i8) -> i32;
-    #[no_mangle]
-    fn cff_read_charsets(cff: *mut cff_font) -> i32;
-    #[no_mangle]
-    fn cff_read_encoding(cff: *mut cff_font) -> i32;
-    #[no_mangle]
-    fn cff_read_subrs(cff: *mut cff_font) -> i32;
-    #[no_mangle]
-    fn cff_encoding_lookup(cff: *mut cff_font, code: card8) -> card16;
-    /* Returns GID of glyph with SID/CID "cid" */
-    /* Returns SID or CID */
-    /* FDSelect */
-    /* Font DICT(s) */
-    /* Private DICT(s) */
-    /* String */
-    #[no_mangle]
-    fn cff_get_string(cff: *mut cff_font, id: s_SID) -> *mut i8;
-    #[no_mangle]
-    fn cff_release_charsets(charset: *mut cff_charsets);
-    #[no_mangle]
-    fn cff_charsets_lookup_inverse(cff: *mut cff_font, gid: card16) -> card16;
-    #[no_mangle]
-    fn cff_read_private(cff: *mut cff_font) -> i32;
-    #[no_mangle]
-    fn cff_charsets_lookup(cff: *mut cff_font, cid: card16) -> card16;
-    #[no_mangle]
-    fn cff_get_sid(cff: *mut cff_font, str: *const i8) -> i32;
-    #[no_mangle]
-    fn cff_add_string(cff: *mut cff_font, str: *const i8, unique: i32) -> s_SID;
-    #[no_mangle]
-    fn cff_update_string(cff: *mut cff_font);
-    #[no_mangle]
-    fn cff_dict_set(dict: *mut cff_dict, key: *const i8, idx: i32, value: f64);
-    #[no_mangle]
-    fn cff_dict_get(dict: *mut cff_dict, key: *const i8, idx: i32) -> f64;
-    #[no_mangle]
-    fn cff_dict_add(dict: *mut cff_dict, key: *const i8, count: i32);
-    #[no_mangle]
-    fn cff_dict_remove(dict: *mut cff_dict, key: *const i8);
-    #[no_mangle]
-    fn cff_dict_known(dict: *mut cff_dict, key: *const i8) -> i32;
-    #[no_mangle]
-    fn cff_dict_pack(dict: *mut cff_dict, dest: *mut card8, destlen: i32) -> i32;
-    #[no_mangle]
-    fn cff_dict_update(dict: *mut cff_dict, cff: *mut cff_font);
-    #[no_mangle]
     fn cs_copy_charstring(
         dest: *mut card8,
         destlen: i32,
@@ -228,53 +125,9 @@ extern "C" {
         ginfo: *mut cs_ginfo,
     ) -> i32;
     #[no_mangle]
-    fn dpx_open_opentype_file(filename: *const i8) -> rust_input_handle_t;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
@@ -310,65 +163,16 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_index {
-    pub count: card16,
-    pub offsize: c_offsize,
-    pub offset: *mut l_offset,
-    pub data: *mut card8,
-}
+
+use super::dpx_cff::cff_index;
 pub type card8 = u8;
 pub type l_offset = u32;
 pub type c_offsize = u8;
 pub type card16 = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_encoding {
-    pub format: card8,
-    pub num_entries: card8,
-    pub data: C2RustUnnamed,
-    pub num_supps: card8,
-    pub supp: *mut cff_map,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_map {
-    pub code: card8,
-    pub glyph: s_SID,
-}
+use super::dpx_cff::cff_encoding;
+use super::dpx_cff::cff_map;
 pub type s_SID = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed {
-    pub codes: *mut card8,
-    pub range1: *mut cff_range1,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range1 {
-    pub first: s_SID,
-    pub n_left: card8,
-}
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+use super::dpx_cff::cff_range1;
 /* CFF Data Types */
 /* SID SID number */
 /* offset(0) */
@@ -403,98 +207,11 @@ of an Offset field or fields, range 1-4 */
 /* format 1 */
 /* number of supplementary data */
 /* supplement */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_charsets {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed_0,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_0 {
-    pub glyphs: *mut s_SID,
-    pub range1: *mut cff_range1,
-    pub range2: *mut cff_range2,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range2 {
-    pub first: s_SID,
-    pub n_left: card16,
-}
+use super::dpx_cff::cff_charsets;
 
+use super::dpx_cff::cff_font;
 use super::dpx_sfnt::sfnt;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_font {
-    pub fontname: *mut i8,
-    pub header: cff_header,
-    pub name: *mut cff_index,
-    pub topdict: *mut cff_dict,
-    pub string: *mut cff_index,
-    pub gsubr: *mut cff_index,
-    pub encoding: *mut cff_encoding,
-    pub charsets: *mut cff_charsets,
-    pub fdselect: *mut cff_fdselect,
-    pub cstrings: *mut cff_index,
-    pub fdarray: *mut *mut cff_dict,
-    pub private: *mut *mut cff_dict,
-    pub subrs: *mut *mut cff_index,
-    pub offset: l_offset,
-    pub gsubr_offset: l_offset,
-    pub num_glyphs: card16,
-    pub num_fds: card8,
-    pub _string: *mut cff_index,
-    pub handle: rust_input_handle_t,
-    pub filter: i32,
-    pub index: i32,
-    pub flag: i32,
-    pub is_notdef_notzero: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict {
-    pub max: i32,
-    pub count: i32,
-    pub entries: *mut cff_dict_entry,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_dict_entry {
-    pub id: i32,
-    pub key: *const i8,
-    pub count: i32,
-    pub values: *mut f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_fdselect {
-    pub format: card8,
-    pub num_entries: card16,
-    pub data: C2RustUnnamed_1,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_1 {
-    pub fds: *mut card8,
-    pub ranges: *mut cff_range3,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_range3 {
-    pub first: card16,
-    pub fd: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cff_header {
-    pub major: card8,
-    pub minor: card8,
-    pub hdr_size: card8,
-    pub offsize: c_offsize,
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct cs_ginfo {
@@ -528,27 +245,6 @@ pub struct C2RustUnnamed_3 {
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-   Copyright (C) 2008-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
-   the dvipdfmx project team.
-
-   Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /*
  * CFF/OpenType Font support:
  *
@@ -756,27 +452,6 @@ unsafe extern "C" fn add_SimpleMetrics(
         pdf_new_number(lastchar as f64),
     );
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 #[no_mangle]
 pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     let mut fontdict: *mut pdf_obj = 0 as *mut pdf_obj; /* Actually string object */

@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -14,6 +35,11 @@ use super::dpx_numbers::{
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_dvi::{
+    dpx_dvi_pop, dvi_dirchg, dvi_do_special, dvi_down, dvi_locate_font, dvi_push, dvi_put,
+    dvi_right, dvi_rule, dvi_set, dvi_set_font, dvi_vf_finish, dvi_vf_init, dvi_w, dvi_w0, dvi_x,
+    dvi_x0, dvi_y, dvi_y0, dvi_z, dvi_z0,
+};
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
 use libc::free;
 extern "C" {
@@ -36,91 +62,7 @@ extern "C" {
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
     #[no_mangle]
-    fn dvi_set_font(font_id: i32);
-    #[no_mangle]
-    fn dvi_set(ch: i32);
-    #[no_mangle]
-    fn dvi_put(ch: i32);
-    #[no_mangle]
-    fn dvi_dirchg(dir: u8);
-    #[no_mangle]
-    fn dvi_do_special(buffer: *const libc::c_void, size: i32);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dvi_z(ch: i32);
-    #[no_mangle]
-    fn dvi_z0();
-    #[no_mangle]
-    fn dvi_vf_init(dev_font_id: i32);
-    #[no_mangle]
-    fn dvi_y(ch: i32);
-    #[no_mangle]
-    fn dvi_push();
-    #[no_mangle]
-    fn dpx_dvi_pop();
-    #[no_mangle]
-    fn dvi_y0();
-    #[no_mangle]
-    fn dvi_locate_font(name: *const i8, ptsize: spt_t) -> u32;
-    #[no_mangle]
-    fn dvi_vf_finish();
-    #[no_mangle]
-    fn dvi_down(y: i32);
-    #[no_mangle]
-    fn dvi_right(x: i32);
-    #[no_mangle]
-    fn dvi_x(ch: i32);
-    #[no_mangle]
-    fn dvi_w0();
-    #[no_mangle]
-    fn dvi_x0();
-    #[no_mangle]
-    fn dvi_rule(width: i32, height: i32);
-    #[no_mangle]
-    fn dvi_w(ch: i32);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
@@ -789,27 +731,6 @@ pub unsafe extern "C" fn vf_set_char(mut ch: i32, mut vf_font: i32) {
         panic!("Font not loaded\n");
     };
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 #[no_mangle]
 pub unsafe extern "C" fn vf_close_all_fonts() {
     let mut i: u32 = 0;

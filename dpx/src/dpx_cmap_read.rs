@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -11,68 +32,16 @@
 use crate::strstartswith;
 use crate::warn;
 
+use super::dpx_cmap::{
+    CMap_add_bfchar, CMap_add_bfrange, CMap_add_cidchar, CMap_add_cidrange,
+    CMap_add_codespacerange, CMap_add_notdefchar, CMap_add_notdefrange, CMap_cache_find,
+    CMap_cache_get, CMap_set_CIDSysInfo, CMap_set_name, CMap_set_type, CMap_set_usecmap,
+    CMap_set_wmode,
+};
 use crate::{ttstub_input_get_size, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
     pub type pst_obj;
-    #[no_mangle]
-    fn CMap_cache_find(cmap_name: *const i8) -> i32;
-    #[no_mangle]
-    fn CMap_cache_get(id: i32) -> *mut CMap;
-    #[no_mangle]
-    fn CMap_add_codespacerange(
-        cmap: *mut CMap,
-        codelo: *const u8,
-        codehi: *const u8,
-        dim: size_t,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_add_notdefrange(
-        cmap: *mut CMap,
-        srclo: *const u8,
-        srchi: *const u8,
-        srcdim: size_t,
-        dst: CID,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_add_notdefchar(cmap: *mut CMap, src: *const u8, srcdim: size_t, dst: CID) -> i32;
-    #[no_mangle]
-    fn CMap_add_cidrange(
-        cmap: *mut CMap,
-        srclo: *const u8,
-        hi: *const u8,
-        srcdim: size_t,
-        base: CID,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_add_bfrange(
-        cmap: *mut CMap,
-        srclo: *const u8,
-        srchi: *const u8,
-        srcdim: size_t,
-        dest: *const u8,
-        destdim: size_t,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_add_cidchar(cmap: *mut CMap, src: *const u8, srcdim: size_t, dest: CID) -> i32;
-    #[no_mangle]
-    fn CMap_add_bfchar(
-        cmap: *mut CMap,
-        src: *const u8,
-        srcdim: size_t,
-        dest: *const u8,
-        destdim: size_t,
-    ) -> i32;
-    #[no_mangle]
-    fn CMap_set_CIDSysInfo(cmap: *mut CMap, csi: *const CIDSysInfo);
-    #[no_mangle]
-    fn CMap_set_usecmap(cmap: *mut CMap, ucmap: *mut CMap);
-    #[no_mangle]
-    fn CMap_set_wmode(cmap: *mut CMap, wmode: i32);
-    #[no_mangle]
-    fn CMap_set_type(cmap: *mut CMap, type_0: i32);
-    #[no_mangle]
-    fn CMap_set_name(cmap: *mut CMap, name: *const i8);
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -91,27 +60,6 @@ extern "C" {
     fn CMap_is_valid(cmap: *mut CMap) -> bool;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
@@ -135,96 +83,15 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 pub type rust_input_handle_t = *mut libc::c_void;
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
-/* CIDFont types */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
+use super::dpx_cid::CIDSysInfo;
 /* Mapping types, MAP_IS_NAME is not supported. */
 /* Lookup flags */
 /* DEBUG */
 /* Codespacerange */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-    /* Upper bounds of valid input code */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-    /* Next Subtbl for LOOKUP_CONTINUE */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-    /* Position of next free data segment */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_0,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed,
-    pub reverseMap: *mut i32,
-}
+
+use super::dpx_cmap::rangeDef;
+use super::dpx_cmap::CMap;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
@@ -252,27 +119,6 @@ pub struct ifreader {
     pub unread: size_t,
 }
 pub type pst_type = i32;
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-   the dvipdfmx project team.
-
-   Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2 of the License, or
-   (at your option) any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 static mut __verbose: i32 = 0i32;
 unsafe extern "C" fn ifreader_create(
     mut handle: rust_input_handle_t,
@@ -955,27 +801,6 @@ pub unsafe extern "C" fn CMap_parse_check_sig(mut handle: rust_input_handle_t) -
     ttstub_input_seek(handle, 0i32 as ssize_t, 0i32);
     result
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 #[no_mangle]
 pub unsafe extern "C" fn CMap_parse(mut cmap: *mut CMap, mut handle: rust_input_handle_t) -> i32 {
     let mut tok1: *mut pst_obj = 0 as *mut pst_obj; /* else Simply ignore */

@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(dead_code,
          mutable_transmutes,
          non_camel_case_types,
@@ -8,6 +29,7 @@
 
 use crate::warn;
 
+use super::dpx_cmap::{CMap_get_CIDSysInfo, CMap_is_valid};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_new_stream,
     pdf_new_string, pdf_obj, pdf_stream_dict,
@@ -19,16 +41,6 @@ extern "C" {
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn CMap_get_CIDSysInfo(cmap: *mut CMap) -> *mut CIDSysInfo;
-    #[no_mangle]
-    fn CMap_get_wmode(cmap: *mut CMap) -> i32;
-    #[no_mangle]
-    fn CMap_get_name(cmap: *mut CMap) -> *mut i8;
-    #[no_mangle]
-    fn CMap_is_Identity(cmap: *mut CMap) -> bool;
-    #[no_mangle]
-    fn CMap_is_valid(cmap: *mut CMap) -> bool;
     /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
@@ -48,48 +60,6 @@ extern "C" {
      */
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
@@ -105,74 +75,12 @@ extern "C" {
     fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
 }
 pub type size_t = u64;
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
+use super::dpx_cid::CIDSysInfo;
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
-/* CIDFont types */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CIDSysInfo {
-    pub registry: *mut i8,
-    pub ordering: *mut i8,
-    pub supplement: i32,
-}
-/* Codespacerange */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct rangeDef {
-    pub dim: size_t,
-    pub codeLo: *mut u8,
-    pub codeHi: *mut u8,
-    /* Upper bounds of valid input code */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapDef {
-    pub flag: i32,
-    pub len: size_t,
-    pub code: *mut u8,
-    pub next: *mut mapDef,
-    /* Next Subtbl for LOOKUP_CONTINUE */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct mapData {
-    pub data: *mut u8,
-    pub prev: *mut mapData,
-    pub pos: i32,
-    /* Position of next free data segment */
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct CMap {
-    pub name: *mut i8,
-    pub type_0: i32,
-    pub wmode: i32,
-    pub CSI: *mut CIDSysInfo,
-    pub useCMap: *mut CMap,
-    pub codespace: C2RustUnnamed_0,
-    pub mapTbl: *mut mapDef,
-    pub mapData: *mut mapData,
-    pub flags: i32,
-    pub profile: C2RustUnnamed,
-    pub reverseMap: *mut i32,
-}
+use super::dpx_cmap::mapDef;
+use super::dpx_cmap::rangeDef;
+use super::dpx_cmap::CMap;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {
@@ -188,25 +96,6 @@ pub struct C2RustUnnamed_0 {
     pub max: u32,
     pub ranges: *mut rangeDef,
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 /*
  * References:
  *
@@ -532,27 +421,6 @@ unsafe extern "C" fn write_map(
     }
     count as i32
 }
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 #[no_mangle]
 pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj {
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;

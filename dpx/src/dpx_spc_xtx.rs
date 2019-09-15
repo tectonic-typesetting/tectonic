@@ -1,3 +1,24 @@
+/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
+
+    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    the dvipdfmx project team.
+
+    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+*/
 #![allow(
     dead_code,
     mutable_transmutes,
@@ -8,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_set_fixed_point};
 use super::dpx_spc_util::spc_util_read_colorspec;
@@ -54,31 +76,8 @@ extern "C" {
     fn pdf_insert_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> *mut fontmap_rec;
     #[no_mangle]
     fn is_pdfm_mapline(mline: *const i8) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    static mut work_buffer: [i8; 0];
     /* Text composition mode is ignored (always same as font's
      * writing mode) and glyph rotation is not enabled if
      * auto_rotate is unset.
@@ -102,27 +101,6 @@ extern "C" {
     fn pdf_dev_grestore() -> i32;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
     /* syntax 1: ((rgb|cmyk|hsb|gray) colorvalues)|colorname
      * syntax 0: pdf_number|pdf_array
      *
@@ -132,69 +110,12 @@ extern "C" {
     fn spc_util_read_numbers(values: *mut f64, num_values: i32, args: *mut spc_arg) -> i32;
 }
 pub type size_t = u64;
-/* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 
 use super::dpx_specials::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct spc_handler {
-    pub key: *const i8,
-    pub exec: spc_handler_fn_ptr,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_rec {
-    pub map_name: *mut i8,
-    pub font_name: *mut i8,
-    pub enc_name: *mut i8,
-    pub charmap: C2RustUnnamed,
-    pub opt: fontmap_opt,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct fontmap_opt {
-    pub slant: f64,
-    pub extend: f64,
-    pub bold: f64,
-    pub mapc: i32,
-    pub flags: i32,
-    pub otl_tags: *mut i8,
-    pub tounicode: *mut i8,
-    pub cff_charsets: *mut libc::c_void,
-    pub design_size: f64,
-    pub charcoll: *mut i8,
-    pub index: i32,
-    pub style: i32,
-    pub stemv: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub sfd_name: *mut i8,
-    pub subfont_id: *mut i8,
-}
+use super::dpx_fontmap::fontmap_rec;
+use super::dpx_specials::spc_handler;
 
 use super::dpx_pdfdev::pdf_coord;
 
@@ -209,34 +130,6 @@ pub use super::dpx_pdfcolor::pdf_color;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-/*  This is xdvipdfmx, an extended version of dvipdfmx,
-    an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2013-2016 by the dvipdfmx project team.
-
-    Copyright (c) 2006 SIL International
-    Originally written by Jonathan Kew
-
-    This file based on spc_pdfm.c, part of the dvipdfmx project:
-
-    Copyright (C) 2002 by Jin-Hwan Cho and Shunsaku Hirata.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 #[no_mangle]
 pub unsafe extern "C" fn spc_handler_xtx_do_transform(
     mut x_user: f64,
@@ -848,33 +741,6 @@ pub unsafe extern "C" fn spc_xtx_check_special(mut buf: *const i8, mut len: i32)
     }
     false
 }
-/*  This is xdvipdfmx, an extended version of dvipdfmx,
-    an eXtended version of dvipdfm by Mark A. Wicks.
-
-    Copyright (C) 2013-2016 by the dvipdfmx project team.
-
-    Copyright (c) 2006 SIL International
-    Originally written by Jonathan Kew
-
-    Copyright (C) 2002 by Jin-Hwan Cho and Shunsaku Hirata,
-    the dvipdfmx project team.
-
-    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-*/
 #[no_mangle]
 pub unsafe extern "C" fn spc_xtx_setup_handler(
     mut sph: *mut spc_handler,
