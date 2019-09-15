@@ -122,7 +122,7 @@ pub struct iccbased_cdata {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_0 {
+pub struct CspcCache {
     pub count: u32,
     pub capacity: u32,
     pub colorspaces: *mut pdf_colorspace,
@@ -681,39 +681,23 @@ unsafe extern "C" fn iccp_init_iccHeader(mut icch: *mut iccHeader) {
         16i32 as u64,
     );
 }
-unsafe extern "C" fn init_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
-    assert!(!cdata.is_null());
-    (*cdata).sig =
-        ('i' as i32) << 24i32 | ('c' as i32) << 16i32 | ('c' as i32) << 8i32 | 'b' as i32;
+unsafe extern "C" fn init_iccbased_cdata(cdata: &mut iccbased_cdata) {
+    cdata.sig = i32::from_be_bytes(*b"iccb");
     memset(
-        (*cdata).checksum.as_mut_ptr() as *mut libc::c_void,
+        cdata.checksum.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        16i32 as u64,
+        16_u64,
     );
-    (*cdata).colorspace = 0i32;
-    (*cdata).alternate = -1i32;
+    cdata.colorspace = 0i32;
+    cdata.alternate = -1i32;
 }
-unsafe extern "C" fn release_iccbased_cdata(mut cdata: *mut iccbased_cdata) {
-    assert!(
-        !cdata.is_null()
-            && (*cdata).sig
-                == ('i' as i32) << 24i32
-                    | ('c' as i32) << 16i32
-                    | ('c' as i32) << 8i32
-                    | 'b' as i32
-    );
-    free(cdata as *mut libc::c_void);
+unsafe extern "C" fn release_iccbased_cdata(cdata: &mut iccbased_cdata) {
+    assert!(cdata.sig == i32::from_be_bytes(*b"iccb"));
+    free(cdata as *mut iccbased_cdata as *mut libc::c_void);
 }
-unsafe extern "C" fn get_num_components_iccbased(mut cdata: *const iccbased_cdata) -> i32 {
+unsafe extern "C" fn get_num_components_iccbased(cdata: &iccbased_cdata) -> i32 {
     let mut num_components: i32 = 0i32;
-    assert!(
-        !cdata.is_null()
-            && (*cdata).sig
-                == ('i' as i32) << 24i32
-                    | ('c' as i32) << 16i32
-                    | ('c' as i32) << 8i32
-                    | 'b' as i32
-    );
+    assert!(cdata.sig == i32::from_be_bytes(*b"iccb"));
     match (*cdata).colorspace {
         -3 => num_components = 3i32,
         -4 => num_components = 4i32,
@@ -725,46 +709,32 @@ unsafe extern "C" fn get_num_components_iccbased(mut cdata: *const iccbased_cdat
 }
 unsafe extern "C" fn compare_iccbased(
     mut ident1: *const i8,
-    mut cdata1: *const iccbased_cdata,
+    mut cdata1: Option<&iccbased_cdata>,
     mut ident2: *const i8,
-    mut cdata2: *const iccbased_cdata,
+    mut cdata2: Option<&iccbased_cdata>,
 ) -> i32 {
-    if !cdata1.is_null() && !cdata2.is_null() {
-        assert!(
-            !cdata1.is_null()
-                && (*cdata1).sig
-                    == ('i' as i32) << 24i32
-                        | ('c' as i32) << 16i32
-                        | ('c' as i32) << 8i32
-                        | 'b' as i32
-        );
-        assert!(
-            !cdata2.is_null()
-                && (*cdata2).sig
-                    == ('i' as i32) << 24i32
-                        | ('c' as i32) << 16i32
-                        | ('c' as i32) << 8i32
-                        | 'b' as i32
-        );
+    if let (Some(cdata1), Some(cdata2)) = (cdata1, cdata2) {
+        assert!(cdata1.sig == i32::from_be_bytes(*b"iccb"));
+        assert!(cdata2.sig == i32::from_be_bytes(*b"iccb"));
         if memcmp(
             (*cdata1).checksum.as_ptr() as *const libc::c_void,
             nullbytes16.as_mut_ptr() as *const libc::c_void,
             16i32 as u64,
         ) != 0
             && memcmp(
-                (*cdata2).checksum.as_ptr() as *const libc::c_void,
+                cdata2.checksum.as_ptr() as *const libc::c_void,
                 nullbytes16.as_mut_ptr() as *const libc::c_void,
                 16i32 as u64,
             ) != 0
         {
             return memcmp(
-                (*cdata1).checksum.as_ptr() as *const libc::c_void,
-                (*cdata2).checksum.as_ptr() as *const libc::c_void,
+                cdata1.checksum.as_ptr() as *const libc::c_void,
+                cdata2.checksum.as_ptr() as *const libc::c_void,
                 16i32 as u64,
             );
         }
-        if (*cdata1).colorspace != (*cdata2).colorspace {
-            return (*cdata1).colorspace - (*cdata2).colorspace;
+        if cdata1.colorspace != cdata2.colorspace {
+            return cdata1.colorspace - cdata2.colorspace;
         }
         /* Continue if checksum unknown and colorspace is same. */
     }
@@ -1295,7 +1265,6 @@ pub unsafe extern "C" fn iccp_load_profile(
     };
     let mut colorspace: i32 = 0;
     let mut checksum: [u8; 16] = [0; 16];
-    let mut cdata: *mut iccbased_cdata = 0 as *mut iccbased_cdata;
     iccp_init_iccHeader(&mut icch);
     if iccp_unpack_header(&mut icch, profile, proflen, 1i32) < 0i32 {
         /* check size */
@@ -1355,9 +1324,9 @@ pub unsafe extern "C" fn iccp_load_profile(
         print_iccp_header(&mut icch, checksum.as_mut_ptr());
         return -1i32;
     }
-    cdata = new((1_u64).wrapping_mul(::std::mem::size_of::<iccbased_cdata>() as u64) as u32)
+    let cdata = new((1_u64).wrapping_mul(::std::mem::size_of::<iccbased_cdata>() as u64) as u32)
         as *mut iccbased_cdata;
-    init_iccbased_cdata(cdata);
+    init_iccbased_cdata(&mut *cdata);
     (*cdata).colorspace = colorspace;
     memcpy(
         (*cdata).checksum.as_mut_ptr() as *mut libc::c_void,
@@ -1369,7 +1338,7 @@ pub unsafe extern "C" fn iccp_load_profile(
         if verbose != 0 {
             info!("(ICCP:[id={}])", cspc_id);
         }
-        release_iccbased_cdata(cdata);
+        release_iccbased_cdata(&mut *cdata);
         return cspc_id;
     }
     if verbose > 1i32 {
@@ -1386,15 +1355,15 @@ pub unsafe extern "C" fn iccp_load_profile(
     pdf_add_dict(
         stream_dict,
         pdf_new_name(b"N\x00" as *const u8 as *const i8),
-        pdf_new_number(get_num_components_iccbased(cdata) as f64),
+        pdf_new_number(get_num_components_iccbased(&*cdata) as f64),
     );
     pdf_add_stream(stream, profile, proflen);
     pdf_release_obj(stream);
     cspc_id = pdf_colorspace_defineresource(ident, 4i32, cdata as *mut libc::c_void, resource);
     cspc_id
 }
-static mut cspc_cache: C2RustUnnamed_0 = {
-    let mut init = C2RustUnnamed_0 {
+static mut cspc_cache: CspcCache = {
+    let mut init = CspcCache {
         count: 0_u32,
         capacity: 0_u32,
         colorspaces: 0 as *const pdf_colorspace as *mut pdf_colorspace,
@@ -1417,9 +1386,9 @@ unsafe extern "C" fn pdf_colorspace_findresource(
                 4 => {
                     cmp = compare_iccbased(
                         ident,
-                        cdata as *const iccbased_cdata,
+                        Some(&*(cdata as *const iccbased_cdata)),
                         (*colorspace).ident,
-                        (*colorspace).cdata as *const iccbased_cdata,
+                        Some(&*((*colorspace).cdata as *const iccbased_cdata)),
                     )
                 }
                 _ => {}
@@ -1451,7 +1420,7 @@ unsafe extern "C" fn pdf_clean_colorspace_struct(mut colorspace: *mut pdf_colors
     if !(*colorspace).cdata.is_null() {
         match (*colorspace).subtype {
             4 => {
-                release_iccbased_cdata((*colorspace).cdata as *mut iccbased_cdata);
+                release_iccbased_cdata(&mut *((*colorspace).cdata as *mut iccbased_cdata));
             }
             _ => {}
         }
