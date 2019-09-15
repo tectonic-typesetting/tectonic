@@ -41,7 +41,7 @@ use crate::dpx_pdfobj::{
     pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_file_get_trailer, pdf_get_array,
     pdf_import_object, pdf_lookup_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
     pdf_new_stream, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_open, pdf_release_obj,
-    pdf_stream_dataptr, pdf_stream_dict, pdf_stream_length,
+    pdf_stream_dataptr, pdf_stream_dict, pdf_stream_length, PdfObjType,
 };
 use crate::dpx_pdfparse::{parse_ident, parse_pdf_array};
 use crate::streq_ptr;
@@ -224,7 +224,7 @@ unsafe extern "C" fn pdf_get_page_obj(
         trailer,
         b"Root\x00" as *const u8 as *const i8,
     ));
-    if !(!catalog.is_null() && pdf_obj_typeof(catalog) == 6i32) {
+    if !(!catalog.is_null() && pdf_obj_typeof(catalog) == PdfObjType::DICT) {
         warn!("Can\'t read document catalog.");
         pdf_release_obj(trailer);
         pdf_release_obj(catalog);
@@ -237,7 +237,10 @@ unsafe extern "C" fn pdf_get_page_obj(
     ));
     if !markinfo.is_null() {
         tmp = pdf_lookup_dict(markinfo, b"Marked\x00" as *const u8 as *const i8);
-        if !tmp.is_null() && pdf_obj_typeof(tmp) == 1i32 && pdf_boolean_value(tmp) as i32 != 0 {
+        if !tmp.is_null()
+            && pdf_obj_typeof(tmp) == PdfObjType::BOOLEAN
+            && pdf_boolean_value(tmp) as i32 != 0
+        {
             warn!("PDF file is tagged... Ignoring tags.");
         }
         pdf_release_obj(markinfo);
@@ -423,12 +426,12 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
     if contents.is_null() {
         return 0 as *mut pdf_obj;
     }
-    if pdf_obj_typeof(contents) == 8i32 {
+    if pdf_obj_typeof(contents) == PdfObjType::NULL {
         /* empty page */
         pdf_release_obj(contents);
         /* TODO: better don't include anything if the page is empty */
         contents = pdf_new_stream(0i32)
-    } else if !contents.is_null() && pdf_obj_typeof(contents) == 5i32 {
+    } else if !contents.is_null() && pdf_obj_typeof(contents) == PdfObjType::ARRAY {
         /*
          * Concatenate all content streams.
          */
@@ -440,8 +443,8 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
             if content_seg.is_null() {
                 break;
             }
-            if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == 8i32) {
-                if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == 7i32) {
+            if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == PdfObjType::NULL) {
+                if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == PdfObjType::STREAM) {
                     warn!("Page content not a stream object. Broken PDF file?");
                     pdf_release_obj(content_seg);
                     pdf_release_obj(content_new);
@@ -463,7 +466,7 @@ unsafe extern "C" fn pdf_get_page_content(mut page: *mut pdf_obj) -> *mut pdf_ob
         pdf_release_obj(contents);
         contents = content_new
     } else {
-        if !(!contents.is_null() && pdf_obj_typeof(contents) == 7i32) {
+        if !(!contents.is_null() && pdf_obj_typeof(contents) == PdfObjType::STREAM) {
             warn!("Page content not a stream object. Broken PDF file?");
             pdf_release_obj(contents);
             return 0 as *mut pdf_obj;
@@ -531,7 +534,7 @@ pub unsafe extern "C" fn pdf_include_page(
                 b"Marked\x00" as *const u8 as *const i8,
             ));
             pdf_release_obj(markinfo);
-            if !(!tmp.is_null() && pdf_obj_typeof(tmp) == 1i32) {
+            if !(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::BOOLEAN) {
                 pdf_release_obj(tmp);
                 current_block = 3699483483911207084;
             } else {
@@ -563,14 +566,14 @@ pub unsafe extern "C" fn pdf_include_page(
                     content_new = pdf_new_stream(0i32);
                     current_block = 2480299350034459858;
                 /* TODO: better don't include anything if the page is empty */
-                } else if !contents.is_null() && pdf_obj_typeof(contents) == 7i32 {
+                } else if !contents.is_null() && pdf_obj_typeof(contents) == PdfObjType::STREAM {
                     /*
                      * We must import the stream because its dictionary
                      * may contain indirect references.
                      */
                     content_new = pdf_import_object(contents);
                     current_block = 2480299350034459858;
-                } else if !contents.is_null() && pdf_obj_typeof(contents) == 5i32 {
+                } else if !contents.is_null() && pdf_obj_typeof(contents) == PdfObjType::ARRAY {
                     /*
                      * Concatenate all content streams.
                      */
@@ -585,7 +588,8 @@ pub unsafe extern "C" fn pdf_include_page(
                         }
                         let mut content_seg: *mut pdf_obj =
                             pdf_deref_obj(pdf_get_array(contents, idx));
-                        if !(!content_seg.is_null() && pdf_obj_typeof(content_seg) == 7i32)
+                        if !(!content_seg.is_null()
+                            && pdf_obj_typeof(content_seg) == PdfObjType::STREAM)
                             || pdf_concat_stream(content_new, content_seg) < 0i32
                         {
                             pdf_release_obj(content_seg);

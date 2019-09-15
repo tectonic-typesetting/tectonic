@@ -39,7 +39,7 @@ use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info, transform_info_cl
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_array, pdf_new_boolean,
     pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string, pdf_obj,
-    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_string_value,
+    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_string_value, PdfObjType,
 };
 use crate::mfree;
 use crate::streq_ptr;
@@ -710,7 +710,7 @@ unsafe extern "C" fn check_resourcestatus(mut category: *const i8, mut resname: 
         return 0i32;
     }
     dict2 = pdf_lookup_dict(dict1, category);
-    if !dict2.is_null() && pdf_obj_typeof(dict2) == 6i32 {
+    if !dict2.is_null() && pdf_obj_typeof(dict2) == PdfObjType::DICT {
         if !pdf_lookup_dict(dict2, resname).is_null() {
             return 1i32;
         }

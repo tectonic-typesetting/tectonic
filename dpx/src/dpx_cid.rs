@@ -38,7 +38,7 @@ use super::dpx_cff::cff_release_charsets;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_file, pdf_link_obj, pdf_lookup_dict, pdf_name_value, pdf_new_name,
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_remove_dict,
-    pdf_string_value,
+    pdf_string_value, PdfObjType,
 };
 use libc::free;
 extern "C" {
@@ -1027,7 +1027,7 @@ unsafe extern "C" fn CIDFont_base_open(
     let mut supplement: i32 = 0;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     tmp = pdf_lookup_dict(fontdict, b"CIDSystemInfo\x00" as *const u8 as *const i8);
-    assert!(!tmp.is_null() && pdf_obj_typeof(tmp) == 6i32);
+    assert!(!tmp.is_null() && pdf_obj_typeof(tmp) == PdfObjType::DICT);
     registry = pdf_string_value(pdf_lookup_dict(
         tmp,
         b"Registry\x00" as *const u8 as *const i8,
@@ -1074,7 +1074,7 @@ unsafe extern "C" fn CIDFont_base_open(
     let mut tmp_0: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut type_0: *mut i8 = 0 as *mut i8;
     tmp_0 = pdf_lookup_dict(fontdict, b"Subtype\x00" as *const u8 as *const i8);
-    assert!(!tmp_0.is_null() && pdf_obj_typeof(tmp_0) == 4i32);
+    assert!(!tmp_0.is_null() && pdf_obj_typeof(tmp_0) == PdfObjType::NAME);
     type_0 = pdf_name_value(tmp_0);
     if streq_ptr(type_0, b"CIDFontType0\x00" as *const u8 as *const i8) {
         (*font).subtype = 1i32

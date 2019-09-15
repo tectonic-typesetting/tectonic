@@ -36,7 +36,7 @@ use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_deref_obj, pdf_file, pdf_lookup_dict, pdf_merge_dict,
     pdf_new_array, pdf_new_boolean, pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number,
     pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj,
-    pdf_stream_dict,
+    pdf_stream_dict, PdfObjType,
 };
 use libc::free;
 extern "C" {
@@ -82,10 +82,8 @@ pub type size_t = u64;
 pub struct ParserState {
     pub tainted: i32,
 }
-static mut parser_state: ParserState = {
-    let mut init = ParserState { tainted: 0i32 };
-    init
-};
+static mut parser_state: ParserState = ParserState { tainted: 0i32 };
+
 static mut save: *const i8 = 0 as *const i8;
 #[no_mangle]
 pub unsafe extern "C" fn dump(mut start: *const i8, mut end: *const i8) {
@@ -858,7 +856,7 @@ unsafe extern "C" fn parse_pdf_stream(
     tmp = pdf_lookup_dict(dict, b"Length\x00" as *const u8 as *const i8);
     if !tmp.is_null() {
         tmp2 = pdf_deref_obj(tmp);
-        if pdf_obj_typeof(tmp2) != 2i32 {
+        if pdf_obj_typeof(tmp2) != PdfObjType::NUMBER {
             stream_length = -1i32
         } else {
             stream_length = pdf_number_value(tmp2) as i32

@@ -33,6 +33,10 @@ use crate::warn;
 
 use super::dpx_dvi::{dvi_dev_xpos, dvi_dev_ypos, dvi_link_annot, dvi_tag_depth, dvi_untag_depth};
 use super::dpx_pdfdraw::pdf_dev_transform;
+use super::dpx_pdfnames::{
+    pdf_delete_name_tree, pdf_names_add_object, pdf_names_close_object, pdf_names_lookup_object,
+    pdf_names_lookup_reference, pdf_new_name_tree,
+};
 use crate::dpx_pdfobj::{pdf_new_number, pdf_obj, pdf_ref_obj};
 extern "C" {
     #[no_mangle]
@@ -71,31 +75,6 @@ extern "C" {
     fn pdf_doc_end_annot();
     /* Hash */
     /* Not actually tree... */
-    #[no_mangle]
-    fn pdf_new_name_tree() -> *mut ht_table;
-    #[no_mangle]
-    fn pdf_delete_name_tree(names: *mut *mut ht_table);
-    #[no_mangle]
-    fn pdf_names_add_object(
-        names: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-        object: *mut pdf_obj,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_names_lookup_reference(
-        names: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_names_lookup_object(
-        names: *mut ht_table,
-        key: *const libc::c_void,
-        keylen: i32,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_names_close_object(names: *mut ht_table, key: *const libc::c_void, keylen: i32) -> i32;
     /* Please remove this */
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);

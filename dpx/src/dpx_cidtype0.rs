@@ -217,8 +217,8 @@ pub type rust_input_handle_t = *mut libc::c_void;
 
 use super::dpx_cid::{cid_opt, CIDFont, CIDSysInfo};
 
-use super::dpx_sfnt::sfnt;
 use super::dpx_cs_type2::cs_ginfo;
+use super::dpx_sfnt::sfnt;
 
 use super::dpx_cff::cff_charsets;
 pub type card8 = u8;

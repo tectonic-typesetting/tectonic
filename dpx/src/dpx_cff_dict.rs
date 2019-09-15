@@ -854,7 +854,6 @@ unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut va
     len
 }
 unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value: f64) -> i32 {
-    let mut i: i32 = 0i32;
     let mut pos: i32 = 2i32;
     let mut buffer: [i8; 32] = [0; 32];
     if destlen < 2i32 {
@@ -878,26 +877,20 @@ unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value
         b"%.13g\x00" as *const u8 as *const i8,
         value,
     );
-    i = 0i32;
-    while buffer[i as usize] as i32 != '\u{0}' as i32 {
-        let mut ch: u8 = 0_u8;
-        if buffer[i as usize] as i32 == '.' as i32 {
-            ch = 0xa_u8
-        } else if buffer[i as usize] as i32 >= '0' as i32 && buffer[i as usize] as i32 <= '9' as i32
-        {
-            ch = (buffer[i as usize] as i32 - '0' as i32) as u8
-        } else if buffer[i as usize] as i32 == 'e' as i32 {
+    let mut i = 0;
+    while buffer[i] as u8 != '\u{0}' as u8 {
+        let mut ch: u8 = if buffer[i] as u8 == b'.' {
+            0xa
+        } else if buffer[i] as u8 >= b'0' && buffer[i] as u8 <= b'9' {
+            buffer[i] as u8 - b'0'
+        } else if buffer[i] as u8 == b'e' {
             i += 1;
-            ch = (if buffer[i as usize] as i32 == '-' as i32 {
-                0xci32
-            } else {
-                0xbi32
-            }) as u8
+            (if buffer[i] as u8 == b'-' { 0xc } else { 0xb })
         } else {
-            panic!("{}: Invalid character.", "CFF",);
-        }
+            panic!("{}: Invalid character.", "CFF")
+        };
         if destlen < pos / 2i32 + 1i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
+            panic!("{}: Buffer overflow.", "CFF");
         }
         if pos % 2i32 != 0 {
             let ref mut fresh15 = *dest.offset((pos / 2i32) as isize);
