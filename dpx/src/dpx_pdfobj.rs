@@ -1849,7 +1849,7 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
                 as u32 as u32;
             /* Type 3 -- Average */
             let mut tmp: libc::c_int =
-                (((up + left) / 2i32) as libc::c_double).floor() as libc::c_int;
+                (((up + left) / 2i32) as f64).floor() as libc::c_int;
             sum[3] = (sum[3] as libc::c_uint)
                 .wrapping_add((*p.offset(i as isize) as libc::c_int - tmp).abs() as libc::c_uint)
                 as u32 as u32;
@@ -1934,7 +1934,7 @@ unsafe extern "C" fn filter_PNG15_apply_filter(
                         0i32
                     };
                     let mut tmp_0: libc::c_int =
-                        (((up_1 + left_1) / 2i32) as libc::c_double).floor() as libc::c_int;
+                        (((up_1 + left_1) / 2i32) as f64).floor() as libc::c_int;
                     *pp.offset((i + 1i32) as isize) =
                         (*p.offset(i as isize) as libc::c_int - tmp_0) as libc::c_uchar;
                     i += 1
@@ -2203,22 +2203,22 @@ unsafe extern "C" fn filter_create_predictor_dict(
     pdf_add_dict(
         parms,
         pdf_new_name(b"BitsPerComponent\x00" as *const u8 as *const i8),
-        pdf_new_number(bpc as libc::c_double),
+        pdf_new_number(bpc as f64),
     );
     pdf_add_dict(
         parms,
         pdf_new_name(b"Colors\x00" as *const u8 as *const i8),
-        pdf_new_number(colors as libc::c_double),
+        pdf_new_number(colors as f64),
     );
     pdf_add_dict(
         parms,
         pdf_new_name(b"Columns\x00" as *const u8 as *const i8),
-        pdf_new_number(columns as libc::c_double),
+        pdf_new_number(columns as f64),
     );
     pdf_add_dict(
         parms,
         pdf_new_name(b"Predictor\x00" as *const u8 as *const i8),
-        pdf_new_number(predictor as libc::c_double),
+        pdf_new_number(predictor as f64),
     );
     return parms;
 }
@@ -2950,7 +2950,7 @@ unsafe extern "C" fn filter_decoded(
                                 0i32
                             };
                             let mut tmp: libc::c_int =
-                                (((up + left) / 2i32) as libc::c_double).floor() as libc::c_int;
+                                (((up + left) / 2i32) as f64).floor() as libc::c_int;
                             *buf.offset(i as isize) = (*p.offset(i as isize) as libc::c_int + tmp
                                 & 0xffi32)
                                 as libc::c_uchar;

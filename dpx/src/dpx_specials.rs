@@ -228,7 +228,6 @@ pub struct spc_handler {
     pub exec: spc_handler_fn_ptr,
 }
 
-use super::dpx_dpxutil::ht_entry;
 use super::dpx_dpxutil::ht_table;
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 

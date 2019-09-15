@@ -151,8 +151,6 @@ extern "C" fn pdf_coord__transform(p: &mut pdf_coord, M: &pdf_tmatrix) -> i32 {
     0i32
 }
 extern "C" fn pdf_coord__dtransform(p: &mut pdf_coord, M: &pdf_tmatrix) -> i32 {
-    let mut x: f64 = 0.;
-    let mut y: f64 = 0.;
     let pdf_coord { x, y } = *p;
     p.x = x * M.a + y * M.c;
     p.y = x * M.b + y * M.d;
@@ -160,8 +158,6 @@ extern "C" fn pdf_coord__dtransform(p: &mut pdf_coord, M: &pdf_tmatrix) -> i32 {
 }
 unsafe extern "C" fn pdf_coord__idtransform(p: &mut pdf_coord, M: &pdf_tmatrix) -> i32 {
     let mut W = pdf_tmatrix::new();
-    let mut x: f64 = 0.;
-    let mut y: f64 = 0.;
     let mut error: i32 = 0;
     error = inversematrix(&mut W, M);
     if error != 0 {
@@ -510,7 +506,6 @@ unsafe extern "C" fn pdf_path__elliptarc(
 }
 unsafe extern "C" fn pdf_path__closepath(pa: &mut pdf_path, cp: &mut pdf_coord) -> i32
 /* no arg */ {
-    let mut pe: *mut pa_elem = 0 as *mut pa_elem;
     /* search for start point of the last subpath */
     let pe = pa.path.iter().rev().find(|pe| pe.typ == PeType::MOVETO);
 
@@ -703,21 +698,16 @@ unsafe extern "C" fn pdf_dev__flushpath(
     mut rule: i32,
     mut ignore_rule: i32,
 ) -> i32 {
-    let mut pe: *mut pa_elem = 0 as *mut pa_elem; /* FIXME */
-    let mut pe1: *mut pa_elem = 0 as *mut pa_elem; /* width...  */
     let mut b: *mut i8 = fmt_buf.as_mut_ptr(); /* height... */
     let mut b_len: i32 = 1024i32; /* op: re */
     let mut r = pdf_rect::new(); /* op: m l c v y h */
-    let mut pt: *mut pdf_coord = 0 as *mut pdf_coord; /* op: m l c v y h */
-    let mut n_pts: i32 = 0; /* op: f F s S b B W f* F* s* S* b* B* W* */
     let mut n_seg: i32 = 0; /* default to 1 in PDF */
     let mut len: i32 = 0i32;
-    let mut isclip: i32 = 0i32;
     let mut isrect: i32 = 0;
     let mut i: i32 = 0;
     let mut j: i32 = 0;
     assert!([b'f', b'F', b's', b'S', b'b', b'B', b'W', b' '].contains(&(opchr as u8)));
-    isclip = if opchr == b'W' as i8 { 1i32 } else { 0i32 };
+    let isclip = if opchr == b'W' as i8 { true } else { false };
     if
     /*pa.num_paths <= 0_u32 &&*/
     path_added == 0i32 {
@@ -750,14 +740,14 @@ unsafe extern "C" fn pdf_dev__flushpath(
         len = 0i32
     } else {
         for pe in pa.path.iter_mut() {
-            n_pts = if
-            /* !pe.is_null() &&*/
+            /* op: f F s S b B W f* F* s* S* b* B* W* */
+            let n_pts = if
             pe.typ != PeType::TERMINATE {
                 pe.typ.n_pts() as i32
             } else {
                 0i32
             };
-            for (_j, pt) in (0..n_pts).zip(pe.p.iter_mut()) {
+            for (_j, pt) in (0..n_pts).zip(pe.p.iter_mut()) { /* op: m l c v y h */
                 let fresh32 = len;
                 len = len + 1;
                 *b.offset(fresh32 as isize) = ' ' as i32 as i8;
@@ -796,7 +786,7 @@ unsafe extern "C" fn pdf_dev__flushpath(
         len = len + 1;
         *b.offset(fresh37 as isize) = '*' as i32 as i8
     }
-    if isclip != 0 {
+    if isclip {
         let fresh38 = len;
         len = len + 1;
         *b.offset(fresh38 as isize) = ' ' as i32 as i8;

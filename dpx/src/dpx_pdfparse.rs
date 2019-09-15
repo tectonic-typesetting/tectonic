@@ -79,11 +79,11 @@ pub type size_t = u64;
 /* PDF */
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_0 {
+pub struct ParserState {
     pub tainted: i32,
 }
-static mut parser_state: C2RustUnnamed_0 = {
-    let mut init = C2RustUnnamed_0 { tainted: 0i32 };
+static mut parser_state: ParserState = {
+    let mut init = ParserState { tainted: 0i32 };
     init
 };
 static mut save: *const i8 = 0 as *const i8;

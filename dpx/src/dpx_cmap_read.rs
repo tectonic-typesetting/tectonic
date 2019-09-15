@@ -90,23 +90,8 @@ use super::dpx_cid::CIDSysInfo;
 /* DEBUG */
 /* Codespacerange */
 
-use super::dpx_cmap::rangeDef;
 use super::dpx_cmap::CMap;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub minBytesIn: size_t,
-    pub maxBytesIn: size_t,
-    pub minBytesOut: size_t,
-    pub maxBytesOut: size_t,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_0 {
-    pub num: u32,
-    pub max: u32,
-    pub ranges: *mut rangeDef,
-}
+
 pub type CID = u16;
 #[derive(Copy, Clone)]
 #[repr(C)]

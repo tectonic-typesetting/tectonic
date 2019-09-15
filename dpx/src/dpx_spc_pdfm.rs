@@ -242,7 +242,6 @@ pub struct tounicode {
 
 use super::dpx_dpxutil::ht_table;
 
-use super::dpx_dpxutil::ht_entry;
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 
 use super::dpx_fontmap::fontmap_rec;

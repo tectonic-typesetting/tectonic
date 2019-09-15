@@ -152,14 +152,6 @@ pub struct font_cache {
     pub fonts: *mut Type0Font,
 }
 use super::dpx_cmap::CMap;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub minBytesIn: size_t,
-    pub maxBytesIn: size_t,
-    pub minBytesOut: size_t,
-    pub maxBytesOut: size_t,
-}
 
 static mut __verbose: i32 = 0i32;
 #[no_mangle]

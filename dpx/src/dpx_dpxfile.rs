@@ -382,10 +382,10 @@ pub unsafe extern "C" fn dpx_delete_temp_file(mut tmp: *mut i8, mut force: i32) 
  */
 #[no_mangle]
 pub unsafe extern "C" fn dpx_file_apply_filter(
-    mut cmdtmpl: *const i8,
-    mut input: *const i8,
-    mut output: *const i8,
-    mut version: u8,
+    mut _cmdtmpl: *const i8,
+    mut _input: *const i8,
+    mut _output: *const i8,
+    mut _version: u8,
 ) -> i32 {
     /* Tectonic: defused */
     -1i32

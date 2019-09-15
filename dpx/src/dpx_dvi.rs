@@ -341,32 +341,8 @@ pub struct dvi_lr {
     pub font: i32,
     pub buf_index: u32,
 }
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_3 {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct t1_ginfo {
-    pub use_seac: i32,
-    pub wx: f64,
-    pub wy: f64,
-    pub bbox: C2RustUnnamed_3,
-    pub seac: C2RustUnnamed_4,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_4 {
-    pub asb: f64,
-    pub adx: f64,
-    pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
-}
+
+use super::dpx_t1_char::t1_ginfo;
 
 use super::dpx_sfnt::sfnt;
 use super::dpx_tt_table::{tt_head_table, tt_hhea_table, tt_maxp_table};
@@ -2327,24 +2303,7 @@ unsafe extern "C" fn do_glyphs(mut do_actual_text: i32) {
             let mut descent: f64 = (*font).descent as f64;
             if !(*font).cffont.is_null() {
                 let mut cstrings: *mut cff_index = (*(*font).cffont).cstrings;
-                let mut gm: t1_ginfo = t1_ginfo {
-                    use_seac: 0,
-                    wx: 0.,
-                    wy: 0.,
-                    bbox: C2RustUnnamed_3 {
-                        llx: 0.,
-                        lly: 0.,
-                        urx: 0.,
-                        ury: 0.,
-                    },
-                    seac: C2RustUnnamed_4 {
-                        asb: 0.,
-                        adx: 0.,
-                        ady: 0.,
-                        bchar: 0,
-                        achar: 0,
-                    },
-                };
+                let mut gm = t1_ginfo::new();
                 /* If .notdef is not the 1st glyph in CharStrings, glyph_id given by
                 FreeType should be increased by 1 */
                 if (*(*font).cffont).is_notdef_notzero != 0 {

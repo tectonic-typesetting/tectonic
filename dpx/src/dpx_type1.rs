@@ -159,32 +159,9 @@ pub type s_SID = u16;
 use super::dpx_cff::cff_encoding;
 use super::dpx_cff::cff_map;
 use super::dpx_cff::cff_range1;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct t1_ginfo {
-    pub use_seac: i32,
-    pub wx: f64,
-    pub wy: f64,
-    pub bbox: C2RustUnnamed_3,
-    pub seac: C2RustUnnamed_2,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub asb: f64,
-    pub adx: f64,
-    pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_3 {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
+
+use super::dpx_t1_char::t1_ginfo;
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -290,24 +267,7 @@ unsafe extern "C" fn get_font_attr(mut font: *mut pdf_font, mut cffont: *mut cff
         b"lambda\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut gm: t1_ginfo = t1_ginfo {
-        use_seac: 0,
-        wx: 0.,
-        wy: 0.,
-        bbox: C2RustUnnamed_3 {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        seac: C2RustUnnamed_2 {
-            asb: 0.,
-            adx: 0.,
-            ady: 0.,
-            bchar: 0,
-            achar: 0,
-        },
-    };
+    let mut gm = t1_ginfo::new();
     defaultwidth = 500.0f64;
     nominalwidth = 0.0f64;
     /*
@@ -1181,24 +1141,7 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
      * used already).
      */
     let mut cstring: *mut cff_index = 0 as *mut cff_index;
-    let mut gm: t1_ginfo = t1_ginfo {
-        use_seac: 0,
-        wx: 0.,
-        wy: 0.,
-        bbox: C2RustUnnamed_3 {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        seac: C2RustUnnamed_2 {
-            asb: 0.,
-            adx: 0.,
-            ady: 0.,
-            bchar: 0,
-            achar: 0,
-        },
-    };
+    let mut gm = t1_ginfo::new();
     let mut gid_0: card16 = 0;
     let mut gid_orig: card16 = 0;
     let mut dstlen_max: i32 = 0;
