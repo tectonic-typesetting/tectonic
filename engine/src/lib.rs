@@ -8,7 +8,8 @@
     non_snake_case,
     non_upper_case_globals,
     unused_assignments,
-    unused_mut
+    unused_mut,
+    unused_unsafe
 )]
 #[macro_use]
 extern crate tectonic_bridge as bridge;

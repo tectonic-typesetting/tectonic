@@ -218,35 +218,10 @@ pub type rust_input_handle_t = *mut libc::c_void;
 use super::dpx_cid::{cid_opt, CIDFont, CIDSysInfo};
 
 use super::dpx_sfnt::sfnt;
+use super::dpx_cs_type2::cs_ginfo;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cs_ginfo {
-    pub flags: i32,
-    pub wx: f64,
-    pub wy: f64,
-    pub bbox: C2RustUnnamed_0,
-    pub seac: C2RustUnnamed,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub asb: f64,
-    pub adx: f64,
-    pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
-}
-pub type card8 = u8;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_0 {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
 use super::dpx_cff::cff_charsets;
+pub type card8 = u8;
 pub type card16 = u16;
 pub type s_SID = u16;
 
@@ -315,32 +290,8 @@ use super::dpx_cmap::CMap;
 /* Upper bounds of valid input code */
 
 use super::dpx_agl::agl_name;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct t1_ginfo {
-    pub use_seac: i32,
-    pub wx: f64,
-    pub wy: f64,
-    pub bbox: C2RustUnnamed_7,
-    pub seac: C2RustUnnamed_6,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_6 {
-    pub asb: f64,
-    pub adx: f64,
-    pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_7 {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
+use super::dpx_t1_char::t1_ginfo;
+
 /*
  * CID-Keyed Font support:
  *
@@ -2237,24 +2188,7 @@ unsafe extern "C" fn get_font_attr(mut font: *mut CIDFont, mut cffont: *mut cff_
         b"lambda\x00" as *const u8 as *const i8,
         0 as *const i8,
     ];
-    let mut gm: t1_ginfo = t1_ginfo {
-        use_seac: 0,
-        wx: 0.,
-        wy: 0.,
-        bbox: C2RustUnnamed_7 {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        seac: C2RustUnnamed_6 {
-            asb: 0.,
-            adx: 0.,
-            ady: 0.,
-            bchar: 0,
-            achar: 0,
-        },
-    };
+    let mut gm = t1_ginfo::new();
     defaultwidth = 500.0f64;
     nominalwidth = 0.0f64;
     /*
@@ -2837,24 +2771,7 @@ pub unsafe extern "C" fn CIDFont_type0_t1dofont(mut font: *mut CIDFont) {
         0.0f64,
     );
     let mut cstring: *mut cff_index = 0 as *mut cff_index;
-    let mut gm: t1_ginfo = t1_ginfo {
-        use_seac: 0,
-        wx: 0.,
-        wy: 0.,
-        bbox: C2RustUnnamed_7 {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        seac: C2RustUnnamed_6 {
-            asb: 0.,
-            adx: 0.,
-            ady: 0.,
-            bchar: 0,
-            achar: 0,
-        },
-    };
+    let mut gm = t1_ginfo::new();
     let mut max: i32 = 0i32;
     let mut widths: *mut f64 = 0 as *mut f64;
     let mut w_stat: [i32; 1001] = [0; 1001];

@@ -8,6 +8,7 @@ license = "GPL"
 
 [dependencies]
 tectonic_bridge = { version = "0.0.1-dev", path = "../bridge" }
+lazy_static = "1.4"
 libc = "0.2"
 libpng-sys = "1"
 libz-sys = { version = "1", optional = true}

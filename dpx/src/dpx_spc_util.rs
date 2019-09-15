@@ -64,7 +64,7 @@ use super::dpx_pdfdev::{pdf_tmatrix, transform_info};
 use super::dpx_specials::{spc_arg, spc_env};
 
 /* Color names */
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 #[repr(C)]
 pub struct colordef_ {
     pub key: *const i8,
@@ -368,7 +368,7 @@ pub unsafe extern "C" fn spc_util_read_pdfcolor(
     mut spe: *mut spc_env,
     colorspec: &mut pdf_color,
     mut ap: *mut spc_arg,
-    mut defaultcolor: *mut pdf_color,
+    defaultcolor: Option<&pdf_color>,
 ) -> i32 {
     let mut error: i32 = 0i32;
     assert!(!spe.is_null() && !ap.is_null());
@@ -377,9 +377,11 @@ pub unsafe extern "C" fn spc_util_read_pdfcolor(
         return -1i32;
     }
     error = spc_read_color_pdf(spe, colorspec, ap);
-    if error < 0i32 && !defaultcolor.is_null() {
-        pdf_color_copycolor(colorspec, defaultcolor);
-        error = 0i32
+    if error < 0i32 {
+        if let Some(dc) = defaultcolor {
+            pdf_color_copycolor(colorspec, dc);
+            error = 0i32
+        }
     }
     error
 }
@@ -1112,7 +1114,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.15f64, 0.00f64, 0.69f64, 0.00f64],
                 };
                 init
@@ -1126,7 +1128,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.00f64, 1.00f64, 0.00f64],
                 };
                 init
@@ -1140,7 +1142,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.10f64, 0.84f64, 0.00f64],
                 };
                 init
@@ -1154,7 +1156,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.29f64, 0.84f64, 0.00f64],
                 };
                 init
@@ -1168,7 +1170,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.32f64, 0.52f64, 0.00f64],
                 };
                 init
@@ -1182,7 +1184,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.50f64, 0.70f64, 0.00f64],
                 };
                 init
@@ -1196,7 +1198,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.46f64, 0.50f64, 0.00f64],
                 };
                 init
@@ -1210,7 +1212,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.42f64, 1.00f64, 0.00f64],
                 };
                 init
@@ -1224,7 +1226,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.61f64, 0.87f64, 0.00f64],
                 };
                 init
@@ -1238,7 +1240,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.51f64, 1.00f64, 0.00f64],
                 };
                 init
@@ -1252,7 +1254,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.75f64, 1.00f64, 0.24f64],
                 };
                 init
@@ -1266,7 +1268,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.77f64, 0.87f64, 0.00f64],
                 };
                 init
@@ -1280,7 +1282,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.85f64, 0.87f64, 0.35f64],
                 };
                 init
@@ -1294,7 +1296,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.87f64, 0.68f64, 0.32f64],
                 };
                 init
@@ -1308,7 +1310,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.89f64, 0.94f64, 0.28f64],
                 };
                 init
@@ -1322,7 +1324,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 1.00f64, 1.00f64, 0.00f64],
                 };
                 init
@@ -1336,7 +1338,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 1.00f64, 0.50f64, 0.00f64],
                 };
                 init
@@ -1350,7 +1352,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 1.00f64, 0.13f64, 0.00f64],
                 };
                 init
@@ -1364,7 +1366,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.96f64, 0.39f64, 0.00f64],
                 };
                 init
@@ -1378,7 +1380,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.53f64, 0.38f64, 0.00f64],
                 };
                 init
@@ -1392,7 +1394,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.63f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1406,7 +1408,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 1.00f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1420,7 +1422,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.81f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1434,7 +1436,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.82f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1448,7 +1450,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.34f64, 0.90f64, 0.00f64, 0.02f64],
                 };
                 init
@@ -1462,7 +1464,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.07f64, 0.90f64, 0.00f64, 0.34f64],
                 };
                 init
@@ -1476,7 +1478,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.47f64, 0.91f64, 0.00f64, 0.08f64],
                 };
                 init
@@ -1490,7 +1492,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.48f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1504,7 +1506,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.12f64, 0.59f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1518,7 +1520,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.32f64, 0.64f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1532,7 +1534,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.40f64, 0.80f64, 0.20f64, 0.00f64],
                 };
                 init
@@ -1546,7 +1548,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.45f64, 0.86f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1560,7 +1562,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.50f64, 1.00f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1574,7 +1576,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.79f64, 0.88f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1588,7 +1590,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.75f64, 0.90f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1602,7 +1604,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.86f64, 0.91f64, 0.00f64, 0.04f64],
                 };
                 init
@@ -1616,7 +1618,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.57f64, 0.55f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1630,7 +1632,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.62f64, 0.57f64, 0.23f64, 0.00f64],
                 };
                 init
@@ -1644,7 +1646,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.65f64, 0.13f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1658,7 +1660,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.98f64, 0.13f64, 0.00f64, 0.43f64],
                 };
                 init
@@ -1672,7 +1674,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.94f64, 0.54f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1686,7 +1688,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [1.00f64, 0.50f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1700,7 +1702,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [1.00f64, 1.00f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1714,7 +1716,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.94f64, 0.11f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1728,7 +1730,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [1.00f64, 0.00f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1742,7 +1744,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.96f64, 0.00f64, 0.00f64, 0.00f64],
                 };
                 init
@@ -1756,7 +1758,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.62f64, 0.00f64, 0.12f64, 0.00f64],
                 };
                 init
@@ -1770,7 +1772,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.85f64, 0.00f64, 0.20f64, 0.00f64],
                 };
                 init
@@ -1784,7 +1786,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.86f64, 0.00f64, 0.34f64, 0.02f64],
                 };
                 init
@@ -1798,7 +1800,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.82f64, 0.00f64, 0.30f64, 0.00f64],
                 };
                 init
@@ -1812,7 +1814,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.85f64, 0.00f64, 0.33f64, 0.00f64],
                 };
                 init
@@ -1826,7 +1828,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [1.00f64, 0.00f64, 0.50f64, 0.00f64],
                 };
                 init
@@ -1840,7 +1842,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.99f64, 0.00f64, 0.52f64, 0.00f64],
                 };
                 init
@@ -1854,7 +1856,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.69f64, 0.00f64, 0.50f64, 0.00f64],
                 };
                 init
@@ -1868,7 +1870,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [1.00f64, 0.00f64, 1.00f64, 0.00f64],
                 };
                 init
@@ -1882,7 +1884,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.91f64, 0.00f64, 0.88f64, 0.12f64],
                 };
                 init
@@ -1896,7 +1898,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.92f64, 0.00f64, 0.59f64, 0.25f64],
                 };
                 init
@@ -1910,7 +1912,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.50f64, 0.00f64, 1.00f64, 0.00f64],
                 };
                 init
@@ -1924,7 +1926,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.44f64, 0.00f64, 0.74f64, 0.00f64],
                 };
                 init
@@ -1938,7 +1940,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.26f64, 0.00f64, 0.76f64, 0.00f64],
                 };
                 init
@@ -1952,7 +1954,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.64f64, 0.00f64, 0.95f64, 0.40f64],
                 };
                 init
@@ -1966,7 +1968,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.72f64, 1.00f64, 0.45f64],
                 };
                 init
@@ -1980,7 +1982,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.83f64, 1.00f64, 0.70f64],
                 };
                 init
@@ -1994,7 +1996,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.00f64, 0.81f64, 1.00f64, 0.60f64],
                 };
                 init
@@ -2008,7 +2010,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 4i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.14f64, 0.42f64, 0.56f64, 0.00f64],
                 };
                 init
@@ -2022,7 +2024,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 1i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.5f64, 0., 0., 0.],
                 };
                 init
@@ -2036,7 +2038,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 1i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.0f64, 0., 0., 0.],
                 };
                 init
@@ -2050,7 +2052,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 1i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [1.0f64, 0., 0., 0.],
                 };
                 init
@@ -2064,7 +2066,7 @@ static mut colordefs: [colordef_; 69] = [
             color: {
                 let mut init = pdf_color {
                     num_components: 0i32,
-                    spot_color_name: 0 as *const i8 as *mut i8,
+                    spot_color_name: None,
                     values: [0.0f64, 0., 0., 0.],
                 };
                 init

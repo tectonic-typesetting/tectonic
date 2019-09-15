@@ -284,7 +284,7 @@ unsafe extern "C" fn set_fillstyle(mut g: f64, mut a: f64, mut f_ais: i32) -> i3
     } /* get stroking and fill colors */
     let mut new_fc: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     let (sc, fc) = pdf_color_get_current();
@@ -581,7 +581,7 @@ unsafe extern "C" fn spc_handler_tpic_pa(mut spe: *mut spc_env, mut ap: *mut spc
 unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     if (*tp).num_points <= 1i32 {
@@ -597,7 +597,7 @@ unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc
 unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     if (*tp).num_points <= 1i32 {
@@ -615,7 +615,7 @@ unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -639,7 +639,7 @@ unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -663,7 +663,7 @@ unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -686,7 +686,7 @@ unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: i32 = 0;
@@ -727,7 +727,7 @@ unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
-    let mut cp: pdf_coord = pdf_coord::new();
+    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: i32 = 0;

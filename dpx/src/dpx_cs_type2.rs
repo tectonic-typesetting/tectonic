@@ -50,6 +50,30 @@ pub struct cs_ginfo {
     pub bbox: C2RustUnnamed_0,
     pub seac: C2RustUnnamed,
 }
+
+impl cs_ginfo {
+    pub fn new() -> Self {
+        Self {
+            flags: 0,
+            wx: 0.,
+            wy: 0.,
+            bbox: C2RustUnnamed_0 {
+                llx: 0.,
+                lly: 0.,
+                urx: 0.,
+                ury: 0.,
+            },
+            seac: C2RustUnnamed {
+                asb: 0.,
+                adx: 0.,
+                ady: 0.,
+                bchar: 0,
+                achar: 0,
+            },
+        }
+    }
+}
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed {

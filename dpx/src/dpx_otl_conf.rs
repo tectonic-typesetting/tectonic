@@ -619,10 +619,10 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
 static mut otl_confs: *mut pdf_obj = 0 as *const pdf_obj as *mut pdf_obj;
 #[no_mangle]
 pub unsafe extern "C" fn otl_find_conf(mut conf_name: *const i8) -> *mut pdf_obj {
-    let mut rule: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut script: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut language: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut options: *mut pdf_obj = 0 as *mut pdf_obj;
+    let mut _rule: *mut pdf_obj = 0 as *mut pdf_obj;
+    let mut _script: *mut pdf_obj = 0 as *mut pdf_obj;
+    let mut _language: *mut pdf_obj = 0 as *mut pdf_obj;
+    let mut _options: *mut pdf_obj = 0 as *mut pdf_obj;
     0 as *mut pdf_obj
 }
 #[no_mangle]

@@ -89,7 +89,7 @@ pub type __off64_t = i64;
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 
-use super::dpx_pdfdev::{pdf_coord, pdf_rect, pdf_tmatrix};
+use super::dpx_pdfdev::{pdf_coord, pdf_tmatrix};
 
 use crate::dpx_pdfximage::{load_options, pdf_ximage, xform_info};
 pub const OP_CURVETO2: C2RustUnnamed_0 = 15;
@@ -1076,10 +1076,10 @@ pub unsafe extern "C" fn pdf_copy_clip(
         } else {
             let mut j: u32 = 0;
             let mut T = pdf_tmatrix::new();
-            let mut p0: pdf_coord = pdf_coord::new();
-            let mut p1: pdf_coord = pdf_coord::new();
-            let mut p2: pdf_coord = pdf_coord::new();
-            let mut p3: pdf_coord = pdf_coord::new();
+            let mut p0 = pdf_coord::new();
+            let mut p1 = pdf_coord::new();
+            let mut p2 = pdf_coord::new();
+            let mut p3 = pdf_coord::new();
             token = parse_ident(&mut clip_path, end_path);
             j = 0_u32;
             while (j as u64)

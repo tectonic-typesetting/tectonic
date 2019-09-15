@@ -182,26 +182,10 @@ use super::dpx_cid::{cid_opt, CIDFont, CIDSysInfo};
 
 use super::dpx_cmap::CMap;
 use super::dpx_tt_cmap::tt_cmap;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed {
-    pub minBytesIn: size_t,
-    pub maxBytesIn: size_t,
-    pub minBytesOut: size_t,
-    pub maxBytesOut: size_t,
-}
+
 /* 2 for CID, variable for Code..  */
 /* CID (as 16-bit BE), Code ...    */
 /* Next Subtbl for LOOKUP_CONTINUE */
-
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_0 {
-    pub num: u32,
-    pub max: u32,
-    pub ranges: *mut rangeDef,
-}
-use super::dpx_cmap::rangeDef;
 
 use super::dpx_sfnt::sfnt;
 

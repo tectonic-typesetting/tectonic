@@ -73,7 +73,7 @@ unsafe extern "C" fn spc_handler_color_push(mut spe: *mut spc_env, mut args: *mu
     let mut error: i32 = 0;
     let mut colorspec: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
@@ -97,7 +97,7 @@ unsafe extern "C" fn spc_handler_color_default(
     let mut error: i32 = 0;
     let mut colorspec: pdf_color = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);
@@ -112,7 +112,7 @@ unsafe extern "C" fn spc_handler_background(mut spe: *mut spc_env, mut args: *mu
     let mut error: i32 = 0;
     let mut colorspec = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 1i32);

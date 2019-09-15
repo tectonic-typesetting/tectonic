@@ -132,6 +132,16 @@ impl pdf_tmatrix {
             f: 0.,
         }
     }
+    pub const fn identity() -> Self {
+        Self {
+            a: 1.,
+            b: 0.,
+            c: 0.,
+            d: 1.,
+            e: 0.,
+            f: 0.,
+        }
+    }
 }
 #[derive(Copy, Clone, Default)]
 #[repr(C)]
@@ -151,7 +161,7 @@ impl pdf_rect {
         }
     }
 }
-#[derive(Copy, Clone, Default, PartialEq)]
+#[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct pdf_coord {
     pub x: f64,
@@ -162,6 +172,7 @@ impl pdf_coord {
         Self { x: 0., y: 0. }
     }
 }
+
 #[derive(Copy, Clone, Default)]
 #[repr(C)]
 pub struct transform_info {
@@ -216,7 +227,7 @@ pub type card8 = u8;
  */
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_0 {
+pub struct DevUnit {
     pub dvi2pts: f64,
     pub min_bp_val: i32,
     pub precision: i32,
@@ -224,7 +235,7 @@ pub struct C2RustUnnamed_0 {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_1 {
+pub struct TextState {
     pub font_id: i32,
     pub offset: spt_t,
     pub ref_x: spt_t,
@@ -246,7 +257,7 @@ pub struct C2RustUnnamed_2 {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_3 {
+pub struct DevParam {
     pub autorotate: i32,
     pub colormode: i32,
 }
@@ -274,8 +285,8 @@ pub unsafe extern "C" fn pdf_dev_set_verbose(mut level: i32) {
 pub unsafe extern "C" fn pdf_dev_scale() -> f64 {
     1.0f64
 }
-static mut dev_unit: C2RustUnnamed_0 = {
-    let mut init = C2RustUnnamed_0 {
+static mut dev_unit: DevUnit = {
+    let mut init = DevUnit {
         dvi2pts: 0.0f64,
         min_bp_val: 658i32,
         precision: 2i32,
@@ -511,8 +522,8 @@ pub unsafe extern "C" fn pdf_sprint_number(mut buf: *mut i8, mut value: f64) -> 
     *buf.offset(len as isize) = '\u{0}' as i32 as i8;
     len
 }
-static mut dev_param: C2RustUnnamed_3 = {
-    let mut init = C2RustUnnamed_3 {
+static mut dev_param: DevParam = {
+    let mut init = DevParam {
         autorotate: 1i32,
         colormode: 1i32,
     };
@@ -520,8 +531,8 @@ static mut dev_param: C2RustUnnamed_3 = {
 };
 static mut motion_state: i32 = 1i32;
 static mut format_buffer: [i8; 4096] = [0; 4096];
-static mut text_state: C2RustUnnamed_1 = {
-    let mut init = C2RustUnnamed_1 {
+static mut text_state: TextState = {
+    let mut init = TextState {
         font_id: -1i32,
         offset: 0i32,
         ref_x: 0i32,
@@ -1959,10 +1970,10 @@ pub unsafe extern "C" fn pdf_dev_set_rect(
 ) {
     let mut dev_x: f64 = 0.; /* currentmatrix */
     let mut dev_y: f64 = 0.; /* 0 for B&W */
-    let mut p0: pdf_coord = pdf_coord::new();
-    let mut p1: pdf_coord = pdf_coord::new();
-    let mut p2: pdf_coord = pdf_coord::new();
-    let mut p3: pdf_coord = pdf_coord::new();
+    let mut p0 = pdf_coord::new();
+    let mut p1 = pdf_coord::new();
+    let mut p2 = pdf_coord::new();
+    let mut p3 = pdf_coord::new();
     let mut min_x: f64 = 0.;
     let mut min_y: f64 = 0.;
     let mut max_x: f64 = 0.;

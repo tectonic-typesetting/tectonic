@@ -212,32 +212,8 @@ use super::dpx_cff::cff_charsets;
 use super::dpx_cff::cff_font;
 use super::dpx_sfnt::sfnt;
 
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct cs_ginfo {
-    pub flags: i32,
-    pub wx: f64,
-    pub wy: f64,
-    pub bbox: C2RustUnnamed_3,
-    pub seac: C2RustUnnamed_2,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_2 {
-    pub asb: f64,
-    pub adx: f64,
-    pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct C2RustUnnamed_3 {
-    pub llx: f64,
-    pub lly: f64,
-    pub urx: f64,
-    pub ury: f64,
-}
+use super::dpx_cs_type2::cs_ginfo;
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.
@@ -486,24 +462,7 @@ pub unsafe extern "C" fn pdf_font_load_type1c(mut font: *mut pdf_font) -> i32 {
     let mut num_glyphs: card16 = 0;
     let mut cs_count: card16 = 0;
     let mut code: card16 = 0;
-    let mut ginfo: cs_ginfo = cs_ginfo {
-        flags: 0,
-        wx: 0.,
-        wy: 0.,
-        bbox: C2RustUnnamed_3 {
-            llx: 0.,
-            lly: 0.,
-            urx: 0.,
-            ury: 0.,
-        },
-        seac: C2RustUnnamed_2 {
-            asb: 0.,
-            adx: 0.,
-            ady: 0.,
-            bchar: 0,
-            achar: 0,
-        },
-    };
+    let mut ginfo = cs_ginfo::new();
     let mut nominal_width: f64 = 0.;
     let mut default_width: f64 = 0.;
     let mut notdef_width: f64 = 0.;

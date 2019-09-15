@@ -145,7 +145,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
         let mut init = pdf_tmatrix::new();
         init
     };
-    let mut pt: pdf_coord = pdf_coord::new();
+    let mut pt = pdf_coord::new();
     /* Create transformation matrix */
     M.a = a;
     M.b = b;
@@ -283,7 +283,7 @@ unsafe extern "C" fn spc_handler_xtx_backgroundcolor(
     let mut error: i32 = 0;
     let mut colorspec = pdf_color {
         num_components: 0,
-        spot_color_name: 0 as *mut i8,
+        spot_color_name: None,
         values: [0.; 4],
     };
     error = spc_util_read_colorspec(spe, &mut colorspec, args, 0i32);
