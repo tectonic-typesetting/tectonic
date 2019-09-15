@@ -37,6 +37,16 @@ use super::dpx_pdfcolor::{
 };
 use super::dpx_pdfdev::{pdf_sprint_coord, pdf_sprint_matrix, pdf_sprint_rect};
 
+use lazy_static::lazy_static;
+use std::sync::Mutex;
+
+lazy_static! { // TODO move to context structure
+    static ref gs_stack: Mutex<Vec<pdf_gstate>> = Mutex::new({
+        let mut v = vec![];
+        v
+    });
+}
+
 extern "C" {
     #[no_mangle]
     fn graphics_mode();
@@ -809,16 +819,6 @@ impl<T> Top<T> for Vec<T> {
     }
 }
 
-use lazy_static::lazy_static;
-use std::sync::Mutex;
-
-lazy_static! {
-    static ref gs_stack: Mutex<Vec<pdf_gstate>> = Mutex::new({
-        let mut v = vec![];
-        v
-    });
-}
-
 impl pdf_gstate {
     pub fn init() -> Self {
         Self {
@@ -839,14 +839,7 @@ impl pdf_gstate {
         }
     }
 }
-/*unsafe extern "C" fn clear_a_gstate(mut gs: *mut pdf_gstate) {
-    //clear_a_path(&mut (*gs).path);
-    memset(
-        gs as *mut libc::c_void,
-        0i32,
-        ::std::mem::size_of::<pdf_gstate>() as u64,
-    );
-}*/
+
 unsafe extern "C" fn copy_a_gstate(gs1: &mut pdf_gstate, gs2: &pdf_gstate) {
     let mut i: i32 = 0;
     gs1.cp = gs2.cp;
