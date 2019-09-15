@@ -3081,7 +3081,7 @@ unsafe extern "C" fn do_currentfont() -> i32 {
 }
 unsafe extern "C" fn do_show() -> i32 {
     let mut font: *mut mp_font = 0 as *mut mp_font;
-    let mut cp = pdf_coord::new();
+    let mut cp = pdf_coord::zero();
     let mut text_str: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut length: i32 = 0;
     let mut strptr: *mut u8 = 0 as *mut u8;
@@ -3256,7 +3256,7 @@ unsafe extern "C" fn do_operator(mut token: *const i8, mut x_user: f64, mut y_us
     let mut values: [f64; 12] = [0.; 12];
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut matrix = pdf_tmatrix::new();
-    let mut cp = pdf_coord::new();
+    let mut cp = pdf_coord::zero();
     let mut color: pdf_color = pdf_color {
         num_components: 0,
         spot_color_name: None,

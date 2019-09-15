@@ -306,67 +306,54 @@ unsafe extern "C" fn ispageref(mut key: *const i8) -> i32 {
  */
 #[no_mangle]
 pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_obj {
-    let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cp = pdf_coord::new();
-    let mut k: i32 = 0;
     assert!(!named_objects.is_null());
     if key.is_null() {
         return 0 as *mut pdf_obj;
     }
-    k = 0i32;
-    while !_rkeys[k as usize].is_null() && strcmp(key, _rkeys[k as usize]) != 0 {
+    let mut k = 0;
+    while !_rkeys[k].is_null() && strcmp(key, _rkeys[k]) != 0 {
         k += 1
     }
-    match k {
+    let value = match k {
         0 => {
             /* xpos and ypos must be position in device space here. */
-            cp.x = dvi_dev_xpos();
-            cp.y = 0.0f64;
+            let mut cp = pdf_coord::new(dvi_dev_xpos(), 0.);
             pdf_dev_transform(&mut cp, None);
-            value = pdf_new_number((cp.x / 0.01f64 + 0.5f64).floor() * 0.01f64)
+            pdf_new_number((cp.x / 0.01 + 0.5).floor() * 0.01)
         }
         1 => {
-            cp.x = 0.0f64;
-            cp.y = dvi_dev_ypos();
+            let mut cp = pdf_coord::new(0., dvi_dev_ypos());
             pdf_dev_transform(&mut cp, None);
-            value = pdf_new_number((cp.y / 0.01f64 + 0.5f64).floor() * 0.01f64)
+            pdf_new_number((cp.y / 0.01 + 0.5).floor() * 0.01)
         }
-        2 => value = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8),
-        3 => value = pdf_doc_get_reference(b"@PREVPAGE\x00" as *const u8 as *const i8),
-        4 => value = pdf_doc_get_reference(b"@NEXTPAGE\x00" as *const u8 as *const i8),
-        6 => {
-            value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Pages\x00" as *const u8 as *const i8,
-            ))
-        }
-        7 => {
-            value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Names\x00" as *const u8 as *const i8,
-            ))
-        }
-        5 => value = pdf_ref_obj(pdf_doc_current_page_resources()),
-        8 => {
-            value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Catalog\x00" as *const u8 as *const i8,
-            ))
-        }
-        9 => {
-            value = pdf_ref_obj(pdf_doc_get_dictionary(
-                b"Info\x00" as *const u8 as *const i8,
-            ))
-        }
+        2 => pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8),
+        3 => pdf_doc_get_reference(b"@PREVPAGE\x00" as *const u8 as *const i8),
+        4 => pdf_doc_get_reference(b"@NEXTPAGE\x00" as *const u8 as *const i8),
+        6 => pdf_ref_obj(pdf_doc_get_dictionary(
+            b"Pages\x00" as *const u8 as *const i8,
+        )),
+        7 => pdf_ref_obj(pdf_doc_get_dictionary(
+            b"Names\x00" as *const u8 as *const i8,
+        )),
+        5 => pdf_ref_obj(pdf_doc_current_page_resources()),
+        8 => pdf_ref_obj(pdf_doc_get_dictionary(
+            b"Catalog\x00" as *const u8 as *const i8,
+        )),
+        9 => pdf_ref_obj(pdf_doc_get_dictionary(
+            b"Info\x00" as *const u8 as *const i8,
+        )),
         _ => {
             if ispageref(key) != 0 {
-                value = pdf_doc_ref_page(atoi(key.offset(4)) as u32)
+                pdf_doc_ref_page(atoi(key.offset(4)) as u32)
             } else {
-                value = pdf_names_lookup_reference(
+                pdf_names_lookup_reference(
                     named_objects,
                     key as *const libc::c_void,
                     strlen(key) as i32,
                 )
             }
         }
-    }
+    };
     if value.is_null() {
         _tt_abort(
             b"Object reference %s not exist.\x00" as *const u8 as *const i8,
@@ -378,7 +365,6 @@ pub unsafe extern "C" fn spc_lookup_reference(mut key: *const i8) -> *mut pdf_ob
 #[no_mangle]
 pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
     let mut value: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cp = pdf_coord::new();
     let mut k: i32 = 0;
     assert!(!named_objects.is_null());
     if key.is_null() {
@@ -390,14 +376,12 @@ pub unsafe extern "C" fn spc_lookup_object(mut key: *const i8) -> *mut pdf_obj {
     }
     match k {
         0 => {
-            cp.x = dvi_dev_xpos();
-            cp.y = 0.0f64;
+            let mut cp = pdf_coord::new(dvi_dev_xpos(), 0.);
             pdf_dev_transform(&mut cp, None);
             value = pdf_new_number((cp.x / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
         1 => {
-            cp.x = 0.0f64;
-            cp.y = dvi_dev_ypos();
+            let mut cp = pdf_coord::new(0., dvi_dev_ypos());
             pdf_dev_transform(&mut cp, None);
             value = pdf_new_number((cp.y / 0.01f64 + 0.5f64).floor() * 0.01f64)
         }
@@ -745,9 +729,7 @@ unsafe extern "C" fn print_error(mut name: *const i8, mut spe: *mut spc_env, mut
     let mut ebuf: [i8; 64] = [0; 64];
     let mut i: i32 = 0;
     let mut pg: i32 = (*spe).pg;
-    let mut c = pdf_coord::new();
-    c.x = (*spe).x_user;
-    c.y = (*spe).y_user;
+    let mut c = pdf_coord::new((*spe).x_user, (*spe).y_user);
     pdf_dev_transform(&mut c, None);
     if !(*ap).command.is_null() && !name.is_null() {
         dpx_warning(

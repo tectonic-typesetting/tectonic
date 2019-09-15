@@ -492,9 +492,7 @@ unsafe extern "C" fn html_open_dest(
     let mut error: i32 = 0;
     let mut array: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut page_ref: *mut pdf_obj = 0 as *mut pdf_obj;
-    let mut cp = pdf_coord::new();
-    cp.x = (*spe).x_user;
-    cp.y = (*spe).y_user;
+    let mut cp = pdf_coord::new((*spe).x_user, (*spe).y_user);
     pdf_dev_transform(&mut cp, None);
     page_ref = pdf_doc_get_reference(b"@THISPAGE\x00" as *const u8 as *const i8);
     assert!(!page_ref.is_null());

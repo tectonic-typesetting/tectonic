@@ -261,7 +261,7 @@ unsafe extern "C" fn pdf_path__moveto(
     *cp = *p0;
     let pe = pa_elem {
         typ: PeType::MOVETO,
-        p: [*cp, pdf_coord::new(), pdf_coord::new()],
+        p: [*cp, pdf_coord::zero(), pdf_coord::zero()],
     };
     pa.path.push(pe);
     0i32
@@ -330,7 +330,7 @@ unsafe extern "C" fn pdf_path__transform(pa: &mut pdf_path, M: &pdf_tmatrix) -> 
     while i < pa.len() {
         let pe = &mut pa.path[i];
         n = if pe.typ != PeType::TERMINATE {
-            (*pe).typ.n_pts()
+            pe.typ.n_pts()
         } else {
             0
         };
@@ -405,12 +405,6 @@ unsafe extern "C" fn pdf_path__elliptarc(
     let mut b_y: f64 = 0.;
     let mut d_a: f64 = 0.;
     let mut q: f64 = 0.;
-    let mut p0 = pdf_coord::new();
-    let mut p1 = pdf_coord::new();
-    let mut p2 = pdf_coord::new();
-    let mut p3 = pdf_coord::new();
-    let mut e0 = pdf_coord::new();
-    let mut e1 = pdf_coord::new();
     let mut T = pdf_tmatrix::new();
     let mut n_c: i32 = 0;
     let mut i: i32 = 0;
@@ -452,8 +446,7 @@ unsafe extern "C" fn pdf_path__elliptarc(
     b_x = r_x * b;
     b_y = r_y * b;
     let (s, c) = a_0.sin_cos();
-    p0.x = r_x * c;
-    p0.y = r_y * s;
+    let mut p0 = pdf_coord::new(r_x * c, r_y * s);
     pdf_coord__transform(&mut p0, &mut T);
     p0.x += ca.x;
     p0.y += ca.y;
@@ -467,25 +460,20 @@ unsafe extern "C" fn pdf_path__elliptarc(
     while error == 0 && i < n_c {
         q = a_0 + i as f64 * d_a;
         let (s, c) = q.sin_cos();
-        e0.x = c;
-        e0.y = s;
+        let e0 = pdf_coord::new(c, s);
         let (s, c) = (q + d_a).sin_cos();
-        e1.x = c;
-        e1.y = s;
+        let e1 = pdf_coord::new(c, s);
         /* Condition for tangent vector requirs
          *  d1 = p1 - p0 = f ( sin a, -cos a)
          *  d2 = p2 - p3 = g ( sin b, -cos b)
          * and from symmetry
          *  g^2 = f^2
          */
-        p0.x = r_x * e0.x; /* s.p. */
-        p0.y = r_y * e0.y; /* e.p. */
-        p3.x = r_x * e1.x;
-        p3.y = r_y * e1.y;
-        p1.x = -b_x * e0.y;
-        p1.y = b_y * e0.x;
-        p2.x = b_x * e1.y;
-        p2.y = -b_y * e1.x;
+        /* s.p. *//* e.p. */
+        let mut p0 = pdf_coord::new(r_x * e0.x, r_y * e0.y);
+        let mut p3 = pdf_coord::new(r_x * e1.x, r_y * e1.y);
+        let mut p1 = pdf_coord::new(-b_x * e0.y, b_y * e0.x);
+        let mut p2 = pdf_coord::new(b_x * e1.y, -b_y * e1.x);
         pdf_coord__transform(&mut p0, &mut T);
         pdf_coord__transform(&mut p1, &mut T);
         pdf_coord__transform(&mut p2, &mut T);
@@ -510,7 +498,7 @@ unsafe extern "C" fn pdf_path__closepath(pa: &mut pdf_path, cp: &mut pdf_coord) 
     let pe = pa.path.iter().rev().find(|pe| pe.typ == PeType::MOVETO);
 
     if let Some(pe) = pe {
-        *cp = (*pe).p[0].clone();
+        *cp = pe.p[0].clone();
         /* NOTE:
          *  Manually closed path without closepath is not
          *  affected by linejoin. A path with coincidental
@@ -602,7 +590,6 @@ unsafe extern "C" fn pdf_dev__rectshape(
     let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
     let mut len: i32 = 0i32;
     let mut isclip: i32 = 0i32;
-    let mut p = pdf_coord::new();
     let mut wd: f64 = 0.;
     let mut ht: f64 = 0.;
     assert!([b'f', b'F', b's', b'S', b'b', b'B', b'W', b' '].contains(&(opchr as u8)));
@@ -648,14 +635,13 @@ unsafe extern "C" fn pdf_dev__rectshape(
     let fresh17 = len;
     len = len + 1;
     *buf.offset(fresh17 as isize) = 'n' as i32 as i8;
-    p.x = r.llx;
-    p.y = r.lly;
+    let p = pdf_coord::new(r.llx, r.lly);
     wd = r.urx - r.llx;
     ht = r.ury - r.lly;
     let fresh18 = len;
     len = len + 1;
     *buf.offset(fresh18 as isize) = b' ' as i8;
-    len += pdf_sprint_coord(buf.offset(len as isize), &mut p);
+    len += pdf_sprint_coord(buf.offset(len as isize), &p);
     let fresh19 = len;
     len = len + 1;
     *buf.offset(fresh19 as isize) = b' ' as i8;
@@ -812,7 +798,7 @@ impl<T> Top<T> for Vec<T> {
 impl pdf_gstate {
     pub fn init() -> Self {
         Self {
-            cp: pdf_coord::new(),
+            cp: pdf_coord::zero(),
             matrix: pdf_tmatrix::identity(),
             strokecolor: pdf_color_graycolor_new(0.).unwrap(),
             fillcolor: pdf_color_graycolor_new(0.).unwrap(),
@@ -825,7 +811,7 @@ impl pdf_gstate {
             /* Internal variables */
             flags: 0,
             path: pdf_path::new(),
-            pt_fixee: pdf_coord::new(),
+            pt_fixee: pdf_coord::zero(),
         }
     }
 }
@@ -1197,7 +1183,7 @@ pub unsafe extern "C" fn pdf_dev_flushpath(mut p_op: i8, mut fill_rule: i32) -> 
      */
     error = pdf_dev__flushpath(cpa, p_op, fill_rule, 1i32);
     cpa.path.clear();
-    (*gs).flags &= !(1i32 << 0i32);
+    gs.flags &= !(1i32 << 0i32);
     error
 }
 #[no_mangle]
@@ -1218,10 +1204,8 @@ pub unsafe extern "C" fn pdf_dev_moveto(mut x: f64, mut y: f64) -> i32 {
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let mut p = pdf_coord::new();
-    p.x = x;
-    p.y = y;
-    return pdf_path__moveto(cpa, cpt, &mut p);
+    let p = pdf_coord::new(x, y);
+    pdf_path__moveto(cpa, cpt, &p)
     /* cpt updated */
 }
 #[no_mangle]
@@ -1230,10 +1214,7 @@ pub unsafe extern "C" fn pdf_dev_rmoveto(mut x: f64, mut y: f64) -> i32 {
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let p = pdf_coord {
-        x: cpt.x + x,
-        y: cpt.y + y,
-    };
+    let p = pdf_coord::new(cpt.x + x, cpt.y + y);
     pdf_path__moveto(cpa, cpt, &p)
     /* cpt updated */
 }
@@ -1243,7 +1224,7 @@ pub unsafe extern "C" fn pdf_dev_lineto(mut x: f64, mut y: f64) -> i32 {
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let p0 = pdf_coord { x, y };
+    let p0 = pdf_coord::new(x, y);
     pdf_path__lineto(cpa, cpt, &p0)
 }
 #[no_mangle]
@@ -1252,10 +1233,7 @@ pub unsafe extern "C" fn pdf_dev_rlineto(mut x: f64, mut y: f64) -> i32 {
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let p0 = pdf_coord {
-        x: x + cpt.x,
-        y: y + cpt.y,
-    };
+    let p0 = pdf_coord::new(x + cpt.x, y + cpt.y);
     pdf_path__lineto(cpa, cpt, &p0)
 }
 #[no_mangle]
@@ -1271,9 +1249,9 @@ pub unsafe extern "C" fn pdf_dev_curveto(
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let p0 = pdf_coord { x: x0, y: y0 };
-    let p1 = pdf_coord { x: x1, y: y1 };
-    let p2 = pdf_coord { x: x2, y: y2 };
+    let p0 = pdf_coord::new(x0, y0);
+    let p1 = pdf_coord::new(x1, y1);
+    let p2 = pdf_coord::new(x2, y2);
     pdf_path__curveto(cpa, cpt, &p0, &p1, &p2)
 }
 #[no_mangle]
@@ -1288,8 +1266,8 @@ pub unsafe extern "C" fn pdf_dev_vcurveto(
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
     let cpt_clone = cpt.clone();
-    let p0 = pdf_coord { x: x0, y: y0 };
-    let p1 = pdf_coord { x: x1, y: y1 };
+    let p0 = pdf_coord::new(x0, y0);
+    let p1 = pdf_coord::new(x1, y1);
     pdf_path__curveto(cpa, cpt, &cpt_clone, &p0, &p1)
 }
 #[no_mangle]
@@ -1303,8 +1281,8 @@ pub unsafe extern "C" fn pdf_dev_ycurveto(
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let p0 = pdf_coord { x: x0, y: y0 };
-    let p1 = pdf_coord { x: x1, y: y1 };
+    let p0 = pdf_coord::new(x0, y0);
+    let p1 = pdf_coord::new(x1, y1);
     pdf_path__curveto(cpa, cpt, &p0, &p1, &p1)
 }
 #[no_mangle]
@@ -1320,18 +1298,9 @@ pub unsafe extern "C" fn pdf_dev_rcurveto(
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let p0 = pdf_coord {
-        x: x0 + cpt.x,
-        y: y0 + cpt.y,
-    };
-    let p1 = pdf_coord {
-        x: x1 + cpt.x,
-        y: y1 + cpt.y,
-    };
-    let p2 = pdf_coord {
-        x: x2 + cpt.x,
-        y: y2 + cpt.y,
-    };
+    let p0 = pdf_coord::new(x0 + cpt.x, y0 + cpt.y);
+    let p1 = pdf_coord::new(x1 + cpt.x, y1 + cpt.y);
+    let p2 = pdf_coord::new(x2 + cpt.x, y2 + cpt.y);
     pdf_path__curveto(cpa, cpt, &p0, &p1, &p2)
 }
 #[no_mangle]
@@ -1378,7 +1347,7 @@ pub unsafe extern "C" fn pdf_dev_arc(c_x: f64, c_y: f64, r: f64, a_0: f64, a_1: 
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let mut c = pdf_coord { x: c_x, y: c_y };
+    let mut c = pdf_coord::new(c_x, c_y);
     pdf_path__elliptarc(cpa, cpt, &mut c, r, r, 0.0f64, a_0, a_1, 1i32)
 }
 /* *negative* arc */
@@ -1388,7 +1357,7 @@ pub unsafe extern "C" fn pdf_dev_arcn(c_x: f64, c_y: f64, r: f64, a_0: f64, a_1:
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let mut c = pdf_coord { x: c_x, y: c_y };
+    let mut c = pdf_coord::new(c_x, c_y);
     pdf_path__elliptarc(cpa, cpt, &mut c, r, r, 0.0f64, a_0, a_1, -1i32)
 }
 #[no_mangle]
@@ -1406,7 +1375,7 @@ pub unsafe extern "C" fn pdf_dev_arcx(
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let mut c = pdf_coord { x: c_x, y: c_y };
+    let mut c = pdf_coord::new(c_x, c_y);
     pdf_path__elliptarc(cpa, cpt, &mut c, r_x, r_y, xar, a_0, a_1, a_d)
 }
 /* Required by Tpic */
@@ -1423,15 +1392,9 @@ pub unsafe extern "C" fn pdf_dev_bspline(
     let gs = gss.top();
     let cpa = &mut gs.path;
     let cpt = &mut gs.cp;
-    let p1 = pdf_coord {
-        x: x0 + 2. * (x1 - x0) / 3.,
-        y: y0 + 2. * (y1 - y0) / 3.,
-    };
-    let p2 = pdf_coord {
-        x: x1 + (x2 - x1) / 3.,
-        y: y1 + (y2 - y1) / 3.,
-    };
-    let p3 = pdf_coord { x: x2, y: y2 };
+    let p1 = pdf_coord::new(x0 + 2. * (x1 - x0) / 3., y0 + 2. * (y1 - y0) / 3.);
+    let p2 = pdf_coord::new(x1 + (x2 - x1) / 3., y1 + (y2 - y1) / 3.);
+    let p3 = pdf_coord::new(x2, y2);
     pdf_path__curveto(cpa, cpt, &p1, &p2, &p3)
 }
 #[no_mangle]
@@ -1485,9 +1448,8 @@ pub unsafe extern "C" fn pdf_dev_set_fixed_point(mut x: f64, mut y: f64) {
  * We must remember current depth of nesting when starting a page or xform,
  * and must recover until that depth at the end of page/xform.
  */
-#[no_mangle]
-pub unsafe extern "C" fn pdf_dev_get_fixed_point(p: &mut pdf_coord) {
+pub fn pdf_dev_get_fixed_point() -> pdf_coord {
     let mut gss = gs_stack.lock().unwrap();
     let gs = gss.top();
-    *p = gs.pt_fixee.clone();
+    gs.pt_fixee.clone()
 }
