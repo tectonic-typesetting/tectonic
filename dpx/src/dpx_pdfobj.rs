@@ -1228,7 +1228,6 @@ pub unsafe extern "C" fn pdf_new_name(mut name: *const i8) -> *mut pdf_obj {
 }
 unsafe extern "C" fn write_name(mut name: *mut pdf_name, mut handle: rust_output_handle_t) {
     let mut s: *mut i8 = 0 as *mut i8;
-    let mut i: i32 = 0;
     let mut length: i32 = 0;
     s = (*name).name;
     length = (if !(*name).name.is_null() {
@@ -1248,34 +1247,18 @@ unsafe extern "C" fn write_name(mut name: *mut pdf_name, mut handle: rust_output
      *  whose codes are outside the range 33 (!) to 126 (~).
      */
     pdf_out_char(handle, '/' as i32 as i8);
-    i = 0i32;
-    while i < length {
-        if (*s.offset(i as isize) as i32) < '!' as i32
-            || *s.offset(i as isize) as i32 > '~' as i32
-            || *s.offset(i as isize) as i32 == '#' as i32
-            || (*s.offset(i as isize) as i32 == '(' as i32
-                || *s.offset(i as isize) as i32 == ')' as i32
-                || *s.offset(i as isize) as i32 == '/' as i32
-                || *s.offset(i as isize) as i32 == '<' as i32
-                || *s.offset(i as isize) as i32 == '>' as i32
-                || *s.offset(i as isize) as i32 == '[' as i32
-                || *s.offset(i as isize) as i32 == ']' as i32
-                || *s.offset(i as isize) as i32 == '{' as i32
-                || *s.offset(i as isize) as i32 == '}' as i32
-                || *s.offset(i as isize) as i32 == '%' as i32)
+    let mut i = 0;
+    while i < length as isize {
+        if (*s.offset(i) as u8) < b'!'
+            || (*s.offset(i) as u8) > b'~'
+            || b"#()/<>[]{}%".contains(&(*s.offset(i) as u8))
         {
             /*     ^ "space" is here. */
             pdf_out_char(handle, '#' as i32 as i8);
-            pdf_out_char(
-                handle,
-                xchar[(*s.offset(i as isize) as i32 >> 4i32 & 0xfi32) as usize],
-            );
-            pdf_out_char(
-                handle,
-                xchar[(*s.offset(i as isize) as i32 & 0xfi32) as usize],
-            );
+            pdf_out_char(handle, xchar[(*s.offset(i) as i32 >> 4 & 0xf) as usize]);
+            pdf_out_char(handle, xchar[(*s.offset(i) as i32 & 0xf) as usize]);
         } else {
-            pdf_out_char(handle, *s.offset(i as isize));
+            pdf_out_char(handle, *s.offset(i));
         }
         i += 1
     }

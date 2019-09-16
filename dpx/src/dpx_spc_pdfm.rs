@@ -1588,7 +1588,7 @@ unsafe extern "C" fn spc_handler_pdfm_content(
     mut spe: *mut spc_env,
     mut args: *mut spc_arg,
 ) -> i32 {
-    let mut len: i32 = 0i32;
+    let mut len = 0;
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
         let mut M = pdf_tmatrix {
@@ -1599,31 +1599,24 @@ unsafe extern "C" fn spc_handler_pdfm_content(
             e: (*spe).x_user,
             f: (*spe).y_user,
         };
-        let fresh4 = len;
-        len = len + 1;
-        *work_buffer.as_mut_ptr().offset(fresh4 as isize) = ' ' as i32 as i8;
-        let fresh5 = len;
-        len = len + 1;
-        *work_buffer.as_mut_ptr().offset(fresh5 as isize) = 'q' as i32 as i8;
-        let fresh6 = len;
-        len = len + 1;
-        *work_buffer.as_mut_ptr().offset(fresh6 as isize) = ' ' as i32 as i8;
-        len += pdf_sprint_matrix(work_buffer.as_mut_ptr().offset(len as isize), &mut M);
-        let fresh7 = len;
-        len = len + 1;
-        *work_buffer.as_mut_ptr().offset(fresh7 as isize) = ' ' as i32 as i8;
-        let fresh8 = len;
-        len = len + 1;
-        *work_buffer.as_mut_ptr().offset(fresh8 as isize) = 'c' as i32 as i8;
-        let fresh9 = len;
-        len = len + 1;
-        *work_buffer.as_mut_ptr().offset(fresh9 as isize) = 'm' as i32 as i8;
-        let fresh10 = len;
-        len = len + 1;
-        *work_buffer.as_mut_ptr().offset(fresh10 as isize) = ' ' as i32 as i8;
+        work_buffer[len] = b' ' as i8;
+        len += 1;
+        work_buffer[len] = b'q' as i8;
+        len += 1;
+        work_buffer[len] = b' ' as i8;
+        len += 1;
+        len += pdf_sprint_matrix(&mut work_buffer[len..], &mut M) as usize;
+        work_buffer[len] = b' ' as i8;
+        len += 1;
+        work_buffer[len] = b'c' as i8;
+        len += 1;
+        work_buffer[len] = b'm' as i8;
+        len += 1;
+        work_buffer[len] = b' ' as i8;
+        len += 1;
         /* op: Q */
         pdf_doc_add_page_content(work_buffer.as_mut_ptr(), len as u32); /* op: q cm */
-        len = (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as i32; /* op: ANY */
+        len = (*args).endptr.wrapping_offset_from((*args).curptr) as usize; /* op: ANY */
         pdf_doc_add_page_content((*args).curptr, len as u32); /* op: */
         pdf_doc_add_page_content(b" Q\x00" as *const u8 as *const i8, 2_u32);
         /* op: ANY */

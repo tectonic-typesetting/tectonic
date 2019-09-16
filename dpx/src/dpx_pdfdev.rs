@@ -110,6 +110,45 @@ pub type size_t = u64;
 
 pub use super::dpx_pdfcolor::pdf_color;
 
+#[derive(Clone, Copy, PartialEq)]
+pub enum MotionState {
+    GRAPHICS_MODE = 1,
+    TEXT_MODE = 2,
+    STRING_MODE = 3,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum TextWMode {
+    HH = 0,
+    HV = 1,
+    VH = 4,
+    VV = 5,
+    HD = 3,
+    VD = 7,
+}
+
+impl From<i32> for TextWMode {
+    fn from(r: i32) -> Self {
+        use TextWMode::*;
+        match r {
+            0 => HH,
+            1 => HV,
+            4 => VH,
+            5 => VV,
+            3 => HD,
+            7 => VD,
+            _ => unreachable!(),
+        }
+    }
+}
+
+fn ANGLE_CHANGES(m1: TextWMode, m2: TextWMode) -> bool {
+    !(((m1 as i32) - (m2 as i32)).abs() % 5 == 0)
+}
+fn ROTATE_TEXT(m: TextWMode) -> bool {
+    (m != TextWMode::HH) && (m != TextWMode::VV)
+}
+
 pub type spt_t = i32;
 #[derive(Copy, Clone, Default)]
 #[repr(C)]
@@ -245,7 +284,7 @@ pub struct TextState {
     pub ref_y: spt_t,
     pub raise: spt_t,
     pub leading: spt_t,
-    pub matrix: C2RustUnnamed_2,
+    pub matrix: Matrix,
     pub bold_param: f64,
     pub dir_mode: i32,
     pub force_reset: i32,
@@ -253,10 +292,10 @@ pub struct TextState {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct C2RustUnnamed_2 {
+pub struct Matrix {
     pub slant: f64,
     pub extend: f64,
-    pub rotate: i32,
+    pub rotate: TextWMode,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -445,8 +484,7 @@ unsafe extern "C" fn dev_sprint_bp(
 }
 /* They are affected by precision (set at device initialization). */
 #[no_mangle]
-pub unsafe extern "C" fn pdf_sprint_matrix(mut buf: *mut i8, M: &pdf_tmatrix) -> i32 {
-    let mut len: i32 = 0; /* xxx_sprint_xxx NULL terminates strings. */
+pub unsafe extern "C" fn pdf_sprint_matrix(buf: &mut [i8], M: &pdf_tmatrix) -> i32 {
     let mut prec2: i32 = if dev_unit.precision + 2i32 < 8i32 {
         dev_unit.precision + 2i32
     } else {
@@ -457,29 +495,24 @@ pub unsafe extern "C" fn pdf_sprint_matrix(mut buf: *mut i8, M: &pdf_tmatrix) ->
     } else {
         2i32
     }; /* xxx_sprint_xxx NULL terminates strings. */
-    len = p_dtoa(M.a, prec2, buf); /* xxx_sprint_xxx NULL terminates strings. */
-    let fresh5 = len; /* xxx_sprint_xxx NULL terminates strings. */
-    len = len + 1;
-    *buf.offset(fresh5 as isize) = ' ' as i32 as i8;
-    len += p_dtoa(M.b, prec2, buf.offset(len as isize));
-    let fresh6 = len;
-    len = len + 1;
-    *buf.offset(fresh6 as isize) = ' ' as i32 as i8;
-    len += p_dtoa(M.c, prec2, buf.offset(len as isize));
-    let fresh7 = len;
-    len = len + 1;
-    *buf.offset(fresh7 as isize) = ' ' as i32 as i8;
-    len += p_dtoa(M.d, prec2, buf.offset(len as isize));
-    let fresh8 = len;
-    len = len + 1;
-    *buf.offset(fresh8 as isize) = ' ' as i32 as i8;
-    len += p_dtoa(M.e, prec0, buf.offset(len as isize));
-    let fresh9 = len;
-    len = len + 1;
-    *buf.offset(fresh9 as isize) = ' ' as i32 as i8;
-    len += p_dtoa(M.f, prec0, buf.offset(len as isize));
-    *buf.offset(len as isize) = '\u{0}' as i32 as i8;
-    len
+    let mut len = p_dtoa(M.a, prec2, buf.as_mut_ptr()) as usize; /* xxx_sprint_xxx NULL terminates strings. */
+    buf[len] = b' ' as i8; /* xxx_sprint_xxx NULL terminates strings. */
+    len += 1;
+    len += p_dtoa(M.b, prec2, buf[len..].as_mut_ptr()) as usize;
+    buf[len] = b' ' as i8;
+    len += 1;
+    len += p_dtoa(M.c, prec2, buf[len..].as_mut_ptr()) as usize;
+    buf[len] = b' ' as i8;
+    len += 1;
+    len += p_dtoa(M.d, prec2, buf[len..].as_mut_ptr()) as usize;
+    buf[len] = b' ' as i8;
+    len += 1;
+    len += p_dtoa(M.e, prec0, buf[len..].as_mut_ptr()) as usize;
+    buf[len] = b' ' as i8;
+    len += 1;
+    len += p_dtoa(M.f, prec0, buf[len..].as_mut_ptr()) as usize;
+    buf[len] = '\u{0}' as i32 as i8;
+    len as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_sprint_rect(mut buf: *mut i8, rect: &pdf_rect) -> i32 {
@@ -532,30 +565,24 @@ static mut dev_param: DevParam = {
     };
     init
 };
-static mut motion_state: i32 = 1i32;
+static mut motion_state: MotionState = MotionState::GRAPHICS_MODE;
 static mut format_buffer: [i8; 4096] = [0; 4096];
-static mut text_state: TextState = {
-    let mut init = TextState {
-        font_id: -1i32,
-        offset: 0i32,
-        ref_x: 0i32,
-        ref_y: 0i32,
-        raise: 0i32,
-        leading: 0i32,
-        matrix: {
-            let mut init = C2RustUnnamed_2 {
-                slant: 0.0f64,
-                extend: 1.0f64,
-                rotate: 0i32,
-            };
-            init
-        },
-        bold_param: 0.0f64,
-        dir_mode: 0i32,
-        force_reset: 0i32,
-        is_mb: 0i32,
-    };
-    init
+static mut text_state: TextState = TextState {
+    font_id: -1,
+    offset: 0,
+    ref_x: 0,
+    ref_y: 0,
+    raise: 0,
+    leading: 0,
+    matrix: Matrix {
+        slant: 0.,
+        extend: 1.,
+        rotate: TextWMode::HH,
+    },
+    bold_param: 0.,
+    dir_mode: 0,
+    force_reset: 0,
+    is_mb: 0,
 };
 static mut dev_fonts: *mut dev_font = 0 as *const dev_font as *mut dev_font;
 static mut num_dev_fonts: i32 = 0i32;
@@ -566,72 +593,67 @@ unsafe extern "C" fn dev_set_text_matrix(
     mut ypos: spt_t,
     mut slant: f64,
     mut extend: f64,
-    mut rotate: i32,
+    mut rotate: TextWMode,
 ) {
     let mut tm = pdf_tmatrix::new();
-    let mut len: i32 = 0i32;
+    let mut len = 0;
     /* slant is negated for vertical font so that right-side
      * is always lower. */
     match rotate {
-        4 => {
+        TextWMode::VH => {
             /* Vertical font */
             tm.a = slant;
             tm.b = 1.0f64;
             tm.c = -extend;
             tm.d = 0.0f64
         }
-        1 => {
+        TextWMode::HV => {
             /* Horizontal font */
             tm.a = 0.0f64;
             tm.b = -extend;
             tm.c = 1.0f64;
             tm.d = -slant
         }
-        0 => {
+        TextWMode::HH => {
             /* Horizontal font */
             tm.a = extend;
             tm.b = 0.0f64;
             tm.c = slant;
             tm.d = 1.0f64
         }
-        5 => {
+        TextWMode::VV => {
             /* Vertical font */
             tm.a = 1.0f64;
             tm.b = -slant;
             tm.c = 0.0f64;
             tm.d = extend
         }
-        3 => {
+        TextWMode::HD => {
             /* Horizontal font */
             tm.a = 0.0f64;
             tm.b = extend;
             tm.c = -1.0f64;
             tm.d = slant
         }
-        7 => {
+        TextWMode::VD => {
             /* Vertical font */
             tm.a = -1.0f64; /* op: Tm */
             tm.b = slant;
             tm.c = 0.0f64;
             tm.d = -extend
         }
-        _ => {}
     }
     tm.e = xpos as f64 * dev_unit.dvi2pts;
     tm.f = ypos as f64 * dev_unit.dvi2pts;
-    let fresh14 = len;
-    len = len + 1;
-    format_buffer[fresh14 as usize] = ' ' as i32 as i8;
-    len += pdf_sprint_matrix(format_buffer.as_mut_ptr().offset(len as isize), &mut tm);
-    let fresh15 = len;
-    len = len + 1;
-    format_buffer[fresh15 as usize] = ' ' as i32 as i8;
-    let fresh16 = len;
-    len = len + 1;
-    format_buffer[fresh16 as usize] = 'T' as i32 as i8;
-    let fresh17 = len;
-    len = len + 1;
-    format_buffer[fresh17 as usize] = 'm' as i32 as i8;
+    format_buffer[len] = b' ' as i8;
+    len += 1;
+    len += pdf_sprint_matrix(&mut format_buffer[len..], &mut tm) as usize;
+    format_buffer[len] = b' ' as i8;
+    len += 1;
+    format_buffer[len] = b'T' as i8;
+    len += 1;
+    format_buffer[len] = b'm' as i8;
+    len += 1;
     pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
     text_state.ref_x = xpos;
     text_state.ref_y = ypos;
@@ -656,7 +678,7 @@ unsafe extern "C" fn reset_text_state() {
     if text_state.force_reset != 0
         || text_state.matrix.slant != 0.0f64
         || text_state.matrix.extend != 1.0f64
-        || text_state.matrix.rotate != 0i32 && text_state.matrix.rotate != 5i32
+        || ROTATE_TEXT(text_state.matrix.rotate)
     {
         dev_set_text_matrix(
             0i32,
@@ -673,7 +695,7 @@ unsafe extern "C" fn reset_text_state() {
 }
 unsafe extern "C" fn text_mode() {
     match motion_state {
-        3 => {
+        MotionState::STRING_MODE => {
             pdf_doc_add_page_content(
                 if text_state.is_mb != 0 {
                     b">]TJ\x00" as *const u8 as *const i8
@@ -683,19 +705,19 @@ unsafe extern "C" fn text_mode() {
                 4_u32,
             );
         }
-        1 => {
+        MotionState::GRAPHICS_MODE => {
             reset_text_state();
         }
-        2 | _ => {}
+        MotionState::TEXT_MODE => {}
     }
-    motion_state = 2i32;
+    motion_state = MotionState::TEXT_MODE;
     text_state.offset = 0i32;
 }
 #[no_mangle]
 pub unsafe extern "C" fn graphics_mode() {
     let mut current_block_3: u64;
     match motion_state {
-        3 => {
+        MotionState::STRING_MODE => {
             pdf_doc_add_page_content(
                 if text_state.is_mb != 0 {
                     b">]TJ\x00" as *const u8 as *const i8
@@ -706,10 +728,10 @@ pub unsafe extern "C" fn graphics_mode() {
             );
             current_block_3 = 13064676843759196241;
         }
-        2 => {
+        MotionState::TEXT_MODE => {
             current_block_3 = 13064676843759196241;
         }
-        1 | _ => {
+        MotionState::GRAPHICS_MODE => {
             current_block_3 = 11875828834189669668;
         }
     }
@@ -723,14 +745,14 @@ pub unsafe extern "C" fn graphics_mode() {
         }
         _ => {}
     }
-    motion_state = 1i32;
+    motion_state = MotionState::GRAPHICS_MODE;
 }
 unsafe extern "C" fn start_string(
     mut xpos: spt_t,
     mut ypos: spt_t,
     mut slant: f64,
     mut extend: f64,
-    mut rotate: i32,
+    mut rotate: TextWMode,
 ) {
     let mut delx: spt_t = 0;
     let mut dely: spt_t = 0;
@@ -779,7 +801,7 @@ unsafe extern "C" fn start_string(
      *
      */
     match rotate {
-        4 => {
+        TextWMode::VH => {
             /* Vertical font in horizontal mode: rot = +90
              *                           | 0  -1/e|
              * d_user =  d x I_vh = d x  |        |
@@ -814,7 +836,7 @@ unsafe extern "C" fn start_string(
             );
             error_delx = -error_delx
         }
-        1 => {
+        TextWMode::HV => {
             /* Horizontal font in vertical mode: rot = -90
              *
              *                         |-s/e  1|
@@ -844,7 +866,7 @@ unsafe extern "C" fn start_string(
             );
             error_dely = -error_dely
         }
-        0 => {
+        TextWMode::HH => {
             /* Horizontal font in horizontal mode:
              *                         | 1/e    0|
              * d_user = d x I_hh = d x |         |
@@ -869,7 +891,7 @@ unsafe extern "C" fn start_string(
                 &mut error_dely,
             )
         }
-        5 => {
+        TextWMode::VV => {
             /* Vertical font in vertical mode:
              *                         | 1  s/e|
              * d_user = d x I_vv = d x |       |
@@ -894,7 +916,7 @@ unsafe extern "C" fn start_string(
                 &mut error_dely,
             )
         }
-        3 => {
+        TextWMode::HD => {
             /* Horizontal font in down-to-up mode: rot = +90
              *
              *                          | s/e  -1|
@@ -922,7 +944,7 @@ unsafe extern "C" fn start_string(
             error_delx = -error_delx;
             error_dely = -error_dely
         }
-        7 => {
+        TextWMode::VD => {
             /* Vertical font in down-to-up mode: rot = 180
              *                          |-1 -s/e|
              * d_user = d x -I_vv = d x |       |
@@ -949,7 +971,6 @@ unsafe extern "C" fn start_string(
             error_delx = -error_delx;
             error_dely = -error_dely
         }
-        _ => {}
     }
     pdf_doc_add_page_content(format_buffer.as_mut_ptr(), len as u32);
     /*
@@ -974,18 +995,18 @@ unsafe extern "C" fn string_mode(
     mut ypos: spt_t,
     mut slant: f64,
     mut extend: f64,
-    mut rotate: i32,
+    mut rotate: TextWMode,
 ) {
     let mut current_block_7: u64;
     match motion_state {
-        1 => {
+        MotionState::GRAPHICS_MODE => {
             reset_text_state();
             current_block_7 = 1909977495246269370;
         }
-        2 => {
+        MotionState::TEXT_MODE => {
             current_block_7 = 1909977495246269370;
         }
-        3 | _ => {
+        MotionState::STRING_MODE => {
             current_block_7 = 3640593987805443782;
         }
     }
@@ -1010,7 +1031,7 @@ unsafe extern "C" fn string_mode(
         }
         _ => {}
     }
-    motion_state = 3i32;
+    motion_state = MotionState::STRING_MODE;
 }
 /*
  * The purpose of the following routine is to force a Tf only
@@ -1026,11 +1047,9 @@ unsafe extern "C" fn string_mode(
 unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
     let mut font: *mut dev_font = 0 as *mut dev_font;
     let mut real_font: *mut dev_font = 0 as *mut dev_font;
-    let mut text_rotate: i32 = 0;
     let mut font_scale: f64 = 0.;
     let mut len: i32 = 0;
     let mut vert_dir: i32 = 0;
-    let mut vert_font: i32 = 0;
     /* text_mode() must come before text_state.is_mb is changed. */
     text_mode(); /* Caller should check font_id. */
     font = &mut *dev_fonts.offset(font_id as isize) as *mut dev_font; /* space not necessary. */
@@ -1041,20 +1060,16 @@ unsafe extern "C" fn dev_set_font(mut font_id: i32) -> i32 {
         real_font = font
     }
     text_state.is_mb = if (*font).format == 3i32 { 1i32 } else { 0i32 };
-    vert_font = if (*font).wmode != 0 { 1i32 } else { 0i32 };
-    if dev_param.autorotate != 0 {
-        vert_dir = text_state.dir_mode
+    let vert_font = if (*font).wmode != 0 { 1 } else { 0 };
+    let vert_dir = if dev_param.autorotate != 0 {
+        text_state.dir_mode
     } else {
-        vert_dir = vert_font
-    }
-    text_rotate = vert_font << 2i32 | vert_dir;
+        vert_font
+    };
+    let text_rotate = TextWMode::from(vert_font << 2 | vert_dir);
     if (*font).slant != text_state.matrix.slant
         || (*font).extend != text_state.matrix.extend
-        || (if (text_rotate - text_state.matrix.rotate).abs() % 5i32 == 0i32 {
-            0i32
-        } else {
-            1i32
-        }) != 0
+        || ANGLE_CHANGES(text_rotate, text_state.matrix.rotate)
     {
         text_state.force_reset = 1i32
     }
@@ -1455,7 +1470,7 @@ pub unsafe extern "C" fn pdf_dev_set_string(
      * single text block. There are point_size/1000 rounding error per character.
      * If you really care about accuracy, you should compensate this here too.
      */
-    if motion_state != 3i32 {
+    if motion_state != MotionState::STRING_MODE {
         string_mode(
             xpos,
             ypos,
@@ -1606,7 +1621,7 @@ pub unsafe extern "C" fn pdf_dev_reset_fonts(mut newpage: i32) {
     text_state.font_id = -1i32;
     text_state.matrix.slant = 0.0f64;
     text_state.matrix.extend = 1.0f64;
-    text_state.matrix.rotate = 0i32;
+    text_state.matrix.rotate = TextWMode::HH;
     if newpage != 0 {
         text_state.bold_param = 0.0f64
     }
@@ -2030,32 +2045,24 @@ pub unsafe extern "C" fn pdf_dev_get_dirmode() -> i32 {
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_set_dirmode(mut text_dir: i32) {
     let mut font: *mut dev_font = 0 as *mut dev_font;
-    let mut text_rotate: i32 = 0;
     let mut vert_dir: i32 = 0;
-    let mut vert_font: i32 = 0;
     font = if text_state.font_id < 0i32 {
         0 as *mut dev_font
     } else {
         &mut *dev_fonts.offset(text_state.font_id as isize) as *mut dev_font
     };
-    vert_font = if !font.is_null() && (*font).wmode != 0 {
-        1i32
+    let vert_font = if !font.is_null() && (*font).wmode != 0 {
+        1
     } else {
-        0i32
+        0
     };
-    if dev_param.autorotate != 0 {
-        vert_dir = text_dir
+    let vert_dir = if dev_param.autorotate != 0 {
+        text_dir
     } else {
-        vert_dir = vert_font
-    }
-    text_rotate = vert_font << 2i32 | vert_dir;
-    if !font.is_null()
-        && (if (text_rotate - text_state.matrix.rotate).abs() % 5i32 == 0i32 {
-            0i32
-        } else {
-            1i32
-        }) != 0
-    {
+        vert_font
+    };
+    let text_rotate = TextWMode::from(vert_font << 2 | vert_dir);
+    if !font.is_null() && ANGLE_CHANGES(text_rotate, text_state.matrix.rotate) {
         text_state.force_reset = 1i32
     }
     text_state.matrix.rotate = text_rotate;
@@ -2063,31 +2070,23 @@ pub unsafe extern "C" fn pdf_dev_set_dirmode(mut text_dir: i32) {
 }
 unsafe extern "C" fn dev_set_param_autorotate(mut auto_rotate: i32) {
     let mut font: *mut dev_font = 0 as *mut dev_font;
-    let mut text_rotate: i32 = 0;
-    let mut vert_font: i32 = 0;
-    let mut vert_dir: i32 = 0;
     font = if text_state.font_id < 0i32 {
         0 as *mut dev_font
     } else {
         &mut *dev_fonts.offset(text_state.font_id as isize) as *mut dev_font
     };
-    vert_font = if !font.is_null() && (*font).wmode != 0 {
-        1i32
+    let vert_font = if !font.is_null() && (*font).wmode != 0 {
+        1
     } else {
-        0i32
+        0
     };
-    if auto_rotate != 0 {
-        vert_dir = text_state.dir_mode
+    let vert_dir = if auto_rotate != 0 {
+        text_state.dir_mode
     } else {
-        vert_dir = vert_font
-    }
-    text_rotate = vert_font << 2i32 | vert_dir;
-    if if (text_rotate - text_state.matrix.rotate).abs() % 5i32 == 0i32 {
-        0i32
-    } else {
-        1i32
-    } != 0
-    {
+        vert_font
+    };
+    let text_rotate = TextWMode::from(vert_font << 2 | vert_dir);
+    if ANGLE_CHANGES(text_rotate, text_state.matrix.rotate) {
         text_state.force_reset = 1i32
     }
     text_state.matrix.rotate = text_rotate;
