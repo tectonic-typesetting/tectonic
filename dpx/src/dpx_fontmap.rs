@@ -37,6 +37,7 @@ use crate::{streq_ptr, strstartswith};
 use super::dpx_dpxutil::{
     ht_clear_table, ht_init_table, ht_insert_table, ht_lookup_table, ht_remove_table,
 };
+use super::dpx_mfileio::tt_mfgets;
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
@@ -73,9 +74,6 @@ extern "C" {
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Tectonic-enabled versions */
-    #[no_mangle]
-    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     /* Tectonic-enabled I/O alternatives */
     #[no_mangle]
     fn dpx_tt_open(

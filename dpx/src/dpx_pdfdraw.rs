@@ -35,7 +35,10 @@ use super::dpx_pdfcolor::{
     pdf_color_compare, pdf_color_copycolor, pdf_color_graycolor_new, pdf_color_is_valid,
     pdf_color_to_string, pdf_color_type,
 };
-use super::dpx_pdfdev::{pdf_sprint_coord, pdf_sprint_matrix, pdf_sprint_rect};
+use super::dpx_pdfdev::{
+    pdf_dev_get_param, pdf_dev_reset_fonts, pdf_sprint_coord, pdf_sprint_matrix, pdf_sprint_rect,
+};
+use super::dpx_pdfdoc::pdf_doc_add_page_content;
 
 use lazy_static::lazy_static;
 use std::sync::Mutex;
@@ -51,17 +54,11 @@ extern "C" {
     #[no_mangle]
     fn graphics_mode();
     #[no_mangle]
-    fn pdf_dev_reset_fonts(newpage: i32);
-    #[no_mangle]
-    fn pdf_dev_get_param(param_type: i32) -> i32;
-    #[no_mangle]
     fn pdf_sprint_length(buf: *mut i8, value: f64) -> i32;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
 }
 
 pub use super::dpx_pdfcolor::pdf_color;

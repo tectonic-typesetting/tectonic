@@ -39,6 +39,9 @@ use crate::dpx_pdfobj::pdf_obj;
 use crate::{ttstub_input_close, ttstub_input_open};
 
 use super::dpx_pdfdev::{pdf_dev_put_image, pdf_tmatrix, transform_info, transform_info_clear};
+use super::dpx_pdfdraw::{
+    pdf_dev_current_depth, pdf_dev_grestore, pdf_dev_grestore_to, pdf_dev_gsave,
+};
 use super::dpx_spc_util::spc_util_read_dimtrns;
 use libc::free;
 extern "C" {
@@ -71,18 +74,6 @@ extern "C" {
     fn mps_stack_depth() -> i32;
     #[no_mangle]
     fn mps_eop_cleanup();
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
-    /* The depth here is the depth of q/Q nesting.
-     * We must remember current depth of nesting when starting a page or xform,
-     * and must recover until that depth at the end of page/xform.
-     */
-    #[no_mangle]
-    fn pdf_dev_current_depth() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore_to(depth: i32);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }
@@ -290,7 +281,6 @@ unsafe extern "C" fn spc_handler_ps_plotfile(mut spe: *mut spc_env, mut args: *m
 unsafe extern "C" fn spc_handler_ps_literal(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0i32;
     let mut st_depth: i32 = 0;
-    let mut gs_depth: i32 = 0;
     let mut x_user: f64 = 0.;
     let mut y_user: f64 = 0.;
     assert!(!spe.is_null() && !args.is_null() && (*args).curptr <= (*args).endptr);
@@ -351,7 +341,7 @@ unsafe extern "C" fn spc_handler_ps_literal(mut spe: *mut spc_env, mut args: *mu
     skip_white(&mut (*args).curptr, (*args).endptr);
     if (*args).curptr < (*args).endptr {
         st_depth = mps_stack_depth();
-        gs_depth = pdf_dev_current_depth();
+        let gs_depth = pdf_dev_current_depth();
         error = mps_exec_inline(&mut (*args).curptr, (*args).endptr, x_user, y_user);
         if error != 0 {
             spc_warn(
@@ -396,11 +386,10 @@ unsafe extern "C" fn spc_handler_ps_tricksobj(
 unsafe extern "C" fn spc_handler_ps_default(mut spe: *mut spc_env, mut args: *mut spc_arg) -> i32 {
     let mut error: i32 = 0;
     let mut st_depth: i32 = 0;
-    let mut gs_depth: i32 = 0;
     assert!(!spe.is_null() && !args.is_null());
     pdf_dev_gsave();
     st_depth = mps_stack_depth();
-    gs_depth = pdf_dev_current_depth();
+    let gs_depth = pdf_dev_current_depth();
     let mut M = pdf_tmatrix::new();
     M.d = 1.0f64;
     M.a = M.d;

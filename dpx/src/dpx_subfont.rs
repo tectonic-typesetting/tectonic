@@ -32,6 +32,7 @@
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_mfileio::tt_mfgets;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_seek};
 use libc::free;
 extern "C" {
@@ -64,9 +65,6 @@ extern "C" {
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* Tectonic-enabled versions */
-    #[no_mangle]
-    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]

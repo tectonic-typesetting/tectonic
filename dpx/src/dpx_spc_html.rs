@@ -36,6 +36,11 @@ use super::dpx_pdfximage::{
 };
 
 use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info, transform_info_clear};
+use super::dpx_pdfdoc::{
+    pdf_doc_add_names, pdf_doc_add_page_content, pdf_doc_add_page_resource,
+    pdf_doc_current_page_resources, pdf_doc_get_reference,
+};
+use super::dpx_pdfdraw::{pdf_dev_grestore, pdf_dev_gsave, pdf_dev_rectclip};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_array, pdf_new_boolean,
     pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string, pdf_obj,
@@ -92,34 +97,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn graphics_mode();
-    #[no_mangle]
-    fn pdf_doc_get_reference(category: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_doc_current_page_resources() -> *mut pdf_obj;
-    /* Not really managing tree...
-     * There should be something for number tree.
-     */
-    #[no_mangle]
-    fn pdf_doc_add_names(
-        category: *const i8,
-        key: *const libc::c_void,
-        keylen: i32,
-        value: *mut pdf_obj,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
-    #[no_mangle]
-    fn pdf_doc_add_page_resource(
-        category: *const i8,
-        resource_name: *const i8,
-        resources: *mut pdf_obj,
-    );
-    #[no_mangle]
-    fn pdf_dev_rectclip(x: f64, y: f64, w: f64, h: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
 }
 pub type size_t = u64;
 

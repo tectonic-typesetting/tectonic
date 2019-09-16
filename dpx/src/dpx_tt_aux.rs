@@ -29,6 +29,7 @@
 
 use super::dpx_numbers::tt_get_unsigned_quad;
 use super::dpx_tt_post::{tt_read_post_table, tt_release_post_table};
+use super::dpx_tt_table::{tt_read_head_table, tt_read_os2__table};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
     pdf_new_string, pdf_obj,
@@ -56,11 +57,6 @@ extern "C" {
      */
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn tt_read_head_table(sfont: *mut sfnt) -> *mut tt_head_table;
-    /* OS/2 table */
-    #[no_mangle]
-    fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

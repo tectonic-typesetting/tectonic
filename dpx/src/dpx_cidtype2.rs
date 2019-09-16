@@ -39,6 +39,15 @@ use crate::{info, warn};
 use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode_char};
 use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_truetype_file};
 use super::dpx_pdffont::pdf_font_make_uniqueTag;
+use super::dpx_tt_aux::tt_get_fontdesc;
+use super::dpx_tt_cmap::{tt_cmap_lookup, tt_cmap_read, tt_cmap_release};
+use super::dpx_tt_glyf::{
+    tt_add_glyph, tt_build_finish, tt_build_init, tt_build_tables, tt_get_index, tt_get_metrics,
+};
+use super::dpx_tt_gsub::{
+    otl_gsub, otl_gsub_add_feat, otl_gsub_apply, otl_gsub_new, otl_gsub_release, otl_gsub_select,
+};
+use super::dpx_tt_table::tt_get_ps_fontname;
 use super::dpx_type0::{Type0Font, Type0Font_cache_get, Type0Font_get_usedchars};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_dict, pdf_new_name,
@@ -48,7 +57,6 @@ use crate::dpx_pdfobj::{
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
-    pub type otl_gsub;
     /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
        Copyright 2016-2018 the Tectonic Project
        Licensed under the MIT License.
@@ -122,58 +130,6 @@ extern "C" {
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
-    /* FontDescriptor */
-    #[no_mangle]
-    fn tt_get_fontdesc(
-        sfont: *mut sfnt,
-        embed: *mut i32,
-        stemv: i32,
-        type_0: i32,
-        fontname: *const i8,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn tt_cmap_read(sfont: *mut sfnt, platform: u16, encoding: u16) -> *mut tt_cmap;
-    #[no_mangle]
-    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: u32) -> u16;
-    #[no_mangle]
-    fn tt_cmap_release(cmap: *mut tt_cmap);
-    #[no_mangle]
-    fn tt_build_init() -> *mut tt_glyphs;
-    #[no_mangle]
-    fn tt_build_finish(g: *mut tt_glyphs);
-    #[no_mangle]
-    fn tt_add_glyph(g: *mut tt_glyphs, gid: u16, new_gid: u16) -> u16;
-    #[no_mangle]
-    fn tt_get_index(g: *mut tt_glyphs, gid: u16) -> u16;
-    #[no_mangle]
-    fn tt_build_tables(sfont: *mut sfnt, g: *mut tt_glyphs) -> i32;
-    #[no_mangle]
-    fn tt_get_metrics(sfont: *mut sfnt, g: *mut tt_glyphs) -> i32;
-    /* LookupType for GSUB */
-    #[no_mangle]
-    fn otl_gsub_new() -> *mut otl_gsub;
-    #[no_mangle]
-    fn otl_gsub_release(gsub_list: *mut otl_gsub);
-    #[no_mangle]
-    fn otl_gsub_select(
-        gsub_list: *mut otl_gsub,
-        script: *const i8,
-        language: *const i8,
-        feature: *const i8,
-    ) -> i32;
-    #[no_mangle]
-    fn otl_gsub_add_feat(
-        gsub_list: *mut otl_gsub,
-        script: *const i8,
-        language: *const i8,
-        feature: *const i8,
-        sfont: *mut sfnt,
-    ) -> i32;
-    #[no_mangle]
-    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut u16) -> i32;
-    /* name table */
-    #[no_mangle]
-    fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: u16) -> u16;
 }
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;

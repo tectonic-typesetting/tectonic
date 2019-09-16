@@ -33,10 +33,15 @@ use super::dpx_dvi::{
     dvi_close, dvi_comment, dvi_do_page, dvi_init, dvi_npages, dvi_reset_global_state,
     dvi_scan_specials, dvi_set_verbose,
 };
+use super::dpx_pdfdev::{pdf_dev_reset_global_state, pdf_dev_set_verbose};
 use super::dpx_pdfdoc::pdf_doc_set_mediabox;
+use super::dpx_pdfdoc::{
+    pdf_close_document, pdf_doc_set_creator, pdf_doc_set_verbose, pdf_open_document,
+};
 use super::dpx_pdffont::{
     pdf_font_reset_unique_tag_state, pdf_font_set_deterministic_unique_tags, pdf_font_set_dpi,
 };
+use super::dpx_tt_aux::tt_aux_set_verbose;
 use crate::dpx_pdfparse::parse_unsigned;
 use crate::{info, warn};
 
@@ -125,11 +130,7 @@ extern "C" {
     /* transform matrix */
     /* user_bbox */
     #[no_mangle]
-    fn pdf_dev_reset_global_state();
-    #[no_mangle]
     fn shut_up(quietness: i32);
-    #[no_mangle]
-    fn pdf_dev_set_verbose(level: i32);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -142,24 +143,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_doc_set_verbose(level: i32);
-    #[no_mangle]
-    fn pdf_open_document(
-        filename: *const i8,
-        enable_encrypt: bool,
-        enable_object_stream: bool,
-        media_width: f64,
-        media_height: f64,
-        annot_grow_amount: f64,
-        bookmark_open_depth: i32,
-        check_gotos: i32,
-    );
-    #[no_mangle]
-    fn pdf_close_document();
-    /* PDF document metadata */
-    #[no_mangle]
-    fn pdf_doc_set_creator(creator: *const i8);
     #[no_mangle]
     fn pdf_enc_set_verbose(level: i32);
     #[no_mangle]
@@ -182,9 +165,6 @@ extern "C" {
     fn tfm_reset_global_state();
     #[no_mangle]
     fn vf_reset_global_state();
-    /* flag declared in dvipdfmx.c */
-    #[no_mangle]
-    fn tt_aux_set_verbose(level: i32);
 }
 
 pub type PageRange = page_range;

@@ -42,7 +42,17 @@ use super::dpx_pdffont::{
     pdf_font_get_index, pdf_font_get_mapname, pdf_font_get_resource, pdf_font_get_usedchars,
     pdf_font_get_verbose, pdf_font_is_in_use, pdf_font_set_fontname,
 };
+use super::dpx_tt_aux::tt_get_fontdesc;
+use super::dpx_tt_cmap::{tt_cmap_lookup, tt_cmap_read, tt_cmap_release};
+use super::dpx_tt_glyf::{
+    tt_add_glyph, tt_build_finish, tt_build_init, tt_build_tables, tt_find_glyph, tt_get_index,
+};
+use super::dpx_tt_gsub::{
+    otl_gsub, otl_gsub_add_feat, otl_gsub_apply, otl_gsub_apply_alt, otl_gsub_apply_lig,
+    otl_gsub_new, otl_gsub_release, otl_gsub_select,
+};
 use super::dpx_tt_post::{tt_lookup_post_table, tt_read_post_table, tt_release_post_table};
+use super::dpx_tt_table::tt_get_ps_fontname;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_merge_dict, pdf_new_array, pdf_new_name,
     pdf_new_number, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length,
@@ -51,8 +61,6 @@ use crate::dpx_pdfobj::{
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
-    /* Here is the complete list of PDF object types */
-    pub type otl_gsub;
     #[no_mangle]
     fn atoi(__nptr: *const i8) -> i32;
     #[no_mangle]
@@ -127,67 +135,6 @@ extern "C" {
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
-    /* FontDescriptor */
-    #[no_mangle]
-    fn tt_get_fontdesc(
-        sfont: *mut sfnt,
-        embed: *mut i32,
-        stemv: i32,
-        type_0: i32,
-        fontname: *const i8,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn tt_cmap_read(sfont: *mut sfnt, platform: u16, encoding: u16) -> *mut tt_cmap;
-    #[no_mangle]
-    fn tt_cmap_lookup(cmap: *mut tt_cmap, cc: u32) -> u16;
-    #[no_mangle]
-    fn tt_cmap_release(cmap: *mut tt_cmap);
-    #[no_mangle]
-    fn tt_build_init() -> *mut tt_glyphs;
-    #[no_mangle]
-    fn tt_build_finish(g: *mut tt_glyphs);
-    #[no_mangle]
-    fn tt_add_glyph(g: *mut tt_glyphs, gid: u16, new_gid: u16) -> u16;
-    #[no_mangle]
-    fn tt_get_index(g: *mut tt_glyphs, gid: u16) -> u16;
-    #[no_mangle]
-    fn tt_find_glyph(g: *mut tt_glyphs, gid: u16) -> u16;
-    #[no_mangle]
-    fn tt_build_tables(sfont: *mut sfnt, g: *mut tt_glyphs) -> i32;
-    /* LookupType for GSUB */
-    #[no_mangle]
-    fn otl_gsub_new() -> *mut otl_gsub;
-    #[no_mangle]
-    fn otl_gsub_release(gsub_list: *mut otl_gsub);
-    #[no_mangle]
-    fn otl_gsub_select(
-        gsub_list: *mut otl_gsub,
-        script: *const i8,
-        language: *const i8,
-        feature: *const i8,
-    ) -> i32;
-    #[no_mangle]
-    fn otl_gsub_add_feat(
-        gsub_list: *mut otl_gsub,
-        script: *const i8,
-        language: *const i8,
-        feature: *const i8,
-        sfont: *mut sfnt,
-    ) -> i32;
-    #[no_mangle]
-    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut u16) -> i32;
-    #[no_mangle]
-    fn otl_gsub_apply_alt(gsub_list: *mut otl_gsub, alt_idx: u16, gid: *mut u16) -> i32;
-    #[no_mangle]
-    fn otl_gsub_apply_lig(
-        gsub_list: *mut otl_gsub,
-        gid_in: *mut u16,
-        num_gids: u16,
-        gid_out: *mut u16,
-    ) -> i32;
-    /* name table */
-    #[no_mangle]
-    fn tt_get_ps_fontname(sfont: *mut sfnt, dest: *mut i8, destlen: u16) -> u16;
 }
 pub type rust_input_handle_t = *mut libc::c_void;
 

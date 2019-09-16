@@ -50,6 +50,11 @@ use super::dpx_cmap_write::CMap_create_stream;
 use super::dpx_dpxfile::{dpx_open_opentype_file, dpx_open_truetype_file, dpx_open_type1_file};
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdffont::pdf_font_make_uniqueTag;
+use super::dpx_tt_aux::tt_get_fontdesc;
+use super::dpx_tt_table::{
+    tt_read_VORG_table, tt_read_head_table, tt_read_hhea_table, tt_read_longMetrics,
+    tt_read_maxp_table, tt_read_os2__table, tt_read_vhea_table,
+};
 use super::dpx_type0::{
     Type0Font, Type0Font_cache_get, Type0Font_get_usedchars, Type0Font_set_ToUnicode,
 };
@@ -177,38 +182,6 @@ extern "C" {
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
-    /* FontDescriptor */
-    #[no_mangle]
-    fn tt_get_fontdesc(
-        sfont: *mut sfnt,
-        embed: *mut i32,
-        stemv: i32,
-        type_0: i32,
-        fontname: *const i8,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn tt_read_head_table(sfont: *mut sfnt) -> *mut tt_head_table;
-    #[no_mangle]
-    fn tt_read_hhea_table(sfont: *mut sfnt) -> *mut tt_hhea_table;
-    #[no_mangle]
-    fn tt_read_maxp_table(sfont: *mut sfnt) -> *mut tt_maxp_table;
-    /* vhea */
-    #[no_mangle]
-    fn tt_read_vhea_table(sfont: *mut sfnt) -> *mut tt_vhea_table;
-    /* VORG */
-    #[no_mangle]
-    fn tt_read_VORG_table(sfont: *mut sfnt) -> *mut tt_VORG_table;
-    /* hmtx and vmtx */
-    #[no_mangle]
-    fn tt_read_longMetrics(
-        sfont: *mut sfnt,
-        numGlyphs: u16,
-        numLongMetrics: u16,
-        numExSideBearings: u16,
-    ) -> *mut tt_longMetrics;
-    /* OS/2 table */
-    #[no_mangle]
-    fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -230,13 +203,7 @@ pub type l_offset = u32;
 pub type c_offsize = u8;
 use super::dpx_cff::cff_fdselect;
 use super::dpx_cff::cff_range3;
-/* hmtx and vmtx */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_longMetrics {
-    pub advance: u16,
-    pub sideBearing: i16,
-}
+use super::dpx_tt_table::tt_longMetrics;
 use super::dpx_tt_table::tt_vhea_table;
 pub type Fixed = u32;
 
@@ -257,13 +224,7 @@ pub type FWord = i16;
 /* Data Types as described in Apple's TTRefMan */
 
 pub type uFWord = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_VORG_table {
-    pub defaultVertOriginY: i16,
-    pub numVertOriginYMetrics: u16,
-    pub vertOriginYMetrics: *mut tt_vertOriginYMetrics,
-}
+use super::dpx_tt_table::tt_VORG_table;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct tt_vertOriginYMetrics {

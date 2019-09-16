@@ -32,11 +32,35 @@
 use crate::warn;
 
 use super::dpx_dvi::{dvi_dev_xpos, dvi_dev_ypos, dvi_link_annot, dvi_tag_depth, dvi_untag_depth};
+use super::dpx_pdfdoc::{
+    pdf_doc_begin_annot, pdf_doc_current_page_number, pdf_doc_current_page_resources,
+    pdf_doc_end_annot, pdf_doc_get_dictionary, pdf_doc_get_reference, pdf_doc_ref_page,
+};
 use super::dpx_pdfdraw::pdf_dev_transform;
 use super::dpx_pdfnames::{
     pdf_delete_name_tree, pdf_names_add_object, pdf_names_close_object, pdf_names_lookup_object,
     pdf_names_lookup_reference, pdf_new_name_tree,
 };
+use super::dpx_spc_color::{spc_color_check_special, spc_color_setup_handler};
+use super::dpx_spc_dvipdfmx::{spc_dvipdfmx_check_special, spc_dvipdfmx_setup_handler};
+use super::dpx_spc_dvips::{
+    spc_dvips_at_begin_document, spc_dvips_at_begin_page, spc_dvips_at_end_document,
+    spc_dvips_at_end_page, spc_dvips_check_special, spc_dvips_setup_handler,
+};
+use super::dpx_spc_html::{
+    spc_html_at_begin_document, spc_html_at_begin_page, spc_html_at_end_document,
+    spc_html_at_end_page, spc_html_check_special, spc_html_setup_handler,
+};
+use super::dpx_spc_misc::{spc_misc_check_special, spc_misc_setup_handler};
+use super::dpx_spc_pdfm::{
+    spc_pdfm_at_begin_document, spc_pdfm_at_end_document, spc_pdfm_check_special,
+    spc_pdfm_setup_handler,
+};
+use super::dpx_spc_tpic::{
+    spc_tpic_at_begin_document, spc_tpic_at_begin_page, spc_tpic_at_end_document,
+    spc_tpic_at_end_page, spc_tpic_check_special, spc_tpic_setup_handler,
+};
+use super::dpx_spc_xtx::{spc_xtx_check_special, spc_xtx_setup_handler};
 use crate::dpx_pdfobj::{pdf_new_number, pdf_obj, pdf_ref_obj};
 extern "C" {
     #[no_mangle]
@@ -55,24 +79,6 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    /* They just return PDF dictionary object.
-     * Callers are completely responsible for doing right thing...
-     */
-    #[no_mangle]
-    fn pdf_doc_get_dictionary(category: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_doc_get_reference(category: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_doc_current_page_number() -> i32;
-    #[no_mangle]
-    fn pdf_doc_current_page_resources() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_doc_ref_page(page_no: u32) -> *mut pdf_obj;
-    /* Annotation with auto- clip and line (or page) break */
-    #[no_mangle]
-    fn pdf_doc_begin_annot(dict: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_doc_end_annot();
     /* Hash */
     /* Not actually tree... */
     /* Please remove this */
@@ -80,98 +86,6 @@ extern "C" {
     fn dump(start: *const i8, end: *const i8);
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn spc_color_check_special(buffer: *const i8, size: i32) -> bool;
-    #[no_mangle]
-    fn spc_color_setup_handler(
-        handle: *mut spc_handler,
-        spe: *mut spc_env,
-        args: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_dvipdfmx_check_special(buf: *const i8, len: i32) -> bool;
-    #[no_mangle]
-    fn spc_dvipdfmx_setup_handler(
-        sph: *mut spc_handler,
-        spe: *mut spc_env,
-        ap: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_dvips_at_begin_document() -> i32;
-    #[no_mangle]
-    fn spc_dvips_at_end_document() -> i32;
-    #[no_mangle]
-    fn spc_dvips_at_begin_page() -> i32;
-    #[no_mangle]
-    fn spc_dvips_at_end_page() -> i32;
-    #[no_mangle]
-    fn spc_dvips_check_special(buffer: *const i8, size: i32) -> bool;
-    #[no_mangle]
-    fn spc_dvips_setup_handler(
-        handle: *mut spc_handler,
-        spe: *mut spc_env,
-        args: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_html_at_begin_page() -> i32;
-    #[no_mangle]
-    fn spc_html_at_end_page() -> i32;
-    #[no_mangle]
-    fn spc_html_at_begin_document() -> i32;
-    #[no_mangle]
-    fn spc_html_at_end_document() -> i32;
-    #[no_mangle]
-    fn spc_html_check_special(buffer: *const i8, size: i32) -> bool;
-    #[no_mangle]
-    fn spc_html_setup_handler(
-        handle: *mut spc_handler,
-        spe: *mut spc_env,
-        args: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_misc_check_special(buffer: *const i8, size: i32) -> bool;
-    #[no_mangle]
-    fn spc_misc_setup_handler(
-        handle: *mut spc_handler,
-        spe: *mut spc_env,
-        args: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_pdfm_at_begin_document() -> i32;
-    #[no_mangle]
-    fn spc_pdfm_at_end_document() -> i32;
-    #[no_mangle]
-    fn spc_pdfm_check_special(buffer: *const i8, size: i32) -> bool;
-    #[no_mangle]
-    fn spc_pdfm_setup_handler(
-        handle: *mut spc_handler,
-        spe: *mut spc_env,
-        args: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_tpic_at_begin_page() -> i32;
-    #[no_mangle]
-    fn spc_tpic_at_end_page() -> i32;
-    #[no_mangle]
-    fn spc_tpic_at_begin_document() -> i32;
-    #[no_mangle]
-    fn spc_tpic_at_end_document() -> i32;
-    #[no_mangle]
-    fn spc_tpic_check_special(buffer: *const i8, size: i32) -> bool;
-    #[no_mangle]
-    fn spc_tpic_setup_handler(
-        handle: *mut spc_handler,
-        spe: *mut spc_env,
-        args: *mut spc_arg,
-    ) -> i32;
-    #[no_mangle]
-    fn spc_xtx_check_special(buffer: *const i8, size: i32) -> bool;
-    #[no_mangle]
-    fn spc_xtx_setup_handler(
-        handle: *mut spc_handler,
-        spe: *mut spc_env,
-        args: *mut spc_arg,
-    ) -> i32;
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]

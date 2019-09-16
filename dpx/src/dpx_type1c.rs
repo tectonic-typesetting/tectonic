@@ -52,6 +52,7 @@ use super::dpx_pdffont::{
     pdf_font_get_uniqueTag, pdf_font_get_usedchars, pdf_font_get_verbose, pdf_font_is_in_use,
     pdf_font_set_flags, pdf_font_set_fontname, pdf_font_set_subtype,
 };
+use super::dpx_tt_aux::tt_get_fontdesc;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_lookup_dict, pdf_merge_dict,
     pdf_new_array, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_new_string, pdf_obj,
@@ -149,15 +150,6 @@ extern "C" {
     fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
     #[no_mangle]
     fn tfm_get_width(font_id: i32, ch: i32) -> f64;
-    /* FontDescriptor */
-    #[no_mangle]
-    fn tt_get_fontdesc(
-        sfont: *mut sfnt,
-        embed: *mut i32,
-        stemv: i32,
-        type_0: i32,
-        fontname: *const i8,
-    ) -> *mut pdf_obj;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

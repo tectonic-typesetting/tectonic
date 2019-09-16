@@ -36,7 +36,7 @@ use crate::{streq_ptr, strstartswith};
 use std::ffi::CStr;
 
 use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
-use super::dpx_mfileio::work_buffer;
+use super::dpx_mfileio::{tt_mfgets, work_buffer};
 use crate::{
     ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek,
     ttstub_input_ungetc, ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout,
@@ -75,9 +75,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* Tectonic-enabled versions */
-    #[no_mangle]
-    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     #[no_mangle]
     fn pdf_encrypt_data(
         plain: *const u8,

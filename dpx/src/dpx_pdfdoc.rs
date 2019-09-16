@@ -38,10 +38,18 @@ use super::dpx_dpxutil::{
     ht_lookup_table, ht_set_iter, ht_table_size,
 };
 use super::dpx_pdfcolor::{
-    pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white, pdf_color_set_verbose,
+    pdf_close_colors, pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white,
+    pdf_color_set_verbose, pdf_init_colors,
 };
 use super::dpx_pdfdev::pdf_dev_bop;
+use super::dpx_pdfdev::{
+    pdf_dev_eop, pdf_dev_get_coord, pdf_dev_get_param, pdf_dev_reset_color, pdf_dev_reset_fonts,
+};
 use super::dpx_pdfdraw::pdf_dev_set_color;
+use super::dpx_pdfdraw::{
+    pdf_dev_current_depth, pdf_dev_grestore, pdf_dev_grestore_to, pdf_dev_gsave,
+    pdf_dev_pop_gstate, pdf_dev_push_gstate, pdf_dev_rectfill,
+};
 use super::dpx_pdffont::pdf_font_set_verbose;
 use super::dpx_pdfnames::{
     pdf_delete_name_tree, pdf_names_add_object, pdf_names_create_tree, pdf_new_name_tree,
@@ -115,33 +123,6 @@ extern "C" {
     /* Accessor to various device parameters.
      */
     #[no_mangle]
-    fn pdf_dev_get_param(param_type: i32) -> i32;
-    /* Text composition mode is ignored (always same as font's
-     * writing mode) and glyph rotation is not enabled if
-     * auto_rotate is unset.
-     */
-    /*
-     * For pdf_doc, pdf_draw and others.
-     */
-    /* Force reselecting font and color:
-     * XFrom (content grabbing) and Metapost support want them.
-     */
-    #[no_mangle]
-    fn pdf_dev_reset_fonts(newpage: i32);
-    #[no_mangle]
-    fn pdf_dev_reset_color(force: i32);
-    /* Initialization of transformation matrix with M and others.
-     * They are called within pdf_doc_begin_page() and pdf_doc_end_page().
-     */
-    #[no_mangle]
-    fn pdf_dev_eop();
-    #[no_mangle]
-    fn pdf_dev_get_coord(xpos: *mut f64, ypos: *mut f64);
-    #[no_mangle]
-    fn pdf_close_colors();
-    #[no_mangle]
-    fn pdf_init_colors();
-    #[no_mangle]
     static mut is_xdv: i32;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
@@ -151,26 +132,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_dev_rectfill(x: f64, y: f64, w: f64, h: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
-    /* Requires from mpost.c because new MetaPost graphics must initialize
-     * the current gstate. */
-    #[no_mangle]
-    fn pdf_dev_push_gstate() -> i32;
-    #[no_mangle]
-    fn pdf_dev_pop_gstate() -> i32;
-    /* The depth here is the depth of q/Q nesting.
-     * We must remember current depth of nesting when starting a page or xform,
-     * and must recover until that depth at the end of page/xform.
-     */
-    #[no_mangle]
-    fn pdf_dev_current_depth() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore_to(depth: i32);
     #[no_mangle]
     fn pdf_enc_id_array() -> *mut pdf_obj;
     #[no_mangle]
@@ -3292,7 +3253,7 @@ pub unsafe extern "C" fn pdf_doc_begin_grabbing(
     fnode = new((1_u64).wrapping_mul(::std::mem::size_of::<form_list_node>() as u64) as u32)
         as *mut form_list_node;
     (*fnode).prev = (*p).pending_forms;
-    (*fnode).q_depth = pdf_dev_current_depth();
+    (*fnode).q_depth = pdf_dev_current_depth() as i32;
     form = &mut (*fnode).form;
     /*
      * The reference point of an Xobject is at the lower left corner
@@ -3346,7 +3307,7 @@ pub unsafe extern "C" fn pdf_doc_end_grabbing(mut attrib: *mut pdf_obj) {
     }
     fnode = (*p).pending_forms;
     form = &mut (*fnode).form;
-    pdf_dev_grestore_to((*fnode).q_depth);
+    pdf_dev_grestore_to((*fnode).q_depth as usize);
     /*
      * ProcSet is obsolete in PDF-1.4 but recommended for compatibility.
      */
