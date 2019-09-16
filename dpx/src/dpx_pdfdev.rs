@@ -284,7 +284,7 @@ pub struct TextState {
     pub ref_y: spt_t,
     pub raise: spt_t,
     pub leading: spt_t,
-    pub matrix: Matrix,
+    pub matrix: FontMatrix,
     pub bold_param: f64,
     pub dir_mode: i32,
     pub force_reset: i32,
@@ -292,7 +292,7 @@ pub struct TextState {
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
-pub struct Matrix {
+pub struct FontMatrix {
     pub slant: f64,
     pub extend: f64,
     pub rotate: TextWMode,
@@ -574,7 +574,7 @@ static mut text_state: TextState = TextState {
     ref_y: 0,
     raise: 0,
     leading: 0,
-    matrix: Matrix {
+    matrix: FontMatrix {
         slant: 0.,
         extend: 1.,
         rotate: TextWMode::HH,
