@@ -582,17 +582,13 @@ unsafe extern "C" fn INVERTIBLE_MATRIX(M: &pdf_tmatrix) -> i32 {
  *  various drawing styles, which might inherite
  *  current graphcs state parameter.
  */
-unsafe extern "C" fn pdf_dev__rectshape(
-    r: &pdf_rect,
-    M: Option<&pdf_tmatrix>,
-    mut opchr: i8,
-) -> i32 {
-    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
-    let mut len: i32 = 0i32;
+unsafe extern "C" fn pdf_dev__rectshape(r: &pdf_rect, M: Option<&pdf_tmatrix>, opchr: i8) -> i32 {
+    let buf = &mut fmt_buf;
+    let mut len = 0;
     let mut isclip: i32 = 0i32;
     let mut wd: f64 = 0.;
     let mut ht: f64 = 0.;
-    assert!([b'f', b'F', b's', b'S', b'b', b'B', b'W', b' '].contains(&(opchr as u8)));
+    assert!(b"fFsSbBW ".contains(&(opchr as u8)));
     isclip = if opchr == b'W' as i8 || opchr == b' ' as i8 {
         1i32
     } else {
@@ -606,74 +602,56 @@ unsafe extern "C" fn pdf_dev__rectshape(
         return -1i32;
     } /* op: q cm n re Q */
     graphics_mode();
-    let fresh10 = len;
-    len = len + 1;
-    *buf.offset(fresh10 as isize) = ' ' as i32 as i8;
+    buf[len] = b' ' as i8;
+    len += 1;
     if isclip == 0 {
-        let fresh11 = len;
-        len = len + 1;
-        *buf.offset(fresh11 as isize) = 'q' as i32 as i8;
+        buf[len] = b'q' as i8;
+        len += 1;
         if let Some(m) = M {
-            let fresh12 = len;
-            len = len + 1;
-            *buf.offset(fresh12 as isize) = ' ' as i32 as i8;
-            len += pdf_sprint_matrix(buf.offset(len as isize), m);
-            let fresh13 = len;
-            len = len + 1;
-            *buf.offset(fresh13 as isize) = ' ' as i32 as i8;
-            let fresh14 = len;
-            len = len + 1;
-            *buf.offset(fresh14 as isize) = 'c' as i32 as i8;
-            let fresh15 = len;
-            len = len + 1;
-            *buf.offset(fresh15 as isize) = 'm' as i32 as i8
+            buf[len] = b' ' as i8;
+            len += 1;
+            len += pdf_sprint_matrix(&mut buf[len..], m) as usize;
+            buf[len] = b' ' as i8;
+            len += 1;
+            buf[len] = b'c' as i8;
+            len += 1;
+            buf[len] = b'm' as i8;
+            len += 1;
         }
-        let fresh16 = len;
-        len = len + 1;
-        *buf.offset(fresh16 as isize) = ' ' as i32 as i8
+        buf[len] = b' ' as i8;
+        len += 1;
     }
-    let fresh17 = len;
-    len = len + 1;
-    *buf.offset(fresh17 as isize) = 'n' as i32 as i8;
+    buf[len] = b'n' as i8;
+    len += 1;
     let p = pdf_coord::new(r.llx, r.lly);
     wd = r.urx - r.llx;
     ht = r.ury - r.lly;
-    let fresh18 = len;
-    len = len + 1;
-    *buf.offset(fresh18 as isize) = b' ' as i8;
-    len += pdf_sprint_coord(buf.offset(len as isize), &p);
-    let fresh19 = len;
-    len = len + 1;
-    *buf.offset(fresh19 as isize) = b' ' as i8;
-    len += pdf_sprint_length(buf.offset(len as isize), wd);
-    let fresh20 = len;
-    len = len + 1;
-    *buf.offset(fresh20 as isize) = b' ' as i8;
-    len += pdf_sprint_length(buf.offset(len as isize), ht);
-    let fresh21 = len;
-    len = len + 1;
-    *buf.offset(fresh21 as isize) = b' ' as i8;
-    let fresh22 = len;
-    len = len + 1;
-    *buf.offset(fresh22 as isize) = b'r' as i8;
-    let fresh23 = len;
-    len = len + 1;
-    *buf.offset(fresh23 as isize) = b'e' as i8;
+    buf[len] = b' ' as i8;
+    len += 1;
+    len += pdf_sprint_coord(buf[len..].as_mut_ptr(), &p) as usize;
+    buf[len] = b' ' as i8;
+    len += 1;
+    len += pdf_sprint_length(buf[len..].as_mut_ptr(), wd) as usize;
+    buf[len] = b' ' as i8;
+    len += 1;
+    len += pdf_sprint_length(buf[len..].as_mut_ptr(), ht) as usize;
+    buf[len] = b' ' as i8;
+    len += 1;
+    buf[len] = b'r' as i8;
+    len += 1;
+    buf[len] = b'e' as i8;
+    len += 1;
     if opchr != b' ' as i8 {
-        let fresh24 = len;
-        len = len + 1;
-        *buf.offset(fresh24 as isize) = b' ' as i8;
-        let fresh25 = len;
-        len = len + 1;
-        *buf.offset(fresh25 as isize) = opchr;
-        let fresh26 = len;
-        len = len + 1;
-        *buf.offset(fresh26 as isize) = b' ' as i8;
-        let fresh27 = len;
-        len = len + 1;
-        *buf.offset(fresh27 as isize) = (if isclip != 0 { b'n' } else { b'Q' }) as i8
+        buf[len] = b' ' as i8;
+        len += 1;
+        buf[len] = opchr;
+        len += 1;
+        buf[len] = b' ' as i8;
+        len += 1;
+        buf[len] = (if isclip != 0 { b'n' } else { b'Q' }) as i8;
+        len += 1;
     }
-    pdf_doc_add_page_content(buf, len as u32);
+    pdf_doc_add_page_content(buf.as_mut_ptr(), len as u32);
     0i32
 }
 static mut path_added: i32 = 0i32;
@@ -692,7 +670,7 @@ unsafe extern "C" fn pdf_dev__flushpath(
     let mut isrect: i32 = 0;
     let mut i: i32 = 0;
     let mut j: i32 = 0;
-    assert!([b'f', b'F', b's', b'S', b'b', b'B', b'W', b' '].contains(&(opchr as u8)));
+    assert!(b"fFsSbBW ".contains(&(opchr as u8)));
     let isclip = if opchr == b'W' as i8 { true } else { false };
     if
     /*pa.num_paths <= 0_u32 &&*/
@@ -998,8 +976,8 @@ pub unsafe extern "C" fn pdf_dev_concat(M: &pdf_tmatrix) -> i32 {
     let cpt = &mut gs.cp;
     let CTM = &mut gs.matrix;
     let mut W = pdf_tmatrix::new();
-    let mut buf: *mut i8 = fmt_buf.as_mut_ptr();
-    let mut len: i32 = 0i32;
+    let mut buf = &mut fmt_buf;
+    let mut len = 0;
     /* Adobe Reader erases page content if there are
      * non invertible transformation.
      */
@@ -1015,20 +993,16 @@ pub unsafe extern "C" fn pdf_dev_concat(M: &pdf_tmatrix) -> i32 {
         || M.e.abs() > 2.5e-16f64
         || M.f.abs() > 2.5e-16f64
     {
-        let fresh45 = len;
-        len = len + 1;
-        *buf.offset(fresh45 as isize) = ' ' as i32 as i8;
-        len += pdf_sprint_matrix(buf.offset(len as isize), M);
-        let fresh46 = len;
-        len = len + 1;
-        *buf.offset(fresh46 as isize) = ' ' as i32 as i8;
-        let fresh47 = len;
-        len = len + 1;
-        *buf.offset(fresh47 as isize) = 'c' as i32 as i8;
-        let fresh48 = len;
-        len = len + 1;
-        *buf.offset(fresh48 as isize) = 'm' as i32 as i8;
-        pdf_doc_add_page_content(buf, len as u32);
+        buf[len] = b' ' as i8;
+        len += 1;
+        len += pdf_sprint_matrix(&mut buf[len..], M) as usize;
+        buf[len] = b' ' as i8;
+        len += 1;
+        buf[len] = b'c' as i8;
+        len += 1;
+        buf[len] = b'm' as i8;
+        len += 1;
+        pdf_doc_add_page_content(buf.as_mut_ptr(), len as u32);
         let pdf_tmatrix {
             a: _tmp_a,
             b: _tmp_b,
