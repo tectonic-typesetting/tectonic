@@ -379,10 +379,6 @@ unsafe extern "C" fn pdf_get_rect(
     let mut page: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut bbox = pdf_rect::new();
     let mut matrix = pdf_tmatrix::new();
-    let mut p1 = pdf_coord::new();
-    let mut p2 = pdf_coord::new();
-    let mut p3 = pdf_coord::new();
-    let mut p4 = pdf_coord::new();
     pf = pdf_open(filename, handle);
     if pf.is_null() {
         /* TODO: issue warning */
@@ -425,17 +421,13 @@ unsafe extern "C" fn pdf_get_rect(
     /* Image's attribute "bbox" here is affected by /Rotate entry of included
      * PDF page.
      */
-    p1.x = bbox.llx;
-    p1.y = bbox.lly;
+    let mut p1 = pdf_coord::new(bbox.llx, bbox.lly);
     pdf_dev_transform(&mut p1, Some(&matrix));
-    p2.x = bbox.urx;
-    p2.y = bbox.lly;
+    let mut p2 = pdf_coord::new(bbox.urx, bbox.lly);
     pdf_dev_transform(&mut p2, Some(&matrix));
-    p3.x = bbox.urx;
-    p3.y = bbox.ury;
+    let mut p3 = pdf_coord::new(bbox.urx, bbox.ury);
     pdf_dev_transform(&mut p3, Some(&matrix));
-    p4.x = bbox.llx;
-    p4.y = bbox.ury;
+    let mut p4 = pdf_coord::new(bbox.llx, bbox.ury);
     pdf_dev_transform(&mut p4, Some(&matrix));
     bbox.llx = min4(p1.x, p2.x, p3.x, p4.x);
     bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);

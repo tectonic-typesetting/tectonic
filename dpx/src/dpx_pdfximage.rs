@@ -637,25 +637,17 @@ pub unsafe extern "C" fn pdf_ximage_set_form(
     mut resource: *mut pdf_obj,
 ) {
     let info = form_info;
-    let mut p1 = pdf_coord::new();
-    let mut p2 = pdf_coord::new();
-    let mut p3 = pdf_coord::new();
-    let mut p4 = pdf_coord::new();
     (*I).subtype = 0i32;
     /* Image's attribute "bbox" here is affected by /Rotate entry of included
      * PDF page.
      */
-    p1.x = info.bbox.llx; /* Caller don't know we are using reference. */
-    p1.y = info.bbox.lly;
+    let mut p1 = pdf_coord::new(info.bbox.llx, info.bbox.lly);
     pdf_dev_transform(&mut p1, Some(&info.matrix));
-    p2.x = info.bbox.urx;
-    p1.y = info.bbox.lly;
+    let mut p2 = pdf_coord::new(info.bbox.urx, info.bbox.lly);
     pdf_dev_transform(&mut p2, Some(&info.matrix));
-    p3.x = info.bbox.urx;
-    p3.y = info.bbox.ury;
+    let mut p3 = pdf_coord::new(info.bbox.urx, info.bbox.ury);
     pdf_dev_transform(&mut p3, Some(&info.matrix));
-    p4.x = info.bbox.llx;
-    p4.y = info.bbox.ury;
+    let mut p4 = pdf_coord::new(info.bbox.llx, info.bbox.ury);
     pdf_dev_transform(&mut p4, Some(&info.matrix));
     (*I).attr.bbox.llx = min4(p1.x, p2.x, p3.x, p4.x);
     (*I).attr.bbox.lly = min4(p1.y, p2.y, p3.y, p4.y);

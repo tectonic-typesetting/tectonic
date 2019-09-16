@@ -141,11 +141,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
     mut e: f64,
     mut f: f64,
 ) -> i32 {
-    let mut M: pdf_tmatrix = {
-        let mut init = pdf_tmatrix::new();
-        init
-    };
-    let mut pt = pdf_coord::new();
+    let mut M = pdf_tmatrix::new();
     /* Create transformation matrix */
     M.a = a;
     M.b = b;
@@ -154,7 +150,7 @@ pub unsafe extern "C" fn spc_handler_xtx_do_transform(
     M.e = (1.0f64 - M.a) * x_user - M.c * y_user + e;
     M.f = (1.0f64 - M.d) * y_user - M.b * x_user + f;
     pdf_dev_concat(&mut M);
-    pdf_dev_get_fixed_point(&mut pt);
+    let pt = pdf_dev_get_fixed_point();
     pdf_dev_set_fixed_point(x_user - pt.x, y_user - pt.y);
     0i32
 }

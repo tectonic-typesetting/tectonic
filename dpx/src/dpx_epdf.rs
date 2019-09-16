@@ -1080,10 +1080,10 @@ pub unsafe extern "C" fn pdf_copy_clip(
         } else {
             let mut j: u32 = 0;
             let mut T = pdf_tmatrix::new();
-            let mut p0 = pdf_coord::new();
-            let mut p1 = pdf_coord::new();
-            let mut p2 = pdf_coord::new();
-            let mut p3 = pdf_coord::new();
+            let mut p0 = pdf_coord::zero();
+            let mut p1 = pdf_coord::zero();
+            let mut p2 = pdf_coord::zero();
+            let mut p3 = pdf_coord::zero();
             token = parse_ident(&mut clip_path, end_path);
             j = 0_u32;
             while (j as u64)

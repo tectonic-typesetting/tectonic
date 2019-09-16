@@ -507,15 +507,9 @@ unsafe extern "C" fn tpic__arc(
     tpic__clear(tp);
     0i32
 }
-unsafe extern "C" fn spc_currentpoint(
-    mut spe: *mut spc_env,
-    mut pg: *mut i32,
-    mut cp: *mut pdf_coord,
-) -> i32 {
-    *pg = 0i32;
-    (*cp).x = (*spe).x_user;
-    (*cp).y = (*spe).y_user;
-    0i32
+unsafe fn spc_currentpoint(mut spe: *mut spc_env, mut pg: *mut i32) -> pdf_coord {
+    *pg = 0;
+    pdf_coord::new((*spe).x_user, (*spe).y_user)
 }
 unsafe extern "C" fn spc_handler_tpic_pn(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
@@ -581,7 +575,6 @@ unsafe extern "C" fn spc_handler_tpic_pa(mut spe: *mut spc_env, mut ap: *mut spc
 unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     if (*tp).num_points <= 1i32 {
@@ -591,13 +584,12 @@ unsafe extern "C" fn spc_handler_tpic_fp(mut spe: *mut spc_env, mut ap: *mut spc
         );
         return -1i32;
     }
-    spc_currentpoint(spe, &mut pg, &mut cp);
+    let mut cp = spc_currentpoint(spe, &mut pg);
     tpic__polyline(tp, &mut cp, true, 0.0f64)
 }
 unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
-    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     if (*tp).num_points <= 1i32 {
@@ -607,15 +599,14 @@ unsafe extern "C" fn spc_handler_tpic_ip(mut spe: *mut spc_env, mut ap: *mut spc
         );
         return -1i32;
     }
-    spc_currentpoint(spe, &mut pg, &mut cp);
+    let mut cp = spc_currentpoint(spe, &mut pg);
     tpic__polyline(tp, &mut cp, false, 0.0f64)
 }
 unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
-    let mut da: f64 = 0.0f64;
-    let mut cp = pdf_coord::new();
+    let mut da: f64 = 0.;
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -631,7 +622,7 @@ unsafe extern "C" fn spc_handler_tpic_da(mut spe: *mut spc_env, mut ap: *mut spc
         );
         return -1i32;
     }
-    spc_currentpoint(spe, &mut pg, &mut cp);
+    let mut cp = spc_currentpoint(spe, &mut pg);
     tpic__polyline(tp, &mut cp, true, da)
 }
 unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
@@ -639,7 +630,6 @@ unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -655,7 +645,7 @@ unsafe extern "C" fn spc_handler_tpic_dt(mut spe: *mut spc_env, mut ap: *mut spc
         );
         return -1i32;
     }
-    spc_currentpoint(spe, &mut pg, &mut cp);
+    let mut cp = spc_currentpoint(spe, &mut pg);
     tpic__polyline(tp, &mut cp, true, da)
 }
 unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
@@ -663,7 +653,6 @@ unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut da: f64 = 0.0f64;
-    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     assert!(!spe.is_null() && !ap.is_null() && !tp.is_null());
     skip_blank(&mut (*ap).curptr, (*ap).endptr);
@@ -679,14 +668,13 @@ unsafe extern "C" fn spc_handler_tpic_sp(mut spe: *mut spc_env, mut ap: *mut spc
         );
         return -1i32;
     }
-    spc_currentpoint(spe, &mut pg, &mut cp);
+    let mut cp = spc_currentpoint(spe, &mut pg);
     tpic__spline(tp, &mut cp, true, da)
 }
 unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
-    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: i32 = 0;
@@ -720,14 +708,13 @@ unsafe extern "C" fn spc_handler_tpic_ar(mut spe: *mut spc_env, mut ap: *mut spc
     v[3] *= 0.072f64 / pdf_dev_scale();
     v[4] *= 180.0f64 / 3.14159265358979323846f64;
     v[5] *= 180.0f64 / 3.14159265358979323846f64;
-    spc_currentpoint(spe, &mut pg, &mut cp);
+    let mut cp = spc_currentpoint(spe, &mut pg);
     tpic__arc(tp, &mut cp, true, 0.0f64, v.as_mut_ptr())
 }
 unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32
 /* , void *dp) */ {
     let mut tp: *mut spc_tpic_ = &mut _tpic_state;
     let mut v: [f64; 6] = [0.; 6];
-    let mut cp = pdf_coord::new();
     let mut pg: i32 = 0;
     let mut q: *mut i8 = 0 as *mut i8;
     let mut i: i32 = 0;
@@ -761,7 +748,7 @@ unsafe extern "C" fn spc_handler_tpic_ia(mut spe: *mut spc_env, mut ap: *mut spc
     v[3] *= 0.072f64 / pdf_dev_scale();
     v[4] *= 180.0f64 / 3.14159265358979323846f64;
     v[5] *= 180.0f64 / 3.14159265358979323846f64;
-    spc_currentpoint(spe, &mut pg, &mut cp);
+    let mut cp = spc_currentpoint(spe, &mut pg);
     tpic__arc(tp, &mut cp, false, 0.0f64, v.as_mut_ptr())
 }
 unsafe extern "C" fn spc_handler_tpic_sh(mut spe: *mut spc_env, mut ap: *mut spc_arg) -> i32

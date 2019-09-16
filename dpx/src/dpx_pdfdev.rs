@@ -168,7 +168,10 @@ pub struct pdf_coord {
     pub y: f64,
 }
 impl pdf_coord {
-    pub const fn new() -> Self {
+    pub const fn new(x: f64, y: f64) -> Self {
+        Self { x, y }
+    }
+    pub const fn zero() -> Self {
         Self { x: 0., y: 0. }
     }
 }
@@ -1970,10 +1973,10 @@ pub unsafe extern "C" fn pdf_dev_set_rect(
 ) {
     let mut dev_x: f64 = 0.; /* currentmatrix */
     let mut dev_y: f64 = 0.; /* 0 for B&W */
-    let mut p0 = pdf_coord::new();
-    let mut p1 = pdf_coord::new();
-    let mut p2 = pdf_coord::new();
-    let mut p3 = pdf_coord::new();
+    let mut p0 = pdf_coord::zero();
+    let mut p1 = pdf_coord::zero();
+    let mut p2 = pdf_coord::zero();
+    let mut p3 = pdf_coord::zero();
     let mut min_x: f64 = 0.;
     let mut min_y: f64 = 0.;
     let mut max_x: f64 = 0.;
@@ -2187,7 +2190,7 @@ pub unsafe extern "C" fn pdf_dev_put_image(
         let mut P = pdf_tmatrix::new();
         let mut i: u32 = 0;
         let mut rect = pdf_rect::new();
-        let mut corner: [pdf_coord; 4] = [pdf_coord::new(); 4];
+        let mut corner: [pdf_coord; 4] = [pdf_coord::zero(); 4];
         pdf_dev_set_rect(
             &mut rect,
             (65536i32 as f64 * ref_x) as spt_t,

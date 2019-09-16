@@ -383,110 +383,82 @@ pub unsafe extern "C" fn bmp_include_image(
     pdf_ximage_set_image(ximage, &mut info, stream);
     0i32
 }
-unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, mut hdr: *mut hdr_info) -> i32 {
+
+use crate::FromLEByteSlice;
+unsafe extern "C" fn read_header(mut handle: rust_input_handle_t, hdr: &mut hdr_info) -> i32 {
     let mut buf: [u8; 142] = [0; 142];
-    let mut p: *mut u8 = 0 as *mut u8;
-    p = buf.as_mut_ptr();
-    if ttstub_input_read(
-        handle,
-        buf.as_mut_ptr() as *mut i8,
-        (14i32 + 4i32) as size_t,
-    ) != (14i32 + 4i32) as i64
+    let p = &mut buf;
+    if ttstub_input_read(handle, p.as_mut_ptr() as *mut i8, (14i32 + 4i32) as size_t)
+        != (14i32 + 4i32) as i64
     {
         warn!("Could not read BMP file header...");
         return -1i32;
     }
-    if *p.offset(0) as i32 != 'B' as i32 || *p.offset(1) as i32 != 'M' as i32 {
+    if p[0] != b'B' || p[1] != b'M' {
         warn!("File not starting with \'B\' \'M\'... Not a BMP file?");
         return -1i32;
     }
-    p = p.offset(2);
+    let p = &mut p[2..];
     /* fsize  = ULONG_LE(p); */
-    p = p.offset(4);
-    if *p.offset(0) as i32
-        + ((*p.offset(1) as i32) << 8i32)
-        + ((*p.offset(2) as i32) << 16i32)
-        + ((*p.offset(3) as i32) << 24i32)
-        != 0i32
-    {
+    let p = &mut p[4..];
+    if u32::from_le_byte_slice(&p[..4]) != 0 {
         warn!("Not a BMP file???");
         return -1i32;
     }
-    p = p.offset(4);
-    (*hdr).offset = (*p.offset(0) as i32
-        + ((*p.offset(1) as i32) << 8i32)
-        + ((*p.offset(2) as i32) << 16i32)
-        + ((*p.offset(3) as i32) << 24i32)) as u32;
-    p = p.offset(4);
+    let p = &mut p[4..];
+    hdr.offset = u32::from_le_byte_slice(&p[..4]);
+    let p = &mut p[4..];
     /* info header */
-    (*hdr).hsize = (*p.offset(0) as i32
-        + ((*p.offset(1) as i32) << 8i32)
-        + ((*p.offset(2) as i32) << 16i32)
-        + ((*p.offset(3) as i32) << 24i32)) as u32; /* undefined. FIXME */
-    p = p.offset(4); /* undefined. FIXME */
+    hdr.hsize = u32::from_le_byte_slice(&p[..4]); /* undefined. FIXME */
+    let p = &mut p[4..]; /* undefined. FIXME */
     if ttstub_input_read(
         handle,
-        p as *mut i8,
-        (*hdr).hsize.wrapping_sub(4_u32) as size_t,
-    ) != (*hdr).hsize.wrapping_sub(4_u32) as i64
+        p.as_mut_ptr() as *mut i8,
+        hdr.hsize.wrapping_sub(4_u32) as size_t,
+    ) != hdr.hsize.wrapping_sub(4_u32) as i64
     {
         warn!("Could not read BMP file header...");
         return -1i32;
     }
-    match (*hdr).hsize {
+    match hdr.hsize {
         12 => {
-            (*hdr).width = (*p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32)) as u32;
-            p = p.offset(2);
-            (*hdr).height = *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32);
-            p = p.offset(2);
-            (*hdr).x_pix_per_meter = 0_u32;
-            (*hdr).y_pix_per_meter = 0_u32;
-            if *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32) != 1i32 {
+            hdr.width = u16::from_le_byte_slice(&p[..2]) as u32;
+            let p = &mut p[2..];
+            hdr.height = u16::from_le_byte_slice(&p[..2]) as i32;
+            let p = &mut p[2..];
+            hdr.x_pix_per_meter = 0_u32;
+            hdr.y_pix_per_meter = 0_u32;
+            if u16::from_le_byte_slice(&p[..2]) != 1 {
                 warn!("Unknown bcPlanes value in BMP COREHEADER.");
                 return -1i32;
             }
-            p = p.offset(2);
-            (*hdr).bit_count = (*p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32)) as u16;
-            p = p.offset(2);
-            (*hdr).compression = 0i32;
-            (*hdr).psize = 3i32
+            let p = &mut p[2..];
+            hdr.bit_count = u16::from_le_byte_slice(&p[..2]);
+            let p = &mut p[2..];
+            hdr.compression = 0i32;
+            hdr.psize = 3i32
         }
         40 | 64 | 108 | 124 => {
-            (*hdr).width = (*p.offset(0) as i32
-                + ((*p.offset(1) as i32) << 8i32)
-                + ((*p.offset(2) as i32) << 16i32)
-                + ((*p.offset(3) as i32) << 24i32)) as u32;
-            p = p.offset(4);
-            (*hdr).height = *p.offset(0) as i32
-                + ((*p.offset(1) as i32) << 8i32)
-                + ((*p.offset(2) as i32) << 16i32)
-                + ((*p.offset(3) as i32) << 24i32);
-            p = p.offset(4);
-            if *p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32) != 1i32 {
+            hdr.width = u32::from_le_byte_slice(&p[..4]);
+            let p = &mut p[4..];
+            hdr.height = u32::from_le_byte_slice(&p[..4]) as i32;
+            let p = &mut p[4..];
+            if u16::from_le_byte_slice(&p[..2]) != 1 {
                 warn!("Unknown biPlanes value in BMP INFOHEADER.");
                 return -1i32;
             }
-            p = p.offset(2);
-            (*hdr).bit_count = (*p.offset(0) as i32 + ((*p.offset(1) as i32) << 8i32)) as u16;
-            p = p.offset(2);
-            (*hdr).compression = *p.offset(0) as i32
-                + ((*p.offset(1) as i32) << 8i32)
-                + ((*p.offset(2) as i32) << 16i32)
-                + ((*p.offset(3) as i32) << 24i32);
-            p = p.offset(4);
+            let p = &mut p[2..];
+            hdr.bit_count = u16::from_le_byte_slice(&p[..2]);
+            let p = &mut p[2..];
+            hdr.compression = u32::from_le_byte_slice(&p[..4]) as i32;
+            let p = &mut p[4..];
             /* ignore biSizeImage */
-            p = p.offset(4);
-            (*hdr).x_pix_per_meter = (*p.offset(0) as i32
-                + ((*p.offset(1) as i32) << 8i32)
-                + ((*p.offset(2) as i32) << 16i32)
-                + ((*p.offset(3) as i32) << 24i32)) as u32;
-            p = p.offset(4);
-            (*hdr).y_pix_per_meter = (*p.offset(0) as i32
-                + ((*p.offset(1) as i32) << 8i32)
-                + ((*p.offset(2) as i32) << 16i32)
-                + ((*p.offset(3) as i32) << 24i32)) as u32;
-            p = p.offset(4);
-            (*hdr).psize = 4i32
+            let p = &mut p[4..];
+            hdr.x_pix_per_meter = u32::from_le_byte_slice(&p[..4]);
+            let p = &mut p[4..];
+            hdr.y_pix_per_meter = u32::from_le_byte_slice(&p[..4]);
+            let p = &mut p[4..];
+            hdr.psize = 4i32
         }
         _ => {
             warn!("Unknown BMP header type.");

@@ -64,6 +64,25 @@ pub(crate) unsafe fn mfree(ptr: *mut libc::c_void) -> *mut libc::c_void {
     std::ptr::null_mut()
 }
 
+use core::mem::MaybeUninit;
+pub trait FromLEByteSlice {
+    fn from_le_byte_slice(b: &[u8]) -> Self;
+}
+impl FromLEByteSlice for u32 {
+    fn from_le_byte_slice(b: &[u8]) -> Self {
+        let mut dst: [u8; 4] = unsafe { MaybeUninit::uninit().assume_init() };
+        dst.copy_from_slice(b);
+        u32::from_le_bytes(dst)
+    }
+}
+impl FromLEByteSlice for u16 {
+    fn from_le_byte_slice(b: &[u8]) -> Self {
+        let mut dst: [u8; 2] = unsafe { MaybeUninit::uninit().assume_init() };
+        dst.copy_from_slice(b);
+        u16::from_le_bytes(dst)
+    }
+}
+
 pub mod dpx_agl;
 pub mod dpx_bmpimage;
 pub mod dpx_cff;
