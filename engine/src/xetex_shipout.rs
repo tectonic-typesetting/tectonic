@@ -8,312 +8,50 @@
     unused_mut
 )]
 
-use super::xetex_ini::selector;
+use crate::core_memory::xmalloc;
+use crate::xetex_errors::{confusion, error, fatal_error, overflow};
+use crate::xetex_ext::{
+    apply_tfm_font_mapping, makeXDVGlyphArrayData, make_font_def, store_justified_native_glyphs,
+};
+use crate::xetex_ini::{
+    avail, char_base, cur_area, cur_cs, cur_dir, cur_ext, cur_h, cur_h_offset, cur_list, cur_name,
+    cur_page_height, cur_page_width, cur_tok, cur_v, cur_v_offset, dead_cycles, def_ref,
+    doing_leaders, doing_special, eqtb, file_line_error_style_p, file_offset, font_area, font_bc,
+    font_check, font_dsize, font_ec, font_glue, font_info, font_letter_space, font_mapping,
+    font_name, font_ptr, font_size, font_used, help_line, help_ptr, init_pool_ptr, job_name,
+    last_bop, log_opened, max_h, max_print_line, max_push, max_v, mem, name_of_file,
+    output_file_extension, pdf_last_x_pos, pdf_last_y_pos, pool_ptr, pool_size, rule_dp, rule_ht,
+    rule_wd, rust_stdout, selector, semantic_pagination_enabled, str_pool, str_ptr, str_start,
+    temp_ptr, term_offset, total_pages, width_base, write_file, write_loc, write_open, xdv_buffer,
+    xtx_ligature_present, LR_problems, LR_ptr,
+};
+use crate::xetex_ini::{memory_word, Selector};
+use crate::xetex_output::{
+    print, print_char, print_cstr, print_file_line, print_file_name, print_int, print_ln,
+    print_nl_cstr, print_raw_char, print_scaled,
+};
+use crate::xetex_scaledmath::tex_round;
+use crate::xetex_stringpool::length;
+use crate::xetex_synctex::{
+    synctex_current, synctex_hlist, synctex_horizontal_rule_or_glue, synctex_kern, synctex_math,
+    synctex_sheet, synctex_teehs, synctex_tsilh, synctex_tsilv, synctex_vlist, synctex_void_hlist,
+    synctex_void_vlist,
+};
+use crate::xetex_texmfmp::maketexstring;
+use crate::xetex_xetex0::{
+    begin_diagnostic, begin_token_list, effective_char, end_diagnostic, end_token_list, flush_list,
+    flush_node_list, free_node, get_avail, get_node, get_token, make_name_string, new_kern,
+    new_math, new_native_word_node, open_log_file, pack_file_name, pack_job_name, prepare_mag,
+    scan_toks, show_box, show_token_list, token_show,
+};
 use crate::xetex_xetexd::{is_char_node, print_c_string};
 use crate::{ttstub_output_close, ttstub_output_flush, ttstub_output_open, ttstub_output_write};
-use libc::free;
+use bridge::_tt_abort;
+use libc::{free, strerror, strlen};
 
-extern "C" {
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strerror(_: i32) -> *mut i8;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    /* Needed here for UFILE */
-    /* variables! */
-    /* All the following variables are defined in xetexini.c */
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut name_of_file: *mut i8;
-    #[no_mangle]
-    static mut max_print_line: i32;
-    #[no_mangle]
-    static mut pool_size: i32;
-    #[no_mangle]
-    static mut file_line_error_style_p: i32;
-    #[no_mangle]
-    static mut str_pool: *mut packed_UTF16_code;
-    #[no_mangle]
-    static mut str_start: *mut pool_pointer;
-    #[no_mangle]
-    static mut pool_ptr: pool_pointer;
-    #[no_mangle]
-    static mut str_ptr: str_number;
-    #[no_mangle]
-    static mut init_pool_ptr: pool_pointer;
-    #[no_mangle]
-    static mut rust_stdout: rust_output_handle_t;
-    #[no_mangle]
-    static mut term_offset: i32;
-    #[no_mangle]
-    static mut file_offset: i32;
-    #[no_mangle]
-    static mut doing_special: bool;
-    #[no_mangle]
-    static mut help_line: [*const i8; 6];
-    #[no_mangle]
-    static mut help_ptr: u8;
-    #[no_mangle]
-    static mut temp_ptr: i32;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut avail: i32;
-    #[no_mangle]
-    static mut cur_list: list_state_record;
-    #[no_mangle]
-    static mut cur_cs: i32;
-    #[no_mangle]
-    static mut cur_tok: i32;
-    #[no_mangle]
-    static mut def_ref: i32;
-    #[no_mangle]
-    static mut cur_name: str_number;
-    #[no_mangle]
-    static mut cur_area: str_number;
-    #[no_mangle]
-    static mut cur_ext: str_number;
-    #[no_mangle]
-    static mut job_name: str_number;
-    #[no_mangle]
-    static mut log_opened: bool;
-    #[no_mangle]
-    static mut output_file_extension: *const i8;
-    #[no_mangle]
-    static mut font_info: *mut memory_word;
-    #[no_mangle]
-    static mut font_ptr: internal_font_number;
-    #[no_mangle]
-    static mut font_check: *mut b16x4;
-    #[no_mangle]
-    static mut font_size: *mut scaled_t;
-    #[no_mangle]
-    static mut font_dsize: *mut scaled_t;
-    #[no_mangle]
-    static mut font_name: *mut str_number;
-    #[no_mangle]
-    static mut font_area: *mut str_number;
-    #[no_mangle]
-    static mut font_bc: *mut UTF16_code;
-    #[no_mangle]
-    static mut font_ec: *mut UTF16_code;
-    #[no_mangle]
-    static mut font_glue: *mut i32;
-    #[no_mangle]
-    static mut font_used: *mut bool;
-    #[no_mangle]
-    static mut font_mapping: *mut *mut libc::c_void;
-    #[no_mangle]
-    static mut font_letter_space: *mut scaled_t;
-    #[no_mangle]
-    static mut xdv_buffer: *mut i8;
-    #[no_mangle]
-    static mut char_base: *mut i32;
-    #[no_mangle]
-    static mut width_base: *mut i32;
-    #[no_mangle]
-    static mut total_pages: i32;
-    #[no_mangle]
-    static mut max_v: scaled_t;
-    #[no_mangle]
-    static mut max_h: scaled_t;
-    #[no_mangle]
-    static mut max_push: i32;
-    #[no_mangle]
-    static mut last_bop: i32;
-    #[no_mangle]
-    static mut dead_cycles: i32;
-    #[no_mangle]
-    static mut doing_leaders: bool;
-    #[no_mangle]
-    static mut rule_ht: scaled_t;
-    #[no_mangle]
-    static mut rule_dp: scaled_t;
-    #[no_mangle]
-    static mut rule_wd: scaled_t;
-    #[no_mangle]
-    static mut cur_h: scaled_t;
-    #[no_mangle]
-    static mut cur_v: scaled_t;
-    #[no_mangle]
-    static mut write_file: [rust_output_handle_t; 16];
-    #[no_mangle]
-    static mut write_open: [bool; 18];
-    #[no_mangle]
-    static mut write_loc: i32;
-    #[no_mangle]
-    static mut cur_page_width: scaled_t;
-    #[no_mangle]
-    static mut cur_page_height: scaled_t;
-    #[no_mangle]
-    static mut cur_h_offset: scaled_t;
-    #[no_mangle]
-    static mut cur_v_offset: scaled_t;
-    #[no_mangle]
-    static mut pdf_last_x_pos: i32;
-    #[no_mangle]
-    static mut pdf_last_y_pos: i32;
-    #[no_mangle]
-    static mut LR_ptr: i32;
-    #[no_mangle]
-    static mut LR_problems: i32;
-    #[no_mangle]
-    static mut cur_dir: small_number;
-    #[no_mangle]
-    static mut xtx_ligature_present: bool;
-    #[no_mangle]
-    static mut semantic_pagination_enabled: bool;
-    #[no_mangle]
-    fn show_token_list(p: i32, q: i32, l: i32);
-    #[no_mangle]
-    fn get_avail() -> i32;
-    #[no_mangle]
-    fn flush_list(p: i32);
-    #[no_mangle]
-    fn get_node(s: i32) -> i32;
-    #[no_mangle]
-    fn free_node(p: i32, s: i32);
-    #[no_mangle]
-    fn new_math(w: scaled_t, s: small_number) -> i32;
-    #[no_mangle]
-    fn new_kern(w: scaled_t) -> i32;
-    #[no_mangle]
-    fn show_box(p: i32);
-    #[no_mangle]
-    fn flush_node_list(p: i32);
-    #[no_mangle]
-    fn begin_diagnostic();
-    #[no_mangle]
-    fn end_diagnostic(blank_line: bool);
-    #[no_mangle]
-    fn prepare_mag();
-    #[no_mangle]
-    fn token_show(p: i32);
-    #[no_mangle]
-    fn begin_token_list(p: i32, t: u16);
-    #[no_mangle]
-    fn end_token_list();
-    #[no_mangle]
-    fn get_token();
-    #[no_mangle]
-    fn make_name_string() -> str_number;
-    #[no_mangle]
-    fn makeXDVGlyphArrayData(p: *mut libc::c_void) -> i32;
-    #[no_mangle]
-    fn make_font_def(f: i32) -> i32;
-    #[no_mangle]
-    fn store_justified_native_glyphs(node: *mut libc::c_void);
-    #[no_mangle]
-    fn maketexstring(s: *const i8) -> i32;
-    #[no_mangle]
-    fn apply_tfm_font_mapping(mapping: *mut libc::c_void, c: i32) -> i32;
-    #[no_mangle]
-    fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> i32;
-    #[no_mangle]
-    fn scan_toks(macro_def: bool, xpand: bool) -> i32;
-    #[no_mangle]
-    fn pack_file_name(n: str_number, a: str_number, e: str_number);
-    #[no_mangle]
-    fn pack_job_name(_: *const i8);
-    #[no_mangle]
-    fn open_log_file();
-    #[no_mangle]
-    fn new_native_word_node(f: internal_font_number, n: i32) -> i32;
-    #[no_mangle]
-    fn confusion(s: *const i8) -> !;
-    #[no_mangle]
-    fn fatal_error(s: *const i8) -> !;
-    #[no_mangle]
-    fn overflow(s: *const i8, n: i32) -> !;
-    #[no_mangle]
-    fn tex_round(_: f64) -> i32;
-    #[no_mangle]
-    fn print_scaled(s: scaled_t);
-    #[no_mangle]
-    fn print_ln();
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_file_name(n: i32, a: i32, e: i32);
-    #[no_mangle]
-    fn print_int(n: i32);
-    #[no_mangle]
-    fn length(s: str_number) -> i32;
-    #[no_mangle]
-    fn print_char(s: i32);
-    #[no_mangle]
-    fn print(s: i32);
-    #[no_mangle]
-    fn error();
-    #[no_mangle]
-    fn print_file_line();
-    #[no_mangle]
-    fn print_raw_char(s: UTF16_code, incr_offset: bool);
-    /*  Recording the "{..." line.  In *tex.web, use synctex_sheet(pdf_output) at
-     *  the very beginning of the ship_out procedure.
-     */
-    #[no_mangle]
-    fn synctex_sheet(mag: i32);
-    /*  Recording the "}..." line.  In *tex.web, use synctex_teehs at
-     *  the very end of the ship_out procedure.
-     */
-    #[no_mangle]
-    fn synctex_teehs();
-    /*  This message is sent when a vlist will be shipped out, more precisely at
-     *  the beginning of the vlist_out procedure in *TeX.web.  It will be balanced
-     *  by a synctex_tsilv, sent at the end of the vlist_out procedure.  p is the
-     *  address of the vlist We assume that p is really a vlist node! */
-    #[no_mangle]
-    fn synctex_vlist(this_box: i32);
-    /*  Recording a "}" line ending a vbox: this message is sent whenever a vlist
-     *  has been shipped out. It is used to close the vlist nesting level. It is
-     *  sent at the end of each vlist_out procedure in *TeX.web to balance a former
-     *  synctex_vlist sent at the beginning of that procedure.    */
-    #[no_mangle]
-    fn synctex_tsilv(this_box: i32);
-    /*  This message is sent when a void vlist will be shipped out.
-     *  There is no need to balance a void vlist.  */
-    #[no_mangle]
-    fn synctex_void_vlist(p: i32, this_box: i32);
-    /*  Send this message when an hlist will be shipped out, more precisely at
-     *  the beginning of the hlist_out procedure in *TeX.web.  It must be balanced
-     *  by a synctex_tsilh, sent at the end of the hlist_out procedure.  p is the
-     *  address of the hlist. */
-    #[no_mangle]
-    fn synctex_hlist(this_box: i32);
-    /*  Send this message at the end of the various hlist_out procedure in *TeX.web
-     *  to balance a former synctex_hlist.    */
-    #[no_mangle]
-    fn synctex_tsilh(this_box: i32);
-    /*  This message is sent when a void hlist will be shipped out.
-     *  There is no need to balance a void hlist.  */
-    #[no_mangle]
-    fn synctex_void_hlist(p: i32, this_box: i32);
-    /*  Send this message whenever an inline math node will ship out. */
-    #[no_mangle]
-    fn synctex_math(p: i32, this_box: i32);
-    /*  Send this message whenever an horizontal rule or glue node will ship out. */
-    #[no_mangle]
-    fn synctex_horizontal_rule_or_glue(p: i32, this_box: i32);
-    /*  Send this message whenever a kern node will ship out. */
-    #[no_mangle]
-    fn synctex_kern(p: i32, this_box: i32);
-    /*  For debugging purpose only    */
-    #[no_mangle]
-    fn synctex_current();
-}
 pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
-
-use super::xetex_ini::Selector;
 
 /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
    Copyright 2016-2018 The Tectonic Project
@@ -329,153 +67,6 @@ pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type small_number = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
-/* ## THE ORIGINAL SITUATION (archived for posterity)
- *
- * In XeTeX, a "quarterword" is 16 bits. Who knows why. A "halfword" is,
- * sensibly, 32 bits. A "memory word" is a full word: either four quarters or
- * two halves: i.e., 64 bits. The memory word union also has options for
- * doubles (called `gr`), `integer` which is an i32 (called `cint`), and a
- * pointer (`ptr`).
- *
- * Original struct definition, LITTLE ENDIAN (condensed):
- *
- *   typedef union {
- *       struct { i32 LH, RH; } v;
- *       struct { short B1, B0; } u;
- *   } two_halves;
- *
- *   typedef struct {
- *       struct { u16 B3, B2, B1, B0; } u;
- *   } four_quarters;
- *
- *   typedef union {
- *       two_halves hh;
- *
- *       struct {
- *           i32 junk;
- *           i32 CINT;
- *       } u;
- *
- *       struct {
- *           four_quarters QQQQ;
- *       } v;
- *   } memory_word;
- *
- *   #  define cint u.CINT
- *   #  define qqqq v.QQQQ
- *
- * Original memory layout, LITTLE ENDIAN:
- *
- *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   cint:                             [lsb...............msb]
- *   hh.u:     [l..B1...m] [l..B0...m]
- *   hh.v:     [lsb......LH.......msb] [lsb......RH.......msb]
- *   quarters: [l..B3...m] [l..B2...m] [l..B1...m] [l..B0...m]
- *
- * Original struct definition, BIG ENDIAN (condensed):
- *
- *   typedef union {
- *       struct { i32 RH, LH; } v;
- *       struct {
- *           i32 junk;
- *           short B0, B1;
- *       } u;
- *   } two_halves;
- *
- *   typedef struct {
- *       struct { u16 B0, B1, B2, B3; } u;
- *   } four_quarters;
- *
- *   typedef union {
- *       two_halves hh;
- *       four_quarters qqqq;
- *   } memory_word;
- *
- * Original memory layout, BIG ENDIAN:
- *
- *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   cint:     [msb...............lsb]
- *   hh.u:                             [m..B0...l] [m..B1...l]
- *   hh.v:     [msb......RH.......lsb] [msb......LH.......lsb]
- *   quarters: [m..B0...l] [m..B1...l] [m..B2...l] [m...B3..l]
- *
- * Several things to note that apply to both endiannesses:
- *
- *   1. The different B0 and B1 instances do not line up.
- *   2. `cint` is isomorphic to `hh.v.RH`
- *   3. `hh.u.B0` is isomorphic to `qqqq.u.B2`
- *   4. `hh.u.B1` is isomorphic to `qqqq.u.B3`.
- *   5. The `four_quarters` field `u` serves no discernable purpose.
- *
- * CONVERTING TO THE NEW SYSTEM
- *
- * - `w.cint` => `w.b32.s1`
- * - `w.qqqq.u.B<n>` => `w.b16.s{{3 - <n>}}` !!!!!!!!!!!
- * - similar for `<quarterword_variable>.u.B<n>` => `<quarterword_variable>.s{{3 - <n>}}` !!!
- * - `w.hh.u.B0` => `w.b16.s1`
- * - `w.hh.u.B1` => `w.b16.s0`
- * - `w.hh.v.RH` => `w.b32.s1`
- * - `w.hh.v.LH` => `w.b32.s0`
- * - `four_quarters` => `b16x4`
- * - `two_halves` => `b32x2`
- *
- */
 /* Symbolic accessors for various TeX data structures. I would loooove to turn these
  * into actual structs, but the path to doing that is not currently clear. Making
  * field references symbolic seems like a decent start. Sadly I don't see how to do
@@ -553,17 +144,6 @@ pub union memory_word {
 /* \splitbotmarks<n> */
 pub type glue_ord = u8;
 pub type internal_font_number = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct list_state_record {
-    pub mode: i16,
-    pub head: i32,
-    pub tail: i32,
-    pub eTeX_aux: i32,
-    pub prev_graf: i32,
-    pub mode_line: i32,
-    pub aux: memory_word,
-}
 #[inline]
 unsafe extern "C" fn cur_length() -> pool_pointer {
     pool_ptr - *str_start.offset((str_ptr - 65536i32) as isize)

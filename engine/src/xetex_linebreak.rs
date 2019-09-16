@@ -8,209 +8,31 @@
     unused_mut
 )]
 
-use crate::xetex_ini::hi_mem_min;
+use crate::xetex_errors::{confusion, error, pdf_error};
+use crate::xetex_ext::measure_native_node;
+use crate::xetex_ini::{
+    active_width, adjust_tail, arith_error, avail, bchar_label, char_base, cur_l, cur_lang,
+    cur_list, cur_q, cur_r, eqtb, file_line_error_style_p, first_p, font_bchar,
+    font_in_short_display, font_info, global_prev_p, hc, help_line, help_ptr, hf, hi_mem_min,
+    hlist_stack, hlist_stack_level, hu, hyf, hyf_distance, hyf_next, hyf_num, hyph_index,
+    hyph_link, hyph_list, hyph_start, hyph_word, hyphen_char, hyphen_passed, init_lft, init_lig,
+    init_list, init_trie, just_box, kern_base, last_leftmost_char, last_rightmost_char, lft_hit,
+    lig_kern_base, lig_stack, ligature_present, max_hyph_char, mem, op_start, pack_begin_line,
+    pre_adjust_tail, rt_hit, semantic_pagination_enabled, str_pool, str_start, temp_ptr,
+    trie_not_ready, trie_trc, trie_trl, trie_tro, width_base, xtx_ligature_present,
+};
+use crate::xetex_ini::{b16x4, memory_word};
+use crate::xetex_output::{print_cstr, print_file_line, print_nl_cstr};
+use crate::xetex_stringpool::length;
+use crate::xetex_xetex0::{
+    append_to_vlist, badness, char_pw, delete_glue_ref, effective_char, flush_list,
+    flush_node_list, fract, free_node, get_avail, get_node, hpack, max_hyphenatable_length,
+    new_character, new_disc, new_kern, new_lig_item, new_ligature, new_margin_kern, new_math,
+    new_native_character, new_native_word_node, new_param_glue, new_penalty, new_spec, pop_nest,
+    prev_rightmost,
+};
 use crate::xetex_xetexd::{is_char_node, is_non_discardable_node};
 
-extern "C" {
-    #[no_mangle]
-    fn measure_native_node(node: *mut libc::c_void, use_glyph_metrics: i32);
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut file_line_error_style_p: i32;
-    #[no_mangle]
-    static mut str_pool: *mut packed_UTF16_code;
-    #[no_mangle]
-    static mut str_start: *mut pool_pointer;
-    #[no_mangle]
-    static mut help_line: [*const i8; 6];
-    #[no_mangle]
-    static mut help_ptr: u8;
-    #[no_mangle]
-    static mut arith_error: bool;
-    #[no_mangle]
-    static mut temp_ptr: i32;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut avail: i32;
-    #[no_mangle]
-    static mut last_leftmost_char: i32;
-    #[no_mangle]
-    static mut last_rightmost_char: i32;
-    #[no_mangle]
-    static mut hlist_stack: [i32; 513];
-    #[no_mangle]
-    static mut hlist_stack_level: i16;
-    #[no_mangle]
-    static mut first_p: i32;
-    #[no_mangle]
-    static mut global_prev_p: i32;
-    #[no_mangle]
-    static mut font_in_short_display: i32;
-    #[no_mangle]
-    static mut cur_list: list_state_record;
-    #[no_mangle]
-    static mut font_info: *mut memory_word;
-    #[no_mangle]
-    static mut hyphen_char: *mut i32;
-    #[no_mangle]
-    static mut bchar_label: *mut font_index;
-    #[no_mangle]
-    static mut font_bchar: *mut nine_bits;
-    #[no_mangle]
-    static mut char_base: *mut i32;
-    #[no_mangle]
-    static mut width_base: *mut i32;
-    #[no_mangle]
-    static mut lig_kern_base: *mut i32;
-    #[no_mangle]
-    static mut kern_base: *mut i32;
-    #[no_mangle]
-    static mut adjust_tail: i32;
-    #[no_mangle]
-    static mut pre_adjust_tail: i32;
-    #[no_mangle]
-    static mut pack_begin_line: i32;
-    #[no_mangle]
-    static mut just_box: i32;
-    #[no_mangle]
-    static mut active_width: [scaled_t; 7];
-    #[no_mangle]
-    static mut hc: [i32; 4099];
-    #[no_mangle]
-    static mut hf: internal_font_number;
-    #[no_mangle]
-    static mut hu: [i32; 4097];
-    #[no_mangle]
-    static mut cur_lang: u8;
-    #[no_mangle]
-    static mut max_hyph_char: i32;
-    #[no_mangle]
-    static mut hyf: [u8; 4097];
-    #[no_mangle]
-    static mut init_list: i32;
-    #[no_mangle]
-    static mut init_lig: bool;
-    #[no_mangle]
-    static mut init_lft: bool;
-    #[no_mangle]
-    static mut hyphen_passed: small_number;
-    #[no_mangle]
-    static mut cur_l: i32;
-    #[no_mangle]
-    static mut cur_r: i32;
-    #[no_mangle]
-    static mut cur_q: i32;
-    #[no_mangle]
-    static mut lig_stack: i32;
-    #[no_mangle]
-    static mut ligature_present: bool;
-    #[no_mangle]
-    static mut lft_hit: bool;
-    #[no_mangle]
-    static mut rt_hit: bool;
-    #[no_mangle]
-    static mut trie_trl: *mut trie_pointer;
-    #[no_mangle]
-    static mut trie_tro: *mut trie_pointer;
-    #[no_mangle]
-    static mut trie_trc: *mut u16;
-    #[no_mangle]
-    static mut hyf_distance: [small_number; 35112];
-    #[no_mangle]
-    static mut hyf_num: [small_number; 35112];
-    #[no_mangle]
-    static mut hyf_next: [trie_opcode; 35112];
-    #[no_mangle]
-    static mut op_start: [i32; 256];
-    #[no_mangle]
-    static mut hyph_word: *mut str_number;
-    #[no_mangle]
-    static mut hyph_list: *mut i32;
-    #[no_mangle]
-    static mut hyph_link: *mut hyph_pointer;
-    #[no_mangle]
-    static mut trie_not_ready: bool;
-    #[no_mangle]
-    static mut hyph_start: trie_pointer;
-    #[no_mangle]
-    static mut hyph_index: trie_pointer;
-    #[no_mangle]
-    static mut xtx_ligature_present: bool;
-    #[no_mangle]
-    static mut semantic_pagination_enabled: bool;
-    #[no_mangle]
-    fn badness(t: scaled_t, s: scaled_t) -> i32;
-    #[no_mangle]
-    fn get_avail() -> i32;
-    #[no_mangle]
-    fn flush_list(p: i32);
-    #[no_mangle]
-    fn get_node(s: i32) -> i32;
-    #[no_mangle]
-    fn free_node(p: i32, s: i32);
-    #[no_mangle]
-    fn new_ligature(f: internal_font_number, c: u16, q: i32) -> i32;
-    #[no_mangle]
-    fn new_lig_item(c: u16) -> i32;
-    #[no_mangle]
-    fn new_disc() -> i32;
-    #[no_mangle]
-    fn new_math(w: scaled_t, s: small_number) -> i32;
-    #[no_mangle]
-    fn new_spec(p: i32) -> i32;
-    #[no_mangle]
-    fn new_param_glue(n: small_number) -> i32;
-    #[no_mangle]
-    fn new_kern(w: scaled_t) -> i32;
-    #[no_mangle]
-    fn new_penalty(m: i32) -> i32;
-    #[no_mangle]
-    fn prev_rightmost(s: i32, e: i32) -> i32;
-    #[no_mangle]
-    fn delete_glue_ref(p: i32);
-    #[no_mangle]
-    fn flush_node_list(p: i32);
-    #[no_mangle]
-    fn pop_nest();
-    #[no_mangle]
-    fn length(s: str_number) -> i32;
-    #[no_mangle]
-    fn init_trie();
-    #[no_mangle]
-    fn max_hyphenatable_length() -> i32;
-    #[no_mangle]
-    fn append_to_vlist(b: i32);
-    #[no_mangle]
-    fn hpack(p: i32, w: scaled_t, m: small_number) -> i32;
-    #[no_mangle]
-    fn new_margin_kern(w: scaled_t, p: i32, side: small_number) -> i32;
-    #[no_mangle]
-    fn char_pw(p: i32, side: small_number) -> scaled_t;
-    #[no_mangle]
-    fn new_character(f: internal_font_number, c: UTF16_code) -> i32;
-    #[no_mangle]
-    fn new_native_character(f: internal_font_number, c: UnicodeScalar) -> i32;
-    #[no_mangle]
-    fn new_native_word_node(f: internal_font_number, n: i32) -> i32;
-    #[no_mangle]
-    fn fract(x: i32, n: i32, d: i32, max_answer: i32) -> i32;
-    #[no_mangle]
-    fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> i32;
-    #[no_mangle]
-    fn confusion(s: *const i8) -> !;
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    #[no_mangle]
-    fn error();
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn pdf_error(t: *const i8, p: *const i8) -> !;
-    #[no_mangle]
-    fn print_file_line();
-}
 pub type scaled_t = i32;
 pub type UTF16_code = u16;
 pub type UnicodeScalar = i32;
@@ -218,47 +40,12 @@ pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type small_number = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
 pub type internal_font_number = i32;
 pub type font_index = i32;
 pub type nine_bits = i32;
 pub type trie_pointer = i32;
 pub type trie_opcode = u16;
 pub type hyph_pointer = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct list_state_record {
-    pub mode: i16,
-    pub head: i32,
-    pub tail: i32,
-    pub eTeX_aux: i32,
-    pub prev_graf: i32,
-    pub mode_line: i32,
-    pub aux: memory_word,
-}
 static mut passive: i32 = 0;
 static mut cur_active_width: [scaled_t; 7] = [0; 7];
 static mut background: [scaled_t; 7] = [0; 7];

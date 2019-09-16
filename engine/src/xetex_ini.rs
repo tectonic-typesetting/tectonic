@@ -9,262 +9,42 @@
 )]
 
 use super::xetex_texmfmp::get_date_and_time;
-use crate::mfree;
+use crate::core_memory::{mfree, xcalloc, xmalloc};
+use crate::xetex_errors::{confusion, error, overflow};
+use crate::xetex_ext::release_font_engine;
+use crate::xetex_layout_engine::{destroy_font_manager, set_cp_code};
+use crate::xetex_math::initialize_math_variables;
+use crate::xetex_output::{
+    print, print_char, print_cstr, print_esc, print_esc_cstr, print_file_line, print_file_name,
+    print_int, print_ln, print_nl, print_nl_cstr, print_scaled,
+};
+use crate::xetex_pagebuilder::initialize_pagebuilder_variables;
+use crate::xetex_shipout::{deinitialize_shipout_variables, initialize_shipout_variables};
+use crate::xetex_stringpool::{length, load_pool_strings, make_string};
+use crate::xetex_synctex::synctex_init_command;
+use crate::xetex_texmfmp::maketexstring;
+use crate::xetex_xetex0::{
+    alter_aux, alter_box_dimen, alter_integer, alter_page_so_far, alter_prev_graf, back_error,
+    back_input, begin_diagnostic, close_files_and_terminate, delete_glue_ref, delete_token_ref,
+    do_marks, do_register_command, end_diagnostic, end_file_reading, end_token_list, eq_define,
+    eq_word_define, find_font_dimen, find_sa_element, flush_list, flush_node_list, free_node,
+    geq_define, geq_word_define, get_avail, get_node, get_r_token, get_token, get_x_token, gsa_def,
+    id_lookup, main_control, make_name_string, max_hyphenatable_length, new_font, new_interaction,
+    open_log_file, pack_job_name, prim_lookup, print_cmd_chr, pseudo_close, read_toks, sa_def,
+    scan_box, scan_char_class, scan_char_class_not_ignored, scan_char_num, scan_dimen,
+    scan_fifteen_bit_int, scan_font_ident, scan_glue, scan_glyph_number, scan_int, scan_keyword,
+    scan_left_brace, scan_math_class_int, scan_math_fam_int, scan_optional_equals,
+    scan_register_num, scan_toks, scan_usv_num, scan_xetex_math_char_int, show_cur_cmd_chr,
+    show_save_groups, start_input, trap_zero_glue,
+};
 use crate::{
     ttstub_input_close, ttstub_input_open, ttstub_input_read, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_open_stdout, ttstub_output_write,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn get_avail() -> i32;
-    #[no_mangle]
-    fn flush_list(p: i32);
-    #[no_mangle]
-    fn get_node(s: i32) -> i32;
-    #[no_mangle]
-    fn free_node(p: i32, s: i32);
-    #[no_mangle]
-    fn delete_token_ref(p: i32);
-    #[no_mangle]
-    fn delete_glue_ref(p: i32);
-    #[no_mangle]
-    fn flush_node_list(p: i32);
-    #[no_mangle]
-    fn begin_diagnostic();
-    #[no_mangle]
-    fn end_diagnostic(blank_line: bool);
-    #[no_mangle]
-    fn print_cmd_chr(cmd: u16, chr_code: i32);
-    #[no_mangle]
-    fn id_lookup(j: i32, l: i32) -> i32;
-    #[no_mangle]
-    fn prim_lookup(s: str_number) -> i32;
-    #[no_mangle]
-    fn pseudo_close();
-    #[no_mangle]
-    fn sa_def(p: i32, e: i32);
-    #[no_mangle]
-    fn gsa_def(p: i32, e: i32);
-    #[no_mangle]
-    fn eq_define(p: i32, t: u16, e: i32);
-    #[no_mangle]
-    fn alter_page_so_far();
-    #[no_mangle]
-    fn load_pool_strings(spare_size: i32) -> i32;
-    #[no_mangle]
-    fn alter_prev_graf();
-    #[no_mangle]
-    fn eq_word_define(p: i32, w: i32);
-    #[no_mangle]
-    fn geq_define(p: i32, t: u16, e: i32);
-    #[no_mangle]
-    fn geq_word_define(p: i32, w: i32);
-    #[no_mangle]
-    fn show_cur_cmd_chr();
-    #[no_mangle]
-    fn end_token_list();
-    #[no_mangle]
-    fn back_input();
-    #[no_mangle]
-    fn back_error();
-    #[no_mangle]
-    fn end_file_reading();
-    #[no_mangle]
-    fn get_token();
-    #[no_mangle]
-    fn find_sa_element(t: small_number, n: i32, w: bool);
-    #[no_mangle]
-    fn get_x_token();
-    #[no_mangle]
-    fn scan_left_brace();
-    #[no_mangle]
-    fn scan_optional_equals();
-    #[no_mangle]
-    fn scan_keyword(s: *const i8) -> bool;
-    #[no_mangle]
-    fn scan_glyph_number(f: internal_font_number);
-    #[no_mangle]
-    fn scan_char_class();
-    #[no_mangle]
-    fn scan_char_class_not_ignored();
-    #[no_mangle]
-    fn scan_usv_num();
-    #[no_mangle]
-    fn scan_char_num();
-    #[no_mangle]
-    fn scan_xetex_math_char_int();
-    #[no_mangle]
-    fn scan_math_class_int();
-    #[no_mangle]
-    fn scan_math_fam_int();
-    #[no_mangle]
-    fn scan_fifteen_bit_int();
-    #[no_mangle]
-    fn scan_register_num();
-    #[no_mangle]
-    fn scan_font_ident();
-    #[no_mangle]
-    fn find_font_dimen(writing: bool);
-    #[no_mangle]
-    fn scan_int();
-    #[no_mangle]
-    fn scan_dimen(mu: bool, inf: bool, shortcut: bool);
-    #[no_mangle]
-    fn scan_glue(level: small_number);
-    #[no_mangle]
-    fn scan_toks(macro_def: bool, xpand: bool) -> i32;
-    #[no_mangle]
-    fn read_toks(n: i32, r: i32, j: i32);
-    #[no_mangle]
-    fn make_name_string() -> str_number;
-    #[no_mangle]
-    fn pack_job_name(_: *const i8);
-    #[no_mangle]
-    fn open_log_file();
-    #[no_mangle]
-    fn start_input(primary_input_name: *const i8);
-    #[no_mangle]
-    fn max_hyphenatable_length() -> i32;
-    #[no_mangle]
-    fn overflow(s: *const i8, n: i32) -> !;
-    #[no_mangle]
-    fn show_save_groups();
-    #[no_mangle]
-    fn do_marks(a: small_number, l: small_number, q: i32) -> bool;
-    #[no_mangle]
-    fn scan_box(box_context: i32);
-    #[no_mangle]
-    fn get_r_token();
-    #[no_mangle]
-    fn trap_zero_glue();
-    #[no_mangle]
-    fn do_register_command(a: small_number);
-    #[no_mangle]
-    fn destroy_font_manager();
-    #[no_mangle]
-    fn alter_integer();
-    #[no_mangle]
-    fn alter_box_dimen();
-    #[no_mangle]
-    fn new_font(a: small_number);
-    #[no_mangle]
-    fn new_interaction();
-    #[no_mangle]
-    fn confusion(s: *const i8) -> !;
-    #[no_mangle]
-    fn error();
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_esc_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_file_line();
-    #[no_mangle]
-    fn length(s: str_number) -> i32;
-    #[no_mangle]
-    fn make_string() -> str_number;
-    #[no_mangle]
-    fn alter_aux();
-    #[no_mangle]
-    fn print_int(n: i32);
-    #[no_mangle]
-    fn print(s: i32);
-    #[no_mangle]
-    fn print_char(s: i32);
-    #[no_mangle]
-    fn main_control();
-    #[no_mangle]
-    fn close_files_and_terminate();
-    #[no_mangle]
-    fn initialize_math_variables();
-    #[no_mangle]
-    fn print_ln();
-    #[no_mangle]
-    fn print_nl(s: str_number);
-    #[no_mangle]
-    fn print_esc(s: str_number);
-    #[no_mangle]
-    fn print_file_name(n: i32, a: i32, e: i32);
-    #[no_mangle]
-    fn print_scaled(s: scaled_t);
-    #[no_mangle]
-    fn initialize_pagebuilder_variables();
-    #[no_mangle]
-    fn initialize_shipout_variables();
-    #[no_mangle]
-    fn deinitialize_shipout_variables();
-    #[no_mangle]
-    fn release_font_engine(engine: *mut libc::c_void, type_flag: i32);
-    #[no_mangle]
-    fn maketexstring(s: *const i8) -> i32;
-    #[no_mangle]
-    fn set_cp_code(fontNum: i32, code: u32, side: i32, value: i32);
-    /* synctex.h
+use bridge::_tt_abort;
+use dpx::dpx_pdfobj::{pdf_files_close, pdf_files_init};
+use libc::{free, memset, strcpy, strlen};
 
-    Copyright (c) 2008, 2009 jerome DOT laurens AT u-bourgogne DOT fr
-
-    This file is part of the SyncTeX package.
-
-    Permission is hereby granted, free of charge, to any person
-    obtaining a copy of this software and associated documentation
-    files (the "Software"), to deal in the Software without
-    restriction, including without limitation the rights to use,
-    copy, modify, merge, publish, distribute, sublicense, and/or sell
-    copies of the Software, and to permit persons to whom the
-    Software is furnished to do so, subject to the following
-    conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-    OTHER DEALINGS IN THE SOFTWARE
-
-    Acknowledgments:
-    ----------------
-    The author received useful remarks from the pdfTeX developers, especially Hahn The Thanh,
-    and significant help from XeTeX developer Jonathan Kew
-
-    Nota Bene:
-    ----------
-    If you include or use a significant part of the synctex package into a software,
-    I would appreciate to be listed as contributor and see "SyncTeX" highlighted.
-
-    Version 1
-    Latest Revision: Wed Jul  1 08:17:50 UTC 2009
-
-    */
-    /*  Send this message to init the synctex command value to the command line option.
-     *  Sending this message too early will cause a bus error.  */
-    #[no_mangle]
-    fn synctex_init_command();
-    #[no_mangle]
-    fn pdf_files_close();
-    #[no_mangle]
-    fn pdf_files_init();
-}
 pub type __ssize_t = i64;
 pub type uintptr_t = u64;
 pub type size_t = u64;
@@ -13981,8 +13761,8 @@ pub unsafe extern "C" fn tt_run_engine(
      * main() driver routines. */
     /* Get our stdout handle */
     rust_stdout = ttstub_output_open_stdout();
-    let mut len: size_t = strlen(dump_name);
-    TEX_format_default = xmalloc(len.wrapping_add(1i32 as u64)) as *mut i8;
+    let len = strlen(dump_name);
+    TEX_format_default = xmalloc(len.wrapping_add(1) as _) as *mut i8;
     strcpy(TEX_format_default, dump_name);
     format_default_length = len as i32;
     /* Not sure why these get custom initializations. */
@@ -14263,7 +14043,7 @@ pub unsafe extern "C" fn tt_run_engine(
     memset(
         buffer as *mut libc::c_void,
         0i32,
-        (buf_size as u64).wrapping_mul(::std::mem::size_of::<UnicodeScalar>() as u64),
+        (buf_size as usize).wrapping_mul(::std::mem::size_of::<UnicodeScalar>()),
     );
     first = 0i32;
     scanner_status = 0_u8;

@@ -9,7 +9,7 @@
     unused_mut
 )]
 
-use super::xetex_ext::GlyphBBox;
+use super::xetex_layout_engine::GlyphBBox;
 
 use self::cf_prelude::*;
 
@@ -355,68 +355,15 @@ pub mod cf_prelude {
     }
 }
 
-extern "C" {
-    #[no_mangle]
-    fn strcmp(_: *const libc::c_char, _: *const libc::c_char) -> libc::c_int;
-    #[no_mangle]
-    fn strlen(_: *const libc::c_char) -> usize;
-    #[no_mangle]
-    fn strncmp(_: *const libc::c_char, _: *const libc::c_char, _: usize) -> libc::c_int;
-    #[no_mangle]
-    fn strdup(_: *const libc::c_char) -> *mut libc::c_char;
-    #[no_mangle]
-    fn free(_: *mut libc::c_void);
-    /* The internal, C/C++ interface: */
-    /* Macs provide Fixed and FixedPoint */
-    /* Misc */
-    /* gFreeTypeLibrary is defined in xetex-XeTeXFontInst_FT2.cpp,
-     * also used in xetex-XeTeXFontMgr_FC.cpp and xetex-ext.c.  */
-    #[no_mangle]
-    fn xmalloc(size: usize) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xcalloc(n: usize, size: usize) -> *mut libc::c_void;
-    #[no_mangle]
-    fn print_chars(string: *const u16, len: i32);
-    #[no_mangle]
-    static mut name_of_file: *mut i8;
-    #[no_mangle]
-    static mut name_length: i32;
-    #[no_mangle]
-    static mut font_area: *mut str_number;
-    #[no_mangle]
-    static mut font_layout_engine: *mut *mut libc::c_void;
-    #[no_mangle]
-    static mut font_letter_space: *mut scaled_t;
-    #[no_mangle]
-    static mut loaded_font_flags: libc::c_char;
-    #[no_mangle]
-    static mut loaded_font_letter_space: scaled_t;
-    #[no_mangle]
-    static mut native_font_type_flag: int32_t;
-    #[no_mangle]
-    fn readCommonFeatures(
-        feat: *const libc::c_char,
-        end: *const libc::c_char,
-        extend: *mut libc::c_float,
-        slant: *mut libc::c_float,
-        embolden: *mut libc::c_float,
-        letterspace: *mut libc::c_float,
-        rgbValue: *mut u32,
-    ) -> libc::c_int;
-    #[no_mangle]
-    fn font_feature_warning(
-        featureNameP: *const libc::c_void,
-        featLen: int32_t,
-        settingNameP: *const libc::c_void,
-        setLen: int32_t,
-    );
-    #[no_mangle]
-    fn read_double(s: *mut *const libc::c_char) -> libc::c_double;
-    #[no_mangle]
-    fn Fix2D(f: Fixed) -> libc::c_double;
-    #[no_mangle]
-    fn D2Fix(d: libc::c_double) -> Fixed;
-}
+use crate::core_memory::{xcalloc, xmalloc};
+use crate::xetex_ext::{print_chars, readCommonFeatures, read_double, D2Fix, Fix2D};
+use crate::xetex_ini::memory_word;
+use crate::xetex_ini::{
+    font_area, font_layout_engine, font_letter_space, loaded_font_flags, loaded_font_letter_space,
+    name_length, name_of_file, native_font_type_flag,
+};
+use crate::xetex_xetex0::font_feature_warning;
+use libc::{free, strcmp, strdup, strlen, strncmp};
 type int32_t = libc::c_int;
 type uint16_t = libc::c_ushort;
 pub type Boolean = libc::c_uchar;
@@ -433,62 +380,6 @@ struct FixedPoint {
     y: Fixed,
 }
 
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: int32_t,
-    pub s1: int32_t,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: libc::c_double,
-    pub ptr: *mut libc::c_void,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: uint16_t,
-    pub s1: uint16_t,
-    pub s2: uint16_t,
-    pub s3: uint16_t,
-}
 pub type str_number = int32_t;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
@@ -497,25 +388,7 @@ pub type str_number = int32_t;
 /* Note that we explicitly do *not* change this on Windows. For maximum
  * portability, we should probably accept *either* forward or backward slashes
  * as directory separators. */
-#[inline]
-unsafe fn strstartswith(
-    mut s: *const libc::c_char,
-    mut prefix: *const libc::c_char,
-) -> *const libc::c_char {
-    let mut length: usize = 0;
-    length = strlen(prefix);
-    if strncmp(s, prefix, length) == 0i32 {
-        return s.offset(length as isize);
-    }
-    ptr::null()
-}
-#[inline]
-unsafe fn streq_ptr(mut s1: *const libc::c_char, mut s2: *const libc::c_char) -> bool {
-    if !s1.is_null() && !s2.is_null() {
-        return strcmp(s1, s2) == 0i32;
-    }
-    false
-}
+use crate::{streq_ptr, strstartswith};
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International
@@ -626,11 +499,11 @@ pub unsafe fn do_aat_layout(mut p: *mut libc::c_void, mut justify: libc::c_int) 
     runCount = CFArrayGetCount(glyphRuns);
     totalGlyphCount = CTLineGetGlyphCount(line);
     if totalGlyphCount > 0i32 as libc::c_long {
-        glyph_info = xmalloc((totalGlyphCount * 10i32 as libc::c_long) as usize);
+        glyph_info = xmalloc((totalGlyphCount * 10i32 as libc::c_long) as _);
         locations = glyph_info as *mut FixedPoint;
         glyphIDs = locations.offset(totalGlyphCount as isize) as *mut UInt16;
         glyphAdvances =
-            xmalloc((totalGlyphCount as usize).wrapping_mul(::std::mem::size_of::<Fixed>()))
+            xmalloc((totalGlyphCount as usize).wrapping_mul(::std::mem::size_of::<Fixed>()) as _)
                 as *mut Fixed;
         totalGlyphCount = 0i32 as CFIndex;
         width = 0i32 as CGFloat;
@@ -645,13 +518,13 @@ pub unsafe fn do_aat_layout(mut p: *mut libc::c_void, mut justify: libc::c_int) 
             ) as CFBooleanRef;
             // TODO(jjgod): Avoid unnecessary allocation with CTRunGetFoosPtr().
             let mut glyphs: *mut CGGlyph =
-                xmalloc((count as usize).wrapping_mul(::std::mem::size_of::<CGGlyph>() as usize))
+                xmalloc((count as usize).wrapping_mul(::std::mem::size_of::<CGGlyph>()) as _)
                     as *mut CGGlyph;
             let mut positions: *mut CGPoint =
-                xmalloc((count as usize).wrapping_mul(::std::mem::size_of::<CGPoint>()))
+                xmalloc((count as usize).wrapping_mul(::std::mem::size_of::<CGPoint>()) as _)
                     as *mut CGPoint;
             let mut advances: *mut CGSize =
-                xmalloc((count as usize).wrapping_mul(::std::mem::size_of::<CGSize>()))
+                xmalloc((count as usize).wrapping_mul(::std::mem::size_of::<CGSize>()) as _)
                     as *mut CGSize;
             let mut runWidth: CGFloat = CTRunGetTypographicBounds(
                 run,
@@ -1029,7 +902,8 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                 {
                     use std::os::unix::ffi::OsStrExt;
                     let bytes = osstr.as_bytes();
-                    ret = xcalloc(bytes.len() + 1, std::mem::size_of::<i8>()) as *mut i8;
+                    ret =
+                        xcalloc((bytes.len() + 1) as _, std::mem::size_of::<i8>() as _) as *mut i8;
                     for i in 0..bytes.len() {
                         *ret.offset(i as isize) = bytes[i] as i8;
                     }
@@ -1856,7 +1730,7 @@ pub unsafe fn aat_print_font_name(
     if !name.is_null() {
         let mut len: CFIndex = CFStringGetLength(name);
         let mut buf: *mut UniChar =
-            xcalloc(len as usize, ::std::mem::size_of::<UniChar>()) as *mut UniChar;
+            xcalloc(len as _, ::std::mem::size_of::<UniChar>() as _) as *mut UniChar;
         CFStringGetCharacters(name, CFRangeMake(0i32 as CFIndex, len), buf);
         print_chars(buf, len as libc::c_int);
         free(buf as *mut libc::c_void);

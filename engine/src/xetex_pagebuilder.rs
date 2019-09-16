@@ -8,197 +8,27 @@
     unused_mut
 )]
 
+use crate::xetex_errors::{confusion, error};
+use crate::xetex_ini::{
+    best_height_plus_depth, cur_list, cur_mark, cur_ptr, dead_cycles, disc_ptr, eqtb,
+    file_line_error_style_p, help_line, help_ptr, insert_penalties, last_glue, last_kern,
+    last_node_type, last_penalty, line, mem, nest, nest_ptr, output_active, page_contents,
+    page_so_far, page_tail, sa_root, semantic_pagination_enabled, temp_ptr,
+};
+use crate::xetex_output::{print_cstr, print_esc_cstr, print_file_line, print_int, print_nl_cstr};
+use crate::xetex_scaledmath::x_over_n;
+use crate::xetex_shipout::ship_out;
+use crate::xetex_xetex0::{
+    badness, begin_token_list, box_error, delete_glue_ref, delete_token_ref, do_marks,
+    find_sa_element, flush_node_list, free_node, geq_word_define, get_node, new_null_box,
+    new_save_level, new_skip_param, new_spec, normal_paragraph, prune_page_top, push_nest,
+    scan_left_brace, vert_break, vpackage,
+};
 use crate::xetex_xetexd::is_non_discardable_node;
-extern "C" {
-    /* Needed here for UFILE */
-    /* variables! */
-    /* All the following variables are defined in xetexini.c */
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut file_line_error_style_p: i32;
-    #[no_mangle]
-    static mut help_line: [*const i8; 6];
-    #[no_mangle]
-    static mut help_ptr: u8;
-    #[no_mangle]
-    static mut temp_ptr: i32;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut nest: *mut list_state_record;
-    #[no_mangle]
-    static mut nest_ptr: i32;
-    #[no_mangle]
-    static mut cur_list: list_state_record;
-    #[no_mangle]
-    static mut line: i32;
-    #[no_mangle]
-    static mut cur_mark: [i32; 5];
-    #[no_mangle]
-    static mut dead_cycles: i32;
-    #[no_mangle]
-    static mut best_height_plus_depth: scaled_t;
-    #[no_mangle]
-    static mut page_tail: i32;
-    #[no_mangle]
-    static mut page_contents: u8;
-    #[no_mangle]
-    static mut page_so_far: [scaled_t; 8];
-    #[no_mangle]
-    static mut last_glue: i32;
-    #[no_mangle]
-    static mut last_penalty: i32;
-    #[no_mangle]
-    static mut last_kern: scaled_t;
-    #[no_mangle]
-    static mut last_node_type: i32;
-    #[no_mangle]
-    static mut insert_penalties: i32;
-    #[no_mangle]
-    static mut output_active: bool;
-    #[no_mangle]
-    static mut sa_root: [i32; 8];
-    #[no_mangle]
-    static mut cur_ptr: i32;
-    #[no_mangle]
-    static mut disc_ptr: [i32; 4];
-    #[no_mangle]
-    static mut semantic_pagination_enabled: bool;
-    /* the former xetexcoerce.h: */
-    #[no_mangle]
-    fn badness(t: scaled_t, s: scaled_t) -> i32;
-    #[no_mangle]
-    fn get_node(s: i32) -> i32;
-    #[no_mangle]
-    fn free_node(p: i32, s: i32);
-    #[no_mangle]
-    fn new_null_box() -> i32;
-    #[no_mangle]
-    fn new_spec(p: i32) -> i32;
-    #[no_mangle]
-    fn new_skip_param(n: small_number) -> i32;
-    #[no_mangle]
-    fn delete_token_ref(p: i32);
-    #[no_mangle]
-    fn delete_glue_ref(p: i32);
-    #[no_mangle]
-    fn flush_node_list(p: i32);
-    #[no_mangle]
-    fn push_nest();
-    #[no_mangle]
-    fn new_save_level(c: group_code);
-    #[no_mangle]
-    fn geq_word_define(p: i32, w: i32);
-    #[no_mangle]
-    fn begin_token_list(p: i32, t: u16);
-    #[no_mangle]
-    fn find_sa_element(t: small_number, n: i32, w: bool);
-    #[no_mangle]
-    fn scan_left_brace();
-    #[no_mangle]
-    fn vpackage(p: i32, h: scaled_t, m: small_number, l: scaled_t) -> i32;
-    #[no_mangle]
-    fn prune_page_top(p: i32, s: bool) -> i32;
-    #[no_mangle]
-    fn vert_break(p: i32, h: scaled_t, d: scaled_t) -> i32;
-    #[no_mangle]
-    fn do_marks(a: small_number, l: small_number, q: i32) -> bool;
-    #[no_mangle]
-    fn box_error(n: eight_bits);
-    #[no_mangle]
-    fn normal_paragraph();
-    #[no_mangle]
-    fn error();
-    #[no_mangle]
-    fn confusion(s: *const i8) -> !;
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_esc_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_int(n: i32);
-    #[no_mangle]
-    fn print_file_line();
-    #[no_mangle]
-    fn ship_out(p: i32);
-    #[no_mangle]
-    fn x_over_n(x: scaled_t, n: i32) -> scaled_t;
-}
+
 pub type scaled_t = i32;
 pub type eight_bits = u8;
 pub type small_number = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
-/* enum: normal .. filll */
-pub type group_code = u8;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct list_state_record {
-    pub mode: i16,
-    pub head: i32,
-    pub tail: i32,
-    pub eTeX_aux: i32,
-    pub prev_graf: i32,
-    pub mode_line: i32,
-    pub aux: memory_word,
-}
 /* tectonic/xetex-pagebuilder.c: the page builder
    Copyright 2017-2018 The Tectonic Project
    Licensed under the MIT License.
@@ -1182,7 +1012,7 @@ unsafe extern "C" fn fire_up(mut c: i32) {
                 .s1,
                 7_u16,
             );
-            new_save_level(8i32 as group_code);
+            new_save_level(8);
             normal_paragraph();
             scan_left_brace();
             return;

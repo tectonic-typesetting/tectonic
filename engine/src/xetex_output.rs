@@ -1,74 +1,25 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
-use super::xetex_ini::selector;
+use super::xetex_ini::{
+    dig, doing_special, eqtb, eqtb_top, error_line, file_offset, full_source_filename_stack, hash,
+    in_open, line, line_stack, log_file, max_print_line, mem, pool_ptr, pool_size, rust_stdout,
+    selector, str_pool, str_ptr, str_start, tally, term_offset, trick_buf, trick_count, write_file,
+};
+use super::xetex_ini::{memory_word, Selector};
 use crate::ttstub_output_putc;
-extern "C" {
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    /* Needed here for UFILE */
-    /* variables! */
-    /* All the following variables are defined in xetexini.c */
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut error_line: i32;
-    #[no_mangle]
-    static mut max_print_line: i32;
-    #[no_mangle]
-    static mut pool_size: i32;
-    #[no_mangle]
-    static mut str_pool: *mut packed_UTF16_code;
-    #[no_mangle]
-    static mut str_start: *mut pool_pointer;
-    #[no_mangle]
-    static mut pool_ptr: pool_pointer;
-    #[no_mangle]
-    static mut str_ptr: str_number;
-    #[no_mangle]
-    static mut rust_stdout: rust_output_handle_t;
-    #[no_mangle]
-    static mut log_file: rust_output_handle_t;
-    #[no_mangle]
-    static mut dig: [u8; 23];
-    #[no_mangle]
-    static mut tally: i32;
-    #[no_mangle]
-    static mut term_offset: i32;
-    #[no_mangle]
-    static mut file_offset: i32;
-    #[no_mangle]
-    static mut trick_buf: [UTF16_code; 256];
-    #[no_mangle]
-    static mut trick_count: i32;
-    #[no_mangle]
-    static mut doing_special: bool;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut hash: *mut b32x2;
-    #[no_mangle]
-    static mut eqtb_top: i32;
-    #[no_mangle]
-    static mut in_open: i32;
-    #[no_mangle]
-    static mut line: i32;
-    #[no_mangle]
-    static mut line_stack: *mut i32;
-    #[no_mangle]
-    static mut full_source_filename_stack: *mut str_number;
-    #[no_mangle]
-    static mut write_file: [rust_output_handle_t; 16];
-}
+
+use libc::strlen;
+
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
-
-use super::xetex_ini::Selector;
 
 /* tectonic/xetex-xetexd.h -- many, many XeTeX symbol definitions
    Copyright 2016-2018 The Tectonic Project
@@ -84,62 +35,6 @@ pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type small_number = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
 /* xetex-output */
 /* tectonic/output.c -- functions related to outputting messages
  * Copyright 2016 the Tectonic Project
@@ -480,10 +375,8 @@ pub unsafe extern "C" fn print(mut s: i32) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn print_cstr(mut str: *const i8) {
-    let mut i: u32 = 0_u32;
-    while (i as u64) < strlen(str) {
+    for i in 0..strlen(str) {
         print_char(*str.offset(i as isize) as i32);
-        i = i.wrapping_add(1)
     }
 }
 #[no_mangle]

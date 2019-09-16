@@ -1,44 +1,20 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::core_memory::{xmalloc, xrealloc};
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_input_open, ttstub_output_close,
     ttstub_output_open, ttstub_output_open_stdout, ttstub_output_putc, ttstub_output_write,
 };
-use libc::free;
+use libc::{free, snprintf, strcpy, strlen};
 extern "C" {
-    /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    /* Both XeTeX and bibtex use this enum: */
-    /* The weird enum values are historical and could be rationalized. But it is
-     * good to write them explicitly since they must be kept in sync with
-     * `src/engines/mod.rs`.
-     */
-    /* quasi-hack to get the primary input */
-    /* Bridge API. Keep synchronized with src/engines/mod.rs. */
-    /* These functions are not meant to be used in the C/C++ code. They define the
-     * API that we expose to the Rust side of things. */
-    /* The internal, C/C++ interface: */
-    /* Global symbols that route through the global API variable. Hopefully we
-     * will one day eliminate all of the global state and get rid of all of
-     * these. */
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn snprintf(_: *mut i8, _: u64, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
     #[no_mangle]
@@ -456,47 +432,14 @@ unsafe extern "C" fn putc_log(c: i32) {
     ttstub_output_putc(standard_output, c);
 }
 unsafe extern "C" fn puts_log(mut s: *const i8) {
-    let mut len: size_t = strlen(s);
-    ttstub_output_write(log_file, s, len);
-    ttstub_output_write(standard_output, s, len);
+    let mut len = strlen(s);
+    ttstub_output_write(log_file, s, len as _);
+    ttstub_output_write(standard_output, s, len as _);
 }
 unsafe extern "C" fn ttstub_puts(mut handle: rust_output_handle_t, mut s: *const i8) {
-    ttstub_output_write(handle, s, strlen(s));
+    ttstub_output_write(handle, s, strlen(s) as _);
 }
-static mut fmt_buf: [i8; 1024] = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-];
+static mut fmt_buf: [i8; 1024] = [0; 1024];
 unsafe extern "C" fn printf_log(mut fmt: *const i8, mut args: ...) {
     let mut ap: ::std::ffi::VaListImpl;
     ap = args.clone();
@@ -11131,9 +11074,9 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
 unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name: *const i8) -> i32 {
     name_of_file = xmalloc(
         strlen(aux_file_name)
-            .wrapping_add(1i32 as u64)
-            .wrapping_add(1i32 as u64)
-            .wrapping_mul(::std::mem::size_of::<u8>() as u64),
+            .wrapping_add(1)
+            .wrapping_add(1)
+            .wrapping_mul(::std::mem::size_of::<u8>()) as _,
     ) as *mut u8;
     strcpy(name_of_file as *mut i8, aux_file_name);
     aux_name_length = strlen(name_of_file as *mut i8) as i32;
@@ -12572,11 +12515,11 @@ unsafe extern "C" fn bst_read_command() {
             let mut buf: [i8; 512] = [0; 512];
             snprintf(
                 buf.as_mut_ptr(),
-                (::std::mem::size_of::<[i8; 512]>() as u64).wrapping_sub(1i32 as u64),
+                (::std::mem::size_of::<[i8; 512]>()).wrapping_sub(1) as _,
                 b"Database file #%ld: \x00" as *const u8 as *const i8,
                 bib_ptr as i64 + 1i32 as i64,
             );
-            ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()));
+            ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()) as _);
             log_pr_bib_name();
         }
         bib_line_num = 0i32;
@@ -13376,14 +13319,14 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> TTHistory 
         let mut buf: [i8; 512] = [0; 512];
         snprintf(
             buf.as_mut_ptr(),
-            (::std::mem::size_of::<[i8; 512]>() as u64).wrapping_sub(1i32 as u64),
+            (::std::mem::size_of::<[i8; 512]>()).wrapping_sub(1),
             b"Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n\x00" as *const u8
                 as *const i8,
             max_strings as i64,
             hash_size as i64,
             hash_prime as i64,
         );
-        ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()));
+        ttstub_output_write(log_file, buf.as_mut_ptr(), strlen(buf.as_mut_ptr()) as _);
         if verbose != 0 {
             puts_log(b"The top-level auxiliary file: \x00" as *const u8 as *const i8);
             print_aux_name();

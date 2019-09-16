@@ -1,35 +1,21 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
-extern "C" {
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    static mut buffer: *mut UnicodeScalar;
-    #[no_mangle]
-    static mut max_strings: i32;
-    #[no_mangle]
-    static mut pool_size: i32;
-    #[no_mangle]
-    static mut str_pool: *mut packed_UTF16_code;
-    #[no_mangle]
-    static mut str_start: *mut pool_pointer;
-    #[no_mangle]
-    static mut pool_ptr: pool_pointer;
-    #[no_mangle]
-    static mut str_ptr: str_number;
-    #[no_mangle]
-    static mut init_pool_ptr: pool_pointer;
-    #[no_mangle]
-    static mut init_str_ptr: str_number;
-    #[no_mangle]
-    fn overflow(s: *const i8, n: i32) -> !;
-}
+use libc::strlen;
+
+use crate::xetex_errors::overflow;
+use crate::xetex_ini::{
+    buffer, init_pool_ptr, init_str_ptr, max_strings, pool_ptr, pool_size, str_pool, str_ptr,
+    str_start,
+};
+
 pub type size_t = u64;
 pub type UnicodeScalar = i32;
 pub type pool_pointer = i32;
@@ -48,7 +34,6 @@ static mut string_constants: [*const i8; 3] = [
 pub unsafe extern "C" fn load_pool_strings(mut spare_size: i32) -> i32 {
     let mut s: *const i8 = 0 as *const i8;
     let mut i: i32 = 0i32;
-    let mut total_len: size_t = 0i32 as size_t;
     let mut g: str_number = 0i32;
     loop {
         let fresh0 = i;
@@ -57,15 +42,15 @@ pub unsafe extern "C" fn load_pool_strings(mut spare_size: i32) -> i32 {
         if s.is_null() {
             break;
         }
-        let mut len: size_t = strlen(s);
-        total_len = (total_len as u64).wrapping_add(len) as size_t as size_t;
-        if total_len >= spare_size as u64 {
+        let mut len = strlen(s);
+        let total_len = len;
+        if total_len >= spare_size as usize {
             return 0i32;
         }
         loop {
             let fresh1 = len;
             len = len.wrapping_sub(1);
-            if !(fresh1 > 0i32 as u64) {
+            if !(fresh1 > 0) {
                 break;
             }
             let fresh2 = s;

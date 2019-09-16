@@ -1,17 +1,14 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
-extern "C" {
-    #[no_mangle]
-    static mut arith_error: bool;
-    #[no_mangle]
-    static mut tex_remainder: scaled_t;
-}
+use crate::xetex_ini::{arith_error, tex_remainder};
 pub type scaled_t = i32;
 /* tectonic/xetex-scaledmath.c: low-level math functions
    Copyright 2017 The Tectonic Project

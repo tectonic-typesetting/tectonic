@@ -8,872 +8,98 @@
     unused_mut
 )]
 
-use super::xetex_ini::{history, old_setting, selector};
-use super::xetex_io::{tt_xetex_open_input, u_open_in};
-use crate::mfree;
-use crate::xetex_ini::hi_mem_min;
-use crate::xetex_xetexd::print_c_string;
-use crate::xetex_xetexd::{is_char_node, is_non_discardable_node};
+use super::xetex_io::{
+    bytesFromUTF8, make_utf16_name, name_of_input_file, offsetsFromUTF8, tt_xetex_open_input,
+    u_open_in,
+};
+use crate::core_memory::{mfree, xmalloc, xrealloc};
+#[cfg(target_os = "macos")]
+use crate::xetex_aatfont as aat;
+use crate::xetex_errors::{confusion, error, fatal_error, overflow, pdf_error};
+use crate::xetex_ext::{
+    apply_mapping, apply_tfm_font_mapping, check_for_tfm_font_mapping, find_native_font,
+    get_encoding_mode_and_info, get_font_char_range, get_glyph_bounds,
+    get_native_char_height_depth, get_native_char_sidebearings, getnativechardp, getnativecharht,
+    getnativecharic, getnativecharwd, gr_font_get_named, gr_font_get_named_1, gr_print_font_name,
+    linebreak_next, linebreak_start, load_tfm_font_mapping, map_char_to_glyph, map_glyph_to_index,
+    measure_native_glyph, measure_native_node, ot_font_get, ot_font_get_1, ot_font_get_2,
+    ot_font_get_3, ot_get_font_metrics, print_glyph_name, print_utf8_str,
+    real_get_native_glyph_italic_correction, real_get_native_italic_correction,
+    real_get_native_word_cp, release_font_engine,
+};
+use crate::xetex_ini::{
+    _xeq_level_array, active_width, adjust_tail, after_token, align_ptr, align_state,
+    area_delimiter, arith_error, avail, base_ptr, bchar, bchar_label, best_height_plus_depth,
+    breadth_max, buf_size, buffer, cancel_boundary, char_base, cond_ptr, cur_align, cur_area,
+    cur_boundary, cur_box, cur_chr, cur_cmd, cur_cs, cur_dir, cur_ext, cur_group, cur_head, cur_if,
+    cur_input, cur_l, cur_lang, cur_level, cur_list, cur_loop, cur_mark, cur_name, cur_order,
+    cur_pre_head, cur_pre_tail, cur_ptr, cur_q, cur_r, cur_span, cur_tail, cur_tok, cur_val,
+    cur_val1, cur_val_level, dead_cycles, def_ref, deletions_allowed, depth_base, depth_threshold,
+    dig, disc_ptr, empty, eof_seen, eqtb, eqtb_top, error_count, error_line, expand_depth,
+    expand_depth_count, ext_delimiter, exten_base, false_bchar, file_line_error_style_p,
+    file_name_quote_char, file_offset, first, first_count, fmem_ptr, font_area, font_bc,
+    font_bchar, font_check, font_dsize, font_ec, font_false_bchar, font_flags, font_glue,
+    font_in_short_display, font_info, font_layout_engine, font_letter_space, font_mapping,
+    font_max, font_mem_size, font_name, font_params, font_ptr, font_size, font_used, force_eof,
+    full_source_filename_stack, gave_char_warning_help, grp_stack, half_error_line, hash,
+    hash_extra, hash_high, hash_used, height_base, help_line, help_ptr, hi_mem_min, history,
+    hyphen_char, if_limit, if_line, if_stack, in_open, init_pool_ptr, init_str_ptr, input_file,
+    input_ptr, input_stack, ins_disc, insert_penalties, insert_src_special_auto,
+    insert_src_special_every_par, insert_src_special_every_vbox, interaction, is_hyph,
+    is_in_csname, italic_base, job_name, kern_base, last, last_badness, last_glue, last_kern,
+    last_leftmost_char, last_node_type, last_penalty, last_rightmost_char, lft_hit, lig_kern_base,
+    lig_stack, ligature_present, line, line_stack, lo_mem_max, loaded_font_design_size,
+    loaded_font_flags, loaded_font_letter_space, loaded_font_mapping, log_file, log_opened,
+    long_help_seen, long_state, mag_set, main_f, main_h, main_i, main_j, main_k, main_p, main_pp,
+    main_ppp, main_s, mapped_text, max_buf_stack, max_in_open, max_in_stack, max_nest_stack,
+    max_param_stack, max_print_line, max_reg_help_line, max_reg_num, max_save_stack, max_strings,
+    mem, mem_end, name_in_progress, name_length, name_length16, name_of_file, name_of_file16,
+    native_font_type_flag, native_len, native_text, native_text_size, nest, nest_ptr, nest_size,
+    no_new_control_sequence, old_setting, open_parens, output_active, pack_begin_line,
+    page_contents, page_so_far, page_tail, par_loc, par_token, param_base, param_ptr, param_size,
+    param_stack, pdf_last_x_pos, pdf_last_y_pos, pool_ptr, pool_size, pre_adjust_tail, prev_class,
+    prim, prim_eqtb, prim_used, pseudo_files, pstack, quoted_filename, radix, read_file, read_open,
+    rover, rt_hit, rust_stdout, sa_chain, sa_level, sa_null, sa_root, save_native_len, save_ptr,
+    save_size, save_stack, scanner_status, selector, set_box_allowed, shown_mode, skew_char,
+    skip_line, source_filename_stack, space_class, stack_size, stop_at_space, str_pool, str_ptr,
+    str_start, tally, temp_ptr, term_offset, tex_remainder, texmf_log_name, total_shrink,
+    total_stretch, trick_buf, trick_count, use_err_help, used_tectonic_coda_tokens, warning_index,
+    width_base, write_file, write_open, xtx_ligature_present, LR_problems, LR_ptr,
+};
+use crate::xetex_ini::{b16x4, b32x2, memory_word, prefixed_command};
+use crate::xetex_io::{input_line, open_or_close_in, set_input_file_encoding, u_close};
+use crate::xetex_layout_engine::*;
+use crate::xetex_linebreak::line_break;
+use crate::xetex_math::{
+    after_math, append_choices, build_choices, fin_mlist, flush_math, init_math, math_ac,
+    math_fraction, math_left_right, math_limit_switch, math_radical, resume_after_display,
+    start_eq_no, sub_sup,
+};
+use crate::xetex_output::{
+    print, print_char, print_cs, print_cstr, print_current_string, print_esc, print_esc_cstr,
+    print_file_line, print_file_name, print_hex, print_int, print_ln, print_native_word, print_nl,
+    print_nl_cstr, print_raw_char, print_roman_int, print_sa_num, print_scaled, print_size,
+    print_write_whatsit, sprint_cs,
+};
+use crate::xetex_pagebuilder::build_page;
+use crate::xetex_pic::{count_pdf_file_pages, load_picture};
+use crate::xetex_scaledmath::{mult_and_add, round_xn_over_d, tex_round, x_over_n, xn_over_d};
+use crate::xetex_shipout::{finalize_dvi_file, new_edge, out_what, ship_out};
+use crate::xetex_stringpool::{
+    append_str, length, make_string, search_string, slow_make_string, str_eq_buf, str_eq_str,
+};
+use crate::xetex_synctex::{synctex_start_input, synctex_terminate};
+use crate::xetex_texmfmp::{
+    getmd5sum, gettexstring, is_new_source, make_src_special, maketexstring, remember_source_info,
+};
+use crate::xetex_xetexd::{is_char_node, is_non_discardable_node, print_c_string};
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_flush, ttstub_output_open, ttstub_output_putc,
 };
+use bridge::_tt_abort;
+use libc::{free, memcpy, strcat, strcpy, strlen};
 
-#[cfg(target_os = "macos")]
-use crate::xetex_aatfont as aat;
-
-use libc::free;
-extern "C" {
-    pub type XeTeXLayoutEngine_rec;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    /* Global symbols that route through the global API variable. Hopefully we
-     * will one day eliminate all of the global state and get rid of all of
-     * these. */
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
-    /* Functions originating in texmfmp.c */
-    #[no_mangle]
-    fn getmd5sum(s: i32, file: bool);
-    #[no_mangle]
-    fn gettexstring(_: str_number) -> *mut i8;
-    #[no_mangle]
-    fn is_new_source(_: str_number, _: i32) -> bool;
-    #[no_mangle]
-    fn make_src_special(_: str_number, _: i32) -> pool_pointer;
-    #[no_mangle]
-    fn remember_source_info(_: str_number, _: i32);
-    /* Needed here for UFILE */
-    /* variables! */
-    /* All the following variables are defined in xetexini.c */
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut name_of_file: *mut i8;
-    #[no_mangle]
-    static mut name_of_file16: *mut UTF16_code;
-    #[no_mangle]
-    static mut name_length: i32;
-    #[no_mangle]
-    static mut name_length16: i32;
-    #[no_mangle]
-    static mut buffer: *mut UnicodeScalar;
-    #[no_mangle]
-    static mut first: i32;
-    #[no_mangle]
-    static mut last: i32;
-    #[no_mangle]
-    static mut max_buf_stack: i32;
-    #[no_mangle]
-    static mut error_line: i32;
-    #[no_mangle]
-    static mut half_error_line: i32;
-    #[no_mangle]
-    static mut max_print_line: i32;
-    #[no_mangle]
-    static mut max_strings: i32;
-    #[no_mangle]
-    static mut pool_size: i32;
-    #[no_mangle]
-    static mut font_mem_size: i32;
-    #[no_mangle]
-    static mut font_max: i32;
-    #[no_mangle]
-    static mut buf_size: i32;
-    #[no_mangle]
-    static mut stack_size: i32;
-    #[no_mangle]
-    static mut max_in_open: i32;
-    #[no_mangle]
-    static mut param_size: i32;
-    #[no_mangle]
-    static mut nest_size: i32;
-    #[no_mangle]
-    static mut save_size: i32;
-    #[no_mangle]
-    static mut expand_depth: i32;
-    #[no_mangle]
-    static mut file_line_error_style_p: i32;
-    #[no_mangle]
-    static mut quoted_filename: bool;
-    #[no_mangle]
-    static mut insert_src_special_auto: bool;
-    #[no_mangle]
-    static mut insert_src_special_every_par: bool;
-    #[no_mangle]
-    static mut insert_src_special_every_vbox: bool;
-    #[no_mangle]
-    static mut str_pool: *mut packed_UTF16_code;
-    #[no_mangle]
-    static mut str_start: *mut pool_pointer;
-    #[no_mangle]
-    static mut pool_ptr: pool_pointer;
-    #[no_mangle]
-    static mut str_ptr: str_number;
-    #[no_mangle]
-    static mut init_pool_ptr: pool_pointer;
-    #[no_mangle]
-    static mut init_str_ptr: str_number;
-    #[no_mangle]
-    static mut rust_stdout: rust_output_handle_t;
-    #[no_mangle]
-    static mut log_file: rust_output_handle_t;
-    #[no_mangle]
-    static mut dig: [u8; 23];
-    #[no_mangle]
-    static mut tally: i32;
-    #[no_mangle]
-    static mut term_offset: i32;
-    #[no_mangle]
-    static mut file_offset: i32;
-    #[no_mangle]
-    static mut trick_buf: [UTF16_code; 256];
-    #[no_mangle]
-    static mut trick_count: i32;
-    #[no_mangle]
-    static mut first_count: i32;
-    #[no_mangle]
-    static mut native_text: *mut UTF16_code;
-    #[no_mangle]
-    static mut native_text_size: i32;
-    #[no_mangle]
-    static mut native_len: i32;
-    #[no_mangle]
-    static mut save_native_len: i32;
-    #[no_mangle]
-    static mut interaction: u8;
-    #[no_mangle]
-    static mut deletions_allowed: bool;
-    #[no_mangle]
-    static mut set_box_allowed: bool;
-    #[no_mangle]
-    static mut error_count: i8;
-    #[no_mangle]
-    static mut help_line: [*const i8; 6];
-    #[no_mangle]
-    static mut help_ptr: u8;
-    #[no_mangle]
-    static mut use_err_help: bool;
-    #[no_mangle]
-    static mut arith_error: bool;
-    #[no_mangle]
-    static mut tex_remainder: scaled_t;
-    #[no_mangle]
-    static mut temp_ptr: i32;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut lo_mem_max: i32;
-    #[no_mangle]
-    static mut avail: i32;
-    #[no_mangle]
-    static mut mem_end: i32;
-    #[no_mangle]
-    static mut rover: i32;
-    #[no_mangle]
-    static mut last_leftmost_char: i32;
-    #[no_mangle]
-    static mut last_rightmost_char: i32;
-    #[no_mangle]
-    static mut font_in_short_display: i32;
-    #[no_mangle]
-    static mut depth_threshold: i32;
-    #[no_mangle]
-    static mut breadth_max: i32;
-    #[no_mangle]
-    static mut nest: *mut list_state_record;
-    #[no_mangle]
-    static mut nest_ptr: i32;
-    #[no_mangle]
-    static mut max_nest_stack: i32;
-    #[no_mangle]
-    static mut cur_list: list_state_record;
-    #[no_mangle]
-    static mut shown_mode: i16;
-    #[no_mangle]
-    static mut hash: *mut b32x2;
-    #[no_mangle]
-    static mut hash_used: i32;
-    #[no_mangle]
-    static mut hash_extra: i32;
-    #[no_mangle]
-    static mut eqtb_top: i32;
-    #[no_mangle]
-    static mut hash_high: i32;
-    #[no_mangle]
-    static mut no_new_control_sequence: bool;
-    #[no_mangle]
-    static mut prim: [b32x2; 501];
-    #[no_mangle]
-    static mut prim_used: i32;
-    #[no_mangle]
-    static mut prim_eqtb: [memory_word; 501];
-    #[no_mangle]
-    static mut save_stack: *mut memory_word;
-    #[no_mangle]
-    static mut save_ptr: i32;
-    #[no_mangle]
-    static mut max_save_stack: i32;
-    #[no_mangle]
-    static mut cur_level: u16;
-    #[no_mangle]
-    static mut cur_group: group_code;
-    #[no_mangle]
-    static mut cur_boundary: i32;
-    #[no_mangle]
-    static mut mag_set: i32;
-    #[no_mangle]
-    static mut cur_cmd: eight_bits;
-    #[no_mangle]
-    static mut cur_chr: i32;
-    #[no_mangle]
-    static mut cur_cs: i32;
-    #[no_mangle]
-    static mut cur_tok: i32;
-    #[no_mangle]
-    static mut input_stack: *mut input_state_t;
-    #[no_mangle]
-    static mut input_ptr: i32;
-    #[no_mangle]
-    static mut max_in_stack: i32;
-    #[no_mangle]
-    static mut cur_input: input_state_t;
-    #[no_mangle]
-    static mut in_open: i32;
-    #[no_mangle]
-    static mut open_parens: i32;
-    #[no_mangle]
-    static mut input_file: *mut *mut UFILE;
-    #[no_mangle]
-    static mut line: i32;
-    #[no_mangle]
-    static mut line_stack: *mut i32;
-    #[no_mangle]
-    static mut source_filename_stack: *mut str_number;
-    #[no_mangle]
-    static mut full_source_filename_stack: *mut str_number;
-    #[no_mangle]
-    static mut scanner_status: u8;
-    #[no_mangle]
-    static mut warning_index: i32;
-    #[no_mangle]
-    static mut def_ref: i32;
-    #[no_mangle]
-    static mut param_stack: *mut i32;
-    #[no_mangle]
-    static mut param_ptr: i32;
-    #[no_mangle]
-    static mut max_param_stack: i32;
-    #[no_mangle]
-    static mut align_state: i32;
-    #[no_mangle]
-    static mut base_ptr: i32;
-    #[no_mangle]
-    static mut par_loc: i32;
-    #[no_mangle]
-    static mut par_token: i32;
-    #[no_mangle]
-    static mut force_eof: bool;
-    #[no_mangle]
-    static mut expand_depth_count: i32;
-    #[no_mangle]
-    static mut is_in_csname: bool;
-    #[no_mangle]
-    static mut cur_mark: [i32; 5];
-    #[no_mangle]
-    static mut long_state: u8;
-    #[no_mangle]
-    static mut pstack: [i32; 9];
-    #[no_mangle]
-    static mut cur_val: i32;
-    #[no_mangle]
-    static mut cur_val1: i32;
-    #[no_mangle]
-    static mut cur_val_level: u8;
-    #[no_mangle]
-    static mut radix: small_number;
-    #[no_mangle]
-    static mut cur_order: glue_ord;
-    #[no_mangle]
-    static mut read_file: [*mut UFILE; 16];
-    #[no_mangle]
-    static mut read_open: [u8; 17];
-    #[no_mangle]
-    static mut cond_ptr: i32;
-    #[no_mangle]
-    static mut if_limit: u8;
-    #[no_mangle]
-    static mut cur_if: small_number;
-    #[no_mangle]
-    static mut if_line: i32;
-    #[no_mangle]
-    static mut skip_line: i32;
-    #[no_mangle]
-    static mut cur_name: str_number;
-    #[no_mangle]
-    static mut cur_area: str_number;
-    #[no_mangle]
-    static mut cur_ext: str_number;
-    #[no_mangle]
-    static mut area_delimiter: pool_pointer;
-    #[no_mangle]
-    static mut ext_delimiter: pool_pointer;
-    #[no_mangle]
-    static mut file_name_quote_char: UTF16_code;
-    #[no_mangle]
-    static mut name_in_progress: bool;
-    #[no_mangle]
-    static mut job_name: str_number;
-    #[no_mangle]
-    static mut log_opened: bool;
-    #[no_mangle]
-    static mut texmf_log_name: str_number;
-    #[no_mangle]
-    static mut font_info: *mut memory_word;
-    #[no_mangle]
-    static mut fmem_ptr: font_index;
-    #[no_mangle]
-    static mut font_ptr: internal_font_number;
-    #[no_mangle]
-    static mut font_check: *mut b16x4;
-    #[no_mangle]
-    static mut font_size: *mut scaled_t;
-    #[no_mangle]
-    static mut font_dsize: *mut scaled_t;
-    #[no_mangle]
-    static mut font_params: *mut font_index;
-    #[no_mangle]
-    static mut font_name: *mut str_number;
-    #[no_mangle]
-    static mut font_area: *mut str_number;
-    #[no_mangle]
-    static mut font_bc: *mut UTF16_code;
-    #[no_mangle]
-    static mut font_ec: *mut UTF16_code;
-    #[no_mangle]
-    static mut font_glue: *mut i32;
-    #[no_mangle]
-    static mut font_used: *mut bool;
-    #[no_mangle]
-    static mut hyphen_char: *mut i32;
-    #[no_mangle]
-    static mut skew_char: *mut i32;
-    #[no_mangle]
-    static mut bchar_label: *mut font_index;
-    #[no_mangle]
-    static mut font_bchar: *mut nine_bits;
-    #[no_mangle]
-    static mut font_false_bchar: *mut nine_bits;
-    #[no_mangle]
-    static mut font_layout_engine: *mut *mut libc::c_void;
-    #[no_mangle]
-    static mut font_mapping: *mut *mut libc::c_void;
-    #[no_mangle]
-    static mut font_flags: *mut i8;
-    #[no_mangle]
-    static mut font_letter_space: *mut scaled_t;
-    #[no_mangle]
-    static mut loaded_font_mapping: *mut libc::c_void;
-    #[no_mangle]
-    static mut loaded_font_flags: i8;
-    #[no_mangle]
-    static mut loaded_font_letter_space: scaled_t;
-    #[no_mangle]
-    static mut loaded_font_design_size: scaled_t;
-    #[no_mangle]
-    static mut mapped_text: *mut UTF16_code;
-    #[no_mangle]
-    static mut char_base: *mut i32;
-    #[no_mangle]
-    static mut width_base: *mut i32;
-    #[no_mangle]
-    static mut height_base: *mut i32;
-    #[no_mangle]
-    static mut depth_base: *mut i32;
-    #[no_mangle]
-    static mut italic_base: *mut i32;
-    #[no_mangle]
-    static mut lig_kern_base: *mut i32;
-    #[no_mangle]
-    static mut kern_base: *mut i32;
-    #[no_mangle]
-    static mut exten_base: *mut i32;
-    #[no_mangle]
-    static mut param_base: *mut i32;
-    #[no_mangle]
-    static mut dead_cycles: i32;
-    /* should be internal to shipout, but accessed by synctex */
-    #[no_mangle]
-    static mut total_stretch: [scaled_t; 4];
-    #[no_mangle]
-    static mut total_shrink: [scaled_t; 4];
-    #[no_mangle]
-    static mut last_badness: i32;
-    #[no_mangle]
-    static mut adjust_tail: i32;
-    #[no_mangle]
-    static mut pre_adjust_tail: i32;
-    #[no_mangle]
-    static mut pack_begin_line: i32;
-    #[no_mangle]
-    static mut empty: b32x2;
-    #[no_mangle]
-    static mut cur_align: i32;
-    #[no_mangle]
-    static mut cur_span: i32;
-    #[no_mangle]
-    static mut cur_loop: i32;
-    #[no_mangle]
-    static mut align_ptr: i32;
-    /* tectonic/xetex-io.h: XeTeX-specific low-level I/O routines
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    #[no_mangle]
-    fn make_utf16_name();
-    #[no_mangle]
-    fn input_line(f: *mut UFILE) -> i32;
-    #[no_mangle]
-    fn u_close(f: *mut UFILE);
-    #[no_mangle]
-    fn set_input_file_encoding(f: *mut UFILE, mode: i32, encodingData: i32);
-    #[no_mangle]
-    static bytesFromUTF8: [u8; 256];
-    #[no_mangle]
-    static offsetsFromUTF8: [u32; 6];
-    #[no_mangle]
-    static mut name_of_input_file: *mut i8;
-    #[no_mangle]
-    fn get_ot_math_constant(f: i32, n: i32) -> i32;
-    /* ***************************************************************************\
-     Part of the XeTeX typesetting system
-     Copyright (c) 1994-2008 by SIL International
-     Copyright (c) 2009, 2011 by Jonathan Kew
-     Copyright (c) 2012, 2013 by Jiang Jiang
-     Copyright (c) 2012-2015 by Khaled Hosny
-
-     SIL Author(s): Jonathan Kew
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-    NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE
-    FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-    CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-    Except as contained in this notice, the name of the copyright holders
-    shall not be used in advertising or otherwise to promote the sale,
-    use or other dealings in this Software without prior written
-    authorization from the copyright holders.
-    \****************************************************************************/
-    /* some typedefs that XeTeX uses - on Mac OS, we get these from Apple headers,
-    but otherwise we'll need these substitute definitions */
-    /* command codes for XeTeX extension commands */
-    /* accessing info in a native_word_node */
-    /* info for each glyph is location (FixedPoint) + glyph ID (u16) */
-    /* glyph ID field in a glyph_node */
-    /* For Unicode encoding form interpretation... */
-    /* single-purpose metrics accessors */
-    /* the metrics params here are really TeX 'scaled' (or MacOS 'Fixed') values, but that typedef isn't available every place this is included */
-    #[no_mangle]
-    fn apply_tfm_font_mapping(mapping: *mut libc::c_void, c: i32) -> i32;
-    #[no_mangle]
-    fn load_tfm_font_mapping() -> *mut libc::c_void;
-    #[no_mangle]
-    fn check_for_tfm_font_mapping();
-    #[no_mangle]
-    fn get_cp_code(fontNum: i32, code: u32, side: i32) -> i32;
-    #[no_mangle]
-    fn maketexstring(s: *const i8) -> i32;
-    #[no_mangle]
-    fn count_pdf_file_pages() -> i32;
-    #[no_mangle]
-    fn get_font_char_range(font: i32, first_0: i32) -> i32;
-    #[no_mangle]
-    fn gr_font_get_named_1(what: i32, pEngine: *mut libc::c_void, param: i32) -> i32;
-    #[no_mangle]
-    fn gr_font_get_named(what: i32, pEngine: *mut libc::c_void) -> i32;
-    #[no_mangle]
-    fn gr_print_font_name(what: i32, pEngine: *mut libc::c_void, param1: i32, param2: i32);
-    #[no_mangle]
-    fn print_glyph_name(font: i32, gid: i32);
-    #[no_mangle]
-    fn map_glyph_to_index(font: i32) -> i32;
-    #[no_mangle]
-    fn map_char_to_glyph(font: i32, ch: i32) -> i32;
-    #[no_mangle]
-    fn measure_native_glyph(node: *mut libc::c_void, use_glyph_metrics: i32);
-    #[no_mangle]
-    fn real_get_native_word_cp(node: *mut libc::c_void, side: i32) -> i32;
-    #[no_mangle]
-    fn real_get_native_glyph_italic_correction(node: *mut libc::c_void) -> Fixed;
-    #[no_mangle]
-    fn real_get_native_italic_correction(node: *mut libc::c_void) -> Fixed;
-    #[no_mangle]
-    fn measure_native_node(node: *mut libc::c_void, use_glyph_metrics: i32);
-    #[no_mangle]
-    fn apply_mapping(cnv: *mut libc::c_void, txtPtr: *mut u16, txtLen: i32) -> i32;
-    #[no_mangle]
-    fn ot_font_get_3(
-        what: i32,
-        engine: *mut libc::c_void,
-        param1: i32,
-        param2: i32,
-        param3: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn ot_font_get_2(what: i32, engine: *mut libc::c_void, param1: i32, param2: i32) -> i32;
-    #[no_mangle]
-    fn ot_font_get_1(what: i32, engine: *mut libc::c_void, param: i32) -> i32;
-    #[no_mangle]
-    fn ot_font_get(what: i32, engine: *mut libc::c_void) -> i32;
-    #[no_mangle]
-    fn get_glyph_bounds(font: i32, edge: i32, gid: i32) -> scaled_t;
-    #[no_mangle]
-    fn getnativecharic(font: i32, ch: i32) -> scaled_t;
-    #[no_mangle]
-    fn getnativechardp(font: i32, ch: i32) -> scaled_t;
-    #[no_mangle]
-    fn getnativecharht(font: i32, ch: i32) -> scaled_t;
-    #[no_mangle]
-    fn getnativecharwd(font: i32, ch: i32) -> scaled_t;
-    #[no_mangle]
-    fn get_native_char_sidebearings(font: i32, ch: i32, lsb: *mut scaled_t, rsb: *mut scaled_t);
-    #[no_mangle]
-    fn get_native_char_height_depth(
-        font: i32,
-        ch: i32,
-        height: *mut scaled_t,
-        depth: *mut scaled_t,
-    );
-    #[no_mangle]
-    fn ot_get_font_metrics(
-        engine: *mut libc::c_void,
-        ascent: *mut scaled_t,
-        descent: *mut scaled_t,
-        xheight: *mut scaled_t,
-        capheight: *mut scaled_t,
-        slant: *mut scaled_t,
-    );
-    #[no_mangle]
-    fn release_font_engine(engine: *mut libc::c_void, type_flag: i32);
-    #[no_mangle]
-    fn find_native_font(name: *mut i8, scaled_size: i32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn print_utf8_str(str: *const u8, len: i32);
-    #[no_mangle]
-    fn get_encoding_mode_and_info(info: *mut i32) -> i32;
-    #[no_mangle]
-    fn linebreak_next() -> i32;
-    #[no_mangle]
-    fn linebreak_start(f: i32, localeStrNum: i32, text: *mut u16, textLength: i32);
-    #[no_mangle]
-    fn isOpenTypeMathFont(engine: XeTeXLayoutEngine) -> bool;
-    #[no_mangle]
-    fn usingGraphite(engine: XeTeXLayoutEngine) -> bool;
-    #[no_mangle]
-    fn usingOpenType(engine: XeTeXLayoutEngine) -> bool;
-    #[no_mangle]
-    static mut cur_head: i32;
-    #[no_mangle]
-    static mut cur_tail: i32;
-    #[no_mangle]
-    static mut cur_pre_head: i32;
-    #[no_mangle]
-    static mut cur_pre_tail: i32;
-    #[no_mangle]
-    static mut active_width: [scaled_t; 7];
-    #[no_mangle]
-    static mut cur_lang: u8;
-    #[no_mangle]
-    static mut cur_l: i32;
-    #[no_mangle]
-    static mut cur_r: i32;
-    #[no_mangle]
-    static mut cur_q: i32;
-    #[no_mangle]
-    static mut lig_stack: i32;
-    #[no_mangle]
-    static mut ligature_present: bool;
-    #[no_mangle]
-    static mut lft_hit: bool;
-    #[no_mangle]
-    static mut rt_hit: bool;
-    #[no_mangle]
-    static mut best_height_plus_depth: scaled_t;
-    #[no_mangle]
-    static mut page_tail: i32;
-    #[no_mangle]
-    static mut page_contents: u8;
-    #[no_mangle]
-    static mut page_so_far: [scaled_t; 8];
-    #[no_mangle]
-    static mut last_glue: i32;
-    #[no_mangle]
-    static mut last_penalty: i32;
-    #[no_mangle]
-    static mut last_kern: scaled_t;
-    #[no_mangle]
-    static mut last_node_type: i32;
-    #[no_mangle]
-    static mut insert_penalties: i32;
-    #[no_mangle]
-    static mut output_active: bool;
-    #[no_mangle]
-    static mut main_f: internal_font_number;
-    #[no_mangle]
-    static mut main_i: b16x4;
-    #[no_mangle]
-    static mut main_j: b16x4;
-    #[no_mangle]
-    static mut main_k: font_index;
-    #[no_mangle]
-    static mut main_p: i32;
-    #[no_mangle]
-    static mut main_pp: i32;
-    #[no_mangle]
-    static mut main_ppp: i32;
-    #[no_mangle]
-    static mut main_h: i32;
-    #[no_mangle]
-    static mut is_hyph: bool;
-    #[no_mangle]
-    static mut space_class: i32;
-    #[no_mangle]
-    static mut prev_class: i32;
-    #[no_mangle]
-    static mut main_s: i32;
-    #[no_mangle]
-    static mut bchar: i32;
-    #[no_mangle]
-    static mut false_bchar: i32;
-    #[no_mangle]
-    static mut cancel_boundary: bool;
-    #[no_mangle]
-    static mut ins_disc: bool;
-    #[no_mangle]
-    static mut cur_box: i32;
-    #[no_mangle]
-    static mut after_token: i32;
-    #[no_mangle]
-    static mut long_help_seen: bool;
-    #[no_mangle]
-    static mut write_file: [rust_output_handle_t; 16];
-    #[no_mangle]
-    static mut write_open: [bool; 18];
-    #[no_mangle]
-    static mut pdf_last_x_pos: i32;
-    #[no_mangle]
-    static mut pdf_last_y_pos: i32;
-    #[no_mangle]
-    static mut eof_seen: *mut bool;
-    #[no_mangle]
-    static mut LR_ptr: i32;
-    #[no_mangle]
-    static mut LR_problems: i32;
-    #[no_mangle]
-    static mut cur_dir: small_number;
-    #[no_mangle]
-    static mut pseudo_files: i32;
-    #[no_mangle]
-    static mut grp_stack: *mut save_pointer;
-    #[no_mangle]
-    static mut if_stack: *mut i32;
-    #[no_mangle]
-    static mut max_reg_num: i32;
-    #[no_mangle]
-    static mut max_reg_help_line: *const i8;
-    #[no_mangle]
-    static mut sa_root: [i32; 8];
-    #[no_mangle]
-    static mut cur_ptr: i32;
-    #[no_mangle]
-    static mut sa_null: memory_word;
-    #[no_mangle]
-    static mut sa_chain: i32;
-    #[no_mangle]
-    static mut sa_level: u16;
-    #[no_mangle]
-    static mut disc_ptr: [i32; 4];
-    #[no_mangle]
-    static mut stop_at_space: bool;
-    #[no_mangle]
-    static mut native_font_type_flag: i32;
-    #[no_mangle]
-    static mut xtx_ligature_present: bool;
-    #[no_mangle]
-    static mut used_tectonic_coda_tokens: bool;
-    #[no_mangle]
-    static mut gave_char_warning_help: bool;
-    /*:1683*/
-    /* It looks like these arrays are set up so that they can be safely indexed
-     * with negative indices. The underlying arrays used to be named "zzzaa" and
-     * "zzzbb". */
-    #[no_mangle]
-    static mut _xeq_level_array: [u16; 1114732];
-    /* xetex-errors */
-    /* xetex-math */
-    /* xetex-output */
-    #[no_mangle]
-    fn print_esc_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_char(s: i32);
-    #[no_mangle]
-    fn print_cs(p: i32);
-    #[no_mangle]
-    fn print_ln();
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    #[no_mangle]
-    fn overflow(s: *const i8, n: i32) -> !;
-    #[no_mangle]
-    fn terminate_font_manager();
-    #[no_mangle]
-    fn round_xn_over_d(x: scaled_t, n: i32, d: i32) -> scaled_t;
-    #[no_mangle]
-    fn print_native_word(p: i32);
-    #[no_mangle]
-    fn print_esc(s: str_number);
-    #[no_mangle]
-    fn print(s: i32);
-    #[no_mangle]
-    fn print_scaled(s: scaled_t);
-    #[no_mangle]
-    fn print_int(n: i32);
-    #[no_mangle]
-    fn print_hex(n: i32);
-    #[no_mangle]
-    fn print_raw_char(s: UTF16_code, incr_offset: bool);
-    #[no_mangle]
-    fn print_write_whatsit(s: *const i8, p: i32);
-    #[no_mangle]
-    fn print_file_name(n: i32, a: i32, e: i32);
-    #[no_mangle]
-    fn tex_round(_: f64) -> i32;
-    #[no_mangle]
-    fn print_current_string();
-    #[no_mangle]
-    fn confusion(s: *const i8) -> !;
-    #[no_mangle]
-    fn x_over_n(x: scaled_t, n: i32) -> scaled_t;
-    /* tectonic/xetex-stringpool.h: preloaded "string pool" constants
-       Copyright 2017 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    #[no_mangle]
-    fn length(s: str_number) -> i32;
-    #[no_mangle]
-    fn print_size(s: i32);
-    #[no_mangle]
-    fn print_sa_num(q: i32);
-    #[no_mangle]
-    fn error();
-    #[no_mangle]
-    fn print_file_line();
-    #[no_mangle]
-    fn make_string() -> str_number;
-    #[no_mangle]
-    fn str_eq_buf(s: str_number, k: i32) -> bool;
-    #[no_mangle]
-    fn str_eq_str(s: str_number, t: str_number) -> bool;
-    #[no_mangle]
-    fn print_nl(s: str_number);
-    #[no_mangle]
-    fn finalize_dvi_file();
-    #[no_mangle]
-    fn init_math();
-    #[no_mangle]
-    fn start_eq_no();
-    #[no_mangle]
-    fn math_limit_switch();
-    #[no_mangle]
-    fn math_radical();
-    #[no_mangle]
-    fn math_ac();
-    #[no_mangle]
-    fn append_choices();
-    #[no_mangle]
-    fn sub_sup();
-    #[no_mangle]
-    fn math_fraction();
-    #[no_mangle]
-    fn math_left_right();
-    #[no_mangle]
-    fn after_math();
-    #[no_mangle]
-    fn build_choices();
-    #[no_mangle]
-    fn fin_mlist(p: i32) -> i32;
-    #[no_mangle]
-    fn load_picture(is_pdf: bool);
-    #[no_mangle]
-    fn open_or_close_in();
-    #[no_mangle]
-    fn append_str(s: str_number);
-    #[no_mangle]
-    fn ship_out(p: i32);
-    #[no_mangle]
-    fn line_break(d: bool);
-    #[no_mangle]
-    fn fatal_error(s: *const i8) -> !;
-    #[no_mangle]
-    fn flush_math();
-    #[no_mangle]
-    fn prefixed_command();
-    #[no_mangle]
-    fn resume_after_display();
-    #[no_mangle]
-    fn build_page();
-    #[no_mangle]
-    fn sprint_cs(p: i32);
-    #[no_mangle]
-    fn new_edge(s: small_number, w: scaled_t) -> i32;
-    #[no_mangle]
-    fn out_what(p: i32);
-    #[no_mangle]
-    fn slow_make_string() -> str_number;
-    #[no_mangle]
-    fn search_string(search: str_number) -> str_number;
-    #[no_mangle]
-    fn pdf_error(t: *const i8, p: *const i8) -> !;
-    #[no_mangle]
-    fn print_roman_int(n: i32);
-    #[no_mangle]
-    fn mult_and_add(n: i32, x: scaled_t, y: scaled_t, max_answer: scaled_t) -> scaled_t;
-    #[no_mangle]
-    fn xn_over_d(x: scaled_t, n: i32, d: i32) -> scaled_t;
-    /*  Send this message to clean memory, and close the file.  */
-    #[no_mangle]
-    fn synctex_terminate(log_opened_0: bool);
-    /*  Send this message when starting a new input.  */
-    #[no_mangle]
-    fn synctex_start_input();
-}
 pub type size_t = u64;
 /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
    Copyright 2016-2018 the Tectonic Project
@@ -890,7 +116,6 @@ pub type CFDictionaryRef = *mut libc::c_void;
 
 use super::xetex_ini::Selector;
 
-pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
 pub type UInt16 = u16;
 pub type UInt32 = u32;
 /* quasi-hack to get the primary input */
@@ -910,153 +135,6 @@ pub type pool_pointer = i32;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type small_number = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
-/* ## THE ORIGINAL SITUATION (archived for posterity)
- *
- * In XeTeX, a "quarterword" is 16 bits. Who knows why. A "halfword" is,
- * sensibly, 32 bits. A "memory word" is a full word: either four quarters or
- * two halves: i.e., 64 bits. The memory word union also has options for
- * doubles (called `gr`), `integer` which is an i32 (called `cint`), and a
- * pointer (`ptr`).
- *
- * Original struct definition, LITTLE ENDIAN (condensed):
- *
- *   typedef union {
- *       struct { i32 LH, RH; } v;
- *       struct { short B1, B0; } u;
- *   } two_halves;
- *
- *   typedef struct {
- *       struct { u16 B3, B2, B1, B0; } u;
- *   } four_quarters;
- *
- *   typedef union {
- *       two_halves hh;
- *
- *       struct {
- *           i32 junk;
- *           i32 CINT;
- *       } u;
- *
- *       struct {
- *           four_quarters QQQQ;
- *       } v;
- *   } memory_word;
- *
- *   #  define cint u.CINT
- *   #  define qqqq v.QQQQ
- *
- * Original memory layout, LITTLE ENDIAN:
- *
- *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   cint:                             [lsb...............msb]
- *   hh.u:     [l..B1...m] [l..B0...m]
- *   hh.v:     [lsb......LH.......msb] [lsb......RH.......msb]
- *   quarters: [l..B3...m] [l..B2...m] [l..B1...m] [l..B0...m]
- *
- * Original struct definition, BIG ENDIAN (condensed):
- *
- *   typedef union {
- *       struct { i32 RH, LH; } v;
- *       struct {
- *           i32 junk;
- *           short B0, B1;
- *       } u;
- *   } two_halves;
- *
- *   typedef struct {
- *       struct { u16 B0, B1, B2, B3; } u;
- *   } four_quarters;
- *
- *   typedef union {
- *       two_halves hh;
- *       four_quarters qqqq;
- *   } memory_word;
- *
- * Original memory layout, BIG ENDIAN:
- *
- *   bytes:    --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   cint:     [msb...............lsb]
- *   hh.u:                             [m..B0...l] [m..B1...l]
- *   hh.v:     [msb......RH.......lsb] [msb......LH.......lsb]
- *   quarters: [m..B0...l] [m..B1...l] [m..B2...l] [m...B3..l]
- *
- * Several things to note that apply to both endiannesses:
- *
- *   1. The different B0 and B1 instances do not line up.
- *   2. `cint` is isomorphic to `hh.v.RH`
- *   3. `hh.u.B0` is isomorphic to `qqqq.u.B2`
- *   4. `hh.u.B1` is isomorphic to `qqqq.u.B3`.
- *   5. The `four_quarters` field `u` serves no discernable purpose.
- *
- * CONVERTING TO THE NEW SYSTEM
- *
- * - `w.cint` => `w.b32.s1`
- * - `w.qqqq.u.B<n>` => `w.b16.s{{3 - <n>}}` !!!!!!!!!!!
- * - similar for `<quarterword_variable>.u.B<n>` => `<quarterword_variable>.s{{3 - <n>}}` !!!
- * - `w.hh.u.B0` => `w.b16.s1`
- * - `w.hh.u.B1` => `w.b16.s0`
- * - `w.hh.v.RH` => `w.b32.s1`
- * - `w.hh.v.LH` => `w.b32.s0`
- * - `four_quarters` => `b16x4`
- * - `two_halves` => `b32x2`
- *
- */
 /* Symbolic accessors for various TeX data structures. I would loooove to turn these
  * into actual structs, but the path to doing that is not currently clear. Making
  * field references symbolic seems like a decent start. Sadly I don't see how to do
@@ -1139,28 +217,6 @@ pub type internal_font_number = i32;
 pub type font_index = i32;
 pub type nine_bits = i32;
 pub type save_pointer = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct list_state_record {
-    pub mode: i16,
-    pub head: i32,
-    pub tail: i32,
-    pub eTeX_aux: i32,
-    pub prev_graf: i32,
-    pub mode_line: i32,
-    pub aux: memory_word,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct input_state_t {
-    pub state: u16,
-    pub index: u16,
-    pub start: i32,
-    pub loc: i32,
-    pub limit: i32,
-    pub name: i32,
-    pub synctex_tag: i32,
-}
 
 pub use super::xetex_io::UFILE;
 
@@ -1535,7 +591,7 @@ pub unsafe extern "C" fn copy_native_glyph_info(mut src: i32, mut dest: i32) {
         memcpy(
             (*mem.offset((dest + 5i32) as isize)).ptr,
             (*mem.offset((src + 5i32) as isize)).ptr,
-            (glyph_count * 10i32) as u64,
+            (glyph_count * 10i32) as usize,
         );
         (*mem.offset((dest + 4i32) as isize)).b16.s0 = glyph_count as u16
     };
@@ -9876,7 +8932,7 @@ pub unsafe extern "C" fn scan_keyword(mut s: *const i8) -> bool {
     let mut p: i32 = 4999999i32 - 13i32;
     let mut q: i32 = 0;
     (*mem.offset(p as isize)).b32.s1 = -0xfffffffi32;
-    if strlen(s) == 1i32 as u64 {
+    if strlen(s) == 1 {
         let mut c: i8 = *s.offset(0);
         loop {
             get_x_token();
@@ -9901,8 +8957,8 @@ pub unsafe extern "C" fn scan_keyword(mut s: *const i8) -> bool {
             }
         }
     }
-    let mut slen: size_t = strlen(s);
-    let mut i: size_t = 0i32 as size_t;
+    let slen = strlen(s);
+    let mut i = 0;
     while i < slen {
         get_x_token();
         if cur_cs == 0i32
@@ -16186,8 +15242,8 @@ pub unsafe extern "C" fn start_input(mut primary_input_name: *const i8) {
         stop_at_space = false;
         let mut cp: *const u8 = primary_input_name as *const u8;
         assert!(
-            !((pool_ptr as u64).wrapping_add(strlen(primary_input_name).wrapping_mul(2i32 as u64))
-                >= pool_size as u64),
+            !((pool_ptr as usize).wrapping_add(strlen(primary_input_name).wrapping_mul(2))
+                >= pool_size as usize),
             "string pool overflow [{} bytes]",
             pool_size,
         );

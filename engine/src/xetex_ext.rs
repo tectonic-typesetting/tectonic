@@ -8,26 +8,12 @@
     unused_mut
 )]
 
-use crate::mfree;
 use crate::stub_icu as icu;
 use crate::stub_teckit as teckit;
 use crate::xetex_xetexd::print_c_string;
 use crate::{streq_ptr, strstartswith};
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
 use libc::free;
-
-#[cfg(not(target_os = "macos"))]
-extern "C" {
-    pub type _FcPattern;
-}
-#[cfg(not(target_os = "macos"))]
-pub type FcPattern = _FcPattern;
-
-/// PlatformFontRef matches C++
-#[cfg(not(target_os = "macos"))]
-pub type PlatformFontRef = *mut FcPattern;
-#[cfg(target_os = "macos")]
-pub type PlatformFontRef = CTFontDescriptorRef;
 
 #[cfg(target_os = "macos")]
 use super::xetex_aatfont as aat;
@@ -39,286 +25,25 @@ use super::xetex_aatfont::cf_prelude::{
     CGColorGetComponents, CGColorRef, CGFloat, CTFontDescriptorRef, CTFontGetMatrix, CTFontGetSize,
     CTFontRef,
 };
+use crate::core_memory::{mfree, xcalloc, xmalloc, xrealloc, xstrdup};
+use crate::xetex_ini::memory_word;
+use crate::xetex_ini::{
+    depth_base, font_area, font_flags, font_info, font_layout_engine, font_letter_space,
+    height_base, loaded_font_design_size, loaded_font_flags, loaded_font_letter_space,
+    loaded_font_mapping, mapped_text, name_length, name_of_file, native_font_type_flag, param_base,
+    xdv_buffer,
+};
+use crate::xetex_output::{print_char, print_int, print_nl, print_raw_char};
+use crate::xetex_scaledmath::xn_over_d;
+use crate::xetex_texmfmp::gettexstring;
+use crate::xetex_xetex0::{
+    begin_diagnostic, end_diagnostic, font_feature_warning, font_mapping_warning,
+    get_tracing_fonts_state,
+};
+use bridge::_tt_abort;
 
-extern "C" {
-    pub type XeTeXFont_rec;
-    pub type XeTeXLayoutEngine_rec;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strdup(_: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strstr(_: *const i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strcasecmp(_: *const i8, _: *const i8) -> i32;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    /* tectonic/core-memory.h: basic dynamic memory helpers
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    #[no_mangle]
-    fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    pub fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn hb_tag_from_string(str: *const i8, len: i32) -> hb_tag_t;
-    #[no_mangle]
-    fn getCachedGlyphBBox(fontID: u16, glyphID: u16, bbox: *mut GlyphBBox) -> i32;
-    #[no_mangle]
-    fn cacheGlyphBBox(fontID: u16, glyphID: u16, bbox: *const GlyphBBox);
-    #[no_mangle]
-    fn get_cp_code(fontNum: i32, code: u32, side: i32) -> i32;
-    #[no_mangle]
-    fn maketexstring(s: *const i8) -> i32;
-    #[no_mangle]
-    fn getDefaultDirection(engine: XeTeXLayoutEngine) -> i32;
-    #[no_mangle]
-    fn createFont(fontRef: PlatformFontRef, pointSize: Fixed) -> XeTeXFont;
-    #[no_mangle]
-    fn getAscentAndDescent(engine: XeTeXLayoutEngine, ascent: *mut f32, descent: *mut f32);
-    #[no_mangle]
-    fn setFontLayoutDir(font: XeTeXFont, vertical: i32);
-    #[no_mangle]
-    fn layoutChars(
-        engine: XeTeXLayoutEngine,
-        chars: *mut u16,
-        offset: i32,
-        count: i32,
-        max: i32,
-        rightToLeft: bool,
-    ) -> i32;
-    #[no_mangle]
-    fn getPointSize(engine: XeTeXLayoutEngine) -> f32;
-    #[no_mangle]
-    fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint);
-    #[no_mangle]
-    fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32);
-    #[no_mangle]
-    fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32);
-    #[no_mangle]
-    fn findFontByName(name: *const i8, var: *mut i8, size: f64) -> PlatformFontRef;
-    #[no_mangle]
-    fn getReqEngine() -> i8;
-    #[no_mangle]
-    fn setReqEngine(reqEngine: i8);
-    #[no_mangle]
-    fn getFullName(fontRef: PlatformFontRef) -> *const i8;
-    #[no_mangle]
-    fn getFontFilename(engine: XeTeXLayoutEngine, index: *mut u32) -> *mut i8;
-    #[no_mangle]
-    fn getDesignSize(font: XeTeXFont) -> f64;
-    #[no_mangle]
-    fn deleteFont(font: XeTeXFont);
-    #[no_mangle]
-    fn getSlant(font: XeTeXFont) -> Fixed;
-    #[no_mangle]
-    fn getFontTablePtr(font: XeTeXFont, tableTag: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn countScripts(font: XeTeXFont) -> u32;
-    #[no_mangle]
-    fn countLanguages(font: XeTeXFont, script: hb_tag_t) -> u32;
-    #[no_mangle]
-    fn countFeatures(font: XeTeXFont, script: hb_tag_t, language: hb_tag_t) -> u32;
-    #[no_mangle]
-    fn countGlyphs(font: XeTeXFont) -> u32;
-    #[no_mangle]
-    fn getIndScript(font: XeTeXFont, index: u32) -> hb_tag_t;
-    #[no_mangle]
-    fn getIndLanguage(font: XeTeXFont, script: hb_tag_t, index: u32) -> hb_tag_t;
-    #[no_mangle]
-    fn getIndFeature(font: XeTeXFont, script: hb_tag_t, language: hb_tag_t, index: u32)
-        -> hb_tag_t;
-    #[no_mangle]
-    fn getGlyphWidth(font: XeTeXFont, gid: u32) -> f32;
-    #[no_mangle]
-    fn createFontFromFile(filename: *const i8, index: i32, pointSize: Fixed) -> XeTeXFont;
-    #[no_mangle]
-    fn getCapAndXHeight(engine: XeTeXLayoutEngine, capheight: *mut f32, xheight: *mut f32);
-    #[no_mangle]
-    fn getEmboldenFactor(engine: XeTeXLayoutEngine) -> f32;
-    #[no_mangle]
-    fn getSlantFactor(engine: XeTeXLayoutEngine) -> f32;
-    #[no_mangle]
-    fn getExtendFactor(engine: XeTeXLayoutEngine) -> f32;
-    #[no_mangle]
-    fn getFontRef(engine: XeTeXLayoutEngine) -> PlatformFontRef;
-    #[no_mangle]
-    fn getFont(engine: XeTeXLayoutEngine) -> XeTeXFont;
-    #[no_mangle]
-    fn deleteLayoutEngine(engine: XeTeXLayoutEngine);
-    #[no_mangle]
-    fn createLayoutEngine(
-        fontRef: PlatformFontRef,
-        font: XeTeXFont,
-        script: hb_tag_t,
-        language: *mut i8,
-        features: *mut hb_feature_t,
-        nFeatures: i32,
-        shapers: *mut *mut i8,
-        rgbValue: u32,
-        extend: f32,
-        slant: f32,
-        embolden: f32,
-    ) -> XeTeXLayoutEngine;
-    /* graphite interface functions... */
-    #[no_mangle]
-    fn findGraphiteFeature(
-        engine: XeTeXLayoutEngine,
-        s: *const i8,
-        e: *const i8,
-        f: *mut hb_tag_t,
-        v: *mut i32,
-    ) -> bool;
-    #[no_mangle]
-    fn findNextGraphiteBreak() -> i32;
-    #[no_mangle]
-    fn initGraphiteBreaking(engine: XeTeXLayoutEngine, txtPtr: *const u16, txtLen: i32) -> bool;
-    #[no_mangle]
-    fn getFontCharRange(engine: XeTeXLayoutEngine, reqFirst: i32) -> i32;
-    #[no_mangle]
-    fn getGlyphName(font: XeTeXFont, gid: u16, len: *mut i32) -> *const i8;
-    #[no_mangle]
-    fn mapGlyphToIndex(engine: XeTeXLayoutEngine, glyphName: *const i8) -> i32;
-    #[no_mangle]
-    fn mapCharToGlyph(engine: XeTeXLayoutEngine, charCode: u32) -> u32;
-    #[no_mangle]
-    fn getGlyphItalCorr(engine: XeTeXLayoutEngine, glyphID: u32) -> f32;
-    #[no_mangle]
-    fn getGlyphSidebearings(engine: XeTeXLayoutEngine, glyphID: u32, lsb: *mut f32, rsb: *mut f32);
-    #[no_mangle]
-    fn getGlyphHeightDepth(
-        engine: XeTeXLayoutEngine,
-        glyphID: u32,
-        height: *mut f32,
-        depth: *mut f32,
-    );
-    #[no_mangle]
-    fn getGlyphWidthFromEngine(engine: XeTeXLayoutEngine, glyphID: u32) -> f32;
-    #[no_mangle]
-    fn getGlyphBounds(engine: XeTeXLayoutEngine, glyphID: u32, bbox: *mut GlyphBBox);
-    #[no_mangle]
-    fn getRgbValue(engine: XeTeXLayoutEngine) -> u32;
-    #[no_mangle]
-    fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32;
-    #[no_mangle]
-    fn getGraphiteFeatureCode(engine: XeTeXLayoutEngine, index: u32) -> u32;
-    #[no_mangle]
-    fn countGraphiteFeatureSettings(engine: XeTeXLayoutEngine, feature: u32) -> u32;
-    #[no_mangle]
-    fn getGraphiteFeatureSettingCode(engine: XeTeXLayoutEngine, feature: u32, index: u32) -> u32;
-    #[no_mangle]
-    fn getGraphiteFeatureDefaultSetting(engine: XeTeXLayoutEngine, feature: u32) -> u32;
-    #[no_mangle]
-    fn getGraphiteFeatureLabel(engine: XeTeXLayoutEngine, feature: u32) -> *mut i8;
-    #[no_mangle]
-    fn getGraphiteFeatureSettingLabel(
-        engine: XeTeXLayoutEngine,
-        feature: u32,
-        setting: u32,
-    ) -> *mut i8;
-    #[no_mangle]
-    fn findGraphiteFeatureNamed(engine: XeTeXLayoutEngine, name: *const i8, namelength: i32)
-        -> i64;
-    #[no_mangle]
-    fn findGraphiteFeatureSettingNamed(
-        engine: XeTeXLayoutEngine,
-        feature: u32,
-        name: *const i8,
-        namelength: i32,
-    ) -> i64;
-    /* not the MS compiler, so try Metrowerks' platform macros */
-    /* this seems to be needed for a gcc-mingw32 build to work... */
-    /*
-        Create a converter object from a compiled mapping
-    */
-    #[no_mangle]
-    fn gr_label_destroy(label: *mut libc::c_void);
-    #[no_mangle]
-    fn gettexstring(_: str_number) -> *mut i8;
-    #[no_mangle]
-    pub static mut name_of_file: *mut i8;
-    #[no_mangle]
-    pub static mut name_length: i32;
-    #[no_mangle]
-    static mut font_info: *mut memory_word;
-    #[no_mangle]
-    static mut font_area: *mut str_number;
-    #[no_mangle]
-    static mut font_layout_engine: *mut *mut libc::c_void;
-    #[no_mangle]
-    static mut font_flags: *mut i8;
-    #[no_mangle]
-    static mut font_letter_space: *mut scaled_t;
-    #[no_mangle]
-    static mut loaded_font_mapping: *mut libc::c_void;
-    #[no_mangle]
-    static mut loaded_font_flags: i8;
-    #[no_mangle]
-    static mut loaded_font_letter_space: scaled_t;
-    #[no_mangle]
-    static mut loaded_font_design_size: scaled_t;
-    #[no_mangle]
-    static mut mapped_text: *mut UTF16_code;
-    #[no_mangle]
-    static mut xdv_buffer: *mut i8;
-    #[no_mangle]
-    static mut height_base: *mut i32;
-    #[no_mangle]
-    static mut depth_base: *mut i32;
-    #[no_mangle]
-    static mut param_base: *mut i32;
-    #[no_mangle]
-    static mut native_font_type_flag: i32;
-    #[no_mangle]
-    fn begin_diagnostic();
-    #[no_mangle]
-    fn end_diagnostic(blank_line: bool);
-    #[no_mangle]
-    fn font_feature_warning(
-        featureNameP: *const libc::c_void,
-        featLen: i32,
-        settingNameP: *const libc::c_void,
-        setLen: i32,
-    );
-    #[no_mangle]
-    fn font_mapping_warning(
-        mappingNameP: *const libc::c_void,
-        mappingNameLen: i32,
-        warningType: i32,
-    );
-    #[no_mangle]
-    fn get_tracing_fonts_state() -> i32;
-    #[no_mangle]
-    fn print_raw_char(s: UTF16_code, incr_offset: bool);
-    #[no_mangle]
-    fn print_char(s: i32);
-    #[no_mangle]
-    fn print_nl(s: str_number);
-    #[no_mangle]
-    fn print_int(n: i32);
-    /* xetex-pagebuilder */
-    /* xetex-scaledmath */
-    #[no_mangle]
-    fn xn_over_d(x: scaled_t, n: i32, d: i32) -> scaled_t;
-}
+use crate::xetex_layout_engine::*;
+use libc::{memcpy, strcasecmp, strcat, strcpy, strdup, strlen, strncpy, strstr};
 
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -327,110 +52,15 @@ pub type ssize_t = __ssize_t;
 use crate::TTInputFormat;
 
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type hb_tag_t = u32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct hb_feature_t {
-    pub tag: hb_tag_t,
-    pub value: u32,
-    pub start: u32,
-    pub end: u32,
-}
-pub type scaled_t = i32;
-pub type SInt32 = i32;
 
-#[cfg(not(target_os = "macos"))]
-pub type Fixed = scaled_t;
-#[cfg(target_os = "macos")]
-pub type Fixed = SInt32;
-
-#[derive(Copy, Clone)]
-#[cfg_attr(not(target_os = "macos"), repr(C))]
-#[cfg_attr(target_os = "macos", repr(C, packed(2)))]
-pub struct FixedPoint {
-    pub x: Fixed,
-    pub y: Fixed,
-}
 pub type Boolean = libc::c_uchar;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct FloatPoint {
-    pub x: f32,
-    pub y: f32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct GlyphBBox {
-    pub xMin: f32,
-    pub yMin: f32,
-    pub xMax: f32,
-    pub yMax: f32,
-}
 
-pub type XeTeXFont = *mut XeTeXFont_rec;
-pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
 pub type str_number = i32;
 
 pub type UTF16_code = u16;
 
 /* 16.16 version number */
 
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
 pub type UniChar = u16;
 
 /* tectonic/core-strutils.h: miscellaneous C string utilities
@@ -691,7 +321,7 @@ unsafe extern "C" fn load_mapping_file(
     let mut buffer: *mut i8 =
         xmalloc((e.wrapping_offset_from(s) as i64 + 5i32 as i64) as size_t) as *mut i8;
     let mut map: rust_input_handle_t = 0 as *mut libc::c_void;
-    strncpy(buffer, s, e.wrapping_offset_from(s) as i64 as u64);
+    strncpy(buffer, s, e.wrapping_offset_from(s) as usize);
     *buffer.offset(e.wrapping_offset_from(s) as i64 as isize) = 0_i8;
     strcat(buffer, b".tec\x00" as *const u8 as *const i8);
     map = ttstub_input_open(buffer, TTInputFormat::MISCFONTS, 0i32);
@@ -1144,7 +774,7 @@ unsafe extern "C" fn loadOTfont(
                         memcpy(
                             language as *mut libc::c_void,
                             cp3 as *const libc::c_void,
-                            cp2.wrapping_offset_from(cp3) as i64 as u64,
+                            cp2.wrapping_offset_from(cp3) as usize,
                         );
                         current_block = 13857423536159756434;
                     }
@@ -1417,18 +1047,14 @@ pub unsafe extern "C" fn find_native_font(
     splitFontName(name, &mut var, &mut feat, &mut end, &mut index);
     nameString =
         xmalloc((var.wrapping_offset_from(name) as i64 + 1i32 as i64) as size_t) as *mut i8;
-    strncpy(
-        nameString,
-        name,
-        var.wrapping_offset_from(name) as i64 as u64,
-    );
+    strncpy(nameString, name, var.wrapping_offset_from(name) as usize);
     *nameString.offset(var.wrapping_offset_from(name) as i64 as isize) = 0_i8;
     if feat > var {
         varString = xmalloc(feat.wrapping_offset_from(var) as i64 as size_t) as *mut i8;
         strncpy(
             varString,
             var.offset(1),
-            (feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as u64,
+            (feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as usize,
         );
         *varString.offset((feat.wrapping_offset_from(var) as i64 - 1i32 as i64) as isize) = 0_i8
     }
@@ -1437,7 +1063,7 @@ pub unsafe extern "C" fn find_native_font(
         strncpy(
             featString,
             feat.offset(1),
-            (end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as u64,
+            (end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as usize,
         );
         *featString.offset((end.wrapping_offset_from(feat) as i64 - 1i32 as i64) as isize) = 0_i8
     }
@@ -1491,14 +1117,12 @@ pub unsafe extern "C" fn find_native_font(
             let mut fullName: *const i8 = getFullName(fontRef);
             name_length = strlen(fullName) as i32;
             if !featString.is_null() {
-                name_length = (name_length as u64)
-                    .wrapping_add(strlen(featString).wrapping_add(1i32 as u64))
-                    as i32 as i32
+                name_length =
+                    (name_length as usize).wrapping_add(strlen(featString).wrapping_add(1)) as _
             }
             if !varString.is_null() {
-                name_length = (name_length as u64)
-                    .wrapping_add(strlen(varString).wrapping_add(1i32 as u64))
-                    as i32 as i32
+                name_length =
+                    (name_length as usize).wrapping_add(strlen(varString).wrapping_add(1)) as _
             }
             free(name_of_file as *mut libc::c_void);
             name_of_file = xmalloc((name_length + 1i32) as size_t) as *mut i8;
@@ -1995,7 +1619,7 @@ pub unsafe extern "C" fn make_font_def(mut f: i32) -> i32 {
     memcpy(
         cp as *mut libc::c_void,
         filename as *const libc::c_void,
-        filenameLen as u64,
+        filenameLen as _,
     );
     cp = cp.offset(filenameLen as i32 as isize);
     *(cp as *mut u32) = SWAP32(index);

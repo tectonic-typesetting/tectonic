@@ -9,18 +9,10 @@
 )]
 
 use crate::streq_ptr;
-extern "C" {
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    static mut in_initex_mode: bool;
-    #[no_mangle]
-    static mut halt_on_error_p: i32;
-    #[no_mangle]
-    static mut synctex_enabled: i32;
-    #[no_mangle]
-    static mut semantic_pagination_enabled: bool;
-}
+use crate::xetex_ini::{
+    halt_on_error_p, in_initex_mode, semantic_pagination_enabled, synctex_enabled,
+};
+
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

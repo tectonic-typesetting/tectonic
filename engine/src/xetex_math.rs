@@ -8,302 +8,39 @@
     unused_mut
 )]
 
+use crate::xetex_errors::{confusion, error};
+use crate::xetex_ext::{map_char_to_glyph, measure_native_glyph, real_get_native_glyph};
+use crate::xetex_ini::{
+    adjust_tail, avail, char_base, cur_c, cur_chr, cur_cmd, cur_dir, cur_f, cur_group, cur_i,
+    cur_lang, cur_list, cur_val, cur_val1, depth_base, empty, eqtb, exten_base,
+    file_line_error_style_p, font_area, font_bc, font_ec, font_info, font_layout_engine,
+    font_params, height_base, help_line, help_ptr, insert_src_special_every_math, italic_base,
+    just_box, kern_base, lig_kern_base, mem, nest_ptr, null_character, param_base, pre_adjust_tail,
+    save_ptr, save_stack, skew_char, temp_ptr, tex_remainder, total_shrink, width_base,
+    xtx_ligature_present, LR_problems, LR_ptr,
+};
+use crate::xetex_ini::{b16x4, b16x4_le_t, memory_word};
+use crate::xetex_layout_engine::*;
+use crate::xetex_linebreak::line_break;
+use crate::xetex_output::{
+    print, print_char, print_cstr, print_esc_cstr, print_file_line, print_int, print_nl_cstr,
+    print_size,
+};
+use crate::xetex_pagebuilder::build_page;
+use crate::xetex_scaledmath::{half, mult_and_add, tex_round, x_over_n, xn_over_d};
+use crate::xetex_xetex0::{
+    append_to_vlist, back_error, back_input, begin_token_list, char_warning, copy_node_list,
+    delete_glue_ref, effective_char, eq_word_define, flush_node_list, free_node, get_avail,
+    get_node, get_token, get_x_token, group_code, hpack, insert_src_special, internal_font_number,
+    just_copy, just_reverse, new_character, new_choice, new_glue, new_kern, new_math,
+    new_native_character, new_noad, new_null_box, new_param_glue, new_penalty, new_rule,
+    new_skip_param, new_spec, norm_min, off_save, pop_nest, push_math, push_nest,
+    scan_delimiter_int, scan_dimen, scan_fifteen_bit_int, scan_keyword, scan_left_brace, scan_math,
+    scan_math_class_int, scan_math_fam_int, scan_usv_num, unsave, vpackage,
+};
 use crate::xetex_xetexd::is_char_node;
 
-extern "C" {
-    pub type XeTeXLayoutEngine_rec;
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut file_line_error_style_p: i32;
-    #[no_mangle]
-    static mut insert_src_special_every_math: bool;
-    #[no_mangle]
-    static mut help_line: [*const i8; 6];
-    #[no_mangle]
-    static mut help_ptr: u8;
-    #[no_mangle]
-    static mut tex_remainder: scaled_t;
-    #[no_mangle]
-    static mut temp_ptr: i32;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut avail: i32;
-    #[no_mangle]
-    static mut nest_ptr: i32;
-    #[no_mangle]
-    static mut cur_list: list_state_record;
-    #[no_mangle]
-    static mut save_stack: *mut memory_word;
-    #[no_mangle]
-    static mut save_ptr: i32;
-    #[no_mangle]
-    static mut cur_group: group_code;
-    #[no_mangle]
-    static mut cur_cmd: eight_bits;
-    #[no_mangle]
-    static mut cur_chr: i32;
-    #[no_mangle]
-    static mut cur_val: i32;
-    #[no_mangle]
-    static mut cur_val1: i32;
-    #[no_mangle]
-    static mut font_info: *mut memory_word;
-    #[no_mangle]
-    static mut font_params: *mut font_index;
-    #[no_mangle]
-    static mut font_area: *mut str_number;
-    #[no_mangle]
-    static mut font_bc: *mut UTF16_code;
-    #[no_mangle]
-    static mut font_ec: *mut UTF16_code;
-    #[no_mangle]
-    static mut skew_char: *mut i32;
-    #[no_mangle]
-    static mut font_layout_engine: *mut *mut libc::c_void;
-    #[no_mangle]
-    static mut char_base: *mut i32;
-    #[no_mangle]
-    static mut width_base: *mut i32;
-    #[no_mangle]
-    static mut height_base: *mut i32;
-    #[no_mangle]
-    static mut depth_base: *mut i32;
-    #[no_mangle]
-    static mut italic_base: *mut i32;
-    #[no_mangle]
-    static mut lig_kern_base: *mut i32;
-    #[no_mangle]
-    static mut kern_base: *mut i32;
-    #[no_mangle]
-    static mut exten_base: *mut i32;
-    #[no_mangle]
-    static mut param_base: *mut i32;
-    #[no_mangle]
-    static mut null_character: b16x4;
-    #[no_mangle]
-    static mut total_shrink: [scaled_t; 4];
-    #[no_mangle]
-    static mut adjust_tail: i32;
-    #[no_mangle]
-    static mut pre_adjust_tail: i32;
-    #[no_mangle]
-    static mut empty: b32x2;
-    #[no_mangle]
-    static mut cur_f: internal_font_number;
-    #[no_mangle]
-    static mut cur_c: i32;
-    #[no_mangle]
-    static mut cur_i: b16x4;
-    #[no_mangle]
-    fn usingOpenType(engine: XeTeXLayoutEngine) -> bool;
-    #[no_mangle]
-    fn isOpenTypeMathFont(engine: XeTeXLayoutEngine) -> bool;
-    #[no_mangle]
-    fn measure_native_glyph(node: *mut libc::c_void, use_glyph_metrics: i32);
-    #[no_mangle]
-    fn map_char_to_glyph(font: i32, ch: i32) -> i32;
-    #[no_mangle]
-    fn real_get_native_glyph(pNode: *mut libc::c_void, index: u32) -> u16;
-    #[no_mangle]
-    fn get_native_mathsy_param(f: i32, n: i32) -> i32;
-    #[no_mangle]
-    fn get_native_mathex_param(f: i32, n: i32) -> i32;
-    #[no_mangle]
-    fn get_ot_math_constant(f: i32, n: i32) -> i32;
-    #[no_mangle]
-    fn get_ot_math_variant(f: i32, g: i32, v: i32, adv: *mut i32, horiz: i32) -> i32;
-    #[no_mangle]
-    fn get_ot_assembly_ptr(f: i32, g: i32, horiz: i32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn free_ot_assembly(a: *mut GlyphAssembly);
-    #[no_mangle]
-    fn get_ot_math_ital_corr(f: i32, g: i32) -> i32;
-    #[no_mangle]
-    fn get_ot_math_accent_pos(f: i32, g: i32) -> i32;
-    #[no_mangle]
-    fn get_ot_math_kern(f: i32, g: i32, sf: i32, sg: i32, cmd: i32, shift: i32) -> i32;
-    #[no_mangle]
-    fn ot_part_count(a: *const GlyphAssembly) -> i32;
-    #[no_mangle]
-    fn ot_part_glyph(a: *const GlyphAssembly, i: i32) -> i32;
-    #[no_mangle]
-    fn ot_part_is_extender(a: *const GlyphAssembly, i: i32) -> bool;
-    #[no_mangle]
-    fn ot_part_start_connector(f: i32, a: *const GlyphAssembly, i: i32) -> i32;
-    #[no_mangle]
-    fn ot_part_end_connector(f: i32, a: *const GlyphAssembly, i: i32) -> i32;
-    #[no_mangle]
-    fn ot_part_full_advance(f: i32, a: *const GlyphAssembly, i: i32) -> i32;
-    #[no_mangle]
-    fn ot_min_connector_overlap(f: i32) -> i32;
-    /*:1683*/
-    /* It looks like these arrays are set up so that they can be safely indexed
-     * with negative indices. The underlying arrays used to be named "zzzaa" and
-     * "zzzbb". */
-    /* the former xetexcoerce.h: */
-    #[no_mangle]
-    fn just_reverse(p: i32);
-    #[no_mangle]
-    fn get_token();
-    #[no_mangle]
-    fn get_x_token();
-    #[no_mangle]
-    fn scan_left_brace();
-    #[no_mangle]
-    fn scan_keyword(s: *const i8) -> bool;
-    #[no_mangle]
-    fn scan_usv_num();
-    #[no_mangle]
-    fn scan_math_class_int();
-    #[no_mangle]
-    fn scan_math_fam_int();
-    #[no_mangle]
-    fn scan_fifteen_bit_int();
-    #[no_mangle]
-    fn scan_delimiter_int();
-    #[no_mangle]
-    fn effective_char(err_p: bool, f: internal_font_number, c: u16) -> i32;
-    #[no_mangle]
-    fn scan_dimen(mu: bool, inf: bool, shortcut: bool);
-    #[no_mangle]
-    fn char_warning(f: internal_font_number, c: i32);
-    #[no_mangle]
-    fn new_native_character(f: internal_font_number, c: UnicodeScalar) -> i32;
-    #[no_mangle]
-    fn new_character(f: internal_font_number, c: UTF16_code) -> i32;
-    #[no_mangle]
-    fn hpack(p: i32, w: scaled_t, m: small_number) -> i32;
-    #[no_mangle]
-    fn vpackage(p: i32, h: scaled_t, m: small_number, l: scaled_t) -> i32;
-    #[no_mangle]
-    fn append_to_vlist(b: i32);
-    #[no_mangle]
-    fn new_noad() -> i32;
-    #[no_mangle]
-    fn new_choice() -> i32;
-    #[no_mangle]
-    fn line_break(d: bool);
-    #[no_mangle]
-    fn off_save();
-    #[no_mangle]
-    fn norm_min(h: i32) -> small_number;
-    #[no_mangle]
-    fn push_math(c: group_code);
-    #[no_mangle]
-    fn just_copy(p: i32, h: i32, t: i32);
-    #[no_mangle]
-    fn back_error();
-    #[no_mangle]
-    fn back_input();
-    #[no_mangle]
-    fn begin_token_list(p: i32, t: u16);
-    #[no_mangle]
-    fn unsave();
-    #[no_mangle]
-    fn eq_word_define(p: i32, w: i32);
-    #[no_mangle]
-    static mut just_box: i32;
-    #[no_mangle]
-    static mut cur_lang: u8;
-    #[no_mangle]
-    fn pop_nest();
-    #[no_mangle]
-    fn push_nest();
-    #[no_mangle]
-    fn copy_node_list(p: i32) -> i32;
-    #[no_mangle]
-    fn flush_node_list(p: i32);
-    #[no_mangle]
-    fn delete_glue_ref(p: i32);
-    #[no_mangle]
-    fn new_penalty(m: i32) -> i32;
-    #[no_mangle]
-    fn new_kern(w: scaled_t) -> i32;
-    #[no_mangle]
-    fn new_skip_param(n: small_number) -> i32;
-    #[no_mangle]
-    fn new_glue(q: i32) -> i32;
-    #[no_mangle]
-    fn new_param_glue(n: small_number) -> i32;
-    #[no_mangle]
-    fn new_spec(p: i32) -> i32;
-    #[no_mangle]
-    fn new_math(w: scaled_t, s: small_number) -> i32;
-    #[no_mangle]
-    fn new_rule() -> i32;
-    #[no_mangle]
-    fn new_null_box() -> i32;
-    #[no_mangle]
-    fn free_node(p: i32, s: i32);
-    #[no_mangle]
-    fn get_node(s: i32) -> i32;
-    #[no_mangle]
-    fn get_avail() -> i32;
-    #[no_mangle]
-    static mut xtx_ligature_present: bool;
-    #[no_mangle]
-    static mut cur_dir: small_number;
-    #[no_mangle]
-    static mut LR_problems: i32;
-    #[no_mangle]
-    static mut LR_ptr: i32;
-    /* xetex-errors */
-    #[no_mangle]
-    fn confusion(s: *const i8) -> !;
-    #[no_mangle]
-    fn scan_math(p: i32);
-    #[no_mangle]
-    fn insert_src_special();
-    #[no_mangle]
-    fn error();
-    #[no_mangle]
-    fn print_esc_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_size(s: i32);
-    #[no_mangle]
-    fn print_int(n: i32);
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn print(s: i32);
-    #[no_mangle]
-    fn print_char(s: i32);
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    /* xetex-pagebuilder */
-    /* xetex-scaledmath */
-    #[no_mangle]
-    fn x_over_n(x: scaled_t, n: i32) -> scaled_t;
-    #[no_mangle]
-    fn mult_and_add(n: i32, x: scaled_t, y: scaled_t, max_answer: scaled_t) -> scaled_t;
-    #[no_mangle]
-    fn print_file_line();
-    #[no_mangle]
-    fn half(x: i32) -> i32;
-    #[no_mangle]
-    fn tex_round(_: f64) -> i32;
-    #[no_mangle]
-    fn build_page();
-    #[no_mangle]
-    fn xn_over_d(x: scaled_t, n: i32, d: i32) -> scaled_t;
-}
-pub type hb_codepoint_t = u32;
-pub type hb_position_t = i32;
-pub type hb_ot_math_glyph_part_flags_t = u32;
-pub const HB_OT_MATH_GLYPH_PART_FLAG_EXTENDER: hb_ot_math_glyph_part_flags_t = 1;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct hb_ot_math_glyph_part_t {
-    pub glyph: hb_codepoint_t,
-    pub start_connector_length: hb_position_t,
-    pub end_connector_length: hb_position_t,
-    pub full_advance: hb_position_t,
-    pub flags: hb_ot_math_glyph_part_flags_t,
-}
 pub type scaled_t = i32;
-pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngine_rec;
 /* ***************************************************************************\
  Part of the XeTeX typesetting system
  Copyright (c) 1994-2008 by SIL International
@@ -335,55 +72,11 @@ shall not be used in advertising or otherwise to promote the sale,
 use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct GlyphAssembly {
-    pub count: u32,
-    pub parts: *mut hb_ot_math_glyph_part_t,
-}
 pub type UTF16_code = u16;
 pub type UnicodeScalar = i32;
 pub type eight_bits = u8;
 pub type str_number = i32;
 pub type small_number = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
-pub type group_code = u8;
-pub type internal_font_number = i32;
-pub type font_index = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct list_state_record {
-    pub mode: i16,
-    pub head: i32,
-    pub tail: i32,
-    pub eTeX_aux: i32,
-    pub prev_graf: i32,
-    pub mode_line: i32,
-    pub aux: memory_word,
-}
 static mut null_delimiter: b16x4 = b16x4 {
     s0: 0,
     s1: 0,
