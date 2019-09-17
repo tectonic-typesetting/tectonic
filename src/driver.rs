@@ -215,17 +215,15 @@ pub enum OutputFormat {
 impl FromStr for OutputFormat {
     type Err = &'static str;
 
-    fn from_str(s: &str) -> StdResult<Self, Self::Err> {
-        let actual = match s {
-            "aux" => OutputFormat::Aux,
-            "html" => OutputFormat::Html,
-            "xdv" => OutputFormat::Xdv,
-            "pdf" => OutputFormat::Pdf,
-            "fmt" => OutputFormat::Format,
-            _ => unreachable!(),
-        };
-
-        Ok(actual)
+    fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
+        match a_str {
+            "aux" => Ok(OutputFormat::Aux),
+            "html" => Ok(OutputFormat::Html),
+            "xdv" => Ok(OutputFormat::Xdv),
+            "pdf" => Ok(OutputFormat::Pdf),
+            "fmt" => Ok(OutputFormat::Format),
+            _ => Err("unsupported or unknown format"),
+        }
     }
 }
 
@@ -257,14 +255,12 @@ impl FromStr for PassSetting {
     type Err = &'static str;
 
     fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
-        let actual = match a_str {
-            "default" => PassSetting::Default,
-            "bibtex_first" => PassSetting::BibtexFirst,
-            "tex" => PassSetting::Tex,
-            _ => unreachable!(),
-        };
-
-        Ok(actual)
+        match a_str {
+            "default" => Ok(PassSetting::Default),
+            "bibtex_first" => Ok(PassSetting::BibtexFirst),
+            "tex" => Ok(PassSetting::Tex),
+            _ => Err("unsupported or unknown pass setting"),
+        }
     }
 }
 
