@@ -22,12 +22,12 @@ use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
-struct Opt {
+struct CliOptions {
     /// The file to process, or "-" to process the standard input stream"
-    #[structopt(name = "INPUT")]
+    #[structopt(name = "input")]
     input: String,
     /// The name of the "format" file used to initialize the TeX engine
-    #[structopt(long, short, name = "PATH", default_value = "latex")]
+    #[structopt(long, short, name = "path", default_value = "latex")]
     format: String,
     /// Use this Zip-format bundle file to find resource files instead of the default
     #[structopt(
@@ -43,7 +43,7 @@ struct Opt {
     // TODO add URL validation
     web_bundle: Option<String>,
     /// How much chatter to print when running
-    #[structopt(long = "chatter", short, name = "LEVEL", default_value = "default", possible_values(&["default", "minimal"]))]
+    #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
     chatter_level: String,
     /// Use only resource files cached locally
     #[structopt(short = "C")]
@@ -51,8 +51,8 @@ struct Opt {
     /// The kind of output to generate
     #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "format"]))]
     outfmt: String,
-    /// Write Makefile-format rules expressing the dependencies of this run to <DEST_PATH>
-    #[structopt(long, name = "DEST_PATH")]
+    /// Write Makefile-format rules expressing the dependencies of this run to <dest_path>
+    #[structopt(long, name = "dest_path")]
     makefile_rules: Option<PathBuf>,
     /// Which engines to run
     #[structopt(long, default_value = "default", possible_values(&["default", "tex", "bibtex_first"]))]
@@ -69,17 +69,21 @@ struct Opt {
     /// Generate SyncTeX data
     #[structopt(long)]
     synctex: bool,
-    /// Tell the engine that no file at <HIDE_PATH> exists, if it tries to read it
+    /// Tell the engine that no file at <hide_path> exists, if it tries to read it
     #[structopt(long, name = "hide_path")]
     hide: Option<Vec<PathBuf>>,
     /// Print the engine's chatter during processing
     #[structopt(long = "print", short)]
     print_stdout: bool,
-    /// The directory in which to place output files [default: the directory containing INPUT]
-    #[structopt(name = "OUTDIR", short, long, parse(from_os_str))]
+    /// The directory in which to place output files [default: the directory containing <input>]
+    #[structopt(name = "outdir", short, long, parse(from_os_str))]
     outdir: Option<PathBuf>,
 }
-fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBackend) -> Result<()> {
+fn inner(
+    args: CliOptions,
+    config: PersistentConfig,
+    status: &mut TermcolorStatusBackend,
+) -> Result<()> {
     let mut sess_builder = ProcessingSessionBuilder::default();
     let format_path = args.format;
     sess_builder
@@ -196,7 +200,7 @@ fn inner(args: Opt, config: PersistentConfig, status: &mut TermcolorStatusBacken
 }
 
 fn main() {
-    let args = Opt::from_args();
+    let args = CliOptions::from_args();
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
     // it to use a specified set of local files, rather than going to the
