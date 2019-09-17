@@ -29,6 +29,7 @@
 
 use crate::warn;
 
+use super::dpx_cid::{CSI_IDENTITY, CSI_UNICODE};
 use super::dpx_cmap::{CMap_get_CIDSysInfo, CMap_is_valid};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_new_stream,
@@ -36,43 +37,18 @@ use crate::dpx_pdfobj::{
 };
 use libc::free;
 extern "C" {
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    static mut CSI_IDENTITY: CIDSysInfo;
-    #[no_mangle]
-    static mut CSI_UNICODE: CIDSysInfo;
-    #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Name does not include the / */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_defineresource(
-        category: *const i8,
-        resname: *const i8,
-        object: *mut pdf_obj,
-        flags: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_findresource(category: *const i8, resname: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
 }
 pub type size_t = u64;
 

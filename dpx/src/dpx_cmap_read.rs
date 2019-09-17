@@ -35,13 +35,17 @@ use crate::warn;
 use super::dpx_cmap::{
     CMap_add_bfchar, CMap_add_bfrange, CMap_add_cidchar, CMap_add_cidrange,
     CMap_add_codespacerange, CMap_add_notdefchar, CMap_add_notdefrange, CMap_cache_find,
-    CMap_cache_get, CMap_set_CIDSysInfo, CMap_set_name, CMap_set_type, CMap_set_usecmap,
-    CMap_set_wmode,
+    CMap_cache_get, CMap_is_valid, CMap_set_CIDSysInfo, CMap_set_name, CMap_set_type,
+    CMap_set_usecmap, CMap_set_wmode,
+};
+use super::dpx_pst::pst_get_token;
+use super::dpx_pst_obj::pst_obj;
+use super::dpx_pst_obj::{
+    pst_data_ptr, pst_getIV, pst_getSV, pst_length_of, pst_release_obj, pst_type_of,
 };
 use crate::{ttstub_input_get_size, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    pub type pst_obj;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -57,27 +61,11 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn CMap_is_valid(cmap: *mut CMap) -> bool;
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pst_get_token(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
-    #[no_mangle]
-    fn pst_release_obj(obj: *mut pst_obj);
-    #[no_mangle]
-    fn pst_type_of(obj: *mut pst_obj) -> pst_type;
-    #[no_mangle]
-    fn pst_length_of(obj: *mut pst_obj) -> i32;
-    #[no_mangle]
-    fn pst_getIV(obj: *mut pst_obj) -> i32;
-    #[no_mangle]
-    fn pst_getSV(obj: *mut pst_obj) -> *mut u8;
-    #[no_mangle]
-    fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

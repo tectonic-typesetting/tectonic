@@ -34,33 +34,25 @@ use crate::warn;
 
 use super::dpx_mfileio::work_buffer;
 use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
+use super::dpx_pdfcolor::{
+    iccp_check_colorspace, iccp_get_rendering_intent, iccp_load_profile,
+    pdf_get_colorspace_reference,
+};
 use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_name, pdf_new_number,
-    pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dataptr, pdf_stream_dict,
-    pdf_stream_length,
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_get_version, pdf_new_array, pdf_new_name,
+    pdf_new_number, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dataptr,
+    pdf_stream_dict, pdf_stream_length,
 };
 use crate::{ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn pdf_get_colorspace_reference(cspc_id: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn iccp_load_profile(ident: *const i8, profile: *const libc::c_void, proflen: i32) -> i32;
-    #[no_mangle]
-    fn iccp_check_colorspace(colortype: i32, profile: *const libc::c_void, proflen: i32) -> i32;
-    #[no_mangle]
-    fn iccp_get_rendering_intent(profile: *const libc::c_void, proflen: i32) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]

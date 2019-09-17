@@ -30,19 +30,21 @@
 use crate::warn;
 
 use super::dpx_mfileio::work_buffer;
+use super::dpx_pdfdev::pdf_sprint_number;
+use super::dpx_pdfencoding::{
+    pdf_encoding_get_encoding, pdf_encoding_get_name, pdf_encoding_used_by_type3,
+};
 use super::dpx_pdffont::{
     pdf_font, pdf_font_get_encoding, pdf_font_get_ident, pdf_font_get_param, pdf_font_get_resource,
     pdf_font_get_usedchars, pdf_font_is_in_use, pdf_font_set_fontname,
 };
+use super::dpx_tfm::{tfm_get_design_size, tfm_open};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_dict, pdf_new_name,
     pdf_new_number, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj,
 };
 use libc::free;
 extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
     #[no_mangle]
     fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
@@ -61,31 +63,6 @@ extern "C" {
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    /* When reading numbers from binary files 1, 2, or 3 bytes are
-       interpreted as either signed or unsigned.
-
-       Four bytes from DVI, PK, TFM, or VF files always yield a signed
-       32-bit integer (i32), but some of them must not be negative.
-
-       Four byte numbers from JPEG2000, OpenType, or TrueType files are
-       mostly unsigned (u32) and occasionally signed (i32).
-    */
-    #[no_mangle]
-    fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
-    #[no_mangle]
-    fn pdf_encoding_used_by_type3(enc_id: i32);
-    /* WARNING:
-     * Pointer(s) may change after another encoding is loaded.
-     */
-    #[no_mangle]
-    fn pdf_encoding_get_name(enc_id: i32) -> *mut i8;
-    #[no_mangle]
-    fn pdf_encoding_get_encoding(enc_id: i32) -> *mut *mut i8;
-    #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
-    /* From TFM header */
-    #[no_mangle]
-    fn tfm_get_design_size(font_id: i32) -> f64;
 }
 
 use crate::dpx_numbers::{

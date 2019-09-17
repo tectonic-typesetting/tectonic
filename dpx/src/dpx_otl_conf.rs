@@ -31,6 +31,9 @@
 
 use crate::info;
 
+use super::dpx_agl::agl_get_unicodes;
+use super::dpx_dpxutil::parse_c_ident;
+use super::dpx_pdfparse::skip_white;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_get_array, pdf_link_obj, pdf_lookup_dict,
     pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string,
@@ -48,23 +51,16 @@ extern "C" {
     fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn agl_get_unicodes(glyphstr: *const i8, unicodes: *mut i32, max_uncodes: i32) -> i32;
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

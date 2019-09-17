@@ -33,12 +33,15 @@ use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
-use super::dpx_mfileio::tt_mfgets;
-use super::dpx_mfileio::work_buffer;
+use super::dpx_bmpimage::{bmp_include_image, check_for_bmp};
+use super::dpx_dpxfile::{dpx_delete_temp_file, keep_cache};
+use super::dpx_jpegimage::{check_for_jpeg, jpeg_include_image};
+use super::dpx_mfileio::{tt_mfgets, work_buffer};
 use super::dpx_pdfdraw::pdf_dev_transform;
+use crate::dpx_epdf::pdf_include_page;
 use crate::dpx_pdfobj::{
-    pdf_add_dict, pdf_link_obj, pdf_merge_dict, pdf_new_name, pdf_new_number, pdf_obj,
-    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_dict, PdfObjType,
+    check_for_pdf, pdf_add_dict, pdf_link_obj, pdf_merge_dict, pdf_new_name, pdf_new_number,
+    pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_dict, PdfObjType,
 };
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_seek};
 use libc::free;
@@ -55,44 +58,14 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Name does not include the / */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    #[no_mangle]
-    fn check_for_pdf(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn bmp_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn check_for_bmp(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn dpx_delete_temp_file(tmp: *mut i8, force: i32);
-    /* tmp freed here */
-    #[no_mangle]
-    static mut keep_cache: i32;
     #[no_mangle]
     fn min4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
     #[no_mangle]
     fn max4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
     #[no_mangle]
-    fn pdf_include_page(
-        ximage: *mut pdf_ximage,
-        handle: rust_input_handle_t,
-        ident: *const i8,
-        options: load_options,
-    ) -> i32;
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn check_for_jpeg(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn jpeg_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]

@@ -40,25 +40,22 @@ use super::dpx_pdfdraw::{
 use super::dpx_pdfdraw::{
     pdf_dev_currentmatrix, pdf_dev_moveto, pdf_dev_transform, pdf_invertmatrix,
 };
+use super::dpx_pdfparse::skip_white;
 use super::dpx_pdfximage::{pdf_ximage_init_form_info, pdf_ximage_set_form};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_boolean_value, pdf_close, pdf_concat_stream,
-    pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_file_get_trailer, pdf_get_array,
-    pdf_import_object, pdf_lookup_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
-    pdf_new_stream, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_open, pdf_release_obj,
-    pdf_stream_dataptr, pdf_stream_dict, pdf_stream_length, PdfObjType,
+    pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_file_get_trailer, pdf_file_get_version,
+    pdf_get_array, pdf_get_version, pdf_import_object, pdf_lookup_dict, pdf_new_array,
+    pdf_new_dict, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_number_value, pdf_obj,
+    pdf_obj_typeof, pdf_open, pdf_release_obj, pdf_stream_dataptr, pdf_stream_dict,
+    pdf_stream_length, PdfObjType,
 };
 use crate::dpx_pdfparse::{parse_ident, parse_pdf_array};
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
     #[no_mangle]
     fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn pdf_file_get_version(pf: *mut pdf_file) -> u32;
     #[no_mangle]
     fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
@@ -67,10 +64,6 @@ extern "C" {
     fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;

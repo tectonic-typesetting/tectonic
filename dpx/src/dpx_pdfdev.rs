@@ -34,6 +34,7 @@ use crate::{info, warn};
 use super::dpx_cff::cff_charsets_lookup_cid;
 use super::dpx_cmap::{CMap_cache_get, CMap_decode};
 use super::dpx_dvi::dvi_is_tracking_boxes;
+use super::dpx_fontmap::pdf_lookup_fontmap_record;
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
 use super::dpx_pdfdoc::pdf_doc_expand_box;
@@ -50,7 +51,7 @@ use super::dpx_pdffont::{
 use super::dpx_pdfximage::{
     pdf_ximage_get_reference, pdf_ximage_get_resname, pdf_ximage_scale_image,
 };
-use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_release_obj};
+use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_release_obj, pdfobj_escape_str};
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
@@ -64,26 +65,14 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Color stack
-     */
-    #[no_mangle]
-    fn pdfobj_escape_str(buffer: *mut i8, size: size_t, s: *const u8, len: size_t) -> size_t;
-    #[no_mangle]
-    fn pdf_lookup_fontmap_record(kp: *const i8) -> *mut fontmap_rec;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    /* allow other modules (pdfdev) to ask whether we're collecting box areas */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-/* font_name is used when mrec is NULL.
- * font_scale (point size) used by PK font.
- * It might be necessary if dvipdfmx supports font format with
- * various optical sizes supported in the future.
- */
 }
 pub type size_t = u64;
 

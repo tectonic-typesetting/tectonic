@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_dpxutil::skip_white_spaces;
 use crate::stub_errno as errno;
 use crate::warn;
 
@@ -42,8 +43,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn xtoi(c: i8) -> i32;
-    #[no_mangle]
-    fn skip_white_spaces(s: *mut *mut u8, endptr: *mut u8);
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]

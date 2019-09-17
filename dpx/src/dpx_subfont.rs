@@ -38,23 +38,6 @@ use libc::free;
 extern "C" {
     #[no_mangle]
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    /* Both XeTeX and bibtex use this enum: */
-    /* The weird enum values are historical and could be rationalized. But it is
-     * good to write them explicitly since they must be kept in sync with
-     * `src/engines/mod.rs`.
-     */
-    /* quasi-hack to get the primary input */
-    /* Bridge API. Keep synchronized with src/engines/mod.rs. */
-    /* These functions are not meant to be used in the C/C++ code. They define the
-     * API that we expose to the Rust side of things. */
-    /* The internal, C/C++ interface: */
-    /* Global symbols that route through the global API variable. Hopefully we
-     * will one day eliminate all of the global state and get rid of all of
-     * these. */
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]

@@ -35,15 +35,20 @@ use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
 use super::dpx_cff::cff_release_charsets;
+use super::dpx_cidtype0::{
+    CIDFont_type0_dofont, CIDFont_type0_open, CIDFont_type0_set_flags, CIDFont_type0_set_verbose,
+    CIDFont_type0_t1cdofont, CIDFont_type0_t1dofont,
+};
+use super::dpx_cidtype2::{
+    CIDFont_type2_dofont, CIDFont_type2_open, CIDFont_type2_set_flags, CIDFont_type2_set_verbose,
+};
 use crate::dpx_pdfobj::{
-    pdf_add_dict, pdf_file, pdf_link_obj, pdf_lookup_dict, pdf_name_value, pdf_new_name,
-    pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_remove_dict,
-    pdf_string_value, PdfObjType,
+    pdf_add_dict, pdf_file, pdf_get_version, pdf_link_obj, pdf_lookup_dict, pdf_name_value,
+    pdf_new_name, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
+    pdf_remove_dict, pdf_string_value, PdfObjType,
 };
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -64,37 +69,6 @@ extern "C" {
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn CIDFont_type0_set_verbose(level: i32);
-    #[no_mangle]
-    fn CIDFont_type0_set_flags(flags: i32);
-    #[no_mangle]
-    fn CIDFont_type0_open(
-        font: *mut CIDFont,
-        name: *const i8,
-        cmap_csi: *mut CIDSysInfo,
-        opt: *mut cid_opt,
-        expected_flag: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn CIDFont_type0_dofont(font: *mut CIDFont);
-    #[no_mangle]
-    fn CIDFont_type0_t1dofont(font: *mut CIDFont);
-    #[no_mangle]
-    fn CIDFont_type0_t1cdofont(font: *mut CIDFont);
-    #[no_mangle]
-    fn CIDFont_type2_set_verbose(level: i32);
-    #[no_mangle]
-    fn CIDFont_type2_set_flags(flags: i32);
-    #[no_mangle]
-    fn CIDFont_type2_open(
-        font: *mut CIDFont,
-        name: *const i8,
-        cmap_csi: *mut CIDSysInfo,
-        opt: *mut cid_opt,
-    ) -> i32;
-    #[no_mangle]
-    fn CIDFont_type2_dofont(font: *mut CIDFont);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -160,17 +134,8 @@ pub struct FontCache {
     pub fonts: *mut *mut CIDFont,
 }
 use super::dpx_cff::cff_charsets;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union C2RustUnnamed_1 {
-    pub glyphs: *mut s_SID,
-    pub range1: *mut cff_range1,
-    pub range2: *mut cff_range2,
-}
-use super::dpx_cff::cff_range2;
 pub type card16 = u16;
 pub type s_SID = u16;
-use super::dpx_cff::cff_range1;
 pub type card8 = u8;
 /* PLEASE SEND INFORMATION ON FONTS
  *

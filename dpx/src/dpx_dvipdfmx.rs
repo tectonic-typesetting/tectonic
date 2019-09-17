@@ -33,7 +33,9 @@ use super::dpx_dvi::{
     dvi_close, dvi_comment, dvi_do_page, dvi_init, dvi_npages, dvi_reset_global_state,
     dvi_scan_specials, dvi_set_verbose,
 };
-use super::dpx_pdfdev::{pdf_dev_reset_global_state, pdf_dev_set_verbose};
+use super::dpx_pdfdev::{
+    pdf_close_device, pdf_dev_reset_global_state, pdf_dev_set_verbose, pdf_init_device,
+};
 use super::dpx_pdfdoc::pdf_doc_set_mediabox;
 use super::dpx_pdfdoc::{
     pdf_close_document, pdf_doc_set_creator, pdf_doc_set_verbose, pdf_open_document,
@@ -41,10 +43,27 @@ use super::dpx_pdfdoc::{
 use super::dpx_pdffont::{
     pdf_font_reset_unique_tag_state, pdf_font_set_deterministic_unique_tags, pdf_font_set_dpi,
 };
+use super::dpx_pdfparse::skip_white;
 use super::dpx_tt_aux::tt_aux_set_verbose;
 use crate::dpx_pdfparse::parse_unsigned;
 use crate::{info, warn};
 
+use super::dpx_cid::CIDFont_set_flags;
+use super::dpx_dpxconf::{paper, paperinfo};
+use super::dpx_dpxfile::{dpx_delete_old_cache, dpx_file_set_verbose};
+use super::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
+use super::dpx_fontmap::{
+    pdf_close_fontmaps, pdf_fontmap_set_verbose, pdf_init_fontmaps, pdf_load_fontmap_file,
+};
+use super::dpx_pdfencrypt::{pdf_enc_compute_id_string, pdf_enc_set_passwd, pdf_enc_set_verbose};
+use super::dpx_pdfobj::{
+    pdf_files_close, pdf_files_init, pdf_get_version, pdf_obj_reset_global_state,
+    pdf_obj_set_verbose, pdf_set_compression, pdf_set_use_predictor, pdf_set_version,
+};
+use super::dpx_spc_tpic::tpic_set_fill_mode;
+use super::dpx_specials::{spc_exec_at_begin_document, spc_exec_at_end_document};
+use super::dpx_tfm::tfm_reset_global_state;
+use super::dpx_vf::vf_reset_global_state;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -62,109 +81,13 @@ extern "C" {
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
-    fn pdf_obj_set_verbose(level: i32);
-    #[no_mangle]
-    fn pdf_obj_reset_global_state();
-    #[no_mangle]
-    fn pdf_set_version(version: u32);
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    /* Apply proc(key, value, pdata) for each key-value pairs in dict, stop if proc()
-     * returned non-zero value (and that value is returned). PDF object is passed for
-     * key to allow modification (fix) of key.
-     */
-    /* Compare label of two indirect reference object.
-     */
-    /* The following routines are not appropriate for pdfobj.
-     */
-    #[no_mangle]
-    fn pdf_files_init();
-    #[no_mangle]
-    fn CIDFont_set_flags(flags: i32);
-    #[no_mangle]
-    fn pdf_set_use_predictor(bval: i32);
-    #[no_mangle]
-    fn pdf_files_close();
-    #[no_mangle]
-    fn pdf_close_fontmaps();
-    #[no_mangle]
-    fn pdf_load_fontmap_file(filename: *const i8, mode: i32) -> i32;
-    #[no_mangle]
-    fn pdf_fontmap_set_verbose(level: i32);
-    #[no_mangle]
-    fn pdf_set_compression(level: i32);
-    #[no_mangle]
-    fn pdf_init_fontmaps();
-    #[no_mangle]
-    fn paperinfo(ppformat: *const i8) -> *const paper;
-    #[no_mangle]
-    fn dpx_file_set_verbose(level: i32);
-    #[no_mangle]
-    fn dpx_delete_old_cache(life: i32);
-    #[no_mangle]
-    fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    /* The name transform_info is misleading.
-     * I'll put this here for a moment...
-     */
-    /* Physical dimensions
-     *
-     * If those values are given, images will be scaled
-     * and/or shifted to fit within a box described by
-     * those values.
-     */
-    /* transform matrix */
-    /* user_bbox */
-    #[no_mangle]
     fn shut_up(quietness: i32);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn pdf_init_device(unit_conv: f64, precision: i32, is_bw: i32);
-    #[no_mangle]
-    fn pdf_close_device();
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_enc_set_verbose(level: i32);
-    #[no_mangle]
-    fn pdf_enc_compute_id_string(dviname: *const i8, pdfname: *const i8);
-    #[no_mangle]
-    fn pdf_enc_set_passwd(size: u32, perm: u32, owner: *const i8, user: *const i8);
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn tpic_set_fill_mode(mode: i32);
-    /* current page in PDF */
-    /* This should not use pdf_. */
-    /* PDF parser shouldn't depend on this...
-     */
-    #[no_mangle]
-    fn spc_exec_at_end_document() -> i32;
-    #[no_mangle]
-    fn spc_exec_at_begin_document() -> i32;
-    #[no_mangle]
-    fn tfm_reset_global_state();
-    #[no_mangle]
-    fn vf_reset_global_state();
 }
 
 pub type PageRange = page_range;
@@ -175,13 +98,6 @@ pub struct page_range {
     pub last: i32,
 }
 use super::dpx_pdfdev::pdf_rect;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct paper {
-    pub name: *const i8,
-    pub pswidth: f64,
-    pub psheight: f64,
-}
 #[no_mangle]
 pub static mut is_xdv: i32 = 0i32;
 #[no_mangle]

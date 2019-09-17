@@ -28,11 +28,7 @@
          unused_mut)]
 
 use crate::{ttstub_input_getc, ttstub_input_ungetc};
-extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
-}
+
 use libc::{fgetc, fseek, ftell, rewind, ungetc, FILE};
 pub type __off_t = i64;
 pub type __off64_t = i64;

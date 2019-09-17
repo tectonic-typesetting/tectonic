@@ -41,6 +41,7 @@ use super::dpx_pdfnames::{
     pdf_delete_name_tree, pdf_names_add_object, pdf_names_close_object, pdf_names_lookup_object,
     pdf_names_lookup_reference, pdf_new_name_tree,
 };
+use super::dpx_pdfparse::skip_white;
 use super::dpx_spc_color::{spc_color_check_special, spc_color_setup_handler};
 use super::dpx_spc_dvipdfmx::{spc_dvipdfmx_check_special, spc_dvipdfmx_setup_handler};
 use super::dpx_spc_dvips::{
@@ -79,13 +80,8 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    /* Hash */
-    /* Not actually tree... */
-    /* Please remove this */
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
 }
 pub type __builtin_va_list = [__va_list_tag; 1];
 #[derive(Copy, Clone)]

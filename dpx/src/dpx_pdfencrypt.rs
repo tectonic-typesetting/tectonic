@@ -30,9 +30,11 @@
 use crate::warn;
 
 use super::dpx_pdfdoc::pdf_doc_get_dictionary;
+use super::dpx_pdffont::get_unique_time_if_given;
+use super::dpx_unicode::{UC_UTF8_decode_char, UC_is_valid};
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
-    pdf_new_string, pdf_obj,
+    pdf_add_array, pdf_add_dict, pdf_get_version, pdf_new_array, pdf_new_dict, pdf_new_name,
+    pdf_new_number, pdf_new_string, pdf_obj,
 };
 use libc::free;
 extern "C" {
@@ -102,27 +104,6 @@ extern "C" {
     );
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    #[no_mangle]
-    fn get_unique_time_if_given() -> time_t;
-    #[no_mangle]
-    fn UC_is_valid(ucv: i32) -> bool;
-    #[no_mangle]
-    fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> i32;
 }
 pub type __time_t = i64;
 pub type size_t = u64;

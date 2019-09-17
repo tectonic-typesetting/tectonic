@@ -31,15 +31,20 @@
 
 use crate::info;
 
+use super::dpx_agl::{agl_lookup_list, agl_sput_UTF16BE};
+use super::dpx_cid::CSI_UNICODE;
 use super::dpx_cmap::{
     CMap_add_bfchar, CMap_add_codespacerange, CMap_new, CMap_release, CMap_set_CIDSysInfo,
     CMap_set_name, CMap_set_type, CMap_set_wmode,
 };
 use super::dpx_cmap_read::{CMap_parse, CMap_parse_check_sig};
 use super::dpx_cmap_write::CMap_create_stream;
+use super::dpx_dpxfile::dpx_tt_open;
+use super::dpx_pdfparse::skip_white;
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_file, pdf_get_array, pdf_link_obj, pdf_name_value,
-    pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_obj, pdf_release_obj,
+    pdf_add_array, pdf_add_dict, pdf_file, pdf_get_array, pdf_get_version, pdf_link_obj,
+    pdf_name_value, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_obj,
+    pdf_release_obj,
 };
 use crate::dpx_pdfparse::{parse_pdf_array, parse_pdf_name, pdfparse_skip_line};
 use crate::mfree;
@@ -48,26 +53,7 @@ use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub
 use libc::free;
 extern "C" {
     #[no_mangle]
-    fn pdf_get_version() -> u32;
-    #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    /* Both XeTeX and bibtex use this enum: */
-    /* The weird enum values are historical and could be rationalized. But it is
-     * good to write them explicitly since they must be kept in sync with
-     * `src/engines/mod.rs`.
-     */
-    /* quasi-hack to get the primary input */
-    /* Bridge API. Keep synchronized with src/engines/mod.rs. */
-    /* These functions are not meant to be used in the C/C++ code. They define the
-     * API that we expose to the Rust side of things. */
-    /* The internal, C/C++ interface: */
-    /* Global symbols that route through the global API variable. Hopefully we
-     * will one day eliminate all of the global state and get rid of all of
-     * these. */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -78,13 +64,6 @@ extern "C" {
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    /* Tectonic-enabled I/O alternatives */
-    #[no_mangle]
-    fn dpx_tt_open(
-        filename: *const i8,
-        suffix: *const i8,
-        format: TTInputFormat,
-    ) -> rust_input_handle_t;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -93,19 +72,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn agl_sput_UTF16BE(
-        name: *const i8,
-        dstpp: *mut *mut u8,
-        limptr: *mut u8,
-        num_fails: *mut i32,
-    ) -> i32;
-    #[no_mangle]
-    fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
-    #[no_mangle]
-    static mut CSI_UNICODE: CIDSysInfo;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -134,7 +100,6 @@ pub struct C2RustUnnamed {
     pub encodings: *mut pdf_encoding,
 }
 use super::dpx_agl::agl_name;
-use super::dpx_cid::CIDSysInfo;
 use super::dpx_cmap::CMap;
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project

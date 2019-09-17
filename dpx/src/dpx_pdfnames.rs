@@ -38,20 +38,15 @@ use super::dpx_dpxutil::{
 };
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_new_array, pdf_new_dict, pdf_new_name,
-    pdf_new_null, pdf_new_string, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
-    pdf_string_length, pdf_string_value, PdfObjType,
+    pdf_new_null, pdf_new_string, pdf_new_undefined, pdf_obj, pdf_obj_typeof, pdf_ref_obj,
+    pdf_release_obj, pdf_string_length, pdf_string_value, pdf_transfer_label, PdfObjType,
 };
 use libc::free;
 extern "C" {
     #[no_mangle]
     fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn pdf_transfer_label(dst: *mut pdf_obj, src: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_new_undefined() -> *mut pdf_obj;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]

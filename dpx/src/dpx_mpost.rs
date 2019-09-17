@@ -29,48 +29,44 @@
     unused_mut
 )]
 
-use crate::dpx_pdfparse::parse_number;
 use crate::mfree;
 use crate::warn;
 use crate::{streq_ptr, strstartswith};
 
+use super::dpx_dvipdfmx::translate_origin;
+use super::dpx_fontmap::pdf_lookup_fontmap_record;
 use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
 use super::dpx_pdfdev::{
-    pdf_coord, pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
+    dev_unit_dviunit, graphics_mode, pdf_coord, pdf_dev_get_dirmode, pdf_dev_get_font_wmode,
+    pdf_dev_get_param, pdf_dev_locate_font, pdf_dev_put_image, pdf_dev_set_dirmode,
+    pdf_dev_set_param, pdf_dev_set_string, pdf_rect, pdf_tmatrix, transform_info,
+    transform_info_clear,
 };
-use super::dpx_pdfdev::{
-    pdf_dev_get_dirmode, pdf_dev_get_font_wmode, pdf_dev_get_param, pdf_dev_locate_font,
-    pdf_dev_set_dirmode, pdf_dev_set_param, pdf_dev_set_string,
-};
-use super::dpx_pdfdoc::{pdf_doc_begin_grabbing, pdf_doc_set_mediabox};
 use super::dpx_pdfdoc::{
-    pdf_doc_begin_page, pdf_doc_current_page_number, pdf_doc_end_grabbing, pdf_doc_end_page,
+    pdf_doc_begin_grabbing, pdf_doc_begin_page, pdf_doc_current_page_number, pdf_doc_end_grabbing,
+    pdf_doc_end_page, pdf_doc_set_mediabox,
 };
 use super::dpx_pdfdraw::{
-    pdf_dev_arc, pdf_dev_arcn, pdf_dev_clip, pdf_dev_closepath, pdf_dev_curveto, pdf_dev_eoclip,
-    pdf_dev_flushpath, pdf_dev_grestore, pdf_dev_gsave, pdf_dev_lineto, pdf_dev_moveto,
-    pdf_dev_newpath, pdf_dev_rcurveto, pdf_dev_rlineto, pdf_dev_rmoveto, pdf_dev_setdash,
-    pdf_dev_setlinecap, pdf_dev_setlinejoin, pdf_dev_setlinewidth, pdf_dev_setmiterlimit,
+    pdf_dev_arc, pdf_dev_arcn, pdf_dev_clip, pdf_dev_closepath, pdf_dev_concat,
+    pdf_dev_currentmatrix, pdf_dev_currentpoint, pdf_dev_curveto, pdf_dev_dtransform,
+    pdf_dev_eoclip, pdf_dev_flushpath, pdf_dev_grestore, pdf_dev_gsave, pdf_dev_idtransform,
+    pdf_dev_lineto, pdf_dev_moveto, pdf_dev_newpath, pdf_dev_rcurveto, pdf_dev_rlineto,
+    pdf_dev_rmoveto, pdf_dev_set_color, pdf_dev_setdash, pdf_dev_setlinecap, pdf_dev_setlinejoin,
+    pdf_dev_setlinewidth, pdf_dev_setmiterlimit,
 };
-use super::dpx_pdfdraw::{
-    pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_currentpoint, pdf_dev_dtransform,
-    pdf_dev_idtransform, pdf_dev_set_color,
-};
+use super::dpx_subfont::{lookup_sfd_record, sfd_load_record};
+use super::dpx_tfm::{tfm_exists, tfm_get_width, tfm_open, tfm_string_width};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_array_length, pdf_file, pdf_get_array, pdf_lookup_dict, pdf_name_value,
     pdf_new_dict, pdf_new_name, pdf_new_number, pdf_number_value, pdf_obj, pdf_obj_typeof,
     pdf_release_obj, pdf_set_number, pdf_string_length, pdf_string_value, PdfObjType,
 };
 use crate::dpx_pdfparse::{
-    parse_ident, parse_pdf_array, parse_pdf_dict, parse_pdf_name, parse_pdf_string,
-    pdfparse_skip_line,
+    parse_ident, parse_number, parse_pdf_array, parse_pdf_dict, parse_pdf_name, parse_pdf_string,
+    pdfparse_skip_line, skip_white,
 };
 use libc::free;
 extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
-    /* Here is the complete list of PDF object types */
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
@@ -85,7 +81,6 @@ extern "C" {
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -96,48 +91,12 @@ extern "C" {
     fn rewind(__stream: *mut FILE);
     #[no_mangle]
     fn file_size(file: *mut FILE) -> i32;
-    /* Name does not include the / */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    /* returns 1.0/unit_conv */
-    #[no_mangle]
-    fn dev_unit_dviunit() -> f64;
-    /* Text is normal and line art is not normal in dvipdfmx. So we don't have
-     * begin_text (BT in PDF) and end_text (ET), but instead we have graphics_mode()
-     * to terminate text section. pdf_dev_flushpath() and others call this.
-     */
-    #[no_mangle]
-    fn graphics_mode();
-    #[no_mangle]
-    static mut translate_origin: i32;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn pdf_lookup_fontmap_record(kp: *const i8) -> *mut fontmap_rec;
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    /* Please remove this */
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn lookup_sfd_record(rec_id: i32, code: u8) -> u16;
-    #[no_mangle]
-    fn sfd_load_record(sfd_name: *const i8, subfont_id: *const i8) -> i32;
-    #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
-    #[no_mangle]
-    fn tfm_get_width(font_id: i32, ch: i32) -> f64;
-    #[no_mangle]
-    fn tfm_string_width(font_id: i32, s: *const u8, len: u32) -> fixword;
-    #[no_mangle]
-    fn tfm_exists(tfm_name: *const i8) -> bool;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;

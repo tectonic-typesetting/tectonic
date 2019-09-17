@@ -40,13 +40,11 @@ use super::dpx_dvi::{
     dvi_right, dvi_rule, dvi_set, dvi_set_font, dvi_vf_finish, dvi_vf_init, dvi_w, dvi_w0, dvi_x,
     dvi_x0, dvi_y, dvi_y0, dvi_z, dvi_z0,
 };
-use super::dpx_numbers::tt_skip_bytes;
+use super::dpx_numbers::{sqxfw, tt_skip_bytes};
+use super::dpx_tfm::tfm_open;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
 use libc::free;
 extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -58,15 +56,11 @@ extern "C" {
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
-    fn sqxfw(sq: i32, fw: fixword) -> i32;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;

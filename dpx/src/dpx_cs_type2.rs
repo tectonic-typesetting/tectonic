@@ -32,8 +32,6 @@ use crate::warn;
 extern "C" {
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
 }
 pub type card8 = u8;
 pub type card16 = u16;

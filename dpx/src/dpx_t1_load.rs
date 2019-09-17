@@ -34,11 +34,16 @@ use crate::warn;
 use crate::{streq_ptr, strstartswith};
 
 use super::dpx_cff::{cff_add_string, cff_get_sid, cff_update_string};
+use super::dpx_cff::{cff_close, cff_new_index, cff_set_name};
 use super::dpx_cff_dict::{cff_dict_add, cff_dict_set, cff_new_dict};
+use super::dpx_pst::pst_get_token;
+use super::dpx_pst_obj::pst_obj;
+use super::dpx_pst_obj::{
+    pst_data_ptr, pst_getIV, pst_getRV, pst_getSV, pst_release_obj, pst_type_of,
+};
 use crate::{ttstub_input_getc, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    pub type pst_obj;
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -53,57 +58,8 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    /* FontName */
-    /* - CFF structure - */
-    /* CFF Header */
-    /* Name INDEX */
-    /* Top DICT (single) */
-    /* String INDEX */
-    /* Global Subr INDEX */
-    /* Encodings */
-    /* Charsets  */
-    /* FDSelect, CIDFont only */
-    /* CharStrings */
-    /* CIDFont only */
-    /* per-Font DICT */
-    /* Local Subr INDEX, per-Private DICT */
-    /* -- extra data -- */
-    /* non-zero for OpenType or PostScript wrapped */
-    /* number of glyphs (CharString INDEX count) */
-    /* number of Font DICT */
-    /* Updated String INDEX.
-     * Please fix this. We should separate input and output.
-     */
-    /* not used, ASCII Hex filter if needed */
-    /* CFF fontset index */
-    /* Flag: see above */
-    /* 1 if .notdef is not the 1st glyph */
-    /* CFF Header */
-    /* CFF INDEX */
-    /* Name INDEX */
-    /* Global and Local Subrs INDEX */
-    /* Encoding */
-    /* Charsets */
-    /* Returns GID of PS name "glyph" */
-    /* Return PS name of "gid" */
-    /* Returns GID of glyph with SID/CID "cid" */
-    /* Returns SID or CID */
-    /* FDSelect */
-    /* Font DICT(s) */
-    /* Private DICT(s) */
-    /* String */
-    /* tectonic/core-memory.h: basic dynamic memory helpers
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
     #[no_mangle]
     fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn cff_close(cff: *mut cff_font);
-    #[no_mangle]
-    fn cff_new_index(count: card16) -> *mut cff_index;
-    #[no_mangle]
-    fn cff_set_name(cff: *mut cff_font, name: *mut i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
@@ -112,20 +68,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pst_get_token(inbuf: *mut *mut u8, inbufend: *mut u8) -> *mut pst_obj;
-    #[no_mangle]
-    fn pst_release_obj(obj: *mut pst_obj);
-    #[no_mangle]
-    fn pst_type_of(obj: *mut pst_obj) -> pst_type;
-    #[no_mangle]
-    fn pst_getIV(obj: *mut pst_obj) -> i32;
-    #[no_mangle]
-    fn pst_getRV(obj: *mut pst_obj) -> f64;
-    #[no_mangle]
-    fn pst_getSV(obj: *mut pst_obj) -> *mut u8;
-    #[no_mangle]
-    fn pst_data_ptr(obj: *mut pst_obj) -> *mut libc::c_void;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

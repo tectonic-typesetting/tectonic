@@ -29,7 +29,6 @@
 
 use crate::ttstub_input_getc;
 extern "C" {
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
 }

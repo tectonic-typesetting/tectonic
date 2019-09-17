@@ -37,39 +37,45 @@ use super::dpx_dpxutil::{
     ht_append_table, ht_clear_iter, ht_clear_table, ht_init_table, ht_iter_getkey, ht_iter_next,
     ht_lookup_table, ht_set_iter, ht_table_size,
 };
+use super::dpx_dvipdfmx::is_xdv;
+use super::dpx_jpegimage::check_for_jpeg;
 use super::dpx_pdfcolor::{
     pdf_close_colors, pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white,
     pdf_color_set_verbose, pdf_init_colors,
 };
-use super::dpx_pdfdev::pdf_dev_bop;
 use super::dpx_pdfdev::{
-    pdf_dev_eop, pdf_dev_get_coord, pdf_dev_get_param, pdf_dev_reset_color, pdf_dev_reset_fonts,
+    pdf_dev_bop, pdf_dev_eop, pdf_dev_get_coord, pdf_dev_get_param, pdf_dev_reset_color,
+    pdf_dev_reset_fonts,
 };
-use super::dpx_pdfdraw::pdf_dev_set_color;
 use super::dpx_pdfdraw::{
     pdf_dev_current_depth, pdf_dev_grestore, pdf_dev_grestore_to, pdf_dev_gsave,
-    pdf_dev_pop_gstate, pdf_dev_push_gstate, pdf_dev_rectfill,
+    pdf_dev_pop_gstate, pdf_dev_push_gstate, pdf_dev_rectfill, pdf_dev_set_color,
 };
-use super::dpx_pdffont::pdf_font_set_verbose;
+use super::dpx_pdfencrypt::{pdf_enc_id_array, pdf_encrypt_obj};
+use super::dpx_pdffont::{
+    get_unique_time_if_given, pdf_close_fonts, pdf_font_set_verbose, pdf_init_fonts,
+};
 use super::dpx_pdfnames::{
     pdf_delete_name_tree, pdf_names_add_object, pdf_names_create_tree, pdf_new_name_tree,
 };
+use super::dpx_pdfresource::{pdf_close_resources, pdf_init_resources};
 use super::dpx_pdfximage::{
     pdf_close_images, pdf_init_images, pdf_ximage_defineresource, pdf_ximage_findresource,
     pdf_ximage_get_reference, pdf_ximage_init_form_info, pdf_ximage_set_verbose, XInfo,
 };
+use super::dpx_pngimage::check_for_png;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_compare_reference,
     pdf_deref_obj, pdf_file, pdf_file_get_catalog, pdf_get_array, pdf_link_obj, pdf_lookup_dict,
     pdf_merge_dict, pdf_name_value, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
-    pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj,
-    pdf_release_obj, pdf_remove_dict, pdf_set_encrypt, pdf_set_id, pdf_set_info, pdf_set_root,
-    pdf_stream_dict, pdf_stream_length, pdf_string_length, pdf_string_value, PdfObjType,
+    pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_out_flush,
+    pdf_out_init, pdf_ref_obj, pdf_release_obj, pdf_remove_dict, pdf_set_encrypt, pdf_set_id,
+    pdf_set_info, pdf_set_root, pdf_stream_dict, pdf_stream_length, pdf_string_length,
+    pdf_string_value, PdfObjType,
 };
 use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
 extern "C" {
-    /* Here is the complete list of PDF object types */
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -82,7 +88,6 @@ extern "C" {
     fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -100,54 +105,13 @@ extern "C" {
     #[no_mangle]
     fn localtime_r(__timer: *const time_t, __tp: *mut tm) -> *mut tm;
     #[no_mangle]
-    fn pdf_out_init(filename: *const i8, enable_encrypt: bool, enable_object_stream: bool);
-    #[no_mangle]
-    fn pdf_out_flush();
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    /* Compare label of two indirect reference object.
-     */
-    #[no_mangle]
-    fn get_unique_time_if_given() -> time_t;
-    /* Accessor to various device parameters.
-     */
-    #[no_mangle]
-    static mut is_xdv: i32;
-    #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn check_for_jpeg(handle: rust_input_handle_t) -> i32;
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
-    fn pdf_enc_id_array() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_encrypt_obj() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_init_fonts();
-    #[no_mangle]
-    fn pdf_close_fonts();
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn pdf_init_resources();
-    #[no_mangle]
-    fn pdf_close_resources();
-    #[no_mangle]
-    fn check_for_png(handle: rust_input_handle_t) -> i32;
 }
 pub type __time_t = i64;
 pub type size_t = u64;

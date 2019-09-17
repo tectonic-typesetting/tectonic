@@ -42,23 +42,38 @@ use super::dpx_cff_dict::{cff_dict_get, cff_dict_known};
 use super::dpx_dpxfile::{
     dpx_open_dfont_file, dpx_open_opentype_file, dpx_open_truetype_file, dpx_open_type1_file,
 };
-use super::dpx_numbers::tt_skip_bytes;
+use super::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
+use super::dpx_dvipdfmx::{is_xdv, landscape_mode, paper_height, paper_width};
+use super::dpx_fontmap::{pdf_insert_native_fontmap_record, pdf_lookup_fontmap_record};
 use super::dpx_numbers::{
-    tt_get_positive_quad, tt_get_signed_quad, tt_get_unsigned_byte, tt_get_unsigned_num,
-    tt_get_unsigned_pair, tt_get_unsigned_quad,
+    sqxfw, tt_get_positive_quad, tt_get_signed_quad, tt_get_unsigned_byte, tt_get_unsigned_num,
+    tt_get_unsigned_pair, tt_get_unsigned_quad, tt_skip_bytes,
 };
 use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
-use super::dpx_pdfdev::{pdf_dev_begin_actualtext, pdf_dev_end_actualtext, pdf_dev_set_rect};
 use super::dpx_pdfdev::{
-    pdf_dev_locate_font, pdf_dev_set_dirmode, pdf_dev_set_rule, pdf_dev_set_string,
+    graphics_mode, pdf_dev_begin_actualtext, pdf_dev_end_actualtext, pdf_dev_locate_font,
+    pdf_dev_set_dirmode, pdf_dev_set_rect, pdf_dev_set_rule, pdf_dev_set_string,
 };
-use super::dpx_pdfdoc::pdf_doc_expand_box;
-use super::dpx_pdfdoc::{pdf_doc_begin_page, pdf_doc_break_annot, pdf_doc_end_page};
+use super::dpx_pdfdoc::{
+    pdf_doc_begin_page, pdf_doc_break_annot, pdf_doc_end_page, pdf_doc_expand_box,
+};
+use super::dpx_pdfparse::skip_white;
 use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
+use super::dpx_specials::{
+    spc_exec_at_begin_page, spc_exec_at_end_page, spc_exec_special, spc_set_verbose,
+};
+use super::dpx_subfont::{lookup_sfd_record, sfd_load_record, subfont_set_verbose};
+use super::dpx_t1_char::t1char_get_metrics;
+use super::dpx_t1_load::t1_load_font;
+use super::dpx_tfm::{
+    tfm_close_all, tfm_get_fw_depth, tfm_get_fw_height, tfm_get_fw_width, tfm_open, tfm_set_verbose,
+};
+use super::dpx_tt_aux::ttc_read_offset;
 use super::dpx_tt_table::{
     tt_read_head_table, tt_read_hhea_table, tt_read_longMetrics, tt_read_maxp_table,
     tt_read_vhea_table,
 };
+use super::dpx_vf::{vf_close_all_fonts, vf_locate_font, vf_set_char, vf_set_verbose};
 use crate::dpx_pdfobj::{
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj, pdf_string_value, PdfObjType,
 };
@@ -68,7 +83,6 @@ use crate::{
 };
 use libc::free;
 extern "C" {
-    /* Here is the complete list of PDF object types */
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -83,7 +97,6 @@ extern "C" {
     fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -95,107 +108,11 @@ extern "C" {
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn sqxfw(sq: i32, fw: fixword) -> i32;
-    /* Draw texts and rules:
-     *
-     * xpos, ypos, width, and height are all fixed-point numbers
-     * converted to big-points by multiplying unit_conv (dvi2pts).
-     * They must be position in the user space.
-     *
-     * ctype:
-     *   0 - input string is in multi-byte encoding.
-     *   1 - input string is in 8-bit encoding.
-     *   2 - input string is in 16-bit encoding.
-     */
-    /* Set rect to rectangle in device space.
-     * Unit conversion spt_t to bp and transformation applied within it.
-     */
-    /* Text is normal and line art is not normal in dvipdfmx. So we don't have
-     * begin_text (BT in PDF) and end_text (ET), but instead we have graphics_mode()
-     * to terminate text section. pdf_dev_flushpath() and others call this.
-     */
-    #[no_mangle]
-    fn graphics_mode();
-    #[no_mangle]
-    static mut paper_width: f64;
-    #[no_mangle]
-    static mut paper_height: f64;
-    #[no_mangle]
-    static mut landscape_mode: i32;
-    #[no_mangle]
-    static mut is_xdv: i32;
-    #[no_mangle]
-    fn pdf_lookup_fontmap_record(kp: *const i8) -> *mut fontmap_rec;
-    #[no_mangle]
-    fn pdf_insert_native_fontmap_record(
-        filename: *const i8,
-        index: u32,
-        layout_dir: i32,
-        extend: i32,
-        slant: i32,
-        embolden: i32,
-    ) -> *mut fontmap_rec;
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* Please remove this */
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    /* This should not use pdf_. */
-    #[no_mangle]
-    fn spc_set_verbose(level: i32);
-    #[no_mangle]
-    fn spc_exec_at_begin_page() -> i32;
-    #[no_mangle]
-    fn spc_exec_at_end_page() -> i32;
-    #[no_mangle]
-    fn spc_exec_special(p: *const i8, size: i32, x_user: f64, y_user: f64, mag: f64) -> i32;
-    #[no_mangle]
-    fn subfont_set_verbose(level: i32);
-    #[no_mangle]
-    fn lookup_sfd_record(rec_id: i32, code: u8) -> u16;
-    #[no_mangle]
-    fn sfd_load_record(sfd_name: *const i8, subfont_id: *const i8) -> i32;
-    #[no_mangle]
-    fn t1char_get_metrics(
-        src: *mut card8,
-        srclen: i32,
-        subrs: *mut cff_index,
-        ginfo: *mut t1_ginfo,
-    ) -> i32;
-    #[no_mangle]
-    fn t1_load_font(enc_vec: *mut *mut i8, mode: i32, handle: rust_input_handle_t)
-        -> *mut cff_font;
-    #[no_mangle]
-    fn tfm_set_verbose(level: i32);
-    #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
-    #[no_mangle]
-    fn tfm_close_all();
-    #[no_mangle]
-    fn tfm_get_fw_width(font_id: i32, ch: i32) -> fixword;
-    #[no_mangle]
-    fn tfm_get_fw_height(font_id: i32, ch: i32) -> fixword;
-    #[no_mangle]
-    fn tfm_get_fw_depth(font_id: i32, ch: i32) -> fixword;
-    /* TTC (TrueType Collection) */
-    #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
-    #[no_mangle]
-    fn vf_set_verbose(level: i32);
-    #[no_mangle]
-    fn vf_locate_font(tex_name: *const i8, ptsize: spt_t) -> i32;
-    #[no_mangle]
-    fn vf_set_char(ch: i32, vf_font: i32);
-    #[no_mangle]
-    fn vf_close_all_fonts();
-    #[no_mangle]
-    fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
 }
 use crate::*;
 

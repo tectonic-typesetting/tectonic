@@ -33,6 +33,7 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_dpxutil::{parse_c_ident, parse_c_string, parse_float_decimal};
 use super::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
 use super::dpx_pdfdev::pdf_dev_scale;
 use super::dpx_pdfdoc::{
@@ -45,23 +46,13 @@ use super::dpx_pdfdraw::{
     pdf_dev_setmiterlimit,
 };
 use crate::dpx_pdfobj::{
-    pdf_add_dict, pdf_lookup_dict, pdf_name_value, pdf_new_boolean, pdf_new_dict, pdf_new_name,
-    pdf_new_number, pdf_new_string, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
-    pdf_string_value, PdfObjType,
+    pdf_add_dict, pdf_foreach_dict, pdf_get_version, pdf_lookup_dict, pdf_name_value,
+    pdf_new_boolean, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_new_string, pdf_obj,
+    pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_string_value, PdfObjType,
 };
 use crate::dpx_pdfparse::parse_val_ident;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn pdf_foreach_dict(
-        dict: *mut pdf_obj,
-        proc_0: Option<
-            unsafe extern "C" fn(_: *mut pdf_obj, _: *mut pdf_obj, _: *mut libc::c_void) -> i32,
-        >,
-        pdata: *mut libc::c_void,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -75,19 +66,9 @@ extern "C" {
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
-    fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_c_string(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-/* The following two routines are NOT WORKING.
- * Dvipdfmx doesn't manage gstate well..
- */
-/* Always returns 1.0, please rename this. */
 }
 pub type size_t = u64;
 

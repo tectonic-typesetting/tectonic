@@ -41,8 +41,6 @@ extern "C" {
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
 pub type size_t = u64;

@@ -29,17 +29,24 @@
     unused_mut
 )]
 
+use super::dpx_cid::{
+    CIDFont, CIDFont_attach_parent, CIDFont_cache_close, CIDFont_cache_find, CIDFont_cache_get,
+    CIDFont_get_CIDSysInfo, CIDFont_get_embedding, CIDFont_get_flag, CIDFont_get_fontname,
+    CIDFont_get_ident, CIDFont_get_opt_index, CIDFont_get_parent_id, CIDFont_get_resource,
+    CIDFont_get_subtype, CIDFont_is_ACCFont, CIDFont_is_UCSFont,
+};
 use super::dpx_cmap::{CMap_cache_get, CMap_get_CIDSysInfo, CMap_get_wmode, CMap_is_Identity};
+use super::dpx_pdfencoding::pdf_load_ToUnicode_stream;
+use super::dpx_pdfresource::{pdf_defineresource, pdf_findresource, pdf_get_resource_reference};
+use super::dpx_tt_cmap::otf_create_ToUnicode_stream;
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_link_obj, pdf_lookup_dict, pdf_new_array,
-    pdf_new_dict, pdf_new_name, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj,
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_get_version, pdf_link_obj, pdf_lookup_dict,
+    pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_stream, pdf_obj, pdf_ref_obj,
+    pdf_release_obj,
 };
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
-    pub type CIDFont;
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -51,42 +58,6 @@ extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn CIDFont_get_fontname(font: *mut CIDFont) -> *mut i8;
-    #[no_mangle]
-    fn CIDFont_get_ident(font: *mut CIDFont) -> *mut i8;
-    /* FIXME */
-    #[no_mangle]
-    fn CIDFont_get_opt_index(font: *mut CIDFont) -> i32;
-    /* FIXME */
-    #[no_mangle]
-    fn CIDFont_get_flag(font: *mut CIDFont, mask: i32) -> i32;
-    #[no_mangle]
-    fn CIDFont_get_subtype(font: *mut CIDFont) -> i32;
-    #[no_mangle]
-    fn CIDFont_get_embedding(font: *mut CIDFont) -> i32;
-    #[no_mangle]
-    fn CIDFont_get_resource(font: *mut CIDFont) -> *mut pdf_obj;
-    #[no_mangle]
-    fn CIDFont_get_CIDSysInfo(font: *mut CIDFont) -> *mut CIDSysInfo;
-    #[no_mangle]
-    fn CIDFont_attach_parent(font: *mut CIDFont, parent_id: i32, wmode: i32);
-    #[no_mangle]
-    fn CIDFont_get_parent_id(font: *mut CIDFont, wmode: i32) -> i32;
-    #[no_mangle]
-    fn CIDFont_is_ACCFont(font: *mut CIDFont) -> bool;
-    #[no_mangle]
-    fn CIDFont_is_UCSFont(font: *mut CIDFont) -> bool;
-    #[no_mangle]
-    fn CIDFont_cache_find(
-        map_name: *const i8,
-        cmap_csi: *mut CIDSysInfo,
-        fmap_opt: *mut fontmap_opt,
-    ) -> i32;
-    #[no_mangle]
-    fn CIDFont_cache_get(fnt_id: i32) -> *mut CIDFont;
-    #[no_mangle]
-    fn CIDFont_cache_close();
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
@@ -94,36 +65,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* TrueType cmap table */
-    /* or version, only for Mac */
-    /* Paltform ID */
-    /* Platform-specific encoding ID */
-    /* Windows */
-    /* Mac */
-    /* Indirect reference */
-    #[no_mangle]
-    fn otf_create_ToUnicode_stream(
-        map_name: *const i8,
-        ttc_index: i32,
-        used_chars: *const i8,
-        cmap_id: i32,
-    ) -> *mut pdf_obj;
-    /* Just load CMap identified with 'ident'. (parsed)
-     * PDF stream object (not reference) returned.
-     */
-    #[no_mangle]
-    fn pdf_load_ToUnicode_stream(ident: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_defineresource(
-        category: *const i8,
-        resname: *const i8,
-        object: *mut pdf_obj,
-        flags: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_findresource(category: *const i8, resname: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
 }
 pub type size_t = u64;
 #[derive(Copy, Clone)]

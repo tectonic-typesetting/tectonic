@@ -37,8 +37,6 @@ use super::dpx_sfnt::{sfnt_find_table_len, sfnt_find_table_pos, sfnt_locate_tabl
 use crate::{ttstub_input_read, ttstub_input_seek};
 extern "C" {
     #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
 }
 pub type __ssize_t = i64;
@@ -49,7 +47,7 @@ pub type Fixed = u32;
 pub type FWord = i16;
 pub type uFWord = u16;
 
-use super::dpx_sfnt::sfnt;
+use super::dpx_sfnt::{put_big_endian, sfnt};
 
 #[derive(Copy, Clone)]
 #[repr(C)]

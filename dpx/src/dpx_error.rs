@@ -29,9 +29,6 @@
 
 use crate::{ttstub_issue_warning, ttstub_output_open_stdout, ttstub_output_write};
 extern "C" {
-    /* Global symbols that route through the global API variable. Hopefully we
-     * will one day eliminate all of the global state and get rid of all of
-     * these. */
     #[no_mangle]
     fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
 }
