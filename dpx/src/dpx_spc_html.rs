@@ -35,12 +35,16 @@ use super::dpx_pdfximage::{
     pdf_ximage_scale_image,
 };
 
-use super::dpx_pdfdev::{pdf_rect, pdf_tmatrix, transform_info, transform_info_clear};
+use super::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
+use super::dpx_pdfdev::{
+    graphics_mode, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
+};
 use super::dpx_pdfdoc::{
     pdf_doc_add_names, pdf_doc_add_page_content, pdf_doc_add_page_resource,
     pdf_doc_current_page_resources, pdf_doc_get_reference,
 };
 use super::dpx_pdfdraw::{pdf_dev_grestore, pdf_dev_gsave, pdf_dev_rectclip};
+use super::dpx_specials::{spc_begin_annot, spc_end_annot};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_array, pdf_new_boolean,
     pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string, pdf_obj,
@@ -50,8 +54,6 @@ use crate::mfree;
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn tan(_: f64) -> f64;
     #[no_mangle]
     fn atof(__nptr: *const i8) -> f64;
     #[no_mangle]
@@ -70,33 +72,10 @@ extern "C" {
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    #[no_mangle]
-    fn spc_begin_annot(spe: *mut spc_env, annot_dict: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn spc_end_annot(spe: *mut spc_env) -> i32;
-    #[no_mangle]
-    fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn graphics_mode();
 }
 pub type size_t = u64;
 
@@ -1057,7 +1036,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
             M.d = 1.;
             M.a = M.d;
             M.c = 0.;
-            M.b = tan(v[0] * core::f64::consts::PI / 180.)
+            M.b = (v[0] * core::f64::consts::PI / 180.).tan()
         }
         5 => {
             if n != 1i32 {
@@ -1065,7 +1044,7 @@ unsafe extern "C" fn cvt_a_to_tmatrix(
             }
             M.d = 1.;
             M.a = M.d;
-            M.c = tan(v[0] * core::f64::consts::PI / 180.);
+            M.c = (v[0] * core::f64::consts::PI / 180.).tan();
             M.b = 0.
         }
         _ => {}

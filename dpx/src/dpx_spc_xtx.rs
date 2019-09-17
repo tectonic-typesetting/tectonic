@@ -29,6 +29,12 @@
     unused_mut
 )]
 
+use super::dpx_dpxutil::parse_c_ident;
+use super::dpx_fontmap::{
+    is_pdfm_mapline, pdf_append_fontmap_record, pdf_clear_fontmap_record, pdf_init_fontmap_record,
+    pdf_insert_fontmap_record, pdf_load_fontmap_file, pdf_read_fontmap_line,
+    pdf_remove_fontmap_record,
+};
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfdev::{pdf_dev_reset_color, pdf_dev_reset_fonts};
 use super::dpx_pdfdoc::{pdf_doc_add_page_content, pdf_doc_set_bgcolor};
@@ -37,7 +43,8 @@ use super::dpx_pdfdraw::{
     pdf_dev_set_fixed_point,
 };
 use super::dpx_spc_util::spc_util_read_colorspec;
-use crate::dpx_pdfparse::{parse_ident, parse_val_ident};
+use super::dpx_spc_util::spc_util_read_numbers;
+use crate::dpx_pdfparse::{parse_ident, parse_val_ident, skip_white};
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
@@ -58,49 +65,7 @@ extern "C" {
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn pdf_init_fontmap_record(mrec: *mut fontmap_rec);
-    #[no_mangle]
-    fn pdf_clear_fontmap_record(mrec: *mut fontmap_rec);
-    #[no_mangle]
-    fn pdf_load_fontmap_file(filename: *const i8, mode: i32) -> i32;
-    #[no_mangle]
-    fn pdf_read_fontmap_line(
-        mrec: *mut fontmap_rec,
-        mline: *const i8,
-        mline_strlen: i32,
-        format: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_append_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> i32;
-    #[no_mangle]
-    fn pdf_remove_fontmap_record(kp: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_insert_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> *mut fontmap_rec;
-    #[no_mangle]
-    fn is_pdfm_mapline(mline: *const i8) -> i32;
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    /* Text composition mode is ignored (always same as font's
-     * writing mode) and glyph rotation is not enabled if
-     * auto_rotate is unset.
-     */
-    /*
-     * For pdf_doc, pdf_draw and others.
-     */
-    /* Force reselecting font and color:
-     * XFrom (content grabbing) and Metapost support want them.
-     */
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    /* syntax 1: ((rgb|cmyk|hsb|gray) colorvalues)|colorname
-     * syntax 0: pdf_number|pdf_array
-     *
-     * This is for reading *single* color specification.
-     */
-    #[no_mangle]
-    fn spc_util_read_numbers(values: *mut f64, num_values: i32, args: *mut spc_arg) -> i32;
 }
 pub type size_t = u64;
 

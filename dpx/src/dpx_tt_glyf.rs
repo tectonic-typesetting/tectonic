@@ -46,8 +46,6 @@ extern "C" {
     #[no_mangle]
     fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
     #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
@@ -62,7 +60,7 @@ pub type Fixed = u32;
 pub type FWord = i16;
 pub type uFWord = u16;
 
-use super::dpx_sfnt::sfnt;
+use super::dpx_sfnt::{put_big_endian, sfnt};
 
 #[derive(Copy, Clone)]
 #[repr(C)]

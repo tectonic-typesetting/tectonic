@@ -33,6 +33,7 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_cid::CSI_IDENTITY;
 use super::dpx_cmap_read::{CMap_parse, CMap_parse_check_sig};
 use crate::{ttstub_input_close, ttstub_input_open};
 use libc::free;
@@ -49,11 +50,8 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    static mut CSI_IDENTITY: CIDSysInfo;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]

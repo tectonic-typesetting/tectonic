@@ -37,6 +37,9 @@ use std::ffi::CStr;
 
 use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
 use super::dpx_mfileio::{tt_mfgets, work_buffer};
+use super::dpx_pdfdev::pdf_sprint_number;
+use super::dpx_pdfencrypt::{pdf_enc_set_generation, pdf_enc_set_label, pdf_encrypt_data};
+use super::dpx_pdfparse::skip_white;
 use crate::{
     ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek,
     ttstub_input_ungetc, ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout,
@@ -60,7 +63,6 @@ extern "C" {
     fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -75,21 +77,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_encrypt_data(
-        plain: *const u8,
-        plain_len: size_t,
-        cipher: *mut *mut u8,
-        cipher_len: *mut size_t,
-    );
-    #[no_mangle]
-    fn pdf_enc_set_label(label: u32);
-    #[no_mangle]
-    fn pdf_enc_set_generation(generation: u32);
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn pdf_sprint_number(buf: *mut i8, value: f64) -> i32;
 }
 
 use libz_sys as libz;

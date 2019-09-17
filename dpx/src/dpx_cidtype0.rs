@@ -32,25 +32,41 @@ use super::dpx_sfnt::{
 };
 use crate::{info, warn};
 
+use super::dpx_agl::{
+    agl_chop_suffix, agl_lookup_list, agl_name_convert_unicode, agl_name_is_unicode,
+    agl_sput_UTF16BE,
+};
 use super::dpx_cff::{
     cff_add_string, cff_charsets_lookup_inverse, cff_close, cff_get_index_header, cff_get_name,
     cff_get_sid, cff_get_string, cff_glyph_lookup, cff_index_size, cff_new_index, cff_open,
     cff_pack_charsets, cff_pack_fdselect, cff_pack_index, cff_put_header, cff_read_charsets,
     cff_read_fdselect, cff_read_subrs, cff_release_index, cff_set_name, cff_update_string,
 };
+use super::dpx_cff::{
+    cff_charsets_lookup, cff_fdselect_lookup, cff_read_fdarray, cff_read_private,
+    cff_release_charsets, cff_release_fdselect,
+};
 use super::dpx_cff_dict::{
     cff_dict_add, cff_dict_get, cff_dict_known, cff_dict_pack, cff_dict_remove, cff_dict_set,
     cff_dict_update, cff_new_dict,
 };
+use super::dpx_cid::{
+    CIDFont_get_embedding, CIDFont_get_opt_index, CIDFont_get_parent_id, CIDFont_is_BaseFont,
+};
+use super::dpx_cid::{CSI_IDENTITY, CSI_UNICODE};
 use super::dpx_cmap::{
     CMap_add_bfchar, CMap_add_cidchar, CMap_add_codespacerange, CMap_cache_add, CMap_cache_find,
     CMap_new, CMap_release, CMap_set_CIDSysInfo, CMap_set_name, CMap_set_type, CMap_set_wmode,
 };
 use super::dpx_cmap_write::CMap_create_stream;
+use super::dpx_cs_type2::cs_copy_charstring;
 use super::dpx_dpxfile::{dpx_open_opentype_file, dpx_open_truetype_file, dpx_open_type1_file};
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdffont::pdf_font_make_uniqueTag;
+use super::dpx_t1_char::{t1char_convert_charstring, t1char_get_metrics};
+use super::dpx_t1_load::t1_load_font;
 use super::dpx_tt_aux::tt_get_fontdesc;
+use super::dpx_tt_aux::ttc_read_offset;
 use super::dpx_tt_table::{
     tt_read_VORG_table, tt_read_head_table, tt_read_hhea_table, tt_read_longMetrics,
     tt_read_maxp_table, tt_read_os2__table, tt_read_vhea_table,
@@ -80,76 +96,10 @@ extern "C" {
     fn strstr(_: *const i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
-    static mut CSI_IDENTITY: CIDSysInfo;
-    #[no_mangle]
-    static mut CSI_UNICODE: CIDSysInfo;
-    #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    /* FIXME */
-    #[no_mangle]
-    fn CIDFont_get_opt_index(font: *mut CIDFont) -> i32;
-    #[no_mangle]
-    fn CIDFont_get_embedding(font: *mut CIDFont) -> i32;
-    #[no_mangle]
-    fn CIDFont_get_parent_id(font: *mut CIDFont, wmode: i32) -> i32;
-    #[no_mangle]
-    fn CIDFont_is_BaseFont(font: *mut CIDFont) -> bool;
-    #[no_mangle]
-    fn agl_chop_suffix(glyphname: *const i8, suffix: *mut *mut i8) -> *mut i8;
-    #[no_mangle]
-    fn agl_sput_UTF16BE(
-        name: *const i8,
-        dstpp: *mut *mut u8,
-        limptr: *mut u8,
-        num_fails: *mut i32,
-    ) -> i32;
-    #[no_mangle]
-    fn agl_name_is_unicode(glyphname: *const i8) -> bool;
-    #[no_mangle]
-    fn agl_name_convert_unicode(glyphname: *const i8) -> i32;
-    #[no_mangle]
-    fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
-    #[no_mangle]
-    fn cff_release_fdselect(fdselect: *mut cff_fdselect);
-    #[no_mangle]
-    fn cff_release_charsets(charset: *mut cff_charsets);
-    #[no_mangle]
-    fn cff_fdselect_lookup(cff: *mut cff_font, gid: card16) -> card8;
-    #[no_mangle]
-    fn cff_read_private(cff: *mut cff_font) -> i32;
-    #[no_mangle]
-    fn cff_read_fdarray(cff: *mut cff_font) -> i32;
-    #[no_mangle]
-    fn cff_charsets_lookup(cff: *mut cff_font, cid: card16) -> card16;
-    #[no_mangle]
-    fn cs_copy_charstring(
-        dest: *mut card8,
-        destlen: i32,
-        src: *mut card8,
-        srclen: i32,
-        gsubr: *mut cff_index,
-        subr: *mut cff_index,
-        default_width: f64,
-        nominal_width: f64,
-        ginfo: *mut cs_ginfo,
-    ) -> i32;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -158,30 +108,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn t1char_get_metrics(
-        src: *mut card8,
-        srclen: i32,
-        subrs: *mut cff_index,
-        ginfo: *mut t1_ginfo,
-    ) -> i32;
-    #[no_mangle]
-    fn t1char_convert_charstring(
-        dst: *mut card8,
-        dstlen: i32,
-        src: *mut card8,
-        srclen: i32,
-        subrs: *mut cff_index,
-        default_width: f64,
-        nominal_width: f64,
-        ginfo: *mut t1_ginfo,
-    ) -> i32;
-    #[no_mangle]
-    fn t1_load_font(enc_vec: *mut *mut i8, mode: i32, handle: rust_input_handle_t)
-        -> *mut cff_font;
-    /* TTC (TrueType Collection) */
-    #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -225,12 +151,7 @@ pub type FWord = i16;
 
 pub type uFWord = u16;
 use super::dpx_tt_table::tt_VORG_table;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_vertOriginYMetrics {
-    pub glyphIndex: u16,
-    pub vertOriginY: i16,
-}
+
 pub type CID = u16;
 pub type CIDType0Error = i32;
 pub const CID_OPEN_ERROR_IS_CIDFONT: CIDType0Error = -6;

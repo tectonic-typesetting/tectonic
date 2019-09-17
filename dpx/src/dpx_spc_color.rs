@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_dpxutil::parse_c_ident;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set};
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_spc_util::spc_util_read_colorspec;
@@ -39,14 +40,6 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-/* Color special
- * See remark in spc_color.c.
- */
-/* Color stack
- */
-/* Similar to bop_content */
 }
 
 use super::dpx_specials::{spc_arg, spc_env};

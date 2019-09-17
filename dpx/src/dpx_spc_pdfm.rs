@@ -33,7 +33,14 @@ use crate::warn;
 use crate::{streq_ptr, strstartswith};
 
 use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode};
+use super::dpx_dpxutil::parse_c_ident;
 use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
+use super::dpx_dvipdfmx::is_xdv;
+use super::dpx_fontmap::{
+    is_pdfm_mapline, pdf_append_fontmap_record, pdf_clear_fontmap_record, pdf_init_fontmap_record,
+    pdf_insert_fontmap_record, pdf_load_fontmap_file, pdf_read_fontmap_line,
+    pdf_remove_fontmap_record,
+};
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
@@ -45,56 +52,38 @@ use super::dpx_pdfdev::{
 use super::dpx_pdfdev::{
     pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
 };
-use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
-use super::dpx_pdfdoc::{pdf_doc_add_annot, pdf_doc_add_bead, pdf_doc_begin_grabbing};
 use super::dpx_pdfdoc::{
-    pdf_doc_add_names, pdf_doc_add_page_content, pdf_doc_begin_article, pdf_doc_bookmarks_add,
-    pdf_doc_bookmarks_depth, pdf_doc_bookmarks_down, pdf_doc_bookmarks_up,
-    pdf_doc_current_page_number, pdf_doc_end_grabbing, pdf_doc_get_dictionary,
-    pdf_doc_set_bop_content, pdf_doc_set_eop_content,
+    pdf_doc_add_annot, pdf_doc_add_bead, pdf_doc_add_names, pdf_doc_add_page_content,
+    pdf_doc_begin_article, pdf_doc_begin_grabbing, pdf_doc_bookmarks_add, pdf_doc_bookmarks_depth,
+    pdf_doc_bookmarks_down, pdf_doc_bookmarks_up, pdf_doc_current_page_number,
+    pdf_doc_end_grabbing, pdf_doc_get_dictionary, pdf_doc_set_bgcolor, pdf_doc_set_bop_content,
+    pdf_doc_set_eop_content,
 };
-use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
-use super::dpx_pdfdraw::{pdf_dev_grestore, pdf_dev_gsave};
+use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_grestore, pdf_dev_gsave, pdf_dev_transform};
 use super::dpx_pdfximage::{pdf_ximage_findresource, pdf_ximage_get_reference};
-use super::dpx_spc_util::spc_util_read_pdfcolor;
-use super::dpx_spc_util::{spc_util_read_blahblah, spc_util_read_dimtrns};
+use super::dpx_spc_util::{spc_util_read_blahblah, spc_util_read_dimtrns, spc_util_read_pdfcolor};
+use super::dpx_specials::{
+    spc_begin_annot, spc_clear_objects, spc_end_annot, spc_flush_object, spc_lookup_object,
+    spc_push_object, spc_resume_annot, spc_suspend_annot,
+};
+use super::dpx_unicode::{
+    UC_UTF16BE_encode_char, UC_UTF16BE_is_valid_string, UC_UTF8_decode_char,
+    UC_UTF8_is_valid_string, UC_is_valid,
+};
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_file, pdf_get_array,
-    pdf_link_obj, pdf_lookup_dict, pdf_merge_dict, pdf_name_value, pdf_new_array, pdf_new_dict,
-    pdf_new_name, pdf_new_stream, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj,
-    pdf_remove_dict, pdf_set_string, pdf_stream_dict, pdf_string_length, pdf_string_value,
-    PdfObjType,
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_file, pdf_foreach_dict,
+    pdf_get_array, pdf_link_obj, pdf_lookup_dict, pdf_merge_dict, pdf_name_value, pdf_new_array,
+    pdf_new_dict, pdf_new_name, pdf_new_stream, pdf_number_value, pdf_obj, pdf_obj_typeof,
+    pdf_release_obj, pdf_remove_dict, pdf_set_string, pdf_stream_dict, pdf_string_length,
+    pdf_string_value, PdfObjType,
 };
 use crate::dpx_pdfparse::{
-    parse_ident, parse_opt_ident, parse_pdf_dict, parse_pdf_object, parse_val_ident,
+    parse_ident, parse_opt_ident, parse_pdf_dict, parse_pdf_object, parse_pdf_tainted_dict,
+    parse_val_ident, skip_white,
 };
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn spc_clear_objects();
-    #[no_mangle]
-    fn spc_flush_object(key: *const i8);
-    #[no_mangle]
-    fn spc_push_object(key: *const i8, value: *mut pdf_obj);
-    #[no_mangle]
-    fn spc_suspend_annot(spe: *mut spc_env) -> i32;
-    #[no_mangle]
-    fn spc_resume_annot(spe: *mut spc_env) -> i32;
-    #[no_mangle]
-    fn spc_end_annot(spe: *mut spc_env) -> i32;
-    #[no_mangle]
-    fn spc_begin_annot(spe: *mut spc_env, annot_dict: *mut pdf_obj) -> i32;
-    #[no_mangle]
-    fn spc_lookup_object(ident: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_foreach_dict(
-        dict: *mut pdf_obj,
-        proc_0: Option<
-            unsafe extern "C" fn(_: *mut pdf_obj, _: *mut pdf_obj, _: *mut libc::c_void) -> i32,
-        >,
-        pdata: *mut libc::c_void,
-    ) -> i32;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
     #[no_mangle]
@@ -108,54 +97,9 @@ extern "C" {
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
     #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    static mut is_xdv: i32;
-    #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
-    fn pdf_init_fontmap_record(mrec: *mut fontmap_rec);
-    #[no_mangle]
-    fn pdf_clear_fontmap_record(mrec: *mut fontmap_rec);
-    #[no_mangle]
-    fn pdf_load_fontmap_file(filename: *const i8, mode: i32) -> i32;
-    #[no_mangle]
-    fn pdf_read_fontmap_line(
-        mrec: *mut fontmap_rec,
-        mline: *const i8,
-        mline_strlen: i32,
-        format: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_append_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> i32;
-    #[no_mangle]
-    fn pdf_remove_fontmap_record(kp: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_insert_fontmap_record(kp: *const i8, mrec: *const fontmap_rec) -> *mut fontmap_rec;
-    #[no_mangle]
-    fn is_pdfm_mapline(mline: *const i8) -> i32;
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    /* Color special
-     * See remark in spc_color.c.
-     */
-    /* They just return PDF dictionary object.
-     * Callers are completely responsible for doing right thing...
-     */
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn parse_pdf_tainted_dict(pp: *mut *const i8, endptr: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn UC_is_valid(ucv: i32) -> bool;
-    #[no_mangle]
-    fn UC_UTF16BE_is_valid_string(p: *const u8, endptr: *const u8) -> bool;
-    #[no_mangle]
-    fn UC_UTF8_is_valid_string(p: *const u8, endptr: *const u8) -> bool;
-    #[no_mangle]
-    fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
-    #[no_mangle]
-    fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> i32;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

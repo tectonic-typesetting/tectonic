@@ -36,10 +36,12 @@ use super::dpx_sfnt::{
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_cid::{CIDFont_get_embedding, CIDFont_get_parent_id, CIDFont_is_BaseFont};
 use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode_char};
 use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_truetype_file};
 use super::dpx_pdffont::pdf_font_make_uniqueTag;
 use super::dpx_tt_aux::tt_get_fontdesc;
+use super::dpx_tt_aux::ttc_read_offset;
 use super::dpx_tt_cmap::{tt_cmap_lookup, tt_cmap_read, tt_cmap_release};
 use super::dpx_tt_glyf::{
     tt_add_glyph, tt_build_finish, tt_build_init, tt_build_tables, tt_get_index, tt_get_metrics,
@@ -57,23 +59,6 @@ use crate::dpx_pdfobj::{
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
-    /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    /* Both XeTeX and bibtex use this enum: */
-    /* The weird enum values are historical and could be rationalized. But it is
-     * good to write them explicitly since they must be kept in sync with
-     * `src/engines/mod.rs`.
-     */
-    /* quasi-hack to get the primary input */
-    /* Bridge API. Keep synchronized with src/engines/mod.rs. */
-    /* These functions are not meant to be used in the C/C++ code. They define the
-     * API that we expose to the Rust side of things. */
-    /* The internal, C/C++ interface: */
-    /* Global symbols that route through the global API variable. Hopefully we
-     * will one day eliminate all of the global state and get rid of all of
-     * these. */
     #[no_mangle]
     fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -100,36 +85,6 @@ extern "C" {
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    /* pdf_open_document() call them. */
-    /* font_name is used when mrec is NULL.
-     * font_scale (point size) used by PK font.
-     * It might be necessary if dvipdfmx supports font format with
-     * various optical sizes supported in the future.
-     */
-    /* Each font drivers use the followings. */
-    /* without unique tag */
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    #[no_mangle]
-    fn CIDFont_get_embedding(font: *mut CIDFont) -> i32;
-    #[no_mangle]
-    fn CIDFont_get_parent_id(font: *mut CIDFont, wmode: i32) -> i32;
-    #[no_mangle]
-    fn CIDFont_is_BaseFont(font: *mut CIDFont) -> bool;
-    /* TTC (TrueType Collection) */
-    #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
 }
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;

@@ -44,14 +44,17 @@ use super::dpx_cff_dict::{
     cff_dict_add, cff_dict_get, cff_dict_known, cff_dict_pack, cff_dict_remove, cff_dict_set,
     cff_dict_update,
 };
+use super::dpx_cs_type2::cs_copy_charstring;
 use super::dpx_dpxfile::dpx_open_opentype_file;
 use super::dpx_mfileio::work_buffer;
+use super::dpx_pdfencoding::{pdf_create_ToUnicode_CMap, pdf_encoding_get_encoding};
 use super::dpx_pdffont::{
     pdf_font, pdf_font_get_descriptor, pdf_font_get_encoding, pdf_font_get_flag,
     pdf_font_get_fontname, pdf_font_get_ident, pdf_font_get_mapname, pdf_font_get_resource,
     pdf_font_get_uniqueTag, pdf_font_get_usedchars, pdf_font_get_verbose, pdf_font_is_in_use,
     pdf_font_set_flags, pdf_font_set_fontname, pdf_font_set_subtype,
 };
+use super::dpx_tfm::{tfm_get_width, tfm_open};
 use super::dpx_tt_aux::tt_get_fontdesc;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_lookup_dict, pdf_merge_dict,
@@ -61,70 +64,14 @@ use crate::dpx_pdfobj::{
 use crate::{ttstub_input_close, ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    /* Here is the complete list of PDF object types */
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    /* Flag */
-    /* FontName */
-    /* - CFF structure - */
-    /* CFF Header */
-    /* Name INDEX */
-    /* Top DICT (single) */
-    /* String INDEX */
-    /* Global Subr INDEX */
-    /* Encodings */
-    /* Charsets  */
-    /* FDSelect, CIDFont only */
-    /* CharStrings */
-    /* CIDFont only */
-    /* per-Font DICT */
-    /* Local Subr INDEX, per-Private DICT */
-    /* -- extra data -- */
-    /* non-zero for OpenType or PostScript wrapped */
-    /* number of glyphs (CharString INDEX count) */
-    /* number of Font DICT */
-    /* Updated String INDEX.
-     * Please fix this. We should separate input and output.
-     */
-    /* not used, ASCII Hex filter if needed */
-    /* CFF fontset index */
-    /* Flag: see above */
-    /* 1 if .notdef is not the 1st glyph */
-    /* CFF Header */
-    /* CFF INDEX */
-    /* Name INDEX */
-    #[no_mangle]
-    fn cs_copy_charstring(
-        dest: *mut card8,
-        destlen: i32,
-        src: *mut card8,
-        srclen: i32,
-        gsubr: *mut cff_index,
-        subr: *mut cff_index,
-        default_width: f64,
-        nominal_width: f64,
-        ginfo: *mut cs_ginfo,
-    ) -> i32;
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -133,23 +80,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_encoding_get_encoding(enc_id: i32) -> *mut *mut i8;
-    /*
-     * pdf_create_ToUnicode_CMap() returns stream object but not
-     * reference. This need to be renamed to other name like
-     * pdf_create_ToUnicode_stream().
-     */
-    #[no_mangle]
-    fn pdf_create_ToUnicode_CMap(
-        enc_name: *const i8,
-        enc_vec: *mut *mut i8,
-        is_used: *const i8,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
-    #[no_mangle]
-    fn tfm_get_width(font_id: i32, ch: i32) -> f64;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

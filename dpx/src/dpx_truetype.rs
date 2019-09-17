@@ -36,13 +36,20 @@ use super::dpx_sfnt::{
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_agl::{
+    agl_chop_suffix, agl_lookup_list, agl_name_convert_unicode, agl_name_is_unicode,
+    agl_suffix_to_otltag,
+};
 use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_truetype_file};
+use super::dpx_pdfencoding::{pdf_encoding_get_encoding, pdf_encoding_is_predefined};
 use super::dpx_pdffont::{
     pdf_font, pdf_font_get_descriptor, pdf_font_get_encoding, pdf_font_get_ident,
     pdf_font_get_index, pdf_font_get_mapname, pdf_font_get_resource, pdf_font_get_usedchars,
     pdf_font_get_verbose, pdf_font_is_in_use, pdf_font_set_fontname,
 };
+use super::dpx_tfm::{tfm_get_width, tfm_open};
 use super::dpx_tt_aux::tt_get_fontdesc;
+use super::dpx_tt_aux::ttc_read_offset;
 use super::dpx_tt_cmap::{tt_cmap_lookup, tt_cmap_read, tt_cmap_release};
 use super::dpx_tt_glyf::{
     tt_add_glyph, tt_build_finish, tt_build_init, tt_build_tables, tt_find_glyph, tt_get_index,
@@ -75,70 +82,24 @@ extern "C" {
     fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
     #[no_mangle]
     fn strcmp(_: *const i8, _: *const i8) -> i32;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
     #[no_mangle]
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn agl_chop_suffix(glyphname: *const i8, suffix: *mut *mut i8) -> *mut i8;
-    #[no_mangle]
-    fn agl_name_is_unicode(glyphname: *const i8) -> bool;
-    #[no_mangle]
-    fn agl_name_convert_unicode(glyphname: *const i8) -> i32;
-    #[no_mangle]
-    fn agl_suffix_to_otltag(suffix: *const i8) -> *const i8;
-    #[no_mangle]
-    fn agl_lookup_list(glyphname: *const i8) -> *mut agl_name;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_encoding_is_predefined(enc_id: i32) -> i32;
-    #[no_mangle]
-    fn pdf_encoding_get_encoding(enc_id: i32) -> *mut *mut i8;
-    /* 16.16-bit signed fixed-point number */
-    /* table header */
-    /* table data */
-    /* Fixed for Win */
-    /* number of kept tables */
-    /* keep or omit */
-    /* sfnt resource */
-    /* Convert sfnt "fixed" type to double */
-    /* get_***_*** from numbers.h */
-    #[no_mangle]
-    fn put_big_endian(s: *mut libc::c_void, q: i32, n: i32) -> i32;
-    #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
-    #[no_mangle]
-    fn tfm_get_width(font_id: i32, ch: i32) -> f64;
-    /* TTC (TrueType Collection) */
-    #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
 }
 pub type rust_input_handle_t = *mut libc::c_void;
 
-use super::dpx_sfnt::sfnt;
+use super::dpx_sfnt::{put_big_endian, sfnt};
 
 use super::dpx_tt_post::tt_post_table;
 

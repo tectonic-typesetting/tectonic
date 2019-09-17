@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_dpxutil::parse_c_ident;
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
@@ -40,13 +41,10 @@ extern "C" {
     fn strlen(_: *const i8) -> u64;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
 }
 pub type size_t = u64;
 
+use super::dpx_pdfparse::skip_white;
 use super::dpx_specials::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;

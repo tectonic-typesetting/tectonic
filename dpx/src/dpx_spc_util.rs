@@ -29,10 +29,12 @@
     unused_mut
 )]
 
+use super::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
 use super::dpx_pdfcolor::{
     pdf_color_cmykcolor, pdf_color_copycolor, pdf_color_graycolor, pdf_color_rgbcolor,
     pdf_color_spotcolor,
 };
+use super::dpx_pdfparse::skip_white;
 use crate::mfree;
 use crate::streq_ptr;
 use libc::free;
@@ -49,12 +51,6 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn parse_float_decimal(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn parse_c_ident(pp: *mut *const i8, endptr: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
 }
 
 pub use super::dpx_pdfcolor::pdf_color;

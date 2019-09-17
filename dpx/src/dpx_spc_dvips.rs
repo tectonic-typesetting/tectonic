@@ -42,10 +42,10 @@ use super::dpx_pdfdev::{pdf_dev_put_image, pdf_tmatrix, transform_info, transfor
 use super::dpx_pdfdraw::{
     pdf_dev_current_depth, pdf_dev_grestore, pdf_dev_grestore_to, pdf_dev_gsave,
 };
+use super::dpx_pdfparse::skip_white;
 use super::dpx_spc_util::spc_util_read_dimtrns;
 use libc::free;
 extern "C" {
-    /* Here is the complete list of PDF object types */
     #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
@@ -62,10 +62,6 @@ extern "C" {
     fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    /* Please use different interface than findresource...
-     * This is not intended to be used for specifying page number and others.
-     * Only pdf:image special in spc_pdfm.c want optinal dict!
-     */
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
@@ -74,8 +70,6 @@ extern "C" {
     fn mps_stack_depth() -> i32;
     #[no_mangle]
     fn mps_eop_cleanup();
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
 }
 pub type size_t = u64;
 

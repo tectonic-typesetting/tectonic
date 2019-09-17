@@ -33,53 +33,18 @@ use std::convert::TryInto;
 
 use crate::warn;
 
+use super::dpx_pdfcolor::{iccp_check_colorspace, iccp_load_profile, pdf_get_colorspace_reference};
 use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
-    pdf_new_stream, pdf_new_string, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dict,
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_get_version, pdf_new_array, pdf_new_dict,
+    pdf_new_name, pdf_new_number, pdf_new_stream, pdf_new_string, pdf_obj, pdf_ref_obj,
+    pdf_release_obj, pdf_stream_dict, pdf_stream_set_predictor,
 };
 use crate::{ttstub_input_read, ttstub_input_seek};
 use libc::free;
 extern "C" {
     #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
-    /* Name does not include the / */
-    /* pdf_add_dict requires key but pdf_add_array does not.
-     * pdf_add_array always append elements to array.
-     * They should be pdf_put_array(array, idx, element) and
-     * pdf_put_dict(dict, key, value)
-     */
-    /* pdf_add_dict() want pdf_obj as key, however, key must always be name
-     * object and pdf_lookup_dict() and pdf_remove_dict() uses const char as
-     * key. This strange difference seems come from pdfdoc that first allocate
-     * name objects frequently used (maybe 1000 times) such as /Type and does
-     * pdf_link_obj() it rather than allocate/free-ing them each time. But I
-     * already removed that.
-     */
-    #[no_mangle]
-    fn pdf_add_stream(
-        stream: *mut pdf_obj,
-        stream_data_ptr: *const libc::c_void,
-        stream_data_len: i32,
-    );
-    #[no_mangle]
-    fn pdf_stream_set_predictor(
-        stream: *mut pdf_obj,
-        predictor: i32,
-        columns: i32,
-        bpc: i32,
-        colors: i32,
-    );
-    #[no_mangle]
-    fn iccp_check_colorspace(colortype: i32, profile: *const libc::c_void, proflen: i32) -> i32;
-    #[no_mangle]
-    fn iccp_load_profile(ident: *const i8, profile: *const libc::c_void, proflen: i32) -> i32;
-    #[no_mangle]
-    fn pdf_get_colorspace_reference(cspc_id: i32) -> *mut pdf_obj;
     #[no_mangle]
     fn png_read_end(png_ptr: png_structrp, info_ptr: png_inforp);
     #[no_mangle]

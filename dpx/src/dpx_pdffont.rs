@@ -29,9 +29,18 @@
     unused_mut
 )]
 
+use super::dpx_agl::{agl_close_map, agl_init_map, agl_set_verbose};
+use super::dpx_cid::CIDFont_set_verbose;
+use super::dpx_cidtype0::t1_load_UnicodeCMap;
 use super::dpx_cmap::{
     CMap_cache_close, CMap_cache_find, CMap_cache_get, CMap_cache_init, CMap_get_name,
     CMap_get_profile, CMap_get_type, CMap_set_verbose,
+};
+use super::dpx_fontmap::pdf_lookup_fontmap_record;
+use super::dpx_pdfencoding::{
+    pdf_close_encodings, pdf_encoding_add_usedchars, pdf_encoding_complete,
+    pdf_encoding_findresource, pdf_encoding_get_name, pdf_encoding_get_tounicode,
+    pdf_encoding_set_verbose, pdf_get_encoding_obj, pdf_init_encodings, pdf_load_ToUnicode_stream,
 };
 use super::dpx_pkfont::{pdf_font_load_pkfont, pdf_font_open_pkfont, PKFont_set_dpi};
 use super::dpx_truetype::{pdf_font_load_truetype, pdf_font_open_truetype};
@@ -72,28 +81,14 @@ extern "C" {
     fn strstr(_: *const i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn pdf_lookup_fontmap_record(kp: *const i8) -> *mut fontmap_rec;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn snprintf(_: *mut i8, _: u64, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn time(__timer: *mut time_t) -> time_t;
-    #[no_mangle]
-    fn agl_set_verbose(level: i32);
-    #[no_mangle]
-    fn agl_init_map();
-    #[no_mangle]
-    fn agl_close_map();
-    #[no_mangle]
-    fn CIDFont_set_verbose(level: i32);
-    /* Type1 --> CFF CIDFont */
-    #[no_mangle]
-    fn t1_load_UnicodeCMap(font_name: *const i8, otl_tags: *const i8, wmode: i32) -> i32;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
@@ -102,43 +97,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_encoding_set_verbose(level: i32);
-    #[no_mangle]
-    fn pdf_init_encodings();
-    #[no_mangle]
-    fn pdf_close_encodings();
-    /* Creates Encoding resource and ToUnicode CMap
-     * for all non-predefined encodings.
-     */
-    #[no_mangle]
-    fn pdf_encoding_complete();
-    /* enc_name here is .enc file name or the name of predefined
-     * encodings.
-     */
-    #[no_mangle]
-    fn pdf_encoding_findresource(enc_name: *const i8) -> i32;
-    /* Returns the Encoding resource object.
-     */
-    #[no_mangle]
-    fn pdf_get_encoding_obj(enc_id: i32) -> *mut pdf_obj;
-    /* WARNING:
-     * Pointer(s) may change after another encoding is loaded.
-     */
-    #[no_mangle]
-    fn pdf_encoding_get_name(enc_id: i32) -> *mut i8;
-    /* pdf_encoding_copy_usedchars adds the given vector of used characters
-     * to the corresponding vector of the encoding.
-     */
-    #[no_mangle]
-    fn pdf_encoding_add_usedchars(encoding_id: i32, is_used: *const i8);
-    #[no_mangle]
-    fn pdf_encoding_get_tounicode(encoding_id: i32) -> *mut pdf_obj;
-    /* Just load CMap identified with 'ident'. (parsed)
-     * PDF stream object (not reference) returned.
-     */
-    #[no_mangle]
-    fn pdf_load_ToUnicode_stream(ident: *const i8) -> *mut pdf_obj;
 }
 pub type __time_t = i64;
 pub type size_t = u64;

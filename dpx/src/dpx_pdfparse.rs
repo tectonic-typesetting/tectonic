@@ -32,28 +32,19 @@
 use crate::strstartswith;
 use crate::{info, warn};
 
+use super::dpx_specials::spc_lookup_reference;
 use crate::dpx_pdfobj::{
-    pdf_add_array, pdf_add_dict, pdf_deref_obj, pdf_file, pdf_lookup_dict, pdf_merge_dict,
-    pdf_new_array, pdf_new_boolean, pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number,
-    pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj,
-    pdf_stream_dict, PdfObjType,
+    pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_deref_obj, pdf_file, pdf_lookup_dict,
+    pdf_merge_dict, pdf_new_array, pdf_new_boolean, pdf_new_dict, pdf_new_indirect, pdf_new_name,
+    pdf_new_null, pdf_new_number, pdf_new_stream, pdf_new_string, pdf_number_value, pdf_obj,
+    pdf_obj_typeof, pdf_release_obj, pdf_stream_dict, PdfObjType,
 };
 use libc::free;
 extern "C" {
     #[no_mangle]
-    fn pow(_: f64, _: f64) -> f64;
-    #[no_mangle]
     fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
     #[no_mangle]
     fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn pdf_new_indirect(pf: *mut pdf_file, label: u32, generation: u16) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_add_stream(
-        stream: *mut pdf_obj,
-        stream_data_ptr: *const libc::c_void,
-        stream_data_len: i32,
-    );
     #[no_mangle]
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
@@ -68,10 +59,6 @@ extern "C" {
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    /* PDF parser shouldn't depend on this...
-     */
-    #[no_mangle]
-    fn spc_lookup_reference(ident: *const i8) -> *mut pdf_obj;
 }
 
 pub type size_t = u64;
@@ -298,8 +285,8 @@ pub unsafe extern "C" fn parse_pdf_number(
             }
         } else if libc::isdigit(*p.offset(0) as _) != 0 {
             if has_dot != 0 {
-                v += (*p.offset(0) as i32 - '0' as i32) as f64
-                    / pow(10i32 as f64, (nddigits + 1i32) as f64);
+                v +=
+                    (*p.offset(0) as i32 - '0' as i32) as f64 / (10f64).powf((nddigits + 1) as f64);
                 nddigits += 1
             } else {
                 v = v * 10.0f64 + *p.offset(0) as i32 as f64 - '0' as i32 as f64

@@ -35,11 +35,13 @@ use super::dpx_sfnt::{
 };
 use crate::{info, warn};
 
+use super::dpx_agl::agl_get_unicodes;
 use super::dpx_cff::{
     cff_charsets_lookup_inverse, cff_close, cff_get_glyphname, cff_get_string, cff_open,
     cff_read_charsets,
 };
 use super::dpx_cff_dict::{cff_dict_get, cff_dict_known};
+use super::dpx_cid::{CSI_IDENTITY, CSI_UNICODE};
 use super::dpx_cmap::{
     CMap_add_bfchar, CMap_add_cidchar, CMap_add_codespacerange, CMap_cache_add, CMap_cache_find,
     CMap_cache_get, CMap_decode, CMap_get_type, CMap_new, CMap_release, CMap_reverse_decode,
@@ -50,13 +52,15 @@ use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_opentype_file, dpx_open_t
 use super::dpx_numbers::{
     tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
+use super::dpx_pdfresource::{pdf_defineresource, pdf_findresource, pdf_get_resource_reference};
+use super::dpx_tt_aux::ttc_read_offset;
 use super::dpx_tt_gsub::{
     otl_gsub, otl_gsub_add_feat, otl_gsub_add_feat_list, otl_gsub_apply, otl_gsub_apply_chain,
     otl_gsub_new, otl_gsub_release, otl_gsub_select, otl_gsub_set_chain, otl_gsub_set_verbose,
 };
-use super::dpx_tt_post::tt_get_glyphname;
-use super::dpx_tt_post::{tt_read_post_table, tt_release_post_table};
+use super::dpx_tt_post::{tt_get_glyphname, tt_read_post_table, tt_release_post_table};
 use super::dpx_tt_table::tt_read_maxp_table;
+use super::dpx_unicode::UC_UTF16BE_encode_char;
 use crate::dpx_pdfobj::pdf_obj;
 use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_seek};
@@ -72,37 +76,14 @@ extern "C" {
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn agl_get_unicodes(glyphstr: *const i8, unicodes: *mut i32, max_uncodes: i32) -> i32;
-    #[no_mangle]
-    static mut CSI_IDENTITY: CIDSysInfo;
-    #[no_mangle]
-    static mut CSI_UNICODE: CIDSysInfo;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_defineresource(
-        category: *const i8,
-        resname: *const i8,
-        object: *mut pdf_obj,
-        flags: i32,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_findresource(category: *const i8, resname: *const i8) -> i32;
-    #[no_mangle]
-    fn pdf_get_resource_reference(res_id: i32) -> *mut pdf_obj;
-    /* TTC (TrueType Collection) */
-    #[no_mangle]
-    fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
-    #[no_mangle]
-    fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

@@ -41,12 +41,16 @@ use super::dpx_cff::{
 use super::dpx_cff_dict::{
     cff_dict_add, cff_dict_get, cff_dict_known, cff_dict_pack, cff_dict_set, cff_dict_update,
 };
+use super::dpx_pdfencoding::{pdf_create_ToUnicode_CMap, pdf_encoding_get_encoding};
 use super::dpx_pdffont::{
     pdf_font, pdf_font_get_descriptor, pdf_font_get_encoding, pdf_font_get_fontname,
     pdf_font_get_ident, pdf_font_get_mapname, pdf_font_get_resource, pdf_font_get_uniqueTag,
     pdf_font_get_usedchars, pdf_font_get_verbose, pdf_font_is_in_use, pdf_font_set_flags,
     pdf_font_set_fontname, pdf_font_set_subtype,
 };
+use super::dpx_t1_char::{t1char_convert_charstring, t1char_get_metrics};
+use super::dpx_t1_load::{is_pfb, t1_get_fontname, t1_get_standard_glyph, t1_load_font};
+use super::dpx_tfm::{tfm_get_width, tfm_open};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_lookup_dict, pdf_new_array,
     pdf_new_name, pdf_new_number, pdf_new_stream, pdf_new_string, pdf_obj, pdf_ref_obj,
@@ -65,7 +69,6 @@ extern "C" {
     fn strstr(_: *const i8, _: *const i8) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
     #[no_mangle]
     fn _tt_abort(format: *const i8, _: ...) -> !;
     #[no_mangle]
@@ -76,50 +79,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_encoding_get_encoding(enc_id: i32) -> *mut *mut i8;
-    /*
-     * pdf_create_ToUnicode_CMap() returns stream object but not
-     * reference. This need to be renamed to other name like
-     * pdf_create_ToUnicode_stream().
-     */
-    #[no_mangle]
-    fn pdf_create_ToUnicode_CMap(
-        enc_name: *const i8,
-        enc_vec: *mut *mut i8,
-        is_used: *const i8,
-    ) -> *mut pdf_obj;
-    #[no_mangle]
-    fn t1char_get_metrics(
-        src: *mut card8,
-        srclen: i32,
-        subrs: *mut cff_index,
-        ginfo: *mut t1_ginfo,
-    ) -> i32;
-    #[no_mangle]
-    fn t1char_convert_charstring(
-        dst: *mut card8,
-        dstlen: i32,
-        src: *mut card8,
-        srclen: i32,
-        subrs: *mut cff_index,
-        default_width: f64,
-        nominal_width: f64,
-        ginfo: *mut t1_ginfo,
-    ) -> i32;
-    #[no_mangle]
-    fn t1_load_font(enc_vec: *mut *mut i8, mode: i32, handle: rust_input_handle_t)
-        -> *mut cff_font;
-    #[no_mangle]
-    fn is_pfb(handle: rust_input_handle_t) -> bool;
-    #[no_mangle]
-    fn t1_get_fontname(handle: rust_input_handle_t, fontname: *mut i8) -> i32;
-    #[no_mangle]
-    fn t1_get_standard_glyph(code: i32) -> *const i8;
-    #[no_mangle]
-    fn tfm_open(tex_name: *const i8, must_exist: i32) -> i32;
-    #[no_mangle]
-    fn tfm_get_width(font_id: i32, ch: i32) -> f64;
 }
 pub type size_t = u64;
 

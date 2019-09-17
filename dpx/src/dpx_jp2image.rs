@@ -29,47 +29,18 @@
 
 use crate::warn;
 
-use super::dpx_mfileio::work_buffer;
+use super::dpx_mfileio::{file_size, seek_relative, work_buffer};
+use super::dpx_numbers::{get_unsigned_byte, get_unsigned_pair, get_unsigned_quad};
 use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
-    pdf_add_dict, pdf_add_stream, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_obj,
-    pdf_stream_dict,
+    pdf_add_dict, pdf_add_stream, pdf_get_version, pdf_new_name, pdf_new_number, pdf_new_stream,
+    pdf_obj, pdf_stream_dict,
 };
 extern "C" {
-    pub type _IO_wide_data;
-    pub type _IO_codecvt;
-    pub type _IO_marker;
-    /* Here is the complete list of PDF object types */
-    /* A deeper object hierarchy will be considered as (illegal) loop. */
-    #[no_mangle]
-    fn pow(_: f64, _: f64) -> f64;
     #[no_mangle]
     fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
     #[no_mangle]
     fn rewind(__stream: *mut FILE);
-    /* When reading numbers from binary files 1, 2, or 3 bytes are
-       interpreted as either signed or unsigned.
-
-       Four bytes from DVI, PK, TFM, or VF files always yield a signed
-       32-bit integer (i32), but some of them must not be negative.
-
-       Four byte numbers from JPEG2000, OpenType, or TrueType files are
-       mostly unsigned (u32) and occasionally signed (i32).
-    */
-    #[no_mangle]
-    fn get_unsigned_byte(_: *mut FILE) -> u8;
-    #[no_mangle]
-    fn get_unsigned_pair(_: *mut FILE) -> u16;
-    #[no_mangle]
-    fn get_unsigned_quad(_: *mut FILE) -> u32;
-    #[no_mangle]
-    fn seek_relative(file: *mut FILE, pos: i32);
-    #[no_mangle]
-    fn file_size(file: *mut FILE) -> i32;
-    #[no_mangle]
-    fn pdf_get_version() -> u32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
 }
 pub type __off_t = i64;
 pub type __off64_t = i64;
@@ -159,8 +130,8 @@ unsafe extern "C" fn read_res__data(info: &mut ximage_info, mut fp: *mut FILE, m
     HR_D = get_unsigned_pair(fp) as u32;
     VR_E = get_unsigned_byte(fp);
     HR_E = get_unsigned_byte(fp);
-    info.xdensity = 72.0f64 / (HR_N as f64 / HR_D as f64 * pow(10.0f64, HR_E as f64) * 0.0254f64);
-    info.ydensity = 72.0f64 / (VR_N as f64 / VR_D as f64 * pow(10.0f64, VR_E as f64) * 0.0254f64);
+    info.xdensity = 72. / (HR_N as f64 / HR_D as f64 * (10f64).powf(HR_E as f64) * 0.0254);
+    info.ydensity = 72. / (VR_N as f64 / VR_D as f64 * (10f64).powf(VR_E as f64) * 0.0254);
 }
 unsafe extern "C" fn scan_res_(info: &mut ximage_info, mut fp: *mut FILE, mut size: u32) -> i32 {
     let mut len: u32 = 0;

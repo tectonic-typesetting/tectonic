@@ -29,12 +29,14 @@
     unused_mut
 )]
 
-use crate::dpx_pdfparse::parse_ident;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
+use super::dpx_dpxfile::dpx_tt_open;
 use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
 use super::dpx_mfileio::tt_mfgets;
+use super::dpx_pdfparse::{parse_ident, skip_white};
+use super::dpx_unicode::{UC_UTF16BE_encode_char, UC_is_valid};
 use crate::ttstub_input_close;
 use libc::free;
 extern "C" {
@@ -56,27 +58,12 @@ extern "C" {
     fn strchr(_: *const i8, _: i32) -> *mut i8;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* tmp freed here */
-    /* Tectonic-enabled I/O alternatives */
-    #[no_mangle]
-    fn dpx_tt_open(
-        filename: *const i8,
-        suffix: *const i8,
-        format: TTInputFormat,
-    ) -> rust_input_handle_t;
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    /* Please remove this */
-    #[no_mangle]
-    fn skip_white(start: *mut *const i8, end: *const i8);
-    #[no_mangle]
-    fn UC_is_valid(ucv: i32) -> bool;
-    #[no_mangle]
-    fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
