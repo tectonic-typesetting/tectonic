@@ -1,68 +1,32 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::core_memory::xmalloc;
+use crate::xetex_ini::{pool_ptr, pool_size, str_pool, str_start};
+use crate::xetex_io::{bytesFromUTF8, firstByteMark, offsetsFromUTF8};
+use crate::xetex_stringpool::make_string;
 use crate::{ttstub_get_data_md5, ttstub_get_file_md5};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    static mut pool_size: i32;
-    #[no_mangle]
-    static mut str_pool: *mut packed_UTF16_code;
-    #[no_mangle]
-    static mut str_start: *mut pool_pointer;
-    #[no_mangle]
-    static mut pool_ptr: pool_pointer;
-    #[no_mangle]
-    static firstByteMark: [u8; 7];
-    #[no_mangle]
-    static offsetsFromUTF8: [u32; 6];
-    #[no_mangle]
-    static bytesFromUTF8: [u8; 256];
-    #[no_mangle]
-    fn make_string() -> str_number;
-}
-pub type __time_t = i64;
+use libc::{free, sprintf, strlen};
+
 pub type size_t = u64;
-pub type time_t = __time_t;
 pub type str_number = i32;
 pub type packed_UTF16_code = u16;
 pub type UInt32 = u32;
 pub type pool_pointer = i32;
 pub type UInt16 = u16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tm {
-    pub tm_sec: i32,
-    pub tm_min: i32,
-    pub tm_hour: i32,
-    pub tm_mday: i32,
-    pub tm_mon: i32,
-    pub tm_year: i32,
-    pub tm_wday: i32,
-    pub tm_yday: i32,
-    pub tm_isdst: i32,
-    pub tm_gmtoff: i64,
-    pub tm_zone: *const i8,
-}
 /* texmfmp.c: Hand-coded routines for TeX or Metafont in C.  Originally
 written by Tim Morgan, drawing from other Unix ports of TeX.  This is
 a collection of miscellany, everything that's easier (or only
 possible) to do in C.
 
 This file is public domain.  */
-/* For `struct tm'.  Moved here for Visual Studio 2005.  */
 static mut last_source_name: *mut i8 = 0 as *const i8 as *mut i8;
 static mut last_lineno: i32 = 0;
 pub fn get_date_and_time() -> (i32, i32, i32, i32) {
@@ -83,14 +47,13 @@ unsafe extern "C" fn checkpool_pointer(mut pool_ptr_0: pool_pointer, mut len: si
 }
 #[no_mangle]
 pub unsafe extern "C" fn maketexstring(mut s: *const i8) -> i32 {
-    let mut len: size_t = 0;
     let mut rval: UInt32 = 0;
     let mut cp: *const u8 = s as *const u8;
     if s.is_null() || *s as i32 == 0i32 {
         return (65536 + 1i32 as i64) as i32;
     }
-    len = strlen(s);
-    checkpool_pointer(pool_ptr, len);
+    let len = strlen(s);
+    checkpool_pointer(pool_ptr, len as _);
     loop {
         let fresh0 = cp;
         cp = cp.offset(1);
@@ -346,10 +309,10 @@ pub unsafe extern "C" fn make_src_special(
         lineno,
     );
     assert!(
-        !((pool_ptr as u64)
+        !((pool_ptr as usize)
             .wrapping_add(strlen(buf.as_mut_ptr()))
             .wrapping_add(strlen(filename))
-            >= pool_size as size_t),
+            >= pool_size as usize),
         "string pool overflow"
     );
     s = buf.as_mut_ptr();
@@ -406,7 +369,7 @@ pub unsafe extern "C" fn getmd5sum(mut s: str_number, mut file: bool) {
     if file {
         ret = ttstub_get_file_md5(xname, digest.as_mut_ptr())
     } else {
-        ret = ttstub_get_data_md5(xname, strlen(xname), digest.as_mut_ptr())
+        ret = ttstub_get_data_md5(xname, strlen(xname) as _, digest.as_mut_ptr())
     }
     free(xname as *mut libc::c_void);
     if ret != 0 {

@@ -8,105 +8,28 @@
     unused_mut
 )]
 
+use crate::core_memory::{xcalloc, xmalloc, xstrdup};
 use crate::stub_errno as errno;
 use crate::stub_icu as icu;
 use crate::stub_teckit as teckit;
+use crate::xetex_ini::{
+    buf_size, buffer, cur_area, cur_chr, cur_ext, cur_name, cur_val, eqtb, first, last,
+    max_buf_stack, name_in_progress, name_length, name_length16, name_of_file, name_of_file16,
+    read_file, read_open, stop_at_space,
+};
+use crate::xetex_output::{print_int, print_nl};
+use crate::xetex_texmfmp::gettexstring;
+use crate::xetex_xetex0::{
+    bad_utf8_warning, begin_diagnostic, begin_name, end_diagnostic, end_name,
+    get_input_normalization_state, more_name, pack_file_name, scan_file_name, scan_four_bit_int,
+    scan_optional_equals,
+};
 use crate::xetex_xetexd::print_c_string;
 use crate::{
     ttstub_input_close, ttstub_input_getc, ttstub_input_open, ttstub_input_open_primary,
     ttstub_input_seek, ttstub_input_ungetc,
 };
-use libc::free;
-
-extern "C" {
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    /* The internal, C/C++ interface: */
-    /* tectonic/core-memory.h: basic dynamic memory helpers
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    #[no_mangle]
-    fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xcalloc(nelem: size_t, elsize: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn gettexstring(_: str_number) -> *mut i8;
-    /* Needed here for UFILE */
-    /* variables! */
-    /* All the following variables are defined in xetexini.c */
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut name_of_file: *mut i8;
-    #[no_mangle]
-    static mut name_of_file16: *mut UTF16_code;
-    #[no_mangle]
-    static mut name_length: i32;
-    #[no_mangle]
-    static mut name_length16: i32;
-    #[no_mangle]
-    static mut buffer: *mut UnicodeScalar;
-    #[no_mangle]
-    static mut first: i32;
-    #[no_mangle]
-    static mut last: i32;
-    #[no_mangle]
-    static mut max_buf_stack: i32;
-    #[no_mangle]
-    static mut buf_size: i32;
-    #[no_mangle]
-    static mut cur_chr: i32;
-    #[no_mangle]
-    static mut cur_val: i32;
-    #[no_mangle]
-    static mut read_file: [*mut UFILE; 16];
-    #[no_mangle]
-    static mut read_open: [u8; 17];
-    #[no_mangle]
-    static mut cur_name: str_number;
-    #[no_mangle]
-    static mut cur_area: str_number;
-    #[no_mangle]
-    static mut cur_ext: str_number;
-    #[no_mangle]
-    static mut name_in_progress: bool;
-    /* xetex-errors */
-    /* xetex-math */
-    /* xetex-output */
-    #[no_mangle]
-    fn print_nl(s: str_number);
-    #[no_mangle]
-    fn get_input_normalization_state() -> i32;
-    #[no_mangle]
-    fn bad_utf8_warning();
-    #[no_mangle]
-    fn begin_diagnostic();
-    #[no_mangle]
-    fn print_int(n: i32);
-    #[no_mangle]
-    fn print_char(s: i32);
-    #[no_mangle]
-    fn end_diagnostic(blank_line: bool);
-    #[no_mangle]
-    static mut stop_at_space: bool;
-    #[no_mangle]
-    fn scan_optional_equals();
-    #[no_mangle]
-    fn scan_four_bit_int();
-    #[no_mangle]
-    fn begin_name();
-    #[no_mangle]
-    fn more_name(c: UTF16_code) -> bool;
-    #[no_mangle]
-    fn end_name();
-    #[no_mangle]
-    fn pack_file_name(n: str_number, a: str_number, e: str_number);
-    #[no_mangle]
-    fn scan_file_name();
-}
+use libc::{free, strlen};
 
 use crate::*;
 
@@ -292,62 +215,6 @@ pub const U_USING_FALLBACK_WARNING: UErrorCode = -128;
 pub type UTF16_code = u16;
 pub type UnicodeScalar = i32;
 pub type str_number = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
 
 #[derive(Copy, Clone)]
 #[repr(C)]

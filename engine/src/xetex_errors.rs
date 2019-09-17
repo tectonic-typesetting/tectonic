@@ -1,64 +1,23 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::ttstub_output_flush;
-use crate::xetex_ini::{history, selector};
-extern "C" {
-    /* The internal, C/C++ interface: */
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    static mut file_line_error_style_p: i32;
-    #[no_mangle]
-    static mut halt_on_error_p: i32;
-    #[no_mangle]
-    static mut rust_stdout: rust_output_handle_t;
-    #[no_mangle]
-    static mut interaction: u8;
-    #[no_mangle]
-    static mut error_count: i8;
-    #[no_mangle]
-    static mut help_line: [*const i8; 6];
-    #[no_mangle]
-    static mut help_ptr: u8;
-    #[no_mangle]
-    static mut use_err_help: bool;
-    #[no_mangle]
-    static mut job_name: str_number;
-    #[no_mangle]
-    static mut log_opened: bool;
-    #[no_mangle]
-    fn show_context();
-    #[no_mangle]
-    fn open_log_file();
-    #[no_mangle]
-    fn give_err_help();
-    #[no_mangle]
-    fn close_files_and_terminate();
-    #[no_mangle]
-    fn print_ln();
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_char(s: i32);
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_file_line();
-    #[no_mangle]
-    fn print_int(n: i32);
-    #[no_mangle]
-    fn print(s: i32);
-}
-/* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-   Copyright 2016-2018 the Tectonic Project
-   Licensed under the MIT License.
-*/
+use crate::xetex_ini::{
+    error_count, file_line_error_style_p, halt_on_error_p, help_line, help_ptr, history,
+    interaction, job_name, log_opened, rust_stdout, selector, use_err_help,
+};
+use crate::xetex_output::{
+    print, print_char, print_cstr, print_file_line, print_int, print_ln, print_nl_cstr,
+};
+use crate::xetex_xetex0::{close_files_and_terminate, give_err_help, open_log_file, show_context};
+use bridge::_tt_abort;
 
 use crate::TTHistory;
 

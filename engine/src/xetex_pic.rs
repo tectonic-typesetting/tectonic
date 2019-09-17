@@ -1,301 +1,43 @@
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
+use crate::core_memory::xstrdup;
+use crate::xetex_errors::error;
+use crate::xetex_ext::{D2Fix, Fix2D};
+use crate::xetex_ini::memory_word;
+use crate::xetex_ini::{
+    cur_area, cur_ext, cur_list, cur_name, cur_val, file_line_error_style_p, help_line, help_ptr,
+    mem, name_of_file,
+};
+use crate::xetex_output::{
+    print, print_cstr, print_file_line, print_file_name, print_nl_cstr, print_scaled,
+};
+use crate::xetex_xetex0::{
+    new_whatsit, pack_file_name, scan_decimal, scan_dimen, scan_file_name, scan_int, scan_keyword,
+};
+use crate::TTInputFormat;
 use crate::{ttstub_input_close, ttstub_input_open};
-use dpx::dpx_pdfdoc::pdf_doc_get_page;
+use dpx::dpx_bmpimage::{bmp_get_bbox, check_for_bmp};
+use dpx::dpx_dpxutil::{max4, min4};
+use dpx::dpx_jpegimage::{check_for_jpeg, jpeg_get_bbox};
+use dpx::dpx_pdfdoc::{pdf_doc_get_page, pdf_doc_get_page_count};
 use dpx::dpx_pdfdraw::pdf_dev_transform;
 use dpx::dpx_pdfobj::{pdf_close, pdf_file, pdf_obj, pdf_open, pdf_release_obj};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    /* tectonic/core-memory.h: basic dynamic memory helpers
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    #[no_mangle]
-    fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    static mut name_of_file: *mut i8;
-    #[no_mangle]
-    static mut file_line_error_style_p: i32;
-    #[no_mangle]
-    static mut help_line: [*const i8; 6];
-    #[no_mangle]
-    static mut help_ptr: u8;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut cur_list: list_state_record;
-    #[no_mangle]
-    static mut cur_val: i32;
-    #[no_mangle]
-    static mut cur_name: str_number;
-    #[no_mangle]
-    static mut cur_area: str_number;
-    #[no_mangle]
-    static mut cur_ext: str_number;
-    #[no_mangle]
-    fn scan_keyword(s: *const i8) -> bool;
-    #[no_mangle]
-    fn scan_int();
-    #[no_mangle]
-    fn scan_dimen(mu: bool, inf: bool, shortcut: bool);
-    #[no_mangle]
-    fn scan_decimal();
-    #[no_mangle]
-    fn pack_file_name(n: str_number, a: str_number, e: str_number);
-    #[no_mangle]
-    fn scan_file_name();
-    #[no_mangle]
-    fn new_whatsit(s: small_number, w: small_number);
-    /* xetex-errors */
-    #[no_mangle]
-    fn error();
-    #[no_mangle]
-    fn print(s: i32);
-    #[no_mangle]
-    fn print_cstr(s: *const i8);
-    #[no_mangle]
-    fn print_nl_cstr(s: *const i8);
-    /* ***************************************************************************\
-     Part of the XeTeX typesetting system
-     Copyright (c) 1994-2008 by SIL International
-     Copyright (c) 2009, 2011 by Jonathan Kew
-     Copyright (c) 2012, 2013 by Jiang Jiang
-     Copyright (c) 2012-2015 by Khaled Hosny
-
-     SIL Author(s): Jonathan Kew
-
-    Permission is hereby granted, free of charge, to any person obtaining
-    a copy of this software and associated documentation files (the
-    "Software"), to deal in the Software without restriction, including
-    without limitation the rights to use, copy, modify, merge, publish,
-    distribute, sublicense, and/or sell copies of the Software, and to
-    permit persons to whom the Software is furnished to do so, subject to
-    the following conditions:
-
-    The above copyright notice and this permission notice shall be
-    included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-    NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE
-    FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-    CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-    Except as contained in this notice, the name of the copyright holders
-    shall not be used in advertising or otherwise to promote the sale,
-    use or other dealings in this Software without prior written
-    authorization from the copyright holders.
-    \****************************************************************************/
-    /* some typedefs that XeTeX uses - on Mac OS, we get these from Apple headers,
-    but otherwise we'll need these substitute definitions */
-    /* command codes for XeTeX extension commands */
-    /* accessing info in a native_word_node */
-    /* info for each glyph is location (FixedPoint) + glyph ID (u16) */
-    /* glyph ID field in a glyph_node */
-    /* For Unicode encoding form interpretation... */
-    /* single-purpose metrics accessors */
-    #[no_mangle]
-    fn Fix2D(f: Fixed) -> f64;
-    #[no_mangle]
-    fn print_file_name(n: i32, a: i32, e: i32);
-    #[no_mangle]
-    fn print_file_line();
-    #[no_mangle]
-    fn print_scaled(s: scaled_t);
-    #[no_mangle]
-    fn D2Fix(d: f64) -> Fixed;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
-    #[no_mangle]
-    fn min4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
-    #[no_mangle]
-    fn max4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
-    /* PDF document metadata */
-    /* They just return PDF dictionary object.
-     * Callers are completely responsible for doing right thing...
-     */
-    #[no_mangle]
-    fn pdf_doc_get_page_count(pf: *mut pdf_file) -> i32;
-    #[no_mangle]
-    fn check_for_png(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn png_get_bbox(
-        handle: rust_input_handle_t,
-        width: *mut u32,
-        height: *mut u32,
-        xdensity: *mut f64,
-        ydensity: *mut f64,
-    ) -> i32;
-    /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-
-        Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
-        the dvipdfmx project team.
-
-        Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
-
-        This program is free software; you can redistribute it and/or modify
-        it under the terms of the GNU General Public License as published by
-        the Free Software Foundation; either version 2 of the License, or
-        (at your option) any later version.
-
-        This program is distributed in the hope that it will be useful,
-        but WITHOUT ANY WARRANTY; without even the implied warranty of
-        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-        GNU General Public License for more details.
-
-        You should have received a copy of the GNU General Public License
-        along with this program; if not, write to the Free Software
-        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-    */
-    #[no_mangle]
-    fn check_for_jpeg(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn jpeg_get_bbox(
-        handle: rust_input_handle_t,
-        width: *mut u32,
-        height: *mut u32,
-        xdensity: *mut f64,
-        ydensity: *mut f64,
-    ) -> i32;
-    #[no_mangle]
-    fn check_for_bmp(handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn bmp_get_bbox(
-        handle: rust_input_handle_t,
-        width: *mut u32,
-        height: *mut u32,
-        xdensity: *mut f64,
-        ydensity: *mut f64,
-    ) -> i32;
-}
-
-use crate::TTInputFormat;
+use dpx::dpx_pngimage::{check_for_png, png_get_bbox};
+use libc::{free, memcpy, strlen};
 
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
 pub type Fixed = scaled_t;
 pub type str_number = i32;
 pub type small_number = i16;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-/* quasi-hack to get the primary input */
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct list_state_record {
-    pub mode: i16,
-    pub head: i32,
-    pub tail: i32,
-    pub eTeX_aux: i32,
-    pub prev_graf: i32,
-    pub mode_line: i32,
-    pub aux: memory_word,
-}
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct transform_t {
@@ -982,11 +724,11 @@ pub unsafe extern "C" fn load_picture(mut is_pdf: bool) {
     if result == 0i32 {
         new_whatsit(
             43i32 as small_number,
-            (9i32 as u64).wrapping_add(
+            (9usize).wrapping_add(
                 strlen(pic_path)
-                    .wrapping_add(::std::mem::size_of::<memory_word>() as u64)
-                    .wrapping_sub(1i32 as u64)
-                    .wrapping_div(::std::mem::size_of::<memory_word>() as u64),
+                    .wrapping_add(::std::mem::size_of::<memory_word>())
+                    .wrapping_sub(1)
+                    .wrapping_div(::std::mem::size_of::<memory_word>()),
             ) as small_number,
         );
         if is_pdf {

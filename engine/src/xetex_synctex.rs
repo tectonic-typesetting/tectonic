@@ -8,135 +8,24 @@
     unused_mut
 )]
 
-use crate::mfree;
+use crate::core_memory::{mfree, xmalloc, xrealloc, xstrdup};
+use crate::xetex_ini::{
+    cur_h, cur_input, cur_v, eqtb, job_name, mem, rule_dp, rule_ht, rule_wd, synctex_enabled,
+    total_pages,
+};
+use crate::xetex_io::name_of_input_file;
+use crate::xetex_texmfmp::gettexstring;
 use crate::{
     ttstub_fprintf, ttstub_issue_error, ttstub_issue_warning, ttstub_output_close,
     ttstub_output_open,
 };
-use libc::free;
+use libc::{free, strcat, strcpy, strlen};
 use std::ptr;
 
-extern "C" {
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    /* Global symbols that route through the global API variable. Hopefully we
-     * will one day eliminate all of the global state and get rid of all of
-     * these. */
-    /* tectonic/core-memory.h: basic dynamic memory helpers
-       Copyright 2016-2018 the Tectonic Project
-       Licensed under the MIT License.
-    */
-    #[no_mangle]
-    fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn gettexstring(_: str_number) -> *mut i8;
-    /* Needed here for UFILE */
-    /* variables! */
-    /* All the following variables are defined in xetexini.c */
-    #[no_mangle]
-    static mut eqtb: *mut memory_word;
-    #[no_mangle]
-    static mut mem: *mut memory_word;
-    #[no_mangle]
-    static mut cur_input: input_state_t;
-    #[no_mangle]
-    static mut job_name: str_number;
-    #[no_mangle]
-    static mut total_pages: i32;
-    #[no_mangle]
-    static mut rule_ht: scaled_t;
-    #[no_mangle]
-    static mut rule_dp: scaled_t;
-    #[no_mangle]
-    static mut rule_wd: scaled_t;
-    #[no_mangle]
-    static mut cur_h: scaled_t;
-    #[no_mangle]
-    static mut cur_v: scaled_t;
-    #[no_mangle]
-    static mut synctex_enabled: i32;
-    #[no_mangle]
-    static mut name_of_input_file: *mut i8;
-}
 pub type size_t = u64;
 pub type rust_output_handle_t = *mut libc::c_void;
 pub type scaled_t = i32;
 pub type str_number = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b32x2_le_t {
-    pub s0: i32,
-    pub s1: i32,
-}
-/* The annoying `memory_word` type. We have to make sure the byte-swapping
- * that the (un)dumping routines do suffices to put things in the right place
- * in memory.
- *
- * This set of data used to be a huge mess (see comment after the
- * definitions). It is now (IMO) a lot more reasonable, but there will no
- * doubt be carryover weird terminology around the code.
- *
- * ## ENDIANNESS (cheat sheet because I'm lame)
- *
- * Intel is little-endian. Say that we have a 32-bit integer stored in memory
- * with `p` being a `uint8` pointer to its location. In little-endian land,
- * `p[0]` is least significant byte and `p[3]` is its most significant byte.
- *
- * Conversely, in big-endian land, `p[0]` is its most significant byte and
- * `p[3]` is its least significant byte.
- *
- * ## MEMORY_WORD LAYOUT
- *
- * Little endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [lsb......s0.......msb] [lsb......s1.......msb]
- *   b16:   [l..s0...m] [l..s1...m] [l..s2...m] [l..s3...m]
- *
- * Big endian:
- *
- *   bytes: --0-- --1-- --2-- --3-- --4-- --5-- --6-- --7--
- *   b32:   [msb......s1.......lsb] [msb......s0.......lsb]
- *   b16:   [m..s3...l] [m..s2...l] [m..s1...l] [m...s0..l]
- *
- */
-pub type b32x2 = b32x2_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct b16x4_le_t {
-    pub s0: u16,
-    pub s1: u16,
-    pub s2: u16,
-    pub s3: u16,
-}
-pub type b16x4 = b16x4_le_t;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub union memory_word {
-    pub b32: b32x2,
-    pub b16: b16x4,
-    pub gr: f64,
-    pub ptr: *mut libc::c_void,
-}
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct input_state_t {
-    pub state: u16,
-    pub index: u16,
-    pub start: i32,
-    pub loc: i32,
-    pub limit: i32,
-    pub name: i32,
-    pub synctex_tag: i32,
-}
 bitflags::bitflags! {
     #[repr(C)]
     pub struct Flags: u32 {
@@ -359,7 +248,6 @@ static mut synctex_suffix_gz: *const i8 = b".gz\x00" as *const u8 as *const i8;
 unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
     let mut tmp: *mut i8 = 0 as *mut i8;
     let mut the_name: *mut i8 = 0 as *mut i8;
-    let mut len: size_t = 0;
     if synctex_ctxt.flags.contains(Flags::OFF)
         || (*eqtb.offset(
             (1i32
@@ -397,12 +285,12 @@ unsafe extern "C" fn synctex_dot_open() -> rust_output_handle_t {
         return synctex_ctxt.file;
     }
     tmp = gettexstring(job_name);
-    len = strlen(tmp);
-    if !(len <= 0i32 as u64) {
+    let len = strlen(tmp);
+    if !(len <= 0) {
         the_name = xmalloc(
             len.wrapping_add(strlen(synctex_suffix))
                 .wrapping_add(strlen(synctex_suffix_gz))
-                .wrapping_add(1i32 as u64),
+                .wrapping_add(1) as _,
         ) as *mut i8;
         strcpy(the_name, tmp);
         strcat(the_name, synctex_suffix);
@@ -498,7 +386,7 @@ pub unsafe extern "C" fn synctex_start_input() {
         if strlen(synctex_ctxt.root_name) == 0 {
             synctex_ctxt.root_name = xrealloc(
                 synctex_ctxt.root_name as *mut libc::c_void,
-                strlen(b"texput\x00" as *const u8 as *const i8).wrapping_add(1i32 as u64),
+                strlen(b"texput\x00" as *const u8 as *const i8).wrapping_add(1) as _,
             ) as *mut i8;
             strcpy(
                 synctex_ctxt.root_name,
