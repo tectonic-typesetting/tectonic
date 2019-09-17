@@ -16,22 +16,11 @@ use crate::{
 use libc::{free, snprintf, strcpy, strlen};
 extern "C" {
     #[no_mangle]
-    fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
-    #[no_mangle]
     fn _setjmp(_: *mut __jmp_buf_tag) -> i32;
     #[no_mangle]
     fn longjmp(_: *mut __jmp_buf_tag, _: i32) -> !;
 }
-pub type __builtin_va_list = [__va_list_tag; 1];
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct __va_list_tag {
-    pub gp_offset: u32,
-    pub fp_offset: u32,
-    pub overflow_arg_area: *mut libc::c_void,
-    pub reg_save_area: *mut libc::c_void,
-}
-pub type va_list = __builtin_va_list;
+
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -86,6 +75,7 @@ pub type aux_number = i32;
 pub type pds_len = u8;
 pub type pds_type = *const i8;
 pub type blt_in_range = i32;
+
 unsafe extern "C" fn peekable_open(
     mut path: *const i8,
     mut format: TTInputFormat,
@@ -427,6 +417,7 @@ static mut verbose: i32 = 0;
 static mut min_crossrefs: i32 = 0;
 /*:473*/
 /*12: *//*3: */
+
 unsafe extern "C" fn putc_log(c: i32) {
     ttstub_output_putc(log_file, c); /* note: global! */
     ttstub_output_putc(standard_output, c);
@@ -439,13 +430,14 @@ unsafe extern "C" fn puts_log(mut s: *const i8) {
 unsafe extern "C" fn ttstub_puts(mut handle: rust_output_handle_t, mut s: *const i8) {
     ttstub_output_write(handle, s, strlen(s) as _);
 }
-static mut fmt_buf: [i8; 1024] = [0; 1024];
-unsafe extern "C" fn printf_log(mut fmt: *const i8, mut args: ...) {
-    let mut ap: ::std::ffi::VaListImpl;
-    ap = args.clone();
-    vsnprintf(fmt_buf.as_mut_ptr(), 1024i32 as u64, fmt, ap.as_va_list());
-    puts_log(fmt_buf.as_mut_ptr());
-}
+macro_rules! printf_log(
+    ($($arg:tt)*) => {
+        let cstr = std::ffi::CString::new(format!($($arg)*)).expect("Could not convert to CString");
+        let buf = cstr.as_ptr();
+        puts_log(buf);
+    };
+);
+
 unsafe extern "C" fn mark_warning() {
     if history == TTHistory::WARNING_ISSUED {
         err_count += 1
@@ -527,10 +519,7 @@ unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
 unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t, mut s: str_number) {
     let mut i: pool_pointer = 0;
     if s < 0i32 || s >= str_ptr + 3i32 || s >= max_strings {
-        printf_log(
-            b"Illegal string number:%ld\x00" as *const u8 as *const i8,
-            s as i64,
-        );
+        printf_log!("Illegal string number:{}", s);
         print_confusion();
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
@@ -639,10 +628,7 @@ unsafe extern "C" fn log_pr_aux_name() {
     ttstub_output_putc(log_file, '\n' as i32);
 }
 unsafe extern "C" fn aux_err_print() {
-    printf_log(
-        b"---line %ld of file \x00" as *const u8 as *const i8,
-        aux_ln_stack[aux_ptr as usize] as i64,
-    );
+    printf_log!("---line {} of file ", aux_ln_stack[aux_ptr as usize]);
     print_aux_name();
     print_bad_input_line();
     print_skipping_whatever_remains();
@@ -737,10 +723,7 @@ unsafe extern "C" fn aux_end2_err_print() {
     mark_error();
 }
 unsafe extern "C" fn bst_ln_num_print() {
-    printf_log(
-        b"--line %ld of file \x00" as *const u8 as *const i8,
-        bst_line_num as i64,
-    );
+    printf_log!("--line {} of file ", bst_line_num);
     print_bst_name();
 }
 unsafe extern "C" fn bst_err_print_and_look_for_blank_line() {
@@ -812,15 +795,15 @@ unsafe extern "C" fn id_scanning_confusion() {
 unsafe extern "C" fn bst_id_print() {
     if scan_result as i32 == 0i32 {
         /*id_null */
-        printf_log(
-            b"\"%c\" begins identifier, command: \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" begins identifier, command: ",
+            *buffer.offset(buf_ptr2 as isize)
         );
     } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
-        printf_log(
-            b"\"%c\" immediately follows identifier, command: \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" immediately follows identifier, command: ",
+            *buffer.offset(buf_ptr2 as isize)
         );
     } else {
         id_scanning_confusion();
@@ -840,10 +823,7 @@ unsafe extern "C" fn already_seen_function_print(mut seen_fn_loc: hash_loc) {
     bst_err_print_and_look_for_blank_line();
 }
 unsafe extern "C" fn bib_ln_num_print() {
-    printf_log(
-        b"--line %ld of file\x00" as *const u8 as *const i8,
-        bib_line_num as i64,
-    );
+    printf_log!("--line {} of file", bib_line_num);
     print_bib_name();
 }
 unsafe extern "C" fn bib_err_print() {
@@ -893,15 +873,11 @@ unsafe extern "C" fn eat_bib_print() {
     bib_err_print();
 }
 unsafe extern "C" fn bib_one_of_two_print(mut char1: u8, mut char2: u8) {
-    printf_log(
-        b"I was expecting a `%c\' or a `%c\'\x00" as *const u8 as *const i8,
-        char1 as i32,
-        char2 as i32,
-    );
+    printf_log!("I was expecting a `{}' or a `{}'", char1, char2,);
     bib_err_print();
 }
 unsafe extern "C" fn bib_equals_sign_print() {
-    printf_log(b"I was expecting an \"=\"\x00" as *const u8 as *const i8);
+    printf_log!("I was expecting an \"=\"");
     bib_err_print();
 }
 unsafe extern "C" fn bib_unbalanced_braces_print() {
@@ -909,10 +885,7 @@ unsafe extern "C" fn bib_unbalanced_braces_print() {
     bib_err_print();
 }
 unsafe extern "C" fn bib_field_too_long_print() {
-    printf_log(
-        b"Your field is more than %ld characters\x00" as *const u8 as *const i8,
-        buf_size as i64,
-    );
+    printf_log!("Your field is more than {} characters", buf_size);
     bib_err_print();
 }
 unsafe extern "C" fn macro_warn_print() {
@@ -926,9 +899,9 @@ unsafe extern "C" fn bib_id_print() {
         puts_log(b"You\'re missing \x00" as *const u8 as *const i8);
     } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
-        printf_log(
-            b"\"%c\" immediately follows \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" immediately follows ",
+            *buffer.offset(buf_ptr2 as isize)
         );
     } else {
         id_scanning_confusion();
@@ -1001,10 +974,7 @@ unsafe extern "C" fn unknwn_literal_confusion() {
 unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     match stk_tp as i32 {
         0 => {
-            printf_log(
-                b"%ld is an integer literal\x00" as *const u8 as *const i8,
-                stk_lt as i64,
-            );
+            printf_log!("{} is an integer literal", stk_lt);
         }
         1 => {
             putc_log('\"' as i32);
@@ -1032,7 +1002,7 @@ unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
 unsafe extern "C" fn print_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     match stk_tp as i32 {
         0 => {
-            printf_log(b"%ld\n\x00" as *const u8 as *const i8, stk_lt as i64);
+            printf_log!("{}\n", stk_lt);
         }
         1 => {
             print_a_pool_str(stk_lt);
@@ -1132,10 +1102,7 @@ unsafe extern "C" fn add_extension(mut ext: str_number) {
 unsafe extern "C" fn make_string() -> str_number {
     if str_ptr == max_strings {
         print_overflow();
-        printf_log(
-            b"number of strings %ld\n\x00" as *const u8 as *const i8,
-            max_strings as i64,
-        );
+        printf_log!("number of strings {}\n", max_strings);
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     str_ptr = str_ptr + 1i32;
@@ -1269,10 +1236,7 @@ unsafe extern "C" fn str_lookup(
                 loop {
                     if hash_used == 1i32 {
                         print_overflow();
-                        printf_log(
-                            b"hash size %ld\n\x00" as *const u8 as *const i8,
-                            hash_size as i64,
-                        );
+                        printf_log!("hash size {}\n", hash_size);
                         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
                     }
                     hash_used = hash_used - 1i32;
@@ -2203,9 +2167,9 @@ unsafe extern "C" fn skp_token_unknown_function_print() {
     skip_token_print();
 }
 unsafe extern "C" fn skip_illegal_stuff_after_token_print() {
-    printf_log(
-        b"\"%c\" can\'t follow a literal\x00" as *const u8 as *const i8,
-        *buffer.offset(buf_ptr2 as isize) as i32,
+    printf_log!(
+        "\"{}\" can't follow a literal",
+        *buffer.offset(buf_ptr2 as isize)
     );
     skip_token_print();
 }
@@ -2277,7 +2241,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 34 => {
                     buf_ptr2 = buf_ptr2 + 1i32;
                     if !scan1(34i32 as u8) {
-                        printf_log(b"No `\"\' to end string literal\x00" as *const u8 as *const i8);
+                        printf_log!("No `\"\' to end string literal");
                         skip_token_print();
                     } else {
                         literal_loc = str_lookup(
@@ -3550,10 +3514,7 @@ unsafe extern "C" fn init_command_execution() {
 }
 unsafe extern "C" fn check_command_execution() {
     if lit_stk_ptr != 0i32 {
-        printf_log(
-            b"ptr=%ld, stack=\n\x00" as *const u8 as *const i8,
-            lit_stk_ptr as i64,
-        );
+        printf_log!("ptr={}, stack=\n", lit_stk_ptr);
         pop_whole_stack();
         puts_log(b"---the literal stack isn\'t empty\x00" as *const u8 as *const i8);
         bst_ex_warn_print();
@@ -3909,10 +3870,7 @@ unsafe extern "C" fn x_gets() {
                     sp_xptr1 = *str_start.offset((pop_lit2 + 1i32) as isize);
                     if sp_xptr1 - sp_ptr > ent_str_size {
                         bst_1print_string_size_exceeded();
-                        printf_log(
-                            b"%ld, the entry\x00" as *const u8 as *const i8,
-                            ent_str_size as i64,
-                        );
+                        printf_log!("{}, the entry", ent_str_size);
                         bst_2print_string_size_exceeded();
                         sp_xptr1 = sp_ptr + ent_str_size
                     }
@@ -3952,10 +3910,7 @@ unsafe extern "C" fn x_gets() {
                         sp_end = *str_start.offset((pop_lit2 + 1i32) as isize);
                         if sp_end - sp_ptr > glob_str_size {
                             bst_1print_string_size_exceeded();
-                            printf_log(
-                                b"%ld, the global\x00" as *const u8 as *const i8,
-                                glob_str_size as i64,
-                            );
+                            printf_log!("{}, the global", glob_str_size);
                             bst_2print_string_size_exceeded();
                             sp_end = sp_ptr + glob_str_size
                         }
@@ -4408,10 +4363,7 @@ unsafe extern "C" fn x_format_name() {
             if pop_lit2 == 1i32 {
                 puts_log(b"There is no name in \"\x00" as *const u8 as *const i8);
             } else {
-                printf_log(
-                    b"There aren\'t %ld names in \"\x00" as *const u8 as *const i8,
-                    pop_lit2 as i64,
-                );
+                printf_log!("There aren't {} names in \"", pop_lit2);
             }
             print_a_pool_str(pop_lit3);
             putc_log('\"' as i32);
@@ -4425,10 +4377,7 @@ unsafe extern "C" fn x_format_name() {
                         break;
                     }
                     /*comma */
-                    printf_log(
-                        b"Name %ld in \"\x00" as *const u8 as *const i8,
-                        pop_lit2 as i64,
-                    );
+                    printf_log!("Name {} in \"", pop_lit2);
                     print_a_pool_str(pop_lit3);
                     puts_log(b"\" has a comma at the end\x00" as *const u8 as *const i8);
                     bst_ex_warn_print();
@@ -4444,10 +4393,7 @@ unsafe extern "C" fn x_format_name() {
             match *ex_buf.offset(ex_buf_xptr as isize) as i32 {
                 44 => {
                     if num_commas == 2i32 {
-                        printf_log(
-                            b"Too many commas in name %ld of \"\x00" as *const u8 as *const i8,
-                            pop_lit2 as i64,
-                        );
+                        printf_log!("Too many commas in name {} of \"", pop_lit2,);
                         print_a_pool_str(pop_lit3);
                         putc_log('\"' as i32);
                         bst_ex_warn_print();
@@ -4493,10 +4439,7 @@ unsafe extern "C" fn x_format_name() {
                         *name_tok.offset(num_tokens as isize) = name_bf_ptr;
                         num_tokens = num_tokens + 1i32
                     }
-                    printf_log(
-                        b"Name %ld of \"\x00" as *const u8 as *const i8,
-                        pop_lit2 as i64,
-                    );
+                    printf_log!("Name {} of \"", pop_lit2);
                     print_a_pool_str(pop_lit3);
                     puts_log(b"\" isn\'t brace balanced\x00" as *const u8 as *const i8);
                     bst_ex_warn_print();
@@ -4612,10 +4555,7 @@ unsafe extern "C" fn x_int_to_chr() {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
     } else if pop_lit1 < 0i32 || pop_lit1 > 127i32 {
-        printf_log(
-            b"%ld isn\'t valid ASCII\x00" as *const u8 as *const i8,
-            pop_lit1 as i64,
-        );
+        printf_log!("{} isn't valid ASCII", pop_lit1);
         bst_ex_warn_print();
         push_lit_stk(s_null, 1i32 as stk_type);
     } else {
@@ -11360,10 +11300,7 @@ unsafe extern "C" fn aux_input_command() {
         print_a_token();
         puts_log(b": \x00" as *const u8 as *const i8);
         print_overflow();
-        printf_log(
-            b"auxiliary file depth %ld\n\x00" as *const u8 as *const i8,
-            20i32 as i64,
-        );
+        printf_log!("auxiliary file depth {}\n", 20,);
         longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
     }
     aux_extension_ok = true;
@@ -11412,10 +11349,7 @@ unsafe extern "C" fn aux_input_command() {
         aux_err_print();
         return;
     }
-    printf_log(
-        b"A level-%ld auxiliary file: \x00" as *const u8 as *const i8,
-        aux_ptr as i64,
-    );
+    printf_log!("A level-{} auxiliary file: ", aux_ptr,);
     print_aux_name();
     aux_ln_stack[aux_ptr as usize] = 0i32;
 }
@@ -12137,10 +12071,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     return;
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
-                    printf_log(
-                        b"Missing \"%c\" in preamble command\x00" as *const u8 as *const i8,
-                        right_outer_delim as i32,
-                    );
+                    printf_log!("Missing \"{}\" in preamble command", right_outer_delim);
                     bib_err_print();
                     return;
                 }
@@ -12205,10 +12136,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     return;
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
-                    printf_log(
-                        b"Missing \"%c\" in string command\x00" as *const u8 as *const i8,
-                        right_outer_delim as i32,
-                    );
+                    printf_log!("Missing \"{}\" in string command", right_outer_delim,);
                     bib_err_print();
                     return;
                 }
@@ -12506,10 +12434,7 @@ unsafe extern "C" fn bst_read_command() {
     bib_ptr = 0i32;
     while bib_ptr < num_bib_files {
         if verbose != 0 {
-            printf_log(
-                b"Database file #%ld: \x00" as *const u8 as *const i8,
-                bib_ptr as i64 + 1i32 as i64,
-            );
+            printf_log!("Database file #{}: ", bib_ptr + 1,);
             print_bib_name();
         } else {
             let mut buf: [i8; 512] = [0; 512];
@@ -12857,9 +12782,9 @@ unsafe extern "C" fn bst_strings_command() {
 }
 unsafe extern "C" fn get_bst_command_and_process() {
     if !scan_alpha() {
-        printf_log(
-            b"\"%c\" can\'t start a style-file command\x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" can't start a style-file command",
+            *buffer.offset(buf_ptr2 as isize)
         );
         bst_err_print_and_look_for_blank_line();
         return;
@@ -13364,10 +13289,7 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> TTHistory 
     }
     /*456:*/
     if read_performed as i32 != 0 && !reading_completed {
-        printf_log(
-            b"Aborted at line %ld of file \x00" as *const u8 as *const i8,
-            bib_line_num as i64,
-        );
+        printf_log!("Aborted at line {} of file ", bib_line_num,);
         print_bib_name();
     }
     match history {
@@ -13376,20 +13298,14 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> TTHistory 
             if err_count == 1i32 {
                 puts_log(b"(There was 1 warning)\n\x00" as *const u8 as *const i8);
             } else {
-                printf_log(
-                    b"(There were %ld warnings)\n\x00" as *const u8 as *const i8,
-                    err_count as i64,
-                );
+                printf_log!("(There were {} warnings)\n", err_count,);
             }
         }
         TTHistory::ERROR_ISSUED => {
             if err_count == 1i32 {
                 puts_log(b"(There was 1 error message)\n\x00" as *const u8 as *const i8);
             } else {
-                printf_log(
-                    b"(There were %ld error messages)\n\x00" as *const u8 as *const i8,
-                    err_count as i64,
-                );
+                printf_log!("(There were {} error messages)\n", err_count,);
             }
         }
         TTHistory::FATAL_ERROR => {
