@@ -42,14 +42,23 @@ use super::dpx_cff_dict::{cff_dict_get, cff_dict_known};
 use super::dpx_dpxfile::{
     dpx_open_dfont_file, dpx_open_opentype_file, dpx_open_truetype_file, dpx_open_type1_file,
 };
+use super::dpx_numbers::tt_skip_bytes;
 use super::dpx_numbers::{
     tt_get_positive_quad, tt_get_signed_quad, tt_get_unsigned_byte, tt_get_unsigned_num,
     tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
 use super::dpx_pdfcolor::{pdf_color_pop, pdf_color_push, pdf_color_rgbcolor};
-use super::dpx_pdfdev::pdf_dev_set_rect;
+use super::dpx_pdfdev::{pdf_dev_begin_actualtext, pdf_dev_end_actualtext, pdf_dev_set_rect};
+use super::dpx_pdfdev::{
+    pdf_dev_locate_font, pdf_dev_set_dirmode, pdf_dev_set_rule, pdf_dev_set_string,
+};
 use super::dpx_pdfdoc::pdf_doc_expand_box;
+use super::dpx_pdfdoc::{pdf_doc_begin_page, pdf_doc_break_annot, pdf_doc_end_page};
 use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
+use super::dpx_tt_table::{
+    tt_read_head_table, tt_read_hhea_table, tt_read_longMetrics, tt_read_maxp_table,
+    tt_read_vhea_table,
+};
 use crate::dpx_pdfobj::{
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj, pdf_string_value, PdfObjType,
 };
@@ -85,9 +94,6 @@ extern "C" {
     fn dpx_message(fmt: *const i8, _: ...);
     #[no_mangle]
     fn dpx_warning(fmt: *const i8, _: ...);
-    /* Tectonic enabled */
-    #[no_mangle]
-    fn tt_skip_bytes(n: u32, handle: rust_input_handle_t);
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
     /* Draw texts and rules:
@@ -101,24 +107,6 @@ extern "C" {
      *   1 - input string is in 8-bit encoding.
      *   2 - input string is in 16-bit encoding.
      */
-    #[no_mangle]
-    fn pdf_dev_set_string(
-        xpos: spt_t,
-        ypos: spt_t,
-        instr_ptr: *const libc::c_void,
-        instr_len: size_t,
-        text_width: spt_t,
-        font_id: i32,
-        ctype: i32,
-    );
-    #[no_mangle]
-    fn pdf_dev_set_rule(xpos: spt_t, ypos: spt_t, width: spt_t, height: spt_t);
-    /* The design_size and ptsize required by PK font support...
-     */
-    #[no_mangle]
-    fn pdf_dev_locate_font(font_name: *const i8, ptsize: spt_t) -> i32;
-    #[no_mangle]
-    fn pdf_dev_set_dirmode(dir_mode: i32);
     /* Set rect to rectangle in device space.
      * Unit conversion spt_t to bp and transformation applied within it.
      */
@@ -128,10 +116,6 @@ extern "C" {
      */
     #[no_mangle]
     fn graphics_mode();
-    #[no_mangle]
-    fn pdf_dev_begin_actualtext(unicodes: *mut u16, len: i32);
-    #[no_mangle]
-    fn pdf_dev_end_actualtext();
     #[no_mangle]
     static mut paper_width: f64;
     #[no_mangle]
@@ -155,13 +139,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* Page */
-    #[no_mangle]
-    fn pdf_doc_begin_page(scale: f64, x_origin: f64, y_origin: f64);
-    #[no_mangle]
-    fn pdf_doc_end_page();
-    #[no_mangle]
-    fn pdf_doc_break_annot();
     /* Please remove this */
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);
@@ -207,23 +184,6 @@ extern "C" {
     /* TTC (TrueType Collection) */
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
-    #[no_mangle]
-    fn tt_read_head_table(sfont: *mut sfnt) -> *mut tt_head_table;
-    #[no_mangle]
-    fn tt_read_hhea_table(sfont: *mut sfnt) -> *mut tt_hhea_table;
-    #[no_mangle]
-    fn tt_read_maxp_table(sfont: *mut sfnt) -> *mut tt_maxp_table;
-    /* vhea */
-    #[no_mangle]
-    fn tt_read_vhea_table(sfont: *mut sfnt) -> *mut tt_vhea_table;
-    /* hmtx and vmtx */
-    #[no_mangle]
-    fn tt_read_longMetrics(
-        sfont: *mut sfnt,
-        numGlyphs: u16,
-        numLongMetrics: u16,
-        numExSideBearings: u16,
-    ) -> *mut tt_longMetrics;
     #[no_mangle]
     fn vf_set_verbose(level: i32);
     #[no_mangle]
@@ -314,14 +274,8 @@ pub type c_offsize = u8;
 pub type card16 = u16;
 
 pub type s_SID = u16;
-/* hmtx and vmtx */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_longMetrics {
-    pub advance: u16,
-    pub sideBearing: i16,
-}
 use super::dpx_fontmap::fontmap_rec;
+use super::dpx_tt_table::tt_longMetrics;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct dvi_header {

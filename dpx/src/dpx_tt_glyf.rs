@@ -34,7 +34,7 @@ use super::dpx_sfnt::{sfnt_find_table_pos, sfnt_locate_table, sfnt_set_table};
 use super::dpx_tt_table::{
     tt_head_table, tt_hhea_table, tt_maxp_table, tt_os2__table, tt_pack_head_table,
     tt_pack_hhea_table, tt_pack_maxp_table, tt_read_head_table, tt_read_hhea_table,
-    tt_read_maxp_table, tt_read_vhea_table, tt_vhea_table,
+    tt_read_longMetrics, tt_read_maxp_table, tt_read_os2__table, tt_read_vhea_table, tt_vhea_table,
 };
 use crate::{ttstub_input_read, ttstub_input_seek};
 use libc::free;
@@ -51,17 +51,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* hmtx and vmtx */
-    #[no_mangle]
-    fn tt_read_longMetrics(
-        sfont: *mut sfnt,
-        numGlyphs: u16,
-        numLongMetrics: u16,
-        numExSideBearings: u16,
-    ) -> *mut tt_longMetrics;
-    /* OS/2 table */
-    #[no_mangle]
-    fn tt_read_os2__table(sfont: *mut sfnt) -> *mut tt_os2__table;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -105,13 +94,7 @@ pub struct tt_glyphs {
     pub used_slot: *mut u8,
 }
 
-/* hmtx and vmtx */
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tt_longMetrics {
-    pub advance: u16,
-    pub sideBearing: i16,
-}
+use super::dpx_tt_table::tt_longMetrics;
 
 unsafe extern "C" fn find_empty_slot(mut g: *mut tt_glyphs) -> u16 {
     let mut gid: u16 = 0;

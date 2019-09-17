@@ -34,7 +34,16 @@ use crate::streq_ptr;
 use crate::warn;
 
 use super::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
-use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color};
+use super::dpx_pdfdev::pdf_dev_scale;
+use super::dpx_pdfdoc::{
+    pdf_doc_add_page_content, pdf_doc_add_page_resource, pdf_doc_current_page_resources,
+};
+use super::dpx_pdfdraw::{
+    pdf_dev_arcx, pdf_dev_bspline, pdf_dev_concat, pdf_dev_flushpath, pdf_dev_grestore,
+    pdf_dev_gsave, pdf_dev_lineto, pdf_dev_moveto, pdf_dev_newpath, pdf_dev_set_color,
+    pdf_dev_setdash, pdf_dev_setlinecap, pdf_dev_setlinejoin, pdf_dev_setlinewidth,
+    pdf_dev_setmiterlimit,
+};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_lookup_dict, pdf_name_value, pdf_new_boolean, pdf_new_dict, pdf_new_name,
     pdf_new_number, pdf_new_string, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
@@ -75,59 +84,10 @@ extern "C" {
     fn dpx_warning(fmt: *const i8, _: ...);
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    /* The following two routines are NOT WORKING.
-     * Dvipdfmx doesn't manage gstate well..
-     */
-    /* Always returns 1.0, please rename this. */
-    #[no_mangle]
-    fn pdf_dev_scale() -> f64;
-    #[no_mangle]
-    fn pdf_doc_current_page_resources() -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
-    #[no_mangle]
-    fn pdf_doc_add_page_resource(
-        category: *const i8,
-        resource_name: *const i8,
-        resources: *mut pdf_obj,
-    );
-    #[no_mangle]
-    fn pdf_dev_setlinewidth(width: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setmiterlimit(mlimit: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setlinecap(style: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setlinejoin(style: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setdash(count: i32, pattern: *mut f64, offset: f64) -> i32;
-    /* Path Construction */
-    #[no_mangle]
-    fn pdf_dev_moveto(x: f64, y: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_lineto(x0: f64, y0: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_newpath() -> i32;
-    #[no_mangle]
-    fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
-    /* extension */
-    #[no_mangle]
-    fn pdf_dev_arcx(
-        c_x: f64,
-        c_y: f64,
-        r_x: f64,
-        r_y: f64,
-        a_0: f64,
-        a_1: f64,
-        a_d: i32,
-        xar: f64,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_dev_bspline(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> i32;
+/* The following two routines are NOT WORKING.
+ * Dvipdfmx doesn't manage gstate well..
+ */
+/* Always returns 1.0, please rename this. */
 }
 pub type size_t = u64;
 

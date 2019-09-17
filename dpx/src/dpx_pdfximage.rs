@@ -33,6 +33,7 @@ use crate::mfree;
 use crate::{info, warn};
 use crate::{streq_ptr, strstartswith};
 
+use super::dpx_mfileio::tt_mfgets;
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfdraw::pdf_dev_transform;
 use crate::dpx_pdfobj::{
@@ -64,9 +65,6 @@ extern "C" {
      */
     #[no_mangle]
     fn check_for_pdf(handle: rust_input_handle_t) -> i32;
-    /* Tectonic-enabled versions */
-    #[no_mangle]
-    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     #[no_mangle]
     fn bmp_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> i32;
     #[no_mangle]

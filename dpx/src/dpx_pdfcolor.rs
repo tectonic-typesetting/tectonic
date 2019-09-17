@@ -32,6 +32,7 @@
 use crate::mfree;
 use crate::{info, warn};
 
+use super::dpx_pdfdev::{pdf_dev_get_param, pdf_dev_reset_color};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_link_obj, pdf_new_array, pdf_new_name,
     pdf_new_number, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj, pdf_stream_dict,
@@ -64,10 +65,6 @@ extern "C" {
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn sget_unsigned_pair(_: *mut u8) -> u16;
-    #[no_mangle]
-    fn pdf_dev_get_param(param_type: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_reset_color(force: i32);
     #[no_mangle]
     fn MD5_init(ctx: *mut MD5_CONTEXT);
     #[no_mangle]

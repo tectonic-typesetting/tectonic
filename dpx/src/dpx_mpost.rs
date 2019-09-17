@@ -38,7 +38,20 @@ use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rg
 use super::dpx_pdfdev::{
     pdf_coord, pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
 };
+use super::dpx_pdfdev::{
+    pdf_dev_get_dirmode, pdf_dev_get_font_wmode, pdf_dev_get_param, pdf_dev_locate_font,
+    pdf_dev_set_dirmode, pdf_dev_set_param, pdf_dev_set_string,
+};
 use super::dpx_pdfdoc::{pdf_doc_begin_grabbing, pdf_doc_set_mediabox};
+use super::dpx_pdfdoc::{
+    pdf_doc_begin_page, pdf_doc_current_page_number, pdf_doc_end_grabbing, pdf_doc_end_page,
+};
+use super::dpx_pdfdraw::{
+    pdf_dev_arc, pdf_dev_arcn, pdf_dev_clip, pdf_dev_closepath, pdf_dev_curveto, pdf_dev_eoclip,
+    pdf_dev_flushpath, pdf_dev_grestore, pdf_dev_gsave, pdf_dev_lineto, pdf_dev_moveto,
+    pdf_dev_newpath, pdf_dev_rcurveto, pdf_dev_rlineto, pdf_dev_rmoveto, pdf_dev_setdash,
+    pdf_dev_setlinecap, pdf_dev_setlinejoin, pdf_dev_setlinewidth, pdf_dev_setmiterlimit,
+};
 use super::dpx_pdfdraw::{
     pdf_dev_concat, pdf_dev_currentmatrix, pdf_dev_currentpoint, pdf_dev_dtransform,
     pdf_dev_idtransform, pdf_dev_set_color,
@@ -94,48 +107,6 @@ extern "C" {
     /* returns 1.0/unit_conv */
     #[no_mangle]
     fn dev_unit_dviunit() -> f64;
-    /* Draw texts and rules:
-     *
-     * xpos, ypos, width, and height are all fixed-point numbers
-     * converted to big-points by multiplying unit_conv (dvi2pts).
-     * They must be position in the user space.
-     *
-     * ctype:
-     *   0 - input string is in multi-byte encoding.
-     *   1 - input string is in 8-bit encoding.
-     *   2 - input string is in 16-bit encoding.
-     */
-    #[no_mangle]
-    fn pdf_dev_set_string(
-        xpos: spt_t,
-        ypos: spt_t,
-        instr_ptr: *const libc::c_void,
-        instr_len: size_t,
-        text_width: spt_t,
-        font_id: i32,
-        ctype: i32,
-    );
-    /* The design_size and ptsize required by PK font support...
-     */
-    #[no_mangle]
-    fn pdf_dev_locate_font(font_name: *const i8, ptsize: spt_t) -> i32;
-    /* Access text state parameters. */
-    #[no_mangle]
-    fn pdf_dev_get_font_wmode(font_id: i32) -> i32;
-    /* ps: special support want this (pTeX). */
-    /* Text composition (direction) mode
-     * This affects only when auto_rotate is enabled.
-     */
-    #[no_mangle]
-    fn pdf_dev_get_dirmode() -> i32;
-    #[no_mangle]
-    fn pdf_dev_set_dirmode(dir_mode: i32);
-    /* Accessor to various device parameters.
-     */
-    #[no_mangle]
-    fn pdf_dev_get_param(param_type: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_set_param(param_type: i32, value: i32);
     /* Text is normal and line art is not normal in dvipdfmx. So we don't have
      * begin_text (BT in PDF) and end_text (ET), but instead we have graphics_mode()
      * to terminate text section. pdf_dev_flushpath() and others call this.
@@ -150,58 +121,6 @@ extern "C" {
     fn pdf_lookup_fontmap_record(kp: *const i8) -> *mut fontmap_rec;
     #[no_mangle]
     fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_doc_current_page_number() -> i32;
-    /* Page */
-    #[no_mangle]
-    fn pdf_doc_begin_page(scale: f64, x_origin: f64, y_origin: f64);
-    #[no_mangle]
-    fn pdf_doc_end_page();
-    /* Returns xobj_id of started xform. */
-    #[no_mangle]
-    fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
-    #[no_mangle]
-    fn pdf_dev_setlinewidth(width: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setmiterlimit(mlimit: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setlinecap(style: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setlinejoin(style: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_setdash(count: i32, pattern: *mut f64, offset: f64) -> i32;
-    /* Path Construction */
-    #[no_mangle]
-    fn pdf_dev_moveto(x: f64, y: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_rmoveto(x: f64, y: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_closepath() -> i32;
-    #[no_mangle]
-    fn pdf_dev_lineto(x0: f64, y0: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_rlineto(x0: f64, y0: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_curveto(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_rcurveto(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_arc(c_x: f64, c_y: f64, r: f64, a_0: f64, a_1: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_arcn(c_x: f64, c_y: f64, r: f64, a_0: f64, a_1: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_newpath() -> i32;
-    /* Path Painting */
-    #[no_mangle]
-    fn pdf_dev_clip() -> i32;
-    #[no_mangle]
-    fn pdf_dev_eoclip() -> i32;
-    #[no_mangle]
-    fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
     /* Please remove this */
     #[no_mangle]
     fn dump(start: *const i8, end: *const i8);

@@ -31,7 +31,12 @@
 
 use crate::warn;
 
+use super::dpx_pdfdoc::pdf_doc_add_page_content;
 use super::dpx_pdfdoc::pdf_doc_get_page;
+use super::dpx_pdfdraw::{
+    pdf_dev_closepath, pdf_dev_curveto, pdf_dev_flushpath, pdf_dev_lineto, pdf_dev_rectadd,
+    pdf_dev_vcurveto, pdf_dev_ycurveto,
+};
 use super::dpx_pdfdraw::{
     pdf_dev_currentmatrix, pdf_dev_moveto, pdf_dev_transform, pdf_invertmatrix,
 };
@@ -64,23 +69,6 @@ extern "C" {
     fn xmalloc(size: size_t) -> *mut libc::c_void;
     #[no_mangle]
     fn pdf_get_version() -> u32;
-    #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
-    /* Path Construction */
-    #[no_mangle]
-    fn pdf_dev_closepath() -> i32;
-    #[no_mangle]
-    fn pdf_dev_lineto(x0: f64, y0: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_curveto(x0: f64, y0: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_vcurveto(x0: f64, y0: f64, x1: f64, y1: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_ycurveto(x0: f64, y0: f64, x1: f64, y1: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_rectadd(x: f64, y: f64, w: f64, h: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_flushpath(p_op: i8, fill_rule: i32) -> i32;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }

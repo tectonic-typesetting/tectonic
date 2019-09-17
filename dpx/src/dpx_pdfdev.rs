@@ -37,6 +37,11 @@ use super::dpx_dvi::dvi_is_tracking_boxes;
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
 use super::dpx_pdfdoc::pdf_doc_expand_box;
+use super::dpx_pdfdoc::{pdf_doc_add_page_content, pdf_doc_add_page_resource};
+use super::dpx_pdfdraw::{
+    pdf_dev_clear_gstates, pdf_dev_current_depth, pdf_dev_grestore, pdf_dev_grestore_to,
+    pdf_dev_gsave, pdf_dev_init_gstates, pdf_dev_rectclip,
+};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_set_color, pdf_dev_transform};
 use super::dpx_pdffont::{
     pdf_font_findresource, pdf_get_font_encoding, pdf_get_font_reference, pdf_get_font_subtype,
@@ -74,32 +79,6 @@ extern "C" {
     fn new(size: u32) -> *mut libc::c_void;
     #[no_mangle]
     fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
-    #[no_mangle]
-    fn pdf_doc_add_page_resource(
-        category: *const i8,
-        resource_name: *const i8,
-        resources: *mut pdf_obj,
-    );
-    #[no_mangle]
-    fn pdf_dev_init_gstates();
-    #[no_mangle]
-    fn pdf_dev_clear_gstates();
-    #[no_mangle]
-    fn pdf_dev_rectclip(x: f64, y: f64, w: f64, h: f64) -> i32;
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
-    /* The depth here is the depth of q/Q nesting.
-     * We must remember current depth of nesting when starting a page or xform,
-     * and must recover until that depth at the end of page/xform.
-     */
-    #[no_mangle]
-    fn pdf_dev_current_depth() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore_to(depth: i32);
 /* font_name is used when mrec is NULL.
  * font_scale (point size) used by PK font.
  * It might be necessary if dvipdfmx supports font format with
@@ -1644,12 +1623,11 @@ pub unsafe extern "C" fn pdf_dev_bop(M: &pdf_tmatrix) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn pdf_dev_eop() {
-    let mut depth: i32 = 0;
     graphics_mode();
-    depth = pdf_dev_current_depth();
-    if depth != 1i32 {
+    let depth = pdf_dev_current_depth();
+    if depth != 1 {
         warn!("Unbalenced q/Q nesting...: {}", depth);
-        pdf_dev_grestore_to(0i32);
+        pdf_dev_grestore_to(0);
     } else {
         pdf_dev_grestore();
     };

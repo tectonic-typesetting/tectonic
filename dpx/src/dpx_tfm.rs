@@ -37,11 +37,10 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_numbers::tt_skip_bytes;
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    #[no_mangle]
-    fn tt_skip_bytes(n: u32, handle: rust_input_handle_t);
     #[no_mangle]
     fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
     #[no_mangle]

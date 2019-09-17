@@ -40,11 +40,21 @@ use super::dpx_pdfcolor::{
 };
 use super::dpx_pdfdev::pdf_sprint_matrix;
 use super::dpx_pdfdev::{
+    pdf_dev_get_coord, pdf_dev_pop_coord, pdf_dev_push_coord, pdf_dev_reset_color,
+};
+use super::dpx_pdfdev::{
     pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
 };
 use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use super::dpx_pdfdoc::{pdf_doc_add_annot, pdf_doc_add_bead, pdf_doc_begin_grabbing};
+use super::dpx_pdfdoc::{
+    pdf_doc_add_names, pdf_doc_add_page_content, pdf_doc_begin_article, pdf_doc_bookmarks_add,
+    pdf_doc_bookmarks_depth, pdf_doc_bookmarks_down, pdf_doc_bookmarks_up,
+    pdf_doc_current_page_number, pdf_doc_end_grabbing, pdf_doc_get_dictionary,
+    pdf_doc_set_bop_content, pdf_doc_set_eop_content,
+};
 use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
+use super::dpx_pdfdraw::{pdf_dev_grestore, pdf_dev_gsave};
 use super::dpx_pdfximage::{pdf_ximage_findresource, pdf_ximage_get_reference};
 use super::dpx_spc_util::spc_util_read_pdfcolor;
 use super::dpx_spc_util::{spc_util_read_blahblah, spc_util_read_dimtrns};
@@ -129,56 +139,9 @@ extern "C" {
     /* Color special
      * See remark in spc_color.c.
      */
-    #[no_mangle]
-    fn pdf_dev_reset_color(force: i32);
-    #[no_mangle]
-    fn pdf_dev_get_coord(xpos: *mut f64, ypos: *mut f64);
-    #[no_mangle]
-    fn pdf_dev_push_coord(xpos: f64, ypos: f64);
-    #[no_mangle]
-    fn pdf_dev_pop_coord();
     /* They just return PDF dictionary object.
      * Callers are completely responsible for doing right thing...
      */
-    #[no_mangle]
-    fn pdf_doc_get_dictionary(category: *const i8) -> *mut pdf_obj;
-    #[no_mangle]
-    fn pdf_doc_current_page_number() -> i32;
-    /* Not really managing tree...
-     * There should be something for number tree.
-     */
-    #[no_mangle]
-    fn pdf_doc_add_names(
-        category: *const i8,
-        key: *const libc::c_void,
-        keylen: i32,
-        value: *mut pdf_obj,
-    ) -> i32;
-    #[no_mangle]
-    fn pdf_doc_set_bop_content(str: *const i8, length: u32);
-    #[no_mangle]
-    fn pdf_doc_set_eop_content(str: *const i8, length: u32);
-    #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
-    /* Article thread */
-    #[no_mangle]
-    fn pdf_doc_begin_article(article_id: *const i8, info: *mut pdf_obj);
-    /* Bookmarks */
-    #[no_mangle]
-    fn pdf_doc_bookmarks_up() -> i32;
-    #[no_mangle]
-    fn pdf_doc_bookmarks_down() -> i32;
-    #[no_mangle]
-    fn pdf_doc_bookmarks_add(dict: *mut pdf_obj, is_open: i32);
-    #[no_mangle]
-    fn pdf_doc_bookmarks_depth() -> i32;
-    #[no_mangle]
-    fn pdf_doc_end_grabbing(attrib: *mut pdf_obj);
-    /* Similar to bop_content */
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     #[no_mangle]

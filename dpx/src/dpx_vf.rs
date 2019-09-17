@@ -40,6 +40,7 @@ use super::dpx_dvi::{
     dvi_right, dvi_rule, dvi_set, dvi_set_font, dvi_vf_finish, dvi_vf_init, dvi_w, dvi_w0, dvi_x,
     dvi_x0, dvi_y, dvi_y0, dvi_z, dvi_z0,
 };
+use super::dpx_numbers::tt_skip_bytes;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
 use libc::free;
 extern "C" {
@@ -56,9 +57,6 @@ extern "C" {
     fn strcmp(_: *const i8, _: *const i8) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* Tectonic enabled */
-    #[no_mangle]
-    fn tt_skip_bytes(n: u32, handle: rust_input_handle_t);
     #[no_mangle]
     fn sqxfw(sq: i32, fw: fixword) -> i32;
     #[no_mangle]

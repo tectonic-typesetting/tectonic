@@ -30,8 +30,12 @@
 )]
 
 use super::dpx_mfileio::work_buffer;
-use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
-use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_set_fixed_point};
+use super::dpx_pdfdev::{pdf_dev_reset_color, pdf_dev_reset_fonts};
+use super::dpx_pdfdoc::{pdf_doc_add_page_content, pdf_doc_set_bgcolor};
+use super::dpx_pdfdraw::{
+    pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_grestore, pdf_dev_gsave,
+    pdf_dev_set_fixed_point,
+};
 use super::dpx_spc_util::spc_util_read_colorspec;
 use crate::dpx_pdfparse::{parse_ident, parse_val_ident};
 use crate::streq_ptr;
@@ -88,17 +92,6 @@ extern "C" {
     /* Force reselecting font and color:
      * XFrom (content grabbing) and Metapost support want them.
      */
-    #[no_mangle]
-    fn pdf_dev_reset_fonts(newpage: i32);
-    #[no_mangle]
-    fn pdf_dev_reset_color(force: i32);
-    #[no_mangle]
-    fn pdf_doc_add_page_content(buffer: *const i8, length: u32);
-    /* Similar to bop_content */
-    #[no_mangle]
-    fn pdf_dev_gsave() -> i32;
-    #[no_mangle]
-    fn pdf_dev_grestore() -> i32;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
     /* syntax 1: ((rgb|cmyk|hsb|gray) colorvalues)|colorname

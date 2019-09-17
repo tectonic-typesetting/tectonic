@@ -50,14 +50,18 @@ use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_opentype_file, dpx_open_t
 use super::dpx_numbers::{
     tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
+use super::dpx_tt_gsub::{
+    otl_gsub, otl_gsub_add_feat, otl_gsub_add_feat_list, otl_gsub_apply, otl_gsub_apply_chain,
+    otl_gsub_new, otl_gsub_release, otl_gsub_select, otl_gsub_set_chain, otl_gsub_set_verbose,
+};
+use super::dpx_tt_post::tt_get_glyphname;
 use super::dpx_tt_post::{tt_read_post_table, tt_release_post_table};
+use super::dpx_tt_table::tt_read_maxp_table;
 use crate::dpx_pdfobj::pdf_obj;
 use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_seek};
 use libc::free;
 extern "C" {
-    /* Here is the complete list of PDF object types */
-    pub type otl_gsub;
     #[no_mangle]
     fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
@@ -98,46 +102,7 @@ extern "C" {
     #[no_mangle]
     fn ttc_read_offset(sfont: *mut sfnt, ttc_idx: i32) -> u32;
     #[no_mangle]
-    fn otl_gsub_set_verbose(level: i32);
-    /* LookupType for GSUB */
-    #[no_mangle]
-    fn otl_gsub_new() -> *mut otl_gsub;
-    #[no_mangle]
-    fn otl_gsub_release(gsub_list: *mut otl_gsub);
-    #[no_mangle]
-    fn otl_gsub_select(
-        gsub_list: *mut otl_gsub,
-        script: *const i8,
-        language: *const i8,
-        feature: *const i8,
-    ) -> i32;
-    #[no_mangle]
-    fn otl_gsub_apply(gsub_list: *mut otl_gsub, gid: *mut u16) -> i32;
-    /* Handle a list of OTL features */
-    #[no_mangle]
-    fn otl_gsub_apply_chain(gsub_list: *mut otl_gsub, gid: *mut u16) -> i32;
-    #[no_mangle]
-    fn otl_gsub_add_feat(
-        gsub_list: *mut otl_gsub,
-        script: *const i8,
-        language: *const i8,
-        feature: *const i8,
-        sfont: *mut sfnt,
-    ) -> i32;
-    #[no_mangle]
-    fn otl_gsub_add_feat_list(
-        gsub_list: *mut otl_gsub,
-        otl_tags: *const i8,
-        sfont: *mut sfnt,
-    ) -> i32;
-    #[no_mangle]
-    fn otl_gsub_set_chain(gsub_list: *mut otl_gsub, otl_tags: *const i8) -> i32;
-    #[no_mangle]
-    fn tt_get_glyphname(post: *mut tt_post_table, gid: u16) -> *mut i8;
-    #[no_mangle]
     fn UC_UTF16BE_encode_char(ucv: i32, dstpp: *mut *mut u8, endptr: *mut u8) -> size_t;
-    #[no_mangle]
-    fn tt_read_maxp_table(sfont: *mut sfnt) -> *mut tt_maxp_table;
 }
 pub type __ssize_t = i64;
 pub type size_t = u64;

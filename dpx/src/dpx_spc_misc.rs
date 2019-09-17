@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_mfileio::tt_mfgets;
 use super::dpx_mpost::mps_scan_bbox;
 use super::dpx_pdfdev::{pdf_dev_put_image, transform_info, transform_info_clear};
 use super::dpx_pdfximage::pdf_ximage_findresource;
@@ -45,9 +46,6 @@ extern "C" {
     fn sscanf(_: *const i8, _: *const i8, _: ...) -> i32;
     #[no_mangle]
     fn strlen(_: *const i8) -> u64;
-    /* Tectonic-enabled versions */
-    #[no_mangle]
-    fn tt_mfgets(buffer: *mut i8, length: i32, file: rust_input_handle_t) -> *mut i8;
     #[no_mangle]
     fn skip_white(start: *mut *const i8, end: *const i8);
 }

@@ -29,6 +29,7 @@
 
 use crate::warn;
 
+use super::dpx_pdfdoc::pdf_doc_get_dictionary;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_new_array, pdf_new_dict, pdf_new_name, pdf_new_number,
     pdf_new_string, pdf_obj,
@@ -122,11 +123,6 @@ extern "C" {
     fn UC_is_valid(ucv: i32) -> bool;
     #[no_mangle]
     fn UC_UTF8_decode_char(pp: *mut *const u8, endptr: *const u8) -> i32;
-    /* They just return PDF dictionary object.
-     * Callers are completely responsible for doing right thing...
-     */
-    #[no_mangle]
-    fn pdf_doc_get_dictionary(category: *const i8) -> *mut pdf_obj;
 }
 pub type __time_t = i64;
 pub type size_t = u64;
