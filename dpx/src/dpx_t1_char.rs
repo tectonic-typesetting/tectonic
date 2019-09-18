@@ -36,7 +36,6 @@ use crate::warn;
 use libc::{free, memcpy, memset};
 
 pub type size_t = u64;
-pub type card8 = u8;
 
 use super::dpx_cff::cff_index;
 #[derive(Copy, Clone)]
@@ -76,8 +75,8 @@ pub struct C2RustUnnamed {
     pub asb: f64,
     pub adx: f64,
     pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
+    pub bchar: u8,
+    pub achar: u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -121,8 +120,8 @@ pub struct C2RustUnnamed_1 {
     pub asb: f64,
     pub adx: f64,
     pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
+    pub bchar: u8,
+    pub achar: u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -339,8 +338,8 @@ unsafe extern "C" fn release_charpath(mut cd: *mut t1_chardesc) {
 /*
  * Single byte operators:
  */
-unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut card8) {
-    let mut op: card8 = **data;
+unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut u8) {
+    let mut op: u8 = **data;
     *data = (*data).offset(1);
     match op as i32 {
         9 => {
@@ -438,7 +437,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
                         cs_stack_top = cs_stack_top + 1;
                         cs_arg_stack[fresh3 as usize] = (*cd).sbw.sby;
                         argn = 2i32;
-                        op = 21i32 as card8
+                        op = 21i32 as u8
                     }
                 } else {
                     cs_arg_stack[(cs_stack_top - 1i32) as usize] += (*cd).sbw.sby;
@@ -448,7 +447,7 @@ unsafe extern "C" fn do_operator1(mut cd: *mut t1_chardesc, mut data: *mut *mut 
                         cs_arg_stack[(cs_stack_top - 1i32) as usize] = (*cd).sbw.sbx;
                         cs_stack_top += 1;
                         argn = 2i32;
-                        op = 21i32 as card8
+                        op = 21i32 as u8
                     }
                 }
             }
@@ -822,10 +821,10 @@ unsafe extern "C" fn do_callothersubr(mut cd: *mut t1_chardesc) {
  */
 unsafe extern "C" fn do_operator2(
     mut cd: *mut t1_chardesc,
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
 ) {
-    let mut op: card8 = 0;
+    let mut op: u8 = 0;
     *data = (*data).offset(1);
     if endptr < (*data).offset(1) {
         status = -1i32;
@@ -939,9 +938,9 @@ unsafe extern "C" fn do_operator2(
             }
             (*cd).flags |= 1i32 << 2i32;
             cs_stack_top -= 1;
-            (*cd).seac.achar = cs_arg_stack[cs_stack_top as usize] as card8;
+            (*cd).seac.achar = cs_arg_stack[cs_stack_top as usize] as u8;
             cs_stack_top -= 1;
-            (*cd).seac.bchar = cs_arg_stack[cs_stack_top as usize] as card8;
+            (*cd).seac.bchar = cs_arg_stack[cs_stack_top as usize] as u8;
             cs_stack_top -= 1;
             (*cd).seac.ady = cs_arg_stack[cs_stack_top as usize];
             cs_stack_top -= 1;
@@ -971,8 +970,8 @@ unsafe extern "C" fn do_operator2(
 unsafe extern "C" fn put_numbers(
     mut argv: *mut f64,
     mut argn: i32,
-    mut dest: *mut *mut card8,
-    mut limit: *mut card8,
+    mut dest: *mut *mut u8,
+    mut limit: *mut u8,
 ) {
     let mut i: i32 = 0;
     i = 0i32;
@@ -997,22 +996,22 @@ unsafe extern "C" fn put_numbers(
                 }
                 let fresh8 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh8 = 255i32 as card8;
+                *fresh8 = 255i32 as u8;
                 /* Everything else are integers. */
                 ivalue = value.floor() as i32; /* mantissa */
                 let fresh9 = *dest; /* fraction */
                 *dest = (*dest).offset(1); /* Shouldn't come here */
-                *fresh9 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh9 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh10 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh10 = (ivalue & 0xffi32) as card8;
+                *fresh10 = (ivalue & 0xffi32) as u8;
                 ivalue = ((value - ivalue as f64) * 0x10000i64 as f64) as i32;
                 let fresh11 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh11 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh11 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh12 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh12 = (ivalue & 0xffi32) as card8
+                *fresh12 = (ivalue & 0xffi32) as u8
             } else if ivalue >= -107i32 && ivalue <= 107i32 {
                 if limit < (*dest).offset(1) {
                     status = -3i32;
@@ -1020,7 +1019,7 @@ unsafe extern "C" fn put_numbers(
                 }
                 let fresh13 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh13 = (ivalue + 139i32) as card8
+                *fresh13 = (ivalue + 139i32) as u8
             } else if ivalue >= 108i32 && ivalue <= 1131i32 {
                 if limit < (*dest).offset(2) {
                     status = -3i32;
@@ -1029,10 +1028,10 @@ unsafe extern "C" fn put_numbers(
                 ivalue = 0xf700u32.wrapping_add(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh14 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh14 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh14 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh15 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh15 = (ivalue & 0xffi32) as card8
+                *fresh15 = (ivalue & 0xffi32) as u8
             } else if ivalue >= -1131i32 && ivalue <= -108i32 {
                 if limit < (*dest).offset(2) {
                     status = -3i32;
@@ -1041,10 +1040,10 @@ unsafe extern "C" fn put_numbers(
                 ivalue = 0xfb00u32.wrapping_sub(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh16 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh16 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh16 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh17 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh17 = (ivalue & 0xffi32) as card8
+                *fresh17 = (ivalue & 0xffi32) as u8
             } else if ivalue >= -32768i32 && ivalue <= 32767i32 {
                 /* shortint */
                 if limit < (*dest).offset(3) {
@@ -1053,13 +1052,13 @@ unsafe extern "C" fn put_numbers(
                 }
                 let fresh18 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh18 = 28i32 as card8;
+                *fresh18 = 28i32 as u8;
                 let fresh19 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh19 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh19 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh20 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh20 = (ivalue & 0xffi32) as card8
+                *fresh20 = (ivalue & 0xffi32) as u8
             } else {
                 panic!("Unexpected error.");
             }
@@ -1067,11 +1066,11 @@ unsafe extern "C" fn put_numbers(
         i += 1
     }
 }
-unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut card8) {
+unsafe extern "C" fn get_integer(mut data: *mut *mut u8, mut endptr: *mut u8) {
     let mut result: i32 = 0i32;
-    let mut b0: card8 = **data;
-    let mut b1: card8 = 0;
-    let mut b2: card8 = 0;
+    let mut b0: u8 = **data;
+    let mut b1: u8 = 0;
+    let mut b2: u8 = 0;
     *data = (*data).offset(1);
     if b0 as i32 == 28i32 {
         /* shortint */
@@ -1119,7 +1118,7 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut car
     cs_arg_stack[fresh21 as usize] = result as f64;
 }
 /* Type 1 */
-unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut card8) {
+unsafe extern "C" fn get_longint(mut data: *mut *mut u8, mut endptr: *mut u8) {
     let mut result: i32 = 0i32;
     let mut i: u32 = 0;
     *data = (*data).offset(1);
@@ -1154,12 +1153,12 @@ unsafe extern "C" fn get_longint(mut data: *mut *mut card8, mut endptr: *mut car
 /* Parse charstring and build charpath. */
 unsafe extern "C" fn t1char_build_charpath(
     mut cd: *mut t1_chardesc,
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
     mut subrs: *mut cff_index,
 ) {
-    let mut b0: card8 = 0i32 as card8;
-    let mut subr: *mut card8 = 0 as *mut card8;
+    let mut b0: u8 = 0i32 as u8;
+    let mut subr: *mut u8 = 0 as *mut u8;
     let mut len: i32 = 0;
     if nest > 10i32 {
         panic!("Subroutine nested too deeply.");
@@ -1623,7 +1622,7 @@ unsafe extern "C" fn do_postproc(mut cd: *mut t1_chardesc) {
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1char_get_metrics(
-    mut src: *mut card8,
+    mut src: *mut u8,
     mut srclen: i32,
     mut subrs: *mut cff_index,
     mut ginfo: *mut t1_ginfo,
@@ -1699,10 +1698,10 @@ unsafe extern "C" fn t1char_encode_charpath(
     mut cd: *mut t1_chardesc,
     mut default_width: f64,
     mut nominal_width: f64,
-    mut dst: *mut card8,
-    mut endptr: *mut card8,
+    mut dst: *mut u8,
+    mut endptr: *mut u8,
 ) -> i32 {
-    let mut save: *mut card8 = 0 as *mut card8;
+    let mut save: *mut u8 = 0 as *mut u8;
     let mut curr: *mut t1_cpath = 0 as *mut t1_cpath;
     assert!(!cd.is_null());
     save = dst;
@@ -1755,7 +1754,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 18i32
             } else {
                 1i32
-            }) as card8;
+            }) as u8;
             reset = 1i32
         }
         i += 1
@@ -1770,7 +1769,7 @@ unsafe extern "C" fn t1char_encode_charpath(
             18i32
         } else {
             1i32
-        }) as card8
+        }) as u8
     }
     reset = 1i32;
     if (*cd).num_stems - num_hstems > 0i32 {
@@ -1799,7 +1798,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                     23i32
                 } else {
                     3i32
-                }) as card8;
+                }) as u8;
                 reset = 1i32
             }
             i += 1
@@ -1817,12 +1816,12 @@ unsafe extern "C" fn t1char_encode_charpath(
                 if (*curr).type_0 != -1i32 && (*curr).type_0 != 20i32 {
                     let fresh26 = dst;
                     dst = dst.offset(1);
-                    *fresh26 = 23i32 as card8
+                    *fresh26 = 23i32 as u8
                 }
             } else {
                 let fresh27 = dst;
                 dst = dst.offset(1);
-                *fresh27 = 3i32 as card8
+                *fresh27 = 3i32 as u8
             }
         }
     }
@@ -1832,7 +1831,7 @@ unsafe extern "C" fn t1char_encode_charpath(
     while !curr.is_null() && (*curr).type_0 != 14i32 {
         match (*curr).type_0 {
             -1 => {
-                let mut hintmask: [card8; 12] = [0; 12];
+                let mut hintmask: [u8; 12] = [0; 12];
                 memset(
                     hintmask.as_mut_ptr() as *mut libc::c_void,
                     0i32,
@@ -1844,7 +1843,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                     assert!(stem_idx < (*cd).num_stems);
                     hintmask[(stem_idx / 8i32) as usize] =
                         (hintmask[(stem_idx / 8i32) as usize] as i32
-                            | 1i32 << 7i32 - stem_idx % 8i32) as card8;
+                            | 1i32 << 7i32 - stem_idx % 8i32) as u8;
                     curr = (*curr).next
                 }
                 if (*cd).flags & 1i32 << 0i32 != 0 {
@@ -1853,7 +1852,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                     }
                     let fresh28 = dst;
                     dst = dst.offset(1);
-                    *fresh28 = 19i32 as card8;
+                    *fresh28 = 19i32 as u8;
                     memcpy(
                         dst as *mut libc::c_void,
                         hintmask.as_mut_ptr() as *const libc::c_void,
@@ -1863,7 +1862,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 }
             }
             20 => {
-                let mut cntrmask: [card8; 12] = [0; 12];
+                let mut cntrmask: [u8; 12] = [0; 12];
                 let mut stem_idx_0: i32 = 0;
                 let mut i_0: i32 = 0;
                 memset(
@@ -1877,7 +1876,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                     assert!(stem_idx_0 < (*cd).num_stems);
                     cntrmask[(stem_idx_0 / 8i32) as usize] =
                         (cntrmask[(stem_idx_0 / 8i32) as usize] as i32
-                            | 1i32 << 7i32 - stem_idx_0 % 8i32) as card8;
+                            | 1i32 << 7i32 - stem_idx_0 % 8i32) as u8;
                     i_0 += 1
                 }
                 if dst.offset((((*cd).num_stems + 7i32) / 8i32 + 1i32) as isize) >= endptr {
@@ -1885,7 +1884,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 }
                 let fresh29 = dst;
                 dst = dst.offset(1);
-                *fresh29 = 20i32 as card8;
+                *fresh29 = 20i32 as u8;
                 memcpy(
                     dst as *mut libc::c_void,
                     cntrmask.as_mut_ptr() as *const libc::c_void,
@@ -1909,7 +1908,7 @@ unsafe extern "C" fn t1char_encode_charpath(
                 }
                 let fresh30 = dst;
                 dst = dst.offset(1);
-                *fresh30 = (*curr).type_0 as card8;
+                *fresh30 = (*curr).type_0 as u8;
                 curr = (*curr).next
             }
             35 | 34 | 36 => {
@@ -1927,10 +1926,10 @@ unsafe extern "C" fn t1char_encode_charpath(
                 }
                 let fresh31 = dst;
                 dst = dst.offset(1);
-                *fresh31 = 12i32 as card8;
+                *fresh31 = 12i32 as u8;
                 let fresh32 = dst;
                 dst = dst.offset(1);
-                *fresh32 = (*curr).type_0 as card8;
+                *fresh32 = (*curr).type_0 as u8;
                 curr = (*curr).next
             }
             _ => {
@@ -1961,14 +1960,14 @@ unsafe extern "C" fn t1char_encode_charpath(
     }
     let fresh33 = dst;
     dst = dst.offset(1);
-    *fresh33 = 14i32 as card8;
+    *fresh33 = 14i32 as u8;
     dst.wrapping_offset_from(save) as i64 as i32
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1char_convert_charstring(
-    mut dst: *mut card8,
+    mut dst: *mut u8,
     mut dstlen: i32,
-    mut src: *mut card8,
+    mut src: *mut u8,
     mut srclen: i32,
     mut subrs: *mut cff_index,
     mut default_width: f64,

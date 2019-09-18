@@ -157,8 +157,6 @@ pub struct loaded_font {
 use super::dpx_cff::cff_font;
 
 use super::dpx_cff::cff_index;
-pub type card16 = u16;
-
 use super::dpx_fontmap::fontmap_rec;
 use super::dpx_tt_table::tt_longMetrics;
 #[derive(Copy, Clone)]

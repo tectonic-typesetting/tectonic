@@ -348,8 +348,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         /* cid-keyed font - add panose */
         let mut styledict: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut panose: [u8; 12] = [0; 12];
-        panose[0] = ((*os2).sFamilyClass as i32 >> 8i32) as u8;
-        panose[1] = ((*os2).sFamilyClass as i32 & 0xffi32) as u8;
+        panose[0..2].copy_from_slice(&(*os2).sFamilyClass.to_be_bytes());
         memcpy(
             panose.as_mut_ptr().offset(2) as *mut libc::c_void,
             (*os2).panose.as_mut_ptr() as *const libc::c_void,

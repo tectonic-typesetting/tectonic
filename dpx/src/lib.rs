@@ -82,6 +82,23 @@ impl FromLEByteSlice for u16 {
         u16::from_le_bytes(dst)
     }
 }
+pub trait FromBEByteSlice {
+    fn from_be_byte_slice(b: &[u8]) -> Self;
+}
+impl FromBEByteSlice for u32 {
+    fn from_be_byte_slice(b: &[u8]) -> Self {
+        let mut dst: [u8; 4] = unsafe { MaybeUninit::uninit().assume_init() };
+        dst.copy_from_slice(b);
+        u32::from_be_bytes(dst)
+    }
+}
+impl FromBEByteSlice for u16 {
+    fn from_be_byte_slice(b: &[u8]) -> Self {
+        let mut dst: [u8; 2] = unsafe { MaybeUninit::uninit().assume_init() };
+        dst.copy_from_slice(b);
+        u16::from_be_bytes(dst)
+    }
+}
 
 pub mod dpx_agl;
 pub mod dpx_bmpimage;

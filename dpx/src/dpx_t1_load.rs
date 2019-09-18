@@ -55,10 +55,6 @@ pub type rust_input_handle_t = *mut libc::c_void;
 /* SID SID number */
 /* offset(0) */
 /* size offset(0) */
-pub type card8 = u8;
-/* 1-byte unsigned number */
-pub type card16 = u16;
-/* 2-byte unsigned number */
 pub type c_offsize = u8;
 /* 1-byte unsigned number specifies the size
 of an Offset field or fields, range 1-4 */
@@ -1274,7 +1270,7 @@ unsafe extern "C" fn parse_encoding(
     0i32
 }
 unsafe extern "C" fn parse_subrs(
-    mut font: *mut cff_font,
+    font: &cff_font,
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut lenIV: i32,
@@ -1288,7 +1284,7 @@ unsafe extern "C" fn parse_subrs(
     let mut max_size: i32 = 0;
     let mut offsets: *mut i32 = 0 as *mut i32;
     let mut lengths: *mut i32 = 0 as *mut i32;
-    let mut data: *mut card8 = 0 as *mut card8;
+    let mut data: *mut u8 = 0 as *mut u8;
     tok = pst_get_token(start, end);
     if !(pst_type_of(tok) == 2i32) || pst_getIV(tok) < 0i32 {
         warn!("Parsing Subrs failed.");
@@ -1304,7 +1300,7 @@ unsafe extern "C" fn parse_subrs(
         tok = 0 as *mut pst_obj
     }
     if count == 0i32 {
-        let ref mut fresh15 = *(*font).subrs.offset(0);
+        let ref mut fresh15 = *font.subrs.offset(0);
         *fresh15 = 0 as *mut cff_index;
         return 0i32;
     }
@@ -1329,9 +1325,8 @@ unsafe extern "C" fn parse_subrs(
     }
     if mode != 1i32 {
         max_size = 65536i32;
-        data = new(
-            (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32,
-        ) as *mut card8;
+        data = new((max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32)
+            as *mut u8;
         offsets =
             new((count as u32 as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64) as u32)
                 as *mut i32;
@@ -1350,7 +1345,7 @@ unsafe extern "C" fn parse_subrs(
         );
     } else {
         max_size = 0i32;
-        data = 0 as *mut card8;
+        data = 0 as *mut u8;
         offsets = 0 as *mut i32;
         lengths = 0 as *mut i32
     }
@@ -1482,9 +1477,9 @@ unsafe extern "C" fn parse_subrs(
                     max_size += 65536i32;
                     data = renew(
                         data as *mut libc::c_void,
-                        (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64)
+                        (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64)
                             as u32,
-                    ) as *mut card8
+                    ) as *mut u8
                 }
                 if lenIV >= 0i32 {
                     t1_decrypt(4330_u16, data.offset(offset as isize), *start, lenIV, len);
@@ -1496,7 +1491,7 @@ unsafe extern "C" fn parse_subrs(
                     *offsets.offset(idx as isize) = offset;
                     *lengths.offset(idx as isize) = len;
                     memcpy(
-                        &mut *data.offset(offset as isize) as *mut card8 as *mut libc::c_void,
+                        &mut *data.offset(offset as isize) as *mut u8 as *mut libc::c_void,
                         *start as *const libc::c_void,
                         len as _,
                     );
@@ -1508,13 +1503,13 @@ unsafe extern "C" fn parse_subrs(
         }
     }
     if mode != 1i32 {
-        if (*(*font).subrs.offset(0)).is_null() {
-            let ref mut fresh17 = *(*font).subrs.offset(0);
-            *fresh17 = cff_new_index(count as card16);
+        if (*font.subrs.offset(0)).is_null() {
+            let ref mut fresh17 = *font.subrs.offset(0);
+            *fresh17 = cff_new_index(count as u16);
             subrs = *fresh17;
             (*subrs).data = new((offset as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<card8>() as u64)
-                as u32) as *mut card8;
+                .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+                as u32) as *mut u8;
             offset = 0i32;
             i = 0i32;
             while i < count {
@@ -1543,7 +1538,7 @@ unsafe extern "C" fn parse_subrs(
     0i32
 }
 unsafe extern "C" fn parse_charstrings(
-    mut font: *mut cff_font,
+    font: &mut cff_font,
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut lenIV: i32,
@@ -1583,22 +1578,21 @@ unsafe extern "C" fn parse_charstrings(
         tok = 0 as *mut pst_obj
     }
     if mode != 1i32 {
-        charstrings = cff_new_index(count as card16);
+        charstrings = cff_new_index(count as u16);
         max_size = 65536i32;
         (*charstrings).data = new((max_size as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<card8>() as u64)
-            as u32) as *mut card8
+            .wrapping_mul(::std::mem::size_of::<u8>() as u64)
+            as u32) as *mut u8
     } else {
         charstrings = 0 as *mut cff_index;
         max_size = 0i32
     }
-    (*font).cstrings = charstrings;
-    (*font).charsets =
-        new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
-            as *mut cff_charsets;
-    charset = (*font).charsets;
-    (*charset).format = 0i32 as card8;
-    (*charset).num_entries = (count - 1i32) as card16;
+    font.cstrings = charstrings;
+    font.charsets = new((1_u64).wrapping_mul(::std::mem::size_of::<cff_charsets>() as u64) as u32)
+        as *mut cff_charsets;
+    charset = font.charsets;
+    (*charset).format = 0i32 as u8;
+    (*charset).num_entries = (count - 1i32) as u16;
     (*charset).data.glyphs = new(((count - 1i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<s_SID>() as u64)
         as u32) as *mut s_SID;
@@ -1609,7 +1603,7 @@ unsafe extern "C" fn parse_charstrings(
     );
     offset = 0i32;
     have_notdef = 0i32;
-    (*font).is_notdef_notzero = 0i32;
+    font.is_notdef_notzero = 0i32;
     seek_operator(start, end, b"begin\x00" as *const u8 as *const i8);
     i = 0i32;
     while i < count {
@@ -1627,7 +1621,7 @@ unsafe extern "C" fn parse_charstrings(
             && !glyph_name.is_null()
             && strcmp(glyph_name, b".notdef\x00" as *const u8 as *const i8) != 0i32
         {
-            (*font).is_notdef_notzero = 1i32
+            font.is_notdef_notzero = 1i32
         }
         if pst_type_of(tok) == 6i32 {
             if !tok.is_null() {
@@ -1706,9 +1700,9 @@ unsafe extern "C" fn parse_charstrings(
                     max_size += if len > 65536i32 { len } else { 65536i32 };
                     (*charstrings).data = renew(
                         (*charstrings).data as *mut libc::c_void,
-                        (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64)
+                        (max_size as u32 as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64)
                             as u32,
-                    ) as *mut card8
+                    ) as *mut u8
                 }
                 if gid == 0i32 {
                     if lenIV >= 0i32 {
@@ -1761,14 +1755,14 @@ unsafe extern "C" fn parse_charstrings(
                     if gid == 0i32 {
                         *(*charstrings).offset.offset(gid as isize) = 1i32 as l_offset;
                         memcpy(
-                            &mut *(*charstrings).data.offset(0) as *mut card8 as *mut libc::c_void,
+                            &mut *(*charstrings).data.offset(0) as *mut u8 as *mut libc::c_void,
                             *start as *const libc::c_void,
                             len as _,
                         );
                     } else {
                         *(*charstrings).offset.offset(gid as isize) = (offset + 1i32) as l_offset;
                         memcpy(
-                            &mut *(*charstrings).data.offset(offset as isize) as *mut card8
+                            &mut *(*charstrings).data.offset(offset as isize) as *mut u8
                                 as *mut libc::c_void,
                             *start as *const libc::c_void,
                             len as _,
@@ -1824,11 +1818,11 @@ unsafe extern "C" fn parse_charstrings(
     if mode != 1i32 {
         *(*charstrings).offset.offset(count as isize) = (offset + 1i32) as l_offset
     }
-    (*font).num_glyphs = count as card16;
+    font.num_glyphs = count as u16;
     0i32
 }
 unsafe extern "C" fn parse_part2(
-    mut font: *mut cff_font,
+    font: &mut cff_font,
     mut start: *mut *mut u8,
     mut end: *mut u8,
     mut mode: i32,
@@ -1876,7 +1870,7 @@ unsafe extern "C" fn parse_part2(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            cff_dict_add(*(*font).private.offset(0), key, argn);
+            cff_dict_add(*font.private.offset(0), key, argn);
             loop {
                 let fresh20 = argn;
                 argn = argn - 1;
@@ -1884,7 +1878,7 @@ unsafe extern "C" fn parse_part2(
                     break;
                 }
                 cff_dict_set(
-                    *(*font).private.offset(0),
+                    *font.private.offset(0),
                     key,
                     argn,
                     if argn == 0i32 {
@@ -1912,8 +1906,8 @@ unsafe extern "C" fn parse_part2(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            cff_dict_add(*(*font).private.offset(0), key, 1i32);
-            cff_dict_set(*(*font).private.offset(0), key, 0i32, argv[0]);
+            cff_dict_add(*font.private.offset(0), key, 1i32);
+            cff_dict_set(*font.private.offset(0), key, 0i32, argv[0]);
         } else if streq_ptr(key, b"ForceBold\x00" as *const u8 as *const i8) {
             argn = parse_bvalue(start, end, &mut *argv.as_mut_ptr().offset(0));
             if argn != 1i32 {
@@ -1922,8 +1916,8 @@ unsafe extern "C" fn parse_part2(
                 return -1i32;
             }
             if argv[0] != 0i32 as f64 {
-                cff_dict_add(*(*font).private.offset(0), key, 1i32);
-                cff_dict_set(*(*font).private.offset(0), key, 0i32, 1i32 as f64);
+                cff_dict_add(*font.private.offset(0), key, 1i32);
+                cff_dict_set(*font.private.offset(0), key, 0i32, 1i32 as f64);
             }
         }
         /*
@@ -1934,7 +1928,7 @@ unsafe extern "C" fn parse_part2(
     0i32
 }
 unsafe extern "C" fn parse_part1(
-    mut font: *mut cff_font,
+    font: &mut cff_font,
     mut enc_vec: *mut *mut i8,
     mut start: *mut *mut u8,
     mut end: *mut u8,
@@ -2000,8 +1994,8 @@ unsafe extern "C" fn parse_part1(
                 return -1i32;
             }
             if argv[0] != 0.0f64 {
-                cff_dict_add((*font).topdict, key, 1i32);
-                cff_dict_set((*font).topdict, key, 0i32, argv[0]);
+                cff_dict_add(font.topdict, key, 1i32);
+                cff_dict_set(font.topdict, key, 0i32, argv[0]);
             }
         } else if streq_ptr(key, b"UnderLinePosition\x00" as *const u8 as *const i8) as i32 != 0
             || streq_ptr(key, b"UnderLineThickness\x00" as *const u8 as *const i8) as i32 != 0
@@ -2012,8 +2006,8 @@ unsafe extern "C" fn parse_part1(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            cff_dict_add((*font).topdict, key, 1i32);
-            cff_dict_set((*font).topdict, key, 0i32, argv[0]);
+            cff_dict_add(font.topdict, key, 1i32);
+            cff_dict_set(font.topdict, key, 0i32, argv[0]);
         } else if streq_ptr(key, b"FontBBox\x00" as *const u8 as *const i8) {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 4i32);
             if argn != 4i32 {
@@ -2021,14 +2015,14 @@ unsafe extern "C" fn parse_part1(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            cff_dict_add((*font).topdict, key, 4i32);
+            cff_dict_add(font.topdict, key, 4i32);
             loop {
                 let fresh21 = argn;
                 argn = argn - 1;
                 if !(fresh21 > 0i32) {
                     break;
                 }
-                cff_dict_set((*font).topdict, key, argn, argv[argn as usize]);
+                cff_dict_set(font.topdict, key, argn, argv[argn as usize]);
             }
         } else if streq_ptr(key, b"FontMatrix\x00" as *const u8 as *const i8) {
             argn = parse_nvalue(start, end, argv.as_mut_ptr(), 6i32);
@@ -2044,14 +2038,14 @@ unsafe extern "C" fn parse_part1(
                 || argv[4] != 0.0f64
                 || argv[5] != 0.0f64
             {
-                cff_dict_add((*font).topdict, key, 6i32);
+                cff_dict_add(font.topdict, key, 6i32);
                 loop {
                     let fresh22 = argn;
                     argn = argn - 1;
                     if !(fresh22 > 0i32) {
                         break;
                     }
-                    cff_dict_set((*font).topdict, key, argn, argv[argn as usize]);
+                    cff_dict_set(font.topdict, key, argn, argv[argn as usize]);
                 }
             }
         } else if streq_ptr(key, b"version\x00" as *const u8 as *const i8) as i32 != 0
@@ -2071,7 +2065,7 @@ unsafe extern "C" fn parse_part1(
                 return -1i32;
             }
             let mut sid: s_SID = 0;
-            cff_dict_add((*font).topdict, key, 1i32);
+            cff_dict_add(font.topdict, key, 1i32);
             sid = cff_get_sid(font, strval) as s_SID;
             if sid as i32 == 65535i32 {
                 sid = cff_add_string(font, strval, 0i32)
@@ -2080,7 +2074,7 @@ unsafe extern "C" fn parse_part1(
              * We don't care about duplicate strings here since
              * later a subset font of this font will be generated.
              */
-            cff_dict_set((*font).topdict, key, 0i32, sid as f64); /* No Global Subr */
+            cff_dict_set(font.topdict, key, 0i32, sid as f64); /* No Global Subr */
             free(strval as *mut libc::c_void);
         } else if streq_ptr(key, b"IsFixedPitch\x00" as *const u8 as *const i8) {
             argn = parse_bvalue(start, end, &mut *argv.as_mut_ptr().offset(0));
@@ -2090,8 +2084,8 @@ unsafe extern "C" fn parse_part1(
                 return -1i32;
             }
             if argv[0] != 0.0f64 {
-                cff_dict_add(*(*font).private.offset(0), key, 1i32);
-                cff_dict_set(*(*font).private.offset(0), key, 0i32, 1i32 as f64);
+                cff_dict_add(*font.private.offset(0), key, 1i32);
+                cff_dict_set(*font.private.offset(0), key, 0i32, 1i32 as f64);
             }
         }
         free(key as *mut libc::c_void);
@@ -2282,38 +2276,38 @@ pub unsafe extern "C" fn t1_get_fontname(
     free(buffer as *mut libc::c_void);
     0i32
 }
-unsafe extern "C" fn init_cff_font(mut cff: *mut cff_font) {
-    (*cff).handle = 0 as *mut libc::c_void;
-    (*cff).filter = 0i32;
-    (*cff).fontname = 0 as *mut i8;
-    (*cff).index = 0i32;
-    (*cff).flag = 1i32 << 1i32;
-    (*cff).header.major = 1i32 as card8;
-    (*cff).header.minor = 0i32 as card8;
-    (*cff).header.hdr_size = 4i32 as card8;
-    (*cff).header.offsize = 4i32 as c_offsize;
-    (*cff).name = cff_new_index(1i32 as card16);
-    (*cff).topdict = cff_new_dict();
-    (*cff).string = 0 as *mut cff_index;
-    (*cff).gsubr = cff_new_index(0i32 as card16);
-    (*cff).encoding = 0 as *mut cff_encoding;
-    (*cff).charsets = 0 as *mut cff_charsets;
-    (*cff).fdselect = 0 as *mut cff_fdselect;
-    (*cff).cstrings = 0 as *mut cff_index;
-    (*cff).fdarray = 0 as *mut *mut cff_dict;
-    (*cff).private = new((1_u64).wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64) as u32)
+unsafe extern "C" fn init_cff_font(cff: &mut cff_font) {
+    cff.handle = 0 as *mut libc::c_void;
+    cff.filter = 0;
+    cff.fontname = 0 as *mut i8;
+    cff.index = 0;
+    cff.flag = 1 << 1;
+    cff.header.major = 1 as u8;
+    cff.header.minor = 0 as u8;
+    cff.header.hdr_size = 4 as u8;
+    cff.header.offsize = 4 as c_offsize;
+    cff.name = cff_new_index(1);
+    cff.topdict = cff_new_dict();
+    cff.string = 0 as *mut cff_index;
+    cff.gsubr = cff_new_index(0);
+    cff.encoding = 0 as *mut cff_encoding;
+    cff.charsets = 0 as *mut cff_charsets;
+    cff.fdselect = 0 as *mut cff_fdselect;
+    cff.cstrings = 0 as *mut cff_index;
+    cff.fdarray = 0 as *mut *mut cff_dict;
+    cff.private = new((1_u64).wrapping_mul(::std::mem::size_of::<*mut cff_dict>() as u64) as u32)
         as *mut *mut cff_dict;
-    let ref mut fresh23 = *(*cff).private.offset(0);
+    let ref mut fresh23 = *cff.private.offset(0);
     *fresh23 = cff_new_dict();
-    (*cff).subrs = new((1_u64).wrapping_mul(::std::mem::size_of::<*mut cff_index>() as u64) as u32)
+    cff.subrs = new((1_u64).wrapping_mul(::std::mem::size_of::<*mut cff_index>() as u64) as u32)
         as *mut *mut cff_index;
-    let ref mut fresh24 = *(*cff).subrs.offset(0);
+    let ref mut fresh24 = *cff.subrs.offset(0);
     *fresh24 = 0 as *mut cff_index;
-    (*cff).offset = 0i32 as l_offset;
-    (*cff).gsubr_offset = 0i32 as l_offset;
-    (*cff).num_glyphs = 0i32 as card16;
-    (*cff).num_fds = 1i32 as card8;
-    (*cff)._string = cff_new_index(0i32 as card16);
+    cff.offset = 0 as l_offset;
+    cff.gsubr_offset = 0 as l_offset;
+    cff.num_glyphs = 0;
+    cff.num_fds = 1;
+    cff._string = cff_new_index(0);
 }
 #[no_mangle]
 pub unsafe extern "C" fn t1_load_font(
@@ -2334,10 +2328,10 @@ pub unsafe extern "C" fn t1_load_font(
     }
     cff =
         new((1_u64).wrapping_mul(::std::mem::size_of::<cff_font>() as u64) as u32) as *mut cff_font;
-    init_cff_font(cff);
+    init_cff_font(&mut *cff);
     start = buffer;
     end = buffer.offset(length as isize);
-    if parse_part1(cff, enc_vec, &mut start, end) < 0i32 {
+    if parse_part1(&mut *cff, enc_vec, &mut start, end) < 0i32 {
         cff_close(cff);
         free(buffer as *mut libc::c_void);
         panic!("Reading PFB (ASCII part) file failed.");
@@ -2354,13 +2348,13 @@ pub unsafe extern "C" fn t1_load_font(
     }
     start = buffer.offset(4);
     end = buffer.offset(length as isize);
-    if parse_part2(cff, &mut start, end, mode) < 0i32 {
+    if parse_part2(&mut *cff, &mut start, end, mode) < 0i32 {
         cff_close(cff);
         free(buffer as *mut libc::c_void);
         panic!("Reading PFB (BINARY part) file failed.");
     }
     /* Remaining section ignored. */
     free(buffer as *mut libc::c_void);
-    cff_update_string(cff);
+    cff_update_string(&mut *cff);
     cff
 }

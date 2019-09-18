@@ -105,6 +105,7 @@ pub unsafe extern "C" fn mfgets(
 /* Note: this is really just a random array used in other files. */
 #[no_mangle]
 pub static mut work_buffer: [i8; 1024] = [0; 1024];
+pub static mut work_buffer_u8: [u8; 1024] = [0; 1024];
 /* Tectonic-enabled versions */
 /* Modified versions of the above functions based on the Tectonic I/O system. */
 #[no_mangle]

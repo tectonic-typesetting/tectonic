@@ -346,7 +346,7 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
     mediabox.lly = 0.0f64;
     mediabox.urx = paper_width;
     mediabox.ury = paper_height;
-    pdf_doc_set_mediabox(0_u32, &mut mediabox);
+    pdf_doc_set_mediabox(0_u32, &mediabox);
     i = 0_u32;
     while i < num_page_ranges && dvi_npages() != 0 {
         if (*page_ranges.offset(i as isize)).last < 0i32 {
@@ -410,10 +410,10 @@ unsafe extern "C" fn do_dvi_pages(mut page_ranges: *mut PageRange, mut num_page_
                     mediabox.lly = 0.0f64;
                     mediabox.urx = page_width;
                     mediabox.ury = page_height;
-                    pdf_doc_set_mediabox(page_count.wrapping_add(1_u32), &mut mediabox);
+                    pdf_doc_set_mediabox(page_count + 1, &mediabox);
                 }
                 dvi_do_page(page_height, x_offset, y_offset);
-                page_count = page_count.wrapping_add(1);
+                page_count = page_count + 1;
                 info!("]");
             }
             if step > 0i32 && page_no >= (*page_ranges.offset(i as isize)).last {

@@ -213,7 +213,6 @@ pub struct dev_font {
     pub cff_charsets: *mut cff_charsets,
 }
 use super::dpx_cff::cff_charsets;
-pub type card16 = u16;
 /*
  * Unit conversion, formatting and others.
  */
@@ -1124,7 +1123,7 @@ unsafe extern "C" fn handle_multibyte_string(
             let fresh35 = inbuf;
             inbuf = inbuf.offset(1);
             gid = gid.wrapping_add(*fresh35 as u32);
-            gid = cff_charsets_lookup_cid((*font).cff_charsets, gid as card16) as u32;
+            gid = cff_charsets_lookup_cid((*font).cff_charsets, gid as u16) as u32;
             let fresh36 = outbuf;
             outbuf = outbuf.offset(1);
             *fresh36 = (gid >> 8i32) as u8;
@@ -2252,10 +2251,7 @@ pub unsafe extern "C" fn pdf_dev_begin_actualtext(mut unicodes: *mut u16, mut co
         if !(fresh69 > 0i32) {
             break;
         }
-        let mut s: [u8; 2] = [
-            (*unicodes as i32 >> 8i32) as u8,
-            (*unicodes as i32 & 0xffi32) as u8,
-        ];
+        let mut s: [u8; 2] = (*unicodes).to_be_bytes();
         i = pdf_doc_enc;
         len = 0i32;
         while i < 2i32 {

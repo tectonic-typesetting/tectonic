@@ -93,9 +93,8 @@ pub struct tt_cmap {
 
 use super::dpx_cid::CIDSysInfo;
 
-use super::dpx_cff::cff_font;
-pub type card16 = u16;
 use super::dpx_cff::cff_charsets;
+use super::dpx_cff::cff_font;
 use super::dpx_cff::cff_range2;
 /* CFF Data Types */
 /* SID SID number */
@@ -118,15 +117,15 @@ use super::dpx_cff::cff_range1;
 /* Header size (bytes)                  */
 /* Absolute offset (0) size             */
 /* Dictionary */
-/* encoded data value (as card8 or card16) */
+/* encoded data value (as u8 or u16) */
 /* opname                                 */
 /* number of values                        */
 /* values                                  */
 /* Encoding, Charset and FDSelect */
-/* SID or CID, or card8 for Encoding  */
+/* SID or CID, or u8 for Encoding  */
 /* no. of remaining gids/codes in this range */
-/* SID or CID (card16)      */
-/* card16-version of range1 */
+/* SID or CID (u16)      */
+/* u16-version of range1 */
 
 use super::dpx_tt_post::tt_post_table;
 
@@ -324,11 +323,10 @@ unsafe extern "C" fn lookup_cmap2(mut map: *mut cmap2, mut cc: u16) -> u16 {
     let mut firstCode: u16 = 0;
     let mut entryCount: u16 = 0;
     let mut idRangeOffset: u16 = 0;
-    let mut hi: i32 = 0;
-    let mut lo: i32 = 0;
     let mut i: u16 = 0;
-    hi = cc as i32 >> 8i32 & 0xffi32;
-    lo = cc as i32 & 0xffi32;
+    let [hi, lo] = cc.to_be_bytes();
+    let hi = hi as i32;
+    let lo = lo as i32;
     /* select which subHeader to use */
     i = (*map).subHeaderKeys[hi as usize];
     firstCode = (*(*map).subHeaders.offset(i as isize)).firstCode;
@@ -732,10 +730,8 @@ unsafe extern "C" fn load_cmap4(
                 }
                 wbuf[0] = 0_u8;
                 wbuf[1] = 0_u8;
-                wbuf[2] = (ch as i32 >> 8i32 & 0xffi32) as u8;
-                wbuf[3] = (ch as i32 & 0xffi32) as u8;
-                wbuf[4] = (cid as i32 >> 8i32 & 0xffi32) as u8;
-                wbuf[5] = (cid as i32 & 0xffi32) as u8;
+                wbuf[2..4].copy_from_slice(&ch.to_be_bytes());
+                wbuf[4..6].copy_from_slice(&cid.to_be_bytes());
                 CMap_add_cidchar(cmap, wbuf.as_mut_ptr(), 4i32 as size_t, cid);
                 if !tounicode_add.is_null() {
                     let mut p: *mut u8 = wbuf.as_mut_ptr().offset(6);
@@ -797,12 +793,8 @@ unsafe extern "C" fn load_cmap12(
             } else {
                 cid = gid
             }
-            wbuf[0] = (ch >> 24i32 & 0xff_u32) as u8;
-            wbuf[1] = (ch >> 16i32 & 0xff_u32) as u8;
-            wbuf[2] = (ch >> 8i32 & 0xff_u32) as u8;
-            wbuf[3] = (ch & 0xff_u32) as u8;
-            wbuf[4] = (cid as i32 >> 8i32 & 0xffi32) as u8;
-            wbuf[5] = (cid as i32 & 0xffi32) as u8;
+            wbuf[0..4].copy_from_slice(&ch.to_be_bytes());
+            wbuf[4..6].copy_from_slice(&cid.to_be_bytes());
             CMap_add_cidchar(cmap, wbuf.as_mut_ptr(), 4i32 as size_t, cid);
             if !tounicode_add.is_null() {
                 let mut p: *mut u8 = wbuf.as_mut_ptr().offset(6);
@@ -836,10 +828,10 @@ unsafe extern "C" fn handle_CIDFont(
     mut csi: *mut CIDSysInfo,
 ) -> i32 {
     let mut cffont: *mut cff_font = 0 as *mut cff_font; /* CID... */
-    let mut offset: i32 = 0; /* card8 */
+    let mut offset: i32 = 0; /* u8 */
     let mut i: i32 = 0;
-    let mut num_glyphs: card16 = 0;
-    let mut gid: card16 = 0;
+    let mut num_glyphs: u16 = 0;
+    let mut gid: u16 = 0;
     let mut charset: *mut cff_charsets = 0 as *mut cff_charsets;
     let mut map: *mut u8 = 0 as *mut u8;
     let mut maxp: *mut tt_maxp_table = 0 as *mut tt_maxp_table;
@@ -861,38 +853,28 @@ unsafe extern "C" fn handle_CIDFont(
     if cffont.is_null() {
         panic!("Could not open CFF font...");
     }
-    if (*cffont).flag & 1i32 << 0i32 == 0 {
+    let cffont = &mut *cffont;
+    if cffont.flag & 1i32 << 0i32 == 0 {
         cff_close(cffont);
         (*csi).registry = 0 as *mut i8;
         (*csi).ordering = 0 as *mut i8;
         *GIDToCIDMap = 0 as *mut u8;
         return 0i32;
     }
-    if cff_dict_known((*cffont).topdict, b"ROS\x00" as *const u8 as *const i8) == 0 {
+    if cff_dict_known(cffont.topdict, b"ROS\x00" as *const u8 as *const i8) == 0 {
         panic!("No CIDSystemInfo???");
     } else {
-        let mut reg: card16 = 0;
-        let mut ord: card16 = 0;
-        reg = cff_dict_get(
-            (*cffont).topdict,
-            b"ROS\x00" as *const u8 as *const i8,
-            0i32,
-        ) as card16;
-        ord = cff_dict_get(
-            (*cffont).topdict,
-            b"ROS\x00" as *const u8 as *const i8,
-            1i32,
-        ) as card16;
+        let mut reg: u16 = 0;
+        let mut ord: u16 = 0;
+        reg = cff_dict_get(cffont.topdict, b"ROS\x00" as *const u8 as *const i8, 0i32) as u16;
+        ord = cff_dict_get(cffont.topdict, b"ROS\x00" as *const u8 as *const i8, 1i32) as u16;
         (*csi).registry = cff_get_string(cffont, reg);
         (*csi).ordering = cff_get_string(cffont, ord);
-        (*csi).supplement = cff_dict_get(
-            (*cffont).topdict,
-            b"ROS\x00" as *const u8 as *const i8,
-            2i32,
-        ) as i32
+        (*csi).supplement =
+            cff_dict_get(cffont.topdict, b"ROS\x00" as *const u8 as *const i8, 2i32) as i32
     }
     cff_read_charsets(cffont);
-    charset = (*cffont).charsets;
+    charset = cffont.charsets;
     if charset.is_null() {
         panic!("No CFF charset data???");
     }
@@ -903,7 +885,7 @@ unsafe extern "C" fn handle_CIDFont(
         0 => {
             let mut cids: *mut s_SID = 0 as *mut s_SID;
             cids = (*charset).data.glyphs;
-            gid = 1i32 as card16;
+            gid = 1i32 as u16;
             i = 0i32;
             while i < (*charset).num_entries as i32 {
                 *map.offset((2i32 * gid as i32) as isize) =
@@ -916,14 +898,14 @@ unsafe extern "C" fn handle_CIDFont(
         }
         1 => {
             let mut ranges: *mut cff_range1 = 0 as *mut cff_range1;
-            let mut cid: card16 = 0;
-            let mut count: card16 = 0;
+            let mut cid: u16 = 0;
+            let mut count: u16 = 0;
             ranges = (*charset).data.range1;
-            gid = 1i32 as card16;
+            gid = 1i32 as u16;
             i = 0i32;
             while i < (*charset).num_entries as i32 {
                 cid = (*ranges.offset(i as isize)).first;
-                count = ((*ranges.offset(i as isize)).n_left as i32 + 1i32) as card16;
+                count = ((*ranges.offset(i as isize)).n_left as i32 + 1i32) as u16;
                 loop {
                     let fresh3 = count;
                     count = count.wrapping_sub(1);
@@ -941,19 +923,19 @@ unsafe extern "C" fn handle_CIDFont(
         }
         2 => {
             let mut ranges_0: *mut cff_range2 = 0 as *mut cff_range2;
-            let mut cid_0: card16 = 0;
-            let mut count_0: card16 = 0;
+            let mut cid_0: u16 = 0;
+            let mut count_0: u16 = 0;
             ranges_0 = (*charset).data.range2;
             if (*charset).num_entries as i32 == 1i32 && (*ranges_0.offset(0)).first as i32 == 1i32 {
                 /* "Complete" CIDFont */
                 map = mfree(map as *mut libc::c_void) as *mut u8
             } else {
                 /* Not trivial mapping */
-                gid = 1i32 as card16;
+                gid = 1i32 as u16;
                 i = 0i32;
                 while i < (*charset).num_entries as i32 {
                     cid_0 = (*ranges_0.offset(i as isize)).first;
-                    count_0 = ((*ranges_0.offset(i as isize)).n_left as i32 + 1i32) as card16;
+                    count_0 = ((*ranges_0.offset(i as isize)).n_left as i32 + 1i32) as u16;
                     loop {
                         let fresh4 = count_0;
                         count_0 = count_0.wrapping_sub(1);
@@ -993,15 +975,17 @@ unsafe extern "C" fn is_PUA_or_presentation(mut uni: u32) -> bool {
 }
 unsafe extern "C" fn sfnt_get_glyphname(
     mut post: *mut tt_post_table,
-    mut cffont: *mut cff_font,
+    cffont: Option<&cff_font>,
     mut gid: u16,
 ) -> *mut i8 {
     let mut name: *mut i8 = 0 as *mut i8;
     if !post.is_null() {
         name = tt_get_glyphname(post, gid)
     }
-    if name.is_null() && !cffont.is_null() {
-        name = cff_get_glyphname(cffont, gid)
+    if name.is_null() {
+        if let Some(cffont) = cffont {
+            name = cff_get_glyphname(cffont, gid)
+        }
     }
     name
 }
@@ -1015,7 +999,7 @@ unsafe extern "C" fn handle_subst_glyphs(
     mut cmap_add: *mut CMap,
     mut used_glyphs: *const i8,
     mut sfont: *mut sfnt,
-    mut cffont: *mut cff_font,
+    cffont: Option<&cff_font>,
 ) -> u16 {
     let mut count: u16 = 0;
     let mut i: u16 = 0;
@@ -1076,8 +1060,7 @@ unsafe extern "C" fn handle_subst_glyphs(
                                 )) as size_t as size_t;
                                 k += 1
                             }
-                            wbuf[0] = (gid as i32 >> 8i32 & 0xffi32) as u8;
-                            wbuf[1] = (gid as i32 & 0xffi32) as u8;
+                            wbuf[0..2].copy_from_slice(&gid.to_be_bytes());
                             CMap_add_bfchar(
                                 cmap,
                                 wbuf.as_mut_ptr(),
@@ -1142,31 +1125,33 @@ unsafe extern "C" fn handle_subst_glyphs(
     }
     count
 }
-unsafe extern "C" fn prepare_CIDFont_from_sfnt(mut sfont: *mut sfnt) -> *mut cff_font {
+unsafe extern "C" fn prepare_CIDFont_from_sfnt<'a>(
+    mut sfont: *mut sfnt,
+) -> Option<&'a mut cff_font> {
     let mut cffont: *mut cff_font = 0 as *mut cff_font;
     let mut offset: u32 = 0_u32;
     if (*sfont).type_0 != 1i32 << 2i32 || sfnt_read_table_directory(sfont, 0_u32) < 0i32 || {
         offset = sfnt_find_table_pos(sfont, b"CFF \x00" as *const u8 as *const i8);
         offset == 0_u32
     } {
-        return 0 as *mut cff_font;
+        return None;
     }
     cffont = cff_open((*sfont).handle, offset as i32, 0i32);
     if cffont.is_null() {
-        return 0 as *mut cff_font;
+        return None;
     }
-    cff_read_charsets(cffont);
-    cffont
+    cff_read_charsets(&mut *cffont);
+    Some(&mut *cffont)
 }
 unsafe extern "C" fn add_to_cmap_if_used(
     mut cmap: *mut CMap,
-    mut cffont: *mut cff_font,
+    cffont: Option<&cff_font>,
     mut used_chars: *mut i8,
     mut gid: u16,
     mut ch: u32,
 ) -> u16 {
     let mut count: u16 = 0_u16;
-    let mut cid: u16 = (if !cffont.is_null() {
+    let mut cid: u16 = (if let Some(cffont) = cffont {
         cff_charsets_lookup_inverse(cffont, gid) as i32
     } else {
         gid as i32
@@ -1183,8 +1168,7 @@ unsafe extern "C" fn add_to_cmap_if_used(
         let mut len: i32 = 0;
         let mut p: *mut u8 = wbuf.as_mut_ptr().offset(2);
         count = count.wrapping_add(1);
-        wbuf[0] = (cid as i32 >> 8i32 & 0xffi32) as u8;
-        wbuf[1] = (cid as i32 & 0xffi32) as u8;
+        wbuf[0..2].copy_from_slice(&cid.to_be_bytes());
         len = UC_UTF16BE_encode_char(ch as i32, &mut p, wbuf.as_mut_ptr().offset(1024)) as i32;
         CMap_add_bfchar(
             cmap,
@@ -1206,7 +1190,7 @@ unsafe extern "C" fn create_ToUnicode_cmap4(
     mut cmap: *mut CMap,
     mut map: *mut cmap4,
     mut used_chars: *mut i8,
-    mut cffont: *mut cff_font,
+    cffont: Option<&cff_font>,
 ) -> u16 {
     let mut count: u16 = 0_u16;
     let mut segCount: u16 = ((*map).segCountX2 as i32 / 2i32) as u16;
@@ -1250,7 +1234,7 @@ unsafe extern "C" fn create_ToUnicode_cmap12(
     mut cmap: *mut CMap,
     mut map: *mut cmap12,
     mut used_chars: *mut i8,
-    mut cffont: *mut cff_font,
+    cffont: Option<&cff_font>,
 ) -> u16 {
     let mut i: u32 = 0;
     let mut ch: u32 = 0;
@@ -1285,8 +1269,12 @@ unsafe extern "C" fn create_ToUnicode_cmap(
     let mut stream: *mut pdf_obj = 0 as *mut pdf_obj;
     let mut cmap: *mut CMap = 0 as *mut CMap;
     let mut count: u16 = 0_u16;
-    let mut cffont: *mut cff_font = prepare_CIDFont_from_sfnt(sfont);
-    let mut is_cidfont: i8 = (!cffont.is_null() && (*cffont).flag & 1i32 << 0i32 != 0) as i32 as i8;
+    let mut cffont = prepare_CIDFont_from_sfnt(sfont);
+    let mut is_cidfont = if let Some(cffont) = &cffont {
+        cffont.flag & 1i32 << 0i32 != 0
+    } else {
+        false
+    };
     cmap = CMap_new();
     CMap_set_name(cmap, cmap_name);
     CMap_set_wmode(cmap, 0i32);
@@ -1301,11 +1289,7 @@ unsafe extern "C" fn create_ToUnicode_cmap(
     /* cmap_add here stores information about all unencoded glyphs which can be
      * accessed only through OT Layout GSUB table.
      */
-    if !code_to_cid_cmap.is_null()
-        && !cffont.is_null()
-        && is_cidfont as i32 != 0
-        && cmap_add.is_null()
-    {
+    if !code_to_cid_cmap.is_null() && cffont.is_some() && is_cidfont && cmap_add.is_null() {
         let mut i: u16 = 0;
         i = 0_u16;
         while (i as i32) < 8192i32 {
@@ -1357,10 +1341,14 @@ unsafe extern "C" fn create_ToUnicode_cmap(
                     cmap,
                     (*ttcmap).map as *mut cmap4,
                     used_chars_copy.as_mut_ptr(),
-                    if is_cidfont as i32 != 0 {
-                        cffont
+                    if is_cidfont {
+                        if let Some(cffont) = &cffont {
+                            Some(cffont)
+                        } else {
+                            None
+                        }
                     } else {
-                        0 as *mut cff_font
+                        None
                     },
                 )
             }
@@ -1369,10 +1357,14 @@ unsafe extern "C" fn create_ToUnicode_cmap(
                     cmap,
                     (*ttcmap).map as *mut cmap12,
                     used_chars_copy.as_mut_ptr(),
-                    if is_cidfont as i32 != 0 {
-                        cffont
+                    if is_cidfont {
+                        if let Some(cffont) = &cffont {
+                            Some(cffont)
+                        } else {
+                            None
+                        }
                     } else {
-                        0 as *mut cff_font
+                        None
                     },
                 )
             }
@@ -1386,10 +1378,14 @@ unsafe extern "C" fn create_ToUnicode_cmap(
                 cmap_add,
                 used_chars_copy.as_mut_ptr(),
                 sfont,
-                if is_cidfont as i32 != 0 {
-                    0 as *mut cff_font
+                if is_cidfont {
+                    None
                 } else {
-                    cffont
+                    if let Some(cffont) = &cffont {
+                        Some(cffont)
+                    } else {
+                        None
+                    }
                 },
             ) as i32) as u16
     }
@@ -1399,7 +1395,7 @@ unsafe extern "C" fn create_ToUnicode_cmap(
         stream = CMap_create_stream(cmap)
     }
     CMap_release(cmap);
-    if !cffont.is_null() {
+    if let Some(cffont) = cffont {
         cff_close(cffont);
     }
     stream

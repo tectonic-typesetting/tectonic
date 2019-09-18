@@ -32,8 +32,6 @@
 use crate::warn;
 use libc::memmove;
 
-pub type card8 = u8;
-pub type card16 = u16;
 
 use super::dpx_cff::cff_index;
 #[derive(Copy, Clone)]
@@ -75,8 +73,8 @@ pub struct C2RustUnnamed {
     pub asb: f64,
     pub adx: f64,
     pub ady: f64,
-    pub bchar: card8,
-    pub achar: card8,
+    pub bchar: u8,
+    pub achar: u8,
 }
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -102,7 +100,7 @@ static mut trn_array: [f64; 32] = [0.; 32];
 /*
  * clear_stack() put all operands sotred in operand stack to dest.
  */
-unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card8) {
+unsafe extern "C" fn clear_stack(mut dest: *mut *mut u8, mut limit: *mut u8) {
     let mut i: i32 = 0;
     i = 0i32;
     while i < stack_top {
@@ -129,22 +127,22 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 }
                 let fresh0 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh0 = 255i32 as card8;
+                *fresh0 = 255i32 as u8;
                 /* Everything else are integers. */
                 ivalue = value.floor() as i32; /* mantissa */
                 let fresh1 = *dest; /* fraction */
                 *dest = (*dest).offset(1); /* Shouldn't come here */
-                *fresh1 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh1 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh2 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh2 = (ivalue & 0xffi32) as card8;
+                *fresh2 = (ivalue & 0xffi32) as u8;
                 ivalue = ((value - ivalue as f64) * 0x10000i64 as f64) as i32;
                 let fresh3 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh3 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh3 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh4 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh4 = (ivalue & 0xffi32) as card8
+                *fresh4 = (ivalue & 0xffi32) as u8
             } else if ivalue >= -107i32 && ivalue <= 107i32 {
                 if limit < (*dest).offset(1) {
                     status = -3i32;
@@ -152,7 +150,7 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 }
                 let fresh5 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh5 = (ivalue + 139i32) as card8
+                *fresh5 = (ivalue + 139i32) as u8
             } else if ivalue >= 108i32 && ivalue <= 1131i32 {
                 if limit < (*dest).offset(2) {
                     status = -3i32;
@@ -161,10 +159,10 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 ivalue = 0xf700u32.wrapping_add(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh6 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh6 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh6 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh7 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh7 = (ivalue & 0xffi32) as card8
+                *fresh7 = (ivalue & 0xffi32) as u8
             } else if ivalue >= -1131i32 && ivalue <= -108i32 {
                 if limit < (*dest).offset(2) {
                     status = -3i32;
@@ -173,10 +171,10 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 ivalue = 0xfb00u32.wrapping_sub(ivalue as u32).wrapping_sub(108_u32) as i32;
                 let fresh8 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh8 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh8 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh9 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh9 = (ivalue & 0xffi32) as card8
+                *fresh9 = (ivalue & 0xffi32) as u8
             } else if ivalue >= -32768i32 && ivalue <= 32767i32 {
                 /* shortint */
                 if limit < (*dest).offset(3) {
@@ -185,13 +183,13 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
                 }
                 let fresh10 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh10 = 28i32 as card8;
+                *fresh10 = 28i32 as u8;
                 let fresh11 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh11 = (ivalue >> 8i32 & 0xffi32) as card8;
+                *fresh11 = (ivalue >> 8i32 & 0xffi32) as u8;
                 let fresh12 = *dest;
                 *dest = (*dest).offset(1);
-                *fresh12 = (ivalue & 0xffi32) as card8
+                *fresh12 = (ivalue & 0xffi32) as u8
             } else {
                 panic!("{}: Unexpected error.", "Type2 Charstring Parser",);
             }
@@ -210,12 +208,12 @@ unsafe extern "C" fn clear_stack(mut dest: *mut *mut card8, mut limit: *mut card
  *  2: in path construction
  */
 unsafe extern "C" fn do_operator1(
-    mut dest: *mut *mut card8,
-    mut limit: *mut card8,
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut dest: *mut *mut u8,
+    mut limit: *mut u8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
 ) {
-    let mut op: card8 = **data;
+    let mut op: u8 = **data;
     *data = (*data).offset(1);
     match op as i32 {
         18 | 23 | 1 | 3 => {
@@ -366,12 +364,12 @@ unsafe extern "C" fn do_operator1(
  *  random: How random ?
  */
 unsafe extern "C" fn do_operator2(
-    mut dest: *mut *mut card8,
-    mut limit: *mut card8,
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut dest: *mut *mut u8,
+    mut limit: *mut u8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
 ) {
-    let mut op: card8 = 0;
+    let mut op: u8 = 0;
     *data = (*data).offset(1);
     if endptr < (*data).offset(1) {
         status = -1i32;
@@ -399,7 +397,7 @@ unsafe extern "C" fn do_operator2(
             }
             let fresh19 = *dest;
             *dest = (*dest).offset(1);
-            *fresh19 = 12i32 as card8;
+            *fresh19 = 12i32 as u8;
             let fresh20 = *dest;
             *dest = (*dest).offset(1);
             *fresh20 = op
@@ -666,11 +664,11 @@ unsafe extern "C" fn do_operator2(
  * integer:
  *  exactly the same as the DICT encoding (except 29)
  */
-unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut card8) {
+unsafe extern "C" fn get_integer(mut data: *mut *mut u8, mut endptr: *mut u8) {
     let mut result: i32 = 0i32;
-    let mut b0: card8 = **data;
-    let mut b1: card8 = 0;
-    let mut b2: card8 = 0;
+    let mut b0: u8 = **data;
+    let mut b1: u8 = 0;
+    let mut b2: u8 = 0;
     *data = (*data).offset(1);
     if b0 as i32 == 28i32 {
         /* shortint */
@@ -720,7 +718,7 @@ unsafe extern "C" fn get_integer(mut data: *mut *mut card8, mut endptr: *mut car
 /*
  * Signed 16.16-bits fixed number for Type 2 charstring encoding
  */
-unsafe extern "C" fn get_fixed(mut data: *mut *mut card8, mut endptr: *mut card8) {
+unsafe extern "C" fn get_fixed(mut data: *mut *mut u8, mut endptr: *mut u8) {
     let mut ivalue: i32 = 0;
     let mut rvalue: f64 = 0.;
     *data = (*data).offset(1);
@@ -755,12 +753,12 @@ unsafe extern "C" fn get_fixed(mut data: *mut *mut card8, mut endptr: *mut card8
  * id:       biased subroutine number.
  */
 unsafe extern "C" fn get_subr(
-    mut subr: *mut *mut card8,
+    mut subr: *mut *mut u8,
     mut len: *mut i32,
     mut subr_idx: *mut cff_index,
     mut id: i32,
 ) {
-    let mut count: card16 = 0;
+    let mut count: u16 = 0;
     if subr_idx.is_null() {
         panic!(
             "{}: Subroutine called but no subroutine found.",
@@ -796,15 +794,15 @@ unsafe extern "C" fn get_subr(
  *  Type 1 format.
  */
 unsafe extern "C" fn do_charstring(
-    mut dest: *mut *mut card8,
-    mut limit: *mut card8,
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut dest: *mut *mut u8,
+    mut limit: *mut u8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
     mut gsubr_idx: *mut cff_index,
     mut subr_idx: *mut cff_index,
 ) {
-    let mut b0: card8 = 0i32 as card8;
-    let mut subr: *mut card8 = 0 as *mut card8;
+    let mut b0: u8 = 0i32 as u8;
+    let mut subr: *mut u8 = 0 as *mut u8;
     let mut len: i32 = 0;
     if nest > 10i32 {
         panic!(
@@ -908,9 +906,9 @@ unsafe extern "C" fn cs_parse_init() {
  */
 #[no_mangle]
 pub unsafe extern "C" fn cs_copy_charstring(
-    mut dst: *mut card8,
+    mut dst: *mut u8,
     mut dstlen: i32,
-    mut src: *mut card8,
+    mut src: *mut u8,
     mut srclen: i32,
     mut gsubr: *mut cff_index,
     mut subr: *mut cff_index,
@@ -918,7 +916,7 @@ pub unsafe extern "C" fn cs_copy_charstring(
     mut nominal_width: f64,
     mut ginfo: *mut cs_ginfo,
 ) -> i32 {
-    let mut save: *mut card8 = dst;
+    let mut save: *mut u8 = dst;
     cs_parse_init();
     width = 0.0f64;
     have_width = 0i32;
