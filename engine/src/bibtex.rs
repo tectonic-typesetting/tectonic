@@ -767,13 +767,13 @@ unsafe extern "C" fn bst_id_print() {
         /*id_null */
         printf_log!(
             "\"{}\" begins identifier, command: ",
-            *buffer.offset(buf_ptr2 as isize)
+            *buffer.offset(buf_ptr2 as isize) as char
         );
     } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
         printf_log!(
             "\"{}\" immediately follows identifier, command: ",
-            *buffer.offset(buf_ptr2 as isize)
+            *buffer.offset(buf_ptr2 as isize) as char
         );
     } else {
         id_scanning_confusion();
@@ -843,7 +843,11 @@ unsafe extern "C" fn eat_bib_print() {
     bib_err_print();
 }
 unsafe extern "C" fn bib_one_of_two_print(mut char1: u8, mut char2: u8) {
-    printf_log!("I was expecting a `{}' or a `{}'", char1, char2,);
+    printf_log!(
+        "I was expecting a `{}' or a `{}'",
+        char1 as char,
+        char2 as char
+    );
     bib_err_print();
 }
 unsafe extern "C" fn bib_equals_sign_print() {
@@ -871,7 +875,7 @@ unsafe extern "C" fn bib_id_print() {
         /*other_char_adjacent */
         printf_log!(
             "\"{}\" immediately follows ",
-            *buffer.offset(buf_ptr2 as isize)
+            *buffer.offset(buf_ptr2 as isize) as char
         );
     } else {
         id_scanning_confusion();
@@ -2139,7 +2143,7 @@ unsafe extern "C" fn skp_token_unknown_function_print() {
 unsafe extern "C" fn skip_illegal_stuff_after_token_print() {
     printf_log!(
         "\"{}\" can't follow a literal",
-        *buffer.offset(buf_ptr2 as isize)
+        *buffer.offset(buf_ptr2 as isize) as char
     );
     skip_token_print();
 }
@@ -12041,7 +12045,10 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     return;
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
-                    printf_log!("Missing \"{}\" in preamble command", right_outer_delim);
+                    printf_log!(
+                        "Missing \"{}\" in preamble command",
+                        right_outer_delim as char
+                    );
                     bib_err_print();
                     return;
                 }
@@ -12106,7 +12113,10 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     return;
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
-                    printf_log!("Missing \"{}\" in string command", right_outer_delim,);
+                    printf_log!(
+                        "Missing \"{}\" in string command",
+                        right_outer_delim as char
+                    );
                     bib_err_print();
                     return;
                 }
@@ -12754,7 +12764,7 @@ unsafe extern "C" fn get_bst_command_and_process() {
     if !scan_alpha() {
         printf_log!(
             "\"{}\" can't start a style-file command",
-            *buffer.offset(buf_ptr2 as isize)
+            *buffer.offset(buf_ptr2 as isize) as char
         );
         bst_err_print_and_look_for_blank_line();
         return;
