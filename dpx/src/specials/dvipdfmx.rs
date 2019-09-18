@@ -29,7 +29,9 @@
     unused_mut
 )]
 
-use super::dpx_dpxutil::parse_c_ident;
+use super::{spc_arg, spc_env};
+use crate::dpx_dpxutil::parse_c_ident;
+use crate::dpx_pdfparse::skip_white;
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
@@ -44,11 +46,8 @@ extern "C" {
 }
 pub type size_t = u64;
 
-use super::dpx_pdfparse::skip_white;
-use super::dpx_specials::{spc_arg, spc_env};
-
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_specials::spc_handler;
+use super::spc_handler;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

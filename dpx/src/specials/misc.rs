@@ -29,12 +29,13 @@
     unused_mut
 )]
 
-use super::dpx_mfileio::tt_mfgets;
-use super::dpx_mpost::mps_scan_bbox;
-use super::dpx_pdfdev::{pdf_dev_put_image, transform_info, transform_info_clear};
-use super::dpx_pdfparse::skip_white;
-use super::dpx_pdfximage::pdf_ximage_findresource;
+use crate::dpx_mfileio::tt_mfgets;
+use crate::dpx_mpost::mps_scan_bbox;
+use crate::dpx_pdfdev::{pdf_dev_put_image, transform_info, transform_info_clear};
 use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfparse::skip_white;
+use crate::dpx_pdfximage::pdf_ximage_findresource;
+use crate::TTInputFormat;
 use crate::{ttstub_input_close, ttstub_input_open};
 extern "C" {
     #[no_mangle]
@@ -51,14 +52,12 @@ extern "C" {
 
 pub type size_t = u64;
 
-use crate::TTInputFormat;
-
 pub type rust_input_handle_t = *mut libc::c_void;
 
-use super::dpx_specials::{spc_arg, spc_env};
+use super::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_specials::spc_handler;
+use super::spc_handler;
 
 use crate::dpx_pdfximage::load_options;
 

@@ -60,10 +60,11 @@ use super::dpx_pdfobj::{
     pdf_files_close, pdf_files_init, pdf_get_version, pdf_obj_reset_global_state,
     pdf_obj_set_verbose, pdf_set_compression, pdf_set_use_predictor, pdf_set_version,
 };
-use super::dpx_spc_tpic::tpic_set_fill_mode;
-use super::dpx_specials::{spc_exec_at_begin_document, spc_exec_at_end_document};
 use super::dpx_tfm::tfm_reset_global_state;
 use super::dpx_vf::vf_reset_global_state;
+use crate::specials::{
+    spc_exec_at_begin_document, spc_exec_at_end_document, tpic::tpic_set_fill_mode,
+};
 use libc::free;
 extern "C" {
     #[no_mangle]

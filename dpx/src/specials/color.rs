@@ -29,10 +29,13 @@
     unused_mut
 )]
 
-use super::dpx_dpxutil::parse_c_ident;
-use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set};
-use super::dpx_pdfdoc::pdf_doc_set_bgcolor;
-use super::dpx_spc_util::spc_util_read_colorspec;
+use super::util::spc_util_read_colorspec;
+use super::{spc_arg, spc_env};
+use crate::dpx_dpxutil::parse_c_ident;
+use crate::dpx_pdfcolor::{
+    pdf_color, pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set,
+};
+use crate::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use crate::streq_ptr;
 use libc::free;
 extern "C" {
@@ -42,12 +45,8 @@ extern "C" {
     fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
 }
 
-use super::dpx_specials::{spc_arg, spc_env};
-
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_specials::spc_handler;
-
-pub use super::dpx_pdfcolor::pdf_color;
+use super::spc_handler;
 
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
