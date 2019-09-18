@@ -24,13 +24,11 @@ impl FromStr for ChatterLevel {
     type Err = &'static str;
 
     fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
-        let actual = match a_str {
-            "default" => ChatterLevel::Normal,
-            "minimal" => ChatterLevel::Minimal,
-            _ => unreachable!(),
-        };
-
-        Ok(actual)
+        match a_str {
+            "default" => Ok(ChatterLevel::Normal),
+            "minimal" => Ok(ChatterLevel::Minimal),
+            _ => Err("unsupported or unknown chatter level"),
+        }
     }
 }
 
