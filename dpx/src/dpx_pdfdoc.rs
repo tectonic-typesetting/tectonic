@@ -519,7 +519,7 @@ unsafe extern "C" fn compute_timezone_offset() -> i32 {
         tm_yday: 0,
         tm_isdst: 0,
         tm_gmtoff: 0,
-        tm_zone: 0 as *const i8,
+        tm_zone: std::ptr::null_mut(),
     };
     let mut local: tm = tm {
         tm_sec: 0,
@@ -532,7 +532,7 @@ unsafe extern "C" fn compute_timezone_offset() -> i32 {
         tm_yday: 0,
         tm_isdst: 0,
         tm_gmtoff: 0,
-        tm_zone: 0 as *const i8,
+        tm_zone: std::ptr::null_mut(),
     };
     now = get_unique_time_if_given();
     if now == -1i32 as time_t {
