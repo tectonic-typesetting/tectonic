@@ -1,6 +1,5 @@
 #![feature(extern_types)]
 #![feature(ptr_wrapping_offset_from)]
-#![feature(c_variadic)]
 #![allow(
     dead_code,
     mutable_transmutes,

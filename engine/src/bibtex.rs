@@ -14,30 +14,9 @@ use crate::{
     ttstub_output_open, ttstub_output_open_stdout, ttstub_output_putc, ttstub_output_write,
 };
 use libc::{free, snprintf, strcpy, strlen};
-extern "C" {
-    #[no_mangle]
-    fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
-    #[no_mangle]
-    fn _setjmp(_: *mut __jmp_buf_tag) -> i32;
-    #[no_mangle]
-    fn longjmp(_: *mut __jmp_buf_tag, _: i32) -> !;
-}
-pub type __builtin_va_list = [__va_list_tag; 1];
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct __va_list_tag {
-    pub gp_offset: u32,
-    pub fp_offset: u32,
-    pub overflow_arg_area: *mut libc::c_void,
-    pub reg_save_area: *mut libc::c_void,
-}
-pub type va_list = __builtin_va_list;
+use std::panic;
+
 pub type size_t = u64;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct __sigset_t {
-    pub __val: [u64; 16],
-}
 
 use crate::TTHistory;
 
@@ -48,15 +27,6 @@ pub type rust_input_handle_t = *mut libc::c_void;
 pub type str_number = i32;
 /*22: */
 pub type pool_pointer = i32;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct __jmp_buf_tag {
-    pub __jmpbuf: __jmp_buf,
-    pub __mask_was_saved: i32,
-    pub __saved_mask: __sigset_t,
-}
-pub type __jmp_buf = [i64; 8];
-pub type jmp_buf = [__jmp_buf_tag; 1];
 pub type bib_number = i32;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -86,6 +56,7 @@ pub type aux_number = i32;
 pub type pds_len = u8;
 pub type pds_type = *const i8;
 pub type blt_in_range = i32;
+
 unsafe extern "C" fn peekable_open(
     mut path: *const i8,
     mut format: TTInputFormat,
@@ -162,17 +133,6 @@ unsafe extern "C" fn eoln(mut peekable: *mut peekable_input_t) -> bool {
     }
     c == '\n' as i32 || c == '\r' as i32 || c == -1i32
 }
-/* end eofeoln.c */
-static mut error_jmpbuf: jmp_buf = [__jmp_buf_tag {
-    __jmpbuf: [0; 8],
-    __mask_was_saved: 0,
-    __saved_mask: __sigset_t { __val: [0; 16] },
-}; 1];
-static mut recover_jmpbuf: jmp_buf = [__jmp_buf_tag {
-    __jmpbuf: [0; 8],
-    __mask_was_saved: 0,
-    __saved_mask: __sigset_t { __val: [0; 16] },
-}; 1];
 static mut standard_output: rust_output_handle_t = 0 as *const libc::c_void as *mut libc::c_void;
 static mut pool_size: i32 = 0;
 static mut max_bib_files: i32 = 0;
@@ -427,6 +387,7 @@ static mut verbose: i32 = 0;
 static mut min_crossrefs: i32 = 0;
 /*:473*/
 /*12: *//*3: */
+
 unsafe extern "C" fn putc_log(c: i32) {
     ttstub_output_putc(log_file, c); /* note: global! */
     ttstub_output_putc(standard_output, c);
@@ -439,13 +400,14 @@ unsafe extern "C" fn puts_log(mut s: *const i8) {
 unsafe extern "C" fn ttstub_puts(mut handle: rust_output_handle_t, mut s: *const i8) {
     ttstub_output_write(handle, s, strlen(s) as _);
 }
-static mut fmt_buf: [i8; 1024] = [0; 1024];
-unsafe extern "C" fn printf_log(mut fmt: *const i8, mut args: ...) {
-    let mut ap: ::std::ffi::VaListImpl;
-    ap = args.clone();
-    vsnprintf(fmt_buf.as_mut_ptr(), 1024i32 as u64, fmt, ap.as_va_list());
-    puts_log(fmt_buf.as_mut_ptr());
-}
+macro_rules! printf_log(
+    ($($arg:tt)*) => {
+        let cstr = std::ffi::CString::new(format!($($arg)*)).expect("Could not convert to CString");
+        let buf = cstr.as_ptr();
+        puts_log(buf);
+    };
+);
+
 unsafe extern "C" fn mark_warning() {
     if history == TTHistory::WARNING_ISSUED {
         err_count += 1
@@ -527,12 +489,9 @@ unsafe extern "C" fn input_ln(mut peekable: *mut peekable_input_t) -> bool {
 unsafe extern "C" fn out_pool_str(mut handle: rust_output_handle_t, mut s: str_number) {
     let mut i: pool_pointer = 0;
     if s < 0i32 || s >= str_ptr + 3i32 || s >= max_strings {
-        printf_log(
-            b"Illegal string number:%ld\x00" as *const u8 as *const i8,
-            s as i64,
-        );
+        printf_log!("Illegal string number:{}", s);
         print_confusion();
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        panic!();
     }
     i = *str_start.offset(s as isize);
     while i < *str_start.offset((s + 1i32) as isize) {
@@ -639,10 +598,7 @@ unsafe extern "C" fn log_pr_aux_name() {
     ttstub_output_putc(log_file, '\n' as i32);
 }
 unsafe extern "C" fn aux_err_print() {
-    printf_log(
-        b"---line %ld of file \x00" as *const u8 as *const i8,
-        aux_ln_stack[aux_ptr as usize] as i64,
-    );
+    printf_log!("---line {} of file ", aux_ln_stack[aux_ptr as usize]);
     print_aux_name();
     print_bad_input_line();
     print_skipping_whatever_remains();
@@ -660,7 +616,7 @@ unsafe extern "C" fn aux_err_illegal_another_print(mut cmd_num: i32) {
         _ => {
             puts_log(b"Illegal auxiliary-file command\x00" as *const u8 as *const i8);
             print_confusion();
-            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+            panic!();
         }
     }
     puts_log(b" command\x00" as *const u8 as *const i8);
@@ -697,7 +653,7 @@ unsafe extern "C" fn log_pr_bst_name() {
 unsafe extern "C" fn hash_cite_confusion() {
     puts_log(b"Cite hash error\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn check_cite_overflow(mut last_cite: cite_number) {
     if last_cite == max_cites {
@@ -737,10 +693,7 @@ unsafe extern "C" fn aux_end2_err_print() {
     mark_error();
 }
 unsafe extern "C" fn bst_ln_num_print() {
-    printf_log(
-        b"--line %ld of file \x00" as *const u8 as *const i8,
-        bst_line_num as i64,
-    );
+    printf_log!("--line {} of file ", bst_line_num);
     print_bst_name();
 }
 unsafe extern "C" fn bst_err_print_and_look_for_blank_line() {
@@ -749,7 +702,7 @@ unsafe extern "C" fn bst_err_print_and_look_for_blank_line() {
     print_bad_input_line();
     while last != 0i32 {
         if !input_ln(bst_file) {
-            longjmp(recover_jmpbuf.as_mut_ptr(), 1i32);
+            panic!();
         } else {
             bst_line_num = bst_line_num + 1i32
         }
@@ -766,7 +719,7 @@ unsafe extern "C" fn eat_bst_print() {
 unsafe extern "C" fn unknwn_function_class_confusion() {
     puts_log(b"Unknown function class\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn print_fn_class(mut fn_loc_0: hash_loc) {
     match *fn_type.offset(fn_loc_0 as isize) as i32 {
@@ -807,20 +760,20 @@ unsafe extern "C" fn print_fn_class(mut fn_loc_0: hash_loc) {
 unsafe extern "C" fn id_scanning_confusion() {
     puts_log(b"Identifier scanning error\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn bst_id_print() {
     if scan_result as i32 == 0i32 {
         /*id_null */
-        printf_log(
-            b"\"%c\" begins identifier, command: \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" begins identifier, command: ",
+            *buffer.offset(buf_ptr2 as isize) as char
         );
     } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
-        printf_log(
-            b"\"%c\" immediately follows identifier, command: \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" immediately follows identifier, command: ",
+            *buffer.offset(buf_ptr2 as isize) as char
         );
     } else {
         id_scanning_confusion();
@@ -840,10 +793,7 @@ unsafe extern "C" fn already_seen_function_print(mut seen_fn_loc: hash_loc) {
     bst_err_print_and_look_for_blank_line();
 }
 unsafe extern "C" fn bib_ln_num_print() {
-    printf_log(
-        b"--line %ld of file\x00" as *const u8 as *const i8,
-        bib_line_num as i64,
-    );
+    printf_log!("--line {} of file", bib_line_num);
     print_bib_name();
 }
 unsafe extern "C" fn bib_err_print() {
@@ -893,15 +843,15 @@ unsafe extern "C" fn eat_bib_print() {
     bib_err_print();
 }
 unsafe extern "C" fn bib_one_of_two_print(mut char1: u8, mut char2: u8) {
-    printf_log(
-        b"I was expecting a `%c\' or a `%c\'\x00" as *const u8 as *const i8,
-        char1 as i32,
-        char2 as i32,
+    printf_log!(
+        "I was expecting a `{}' or a `{}'",
+        char1 as char,
+        char2 as char
     );
     bib_err_print();
 }
 unsafe extern "C" fn bib_equals_sign_print() {
-    printf_log(b"I was expecting an \"=\"\x00" as *const u8 as *const i8);
+    printf_log!("I was expecting an \"=\"");
     bib_err_print();
 }
 unsafe extern "C" fn bib_unbalanced_braces_print() {
@@ -909,10 +859,7 @@ unsafe extern "C" fn bib_unbalanced_braces_print() {
     bib_err_print();
 }
 unsafe extern "C" fn bib_field_too_long_print() {
-    printf_log(
-        b"Your field is more than %ld characters\x00" as *const u8 as *const i8,
-        buf_size as i64,
-    );
+    printf_log!("Your field is more than {} characters", buf_size);
     bib_err_print();
 }
 unsafe extern "C" fn macro_warn_print() {
@@ -926,9 +873,9 @@ unsafe extern "C" fn bib_id_print() {
         puts_log(b"You\'re missing \x00" as *const u8 as *const i8);
     } else if scan_result as i32 == 2i32 {
         /*other_char_adjacent */
-        printf_log(
-            b"\"%c\" immediately follows \x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" immediately follows ",
+            *buffer.offset(buf_ptr2 as isize) as char
         );
     } else {
         id_scanning_confusion();
@@ -937,12 +884,12 @@ unsafe extern "C" fn bib_id_print() {
 unsafe extern "C" fn bib_cmd_confusion() {
     puts_log(b"Unknown database-file command\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn cite_key_disappeared_confusion() {
     puts_log(b"A cite key disappeared\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn bad_cross_reference_print(mut s: str_number) {
     puts_log(b"--entry \"\x00" as *const u8 as *const i8);
@@ -991,20 +938,17 @@ unsafe extern "C" fn bst_cant_mess_with_entries_print() {
 unsafe extern "C" fn illegl_literal_confusion() {
     puts_log(b"Illegal literal type\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn unknwn_literal_confusion() {
     puts_log(b"Unknown literal type\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     match stk_tp as i32 {
         0 => {
-            printf_log(
-                b"%ld is an integer literal\x00" as *const u8 as *const i8,
-                stk_lt as i64,
-            );
+            printf_log!("{} is an integer literal", stk_lt);
         }
         1 => {
             putc_log('\"' as i32);
@@ -1032,7 +976,7 @@ unsafe extern "C" fn print_stk_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
 unsafe extern "C" fn print_lit(mut stk_lt: i32, mut stk_tp: stk_type) {
     match stk_tp as i32 {
         0 => {
-            printf_log(b"%ld\n\x00" as *const u8 as *const i8, stk_lt as i64);
+            printf_log!("{}\n", stk_lt);
         }
         1 => {
             print_a_pool_str(stk_lt);
@@ -1095,7 +1039,7 @@ unsafe extern "C" fn braces_unbalanced_complaint(mut pop_lit_var: str_number) {
 unsafe extern "C" fn case_conversion_confusion() {
     puts_log(b"Unknown type of case conversion\x00" as *const u8 as *const i8);
     print_confusion();
-    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+    panic!();
 }
 unsafe extern "C" fn start_name(mut file_name: str_number) {
     let mut p_ptr: pool_pointer = 0;
@@ -1132,11 +1076,8 @@ unsafe extern "C" fn add_extension(mut ext: str_number) {
 unsafe extern "C" fn make_string() -> str_number {
     if str_ptr == max_strings {
         print_overflow();
-        printf_log(
-            b"number of strings %ld\n\x00" as *const u8 as *const i8,
-            max_strings as i64,
-        );
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        printf_log!("number of strings {}\n", max_strings);
+        panic!();
     }
     str_ptr = str_ptr + 1i32;
     *str_start.offset(str_ptr as isize) = pool_ptr;
@@ -1269,11 +1210,8 @@ unsafe extern "C" fn str_lookup(
                 loop {
                     if hash_used == 1i32 {
                         print_overflow();
-                        printf_log(
-                            b"hash size %ld\n\x00" as *const u8 as *const i8,
-                            hash_size as i64,
-                        );
-                        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                        printf_log!("hash size {}\n", hash_size);
+                        panic!();
                     }
                     hash_used = hash_used - 1i32;
                     if *hash_text.offset(hash_used as isize) == 0i32 {
@@ -1429,7 +1367,7 @@ unsafe extern "C" fn less_than(mut arg1: cite_number, mut arg2: cite_number) -> 
                 } else {
                     puts_log(b"Duplicate sort key\x00" as *const u8 as *const i8);
                     print_confusion();
-                    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                    panic!();
                 }
             } else {
                 return true;
@@ -2203,9 +2141,9 @@ unsafe extern "C" fn skp_token_unknown_function_print() {
     skip_token_print();
 }
 unsafe extern "C" fn skip_illegal_stuff_after_token_print() {
-    printf_log(
-        b"\"%c\" can\'t follow a literal\x00" as *const u8 as *const i8,
-        *buffer.offset(buf_ptr2 as isize) as i32,
+    printf_log!(
+        "\"{}\" can't follow a literal",
+        *buffer.offset(buf_ptr2 as isize) as char
     );
     skip_token_print();
 }
@@ -2277,7 +2215,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                 34 => {
                     buf_ptr2 = buf_ptr2 + 1i32;
                     if !scan1(34i32 as u8) {
-                        printf_log(b"No `\"\' to end string literal\x00" as *const u8 as *const i8);
+                        printf_log!("No `\"\' to end string literal");
                         skip_token_print();
                     } else {
                         literal_loc = str_lookup(
@@ -2357,7 +2295,7 @@ unsafe extern "C" fn scan_fn_def(mut fn_hash_loc: hash_loc) {
                             b"Already encountered implicit function\x00" as *const u8 as *const i8,
                         );
                         print_confusion();
-                        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                        panic!();
                     }
                     impl_fn_num = impl_fn_num + 1i32;
                     *fn_type.offset(impl_fn_loc as isize) = 1i32 as fn_class;
@@ -2685,7 +2623,7 @@ unsafe extern "C" fn scan_a_field_token_and_eat_white() -> bool {
             if !scan_nonneg_integer() {
                 puts_log(b"A digit disappeared\x00" as *const u8 as *const i8);
                 print_confusion();
-                longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                panic!();
             }
             if store_field {
                 tmp_ptr = buf_ptr1;
@@ -2855,7 +2793,7 @@ unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white() -> bool {
             if field_ptr >= max_fields {
                 puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
                 print_confusion();
-                longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                panic!();
             }
             if *field_info.offset(field_ptr as isize) != 0i32 {
                 /*missing */
@@ -3033,7 +2971,7 @@ unsafe extern "C" fn von_token_found() -> bool {
                                             as *const i8,
                                     );
                                     print_confusion();
-                                    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                                    panic!();
                                 }
                             }
                         }
@@ -3492,7 +3430,7 @@ unsafe extern "C" fn pop_lit_stk(mut pop_lit: *mut i32, mut pop_type: *mut stk_t
                 if *pop_lit != str_ptr - 1i32 {
                     puts_log(b"Nontop top of string stack\x00" as *const u8 as *const i8);
                     print_confusion();
-                    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                    panic!();
                 }
                 str_ptr = str_ptr - 1i32;
                 pool_ptr = *str_start.offset(str_ptr as isize)
@@ -3550,10 +3488,7 @@ unsafe extern "C" fn init_command_execution() {
 }
 unsafe extern "C" fn check_command_execution() {
     if lit_stk_ptr != 0i32 {
-        printf_log(
-            b"ptr=%ld, stack=\n\x00" as *const u8 as *const i8,
-            lit_stk_ptr as i64,
-        );
+        printf_log!("ptr={}, stack=\n", lit_stk_ptr);
         pop_whole_stack();
         puts_log(b"---the literal stack isn\'t empty\x00" as *const u8 as *const i8);
         bst_ex_warn_print();
@@ -3561,7 +3496,7 @@ unsafe extern "C" fn check_command_execution() {
     if cmd_str_ptr != str_ptr {
         puts_log(b"Nonempty empty string stack\x00" as *const u8 as *const i8);
         print_confusion();
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        panic!();
     };
 }
 unsafe extern "C" fn add_pool_buf_and_push() {
@@ -3909,10 +3844,7 @@ unsafe extern "C" fn x_gets() {
                     sp_xptr1 = *str_start.offset((pop_lit2 + 1i32) as isize);
                     if sp_xptr1 - sp_ptr > ent_str_size {
                         bst_1print_string_size_exceeded();
-                        printf_log(
-                            b"%ld, the entry\x00" as *const u8 as *const i8,
-                            ent_str_size as i64,
-                        );
+                        printf_log!("{}, the entry", ent_str_size);
                         bst_2print_string_size_exceeded();
                         sp_xptr1 = sp_ptr + ent_str_size
                     }
@@ -3952,10 +3884,7 @@ unsafe extern "C" fn x_gets() {
                         sp_end = *str_start.offset((pop_lit2 + 1i32) as isize);
                         if sp_end - sp_ptr > glob_str_size {
                             bst_1print_string_size_exceeded();
-                            printf_log(
-                                b"%ld, the global\x00" as *const u8 as *const i8,
-                                glob_str_size as i64,
-                            );
+                            printf_log!("{}, the global", glob_str_size);
                             bst_2print_string_size_exceeded();
                             sp_end = sp_ptr + glob_str_size
                         }
@@ -4408,10 +4337,7 @@ unsafe extern "C" fn x_format_name() {
             if pop_lit2 == 1i32 {
                 puts_log(b"There is no name in \"\x00" as *const u8 as *const i8);
             } else {
-                printf_log(
-                    b"There aren\'t %ld names in \"\x00" as *const u8 as *const i8,
-                    pop_lit2 as i64,
-                );
+                printf_log!("There aren't {} names in \"", pop_lit2);
             }
             print_a_pool_str(pop_lit3);
             putc_log('\"' as i32);
@@ -4425,10 +4351,7 @@ unsafe extern "C" fn x_format_name() {
                         break;
                     }
                     /*comma */
-                    printf_log(
-                        b"Name %ld in \"\x00" as *const u8 as *const i8,
-                        pop_lit2 as i64,
-                    );
+                    printf_log!("Name {} in \"", pop_lit2);
                     print_a_pool_str(pop_lit3);
                     puts_log(b"\" has a comma at the end\x00" as *const u8 as *const i8);
                     bst_ex_warn_print();
@@ -4444,10 +4367,7 @@ unsafe extern "C" fn x_format_name() {
             match *ex_buf.offset(ex_buf_xptr as isize) as i32 {
                 44 => {
                     if num_commas == 2i32 {
-                        printf_log(
-                            b"Too many commas in name %ld of \"\x00" as *const u8 as *const i8,
-                            pop_lit2 as i64,
-                        );
+                        printf_log!("Too many commas in name {} of \"", pop_lit2,);
                         print_a_pool_str(pop_lit3);
                         putc_log('\"' as i32);
                         bst_ex_warn_print();
@@ -4493,10 +4413,7 @@ unsafe extern "C" fn x_format_name() {
                         *name_tok.offset(num_tokens as isize) = name_bf_ptr;
                         num_tokens = num_tokens + 1i32
                     }
-                    printf_log(
-                        b"Name %ld of \"\x00" as *const u8 as *const i8,
-                        pop_lit2 as i64,
-                    );
+                    printf_log!("Name {} of \"", pop_lit2);
                     print_a_pool_str(pop_lit3);
                     puts_log(b"\" isn\'t brace balanced\x00" as *const u8 as *const i8);
                     bst_ex_warn_print();
@@ -4597,7 +4514,7 @@ unsafe extern "C" fn x_format_name() {
         } else {
             puts_log(b"Illegal number of comma,s\x00" as *const u8 as *const i8);
             print_confusion();
-            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+            panic!();
         }
         ex_buf_length = 0i32;
         add_buf_pool(pop_lit1);
@@ -4612,10 +4529,7 @@ unsafe extern "C" fn x_int_to_chr() {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 0i32 as stk_type);
         push_lit_stk(s_null, 1i32 as stk_type);
     } else if pop_lit1 < 0i32 || pop_lit1 > 127i32 {
-        printf_log(
-            b"%ld isn\'t valid ASCII\x00" as *const u8 as *const i8,
-            pop_lit1 as i64,
-        );
+        printf_log!("{} isn't valid ASCII", pop_lit1);
         bst_ex_warn_print();
         push_lit_stk(s_null, 1i32 as stk_type);
     } else {
@@ -5318,7 +5232,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -5475,7 +5389,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -5632,7 +5546,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -5789,7 +5703,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -5946,7 +5860,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -6103,7 +6017,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -6260,7 +6174,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -6417,7 +6331,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -6574,7 +6488,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -6731,7 +6645,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -6888,7 +6802,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -7045,7 +6959,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -7202,7 +7116,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -7359,7 +7273,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -7516,7 +7430,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -7673,7 +7587,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -7830,7 +7744,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -7987,7 +7901,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -8144,7 +8058,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -8301,7 +8215,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -8458,7 +8372,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -8615,7 +8529,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -8772,7 +8686,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -8929,7 +8843,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -9086,7 +9000,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -9244,7 +9158,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -9401,7 +9315,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -9558,7 +9472,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -9715,7 +9629,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -9872,7 +9786,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -10029,7 +9943,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -10186,7 +10100,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -10343,7 +10257,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -10500,7 +10414,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -10657,7 +10571,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -10814,7 +10728,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -10971,7 +10885,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                         _ => {
                             puts_log(b"Unknown built-in function\x00" as *const u8 as *const i8);
                             print_confusion();
-                            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                            panic!();
                         }
                     }
                 }
@@ -11003,7 +10917,7 @@ unsafe extern "C" fn execute_fn(mut ex_fn_loc: hash_loc) {
                 if field_ptr >= max_fields {
                     puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
                     print_confusion();
-                    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                    panic!();
                 }
                 if *field_info.offset(field_ptr as isize) == 0i32 {
                     /*missing */
@@ -11116,7 +11030,7 @@ unsafe extern "C" fn get_the_top_level_aux_file_name(mut aux_file_name: *const i
     if hash_found {
         puts_log(b"Already encountered auxiliary file\x00" as *const u8 as *const i8);
         print_confusion();
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        panic!();
     }
     aux_ln_stack[aux_ptr as usize] = 0i32;
     0i32
@@ -11221,7 +11135,7 @@ unsafe extern "C" fn aux_bib_style_command() {
     if hash_found {
         puts_log(b"Already encountered style file\x00" as *const u8 as *const i8);
         print_confusion();
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        panic!();
     }
     start_name(bst_str);
     bst_file = peekable_open(name_of_file as *mut i8, TTInputFormat::BST);
@@ -11360,11 +11274,8 @@ unsafe extern "C" fn aux_input_command() {
         print_a_token();
         puts_log(b": \x00" as *const u8 as *const i8);
         print_overflow();
-        printf_log(
-            b"auxiliary file depth %ld\n\x00" as *const u8 as *const i8,
-            20i32 as i64,
-        );
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        printf_log!("auxiliary file depth {}\n", 20,);
+        panic!();
     }
     aux_extension_ok = true;
     if buf_ptr2 - buf_ptr1
@@ -11412,10 +11323,7 @@ unsafe extern "C" fn aux_input_command() {
         aux_err_print();
         return;
     }
-    printf_log(
-        b"A level-%ld auxiliary file: \x00" as *const u8 as *const i8,
-        aux_ptr as i64,
-    );
+    printf_log!("A level-{} auxiliary file: ", aux_ptr,);
     print_aux_name();
     aux_ln_stack[aux_ptr as usize] = 0i32;
 }
@@ -11457,7 +11365,7 @@ unsafe extern "C" fn get_aux_command_and_process() {
             _ => {
                 puts_log(b"Unknown auxiliary-file command\x00" as *const u8 as *const i8);
                 print_confusion();
-                longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                panic!();
             }
         }
     };
@@ -12065,7 +11973,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
         /*at_sign */
         puts_log(b"An \"@\" disappeared\x00" as *const u8 as *const i8);
         print_confusion();
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        panic!();
     }
     buf_ptr2 = buf_ptr2 + 1i32;
     if !eat_bib_white_space() {
@@ -12137,9 +12045,9 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     return;
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
-                    printf_log(
-                        b"Missing \"%c\" in preamble command\x00" as *const u8 as *const i8,
-                        right_outer_delim as i32,
+                    printf_log!(
+                        "Missing \"{}\" in preamble command",
+                        right_outer_delim as char
                     );
                     bib_err_print();
                     return;
@@ -12205,9 +12113,9 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     return;
                 }
                 if *buffer.offset(buf_ptr2 as isize) as i32 != right_outer_delim as i32 {
-                    printf_log(
-                        b"Missing \"%c\" in string command\x00" as *const u8 as *const i8,
-                        right_outer_delim as i32,
+                    printf_log!(
+                        "Missing \"{}\" in string command",
+                        right_outer_delim as char
                     );
                     bib_err_print();
                     return;
@@ -12344,7 +12252,7 @@ unsafe extern "C" fn get_bib_command_or_entry_and_process() {
                     /*empty */
                     puts_log(b"The cite list is messed up\x00" as *const u8 as *const i8);
                     print_confusion();
-                    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                    panic!();
                 }
                 puts_log(b"Repeated entry\x00" as *const u8 as *const i8);
                 bib_err_print();
@@ -12506,10 +12414,7 @@ unsafe extern "C" fn bst_read_command() {
     bib_ptr = 0i32;
     while bib_ptr < num_bib_files {
         if verbose != 0 {
-            printf_log(
-                b"Database file #%ld: \x00" as *const u8 as *const i8,
-                bib_ptr as i64 + 1i32 as i64,
-            );
+            printf_log!("Database file #{}: ", bib_ptr + 1,);
             print_bib_name();
         } else {
             let mut buf: [i8; 512] = [0; 512];
@@ -12538,7 +12443,7 @@ unsafe extern "C" fn bst_read_command() {
     if (num_cites - 1i32) * num_fields + crossref_num >= max_fields {
         puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
         print_confusion();
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        panic!();
     }
     cite_ptr = 0i32;
     while cite_ptr < num_cites {
@@ -12568,7 +12473,7 @@ unsafe extern "C" fn bst_read_command() {
     if (num_cites - 1i32) * num_fields + crossref_num >= max_fields {
         puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
         print_confusion();
-        longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+        panic!();
     }
     cite_ptr = 0i32;
     while cite_ptr < num_cites {
@@ -12633,7 +12538,7 @@ unsafe extern "C" fn bst_read_command() {
                 if (cite_xptr + 1i32) * num_fields > max_fields {
                     puts_log(b"field_info index is out of range\x00" as *const u8 as *const i8);
                     print_confusion();
-                    longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+                    panic!();
                 }
                 *cite_list.offset(cite_xptr as isize) = *cite_list.offset(cite_ptr as isize);
                 *type_list.offset(cite_xptr as isize) = *type_list.offset(cite_ptr as isize);
@@ -12857,9 +12762,9 @@ unsafe extern "C" fn bst_strings_command() {
 }
 unsafe extern "C" fn get_bst_command_and_process() {
     if !scan_alpha() {
-        printf_log(
-            b"\"%c\" can\'t start a style-file command\x00" as *const u8 as *const i8,
-            *buffer.offset(buf_ptr2 as isize) as i32,
+        printf_log!(
+            "\"{}\" can't start a style-file command",
+            *buffer.offset(buf_ptr2 as isize) as char
         );
         bst_err_print_and_look_for_blank_line();
         return;
@@ -12912,7 +12817,7 @@ unsafe extern "C" fn get_bst_command_and_process() {
         _ => {
             puts_log(b"Unknown style-file command\x00" as *const u8 as *const i8);
             print_confusion();
-            longjmp(error_jmpbuf.as_mut_ptr(), 1i32);
+            panic!();
         }
     };
 }
@@ -13307,7 +13212,9 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> TTHistory 
         /* TODO: log initialization or get_the_..() error */
         return TTHistory::FATAL_ERROR;
     }
-    if !(_setjmp(error_jmpbuf.as_mut_ptr()) == 1i32) {
+    let prev_hook = panic::take_hook();
+    panic::set_hook(Box::new(|_| {}));
+    let _ = panic::catch_unwind(|| {
         if verbose != 0 {
             puts_log(b"This is BibTeX, Version 0.99d\n\x00" as *const u8 as *const i8);
         } else {
@@ -13352,22 +13259,24 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> TTHistory 
             bst_line_num = 0i32;
             bbl_line_num = 1i32;
             buf_ptr2 = last;
-            if _setjmp(recover_jmpbuf.as_mut_ptr()) == 0i32 {
+            let prev_hook = panic::take_hook();
+            panic::set_hook(Box::new(|_| {}));
+            let _ = panic::catch_unwind(|| {
                 while eat_bst_white_space() {
                     get_bst_command_and_process();
                 }
-            }
+            });
+            panic::set_hook(prev_hook);
             peekable_close(bst_file);
             bst_file = 0 as *mut peekable_input_t
         }
         ttstub_output_close(bbl_file);
-    }
+    });
+    panic::set_hook(prev_hook);
+
     /*456:*/
     if read_performed as i32 != 0 && !reading_completed {
-        printf_log(
-            b"Aborted at line %ld of file \x00" as *const u8 as *const i8,
-            bib_line_num as i64,
-        );
+        printf_log!("Aborted at line {} of file ", bib_line_num,);
         print_bib_name();
     }
     match history {
@@ -13376,20 +13285,14 @@ pub unsafe extern "C" fn bibtex_main(mut aux_file_name: *const i8) -> TTHistory 
             if err_count == 1i32 {
                 puts_log(b"(There was 1 warning)\n\x00" as *const u8 as *const i8);
             } else {
-                printf_log(
-                    b"(There were %ld warnings)\n\x00" as *const u8 as *const i8,
-                    err_count as i64,
-                );
+                printf_log!("(There were {} warnings)\n", err_count,);
             }
         }
         TTHistory::ERROR_ISSUED => {
             if err_count == 1i32 {
                 puts_log(b"(There was 1 error message)\n\x00" as *const u8 as *const i8);
             } else {
-                printf_log(
-                    b"(There were %ld error messages)\n\x00" as *const u8 as *const i8,
-                    err_count as i64,
-                );
+                printf_log!("(There were {} error messages)\n", err_count,);
             }
         }
         TTHistory::FATAL_ERROR => {
