@@ -136,7 +136,6 @@ pub struct FontCache {
 use super::dpx_cff::cff_charsets;
 pub type card16 = u16;
 pub type s_SID = u16;
-pub type card8 = u8;
 /* PLEASE SEND INFORMATION ON FONTS
  *
  * Those fonts are only for fixed-pitch glyphs (full-, half-, third-,

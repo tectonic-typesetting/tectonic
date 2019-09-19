@@ -126,7 +126,6 @@ pub type s_SID = u16;
 
 use super::dpx_cff::cff_index;
 pub type l_offset = u32;
-pub type c_offsize = u8;
 use super::dpx_cff::cff_fdselect;
 use super::dpx_cff::cff_range3;
 use super::dpx_tt_table::tt_longMetrics;

@@ -230,8 +230,6 @@ pub struct dev_font {
 }
 use super::dpx_cff::cff_charsets;
 pub type card16 = u16;
-pub type s_SID = u16;
-pub type card8 = u8;
 /*
  * Unit conversion, formatting and others.
  */

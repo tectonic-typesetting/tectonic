@@ -47,9 +47,6 @@ pub type size_t = u64;
 pub type __compar_fn_t =
     Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32>;
 pub type card8 = u8;
-pub type card16 = u16;
-pub type c_offsize = u8;
-pub type l_offset = u32;
 
 use super::dpx_cff::cff_index;
 #[derive(Copy, Clone)]
