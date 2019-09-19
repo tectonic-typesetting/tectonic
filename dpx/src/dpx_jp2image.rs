@@ -19,13 +19,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::warn;
 
@@ -36,16 +38,11 @@ use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_get_version, pdf_new_name, pdf_new_number, pdf_new_stream,
     pdf_obj, pdf_stream_dict,
 };
-extern "C" {
-    #[no_mangle]
-    fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
-    #[no_mangle]
-    fn rewind(__stream: *mut FILE);
-}
+use libc::{fread, rewind, FILE};
+
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;
-use libc::FILE;
 
 use crate::dpx_pdfximage::{pdf_ximage, ximage_info};
 /* Label */
@@ -402,8 +399,8 @@ pub unsafe extern "C" fn jp2_include_image(mut ximage: *mut pdf_ximage, mut fp: 
     loop {
         nb_read = fread(
             work_buffer.as_mut_ptr() as *mut libc::c_void,
-            ::std::mem::size_of::<i8>() as u64,
-            1024i32 as u64,
+            ::std::mem::size_of::<i8>(),
+            1024,
             fp,
         ) as i32;
         if !(nb_read > 0i32) {

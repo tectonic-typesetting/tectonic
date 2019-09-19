@@ -30,7 +30,7 @@
 )]
 
 use super::util::spc_util_read_colorspec;
-use super::{spc_arg, spc_env};
+use super::{spc_arg, spc_env, spc_handler, spc_warn};
 use crate::dpx_dpxutil::parse_c_ident;
 use crate::dpx_pdfcolor::{
     pdf_color, pdf_color_clear_stack, pdf_color_pop, pdf_color_push, pdf_color_set,
@@ -38,15 +38,6 @@ use crate::dpx_pdfcolor::{
 use crate::dpx_pdfdoc::pdf_doc_set_bgcolor;
 use crate::streq_ptr;
 use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-}
-
-pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::spc_handler;
 
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

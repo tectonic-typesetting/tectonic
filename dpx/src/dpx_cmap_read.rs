@@ -38,35 +38,16 @@ use super::dpx_cmap::{
     CMap_cache_get, CMap_is_valid, CMap_set_CIDSysInfo, CMap_set_name, CMap_set_type,
     CMap_set_usecmap, CMap_set_wmode,
 };
+use super::dpx_error::dpx_message;
+use super::dpx_mem::{new, renew};
 use super::dpx_pst::pst_get_token;
 use super::dpx_pst_obj::pst_obj;
 use super::dpx_pst_obj::{
     pst_data_ptr, pst_getIV, pst_getSV, pst_length_of, pst_release_obj, pst_type_of,
 };
 use crate::{ttstub_input_get_size, ttstub_input_read, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strstr(_: *const i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy, memmove, strcmp, strlen, strstr};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -144,7 +125,7 @@ unsafe extern "C" fn ifreader_read(mut reader: *mut ifreader, mut size: size_t) 
         memmove(
             (*reader).buf as *mut libc::c_void,
             (*reader).cursor as *const libc::c_void,
-            bytesrem,
+            bytesrem as _,
         );
         (*reader).cursor = (*reader).buf;
         (*reader).endptr = (*reader).buf.offset(bytesrem as isize);
@@ -169,7 +150,7 @@ unsafe extern "C" fn check_next_token(mut input: *mut ifreader, mut key: *const 
     let mut cmp: i32 = 0;
     let mut token: *mut pst_obj = 0 as *mut pst_obj;
     let mut str: *mut i8 = 0 as *mut i8;
-    if ifreader_read(input, strlen(key)) == 0i32 as u64 {
+    if ifreader_read(input, strlen(key) as _) == 0 {
         return -1i32;
     }
     token = pst_get_token(&mut (*input).cursor, (*input).endptr);
@@ -214,8 +195,8 @@ unsafe extern "C" fn get_coderange(
         pst_release_obj(tok2);
         return -1i32;
     }
-    memcpy(codeLo as *mut libc::c_void, pst_data_ptr(tok1), dim1 as u64);
-    memcpy(codeHi as *mut libc::c_void, pst_data_ptr(tok2), dim2 as u64);
+    memcpy(codeLo as *mut libc::c_void, pst_data_ptr(tok1), dim1 as _);
+    memcpy(codeHi as *mut libc::c_void, pst_data_ptr(tok2), dim2 as _);
     pst_release_obj(tok1);
     pst_release_obj(tok2);
     *dim = dim1;

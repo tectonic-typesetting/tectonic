@@ -19,24 +19,19 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
-extern "C" {
-    #[no_mangle]
-    fn rand() -> i32;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use super::dpx_mem::new;
+use libc::{memcpy, memset, rand};
+
 pub type size_t = u64;
 
 /* libgcrypt md5 */
@@ -105,7 +100,7 @@ unsafe extern "C" fn _gcry_burn_stack(mut bytes: i32) {
     memset(
         buf.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        ::std::mem::size_of::<[i8; 64]>() as u64,
+        ::std::mem::size_of::<[i8; 64]>(),
     );
     bytes = (bytes as u64).wrapping_sub(::std::mem::size_of::<[i8; 64]>() as u64) as i32 as i32;
     if bytes > 0i32 {
@@ -162,7 +157,7 @@ unsafe extern "C" fn transform(mut ctx: *mut MD5_CONTEXT, mut data: *const u8) {
     memcpy(
         correct_words.as_mut_ptr() as *mut libc::c_void,
         data as *const libc::c_void,
-        (::std::mem::size_of::<u32>() as u64).wrapping_mul(16i32 as u64),
+        (::std::mem::size_of::<u32>()).wrapping_mul(16),
     );
     /* Before we start, one word about the strange constants.
      * They are defined in RFC 1321 as
@@ -759,11 +754,7 @@ pub unsafe extern "C" fn MD5_final(mut outbuf: *mut u8, mut hd: *mut MD5_CONTEXT
         }
         /* fill next block with zeroes */
         MD5_write(hd, 0 as *const u8, 0_u32); /* flush */
-        memset(
-            (*hd).buf.as_mut_ptr() as *mut libc::c_void,
-            0i32,
-            56i32 as u64,
-        );
+        memset((*hd).buf.as_mut_ptr() as *mut libc::c_void, 0i32, 56);
     }
     /* append the 64 bit count */
     (*hd).buf[56] = (lsb & 0xff_u32) as u8; /* p = hd->buf; */
@@ -1165,11 +1156,7 @@ pub unsafe extern "C" fn SHA256_final(mut outbuf: *mut u8, mut hd: *mut SHA256_C
         }
         SHA256_write(hd, 0 as *const u8, 0_u32);
         /* fill next block with zeroes */
-        memset(
-            (*hd).buf.as_mut_ptr() as *mut libc::c_void,
-            0i32,
-            56i32 as u64,
-        );
+        memset((*hd).buf.as_mut_ptr() as *mut libc::c_void, 0i32, 56);
     }
     /* flush */
     /* append the 64 bit count */
@@ -2154,11 +2141,7 @@ pub unsafe extern "C" fn SHA512_final(mut outbuf: *mut u8, mut hd: *mut SHA512_C
         }
         SHA512_write(hd, 0 as *const u8, 0_u32);
         /* fill next block with zeroes */
-        memset(
-            (*hd).buf.as_mut_ptr() as *mut libc::c_void,
-            0i32,
-            112i32 as u64,
-        );
+        memset((*hd).buf.as_mut_ptr() as *mut libc::c_void, 0i32, 112);
     }
     /* flush */
     /* append the 128 bit count */
@@ -2287,7 +2270,7 @@ unsafe extern "C" fn do_arcfour_setkey(
         (*ctx).sbox[j as usize] = t as u8;
         i += 1
     }
-    memset(karr.as_mut_ptr() as *mut libc::c_void, 0i32, 256i32 as u64);
+    memset(karr.as_mut_ptr() as *mut libc::c_void, 0i32, 256);
 }
 #[no_mangle]
 pub unsafe extern "C" fn ARC4_set_key(
@@ -2340,7 +2323,7 @@ pub unsafe extern "C" fn AES_ecb_encrypt(
         memcpy(
             block.as_mut_ptr() as *mut libc::c_void,
             inptr as *const libc::c_void,
-            len,
+            len as _,
         );
         rijndaelEncrypt(
             (*ctx).rk.as_mut_ptr(),
@@ -2382,7 +2365,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             (*ctx).iv.as_mut_ptr() as *mut libc::c_void,
             iv as *const libc::c_void,
-            16i32 as u64,
+            16,
         );
     } else {
         i = 0i32 as size_t;
@@ -2421,7 +2404,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             outptr as *mut libc::c_void,
             (*ctx).iv.as_mut_ptr() as *const libc::c_void,
-            16i32 as u64,
+            16,
         );
         outptr = outptr.offset(16)
     }
@@ -2442,7 +2425,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             (*ctx).iv.as_mut_ptr() as *mut libc::c_void,
             outptr as *const libc::c_void,
-            16i32 as u64,
+            16,
         );
         inptr = inptr.offset(16);
         outptr = outptr.offset(16);
@@ -2469,7 +2452,7 @@ pub unsafe extern "C" fn AES_cbc_encrypt_tectonic(
         memcpy(
             (*ctx).iv.as_mut_ptr() as *mut libc::c_void,
             outptr as *const libc::c_void,
-            16i32 as u64,
+            16,
         );
         inptr = inptr.offset(16);
         outptr = outptr.offset(16)

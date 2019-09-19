@@ -40,28 +40,13 @@ use super::dpx_dvi::{
     dvi_right, dvi_rule, dvi_set, dvi_set_font, dvi_vf_finish, dvi_vf_init, dvi_w, dvi_w0, dvi_x,
     dvi_x0, dvi_y, dvi_y0, dvi_z, dvi_z0,
 };
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::{new, renew};
 use super::dpx_numbers::{sqxfw, tt_skip_bytes};
 use super::dpx_tfm::tfm_open;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy, strcpy, strlen};
+
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type __ssize_t = i64;
@@ -362,8 +347,8 @@ pub unsafe extern "C" fn vf_locate_font(mut tex_name: *const i8, mut ptsize: spt
     thisfont = fresh6 as i32;
     /* Initialize some pointers and such */
     let ref mut fresh7 = (*vf_fonts.offset(thisfont as isize)).tex_name;
-    *fresh7 = new((strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    *fresh7 = new((strlen(tex_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+        as *mut i8;
     strcpy((*vf_fonts.offset(thisfont as isize)).tex_name, tex_name);
     (*vf_fonts.offset(thisfont as isize)).ptsize = ptsize;
     (*vf_fonts.offset(thisfont as isize)).num_chars = 0_u32;
@@ -542,7 +527,7 @@ unsafe extern "C" fn vf_xxx(mut len: i32, mut start: *mut *mut u8, mut end: *mut
         memcpy(
             buffer as *mut libc::c_void,
             *start as *const libc::c_void,
-            len as u64,
+            len as _,
         );
         *buffer.offset(len as isize) = '\u{0}' as i32 as u8;
         let mut p: *mut u8 = buffer;
@@ -555,7 +540,7 @@ unsafe extern "C" fn vf_xxx(mut len: i32, mut start: *mut *mut u8, mut end: *mut
         if memcmp(
             p as *mut i8 as *const libc::c_void,
             b"Warning:\x00" as *const u8 as *const i8 as *const libc::c_void,
-            8i32 as u64,
+            8,
         ) == 0
         {
             if verbose != 0 {

@@ -36,26 +36,16 @@ use super::dpx_dpxutil::{
     ht_append_table, ht_clear_iter, ht_clear_table, ht_init_table, ht_iter_getkey, ht_iter_getval,
     ht_iter_next, ht_lookup_table, ht_set_iter,
 };
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::{new, renew};
+use super::qsort;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_new_array, pdf_new_dict, pdf_new_name,
     pdf_new_null, pdf_new_string, pdf_new_undefined, pdf_obj, pdf_obj_typeof, pdf_ref_obj,
     pdf_release_obj, pdf_string_length, pdf_string_value, pdf_transfer_label, PdfObjType,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memcmp};
 
 pub type size_t = u64;
 pub type __compar_fn_t =
@@ -308,7 +298,7 @@ unsafe extern "C" fn cmp_key(mut d1: *const libc::c_void, mut d2: *const libc::c
         cmp = memcmp(
             (*sd1).key as *const libc::c_void,
             (*sd2).key as *const libc::c_void,
-            keylen as u64,
+            keylen as _,
         );
         if cmp == 0 {
             cmp = (*sd1).keylen - (*sd2).keylen

@@ -39,6 +39,8 @@ use crate::{info, warn};
 use super::dpx_cid::{CIDFont_get_embedding, CIDFont_get_parent_id, CIDFont_is_BaseFont};
 use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode_char};
 use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_truetype_file};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::new;
 use super::dpx_pdffont::pdf_font_make_uniqueTag;
 use super::dpx_tt_aux::tt_get_fontdesc;
 use super::dpx_tt_aux::ttc_read_offset;
@@ -57,35 +59,9 @@ use crate::dpx_pdfobj::{
     pdf_stream_length,
 };
 use crate::ttstub_input_close;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strstr(_: *const i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memmove, memset, sprintf, strcat, strcmp, strcpy, strlen, strncpy, strstr};
+
 pub type size_t = u64;
 pub type rust_input_handle_t = *mut libc::c_void;
 
@@ -272,7 +248,7 @@ unsafe extern "C" fn validate_name(mut fontname: *mut i8, mut len: i32) {
             memmove(
                 fontname.offset(i as isize) as *mut libc::c_void,
                 fontname.offset(i as isize).offset(1) as *const libc::c_void,
-                (len - i) as u64,
+                (len - i) as _,
             );
             count += 1;
             len -= 1
@@ -488,9 +464,8 @@ unsafe extern "C" fn find_tocode_cmap(
         cmap_name = new((strlen(reg)
             .wrapping_add(strlen(ord))
             .wrapping_add(strlen(append))
-            .wrapping_add(3i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+            .wrapping_add(3))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
         sprintf(
             cmap_name,
             b"%s-%s-%s\x00" as *const u8 as *const i8,
@@ -895,7 +870,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         pdf_new_name(b"Registry\x00" as *const u8 as *const i8),
         pdf_new_string(
             (*(*font).csi).registry as *const libc::c_void,
-            strlen((*(*font).csi).registry),
+            strlen((*(*font).csi).registry) as _,
         ),
     );
     pdf_add_dict(
@@ -903,7 +878,7 @@ pub unsafe extern "C" fn CIDFont_type2_dofont(mut font: *mut CIDFont) {
         pdf_new_name(b"Ordering\x00" as *const u8 as *const i8),
         pdf_new_string(
             (*(*font).csi).ordering as *const libc::c_void,
-            strlen((*(*font).csi).ordering),
+            strlen((*(*font).csi).ordering) as _,
         ),
     );
     pdf_add_dict(
@@ -1461,8 +1436,8 @@ pub unsafe extern "C" fn CIDFont_type2_open(
     shortname = new((127_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8; /* for SJIS, UTF-16, ... string */
     namelen = tt_get_ps_fontname(sfont, shortname, 127_u16) as i32;
     if namelen == 0i32 {
-        memset(shortname as *mut libc::c_void, 0i32, 127i32 as u64);
-        strncpy(shortname, name, 127i32 as u64);
+        memset(shortname as *mut libc::c_void, 0i32, 127);
+        strncpy(shortname, name, 127);
         namelen = strlen(shortname) as i32
     }
     validate_name(shortname, namelen);
@@ -1471,8 +1446,9 @@ pub unsafe extern "C" fn CIDFont_type2_open(
      * Mangled name requires more 7 bytes.
      * Style requires more 11 bytes.
      */
-    fontname = new((strlen(shortname).wrapping_add(19i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    fontname =
+        new((strlen(shortname).wrapping_add(19)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy(fontname, shortname);
     free(shortname as *mut libc::c_void);
     if (*opt).embed != 0 && (*opt).style != 0i32 {
@@ -1527,42 +1503,38 @@ pub unsafe extern "C" fn CIDFont_type2_open(
                 (*(*opt).csi).supplement = (*cmap_csi).supplement
             }
         }
-        (*(*font).csi).registry = new((strlen((*(*opt).csi).registry).wrapping_add(1i32 as u64)
-            as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*(*font).csi).registry = new((strlen((*(*opt).csi).registry).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*font).csi).registry, (*(*opt).csi).registry);
-        (*(*font).csi).ordering = new((strlen((*(*opt).csi).ordering).wrapping_add(1i32 as u64)
-            as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*(*font).csi).ordering = new((strlen((*(*opt).csi).ordering).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*font).csi).ordering, (*(*opt).csi).ordering);
         (*(*font).csi).supplement = (*(*opt).csi).supplement
     } else if !cmap_csi.is_null() {
-        (*(*font).csi).registry = new(
-            (strlen((*cmap_csi).registry).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
-        ) as *mut i8;
+        (*(*font).csi).registry = new((strlen((*cmap_csi).registry).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*font).csi).registry, (*cmap_csi).registry);
-        (*(*font).csi).ordering = new(
-            (strlen((*cmap_csi).ordering).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
-        ) as *mut i8;
+        (*(*font).csi).ordering = new((strlen((*cmap_csi).ordering).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*font).csi).ordering, (*cmap_csi).ordering);
         (*(*font).csi).supplement = (*cmap_csi).supplement
     } else {
         (*(*font).csi).registry = new((strlen(b"Adobe\x00" as *const u8 as *const i8)
-            .wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+            .wrapping_add(1))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy(
             (*(*font).csi).registry,
             b"Adobe\x00" as *const u8 as *const i8,
         );
         (*(*font).csi).ordering = new((strlen(b"Identity\x00" as *const u8 as *const i8)
-            .wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+            .wrapping_add(1))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy(
             (*(*font).csi).ordering,
             b"Identity\x00" as *const u8 as *const i8,
@@ -1588,7 +1560,7 @@ pub unsafe extern "C" fn CIDFont_type2_open(
         memmove(
             fontname.offset(7) as *mut libc::c_void,
             fontname as *const libc::c_void,
-            strlen(fontname).wrapping_add(1i32 as u64),
+            strlen(fontname).wrapping_add(1),
         );
         pdf_font_make_uniqueTag(fontname);
         *fontname.offset(6) = '+' as i32 as i8

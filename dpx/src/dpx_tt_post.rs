@@ -36,16 +36,10 @@ use super::dpx_sfnt::sfnt_locate_table;
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_mem::{new, xstrdup};
 use crate::ttstub_input_read;
 use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;

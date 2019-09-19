@@ -19,16 +19,20 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::warn;
 
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::new;
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfdev::pdf_sprint_number;
 use super::dpx_pdfencoding::{
@@ -43,27 +47,8 @@ use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_dict, pdf_new_name,
     pdf_new_number, pdf_new_stream, pdf_obj, pdf_ref_obj, pdf_release_obj,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
-    #[no_mangle]
-    fn fgetc(__stream: *mut FILE) -> i32;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn fopen(_: *const i8, _: *const i8) -> *mut FILE;
-    #[no_mangle]
-    fn fclose(__stream: *mut FILE) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{fclose, fgetc, fopen, fread, free, memset, sprintf};
 
 use crate::dpx_numbers::{
     get_positive_quad, get_signed_byte, get_signed_pair, get_signed_quad, get_unsigned_byte,
@@ -304,7 +289,7 @@ unsafe extern "C" fn pk_decode_packed(
         let mut rowbits_left: u32 = 0;
         let mut nbits: u32 = 0;
         repeat_count = 0_u32;
-        memset(rowptr as *mut libc::c_void, 0xffi32, rowbytes as u64);
+        memset(rowptr as *mut libc::c_void, 0xffi32, rowbytes as _);
         rowbits_left = wd;
         /* Fill run left over from previous row */
         if run_count > 0_u32 {
@@ -424,7 +409,7 @@ unsafe extern "C" fn pk_decode_bitmap(
     rowbytes = wd.wrapping_add(7_u32).wrapping_div(8_u32);
     rowptr =
         new((rowbytes as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
-    memset(rowptr as *mut libc::c_void, 0i32, rowbytes as u64);
+    memset(rowptr as *mut libc::c_void, 0i32, rowbytes as _);
     /* Flip. PK bitmap is not byte aligned for each rows. */
     i = 0_u32; /* flip bit */
     j = 0_u32;
@@ -438,7 +423,7 @@ unsafe extern "C" fn pk_decode_bitmap(
         j = j.wrapping_add(1);
         if j == wd {
             send_out(rowptr, rowbytes, stream);
-            memset(rowptr as *mut libc::c_void, 0i32, rowbytes as u64);
+            memset(rowptr as *mut libc::c_void, 0i32, rowbytes as _);
             j = 0_u32
         }
         i = i.wrapping_add(1)
@@ -670,11 +655,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
             dpi,
         );
     }
-    memset(
-        charavail.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        256i32 as u64,
-    );
+    memset(charavail.as_mut_ptr() as *mut libc::c_void, 0i32, 256);
     charprocs = pdf_new_dict();
     /* Include bitmap as 72dpi image:
      * There seems to be problems in "scaled" bitmap glyph
@@ -756,12 +737,7 @@ pub unsafe extern "C" fn pdf_font_load_pkfont(mut font: *mut pdf_font) -> i32 {
                 pkt_ptr = new(
                     (pkh.pkt_len as u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32,
                 ) as *mut u8;
-                bytesread = fread(
-                    pkt_ptr as *mut libc::c_void,
-                    1i32 as u64,
-                    pkh.pkt_len as u64,
-                    fp,
-                );
+                bytesread = fread(pkt_ptr as *mut libc::c_void, 1, pkh.pkt_len as _, fp) as _;
                 if bytesread != pkh.pkt_len as u64 {
                     _tt_abort(
                         b"Only %zu bytes PK packet read. (expected %d bytes)\x00" as *const u8

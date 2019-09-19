@@ -38,7 +38,9 @@ use super::dpx_dpxutil::{
     ht_lookup_table, ht_set_iter, ht_table_size,
 };
 use super::dpx_dvipdfmx::is_xdv;
+use super::dpx_error::dpx_warning;
 use super::dpx_jpegimage::check_for_jpeg;
+use super::dpx_mem::{new, renew};
 use super::dpx_pdfcolor::{
     pdf_close_colors, pdf_color_copycolor, pdf_color_graycolor, pdf_color_is_white,
     pdf_color_set_verbose, pdf_init_colors,
@@ -74,45 +76,12 @@ use crate::dpx_pdfobj::{
     pdf_string_value, PdfObjType,
 };
 use crate::{ttstub_input_close, ttstub_input_open};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn time(__timer: *mut time_t) -> time_t;
-    #[no_mangle]
-    fn mktime(__tp: *mut tm) -> time_t;
-    #[no_mangle]
-    fn gmtime(__timer: *const time_t) -> *mut tm;
-    #[no_mangle]
-    fn localtime(__timer: *const time_t) -> *mut tm;
-    #[no_mangle]
-    fn gmtime_r(__timer: *const time_t, __tp: *mut tm) -> *mut tm;
-    #[no_mangle]
-    fn localtime_r(__timer: *const time_t, __tp: *mut tm) -> *mut tm;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-}
+use bridge::_tt_abort;
+use libc::{
+    free, gmtime, gmtime_r, localtime, localtime_r, memcpy, mktime, sprintf, strcmp, strcpy,
+    strlen, strncmp, strncpy, time, tm,
+};
+
 pub type __time_t = i64;
 pub type size_t = u64;
 pub type time_t = __time_t;
@@ -120,21 +89,6 @@ pub type time_t = __time_t;
 use crate::TTInputFormat;
 
 pub type rust_input_handle_t = *mut libc::c_void;
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct tm {
-    pub tm_sec: i32,
-    pub tm_min: i32,
-    pub tm_hour: i32,
-    pub tm_mday: i32,
-    pub tm_mon: i32,
-    pub tm_year: i32,
-    pub tm_wday: i32,
-    pub tm_yday: i32,
-    pub tm_isdst: i32,
-    pub tm_gmtoff: i64,
-    pub tm_zone: *const i8,
-}
 
 pub use super::dpx_pdfcolor::pdf_color;
 
@@ -565,7 +519,7 @@ unsafe extern "C" fn compute_timezone_offset() -> i32 {
         tm_yday: 0,
         tm_isdst: 0,
         tm_gmtoff: 0,
-        tm_zone: 0 as *const i8,
+        tm_zone: std::ptr::null_mut(),
     };
     let mut local: tm = tm {
         tm_sec: 0,
@@ -578,7 +532,7 @@ unsafe extern "C" fn compute_timezone_offset() -> i32 {
         tm_yday: 0,
         tm_isdst: 0,
         tm_gmtoff: 0,
-        tm_zone: 0 as *const i8,
+        tm_zone: std::ptr::null_mut(),
     };
     now = get_unique_time_if_given();
     if now == -1i32 as time_t {
@@ -690,7 +644,7 @@ unsafe extern "C" fn pdf_doc_close_docinfo(mut p: *mut pdf_doc) {
             pdf_new_name(b"Producer\x00" as *const u8 as *const i8),
             pdf_new_string(
                 banner.as_mut_ptr() as *const libc::c_void,
-                strlen(banner.as_mut_ptr()),
+                strlen(banner.as_mut_ptr()) as _,
             ),
         );
     }
@@ -702,7 +656,7 @@ unsafe extern "C" fn pdf_doc_close_docinfo(mut p: *mut pdf_doc) {
             pdf_new_name(b"CreationDate\x00" as *const u8 as *const i8),
             pdf_new_string(
                 now.as_mut_ptr() as *const libc::c_void,
-                strlen(now.as_mut_ptr()),
+                strlen(now.as_mut_ptr()) as _,
             ),
         );
     }
@@ -1786,7 +1740,7 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> i32 {
             pdf_new_name(b"Title\x00" as *const u8 as *const i8),
             pdf_new_string(
                 b"<No Title>\x00" as *const u8 as *const i8 as *const libc::c_void,
-                strlen(b"<No Title>\x00" as *const u8 as *const i8),
+                strlen(b"<No Title>\x00" as *const u8 as *const i8) as _,
             ),
         );
         tcolor = pdf_new_array();
@@ -1818,7 +1772,7 @@ pub unsafe extern "C" fn pdf_doc_bookmarks_down() -> i32 {
                                         *const libc::c_void,
                                     strlen(b"app.alert(\"The author of this document made this bookmark item empty!\", 3, 0)\x00"
                                                as *const u8 as
-                                               *const i8)));
+                                               *const i8) as _));
         pdf_add_dict(
             (*item).dict,
             pdf_new_name(b"A\x00" as *const u8 as *const i8),
@@ -2108,7 +2062,7 @@ unsafe extern "C" fn pdf_doc_add_goto(mut annot_dict: *mut pdf_obj) {
                                 ); /* Maybe reference */
                                 D_new = pdf_new_string(
                                     buf.as_mut_ptr() as *const libc::c_void,
-                                    strlen(buf.as_mut_ptr()),
+                                    strlen(buf.as_mut_ptr()) as _,
                                 );
                                 ht_append_table(
                                     &mut pdoc.gotos,
@@ -2168,7 +2122,7 @@ unsafe extern "C" fn warn_undef_dests(mut dests: *mut ht_table, mut gotos: *mut 
             memcpy(
                 dest as *mut libc::c_void,
                 key as *const libc::c_void,
-                keylen as u64,
+                keylen as _,
             );
             *dest.offset(keylen as isize) = 0_i8;
             dpx_warning(
@@ -2341,7 +2295,7 @@ pub unsafe extern "C" fn pdf_doc_begin_article(
 ) {
     let mut p: *mut pdf_doc = &mut pdoc;
     let mut article: *mut pdf_article = 0 as *mut pdf_article;
-    if article_id.is_null() || strlen(article_id) == 0i32 as u64 {
+    if article_id.is_null() || strlen(article_id) == 0 {
         panic!("Article thread without internal identifier.");
     }
     if (*p).articles.num_entries >= (*p).articles.max_entries {
@@ -2356,8 +2310,9 @@ pub unsafe extern "C" fn pdf_doc_begin_article(
         .articles
         .entries
         .offset((*p).articles.num_entries as isize) as *mut pdf_article;
-    (*article).id = new((strlen(article_id).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*article).id =
+        new((strlen(article_id).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*article).id, article_id);
     (*article).info = article_info;
     (*article).num_beads = 0_u32;
@@ -2433,9 +2388,9 @@ pub unsafe extern "C" fn pdf_doc_add_bead(
         }
         bead = &mut *(*article).beads.offset((*article).num_beads as isize) as *mut pdf_bead;
         if !bead_id.is_null() {
-            (*bead).id = new((strlen(bead_id).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*bead).id = new(
+                (strlen(bead_id).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _
+            ) as *mut i8;
             strcpy((*bead).id, bead_id);
         } else {
             (*bead).id = 0 as *mut i8
@@ -2902,8 +2857,7 @@ unsafe extern "C" fn pdf_doc_finish_page(mut p: *mut pdf_doc) {
         let mut thumb_filename: *mut i8 = 0 as *mut i8;
         let mut thumb_ref: *mut pdf_obj = 0 as *mut pdf_obj;
         thumb_filename = new(
-            (strlen(thumb_basename).wrapping_add(7i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
+            (strlen(thumb_basename).wrapping_add(7)).wrapping_mul(::std::mem::size_of::<i8>()) as _
         ) as *mut i8;
         sprintf(
             thumb_filename,
@@ -3035,7 +2989,7 @@ pub unsafe extern "C" fn pdf_open_document(
         pdf_add_dict(
             (*p).info,
             pdf_new_name(b"Creator\x00" as *const u8 as *const i8),
-            pdf_new_string(doccreator as *const libc::c_void, strlen(doccreator)),
+            pdf_new_string(doccreator as *const libc::c_void, strlen(doccreator) as _),
         );
         doccreator = mfree(doccreator as *mut libc::c_void) as *mut i8
     }
@@ -3052,19 +3006,19 @@ pub unsafe extern "C" fn pdf_open_document(
     pdf_set_id(pdf_enc_id_array());
     /* Create a default name for thumbnail image files */
     if manual_thumb_enabled != 0 {
-        let mut fn_len: size_t = strlen(filename);
+        let mut fn_len: size_t = strlen(filename) as _;
         if fn_len > 4i32 as u64
             && strncmp(
                 b".pdf\x00" as *const u8 as *const i8,
                 filename.offset(fn_len as isize).offset(-4),
-                4i32 as u64,
+                4,
             ) == 0
         {
             thumb_basename = new(
                 (fn_len.wrapping_sub(4i32 as u64).wrapping_add(1i32 as u64) as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
             ) as *mut i8;
-            strncpy(thumb_basename, filename, fn_len.wrapping_sub(4i32 as u64));
+            strncpy(thumb_basename, filename, fn_len.wrapping_sub(4) as _);
             *thumb_basename.offset(fn_len.wrapping_sub(4i32 as u64) as isize) = 0_i8
         } else {
             thumb_basename = new((fn_len.wrapping_add(1i32 as u64) as u32 as u64)
@@ -3080,8 +3034,9 @@ pub unsafe extern "C" fn pdf_doc_set_creator(mut creator: *const i8) {
     if creator.is_null() || *creator.offset(0) as i32 == '\u{0}' as i32 {
         return;
     }
-    doccreator = new((strlen(creator).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    doccreator =
+        new((strlen(creator).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy(doccreator, creator);
     /* Ugh */
 }

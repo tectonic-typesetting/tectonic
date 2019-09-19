@@ -37,33 +37,14 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use super::dpx_otl_opt::{
     otl_match_optrule, otl_new_opt, otl_opt, otl_parse_optstring, otl_release_opt,
 };
 use crate::ttstub_input_seek;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memset, strchr, strcpy, strlen, strncpy};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -853,11 +834,7 @@ unsafe extern "C" fn otl_gsub_read_feat(mut gsub: *mut otl_gsub_tab, mut sfont: 
     otl_parse_optstring(language, (*gsub).language);
     feature = otl_new_opt();
     otl_parse_optstring(feature, (*gsub).feature);
-    memset(
-        feat_bits.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        8192i32 as u64,
-    );
+    memset(feat_bits.as_mut_ptr() as *mut libc::c_void, 0i32, 8192);
     ttstub_input_seek((*sfont).handle, gsub_offset as ssize_t, 0i32);
     otl_gsub_read_header(&mut head, sfont);
     offset = gsub_offset.wrapping_add(head.ScriptList as u32);
@@ -1397,14 +1374,17 @@ pub unsafe extern "C" fn otl_gsub_add_feat(
         i += 1
     }
     gsub = &mut *(*gsub_list).gsubs.as_mut_ptr().offset(i as isize) as *mut otl_gsub_tab;
-    (*gsub).script = new((strlen(script).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*gsub).script =
+        new((strlen(script).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*gsub).script, script);
-    (*gsub).language = new((strlen(language).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*gsub).language =
+        new((strlen(language).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*gsub).language, language);
-    (*gsub).feature = new((strlen(feature).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*gsub).feature =
+        new((strlen(feature).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*gsub).feature, feature);
     if verbose > 0i32 {
         info!("\n");
@@ -1442,11 +1422,11 @@ unsafe extern "C" fn scan_otl_tag(
     if otl_tags.is_null() || otl_tags >= endptr {
         return -1i32;
     }
-    memset(script as *mut libc::c_void, ' ' as i32, 4i32 as u64);
+    memset(script as *mut libc::c_void, ' ' as i32, 4);
     *script.offset(4) = 0_i8;
-    memset(language as *mut libc::c_void, ' ' as i32, 4i32 as u64);
+    memset(language as *mut libc::c_void, ' ' as i32, 4);
     *language.offset(4) = 0_i8;
-    memset(feature as *mut libc::c_void, ' ' as i32, 4i32 as u64);
+    memset(feature as *mut libc::c_void, ' ' as i32, 4);
     *feature.offset(4) = 0_i8;
     /* First parse otl_tags variable */
     p = otl_tags;
@@ -1454,7 +1434,7 @@ unsafe extern "C" fn scan_otl_tag(
     if !period.is_null() && period < endptr {
         /* Format scrp.lang.feat */
         if period < p.offset(5) {
-            strncpy(script, p, period.wrapping_offset_from(p) as i64 as u64);
+            strncpy(script, p, period.wrapping_offset_from(p) as _);
         } else {
             dpx_warning(
                 b"Invalid OTL script tag found: %s\x00" as *const u8 as *const i8,
@@ -1467,7 +1447,7 @@ unsafe extern "C" fn scan_otl_tag(
         if !period.is_null() && period < endptr {
             /* Now lang part */
             if period < p.offset(5) {
-                strncpy(language, p, period.wrapping_offset_from(p) as i64 as u64);
+                strncpy(language, p, period.wrapping_offset_from(p) as _);
             } else {
                 dpx_warning(
                     b"Invalid OTL lanuage tag found: %s\x00" as *const u8 as *const i8,
@@ -1483,7 +1463,7 @@ unsafe extern "C" fn scan_otl_tag(
     }
     /* Finally feature */
     if p.offset(4) <= endptr {
-        strncpy(feature, p, endptr.wrapping_offset_from(p) as i64 as u64);
+        strncpy(feature, p, endptr.wrapping_offset_from(p) as _);
         p = endptr
     } else {
         warn!("No valid OTL feature tag specified.");

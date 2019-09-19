@@ -37,29 +37,13 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_error::dpx_message;
+use super::dpx_mem::{new, renew};
 use super::dpx_numbers::tt_skip_bytes;
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strrchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, strcat, strcmp, strcpy, strlen, strrchr};
+
 pub type __off_t = i64;
 pub type __ssize_t = i64;
 pub type size_t = u64;
@@ -884,8 +868,8 @@ pub unsafe extern "C" fn tfm_open(mut tfm_name: *const i8, mut must_exist: i32) 
     {
         ofm_name = new((strlen(tfm_name)
             .wrapping_add(strlen(b".ofm\x00" as *const u8 as *const i8))
-            .wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+            .wrapping_add(1))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
         strcpy(ofm_name, tfm_name);
         strcat(ofm_name, b".ofm\x00" as *const u8 as *const i8);
     } else {
@@ -940,8 +924,8 @@ pub unsafe extern "C" fn tfm_open(mut tfm_name: *const i8, mut must_exist: i32) 
     }
     ttstub_input_close(tfm_handle);
     let ref mut fresh0 = (*fms.offset(numfms as isize)).tex_name;
-    *fresh0 = new((strlen(tfm_name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    *fresh0 = new((strlen(tfm_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+        as *mut i8;
     strcpy((*fms.offset(numfms as isize)).tex_name, tfm_name);
     if verbose != 0 {
         info!(")");

@@ -29,7 +29,7 @@
     unused_mut
 )]
 
-use super::{spc_arg, spc_env};
+use super::{spc_arg, spc_env, spc_warn};
 use crate::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
 pub use crate::dpx_pdfcolor::pdf_color;
 use crate::dpx_pdfcolor::{
@@ -40,21 +40,7 @@ use crate::dpx_pdfdev::{pdf_tmatrix, transform_info};
 use crate::dpx_pdfparse::skip_white;
 use crate::mfree;
 use crate::streq_ptr;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn strcasecmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-}
+use libc::{atof, free, memcmp, strcasecmp, strcmp, strlen};
 
 /* Color names */
 #[derive(Clone)]

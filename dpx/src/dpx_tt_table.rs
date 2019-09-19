@@ -19,13 +19,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use super::dpx_numbers::{
     tt_get_signed_byte, tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair,
@@ -33,12 +35,10 @@ use super::dpx_numbers::{
 };
 use crate::warn;
 
+use super::dpx_mem::new;
 use super::dpx_sfnt::{sfnt_find_table_len, sfnt_find_table_pos, sfnt_locate_table};
 use crate::{ttstub_input_read, ttstub_input_seek};
-extern "C" {
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;

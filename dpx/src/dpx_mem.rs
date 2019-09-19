@@ -19,26 +19,23 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn malloc(_: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn realloc(_: *mut libc::c_void, _: u64) -> *mut libc::c_void;
-}
+use libc::{free, malloc, realloc};
+
 pub type size_t = u64;
 
 #[no_mangle]
 pub unsafe extern "C" fn new(mut size: u32) -> *mut libc::c_void {
-    let mut result: *mut libc::c_void = malloc(size as size_t);
+    let mut result: *mut libc::c_void = malloc(size as _);
     if result.is_null() {
         panic!("Out of memory - asked for {} bytes\n", size);
     }
@@ -47,7 +44,7 @@ pub unsafe extern "C" fn new(mut size: u32) -> *mut libc::c_void {
 #[no_mangle]
 pub unsafe extern "C" fn renew(mut mem: *mut libc::c_void, mut size: u32) -> *mut libc::c_void {
     if size != 0 {
-        let mut result: *mut libc::c_void = realloc(mem, size as size_t);
+        let mut result: *mut libc::c_void = realloc(mem, size as _);
         if result.is_null() {
             panic!("Out of memory - asked for {} bytes\n", size);
         }
@@ -57,4 +54,13 @@ pub unsafe extern "C" fn renew(mut mem: *mut libc::c_void, mut size: u32) -> *mu
         free(mem);
         return 0 as *mut libc::c_void;
     };
+}
+
+extern "C" {
+    #[no_mangle]
+    pub fn xstrdup(s: *const i8) -> *mut i8;
+    #[no_mangle]
+    pub fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
+    #[no_mangle]
+    pub fn xmalloc(size: size_t) -> *mut libc::c_void;
 }

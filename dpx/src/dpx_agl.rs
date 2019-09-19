@@ -34,37 +34,14 @@ use crate::{streq_ptr, strstartswith};
 
 use super::dpx_dpxfile::dpx_tt_open;
 use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::new;
 use super::dpx_mfileio::tt_mfgets;
 use super::dpx_pdfparse::{parse_ident, skip_white};
 use super::dpx_unicode::{UC_UTF16BE_encode_char, UC_is_valid};
 use crate::ttstub_input_close;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy, strchr, strcmp, strcpy, strlen, strncpy, strtol};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -151,20 +128,21 @@ pub unsafe extern "C" fn agl_chop_suffix(
                 ((len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64)
                     as u32,
             ) as *mut i8;
-            strncpy(name, glyphname, len as u64);
+            strncpy(name, glyphname, len as _);
             *name.offset(len as isize) = '\u{0}' as i32 as i8;
             if *p.offset(0) as i32 == '\u{0}' as i32 {
                 *suffix = 0 as *mut i8
             } else {
-                *suffix = new((strlen(p).wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32) as *mut i8;
+                *suffix =
+                    new((strlen(p).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                        as *mut i8;
                 strcpy(*suffix, p);
             }
         }
     } else {
-        name = new((strlen(glyphname).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+        name =
+            new((strlen(glyphname).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy(name, glyphname);
         *suffix = 0 as *mut i8
     }
@@ -229,8 +207,8 @@ unsafe extern "C" fn skip_modifier(mut p: *mut *const i8, mut endptr: *const i8)
     let mut slen: size_t = 0i32 as size_t;
     let mut len: size_t = 0;
     let mut i: u32 = 0;
-    len = endptr.wrapping_offset_from(*p) as i64 as size_t;
-    i = 0_u32;
+    let len = endptr.wrapping_offset_from(*p) as usize;
+    i = 0;
     while !modifiers[i as usize].is_null() {
         if len >= strlen(modifiers[i as usize])
             && memcmp(
@@ -239,7 +217,7 @@ unsafe extern "C" fn skip_modifier(mut p: *mut *const i8, mut endptr: *const i8)
                 len,
             ) == 0
         {
-            slen = strlen(modifiers[i as usize]);
+            slen = strlen(modifiers[i as usize]) as _;
             *p = (*p).offset(slen as isize);
             break;
         } else {
@@ -249,7 +227,6 @@ unsafe extern "C" fn skip_modifier(mut p: *mut *const i8, mut endptr: *const i8)
     slen
 }
 unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
-    let mut len: size_t = 0;
     let mut slen: size_t = 0;
     let mut p: *const i8 = 0 as *const i8;
     let mut endptr: *const i8 = 0 as *const i8;
@@ -257,8 +234,8 @@ unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
         return false;
     }
     p = glyphname;
-    len = strlen(glyphname);
-    if len < 6i32 as u64
+    let len = strlen(glyphname);
+    if len < 6
         || strcmp(
             p.offset(len as isize).offset(-5),
             b"small\x00" as *const u8 as *const i8,
@@ -267,9 +244,9 @@ unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
         return false;
     }
     endptr = p.offset(len as isize).offset(-5);
-    len = (len as u64).wrapping_sub(5i32 as u64) as size_t as size_t;
+    let len = len.wrapping_sub(5);
     slen = skip_modifier(&mut p, endptr);
-    if slen == len {
+    if slen == len as _ {
         return true;
     } else {
         if slen > 0i32 as u64 {
@@ -277,18 +254,18 @@ unsafe extern "C" fn is_smallcap(mut glyphname: *const i8) -> bool {
             return false;
         }
     }
-    len = (len as u64).wrapping_sub(skip_capital(&mut p, endptr) as u64) as size_t as size_t;
-    if len == 0i32 as u64 {
+    let mut len = len.wrapping_sub(skip_capital(&mut p, endptr) as _) as usize;
+    if len == 0 {
         return true;
         /* Asmall, AEsmall, etc */
     }
-    while len > 0i32 as u64 {
+    while len > 0 {
         /* allow multiple accent */
         slen = skip_modifier(&mut p, endptr);
         if slen == 0i32 as u64 {
             return false;
         }
-        len = (len as u64).wrapping_sub(slen) as size_t as size_t
+        len = len.wrapping_sub(slen as _)
     }
     true
 }
@@ -671,11 +648,10 @@ pub unsafe extern "C" fn agl_suffix_to_otltag(mut suffix: *const i8) -> *const i
 }
 unsafe extern "C" fn agl_guess_name(mut glyphname: *const i8) -> ssize_t {
     let mut i: ssize_t = 0;
-    let mut len: size_t = 0;
     if is_smallcap(glyphname) {
         return 0i32 as ssize_t;
     }
-    len = strlen(glyphname);
+    let len = strlen(glyphname);
     i = 1i32 as ssize_t;
     while !var_list[i as usize].key.is_null() {
         if len > strlen(var_list[i as usize].key)
@@ -717,11 +693,11 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         memcpy(
             (*agln).name as *mut libc::c_void,
             glyphname as *const libc::c_void,
-            n as u64,
+            n as _,
         );
         *(*agln).name.offset(n as isize) = '\u{0}' as i32 as i8
     } else if is_smallcap(glyphname) {
-        n = strlen(glyphname).wrapping_sub(5i32 as u64) as i32;
+        n = strlen(glyphname).wrapping_sub(5) as i32;
         (*agln).suffix =
             new((3_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
         strcpy((*agln).suffix, b"sc\x00" as *const u8 as *const i8);
@@ -748,15 +724,14 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
             n = strlen(glyphname).wrapping_sub(strlen(var_list[var_idx as usize].key)) as i32;
             if !var_list[var_idx as usize].suffixes[0].is_null() {
                 (*agln).suffix = new((strlen(var_list[var_idx as usize].suffixes[0])
-                    .wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32) as *mut i8;
+                    .wrapping_add(1))
+                .wrapping_mul(::std::mem::size_of::<i8>())
+                    as _) as *mut i8;
                 strcpy((*agln).suffix, var_list[var_idx as usize].suffixes[0]);
             } else {
-                (*agln).suffix = new((strlen(var_list[var_idx as usize].key)
-                    .wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32) as *mut i8;
+                (*agln).suffix = new((strlen(var_list[var_idx as usize].key).wrapping_add(1))
+                    .wrapping_mul(::std::mem::size_of::<i8>())
+                    as _) as *mut i8;
                 strcpy((*agln).suffix, var_list[var_idx as usize].key);
             }
         }
@@ -766,7 +741,7 @@ unsafe extern "C" fn agl_normalized_name(mut glyphname: *mut i8) -> *mut agl_nam
         memcpy(
             (*agln).name as *mut libc::c_void,
             glyphname as *const libc::c_void,
-            n as u64,
+            n as _,
         );
         *(*agln).name.offset(n as isize) = '\u{0}' as i32 as i8
     }
@@ -971,7 +946,7 @@ pub unsafe extern "C" fn agl_name_is_unicode(mut glyphname: *const i8) -> bool {
     len = if !suffix.is_null() {
         suffix.wrapping_offset_from(glyphname) as i64 as size_t
     } else {
-        strlen(glyphname)
+        strlen(glyphname) as _
     };
     /*
      * uni02ac is invalid glyph name and mapped to th empty string.
@@ -1013,7 +988,7 @@ pub unsafe extern "C" fn agl_name_convert_unicode(mut glyphname: *const i8) -> i
     if !agl_name_is_unicode(glyphname) {
         return -1i32;
     }
-    if strlen(glyphname) > 7i32 as u64 && *glyphname.offset(7) as i32 != '.' as i32 {
+    if strlen(glyphname) > 7 && *glyphname.offset(7) as i32 != '.' as i32 {
         warn!("Mapping to multiple Unicode characters not supported.");
         return -1i32;
     }
@@ -1148,7 +1123,7 @@ pub unsafe extern "C" fn agl_sput_UTF16BE(
         memcpy(
             name as *mut libc::c_void,
             p as *const libc::c_void,
-            sub_len as u64,
+            sub_len as _,
         );
         *name.offset(sub_len as isize) = '\u{0}' as i32 as i8;
         if agl_name_is_unicode(name) {
@@ -1258,7 +1233,7 @@ pub unsafe extern "C" fn agl_get_unicodes(
         memcpy(
             name as *mut libc::c_void,
             p as *const libc::c_void,
-            sub_len as u64,
+            sub_len as _,
         );
         *name.offset(sub_len as isize) = '\u{0}' as i32 as i8;
         if agl_name_is_unicode(name) {

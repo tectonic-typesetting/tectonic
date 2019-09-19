@@ -42,42 +42,16 @@ use super::dpx_cidtype0::{
 use super::dpx_cidtype2::{
     CIDFont_type2_dofont, CIDFont_type2_open, CIDFont_type2_set_flags, CIDFont_type2_set_verbose,
 };
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_file, pdf_get_version, pdf_link_obj, pdf_lookup_dict, pdf_name_value,
     pdf_new_name, pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj,
     pdf_remove_dict, pdf_string_value, PdfObjType,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memcpy, memset, strcat, strchr, strcmp, strcpy, strlen, strncmp, strtoul};
+
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -956,12 +930,12 @@ unsafe extern "C" fn CIDFont_base_open(
     if cid_basefont[idx as usize].fontname.is_null() {
         return -1i32;
     }
-    fontname = new((strlen(name).wrapping_add(12i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    fontname = new((strlen(name).wrapping_add(12)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+        as *mut i8;
     memset(
         fontname as *mut libc::c_void,
         0i32,
-        strlen(name).wrapping_add(12i32 as u64),
+        strlen(name).wrapping_add(12),
     );
     strcpy(fontname, name);
     match (*opt).style {
@@ -1027,12 +1001,12 @@ unsafe extern "C" fn CIDFont_base_open(
     }
     (*font).csi = new((1_u64).wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64) as u32)
         as *mut CIDSysInfo;
-    (*(*font).csi).registry = new((strlen(registry).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
-    (*(*font).csi).ordering = new((strlen(ordering).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
+    (*(*font).csi).registry =
+        new((strlen(registry).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
+    (*(*font).csi).ordering =
+        new((strlen(ordering).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*(*font).csi).registry, registry);
     strcpy((*(*font).csi).ordering, ordering);
     (*(*font).csi).supplement = supplement;
@@ -1141,15 +1115,13 @@ pub unsafe extern "C" fn CIDFont_cache_find(
          */
         (*opt).csi = new((1_u64).wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64) as u32)
             as *mut CIDSysInfo;
-        (*(*opt).csi).registry = new(
-            (strlen((*cmap_csi).registry).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
-        ) as *mut i8;
+        (*(*opt).csi).registry = new((strlen((*cmap_csi).registry).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*opt).csi).registry, (*cmap_csi).registry);
-        (*(*opt).csi).ordering = new(
-            (strlen((*cmap_csi).ordering).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
-        ) as *mut i8;
+        (*(*opt).csi).ordering = new((strlen((*cmap_csi).ordering).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*opt).csi).ordering, (*cmap_csi).ordering);
         (*(*opt).csi).supplement = (*cmap_csi).supplement
     }
@@ -1227,13 +1199,13 @@ pub unsafe extern "C" fn CIDFont_cache_find(
                         as u32,
                 ) as *mut *mut CIDFont
             }
-            (*font).name = new((strlen(map_name).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*font).name = new(
+                (strlen(map_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _
+            ) as *mut i8;
             strcpy((*font).name, map_name);
-            (*font).ident = new((strlen(map_name).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*font).ident = new(
+                (strlen(map_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _
+            ) as *mut i8;
             strcpy((*font).ident, map_name);
             (*font).options = opt;
             let ref mut fresh0 = *(*__cache).fonts.offset(font_id as isize);
@@ -1308,28 +1280,28 @@ unsafe extern "C" fn get_cidsysinfo(
     /* First try alias for standard one. */
     i = 0i32; /* Use heighest supported value for current output PDF version. */
     while !CIDFont_stdcc_alias[i as usize].name.is_null() {
-        n = strlen(CIDFont_stdcc_alias[i as usize].name);
+        n = strlen(CIDFont_stdcc_alias[i as usize].name) as _;
         if !strstartswith((*fmap_opt).charcoll, CIDFont_stdcc_alias[i as usize].name).is_null() {
             csi_idx = CIDFont_stdcc_alias[i as usize].index;
             csi = new((1_u64).wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64) as u32)
                 as *mut CIDSysInfo;
             (*csi).registry = new((strlen(CIDFont_stdcc_def[csi_idx as usize].registry)
-                .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+                .wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
             strcpy(
                 (*csi).registry,
                 CIDFont_stdcc_def[csi_idx as usize].registry,
             );
             (*csi).ordering = new((strlen(CIDFont_stdcc_def[csi_idx as usize].ordering)
-                .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+                .wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
             strcpy(
                 (*csi).ordering,
                 CIDFont_stdcc_def[csi_idx as usize].ordering,
             );
-            if strlen((*fmap_opt).charcoll) > n {
+            if strlen((*fmap_opt).charcoll) > n as usize {
                 (*csi).supplement = strtoul(
                     &mut *(*fmap_opt).charcoll.offset(n as isize),
                     0 as *mut *mut i8,
@@ -1380,24 +1352,24 @@ unsafe extern "C" fn get_cidsysinfo(
         }
         n = strlen((*fmap_opt).charcoll)
             .wrapping_sub(strlen(p))
-            .wrapping_sub(1i32 as u64);
+            .wrapping_sub(1) as _;
         (*csi).registry = new((n.wrapping_add(1i32 as u64) as u32 as u64)
             .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
         memcpy(
             (*csi).registry as *mut libc::c_void,
             (*fmap_opt).charcoll as *const libc::c_void,
-            n,
+            n as _,
         );
         *(*csi).registry.offset(n as isize) = '\u{0}' as i32 as i8;
-        m = strlen(p).wrapping_sub(strlen(q)).wrapping_sub(1i32 as u64) as i32;
+        m = strlen(p).wrapping_sub(strlen(q)).wrapping_sub(1) as _;
         (*csi).ordering =
             new(((m + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
                 as *mut i8;
         memcpy(
             (*csi).ordering as *mut libc::c_void,
             p as *const libc::c_void,
-            m as u64,
+            m as _,
         );
         *(*csi).ordering.offset(m as isize) = '\u{0}' as i32 as i8;
         (*csi).supplement = strtoul(q, 0 as *mut *mut i8, 10i32) as i32;

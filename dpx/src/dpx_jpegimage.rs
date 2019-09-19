@@ -32,6 +32,7 @@
 use crate::mfree;
 use crate::warn;
 
+use super::dpx_mem::{new, renew, xmalloc};
 use super::dpx_mfileio::work_buffer;
 use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
 use super::dpx_pdfcolor::{
@@ -45,19 +46,8 @@ use crate::dpx_pdfobj::{
     pdf_stream_dict, pdf_stream_length,
 };
 use crate::{ttstub_input_get_size, ttstub_input_getc, ttstub_input_read, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memset};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -369,7 +359,7 @@ unsafe extern "C" fn JPEG_info_init(mut j_info: *mut JPEG_info) {
     memset(
         (*j_info).skipbits.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        (1024i32 / 8i32 + 1i32) as u64,
+        1024 / 8 + 1,
     );
 }
 unsafe extern "C" fn JPEG_release_APPn_data(
@@ -1070,7 +1060,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"JFIF\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
-                            5i32 as u64,
+                            5,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 0i32;
@@ -1079,7 +1069,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         } else if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"JFXX\x00" as *const u8 as *const i8 as *const libc::c_void,
-                            5i32 as u64,
+                            5,
                         ) == 0
                         {
                             length = (length as u64)
@@ -1100,7 +1090,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"Exif\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
-                            5i32 as u64,
+                            5,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 3i32;
@@ -1112,7 +1102,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         } else if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"http:\x00" as *const u8 as *const i8 as *const libc::c_void,
-                            5i32 as u64,
+                            5,
                         ) == 0
                             && length > 24i32
                         {
@@ -1126,7 +1116,7 @@ unsafe extern "C" fn JPEG_scan_file(
                                 app_sig.as_mut_ptr() as *const libc::c_void,
                                 b"//ns.adobe.com/xap/1.0/\x00\x00" as *const u8 as *const i8
                                     as *const libc::c_void,
-                                24i32 as u64,
+                                24,
                             ) == 0
                             {
                                 (*j_info).flags |= 1i32 << 4i32;
@@ -1157,7 +1147,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"ICC_PROFILE\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
-                            12i32 as u64,
+                            12,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 2i32;
@@ -1187,7 +1177,7 @@ unsafe extern "C" fn JPEG_scan_file(
                         if memcmp(
                             app_sig.as_mut_ptr() as *const libc::c_void,
                             b"Adobe\x00" as *const u8 as *const i8 as *const libc::c_void,
-                            5i32 as u64,
+                            5,
                         ) == 0
                         {
                             (*j_info).flags |= 1i32 << 1i32;

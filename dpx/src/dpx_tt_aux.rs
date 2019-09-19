@@ -19,15 +19,18 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use super::dpx_dvipdfmx::always_embed;
+use super::dpx_error::dpx_warning;
 use super::dpx_numbers::tt_get_unsigned_quad;
 use super::dpx_tt_post::{tt_read_post_table, tt_release_post_table};
 use super::dpx_tt_table::{tt_read_head_table, tt_read_os2__table};
@@ -36,13 +39,8 @@ use crate::dpx_pdfobj::{
     pdf_new_string, pdf_obj,
 };
 use crate::ttstub_input_seek;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-}
+use libc::{free, memcpy};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -355,7 +353,7 @@ pub unsafe extern "C" fn tt_get_fontdesc(
         memcpy(
             panose.as_mut_ptr().offset(2) as *mut libc::c_void,
             (*os2).panose.as_mut_ptr() as *const libc::c_void,
-            10i32 as u64,
+            10,
         );
         styledict = pdf_new_dict();
         pdf_add_dict(

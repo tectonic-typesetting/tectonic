@@ -36,7 +36,9 @@ use super::dpx_cmap::{
     CMap_cache_close, CMap_cache_find, CMap_cache_get, CMap_cache_init, CMap_get_name,
     CMap_get_profile, CMap_get_type, CMap_set_verbose,
 };
+use super::dpx_error::{dpx_message, dpx_warning};
 use super::dpx_fontmap::pdf_lookup_fontmap_record;
+use super::dpx_mem::{new, renew};
 use super::dpx_pdfencoding::{
     pdf_close_encodings, pdf_encoding_add_usedchars, pdf_encoding_complete,
     pdf_encoding_findresource, pdf_encoding_get_name, pdf_encoding_get_tounicode,
@@ -52,6 +54,7 @@ use super::dpx_type0::{
 };
 use super::dpx_type1::{pdf_font_load_type1, pdf_font_open_type1};
 use super::dpx_type1c::{pdf_font_load_type1c, pdf_font_open_type1c};
+use super::strtoll;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_dict, pdf_new_name, pdf_obj,
     pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_length, PdfObjType,
@@ -60,44 +63,9 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::stub_errno as errno;
 use crate::{info, warn};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    #[no_mangle]
-    fn strtoll(_: *const i8, _: *mut *mut i8, _: i32) -> libc::c_longlong;
-    #[no_mangle]
-    fn rand() -> i32;
-    #[no_mangle]
-    fn srand(__seed: u32);
-    #[no_mangle]
-    fn getenv(__name: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strstr(_: *const i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn snprintf(_: *mut i8, _: u64, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn time(__timer: *mut time_t) -> time_t;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, getenv, memset, rand, snprintf, sprintf, srand, strcpy, strlen, strstr, time};
+
 pub type __time_t = i64;
 pub type size_t = u64;
 pub type time_t = __time_t;
@@ -217,7 +185,7 @@ pub unsafe extern "C" fn pdf_font_make_uniqueTag(mut tag: *mut i8) {
     if unique_tags_deterministic != 0 {
         snprintf(
             tag,
-            7i32 as u64,
+            7,
             b"%06d\x00" as *const u8 as *const i8,
             unique_tag_state,
         );
@@ -248,11 +216,7 @@ unsafe extern "C" fn pdf_init_font_struct(mut font: *mut pdf_font) {
     (*font).subtype = -1i32;
     (*font).font_id = -1i32;
     (*font).fontname = 0 as *mut i8;
-    memset(
-        (*font).uniqueID.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        7i32 as u64,
-    );
+    memset((*font).uniqueID.as_mut_ptr() as *mut libc::c_void, 0i32, 7);
     (*font).index = 0i32;
     (*font).encoding_id = -1i32;
     (*font).reference = 0 as *mut pdf_obj;
@@ -291,11 +255,11 @@ unsafe extern "C" fn pdf_flush_font(mut font: *mut pdf_font) {
                         (*font).ident,
                     );
                 }
-                fontname = new(((7i32 as u64)
+                fontname = new(((7usize)
                     .wrapping_add(strlen((*font).fontname))
-                    .wrapping_add(1i32 as u64) as u32 as u64)
-                    .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                    as u32) as *mut i8;
+                    .wrapping_add(1))
+                .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                    as *mut i8;
                 uniqueTag = pdf_font_get_uniqueTag(font);
                 sprintf(
                     fontname,
@@ -411,7 +375,7 @@ pub unsafe extern "C" fn pdf_get_font_usedchars(mut font_id: i32) -> *mut i8 {
             memset(
                 (*font).usedchars as *mut libc::c_void,
                 0i32,
-                (256i32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64),
+                (256usize).wrapping_mul(::std::mem::size_of::<i8>()),
             );
         }
         return (*font).usedchars;
@@ -882,13 +846,13 @@ pub unsafe extern "C" fn pdf_font_findresource(
             pdf_init_font_struct(font);
             (*font).point_size = font_scale;
             (*font).encoding_id = encoding_id;
-            (*font).ident = new((strlen(fontname).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*font).ident = new(
+                (strlen(fontname).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _
+            ) as *mut i8;
             strcpy((*font).ident, fontname);
-            (*font).map_name = new((strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*font).map_name = new(
+                (strlen(tex_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _
+            ) as *mut i8;
             strcpy((*font).map_name, tex_name);
             (*font).index = if !mrec.is_null() && (*mrec).opt.index != 0 {
                 (*mrec).opt.index
@@ -1055,14 +1019,15 @@ pub unsafe extern "C" fn pdf_font_set_fontname(
     mut fontname: *const i8,
 ) -> i32 {
     assert!(!font.is_null() && !fontname.is_null());
-    if strlen(fontname) > 127i32 as u64 {
+    if strlen(fontname) > 127 {
         panic!("Unexpected error...");
     }
     if !(*font).fontname.is_null() {
         free((*font).fontname as *mut libc::c_void);
     }
-    (*font).fontname = new((strlen(fontname).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*font).fontname =
+        new((strlen(fontname).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*font).fontname, fontname);
     0i32
 }

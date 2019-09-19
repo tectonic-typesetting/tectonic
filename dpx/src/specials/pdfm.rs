@@ -36,17 +36,19 @@ use crate::{streq_ptr, strstartswith};
 use super::util::{spc_util_read_blahblah, spc_util_read_dimtrns, spc_util_read_pdfcolor};
 use super::{
     spc_begin_annot, spc_clear_objects, spc_end_annot, spc_flush_object, spc_lookup_object,
-    spc_push_object, spc_resume_annot, spc_suspend_annot,
+    spc_push_object, spc_resume_annot, spc_suspend_annot, spc_warn,
 };
 use crate::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode};
 use crate::dpx_dpxutil::parse_c_ident;
 use crate::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
 use crate::dpx_dvipdfmx::is_xdv;
+use crate::dpx_error::dpx_warning;
 use crate::dpx_fontmap::{
     is_pdfm_mapline, pdf_append_fontmap_record, pdf_clear_fontmap_record, pdf_init_fontmap_record,
     pdf_insert_fontmap_record, pdf_load_fontmap_file, pdf_read_fontmap_line,
     pdf_remove_fontmap_record,
 };
+use crate::dpx_mem::new;
 use crate::dpx_mfileio::work_buffer;
 use crate::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
@@ -83,25 +85,8 @@ use crate::dpx_unicode::{
     UC_UTF8_is_valid_string, UC_is_valid,
 };
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strstr(_: *const i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, strlen, strstr};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -609,7 +594,7 @@ unsafe extern "C" fn needreencode(
             && memcmp(
                 pdf_string_value(vp),
                 b"\xfe\xff\x00" as *const u8 as *const i8 as *const libc::c_void,
-                2i32 as u64,
+                2,
             ) == 0
         {
             r = 0i32

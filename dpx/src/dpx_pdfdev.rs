@@ -34,7 +34,9 @@ use crate::{info, warn};
 use super::dpx_cff::cff_charsets_lookup_cid;
 use super::dpx_cmap::{CMap_cache_get, CMap_decode};
 use super::dpx_dvi::dvi_is_tracking_boxes;
+use super::dpx_error::{dpx_message, dpx_warning};
 use super::dpx_fontmap::pdf_lookup_fontmap_record;
+use super::dpx_mem::{new, renew};
 use super::dpx_mfileio::work_buffer;
 use super::dpx_pdfcolor::{pdf_color_clear_stack, pdf_color_get_current};
 use super::dpx_pdfdoc::pdf_doc_expand_box;
@@ -51,29 +53,11 @@ use super::dpx_pdffont::{
 use super::dpx_pdfximage::{
     pdf_ximage_get_reference, pdf_ximage_get_resname, pdf_ximage_scale_image,
 };
+use super::modf;
 use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_release_obj, pdfobj_escape_str};
 use crate::streq_ptr;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn modf(_: f64, _: *mut f64) -> f64;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, sprintf, strcpy, strlen};
+
 pub type size_t = u64;
 
 pub use super::dpx_pdfcolor::pdf_color;
@@ -1744,8 +1728,9 @@ pub unsafe extern "C" fn pdf_dev_locate_font(mut font_name: *const i8, mut ptsiz
         num_phys_fonts += 1
     }
     (*font).used_on_this_page = 0i32;
-    (*font).tex_name = new((strlen(font_name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*font).tex_name =
+        new((strlen(font_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*font).tex_name, font_name);
     (*font).sptsize = ptsize;
     match pdf_get_font_subtype((*font).font_id) {

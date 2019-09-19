@@ -29,25 +29,14 @@
     unused_mut
 )]
 
-use super::{spc_arg, spc_env};
+use super::{spc_arg, spc_env, spc_handler, spc_warn};
 use crate::dpx_dpxutil::parse_c_ident;
 use crate::dpx_pdfparse::skip_white;
 use crate::streq_ptr;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-}
+use libc::{free, memcmp, strlen};
+
 pub type size_t = u64;
 
-pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::spc_handler;
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
    Licensed under the MIT License.

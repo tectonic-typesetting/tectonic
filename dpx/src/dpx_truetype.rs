@@ -41,6 +41,8 @@ use super::dpx_agl::{
     agl_suffix_to_otltag,
 };
 use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_truetype_file};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::new;
 use super::dpx_pdfencoding::{pdf_encoding_get_encoding, pdf_encoding_is_predefined};
 use super::dpx_pdffont::{
     pdf_font, pdf_font_get_descriptor, pdf_font_get_encoding, pdf_font_get_ident,
@@ -66,37 +68,9 @@ use crate::dpx_pdfobj::{
     PdfObjType,
 };
 use crate::ttstub_input_close;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn atoi(__nptr: *const i8) -> i32;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{atoi, free, memcpy, memmove, memset, sprintf, strchr, strcpy, strlen, strncpy};
+
 pub type rust_input_handle_t = *mut libc::c_void;
 
 use super::dpx_sfnt::{put_big_endian, sfnt};
@@ -215,22 +189,18 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
     let mut fontname: [i8; 256] = [0; 256];
     let mut n: i32 = 0;
     let mut tmp: *mut pdf_obj = 0 as *mut pdf_obj;
-    memset(
-        fontname.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        256i32 as u64,
-    );
+    memset(fontname.as_mut_ptr() as *mut libc::c_void, 0i32, 256);
     length = tt_get_ps_fontname(sfont, fontname.as_mut_ptr(), 255_u16) as i32;
     if length < 1i32 {
-        length = (if strlen(ident) < 255i32 as u64 {
-            strlen(ident)
+        length = (if strlen(ident) < 255 {
+            strlen(ident) as _
         } else {
-            255i32 as u64
+            255
         }) as i32;
         /* Suppress some warnings on GCC. Clang supports the same warning control
          * #pragmas (and #defines __GNUC__!), but not these particular warnings, which
          * leads to a meta-warning if they're left unguarded. */
-        strncpy(fontname.as_mut_ptr(), ident, length as u64);
+        strncpy(fontname.as_mut_ptr(), ident, length as _);
     }
     fontname[length as usize] = '\u{0}' as i32 as i8;
     n = 0i32;
@@ -239,12 +209,12 @@ pub unsafe extern "C" fn pdf_font_open_truetype(mut font: *mut pdf_font) -> i32 
             memmove(
                 fontname.as_mut_ptr().offset(n as isize) as *mut libc::c_void,
                 fontname.as_mut_ptr().offset(n as isize).offset(1) as *const libc::c_void,
-                (length - n - 1i32) as u64,
+                (length - n - 1) as _,
             );
         }
         n += 1
     }
-    if strlen(fontname.as_mut_ptr()) == 0i32 as u64 {
+    if strlen(fontname.as_mut_ptr()) == 0 {
         _tt_abort(
             b"Can\'t find valid fontname for \"%s\".\x00" as *const u8 as *const i8,
             ident,
@@ -472,7 +442,7 @@ unsafe extern "C" fn do_builtin_encoding(
         return -1i32;
     }
     cmap_table = new((274_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
-    memset(cmap_table as *mut libc::c_void, 0i32, 274i32 as u64);
+    memset(cmap_table as *mut libc::c_void, 0i32, 274);
     put_big_endian(cmap_table as *mut libc::c_void, 0i32, 2i32);
     /* Version  */
     put_big_endian(cmap_table.offset(2) as *mut libc::c_void, 1i32, 2i32);
@@ -652,7 +622,7 @@ unsafe extern "C" fn selectglyph(
     let mut error: i32 = 0i32;
     assert!(!suffix.is_null() && !gm.is_null() && !out.is_null());
     assert!(!suffix.is_null() && *suffix as i32 != 0i32);
-    s = new((strlen(suffix).wrapping_add(1i32 as u64) as u32 as u64)
+    s = new((strlen(suffix).wrapping_add(1) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(s, suffix);
     /* First try converting suffix to feature tag.
@@ -670,14 +640,14 @@ unsafe extern "C" fn selectglyph(
         /* Try loading GSUB only when length of 'suffix' is less
          * than or equal to 4. tt_gsub give a warning otherwise.
          */
-        if strlen(s) > 4i32 as u64 {
+        if strlen(s) > 4 {
             error = -1i32
-        } else if strlen(s) == 4i32 as u64 {
+        } else if strlen(s) == 4 {
             error = select_gsub(s, gm)
         } else {
             /* Uh */
             /* less than 4. pad ' '. */
-            memset(t.as_mut_ptr() as *mut libc::c_void, ' ' as i32, 4i32 as u64);
+            memset(t.as_mut_ptr() as *mut libc::c_void, ' ' as i32, 4);
             t[4] = '\u{0}' as i32 as i8;
             memcpy(
                 t.as_mut_ptr() as *mut libc::c_void,
@@ -701,11 +671,11 @@ unsafe extern "C" fn selectglyph(
                 /* starting at 1 */
                 n = atoi(q.offset(1)) - 1i32;
                 *q.offset(1) = '\u{0}' as i32 as i8;
-                if strlen(s) > 4i32 as u64 {
+                if strlen(s) > 4 {
                     error = -1i32
                 } else {
                     /* This may be alternate substitution. */
-                    memset(t.as_mut_ptr() as *mut libc::c_void, ' ' as i32, 4i32 as u64);
+                    memset(t.as_mut_ptr() as *mut libc::c_void, ' ' as i32, 4);
                     t[4] = '\u{0}' as i32 as i8;
                     memcpy(
                         t.as_mut_ptr() as *mut libc::c_void,
@@ -747,7 +717,7 @@ unsafe extern "C" fn composeglyph(
             b"(?lig|lig?|?cmp|cmp?|frac|afrc)\x00" as *const u8 as *const i8,
             gm,
         )
-    } else if strlen(feat) > 4i32 as u64 {
+    } else if strlen(feat) > 4 {
         error = -1i32
     } else {
         memcpy(
@@ -829,13 +799,13 @@ unsafe extern "C" fn findcomposite(
     if error == 0 {
         return 0i32;
     }
-    gname = new((strlen(glyphname).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    gname = new((strlen(glyphname).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+        as *mut i8;
     strcpy(gname, glyphname);
     memset(
         gids.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        (32i32 as u64).wrapping_mul(::std::mem::size_of::<u16>() as u64),
+        (32usize).wrapping_mul(::std::mem::size_of::<u16>()),
     );
     n_comp = agl_decompose_glyphname(gname, nptrs.as_mut_ptr(), 32i32, &mut suffix);
     error = 0i32;
@@ -1103,7 +1073,7 @@ unsafe extern "C" fn do_custom_encoding(
         return -1i32;
     }
     cmap_table = new((274_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
-    memset(cmap_table as *mut libc::c_void, 0i32, 274i32 as u64);
+    memset(cmap_table as *mut libc::c_void, 0i32, 274);
     put_big_endian(cmap_table as *mut libc::c_void, 0i32, 2i32);
     /* Version  */
     put_big_endian(cmap_table.offset(2) as *mut libc::c_void, 1i32, 2i32);

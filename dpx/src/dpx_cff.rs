@@ -33,29 +33,12 @@ use crate::streq_ptr;
 use crate::warn;
 
 use super::dpx_cff_dict::{cff_dict_get, cff_dict_known, cff_dict_unpack, cff_release_dict};
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::{new, renew};
 use super::dpx_numbers::{tt_get_unsigned_byte, tt_get_unsigned_pair};
 use crate::{ttstub_input_read, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy, memmove, memset, strlen};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -883,7 +866,7 @@ pub unsafe extern "C" fn cff_get_name(mut cff: *mut cff_font) -> *mut i8 {
             .data
             .offset(*(*idx).offset.offset((*cff).index as isize) as isize)
             .offset(-1) as *const libc::c_void,
-        len as u64,
+        len as _,
     );
     *fontname.offset(len as isize) = '\u{0}' as i32 as i8;
     fontname
@@ -891,7 +874,7 @@ pub unsafe extern "C" fn cff_get_name(mut cff: *mut cff_font) -> *mut i8 {
 #[no_mangle]
 pub unsafe extern "C" fn cff_set_name(mut cff: *mut cff_font, mut name: *mut i8) -> i32 {
     let mut idx: *mut cff_index = 0 as *mut cff_index;
-    if strlen(name) > 127i32 as u64 {
+    if strlen(name) > 127 {
         panic!("FontName string length too large...");
     }
     if !(*cff).name.is_null() {
@@ -905,7 +888,7 @@ pub unsafe extern "C" fn cff_set_name(mut cff: *mut cff_font, mut name: *mut i8)
     (*idx).offset =
         new((2_u64).wrapping_mul(::std::mem::size_of::<l_offset>() as u64) as u32) as *mut l_offset;
     *(*idx).offset.offset(0) = 1i32 as l_offset;
-    *(*idx).offset.offset(1) = strlen(name).wrapping_add(1i32 as u64) as l_offset;
+    *(*idx).offset.offset(1) = strlen(name).wrapping_add(1) as l_offset;
     (*idx).data = new(
         (strlen(name) as u32 as u64).wrapping_mul(::std::mem::size_of::<card8>() as u64) as u32
     ) as *mut card8;
@@ -914,7 +897,7 @@ pub unsafe extern "C" fn cff_set_name(mut cff: *mut cff_font, mut name: *mut i8)
         name as *const libc::c_void,
         strlen(name),
     );
-    (5i32 as u64).wrapping_add(strlen(name)) as i32
+    (5usize).wrapping_add(strlen(name)) as _
 }
 #[no_mangle]
 pub unsafe extern "C" fn cff_put_header(
@@ -1048,7 +1031,7 @@ pub unsafe extern "C" fn cff_pack_index(
         if destlen < 2i32 {
             panic!("Not enough space available...");
         }
-        memset(dest as *mut libc::c_void, 0i32, 2i32 as u64);
+        memset(dest as *mut libc::c_void, 0i32, 2);
         return 2i32;
     }
     len = cff_index_size(idx);
@@ -1132,7 +1115,7 @@ pub unsafe extern "C" fn cff_pack_index(
     memmove(
         dest as *mut libc::c_void,
         (*idx).data as *const libc::c_void,
-        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1_u32) as u64,
+        (*(*idx).offset.offset((*idx).count as isize)).wrapping_sub(1) as _,
     );
     len
 }
@@ -1199,7 +1182,7 @@ pub unsafe extern "C" fn cff_get_string(mut cff: *mut cff_font, mut id: s_SID) -
         memcpy(
             result as *mut libc::c_void,
             cff_stdstr[id as usize] as *const libc::c_void,
-            len as u64,
+            len as _,
         );
         *result.offset(len as isize) = '\u{0}' as i32 as i8
     } else if !cff.is_null() && !(*cff).string.is_null() {
@@ -1217,7 +1200,7 @@ pub unsafe extern "C" fn cff_get_string(mut cff: *mut cff_font, mut id: s_SID) -
                     .data
                     .offset(*(*strings).offset.offset(id as isize) as isize)
                     .offset(-1) as *const libc::c_void,
-                len as u64,
+                len as _,
             );
             *result.offset(len as isize) = '\u{0}' as i32 as i8
         }
@@ -1236,8 +1219,8 @@ pub unsafe extern "C" fn cff_get_sid(mut cff: *mut cff_font, mut str: *const i8)
         i = 0i32 as card16;
         while (i as i32) < (*idx).count as i32 {
             if strlen(str)
-                == (*(*idx).offset.offset((i as i32 + 1i32) as isize))
-                    .wrapping_sub(*(*idx).offset.offset(i as isize)) as u64
+                == (*(*idx).offset.offset((i + 1) as isize))
+                    .wrapping_sub(*(*idx).offset.offset(i as isize)) as _
                 && memcmp(
                     str as *const libc::c_void,
                     (*idx)
@@ -1294,8 +1277,8 @@ unsafe extern "C" fn cff_match_string(
             panic!("Invalid SID");
         }
         if strlen(str)
-            == (*(*(*cff).string).offset.offset((i as i32 + 1i32) as isize))
-                .wrapping_sub(*(*(*cff).string).offset.offset(i as isize)) as u64
+            == (*(*(*cff).string).offset.offset((i + 1) as isize))
+                .wrapping_sub(*(*(*cff).string).offset.offset(i as isize)) as _
         {
             return if memcmp(
                 str as *const libc::c_void,
@@ -1337,7 +1320,7 @@ pub unsafe extern "C" fn cff_add_string(
     let mut strings: *mut cff_index = 0 as *mut cff_index;
     let mut offset: l_offset = 0;
     let mut size: l_offset = 0;
-    let mut len: size_t = strlen(str);
+    let mut len: size_t = strlen(str) as _;
     if cff.is_null() {
         panic!("CFF font not opened.");
     }
@@ -1363,7 +1346,7 @@ pub unsafe extern "C" fn cff_add_string(
                 && memcmp(
                     (*strings).data.offset(offset as isize).offset(-1) as *const libc::c_void,
                     str as *const libc::c_void,
-                    len,
+                    len as _,
                 ) == 0
             {
                 return (idx as i32 + 391i32) as s_SID;
@@ -1396,7 +1379,7 @@ pub unsafe extern "C" fn cff_add_string(
     memcpy(
         (*strings).data.offset(offset as isize).offset(-1) as *mut libc::c_void,
         str as *const libc::c_void,
-        len,
+        len as _,
     );
     (idx as i32 + 391i32) as s_SID
 }

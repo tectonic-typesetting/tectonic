@@ -19,20 +19,19 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::warn;
+use libc::memmove;
 
-extern "C" {
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-}
 pub type card8 = u8;
 pub type card16 = u16;
 pub type c_offsize = u8;
@@ -267,7 +266,7 @@ unsafe extern "C" fn do_operator1(
                 memmove(
                     *dest as *mut libc::c_void,
                     *data as *const libc::c_void,
-                    masklen as u64,
+                    masklen as _,
                 );
                 *data = (*data).offset(masklen as isize);
                 *dest = (*dest).offset(masklen as isize)

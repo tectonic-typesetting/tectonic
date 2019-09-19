@@ -36,6 +36,8 @@ use super::dpx_cid::{
     CIDFont_get_subtype, CIDFont_is_ACCFont, CIDFont_is_UCSFont,
 };
 use super::dpx_cmap::{CMap_cache_get, CMap_get_CIDSysInfo, CMap_get_wmode, CMap_is_Identity};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use super::dpx_pdfencoding::pdf_load_ToUnicode_stream;
 use super::dpx_pdfresource::{pdf_defineresource, pdf_findresource, pdf_get_resource_reference};
 use super::dpx_tt_cmap::otf_create_ToUnicode_stream;
@@ -45,27 +47,8 @@ use crate::dpx_pdfobj::{
     pdf_release_obj,
 };
 use crate::streq_ptr;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memset, sprintf, strcpy, strlen};
+
 pub type size_t = u64;
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -101,8 +84,8 @@ pub unsafe extern "C" fn Type0Font_set_verbose(mut level: i32) {
 }
 unsafe extern "C" fn new_used_chars2() -> *mut i8 {
     let mut used_chars: *mut i8 = 0 as *mut i8;
-    used_chars = new((8192_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
-    memset(used_chars as *mut libc::c_void, 0i32, 8192i32 as u64);
+    used_chars = new((8192usize).wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
+    memset(used_chars as *mut libc::c_void, 0i32, 8192);
     used_chars
 }
 /* MUST BE NULL */
@@ -255,9 +238,9 @@ unsafe extern "C" fn add_ToUnicode(mut font: *mut Type0Font) {
     } else {
         let mut cmap_base: *mut i8 = new((strlen((*csi).registry)
             .wrapping_add(strlen((*csi).ordering))
-            .wrapping_add(2i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+            .wrapping_add(2))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         sprintf(
             cmap_base,
             b"%s-%s\x00" as *const u8 as *const i8,
@@ -438,19 +421,19 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      * Identity-V for vertical fonts.
      */
     if wmode != 0 {
-        (*font).encoding = new((strlen(b"Identity-V\x00" as *const u8 as *const i8)
-            .wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        (*font).encoding = new(
+            (strlen(b"Identity-V\x00" as *const u8 as *const i8).wrapping_add(1))
+                .wrapping_mul(::std::mem::size_of::<i8>()) as _,
+        ) as *mut i8;
         strcpy(
             (*font).encoding,
             b"Identity-V\x00" as *const u8 as *const i8,
         );
     } else {
-        (*font).encoding = new((strlen(b"Identity-H\x00" as *const u8 as *const i8)
-            .wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        (*font).encoding = new(
+            (strlen(b"Identity-H\x00" as *const u8 as *const i8).wrapping_add(1))
+                .wrapping_mul(::std::mem::size_of::<i8>()) as _,
+        ) as *mut i8;
         strcpy(
             (*font).encoding,
             b"Identity-H\x00" as *const u8 as *const i8,
@@ -490,7 +473,7 @@ pub unsafe extern "C" fn Type0Font_cache_find(
      */
     fontname = CIDFont_get_fontname(cidfont); /* skip XXXXXX+ */
     if __verbose != 0 {
-        if CIDFont_get_embedding(cidfont) != 0 && strlen(fontname) > 7i32 as u64 {
+        if CIDFont_get_embedding(cidfont) != 0 && strlen(fontname) > 7 {
             dpx_message(
                 b"(CID:%s)\x00" as *const u8 as *const i8,
                 fontname.offset(7),
@@ -516,9 +499,9 @@ pub unsafe extern "C" fn Type0Font_cache_find(
         1 => {
             (*font).fontname = new((strlen(fontname)
                 .wrapping_add(strlen((*font).encoding))
-                .wrapping_add(2i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+                .wrapping_add(2))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
             sprintf(
                 (*font).fontname,
                 b"%s-%s\x00" as *const u8 as *const i8,

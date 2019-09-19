@@ -32,25 +32,13 @@
 use crate::streq_ptr;
 use crate::warn;
 
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::{new, renew};
 use crate::dpx_pdfobj::{pdf_link_obj, pdf_obj, pdf_ref_obj, pdf_release_obj};
 use crate::mfree;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, strcpy, strlen};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct pdf_res {
@@ -289,9 +277,9 @@ pub unsafe extern "C" fn pdf_defineresource(
         res = &mut *(*rc).resources.offset(res_id as isize) as *mut pdf_res;
         pdf_init_resource(res);
         if !resname.is_null() && *resname.offset(0) as i32 != '\u{0}' as i32 {
-            (*res).ident = new((strlen(resname).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*res).ident = new(
+                (strlen(resname).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _
+            ) as *mut i8;
             strcpy((*res).ident, resname);
         }
         (*res).category = cat_id;

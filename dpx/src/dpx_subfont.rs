@@ -32,31 +32,12 @@
 use crate::streq_ptr;
 use crate::{info, warn};
 
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use super::dpx_mfileio::tt_mfgets;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcpy, strchr, strcmp, strcpy, strlen, strtol};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -151,11 +132,11 @@ unsafe extern "C" fn readline(
             *r = ' ' as i32 as i8; /* empty line */
             *r.offset(1) = '\u{0}' as i32 as i8
         }
-        if strlen(q) == 0i32 as u64 {
+        if strlen(q) == 0 {
             break;
         }
-        n = (n as u64).wrapping_add(strlen(q)) as i32 as i32;
-        q = q.offset(strlen(q).wrapping_sub(1i32 as u64) as isize);
+        n = (n as u64).wrapping_add(strlen(q) as _) as _;
+        q = q.offset(strlen(q).wrapping_sub(1) as _);
         if *q as i32 != '\\' as i32 {
             break;
         }
@@ -324,7 +305,7 @@ unsafe extern "C" fn scan_sfd_file(
         }
         id = new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
-        memcpy(id as *mut libc::c_void, q as *const libc::c_void, n as u64);
+        memcpy(id as *mut libc::c_void, q as *const libc::c_void, n as _);
         *id.offset(n as isize) = '\u{0}' as i32 as i8;
         if (*sfd).num_subfonts >= (*sfd).max_subfonts {
             (*sfd).max_subfonts += 16i32;
@@ -392,9 +373,9 @@ unsafe extern "C" fn find_sfd_file(mut sfd_name: *const i8) -> i32 {
         }
         sfd = &mut *sfd_files.offset(num_sfd_files as isize) as *mut sfd_file_;
         init_sfd_file_(sfd);
-        (*sfd).ident = new((strlen(sfd_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        (*sfd).ident =
+            new((strlen(sfd_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy((*sfd).ident, sfd_name);
         handle =
             ttstub_input_open((*sfd).ident, TTInputFormat::SFD, 0i32) as *mut rust_input_handle_t;
