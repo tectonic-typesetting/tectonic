@@ -34,7 +34,7 @@ use super::dpx_sfnt::{
     sfnt_read_table_directory, sfnt_require_table,
 };
 use crate::streq_ptr;
-use crate::{info, warn};
+use crate::{info, warn, FromBEByteSlice};
 
 use super::dpx_cid::{CIDFont_get_embedding, CIDFont_get_parent_id, CIDFont_is_BaseFont};
 use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode_char};
@@ -784,20 +784,22 @@ unsafe extern "C" fn fix_CJK_symbols(mut code: u16) -> u16 {
     alt_code
 }
 unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> i32 {
-    let mut inbuf: [u8; 2] = [0; 2];
     let mut outbuf: [u8; 32] = [0; 32];
     let mut inbytesleft: size_t = 2i32 as size_t;
     let mut outbytesleft: size_t = 32i32 as size_t;
-    let mut p: *const u8 = 0 as *const u8;
     let mut q: *mut u8 = 0 as *mut u8;
     if cmap.is_null() {
         return cid as i32;
     }
-    inbuf[0] = (cid as i32 >> 8i32 & 0xffi32) as u8;
-    inbuf[1] = (cid as i32 & 0xffi32) as u8;
-    p = inbuf.as_mut_ptr();
+    let mut inbuf = cid.to_be_bytes().as_ptr();
     q = outbuf.as_mut_ptr();
-    CMap_decode_char(cmap, &mut p, &mut inbytesleft, &mut q, &mut outbytesleft);
+    CMap_decode_char(
+        cmap,
+        &mut inbuf,
+        &mut inbytesleft,
+        &mut q,
+        &mut outbytesleft,
+    );
     if inbytesleft != 0i32 as u64 {
         return 0i32;
     } else {
@@ -809,10 +811,8 @@ unsafe extern "C" fn cid_to_code(mut cmap: *mut CMap, mut cid: CID) -> i32 {
             } else {
                 if outbytesleft == 28i32 as u64 {
                     /* We assume the output encoding is UTF-16. */
-                    let mut hi: CID = 0;
-                    let mut lo: CID = 0;
-                    hi = ((outbuf[0] as i32) << 8i32 | outbuf[1] as i32) as CID;
-                    lo = ((outbuf[2] as i32) << 8i32 | outbuf[3] as i32) as CID;
+                    let mut hi: CID = u16::from_be_byte_slice(&outbuf[0..2]);
+                    let mut lo: CID = u16::from_be_byte_slice(&outbuf[2..4]);
                     if hi as i32 >= 0xd800i32
                         && hi as i32 <= 0xdbffi32
                         && lo as i32 >= 0xdc00i32

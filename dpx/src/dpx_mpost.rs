@@ -3922,7 +3922,7 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
     }
     mp_cmode = 0i32;
     pdf_doc_begin_page(1.0f64, -Xorigin, -Yorigin);
-    pdf_doc_set_mediabox(pdf_doc_current_page_number() as u32, &mut bbox);
+    pdf_doc_set_mediabox(pdf_doc_current_page_number() as u32, &bbox);
     dir_mode = pdf_dev_get_dirmode();
     pdf_dev_set_param(1i32, 0i32);
     skip_prolog(&mut start, end);

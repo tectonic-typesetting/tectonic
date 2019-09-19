@@ -40,8 +40,6 @@ use bridge::_tt_abort;
 use libc::{free, memset, sprintf, strcmp, strtod};
 
 pub type rust_input_handle_t = *mut libc::c_void;
-pub type card8 = u8;
-pub type card16 = u16;
 pub type l_offset = u32;
 pub type s_SID = u16;
 /* CFF Data Types */
@@ -531,14 +529,14 @@ static mut dict_operator: [C2RustUnnamed_2; 61] = [
 ];
 /* Parse DICT data */
 unsafe extern "C" fn get_integer(
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
     mut status: *mut i32,
 ) -> f64 {
     let mut result: i32 = 0i32;
-    let mut b0: card8 = 0;
-    let mut b1: card8 = 0;
-    let mut b2: card8 = 0;
+    let mut b0: u8 = 0;
+    let mut b1: u8 = 0;
+    let mut b2: u8 = 0;
     let fresh0 = *data;
     *data = (*data).offset(1);
     b0 = *fresh0;
@@ -590,8 +588,8 @@ unsafe extern "C" fn get_integer(
 }
 /* Simply uses strtod */
 unsafe extern "C" fn get_real(
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
     mut status: *mut i32,
 ) -> f64 {
     let mut result: f64 = 0.0f64; /* skip first byte (30) */
@@ -670,8 +668,8 @@ unsafe extern "C" fn get_real(
 /* operators */
 unsafe extern "C" fn add_dict(
     mut dict: *mut cff_dict,
-    mut data: *mut *mut card8,
-    mut endptr: *mut card8,
+    mut data: *mut *mut u8,
+    mut endptr: *mut u8,
     mut status: *mut i32,
 ) {
     let mut id: i32 = 0;
@@ -750,10 +748,7 @@ don't treat this as underflow (e.g. StemSnapV in TemporaLGCUni-Italic.otf) */
  *  ROS    : three numbers, SID, SID, and a number
  */
 #[no_mangle]
-pub unsafe extern "C" fn cff_dict_unpack(
-    mut data: *mut card8,
-    mut endptr: *mut card8,
-) -> *mut cff_dict {
+pub unsafe extern "C" fn cff_dict_unpack(mut data: *mut u8, mut endptr: *mut u8) -> *mut cff_dict {
     let mut dict: *mut cff_dict = 0 as *mut cff_dict;
     let mut status: i32 = 0i32;
     stack_top = 0i32;
@@ -791,152 +786,105 @@ pub unsafe extern "C" fn cff_dict_unpack(
     dict
 }
 /* Pack DICT data */
-unsafe extern "C" fn pack_integer(mut dest: *mut card8, mut destlen: i32, mut value: i32) -> i32 {
-    let mut len: i32 = 0i32; /* longint */
-    if value >= -107i32 && value <= 107i32 {
-        if destlen < 1i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
-        }
-        *dest.offset(0) = (value + 139i32 & 0xffi32) as card8;
-        len = 1i32
-    } else if value >= 108i32 && value <= 1131i32 {
-        if destlen < 2i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
-        }
-        value = 0xf700u32.wrapping_add(value as u32).wrapping_sub(108_u32) as i32;
-        *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
-        *dest.offset(1) = (value & 0xffi32) as card8;
-        len = 2i32
-    } else if value >= -1131i32 && value <= -108i32 {
-        if destlen < 2i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
-        }
-        value = 0xfb00u32.wrapping_sub(value as u32).wrapping_sub(108_u32) as i32;
-        *dest.offset(0) = (value >> 8i32 & 0xffi32) as card8;
-        *dest.offset(1) = (value & 0xffi32) as card8;
-        len = 2i32
-    } else if value >= -32768i32 && value <= 32767i32 {
+unsafe extern "C" fn pack_integer(dest: &mut [u8], mut value: i32) -> usize {
+    if value >= -107 && value <= 107 {
+        dest[0] = (value + 139 & 0xff) as u8;
+        1
+    } else if value >= 108 && value <= 1131 {
+        let value = (0xf700u32 + (value as u32) - 108) as u16;
+        dest[0..2].copy_from_slice(&value.to_be_bytes());
+        2
+    } else if value >= -1131 && value <= -108 {
+        let value = (0xfb00u32.wrapping_sub(value as u32).wrapping_sub(108)) as u16;
+        dest[0..2].copy_from_slice(&value.to_be_bytes());
+        2
+    } else if value >= -32768 && value <= 32767 {
         /* shortint */
-        if destlen < 3i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
-        }
-        *dest.offset(0) = 28i32 as card8;
-        *dest.offset(1) = (value >> 8i32 & 0xffi32) as card8;
-        *dest.offset(2) = (value & 0xffi32) as card8;
-        len = 3i32
+        let value = value as i16;
+        dest[0] = 28;
+        dest[1..3].copy_from_slice(&value.to_be_bytes());
+        3
     } else {
-        if destlen < 5i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
-        }
-        *dest.offset(0) = 29i32 as card8;
-        *dest.offset(1) = (value >> 24i32 & 0xffi32) as card8;
-        *dest.offset(2) = (value >> 16i32 & 0xffi32) as card8;
-        *dest.offset(3) = (value >> 8i32 & 0xffi32) as card8;
-        *dest.offset(4) = (value & 0xffi32) as card8;
-        len = 5i32
+        dest[0] = 29;
+        dest[1..5].copy_from_slice(&value.to_be_bytes());
+        5
     }
-    len
 }
-unsafe extern "C" fn pack_real(mut dest: *mut card8, mut destlen: i32, mut value: f64) -> i32 {
-    let mut pos: i32 = 2i32;
-    let mut buffer: [i8; 32] = [0; 32];
-    if destlen < 2i32 {
-        panic!("{}: Buffer overflow.", "CFF",);
+unsafe extern "C" fn pack_real(dest: &mut [u8], mut value: f64) -> usize {
+    let mut pos = 2_usize;
+    let mut buffer: [u8; 32] = [0; 32];
+    dest[0] = 30 as u8;
+    if value == 0. {
+        dest[1] = 0xf as u8;
+        return 2;
     }
-    *dest.offset(0) = 30i32 as card8;
-    if value == 0.0f64 {
-        *dest.offset(1) = 0xfi32 as card8;
-        return 2i32;
-    }
-    if value < 0.0f64 {
-        *dest.offset(1) = 0xe0i32 as card8;
-        value *= -1.0f64;
+    if value < 0. {
+        dest[1] = 0xe0 as u8;
+        value *= -1.;
         pos += 1
     }
     /* To avoid the problem with Mac OS X 10.4 Quartz,
      * change the presion of the real numbers
      * on June 27, 2007 for musix20.pfb */
     sprintf(
-        buffer.as_mut_ptr(),
+        buffer.as_mut_ptr() as *mut i8,
         b"%.13g\x00" as *const u8 as *const i8,
         value,
     );
     let mut i = 0;
-    while buffer[i] as u8 != '\u{0}' as u8 {
-        let mut ch: u8 = if buffer[i] as u8 == b'.' {
+    while buffer[i] != '\u{0}' as u8 {
+        let mut ch = if buffer[i] == b'.' {
             0xa
-        } else if buffer[i] as u8 >= b'0' && buffer[i] as u8 <= b'9' {
-            buffer[i] as u8 - b'0'
-        } else if buffer[i] as u8 == b'e' {
+        } else if buffer[i] >= b'0' && buffer[i] <= b'9' {
+            buffer[i] - b'0'
+        } else if buffer[i] == b'e' {
             i += 1;
-            (if buffer[i] as u8 == b'-' { 0xc } else { 0xb })
+            (if buffer[i] == b'-' { 0xc } else { 0xb })
         } else {
             panic!("{}: Invalid character.", "CFF")
         };
-        if destlen < pos / 2i32 + 1i32 {
-            panic!("{}: Buffer overflow.", "CFF");
-        }
-        if pos % 2i32 != 0 {
-            let ref mut fresh15 = *dest.offset((pos / 2i32) as isize);
-            *fresh15 = (*fresh15 as i32 + ch as i32) as card8
+        if pos % 2 != 0 {
+            dest[pos / 2] += ch;
         } else {
-            *dest.offset((pos / 2i32) as isize) = ((ch as i32) << 4i32) as card8
+            dest[pos / 2] = ((ch as i32) << 4i32) as u8
         }
         pos += 1;
         i += 1
     }
-    if pos % 2i32 != 0 {
-        let ref mut fresh16 = *dest.offset((pos / 2i32) as isize);
-        *fresh16 = (*fresh16 as i32 + 0xfi32) as card8;
+    if pos % 2 != 0 {
+        dest[pos / 2] += 0x0f;
         pos += 1
     } else {
-        if destlen < pos / 2i32 + 1i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
-        }
-        *dest.offset((pos / 2i32) as isize) = 0xffi32 as card8;
-        pos += 2i32
+        dest[pos / 2] = 0xff as u8;
+        pos += 2
     }
-    pos / 2i32
+    pos / 2
 }
 unsafe extern "C" fn cff_dict_put_number(
     mut value: f64,
-    mut dest: *mut card8,
-    mut destlen: i32,
+    dest: &mut [u8],
     mut type_0: i32,
-) -> i32 {
-    let mut len: i32 = 0i32;
+) -> usize {
     let mut nearint: f64 = 0.;
     nearint = (value + 0.5f64).floor();
     /* set offset to longint */
     if type_0 == 1i32 << 7i32 {
-        let mut lvalue: i32 = 0; /* integer */
-        lvalue = value as i32;
-        if destlen < 5i32 {
-            panic!("{}: Buffer overflow.", "CFF",);
-        }
-        *dest.offset(0) = 29i32 as card8;
-        *dest.offset(1) = (lvalue >> 24i32 & 0xffi32) as card8;
-        *dest.offset(2) = (lvalue >> 16i32 & 0xffi32) as card8;
-        *dest.offset(3) = (lvalue >> 8i32 & 0xffi32) as card8;
-        *dest.offset(4) = (lvalue & 0xffi32) as card8;
-        len = 5i32
+        let mut lvalue = value as i32; /* integer */
+        dest[0] = 29;
+        dest[1..5].copy_from_slice(&lvalue.to_be_bytes());
+        5
     } else if value > 0x7fffffffi32 as f64
         || value < (-0x7fffffffi32 - 1i32) as f64
         || (value - nearint).abs() > 1.0e-5f64
     {
         /* real */
-        len = pack_real(dest, destlen, value)
+        pack_real(dest, value)
     } else {
-        len = pack_integer(dest, destlen, nearint as i32)
+        pack_integer(dest, nearint as i32)
     }
-    len
 }
-unsafe extern "C" fn put_dict_entry(
-    mut de: *mut cff_dict_entry,
-    mut dest: *mut card8,
-    mut destlen: i32,
-) -> i32 {
-    let mut len: i32 = 0i32;
+unsafe extern "C" fn put_dict_entry(mut de: *mut cff_dict_entry, dest: &mut [u8]) -> usize {
+    let mut len = 0_usize;
     let mut i: i32 = 0;
     let mut type_0: i32 = 0;
     let mut id: i32 = 0;
@@ -949,33 +897,17 @@ unsafe extern "C" fn put_dict_entry(
         } else {
             type_0 = 1i32 << 0i32 | 1i32 << 1i32
         }
-        i = 0i32;
-        while i < (*de).count {
-            len += cff_dict_put_number(
-                *(*de).values.offset(i as isize),
-                dest.offset(len as isize),
-                destlen - len,
-                type_0,
-            );
-            i += 1
+        for i in 0..(*de).count {
+            len += cff_dict_put_number(*(*de).values.offset(i as isize), &mut dest[len..], type_0);
         }
         if id >= 0i32 && id < 22i32 {
-            if len + 1i32 > destlen {
-                panic!("{}: Buffer overflow.", "CFF",);
-            }
-            let fresh17 = len;
-            len = len + 1;
-            *dest.offset(fresh17 as isize) = id as card8
+            dest[len] = id as u8;
+            len += 1;
         } else if id >= 0i32 && id < 22i32 + 39i32 {
-            if len + 2i32 > destlen {
-                panic!("in cff_dict_pack(): Buffer overflow");
-            }
-            let fresh18 = len;
-            len = len + 1;
-            *dest.offset(fresh18 as isize) = 12i32 as card8;
-            let fresh19 = len;
-            len = len + 1;
-            *dest.offset(fresh19 as isize) = (id - 22i32) as card8
+            dest[len] = 12;
+            len += 1;
+            dest[len] = (id - 22i32) as u8;
+            len += 1;
         } else {
             panic!("{}: Invalid CFF DICT operator ID.", "CFF",);
         }
@@ -983,39 +915,28 @@ unsafe extern "C" fn put_dict_entry(
     len
 }
 #[no_mangle]
-pub unsafe extern "C" fn cff_dict_pack(
-    mut dict: *mut cff_dict,
-    mut dest: *mut card8,
-    mut destlen: i32,
-) -> i32 {
-    let mut len: i32 = 0i32;
-    let mut i: i32 = 0;
-    i = 0i32;
-    while i < (*dict).count {
+pub unsafe extern "C" fn cff_dict_pack(mut dict: *mut cff_dict, dest: &mut [u8]) -> usize {
+    let mut len = 0_usize;
+    let mut i = 0;
+    while i < (*dict).count as isize {
         if streq_ptr(
-            (*(*dict).entries.offset(i as isize)).key,
+            (*(*dict).entries.offset(i)).key,
             b"ROS\x00" as *const u8 as *const i8,
         ) {
-            len += put_dict_entry(&mut *(*dict).entries.offset(i as isize), dest, destlen);
+            len += put_dict_entry(&mut *(*dict).entries.offset(i), dest);
             break;
         } else {
             i += 1
         }
     }
-    i = 0i32;
-    while i < (*dict).count {
+    for i in 0..(*dict).count as isize {
         if strcmp(
-            (*(*dict).entries.offset(i as isize)).key,
+            (*(*dict).entries.offset(i)).key,
             b"ROS\x00" as *const u8 as *const i8,
         ) != 0
         {
-            len += put_dict_entry(
-                &mut *(*dict).entries.offset(i as isize),
-                dest.offset(len as isize),
-                destlen - len,
-            )
+            len += put_dict_entry(&mut *(*dict).entries.offset(i), &mut dest[len..])
         }
-        i += 1
     }
     len
 }
@@ -1169,7 +1090,7 @@ pub unsafe extern "C" fn cff_dict_set(
 }
 /* decode/encode DICT */
 #[no_mangle]
-pub unsafe extern "C" fn cff_dict_update(mut dict: *mut cff_dict, mut cff: *mut cff_font) {
+pub unsafe extern "C" fn cff_dict_update(mut dict: *mut cff_dict, cff: &mut cff_font) {
     let mut i: i32 = 0;
     i = 0i32;
     while i < (*dict).count {
