@@ -69,6 +69,7 @@ use crate::specials::{
 };
 use bridge::_tt_abort;
 use libc::{atof, atoi, free, memcmp, strchr, strcmp, strlen};
+use std::slice::from_raw_parts;
 
 pub type PageRange = page_range;
 #[derive(Copy, Clone)]
@@ -507,7 +508,10 @@ pub unsafe extern "C" fn dvipdfmx_main(
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
     pdf_font_set_dpi(font_dpi);
     dpx_delete_old_cache(image_cache_life);
-    pdf_enc_compute_id_string(dvi_filename, pdf_filename);
+    pdf_enc_compute_id_string(
+        if dvi_filename.is_null() { None } else { Some(from_raw_parts(dvi_filename as *const u8, strlen(dvi_filename))) },
+        if pdf_filename.is_null() { None } else { Some(from_raw_parts(pdf_filename as *const u8, strlen(pdf_filename))) },
+    );
     let mut ver_major: i32 = 0i32;
     let mut ver_minor: i32 = 0i32;
     let mut owner_pw: [i8; 127] = [0; 127];

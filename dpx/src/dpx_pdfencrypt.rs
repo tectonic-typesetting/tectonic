@@ -43,7 +43,7 @@ use crate::dpx_pdfobj::{
     pdf_new_number, pdf_new_string, pdf_obj,
 };
 use libc::{
-    free, gmtime, localtime, memcpy, memset, srand, sprintf, strcpy, strlen, time, tm,
+    free, gmtime, localtime, memcpy, memset, srand, strcpy, strlen, time,
 };
 use md5::{Md5, Digest};
 use sha2::{Sha256, Sha384, Sha512};
@@ -140,57 +140,38 @@ unsafe extern "C" fn pdf_enc_init(mut use_aes: i32, mut encrypt_metadata: i32) {
     p.setting.encrypt_metadata = encrypt_metadata;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn pdf_enc_compute_id_string(mut dviname: *const i8, mut pdfname: *const i8) {
+pub unsafe fn pdf_enc_compute_id_string(dviname: Option<&[u8]>, mut pdfname: Option<&[u8]>) {
     let p = &mut sec_data;
-    let mut date_string: *mut i8 = 0 as *mut i8;
-    let mut producer: *mut i8 = 0 as *mut i8;
-    let mut current_time: time_t = 0;
-    let mut bd_time: *mut tm = 0 as *mut tm;
     /* FIXME: This should be placed in main() or somewhere. */
     pdf_enc_init(1i32, 1i32);
-    let mut md5 = Md5::new();
-    date_string = new((15_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
-    current_time = get_unique_time_if_given();
-    if current_time == -1i32 as time_t {
+    let mut current_time = get_unique_time_if_given();
+    let bd_time = *(if current_time == -1 as time_t {
         time(&mut current_time);
-        bd_time = localtime(&mut current_time)
+        localtime(&mut current_time)
     } else {
-        bd_time = gmtime(&mut current_time)
+        gmtime(&mut current_time)
+    });
+    let mut md5 = Md5::new();
+    md5.input(&format!(
+        "{:04}{:02}{:02}{:02}{:02}{:02}",
+        bd_time.tm_year + 1900,
+        bd_time.tm_mon + 1,
+        bd_time.tm_mday,
+        bd_time.tm_hour,
+        bd_time.tm_min,
+        bd_time.tm_sec,
+    ));
+    md5.input(&format!(
+        "{}-{}, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata",
+        // TODO: Are these variables?
+        "xdvipdfmx",
+        "0.1"
+    ));
+    if let Some(dviname) = dviname {
+        md5.input(dviname);
     }
-    sprintf(
-        date_string,
-        b"%04d%02d%02d%02d%02d%02d\x00" as *const u8 as *const i8,
-        (*bd_time).tm_year + 1900i32,
-        (*bd_time).tm_mon + 1i32,
-        (*bd_time).tm_mday,
-        (*bd_time).tm_hour,
-        (*bd_time).tm_min,
-        (*bd_time).tm_sec,
-    );
-    md5.input(from_raw_parts(date_string as *const u8, strlen(date_string)));
-    free(date_string as *mut libc::c_void);
-    producer = new((strlen(
-        b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
-            as *const u8 as *const i8,
-    )
-    .wrapping_add(strlen(b"xdvipdfmx\x00" as *const u8 as *const i8))
-    .wrapping_add(strlen(b"0.1\x00" as *const u8 as *const i8)) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
-    sprintf(
-        producer,
-        b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
-            as *const u8 as *const i8,
-        b"xdvipdfmx\x00" as *const u8 as *const i8,
-        b"0.1\x00" as *const u8 as *const i8,
-    );
-    md5.input(from_raw_parts(producer as *const u8, strlen(producer)));
-    free(producer as *mut libc::c_void);
-    if !dviname.is_null() {
-        md5.input(from_raw_parts(dviname as *const u8, strlen(dviname)));
-    }
-    if !pdfname.is_null() {
-        md5.input(from_raw_parts(pdfname as *const u8, strlen(pdfname)));
+    if let Some(pdfname) = pdfname {
+        md5.input(pdfname);
     }
     p.ID = md5.result().into();
 }
