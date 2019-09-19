@@ -34,7 +34,10 @@ use crate::warn;
 use crate::{streq_ptr, strstartswith};
 
 use super::dpx_dvipdfmx::translate_origin;
+use super::dpx_error::dpx_warning;
 use super::dpx_fontmap::pdf_lookup_fontmap_record;
+use super::dpx_mem::new;
+use super::dpx_mfileio::file_size;
 use super::dpx_pdfcolor::{pdf_color_cmykcolor, pdf_color_graycolor, pdf_color_rgbcolor};
 use super::dpx_pdfdev::{
     dev_unit_dviunit, graphics_mode, pdf_coord, pdf_dev_get_dirmode, pdf_dev_get_font_wmode,
@@ -54,6 +57,7 @@ use super::dpx_pdfdraw::{
     pdf_dev_rmoveto, pdf_dev_set_color, pdf_dev_setdash, pdf_dev_setlinecap, pdf_dev_setlinejoin,
     pdf_dev_setlinewidth, pdf_dev_setmiterlimit,
 };
+use super::dpx_pdfparse::dump;
 use super::dpx_subfont::{lookup_sfd_record, sfd_load_record};
 use super::dpx_tfm::{tfm_exists, tfm_get_width, tfm_open, tfm_string_width};
 use crate::dpx_pdfobj::{
@@ -65,39 +69,9 @@ use crate::dpx_pdfparse::{
     parse_ident, parse_number, parse_pdf_array, parse_pdf_dict, parse_pdf_name, parse_pdf_string,
     pdfparse_skip_line, skip_white,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn fread(_: *mut libc::c_void, _: u64, _: u64, _: *mut FILE) -> u64;
-    #[no_mangle]
-    fn rewind(__stream: *mut FILE);
-    #[no_mangle]
-    fn file_size(file: *mut FILE) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dump(start: *const i8, end: *const i8);
-}
+use bridge::_tt_abort;
+use libc::{atof, fread, free, rewind, sprintf, strchr, strcmp, strcpy, strlen, strtod};
+
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;
@@ -1970,9 +1944,9 @@ unsafe extern "C" fn mp_setfont(mut font_name: *const i8, mut pt_size: f64) -> i
         name = font_name
     } /* Need not exist in MP mode */
     free((*font).font_name as *mut libc::c_void);
-    (*font).font_name = new((strlen(font_name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
+    (*font).font_name =
+        new((strlen(font_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*font).font_name, font_name);
     (*font).subfont_id = subfont_id;
     (*font).pt_size = pt_size;
@@ -1991,9 +1965,9 @@ unsafe extern "C" fn save_font() {
     let mut next: *mut mp_font = 0 as *mut mp_font;
     if currentfont < 0i32 {
         font_stack[0].font_name = new((strlen(b"Courier\x00" as *const u8 as *const i8)
-            .wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+            .wrapping_add(1))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy(
             font_stack[0].font_name,
             b"Courier\x00" as *const u8 as *const i8,
@@ -2007,10 +1981,8 @@ unsafe extern "C" fn save_font() {
     currentfont = currentfont + 1;
     current = &mut *font_stack.as_mut_ptr().offset(fresh0 as isize) as *mut mp_font;
     next = &mut *font_stack.as_mut_ptr().offset(currentfont as isize) as *mut mp_font;
-    (*next).font_name = new(
-        (strlen((*current).font_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
-    ) as *mut i8;
+    (*next).font_name = new((strlen((*current).font_name).wrapping_add(1))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     strcpy((*next).font_name, (*current).font_name);
     (*next).pt_size = (*current).pt_size;
     (*next).subfont_id = (*current).subfont_id;
@@ -3935,8 +3907,8 @@ pub unsafe extern "C" fn mps_do_page(mut image_file: *mut FILE) -> i32 {
             as *mut i8;
     fread(
         buffer as *mut libc::c_void,
-        ::std::mem::size_of::<i8>() as u64,
-        size as u64,
+        ::std::mem::size_of::<i8>(),
+        size as _,
         image_file,
     );
     *buffer.offset(size as isize) = 0_i8;

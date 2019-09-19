@@ -19,20 +19,20 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::ttstub_input_getc;
-extern "C" {
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-}
+use bridge::_tt_abort;
 use libc::{fgetc, FILE};
+
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;

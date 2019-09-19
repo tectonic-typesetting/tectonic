@@ -19,16 +19,19 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::warn;
 
+use super::dpx_mem::{new, renew};
 use super::dpx_numbers::{tt_get_signed_pair, tt_get_unsigned_pair, tt_get_unsigned_quad};
 use super::dpx_sfnt::{sfnt_find_table_pos, sfnt_locate_table, sfnt_set_table};
 use super::dpx_tt_table::{
@@ -36,25 +39,13 @@ use super::dpx_tt_table::{
     tt_pack_hhea_table, tt_pack_maxp_table, tt_read_head_table, tt_read_hhea_table,
     tt_read_longMetrics, tt_read_maxp_table, tt_read_os2__table, tt_read_vhea_table, tt_vhea_table,
 };
+use crate::qsort;
 use crate::{ttstub_input_read, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcpy, memset};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
-pub type __compar_fn_t =
-    Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32>;
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type Fixed = u32;
 pub type FWord = i16;
@@ -200,7 +191,7 @@ pub unsafe extern "C" fn tt_build_init() -> *mut tt_glyphs {
     (*g).gd = 0 as *mut tt_glyph_desc;
     (*g).used_slot =
         new((8192_u64).wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
-    memset((*g).used_slot as *mut libc::c_void, 0i32, 8192i32 as u64);
+    memset((*g).used_slot as *mut libc::c_void, 0i32, 8192);
     tt_add_glyph(g, 0_u16, 0_u16);
     g
 }
@@ -329,12 +320,12 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
     } else {
         panic!("Unknown IndexToLocFormat.");
     }
-    w_stat = new((((*g).emsize as i32 + 2i32) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<u16>() as u64) as u32) as *mut u16;
+    w_stat =
+        new(((*g).emsize + 2).wrapping_mul(::std::mem::size_of::<u16>() as _) as _) as *mut u16;
     memset(
         w_stat as *mut libc::c_void,
         0i32,
-        (::std::mem::size_of::<u16>() as u64).wrapping_mul(((*g).emsize as i32 + 2i32) as u64),
+        (::std::mem::size_of::<u16>()).wrapping_mul(((*g).emsize + 2) as _),
     );
     /*
      * Read glyf table.
@@ -632,12 +623,12 @@ pub unsafe extern "C" fn tt_build_tables(mut sfont: *mut sfnt, mut g: *mut tt_gl
             0i32,
             (*(*g).gd.offset(i as isize))
                 .length
-                .wrapping_add(padlen as u32) as u64,
+                .wrapping_add(padlen as _) as _,
         );
         memcpy(
             glyf_table_data.offset(offset as isize) as *mut libc::c_void,
             (*(*g).gd.offset(i as isize)).data as *const libc::c_void,
-            (*(*g).gd.offset(i as isize)).length as u64,
+            (*(*g).gd.offset(i as isize)).length as _,
         );
         offset = (offset as u32).wrapping_add(
             (*(*g).gd.offset(i as isize))
@@ -796,7 +787,7 @@ pub unsafe extern "C" fn tt_get_metrics(mut sfont: *mut sfnt, mut g: *mut tt_gly
     memset(
         w_stat as *mut libc::c_void,
         0i32,
-        (::std::mem::size_of::<u16>() as u64).wrapping_mul(((*g).emsize as i32 + 2i32) as u64),
+        (::std::mem::size_of::<u16>()).wrapping_mul((*g).emsize as usize + 2),
     );
     /*
      * Read glyf table.

@@ -32,6 +32,9 @@
 use crate::strstartswith;
 use crate::{info, warn};
 
+use super::dpx_dpxutil::xtoi;
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::new;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_deref_obj, pdf_file, pdf_lookup_dict,
     pdf_merge_dict, pdf_new_array, pdf_new_boolean, pdf_new_dict, pdf_new_indirect, pdf_new_name,
@@ -39,27 +42,7 @@ use crate::dpx_pdfobj::{
     pdf_obj_typeof, pdf_release_obj, pdf_stream_dict, PdfObjType,
 };
 use crate::specials::spc_lookup_reference;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn xtoi(c: i8) -> i32;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy, strchr};
 
 pub type size_t = u64;
 /* pow() */
@@ -138,7 +121,7 @@ unsafe extern "C" fn parsed_string(mut start: *const i8, mut end: *const i8) -> 
         memcpy(
             result as *mut libc::c_void,
             start as *const libc::c_void,
-            len as u64,
+            len as _,
         );
         *result.offset(len as isize) = '\u{0}' as i32 as i8
     }
@@ -885,7 +868,7 @@ unsafe extern "C" fn parse_pdf_stream(
         || memcmp(
             p as *const libc::c_void,
             b"endstream\x00" as *const u8 as *const i8 as *const libc::c_void,
-            9i32 as u64,
+            9,
         ) != 0
     {
         pdf_release_obj(result);
@@ -1030,7 +1013,7 @@ pub unsafe extern "C" fn parse_pdf_object(
                     && memcmp(
                         *pp as *const libc::c_void,
                         b"stream\x00" as *const u8 as *const i8 as *const libc::c_void,
-                        6i32 as u64,
+                        6,
                     ) == 0
                 {
                     dict = result;

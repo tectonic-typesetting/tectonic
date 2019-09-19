@@ -35,46 +35,21 @@ use crate::{streq_ptr, strstartswith};
 
 use super::dpx_bmpimage::{bmp_include_image, check_for_bmp};
 use super::dpx_dpxfile::{dpx_delete_temp_file, keep_cache};
+use super::dpx_dpxutil::{max4, min4};
+use super::dpx_error::{dpx_message, dpx_warning};
 use super::dpx_jpegimage::{check_for_jpeg, jpeg_include_image};
+use super::dpx_mem::{new, renew};
 use super::dpx_mfileio::{tt_mfgets, work_buffer};
 use super::dpx_pdfdraw::pdf_dev_transform;
+use super::dpx_pngimage::{check_for_png, png_include_image};
 use crate::dpx_epdf::pdf_include_page;
 use crate::dpx_pdfobj::{
     check_for_pdf, pdf_add_dict, pdf_link_obj, pdf_merge_dict, pdf_new_name, pdf_new_number,
     pdf_obj, pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_stream_dict, PdfObjType,
 };
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn min4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
-    #[no_mangle]
-    fn max4(v1: f64, v2: f64, v3: f64, v4: f64) -> f64;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn png_include_image(ximage: *mut pdf_ximage, handle: rust_input_handle_t) -> i32;
-    #[no_mangle]
-    fn check_for_png(handle: rust_input_handle_t) -> i32;
-}
+use libc::{free, memset, sprintf, strcpy, strlen};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -180,11 +155,7 @@ unsafe extern "C" fn pdf_init_ximage_struct(mut I: *mut pdf_ximage) {
     (*I).ident = 0 as *mut i8;
     (*I).filename = 0 as *mut i8;
     (*I).subtype = -1i32;
-    memset(
-        (*I).res_name.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        16i32 as u64,
-    );
+    memset((*I).res_name.as_mut_ptr() as *mut libc::c_void, 0i32, 16);
     (*I).reference = 0 as *mut pdf_obj;
     (*I).resource = 0 as *mut pdf_obj;
     (*I).attr.height = 0i32;
@@ -296,15 +267,15 @@ unsafe extern "C" fn load_image(
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
-        (*I).ident = new((strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        (*I).ident =
+            new((strlen(ident).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy((*I).ident, ident);
     }
     if !fullname.is_null() {
-        (*I).filename = new((strlen(fullname).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        (*I).filename =
+            new((strlen(fullname).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy((*I).filename, fullname);
     }
     (*I).attr.page_no = options.page_no;
@@ -674,9 +645,9 @@ pub unsafe extern "C" fn pdf_ximage_defineresource(
     I = &mut *(*ic).ximages.offset(id as isize) as *mut pdf_ximage;
     pdf_init_ximage_struct(I);
     if !ident.is_null() {
-        (*I).ident = new((strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        (*I).ident =
+            new((strlen(ident).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy((*I).ident, ident);
     }
     match info {
@@ -957,9 +928,9 @@ pub unsafe extern "C" fn set_distiller_template(mut s: *mut i8) {
     if s.is_null() || *s as i32 == '\u{0}' as i32 {
         _opts.cmdtmpl = 0 as *mut i8
     } else {
-        _opts.cmdtmpl = new((strlen(s).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        _opts.cmdtmpl =
+            new((strlen(s).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy(_opts.cmdtmpl, s);
     };
 }

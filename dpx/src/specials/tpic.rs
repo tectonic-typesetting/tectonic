@@ -33,9 +33,11 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::warn;
 
-use super::{spc_arg, spc_env};
+use super::{spc_arg, spc_env, spc_warn};
 
 use crate::dpx_dpxutil::{parse_c_ident, parse_c_string, parse_float_decimal};
+use crate::dpx_error::dpx_warning;
+use crate::dpx_mem::renew;
 use crate::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
 use crate::dpx_pdfdev::pdf_dev_scale;
 use crate::dpx_pdfdoc::{
@@ -53,25 +55,8 @@ use crate::dpx_pdfobj::{
     pdf_obj_typeof, pdf_ref_obj, pdf_release_obj, pdf_string_value, PdfObjType,
 };
 use crate::dpx_pdfparse::parse_val_ident;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{atof, free, memcmp, sprintf, strlen};
+
 pub type size_t = u64;
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
@@ -848,10 +833,7 @@ unsafe extern "C" fn spc_parse_kvpairs(mut ap: *mut spc_arg) -> *mut pdf_obj {
                     pdf_add_dict(
                         dict,
                         pdf_new_name(kp),
-                        pdf_new_string(
-                            vp as *const libc::c_void,
-                            strlen(vp).wrapping_add(1i32 as u64),
-                        ),
+                        pdf_new_string(vp as *const libc::c_void, strlen(vp).wrapping_add(1) as _),
                     );
                     free(vp as *mut libc::c_void);
                 }

@@ -40,6 +40,8 @@ use super::dpx_cmap::{
 use super::dpx_cmap_read::{CMap_parse, CMap_parse_check_sig};
 use super::dpx_cmap_write::CMap_create_stream;
 use super::dpx_dpxfile::dpx_tt_open;
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use super::dpx_pdfparse::skip_white;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_file, pdf_get_array, pdf_get_version, pdf_link_obj,
@@ -50,29 +52,9 @@ use crate::dpx_pdfparse::{parse_pdf_array, parse_pdf_name, pdfparse_skip_line};
 use crate::mfree;
 use crate::streq_ptr;
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memset, sprintf, strcmp, strcpy, strlen};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -117,12 +99,12 @@ unsafe extern "C" fn pdf_init_encoding_struct(mut encoding: *mut pdf_encoding) {
     memset(
         (*encoding).glyphs.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        (256i32 as u64).wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
+        (256usize).wrapping_mul(::std::mem::size_of::<*mut i8>()),
     );
     memset(
         (*encoding).is_used.as_mut_ptr() as *mut libc::c_void,
         0i32,
-        256i32 as u64,
+        256,
     );
     (*encoding).tounicode = 0 as *mut pdf_obj;
     (*encoding).baseenc = 0 as *mut pdf_encoding;
@@ -457,13 +439,13 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
     }
     encoding = &mut *enc_cache.encodings.offset(enc_id as isize) as *mut pdf_encoding;
     pdf_init_encoding_struct(encoding);
-    (*encoding).ident = new((strlen(ident).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
+    (*encoding).ident =
+        new((strlen(ident).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*encoding).ident, ident);
-    (*encoding).enc_name = new((strlen(enc_name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
+    (*encoding).enc_name =
+        new((strlen(enc_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*encoding).enc_name, enc_name);
     (*encoding).flags = flags;
     code = 0i32;
@@ -475,10 +457,9 @@ unsafe extern "C" fn pdf_encoding_new_encoding(
             ) != 0
         {
             (*encoding).glyphs[code as usize] = new((strlen(*encoding_vec.offset(code as isize))
-                .wrapping_add(1i32 as u64)
-                as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+                .wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>())
+                as _) as *mut i8;
             strcpy(
                 (*encoding).glyphs[code as usize],
                 *encoding_vec.offset(code as isize),
@@ -701,8 +682,8 @@ pub unsafe extern "C" fn pdf_create_ToUnicode_CMap(
     assert!(!enc_name.is_null() && !enc_vec.is_null());
     cmap_name = new((strlen(enc_name)
         .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const i8))
-        .wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+        .wrapping_add(1))
+    .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     sprintf(
         cmap_name,
         b"%s-UTF16\x00" as *const u8 as *const i8,

@@ -19,35 +19,29 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
-use crate::warn;
-
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::new;
+use super::dpx_numbers::tt_get_unsigned_byte;
+use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_new_array, pdf_new_name, pdf_new_number,
     pdf_new_stream, pdf_new_string, pdf_obj, pdf_release_obj, pdf_stream_dict,
     pdf_stream_set_predictor,
 };
-use libc::free;
-
-use super::dpx_numbers::tt_get_unsigned_byte;
-use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
-
+use crate::warn;
 use crate::{ttstub_input_read, ttstub_input_seek};
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memset};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -467,7 +461,7 @@ unsafe extern "C" fn read_raster_rle8(
     memset(
         data_ptr as *mut libc::c_void,
         0i32,
-        (rowbytes * height) as u64,
+        (rowbytes * height) as _,
     );
     v = 0i32;
     eoi = 0i32;
@@ -516,7 +510,7 @@ unsafe extern "C" fn read_raster_rle8(
                     warn!("RLE decode failed...");
                     return -1i32;
                 }
-                memset(p as *mut libc::c_void, b1 as i32, b0 as u64);
+                memset(p as *mut libc::c_void, b1 as i32, b0 as _);
             }
         }
         /* next row ... */
@@ -562,7 +556,7 @@ unsafe extern "C" fn read_raster_rle4(
     memset(
         data_ptr as *mut libc::c_void,
         0i32,
-        (rowbytes * height) as u64,
+        (rowbytes * height) as _,
     );
     v = 0i32;
     eoi = 0i32;
@@ -636,7 +630,7 @@ unsafe extern "C" fn read_raster_rle4(
                     h += 1
                 }
                 nbytes = (b0 as i32 + 1i32) / 2i32;
-                memset(p as *mut libc::c_void, b1 as i32, nbytes as u64);
+                memset(p as *mut libc::c_void, b1 as i32, nbytes as _);
                 h += b0 as i32;
                 if h % 2i32 != 0 {
                     let ref mut fresh2 = *p.offset((nbytes - 1i32) as isize);

@@ -33,6 +33,8 @@ use crate::info;
 
 use super::dpx_agl::agl_get_unicodes;
 use super::dpx_dpxutil::parse_c_ident;
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::new;
 use super::dpx_pdfparse::skip_white;
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_array_length, pdf_get_array, pdf_link_obj, pdf_lookup_dict,
@@ -41,27 +43,9 @@ use crate::dpx_pdfobj::{
 };
 use crate::streq_ptr;
 use crate::{ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memset, strcat, strcmp, strcpy, strlen};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -300,7 +284,7 @@ unsafe extern "C" fn add_rule(
     if !suffix.is_null() {
         pdf_add_array(
             rule,
-            pdf_new_string(suffix as *const libc::c_void, strlen(suffix)),
+            pdf_new_string(suffix as *const libc::c_void, strlen(suffix) as _),
         ); /* allows @ */
     } else {
         pdf_add_array(rule, pdf_new_null());
@@ -450,7 +434,7 @@ unsafe extern "C" fn parse_block(
                     tmp = new(((len + 1i32) as u32 as u64)
                         .wrapping_mul(::std::mem::size_of::<i8>() as u64)
                         as u32) as *mut i8;
-                    memset(tmp as *mut libc::c_void, 0i32, (len + 1i32) as u64);
+                    memset(tmp as *mut libc::c_void, 0i32, (len + 1) as _);
                     i = 0i32;
                     while i < len {
                         if libc::isspace(**pp as _) == 0 {
@@ -462,7 +446,7 @@ unsafe extern "C" fn parse_block(
                     pdf_add_dict(
                         rule,
                         pdf_new_name(token),
-                        pdf_new_string(tmp as *const libc::c_void, strlen(tmp)),
+                        pdf_new_string(tmp as *const libc::c_void, strlen(tmp) as _),
                     );
                     if verbose > 0i32 {
                         dpx_message(
@@ -564,8 +548,8 @@ unsafe extern "C" fn otl_read_conf(mut conf_name: *const i8) -> *mut pdf_obj {
     let mut len: i32 = 0;
     filename = new((strlen(conf_name)
         .wrapping_add(strlen(b".otl\x00" as *const u8 as *const i8))
-        .wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+        .wrapping_add(1))
+    .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     strcpy(filename, conf_name);
     strcat(filename, b".otl\x00" as *const u8 as *const i8);
     handle = ttstub_input_open(filename, TTInputFormat::CNF, 0i32) as *mut rust_input_handle_t;

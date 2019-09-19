@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::dpx_mem::{new, renew};
 use super::dpx_numbers::{tt_get_unsigned_pair, tt_get_unsigned_quad};
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_name, pdf_new_number, pdf_new_stream, pdf_obj,
@@ -36,17 +37,8 @@ use crate::dpx_pdfobj::{
 };
 use crate::mfree;
 use crate::{ttstub_input_read, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -268,7 +260,7 @@ unsafe extern "C" fn find_table_index(
         if memcmp(
             (*(*td).tables.offset(idx as isize)).tag.as_mut_ptr() as *const libc::c_void,
             tag as *const libc::c_void,
-            4i32 as u64,
+            4,
         ) == 0
         {
             return idx;
@@ -300,7 +292,7 @@ pub unsafe extern "C" fn sfnt_set_table(
         memcpy(
             (*(*td).tables.offset(idx as isize)).tag.as_mut_ptr() as *mut libc::c_void,
             tag as *const libc::c_void,
-            4i32 as u64,
+            4,
         );
     }
     (*(*td).tables.offset(idx as isize)).check_sum = sfnt_calc_checksum(data, length);
@@ -487,7 +479,7 @@ pub unsafe extern "C" fn sfnt_create_FontFile_stream(mut sfont: *mut sfnt) -> *m
             memcpy(
                 p as *mut libc::c_void,
                 (*(*td).tables.offset(i as isize)).tag.as_mut_ptr() as *const libc::c_void,
-                4i32 as u64,
+                4,
             );
             p = p.offset(4);
             p = p.offset(put_big_endian(

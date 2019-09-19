@@ -29,18 +29,13 @@
     unused_mut
 )]
 use super::dpx_dpxutil::skip_white_spaces;
+use super::dpx_mem::new;
 use super::dpx_pst_obj::pst_obj;
 use super::dpx_pst_obj::{
     pst_new_mark, pst_new_obj, pst_parse_boolean, pst_parse_name, pst_parse_null, pst_parse_number,
     pst_parse_string,
 };
-
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::memcpy;
 
 pub type pst_type = i32;
 
@@ -76,7 +71,7 @@ unsafe extern "C" fn pst_parse_any(mut inbuf: *mut *mut u8, mut inbufend: *mut u
     memcpy(
         data as *mut libc::c_void,
         *inbuf as *const libc::c_void,
-        len as u64,
+        len as _,
     );
     *data.offset(len as isize) = '\u{0}' as i32 as u8;
     *inbuf = cur;

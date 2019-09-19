@@ -39,50 +39,17 @@ use super::dpx_dpxutil::{
     ht_clear_table, ht_init_table, ht_insert_table, ht_lookup_table, ht_remove_table,
 };
 use super::dpx_dpxutil::{parse_c_string, parse_float_decimal};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, xmalloc};
 use super::dpx_mfileio::tt_mfgets;
 use super::dpx_subfont::{release_sfd_record, sfd_get_subfont_ids};
 use crate::ttstub_input_close;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn atoi(__nptr: *const i8) -> i32;
-    #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    #[no_mangle]
-    fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strstr(_: *const i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{
+    atof, atoi, free, memcmp, memcpy, sprintf, strcat, strchr, strcmp, strcpy, strlen, strstr,
+    strtol, strtoul,
+};
+
 pub type size_t = u64;
 
 use crate::TTInputFormat;
@@ -179,8 +146,7 @@ unsafe extern "C" fn mstrdup(mut s: *const i8) -> *mut i8 {
     if s.is_null() {
         return 0 as *mut i8;
     }
-    r = new((strlen(s).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    r = new((strlen(s).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     strcpy(r, s);
     r
 }
@@ -227,13 +193,14 @@ unsafe extern "C" fn fill_in_defaults(mut mrec: *mut fontmap_rec, mut tex_name: 
     }
     /* We *must* fill font_name either explicitly or by default */
     if (*mrec).font_name.is_null() {
-        (*mrec).font_name = new((strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*mrec).font_name =
+            new((strlen(tex_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy((*mrec).font_name, tex_name);
     }
-    (*mrec).map_name = new((strlen(tex_name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*mrec).map_name =
+        new((strlen(tex_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*mrec).map_name, tex_name);
     /* Use "UCS" character collection for Unicode SFD
      * and Identity CMap combination. For backward
@@ -285,9 +252,9 @@ unsafe extern "C" fn fill_in_defaults(mut mrec: *mut fontmap_rec, mut tex_name: 
                 .is_null())
         {
             (*mrec).opt.charcoll = new((strlen(b"UCS\x00" as *const u8 as *const i8)
-                .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8; /* we don't have quoted string */
+                .wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8; /* we don't have quoted string */
             strcpy((*mrec).opt.charcoll, b"UCS\x00" as *const u8 as *const i8);
         }
     };
@@ -341,7 +308,7 @@ unsafe extern "C" fn parse_string_value(mut pp: *mut *const i8, mut endptr: *con
         q = new(
             (n.wrapping_add(1_u32) as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
         ) as *mut i8;
-        memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as u64);
+        memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as _);
         *q.offset(n as isize) = '\u{0}' as i32 as i8
     }
     *pp = p;
@@ -405,7 +372,7 @@ unsafe extern "C" fn parse_integer_value(
     }
     q = new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
         as *mut i8;
-    memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as u64);
+    memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as _);
     *q.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
     q
@@ -853,14 +820,14 @@ unsafe extern "C" fn chop_sfd_name(mut tex_name: *const i8, mut sfd_name: *mut *
     }
     n = q.wrapping_offset_from(p) as i64 as i32;
     q = q.offset(1);
-    len = strlen(tex_name).wrapping_sub(n as u64) as i32;
+    len = strlen(tex_name).wrapping_sub(n as _) as _;
     fontname =
         new(((len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
     memcpy(
         fontname as *mut libc::c_void,
         tex_name as *const libc::c_void,
-        m as u64,
+        m as _,
     );
     *fontname.offset(m as isize) = '\u{0}' as i32 as i8;
     if *q != 0 {
@@ -872,7 +839,7 @@ unsafe extern "C" fn chop_sfd_name(mut tex_name: *const i8, mut sfd_name: *mut *
     memcpy(
         *sfd_name as *mut libc::c_void,
         p as *const libc::c_void,
-        n as u64,
+        n as _,
     );
     *(*sfd_name).offset(n as isize) = '\u{0}' as i32 as i8;
     fontname
@@ -897,24 +864,24 @@ unsafe extern "C" fn make_subfont_name(
         return 0 as *mut i8;
     }
     n = q.wrapping_offset_from(p) as i64 as i32 + 1i32;
-    if strlen(sfd_name) != (n - 2i32) as u64
+    if strlen(sfd_name) != (n - 2i32) as _
         || memcmp(
             p.offset(1) as *const libc::c_void,
             sfd_name as *const libc::c_void,
-            (n - 2i32) as u64,
+            (n - 2) as _,
         ) != 0
     {
         return 0 as *mut i8;
     }
     tfm_name = new((strlen(map_name)
-        .wrapping_sub(n as u64)
+        .wrapping_sub(n as _)
         .wrapping_add(strlen(sub_id))
-        .wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+        .wrapping_add(1))
+    .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     memcpy(
         tfm_name as *mut libc::c_void,
         map_name as *const libc::c_void,
-        m as u64,
+        m as _,
     );
     *tfm_name.offset(m as isize) = '\u{0}' as i32 as i8;
     strcat(tfm_name, sub_id);
@@ -1352,7 +1319,7 @@ pub unsafe extern "C" fn pdf_insert_native_fontmap_record(
     let mut mrec: *mut fontmap_rec = 0 as *mut fontmap_rec;
     let mut ret: *mut fontmap_rec = 0 as *mut fontmap_rec;
     assert!(!path.is_null());
-    fontmap_key = xmalloc(strlen(path).wrapping_add(40i32 as u64)) as *mut i8;
+    fontmap_key = xmalloc(strlen(path).wrapping_add(40) as _) as *mut i8;
     sprintf(
         fontmap_key,
         b"%s/%d/%c/%d/%d/%d\x00" as *const u8 as *const i8,
@@ -1463,7 +1430,7 @@ unsafe extern "C" fn substr(mut str: *mut *const i8, mut stop: i8) -> *mut i8 {
     memcpy(
         sstr as *mut libc::c_void,
         *str as *const libc::c_void,
-        endptr.wrapping_offset_from(*str) as i64 as u64,
+        endptr.wrapping_offset_from(*str) as _,
     );
     *sstr.offset(endptr.wrapping_offset_from(*str) as i64 as isize) = '\u{0}' as i32 as i8;
     *str = endptr.offset(1);
@@ -1527,9 +1494,9 @@ unsafe extern "C" fn strip_options(mut map_name: *const i8, mut opt: *mut fontma
             font_name = substr(&mut p, ',' as i32 as i8);
             have_style = 1i32
         } else {
-            font_name = new((strlen(p).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            font_name =
+                new((strlen(p).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                    as *mut i8;
             strcpy(font_name, p);
         }
     }
@@ -1544,9 +1511,9 @@ unsafe extern "C" fn strip_options(mut map_name: *const i8, mut opt: *mut fontma
                 map_name,
             );
         } else {
-            (*opt).charcoll = new((strlen(p).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                as u32) as *mut i8;
+            (*opt).charcoll =
+                new((strlen(p).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                    as *mut i8;
             strcpy((*opt).charcoll, p);
         }
     }

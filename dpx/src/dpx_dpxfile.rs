@@ -29,36 +29,14 @@
     unused_mut
 )]
 
+use super::dpx_mem::{new, xstrdup};
 use super::dpx_numbers::{tt_get_unsigned_pair, tt_get_unsigned_quad};
 use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn getenv(__name: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn mkstemp(__template: *mut i8) -> i32;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn remove(__filename: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strrchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn close(__fd: i32) -> i32;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{
+    close, free, getenv, memcmp, mkstemp, remove, strcat, strcpy, strlen, strncmp, strrchr,
+};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -94,12 +72,12 @@ unsafe extern "C" fn check_stream_is_truetype(mut handle: rust_input_handle_t) -
     if memcmp(
         _sbuf.as_mut_ptr() as *const libc::c_void,
         b"true\x00" as *const u8 as *const i8 as *const libc::c_void,
-        4i32 as u64,
+        4,
     ) == 0
         || memcmp(
             _sbuf.as_mut_ptr() as *const libc::c_void,
             b"\x00\x01\x00\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
-            4i32 as u64,
+            4,
         ) == 0
     {
         /* This doesn't help... */
@@ -108,7 +86,7 @@ unsafe extern "C" fn check_stream_is_truetype(mut handle: rust_input_handle_t) -
     if memcmp(
         _sbuf.as_mut_ptr() as *const libc::c_void,
         b"ttcf\x00" as *const u8 as *const i8 as *const libc::c_void,
-        4i32 as u64,
+        4,
     ) == 0
     {
         return true;
@@ -127,7 +105,7 @@ unsafe extern "C" fn check_stream_is_opentype(mut handle: rust_input_handle_t) -
     if memcmp(
         _sbuf.as_mut_ptr() as *const libc::c_void,
         b"OTTO\x00" as *const u8 as *const i8 as *const libc::c_void,
-        4i32 as u64,
+        4,
     ) == 0
     {
         return true;
@@ -152,12 +130,12 @@ unsafe extern "C" fn check_stream_is_type1(mut handle: rust_input_handle_t) -> b
     if memcmp(
         p.offset(6) as *const libc::c_void,
         b"%!PS-AdobeFont\x00" as *const u8 as *const i8 as *const libc::c_void,
-        14i32 as u64,
+        14,
     ) == 0
         || memcmp(
             p.offset(6) as *const libc::c_void,
             b"%!FontType1\x00" as *const u8 as *const i8 as *const libc::c_void,
-            11i32 as u64,
+            11,
         ) == 0
     {
         return true;
@@ -165,7 +143,7 @@ unsafe extern "C" fn check_stream_is_type1(mut handle: rust_input_handle_t) -> b
     if memcmp(
         p.offset(6) as *const libc::c_void,
         b"%!PS\x00" as *const u8 as *const i8 as *const libc::c_void,
-        4i32 as u64,
+        4,
     ) == 0
     {
         /* This was #if-0'd out:
@@ -205,10 +183,8 @@ unsafe extern "C" fn check_stream_is_dfont(mut handle: rust_input_handle_t) -> b
 unsafe extern "C" fn ensuresuffix(mut basename: *const i8, mut sfx: *const i8) -> *mut i8 {
     let mut q: *mut i8 = 0 as *mut i8;
     let mut p: *mut i8 = 0 as *mut i8;
-    p = new((strlen(basename)
-        .wrapping_add(strlen(sfx))
-        .wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    p = new((strlen(basename).wrapping_add(strlen(sfx)).wrapping_add(1))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     strcpy(p, basename);
     q = strrchr(p, '.' as i32);
     if q.is_null() && *sfx.offset(0) as i32 != 0 {
@@ -288,7 +264,7 @@ pub unsafe extern "C" fn dpx_open_dfont_file(mut filename: *const i8) -> rust_in
         && strncmp(
             filename.offset(len as isize).offset(-6),
             b".dfont\x00" as *const u8 as *const i8,
-            6i32 as u64,
+            6,
         ) != 0
     {
         /* I've double-checked that we're accurately representing the original
@@ -322,7 +298,7 @@ unsafe extern "C" fn dpx_get_tmpdir() -> *mut i8 {
         _tmpd = b"/tmp\x00" as *const u8 as *const i8
     }
     ret = xstrdup(_tmpd);
-    i = strlen(ret);
+    i = strlen(ret) as _;
     while i > 1i32 as u64 && *ret.offset(i.wrapping_sub(1i32 as u64) as isize) as i32 == '/' as i32
     {
         *ret.offset(i.wrapping_sub(1i32 as u64) as isize) = '\u{0}' as i32 as i8;
@@ -338,7 +314,7 @@ pub unsafe extern "C" fn dpx_create_temp_file() -> *mut i8 {
     tmpdir = dpx_get_tmpdir();
     n = strlen(tmpdir)
         .wrapping_add(strlen(b"/dvipdfmx.XXXXXX\x00" as *const u8 as *const i8))
-        .wrapping_add(1i32 as u64);
+        .wrapping_add(1) as _;
     tmp = new((n as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     strcpy(tmp, tmpdir);
     free(tmpdir as *mut libc::c_void);

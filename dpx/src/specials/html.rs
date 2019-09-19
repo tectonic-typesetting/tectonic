@@ -35,8 +35,11 @@ use crate::dpx_pdfximage::{
     pdf_ximage_scale_image,
 };
 
+use super::spc_warn;
 use super::{spc_begin_annot, spc_end_annot};
 use crate::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
+use crate::dpx_error::dpx_warning;
+use crate::dpx_mem::new;
 use crate::dpx_pdfdev::{
     graphics_mode, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
 };
@@ -52,31 +55,8 @@ use crate::dpx_pdfobj::{
 };
 use crate::mfree;
 use crate::streq_ptr;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcat(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{atof, free, memcmp, memcpy, sprintf, strcat, strcmp, strcpy, strlen};
+
 pub type size_t = u64;
 
 use super::{spc_arg, spc_env};
@@ -159,7 +139,7 @@ unsafe extern "C" fn parse_key_val(
     }
     k = new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
         as *mut i8;
-    memcpy(k as *mut libc::c_void, q as *const libc::c_void, n as u64);
+    memcpy(k as *mut libc::c_void, q as *const libc::c_void, n as _);
     *k.offset(n as isize) = '\u{0}' as i32 as i8;
     if p.offset(2) >= endptr
         || *p.offset(0) as i32 != '=' as i32
@@ -183,7 +163,7 @@ unsafe extern "C" fn parse_key_val(
             v = new(
                 ((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
             ) as *mut i8;
-            memcpy(v as *mut libc::c_void, q as *const libc::c_void, n as u64);
+            memcpy(v as *mut libc::c_void, q as *const libc::c_void, n as _);
             *v.offset(n as isize) = '\u{0}' as i32 as i8;
             p = p.offset(1)
         }
@@ -258,10 +238,7 @@ unsafe extern "C" fn read_html_tag(
             pdf_add_dict(
                 attr,
                 pdf_new_name(kp),
-                pdf_new_string(
-                    vp as *const libc::c_void,
-                    strlen(vp).wrapping_add(1i32 as u64),
-                ),
+                pdf_new_string(vp as *const libc::c_void, strlen(vp).wrapping_add(1) as _),
             );
             free(kp as *mut libc::c_void);
             free(vp as *mut libc::c_void);
@@ -355,7 +332,7 @@ unsafe extern "C" fn fqurl(mut baseurl: *const i8, mut name: *const i8) -> *mut 
     let mut len: i32 = 0i32;
     len = strlen(name) as i32;
     if !baseurl.is_null() {
-        len = (len as u64).wrapping_add(strlen(baseurl).wrapping_add(1i32 as u64)) as i32 as i32
+        len = (len as usize).wrapping_add(strlen(baseurl).wrapping_add(1)) as _
     }
     q = new(((len + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
         as *mut i8;
@@ -409,7 +386,10 @@ unsafe extern "C" fn html_open_link(
         pdf_add_dict(
             (*sd).link_dict,
             pdf_new_name(b"Dest\x00" as *const u8 as *const i8),
-            pdf_new_string(url.offset(1) as *const libc::c_void, strlen(url.offset(1))),
+            pdf_new_string(
+                url.offset(1) as *const libc::c_void,
+                strlen(url.offset(1)) as _,
+            ),
         ); /* Otherwise must be bug */
     } else {
         let mut action: *mut pdf_obj = pdf_new_dict();
@@ -426,7 +406,7 @@ unsafe extern "C" fn html_open_link(
         pdf_add_dict(
             action,
             pdf_new_name(b"URI\x00" as *const u8 as *const i8),
-            pdf_new_string(url as *const libc::c_void, strlen(url)),
+            pdf_new_string(url as *const libc::c_void, strlen(url) as _),
         );
         pdf_add_dict(
             (*sd).link_dict,
@@ -565,8 +545,8 @@ unsafe extern "C" fn spc_html__base_empty(
         );
         free((*sd).baseurl as *mut libc::c_void);
     }
-    (*sd).baseurl = new((strlen(vp).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*sd).baseurl =
+        new((strlen(vp).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     strcpy((*sd).baseurl, vp);
     0i32
 }
@@ -801,10 +781,10 @@ unsafe extern "C" fn spc_html__img_empty(mut spe: *mut spc_env, mut attr: *mut p
         let mut dict: *mut pdf_obj = 0 as *mut pdf_obj;
         let mut a: i32 = (100.0f64 * alpha).round() as i32;
         if a != 0i32 {
-            res_name = new((strlen(b"_Tps_a100_\x00" as *const u8 as *const i8)
-                .wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-                as *mut i8;
+            res_name = new(
+                (strlen(b"_Tps_a100_\x00" as *const u8 as *const i8).wrapping_add(1))
+                    .wrapping_mul(::std::mem::size_of::<i8>()) as _,
+            ) as *mut i8;
             sprintf(res_name, b"_Tps_a%03d_\x00" as *const u8 as *const i8, a);
             if check_resourcestatus(b"ExtGState\x00" as *const u8 as *const i8, res_name) == 0 {
                 dict = create_xgstate((0.01f64 * a as f64 / 0.01f64).round() * 0.01f64, 0i32);
@@ -1085,7 +1065,7 @@ pub unsafe extern "C" fn spc_html_check_special(mut buffer: *const i8, mut size:
         p = p.offset(1)
     }
     size = endptr.wrapping_offset_from(p) as i64 as i32;
-    if size as u64 >= strlen(b"html:\x00" as *const u8 as *const i8)
+    if size as usize >= strlen(b"html:\x00" as *const u8 as *const i8)
         && memcmp(
             p as *const libc::c_void,
             b"html:\x00" as *const u8 as *const i8 as *const libc::c_void,

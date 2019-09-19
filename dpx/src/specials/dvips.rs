@@ -41,39 +41,17 @@ use crate::dpx_pdfobj::pdf_obj;
 use crate::dpx_pdfximage::pdf_ximage_findresource;
 use crate::{ttstub_input_close, ttstub_input_open};
 
+use super::spc_warn;
 use super::util::spc_util_read_dimtrns;
+use crate::dpx_mem::{new, xmalloc, xrealloc};
+use crate::dpx_mpost::{mps_eop_cleanup, mps_exec_inline, mps_stack_depth};
 use crate::dpx_pdfdev::{pdf_dev_put_image, pdf_tmatrix, transform_info, transform_info_clear};
 use crate::dpx_pdfdraw::{
     pdf_dev_current_depth, pdf_dev_grestore, pdf_dev_grestore_to, pdf_dev_gsave,
 };
 use crate::dpx_pdfparse::skip_white;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn mps_exec_inline(buffer: *mut *const i8, endptr: *const i8, x_user: f64, y_user: f64) -> i32;
-    #[no_mangle]
-    fn mps_stack_depth() -> i32;
-    #[no_mangle]
-    fn mps_eop_cleanup();
-}
+use libc::{free, memcmp, memcpy, strlen, strncmp, strncpy};
+
 pub type size_t = u64;
 
 pub type rust_input_handle_t = *mut libc::c_void;
@@ -108,7 +86,7 @@ unsafe extern "C" fn spc_handler_ps_header(mut spe: *mut spc_env, mut args: *mut
     strncpy(
         pro,
         (*args).curptr,
-        (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
+        (*args).endptr.wrapping_offset_from((*args).curptr) as _,
     );
     *pro.offset((*args).endptr.wrapping_offset_from((*args).curptr) as i64 as isize) = 0_i8;
     ps_header =
@@ -171,7 +149,7 @@ unsafe extern "C" fn parse_filename(mut pp: *mut *const i8, mut endptr: *const i
     }
     r = new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
         as *mut i8;
-    memcpy(r as *mut libc::c_void, q as *const libc::c_void, n as u64);
+    memcpy(r as *mut libc::c_void, q as *const libc::c_void, n as _);
     *r.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
     r
@@ -572,7 +550,7 @@ pub unsafe extern "C" fn spc_dvips_check_special(mut buf: *const i8, mut len: i3
         < (::std::mem::size_of::<[spc_handler; 10]>() as u64)
             .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if len as u64 >= strlen(dvips_handlers[i as usize].key)
+        if len as usize >= strlen(dvips_handlers[i as usize].key)
             && memcmp(
                 p as *const libc::c_void,
                 dvips_handlers[i as usize].key as *const libc::c_void,
@@ -629,8 +607,8 @@ pub unsafe extern "C" fn spc_dvips_setup_handler(
         < (::std::mem::size_of::<[spc_handler; 10]>() as u64)
             .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if keylen as u64 == strlen(dvips_handlers[i as usize].key)
-            && strncmp(key, dvips_handlers[i as usize].key, keylen as u64) == 0
+        if keylen as usize == strlen(dvips_handlers[i as usize].key)
+            && strncmp(key, dvips_handlers[i as usize].key, keylen as usize) == 0
         {
             skip_white(&mut (*args).curptr, (*args).endptr);
             (*args).command = dvips_handlers[i as usize].key;

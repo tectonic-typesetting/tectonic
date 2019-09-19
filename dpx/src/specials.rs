@@ -43,10 +43,6 @@ use crate::warn;
 
 use self::color::{spc_color_check_special, spc_color_setup_handler};
 use self::dvipdfmx::{spc_dvipdfmx_check_special, spc_dvipdfmx_setup_handler};
-use self::dvips::{
-    spc_dvips_at_begin_document, spc_dvips_at_begin_page, spc_dvips_at_end_document,
-    spc_dvips_at_end_page, spc_dvips_check_special, spc_dvips_setup_handler,
-};
 use self::html::{
     spc_html_at_begin_document, spc_html_at_begin_page, spc_html_at_end_document,
     spc_html_at_end_page, spc_html_check_special, spc_html_setup_handler,
@@ -62,6 +58,7 @@ use self::tpic::{
 };
 use self::xtx::{spc_xtx_check_special, spc_xtx_setup_handler};
 use super::dpx_dvi::{dvi_dev_xpos, dvi_dev_ypos, dvi_link_annot, dvi_tag_depth, dvi_untag_depth};
+use super::dpx_error::dpx_warning;
 use super::dpx_pdfdoc::{
     pdf_doc_begin_annot, pdf_doc_current_page_number, pdf_doc_current_page_resources,
     pdf_doc_end_annot, pdf_doc_get_dictionary, pdf_doc_get_reference, pdf_doc_ref_page,
@@ -71,38 +68,16 @@ use super::dpx_pdfnames::{
     pdf_delete_name_tree, pdf_names_add_object, pdf_names_close_object, pdf_names_lookup_object,
     pdf_names_lookup_reference, pdf_new_name_tree,
 };
-use super::dpx_pdfparse::skip_white;
+use super::dpx_pdfparse::{dump, skip_white};
+use super::specials::dvips::{
+    spc_dvips_at_begin_document, spc_dvips_at_begin_page, spc_dvips_at_end_document,
+    spc_dvips_at_end_page, spc_dvips_check_special, spc_dvips_setup_handler,
+};
 use crate::dpx_pdfobj::{pdf_new_number, pdf_obj, pdf_ref_obj};
-extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn vsprintf(_: *mut i8, _: *const i8, _: ::std::ffi::VaList) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn atoi(__nptr: *const i8) -> i32;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dump(start: *const i8, end: *const i8);
-}
-pub type __builtin_va_list = [__va_list_tag; 1];
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct __va_list_tag {
-    pub gp_offset: u32,
-    pub fp_offset: u32,
-    pub overflow_arg_area: *mut libc::c_void,
-    pub reg_save_area: *mut libc::c_void,
-}
-pub type va_list = __builtin_va_list;
+use bridge::_tt_abort;
+use bridge::vsnprintf;
+use libc::{atoi, memcmp, sprintf, strcmp, strlen};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_env {
@@ -154,7 +129,7 @@ pub unsafe extern "C" fn spc_warn(mut spe: *mut spc_env, mut fmt: *const i8, mut
     let mut ap: ::std::ffi::VaListImpl;
     static mut buf: [i8; 1024] = [0; 1024];
     ap = args.clone();
-    vsprintf(buf.as_mut_ptr(), fmt, ap.as_va_list());
+    vsnprintf(buf.as_mut_ptr(), buf.len() as _, fmt, ap.as_va_list());
     dpx_warning(b"%s\x00" as *const u8 as *const i8, buf.as_mut_ptr());
 }
 /* This is currently just to make other spc_xxx to not directly

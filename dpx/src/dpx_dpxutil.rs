@@ -29,18 +29,11 @@
     unused_mut
 )]
 
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::new;
 use crate::mfree;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy};
+
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ht_entry {
@@ -194,7 +187,7 @@ pub unsafe extern "C" fn ht_lookup_table(
     hent = (*ht).table[hkey as usize];
     while !hent.is_null() {
         if (*hent).keylen == keylen
-            && memcmp((*hent).key as *const libc::c_void, key, keylen as u64) == 0
+            && memcmp((*hent).key as *const libc::c_void, key, keylen as _) == 0
         {
             return (*hent).value;
         }
@@ -218,7 +211,7 @@ pub unsafe extern "C" fn ht_remove_table(
     prev = 0 as *mut ht_entry;
     while !hent.is_null() {
         if (*hent).keylen == keylen
-            && memcmp((*hent).key as *const libc::c_void, key, keylen as u64) == 0
+            && memcmp((*hent).key as *const libc::c_void, key, keylen as _) == 0
         {
             break;
         }
@@ -261,7 +254,7 @@ pub unsafe extern "C" fn ht_insert_table(
     prev = 0 as *mut ht_entry;
     while !hent.is_null() {
         if (*hent).keylen == keylen
-            && memcmp((*hent).key as *const libc::c_void, key, keylen as u64) == 0
+            && memcmp((*hent).key as *const libc::c_void, key, keylen as _) == 0
         {
             break;
         }
@@ -276,10 +269,8 @@ pub unsafe extern "C" fn ht_insert_table(
     } else {
         hent = new((1_u64).wrapping_mul(::std::mem::size_of::<ht_entry>() as u64) as u32)
             as *mut ht_entry;
-        (*hent).key =
-            new((keylen as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-                as *mut i8;
-        memcpy((*hent).key as *mut libc::c_void, key, keylen as u64);
+        (*hent).key = new((keylen).wrapping_mul(::std::mem::size_of::<i8>() as _) as _) as *mut i8;
+        memcpy((*hent).key as *mut libc::c_void, key, keylen as _);
         (*hent).keylen = keylen;
         (*hent).value = value;
         (*hent).next = 0 as *mut ht_entry;
@@ -319,7 +310,7 @@ pub unsafe extern "C" fn ht_append_table(
     (*hent).key =
         new((keylen as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
-    memcpy((*hent).key as *mut libc::c_void, key, keylen as u64);
+    memcpy((*hent).key as *mut libc::c_void, key, keylen as _);
     (*hent).keylen = keylen;
     (*hent).value = value;
     (*hent).next = 0 as *mut ht_entry;
@@ -600,9 +591,8 @@ pub unsafe extern "C" fn parse_c_ident(mut pp: *mut *const i8, mut endptr: *cons
         p = p.offset(1);
         n += 1
     }
-    q = new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8;
-    memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as u64);
+    q = new((n + 1).wrapping_mul(::std::mem::size_of::<i8>() as _) as _) as *mut i8;
+    memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as _);
     *q.offset(n as isize) = '\u{0}' as i32 as i8;
     *pp = p;
     q
@@ -662,7 +652,7 @@ pub unsafe extern "C" fn parse_float_decimal(
         n = p.wrapping_offset_from(*pp) as i64 as i32;
         q = new(((n + 1i32) as u32 as u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
             as *mut i8;
-        memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as u64);
+        memcpy(q as *mut libc::c_void, *pp as *const libc::c_void, n as _);
         *q.offset(n as isize) = '\u{0}' as i32 as i8
     }
     *pp = p;

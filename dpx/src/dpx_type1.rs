@@ -41,6 +41,8 @@ use super::dpx_cff::{
 use super::dpx_cff_dict::{
     cff_dict_add, cff_dict_get, cff_dict_known, cff_dict_pack, cff_dict_set, cff_dict_update,
 };
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use super::dpx_pdfencoding::{pdf_create_ToUnicode_CMap, pdf_encoding_get_encoding};
 use super::dpx_pdffont::{
     pdf_font, pdf_font_get_descriptor, pdf_font_get_encoding, pdf_font_get_fontname,
@@ -57,29 +59,9 @@ use crate::dpx_pdfobj::{
     pdf_release_obj, pdf_stream_dataptr, pdf_stream_dict, pdf_stream_length,
 };
 use crate::{ttstub_input_close, ttstub_input_open};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strstr(_: *const i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memset, sprintf, strlen, strstr};
+
 pub type size_t = u64;
 
 use crate::TTInputFormat;
@@ -176,11 +158,7 @@ pub unsafe extern "C" fn pdf_font_open_type1(mut font: *mut pdf_font) -> i32 {
         if handle.is_null() {
             return -1i32;
         }
-        memset(
-            fontname.as_mut_ptr() as *mut libc::c_void,
-            0i32,
-            (127i32 + 1i32) as u64,
-        );
+        memset(fontname.as_mut_ptr() as *mut libc::c_void, 0i32, 127 + 1);
         if !is_pfb(handle) || t1_get_fontname(handle, fontname.as_mut_ptr()) < 0i32 {
             _tt_abort(
                 b"Failed to read Type 1 font \"%s\".\x00" as *const u8 as *const i8,
@@ -902,8 +880,9 @@ pub unsafe extern "C" fn pdf_font_load_type1(mut font: *mut pdf_font) -> i32 {
         );
     }
     ttstub_input_close(handle);
-    fullname = new((strlen(fontname).wrapping_add(8i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    fullname =
+        new((strlen(fontname).wrapping_add(8)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     sprintf(
         fullname,
         b"%6s+%s\x00" as *const u8 as *const i8,

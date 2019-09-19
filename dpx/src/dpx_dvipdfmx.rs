@@ -52,9 +52,11 @@ use super::dpx_cid::CIDFont_set_flags;
 use super::dpx_dpxconf::{paper, paperinfo};
 use super::dpx_dpxfile::{dpx_delete_old_cache, dpx_file_set_verbose};
 use super::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
+use super::dpx_error::{dpx_warning, shut_up};
 use super::dpx_fontmap::{
     pdf_close_fontmaps, pdf_fontmap_set_verbose, pdf_init_fontmaps, pdf_load_fontmap_file,
 };
+use super::dpx_mem::{new, renew};
 use super::dpx_pdfencrypt::{pdf_enc_compute_id_string, pdf_enc_set_passwd, pdf_enc_set_verbose};
 use super::dpx_pdfobj::{
     pdf_files_close, pdf_files_init, pdf_get_version, pdf_obj_reset_global_state,
@@ -65,31 +67,8 @@ use super::dpx_vf::vf_reset_global_state;
 use crate::specials::{
     spc_exec_at_begin_document, spc_exec_at_end_document, tpic::tpic_set_fill_mode,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn atoi(__nptr: *const i8) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn strchr(_: *const i8, _: i32) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn shut_up(quietness: i32);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{atof, atoi, free, memcmp, strchr, strcmp, strlen};
 
 pub type PageRange = page_range;
 #[derive(Copy, Clone)]
@@ -180,7 +159,7 @@ unsafe extern "C" fn read_length(
             q = q.offset(strlen(b"true\x00" as *const u8 as *const i8) as isize)
             /* just skip "true" */
         }
-        if strlen(q) == 0i32 as u64 {
+        if strlen(q) == 0 {
             free(qq as *mut libc::c_void);
             skip_white(&mut p, endptr);
             q = parse_c_ident(&mut p, endptr);

@@ -35,32 +35,12 @@ use crate::{info, warn};
 
 use super::dpx_cid::CSI_IDENTITY;
 use super::dpx_cmap_read::{CMap_parse, CMap_parse_check_sig};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use crate::{ttstub_input_close, ttstub_input_open};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memcmp, memcpy, memset, strcmp, strcpy, strlen};
+
 pub type size_t = u64;
 
 use crate::TTInputFormat;
@@ -197,7 +177,7 @@ pub unsafe extern "C" fn CMap_new() -> *mut CMap {
     memset(
         (*cmap).reverseMap as *mut libc::c_void,
         0i32,
-        (65536i32 as u64).wrapping_mul(::std::mem::size_of::<i32>() as u64),
+        (65536usize).wrapping_mul(::std::mem::size_of::<i32>()),
     );
     cmap
 }
@@ -296,14 +276,14 @@ unsafe extern "C" fn handle_undefined(
             memcpy(
                 *outbuf as *mut libc::c_void,
                 b"\x00\x00\x00" as *const u8 as *const i8 as *const libc::c_void,
-                2i32 as u64,
+                2,
             );
         }
         2 => {
             memcpy(
                 *outbuf as *mut libc::c_void,
                 b"\xff\xfd\x00" as *const u8 as *const i8 as *const libc::c_void,
-                2i32 as u64,
+                2,
             );
         }
         _ => {
@@ -312,7 +292,7 @@ unsafe extern "C" fn handle_undefined(
                 (*cmap).type_0
             );
             warn!("<0000> is used for .notdef char.");
-            memset(*outbuf as *mut libc::c_void, 0i32, 2i32 as u64);
+            memset(*outbuf as *mut libc::c_void, 0i32, 2);
         }
     }
     *outbuf = (*outbuf).offset(2);
@@ -349,7 +329,7 @@ pub unsafe extern "C" fn CMap_decode_char(
         memcpy(
             *outbuf as *mut libc::c_void,
             *inbuf as *const libc::c_void,
-            2i32 as u64,
+            2,
         );
         *inbuf = (*inbuf).offset(2);
         *outbuf = (*outbuf).offset(2);
@@ -433,7 +413,7 @@ pub unsafe extern "C" fn CMap_decode_char(
                 memcpy(
                     *outbuf as *mut libc::c_void,
                     (*t.offset(c as isize)).code as *const libc::c_void,
-                    (*t.offset(c as isize)).len,
+                    (*t.offset(c as isize)).len as _,
                 );
             } else {
                 panic!("{}: Buffer overflow.", "CMap",);
@@ -505,8 +485,9 @@ pub unsafe extern "C" fn CMap_get_CIDSysInfo(mut cmap: *mut CMap) -> *mut CIDSys
 pub unsafe extern "C" fn CMap_set_name(mut cmap: *mut CMap, mut name: *const i8) {
     assert!(!cmap.is_null());
     free((*cmap).name as *mut libc::c_void);
-    (*cmap).name = new((strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*cmap).name =
+        new((strlen(name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*cmap).name, name);
 }
 #[no_mangle]
@@ -528,17 +509,15 @@ pub unsafe extern "C" fn CMap_set_CIDSysInfo(mut cmap: *mut CMap, mut csi: *cons
         free((*cmap).CSI as *mut libc::c_void);
     }
     if !csi.is_null() && !(*csi).registry.is_null() && !(*csi).ordering.is_null() {
-        (*cmap).CSI = new((1_u64).wrapping_mul(::std::mem::size_of::<CIDSysInfo>() as u64) as u32)
-            as *mut CIDSysInfo;
-        (*(*cmap).CSI).registry = new((strlen((*csi).registry).wrapping_add(1i32 as u64) as u32
-            as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*cmap).CSI =
+            new((1usize).wrapping_mul(::std::mem::size_of::<CIDSysInfo>()) as _) as *mut CIDSysInfo;
+        (*(*cmap).CSI).registry = new((strlen((*csi).registry).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*cmap).CSI).registry, (*csi).registry);
-        (*(*cmap).CSI).ordering = new((strlen((*csi).ordering).wrapping_add(1i32 as u64) as u32
-            as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8;
+        (*(*cmap).CSI).ordering = new((strlen((*csi).ordering).wrapping_add(1))
+            .wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
         strcpy((*(*cmap).CSI).ordering, (*csi).ordering);
         (*(*cmap).CSI).supplement = (*csi).supplement
     } else {
@@ -696,12 +675,12 @@ pub unsafe extern "C" fn CMap_add_codespacerange(
     memcpy(
         (*csr).codeHi as *mut libc::c_void,
         codehi as *const libc::c_void,
-        dim,
+        dim as _,
     );
     memcpy(
         (*csr).codeLo as *mut libc::c_void,
         codelo as *const libc::c_void,
-        dim,
+        dim as _,
     );
     (*cmap).codespace.num = (*cmap).codespace.num.wrapping_add(1);
     0i32
@@ -834,7 +813,7 @@ pub unsafe extern "C" fn CMap_add_bfrange(
         memcpy(
             (*cur.offset(c as isize)).code as *mut libc::c_void,
             base as *const libc::c_void,
-            dstdim,
+            dstdim as _,
         );
         last_byte = c - *srclo.offset(srcdim.wrapping_sub(1i32 as u64) as isize) as i32
             + *base.offset(dstdim.wrapping_sub(1i32 as u64) as isize) as i32;
@@ -1073,7 +1052,7 @@ unsafe extern "C" fn check_range(
         || memcmp(
             srclo as *const libc::c_void,
             srchi as *const libc::c_void,
-            srcdim.wrapping_sub(1i32 as u64),
+            srcdim.wrapping_sub(1) as _,
         ) != 0
         || *srclo.offset(srcdim.wrapping_sub(1i32 as u64) as isize) as i32
             > *srchi.offset(srcdim.wrapping_sub(1i32 as u64) as isize) as i32

@@ -36,6 +36,8 @@ use crate::{streq_ptr, strstartswith};
 use std::ffi::CStr;
 
 use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::{new, renew};
 use super::dpx_mfileio::{tt_mfgets, work_buffer};
 use super::dpx_pdfdev::pdf_sprint_number;
 use super::dpx_pdfencrypt::{pdf_enc_set_generation, pdf_enc_set_label, pdf_encrypt_data};
@@ -45,39 +47,8 @@ use crate::{
     ttstub_input_ungetc, ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout,
     ttstub_output_putc, ttstub_output_write,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn atoi(__nptr: *const i8) -> i32;
-    #[no_mangle]
-    fn strtoul(_: *const i8, _: *mut *mut i8, _: i32) -> u64;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: libc::c_int, _: libc::c_ulong) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn sscanf(_: *const i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{atof, atoi, free, memcmp, memset, sprintf, sscanf, strcmp, strlen, strtoul};
 
 use libz_sys as libz;
 
@@ -364,7 +335,7 @@ pub unsafe extern "C" fn pdf_out_init(
     }
     pdf_output_handle = ttstub_output_open(filename, 0i32);
     if pdf_output_handle.is_null() {
-        if strlen(filename) < 128i32 as u64 {
+        if strlen(filename) < 128 {
             _tt_abort(
                 b"Unable to open \"%s\".\x00" as *const u8 as *const i8,
                 filename,
@@ -1217,7 +1188,7 @@ unsafe extern "C" fn write_name(mut name: *mut pdf_name, mut handle: rust_output
     length = (if !(*name).name.is_null() {
         strlen((*name).name)
     } else {
-        0i32 as u64
+        0
     }) as i32;
     /*
      * From PDF Reference, 3rd ed., p.33:
@@ -1997,7 +1968,8 @@ unsafe extern "C" fn apply_filter_TIFF2_1_2_4(
         memset(
             prev as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<u16>() as libc::c_ulong).wrapping_mul(num_comp as libc::c_ulong),
+            (::std::mem::size_of::<u16>() as libc::c_ulong).wrapping_mul(num_comp as libc::c_ulong)
+                as _,
         );
         outbuf = 0i32 as u16;
         inbuf = outbuf;
@@ -2088,7 +2060,7 @@ unsafe extern "C" fn filter_TIFF2_apply_filter(
                     prev as *mut libc::c_void,
                     0i32,
                     (::std::mem::size_of::<u16>() as libc::c_ulong)
-                        .wrapping_mul(colors as libc::c_ulong),
+                        .wrapping_mul(colors as libc::c_ulong) as _,
                 );
                 i = 0i32;
                 while i < columns {
@@ -2119,7 +2091,7 @@ unsafe extern "C" fn filter_TIFF2_apply_filter(
                     prev as *mut libc::c_void,
                     0i32,
                     (::std::mem::size_of::<u16>() as libc::c_ulong)
-                        .wrapping_mul(colors as libc::c_ulong),
+                        .wrapping_mul(colors as libc::c_ulong) as _,
                 );
                 i = 0i32;
                 while i < columns {
@@ -2663,11 +2635,7 @@ unsafe extern "C" fn filter_row_TIFF2(
     col = new((parms.colors as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong) as u32)
         as *mut libc::c_uchar;
-    memset(
-        col as *mut libc::c_void,
-        0i32,
-        parms.colors as libc::c_ulong,
-    );
+    memset(col as *mut libc::c_void, 0i32, parms.colors as _);
     outbuf = 0i32;
     inbuf = outbuf;
     outbits = 0i32;
@@ -2737,7 +2705,7 @@ unsafe extern "C" fn filter_decoded(
     buf = new((length as u32 as libc::c_ulong)
         .wrapping_mul(::std::mem::size_of::<libc::c_uchar>() as libc::c_ulong) as u32)
         as *mut libc::c_uchar;
-    memset(prev as *mut libc::c_void, 0i32, length as libc::c_ulong);
+    memset(prev as *mut libc::c_void, 0i32, length as _);
     let mut current_block_77: u64;
     match parms.predictor {
         1 => {
@@ -3458,11 +3426,11 @@ unsafe extern "C" fn find_xref(mut handle: rust_input_handle_t, mut file_size: i
         } else {
             currentpos = ttstub_input_seek(handle, 0i32 as ssize_t, 1i32) as i32;
             n = (if strlen(b"startxref\x00" as *const u8 as *const i8)
-                < (file_size - currentpos) as u64
+                < (file_size - currentpos) as _
             {
                 strlen(b"startxref\x00" as *const u8 as *const i8)
             } else {
-                (file_size - currentpos) as u64
+                (file_size - currentpos) as _
             }) as i32;
             ttstub_input_read(handle, work_buffer.as_mut_ptr(), n as size_t);
             ttstub_input_seek(handle, currentpos as ssize_t, 0i32);
@@ -4074,7 +4042,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                                 warn!("An unsigned integer expected but could not find. (xref)");
                                 return -1i32;
                             } else {
-                                if strlen(q_0) != 10i32 as u64 {
+                                if strlen(q_0) != 10 {
                                     /* exactly 10 digits */
                                     warn!("Offset must be a 10 digits number. (xref)");
                                     free(q_0 as *mut libc::c_void);
@@ -4091,7 +4059,7 @@ unsafe extern "C" fn parse_xref_table(mut pf: *mut pdf_file, mut xref_pos: i32) 
                                 warn!("An unsigned integer expected but could not find. (xref)");
                                 return -1i32;
                             } else {
-                                if strlen(q_0) != 5i32 as u64 {
+                                if strlen(q_0) != 5 {
                                     /* exactly 5 digits */
                                     warn!("Expecting a 5 digits number. (xref)");
                                     free(q_0 as *mut libc::c_void);

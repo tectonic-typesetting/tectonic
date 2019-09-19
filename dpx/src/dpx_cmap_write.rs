@@ -19,37 +19,28 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
-#![allow(dead_code,
-         mutable_transmutes,
-         non_camel_case_types,
-         non_snake_case,
-         non_upper_case_globals,
-         unused_assignments,
-         unused_mut)]
+#![allow(
+    dead_code,
+    mutable_transmutes,
+    non_camel_case_types,
+    non_snake_case,
+    non_upper_case_globals,
+    unused_assignments,
+    unused_mut
+)]
 
 use crate::warn;
 
 use super::dpx_cid::{CSI_IDENTITY, CSI_UNICODE};
 use super::dpx_cmap::{CMap_get_CIDSysInfo, CMap_is_valid};
+use super::dpx_mem::new;
 use crate::dpx_pdfobj::{
     pdf_add_dict, pdf_add_stream, pdf_new_dict, pdf_new_name, pdf_new_number, pdf_new_stream,
     pdf_new_string, pdf_obj, pdf_stream_dict,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memcmp, memset, sprintf, strlen};
+
 pub type size_t = u64;
 
 use super::dpx_cid::CIDSysInfo;
@@ -106,7 +97,7 @@ unsafe extern "C" fn block_count(mut mtab: *mut mapDef, mut c: i32) -> size_t {
         if !(memcmp(
             (*mtab.offset((c - 1i32) as isize)).code as *const libc::c_void,
             (*mtab.offset(c as isize)).code as *const libc::c_void,
-            n,
+            n as _,
         ) == 0
             && (*(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as i32) < 255i32
             && *(*mtab.offset((c - 1i32) as isize)).code.offset(n as isize) as i32 + 1i32
@@ -423,7 +414,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
             pdf_new_name(b"Registry\x00" as *const u8 as *const i8),
             pdf_new_string(
                 (*csi).registry as *const libc::c_void,
-                strlen((*csi).registry),
+                strlen((*csi).registry) as _,
             ),
         );
         pdf_add_dict(
@@ -431,7 +422,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
             pdf_new_name(b"Ordering\x00" as *const u8 as *const i8),
             pdf_new_string(
                 (*csi).ordering as *const libc::c_void,
-                strlen((*csi).ordering),
+                strlen((*csi).ordering) as _,
             ),
         );
         pdf_add_dict(
@@ -474,7 +465,7 @@ pub unsafe extern "C" fn CMap_create_stream(mut cmap: *mut CMap) -> *mut pdf_obj
     memset(
         codestr as *mut libc::c_void,
         0i32,
-        (*cmap).profile.maxBytesIn,
+        (*cmap).profile.maxBytesIn as _,
     );
     wbuf.curptr = wbuf.buf;
     wbuf.limptr = wbuf

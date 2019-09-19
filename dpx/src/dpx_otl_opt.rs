@@ -31,19 +31,9 @@
 
 use crate::warn;
 
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::new;
+use libc::{free, memcpy, memset, strlen};
 
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -100,11 +90,7 @@ unsafe extern "C" fn bt_new_tree() -> *mut bt_node {
     (*expr).flag = 0i32;
     (*expr).left = 0 as *mut bt_node;
     (*expr).right = 0 as *mut bt_node;
-    memset(
-        (*expr).data.as_mut_ptr() as *mut libc::c_void,
-        0i32,
-        4i32 as u64,
-    );
+    memset((*expr).data.as_mut_ptr() as *mut libc::c_void, 0i32, 4);
     expr
 }
 unsafe extern "C" fn bt_release_tree(mut tree: *mut bt_node) {
@@ -154,7 +140,7 @@ unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -
                     memcpy(
                         (*curr).data.as_mut_ptr() as *mut libc::c_void,
                         (*expr).data.as_mut_ptr() as *const libc::c_void,
-                        4i32 as u64,
+                        4,
                     );
                     free(expr as *mut libc::c_void);
                 } else {
@@ -189,7 +175,7 @@ unsafe extern "C" fn parse_expr(mut pp: *mut *const i8, mut endptr: *const i8) -
                 memset(
                     (*curr).data.as_mut_ptr() as *mut libc::c_void,
                     '?' as i32,
-                    4i32 as u64,
+                    4,
                 );
                 *pp = (*pp).offset(1)
             }

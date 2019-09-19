@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::spc_warn;
 use super::util::{spc_util_read_colorspec, spc_util_read_numbers};
 use crate::dpx_dpxutil::parse_c_ident;
 use crate::dpx_fontmap::{
@@ -36,6 +37,7 @@ use crate::dpx_fontmap::{
     pdf_insert_fontmap_record, pdf_load_fontmap_file, pdf_read_fontmap_line,
     pdf_remove_fontmap_record,
 };
+use crate::dpx_mem::{new, xrealloc};
 use crate::dpx_mfileio::work_buffer;
 use crate::dpx_pdfdev::{pdf_dev_reset_color, pdf_dev_reset_fonts};
 use crate::dpx_pdfdoc::{pdf_doc_add_page_content, pdf_doc_set_bgcolor};
@@ -45,27 +47,8 @@ use crate::dpx_pdfdraw::{
 };
 use crate::dpx_pdfparse::{parse_ident, parse_val_ident, skip_white};
 use crate::streq_ptr;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn xrealloc(old_address: *mut libc::c_void, new_size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, sprintf, strlen, strncmp, strncpy};
+
 pub type size_t = u64;
 
 use super::{spc_arg, spc_env};
@@ -371,7 +354,7 @@ unsafe extern "C" fn spc_handler_xtx_initoverlay(
     strncpy(
         overlay_name.as_mut_ptr(),
         (*args).curptr,
-        (*args).endptr.wrapping_offset_from((*args).curptr) as i64 as u64,
+        (*args).endptr.wrapping_offset_from((*args).curptr) as _,
     );
     overlay_name[(*args).endptr.wrapping_offset_from((*args).curptr) as i64 as usize] = 0_i8;
     (*args).curptr = (*args).endptr;

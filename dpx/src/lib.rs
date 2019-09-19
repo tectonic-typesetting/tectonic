@@ -147,3 +147,14 @@ pub mod dpx_vf;
 pub mod specials;
 
 pub use crate::dpx_dvipdfmx::dvipdfmx_main;
+
+pub type __compar_fn_t =
+    Option<unsafe extern "C" fn(_: *const libc::c_void, _: *const libc::c_void) -> i32>;
+extern "C" {
+    #[no_mangle]
+    fn qsort(__base: *mut libc::c_void, __nmemb: size_t, __size: size_t, __compar: __compar_fn_t);
+    #[no_mangle]
+    fn strtoll(_: *const i8, _: *mut *mut i8, _: i32) -> libc::c_longlong;
+    #[no_mangle]
+    fn modf(_: f64, _: *mut f64) -> f64;
+}

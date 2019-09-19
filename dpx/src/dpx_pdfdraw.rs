@@ -51,12 +51,7 @@ lazy_static! { // TODO move to context structure
     });
 }
 
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-}
+use libc::sprintf;
 
 pub use super::dpx_pdfcolor::pdf_color;
 

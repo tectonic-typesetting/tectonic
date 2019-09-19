@@ -30,29 +30,15 @@
 )]
 
 use super::dpx_cff::{cff_add_string, cff_get_string};
+use super::dpx_mem::{new, renew};
 use super::dpx_mfileio::work_buffer;
 use crate::mfree;
 use crate::streq_ptr;
 use crate::stub_errno as errno;
 use crate::warn;
-use libc::free;
+use bridge::_tt_abort;
+use libc::{free, memset, sprintf, strcmp, strtod};
 
-extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type card8 = u8;
 pub type card16 = u16;
@@ -1081,7 +1067,7 @@ pub unsafe extern "C" fn cff_dict_add(mut dict: *mut cff_dict, mut key: *const i
         memset(
             (*(*dict).entries.offset((*dict).count as isize)).values as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<f64>() as u64).wrapping_mul(count as u64),
+            (::std::mem::size_of::<f64>()).wrapping_mul(count as _),
         );
     } else {
         let ref mut fresh22 = (*(*dict).entries.offset((*dict).count as isize)).values;

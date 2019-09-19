@@ -36,6 +36,7 @@ use super::dpx_sfnt::{
 use crate::mfree;
 use crate::streq_ptr;
 use crate::warn;
+use crate::{size_t, ssize_t};
 
 use super::dpx_cff::cff_close;
 use super::dpx_cff_dict::{cff_dict_get, cff_dict_known};
@@ -44,7 +45,9 @@ use super::dpx_dpxfile::{
 };
 use super::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
 use super::dpx_dvipdfmx::{is_xdv, landscape_mode, paper_height, paper_width};
+use super::dpx_error::{dpx_message, dpx_warning};
 use super::dpx_fontmap::{pdf_insert_native_fontmap_record, pdf_lookup_fontmap_record};
+use super::dpx_mem::{new, renew, xmalloc};
 use super::dpx_numbers::{
     sqxfw, tt_get_positive_quad, tt_get_signed_quad, tt_get_unsigned_byte, tt_get_unsigned_num,
     tt_get_unsigned_pair, tt_get_unsigned_quad, tt_skip_bytes,
@@ -57,6 +60,7 @@ use super::dpx_pdfdev::{
 use super::dpx_pdfdoc::{
     pdf_doc_begin_page, pdf_doc_break_annot, pdf_doc_end_page, pdf_doc_expand_box,
 };
+use super::dpx_pdfparse::dump;
 use super::dpx_pdfparse::skip_white;
 use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
 use super::dpx_subfont::{lookup_sfd_record, sfd_load_record, subfont_set_verbose};
@@ -81,40 +85,8 @@ use crate::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_getc, ttstub_input_open,
     ttstub_input_read, ttstub_input_seek, ttstub_input_ungetc,
 };
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn atof(__nptr: *const i8) -> f64;
-    #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn dump(start: *const i8, end: *const i8);
-}
-use crate::*;
+use bridge::_tt_abort;
+use libc::{atof, free, memcmp, memset, sprintf, strcmp, strlen, strncpy, strtol};
 
 use crate::TTInputFormat;
 
@@ -1223,7 +1195,7 @@ pub unsafe extern "C" fn dvi_locate_font(mut tfm_name: *const i8, mut ptsize: sp
     memset(
         &mut *loaded_fonts.offset(cur_id as isize) as *mut loaded_font as *mut libc::c_void,
         0i32,
-        ::std::mem::size_of::<loaded_font>() as u64,
+        ::std::mem::size_of::<loaded_font>(),
     );
     /* TFM must exist here. */
     (*loaded_fonts.offset(cur_id as isize)).tfm_id = tfm_open(tfm_name, 1i32);
@@ -1416,7 +1388,7 @@ unsafe extern "C" fn dvi_locate_native_font(
     let fresh17 = num_loaded_fonts;
     num_loaded_fonts = num_loaded_fonts.wrapping_add(1);
     cur_id = fresh17 as i32;
-    fontmap_key = xmalloc(strlen(filename).wrapping_add(40i32 as u64)) as *mut i8;
+    fontmap_key = xmalloc(strlen(filename).wrapping_add(40) as _) as *mut i8;
     sprintf(
         fontmap_key,
         b"%s/%u/%c/%d/%d/%d\x00" as *const u8 as *const i8,
@@ -1445,7 +1417,7 @@ unsafe extern "C" fn dvi_locate_native_font(
     memset(
         &mut *loaded_fonts.offset(cur_id as isize) as *mut loaded_font as *mut libc::c_void,
         0i32,
-        ::std::mem::size_of::<loaded_font>() as u64,
+        ::std::mem::size_of::<loaded_font>(),
     );
     (*loaded_fonts.offset(cur_id as isize)).font_id = pdf_dev_locate_font(fontmap_key, ptsize);
     (*loaded_fonts.offset(cur_id as isize)).size = ptsize;
@@ -1461,7 +1433,7 @@ unsafe extern "C" fn dvi_locate_native_font(
         memset(
             enc_vec.as_mut_ptr() as *mut libc::c_void,
             0i32,
-            (256i32 as u64).wrapping_mul(::std::mem::size_of::<*mut i8>() as u64),
+            (256usize).wrapping_mul(::std::mem::size_of::<*mut i8>()),
         );
         cffont = t1_load_font(enc_vec.as_mut_ptr(), 0i32, handle);
         if cffont.is_null() {
@@ -2658,7 +2630,7 @@ unsafe extern "C" fn read_length(
             u /= if mag != 0.0f64 { mag } else { 1.0f64 };
             q = q.offset(strlen(b"true\x00" as *const u8 as *const i8) as isize)
         }
-        if strlen(q) == 0i32 as u64 {
+        if strlen(q) == 0 {
             /* "true" was a separate word from the units */
             free(qq as *mut libc::c_void);
             skip_white(&mut p, endptr);
@@ -2875,7 +2847,7 @@ unsafe extern "C" fn scan_special(
                     obj = parse_pdf_string(&mut p, endptr);
                     if !obj.is_null() {
                         if !pdf_string_value(obj).is_null() {
-                            strncpy(owner_pw, pdf_string_value(obj) as *const i8, 127i32 as u64);
+                            strncpy(owner_pw, pdf_string_value(obj) as *const i8, 127);
                         }
                         pdf_release_obj(obj);
                     } else {
@@ -2885,7 +2857,7 @@ unsafe extern "C" fn scan_special(
                     obj = parse_pdf_string(&mut p, endptr);
                     if !obj.is_null() {
                         if !pdf_string_value(obj).is_null() {
-                            strncpy(user_pw, pdf_string_value(obj) as *const i8, 127i32 as u64);
+                            strncpy(user_pw, pdf_string_value(obj) as *const i8, 127);
                         }
                         pdf_release_obj(obj);
                     } else {

@@ -33,27 +33,9 @@ use super::dpx_dpxutil::skip_white_spaces;
 use crate::stub_errno as errno;
 use crate::warn;
 
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn strtol(_: *const i8, _: *mut *mut i8, _: i32) -> i64;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn xtoi(c: i8) -> i32;
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use super::dpx_dpxutil::xtoi;
+use super::dpx_mem::new;
+use libc::{free, memcmp, memcpy, sprintf, strcpy, strlen, strtod, strtol};
 
 #[derive(Copy, Clone)]
 #[repr(C)]
@@ -104,10 +86,8 @@ pub unsafe extern "C" fn pst_new_obj(
 #[no_mangle]
 pub unsafe extern "C" fn pst_new_mark() -> *mut pst_obj {
     let mut q: *mut i8 = 0 as *mut i8;
-    q = new(
-        (strlen(pst_const_mark).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
-    ) as *mut i8;
+    q = new((strlen(pst_const_mark).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+        as *mut i8;
     strcpy(q, pst_const_mark);
     pst_new_obj(7i32, q as *mut libc::c_void)
 }
@@ -229,7 +209,7 @@ pub unsafe extern "C" fn pst_getSV(mut obj: *mut pst_obj) -> *mut u8 {
                 sv = new(((len + 1i32) as u32 as u64)
                     .wrapping_mul(::std::mem::size_of::<u8>() as u64)
                     as u32) as *mut u8;
-                memcpy(sv as *mut libc::c_void, (*obj).data, len as u64);
+                memcpy(sv as *mut libc::c_void, (*obj).data, len as _);
                 *sv.offset(len as isize) = '\u{0}' as i32 as u8
             } else {
                 sv = 0 as *mut u8
@@ -290,7 +270,7 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
         memcpy(
             str as *mut libc::c_void,
             b"true\x00" as *const u8 as *const i8 as *const libc::c_void,
-            4i32 as u64,
+            4,
         );
         *str.offset(4) = '\u{0}' as i32 as u8
     } else {
@@ -298,7 +278,7 @@ unsafe extern "C" fn pst_boolean_SV(mut obj: *mut pst_boolean) -> *mut u8 {
         memcpy(
             str as *mut libc::c_void,
             b"false\x00" as *const u8 as *const i8 as *const libc::c_void,
-            5i32 as u64,
+            5,
         );
         *str.offset(5) = '\u{0}' as i32 as u8
     }
@@ -320,7 +300,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
         && memcmp(
             *inbuf as *const libc::c_void,
             b"true\x00" as *const u8 as *const i8 as *const libc::c_void,
-            4i32 as u64,
+            4,
         ) == 0i32
         && ((*inbuf).offset(4) == inbufend
             || (*(*inbuf).offset(4) as i32 == '(' as i32
@@ -346,7 +326,7 @@ pub unsafe extern "C" fn pst_parse_boolean(
         && memcmp(
             *inbuf as *const libc::c_void,
             b"false\x00" as *const u8 as *const i8 as *const libc::c_void,
-            5i32 as u64,
+            5,
         ) == 0i32
         && ((*inbuf).offset(5) == inbufend
             || (*(*inbuf).offset(5) as i32 == '(' as i32
@@ -382,7 +362,7 @@ pub unsafe extern "C" fn pst_parse_null(
         && memcmp(
             *inbuf as *const libc::c_void,
             b"null\x00" as *const u8 as *const i8 as *const libc::c_void,
-            4i32 as u64,
+            4,
         ) == 0i32
         && ((*inbuf).offset(4) == inbufend
             || (*(*inbuf).offset(4) as i32 == '(' as i32
@@ -405,8 +385,7 @@ pub unsafe extern "C" fn pst_parse_null(
         let mut q: *mut i8 = 0 as *mut i8;
         *inbuf = (*inbuf).offset(4);
         q = new(
-            (strlen(pst_const_null).wrapping_add(1i32 as u64) as u32 as u64)
-                .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
+            (strlen(pst_const_null).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _,
         ) as *mut i8;
         strcpy(q, pst_const_null);
         return pst_new_obj(0i32, q as *mut libc::c_void);
@@ -626,8 +605,9 @@ unsafe extern "C" fn pst_name_new(mut name: *const i8) -> *mut pst_name {
     let mut obj: *mut pst_name = 0 as *mut pst_name;
     obj =
         new((1_u64).wrapping_mul(::std::mem::size_of::<pst_name>() as u64) as u32) as *mut pst_name;
-    (*obj).value = new((strlen(name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+    (*obj).value =
+        new((strlen(name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy((*obj).value, name);
     obj
 }
@@ -727,10 +707,9 @@ unsafe extern "C" fn pst_name_RV() -> f64 {
 }
 unsafe extern "C" fn pst_name_SV(mut obj: *mut pst_name) -> *mut u8 {
     let mut value: *mut i8 = 0 as *mut i8;
-    value = new(
-        (strlen((*obj).value).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32,
-    ) as *mut i8;
+    value =
+        new((strlen((*obj).value).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8;
     strcpy(value, (*obj).value);
     value as *mut u8
 }
@@ -759,7 +738,7 @@ unsafe extern "C" fn pst_string_new(mut str: *mut u8, mut len: u32) -> *mut pst_
             memcpy(
                 (*obj).value as *mut libc::c_void,
                 str as *const libc::c_void,
-                len as u64,
+                len as _,
             );
         }
     }
@@ -1042,7 +1021,7 @@ unsafe extern "C" fn pst_string_SV(mut obj: *mut pst_string) -> *mut u8 {
     memcpy(
         str as *mut libc::c_void,
         (*obj).value as *const libc::c_void,
-        (*obj).length as u64,
+        (*obj).length as _,
     );
     *str.offset((*obj).length as isize) = '\u{0}' as i32 as u8;
     str

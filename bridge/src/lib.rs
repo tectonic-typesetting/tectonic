@@ -11,7 +11,7 @@
 
 extern "C" {
     #[no_mangle]
-    fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
+    pub fn vsnprintf(_: *mut i8, _: u64, _: *const i8, _: ::std::ffi::VaList) -> i32;
 }
 
 pub type size_t = u64;

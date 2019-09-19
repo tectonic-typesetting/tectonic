@@ -29,6 +29,7 @@
     unused_mut
 )]
 
+use super::spc_warn;
 use crate::dpx_mfileio::tt_mfgets;
 use crate::dpx_mpost::mps_scan_bbox;
 use crate::dpx_pdfdev::{pdf_dev_put_image, transform_info, transform_info_clear};
@@ -37,18 +38,7 @@ use crate::dpx_pdfparse::skip_white;
 use crate::dpx_pdfximage::pdf_ximage_findresource;
 use crate::TTInputFormat;
 use crate::{ttstub_input_close, ttstub_input_open};
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn spc_warn(spe: *mut spc_env, fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn sscanf(_: *const i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-}
+use libc::{memcpy, sscanf, strlen, strncmp};
 
 pub type size_t = u64;
 
@@ -92,7 +82,7 @@ unsafe extern "C" fn spc_handler_postscriptbox(mut spe: *mut spc_env, mut ap: *m
     memcpy(
         buf.as_mut_ptr() as *mut libc::c_void,
         (*ap).curptr as *const libc::c_void,
-        len as u64,
+        len as _,
     );
     buf[len as usize] = '\u{0}' as i32 as i8;
     transform_info_clear(&mut ti);
@@ -224,7 +214,7 @@ pub unsafe extern "C" fn spc_misc_check_special(mut buffer: *const i8, mut size:
         < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
             .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if size as u64 >= strlen(misc_handlers[i as usize].key)
+        if size as usize >= strlen(misc_handlers[i as usize].key)
             && strncmp(
                 p,
                 misc_handlers[i as usize].key,
@@ -264,8 +254,8 @@ pub unsafe extern "C" fn spc_misc_setup_handler(
         < (::std::mem::size_of::<[spc_handler; 6]>() as u64)
             .wrapping_div(::std::mem::size_of::<spc_handler>() as u64)
     {
-        if keylen as u64 == strlen(misc_handlers[i as usize].key)
-            && strncmp(key, misc_handlers[i as usize].key, keylen as u64) == 0
+        if keylen as usize == strlen(misc_handlers[i as usize].key)
+            && strncmp(key, misc_handlers[i as usize].key, keylen as _) == 0
         {
             skip_white(&mut (*args).curptr, (*args).endptr);
             (*args).command = misc_handlers[i as usize].key;

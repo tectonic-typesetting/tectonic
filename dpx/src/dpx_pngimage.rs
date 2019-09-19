@@ -29,10 +29,12 @@
     unused_mut
 )]
 use libpng_sys::ffi::*;
+
 use std::convert::TryInto;
 
 use crate::warn;
 
+use super::dpx_mem::new;
 use super::dpx_pdfcolor::{iccp_check_colorspace, iccp_load_profile, pdf_get_colorspace_reference};
 use super::dpx_pdfximage::{pdf_ximage_init_image_info, pdf_ximage_set_image};
 use crate::dpx_pdfobj::{
@@ -42,14 +44,13 @@ use crate::dpx_pdfobj::{
 };
 use crate::{ttstub_input_read, ttstub_input_seek};
 use libc::free;
+
 extern "C" {
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn png_read_end(png_ptr: png_structrp, info_ptr: png_inforp);
+    // Should be removed once fixed upstream
     #[no_mangle]
     fn png_destroy_info_struct(png_ptr: png_const_structrp, info_ptr_ptr: png_infopp);
 }
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -396,7 +397,7 @@ pub unsafe extern "C" fn png_include_image(
         }
     }
     /* PNG_LIBPNG_VER */
-    png_read_end(png, 0 as *mut png_info);
+    png_read_end(png, png_info);
     /* Cleanup */
     png_destroy_info_struct(png, &mut (png_info as *mut _) as *mut *mut _);
     png_destroy_read_struct(

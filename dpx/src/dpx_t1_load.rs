@@ -36,39 +36,16 @@ use crate::{streq_ptr, strstartswith};
 use super::dpx_cff::{cff_add_string, cff_get_sid, cff_update_string};
 use super::dpx_cff::{cff_close, cff_new_index, cff_set_name};
 use super::dpx_cff_dict::{cff_dict_add, cff_dict_set, cff_new_dict};
+use super::dpx_error::dpx_warning;
+use super::dpx_mem::{new, renew, xstrdup};
 use super::dpx_pst::pst_get_token;
 use super::dpx_pst_obj::pst_obj;
 use super::dpx_pst_obj::{
     pst_data_ptr, pst_getIV, pst_getRV, pst_getSV, pst_release_obj, pst_type_of,
 };
 use crate::{ttstub_input_getc, ttstub_input_read, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memmove(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memcmp(_: *const libc::c_void, _: *const libc::c_void, _: u64) -> i32;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn xstrdup(s: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-    #[no_mangle]
-    fn renew(p: *mut libc::c_void, size: u32) -> *mut libc::c_void;
-}
+use libc::{free, memcmp, memcpy, memmove, memset, strcmp, strcpy, strlen};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -1089,12 +1066,9 @@ unsafe extern "C" fn parse_encoding(
                     ) != 0i32
                 {
                     let ref mut fresh9 = *enc_vec.offset(code as isize);
-                    *fresh9 = new(
-                        (strlen(StandardEncoding[code as usize]).wrapping_add(1i32 as u64) as u32
-                            as u64)
-                            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                            as u32,
-                    ) as *mut i8;
+                    *fresh9 = new((strlen(StandardEncoding[code as usize]).wrapping_add(1))
+                        .wrapping_mul(::std::mem::size_of::<i8>())
+                        as _) as *mut i8;
                     strcpy(
                         *enc_vec.offset(code as isize),
                         StandardEncoding[code as usize],
@@ -1128,11 +1102,9 @@ unsafe extern "C" fn parse_encoding(
                     ) != 0i32
                 {
                     let ref mut fresh11 = *enc_vec.offset(code as isize);
-                    *fresh11 = new((strlen(ISOLatin1Encoding[code as usize])
-                        .wrapping_add(1i32 as u64) as u32
-                        as u64)
-                        .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-                        as u32) as *mut i8;
+                    *fresh11 = new((strlen(ISOLatin1Encoding[code as usize]).wrapping_add(1))
+                        .wrapping_mul(::std::mem::size_of::<i8>())
+                        as _) as *mut i8;
                     strcpy(
                         *enc_vec.offset(code as isize),
                         ISOLatin1Encoding[code as usize],
@@ -1369,12 +1341,12 @@ unsafe extern "C" fn parse_subrs(
         memset(
             offsets as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<i32>() as u64).wrapping_mul(count as u64),
+            (::std::mem::size_of::<i32>()).wrapping_mul(count as _),
         );
         memset(
             lengths as *mut libc::c_void,
             0i32,
-            (::std::mem::size_of::<i32>() as u64).wrapping_mul(count as u64),
+            (::std::mem::size_of::<i32>()).wrapping_mul(count as _),
         );
     } else {
         max_size = 0i32;
@@ -1526,7 +1498,7 @@ unsafe extern "C" fn parse_subrs(
                     memcpy(
                         &mut *data.offset(offset as isize) as *mut card8 as *mut libc::c_void,
                         *start as *const libc::c_void,
-                        len as u64,
+                        len as _,
                     );
                     offset += len
                 }
@@ -1551,7 +1523,7 @@ unsafe extern "C" fn parse_subrs(
                     memcpy(
                         (*subrs).data.offset(offset as isize) as *mut libc::c_void,
                         data.offset(*offsets.offset(i as isize) as isize) as *const libc::c_void,
-                        *lengths.offset(i as isize) as u64,
+                        *lengths.offset(i as isize) as _,
                     );
                     offset += *lengths.offset(i as isize)
                 }
@@ -1633,7 +1605,7 @@ unsafe extern "C" fn parse_charstrings(
     memset(
         (*charset).data.glyphs as *mut libc::c_void,
         0i32,
-        (::std::mem::size_of::<s_SID>() as u64).wrapping_mul((count - 1i32) as u64),
+        (::std::mem::size_of::<s_SID>()).wrapping_mul(count as usize - 1),
     );
     offset = 0i32;
     have_notdef = 0i32;
@@ -1747,7 +1719,7 @@ unsafe extern "C" fn parse_charstrings(
                                 .offset(-(lenIV as isize))
                                 as *mut libc::c_void,
                             (*charstrings).data as *const libc::c_void,
-                            offset as u64,
+                            offset as _,
                         );
                         j = 1i32;
                         while j <= i {
@@ -1760,7 +1732,7 @@ unsafe extern "C" fn parse_charstrings(
                         memmove(
                             (*charstrings).data.offset(len as isize) as *mut libc::c_void,
                             (*charstrings).data as *const libc::c_void,
-                            offset as u64,
+                            offset as _,
                         );
                         j = 1i32;
                         while j <= i {
@@ -1791,7 +1763,7 @@ unsafe extern "C" fn parse_charstrings(
                         memcpy(
                             &mut *(*charstrings).data.offset(0) as *mut card8 as *mut libc::c_void,
                             *start as *const libc::c_void,
-                            len as u64,
+                            len as _,
                         );
                     } else {
                         *(*charstrings).offset.offset(gid as isize) = (offset + 1i32) as l_offset;
@@ -1799,7 +1771,7 @@ unsafe extern "C" fn parse_charstrings(
                             &mut *(*charstrings).data.offset(offset as isize) as *mut card8
                                 as *mut libc::c_void,
                             *start as *const libc::c_void,
-                            len as u64,
+                            len as _,
                         );
                     }
                     offset += len
@@ -1995,7 +1967,7 @@ unsafe extern "C" fn parse_part1(
                 free(key as *mut libc::c_void);
                 return -1i32;
             }
-            if strlen(strval) > 127i32 as u64 {
+            if strlen(strval) > 127 {
                 dpx_warning(
                     b"FontName too long: %s (%zu bytes)\x00" as *const u8 as *const i8,
                     strval,
@@ -2162,12 +2134,12 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
     if memcmp(
         sig.as_mut_ptr() as *const libc::c_void,
         b"%!PS-AdobeFont\x00" as *const u8 as *const i8 as *const libc::c_void,
-        14i32 as u64,
+        14,
     ) == 0
         || memcmp(
             sig.as_mut_ptr() as *const libc::c_void,
             b"%!FontType1\x00" as *const u8 as *const i8 as *const libc::c_void,
-            11i32 as u64,
+            11,
         ) == 0
     {
         return true;
@@ -2175,7 +2147,7 @@ pub unsafe extern "C" fn is_pfb(mut handle: rust_input_handle_t) -> bool {
     if memcmp(
         sig.as_mut_ptr() as *const libc::c_void,
         b"%!PS\x00" as *const u8 as *const i8 as *const libc::c_void,
-        4i32 as u64,
+        4,
     ) == 0
     {
         sig[14] = '\u{0}' as i32 as i8;
@@ -2292,7 +2264,7 @@ pub unsafe extern "C" fn t1_get_fontname(
         if streq_ptr(key, b"FontName\x00" as *const u8 as *const i8) {
             let mut strval: *mut i8 = 0 as *mut i8;
             if parse_svalue(&mut start, end, &mut strval) == 1i32 {
-                if strlen(strval) > 127i32 as u64 {
+                if strlen(strval) > 127 {
                     dpx_warning(
                         b"FontName \"%s\" too long. (%zu bytes)\x00" as *const u8 as *const i8,
                         strval,

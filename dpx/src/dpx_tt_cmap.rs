@@ -49,6 +49,8 @@ use super::dpx_cmap::{
 };
 use super::dpx_cmap_write::CMap_create_stream;
 use super::dpx_dpxfile::{dpx_open_dfont_file, dpx_open_opentype_file, dpx_open_truetype_file};
+use super::dpx_error::{dpx_message, dpx_warning};
+use super::dpx_mem::new;
 use super::dpx_numbers::{
     tt_get_signed_pair, tt_get_unsigned_byte, tt_get_unsigned_pair, tt_get_unsigned_quad,
 };
@@ -64,27 +66,9 @@ use super::dpx_unicode::UC_UTF16BE_encode_char;
 use crate::dpx_pdfobj::pdf_obj;
 use crate::mfree;
 use crate::{ttstub_input_close, ttstub_input_seek};
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn sprintf(_: *mut i8, _: *const i8, _: ...) -> i32;
-    #[no_mangle]
-    fn memcpy(_: *mut libc::c_void, _: *const libc::c_void, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn memset(_: *mut libc::c_void, _: i32, _: u64) -> *mut libc::c_void;
-    #[no_mangle]
-    fn strcpy(_: *mut i8, _: *const i8) -> *mut i8;
-    #[no_mangle]
-    fn strlen(_: *const i8) -> u64;
-    #[no_mangle]
-    fn _tt_abort(format: *const i8, _: ...) -> !;
-    #[no_mangle]
-    fn dpx_warning(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn dpx_message(fmt: *const i8, _: ...);
-    #[no_mangle]
-    fn new(size: u32) -> *mut libc::c_void;
-}
+use bridge::_tt_abort;
+use libc::{free, memcpy, memset, sprintf, strcpy, strlen};
+
 pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
@@ -917,11 +901,7 @@ unsafe extern "C" fn handle_CIDFont(
     }
     map = new(((num_glyphs as i32 * 2i32) as u32 as u64)
         .wrapping_mul(::std::mem::size_of::<u8>() as u64) as u32) as *mut u8;
-    memset(
-        map as *mut libc::c_void,
-        0i32,
-        (num_glyphs as i32 * 2i32) as u64,
-    );
+    memset(map as *mut libc::c_void, 0i32, (num_glyphs * 2) as _);
     match (*charset).format as i32 {
         0 => {
             let mut cids: *mut s_SID = 0 as *mut s_SID;
@@ -1370,7 +1350,7 @@ unsafe extern "C" fn create_ToUnicode_cmap(
         memcpy(
             used_chars_copy.as_mut_ptr() as *mut libc::c_void,
             used_chars as *const libc::c_void,
-            8192i32 as u64,
+            8192,
         );
         /* For create_ToUnicode_cmap{4,12}(), cffont is for GID -> CID lookup,
          * so it is only needed for CID fonts. */
@@ -1490,12 +1470,12 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
      * happens when XeTeX embeds full font path
      * https://sourceforge.net/p/xetex/bugs/52/
      */
-    normalized_font_name = new((strlen(font_name).wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-        as *mut i8; /* many warnings without this... */
+    normalized_font_name =
+        new((strlen(font_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+            as *mut i8; /* many warnings without this... */
     strcpy(normalized_font_name, font_name);
     i = 0i32 as size_t;
-    while i < strlen(font_name) {
+    while i < strlen(font_name) as _ {
         if *normalized_font_name.offset(i as isize) as i32 == '/' as i32 {
             *normalized_font_name.offset(i as isize) = '-' as i32 as i8
         }
@@ -1503,8 +1483,8 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
     }
     cmap_name = new((strlen(font_name)
         .wrapping_add(strlen(b"-UTF16\x00" as *const u8 as *const i8))
-        .wrapping_add(5i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+        .wrapping_add(5))
+    .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     sprintf(
         cmap_name,
         b"%s,%03d-UTF16\x00" as *const u8 as *const i8,
@@ -1566,8 +1546,8 @@ pub unsafe extern "C" fn otf_create_ToUnicode_stream(
     }
     cmap_add_name = new((strlen(font_name)
         .wrapping_add(strlen(b",000-UCS32-Add\x00" as *const u8 as *const i8))
-        .wrapping_add(1i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+        .wrapping_add(1))
+    .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     sprintf(
         cmap_add_name,
         b"%s,%03d-UCS32-Add\x00" as *const u8 as *const i8,
@@ -1769,8 +1749,8 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
     }
     base_name = new((strlen(map_name)
         .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const i8))
-        .wrapping_add(5i32 as u64) as u32 as u64)
-        .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
+        .wrapping_add(5))
+    .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
     if wmode != 0 {
         sprintf(
             base_name,
@@ -1790,9 +1770,8 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         cmap_name = new((strlen(map_name)
             .wrapping_add(strlen(otl_tags))
             .wrapping_add(strlen(b"-UCS4-H\x00" as *const u8 as *const i8))
-            .wrapping_add(6i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+            .wrapping_add(6))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8;
         if wmode != 0 {
             sprintf(
                 cmap_name,
@@ -1816,9 +1795,8 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
          */
         tounicode_add_name = new((strlen(map_name)
             .wrapping_add(strlen(b",000-UCS32-Add\x00" as *const u8 as *const i8))
-            .wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64)
-            as u32) as *mut i8; /* Microsoft UCS4 */
+            .wrapping_add(1))
+        .wrapping_mul(::std::mem::size_of::<i8>()) as _) as *mut i8; /* Microsoft UCS4 */
         sprintf(
             tounicode_add_name,
             b"%s,%03d-UCS32-Add\x00" as *const u8 as *const i8,
@@ -1851,9 +1829,9 @@ pub unsafe extern "C" fn otf_load_Unicode_CMap(
         }
         free(tounicode_add_name as *mut libc::c_void);
     } else {
-        cmap_name = new((strlen(base_name).wrapping_add(1i32 as u64) as u32 as u64)
-            .wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32)
-            as *mut i8;
+        cmap_name =
+            new((strlen(base_name).wrapping_add(1)).wrapping_mul(::std::mem::size_of::<i8>()) as _)
+                as *mut i8;
         strcpy(cmap_name, base_name);
     }
     if (*sfont).type_0 == 1i32 << 2i32 {

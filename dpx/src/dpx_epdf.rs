@@ -31,6 +31,7 @@
 
 use crate::warn;
 
+use super::dpx_mem::xmalloc;
 use super::dpx_pdfdoc::pdf_doc_add_page_content;
 use super::dpx_pdfdoc::pdf_doc_get_page;
 use super::dpx_pdfdraw::{
@@ -52,19 +53,8 @@ use crate::dpx_pdfobj::{
 };
 use crate::dpx_pdfparse::{parse_ident, parse_pdf_array};
 use crate::streq_ptr;
-use libc::free;
-extern "C" {
-    #[no_mangle]
-    fn strtod(_: *const i8, _: *mut *mut i8) -> f64;
-    #[no_mangle]
-    fn strncpy(_: *mut i8, _: *const i8, _: u64) -> *mut i8;
-    #[no_mangle]
-    fn strcmp(_: *const i8, _: *const i8) -> i32;
-    #[no_mangle]
-    fn strncmp(_: *const i8, _: *const i8, _: u64) -> i32;
-    #[no_mangle]
-    fn xmalloc(size: size_t) -> *mut libc::c_void;
-}
+use libc::{free, strncmp, strncpy, strtod};
+
 pub type __off_t = i64;
 pub type __off64_t = i64;
 pub type size_t = u64;
@@ -974,7 +964,7 @@ pub unsafe extern "C" fn pdf_copy_clip(
     strncpy(
         save_path,
         pdf_stream_dataptr(contents) as *const i8,
-        pdf_stream_length(contents) as u64,
+        pdf_stream_length(contents) as _,
     );
     clip_path = save_path;
     end_path = clip_path.offset(pdf_stream_length(contents) as isize);
@@ -1008,46 +998,17 @@ pub unsafe extern "C" fn pdf_copy_clip(
             top += 1;
             stack[top as usize] = 0i32 as f64
         } else if *clip_path as i32 == '/' as i32 {
-            if strncmp(
-                b"/DeviceGray\x00" as *const u8 as *const i8,
-                clip_path,
-                11i32 as u64,
-            ) == 0i32
-                || strncmp(
-                    b"/Indexed\x00" as *const u8 as *const i8,
-                    clip_path,
-                    8i32 as u64,
-                ) == 0i32
-                || strncmp(
-                    b"/CalGray\x00" as *const u8 as *const i8,
-                    clip_path,
-                    8i32 as u64,
-                ) == 0i32
+            if strncmp(b"/DeviceGray\x00" as *const u8 as *const i8, clip_path, 11) == 0i32
+                || strncmp(b"/Indexed\x00" as *const u8 as *const i8, clip_path, 8) == 0i32
+                || strncmp(b"/CalGray\x00" as *const u8 as *const i8, clip_path, 8) == 0i32
             {
                 color_dimen = 1i32
-            } else if strncmp(
-                b"/DeviceRGB\x00" as *const u8 as *const i8,
-                clip_path,
-                10i32 as u64,
-            ) == 0i32
-                || strncmp(
-                    b"/CalRGB\x00" as *const u8 as *const i8,
-                    clip_path,
-                    7i32 as u64,
-                ) == 0i32
-                || strncmp(
-                    b"/Lab\x00" as *const u8 as *const i8,
-                    clip_path,
-                    4i32 as u64,
-                ) == 0i32
+            } else if strncmp(b"/DeviceRGB\x00" as *const u8 as *const i8, clip_path, 10) == 0i32
+                || strncmp(b"/CalRGB\x00" as *const u8 as *const i8, clip_path, 7) == 0i32
+                || strncmp(b"/Lab\x00" as *const u8 as *const i8, clip_path, 4) == 0i32
             {
                 color_dimen = 3i32
-            } else if strncmp(
-                b"/DeviceCMYK\x00" as *const u8 as *const i8,
-                clip_path,
-                11i32 as u64,
-            ) == 0i32
-            {
+            } else if strncmp(b"/DeviceCMYK\x00" as *const u8 as *const i8, clip_path, 11) == 0i32 {
                 color_dimen = 4i32
             } else {
                 clip_path = clip_path.offset(1);
