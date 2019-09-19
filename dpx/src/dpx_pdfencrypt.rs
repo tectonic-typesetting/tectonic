@@ -29,15 +29,16 @@
     unused_mut
 )]
 
-use crate::warn;
+use std::slice::from_raw_parts;
 
+use crate::warn;
 use super::dpx_dpxcrypt::{
-    AES_cbc_encrypt_tectonic, AES_ecb_encrypt, ARC4_set_key, MD5_final, MD5_init, MD5_write,
+    AES_cbc_encrypt_tectonic, AES_ecb_encrypt, ARC4_set_key,
     SHA256_final, SHA256_init, SHA256_write, SHA384_init, SHA512_final, SHA512_init, SHA512_write,
     ARC4,
 };
 use super::dpx_dpxcrypt::{
-    ARC4_CONTEXT, MD5_CONTEXT, SHA256_CONTEXT, SHA512_CONTEXT, SHA512_STATE,
+    ARC4_CONTEXT, SHA256_CONTEXT, SHA512_CONTEXT, SHA512_STATE,
 };
 use super::dpx_mem::new;
 use super::dpx_pdfdoc::pdf_doc_get_dictionary;
@@ -50,6 +51,7 @@ use crate::dpx_pdfobj::{
 use libc::{
     free, gmtime, localtime, memcpy, memset, rand, sprintf, srand, strcpy, strlen, time, tm,
 };
+use md5::{Md5, Digest};
 
 pub type __time_t = i64;
 pub type size_t = u64;
@@ -146,18 +148,9 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(mut dviname: *const i8, mut p
     let mut producer: *mut i8 = 0 as *mut i8;
     let mut current_time: time_t = 0;
     let mut bd_time: *mut tm = 0 as *mut tm;
-    let mut md5: MD5_CONTEXT = MD5_CONTEXT {
-        A: 0,
-        B: 0,
-        C: 0,
-        D: 0,
-        nblocks: 0,
-        buf: [0; 64],
-        count: 0,
-    };
     /* FIXME: This should be placed in main() or somewhere. */
     pdf_enc_init(1i32, 1i32);
-    MD5_init(&mut md5);
+    let mut md5 = Md5::new();
     date_string = new((15_u64).wrapping_mul(::std::mem::size_of::<i8>() as u64) as u32) as *mut i8;
     current_time = get_unique_time_if_given();
     if current_time == -1i32 as time_t {
@@ -176,7 +169,7 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(mut dviname: *const i8, mut p
         (*bd_time).tm_min,
         (*bd_time).tm_sec,
     );
-    MD5_write(&mut md5, date_string as *mut u8, strlen(date_string) as u32);
+    md5.input(from_raw_parts(date_string as *const u8, strlen(date_string)));
     free(date_string as *mut libc::c_void);
     producer = new((strlen(
         b"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata\x00"
@@ -192,15 +185,15 @@ pub unsafe extern "C" fn pdf_enc_compute_id_string(mut dviname: *const i8, mut p
         b"xdvipdfmx\x00" as *const u8 as *const i8,
         b"0.1\x00" as *const u8 as *const i8,
     );
-    MD5_write(&mut md5, producer as *mut u8, strlen(producer) as u32);
+    md5.input(from_raw_parts(producer as *const u8, strlen(producer)));
     free(producer as *mut libc::c_void);
     if !dviname.is_null() {
-        MD5_write(&mut md5, dviname as *const u8, strlen(dviname) as u32);
+        md5.input(from_raw_parts(dviname as *const u8, strlen(dviname)));
     }
     if !pdfname.is_null() {
-        MD5_write(&mut md5, pdfname as *const u8, strlen(pdfname) as u32);
+        md5.input(from_raw_parts(pdfname as *const u8, strlen(pdfname)));
     }
-    MD5_final(p.ID.as_mut_ptr(), &mut md5);
+    p.ID = md5.result().into();
 }
 unsafe extern "C" fn passwd_padding(mut src: *const i8, mut dst: *mut u8) {
     let mut len: i32 = 0;
@@ -224,21 +217,11 @@ unsafe extern "C" fn compute_owner_password(
     let mut i: i32 = 0;
     let mut j: i32 = 0;
     let mut padded: [u8; 32] = [0; 32];
-    let mut md5: MD5_CONTEXT = MD5_CONTEXT {
-        A: 0,
-        B: 0,
-        C: 0,
-        D: 0,
-        nblocks: 0,
-        buf: [0; 64],
-        count: 0,
-    };
     let mut arc4: ARC4_CONTEXT = ARC4_CONTEXT {
         idx_i: 0,
         idx_j: 0,
         sbox: [0; 256],
     };
-    let mut hash: [u8; 32] = [0; 32];
     passwd_padding(
         if strlen(opasswd) > 0 {
             opasswd
@@ -247,9 +230,9 @@ unsafe extern "C" fn compute_owner_password(
         },
         padded.as_mut_ptr(),
     );
-    MD5_init(&mut md5);
-    MD5_write(&mut md5, padded.as_mut_ptr(), 32_u32);
-    MD5_final(hash.as_mut_ptr(), &mut md5);
+    let mut md5 = Md5::new();
+    md5.input(&padded);
+    let mut hash = md5.result();
     if p.R >= 3i32 {
         i = 0i32;
         while i < 50i32 {
@@ -257,9 +240,9 @@ unsafe extern "C" fn compute_owner_password(
              * NOTE: We truncate each MD5 hash as in the following step.
              *       Otherwise Adobe Reader won't decrypt the PDF file.
              */
-            MD5_init(&mut md5);
-            MD5_write(&mut md5, hash.as_mut_ptr(), p.key_size as u32);
-            MD5_final(hash.as_mut_ptr(), &mut md5);
+            let mut md5 = Md5::new();
+            md5.input(&hash[..p.key_size as usize]);
+            hash = md5.result();
             i += 1
         }
     }
@@ -295,29 +278,19 @@ unsafe extern "C" fn compute_owner_password(
 }
 unsafe extern "C" fn compute_encryption_key(p: &mut pdf_sec, mut passwd: *const i8) {
     let mut i: i32 = 0;
-    let mut hash: [u8; 32] = [0; 32];
     let mut padded: [u8; 32] = [0; 32];
-    let mut md5: MD5_CONTEXT = MD5_CONTEXT {
-        A: 0,
-        B: 0,
-        C: 0,
-        D: 0,
-        nblocks: 0,
-        buf: [0; 64],
-        count: 0,
-    };
     passwd_padding(passwd, padded.as_mut_ptr());
-    MD5_init(&mut md5);
-    MD5_write(&mut md5, padded.as_mut_ptr(), 32_u32);
-    MD5_write(&mut md5, p.O.as_mut_ptr(), 32_u32);
+    let mut md5 = Md5::new();
+    md5.input(&padded);
+    md5.input(&p.O[..32]);
     let mut tmp: [u8; 4] = [0; 4];
     tmp[0] = (p.P as u8 as i32 & 0xffi32) as u8;
     tmp[1] = ((p.P >> 8i32) as u8 as i32 & 0xffi32) as u8;
     tmp[2] = ((p.P >> 16i32) as u8 as i32 & 0xffi32) as u8;
     tmp[3] = ((p.P >> 24i32) as u8 as i32 & 0xffi32) as u8;
-    MD5_write(&mut md5, tmp.as_mut_ptr(), 4_u32);
-    MD5_write(&mut md5, p.ID.as_mut_ptr(), 16_u32);
-    MD5_final(hash.as_mut_ptr(), &mut md5);
+    md5.input(&tmp);
+    md5.input(&p.ID);
+    let mut hash = md5.result();
     if p.R >= 3i32 {
         i = 0i32;
         while i < 50i32 {
@@ -325,9 +298,9 @@ unsafe extern "C" fn compute_encryption_key(p: &mut pdf_sec, mut passwd: *const 
              * NOTE: We truncate each MD5 hash as in the following step.
              *       Otherwise Adobe Reader won't decrypt the PDF file.
              */
-            MD5_init(&mut md5);
-            MD5_write(&mut md5, hash.as_mut_ptr(), p.key_size as u32);
-            MD5_final(hash.as_mut_ptr(), &mut md5);
+            let mut md5 = Md5::new();
+            md5.input(&hash.as_slice()[..p.key_size as usize]);
+            hash = md5.result();
             i += 1
         }
     }
@@ -345,15 +318,6 @@ unsafe extern "C" fn compute_user_password(p: &mut pdf_sec, mut uplain: *const i
         idx_j: 0,
         sbox: [0; 256],
     };
-    let mut md5: MD5_CONTEXT = MD5_CONTEXT {
-        A: 0,
-        B: 0,
-        C: 0,
-        D: 0,
-        nblocks: 0,
-        buf: [0; 64],
-        count: 0,
-    };
     let mut upasswd: [u8; 32] = [0; 32];
     compute_encryption_key(p, uplain);
     match p.R {
@@ -367,13 +331,12 @@ unsafe extern "C" fn compute_user_password(p: &mut pdf_sec, mut uplain: *const i
             );
         }
         3 | 4 => {
-            let mut hash: [u8; 32] = [0; 32];
             let mut tmp1: [u8; 32] = [0; 32];
             let mut tmp2: [u8; 32] = [0; 32];
-            MD5_init(&mut md5);
-            MD5_write(&mut md5, padding_bytes.as_ptr(), 32_u32);
-            MD5_write(&mut md5, p.ID.as_mut_ptr(), 16_u32);
-            MD5_final(hash.as_mut_ptr(), &mut md5);
+            let mut md5 = Md5::new();
+            md5.input(&padding_bytes);
+            md5.input(&p.ID);
+            let mut hash = md5.result();
             ARC4_set_key(&mut arc4, p.key_size as u32, p.key.as_mut_ptr());
             ARC4(&mut arc4, 16_u32, hash.as_mut_ptr(), tmp1.as_mut_ptr());
             i = 1i32;
@@ -875,18 +838,10 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
         compute_owner_password_V5(p, opasswd.as_mut_ptr());
     };
 }
-unsafe extern "C" fn calculate_key(p: &mut pdf_sec, mut key: *mut u8) {
-    let mut len: i32 = p.key_size + 5i32;
-    let mut tmp: [u8; 25] = [0; 25];
-    let mut md5: MD5_CONTEXT = MD5_CONTEXT {
-        A: 0,
-        B: 0,
-        C: 0,
-        D: 0,
-        nblocks: 0,
-        buf: [0; 64],
-        count: 0,
-    };
+
+unsafe extern "C" fn calculate_key(p: &mut pdf_sec) -> [u8; 16] {
+    let mut len = p.key_size as usize + 5;
+    let mut tmp = [0u8; 25];
     memcpy(
         tmp.as_mut_ptr() as *mut libc::c_void,
         p.key.as_mut_ptr() as *const libc::c_void,
@@ -903,12 +858,13 @@ unsafe extern "C" fn calculate_key(p: &mut pdf_sec, mut key: *mut u8) {
         tmp[(p.key_size + 6i32) as usize] = 0x41_u8;
         tmp[(p.key_size + 7i32) as usize] = 0x6c_u8;
         tmp[(p.key_size + 8i32) as usize] = 0x54_u8;
-        len += 4i32
+        len += 4;
     }
-    MD5_init(&mut md5);
-    MD5_write(&mut md5, tmp.as_mut_ptr(), len as u32);
-    MD5_final(key, &mut md5);
+    let mut md5 = Md5::new();
+    md5.input(&tmp[..len]);
+    md5.result().into()
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn pdf_encrypt_data(
     mut plain: *const u8,
@@ -917,10 +873,9 @@ pub unsafe extern "C" fn pdf_encrypt_data(
     mut cipher_len: *mut size_t,
 ) {
     let p = &mut sec_data;
-    let mut key: [u8; 32] = [0; 32];
     match p.V {
         1 | 2 => {
-            calculate_key(p, key.as_mut_ptr());
+            let mut key = calculate_key(p);
             let mut arc4: ARC4_CONTEXT = ARC4_CONTEXT {
                 idx_i: 0,
                 idx_j: 0,
@@ -942,7 +897,7 @@ pub unsafe extern "C" fn pdf_encrypt_data(
             ARC4(&mut arc4, plain_len as u32, plain, *cipher);
         }
         4 => {
-            calculate_key(p, key.as_mut_ptr());
+            let mut key = calculate_key(p);
             AES_cbc_encrypt_tectonic(
                 key.as_mut_ptr(),
                 (if 16i32 < p.key_size + 5i32 {
