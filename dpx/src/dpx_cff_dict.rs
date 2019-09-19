@@ -42,7 +42,6 @@ use libc::{free, memset, sprintf, strcmp, strtod};
 pub type rust_input_handle_t = *mut libc::c_void;
 pub type card8 = u8;
 pub type card16 = u16;
-pub type c_offsize = u8;
 pub type l_offset = u32;
 pub type s_SID = u16;
 /* CFF Data Types */

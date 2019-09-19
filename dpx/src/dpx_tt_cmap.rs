@@ -94,9 +94,6 @@ pub struct tt_cmap {
 use super::dpx_cid::CIDSysInfo;
 
 use super::dpx_cff::cff_font;
-pub type card8 = u8;
-pub type l_offset = u32;
-pub type c_offsize = u8;
 pub type card16 = u16;
 use super::dpx_cff::cff_charsets;
 use super::dpx_cff::cff_range2;

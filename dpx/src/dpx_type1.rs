@@ -79,8 +79,6 @@ pub type card8 = u8;
 of an Offset field or fields, range 1-4 */
 pub type l_offset = u32;
 /* 2-byte unsigned number */
-pub type c_offsize = u8;
-/* 1-byte unsigned number */
 pub type card16 = u16;
 
 use super::dpx_cff::cff_font;

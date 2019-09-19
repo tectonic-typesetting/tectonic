@@ -37,9 +37,6 @@ use libc::{free, memcpy, memset};
 
 pub type size_t = u64;
 pub type card8 = u8;
-pub type card16 = u16;
-pub type c_offsize = u8;
-pub type l_offset = u32;
 
 use super::dpx_cff::cff_index;
 #[derive(Copy, Clone)]

@@ -157,12 +157,8 @@ pub struct loaded_font {
 use super::dpx_cff::cff_font;
 
 use super::dpx_cff::cff_index;
-pub type card8 = u8;
-pub type l_offset = u32;
-pub type c_offsize = u8;
 pub type card16 = u16;
 
-pub type s_SID = u16;
 use super::dpx_fontmap::fontmap_rec;
 use super::dpx_tt_table::tt_longMetrics;
 #[derive(Copy, Clone)]
