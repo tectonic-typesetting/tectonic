@@ -43,10 +43,11 @@ use crate::dpx_pdfobj::{
     pdf_new_number, pdf_new_string, pdf_obj,
 };
 use libc::{
-    free, gmtime, localtime, memcpy, memset, rand, sprintf, srand, strcpy, strlen, time, tm,
+    free, gmtime, localtime, memcpy, memset, srand, sprintf, strcpy, strlen, time, tm,
 };
 use md5::{Md5, Digest};
 use sha2::{Sha256, Sha384, Sha512};
+use rand::prelude::*;
 
 pub type __time_t = i64;
 pub type size_t = u64;
@@ -115,7 +116,7 @@ static mut sec_data: pdf_sec = pdf_sec {
         gennum: 0,
     },
 };
-static mut padding_bytes: [u8; 32] = [
+static padding_bytes: [u8; 32] = [
     0x28, 0xbf, 0x4e, 0x5e, 0x4e, 0x75, 0x8a, 0x41, 0x64, 0, 0x4e, 0x56, 0xff, 0xfa, 0x1, 0x8,
     0x2e, 0x2e, 0, 0xb6, 0xd0, 0x68, 0x3e, 0x80, 0x2f, 0xc, 0xa9, 0xfe, 0x64, 0x53, 0x69, 0x7a,
 ];
@@ -125,17 +126,20 @@ static mut verbose: u8 = 0_u8;
 pub unsafe extern "C" fn pdf_enc_set_verbose(mut level: i32) {
     verbose = level as u8; /* For AES IV */
 }
+
 unsafe extern "C" fn pdf_enc_init(mut use_aes: i32, mut encrypt_metadata: i32) {
     let mut current_time: time_t = 0;
     let p = &mut sec_data;
     current_time = get_unique_time_if_given();
-    if current_time == -1i32 as time_t {
-        current_time = time(0 as *mut time_t)
+    if current_time == -1 {
+        current_time = time(std::ptr::null_mut())
     }
+    // TODO: libc rand is not used in this module
     srand(current_time as u32);
     p.setting.use_aes = use_aes;
     p.setting.encrypt_metadata = encrypt_metadata;
 }
+
 #[no_mangle]
 pub unsafe extern "C" fn pdf_enc_compute_id_string(mut dviname: *const i8, mut pdfname: *const i8) {
     let p = &mut sec_data;
@@ -271,6 +275,7 @@ unsafe extern "C" fn compute_owner_password(
         32,
     );
 }
+
 unsafe extern "C" fn compute_encryption_key(p: &mut pdf_sec, mut passwd: *const i8) {
     let mut i: i32 = 0;
     let mut padded: [u8; 32] = [0; 32];
@@ -305,6 +310,7 @@ unsafe extern "C" fn compute_encryption_key(p: &mut pdf_sec, mut passwd: *const 
         p.key_size as _,
     );
 }
+
 unsafe extern "C" fn compute_user_password(p: &mut pdf_sec, mut uplain: *const i8) {
     let mut i: i32 = 0;
     let mut j: i32 = 0;
@@ -498,19 +504,12 @@ unsafe extern "C" fn compute_hash_V5(
     hash
 }
 unsafe extern "C" fn compute_owner_password_V5(p: &mut pdf_sec, mut oplain: *const i8) {
-    let mut vsalt: [u8; 8] = [0; 8];
-    let mut ksalt: [u8; 8] = [0; 8];
+    let mut vsalt: [u8; 8] = random();
+    let mut ksalt: [u8; 8] = random();
     let mut hash: [u8; 32] = [0; 32];
     let mut OE: *mut u8 = 0 as *mut u8;
     let mut iv: [u8; 16] = [0; 16];
     let mut OE_len: size_t = 0;
-    let mut i: i32 = 0;
-    i = 0i32;
-    while i < 8i32 {
-        vsalt[i as usize] = (rand() % 256i32) as u8;
-        ksalt[i as usize] = (rand() % 256i32) as u8;
-        i += 1
-    }
     hash = compute_hash_V5(
         oplain,
         vsalt.as_mut_ptr(),
@@ -557,19 +556,13 @@ unsafe extern "C" fn compute_owner_password_V5(p: &mut pdf_sec, mut oplain: *con
     free(OE as *mut libc::c_void);
 }
 unsafe extern "C" fn compute_user_password_V5(p: &mut pdf_sec, mut uplain: *const i8) {
-    let mut vsalt: [u8; 8] = [0; 8];
-    let mut ksalt: [u8; 8] = [0; 8];
+    let mut vsalt: [u8; 8] = random();
+    let mut ksalt: [u8; 8] = random();
     let mut hash: [u8; 32] = [0; 32];
     let mut UE: *mut u8 = 0 as *mut u8;
     let mut iv: [u8; 16] = [0; 16];
     let mut UE_len: size_t = 0;
     let mut i: i32 = 0;
-    i = 0i32;
-    while i < 8i32 {
-        vsalt[i as usize] = (rand() % 256i32) as u8;
-        ksalt[i as usize] = (rand() % 256i32) as u8;
-        i += 1
-    }
     hash = compute_hash_V5(
         uplain,
         vsalt.as_mut_ptr(),
@@ -720,12 +713,9 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
     mut uplain: *const i8,
 ) {
     let p = &mut sec_data;
-    let mut opasswd: [i8; 128] = [0; 128];
-    let mut upasswd: [i8; 128] = [0; 128];
-    let mut version: i32 = 0;
     assert!(!oplain.is_null());
     assert!(!uplain.is_null());
-    version = pdf_get_version() as i32;
+    let version = pdf_get_version();
     p.key_size = bits.wrapping_div(8_u32) as i32;
     if p.key_size == 5i32 {
         /* 40bit */
@@ -739,7 +729,7 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
         p.key_size = 5i32;
         p.V = 2i32
     }
-    check_version(p, version);
+    check_version(p, version as i32);
     p.P = (perm | 0xc0u32) as i32;
     match p.V {
         1 => p.R = if (p.P as i64) < 0x100 { 2i32 } else { 3i32 },
@@ -748,29 +738,24 @@ pub unsafe extern "C" fn pdf_enc_set_passwd(
         5 => p.R = 6i32,
         _ => p.R = 3i32,
     }
-    memset(opasswd.as_mut_ptr() as *mut libc::c_void, 0i32, 128);
-    memset(upasswd.as_mut_ptr() as *mut libc::c_void, 0i32, 128);
     /* Password must be preprocessed. */
+    let mut opasswd: [i8; 128] = [0; 128];
+    let mut upasswd: [i8; 128] = [0; 128];
     if preproc_password(oplain, opasswd.as_mut_ptr(), p.V) < 0i32 {
         warn!("Invaid UTF-8 string for password.");
     }
     if preproc_password(uplain, upasswd.as_mut_ptr(), p.V) < 0i32 {
         warn!("Invalid UTF-8 string for passowrd.");
     }
-    if p.R >= 3i32 {
+    if p.R >= 3 {
         p.P = (p.P as u32 | 0xfffff000u32) as i32
     }
-    if p.V < 5i32 {
+    if p.V < 5 {
         compute_owner_password(p, opasswd.as_mut_ptr(), upasswd.as_mut_ptr());
         compute_user_password(p, upasswd.as_mut_ptr());
-    } else if p.V == 5i32 {
-        let mut i: i32 = 0;
-        i = 0i32;
-        while i < 32i32 {
-            p.key[i as usize] = (rand() % 256i32) as u8;
-            i += 1
-        }
-        p.key_size = 32i32;
+    } else if p.V == 5 {
+        p.key = random();
+        p.key_size = 32;
         /* uses p->U */
         compute_user_password_V5(p, upasswd.as_mut_ptr());
         compute_owner_password_V5(p, opasswd.as_mut_ptr());
