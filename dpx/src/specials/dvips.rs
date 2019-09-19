@@ -33,17 +33,20 @@ use crate::mfree;
 use crate::strstartswith;
 use crate::warn;
 
-use super::dpx_pdfdraw::pdf_dev_concat;
-use super::dpx_pdfximage::pdf_ximage_findresource;
+use super::{spc_arg, spc_env};
+use crate::TTInputFormat;
+
+use crate::dpx_pdfdraw::pdf_dev_concat;
 use crate::dpx_pdfobj::pdf_obj;
+use crate::dpx_pdfximage::pdf_ximage_findresource;
 use crate::{ttstub_input_close, ttstub_input_open};
 
-use super::dpx_pdfdev::{pdf_dev_put_image, pdf_tmatrix, transform_info, transform_info_clear};
-use super::dpx_pdfdraw::{
+use super::util::spc_util_read_dimtrns;
+use crate::dpx_pdfdev::{pdf_dev_put_image, pdf_tmatrix, transform_info, transform_info_clear};
+use crate::dpx_pdfdraw::{
     pdf_dev_current_depth, pdf_dev_grestore, pdf_dev_grestore_to, pdf_dev_gsave,
 };
-use super::dpx_pdfparse::skip_white;
-use super::dpx_spc_util::spc_util_read_dimtrns;
+use crate::dpx_pdfparse::skip_white;
 use libc::free;
 extern "C" {
     #[no_mangle]
@@ -73,15 +76,11 @@ extern "C" {
 }
 pub type size_t = u64;
 
-use crate::TTInputFormat;
-
 pub type rust_input_handle_t = *mut libc::c_void;
 /* quasi-hack to get the primary input */
 
-use super::dpx_specials::{spc_arg, spc_env};
-
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_specials::spc_handler;
+use super::spc_handler;
 
 use crate::dpx_pdfximage::load_options;
 static mut block_pending: i32 = 0i32;

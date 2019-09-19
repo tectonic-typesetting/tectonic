@@ -29,8 +29,38 @@
     unused_mut
 )]
 
+pub mod color;
+pub mod dvipdfmx;
+pub mod dvips;
+pub mod html;
+pub mod misc;
+pub mod pdfm;
+pub mod tpic;
+pub mod util;
+pub mod xtx;
+
 use crate::warn;
 
+use self::color::{spc_color_check_special, spc_color_setup_handler};
+use self::dvipdfmx::{spc_dvipdfmx_check_special, spc_dvipdfmx_setup_handler};
+use self::dvips::{
+    spc_dvips_at_begin_document, spc_dvips_at_begin_page, spc_dvips_at_end_document,
+    spc_dvips_at_end_page, spc_dvips_check_special, spc_dvips_setup_handler,
+};
+use self::html::{
+    spc_html_at_begin_document, spc_html_at_begin_page, spc_html_at_end_document,
+    spc_html_at_end_page, spc_html_check_special, spc_html_setup_handler,
+};
+use self::misc::{spc_misc_check_special, spc_misc_setup_handler};
+use self::pdfm::{
+    spc_pdfm_at_begin_document, spc_pdfm_at_end_document, spc_pdfm_check_special,
+    spc_pdfm_setup_handler,
+};
+use self::tpic::{
+    spc_tpic_at_begin_document, spc_tpic_at_begin_page, spc_tpic_at_end_document,
+    spc_tpic_at_end_page, spc_tpic_check_special, spc_tpic_setup_handler,
+};
+use self::xtx::{spc_xtx_check_special, spc_xtx_setup_handler};
 use super::dpx_dvi::{dvi_dev_xpos, dvi_dev_ypos, dvi_link_annot, dvi_tag_depth, dvi_untag_depth};
 use super::dpx_pdfdoc::{
     pdf_doc_begin_annot, pdf_doc_current_page_number, pdf_doc_current_page_resources,
@@ -42,26 +72,6 @@ use super::dpx_pdfnames::{
     pdf_names_lookup_reference, pdf_new_name_tree,
 };
 use super::dpx_pdfparse::skip_white;
-use super::dpx_spc_color::{spc_color_check_special, spc_color_setup_handler};
-use super::dpx_spc_dvipdfmx::{spc_dvipdfmx_check_special, spc_dvipdfmx_setup_handler};
-use super::dpx_spc_dvips::{
-    spc_dvips_at_begin_document, spc_dvips_at_begin_page, spc_dvips_at_end_document,
-    spc_dvips_at_end_page, spc_dvips_check_special, spc_dvips_setup_handler,
-};
-use super::dpx_spc_html::{
-    spc_html_at_begin_document, spc_html_at_begin_page, spc_html_at_end_document,
-    spc_html_at_end_page, spc_html_check_special, spc_html_setup_handler,
-};
-use super::dpx_spc_misc::{spc_misc_check_special, spc_misc_setup_handler};
-use super::dpx_spc_pdfm::{
-    spc_pdfm_at_begin_document, spc_pdfm_at_end_document, spc_pdfm_check_special,
-    spc_pdfm_setup_handler,
-};
-use super::dpx_spc_tpic::{
-    spc_tpic_at_begin_document, spc_tpic_at_begin_page, spc_tpic_at_end_document,
-    spc_tpic_at_end_page, spc_tpic_check_special, spc_tpic_setup_handler,
-};
-use super::dpx_spc_xtx::{spc_xtx_check_special, spc_xtx_setup_handler};
 use crate::dpx_pdfobj::{pdf_new_number, pdf_obj, pdf_ref_obj};
 extern "C" {
     #[no_mangle]

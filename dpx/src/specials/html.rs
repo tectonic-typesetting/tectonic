@@ -29,22 +29,22 @@
     unused_mut
 )]
 
-use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
-use super::dpx_pdfximage::{
+use crate::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_transform};
+use crate::dpx_pdfximage::{
     pdf_ximage_findresource, pdf_ximage_get_reference, pdf_ximage_get_resname,
     pdf_ximage_scale_image,
 };
 
-use super::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
-use super::dpx_pdfdev::{
+use super::{spc_begin_annot, spc_end_annot};
+use crate::dpx_dpxutil::{parse_c_ident, parse_float_decimal};
+use crate::dpx_pdfdev::{
     graphics_mode, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
 };
-use super::dpx_pdfdoc::{
+use crate::dpx_pdfdoc::{
     pdf_doc_add_names, pdf_doc_add_page_content, pdf_doc_add_page_resource,
     pdf_doc_current_page_resources, pdf_doc_get_reference,
 };
-use super::dpx_pdfdraw::{pdf_dev_grestore, pdf_dev_gsave, pdf_dev_rectclip};
-use super::dpx_specials::{spc_begin_annot, spc_end_annot};
+use crate::dpx_pdfdraw::{pdf_dev_grestore, pdf_dev_gsave, pdf_dev_rectclip};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_link_obj, pdf_lookup_dict, pdf_new_array, pdf_new_boolean,
     pdf_new_dict, pdf_new_name, pdf_new_null, pdf_new_number, pdf_new_string, pdf_obj,
@@ -79,10 +79,10 @@ extern "C" {
 }
 pub type size_t = u64;
 
-use super::dpx_specials::{spc_arg, spc_env};
+use super::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_specials::spc_handler;
+use super::spc_handler;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_html_ {
@@ -99,7 +99,7 @@ pub struct C2RustUnnamed_0 {
 
 use crate::dpx_pdfximage::load_options;
 
-use super::dpx_pdfdev::pdf_coord;
+use crate::dpx_pdfdev::pdf_coord;
 
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

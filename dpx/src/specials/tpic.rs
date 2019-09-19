@@ -33,13 +33,15 @@ use crate::mfree;
 use crate::streq_ptr;
 use crate::warn;
 
-use super::dpx_dpxutil::{parse_c_ident, parse_c_string, parse_float_decimal};
-use super::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
-use super::dpx_pdfdev::pdf_dev_scale;
-use super::dpx_pdfdoc::{
+use super::{spc_arg, spc_env};
+
+use crate::dpx_dpxutil::{parse_c_ident, parse_c_string, parse_float_decimal};
+use crate::dpx_pdfcolor::{pdf_color_brighten_color, pdf_color_get_current};
+use crate::dpx_pdfdev::pdf_dev_scale;
+use crate::dpx_pdfdoc::{
     pdf_doc_add_page_content, pdf_doc_add_page_resource, pdf_doc_current_page_resources,
 };
-use super::dpx_pdfdraw::{
+use crate::dpx_pdfdraw::{
     pdf_dev_arcx, pdf_dev_bspline, pdf_dev_concat, pdf_dev_flushpath, pdf_dev_grestore,
     pdf_dev_gsave, pdf_dev_lineto, pdf_dev_moveto, pdf_dev_newpath, pdf_dev_set_color,
     pdf_dev_setdash, pdf_dev_setlinecap, pdf_dev_setlinejoin, pdf_dev_setlinewidth,
@@ -72,10 +74,8 @@ extern "C" {
 }
 pub type size_t = u64;
 
-use super::dpx_specials::{spc_arg, spc_env};
-
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_specials::spc_handler;
+use super::spc_handler;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct C2RustUnnamed_0 {
@@ -93,11 +93,11 @@ pub struct spc_tpic_ {
     pub max_points: i32,
 }
 
-use super::dpx_pdfdev::pdf_coord;
+use crate::dpx_pdfdev::pdf_coord;
 
-pub use super::dpx_pdfcolor::pdf_color;
+pub use crate::dpx_pdfcolor::pdf_color;
 
-use super::dpx_pdfdev::pdf_tmatrix;
+use crate::dpx_pdfdev::pdf_tmatrix;
 
 /* tectonic/core-memory.h: basic dynamic memory helpers
    Copyright 2016-2018 the Tectonic Project

@@ -30,46 +30,42 @@
 )]
 
 use crate::warn;
+use crate::TTInputFormat;
 use crate::{streq_ptr, strstartswith};
 
-use super::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode};
-use super::dpx_dpxutil::parse_c_ident;
-use super::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
-use super::dpx_dvipdfmx::is_xdv;
-use super::dpx_fontmap::{
+use super::util::{spc_util_read_blahblah, spc_util_read_dimtrns, spc_util_read_pdfcolor};
+use super::{
+    spc_begin_annot, spc_clear_objects, spc_end_annot, spc_flush_object, spc_lookup_object,
+    spc_push_object, spc_resume_annot, spc_suspend_annot,
+};
+use crate::dpx_cmap::{CMap_cache_find, CMap_cache_get, CMap_decode};
+use crate::dpx_dpxutil::parse_c_ident;
+use crate::dpx_dpxutil::{ht_append_table, ht_clear_table, ht_init_table, ht_lookup_table};
+use crate::dpx_dvipdfmx::is_xdv;
+use crate::dpx_fontmap::{
     is_pdfm_mapline, pdf_append_fontmap_record, pdf_clear_fontmap_record, pdf_init_fontmap_record,
     pdf_insert_fontmap_record, pdf_load_fontmap_file, pdf_read_fontmap_line,
     pdf_remove_fontmap_record,
 };
-use super::dpx_mfileio::work_buffer;
-use super::dpx_pdfcolor::{
+use crate::dpx_mfileio::work_buffer;
+use crate::dpx_pdfcolor::{
     pdf_color_copycolor, pdf_color_get_current, pdf_color_pop, pdf_color_push, pdf_color_set,
 };
-use super::dpx_pdfdev::pdf_sprint_matrix;
-use super::dpx_pdfdev::{
+use crate::dpx_pdfdev::pdf_sprint_matrix;
+use crate::dpx_pdfdev::{
     pdf_dev_get_coord, pdf_dev_pop_coord, pdf_dev_push_coord, pdf_dev_reset_color,
 };
-use super::dpx_pdfdev::{
+use crate::dpx_pdfdev::{
     pdf_dev_put_image, pdf_rect, pdf_tmatrix, transform_info, transform_info_clear,
 };
-use super::dpx_pdfdoc::{
+use crate::dpx_pdfdoc::{
     pdf_doc_add_annot, pdf_doc_add_bead, pdf_doc_add_names, pdf_doc_add_page_content,
     pdf_doc_begin_article, pdf_doc_begin_grabbing, pdf_doc_bookmarks_add, pdf_doc_bookmarks_depth,
     pdf_doc_bookmarks_down, pdf_doc_bookmarks_up, pdf_doc_current_page_number,
     pdf_doc_end_grabbing, pdf_doc_get_dictionary, pdf_doc_set_bgcolor, pdf_doc_set_bop_content,
     pdf_doc_set_eop_content,
 };
-use super::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_grestore, pdf_dev_gsave, pdf_dev_transform};
-use super::dpx_pdfximage::{pdf_ximage_findresource, pdf_ximage_get_reference};
-use super::dpx_spc_util::{spc_util_read_blahblah, spc_util_read_dimtrns, spc_util_read_pdfcolor};
-use super::dpx_specials::{
-    spc_begin_annot, spc_clear_objects, spc_end_annot, spc_flush_object, spc_lookup_object,
-    spc_push_object, spc_resume_annot, spc_suspend_annot,
-};
-use super::dpx_unicode::{
-    UC_UTF16BE_encode_char, UC_UTF16BE_is_valid_string, UC_UTF8_decode_char,
-    UC_UTF8_is_valid_string, UC_is_valid,
-};
+use crate::dpx_pdfdraw::{pdf_dev_concat, pdf_dev_grestore, pdf_dev_gsave, pdf_dev_transform};
 use crate::dpx_pdfobj::{
     pdf_add_array, pdf_add_dict, pdf_add_stream, pdf_array_length, pdf_file, pdf_foreach_dict,
     pdf_get_array, pdf_link_obj, pdf_lookup_dict, pdf_merge_dict, pdf_name_value, pdf_new_array,
@@ -80,6 +76,11 @@ use crate::dpx_pdfobj::{
 use crate::dpx_pdfparse::{
     parse_ident, parse_opt_ident, parse_pdf_dict, parse_pdf_object, parse_pdf_tainted_dict,
     parse_val_ident, skip_white,
+};
+use crate::dpx_pdfximage::{pdf_ximage_findresource, pdf_ximage_get_reference};
+use crate::dpx_unicode::{
+    UC_UTF16BE_encode_char, UC_UTF16BE_is_valid_string, UC_UTF8_decode_char,
+    UC_UTF8_is_valid_string, UC_is_valid,
 };
 use crate::{ttstub_input_close, ttstub_input_open, ttstub_input_read};
 use libc::free;
@@ -105,14 +106,12 @@ pub type __ssize_t = i64;
 pub type size_t = u64;
 pub type ssize_t = __ssize_t;
 
-use crate::TTInputFormat;
-
 pub type rust_input_handle_t = *mut libc::c_void;
 
-use super::dpx_specials::{spc_arg, spc_env};
+use super::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_specials::spc_handler;
+use super::spc_handler;
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct spc_pdf_ {
@@ -132,12 +131,12 @@ pub struct tounicode {
     /* An array of PDF names. */
 }
 
-use super::dpx_dpxutil::ht_table;
+use crate::dpx_dpxutil::ht_table;
 
 pub type hval_free_func = Option<unsafe extern "C" fn(_: *mut libc::c_void) -> ()>;
 
-use super::dpx_fontmap::fontmap_rec;
-pub use super::dpx_pdfcolor::pdf_color;
+use crate::dpx_fontmap::fontmap_rec;
+pub use crate::dpx_pdfcolor::pdf_color;
 
 use crate::dpx_pdfximage::load_options;
 
@@ -148,9 +147,9 @@ pub struct resource_map {
     pub type_0: i32,
     pub res_id: i32,
 }
-use super::dpx_cmap::CMap;
+use crate::dpx_cmap::CMap;
 
-use super::dpx_pdfdev::pdf_coord;
+use crate::dpx_pdfdev::pdf_coord;
 
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project

@@ -59,9 +59,6 @@ use super::dpx_pdfdoc::{
 };
 use super::dpx_pdfparse::skip_white;
 use super::dpx_pdfparse::{parse_pdf_number, parse_pdf_string};
-use super::dpx_specials::{
-    spc_exec_at_begin_page, spc_exec_at_end_page, spc_exec_special, spc_set_verbose,
-};
 use super::dpx_subfont::{lookup_sfd_record, sfd_load_record, subfont_set_verbose};
 use super::dpx_t1_char::t1char_get_metrics;
 use super::dpx_t1_load::t1_load_font;
@@ -76,6 +73,9 @@ use super::dpx_tt_table::{
 use super::dpx_vf::{vf_close_all_fonts, vf_locate_font, vf_set_char, vf_set_verbose};
 use crate::dpx_pdfobj::{
     pdf_number_value, pdf_obj, pdf_obj_typeof, pdf_release_obj, pdf_string_value, PdfObjType,
+};
+use crate::specials::{
+    spc_exec_at_begin_page, spc_exec_at_end_page, spc_exec_special, spc_set_verbose,
 };
 use crate::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_getc, ttstub_input_open,

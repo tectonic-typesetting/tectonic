@@ -29,21 +29,20 @@
     unused_mut
 )]
 
-use super::dpx_dpxutil::parse_c_ident;
-use super::dpx_fontmap::{
+use super::util::{spc_util_read_colorspec, spc_util_read_numbers};
+use crate::dpx_dpxutil::parse_c_ident;
+use crate::dpx_fontmap::{
     is_pdfm_mapline, pdf_append_fontmap_record, pdf_clear_fontmap_record, pdf_init_fontmap_record,
     pdf_insert_fontmap_record, pdf_load_fontmap_file, pdf_read_fontmap_line,
     pdf_remove_fontmap_record,
 };
-use super::dpx_mfileio::work_buffer;
-use super::dpx_pdfdev::{pdf_dev_reset_color, pdf_dev_reset_fonts};
-use super::dpx_pdfdoc::{pdf_doc_add_page_content, pdf_doc_set_bgcolor};
-use super::dpx_pdfdraw::{
+use crate::dpx_mfileio::work_buffer;
+use crate::dpx_pdfdev::{pdf_dev_reset_color, pdf_dev_reset_fonts};
+use crate::dpx_pdfdoc::{pdf_doc_add_page_content, pdf_doc_set_bgcolor};
+use crate::dpx_pdfdraw::{
     pdf_dev_concat, pdf_dev_get_fixed_point, pdf_dev_grestore, pdf_dev_gsave,
     pdf_dev_set_fixed_point,
 };
-use super::dpx_spc_util::spc_util_read_colorspec;
-use super::dpx_spc_util::spc_util_read_numbers;
 use crate::dpx_pdfparse::{parse_ident, parse_val_ident, skip_white};
 use crate::streq_ptr;
 use libc::free;
@@ -69,17 +68,17 @@ extern "C" {
 }
 pub type size_t = u64;
 
-use super::dpx_specials::{spc_arg, spc_env};
+use super::{spc_arg, spc_env};
 
 pub type spc_handler_fn_ptr = Option<unsafe extern "C" fn(_: *mut spc_env, _: *mut spc_arg) -> i32>;
-use super::dpx_fontmap::fontmap_rec;
-use super::dpx_specials::spc_handler;
+use super::spc_handler;
+use crate::dpx_fontmap::fontmap_rec;
 
-use super::dpx_pdfdev::pdf_coord;
+use crate::dpx_pdfdev::pdf_coord;
 
-use super::dpx_pdfdev::pdf_tmatrix;
+use crate::dpx_pdfdev::pdf_tmatrix;
 
-pub use super::dpx_pdfcolor::pdf_color;
+pub use crate::dpx_pdfcolor::pdf_color;
 
 /* tectonic/core-strutils.h: miscellaneous C string utilities
    Copyright 2016-2018 the Tectonic Project
