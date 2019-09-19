@@ -1431,6 +1431,7 @@ dependencies = [
  "libpng-sys 1.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "libz-sys 1.0.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "md-5 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sha2 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tectonic_bridge 0.0.1-dev",
 ]
 

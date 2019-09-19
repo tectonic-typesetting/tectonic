@@ -32,14 +32,8 @@
 use std::slice::from_raw_parts;
 
 use crate::warn;
-use super::dpx_dpxcrypt::{
-    AES_cbc_encrypt_tectonic, AES_ecb_encrypt, ARC4_set_key,
-    SHA256_final, SHA256_init, SHA256_write, SHA384_init, SHA512_final, SHA512_init, SHA512_write,
-    ARC4,
-};
-use super::dpx_dpxcrypt::{
-    ARC4_CONTEXT, SHA256_CONTEXT, SHA512_CONTEXT, SHA512_STATE,
-};
+use super::dpx_dpxcrypt::{AES_cbc_encrypt_tectonic, AES_ecb_encrypt, ARC4_set_key, ARC4};
+use super::dpx_dpxcrypt::ARC4_CONTEXT;
 use super::dpx_mem::new;
 use super::dpx_pdfdoc::pdf_doc_get_dictionary;
 use super::dpx_pdffont::get_unique_time_if_given;
@@ -52,6 +46,7 @@ use libc::{
     free, gmtime, localtime, memcpy, memset, rand, sprintf, srand, strcpy, strlen, time, tm,
 };
 use md5::{Md5, Digest};
+use sha2::{Sha256, Sha384, Sha512};
 
 pub type __time_t = i64;
 pub type size_t = u64;
@@ -374,46 +369,30 @@ unsafe extern "C" fn compute_user_password(p: &mut pdf_sec, mut uplain: *const i
 }
 /* Algorithm 2.B from ISO 32000-1 chapter 7 */
 unsafe extern "C" fn compute_hash_V5(
-    mut hash: *mut u8,
     mut passwd: *const i8,
     mut salt: *const u8,
     mut user_key: *const u8,
     mut R: i32,
-)
+) -> [u8; 32]
 /* revision */
 {
-    let mut sha: SHA256_CONTEXT = SHA256_CONTEXT {
-        h0: 0,
-        h1: 0,
-        h2: 0,
-        h3: 0,
-        h4: 0,
-        h5: 0,
-        h6: 0,
-        h7: 0,
-        nblocks: 0,
-        buf: [0; 64],
-        count: 0,
-    };
+    let mut sha = Sha256::new();
     let mut K: [u8; 64] = [0; 64];
     let mut K_len: size_t = 0;
     let mut nround: i32 = 0;
-    SHA256_init(&mut sha);
-    SHA256_write(&mut sha, passwd as *const u8, strlen(passwd) as u32);
-    SHA256_write(&mut sha, salt, 8_u32);
+    sha.input(from_raw_parts(passwd as *const u8, strlen(passwd)));
+    sha.input(from_raw_parts(salt, 8));
     if !user_key.is_null() {
-        SHA256_write(&mut sha, user_key, 48_u32);
+        sha.input(from_raw_parts(user_key, 48));
     }
-    SHA256_final(hash, &mut sha);
+    let mut hash: [u8; 32] = sha.result().into();
     assert!(R == 5i32 || R == 6i32);
     if R == 5i32 {
-        return;
+        return hash;
     }
-    memcpy(
-        K.as_mut_ptr() as *mut libc::c_void,
-        hash as *const libc::c_void,
-        32,
-    );
+    for (K_item, hash_item) in K.iter_mut().zip(hash.iter()) {
+        *K_item = *hash_item;
+    }
     K_len = 32i32 as size_t;
     nround = 1i32;
     loop
@@ -480,65 +459,28 @@ unsafe extern "C" fn compute_hash_V5(
         E_mod3 %= 3i32;
         match E_mod3 {
             0 => {
-                let mut sha_0: SHA256_CONTEXT = SHA256_CONTEXT {
-                    h0: 0,
-                    h1: 0,
-                    h2: 0,
-                    h3: 0,
-                    h4: 0,
-                    h5: 0,
-                    h6: 0,
-                    h7: 0,
-                    nblocks: 0,
-                    buf: [0; 64],
-                    count: 0,
-                };
-                SHA256_init(&mut sha_0);
-                SHA256_write(&mut sha_0, E, E_len as u32);
-                SHA256_final(K.as_mut_ptr(), &mut sha_0);
-                K_len = 32i32 as size_t
+                let mut sha_0 = Sha256::new();
+                sha_0.input(from_raw_parts(E, E_len as usize));
+                for (K_item, result_item) in K.iter_mut().zip(sha_0.result()) {
+                    *K_item = result_item;
+                }
+                K_len = 32;
             }
             1 => {
-                let mut sha_1: SHA512_CONTEXT = SHA512_CONTEXT {
-                    state: SHA512_STATE {
-                        h0: 0,
-                        h1: 0,
-                        h2: 0,
-                        h3: 0,
-                        h4: 0,
-                        h5: 0,
-                        h6: 0,
-                        h7: 0,
-                    },
-                    nblocks: 0,
-                    buf: [0; 128],
-                    count: 0,
-                };
-                SHA384_init(&mut sha_1);
-                SHA512_write(&mut sha_1, E, E_len as u32);
-                SHA512_final(K.as_mut_ptr(), &mut sha_1);
-                K_len = 48i32 as size_t
+                let mut sha_1 = Sha384::new();
+                sha_1.input(from_raw_parts(E, E_len as usize));
+                for (K_item, result_item) in K.iter_mut().zip(sha_1.result()) {
+                    *K_item = result_item;
+                }
+                K_len = 48;
             }
             2 => {
-                let mut sha_2: SHA512_CONTEXT = SHA512_CONTEXT {
-                    state: SHA512_STATE {
-                        h0: 0,
-                        h1: 0,
-                        h2: 0,
-                        h3: 0,
-                        h4: 0,
-                        h5: 0,
-                        h6: 0,
-                        h7: 0,
-                    },
-                    nblocks: 0,
-                    buf: [0; 128],
-                    count: 0,
-                };
-                SHA512_init(&mut sha_2);
-                SHA512_write(&mut sha_2, E, E_len as u32);
-                SHA512_final(K.as_mut_ptr(), &mut sha_2);
-                K_len = 64i32 as size_t
+                let mut sha_2 = Sha512::new();
+                sha_2.input(from_raw_parts(E, E_len as usize));
+                for (K_item, result_item) in K.iter_mut().zip(sha_2.result()) {
+                    *K_item = result_item;
+                }
+                K_len = 64;
             }
             _ => {}
         }
@@ -549,11 +491,11 @@ unsafe extern "C" fn compute_hash_V5(
         }
         nround += 1
     }
-    memcpy(
-        hash as *mut libc::c_void,
-        K.as_mut_ptr() as *const libc::c_void,
-        32,
-    );
+
+    for (hash_item, K_item) in hash.iter_mut().zip(K.iter()) {
+        *hash_item = *K_item;
+    }
+    hash
 }
 unsafe extern "C" fn compute_owner_password_V5(p: &mut pdf_sec, mut oplain: *const i8) {
     let mut vsalt: [u8; 8] = [0; 8];
@@ -569,8 +511,7 @@ unsafe extern "C" fn compute_owner_password_V5(p: &mut pdf_sec, mut oplain: *con
         ksalt[i as usize] = (rand() % 256i32) as u8;
         i += 1
     }
-    compute_hash_V5(
-        hash.as_mut_ptr(),
+    hash = compute_hash_V5(
         oplain,
         vsalt.as_mut_ptr(),
         p.U.as_mut_ptr(),
@@ -591,8 +532,7 @@ unsafe extern "C" fn compute_owner_password_V5(p: &mut pdf_sec, mut oplain: *con
         ksalt.as_mut_ptr() as *const libc::c_void,
         8,
     );
-    compute_hash_V5(
-        hash.as_mut_ptr(),
+    hash = compute_hash_V5(
         oplain,
         ksalt.as_mut_ptr(),
         p.U.as_mut_ptr(),
@@ -630,8 +570,7 @@ unsafe extern "C" fn compute_user_password_V5(p: &mut pdf_sec, mut uplain: *cons
         ksalt[i as usize] = (rand() % 256i32) as u8;
         i += 1
     }
-    compute_hash_V5(
-        hash.as_mut_ptr(),
+    hash = compute_hash_V5(
         uplain,
         vsalt.as_mut_ptr(),
         0 as *const u8,
@@ -652,8 +591,7 @@ unsafe extern "C" fn compute_user_password_V5(p: &mut pdf_sec, mut uplain: *cons
         ksalt.as_mut_ptr() as *const libc::c_void,
         8,
     );
-    compute_hash_V5(
-        hash.as_mut_ptr(),
+    hash = compute_hash_V5(
         uplain,
         ksalt.as_mut_ptr(),
         0 as *const u8,
