@@ -144,6 +144,16 @@ fn check_file(tempdir: &TempDir, rest: &str) {
 /* Keep tests alphabetized */
 
 #[test]
+fn bad_chatter_1() {
+    if env::var("RUNNING_COVERAGE").is_ok() {
+        return;
+    }
+
+    let output = run_tectonic(&PathBuf::from("."), &["-", "--chatter=reticent"]);
+    error_or_panic(output);
+}
+
+#[test]
 fn bad_input_path_1() {
     if env::var("RUNNING_COVERAGE").is_ok() {
         return;
@@ -160,6 +170,16 @@ fn bad_input_path_2() {
     }
 
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
+    error_or_panic(output);
+}
+
+#[test]
+fn bad_outfmt_1() {
+    if env::var("RUNNING_COVERAGE").is_ok() {
+        return;
+    }
+
+    let output = run_tectonic(&PathBuf::from("."), &["-", "--outfmt=dd"]);
     error_or_panic(output);
 }
 

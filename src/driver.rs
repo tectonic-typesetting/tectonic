@@ -17,6 +17,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
+use std::str::FromStr;
 
 use crate::digest::DigestData;
 use crate::engines::IoEventBackend;
@@ -25,6 +26,7 @@ use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenRe
 use crate::status::StatusBackend;
 use crate::{ctry, errmsg, tt_error, tt_note, tt_warning};
 use crate::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
+use std::result::Result as StdResult;
 
 /// Different patterns with which files may have been accessed by the
 /// underlying engines. Once a file is marked as ReadThenWritten or
@@ -210,6 +212,21 @@ pub enum OutputFormat {
     Format,
 }
 
+impl FromStr for OutputFormat {
+    type Err = &'static str;
+
+    fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
+        match a_str {
+            "aux" => Ok(OutputFormat::Aux),
+            "html" => Ok(OutputFormat::Html),
+            "xdv" => Ok(OutputFormat::Xdv),
+            "pdf" => Ok(OutputFormat::Pdf),
+            "fmt" => Ok(OutputFormat::Format),
+            _ => Err("unsupported or unknown format"),
+        }
+    }
+}
+
 impl Default for OutputFormat {
     fn default() -> OutputFormat {
         OutputFormat::Pdf
@@ -231,6 +248,19 @@ pub enum PassSetting {
 impl Default for PassSetting {
     fn default() -> PassSetting {
         PassSetting::Default
+    }
+}
+
+impl FromStr for PassSetting {
+    type Err = &'static str;
+
+    fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
+        match a_str {
+            "default" => Ok(PassSetting::Default),
+            "bibtex_first" => Ok(PassSetting::BibtexFirst),
+            "tex" => Ok(PassSetting::Tex),
+            _ => Err("unsupported or unknown pass setting"),
+        }
     }
 }
 
