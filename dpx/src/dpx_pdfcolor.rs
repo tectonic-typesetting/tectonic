@@ -29,10 +29,9 @@
     unused_mut
 )]
 
+use std::slice::from_raw_parts;
 use crate::mfree;
 use crate::{info, warn};
-
-use super::dpx_dpxcrypt::{MD5_final, MD5_init, MD5_write, MD5_CONTEXT};
 use super::dpx_error::{dpx_message, dpx_warning};
 use super::dpx_mem::{new, renew};
 use super::dpx_numbers::sget_unsigned_pair;
@@ -43,6 +42,7 @@ use crate::dpx_pdfobj::{
     pdf_stream_dict,
 };
 use libc::{free, memcmp, memcpy, memset, sprintf, strcmp, strcpy, strlen};
+use md5::{Md5, Digest};
 
 pub type size_t = u64;
 
@@ -830,31 +830,20 @@ unsafe extern "C" fn iccp_unpack_header(
     0i32
 }
 unsafe extern "C" fn iccp_get_checksum(
-    mut checksum: *mut u8,
-    mut profile: *const libc::c_void,
-    mut proflen: i32,
-) {
-    let mut p: *const u8 = 0 as *const u8;
-    let mut md5: MD5_CONTEXT = MD5_CONTEXT {
-        A: 0,
-        B: 0,
-        C: 0,
-        D: 0,
-        nblocks: 0,
-        buf: [0; 64],
-        count: 0,
-    };
-    p = profile as *const u8;
-    MD5_init(&mut md5);
-    MD5_write(&mut md5, p.offset(0), 56_u32);
-    MD5_write(&mut md5, nullbytes16.as_mut_ptr(), 12_u32);
-    MD5_write(&mut md5, p.offset(68), 16_u32);
-    MD5_write(&mut md5, nullbytes16.as_mut_ptr(), 16_u32);
-    MD5_write(&mut md5, p.offset(100), 28_u32);
+    profile: *const u8,
+    proflen: usize,
+) -> [u8; 16] {
+    let mut md5 = Md5::new();
+    md5.input(from_raw_parts(profile.offset(0), 56));
+    md5.input(&[0u8; 12]);
+    md5.input(from_raw_parts(profile.offset(68), 16));
+    md5.input(&[0u8; 16]);
+    md5.input(from_raw_parts(profile.offset(100), 28));
     /* body */
-    MD5_write(&mut md5, p.offset(128), (proflen - 128i32) as u32);
-    MD5_final(checksum, &mut md5);
+    md5.input(from_raw_parts(profile.offset(128), proflen - 128));
+    md5.result().into()
 }
+
 unsafe extern "C" fn print_iccp_header(icch: &mut iccHeader, mut checksum: *mut u8) {
     info!("\n");
     info!("pdf_color>> ICC Profile Info\n");
@@ -1128,7 +1117,6 @@ pub unsafe extern "C" fn iccp_load_profile(
     let mut cspc_id: i32 = 0;
     let mut icch = iccHeader::default();
     let mut colorspace: i32 = 0;
-    let mut checksum: [u8; 16] = [0; 16];
     iccp_init_iccHeader(&mut icch);
     if iccp_unpack_header(&mut icch, profile, proflen, 1i32) < 0i32 {
         /* check size */
@@ -1172,7 +1160,7 @@ pub unsafe extern "C" fn iccp_load_profile(
         print_iccp_header(&mut icch, 0 as *mut u8);
         return -1i32;
     }
-    iccp_get_checksum(checksum.as_mut_ptr(), profile, proflen);
+    let mut checksum = iccp_get_checksum(profile as *const u8, proflen as usize);
     if memcmp(
         icch.ID.as_mut_ptr() as *const libc::c_void,
         nullbytes16.as_mut_ptr() as *const libc::c_void,
