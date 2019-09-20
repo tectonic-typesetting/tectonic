@@ -2,13 +2,14 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-use clap::crate_version;
 use tectonic;
 
-use clap::{App, Arg, ArgMatches};
+use structopt::StructOpt;
+
 use std::fs::File;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process;
+use std::str::FromStr;
 
 use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
@@ -19,49 +20,95 @@ use tectonic::status::{ChatterLevel, StatusBackend};
 
 use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 
+#[derive(Debug, StructOpt)]
+#[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
+struct CliOptions {
+    /// The file to process, or "-" to process the standard input stream"
+    #[structopt(name = "input")]
+    input: String,
+    /// The name of the "format" file used to initialize the TeX engine
+    #[structopt(long, short, name = "path", default_value = "latex")]
+    format: String,
+    /// Use this Zip-format bundle file to find resource files instead of the default
+    #[structopt(
+        takes_value(true),
+        parse(from_os_str),
+        long,
+        short,
+        name = "zip_file_path"
+    )]
+    bundle: Option<PathBuf>,
+    /// Use this URL find resource files instead of the default
+    #[structopt(takes_value(true), long, short, name = "url")]
+    // TODO add URL validation
+    web_bundle: Option<String>,
+    /// How much chatter to print when running
+    #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
+    chatter_level: String,
+    /// Use only resource files cached locally
+    #[structopt(short = "C")]
+    only_cached: bool,
+    /// The kind of output to generate
+    #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "format"]))]
+    outfmt: String,
+    /// Write Makefile-format rules expressing the dependencies of this run to <dest_path>
+    #[structopt(long, name = "dest_path")]
+    makefile_rules: Option<PathBuf>,
+    /// Which engines to run
+    #[structopt(long, default_value = "default", possible_values(&["default", "tex", "bibtex_first"]))]
+    pass: String,
+    /// Rerun the TeX engine exactly this many times after the first
+    #[structopt(name = "count", long = "reruns", short = "r")]
+    reruns: Option<usize>,
+    /// Keep the intermediate files generated during processing
+    #[structopt(short, long)]
+    keep_intermediates: bool,
+    /// Keep the log files generated during processing
+    #[structopt(long)]
+    keep_logs: bool,
+    /// Generate SyncTeX data
+    #[structopt(long)]
+    synctex: bool,
+    /// Tell the engine that no file at <hide_path> exists, if it tries to read it
+    #[structopt(long, name = "hide_path")]
+    hide: Option<Vec<PathBuf>>,
+    /// Print the engine's chatter during processing
+    #[structopt(long = "print", short)]
+    print_stdout: bool,
+    /// The directory in which to place output files [default: the directory containing <input>]
+    #[structopt(name = "outdir", short, long, parse(from_os_str))]
+    outdir: Option<PathBuf>,
+}
 fn inner(
-    args: ArgMatches,
+    args: CliOptions,
     config: PersistentConfig,
     status: &mut TermcolorStatusBackend,
 ) -> Result<()> {
     let mut sess_builder = ProcessingSessionBuilder::default();
-    let format_path = args.value_of("format").unwrap();
+    let format_path = args.format;
     sess_builder
-        .format_name(format_path)
-        .keep_logs(args.is_present("keep_logs"))
-        .keep_intermediates(args.is_present("keep_intermediates"))
+        .format_name(&format_path)
+        .keep_logs(args.keep_logs)
+        .keep_intermediates(args.keep_intermediates)
         .format_cache_path(config.format_cache_path()?)
-        .synctex(args.is_present("synctex"));
+        .synctex(args.synctex);
 
-    let output_format = match args.value_of("outfmt").unwrap() {
-        "aux" => OutputFormat::Aux,
-        "html" => OutputFormat::Html,
-        "xdv" => OutputFormat::Xdv,
-        "pdf" => OutputFormat::Pdf,
-        "format" => OutputFormat::Format,
-        _ => unreachable!(),
-    };
-    sess_builder.output_format(output_format);
+    sess_builder.output_format(OutputFormat::from_str(&args.outfmt).unwrap());
 
-    let pass = match args.value_of("pass").unwrap() {
-        "default" => PassSetting::Default,
-        "bibtex_first" => PassSetting::BibtexFirst,
-        "tex" => PassSetting::Tex,
-        _ => unreachable!(),
-    };
+    let pass = PassSetting::from_str(&args.pass).unwrap();
     sess_builder.pass(pass);
 
-    if let Some(s) = args.value_of("reruns") {
-        sess_builder.reruns(usize::from_str_radix(s, 10)?);
+    if let Some(s) = args.reruns {
+        sess_builder.reruns(s);
     }
 
-    if let Some(p) = args.value_of_os("makefile_rules") {
+    if let Some(p) = args.makefile_rules {
         sess_builder.makefile_output_path(p);
     }
 
     // Input and path setup
 
-    let input_path = args.value_of_os("INPUT").unwrap();
+    let input_path = args.input;
     if input_path == "-" {
         // Don't provide an input path to the ProcessingSession, so it will default to stdin.
         sess_builder.tex_input_name("texput.tex");
@@ -71,7 +118,7 @@ fn inner(
             "reading from standard input; outputs will appear under the base name \"texput\""
         );
     } else {
-        let input_path = Path::new(input_path);
+        let input_path = Path::new(&input_path);
         sess_builder.primary_input_path(input_path);
 
         if let Some(fname) = input_path.file_name() {
@@ -93,8 +140,7 @@ fn inner(
         }
     }
 
-    if let Some(dir) = args.value_of_os("outdir") {
-        let output_dir = Path::new(dir);
+    if let Some(output_dir) = args.outdir {
         if !output_dir.is_dir() {
             return Err(errmsg!(
                 "output directory \"{}\" does not exist",
@@ -106,22 +152,22 @@ fn inner(
 
     // Set up the rest of I/O.
 
-    sess_builder.print_stdout(args.is_present("print_stdout"));
+    sess_builder.print_stdout(args.print_stdout);
 
-    if let Some(items) = args.values_of_os("hide") {
+    if let Some(items) = args.hide {
         for v in items {
             sess_builder.hide(v);
         }
     }
 
-    let only_cached = args.is_present("only_cached");
+    let only_cached = args.only_cached;
     if only_cached {
         tt_note!(status, "using only cached resource files");
     }
-    if let Some(p) = args.value_of("bundle") {
-        let zb = ctry!(ZipBundle::<File>::open(Path::new(&p)); "error opening bundle");
+    if let Some(p) = args.bundle {
+        let zb = ctry!(ZipBundle::<File>::open(&p); "error opening bundle");
         sess_builder.bundle(Box::new(zb));
-    } else if let Some(u) = args.value_of("web_bundle") {
+    } else if let Some(u) = args.web_bundle {
         sess_builder.bundle(Box::new(config.make_cached_url_provider(
             &u,
             only_cached,
@@ -154,96 +200,7 @@ fn inner(
 }
 
 fn main() {
-    let matches = App::new("Tectonic")
-        .version(crate_version!())
-        .about("Process a (La)TeX document")
-        .arg(Arg::with_name("format")
-             .long("format")
-             .value_name("PATH")
-             .help("The name of the \"format\" file used to initialize the TeX engine")
-             .default_value("latex"))
-        .arg(Arg::with_name("bundle")
-             .long("bundle")
-             .short("b")
-             .value_name("PATH")
-             .help("Use this Zip-format bundle file to find resource files instead of the default")
-             .takes_value(true))
-        .arg(Arg::with_name("web_bundle")
-             .long("web-bundle")
-             .short("w")
-             .value_name("URL")
-             .help("Use this URL find resource files instead of the default")
-             .takes_value(true))
-        .arg(Arg::with_name("only_cached")
-             .short("C")
-             .long("only-cached")
-             .help("Use only resource files cached locally"))
-        .arg(Arg::with_name("outfmt")
-             .long("outfmt")
-             .value_name("FORMAT")
-             .help("The kind of output to generate")
-             .possible_values(&["pdf", "html", "xdv", "aux", "format"])
-             .default_value("pdf"))
-        .arg(Arg::with_name("makefile_rules")
-             .long("makefile-rules")
-             .value_name("PATH")
-             .help("Write Makefile-format rules expressing the dependencies of this run to <PATH>"))
-        .arg(Arg::with_name("pass")
-             .long("pass")
-             .value_name("PASS")
-             .help("Which engines to run")
-             .possible_values(&["default", "tex", "bibtex_first"])
-             .default_value("default"))
-        .arg(Arg::with_name("reruns")
-             .long("reruns")
-             .short("r")
-             .value_name("COUNT")
-             .help("Rerun the TeX engine exactly this many times after the first"))
-        .arg(Arg::with_name("keep_intermediates")
-             .short("k")
-             .long("keep-intermediates")
-             .help("Keep the intermediate files generated during processing"))
-        .arg(Arg::with_name("keep_logs")
-             .long("keep-logs")
-             .help("Keep the log files generated during processing"))
-        .arg(Arg::with_name("synctex")
-             .long("synctex")
-             .help("Generate SyncTeX data"))
-        .arg(Arg::with_name("hide")
-             .long("hide")
-             .value_name("PATH")
-             .multiple(true)
-             .number_of_values(1)
-             .help("Tell the engine that no file at <PATH> exists, if it tries to read it"))
-        .arg(Arg::with_name("print_stdout")
-             .long("print")
-             .short("p")
-             .help("Print the engine's chatter during processing"))
-        .arg(Arg::with_name("chatter_level")
-             .long("chatter")
-             .short("c")
-             .value_name("LEVEL")
-             .help("How much chatter to print when running")
-             .possible_values(&["default", "minimal"])
-             .default_value("default"))
-        .arg(Arg::with_name("outdir")
-             .long("outdir")
-             .short("o")
-             .value_name("OUTDIR")
-             .help("The directory in which to place output files [default: the directory containing INPUT]"))
-        .arg(Arg::with_name("INPUT")
-             .help("The file to process, or \"-\" to process the standard input stream")
-             .required(true)
-             .index(1))
-        .get_matches ();
-
-    //env_logger::init();
-
-    let chatter = match matches.value_of("chatter_level").unwrap() {
-        "default" => ChatterLevel::Normal,
-        "minimal" => ChatterLevel::Minimal,
-        _ => unreachable!(),
-    };
+    let args = CliOptions::from_args();
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
     // it to use a specified set of local files, rather than going to the
@@ -280,7 +237,8 @@ fn main() {
     // something I'd be relatively OK with since it'd only affect the progam
     // UI, not the processing results).
 
-    let mut status = TermcolorStatusBackend::new(chatter);
+    let mut status =
+        TermcolorStatusBackend::new(ChatterLevel::from_str(&args.chatter_level).unwrap());
 
     // For now ...
 
@@ -293,7 +251,7 @@ fn main() {
     // function ... all so that we can print out the word "error:" in red.
     // This code parallels various bits of the `error_chain` crate.
 
-    if let Err(ref e) = inner(matches, config, &mut status) {
+    if let Err(ref e) = inner(args, config, &mut status) {
         status.bare_error(e);
         process::exit(1)
     }

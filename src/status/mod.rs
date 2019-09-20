@@ -8,6 +8,8 @@ pub mod termcolor;
 
 use std::cmp;
 use std::fmt::Arguments;
+use std::result::Result as StdResult;
+use std::str::FromStr;
 
 use crate::errors::Error;
 
@@ -16,6 +18,18 @@ use crate::errors::Error;
 pub enum ChatterLevel {
     Minimal = 0,
     Normal,
+}
+
+impl FromStr for ChatterLevel {
+    type Err = &'static str;
+
+    fn from_str(a_str: &str) -> StdResult<Self, Self::Err> {
+        match a_str {
+            "default" => Ok(ChatterLevel::Normal),
+            "minimal" => Ok(ChatterLevel::Minimal),
+            _ => Err("unsupported or unknown chatter level"),
+        }
+    }
 }
 
 impl PartialEq for ChatterLevel {
