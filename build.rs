@@ -203,6 +203,23 @@ fn main() {
         ccfg.flag_if_supported(flag);
     }
 
+    let profile_target_requires_frame_pointer: bool = target_cfg!(not(any(
+        // Whitelist of platforms which do not require frame pointers.
+        all(target_os = "linux", target_arch = "x86_64"),
+        // Add more platforms here.
+    )));
+
+    const PROFILE_BUILD_ENABLED: bool = cfg!(feature = "profile");
+
+    let profile_config = |cfg: &mut cc::Build| {
+        if PROFILE_BUILD_ENABLED {
+            cfg.debug(true)
+                .force_frame_pointer(profile_target_requires_frame_pointer);
+        }
+    };
+
+    profile_config(&mut ccfg);
+
     ccfg.file("tectonic/bibtex.c")
         .file("tectonic/core-bridge.c")
         .file("tectonic/core-memory.c")
@@ -333,6 +350,8 @@ fn main() {
     for flag in &cppflags {
         cppcfg.flag_if_supported(flag);
     }
+
+    profile_config(&mut cppcfg);
 
     cppcfg
         .cpp(true)

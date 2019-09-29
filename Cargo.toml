@@ -33,7 +33,7 @@ name = "tectonic"
 crate-type = ["rlib"]
 
 [build-dependencies]
-cc = "^1.0"
+cc = "^1.0.46"
 pkg-config = "^0.3"  # note: sync dist/docker/*/pkg-config-rs.sh with the version in Cargo.lock
 regex = "^1.3"
 sha2 = "^0.8"
@@ -66,6 +66,9 @@ default = ["serialization"]
 # adopted the newer scheme to avoid having to depend on both -- should maybe
 # just get rid of this feature:
 serialization = ["serde", "toml"]
+
+# developer feature to compile with the necessary flags for profiling tectonic.
+profile = []
 
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"
