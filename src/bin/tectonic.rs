@@ -23,7 +23,7 @@ use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
 struct CliOptions {
-    /// The file to process, or "-" to process the standard input stream"
+    /// The file to process, or "-" to process the standard input stream
     #[structopt(name = "input")]
     input: String,
     /// The name of the "format" file used to initialize the TeX engine
@@ -46,7 +46,7 @@ struct CliOptions {
     #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
     chatter_level: String,
     /// Use only resource files cached locally
-    #[structopt(short = "C")]
+    #[structopt(short = "C", long)]
     only_cached: bool,
     /// The kind of output to generate
     #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "format"]))]
