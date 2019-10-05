@@ -8,6 +8,7 @@
 ///
 /// TODO: this surely needs to become much smarter and more flexible.
 use cc;
+use cfg_support::{CfgBuilder, CfgTarget};
 use pkg_config;
 use vcpkg;
 
@@ -350,7 +351,10 @@ fn main() {
 
     // Platform-specific adjustments:
 
-    if cfg!(target_os = "macos") {
+    let target_info = CfgTarget::new();
+    let is_mac_os = target_info.all(&[CfgBuilder::new().target_os("macos").build()]);
+
+    if is_mac_os {
         ccfg.define("XETEX_MAC", Some("1"));
         ccfg.file("tectonic/xetex-macos.c");
 
@@ -365,12 +369,13 @@ fn main() {
         println!("cargo:rustc-link-lib=framework=AppKit");
     }
 
-    if cfg!(not(target_os = "macos")) {
+    if !is_mac_os {
         // At the moment we use Fontconfig on both Linux and Windows.
         cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
-    if cfg!(target_endian = "big") {
+    let is_big_endian = target_info.all(&[CfgBuilder::new().target_endian("big").build()]);
+    if is_big_endian {
         ccfg.define("WORDS_BIGENDIAN", "1");
         cppcfg.define("WORDS_BIGENDIAN", "1");
     }
@@ -393,6 +398,11 @@ fn main() {
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {
+        let file = file.unwrap();
+        println!("cargo:rerun-if-changed={}", file.path().display());
+    }
+    // ditto for cfg_support
+    for file in PathBuf::from("cfg_support").read_dir().unwrap() {
         let file = file.unwrap();
         println!("cargo:rerun-if-changed={}", file.path().display());
     }
