@@ -8,8 +8,8 @@
 ///
 /// TODO: this surely needs to become much smarter and more flexible.
 use cc;
-use cfg_support::{CfgBuilder, CfgTarget};
 use pkg_config;
+use tectonic_cfg_support::*;
 use vcpkg;
 
 use std::env;
@@ -351,8 +351,7 @@ fn main() {
 
     // Platform-specific adjustments:
 
-    let target_info = CfgTarget::new();
-    let is_mac_os = target_info.all(&[CfgBuilder::new().target_os("macos").build()]);
+    let is_mac_os = build_cfg!(target_os = "macos");
 
     if is_mac_os {
         ccfg.define("XETEX_MAC", Some("1"));
@@ -374,7 +373,7 @@ fn main() {
         cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
-    let is_big_endian = target_info.all(&[CfgBuilder::new().target_endian("big").build()]);
+    let is_big_endian = build_cfg!(target_endian = "big");
     if is_big_endian {
         ccfg.define("WORDS_BIGENDIAN", "1");
         cppcfg.define("WORDS_BIGENDIAN", "1");
@@ -398,11 +397,6 @@ fn main() {
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {
-        let file = file.unwrap();
-        println!("cargo:rerun-if-changed={}", file.path().display());
-    }
-    // ditto for cfg_support
-    for file in PathBuf::from("cfg_support").read_dir().unwrap() {
         let file = file.unwrap();
         println!("cargo:rerun-if-changed={}", file.path().display());
     }
