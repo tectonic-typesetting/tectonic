@@ -4,6 +4,7 @@
 
 //! A framework for showing status messages to the user.
 
+pub mod plain;
 pub mod termcolor;
 
 use std::cmp;
@@ -77,6 +78,8 @@ pub trait StatusBackend {
             None,
         )
     }
+
+    fn dump_to_stderr(&mut self, output: &[u8]);
 }
 
 /// Report a formatted informational message to the user.
@@ -133,4 +136,5 @@ impl NoopStatusBackend {
 
 impl StatusBackend for NoopStatusBackend {
     fn report(&mut self, _kind: MessageKind, _args: Arguments, _err: Option<&Error>) {}
+    fn dump_to_stderr(&mut self, _output: &[u8]) {}
 }
