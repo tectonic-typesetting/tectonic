@@ -57,6 +57,7 @@ tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
 toml = "^0.5"
 zip = { version = "^0.5", default-features = false, features = ["deflate"] }
+atty = "0.2.13"
 
 [features]
 default = ["serialization"]

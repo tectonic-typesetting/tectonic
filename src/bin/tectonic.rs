@@ -4,6 +4,7 @@
 
 use tectonic;
 
+use atty;
 use structopt::StructOpt;
 
 use std::fs::File;
@@ -15,10 +16,11 @@ use tectonic::config::PersistentConfig;
 use tectonic::driver::{OutputFormat, PassSetting, ProcessingSessionBuilder};
 use tectonic::errors::{ErrorKind, Result};
 use tectonic::io::zipbundle::ZipBundle;
+use tectonic::status::plain::PlainStatusBackend;
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::{ChatterLevel, StatusBackend};
 
-use tectonic::{ctry, errmsg, tt_error, tt_error_styled, tt_note};
+use tectonic::{ctry, errmsg, tt_error, tt_note};
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
@@ -45,11 +47,14 @@ struct CliOptions {
     /// How much chatter to print when running
     #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
     chatter_level: String,
+    /// Enable/disable colorful log output.
+    #[structopt(long, name = "color", default_value = "auto", possible_values(&["always", "auto", "never"]))]
+    color: String,
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
     only_cached: bool,
     /// The kind of output to generate
-    #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "format"]))]
+    #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "fmt"]))]
     outfmt: String,
     /// Write Makefile-format rules expressing the dependencies of this run to <dest_path>
     #[structopt(long, name = "dest_path")]
@@ -79,11 +84,7 @@ struct CliOptions {
     #[structopt(name = "outdir", short, long, parse(from_os_str))]
     outdir: Option<PathBuf>,
 }
-fn inner(
-    args: CliOptions,
-    config: PersistentConfig,
-    status: &mut TermcolorStatusBackend,
-) -> Result<()> {
+fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<()> {
     let mut sess_builder = ProcessingSessionBuilder::default();
     let format_path = args.format;
     sess_builder
@@ -189,10 +190,11 @@ fn inner(
                     "something bad happened inside {}; its output follows:\n",
                     engine
                 );
-                tt_error_styled!(status, "===============================================================================");
+
+                tt_error!(status, "===============================================================================");
                 status.dump_to_stderr(&output);
-                tt_error_styled!(status, "===============================================================================");
-                tt_error_styled!(status, "");
+                tt_error!(status, "===============================================================================");
+                tt_error!(status, "");
             }
         }
     }
@@ -237,8 +239,19 @@ fn main() {
     // something I'd be relatively OK with since it'd only affect the progam
     // UI, not the processing results).
 
-    let mut status =
-        TermcolorStatusBackend::new(ChatterLevel::from_str(&args.chatter_level).unwrap());
+    let chatter_level = ChatterLevel::from_str(&args.chatter_level).unwrap();
+    let use_color = match &*args.color {
+        "always" => true,
+        "auto" => atty::is(atty::Stream::Stdout),
+        "never" => false,
+        _ => unreachable!(),
+    };
+
+    let mut status = if use_color {
+        Box::new(TermcolorStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
+    } else {
+        Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
+    };
 
     // For now ...
 
@@ -251,8 +264,8 @@ fn main() {
     // function ... all so that we can print out the word "error:" in red.
     // This code parallels various bits of the `error_chain` crate.
 
-    if let Err(ref e) = inner(args, config, &mut status) {
-        status.bare_error(e);
+    if let Err(ref e) = inner(args, config, &mut *status) {
+        tt_error!(status, ""; e);
         process::exit(1)
     }
 }
