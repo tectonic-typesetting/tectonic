@@ -1632,6 +1632,7 @@ name = "tectonic"
 version = "0.0.0-dev.0"
 dependencies = [
  "app_dirs2",
+ "atty",
  "byte-unit",
  "cc",
  "cfg-if",
