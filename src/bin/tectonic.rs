@@ -39,7 +39,7 @@ struct CliOptions {
     chatter_level: String,
     /// Enable/disable colorful log output.
     #[structopt(long, name = "color", default_value = "auto", possible_values(&["always", "auto", "never"]))]
-    color: String,
+    cli_color: String,
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
     only_cached: bool,
@@ -236,14 +236,14 @@ fn main() {
     // UI, not the processing results).
 
     let chatter_level = ChatterLevel::from_str(&args.chatter_level).unwrap();
-    let use_color = match &*args.color {
+    let use_cli_color = match &*args.cli_color {
         "always" => true,
         "auto" => atty::is(atty::Stream::Stdout),
         "never" => false,
         _ => unreachable!(),
     };
 
-    let mut status = if use_color {
+    let mut status = if use_cli_color {
         Box::new(TermcolorStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
     } else {
         Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
