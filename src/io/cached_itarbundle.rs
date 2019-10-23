@@ -84,7 +84,7 @@ fn get_index(url: &str, status: &mut dyn StatusBackend) -> Result<GzDecoder<Resp
     let res = Client::new().get(&index_url).send()?;
     if !res.status().is_success() {
         return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
-            index_url.clone(),
+            index_url,
             res.status(),
         )))
         .chain_err(|| "couldn\'t fetch".to_string());
@@ -450,7 +450,7 @@ impl CachedITarBundle {
         Ok(CachedITarBundle {
             url: url.to_owned(),
             redirect_url,
-            digest_path: digest_path.to_owned(),
+            digest_path,
             cached_digest,
             checked_digest,
             manifest_path,

@@ -16,13 +16,11 @@ static char *last_source_name = NULL;
 static int last_lineno;
 
 void
-get_date_and_time (int32_t *minutes,  int32_t *day,
-                   int32_t *month,  int32_t *year)
+get_date_and_time (time_t source_date_epoch,
+                   int32_t *minutes, int32_t *day,
+                   int32_t *month, int32_t *year)
 {
-  struct tm *tmptr;
-
-  time_t myclock = time ((time_t *) 0);
-  tmptr = localtime (&myclock);
+  struct tm *tmptr = localtime (&source_date_epoch);
   *minutes = tmptr->tm_hour * 60 + tmptr->tm_min;
   *day = tmptr->tm_mday;
   *month = tmptr->tm_mon + 1;

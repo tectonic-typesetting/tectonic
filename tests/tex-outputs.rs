@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
-use std::env;
 use std::path::Path;
+use std::time;
 
 use tectonic::engines::tex::TexResult;
 use tectonic::engines::NoopIoEventBackend;
@@ -116,13 +116,14 @@ impl TestCase {
                 TexEngine::new().process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
-                // While the xdv and log output is deterministic without setting
-                // SOURCE_DATE_EPOCH, xdvipdfmx uses the current date in various places.
-                env::set_var("SOURCE_DATE_EPOCH", "1456304492"); // TODO: default to deterministic behaviour
-
                 XdvipdfmxEngine::new()
                     .with_compression(false)
                     .with_deterministic_tags(true)
+                    .with_date(
+                        time::SystemTime::UNIX_EPOCH
+                            .checked_add(time::Duration::from_secs(1_456_304_492))
+                            .unwrap(),
+                    )
                     .process(&mut io, &mut events, &mut status, &xdvname, &pdfname)
                     .unwrap();
             }

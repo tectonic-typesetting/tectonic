@@ -496,6 +496,7 @@ extern "C" {
         api: *const TectonicBridgeApi,
         dump_name: *const libc::c_char,
         input_file_name: *const libc::c_char,
+        build_date: libc::time_t,
     ) -> libc::c_int;
     fn dvipdfmx_simple_main(
         api: *const TectonicBridgeApi,
@@ -503,6 +504,7 @@ extern "C" {
         pdfname: *const libc::c_char,
         enable_compression: bool,
         deterministic_tags: bool,
+        build_date: libc::time_t,
     ) -> libc::c_int;
     fn bibtex_simple_main(
         api: *const TectonicBridgeApi,
