@@ -89,7 +89,6 @@ void pdf_enc_set_verbose (int level)
 static void
 pdf_enc_init (int use_aes, int encrypt_metadata)
 {
-  time_t current_time;
   struct pdf_sec *p = &sec_data;
 
   srand(source_date_epoch); /* For AES IV */
@@ -105,7 +104,6 @@ pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
 {
   struct pdf_sec *p = &sec_data;
   char *date_string, *producer;
-  time_t current_time;
   struct tm *bd_time;
   MD5_CONTEXT     md5;
 

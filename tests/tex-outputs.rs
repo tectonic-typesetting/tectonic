@@ -121,7 +121,7 @@ impl TestCase {
                     .with_deterministic_tags(true)
                     .with_date(
                         time::SystemTime::UNIX_EPOCH
-                            .checked_add(time::Duration::from_secs(1456304492))
+                            .checked_add(time::Duration::from_secs(1_456_304_492))
                             .unwrap(),
                     )
                     .process(&mut io, &mut events, &mut status, &xdvname, &pdfname)
