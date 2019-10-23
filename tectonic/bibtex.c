@@ -910,7 +910,7 @@ static void already_seen_function_print(hash_loc seen_fn_loc)
 
 static void bib_ln_num_print(void)
 {
-    printf_log("--line %ld of file", (long) bib_line_num);
+    printf_log("--line %ld of file ", (long) bib_line_num);
     print_bib_name();
 }
 
