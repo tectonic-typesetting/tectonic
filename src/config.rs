@@ -12,7 +12,6 @@
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -59,6 +58,7 @@ impl PersistentConfig {
     /// false, the default configuration is returned and the filesystem is not
     /// modified.
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
+        use std::fs::File;
         use std::io::ErrorKind as IoErrorKind;
         use std::io::{Read, Write};
         let mut cfg_path = if auto_create_config_file {
@@ -135,8 +135,8 @@ impl PersistentConfig {
         only_cached: bool,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        use reqwest::Url;
         use std::io;
+        use url::Url;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             return Ok(Box::new(crate::test_util::TestBundle::default()));

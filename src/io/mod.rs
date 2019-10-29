@@ -17,6 +17,18 @@ use crate::digest::{self, Digest, DigestData};
 use crate::errors::{Error, ErrorKind, Result};
 use crate::status::StatusBackend;
 
+#[cfg(feature = "reqwest")]
+#[path = "download_reqwest.rs"]
+pub mod download;
+
+#[cfg(feature = "curl")]
+#[path = "download_curl.rs"]
+pub mod download;
+
+#[cfg(all(not(feature = "curl"), not(feature = "reqwest")))]
+#[path = "download_none.rs"]
+pub mod download;
+
 pub mod cached_itarbundle;
 pub mod dirbundle;
 pub mod filesystem;

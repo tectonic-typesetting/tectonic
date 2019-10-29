@@ -5,7 +5,6 @@
 use error_chain::bail;
 use flate2::read::GzDecoder;
 use fs2::FileExt;
-use reqwest::{header::HeaderMap, Client, RedirectPolicy, Response, StatusCode};
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::fs::{self, File};
@@ -21,13 +20,14 @@ use crate::errors::{Error, ErrorKind, Result, ResultExt};
 use crate::status::StatusBackend;
 use crate::{ctry, tt_note, tt_warning};
 
-const MAX_HTTP_REDIRECTS_ALLOWED: usize = 10;
+use crate::io::download::{self, Client, Response, StatusCode};
+
 const MAX_HTTP_ATTEMPTS: usize = 4;
 
 /// A simple way to read chunks out of a big seekable byte stream. You could
 /// implement this for io::File pretty trivially but that's not currently
 /// needed.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct HttpRangeReader {
     url: String,
     client: Client,
@@ -44,13 +44,8 @@ impl HttpRangeReader {
 
 impl HttpRangeReader {
     fn read_range(&mut self, offset: u64, length: usize) -> Result<Response> {
-        let end_inclusive = offset + length as u64 - 1;
-
-        let mut headers = HeaderMap::new();
-        use headers::HeaderMapExt;
-        headers.typed_insert(headers::Range::bytes(offset..=end_inclusive).unwrap());
-
-        let res = self.client.get(&self.url).headers(headers).send()?;
+        let end = offset + length as u64 - 1;
+        let res = download::get_range_inclusive(&mut self.client, &self.url, offset, end)?;
 
         if res.status() != StatusCode::PARTIAL_CONTENT {
             return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
@@ -81,7 +76,7 @@ fn get_index(url: &str, status: &mut dyn StatusBackend) -> Result<GzDecoder<Resp
 
     tt_note!(status, "downloading index {}", index_url);
 
-    let res = Client::new().get(&index_url).send()?;
+    let res = download::get(&index_url)?;
     if !res.status().is_success() {
         return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
             index_url,
@@ -91,59 +86,6 @@ fn get_index(url: &str, status: &mut dyn StatusBackend) -> Result<GzDecoder<Resp
     }
 
     Ok(GzDecoder::new(res))
-}
-
-fn resolve_url(url: &str, status: &mut dyn StatusBackend) -> Result<String> {
-    tt_note!(status, "connecting to {}", url);
-
-    // First, we actually do a HEAD request on the URL for the data file.
-    // If it's redirected, we update our URL to follow the redirects. If
-    // we didn't do this separately, the index file would have to be the
-    // one with the redirect setup, which would be confusing and annoying.
-
-    let redirect_policy = RedirectPolicy::custom(|attempt| {
-        // In the process of resolving the file url it might be neccesary
-        // to stop at a certain level of redirection. This might be required
-        // because some hosts might redirect to a version of the url where
-        // it isn't possible to select the index file by appending .index.gz.
-        // (This mostly happens because CDNs redirect to the file hash.)
-        if attempt.previous().len() >= MAX_HTTP_REDIRECTS_ALLOWED {
-            attempt.too_many_redirects()
-        } else if let Some(segments) = attempt.url().clone().path_segments() {
-            let follow = segments
-                .last()
-                .map(|file| file.contains('.'))
-                .unwrap_or(true);
-            if follow {
-                attempt.follow()
-            } else {
-                attempt.stop()
-            }
-        } else {
-            attempt.follow()
-        }
-    });
-    let res = Client::builder()
-        .redirect(redirect_policy)
-        .build()?
-        .head(url)
-        .send()?;
-
-    if !(res.status().is_success() || res.status() == StatusCode::FOUND) {
-        return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
-            url.to_string(),
-            res.status(),
-        )))
-        .chain_err(|| "couldn\'t probe".to_string());
-    }
-
-    let final_url = res.url().clone().into_string();
-
-    if final_url != url {
-        tt_note!(status, "resolved to {}", final_url);
-    }
-
-    Ok(final_url)
 }
 
 /// Attempts to download a file from the bundle.
@@ -224,7 +166,7 @@ fn parse_index_line(line: &str) -> Result<Option<(String, FileInfo)>> {
 
 /// Attempts to find the redirected url, download the index and digest.
 fn get_everything(url: &str, status: &mut dyn StatusBackend) -> Result<(String, String, String)> {
-    let url = resolve_url(url, status)?;
+    let url = download::resolve_url(url, status)?;
 
     let index = {
         let mut index = String::new();
@@ -325,7 +267,7 @@ fn make_txt_path(base: &Path, digest_text: &str) -> PathBuf {
 }
 
 /// Bundle provided by an indexed tar file over http with a local cache.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct CachedITarBundle {
     url: String,
     redirect_url: String,

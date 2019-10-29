@@ -242,7 +242,9 @@ if $is_main_build ; then
     travis_fold_end cargo_fmt
     travis_fold_start cargo_clippy "cargo clippy" verbose
     travis_retry rustup component add clippy
-    cargo clippy --all --all-targets --all-features -- --deny warnings
+    cargo clippy --all --all-targets -- --deny warnings
+    cargo clippy --all --all-targets --no-default-features --features serialization -- --deny warnings
+    cargo clippy --all --all-targets --no-default-features --features curl -- --deny warnings
     travis_fold_end cargo_clippy
 fi
 
@@ -261,6 +263,10 @@ else
     travis_fold_start cargo_build_no_default_features "cargo build --no-default-features" verbose
     cargo build --no-default-features --verbose
     travis_fold_end cargo_build_no_default_features
+    travis_fold_start cargo_build_curl \
+        "cargo build --no-default-features --features serialization,curl" verbose
+    cargo build --no-default-features --features serialization,curl
+    travis_fold_end cargo_build_curl
     travis_fold_start cargo_build "cargo build" verbose
     cargo build --verbose
     travis_fold_end cargo_build

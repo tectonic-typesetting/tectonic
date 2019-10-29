@@ -10,9 +10,9 @@
 // hopefully show up in a future version.
 #![allow(deprecated)]
 
+use crate::io::download;
 use app_dirs;
 use error_chain::error_chain;
-use reqwest::StatusCode;
 use std::io::Write;
 use std::result::Result as StdResult;
 use std::{convert, ffi, io, num, str};
@@ -63,7 +63,7 @@ error_chain! {
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
-        Reqwest(reqwest::Error);
+        Download(download::Error);
         ConfigRead(ReadError);
         ConfigWrite(WriteError);
         Utf8(str::Utf8Error);
@@ -97,7 +97,7 @@ error_chain! {
             display("the {} engine had an unrecoverable error", engine)
         }
 
-        UnexpectedHttpResponse(url: String, status: StatusCode) {
+        UnexpectedHttpResponse(url: String, status: download::StatusCode) {
             description("unexpected HTTP response to URL")
             display("unexpected HTTP response to URL {}: {}", url, status)
         }
