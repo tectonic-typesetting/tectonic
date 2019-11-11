@@ -12,10 +12,12 @@ const APP_INFO: app_dirs::AppInfo = app_dirs::AppInfo {
     author: "TectonicProject",
 };
 
+#[cfg(feature = "serialization")]
 pub fn user_config() -> Result<PathBuf> {
     Ok(app_dirs::app_root(AppDataType::UserConfig, &APP_INFO)?)
 }
 
+#[cfg(feature = "serialization")]
 pub fn get_user_config() -> Result<PathBuf> {
     Ok(app_dirs::get_app_root(AppDataType::UserConfig, &APP_INFO)?)
 }

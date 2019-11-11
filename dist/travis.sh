@@ -199,6 +199,9 @@ if $is_docker_build ; then
     docker run -v $(pwd):/alpine/home/rust/src ttci-$IMAGE
     travis_fold_end docker_test
 else
+    travis_fold_start cargo_build_no_default_features "cargo build --no-default-features" verbose
+    cargo build --no-default-features --verbose
+    travis_fold_end cargo_build_no_default_features
     travis_fold_start cargo_build "cargo build" verbose
     cargo build --verbose
     travis_fold_end cargo_build

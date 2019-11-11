@@ -41,6 +41,7 @@ vcpkg = "0.2.7"
 
 [dependencies]
 app_dirs = "^1.1"
+cfg-if = "0.1"
 structopt = "0.3"
 error-chain = "^0.12"
 flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
@@ -55,7 +56,7 @@ sha2 = "^0.8"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 tectonic_xdv = { path = "xdv", version = "0.1.9-dev" }
 termcolor = "^1.0"
-toml = "^0.5"
+toml = { version = "^0.5", optional = true }
 zip = { version = "^0.5", default-features = false, features = ["deflate"] }
 
 [features]
@@ -63,7 +64,7 @@ default = ["serialization"]
 # Note: we used to have this to couple "serde" and "serde-derive", but we've
 # adopted the newer scheme to avoid having to depend on both -- should maybe
 # just get rid of this feature:
-serialization = ["serde"]
+serialization = ["serde", "toml"]
 
 # freetype-sys = "^0.4"
 # harfbuzz-sys = "^0.1"
