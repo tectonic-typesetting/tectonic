@@ -9,7 +9,7 @@
 #define eof tectonic_eof
 
 /* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
-#define XTALLOC(n, t) (xmalloc ((n) * sizeof (t)))
+#define XTALLOC(n, t) (xcalloc (n, sizeof (t)))
 
 #define BIB_XRETALLOC_NOSET(array_name, array_var, type, size_var, new_size) \
   (array_var) = (type *) xrealloc((array_var), (new_size + 1) * sizeof(type))
