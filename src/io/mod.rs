@@ -18,6 +18,7 @@ use crate::errors::{Error, ErrorKind, Result};
 use crate::status::StatusBackend;
 
 pub mod cached_itarbundle;
+pub mod dirbundle;
 pub mod filesystem;
 pub mod format_cache;
 pub mod memory;

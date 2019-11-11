@@ -26,7 +26,7 @@ impl<R: Read + Seek> ZipBundle<R> {
 }
 
 impl ZipBundle<File> {
-    pub fn open(path: &Path) -> Result<ZipBundle<File>> {
+    pub fn open<P: AsRef<Path>>(path: P) -> Result<ZipBundle<File>> {
         Self::new(File::open(path)?)
     }
 }
