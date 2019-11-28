@@ -4,11 +4,12 @@ Tectonic has many command line options.
 If you have Tectonic installed, you can view them with `tectonic --help`.
 
 The following are the available flags.
+
 | Short | Full                      | Explanation                                                                                    |
 |:------|:--------------------------|:-----------------------------------------------------------------------------------------------|
 | `-h`  | `--help`                  | Prints help information                                                                        |
 | `-k`  | `--keep-intermediates`    | Keep the intermediate files generated during processing                                        |
-|       | `--keep-logs`             | Keep the log files gener ated during processing                                                |
+|       | `--keep-logs`             | Keep the log files generated during processing                                                |
 | `-C`  | `--only-cached`           | Use only resource files cached locally                                                         |
 | `-p`  | `--print`                 | Print the engine's chatter during processing                                                   |
 |       | `--synctex`               | Generate SyncTeX data                                                                          |
@@ -35,3 +36,5 @@ Then, after specifying flags and options, you have to provide the actual input t
 This can be a (path to a) file, or "-" to process the standard input stream.
 
 In short, the usage is `tectonic [FLAGS] [OPTIONS] <INPUT>`.
+
+An example would be `tectonic --synctex --reruns 0 -o ../out/ main.tex`.
