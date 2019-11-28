@@ -1,4 +1,4 @@
-# Tectonic’s Command Line Interface
+# Tectonic's Command Line Interface
 
 Tectonic has many command line options.
 If you have Tectonic installed, you can view them with `tectonic --help`.
