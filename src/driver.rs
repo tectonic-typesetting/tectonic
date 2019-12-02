@@ -555,11 +555,16 @@ impl ProcessingSessionBuilder {
             tex_rerun_specification: self.reruns,
             keep_intermediates: self.keep_intermediates,
             keep_logs: self.keep_logs,
-            noted_tex_warnings: false,
             synctex_enabled: self.synctex,
             build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
         })
     }
+}
+
+#[derive(Debug, Clone)]
+enum RerunReason {
+    Bibtex,
+    FileChange(String),
 }
 
 /// The ProcessingSession struct runs the whole show when we're actually
@@ -612,7 +617,6 @@ pub struct ProcessingSession {
     tex_rerun_specification: Option<usize>,
     keep_intermediates: bool,
     keep_logs: bool,
-    noted_tex_warnings: bool,
     synctex_enabled: bool,
 
     /// See `TexEngine::with_date` and `XdvipdfmxEngine::with_date`.
@@ -628,7 +632,7 @@ impl ProcessingSession {
     /// Assess whether we need to rerun an engine. This is the case if there
     /// was a file that the engine read and then rewrote, and the rewritten
     /// version is different than the version that it read in.
-    fn rerun_needed<S: StatusBackend>(&mut self, status: &mut S) -> Option<String> {
+    fn is_rerun_needed<S: StatusBackend>(&self, status: &mut S) -> Option<RerunReason> {
         // TODO: we should probably wire up diagnostics since I expect this
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
@@ -650,7 +654,7 @@ impl ProcessingSession {
                 };
 
                 if file_changed {
-                    return Some(name.to_string_lossy().into_owned());
+                    return Some(RerunReason::FileChange(name.to_string_lossy().into_owned()));
                 }
             }
         }
@@ -721,7 +725,14 @@ impl ProcessingSession {
         // Do the meat of the work.
 
         let result = match self.pass {
-            PassSetting::Tex => self.tex_pass(None, status),
+            PassSetting::Tex => match self.tex_pass(None, status) {
+                Ok(Some(warnings)) => {
+                    tt_warning!(status, "{}", warnings);
+                    Ok(0)
+                }
+                Ok(None) => Ok(0),
+                Err(e) => Err(e),
+            },
             PassSetting::Default => self.default_pass(false, status),
             PassSetting::BibtexFirst => self.default_pass(true, status),
         };
@@ -902,17 +913,18 @@ impl ProcessingSession {
         // auto-detect whether we need to run bibtex, possibly run it, and
         // then go ahead.
 
+        let mut warnings = None;
         let mut rerun_result = if bibtex_first {
             self.bibtex_pass(status)?;
-            Some(String::new())
+            Some(RerunReason::Bibtex)
         } else {
-            self.tex_pass(None, status)?;
+            warnings = self.tex_pass(None, status)?;
 
-            if self.use_bibtex() {
+            if self.is_bibtex_needed() {
                 self.bibtex_pass(status)?;
-                Some(String::new())
+                Some(RerunReason::Bibtex)
             } else {
-                self.rerun_needed(status)
+                self.is_rerun_needed(status)
             }
         };
 
@@ -928,16 +940,9 @@ impl ProcessingSession {
                 "I was told to".to_owned()
             } else {
                 match rerun_result {
-                    Some(ref s) => {
-                        if s == "" {
-                            "bibtex was run".to_owned()
-                        } else {
-                            format!("\"{}\" changed", s)
-                        }
-                    }
-                    None => {
-                        break;
-                    }
+                    Some(RerunReason::Bibtex) => "bibtex was run".to_owned(),
+                    Some(RerunReason::FileChange(ref s)) => format!("\"{}\" changed", s),
+                    None => break,
                 }
             };
 
@@ -951,10 +956,10 @@ impl ProcessingSession {
                 summ.read_digest = None;
             }
 
-            self.tex_pass(Some(&rerun_explanation), status)?;
+            warnings = self.tex_pass(Some(&rerun_explanation), status)?;
 
             if !reruns_fixed {
-                rerun_result = self.rerun_needed(status);
+                rerun_result = self.is_rerun_needed(status);
 
                 if rerun_result.is_some() && i == DEFAULT_MAX_TEX_PASSES - 1 {
                     tt_warning!(
@@ -965,6 +970,11 @@ impl ProcessingSession {
                     break;
                 }
             }
+        }
+
+        // The last tex pass generated warnings.
+        if let Some(warnings) = warnings {
+            tt_warning!(status, "{}", warnings);
         }
 
         // And finally, xdvipdfmx or spx2html. Maybe.
@@ -978,7 +988,7 @@ impl ProcessingSession {
         Ok(0)
     }
 
-    fn use_bibtex(&self) -> bool {
+    fn is_bibtex_needed(&self) -> bool {
         const BIBDATA: &[u8] = b"\\bibdata";
 
         self.io
@@ -1077,7 +1087,7 @@ impl ProcessingSession {
         &mut self,
         rerun_explanation: Option<&str>,
         status: &mut S,
-    ) -> Result<i32> {
+    ) -> Result<Option<&'static str>> {
         let result = {
             let mut stack = self.io.as_stack();
             if let Some(s) = rerun_explanation {
@@ -1101,32 +1111,18 @@ impl ProcessingSession {
                 )
         };
 
-        match result {
-            Ok(TexResult::Spotless) => {}
-            Ok(TexResult::Warnings) => {
-                if !self.noted_tex_warnings {
-                    tt_note!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
-                    self.noted_tex_warnings = true;
-                }
-            }
-            Ok(TexResult::Errors) => {
-                if !self.noted_tex_warnings {
-                    // Weakness: if a first pass produces warnings and a
-                    // second pass produces ignored errors, we won't say so.
-                    tt_warning!(
-                        status,
-                        "errors were issued by the TeX engine, but were ignored; \
-                         use --print and/or --keep-logs for details."
-                    );
-                    self.noted_tex_warnings = true;
-                }
-            }
-            Err(e) => {
-                return Err(e.chain_err(|| ErrorKind::EngineError("TeX")));
-            }
-        }
+        let warnings = match result {
+            Ok(TexResult::Spotless) => None,
+            Ok(TexResult::Warnings) =>
+                    Some("warnings were issued by the TeX engine; use --print and/or --keep-logs for details."),
+            Ok(TexResult::Errors) =>
+                    Some("errors were issued by the TeX engine, but were ignored; \
+                         use --print and/or --keep-logs for details."),
+            Err(e) =>
+                return Err(e.chain_err(|| ErrorKind::EngineError("TeX"))),
+        };
 
-        Ok(0)
+        Ok(warnings)
     }
 
     fn bibtex_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
