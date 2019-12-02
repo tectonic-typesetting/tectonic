@@ -58,14 +58,6 @@
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16
 #define PDFDOC_BEAD_ALLOC_SIZE    16
 
-#ifdef _WIN32
-#define tectonic_gmtime_r(a, b) gmtime_s(b, a)
-#define tectonic_localtime_r(a, b) localtime_s(b, a)
-#else
-#define tectonic_gmtime_r(a, b) gmtime_r(a, b)
-#define tectonic_localtime_r(a, b) localtime_r(a, b)
-#endif
-
 static int verbose = 0;
 
 static char  manual_thumb_enabled  = 0;
@@ -426,62 +418,14 @@ pdf_doc_set_eop_content (const char *content, unsigned int length)
   return;
 }
 
-#ifndef HAVE_TM_GMTOFF
-#ifndef HAVE_TIMEZONE
-
-/* auxiliary function to compute timezone offset on
-   systems that do not support the tm_gmtoff in struct tm,
-   or have a timezone variable.  Such as i386-solaris.  */
-
-static int32_t
-compute_timezone_offset(void)
-{
-  time_t now;
-  struct tm tm;
-  struct tm local;
-
-  now = get_unique_time_if_given();
-  if (now == INVALID_EPOCH_VALUE) {
-    now = time(NULL);
-    tectonic_localtime_r(&now, &local);
-    tectonic_gmtime_r(&now, &tm);
-    return (mktime(&local) - mktime(&tm));
-  } else {
-    return(0);
-  }
-}
-
-#endif /* HAVE_TIMEZONE */
-#endif /* HAVE_TM_GMTOFF */
-
 /*
  * Docinfo
  */
 static int
-asn_date (char *date_string)
+asn_date (char *date_string, time_t date)
 {
-  int32_t     tz_offset;
-  time_t      current_time;
-  struct tm  *bd_time;
-
-  current_time = get_unique_time_if_given();
-  if (current_time == INVALID_EPOCH_VALUE) {
-    time(&current_time);
-    bd_time = localtime(&current_time);
-
-#ifdef HAVE_TM_GMTOFF
-    tz_offset = bd_time->tm_gmtoff;
-#else
-#  ifdef HAVE_TIMEZONE
-    tz_offset = -timezone;
-#  else
-    tz_offset = compute_timezone_offset();
-#  endif /* HAVE_TIMEZONE */
-#endif /* HAVE_TM_GMTOFF */
-  } else {
-    bd_time = gmtime(&current_time);
-    tz_offset = 0;
-  }
+  int32_t     tz_offset = 0;
+  struct tm  *bd_time = gmtime(&date);
   sprintf(date_string, "D:%04d%02d%02d%02d%02d%02d%c%02d'%02d'",
           bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
           bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec,
@@ -548,10 +492,10 @@ pdf_doc_close_docinfo (pdf_doc *p)
                  pdf_new_string(banner, strlen(banner)));
   }
 
-  if (!pdf_lookup_dict(docinfo, "CreationDate")) {
+  if (!pdf_lookup_dict(docinfo, "CreationDate") && source_date_epoch) {
     char now[80];
 
-    asn_date(now);
+    asn_date(now, source_date_epoch);
     pdf_add_dict(docinfo,
                  pdf_new_name ("CreationDate"),
                  pdf_new_string(now, strlen(now)));

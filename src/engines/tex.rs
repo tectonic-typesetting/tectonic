@@ -3,6 +3,7 @@
 // Licensed under the MIT License.
 
 use std::ffi::{CStr, CString};
+use std::time::SystemTime;
 
 use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
 use crate::errors::{DefinitelySame, ErrorKind, Result};
@@ -35,6 +36,7 @@ pub struct TexEngine {
     initex_mode: bool,
     synctex_enabled: bool,
     semantic_pagination_enabled: bool,
+    build_date: SystemTime,
 }
 
 impl Default for TexEngine {
@@ -44,6 +46,7 @@ impl Default for TexEngine {
             initex_mode: false,
             synctex_enabled: false,
             semantic_pagination_enabled: false,
+            build_date: SystemTime::UNIX_EPOCH,
         }
     }
 }
@@ -84,6 +87,14 @@ impl TexEngine {
     /// This is an essential component of the HTML output process.
     pub fn semantic_pagination(&mut self, enabled: bool) -> &mut Self {
         self.semantic_pagination_enabled = enabled;
+        self
+    }
+
+    /// Sets the date and time used by the TeX engine. This affects things like
+    /// LaTeX's \today command. When expecting reproducible builds, this should
+    /// be set to a static value, like its default value UNIX_EPOCH.
+    pub fn build_date(&mut self, date: SystemTime) -> &mut Self {
+        self.build_date = date;
         self
     }
 
@@ -130,7 +141,15 @@ impl TexEngine {
         }
 
         unsafe {
-            match super::tex_simple_main(&bridge, cformat.as_ptr(), cinput.as_ptr()) {
+            match super::tex_simple_main(
+                &bridge,
+                cformat.as_ptr(),
+                cinput.as_ptr(),
+                self.build_date
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .expect("invalid build date")
+                    .as_secs() as libc::time_t,
+            ) {
                 0 => Ok(TexResult::Spotless),
                 1 => Ok(TexResult::Warnings),
                 2 => Ok(TexResult::Errors),

@@ -3902,7 +3902,7 @@ get_strings_started(void)
 
 
 tt_history_t
-tt_run_engine(char *dump_name, char *input_file_name)
+tt_run_engine(char *dump_name, char *input_file_name, time_t build_date)
 {
     int32_t font_k;
 
@@ -4271,7 +4271,8 @@ tt_run_engine(char *dump_name, char *input_file_name)
         INTPAR(month) = 0;
         INTPAR(year) = 0;
     } else {
-        get_date_and_time(&(INTPAR(time)),
+        get_date_and_time(build_date,
+                          &(INTPAR(time)),
                           &(INTPAR(day)),
                           &(INTPAR(month)),
                           &(INTPAR(year)));

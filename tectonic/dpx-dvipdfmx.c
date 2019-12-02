@@ -94,6 +94,8 @@ static int     do_encryption = 0;
 static int     key_bits      = 40;
 static int32_t permission    = 0x003C;
 
+time_t source_date_epoch = (time_t) -1;
+
 /* Page device */
 double paper_width  = 595.0;
 double paper_height = 842.0;
@@ -371,7 +373,8 @@ dvipdfmx_main (
   bool compress,
   bool deterministic_tags,
   bool quiet,
-  unsigned int verbose)
+  unsigned int verbose,
+  time_t build_date)
 {
   bool enable_object_stream = true;
   double dvi2pts;
@@ -425,6 +428,7 @@ dvipdfmx_main (
   font_dpi = 600;
   pdfdecimaldigits = 5;
   image_cache_life = -2;
+  source_date_epoch = build_date;
   pdf_load_fontmap_file("pdftex.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("kanjix.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);

@@ -18,8 +18,39 @@ use std::result::Result as StdResult;
 use std::{convert, ffi, io, num, str};
 use tectonic_xdv;
 use tempfile;
-use toml;
 use zip::result::ZipError;
+
+cfg_if::cfg_if! {
+    if #[cfg(feature = "toml")] {
+        pub type ReadError = toml::de::Error;
+        pub type WriteError = toml::ser::Error;
+    } else {
+        use std::fmt::{self, Formatter, Display};
+        use std::error;
+
+        #[derive(Debug)]
+        pub enum ReadError {}
+
+        impl Display for ReadError {
+            fn fmt(&self, _fmt: &mut Formatter<'_>) -> fmt::Result {
+                Ok(())
+            }
+        }
+
+        impl error::Error for ReadError { }
+
+        #[derive(Debug)]
+        pub enum WriteError {}
+
+        impl Display for WriteError {
+            fn fmt(&self, _fmt: &mut Formatter<'_>) -> fmt::Result {
+                Ok(())
+            }
+        }
+
+        impl error::Error for WriteError { }
+    }
+}
 
 error_chain! {
     types {
@@ -33,8 +64,8 @@ error_chain! {
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
         Reqwest(reqwest::Error);
-        TomlDe(toml::de::Error);
-        TomlSer(toml::ser::Error);
+        ConfigRead(ReadError);
+        ConfigWrite(WriteError);
         Utf8(str::Utf8Error);
         Xdv(tectonic_xdv::XdvError);
         Zip(ZipError);

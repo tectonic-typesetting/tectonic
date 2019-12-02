@@ -12,7 +12,6 @@
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::ffi::OsStr;
 use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -20,6 +19,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use crate::app_dirs;
 use crate::errors::{ErrorKind, Result};
 use crate::io::cached_itarbundle::CachedITarBundle;
+use crate::io::dirbundle::DirBundle;
 use crate::io::zipbundle::ZipBundle;
 use crate::io::Bundle;
 use crate::status::StatusBackend;
@@ -119,12 +119,15 @@ impl PersistentConfig {
 
     pub fn make_local_file_provider(
         &self,
-        file_path: &OsStr,
+        file_path: PathBuf,
         _status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        let zip_bundle = ZipBundle::<File>::open(Path::new(file_path))?;
-
-        Ok(Box::new(zip_bundle) as _)
+        let bundle: Box<dyn Bundle> = if file_path.is_dir() {
+            Box::new(DirBundle::new(file_path))
+        } else {
+            Box::new(ZipBundle::open(file_path)?)
+        };
+        Ok(bundle)
     }
 
     pub fn default_bundle(
@@ -153,9 +156,7 @@ impl PersistentConfig {
             let file_path = url.to_file_path().map_err(|_| {
                 io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path")
             })?;
-            let zip_bundle = self.make_local_file_provider(file_path.as_os_str(), status)?;
-
-            return Ok(Box::new(zip_bundle) as _);
+            return self.make_local_file_provider(file_path, status);
         }
         let bundle =
             self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, None, status)?;

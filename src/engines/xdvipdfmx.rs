@@ -3,6 +3,7 @@
 // Licensed under the MIT License.
 
 use std::ffi::{CStr, CString};
+use std::time::SystemTime;
 
 use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
 use crate::errors::{ErrorKind, Result};
@@ -12,6 +13,7 @@ use crate::status::StatusBackend;
 pub struct XdvipdfmxEngine {
     enable_compression: bool,
     deterministic_tags: bool,
+    build_date: SystemTime,
 }
 
 impl XdvipdfmxEngine {
@@ -19,6 +21,7 @@ impl XdvipdfmxEngine {
         XdvipdfmxEngine {
             enable_compression: true,
             deterministic_tags: false,
+            build_date: SystemTime::UNIX_EPOCH,
         }
     }
 
@@ -29,6 +32,15 @@ impl XdvipdfmxEngine {
 
     pub fn with_deterministic_tags(mut self, flag: bool) -> Self {
         self.deterministic_tags = flag;
+        self
+    }
+
+    /// Sets the date and time used by the xdvipdfmx engine. This value is used
+    /// as a source of entropy and is written to the output PDF. When expecting
+    /// reproducible builds, this should be set to a static value, like its
+    /// default value UNIX_EPOCH.
+    pub fn with_date(mut self, date: SystemTime) -> Self {
+        self.build_date = date;
         self
     }
 
@@ -55,6 +67,10 @@ impl XdvipdfmxEngine {
                 cpdf.as_ptr(),
                 self.enable_compression,
                 self.deterministic_tags,
+                self.build_date
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .expect("invalid build date")
+                    .as_secs() as libc::time_t,
             ) {
                 99 => {
                     let ptr = super::tt_get_error_message();
