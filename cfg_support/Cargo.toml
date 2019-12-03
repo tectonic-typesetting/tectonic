@@ -1,7 +1,10 @@
 [package]
 name = "tectonic_cfg_support"
 version = "0.0.1"
-authors = ["Matt Rice <ratmice@gmail.com>"]
+authors = [
+    "Matt Rice <ratmice@gmail.com>",
+    "Peter Williams <peter@newton.cx"
+]
 description = """
 A build.rs support crate that helps deal with CARGO_CFG_TARGET_* variables.
 When cross-compiling, these variables must be used instead of constructs such

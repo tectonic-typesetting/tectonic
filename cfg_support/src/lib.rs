@@ -155,6 +155,13 @@ impl TargetConfiguration {
 //    "modes" prefixed with an expression like `@emit`. They are essentially
 //    different sub-macros but this trick allows us to get everything done
 //    with one named macro_rules! export.
+// 4. Also due to the above, the logical flow of the macro generally goes from
+//    bottom to top, so that's probably the best way to read the code.
+//
+// Some links for reference:
+//
+// - https://users.rust-lang.org/t/top-down-macro-parsing-or-higher-order-macros/8879
+// - https://danielkeep.github.io/tlborm/book/pat-incremental-tt-munchers.html
 #[macro_export]
 macro_rules! target_cfg {
     // "@emit" rules are used for comma-separated lists that have had their
