@@ -351,7 +351,7 @@ fn main() {
 
     // Platform-specific adjustments:
 
-    let is_mac_os = build_cfg!(target_os = "macos");
+    let is_mac_os = target_cfg!(target_os = "macos");
 
     if is_mac_os {
         ccfg.define("XETEX_MAC", Some("1"));
@@ -373,7 +373,7 @@ fn main() {
         cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
-    let is_big_endian = build_cfg!(target_endian = "big");
+    let is_big_endian = target_cfg!(target_endian = "big");
     if is_big_endian {
         ccfg.define("WORDS_BIGENDIAN", "1");
         cppcfg.define("WORDS_BIGENDIAN", "1");
