@@ -13,6 +13,7 @@ use tectonic_cfg_support::*;
 use vcpkg;
 
 use std::env;
+use std::ops::Not;
 use std::path::{Path, PathBuf};
 
 #[cfg(not(target_os = "macos"))]
@@ -203,11 +204,11 @@ fn main() {
         ccfg.flag_if_supported(flag);
     }
 
-    let profile_target_requires_frame_pointer: bool = target_cfg!(not(any(
-        // Whitelist of platforms which do not require frame pointers.
-        all(target_os = "linux", target_arch = "x86_64"),
-        // Add more platforms here.
-    )));
+    // Negated whitelist of the platforms which work without frame pointers.
+    // To add more platforms, or these together:
+    // target_cfg!(...) || target_cfg!(...).not();
+    let profile_target_requires_frame_pointer: bool =
+        target_cfg!(all(target_os = "linux", target_arch = "x86_64")).not();
 
     const PROFILE_BUILD_ENABLED: bool = cfg!(feature = "profile");
 
