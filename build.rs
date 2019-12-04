@@ -9,6 +9,7 @@
 /// TODO: this surely needs to become much smarter and more flexible.
 use cc;
 use pkg_config;
+use tectonic_cfg_support::*;
 use vcpkg;
 
 use std::env;
@@ -350,7 +351,9 @@ fn main() {
 
     // Platform-specific adjustments:
 
-    if cfg!(target_os = "macos") {
+    let is_mac_os = target_cfg!(target_os = "macos");
+
+    if is_mac_os {
         ccfg.define("XETEX_MAC", Some("1"));
         ccfg.file("tectonic/xetex-macos.c");
 
@@ -365,12 +368,13 @@ fn main() {
         println!("cargo:rustc-link-lib=framework=AppKit");
     }
 
-    if cfg!(not(target_os = "macos")) {
+    if !is_mac_os {
         // At the moment we use Fontconfig on both Linux and Windows.
         cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
-    if cfg!(target_endian = "big") {
+    let is_big_endian = target_cfg!(target_endian = "big");
+    if is_big_endian {
         ccfg.define("WORDS_BIGENDIAN", "1");
         cppcfg.define("WORDS_BIGENDIAN", "1");
     }
