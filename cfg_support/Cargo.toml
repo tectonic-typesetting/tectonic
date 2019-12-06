@@ -1,3 +1,6 @@
+# Copyright 2019 the Tectonic Project
+# Licensed under the MIT License.
+
 [package]
 name = "tectonic_cfg_support"
 version = "0.0.1"
@@ -8,8 +11,8 @@ authors = [
 description = """
 A build.rs support crate that helps deal with CARGO_CFG_TARGET_* variables.
 When cross-compiling, these variables must be used instead of constructs such
-as `cfg!(target_arch = ...)` because the build.rs script must target the host
-architecture.
+as `cfg!(target_arch = ...)` because the build.rs script is compiled to
+target the build host environment, not the true target environment.
 """
 homepage = "https://tectonic-typesetting.github.io/"
 documentation = "https://docs.rs/tectonic"
