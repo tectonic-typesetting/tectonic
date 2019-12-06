@@ -1,9 +1,9 @@
-# Copyright 2018 the Tectonic Project
+# Copyright 2018-2019 the Tectonic Project
 # Licensed under the MIT License.
 
 [package]
 name = "tectonic_xdv"
-version = "0.1.8"
+version = "0.1.9-dev"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A decoder for the XDV and SPX file formats used by XeTeX and Tectonic.

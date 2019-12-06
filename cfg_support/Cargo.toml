@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_cfg_support"
-version = "0.0.1"
+version = "0.0.2-dev"
 authors = [
     "Matt Rice <ratmice@gmail.com>",
     "Peter Williams <peter@newton.cx"
