@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_xdv"
-version = "0.1.9-dev"
+version = "0.1.8"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A decoder for the XDV and SPX file formats used by XeTeX and Tectonic.

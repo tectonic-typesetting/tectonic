@@ -11,7 +11,7 @@
 # tectonic repository.
 
 pkgname=tectonic
-pkgver=0.1.11
+pkgver=0.1.12
 pkgrel=0
 arch=('x86_64')
 pkgdesc='Modernized, complete, self-contained TeX/LaTeX engine, powered by XeTeX and TeXLive'
@@ -20,7 +20,7 @@ license=('MIT')
 depends=('fontconfig' 'harfbuzz-icu' 'openssl')
 makedepends=('rust')
 source=("$pkgname-$pkgver.tar.gz::https://crates.io/api/v1/crates/$pkgname/$pkgver/download")
-sha512sums=('103b22129e3daa28dbb6e68cbc256c711bc6cd3b51e3b356db67d421c6b547eef1d600da2750a5312426ad9db132f4f77d452abeb77062d5394e0f887af8ff81')
+sha512sums=('837f38346d6b2c07d960d087f7eda1a0ca57735e18a71f956010c59bf9a45628ce40b4efc541f0b69cefe35261ffeb7d44e941448f5c550aeba3782f8b9d903b')
 
 build() {
 	cd $pkgname-$pkgver
