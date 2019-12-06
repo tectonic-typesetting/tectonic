@@ -115,10 +115,9 @@ else
 fi
 echo "is_continuous_deployment_build: $is_continuous_deployment_build"
 
-if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" =~ ^v[0-9]+\. ]] ; then
-    # This is a push to master associated with a tag that looks like the regex
-    # above, so this seems to be a tagged release. As above, this variable can
-    # be true with $is_main_build being false.
+if [[ "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" =~ ^v[0-9]+\. ]] ; then
+    # This is a push of tag that matches the regex: a new release. As above,
+    # this variable can be true with $is_main_build being false.
     is_release_build=true
     release_version="$(echo "$TRAVIS_TAG" |sed -e 's/^v//')"
 else
