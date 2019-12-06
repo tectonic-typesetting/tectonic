@@ -36,12 +36,14 @@ matrix:
   allow_failures:
     - rust: nightly
 
-# Don't CI branches besides master. Pull requests still get CI'd -- but
-# when a PR comes in on a branch in the same repo, this prevents it from
-# being CI'd twice.
+# Don't CI branches besides master. Pull requests still get CI'd -- but when a
+# PR comes in on a branch in the same repo, this prevents it from being CI'd
+# twice. Despire the name of this config item, the filtering applies to both
+# branch and tag names, so to CI release tags we have to list them here too.
 branches:
   only:
     - master
+    - /^v\d+\.\d+\.\d+.*$/
 
 addons:
   apt:
