@@ -271,8 +271,8 @@ if $is_main_build ; then
             book_version="$release_version"
             book_desc="docs mdbook @ v$release_version"
         else  # continuous deployment
-            book_version="$release_version"
-            book_desc="docs mdbook @ v$release_version"
+            book_version="latest"
+            book_desc="docs mdbook @ $TRAVIS_COMMIT"
         fi
     else
         verb="build"
