@@ -44,15 +44,25 @@ environment:
   #   mingw_target: i686-w64-mingw32
   #   mingw_package_prefix: mingw-w64-i686
 
-# This filter is misleadingly named and applies to both tags and branches. We
-# filter to only build on the `continuous` tag and `vX.Y.Z` tags for
-# continuous deployment -- BUT pull requests still get CI'd. The `continuous`
-# tag is updated by Travis CI on every push to master, and its use allows us
-# to use the same logic to publish artifacts for both continuous deployment
-# and for release tags.
+# This filter is misleadingly named and applies to both tags and branches.
+#
+# The context for our settings is the Tectonic continuous deployment model, in
+# which Travis CI updates a tag named `continuous` for every push to master.
+# Running builds and deployments based on that tag update, rather than
+# directly on pushes to master, allows us to use the same logic to publish
+# artifacts for both continuous deployment and for release tags.
+#
+# So, ideally our CI scripts should run in three circumstances: (1) pull
+# requests, (2) release tags (`vX.Y.Z`), and (3) the `continuous` tag.
+#
+# It seems that AppVeyor won't build pull requests unless you activate builds
+# for the `master` branch, though, so we need to include it here. Farther
+# below we short-circuit and exit for pushes to master that are not PR builds.
+
 branches:
   only:
     - continuous
+    - master
     - /^v[0-9]\..*/
 
 cache:
@@ -63,6 +73,12 @@ cache:
   - target
 
 ## Install Script ##
+
+# As mentioned above: short-circuit if this is a push to master that isn't a
+# PR. Travis CI will update the `continuous` tag and we should trigger a build
+# and deployment off of that instead.
+init:
+- ps: if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_TITLE) {Exit-AppveyorBuild}
 
 # This is the most important part of the Appveyor configuration. This installs the version of Rust
 # specified by the 'channel' and 'target' environment variables from the build matrix. This uses
