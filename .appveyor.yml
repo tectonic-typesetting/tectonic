@@ -1,5 +1,7 @@
 # Appveyor configuration template for Rust using rustup for Rust installation
 # https://github.com/starkat99/appveyor-rust
+#
+# AppVeyor environment variables: https://www.appveyor.com/docs/environment-variables/
 
 ## Operating System (VM environment) ##
 
@@ -42,12 +44,26 @@ environment:
   #   mingw_target: i686-w64-mingw32
   #   mingw_package_prefix: mingw-w64-i686
 
-# Don't CI branches besides master. Pull requests still get CI'd -- but
-# when a PR comes in on a branch in the same repo, this prevents it from
-# being CI'd twice.
+# This filter is misleadingly named and applies to both tags and branches.
+#
+# The context for our settings is the Tectonic continuous deployment model, in
+# which Travis CI updates a tag named `continuous` for every push to master.
+# Running builds and deployments based on that tag update, rather than
+# directly on pushes to master, allows us to use the same logic to publish
+# artifacts for both continuous deployment and for release tags.
+#
+# So, ideally our CI scripts should run in three circumstances: (1) pull
+# requests, (2) release tags (`vX.Y.Z`), and (3) the `continuous` tag.
+#
+# It seems that AppVeyor won't build pull requests unless you activate builds
+# for the `master` branch, though, so we need to include it here. Farther
+# below we short-circuit and exit for pushes to master that are not PR builds.
+
 branches:
   only:
+    - continuous
     - master
+    - /^v[0-9]\..*/
 
 cache:
   - '%USERPROFILE%\.cargo\bin'
@@ -57,6 +73,12 @@ cache:
   - target
 
 ## Install Script ##
+
+# As mentioned above: short-circuit if this is a push to master that isn't a
+# PR. Travis CI will update the `continuous` tag and we should trigger a build
+# and deployment off of that instead.
+init:
+- ps: if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_TITLE) {Exit-AppveyorBuild}
 
 # This is the most important part of the Appveyor configuration. This installs the version of Rust
 # specified by the 'channel' and 'target' environment variables from the build matrix. This uses
@@ -92,8 +114,8 @@ before_test:
   # Building on msvc toolchain is seen as cross compilation.
   - set PKG_CONFIG_ALLOW_CROSS=1
   # Workaround rust#53454
-  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\crt2.o" %USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\crt2.o"
-  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\dllcrt2.o" %USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\dllcrt2.o"
+  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\crt2.o" "%USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\crt2.o"
+  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\dllcrt2.o" "%USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\dllcrt2.o"
   # Dodge format file locking issue in the test suite
   - set RUST_TEST_THREADS=1
 
@@ -102,3 +124,12 @@ before_test:
 # environment variable.
 test_script:
   - cargo test --target %target%
+  # TEMPORARY: check out filenames for artifact publication
+  - dir target
+  - dir target\%target%
+  # TODO: munge in version, decide debug vs. release
+  - copy target\%target%\debug\tectonic.exe tectonic-%target%.exe
+
+artifacts:
+  - path: 'target-$(target).exe'
+    name: 'Tectonic executable for $(target)'

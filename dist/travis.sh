@@ -116,6 +116,7 @@ fi
 echo "is_continuous_deployment_trigger: $is_continuous_deployment_trigger"
 
 publish_artifacts=false
+version_text=none
 upload_artifact=false
 
 if [[ "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" == continuous ]] ; then
@@ -124,6 +125,7 @@ if [[ "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" == continuous ]] ; then
     # which is the one that does most of the actual work.
     is_continuous_deployment_build=true
     publish_artifacts=true
+    version_text=latest
     upload_artifacts=(
         dist/add-github-release-artifact.sh
         -d "Continuous deployment of commit $TRAVIS_COMMIT"
@@ -139,8 +141,8 @@ if [[ "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" =~ ^v[0-9]+\. ]] ; then
     # This is a push of tag that matches the above regex: a new release. As
     # above, this variable can be true with $is_main_build being false.
     is_release_build=true
-    release_version="$(echo "$TRAVIS_TAG" |sed -e 's/^v//')"
     publish_artifacts=true
+    version_text="$(echo "$TRAVIS_TAG" |sed -e 's/^v//')"
     upload_artifacts=(
         dist/add-github-release-artifact.sh
         -d "Release tag $TRAVIS_TAG"
@@ -148,10 +150,9 @@ if [[ "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" =~ ^v[0-9]+\. ]] ; then
     )
 else
     is_release_build=false
-    release_version=none
 fi
-echo "is_release_build: $is_release_build ($release_version)"
-echo "publish_artifacts: $publish_artifacts"
+echo "is_release_build: $is_release_build"
+echo "publish_artifacts: $publish_artifacts (v. $version_text)"
 travis_fold_end env
 
 # The main build of the CD trigger deletes the previous GitHub Release and tag
@@ -268,10 +269,8 @@ if $is_main_build ; then
         verb="build and publish"
 
         if $is_release_build ; then
-            book_version="$release_version"
-            book_desc="docs mdbook @ v$release_version"
+            book_desc="docs mdbook @ v$version_text"
         else  # continuous deployment
-            book_version="latest"
             book_desc="docs mdbook @ $TRAVIS_COMMIT"
         fi
     else
@@ -285,7 +284,7 @@ if $is_main_build ; then
         dist/force-push-tree.sh \
             docs/book \
             https://github.com/tectonic-typesetting/book.git \
-            "$book_version" \
+            "$version_text" \
             "$book_desc"
     fi
 
@@ -315,13 +314,24 @@ fi
 
 ls -l target/*
 
+# The Docker build makes a statically-linked executable that we can
+# publish.
+
+if $is_docker_build; then
+    travis_fold_start dockerpub "Publish Docker-built binary artifact" verbose
+    tarname="tectonic-$version_text-$IMAGE.tar.gz"
+    (cd target/$IMAGE/release && tar czf ../../../"$tarname" tectonic) || exit $?
+    "${upload_artifacts[@]}" "$tarname"
+    travis_fold_end dockerpub
+fi
+
 # AppImage artifact: currently only Linux/x86_64, i.e. main build
 
 if $is_main_build; then
     travis_fold_start appimage "Build AppImage" verbose
 
-    # Upload an AppImage into the "continuous" release
     if $is_continuous_deployment_build ; then
+        # In CD, we include extra information for incremental updates.
         repo_info=$(echo "$TRAVIS_REPO_SLUG" |sed -e 's,/,|,g')
         export TECTONIC_APPIMAGE_TAG=continuous
         export UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync"
