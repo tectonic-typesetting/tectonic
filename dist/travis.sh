@@ -106,35 +106,70 @@ fi
 echo "is_docker_build: $is_docker_build"
 
 if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" == "" ]] ; then
-    # This is a push to master that's not tagged, so we'll want to run our
-    # continuous-deployment logic. Note that this variable can be true with
-    # $is_main_build being false.
+    # This is a push to master that's not tagged, so we'll want to initiate
+    # our continuous-deployment (CD) workflow. Note that this variable can be
+    # true with $is_main_build being false.
+    is_continuous_deployment_trigger=true
+else
+    is_continuous_deployment_trigger=false
+fi
+echo "is_continuous_deployment_trigger: $is_continuous_deployment_trigger"
+
+publish_artifacts=false
+upload_artifact=false
+
+if [[ "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" == continuous ]] ; then
+    # The second half of our CD workflow is triggered by the creation of a new
+    # tag called "continuous". Creating that tag triggers another CI run,
+    # which is the one that does most of the actual work.
     is_continuous_deployment_build=true
+    publish_artifacts=true
+    upload_artifacts=(
+        dist/add-github-release-artifact.sh
+        -d "Continuous deployment of commit $TRAVIS_COMMIT"
+        -p  # prerelease
+        continuous
+    )
 else
     is_continuous_deployment_build=false
 fi
 echo "is_continuous_deployment_build: $is_continuous_deployment_build"
 
-if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" =~ ^v[0-9]+\. ]] ; then
-    # This is a push to master associated with a tag that looks like the regex
-    # above, so this seems to be a tagged release. As above, this variable can
-    # be true with $is_main_build being false.
+if [[ "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" =~ ^v[0-9]+\. ]] ; then
+    # This is a push of tag that matches the above regex: a new release. As
+    # above, this variable can be true with $is_main_build being false.
     is_release_build=true
     release_version="$(echo "$TRAVIS_TAG" |sed -e 's/^v//')"
+    publish_artifacts=true
+    upload_artifacts=(
+        dist/add-github-release-artifact.sh
+        -d "Release tag $TRAVIS_TAG"
+        $TRAVIS_TAG
+    )
 else
     is_release_build=false
     release_version=none
 fi
 echo "is_release_build: $is_release_build ($release_version)"
+echo "publish_artifacts: $publish_artifacts"
 travis_fold_end env
 
-# The special tag "continuous" is used to maintain a GitHub "release" that
-# tracks `master`. If we've been triggered for that, that means that something
-# *else* was triggered that caused the continuous deployment code to fire.
-# So we should do nothing.
+# The main build of the CD trigger deletes the previous GitHub Release and tag
+# named "continuous", then recreates the tag to point to the current commit.
+# This makes it so that the same workflows can run for both the CD case and
+# when full release tags are pushed. Another nice aspect of this approach is
+# that it does the right thing even although multiple instances of this script
+# are running without any way to communicate with each other.
 
-if [[ "$TRAVIS_TAG" == continuous ]] ; then
-    echo -e "\033[34;1mThis is a 'continuous' release. Exiting.\033[0m"
+if $is_continuous_deployment_trigger ; then
+    if $is_main_build ; then
+        travis_fold_start launch_cd "Trigger continuous deployment workflow" verbose
+        dist/delete-github-release-and-tag.sh continuous
+        dist/create-github-tag.sh continuous $TRAVIS_COMMIT
+        travis_fold_end launch_cd
+    fi
+
+    echo -e "\033[34;1mThis is a continuous deployment trigger build. Exiting.\033[0m"
     exit 0
 fi
 
@@ -225,81 +260,90 @@ if $is_main_build ; then
     travis_fold_end cargo_kcov
 fi
 
-# We also build the docs/ mdbook for the main build.
+# The docs/ mdbook: only built in the main build.
 
 if $is_main_build ; then
-    travis_fold_start docs_mdbook "mdbook build docs" verbose
+    if $publish_artifacts ; then
+        verb="build and publish"
+
+        if $is_release_build ; then
+            book_version="$release_version"
+            book_desc="docs mdbook @ v$release_version"
+        else  # continuous deployment
+            book_version="$release_version"
+            book_desc="docs mdbook @ v$release_version"
+        fi
+    else
+        verb="build"
+    fi
+
+    travis_fold_start docs_mdbook "mdbook $verb docs" verbose
     dist/build-mdbook.sh docs
+
+    if $publish_artifacts; then
+        dist/force-push-tree.sh \
+            docs/book \
+            https://github.com/tectonic-typesetting/book.git \
+            "$book_version" \
+            "$book_desc"
+    fi
+
     travis_fold_end docs_mdbook
 fi
 
-# If we're a "continuous deployment" build, we should push out various artifacts.
-#
-# We maintain a "continuous" pseudo-release on GitHub for binary artifacts
-# that people might want to download. Right now, all we do is make an AppImage
-# for the main build. I believe that the upload script that we use deletes the
-# "continuous" release every time it runs, so if we want different elements of
-# the build matrix to contribute various artifacts, we're going to need to
-# take a different tactic.
+# Everything until now has been exercising and validating the build. The rest
+# of this script builds release artifacts, which is only worth doing if we
+# have a place to put them. Currently, this happens for continuous deployment
+# and release tag builds, but not pull requests.
 
-if $is_continuous_deployment_build; then
-    if $is_main_build; then
-        travis_fold_start continuous "Continuous deployment" verbose
-        # Careful! For the code coverage, we use "-C link-dead-code", which we
-        # don't want for release artifacts. (Which are built with `cargo build
-        # --release` inside dist/appimage/build.sh.) But if we ever add other
-        # stuff to $RUSTFLAGS, this command will lose it.
-        unset RUSTFLAGS
-
-        # Upload an AppImage into the "continuous" release
-        travis_retry wget https://github.com/probonopd/uploadtool/raw/master/upload.sh
-        repo_info=$(echo "$TRAVIS_REPO_SLUG" |sed -e 's,/,|,g')
-        TECTONIC_APPIMAGE_TAG=continuous \
-        UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync" \
-            dist/appimage/build.sh
-        bash ./upload.sh dist/appimage/tectonic-*.AppImage*
-
-        # Deploy the docs book
-        dist/force-push-tree.sh \
-            docs/book \
-            https://github.com/tectonic-typesetting/book.git \
-            latest \
-            "docs mdbook @ $TRAVIS_COMMIT"
-
-        travis_fold_end continuous
-    fi
-
-    # TODO: Do something with the Linux static build?
+if ! $publish_artifacts; then
+    echo -e "\033[34;1mThis build does not include release artifacts. Stopping here.\033[0m"
+    exit 0
 fi
 
-# If we're a release build, we should create and upload official release
-# artifacts, etc.
+# Careful! For the code coverage, we use "-C link-dead-code" in the main
+# build, which we don't want for release artifacts. But if we ever add other
+# stuff to $RUSTFLAGS, this command will lose it.
 
-if $is_release_build; then
-    if $is_main_build; then
-        travis_fold_start release "Release deployment" verbose
-        # Careful! See the warning above.
-        unset RUSTFLAGS
+if $is_main_build ; then
+    unset RUSTFLAGS
+fi
 
-        # Create an AppImage release artifact. (UNTESTED as of 0.1.11!)
-        travis_retry wget https://github.com/probonopd/uploadtool/raw/master/upload.sh
-        dist/appimage/build.sh
-        bash ./upload.sh dist/appimage/tectonic-*.AppImage*
+# XXXX temporary -- check out filenames for other artifacts we can make
 
-        # Trigger Arch linux to build a new package.
-        openssl aes-256-cbc -K $encrypted_bc40b17e21fa_key -iv $encrypted_bc40b17e21fa_iv \
-                -in dist/deploy_key.enc -out /tmp/deploy_key -d
-        chmod 600 /tmp/deploy_key
-        bash dist/arch/deploy.sh
-        travis_fold_end release
+ls -l target/*
 
-        # Deploy the docs book (UNTESTED as of 0.1.11!)
-        dist/force-push-tree.sh \
-            docs/book \
-            https://github.com/tectonic-typesetting/book.git \
-            "$release_version" \
-            "docs mdbook @ v$release_version"
+# AppImage artifact: currently only Linux/x86_64, i.e. main build
+
+if $is_main_build; then
+    travis_fold_start appimage "Build AppImage" verbose
+
+    # Upload an AppImage into the "continuous" release
+    if $is_continuous_deployment_build ; then
+        repo_info=$(echo "$TRAVIS_REPO_SLUG" |sed -e 's,/,|,g')
+        export TECTONIC_APPIMAGE_TAG=continuous
+        export UPDATE_INFORMATION="gh-releases-zsync|$repo_info|continuous|tectonic-*.AppImage.zsync"
     fi
 
-    # TODO: Do something with the Linux static build?
+    dist/appimage/build.sh
+    "${upload_artifacts[@]}" dist/appimage/tectonic-*.AppImage*
+    travis_fold_end appimage
+fi
+
+# Everything below here is only for tagged releases.
+
+if ! $is_release_build; then
+    echo -e "\033[34;1mThis build is not a tagged release. Stopping here.\033[0m"
+    exit 0
+fi
+
+# Yet more work to do. Trigger Arch Linux to build a new package.
+
+if $is_main_build; then
+    travis_fold_start arch_linux "Update Arch Linux package" verbose
+    openssl aes-256-cbc -K $encrypted_bc40b17e21fa_key -iv $encrypted_bc40b17e21fa_iv \
+            -in dist/deploy_key.enc -out /tmp/deploy_key -d
+    chmod 600 /tmp/deploy_key
+    bash dist/arch/deploy.sh
+    travis_fold_end arch_linux
 fi
