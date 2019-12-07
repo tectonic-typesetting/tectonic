@@ -126,4 +126,10 @@ test_script:
   - cargo test --target %target%
   # TEMPORARY: check out filenames for artifact publication
   - dir target
-  - dir target\*
+  - dir target\%target%
+  # TODO: munge in version, decide debug vs. release
+  - copy target\%target%\debug\tectonic.exe tectonic-%target%.exe
+
+artifacts:
+  - path: target-%target%.exe
+    name: Tectonic executable
