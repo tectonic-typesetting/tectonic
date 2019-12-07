@@ -126,4 +126,4 @@ test_script:
   - cargo test --target %target%
   # TEMPORARY: check out filenames for artifact publication
   - dir target
-  - dir target/*
+  - dir target\*
