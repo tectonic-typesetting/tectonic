@@ -59,12 +59,11 @@ fi
 release_id=$("${curl[@]}" -XGET "$api_base_url/releases/tags/$release_name" | jql '"id"')
 
 if [ -z "$release_id" ] ; then
-    echo >&2 "error: couldn't get release ID; probably no such release"
-    exit 1
+    echo "warning: couldn't get release ID; presuming no such release"
+else
+    echo "info: deleting release"
+    "${curl[@]}" -XDELETE "$api_base_url/releases/$release_id"
 fi
-
-echo "info: deleting release"
-"${curl[@]}" -XDELETE "$api_base_url/releases/$release_id"
 
 echo "info: deleting tag"
 "${curl[@]}" -XDELETE "$api_base_url/git/refs/tags/$release_name"
