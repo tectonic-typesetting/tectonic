@@ -58,6 +58,11 @@ workflows:
       - deploy:
           requires:
             - build
+          filters:
+            tags:
+              only: continuous
+            branches:
+              ignore: /.*/
   release-build:
     jobs:
       - build:
@@ -69,3 +74,8 @@ workflows:
       - deploy:
           requires:
             - build
+          filters:
+            tags:
+              only: /^v[0-9]\..*/
+            branches:
+              ignore: /.*/
