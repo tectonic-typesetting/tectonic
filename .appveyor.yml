@@ -76,9 +76,10 @@ cache:
 
 # As mentioned above: short-circuit if this is a push to master that isn't a
 # PR. Travis CI will update the `continuous` tag and we should trigger a build
-# and deployment off of that instead.
+# and deployment off of that instead. Annoyingly, AppVeyor considers tag
+# pushes to also be pushes to master.
 init:
-- ps: if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_TITLE) {Exit-AppveyorBuild}
+- ps: if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and !$env:APPVEYOR_PULL_REQUEST_TITLE -and !$env:APPVEYOR_REPO_TAG_NAME) {Exit-AppveyorBuild}
 
 # This is the most important part of the Appveyor configuration. This installs the version of Rust
 # specified by the 'channel' and 'target' environment variables from the build matrix. This uses
