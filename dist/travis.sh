@@ -321,8 +321,9 @@ ls -l target/*
 
 if $is_docker_build; then
     travis_fold_start dockerpub "Publish Docker-built binary artifact" verbose
-    tarname="tectonic-$version_text-$IMAGE.tar.gz"
-    (cd target/$IMAGE/release && tar czf ../../../"$tarname" tectonic)
+    target=$(echo $IMAGE |sed -e s/alpine/unknown/)  # hack for our setup
+    tarname="tectonic-$version_text-$target.tar.gz"
+    (cd target/$target/release && tar czf ../../../"$tarname" tectonic)
     "${upload_artifacts[@]}" "$tarname"
     travis_fold_end dockerpub
 fi
