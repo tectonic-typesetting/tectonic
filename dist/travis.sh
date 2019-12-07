@@ -331,7 +331,7 @@ fi
 # AppImage artifact: currently only Linux/x86_64, i.e. main build
 
 if $is_main_build; then
-    travis_fold_start appimage "Build AppImage" verbose
+    travis_fold_start appimage "Build and publish AppImage" verbose
 
     if $is_continuous_deployment_build ; then
         # In CD, we include extra information for incremental updates.
