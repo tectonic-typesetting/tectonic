@@ -114,8 +114,8 @@ before_test:
   # Building on msvc toolchain is seen as cross compilation.
   - set PKG_CONFIG_ALLOW_CROSS=1
   # Workaround rust#53454
-  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\crt2.o" %USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\crt2.o"
-  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\dllcrt2.o" %USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\dllcrt2.o"
+  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\crt2.o" "%USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\crt2.o"
+  - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\dllcrt2.o" "%USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\dllcrt2.o"
   # Dodge format file locking issue in the test suite
   - set RUST_TEST_THREADS=1
 
