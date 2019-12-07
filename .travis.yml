@@ -42,6 +42,7 @@ matrix:
 # branch and tag names, so to CI release tags we have to list them here too.
 branches:
   only:
+    - continuous
     - master
     - /^v\d+\.\d+\.\d+.*$/
 
