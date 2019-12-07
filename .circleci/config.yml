@@ -14,8 +14,11 @@
 # deployment logic that fires when a tag named `vX.Y.Z` is pushed to GitHub.
 # Since Travis CI takes care of the tag creation, we actually ignore pushes to
 # master, and instead just watch for events on the `continuous` tag.
+#
+# Environment variables used by Circle:
+# https://circleci.com/docs/2.0/env-vars/#built-in-environment-variables
 
-version: 2
+version: 2.1
 
 jobs:
   build:
@@ -38,12 +41,12 @@ jobs:
 
 workflows:
   version: 2
-  pull-request:
+  pull-request-build:
     jobs:
       - build:
           filters:
             branches:
-              ignore: master
+              only: /pull\/[0-9]+/
   continuous-deployment-build:
     jobs:
       - build:
