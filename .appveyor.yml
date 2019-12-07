@@ -1,5 +1,7 @@
 # Appveyor configuration template for Rust using rustup for Rust installation
 # https://github.com/starkat99/appveyor-rust
+#
+# AppVeyor environment variables: https://www.appveyor.com/docs/environment-variables/
 
 ## Operating System (VM environment) ##
 
@@ -42,12 +44,16 @@ environment:
   #   mingw_target: i686-w64-mingw32
   #   mingw_package_prefix: mingw-w64-i686
 
-# Don't CI branches besides master. Pull requests still get CI'd -- but
-# when a PR comes in on a branch in the same repo, this prevents it from
-# being CI'd twice.
+# This filter is misleadingly named and applies to both tags and branches. We
+# filter to only build on the `continuous` tag and `vX.Y.Z` tags for
+# continuous deployment -- BUT pull requests still get CI'd. The `continuous`
+# tag is updated by Travis CI on every push to master, and its use allows us
+# to use the same logic to publish artifacts for both continuous deployment
+# and for release tags.
 branches:
   only:
-    - master
+    - continuous
+    - /^v[0-9]\..*/
 
 cache:
   - '%USERPROFILE%\.cargo\bin'
@@ -102,3 +108,6 @@ before_test:
 # environment variable.
 test_script:
   - cargo test --target %target%
+  # TEMPORARY: check out filenames for artifact publication
+  - dir target
+  - dir target/*
