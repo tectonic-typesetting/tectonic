@@ -170,6 +170,7 @@ if $is_continuous_deployment_trigger ; then
     fi
 
     echo -e "\033[34;1mThis is a continuous deployment trigger build. Exiting.\033[0m"
+    sleep 5  # work around travis-ci/travis-ci#6018
     exit 0
 fi
 
@@ -298,6 +299,7 @@ fi
 
 if ! $publish_artifacts; then
     echo -e "\033[34;1mThis build does not include release artifacts. Stopping here.\033[0m"
+    sleep 5  # work around travis-ci/travis-ci#6018
     exit 0
 fi
 
@@ -334,6 +336,7 @@ fi
 
 if ! $is_release_build; then
     echo -e "\033[34;1mThis build is not a tagged release. Stopping here.\033[0m"
+    sleep 5  # work around travis-ci/travis-ci#6018
     exit 0
 fi
 
@@ -347,3 +350,8 @@ if $is_main_build; then
     bash dist/arch/deploy.sh
     travis_fold_end arch_linux
 fi
+
+# All done! Work around travis-ci/travis-ci#6018
+
+sleep 5
+exit 0
