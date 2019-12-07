@@ -21,6 +21,10 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
+# ... but not actually, due to travis-ci/travis-ci#6018. Sleeping upon exit
+# helps avoid truncated logs.
+trap 'sleep 5' EXIT
+
 echo ""
 
 # We use `travis_retry` [1] to deal with transient network errors for commands
@@ -171,7 +175,6 @@ if $is_continuous_deployment_trigger ; then
     fi
 
     echo -e "\033[34;1mThis is a continuous deployment trigger build. Exiting.\033[0m"
-    sleep 5  # work around travis-ci/travis-ci#6018
     exit 0
 fi
 
@@ -298,7 +301,6 @@ fi
 
 if ! $publish_artifacts; then
     echo -e "\033[34;1mThis build does not include release artifacts. Stopping here.\033[0m"
-    sleep 5  # work around travis-ci/travis-ci#6018
     exit 0
 fi
 
@@ -320,7 +322,7 @@ ls -l target/*
 if $is_docker_build; then
     travis_fold_start dockerpub "Publish Docker-built binary artifact" verbose
     tarname="tectonic-$version_text-$IMAGE.tar.gz"
-    (cd target/$IMAGE/release && tar czf ../../../"$tarname" tectonic) || exit $?
+    (cd target/$IMAGE/release && tar czf ../../../"$tarname" tectonic)
     "${upload_artifacts[@]}" "$tarname"
     travis_fold_end dockerpub
 fi
@@ -346,7 +348,6 @@ fi
 
 if ! $is_release_build; then
     echo -e "\033[34;1mThis build is not a tagged release. Stopping here.\033[0m"
-    sleep 5  # work around travis-ci/travis-ci#6018
     exit 0
 fi
 
@@ -360,8 +361,3 @@ if $is_main_build; then
     bash dist/arch/deploy.sh
     travis_fold_end arch_linux
 fi
-
-# All done! Work around travis-ci/travis-ci#6018
-
-sleep 5
-exit 0
