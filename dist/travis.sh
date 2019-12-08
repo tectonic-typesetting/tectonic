@@ -312,10 +312,6 @@ if $is_main_build ; then
     unset RUSTFLAGS
 fi
 
-# XXXX temporary -- check out filenames for other artifacts we can make
-
-ls -l target/*
-
 # The Docker build makes a statically-linked executable that we can
 # publish.
 
