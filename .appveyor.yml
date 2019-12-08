@@ -119,21 +119,26 @@ before_test:
   - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\dllcrt2.o" "%USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\dllcrt2.o"
   # Dodge format file locking issue in the test suite
   - set RUST_TEST_THREADS=1
+  # Settings for continuous deployment. %var:~,1% is first character of $var, %var:~1% is all but the first character.
+  - if "%APPVEYOR_REPO_TAG_NAME%" == "continuous" set VERSION_TEXT=latest
+  - if "%APPVEYOR_REPO_TAG_NAME:~,1%" == "v" set VERSION_TEXT=%APPVEYOR_REPO_TAG_NAME:~1%
 
 # Uses 'cargo test' to run tests and build. Alternatively, the project may call compiled programs
 # directly or perform other testing commands. Rust will automatically be placed in the PATH
 # environment variable.
 test_script:
   - cargo test --target %target%
-  # TEMPORARY: check out filenames for artifact publication
-  - dir target
-  - dir target\%target%\debug
-  # TODO: munge in version, decide debug vs. release
-  - copy target\%target%\debug\tectonic.exe tectonic-%target%.exe
-  # TEMP:
-  - pwd
-  - dir /s
+  - copy target\%target%\debug\tectonic.exe tectonic-%VERSION_TEXT%-%target%.exe
 
 artifacts:
-  - path: 'tectonic-$(target).exe'
+  - path: 'tectonic-*-$(target).exe'
     name: 'Tectonic executable for $(target)'
+
+deploy:
+  description: 'AppVeyor-created release'
+  artifact: /.*/
+  force_update: true  # if false, AppVeyor errors out if the release already exists. Which it does.
+  on:
+    APPVEYOR_REPO_TAG: true
+  auth_token:
+    secure: 9IwzBZ/BmopG5LYT0We7UlSNHIDpJO/l4NebW1+A7IZuV/hDMAb8raLEbcV0gZXx
