@@ -20,10 +20,14 @@
 
 version: 2.1
 
-jobs:
-  build:
+executors:
+  bigendian-host:
     machine:
       image: circleci/classic:201711-01
+
+jobs:
+  build:
+    executor: bigendian-host
     steps:
       # Print a notice aimed at confused pull-requesters:
       - run: echo "Testing Tectonic on a synthetic big-endian CPU; this will take a while."
@@ -33,11 +37,19 @@ jobs:
           command: sudo bash .circleci/outer-build.sh $CIRCLE_WORKING_DIRECTORY
           no_output_timeout: 1800
 
-  deploy:
-    machine:
-      image: circleci/classic:201711-01
+  # In principle it would be cleaner to do the deploy in a different job,
+  # orchestrated by the workflows setup, but it is somewhat annoying for
+  # jobs to share data (https://circleci.com/docs/2.0/workflows/#using-workspaces-to-share-data-among-jobs).
+  # For now, let's just take the easy way out:
+  build-and-deploy:
+    executor: bigendian-host
     steps:
-      - run: .circleci/deploy.sh
+    steps:
+      - checkout
+      - run:
+          command: sudo bash .circleci/outer-build.sh $CIRCLE_WORKING_DIRECTORY
+          no_output_timeout: 1800
+      - run: bash .circleci/deploy.sh
 
 workflows:
   version: 2
@@ -49,15 +61,7 @@ workflows:
               only: /pull\/[0-9]+/
   continuous-deployment-build:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: continuous
-            branches:
-              ignore: /.*/
-      - deploy:
-          requires:
-            - build
+      - build-and-deploy:
           filters:
             tags:
               only: continuous
@@ -65,15 +69,7 @@ workflows:
               ignore: /.*/
   release-build:
     jobs:
-      - build:
-          filters:
-            tags:
-              only: /^v[0-9]\..*/
-            branches:
-              ignore: /.*/
-      - deploy:
-          requires:
-            - build
+      - build-and-deploy:
           filters:
             tags:
               only: /^v[0-9]\..*/
