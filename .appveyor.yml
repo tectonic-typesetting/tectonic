@@ -135,6 +135,7 @@ artifacts:
     name: 'Tectonic executable for $(target)'
 
 deploy:
+  provider: GitHub
   description: 'AppVeyor-created release'
   artifact: /.*/
   force_update: true  # if false, AppVeyor errors out if the release already exists. Which it does.

@@ -44,7 +44,6 @@ jobs:
   build-and-deploy:
     executor: bigendian-host
     steps:
-    steps:
       - checkout
       - run:
           command: sudo bash .circleci/outer-build.sh $CIRCLE_WORKING_DIRECTORY
