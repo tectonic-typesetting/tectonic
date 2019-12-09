@@ -178,6 +178,25 @@ if $is_continuous_deployment_trigger ; then
     exit 0
 fi
 
+# If we're the main build of a job that will create artifacts, immediately
+# upload a fake-ish artifact to trigger the creation of the release on GitHub.
+# This means that any real job that wants to upload an artifact will be able
+# to assume that the destination release exists, since this codepath is going
+# to run much faster than anything that requires a build.
+
+if $publish_artifacts; then
+    if $is_main_build ; then
+        travis_fold_start create_release "Creating GitHub release" verbose
+        cat >RELEASE-INFO.txt <<EOF
+commit=$TRAVIS_COMMIT
+github_tag=$TRAVIS_TAG
+version_text=$version_text
+EOF
+        "${upload_artifacts[@]}" RELEASE-INFO.txt
+        travis_fold_end create_release
+    fi
+fi
+
 # Install dependencies
 
 if [[ "$TRAVIS_OS_NAME" == osx ]]; then
