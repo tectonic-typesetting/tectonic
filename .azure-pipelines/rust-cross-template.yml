@@ -14,5 +14,7 @@ jobs:
       displayName: Install rust
     - script: cargo install cross
       displayName: Install cross
-    - script: cross test --target ${{ parameters.target }}
+    - script: |
+        export PKG_CONFIG_ALLOW_CROSS=1
+        cross test --target ${{ parameters.target }}
       displayName: Build and test
