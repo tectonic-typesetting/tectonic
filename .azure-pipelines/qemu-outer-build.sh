@@ -62,5 +62,4 @@ done
 
 # Ready to hand off to the chroot!
 
-###exec chroot $buildroot $chroot_work/.azure-pipelines/qemu-inner-build.sh $chroot_work
-echo SKIPPING INNER
+exec chroot $buildroot $chroot_work/.azure-pipelines/qemu-inner-build.sh $chroot_work

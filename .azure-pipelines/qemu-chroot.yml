@@ -9,4 +9,4 @@ jobs:
 
   steps:
   - bash: sudo bash .azure-pipelines/qemu-outer-build.sh $(Agent.BuildDirectory) ${{ parameters.buildenv_name }}
-    displayName: 'Launch sudo chroot build'
+    displayName: 'Build in sudo chroot'
