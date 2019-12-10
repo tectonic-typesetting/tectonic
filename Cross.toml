@@ -1,0 +1,9 @@
+[build.env]
+passthrough = [
+  "PKG_CONFIG_ALLOW_CROSS",
+  "RUST_BACKTRACE",
+  "RUST_LOG",
+  "RUSTFLAGS",
+  "TECTONIC_DEP_BACKEND",
+  "VCPKG_ROOT",
+]
