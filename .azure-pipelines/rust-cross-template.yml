@@ -15,6 +15,20 @@ jobs:
     - script: cargo install cross
       displayName: Install cross
     - script: |
+        docker build -t local:${{ parameters.target }} - <<EOF
+        FROM rustembedded/cross:${{ parameters.target }}-0.1.16
+        RUN dpkg --add-architecture i586 && \
+          apt-get update && \
+          apt-get install \
+            libfontconfig1-dev \
+            libgraphite2-dev \
+            libharfbuzz-dev \
+            libicu-dev \
+            libssl-dev \
+            zlib1g-dev
+        EOF
+    - script: |
         export PKG_CONFIG_ALLOW_CROSS=1
+        export RUST_BACKTRACE=1
         cross test --target ${{ parameters.target }}
       displayName: Build and test

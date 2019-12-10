@@ -7,3 +7,6 @@ passthrough = [
   "TECTONIC_DEP_BACKEND",
   "VCPKG_ROOT",
 ]
+
+[target.i586-unknown-linux-musl]
+image = "local:i586-unknown-linux-musl"
