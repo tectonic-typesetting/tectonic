@@ -17,15 +17,15 @@ jobs:
     - script: |
         docker build -t local:${{ parameters.target }} - <<EOF
         FROM rustembedded/cross:${{ parameters.target }}-0.1.16
-        RUN dpkg --add-architecture i586 && \
+        RUN dpkg --add-architecture i386 && \
           apt-get update && \
           apt-get install -y \
-            libfontconfig1-dev \
-            libgraphite2-dev \
-            libharfbuzz-dev \
-            libicu-dev \
-            libssl-dev \
-            zlib1g-dev && \
+            libfontconfig1-dev:i386 \
+            libgraphite2-dev:i386 \
+            libharfbuzz-dev:i386 \
+            libicu-dev:i386 \
+            libssl-dev:i386 \
+            zlib1g-dev:i386 && \
           apt-get clean && \
           rm -rf /var/lib/apt/lists/*
         EOF

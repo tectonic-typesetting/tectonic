@@ -8,5 +8,5 @@ passthrough = [
   "VCPKG_ROOT",
 ]
 
-[target.i586-unknown-linux-musl]
-image = "local:i586-unknown-linux-musl"
+[target.i386-unknown-linux-musl]
+image = "local:i386-unknown-linux-musl"

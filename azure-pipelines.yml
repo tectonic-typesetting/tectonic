@@ -19,4 +19,4 @@ jobs:
 
 - template: .azure-pipelines/rust-cross-template.yml
   parameters:
-    target: i586-unknown-linux-musl
+    target: i386-unknown-linux-musl
