@@ -51,7 +51,7 @@ jobs:
     executor: bigendian-host
     steps:
       - checkout
-      - run: 'false'
+      - run: pwd
 
 workflows:
   version: 2
