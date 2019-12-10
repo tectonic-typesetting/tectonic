@@ -13,6 +13,6 @@ pr:
 - master
 
 jobs:
-- template: .azure-pipelines/chroot.yml
+- template: .azure-pipelines/qemu-chroot.yml
   parameters:
     buildenv_name: ppc
