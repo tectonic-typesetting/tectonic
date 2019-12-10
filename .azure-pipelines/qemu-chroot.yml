@@ -3,7 +3,7 @@
 
 jobs:
 
-- job: sudo-chroot-build
+- job: sudo_chroot_build_${{ parameters.buildenv_name }}
   pool:
     vmImage: '18.04'
 
