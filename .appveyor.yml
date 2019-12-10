@@ -127,8 +127,8 @@ before_test:
 # directly or perform other testing commands. Rust will automatically be placed in the PATH
 # environment variable.
 test_script:
-  - cargo test --target %target%
-  - copy target\%target%\debug\tectonic.exe tectonic-%VERSION_TEXT%-%target%.exe
+  - cargo test --target %target% --release
+  - copy target\%target%\release\tectonic.exe tectonic-%VERSION_TEXT%-%target%.exe
 
 artifacts:
   - path: 'tectonic-*-$(target).exe'
