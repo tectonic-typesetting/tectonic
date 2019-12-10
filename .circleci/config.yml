@@ -48,6 +48,11 @@ jobs:
       - run:
           command: sudo bash .circleci/outer-build.sh $CIRCLE_WORKING_DIRECTORY
           no_output_timeout: 1800
+      # TEMPORARY debugging
+      - run: pwd
+      - run: ls $CIRCLE_WORKING_DIRECTORY
+      - run: ls $CIRCLE_WORKING_DIRECTORY/*
+      - run: ls $CIRCLE_WORKING_DIRECTORY/*/*
       - run: bash .circleci/deploy.sh
 
 workflows:
