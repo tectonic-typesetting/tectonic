@@ -63,4 +63,5 @@ done
 
 # Ready to hand off to the chroot!
 
-exec chroot $buildroot $chroot_work/.circleci/inner-build.sh $chroot_work
+### exec chroot $buildroot $chroot_work/.circleci/inner-build.sh $chroot_work
+echo SKIP CHROOT BUILD
