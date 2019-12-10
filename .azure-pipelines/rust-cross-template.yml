@@ -19,14 +19,17 @@ jobs:
         FROM rustembedded/cross:${{ parameters.target }}-0.1.16
         RUN dpkg --add-architecture i586 && \
           apt-get update && \
-          apt-get install \
+          apt-get install -y \
             libfontconfig1-dev \
             libgraphite2-dev \
             libharfbuzz-dev \
             libicu-dev \
             libssl-dev \
-            zlib1g-dev
+            zlib1g-dev && \
+          apt-get clean && \
+          rm -rf /var/lib/apt/lists/*
         EOF
+      displayName: Make custom cross-compile container
     - script: |
         export PKG_CONFIG_ALLOW_CROSS=1
         export RUST_BACKTRACE=1
