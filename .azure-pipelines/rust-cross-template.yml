@@ -1,0 +1,18 @@
+# Copyright 2019 the Tectonic Project
+# Licensed under the MIT License.
+
+jobs:
+
+- job: rust_cross_build
+  pool:
+    vmImage: 'ubuntu-18.04'
+
+  steps:
+    - script: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+      displayName: Install rust
+    - script: cargo install cross
+      displayName: Install cross
+    - script: cross test --target ${{ parameters.target }}
+      displayName: Build and test

@@ -16,3 +16,7 @@ jobs:
 - template: .azure-pipelines/qemu-chroot.yml
   parameters:
     buildenv_name: ppc
+
+- template: .azure-pipelines/rust-cross-template.yml
+  parameters:
+    target: i586-unknown-linux-musl
