@@ -8,5 +8,5 @@ jobs:
     vmImage: 'ubuntu-18.04'
 
   steps:
-  - bash: sudo bash .azure-pipelines/qemu-outer-build.sh $(Agent.BuildDirectory) ${{ parameters.buildenv_name }}
+  - bash: sudo bash .azure-pipelines/qemu-outer-build.sh $(Build.Repository.LocalPath) ${{ parameters.buildenv_name }}
     displayName: 'Build in sudo chroot'

@@ -19,6 +19,13 @@ fi
 buildroot="$(dirname "$work")"
 chroot_work=${work#$buildroot}
 
+# XXX TEMP
+
+echo "work: $work"
+echo "buildroot: $buildroot"
+ls $buildroot
+ls $work
+
 # This link points to a tarball of a pre-assembled Ubuntu chroot
 # that can be run via QEMU. This tarball was generated according to the
 # procedure describe here:

@@ -2,7 +2,7 @@
 # Licensed under the MIT License.
 
 # Environment variables:
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
 
 trigger:
   branches:
