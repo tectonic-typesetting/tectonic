@@ -20,6 +20,7 @@ keywords = ["tex", "latex", "typesetting", "font"]
 categories = ["command-line-interface", "parser-implementations", "rendering", "science", "text-processing"]
 license = "MIT"
 edition = "2018"
+exclude = ["/dist/", "/reference_sources/"]
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
