@@ -17,21 +17,24 @@ jobs:
     - script: |
         docker build -t local:${{ parameters.target }} - <<EOF
         FROM rustembedded/cross:${{ parameters.target }}-0.1.16
-        RUN dpkg --add-architecture i386 && \
+        RUN echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ bionic main restricted universe' >>/etc/apt/sources.list
+        RUN echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ bionic-updates main restricted universe' >>/etc/apt/sources.list
+        RUN dpkg --add-architecture arm64 && \
           apt-get update && \
           apt-get install -y \
-            libfontconfig1-dev:i386 \
-            libgraphite2-dev:i386 \
-            libharfbuzz-dev:i386 \
-            libicu-dev:i386 \
-            libssl-dev:i386 \
-            zlib1g-dev:i386 && \
+            libfontconfig1-dev:arm64 \
+            libgraphite2-dev:arm64 \
+            libharfbuzz-dev:arm64 \
+            libicu-dev:arm64 \
+            libssl-dev:arm64 \
+            zlib1g-dev:arm64 && \
           apt-get clean && \
           rm -rf /var/lib/apt/lists/*
         EOF
       displayName: Make custom cross-compile container
     - script: |
         export PKG_CONFIG_ALLOW_CROSS=1
+        export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig
         export RUST_BACKTRACE=1
         cross test --target ${{ parameters.target }}
       displayName: Build and test

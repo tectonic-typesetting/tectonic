@@ -1,6 +1,7 @@
 [build.env]
 passthrough = [
   "PKG_CONFIG_ALLOW_CROSS",
+  "PKG_CONFIG_LIBDIR",
   "RUST_BACKTRACE",
   "RUST_LOG",
   "RUSTFLAGS",
@@ -8,5 +9,5 @@ passthrough = [
   "VCPKG_ROOT",
 ]
 
-[target.i386-unknown-linux-musl]
-image = "local:i386-unknown-linux-musl"
+[target.aarch64-unknown-linux-gnu]
+image = "local:aarch64-unknown-linux-gnu"
