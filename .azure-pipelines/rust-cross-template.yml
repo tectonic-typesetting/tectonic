@@ -16,11 +16,11 @@ jobs:
       displayName: Install cross
     - script: |
         docker build -t local:${{ parameters.target }} - <<EOF
-        FROM rustembedded/cross:${{ parameters.target }}-0.1.16
+        FROM rustembedded/cross:${{ parameters.target }}
         RUN cp /etc/apt/sources.list /etc/apt/sources.list.orig && \
           grep '^deb' /etc/apt/sources.list.orig |sed -e 's/^deb/deb [arch=amd64]/' >/etc/apt/sources.list && \
-          echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ trusty main restricted universe' >>/etc/apt/sources.list && \
-          echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ trusty-updates main restricted universe' >>/etc/apt/sources.list && \
+          echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ xenial main restricted universe' >>/etc/apt/sources.list && \
+          echo 'deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports/ xenial-updates main restricted universe' >>/etc/apt/sources.list && \
           dpkg --add-architecture arm64 && \
           apt-get update && \
           apt-get install -y \
