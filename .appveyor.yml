@@ -119,7 +119,11 @@ before_test:
   - if "%target_env%" == "gnu" copy /y "C:\msys64\%mingw_subdir%\%mingw_target%\lib\dllcrt2.o" "%USERPROFILE%\.rustup\toolchains\%toolchain%\lib\rustlib\%target%\lib\dllcrt2.o"
   # Dodge format file locking issue in the test suite
   - set RUST_TEST_THREADS=1
-  # Settings for continuous deployment. %var:~,1% is first character of $var, %var:~1% is all but the first character.
+  # Settings for continuous deployment. %var:~,1% is first character of $var,
+  # %var:~1% is all but the first character. For some reason, if
+  # APPVEYOR_REPO_TAG_NAME is left undefined, I get bizarre batch syntax
+  # errors that I can't reproduce locally or figure out how to fix.
+  - if not defined APPVEYOR_REPO_TAG_NAME set APPVEYOR_REPO_TAG_NAME=notag
   - if "%APPVEYOR_REPO_TAG_NAME%" == "continuous" set VERSION_TEXT=latest
   - if "%APPVEYOR_REPO_TAG_NAME:~,1%" == "v" set VERSION_TEXT=%APPVEYOR_REPO_TAG_NAME:~1%
 
