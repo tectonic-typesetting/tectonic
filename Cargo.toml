@@ -78,6 +78,6 @@ profile = []
 [dev-dependencies]
 futures = "0.1"
 headers = "0.2"
-hyper = "0.12"
+hyper = "0.13"
 tempfile = "^3.1"
 tokio = "0.1.22"
