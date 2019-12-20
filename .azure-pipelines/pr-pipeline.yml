@@ -17,7 +17,7 @@ pr:
 
 jobs:
 
-- template: .azure-pipelines/cross-build-job.yml
+- template: cross-build-job.yml
   parameters:
     target: arm-unknown-linux-musleabihf
     target_uscore: arm_unknown_linux_musleabihf
