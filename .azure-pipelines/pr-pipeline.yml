@@ -1,0 +1,23 @@
+# Copyright 2019 the Tectonic Project
+# Licensed under the MIT License.
+
+# This file defines a pipeline that runs upon pull requests to master. We do
+# various build verification steps, but not continuous or release deployment
+# activities.
+#
+# Environment variables: https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+
+trigger:
+  branches:
+    exclude:
+    - '*'
+
+pr:
+- master
+
+jobs:
+
+- template: .azure-pipelines/cross-build-job.yml
+  parameters:
+    target: arm-unknown-linux-musleabihf
+    target_uscore: arm_unknown_linux_musleabihf

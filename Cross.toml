@@ -1,0 +1,2 @@
+[target.arm-unknown-linux-musleabihf]
+image = "tectonictypesetting/crossbuild:arm-unknown-linux-musleabihf"
