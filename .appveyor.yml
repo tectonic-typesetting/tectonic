@@ -144,7 +144,7 @@ artifacts:
 
 deploy_script:
   - ps: |
-      If ($env:APPVEYOR_REPO_TAG_NAME != "notag") {
+      If ($env:APPVEYOR_REPO_TAG_NAME -ne "notag") {
         appveyor-retry appveyor DownloadFile https://github.com/tectonic-typesetting/tectonic-ci-support/releases/download/production/ttcitool-latest-x86_64-pc-windows-msvc.exe -FileName ttcitool.exe
         .\ttcitool.exe upload-gh-artifact tectonic-%VERSION_TEXT%-%target%.exe
       }
