@@ -47,7 +47,7 @@ jobs:
     displayName: Rename binary for GitHub deployment
   - task: GitHubRelease@0
     inputs:
-      gitHubConnection: pkgw@GitHub-access-token
+      gitHubConnection: pkgw@GitHub-OAuth
       repositoryName: '$(Build.Repository.Name)'
       action: 'edit'
       target: '$(Build.SourceVersion)'
