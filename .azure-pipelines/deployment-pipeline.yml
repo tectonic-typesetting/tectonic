@@ -31,7 +31,7 @@ jobs:
 
   steps:
   - bash: |
-      echo "##vso[task.setvariable variable=tag_name]${BUILD_SOURCEBRANCH#refs/tags/}" ;;
+      echo "##vso[task.setvariable variable=tag_name]${BUILD_SOURCEBRANCH#refs/tags/}"
       case $BUILD_SOURCEBRANCH in
       refs/tags/continuous) echo "##vso[task.setvariable variable=version_text]latest" ;;
       refs/tags/v*) echo "##vso[task.setvariable variable=version_text]${BUILD_SOURCEBRANCH#refs/tags/v}" ;;
