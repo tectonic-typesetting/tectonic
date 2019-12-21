@@ -267,6 +267,8 @@ fn test_outdir() {
 
 #[test]
 #[should_panic]
+// panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
+#[cfg(not(all(target_arch = "arm", target_env = "musl")))]
 fn test_bad_outdir() {
     if env::var("RUNNING_COVERAGE").is_ok() {
         panic!()
@@ -288,6 +290,8 @@ fn test_bad_outdir() {
 
 #[test]
 #[should_panic]
+// panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
+#[cfg(not(all(target_arch = "arm", target_env = "musl")))]
 fn test_outdir_is_file() {
     if env::var("RUNNING_COVERAGE").is_ok() {
         panic!()
