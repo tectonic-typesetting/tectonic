@@ -8,7 +8,7 @@
 trigger:
   branches:
     include:
-      - refs/tags/continous
+      - refs/tags/continuous
       - refs/tags/v*
 
 pr: none
