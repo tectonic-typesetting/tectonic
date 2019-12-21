@@ -41,16 +41,12 @@ jobs:
     parameters:
       platform: $(target_kabob)
   - script: |
-      artifact="tectonic-$(version_text)-$(target_kabob)"
-      cp target/$(target_kabob)/release/tectonic $artifact
-      echo "##vso[task.setvariable variable=artifact]$artifact"
-    displayName: Rename binary for GitHub deployment
-  - task: GitHubRelease@0
-    inputs:
-      gitHubConnection: pkgw@GitHub-OAuth
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'edit'
-      target: '$(Build.SourceVersion)'
-      tag: '$(tag_name)'
-      assets: '$(artifact)'
-      assetUploadMode: 'replace'
+      set -xeuo pipefail
+      cd target/$(target_kabob)/release
+      curl --proto '=https' --tlsv1.2 -sSfL "$TOOL_URL" |tar xz
+      artifact="tectonic-$(version_text)-$(target_kabob).tar.gz"
+      tar czf $artifact tectonic
+      ../ttcitool upload-gh-artifact $artifact
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
+      TOOL_URL: https://github.com/tectonic-typesetting/tectonic-ci-support/releases/download/production/ttcitool-latest-x86_64-unknown-linux-gnu.tar.gz
