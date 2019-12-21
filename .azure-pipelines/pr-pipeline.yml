@@ -15,9 +15,23 @@ trigger:
 pr:
 - master
 
-jobs:
+variables:
+- template: variables.yml
 
-- template: cross-build-job.yml
-  parameters:
-    target: arm-unknown-linux-musleabihf
-    target_uscore: arm_unknown_linux_musleabihf
+jobs:
+- job: build_cross
+  pool:
+    vmImage: ${{ variables.linux_image }}
+
+  strategy:
+    matrix:
+      ${{ each vpair in variables }}:
+        ${{ if startsWith(vpair.key, 'target_') }}:
+          ${{ vpair.key }}:
+            target_id: ${{ vpair.key }}
+            target_kabob: ${{ vpair.value }}
+
+  steps:
+  - template: cross-build-steps.yml
+    parameters:
+      platform: $(target_kabob)

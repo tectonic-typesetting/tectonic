@@ -1,0 +1,56 @@
+# Copyright 2019 the Tectonic Project
+# Licensed under the MIT License.
+
+# Triggered when a deployment tag is pushed. This might be either the
+# "continuous" tag, for our continuous deployment workflow, or a real release
+# tag.
+
+trigger:
+  branches:
+    include:
+      - refs/tags/continous
+      - refs/tags/v*
+
+pr: none
+
+variables:
+- template: variables.yml
+
+jobs:
+- job: build_and_deploy_cross
+  pool:
+    vmImage: ${{ variables.linux_image }}
+
+  strategy:
+    matrix:
+      ${{ each vpair in variables }}:
+        ${{ if startsWith(vpair.key, 'target_') }}:
+          ${{ vpair.key }}:
+            target_id: ${{ vpair.key }}
+            target_kabob: ${{ vpair.value }}
+
+  steps:
+  - bash: |
+      echo "##vso[task.setvariable variable=tag_name]${BUILD_SOURCEBRANCH#refs/tags/}" ;;
+      case $BUILD_SOURCEBRANCH in
+      refs/tags/continuous) echo "##vso[task.setvariable variable=version_text]latest" ;;
+      refs/tags/v*) echo "##vso[task.setvariable variable=version_text]${BUILD_SOURCEBRANCH#refs/tags/v}" ;;
+      *) exit 1 ;;
+      esac
+  - template: cross-build-steps.yml
+    parameters:
+      platform: $(target_kabob)
+  - script: |
+      artifact="tectonic-$(version_text)-$(target_kabob)"
+      cp target/$(target_kabob)/release/tectonic $artifact
+      echo "##vso[task.setvariable variable=artifact]$artifact"
+    displayName: Rename binary for GitHub deployment
+  - task: GitHubRelease@0
+    inputs:
+      gitHubConnection: tectonic-typesetting
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'edit'
+      target: '$(Build.SourceVersion)'
+      tag: '$(tag_name)'
+      assets: '$(artifact)'
+      assetUploadMode: 'replace'

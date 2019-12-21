@@ -1,0 +1,8 @@
+# Copyright 2019 the Tectonic Project
+# Licensed under the MIT License.
+
+# This files sets global variables that are shared among various pipelines.
+
+variables:
+  linux_image: 'ubuntu-18.04'
+  target_arm_unknown_linux_musleabihf: 'arm-unknown-linux-musleabihf'
