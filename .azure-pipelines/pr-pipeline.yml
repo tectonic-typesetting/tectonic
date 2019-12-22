@@ -35,3 +35,9 @@ jobs:
   - template: cross-build-steps.yml
     parameters:
       platform: $(target_kabob)
+
+- job: build_semistatic_macos
+  pool:
+    vmImage: macOS-10.13  # vcpkg has a finicky build that currently requires this
+  steps:
+  - template: semistatic-macos-build-steps.yml
