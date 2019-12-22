@@ -5,4 +5,5 @@
 
 variables:
   linux_image: 'ubuntu-18.04'
+  macos_image: 'macOS-10.14'
   target_arm_unknown_linux_musleabihf: 'arm-unknown-linux-musleabihf'
