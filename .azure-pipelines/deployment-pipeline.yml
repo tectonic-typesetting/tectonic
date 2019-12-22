@@ -30,13 +30,7 @@ jobs:
             target_kabob: ${{ vpair.value }}
 
   steps:
-  - bash: |
-      echo "##vso[task.setvariable variable=tag_name]${BUILD_SOURCEBRANCH#refs/tags/}"
-      case $BUILD_SOURCEBRANCH in
-      refs/tags/continuous) echo "##vso[task.setvariable variable=version_text]latest" ;;
-      refs/tags/v*) echo "##vso[task.setvariable variable=version_text]${BUILD_SOURCEBRANCH#refs/tags/v}" ;;
-      *) exit 1 ;;
-      esac
+  - template: set-deployment-variables-steps.yml
   - template: cross-build-steps.yml
     parameters:
       platform: $(target_kabob)
@@ -50,3 +44,20 @@ jobs:
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
       TOOL_URL: https://github.com/tectonic-typesetting/tectonic-ci-support/releases/download/production/ttcitool-latest-x86_64-unknown-linux-gnu.tar.gz
+
+- job: build_and_deploy_semistatic_macos
+  pool:
+    vmImage: macOS-10.13  # vcpkg has a finicky build that currently requires this
+  steps:
+  - template: set-deployment-variables-steps.yml
+  - template: semistatic-macos-build-steps.yml
+  - script: |
+      set -xeuo pipefail
+      cd target/release
+      curl --proto '=https' --tlsv1.2 -sSfL "$TOOL_URL" |tar xz
+      artifact="tectonic-$(version_text)-x86_64-apple-darwin.tar.gz"
+      tar czf $artifact tectonic
+      ./ttcitool upload-gh-artifact $artifact
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
+      TOOL_URL: https://github.com/tectonic-typesetting/tectonic-ci-support/releases/download/production/ttcitool-latest-x86_64-apple-darwin.tar.gz
