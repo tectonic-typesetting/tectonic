@@ -23,6 +23,19 @@ lazy_static! {
         root.push("tests");
         root
     };
+    static ref TARGET_RUNNER_WORDS: Vec<String> = {
+        // compile-time environment variable from build.rs:
+        let target = env!("TARGET").to_owned();
+        let mut target = target.replace('-', "_");
+        target.make_ascii_uppercase();
+
+        // run-time environment variable check:
+        if let Ok(runtext) = env::var(format!("CARGO_TARGET_{}_RUNNER", target)) {
+            runtext.split_whitespace().map(|x| x.to_owned()).collect()
+        } else {
+            vec![]
+        }
+    };
 }
 
 fn get_plain_format_arg() -> String {
@@ -48,7 +61,14 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     println!("using tectonic binary at {:?}", tectonic);
     println!("using cwd {:?}", cwd);
 
-    let mut command = Command::new(tectonic);
+    let mut command = if TARGET_RUNNER_WORDS.len() > 0 {
+        let mut cmd = Command::new(&TARGET_RUNNER_WORDS[0]);
+        cmd.args(&TARGET_RUNNER_WORDS[1..]).arg(tectonic);
+        cmd
+    } else {
+        Command::new(tectonic)
+    };
+
     command.args(args).current_dir(cwd).env(
         tectonic::test_util::TEST_ROOT_ENV_VAR,
         TEST_ROOT.as_os_str(),
