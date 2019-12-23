@@ -63,8 +63,15 @@ enum DepState {
 impl DepState {
     /// Probe for our dependent libraries using pkg-config.
     fn new_pkg_config() -> Self {
+        let statik = if let Ok(_) = env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC") {
+            true
+        } else {
+            false
+        };
+
         let libs = pkg_config::Config::new()
             .cargo_metadata(false)
+            .statik(statik)
             .probe(PKGCONFIG_LIBS)
             .unwrap();
         DepState::PkgConfig(PkgConfigState { libs })
@@ -110,11 +117,56 @@ impl DepState {
     /// backend or the target.
     fn emit_late_extras(&self, target: &str) {
         match self {
-            &DepState::PkgConfig(_) => {
-                pkg_config::Config::new()
-                    .cargo_metadata(true)
-                    .probe(PKGCONFIG_LIBS)
-                    .unwrap();
+            &DepState::PkgConfig(ref state) => {
+                if let Ok(_) = env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC") {
+                    // pkg-config will prevent "system libraries" from being
+                    // linked statically even when PKG_CONFIG_ALL_STATIC=1,
+                    // but its definition of a system library isn't always
+                    // perfect. For Debian cross builds, we'd like to make
+                    // binaries that are dynamically linked with things like
+                    // libc and libm but not libharfbuzz, etc. In this mode we
+                    // override pkg-config's logic by emitting the metadata
+                    // ourselves.
+                    for link_path in &state.libs.link_paths {
+                        println!("cargo:rustc-link-search=native={}", link_path.display());
+                    }
+
+                    for fw_path in &state.libs.framework_paths {
+                        println!("cargo:rustc-link-search=framework={}", fw_path.display());
+                    }
+
+                    for libbase in &state.libs.libs {
+                        let do_static = match libbase.as_ref() {
+                            "c" | "m" | "dl" | "pthread" => false,
+                            _ => {
+                                // Frustratingly, graphite2 seems to have
+                                // issues with static builds; e.g. static
+                                // graphite2 is not available on Debian. So
+                                // let's jump through the hoops of testing
+                                // whether the static archive seems findable.
+                                let libname = format!("lib{}.a", libbase);
+                                state
+                                    .libs
+                                    .link_paths
+                                    .iter()
+                                    .any(|d| d.join(&libname).exists())
+                            }
+                        };
+
+                        let mode = if do_static { "static=" } else { "" };
+                        println!("cargo:rustc-link-lib={}{}", mode, libbase);
+                    }
+
+                    for fw in &state.libs.frameworks {
+                        println!("cargo:rustc-link-lib=framework={}", fw);
+                    }
+                } else {
+                    // Just let pkg-config do its thing.
+                    pkg_config::Config::new()
+                        .cargo_metadata(true)
+                        .probe(PKGCONFIG_LIBS)
+                        .unwrap();
+                }
             }
 
             &DepState::VcPkg(_) => {
@@ -149,6 +201,7 @@ fn main() {
     // OK, how are we finding our dependencies?
 
     println!("cargo:rerun-if-env-changed=TECTONIC_DEP_BACKEND");
+    println!("cargo:rerun-if-env-changed=TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC");
 
     let dep_state = if let Ok(dep_backend_str) = env::var("TECTONIC_DEP_BACKEND") {
         match dep_backend_str.as_ref() {
