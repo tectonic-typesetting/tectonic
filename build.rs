@@ -140,6 +140,12 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     let rustflags = env::var("RUSTFLAGS").unwrap_or(String::new());
 
+    // Re-export $TARGET during the build so that our executable tests know
+    // what environment variable CARGO_TARGET_@TARGET@_RUNNER to check when
+    // they want to spawn off executables.
+
+    println!("cargo:rustc-env=TARGET={}", target);
+
     // OK, how are we finding our dependencies?
 
     println!("cargo:rerun-if-env-changed=TECTONIC_DEP_BACKEND");
