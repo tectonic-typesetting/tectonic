@@ -11135,6 +11135,10 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     /* "measure the width of the space character and set up font parameters" */
     p = new_native_character(font_ptr, ' ' );
     s = BOX_width(p) + loaded_font_letter_space;
+    /* Free up the memory */
+    if(NATIVE_NODE_glyph_info_ptr(p)) {
+       NATIVE_NODE_glyph_info_ptr(p) = mfree(NATIVE_NODE_glyph_info_ptr(p));
+    }
     free_node(p, NATIVE_NODE_size(p));
 
     font_info[fmem_ptr++].b32.s1 = font_slant;

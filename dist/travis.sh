@@ -89,9 +89,7 @@ echo "TRAVIS_REPO_SLUG: $TRAVIS_REPO_SLUG"
 echo "TRAVIS_SECURE_ENV_VARS: $TRAVIS_SECURE_ENV_VARS"
 echo "TRAVIS_TAG: $TRAVIS_TAG"
 
-echo "IMAGE: $IMAGE"
-
-if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_RUST_VERSION" == stable && "$IMAGE" = "" ]] ; then
+if [[ "$TRAVIS_OS_NAME" == linux && "$TRAVIS_RUST_VERSION" == stable ]] ; then
     # This is the "main" build of the matrix for this commit. The commit might
     # still be on a non-master branch, or caused by a PR rather than a push,
     # etc.
@@ -100,14 +98,6 @@ else
     is_main_build=false
 fi
 echo "is_main_build: $is_main_build"
-
-if [[ "$TRAVIS_OS_NAME" == linux && "$IMAGE" != "" ]] ; then
-    # This is a Linux build that should happen inside a custom Docker container.
-    is_docker_build=true
-else
-    is_docker_build=false
-fi
-echo "is_docker_build: $is_docker_build"
 
 if [[ "$TRAVIS_BRANCH" == master && "$TRAVIS_EVENT_TYPE" == push && "$TRAVIS_TAG" == "" ]] ; then
     # This is a push to master that's not tagged, so we'll want to initiate
@@ -207,30 +197,26 @@ if [[ "$TRAVIS_OS_NAME" == osx ]]; then
     export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
     travis_fold_end install_deps
 elif [[ "$TRAVIS_OS_NAME" == linux ]] ; then
-    if $is_docker_build ; then
-        : # Don't need the deps here; all the action is in the container.
-    else
-        # We actually use .travis.yml to install basic packages, but we need
-        # to install a newer Harfbuzz. At the moment, Travis' Xenial images
-        # have an auto-update daemon that can lock the apt/dpkg system under
-        # us. See https://github.com/travis-ci/travis-cookbooks/issues/952 and
-        # https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
-        # . We adopt the workaround from the StackExchange post.
+    # We actually use .travis.yml to install basic packages, but we need
+    # to install a newer Harfbuzz. At the moment, Travis' Xenial images
+    # have an auto-update daemon that can lock the apt/dpkg system under
+    # us. See https://github.com/travis-ci/travis-cookbooks/issues/952 and
+    # https://unix.stackexchange.com/questions/315502/how-to-disable-apt-daily-service-on-ubuntu-cloud-vm-image
+    # . We adopt the workaround from the StackExchange post.
 
-        travis_fold_start install_deps "Install dependencies" verbose
-        sudo systemctl stop apt-daily.timer
-        sudo systemctl stop apt-daily.service
-        sudo systemctl kill --kill-who=all apt-daily.service
+    travis_fold_start install_deps "Install dependencies" verbose
+    sudo systemctl stop apt-daily.timer
+    sudo systemctl stop apt-daily.service
+    sudo systemctl kill --kill-who=all apt-daily.service
 
-        while ! (systemctl list-units --all apt-daily.service | fgrep -q dead) ; do
-            sleep 1
-        done
+    while ! (systemctl list-units --all apt-daily.service | fgrep -q dead) ; do
+        sleep 1
+    done
 
-        travis_retry sudo add-apt-repository -y ppa:k-peter/tectonic-ci
-        travis_retry sudo apt-get update
-        travis_retry sudo apt-get install -y libharfbuzz-dev
-        travis_fold_end install_deps
-    fi
+    travis_retry sudo add-apt-repository -y ppa:k-peter/tectonic-ci
+    travis_retry sudo apt-get update
+    travis_retry sudo apt-get install -y libharfbuzz-dev
+    travis_fold_end install_deps
 fi
 
 # Check that the code is properly rustfmt'd and clippy'd.
@@ -252,28 +238,19 @@ fi
 
 export RUST_BACKTRACE=1
 
-if $is_docker_build ; then
-    travis_fold_start docker_build "docker build" verbose
-    docker build --build-arg=uid=$(id -u) -t ttci-$IMAGE dist/docker/$IMAGE/
-    travis_fold_end docker_build
-    travis_fold_start docker_test "docker test" verbose
-    docker run -v $(pwd):/alpine/home/rust/src ttci-$IMAGE
-    travis_fold_end docker_test
-else
-    travis_fold_start cargo_build_no_default_features "cargo build --no-default-features" verbose
-    cargo build --no-default-features --verbose
-    travis_fold_end cargo_build_no_default_features
-    travis_fold_start cargo_build_curl \
-        "cargo build --no-default-features --features serialization,curl" verbose
-    cargo build --no-default-features --features serialization,curl
-    travis_fold_end cargo_build_curl
-    travis_fold_start cargo_build "cargo build" verbose
-    cargo build --verbose
-    travis_fold_end cargo_build
-    travis_fold_start cargo_test "cargo test" verbose
-    cargo test
-    travis_fold_end cargo_test
-fi
+travis_fold_start cargo_build_no_default_features "cargo build --no-default-features" verbose
+cargo build --no-default-features --verbose
+travis_fold_end cargo_build_no_default_features
+travis_fold_start cargo_build_curl \
+    "cargo build --no-default-features --features serialization,curl" verbose
+cargo build --no-default-features --features serialization,curl
+travis_fold_end cargo_build_curl
+travis_fold_start cargo_build "cargo build" verbose
+cargo build --verbose
+travis_fold_end cargo_build
+travis_fold_start cargo_test "cargo test" verbose
+cargo test
+travis_fold_end cargo_test
 
 # OK! If we got this far, we think we made a functional set of (debug-mode)
 # Tectonic artifacts for this build matrix element.
@@ -335,18 +312,6 @@ fi
 
 if $is_main_build ; then
     unset RUSTFLAGS
-fi
-
-# The Docker build makes a statically-linked executable that we can
-# publish.
-
-if $is_docker_build; then
-    travis_fold_start dockerpub "Publish Docker-built binary artifact" verbose
-    target=$(echo $IMAGE |sed -e s/alpine/unknown/)  # hack for our setup
-    tarname="tectonic-$version_text-$target.tar.gz"
-    (cd target/$target/release && tar czf ../../../"$tarname" tectonic)
-    "${upload_artifacts[@]}" "$tarname"
-    travis_fold_end dockerpub
 fi
 
 # AppImage artifact: currently only Linux/x86_64, i.e. main build

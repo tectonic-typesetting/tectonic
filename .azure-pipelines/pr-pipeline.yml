@@ -1,0 +1,43 @@
+# Copyright 2019 the Tectonic Project
+# Licensed under the MIT License.
+
+# This file defines a pipeline that runs upon pull requests to master. We do
+# various build verification steps, but not continuous or release deployment
+# activities.
+#
+# Environment variables: https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
+
+trigger:
+  branches:
+    exclude:
+    - '*'
+
+pr:
+- master
+
+variables:
+- template: variables.yml
+
+jobs:
+- job: build_cross
+  pool:
+    vmImage: ${{ variables.linux_image }}
+
+  strategy:
+    matrix:
+      ${{ each vpair in variables }}:
+        ${{ if startsWith(vpair.key, 'target_') }}:
+          ${{ vpair.key }}:
+            target_id: ${{ vpair.key }}
+            target_kabob: ${{ vpair.value }}
+
+  steps:
+  - template: cross-build-steps.yml
+    parameters:
+      platform: $(target_kabob)
+
+- job: build_semistatic_macos
+  pool:
+    vmImage: macOS-10.13  # vcpkg has a finicky build that currently requires this
+  steps:
+  - template: semistatic-macos-build-steps.yml

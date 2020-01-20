@@ -10,6 +10,10 @@ os: Visual Studio 2017
 
 ## Build Matrix ##
 environment:
+  global:
+    GITHUB_TOKEN:
+      secure: 9IwzBZ/BmopG5LYT0We7UlSNHIDpJO/l4NebW1+A7IZuV/hDMAb8raLEbcV0gZXx
+
   matrix:
 ### MSVC Targets ###
     # Stable 64-bit MSVC
@@ -138,12 +142,9 @@ artifacts:
   - path: 'tectonic-*-$(target).exe'
     name: 'Tectonic executable for $(target)'
 
-deploy:
-  provider: GitHub
-  description: 'AppVeyor-created release'
-  artifact: /.*/
-  force_update: true  # if false, AppVeyor errors out if the release already exists. Which it does.
-  on:
-    APPVEYOR_REPO_TAG: true
-  auth_token:
-    secure: 9IwzBZ/BmopG5LYT0We7UlSNHIDpJO/l4NebW1+A7IZuV/hDMAb8raLEbcV0gZXx
+deploy_script:
+  - ps: |
+      If ($env:APPVEYOR_REPO_TAG_NAME -ne "notag") {
+        appveyor-retry appveyor DownloadFile https://github.com/tectonic-typesetting/tectonic-ci-support/releases/download/production/ttcitool-latest-x86_64-pc-windows-msvc.exe -FileName ttcitool.exe
+        .\ttcitool.exe upload-gh-artifact tectonic-${env:VERSION_TEXT}-${env:target}.exe
+      }
