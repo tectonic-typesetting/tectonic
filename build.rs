@@ -16,13 +16,12 @@ use std::env;
 use std::path::{Path, PathBuf};
 
 #[cfg(not(target_os = "macos"))]
-const PKGCONFIG_LIBS: &'static str =
+const PKGCONFIG_LIBS: &str =
     "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 // No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
-const PKGCONFIG_LIBS: &'static str =
-    "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+const PKGCONFIG_LIBS: &str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
 
 /// Build-script state when using pkg-config as the backend.
 #[derive(Debug)]
@@ -32,10 +31,10 @@ struct PkgConfigState {
 
 // Need a way to check that the vcpkg harfbuzz port has graphite2 and icu options enabled.
 #[cfg(not(target_os = "macos"))]
-const VCPKG_LIBS: &[&'static str] = &["fontconfig", "harfbuzz", "freetype", "graphite2"];
+const VCPKG_LIBS: &[&str] = &["fontconfig", "harfbuzz", "freetype", "graphite2"];
 
 #[cfg(target_os = "macos")]
-const VCPKG_LIBS: &[&'static str] = &["harfbuzz", "freetype", "graphite2"];
+const VCPKG_LIBS: &[&str] = &["harfbuzz", "freetype", "graphite2"];
 
 /// Build-script state when using vcpkg as the backend.
 #[derive(Clone, Debug)]
@@ -63,11 +62,7 @@ enum DepState {
 impl DepState {
     /// Probe for our dependent libraries using pkg-config.
     fn new_pkg_config() -> Self {
-        let statik = if let Ok(_) = env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC") {
-            true
-        } else {
-            false
-        };
+        let statik = env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC").is_ok();
 
         let libs = pkg_config::Config::new()
             .cargo_metadata(false)
@@ -83,7 +78,7 @@ impl DepState {
 
         for dep in VCPKG_LIBS {
             let library = vcpkg::find_package(dep)
-                .expect(&format!("failed to load package {} from vcpkg", dep));
+                .unwrap_or_else(|e| panic!("failed to load package {} from vcpkg: {}", dep, e));
             include_paths.extend(library.include_paths.iter().cloned());
         }
 
@@ -97,13 +92,13 @@ impl DepState {
         F: FnMut(&Path),
     {
         match self {
-            &DepState::PkgConfig(ref s) => {
+            DepState::PkgConfig(ref s) => {
                 for p in &s.libs.include_paths {
                     f(p);
                 }
             }
 
-            &DepState::VcPkg(ref s) => {
+            DepState::VcPkg(ref s) => {
                 for p in &s.include_paths {
                     f(p);
                 }
@@ -117,8 +112,8 @@ impl DepState {
     /// backend or the target.
     fn emit_late_extras(&self, target: &str) {
         match self {
-            &DepState::PkgConfig(ref state) => {
-                if let Ok(_) = env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC") {
+            DepState::PkgConfig(ref state) => {
+                if env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC").is_ok() {
                     // pkg-config will prevent "system libraries" from being
                     // linked statically even when PKG_CONFIG_ALL_STATIC=1,
                     // but its definition of a system library isn't always
@@ -169,7 +164,7 @@ impl DepState {
                 }
             }
 
-            &DepState::VcPkg(_) => {
+            DepState::VcPkg(_) => {
                 if target.contains("-linux-") {
                     // add icudata to the end of the list of libs as vcpkg-rs
                     // does not order individual libraries as a single pass
@@ -190,7 +185,7 @@ impl Default for DepState {
 
 fn main() {
     let target = env::var("TARGET").unwrap();
-    let rustflags = env::var("RUSTFLAGS").unwrap_or(String::new());
+    let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
 
     // Re-export $TARGET during the build so that our executable tests know
     // what environment variable CARGO_TARGET_@TARGET@_RUNNER to check when
