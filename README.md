@@ -7,9 +7,9 @@ engine, powered by [XeTeX](http://xetex.sourceforge.net/) and
 
 ## Read this first
 
-You should probably **click through to
+If you just want to compile TeX documents, you should probably **click through to
 [the main Tectonic website](https://tectonic-typesetting.github.io/)**. This
-page is just a quick reference for Tectonic developers.
+page is primarily aimed at folks interested in how Tectonic works “under the hood.”
 
 ## Developer dashboard
 
@@ -27,6 +27,20 @@ page is just a quick reference for Tectonic developers.
 - [API documentation](https://docs.rs/tectonic/).
 - [Issues](https://github.com/tectonic-typesetting/tectonic/issues/).
 - [Changelog](./CHANGELOG.md).
+
+## Technical ecosystem
+
+If you’re interested in Tectonic as a software tool, you might also want to check out:
+
+- You can use Tectonic as a
+  [GitHub Action](https://github.com/features/actions) with
+  [compile-latex](https://github.com/marketplace/actions/compile-latex),
+  thanks to [Vinay Sharma](https://github.com/vinay0410).
+- [tt.ente.ninja](https://tt.ente.ninja), which runs Tectonic against a subset
+  of the [arxiv.org](https://arxiv.org/) corpus à la the Rust tool
+  [Crater](https://github.com/rust-lang/crater) — a
+  [project](https://github.com/Mrmaxmeier/tectonic-on-arXiv) by
+  [@Mrmaxmeier](https://github.com/Mrmaxmeier/)
 
 ## The “reference sources”
 
