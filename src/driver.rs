@@ -11,6 +11,7 @@
 //! For an example of how to use this module, see `src/bin/tectonic.rs`, which contains tectonic's main
 //! CLI program.
 
+use byte_unit::Byte;
 use std::collections::{HashMap, HashSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -871,15 +872,20 @@ impl ProcessingSession {
             }
 
             if contents.is_empty() {
-                status.note_highlighted("Not writing ", &sname, ": it would be empty.");
+                status.note_highlighted(
+                    "Not writing ",
+                    &format!("`{}`", sname),
+                    ": it would be empty.",
+                );
                 continue;
             }
 
             let real_path = root.join(name);
+            let byte_len = Byte::from_bytes(contents.len() as u128);
             status.note_highlighted(
                 "Writing ",
-                &real_path.to_string_lossy(),
-                &format!(" ({} bytes)", contents.len()),
+                &format!("`{}`", real_path.to_string_lossy()),
+                &format!(" ({})", byte_len.get_appropriate_unit(true).to_string()),
             );
 
             let mut f = File::create(&real_path)?;
