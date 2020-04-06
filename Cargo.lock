@@ -1350,7 +1350,7 @@ dependencies = [
  "serde 1.0.106 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "structopt 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "tectonic_cfg_support 0.0.2",
+ "tectonic_cfg_support 0.0.3-dev",
  "tectonic_xdv 0.1.9-dev",
  "tempfile 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "termcolor 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1362,7 +1362,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_cfg_support"
-version = "0.0.2"
+version = "0.0.3-dev"
 dependencies = [
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

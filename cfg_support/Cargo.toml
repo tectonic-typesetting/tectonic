@@ -1,9 +1,9 @@
-# Copyright 2019 the Tectonic Project
+# Copyright 2019-2020 the Tectonic Project
 # Licensed under the MIT License.
 
 [package]
 name = "tectonic_cfg_support"
-version = "0.0.2"
+version = "0.0.3-dev"
 authors = [
     "Matt Rice <ratmice@gmail.com>",
     "Peter Williams <peter@newton.cx>"
