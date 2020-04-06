@@ -1,11 +1,10 @@
-# The `tectonic_cfg_support` create
+# The `tectonic_cfg_support` crate
 
-This create is a support create for `build.rs` files that helps deal with
-`CARGO_CFG_TARGET_*` variables. When cross-compiling, these variables must be
-used instead of constructs such as `cfg!(target_arch = ...)` because the
-`build.rs` script is compiled to target the build host environment, not the
-true target environment. This crate is part of
-[the Tectonic project](https://tectonic-typesetting.github.io/).
+This crate helps `build.rs` files deal with `CARGO_CFG_TARGET_*` variables. When
+cross-compiling, these variables must be used instead of constructs such as
+`cfg!(target_arch = ...)` because the `build.rs` script is compiled to target
+the build host environment, not the true target environment. This crate is part
+of [the Tectonic project](https://tectonic-typesetting.github.io/).
 
 [![](http://meritbadge.herokuapp.com/tectonic_cfg_support)](https://crates.io/crates/tectonic_cfg_support)
 
