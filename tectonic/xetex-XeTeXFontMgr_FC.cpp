@@ -335,8 +335,10 @@ XeTeXFontMgr_FC::initialize()
 void
 XeTeXFontMgr_FC::terminate()
 {
-    FcFontSetDestroy(allFonts);
-    allFonts = NULL;
+    if (allFonts != NULL) {
+        FcFontSetDestroy(allFonts);
+        allFonts = NULL;
+    }
 
     if (macRomanConv != NULL) {
         ucnv_close(macRomanConv);
