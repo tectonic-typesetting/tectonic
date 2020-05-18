@@ -34,7 +34,7 @@ name = "tectonic"
 crate-type = ["rlib"]
 
 [build-dependencies]
-cc = "^1.0.52"
+cc = "^1.0.53"
 pkg-config = "^0.3"
 regex = "^1.3"
 sha2 = "^0.8"
