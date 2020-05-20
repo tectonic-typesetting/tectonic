@@ -10,14 +10,11 @@
 // hopefully show up in a future version.
 #![allow(deprecated)]
 
-use app_dirs;
 use error_chain::error_chain;
 use reqwest::StatusCode;
 use std::io::Write;
 use std::result::Result as StdResult;
 use std::{convert, ffi, io, num, str};
-use tectonic_xdv;
-use tempfile;
 use zip::result::ZipError;
 
 cfg_if::cfg_if! {

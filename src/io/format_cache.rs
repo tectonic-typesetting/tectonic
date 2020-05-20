@@ -8,7 +8,6 @@
 use std::ffi::OsStr;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
-use tempfile;
 
 use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
 use crate::digest::DigestData;

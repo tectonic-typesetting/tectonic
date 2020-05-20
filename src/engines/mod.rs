@@ -15,7 +15,6 @@
 use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};
 use lazy_static::lazy_static;
-use libc;
 use md5::{Digest, Md5};
 use std::borrow::Cow;
 use std::ffi::{CStr, OsStr, OsString};
