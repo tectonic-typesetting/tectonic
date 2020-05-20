@@ -1,5 +1,5 @@
 # .travis.yml -- Travis CI specification file.
-# Copyright 2016-2019 the Tectonic Project
+# Copyright 2016-2020 the Tectonic Project
 # Licensed under the MIT License.
 
 language: rust
@@ -26,7 +26,7 @@ matrix:
       rust: nightly
     # MacOS, Rust stable: just a smoke test
     - os: osx
-      osx_image: xcode10.2
+      osx_image: xcode11.4
       rust: stable
   allow_failures:
     - rust: nightly
