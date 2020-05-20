@@ -1,4 +1,4 @@
-# Copyright 2019 the Tectonic Project
+# Copyright 2019-2020 the Tectonic Project
 # Licensed under the MIT License.
 
 # This file defines a pipeline that runs upon pull requests to master. We do
@@ -38,6 +38,6 @@ jobs:
 
 - job: build_semistatic_macos
   pool:
-    vmImage: macOS-10.13  # vcpkg has a finicky build that currently requires this
+    vmImage: macOS-10.15
   steps:
   - template: semistatic-macos-build-steps.yml
