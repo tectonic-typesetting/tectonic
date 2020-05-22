@@ -1,4 +1,4 @@
-# Copyright 2019 the Tectonic Project
+# Copyright 2019-2020 the Tectonic Project
 # Licensed under the MIT License.
 
 # Triggered when a deployment tag is pushed. This might be either the
@@ -47,7 +47,7 @@ jobs:
 
 - job: build_and_deploy_semistatic_macos
   pool:
-    vmImage: macOS-10.13  # vcpkg has a finicky build that currently requires this
+    vmImage: macOS-10.15
   steps:
   - template: set-deployment-variables-steps.yml
   - template: semistatic-macos-build-steps.yml

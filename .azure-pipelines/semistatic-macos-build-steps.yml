@@ -1,14 +1,11 @@
-# Copyright 2019 the Tectonic Project
+# Copyright 2019-2020 the Tectonic Project
 # Licensed under the MIT License.
 
 # Step to build and test the Tectonic binary in release mode on macOS using
 # vcpkg and static libraries for the system dependencies, resulting in a
 # binary that can run out-of-the-box on a macOS system.
 
-# vcpkg has a surprisingly finicky build. Right now the only way I can get it
-# to bootstrap is to use brew's gcc 9 on 10.13. Cf:
-# https://github.com/microsoft/vcpkg/issues/8627
-# https://github.com/microsoft/vcpkg/issues/7585
+# vcpkg has a surprisingly finicky build.
 
 steps:
 - script: |

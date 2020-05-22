@@ -2,7 +2,6 @@
 // Copyright 2016-2017 the Tectonic Project
 // Licensed under the MIT License.
 
-use libc;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::fs::File;

@@ -2,8 +2,6 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
-use tectonic;
-
 use structopt::StructOpt;
 
 use std::env;
