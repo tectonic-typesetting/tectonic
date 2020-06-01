@@ -82,3 +82,12 @@ headers = "0.2"
 hyper = "0.12"
 tempfile = "^3.1"
 tokio = "0.1.22"
+
+[package.metadata.vcpkg]
+git = "https://github.com/microsoft/vcpkg"
+rev = "6d36e2a"
+
+[package.metadata.vcpkg.target]
+x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
+x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
+x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
