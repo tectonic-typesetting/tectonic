@@ -53,7 +53,7 @@ headers = "^0.2"
 lazy_static = "^1.4"
 libc = "^0.2"
 tempfile = "^3.1"
-md-5 = "^0.8"
+md-5 = "^0.9"
 reqwest = "^0.9"
 sha2 = "^0.9"
 serde = { version = "^1.0", features = ["derive"], optional = true }
