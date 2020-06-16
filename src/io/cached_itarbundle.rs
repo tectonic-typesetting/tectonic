@@ -608,7 +608,7 @@ impl CachedITarBundle {
         let length = content.len();
 
         let mut digest_builder = digest::create();
-        digest_builder.input(&content);
+        digest_builder.update(&content);
 
         let digest = DigestData::from(digest_builder);
 
