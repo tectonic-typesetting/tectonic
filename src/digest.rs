@@ -94,7 +94,7 @@ impl FromStr for DigestData {
 impl From<DigestComputer> for DigestData {
     fn from(s: DigestComputer) -> DigestData {
         let mut result = DigestData::zeros();
-        let res = s.result();
+        let res = s.finalize();
         result.0.copy_from_slice(res.as_slice());
         result
     }
