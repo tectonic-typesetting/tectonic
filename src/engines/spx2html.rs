@@ -1,4 +1,4 @@
-// Copyright 2018 the Tectonic Project
+// Copyright 2018-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Convert Tectonic’s SPX format to HTML
@@ -39,7 +39,7 @@ impl Spx2HtmlEngine {
 
             if spx.ends_with(".spx") {
                 let l = s.len();
-                s.split_off(l - 4);
+                s.truncate(l - 4);
             }
 
             s.push_str(".html");

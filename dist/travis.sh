@@ -255,7 +255,21 @@ if $is_main_build ; then
     travis_fold_start cargo_kcov "cargo kcov" verbose
     travis_retry sudo apt-get install -y kcov
     cargo install --force cargo-kcov
+
+    # As of Rust 1.44, test executables land in target/debug/deps/ instead of
+    # target/debug/, which messes up current cargo-kcov (0.5.2) because it tries
+    # to search for those executables. Work around with `cp`. One of the
+    # `tectonic-*` binaries is the debug executable, which is hard-linked to
+    # `target/debug/tectonic`. kcov will erroneously try to run this as a test
+    # if we copy it, so we have to make not to do that, which we accomplish with
+    # a search based on the hardlink count. Hacky and fragile but this should
+    # get us going. Hopefully kcov will get fixed where this will become
+    # unneccessary anyway.
+    rm target/debug/deps/tectonic-????????????????
     cargo test --no-run
+    find target/debug/deps/tectonic-???????????????? -links 2 -print -delete
+    cp -vp target/debug/deps/*-???????????????? target/debug/
+
     env RUNNING_COVERAGE=1 cargo kcov --no-clean-rebuild
     bash <(curl -s https://codecov.io/bash)
     travis_fold_end cargo_kcov
