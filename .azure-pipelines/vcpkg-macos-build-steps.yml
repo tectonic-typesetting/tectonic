@@ -1,0 +1,31 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+# Variant macOS vcpkg build using `cargo vcpkg`.
+
+steps:
+- script: |
+    set -e
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+    echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+  displayName: Install Rust
+
+- script: |
+    set -xeuo pipefail
+    cargo install cargo-vcpkg
+  displayName: Install cargo-vcpkg
+
+- script: |
+    set -xeuo pipefail
+    cargo vcpkg build
+  displayName: Build vcpkg deps
+
+- script: |
+    set -xeuo pipefail
+    TECTONIC_DEP_BACKEND=vcpkg cargo build --release --all
+  displayName: Build Tectonic
+
+- script: |
+    set -xeuo pipefail
+    TECTONIC_DEP_BACKEND=vcpkg cargo test --release --all
+  displayName: Test Tectonic

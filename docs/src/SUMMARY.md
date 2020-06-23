@@ -7,4 +7,5 @@
 - [Tectonic’s Command Line Interface](cli/index.md)
 - [The Tectonic Implementation of the TeX Language](lang-impl/index.md)
 - [Cookbook](cookbook/index.md)
-	* [build tectonic with vcpkg on macOS](cookbook/vcpkg.md)
+  _ [detailed way to build tectonic with vcpkg on macOS](cookbook/vcpkg.md)
+  _ [a simpler way to build tectonic with vcpkg on macOS, Linux or Windows](cookbook/cargo-vcpkg.md)
