@@ -41,3 +41,9 @@ jobs:
     vmImage: macOS-10.15
   steps:
   - template: semistatic-macos-build-steps.yml
+
+- job: build_vcpkg_macos
+  pool:
+    vmImage: macOS-10.15
+  steps:
+  - template: vcpkg-macos-build-steps.yml
