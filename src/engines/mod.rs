@@ -265,7 +265,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
                     break;
                 }
             };
-            hash.input(&buf[..nread]);
+            hash.update(&buf[..nread]);
         }
 
         // Clean up.
@@ -274,7 +274,7 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         self.events.input_closed(name, digest_opt);
 
         if !error_occurred {
-            let result = hash.result();
+            let result = hash.finalize();
             dest.copy_from_slice(result.as_slice());
         }
 
@@ -560,8 +560,8 @@ extern "C" fn get_data_md5<'a, I: 'a + IoProvider>(
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
     let mut hash = Md5::default();
-    hash.input(rdata);
-    let result = hash.result();
+    hash.update(rdata);
+    let result = hash.finalize();
     rdest.copy_from_slice(result.as_slice());
 
     0

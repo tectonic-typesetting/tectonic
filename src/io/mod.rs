@@ -196,7 +196,7 @@ impl Read for InputHandle {
         self.ever_read = true;
         let n = self.inner.read(buf)?;
         if !self.read_only {
-            self.digest.input(&buf[..n]);
+            self.digest.update(&buf[..n]);
         }
         Ok(n)
     }
@@ -280,7 +280,7 @@ impl OutputHandle {
 impl Write for OutputHandle {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let n = self.inner.write(buf)?;
-        self.digest.input(&buf[..n]);
+        self.digest.update(&buf[..n]);
         Ok(n)
     }
 

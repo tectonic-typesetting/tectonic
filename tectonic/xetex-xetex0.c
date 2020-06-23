@@ -10845,7 +10845,7 @@ void char_warning(internal_font_number f, int32_t c)
         str_ptr--; /* this is the "flush_string" macro which discards the most recent string */
         pool_ptr = str_start[str_ptr - 0x10000];
 
-        ttstub_issue_warning("could not represent character \"%s\" in font \"%s\"", chr, fn);
+        ttstub_issue_warning("could not represent character \"%s\" (0x%" PRIx32 ") in font \"%s\"", chr, c, fn);
 
         free(fn);
         free(chr);
