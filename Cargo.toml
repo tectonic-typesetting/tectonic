@@ -43,7 +43,7 @@ vcpkg = "0.2.10"
 
 [dependencies]
 app_dirs = "^1.1"
-byte-unit = "^3.1"
+byte-unit = "^4.0"
 cfg-if = "0.1"
 structopt = "0.3"
 error-chain = "^0.12"
