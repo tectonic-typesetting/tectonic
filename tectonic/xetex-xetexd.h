@@ -1095,6 +1095,7 @@ cur_length(void) {
 
 
 /* Tectonic related functions */
+void tt_cleanup(void);
 tt_history_t tt_run_engine(char *dump_name, char *input_file_name, time_t build_date);
 
 
