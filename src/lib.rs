@@ -167,7 +167,7 @@ mod tests {
             conditions (like using fontconfig), compiling afterwards results in
             a segmentation fault.
             This test has no assertions because the simple fact that it didn't
-            crash the test runner means it succeeded.            
+            crash the test runner means it succeeded.
         */
         for _ in 0..2 {
             latex_to_pdf(
