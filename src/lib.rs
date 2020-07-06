@@ -151,3 +151,33 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
         )),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[allow(unused_must_use)]
+    #[cfg(target_os = "linux")]
+    fn no_segfault_after_failed_compilation() {
+        /*
+            This is mostly relevant when using tectonic as a library.
+            After a compilation error xetex assumes the process will exit so
+            it doesn't fully cleanup its auxiliary structures. User some
+            conditions (like using fontconfig), compiling afterwards results in
+            a segmentation fault.
+            This test has no assertions because the simple fact that it didn't
+            crash the test runner means it succeeded.
+        */
+        for _ in 0..2 {
+            latex_to_pdf(
+                r"\documentclass{article}
+\usepackage{fontspec}
+\setmainfont{Ubuntu Mono}
+\begin{document}
+\invalidcommand{}
+\end{document}",
+            );
+        }
+    }
+}
