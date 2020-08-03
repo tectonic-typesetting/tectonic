@@ -42,7 +42,7 @@ tectonic_cfg_support = { path = "cfg_support", version = "0.0.3-dev" }
 vcpkg = "0.2.10"
 
 [dependencies]
-app_dirs2 = "2"
+app_dirs = { version = "2", package = "app_dirs2" }
 byte-unit = "^4.0"
 cfg-if = "0.1"
 structopt = "0.3"
