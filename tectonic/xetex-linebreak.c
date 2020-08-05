@@ -674,7 +674,7 @@ line_break(bool d)
             /* ... resuming 895 ... */
             case KERN_NODE:
                 if (NODE_subtype(cur_p) == EXPLICIT) {
-                    if (!is_char_node(LLIST_link(cur_p)) < hi_mem_min && auto_breaking) {
+                    if (!is_char_node(LLIST_link(cur_p)) && auto_breaking) {
                         if (NODE_type(LLIST_link(cur_p)) == GLUE_NODE)
                             try_break(0, UNHYPHENATED);
                     }
