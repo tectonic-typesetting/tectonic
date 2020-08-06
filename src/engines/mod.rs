@@ -26,7 +26,7 @@ use std::{io, ptr, slice};
 use crate::digest::DigestData;
 use crate::errors::{Error, ErrorKind, Result};
 use crate::io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
-use crate::status::StatusBackend;
+use crate::status::{MessageKind, StatusBackend};
 use crate::{tt_error, tt_warning};
 
 // Public sub-modules and reexports.
@@ -467,6 +467,10 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 #[repr(C)]
 struct TectonicBridgeApi {
     context: *const libc::c_void,
+    diag_warn_begin: *const libc::c_void,
+    diag_error_begin: *const libc::c_void,
+    diag_finish: *const libc::c_void,
+    diag_append: *const libc::c_void,
     issue_warning: *const libc::c_void,
     issue_error: *const libc::c_void,
     get_file_md5: *const libc::c_void,
@@ -512,6 +516,45 @@ extern "C" {
 }
 
 // Entry points for the C/C++ API functions.
+
+struct Diagnostic {
+    message: String,
+    kind: MessageKind,
+}
+
+extern "C" fn diag_warn_begin() -> *mut Diagnostic {
+    let warning = Box::new(Diagnostic {
+        message: String::new(),
+        kind: MessageKind::Warning,
+    });
+    Box::into_raw(warning)
+}
+
+extern "C" fn diag_error_begin() -> *mut Diagnostic {
+    let warning = Box::new(Diagnostic {
+        message: String::new(),
+        kind: MessageKind::Error,
+    });
+    Box::into_raw(warning)
+}
+
+extern "C" fn diag_finish<'a, I: 'a + IoProvider>(
+    es: *mut ExecutionState<'a, I>,
+    diag: *mut Diagnostic,
+) {
+    let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
+    let es = unsafe { &mut *es };
+
+    es.status
+        .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+}
+
+extern "C" fn diag_append(diag: *mut Diagnostic, text: *const libc::c_char) {
+    let rdiag = unsafe { &mut *diag };
+    let rtext = unsafe { CStr::from_ptr(text) };
+
+    rdiag.message.push_str(&rtext.to_string_lossy());
+}
 
 extern "C" fn issue_warning<'a, I: 'a + IoProvider>(
     es: *mut ExecutionState<'a, I>,
@@ -810,6 +853,10 @@ impl TectonicBridgeApi {
     fn new<'a, I: 'a + IoProvider>(exec_state: &ExecutionState<'a, I>) -> TectonicBridgeApi {
         TectonicBridgeApi {
             context: (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
+            diag_warn_begin: diag_warn_begin as *const libc::c_void,
+            diag_error_begin: diag_error_begin as *const libc::c_void,
+            diag_finish: diag_finish::<'a, I> as *const libc::c_void,
+            diag_append: diag_append as *const libc::c_void,
             issue_warning: issue_warning::<'a, I> as *const libc::c_void,
             issue_error: issue_error::<'a, I> as *const libc::c_void,
             get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,

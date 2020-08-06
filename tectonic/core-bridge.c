@@ -110,6 +110,30 @@ bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
 
 #define TGB tectonic_global_bridge
 
+diagnostic_t
+ttstub_diag_warn_begin(void)
+{
+    return TGB->diag_warn_begin();
+}
+
+diagnostic_t
+ttstub_diag_error_begin(void)
+{
+    return TGB->diag_error_begin();
+}
+
+void
+ttstub_diag_finish(diagnostic_t diag)
+{
+    TGB->diag_finish(TGB->context, diag);
+}
+
+void
+ttstub_diag_append(diagnostic_t diag, char const *text)
+{
+    TGB->diag_append(diag, text);
+}
+
 PRINTF_FUNC(1,2) void
 ttstub_issue_warning(const char *format, ...)
 {
