@@ -1024,6 +1024,7 @@ void flush_math(void);
 /* xetex-output */
 
 void capture_to_diagnostic(diagnostic_t diagnostic);
+PRINTF_FUNC(1,2) diagnostic_t diagnostic_error_here(const char *format, ...);
 void print_ln(void);
 void print_raw_char(UTF16_code s, bool incr_offset);
 void print_char(int32_t s);

@@ -20,6 +20,39 @@ capture_to_diagnostic(diagnostic_t diagnostic)
     current_diagnostic = diagnostic;
 }
 
+PRINTF_FUNC(1,2) diagnostic_t
+diagnostic_error_here(const char *format, ...)
+{
+    diagnostic_t error = ttstub_diag_error_begin();
+
+    // Add file/line number information
+    // This duplicates logic from print_file_line
+
+    int32_t level = in_open;
+    while (level > 0 && full_source_filename_stack[level] == 0)
+        level--;
+
+    if (level == 0) {
+        ttstub_diag_append(error, "!");
+    } else {
+        int32_t source_line = line;
+        if (level != in_open) {
+            source_line = line_stack[level + 1];
+        }
+
+        char* filename = gettexstring(full_source_filename_stack[level]);
+        ttstub_diag_printf(error, "%s:%d: ", filename, source_line);
+        free(filename);
+    }
+
+    va_list ap;
+    va_start(ap, format);
+    ttstub_diag_vprintf(error, format, ap);
+    va_end(ap);
+
+    return error;
+}
+
 static void
 warn_char(int c)
 {
