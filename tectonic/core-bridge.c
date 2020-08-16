@@ -134,6 +134,23 @@ ttstub_diag_append(diagnostic_t diag, char const *text)
     TGB->diag_append(diag, text);
 }
 
+PRINTF_FUNC(2,0) void
+ttstub_diag_vprintf(diagnostic_t diag, const char *format, va_list ap)
+{
+    vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
+    TGB->diag_append(diag, error_buf);
+}
+
+PRINTF_FUNC(2,3) void
+ttstub_diag_printf(diagnostic_t diag, const char *format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    ttstub_diag_vprintf(diag, format, ap);
+    va_end(ap);
+}
+
 PRINTF_FUNC(1,2) void
 ttstub_issue_warning(const char *format, ...)
 {
