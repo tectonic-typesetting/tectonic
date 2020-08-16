@@ -11833,6 +11833,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
     b16x4 i;
     int32_t pp, ppp = TEX_NULL;
     int32_t total_chars, k;
+    diagnostic_t warning = 0;
 
     last_badness = 0;
     r = get_node(BOX_NODE_SIZE);
@@ -12128,6 +12129,10 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 last_badness = badness(x, total_stretch[NORMAL]);
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
+
+                    warning = ttstub_diag_warn_begin();
+                    capture_to_diagnostic(warning);
+
                     if (last_badness > 100)
                         print_nl_cstr("Underfull");
                     else
@@ -12170,6 +12175,10 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                     mem[mem[q].b32.s1 + 1].b32.s1 = DIMENPAR(overfull_rule);
                 }
                 print_ln();
+
+                warning = ttstub_diag_warn_begin();
+                capture_to_diagnostic(warning);
+
                 print_nl_cstr("Overfull \\hbox (");
                 print_scaled(-(int32_t) x - total_shrink[NORMAL]);
                 print_cstr("pt too wide");
@@ -12181,6 +12190,10 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
+
+                    warning = ttstub_diag_warn_begin();
+                    capture_to_diagnostic(warning);
+
                     print_nl_cstr("Tight \\hbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
@@ -12206,6 +12219,10 @@ common_ending:
             print_cstr(") detected at line ");
         print_int(line);
     }
+
+    capture_to_diagnostic(0);
+    ttstub_diag_finish(warning);
+
     print_ln();
     font_in_short_display = FONT_BASE;
     short_display(mem[r + 5].b32.s1);
@@ -12238,6 +12255,10 @@ exit:
         if (LR_problems > 0) {
             {
                 print_ln();
+
+                warning = ttstub_diag_warn_begin();
+                capture_to_diagnostic(warning);
+
                 print_nl_cstr("\\endL or \\endR problem (");
                 print_int(LR_problems / 10000);
                 print_cstr(" missing, ");
@@ -12268,6 +12289,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
     scaled_t s;
     int32_t g;
     glue_ord o;
+    diagnostic_t warning = 0;
 
     last_badness = 0;
     r = get_node(BOX_NODE_SIZE);
@@ -12387,6 +12409,10 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 last_badness = badness(x, total_stretch[NORMAL]);
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
+
+                    warning = ttstub_diag_warn_begin();
+                    capture_to_diagnostic(warning);
+
                     if (last_badness > 100)
                         print_nl_cstr("Underfull");
                     else
@@ -12422,6 +12448,10 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
             if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(vfuzz))
                 || (INTPAR(vbadness) < 100)) {
                 print_ln();
+
+                warning = ttstub_diag_warn_begin();
+                capture_to_diagnostic(warning);
+
                 print_nl_cstr("Overfull \\vbox (");
                 print_scaled(-(int32_t) x - total_shrink[NORMAL]);
                 print_cstr("pt too high");
@@ -12433,6 +12463,10 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
+
+                    warning = ttstub_diag_warn_begin();
+                    capture_to_diagnostic(warning);
+
                     print_nl_cstr("Tight \\vbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
@@ -12456,6 +12490,10 @@ common_ending:
         print_int(line);
         print_ln();
     }
+
+    capture_to_diagnostic(0);
+    ttstub_diag_finish(warning);
+
     begin_diagnostic();
     show_box(r);
     end_diagnostic(true);
