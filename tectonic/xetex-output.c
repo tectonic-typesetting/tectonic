@@ -53,6 +53,20 @@ diagnostic_error_here(const char *format, ...)
     return error;
 }
 
+// This replaces the "print file+line number" block at the start of errors
+diagnostic_t
+error_here_with_diagnostic(const char* message)
+{
+    diagnostic_t error = diagnostic_error_here("%s", message);
+    if (file_line_error_style_p)
+        print_file_line();
+    else
+        print_nl_cstr("! ");
+    print_cstr(message);
+
+    return error;
+}
+
 static void
 warn_char(int c)
 {
