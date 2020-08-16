@@ -8,22 +8,45 @@
 #include "xetex-synctex.h"
 #include "core-bridge.h"
 
+static diagnostic_t current_diagnostic = 0;
+
+void
+capture_to_diagnostic(diagnostic_t diagnostic)
+{
+    if (current_diagnostic && diagnostic) {
+        /* Should this be an error? */
+        ttstub_issue_warning("multiple warnings attempting to capture output");
+    }
+    current_diagnostic = diagnostic;
+}
+
+static void
+warn_char(int c)
+{
+    if (current_diagnostic) {
+        char bytes[2] = { c, 0 };
+        ttstub_diag_append(current_diagnostic, bytes);
+    }
+}
 
 void
 print_ln(void)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
+        warn_char('\n');
         ttstub_output_putc(rust_stdout, '\n');
         ttstub_output_putc(log_file, '\n');
         term_offset = 0;
         file_offset = 0;
         break;
     case SELECTOR_LOG_ONLY:
+        warn_char('\n');
         ttstub_output_putc(log_file, '\n');
         file_offset = 0;
         break;
     case SELECTOR_TERM_ONLY:
+        warn_char('\n');
         ttstub_output_putc(rust_stdout, '\n');
         term_offset = 0;
         break;
@@ -43,6 +66,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
+        warn_char(s);
         ttstub_output_putc(rust_stdout, s);
         ttstub_output_putc(log_file, s);
         if (incr_offset) {
@@ -59,6 +83,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
         }
         break;
     case SELECTOR_LOG_ONLY:
+        warn_char(s);
         ttstub_output_putc(log_file, s);
         if (incr_offset)
             file_offset++;
@@ -66,6 +91,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
             print_ln();
         break;
     case SELECTOR_TERM_ONLY:
+        warn_char(s);
         ttstub_output_putc(rust_stdout, s);
         if (incr_offset)
             term_offset++;
