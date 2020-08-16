@@ -1023,8 +1023,45 @@ void flush_math(void);
 
 /* xetex-output */
 
+// Redirect messages printed to log/terminal into a diagnostic until a
+// subsequent capture_to_diagnostic(0). A standard usage of this is
+//
+//     diagnostic_t warning = ttstub_diag_warn_begin();
+//     capture_to_diagnostic(warning);
+//
+//     ... XeTeX prints some errors using print_* functions ...
+//
+//     capture_to_diagnostic(0);
+//     ttstub_diag_finish(warning);
+//
+// Instead of ttstub_diag_warn_begin you can use ttstub_diag_error_begin, or
+// the subsequent functions which return diagnostic_t.
 void capture_to_diagnostic(diagnostic_t diagnostic);
+// Create a diagnostic error which starts with the location of the error.
+// Essentially does the same thing as
+//
+//     if (file_line_error_style_p)
+//         print_file_line();
+//     else
+//         print_nl_cstr("! ");
+//
+// but outputs to the diagnostic only. In most cases you'll want to use
+// error_here_with_diagnostic() though - it calls this function *and* runs the
+// above xetex location printing.
 PRINTF_FUNC(1,2) diagnostic_t diagnostic_error_here(const char *format, ...);
+// A replacement for xetex print_file_line+print_nl_ctr blocks. e.g. Replace
+//
+//     if (file_line_error_style_p)
+//         print_file_line();
+//     else
+//         print_nl_cstr("! ");
+//     print_cstr("Cannot use ");
+//
+// with
+//
+//     diagnostic_t errmsg = error_here_with_diagnostic("Cannot use ");
+//
+// and call capture_to_diagnostic/ttstub_diag_finish as needed.
 diagnostic_t error_here_with_diagnostic(const char* message);
 void print_ln(void);
 void print_raw_char(UTF16_code s, bool incr_offset);
