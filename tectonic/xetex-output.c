@@ -8,22 +8,96 @@
 #include "xetex-synctex.h"
 #include "core-bridge.h"
 
+static diagnostic_t current_diagnostic = 0;
+
+void
+capture_to_diagnostic(diagnostic_t diagnostic)
+{
+    if (current_diagnostic) {
+        ttstub_diag_finish(current_diagnostic);
+    }
+
+    current_diagnostic = diagnostic;
+}
+
+static void
+diagnostic_print_file_line(diagnostic_t diagnostic)
+{
+    // Add file/line number information
+    // This duplicates logic from print_file_line
+
+    int32_t level = in_open;
+    while (level > 0 && full_source_filename_stack[level] == 0)
+        level--;
+
+    if (level == 0) {
+        ttstub_diag_append(diagnostic, "!");
+    } else {
+        int32_t source_line = line;
+        if (level != in_open) {
+            source_line = line_stack[level + 1];
+        }
+
+        char* filename = gettexstring(full_source_filename_stack[level]);
+        ttstub_diag_printf(diagnostic, "%s:%d: ", filename, source_line);
+        free(filename);
+    }
+}
+
+diagnostic_t
+diagnostic_begin_capture_warning_here(void)
+{
+    diagnostic_t warning = ttstub_diag_warn_begin();
+    diagnostic_print_file_line(warning);
+    capture_to_diagnostic(warning);
+    return warning;
+}
+
+// This replaces the "print file+line number" block at the start of errors
+diagnostic_t
+error_here_with_diagnostic(const char* message)
+{
+    diagnostic_t error = ttstub_diag_error_begin();
+    diagnostic_print_file_line(error);
+    capture_to_diagnostic(error);
+    ttstub_diag_printf(error, "%s", message);
+
+    if (file_line_error_style_p)
+        print_file_line();
+    else
+        print_nl_cstr("! ");
+    print_cstr(message);
+
+    return error;
+}
+
+static void
+warn_char(int c)
+{
+    if (current_diagnostic) {
+        char bytes[2] = { c, 0 };
+        ttstub_diag_append(current_diagnostic, bytes);
+    }
+}
 
 void
 print_ln(void)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
+        warn_char('\n');
         ttstub_output_putc(rust_stdout, '\n');
         ttstub_output_putc(log_file, '\n');
         term_offset = 0;
         file_offset = 0;
         break;
     case SELECTOR_LOG_ONLY:
+        warn_char('\n');
         ttstub_output_putc(log_file, '\n');
         file_offset = 0;
         break;
     case SELECTOR_TERM_ONLY:
+        warn_char('\n');
         ttstub_output_putc(rust_stdout, '\n');
         term_offset = 0;
         break;
@@ -43,6 +117,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
 {
     switch (selector) {
     case SELECTOR_TERM_AND_LOG:
+        warn_char(s);
         ttstub_output_putc(rust_stdout, s);
         ttstub_output_putc(log_file, s);
         if (incr_offset) {
@@ -59,6 +134,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
         }
         break;
     case SELECTOR_LOG_ONLY:
+        warn_char(s);
         ttstub_output_putc(log_file, s);
         if (incr_offset)
             file_offset++;
@@ -66,6 +142,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
             print_ln();
         break;
     case SELECTOR_TERM_ONLY:
+        warn_char(s);
         ttstub_output_putc(rust_stdout, s);
         if (incr_offset)
             term_offset++;

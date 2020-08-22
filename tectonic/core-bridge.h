@@ -50,12 +50,17 @@ typedef enum
 
 typedef void *rust_output_handle_t;
 typedef void *rust_input_handle_t;
-
+typedef void *diagnostic_t;
 
 /* Bridge API. Keep synchronized with src/engines/mod.rs. */
 
 typedef struct tt_bridge_api_t {
     void *context;
+
+    diagnostic_t (*diag_warn_begin)(void);
+    diagnostic_t (*diag_error_begin)(void);
+    void (*diag_finish)(void *context, diagnostic_t diag);
+    void (*diag_append)(diagnostic_t diag, char const *text);
 
     void (*issue_warning)(void *context, char const *text);
     void (*issue_error)(void *context, char const *text);
@@ -98,6 +103,23 @@ NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
 /* Global symbols that route through the global API variable. Hopefully we
  * will one day eliminate all of the global state and get rid of all of
  * these. */
+
+// See xetex-xetexd.h for other useful functions for producing diagnostics.
+
+// Create a diagnostic that represents a warning
+diagnostic_t ttstub_diag_warn_begin(void);
+// Create a diagnostic that represents an error
+diagnostic_t ttstub_diag_error_begin(void);
+// Finish and emit a diagnostic
+void ttstub_diag_finish(diagnostic_t diag);
+// Append a string the diagnostic's message
+void ttstub_diag_append(diagnostic_t diag, char const *text);
+// Convenience functions to append to the message using printf specifiers
+PRINTF_FUNC(2,3) void ttstub_diag_printf(diagnostic_t diag, const char *format, ...);
+// Append to diagnostic message - for higher-level abstractions.
+// Zero means there's no variadic parameter - only the format is checked. See
+// https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html
+PRINTF_FUNC(2,0) void ttstub_diag_vprintf(diagnostic_t diag, const char *format, va_list ap);
 
 PRINTF_FUNC(1,2) void ttstub_issue_warning(const char *format, ...);
 PRINTF_FUNC(1,2) void ttstub_issue_error(const char *format, ...);

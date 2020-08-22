@@ -16,8 +16,8 @@ steps:
 
 - script: |
     set -xeuo pipefail
-    brew install gcc
-  displayName: Install gcc for vcpkg
+    brew install gcc pkg-config
+  displayName: Install vcpkg dependencies
 
 - script: |
     set -xeuo pipefail

@@ -12128,6 +12128,9 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 last_badness = badness(x, total_stretch[NORMAL]);
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
+
+                    diagnostic_begin_capture_warning_here();
+
                     if (last_badness > 100)
                         print_nl_cstr("Underfull");
                     else
@@ -12170,6 +12173,8 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                     mem[mem[q].b32.s1 + 1].b32.s1 = DIMENPAR(overfull_rule);
                 }
                 print_ln();
+
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("Overfull \\hbox (");
                 print_scaled(-(int32_t) x - total_shrink[NORMAL]);
                 print_cstr("pt too wide");
@@ -12181,6 +12186,8 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
+
+                    diagnostic_begin_capture_warning_here();
                     print_nl_cstr("Tight \\hbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
@@ -12206,6 +12213,9 @@ common_ending:
             print_cstr(") detected at line ");
         print_int(line);
     }
+
+    capture_to_diagnostic(NULL);
+
     print_ln();
     font_in_short_display = FONT_BASE;
     short_display(mem[r + 5].b32.s1);
@@ -12238,6 +12248,8 @@ exit:
         if (LR_problems > 0) {
             {
                 print_ln();
+
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("\\endL or \\endR problem (");
                 print_int(LR_problems / 10000);
                 print_cstr(" missing, ");
@@ -12387,6 +12399,8 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 last_badness = badness(x, total_stretch[NORMAL]);
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
+
+                    diagnostic_begin_capture_warning_here();
                     if (last_badness > 100)
                         print_nl_cstr("Underfull");
                     else
@@ -12422,6 +12436,8 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
             if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(vfuzz))
                 || (INTPAR(vbadness) < 100)) {
                 print_ln();
+
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("Overfull \\vbox (");
                 print_scaled(-(int32_t) x - total_shrink[NORMAL]);
                 print_cstr("pt too high");
@@ -12433,6 +12449,8 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
+
+                    diagnostic_begin_capture_warning_here();
                     print_nl_cstr("Tight \\vbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
@@ -12456,6 +12474,9 @@ common_ending:
         print_int(line);
         print_ln();
     }
+
+    capture_to_diagnostic(NULL);
+
     begin_diagnostic();
     show_box(r);
     end_diagnostic(true);
@@ -13872,22 +13893,18 @@ void app_space(void)
     cur_list.tail = q;
 }
 
-void insert_dollar_sign(void)
+void
+insert_dollar_sign(void)
 {
     back_input();
-    cur_tok = (MATH_SHIFT_TOKEN + 36);
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Missing $ inserted");
-    }
-    {
-        help_ptr = 2;
-        help_line[1] = "I've inserted a begin-math/end-math symbol since I think";
-        help_line[0] = "you left one out. Proceed, with fingers crossed.";
-    }
+    cur_tok = (MATH_SHIFT_TOKEN + 36 /*'$'*/);
+
+    error_here_with_diagnostic("Missing $ inserted");
+    capture_to_diagnostic(NULL);
+
+    help_ptr = 2;
+    help_line[1] = "I've inserted a begin-math/end-math symbol since I think";
+    help_line[0] = "you left one out. Proceed, with fingers crossed.";
     ins_error();
 }
 

@@ -30,7 +30,7 @@
 /* Various buffer sizes */
 
 #define HASH_SIZE 15000 /* max number of control sequences */
-#define HASH_PRIME 8501 /* "a prime number equal to about 85% of hash_size */
+#define HASH_PRIME 8501 /* "a prime number equal to about 85% of hash_size" */
 
 #define MAX_FONT_MAX 9000
 
