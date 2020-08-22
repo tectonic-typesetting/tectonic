@@ -11833,7 +11833,6 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
     b16x4 i;
     int32_t pp, ppp = TEX_NULL;
     int32_t total_chars, k;
-    diagnostic_t warning = 0;
 
     last_badness = 0;
     r = get_node(BOX_NODE_SIZE);
@@ -12130,8 +12129,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
 
-                    warning = ttstub_diag_warn_begin();
-                    capture_to_diagnostic(warning);
+                    diagnostic_begin_capture_warning_here();
 
                     if (last_badness > 100)
                         print_nl_cstr("Underfull");
@@ -12176,9 +12174,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 }
                 print_ln();
 
-                warning = ttstub_diag_warn_begin();
-                capture_to_diagnostic(warning);
-
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("Overfull \\hbox (");
                 print_scaled(-(int32_t) x - total_shrink[NORMAL]);
                 print_cstr("pt too wide");
@@ -12191,9 +12187,7 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 if (last_badness > INTPAR(hbadness)) {
                     print_ln();
 
-                    warning = ttstub_diag_warn_begin();
-                    capture_to_diagnostic(warning);
-
+                    diagnostic_begin_capture_warning_here();
                     print_nl_cstr("Tight \\hbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
@@ -12220,8 +12214,7 @@ common_ending:
         print_int(line);
     }
 
-    capture_to_diagnostic(0);
-    ttstub_diag_finish(warning);
+    capture_to_diagnostic(NULL);
 
     print_ln();
     font_in_short_display = FONT_BASE;
@@ -12256,9 +12249,7 @@ exit:
             {
                 print_ln();
 
-                warning = ttstub_diag_warn_begin();
-                capture_to_diagnostic(warning);
-
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("\\endL or \\endR problem (");
                 print_int(LR_problems / 10000);
                 print_cstr(" missing, ");
@@ -12289,7 +12280,6 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
     scaled_t s;
     int32_t g;
     glue_ord o;
-    diagnostic_t warning = 0;
 
     last_badness = 0;
     r = get_node(BOX_NODE_SIZE);
@@ -12410,9 +12400,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
 
-                    warning = ttstub_diag_warn_begin();
-                    capture_to_diagnostic(warning);
-
+                    diagnostic_begin_capture_warning_here();
                     if (last_badness > 100)
                         print_nl_cstr("Underfull");
                     else
@@ -12449,9 +12437,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 || (INTPAR(vbadness) < 100)) {
                 print_ln();
 
-                warning = ttstub_diag_warn_begin();
-                capture_to_diagnostic(warning);
-
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("Overfull \\vbox (");
                 print_scaled(-(int32_t) x - total_shrink[NORMAL]);
                 print_cstr("pt too high");
@@ -12464,9 +12450,7 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 if (last_badness > INTPAR(vbadness)) {
                     print_ln();
 
-                    warning = ttstub_diag_warn_begin();
-                    capture_to_diagnostic(warning);
-
+                    diagnostic_begin_capture_warning_here();
                     print_nl_cstr("Tight \\vbox (badness ");
                     print_int(last_badness);
                     goto common_ending;
@@ -12491,8 +12475,7 @@ common_ending:
         print_ln();
     }
 
-    capture_to_diagnostic(0);
-    ttstub_diag_finish(warning);
+    capture_to_diagnostic(NULL);
 
     begin_diagnostic();
     show_box(r);

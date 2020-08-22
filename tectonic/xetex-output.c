@@ -13,18 +13,16 @@ static diagnostic_t current_diagnostic = 0;
 void
 capture_to_diagnostic(diagnostic_t diagnostic)
 {
-    if (current_diagnostic && diagnostic) {
-        /* Should this be an error? */
-        ttstub_issue_warning("multiple warnings attempting to capture output");
+    if (current_diagnostic) {
+        ttstub_diag_finish(current_diagnostic);
     }
+
     current_diagnostic = diagnostic;
 }
 
-PRINTF_FUNC(1,2) diagnostic_t
-diagnostic_error_here(const char *format, ...)
+static void
+diagnostic_print_file_line(diagnostic_t diagnostic)
 {
-    diagnostic_t error = ttstub_diag_error_begin();
-
     // Add file/line number information
     // This duplicates logic from print_file_line
 
@@ -33,7 +31,7 @@ diagnostic_error_here(const char *format, ...)
         level--;
 
     if (level == 0) {
-        ttstub_diag_append(error, "!");
+        ttstub_diag_append(diagnostic, "!");
     } else {
         int32_t source_line = line;
         if (level != in_open) {
@@ -41,23 +39,29 @@ diagnostic_error_here(const char *format, ...)
         }
 
         char* filename = gettexstring(full_source_filename_stack[level]);
-        ttstub_diag_printf(error, "%s:%d: ", filename, source_line);
+        ttstub_diag_printf(diagnostic, "%s:%d: ", filename, source_line);
         free(filename);
     }
+}
 
-    va_list ap;
-    va_start(ap, format);
-    ttstub_diag_vprintf(error, format, ap);
-    va_end(ap);
-
-    return error;
+diagnostic_t
+diagnostic_begin_capture_warning_here(void)
+{
+    diagnostic_t warning = ttstub_diag_warn_begin();
+    diagnostic_print_file_line(warning);
+    capture_to_diagnostic(warning);
+    return warning;
 }
 
 // This replaces the "print file+line number" block at the start of errors
 diagnostic_t
 error_here_with_diagnostic(const char* message)
 {
-    diagnostic_t error = diagnostic_error_here("%s", message);
+    diagnostic_t error = ttstub_diag_error_begin();
+    diagnostic_print_file_line(error);
+    capture_to_diagnostic(error);
+    ttstub_diag_printf(error, "%s", message);
+
     if (file_line_error_style_p)
         print_file_line();
     else
