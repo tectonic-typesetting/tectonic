@@ -13893,22 +13893,18 @@ void app_space(void)
     cur_list.tail = q;
 }
 
-void insert_dollar_sign(void)
+void
+insert_dollar_sign(void)
 {
     back_input();
-    cur_tok = (MATH_SHIFT_TOKEN + 36);
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Missing $ inserted");
-    }
-    {
-        help_ptr = 2;
-        help_line[1] = "I've inserted a begin-math/end-math symbol since I think";
-        help_line[0] = "you left one out. Proceed, with fingers crossed.";
-    }
+    cur_tok = (MATH_SHIFT_TOKEN + 36 /*'$'*/);
+
+    error_here_with_diagnostic("Missing $ inserted");
+    capture_to_diagnostic(NULL);
+
+    help_ptr = 2;
+    help_line[1] = "I've inserted a begin-math/end-math symbol since I think";
+    help_line[0] = "you left one out. Proceed, with fingers crossed.";
     ins_error();
 }
 
