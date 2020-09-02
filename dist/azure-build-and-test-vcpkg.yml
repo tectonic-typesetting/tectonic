@@ -34,9 +34,13 @@ steps:
 - bash: |
     set -xeuo pipefail
     cargo vcpkg build
+  displayName: Build vcpkg deps
+
+# Note: setvariable + `set -x` adds spurious single quotes at ends of variable values
+- bash: |
     echo "##vso[task.setvariable variable=VCPKG_ROOT;]$(pwd)/target/vcpkg"
     echo "##vso[task.setvariable variable=TECTONIC_DEP_BACKEND;]vcpkg"
-  displayName: Build vcpkg deps
+  displayName: Setup build variables
 
 - template: azure-generic-build.yml
   parameters:
