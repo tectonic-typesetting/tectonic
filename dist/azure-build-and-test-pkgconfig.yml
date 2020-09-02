@@ -36,7 +36,7 @@ steps:
 
 - bash: |
     set -xeuo pipefail
-    brew install harfbuzz openssl
+    brew install harfbuzz icu4c openssl
   displayName: "Install pkg-config dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 

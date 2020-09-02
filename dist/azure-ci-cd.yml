@@ -16,7 +16,7 @@ stages:
   # Main Linux build(s) that create release artifacts
   - job: Linux_vcpkg
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-20.04
     steps:
     - template: azure-build-and-test-vcpkg.yml
       parameters:
@@ -30,7 +30,7 @@ stages:
   # shouldn't create release artifacts.
   - job: Linux_pkgconfig_canary
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-20.04
     steps:
     - template: azure-build-and-test-pkgconfig.yml
       parameters:
