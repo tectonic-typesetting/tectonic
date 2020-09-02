@@ -51,5 +51,7 @@ steps:
 
 - template: azure-generic-build.yml
   parameters:
-    canaryBuild: ${{ parameters.canaryBuild }}
-    primaryRcBuild: ${{ parameters.primaryRcBuild }}
+    ${{ if parameters.canaryBuild }}:
+      canaryBuild: true
+    ${{ if parameters.primaryRcBuild }}:
+      primaryRcBuild: true
