@@ -13,9 +13,6 @@ parameters:
 - name: canaryBuild
   type: boolean
   default: false
-- name: primaryRcBuild
-  type: boolean
-  default: false
 
 steps:
 - template: azure-generic-build-setup.yml
@@ -45,4 +42,3 @@ steps:
 - template: azure-generic-build.yml
   parameters:
     canaryBuild: ${{ parameters.canaryBuild }}
-    primaryRcBuild: ${{ parameters.primaryRcBuild }}

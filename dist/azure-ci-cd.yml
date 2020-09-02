@@ -3,22 +3,40 @@
 #
 # Main pipeline spec for CI/CD on Azure Pipelines.
 
+# We cannot use Pipeline's matrixing framework because only it works with
+# *runtime variables*, while we want to use templates with *parameters*, which
+# are evaluated at *compile time* only. By hardcoding our matrixing data as
+# top-level parameters, we can use them in compile-time template evaluation
+# (`${{ }}` expressions) to achieve a matrixing effect.
 parameters:
 - name: linuxPkgconfigBuilds
   type: object
   default:
   - name: stable
     params:
-      primaryRcBuild: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}
+      primaryBuild: true
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
+  - name: stable_semistatic
+    params:
+      canaryBuild: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+      TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: true
   - name: beta
     params:
       canaryBuild: true
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: beta
+  - name: nightly
+    params:
+      canaryBuild: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: nightly
 
 trigger:
   branches:

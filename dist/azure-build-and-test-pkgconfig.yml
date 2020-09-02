@@ -13,19 +13,11 @@ parameters:
 - name: canaryBuild
   type: boolean
   default: false
-- name: primaryRcBuild
+- name: primaryBuild
   type: boolean
   default: false
 
 steps:
-- bash: echo here
-  displayName: testprimaryRcTrue
-  condition: ${{parameters.primaryRcBuild}}
-
-- bash: echo here
-  displayName: testprimaryRcFalse
-  condition: not(${{parameters.primaryRcBuild}})
-
 - template: azure-generic-build-setup.yml
 
 - bash: |
@@ -60,5 +52,4 @@ steps:
 - template: azure-generic-build.yml
   parameters:    
       canaryBuild: ${{ parameters.canaryBuild }}
-      primaryRcBuild: ${{ parameters.primaryRcBuild }}
-
+      primaryRcBuild: ${{ and(parameters.primaryBuild, eq(variables['Build.SourceBranchName'], 'rc')) }}
