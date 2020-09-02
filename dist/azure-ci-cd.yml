@@ -27,7 +27,7 @@ stages:
           canaryBuild: true
         ${{ if and(ne(variables['CANARY'], 'yes'), eq(variables['Build.SourceBranchName'], 'rc')) }}:
           primaryRcBuild: true
-        tmpTest: ${{ variables['CANARY'] }}
+        tmpTest: $[variables['CANARY']]
     strategy:
       matrix:
         stable-semistatic:
