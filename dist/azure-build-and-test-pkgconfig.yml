@@ -20,6 +20,26 @@ parameters:
 steps:
 - template: azure-generic-build-setup.yml
 
+- bash: |
+    set -xeuo pipefail
+    sudo apt-get update
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      libgraphite2-dev \
+      libharfbuzz-dev \
+      libfontconfig1-dev \
+      libicu-dev \
+      libssl-dev \
+      openssl \
+      zlib1g-dev
+  displayName: "Install pkg-config dependencies (Ubuntu)"
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+- bash: |
+    set -xeuo pipefail
+    brew install harfbuzz openssl
+  displayName: "Install pkg-config dependencies (macOS)"
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
 # Note: setvariable + `set -x` adds spurious single quotes at ends of variable values
 - bash: |
     echo "##vso[task.setvariable variable=TECTONIC_DEP_BACKEND;]pkg-config"

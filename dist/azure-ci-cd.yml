@@ -54,6 +54,17 @@ stages:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
 
+  - job: macOS_pkgconfig
+    pool:
+      vmImage: macos-10.15
+    steps:
+    - template: azure-build-and-test-pkgconfig.yml
+      parameters:
+        canaryBuild: true
+    variables:
+      TARGET: x86_64-apple-darwin
+      TOOLCHAIN: stable
+  
   # Windows builds
   - job: Windows_vcpkg
     pool:
