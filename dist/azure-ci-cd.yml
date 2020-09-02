@@ -45,7 +45,7 @@ stages:
           TOOLCHAIN: nightly
 
   # Mac builds
-  - job: macOS
+  - job: macOS_vcpkg
     pool:
       vmImage: macos-10.15
     steps:
@@ -55,19 +55,18 @@ stages:
       TOOLCHAIN: stable
 
   # Windows builds
-  - job: Windows
+  - job: Windows_vcpkg
     pool:
       vmImage: windows-2019
     steps:
     - template: azure-build-and-test-vcpkg.yml
-    strategy:
-      matrix:
-        x86_64-msvc:
-          TARGET: x86_64-pc-windows-msvc
-          TOOLCHAIN: stable-x86_64-pc-windows-msvc
-        x86_64-gnu:
-          TARGET: x86_64-pc-windows-gnu
-          TOOLCHAIN: stable-x86_64-pc-windows-gnu
+    variables:
+      TARGET: x86_64-pc-windows-msvc
+      TOOLCHAIN: stable-x86_64-pc-windows-msvc
+
+  # todo: non-vcpkg windows-gnu
+  #   TARGET: x86_64-pc-windows-gnu
+  #   TOOLCHAIN: stable-x86_64-pc-windows-gnu
 
   # rustfmt check
   - job: rustfmt
