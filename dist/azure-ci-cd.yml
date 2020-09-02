@@ -13,34 +13,34 @@ stages:
 - stage: BuildAndTest
   jobs:
 
-  # Main Linux build(s) that create release artifacts
-  - job: Linux_vcpkg
-    pool:
-      vmImage: ubuntu-20.04
-    steps:
-    - template: azure-build-and-test-vcpkg.yml
-      parameters:
-        primaryRcBuild: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}
-    variables:
-      TARGET: x86_64-unknown-linux-gnu
-      TOOLCHAIN: stable
+  # Linux builds.
+  # TODO: I think Linux/vcpkg is broken: https://github.com/mcgoo/vcpkg-rs/issues/21
 
-  # As far as I can tell, there is no way to matrix over a template *parameter*?
-  # So we need a separate group for the "canary" jobs that test build success but
-  # shouldn't create release artifacts.
-  - job: Linux_pkgconfig_canary
+  - job: Linux_pkgconfig
     pool:
       vmImage: ubuntu-20.04
     steps:
     - template: azure-build-and-test-pkgconfig.yml
       parameters:
-        canaryBuild: true
+        canaryBuild: ${{ eq(variables['CANARY'], 'yes') }}
+        primaryRcBuild: ${{ and(ne(variables['CANARY'], 'yes'), eq(variables['Build.SourceBranchName'], 'rc')) }}
     strategy:
       matrix:
+        stable-semistatic:
+          CANARY: no
+          TARGET: x86_64-unknown-linux-gnu
+          TOOLCHAIN: stable
+          TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: yes
+        stable:
+          CANARY: yes
+          TARGET: x86_64-unknown-linux-gnu
+          TOOLCHAIN: stable
         beta:
+          CANARY: yes
           TARGET: x86_64-unknown-linux-gnu
           TOOLCHAIN: beta
         nightly:
+          CANARY: yes
           TARGET: x86_64-unknown-linux-gnu
           TOOLCHAIN: nightly
 
