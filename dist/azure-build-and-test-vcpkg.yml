@@ -21,14 +21,31 @@ steps:
 - template: azure-generic-build-setup.yml
 
 - script: |
-    git clone https://github.com/microsoft/vcpkg %USERPROFILE%\vcpkg
+    git clone https://github.com/Microsoft/vcpkg %USERPROFILE%\vcpkg
     call %USERPROFILE%\vcpkg\bootstrap-vcpkg.bat
     %USERPROFILE%\vcpkg\vcpkg install --triplet x64-windows-static fontconfig freetype harfbuzz[icu,graphite2]
-    echo "##vso[task.setvariable variable=VCPKG_ROOT;]%USERPROFILE%\vcpkg"
-    echo "##vso[task.setvariable variable=TECTONIC_DEP_BACKEND;]vcpkg"
-    echo "##vso[task.setvariable variable=RUSTFLAGS;]-Ctarget-feature=+crt-static"
+    echo ##vso[task.setvariable variable=VCPKG_ROOT;]%USERPROFILE%\vcpkg
+    echo ##vso[task.setvariable variable=TECTONIC_DEP_BACKEND;]vcpkg
+    echo ##vso[task.setvariable variable=RUSTFLAGS;]-Ctarget-feature=+crt-static
   displayName: "Setup vcpkg (Windows MSVC)"
   condition: and(succeeded(), endsWith(variables['TARGET'], '-msvc'))
+
+- bash: |
+    set -xeuo pipefail
+    brew install gcc pkg-config
+  displayName: "Install vcpkg dependencies (macOS)"
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
+- script: |
+    set -xeuo pipefail
+    git clone https://github.com/Microsoft/vcpkg.git
+    export CC=gcc-9 CXX=g++-9
+    ./vcpkg/bootstrap-vcpkg.sh --disableMetrics
+    ./vcpkg/vcpkg install freetype 'harfbuzz[icu,graphite2]'
+    echo "##vso[task.setvariable variable=VCPKG_ROOT;]$(pwd)/vcpkg"
+    echo "##vso[task.setvariable variable=TECTONIC_DEP_BACKEND;]vcpkg"
+  displayName: "Setup vcpkg (not Windows)"
+  condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
 
 - template: azure-generic-build.yml
   parameters:
