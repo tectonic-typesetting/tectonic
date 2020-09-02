@@ -37,7 +37,7 @@ steps:
 - bash: |
     set -xeuo pipefail
     brew install harfbuzz openssl
-    icupcdir="$(echo /usr/local/Cellar/icu4c/*/lib/pkgconfig)""
+    icupcdir="$(echo /usr/local/Cellar/icu4c/*/lib/pkgconfig)"
     export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:$icupcdir"
     echo "* new PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
     set +x  # `set -x` messes up setvariable
