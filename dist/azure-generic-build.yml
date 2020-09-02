@@ -1,11 +1,13 @@
 # Copyright 2016-2020 the Tectonic Project
 # Licensed under the MIT License.
 #
-# Azure Pipelines template for a standard build-and-test job.
-# Besides the parameters, the following variables are expected:
+# Azure Pipelines template for a standard build-and-test workflow once
+# dependencies have been set up. Besides the parameters, the following variables
+# are expected:
 #
 # - TARGET: the build target triple (e.g. "x86_86-unknown-linux-gnu")
-# - TOOLCHAIN: the rust toolchain type (e.g., "stable", "beta-x86_64-pc-windows-msvc")
+# - TOOLCHAIN: the rust toolchain type (e.g., "stable",
+#   "beta-x86_64-pc-windows-msvc")
 
 parameters:
 - name: canaryBuild
@@ -16,42 +18,6 @@ parameters:
   default: false
 
 steps:
-- checkout: self
-
-- bash: |
-    set -ex
-    rustup set profile minimal
-    rustup component remove --toolchain=$TOOLCHAIN rust-docs || echo "already removed"
-    rustup update --no-self-update $TOOLCHAIN
-    rustup default $TOOLCHAIN
-    # Helpful versions
-    rustup -V
-    rustc -Vv
-    cargo -V
-  displayName: Setup Rust
-
-- bash: |
-    d="$(mktemp -d /tmp/cranko.XXXXXX)"
-    cd "$d"
-    curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
-    echo "##vso[task.prependpath]$d"
-  displayName: Install latest Cranko (not Windows)
-  condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
-
-- pwsh: |
-    $d = Join-Path $Env:Temp cranko-$(New-Guid)
-    [void][System.IO.Directory]::CreateDirectory($d)
-    cd $d
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-    iex ((New-Object System.Net.WebClient).DownloadString('https://pkgw.github.io/cranko/fetch-latest.ps1'))
-    echo "##vso[task.prependpath]$d"
-  displayName: Install latest Cranko (Windows)
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
-- bash: |
-    cranko release-workflow apply-versions
-  displayName: "cranko release-workflow apply-versions"
-
 - bash: cargo build --all --release
   displayName: "cargo build"
 
@@ -87,7 +53,7 @@ steps:
         artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
         mkdir -p "$artifact_dir"
         git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
-      displayName: "Generate and Bundle release commit"
+      displayName: "Generate and bundle release commit"
 
     - task: PublishPipelineArtifact@1
       displayName: Publish git bundle artifact
