@@ -3,6 +3,25 @@
 #
 # Main pipeline spec for CI/CD on Azure Pipelines.
 
+parameters:
+- name: linuxPkgconfigBuilds
+  type: object
+  default:
+  - name: stable
+    params:
+      canaryBuild: false
+      primaryRcBuild: false # XXXXXXXXXXXXX
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+  - name: beta
+    params:
+      canaryBuild: true
+      primaryRcBuild: false
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: beta
+
 trigger:
   branches:
     include:
@@ -16,37 +35,16 @@ stages:
   # Linux builds.
   # TODO: I think Linux/vcpkg is broken: https://github.com/mcgoo/vcpkg-rs/issues/21
 
-  - job: Linux_pkgconfig
-    pool:
-      vmImage: ubuntu-20.04
-    steps:
-    - bash: echo $(CANARY)
-    - template: azure-build-and-test-pkgconfig.yml
-      parameters:
-        ${{ if eq(variables['CANARY'], 'yes') }}:
-          canaryBuild: true
-        ${{ if and(ne(variables['CANARY'], 'yes'), eq(variables['Build.SourceBranchName'], 'rc')) }}:
-          primaryRcBuild: true
-        tmpTest: $[variables['CANARY']]
-    strategy:
-      matrix:
-        stable-semistatic:
-          CANARY: no
-          TARGET: x86_64-unknown-linux-gnu
-          TOOLCHAIN: stable
-          TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: yes
-        stable:
-          CANARY: yes
-          TARGET: x86_64-unknown-linux-gnu
-          TOOLCHAIN: stable
-        beta:
-          CANARY: yes
-          TARGET: x86_64-unknown-linux-gnu
-          TOOLCHAIN: beta
-        nightly:
-          CANARY: yes
-          TARGET: x86_64-unknown-linux-gnu
-          TOOLCHAIN: nightly
+  - ${{ each build in parameters.linuxPkgconfigBuilds }}:
+    - job: ${{ format('Linux_pkgconfig_{0}', build.name) }}
+      pool:
+        vmImage: ubuntu-20.04
+      steps:
+      - template: azure-build-and-test-pkgconfig.yml
+        parameters:
+          ${{ insert }}: ${{ build.params }}
+      variables:
+        ${{ insert }}: ${{ build.vars }}
 
   # Mac builds
   - job: macOS_vcpkg
@@ -68,7 +66,7 @@ stages:
     variables:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
-  
+
   # Windows builds
   - job: Windows_vcpkg
     pool:

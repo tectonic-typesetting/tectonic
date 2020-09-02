@@ -65,8 +65,7 @@ steps:
   displayName: Setup build variables
 
 - template: azure-generic-build.yml
-  parameters:
-    ${{ if parameters.canaryBuild }}:
-      canaryBuild: true
-    ${{ if parameters.primaryRcBuild }}:
-      primaryRcBuild: true
+  parameters:    
+      canaryBuild: ${{ parameters.canaryBuild }}
+      primaryRcBuild: ${{ parameters.primaryRcBuild }}
+
