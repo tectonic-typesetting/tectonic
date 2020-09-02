@@ -28,11 +28,11 @@ stages:
   # As far as I can tell, there is no way to matrix over a template *parameter*?
   # So we need a separate group for the "canary" jobs that test build success but
   # shouldn't create release artifacts.
-  - job: Linux_canary
+  - job: Linux_pkgconfig_canary
     pool:
       vmImage: ubuntu-16.04
     steps:
-    - template: azure-build-and-test-vcpkg.yml
+    - template: azure-build-and-test-pkgconfig.yml
       parameters:
         canaryBuild: true
     strategy:
