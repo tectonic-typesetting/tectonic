@@ -22,8 +22,8 @@ stages:
     steps:
     - template: azure-build-and-test-pkgconfig.yml
       parameters:
-        canaryBuild: ${{ eq(variables['CANARY'], 'yes') }}
-        primaryRcBuild: ${{ and(ne(variables['CANARY'], 'yes'), eq(variables['Build.SourceBranchName'], 'rc')) }}
+        canaryBuild: eq(variables['CANARY'], 'yes')
+        primaryRcBuild: and(ne(variables['CANARY'], 'yes'), eq(variables['Build.SourceBranchName'], 'rc'))
     strategy:
       matrix:
         stable-semistatic:
