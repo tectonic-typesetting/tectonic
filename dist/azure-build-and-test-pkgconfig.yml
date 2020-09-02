@@ -18,7 +18,7 @@ parameters:
   default: false
 - name: tmpTest
   type: string
-  default: unassigned
+  default: 'unassigned'
 
 steps:
 - bash: echo here
@@ -31,7 +31,7 @@ steps:
 
 - bash: echo here
   displayName: testTemp
-  condition: eq(${{parameters.tmpTest}}, 'neverused')
+  condition: eq('${{parameters.tmpTest}}', 'neverused')
 
 - template: azure-generic-build-setup.yml
 
