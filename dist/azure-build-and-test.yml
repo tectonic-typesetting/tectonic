@@ -17,7 +17,6 @@ parameters:
 
 steps:
 - checkout: self
-  fetchDepth: 1
 
 - bash: |
     set -ex
