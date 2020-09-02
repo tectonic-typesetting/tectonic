@@ -16,6 +16,9 @@ parameters:
 - name: primaryRcBuild
   type: boolean
   default: false
+- name: tmpTest
+  type: string
+  default: unassigned
 
 steps:
 - bash: echo here
@@ -25,6 +28,10 @@ steps:
 - bash: echo here
   displayName: testCanaryFalse
   condition: not(${{parameters.canaryBuild}})
+
+- bash: echo here
+  displayName: testTemp
+  condition: eq(${{parameters.tmpTest}}, 'neverused')
 
 - template: azure-generic-build-setup.yml
 

@@ -20,12 +20,14 @@ stages:
     pool:
       vmImage: ubuntu-20.04
     steps:
+    - bash: echo $(CANARY)
     - template: azure-build-and-test-pkgconfig.yml
       parameters:
         ${{ if eq(variables['CANARY'], 'yes') }}:
           canaryBuild: true
         ${{ if and(ne(variables['CANARY'], 'yes'), eq(variables['Build.SourceBranchName'], 'rc')) }}:
           primaryRcBuild: true
+        tmpTest: ${{ variables['CANARY'] }}
     strategy:
       matrix:
         stable-semistatic:
