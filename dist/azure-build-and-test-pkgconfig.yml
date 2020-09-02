@@ -16,22 +16,15 @@ parameters:
 - name: primaryRcBuild
   type: boolean
   default: false
-- name: tmpTest
-  type: string
-  default: 'unassigned'
 
 steps:
 - bash: echo here
-  displayName: testCanaryTrue
-  condition: ${{parameters.canaryBuild}}
+  displayName: testprimaryRcTrue
+  condition: ${{parameters.primaryRcBuild}}
 
 - bash: echo here
-  displayName: testCanaryFalse
-  condition: not(${{parameters.canaryBuild}})
-
-- bash: echo here
-  displayName: testTemp
-  condition: eq('${{parameters.tmpTest}}', 'neverused')
+  displayName: testprimaryRcFalse
+  condition: not(${{parameters.primaryRcBuild}})
 
 - template: azure-generic-build-setup.yml
 

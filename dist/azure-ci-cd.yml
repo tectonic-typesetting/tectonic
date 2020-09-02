@@ -9,15 +9,13 @@ parameters:
   default:
   - name: stable
     params:
-      canaryBuild: false
-      primaryRcBuild: false # XXXXXXXXXXXXX
+      primaryRcBuild: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
   - name: beta
     params:
       canaryBuild: true
-      primaryRcBuild: false
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: beta
