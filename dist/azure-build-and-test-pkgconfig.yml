@@ -20,11 +20,11 @@ parameters:
 steps:
 - bash: echo here
   displayName: testCanaryTrue
-  condition: parameters.canaryBuild
+  condition: ${{parameters.canaryBuild}}
 
 - bash: echo here
   displayName: testCanaryFalse
-  condition: not(parameters.canaryBuild)
+  condition: not(${{parameters.canaryBuild}})
 
 - template: azure-generic-build-setup.yml
 
