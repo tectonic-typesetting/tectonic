@@ -18,7 +18,7 @@ parameters:
   default: false
 
 steps:
-- bash: cargo build --all --release
+- bash: cargo build --all --release -vv
   displayName: "cargo build"
 
 - bash: cargo test --all --release

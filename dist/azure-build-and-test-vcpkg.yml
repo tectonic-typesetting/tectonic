@@ -31,6 +31,9 @@ steps:
 - bash: |
     set -xeuo pipefail
     cargo vcpkg -v build
+    ls target/vcpkg
+    echo target/vcpkg/installed/*
+    ls target/vcpkg/installed/*
   displayName: Build vcpkg deps
 
 # Note: setvariable + `set -x` adds spurious single quotes at ends of variable values
