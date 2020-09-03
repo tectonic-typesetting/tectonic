@@ -1,0 +1,51 @@
+# Copyright 2019 the Tectonic Project
+# Licensed under the MIT License.
+
+steps:
+- template: azure-generic-build-setup.yml
+
+- bash: docker run --rm --privileged multiarch/qemu-user-static:register --reset --credential yes
+  displayName: Set up QEMU
+
+- bash: docker run --rm -v $(pwd):/work:rw,Z tectonictypesetting/ttcross:latest
+  displayName: Install custom-built cross tool
+
+- bash: |
+    echo "##vso[task.setvariable variable=CROSS_ARGS;]--target=$TARGET --release"
+  displayName: Set build variables
+
+# Make the release commit. Do an extremely minimal build to get Cargo.lock
+# updated.
+
+- bash: cargo build -p tectonic_cfg_support
+
+- bash: |
+    git add .
+    cranko release-workflow commit
+    git show HEAD
+  displayName: Make release commit
+
+# Main build/test
+
+- bash: ./cross build $CROSS_ARGS --all
+  displayName: "cross build"
+
+- bash: ./cross test $CROSS_ARGS --all
+  displayName: "cross test"
+
+# Publish binaries
+
+- bash: |
+    artifact_dir="$(Build.ArtifactStagingDirectory)/binary-$TARGET"
+    mkdir -p "$artifact_dir"
+    cranko cargo package-released-binaries --command-name=./cross --reroot=. \
+      -t $TARGET \
+      $artifact_dir \
+      -- build $CROSS_ARGS --all
+  displayName: "Package binaries"
+
+- task: PublishPipelineArtifact@1
+  displayName: Publish packaged binary artifact
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/binary-$(TARGET)'
+    artifactName: binary-$(TARGET)

@@ -21,12 +21,7 @@ steps:
 - bash: cargo build --all --release -v
   displayName: "cargo build"
 
-- bash: |
-    # temp debugging for win/vcpkg
-    set -ex
-    ls -la tests
-    echo foo >tests/mytestfile.txt
-    cargo test --all --release
+- bash: cargo test --all --release
   displayName: "cargo test"
 
 # For non-canary builds, export artifacts.

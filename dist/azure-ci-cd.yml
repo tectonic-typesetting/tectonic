@@ -80,6 +80,13 @@ parameters:
       TARGET: x86_64-pc-windows-msvc
       TOOLCHAIN: stable-x86_64-pc-windows-msvc
 
+- name: crossBuilds
+  type: object
+  default:
+  - name: mips_unknown_linux_gnu
+    vars:
+      TARGET: mips-unknown-linux-gnu
+
 stages:
 - stage: BuildAndTest
   jobs:
@@ -107,6 +114,17 @@ stages:
         parameters:
           ${{ insert }}: ${{ build.params }}
       variables:
+        ${{ insert }}: ${{ build.vars }}
+
+  # cross builds
+  - ${{ each build in parameters.crossBuilds }}:
+    - job: ${{ format('cross_{0}', build.name) }}
+      pool:
+        vmImage: ubuntu-20.04
+      steps:
+      - template: azure-build-and-test-cross.yml
+      variables:
+        TOOLCHAIN: stable
         ${{ insert }}: ${{ build.vars }}
 
   # rustfmt check
