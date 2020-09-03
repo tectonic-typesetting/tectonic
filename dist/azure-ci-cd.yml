@@ -116,6 +116,19 @@ stages:
     steps:
       - bash: rustup component add clippy
         displayName: "Install clippy"
+      # Ew, redundant with stock builds:
+      - bash: |
+          set -xeuo pipefail
+          sudo apt-get update
+          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            libgraphite2-dev \
+            libharfbuzz-dev \
+            libfontconfig1-dev \
+            libicu-dev \
+            libssl-dev \
+            openssl \
+            zlib1g-dev
+        displayName: "Install pkg-config dependencies (Ubuntu)"
       - bash: cargo clippy --all --all-targets --all-features -- --deny warnings
         displayName: "Check clippy (cargo)"
     variables:
