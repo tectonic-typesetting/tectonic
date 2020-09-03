@@ -33,7 +33,7 @@ steps:
     cargo vcpkg -v build
     ls target/vcpkg
     echo target/vcpkg/installed/*
-    ls target/vcpkg/installed/*
+    ls target/vcpkg/installed/*/lib
   displayName: Build vcpkg deps
 
 # Note: setvariable + `set -x` adds spurious single quotes at ends of variable values
