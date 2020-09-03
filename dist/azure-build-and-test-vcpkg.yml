@@ -19,7 +19,7 @@ steps:
 
 - bash: |
     set -xeuo pipefail
-    brew install gcc pkg-config
+    brew install pkg-config
   displayName: "Install vcpkg dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
@@ -30,7 +30,7 @@ steps:
 
 - bash: |
     set -xeuo pipefail
-    cargo vcpkg build
+    cargo vcpkg -v build
   displayName: Build vcpkg deps
 
 # Note: setvariable + `set -x` adds spurious single quotes at ends of variable values

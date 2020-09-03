@@ -12,19 +12,19 @@ parameters:
 - name: linuxPkgconfigBuilds
   type: object
   default:
-  - name: stable
+  - name: stable_semistatic
     params:
       primaryBuild: true
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
-  - name: stable_semistatic
+      TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: true
+  - name: stable
     params:
       canaryBuild: true
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
-      TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: true
   - name: beta
     params:
       canaryBuild: true
@@ -100,7 +100,7 @@ stages:
   # rustfmt check
   - job: rustfmt
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-20.04
     steps:
       - bash: rustup component add rustfmt
         displayName: "Install rustfmt"
@@ -112,11 +112,11 @@ stages:
   # clippy check
   - job: clippy
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-20.04
     steps:
       - bash: rustup component add clippy
         displayName: "Install clippy"
-      - bash: cargo fmt --all -- --check
+      - bash: cargo clippy --all --all-targets --all-features -- --deny warnings
         displayName: "Check clippy (cargo)"
     variables:
       TOOLCHAIN: stable
@@ -132,7 +132,7 @@ stages:
     environment: Deploy
     displayName: Deploy
     pool:
-      vmImage: ubuntu-16.04
+      vmImage: ubuntu-20.04
 
     variables:
     - group: Deployment Credentials
