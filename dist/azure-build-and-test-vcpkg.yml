@@ -42,6 +42,11 @@ steps:
     echo "##vso[task.setvariable variable=TECTONIC_DEP_BACKEND;]vcpkg"
   displayName: Setup build variables
 
+- bash: |
+    echo "##vso[task.setvariable variable=RUSTFLAGS;]-Ctarget-feature=+crt-static"
+  displayName: Setup build variables (Windows)
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
 - template: azure-generic-build.yml
   parameters:
     canaryBuild: ${{ parameters.canaryBuild }}

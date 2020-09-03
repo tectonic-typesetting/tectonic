@@ -90,7 +90,7 @@ rev = "ff1d20fd9a72d72d51a549c27b669cd6040fb7d9"
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
 x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
-x86_64-pc-windows-msvc = { triplet = "x64-windows-static-md", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
+x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
 tectonic_cfg_support = "34d6bda41d9834eb179c337a4f7cedc31d3f305d"
