@@ -36,6 +36,7 @@ steps:
 # Publish binaries
 
 - bash: |
+    set -ex
     artifact_dir="$(Build.ArtifactStagingDirectory)/binary-$TARGET"
     mkdir -p "$artifact_dir"
     cranko cargo package-released-binaries --command-name=./cross --reroot=. \
