@@ -63,6 +63,13 @@ parameters:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
 
+  - name: windows
+    vmImage: windows-2019
+    params: {}
+    vars:
+      TARGET: x86_64-pc-windows-gnu
+      TOOLCHAIN: stable-x86_64-pc-windows-gnu
+
 - name: vcpkgBuilds
   type: object
   default:
