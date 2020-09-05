@@ -142,6 +142,15 @@ stages:
         TOOLCHAIN: stable
         ${{ insert }}: ${{ build.vars }}
 
+  # coverage analysis check
+  - job: coverage
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+      - template: azure-coverage.yml
+    variables:
+      TOOLCHAIN: stable
+
   # rustfmt check
   - job: rustfmt
     pool:
