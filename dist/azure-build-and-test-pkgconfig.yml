@@ -54,9 +54,15 @@ steps:
     pacman -S --noconfirm \
       mingw-w64-x86_64-fontconfig \
       mingw-w64-x86_64-freetype \
-      mingw-w64-x86_64-icu
+      mingw-w64-x86_64-icu \
+      mingw-w64-x86_64-pkg-config \
+      pkg-config
     # Format file locking issue workaround:
     echo "##vso[task.setvariable variable=RUST_TEST_THREADS;]1"
+    # TEMP DEBUG
+    set -x
+    which pkg-config
+    pkg-config --cflags "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib"
   displayName: "Install pkg-config dependencies (Windows)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
