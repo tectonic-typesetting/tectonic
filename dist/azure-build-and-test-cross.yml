@@ -42,7 +42,7 @@ steps:
     cranko cargo package-released-binaries --command-name=./cross --reroot=. \
       -t $TARGET \
       $artifact_dir \
-      -- build $CROSS_ARGS --all
+      -- build $CROSS_ARGS
   displayName: "Package binaries"
 
 - task: PublishPipelineArtifact@1
