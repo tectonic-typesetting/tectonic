@@ -46,17 +46,24 @@ steps:
 #   release of the `tectonic` project. Things like the book should be updated
 #   with a real version number.
 - bash: |
+    set -xeuo pipefail
     if ${isMainDev} ; then
       version_text=latest
-    else if cranko show if-released --exit-code tectonic ; then
+    elif cranko show if-released --exit-code tectonic ; then
       version_text="$(cranko show version tectonic)"
     else
       version_text=skip
     fi
 
     echo "toplevel version: $isMainDev, $isRelease => $version_text"
+
+    # `set -x` messes up `setvariable` behavior:
+    set +x
     echo "##vso[task.setvariable variable=TOPLEVEL_MODE;]$version_text"
   displayName: Set toplevel release mode
+  env:
+    isMainDev: ${{ parameters['isMainDev'] }}
+    isRelease: ${{ parameters['isRelease'] }}
 
 # Because we want to create GitHub releases for any Cranko project that gets
 # released, we always need the GitHub credential helper to be set up, even when
