@@ -56,7 +56,9 @@ steps:
   - bash: |
       cranko github create-releases
       if cranko show if-released --exit-code tectonic; then
-        cranko github upload-artifacts tectonic $(Pipeline.Workspace)/binary-collection/*
+        cranko github upload-artifacts tectonic \
+          $(Pipeline.Workspace)/binary-collection/* \
+          $(Pipeline.Workspace)/appimage/*
       fi
     displayName: Create GitHub releases
     env:
