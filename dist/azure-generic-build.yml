@@ -70,18 +70,14 @@ steps:
         targetPath: '$(Build.ArtifactStagingDirectory)/appimage'
         artifactName: appimage
 
-    # If even further, this is a push to `rc`, archive the release commit. This
-    # is a bit of fail-safe paranoia to avoid somehow pushing to `release`
-    # straight from `master`.
-    - ${{ if eq(variables['Build.SourceBranchName'], 'rc') }}:
-      - bash: |
-          artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
-          mkdir -p "$artifact_dir"
-          git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
-        displayName: "Generate and bundle release commit"
+    - bash: |
+        artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
+        mkdir -p "$artifact_dir"
+        git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
+      displayName: Bundle release commit
 
-      - task: PublishPipelineArtifact@1
-        displayName: Publish git bundle artifact
-        inputs:
-          targetPath: '$(Build.ArtifactStagingDirectory)/git-release'
-          artifactName: git-release
+    - task: PublishPipelineArtifact@1
+      displayName: Publish git bundle artifact
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/git-release'
+        artifactName: git-release

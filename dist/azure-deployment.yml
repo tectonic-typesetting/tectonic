@@ -22,6 +22,7 @@ steps:
 - checkout: self
 
 - bash: |
+    set -xeuo pipefail
     d="$(mktemp -d /tmp/cranko.XXXXXX)"
     cd "$d"
     curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
@@ -29,6 +30,7 @@ steps:
   displayName: Install latest Cranko
 
 - bash: |
+    set -xeuo pipefail
     git switch -c release
     git pull --ff-only $(Pipeline.Workspace)/git-release/release.bundle
     git show
@@ -45,9 +47,11 @@ steps:
 # - Otherwise, the text of the variable is the version string of a new official
 #   release of the `tectonic` project. Things like the book should be updated
 #   with a real version number.
+#
+# The boolean parameters stringify to `True` or `False`
 - bash: |
     set -xeuo pipefail
-    if ${isMainDev} ; then
+    if [[ ${isMainDev} == True ]] ; then
       version_text=latest
     elif cranko show if-released --exit-code tectonic ; then
       version_text="$(cranko show version tectonic)"
@@ -69,6 +73,7 @@ steps:
 # released, we always need the GitHub credential helper to be set up, even when
 # TOPLEVEL_MODE is "skip".
 - bash: |
+    set -xeuo pipefail
     git config --global user.email "notifications@github.com"
     git config --global user.name "Tectonic CI"
     cranko github install-credential-helper
@@ -92,7 +97,7 @@ steps:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
 
 # Things that only happen in main-dev mode:
-- ${{ if parameters.isRelease }}:
+- ${{ if parameters.isMainDev }}:
   - bash: |
       set -xeuo pipefail
       cranko github delete-release continuous
@@ -113,16 +118,19 @@ steps:
 # Things that only happen in full-official-release mode:
 - ${{ if parameters.isRelease }}:
   - bash: |
+      set -xeuo pipefail
       cranko release-workflow tag
     displayName: Create release tags
 
   - bash: |
+      set -xeuo pipefail
       git push --tags origin release:release
     displayName: Update release branch
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
 
   - bash: |
+      set -xeuo pipefail
       cranko cargo foreach-released -- publish --no-verify
     displayName: Publish updated Cargo crates
     env:
@@ -133,6 +141,7 @@ steps:
   # associated artifacts, in which case I think the best approach will be to add
   # more logic analogous to what we've got now.
   - bash: |
+      set -xeuo pipefail
       cranko github create-releases
 
       if cranko show if-released --exit-code tectonic; then
@@ -147,6 +156,7 @@ steps:
   # Things that only happen in full-official-release mode, plus a new release of
   # the toplevel project was made:
   - bash: |
+      set -xeuo pipefail
       keypath=$(mktemp)
       echo "$ARCHLINUX_DEPLOY_KEY_BASE64" |base64 -d >"$keypath"
       bash dist/arch/deploy.sh "$keypath" "$(cranko show version tectonic)"
