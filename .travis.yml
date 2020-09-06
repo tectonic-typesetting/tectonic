@@ -1,0 +1,44 @@
+# Temporary Travis file to securely re-export secret variables
+
+language: rust
+cache: false
+branches:
+  only:
+  - master
+
+install: true
+
+script: |
+  gpg --import <<'EOF'
+  -----BEGIN PGP PUBLIC KEY BLOCK-----
+
+  mQENBFhSsu0BCADFhwmaVSYPQVkS17+UGhEo5DwEDLmL68qVDCgnSo8cOGqE/c5U
+  GgCfdHEHvwIdFzi8udJtflvNkEthim24necrgWZwEC4VUGwLS0wJ7aXU3xMi/0H1
+  qDrg3iookPV4eNs2OuwNNANG5LpSKFKVaEAeKsjHmvPNrcFsqE/l97+zUoCwI+LO
+  bBbjHWnidTTKNuPLhe3ZLzgPldPNropux6uCbADei72hvsJZSexUiNB9kc2yDNfq
+  a2DUcej1TgoVEYSQSPsOjcKD066yhVJx/QVnP606IgBMCVZQFIN9gk/OHpVDnUY2
+  tsclg2rYL74i17lg1ANT4Pv6dbesNm4q/f9PABEBAAG0M1BldGVyIFdpbGxpYW1z
+  IChCZWNrZXQgcGFja2FnaW5nKSA8cGV0ZXJAbmV3dG9uLmN4PokBOAQTAQIAIgUC
+  WFKy7QIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQbFkbrJdq01Wsdgf5
+  ASXnXv7WSWfUQjW4MmRzFshArTNZb3+D0TWe1iRD+kPIgpk2Y4nHC3Wi6h1DqUc+
+  jgUnA8GgRig8EkpD6ib/e8ydeJkMAwtt6eZtcIT9uo/+gOe0juE/noeS0OwGzd6m
+  Sp7J6ceUNyEhn23/xbVorZaQx5B+7feGHxKRYbxpOEtluU5xUVf3pTLtpgJ+WPFm
+  VjAH22elQSyV9Gvj1SyEzOGmn8XMboHhMXzZnW1p73tZPZ9PCejWjMlMPbpWUT+S
+  mZTqsvF2aRba0Ak312xWJrWR25qJhUlzpdAtQ39jQnGjmCpMjaP6gmZB7uqw2lDH
+  pqy/biV17un24LLxrD49fLkBDQRYUrLtAQgAy/HLeTl5esI9pMZAESL/Gp2i5HeA
+  UHOB8axgqjPeQ/Xlf0/WSkscqCVQs3S3ulSmUzEglKXI5wySm5TBIbIMxh7YKTzn
+  BQjYgKI74ctBtw6JGL9JPRSwPSFMbPmJtIPS17gxsIatn5kmw5ujttZCF/gzfV75
+  0uVrgoSyInS2sVel0+Fstxlb9nFbHUPAJRW9sLNFIXaHt4OpGxE/NEPtUtp0nkMa
+  xZlVPqCc1eeewZ8Tp6Xd7RsAFtL/SEpWEaKZKCLPDJ0g+km7hSFhqD36bG/Bu5MK
+  sHml0tR7/vNuH+xAw7+MFUslYraSTe6964GzryD32vu9Ju8/g4+A/1D6yQARAQAB
+  iQEfBBgBAgAJBQJYUrLtAhsMAAoJEGxZG6yXatNVrHcH/35Yr8oSqbV8mMsl599g
+  VF+3CHt7gE8mWjappe/lslFg9e2fLWLVT1LtpWteZ/eON7EKapXQg6i+RaZDzfpC
+  ZE9hgo1GjozGkE0Jcvxm7qsIF9OnuXP3p4vl7g5XICk/wnLTIOcEz7WLJtZbRYiz
+  kgdeM5BXhfuuBZU2FdmwUcu1iGxg6kfGAJ+JwcPtC4mDW7vViSpW+n1drIyNL2qm
+  ixMHEr2y4l3sbpqK1wwiSzv2UWPQFBMu8xAVqECEYLVTKCvvu9xs8mW6mfOphrUh
+  8+e8uo/hrmcK9WcbawrLW9RVkokw5ZXKBQD5tPE8hSnbKj4VZr/WJyRkfk2j9Inu
+  7YI=
+  =7G2f
+  -----END PGP PUBLIC KEY BLOCK-----
+  EOF
+  env |gpg -e -r 976AD355 --armor
