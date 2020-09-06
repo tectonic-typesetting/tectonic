@@ -69,4 +69,4 @@ steps:
 - template: azure-generic-build.yml
   parameters:
       canaryBuild: ${{ parameters.canaryBuild }}
-      primaryRcBuild: ${{ and(parameters.primaryBuild, eq(variables['Build.SourceBranchName'], 'rc')) }}
+      primaryBuild: ${{ parameters.primaryBuild }}

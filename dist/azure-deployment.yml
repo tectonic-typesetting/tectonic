@@ -55,7 +55,22 @@ steps:
 
   - bash: |
       cranko github create-releases
-      cranko github upload-artifacts tectonic $(Pipeline.Workspace)/binary-collection/*
+      if cranko show if-released --exit-code tectonic; then
+        cranko github upload-artifacts tectonic $(Pipeline.Workspace)/binary-collection/*
+      fi
     displayName: Create GitHub releases
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+  - bash: |
+      if cranko show if-released --exit-code tectonic; then
+        # Worth adding better Cranko support for this? reboot-branch is close
+        dist/force-push-tree.sh \
+          $(Pipeline.Workspace)/book \
+          https://github.com/tectonic-typesetting/book.git \
+          "$(cranko show version tectonic)" \
+          "docs mdbook"
+      fi
+    displayName: Update book HTML
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
