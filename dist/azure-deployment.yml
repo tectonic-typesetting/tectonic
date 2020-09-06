@@ -76,3 +76,13 @@ steps:
     displayName: Update book HTML
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+  - bash: |
+      if cranko show if-released --exit-code tectonic; then
+        keypath=$(mktemp)
+        echo "$ARCHLINUX_DEPLOY_KEY_BASE64" |base64 -d >"$keypath"
+        bash dist/arch/deploy.sh "$keypath" "$(cranko show version tectonic)"
+      fi
+    displayName: Update ArchLinux package
+    env:
+      ARCHLINUX_DEPLOY_KEY_BASE64: $(ARCHLINUX_DEPLOY_KEY_BASE64)

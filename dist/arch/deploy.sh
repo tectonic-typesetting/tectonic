@@ -1,7 +1,9 @@
 #!/bin/bash
 
 set -ex
-cd "$TRAVIS_BUILD_DIR/dist/arch"
+cd "$(dirname $0)"
+keypath="$1"
+release_desc="$2"
 
 # Set up to run makepkg
 wget https://www.archlinux.org/packages/core/x86_64/pacman/download/ -O pacman.pkg.tar.xz
@@ -12,7 +14,7 @@ export LIBRARY="$(pwd)/usr/share/makepkg"
 config="$(pwd)/etc/makepkg.conf"
 
 # Get the repo
-git config --global --add core.sshCommand "ssh -o StrictHostKeyChecking=false -i /tmp/deploy_key"
+git config --global --add core.sshCommand "ssh -o StrictHostKeyChecking=false -i $keypath"
 git clone ssh://aur@aur.archlinux.org/tectonic.git aur
 
 # Update it
@@ -24,7 +26,7 @@ cd aur
 git add PKGBUILD .SRCINFO
 git config user.email "tectonic-deploy@example.com"
 git config user.name "tectonic-deploy"
-git commit -m "Release $TRAVIS_TAG"
+git commit -m "Release $release_desc"
 
 # Deploy to AUR
 git push origin master
