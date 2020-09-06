@@ -9,15 +9,6 @@ parameters:
   default: false
 
 steps:
-- bash: |
-    cd $(Pipeline.Workspace)
-    mkdir binary-collection
-    cp binary-*/* binary-collection/
-  displayName: Collect release artifacts
-
-- publish: $(Pipeline.Workspace)/binary-collection
-  displayName: Publish release artifacts
-  artifact: binary-collection
 
 # if we're on the `rc` branch, the release has been fully vetted and the
 # internal artifacts have been gathered -- time to lock in a new `release`
@@ -57,7 +48,7 @@ steps:
       cranko github create-releases
       if cranko show if-released --exit-code tectonic; then
         cranko github upload-artifacts tectonic \
-          $(Pipeline.Workspace)/binary-collection/* \
+          $(Pipeline.Workspace)/binary-*/* \
           $(Pipeline.Workspace)/appimage/*
       fi
     displayName: Create GitHub releases
