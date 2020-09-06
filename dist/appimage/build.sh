@@ -28,7 +28,7 @@ cd "$top"
 cargo build --release
 
 if [ -z "$TECTONIC_APPIMAGE_TAG" ] ; then
-    TECTONIC_APPIMAGE_TAG="$(cargo run --quiet --release -- --version |awk '{print $2}')"
+    TECTONIC_APPIMAGE_TAG="$(cranko show version tectonic)"
 fi
 
 # Everything else is done here:

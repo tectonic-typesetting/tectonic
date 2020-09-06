@@ -13,7 +13,7 @@ parameters:
 - name: canaryBuild
   type: boolean
   default: false
-- name: primaryRcBuild
+- name: primaryBuild
   type: boolean
   default: false
 
@@ -45,18 +45,43 @@ steps:
       targetPath: '$(Build.ArtifactStagingDirectory)/binary-$(TARGET)'
       artifactName: binary-$(TARGET)
 
-  # If, further, we're the primary build on the `rc` branch, export ours as the
-  # canonical release commit.
+  # If, further, we're the primary build, do some stuff that should only happen
+  # once among all of the build jobs.
 
-  - ${{ if eq(parameters.primaryRcBuild, true) }}:
+  - ${{ if eq(parameters.primaryBuild, true) }}:
     - bash: |
-        artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
+        artifact_dir="$(Build.ArtifactStagingDirectory)/appimage"
         mkdir -p "$artifact_dir"
-        git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
-      displayName: "Generate and bundle release commit"
+
+        if [[ $SOURCE_BRANCH == master ]] ; then
+          export TECTONIC_APPIMAGE_TAG=continuous
+          export UPDATE_INFORMATION="gh-releases-zsync|tectonic-typesetting|tectonic|continuous|tectonic-*.AppImage.zsync"
+        fi
+
+        ./dist/appimage/build.sh
+        cp dist/appimage/tectonic-*.AppImage* "$artifact_dir"
+      displayName: Build AppImage
+      env:
+        SOURCE_BRANCH: ${{ variables['Build.SourceBranchName'] }}
 
     - task: PublishPipelineArtifact@1
-      displayName: Publish git bundle artifact
+      displayName: Publish AppImage artifact(s)
       inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)/git-release'
-        artifactName: git-release
+        targetPath: '$(Build.ArtifactStagingDirectory)/appimage'
+        artifactName: appimage
+
+    # If even further, this is a push to `rc`, archive the release commit. This
+    # is a bit of fail-safe paranoia to avoid somehow pushing to `release`
+    # straight from `master`.
+    - ${{ if eq(variables['Build.SourceBranchName'], 'rc') }}:
+      - bash: |
+          artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
+          mkdir -p "$artifact_dir"
+          git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
+        displayName: "Generate and bundle release commit"
+
+      - task: PublishPipelineArtifact@1
+        displayName: Publish git bundle artifact
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)/git-release'
+          artifactName: git-release
