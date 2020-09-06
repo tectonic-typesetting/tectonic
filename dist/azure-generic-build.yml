@@ -1,0 +1,62 @@
+# Copyright 2016-2020 the Tectonic Project
+# Licensed under the MIT License.
+#
+# Azure Pipelines template for a standard build-and-test workflow once
+# dependencies have been set up. Besides the parameters, the following variables
+# are expected:
+#
+# - TARGET: the build target triple (e.g. "x86_86-unknown-linux-gnu")
+# - TOOLCHAIN: the rust toolchain type (e.g., "stable",
+#   "beta-x86_64-pc-windows-msvc")
+
+parameters:
+- name: canaryBuild
+  type: boolean
+  default: false
+- name: primaryRcBuild
+  type: boolean
+  default: false
+
+steps:
+- bash: cargo build --all --release -v
+  displayName: "cargo build"
+
+- bash: cargo test --all --release
+  displayName: "cargo test"
+
+# For non-canary builds, export artifacts.
+
+- ${{ if eq(parameters.canaryBuild, false) }}:
+  - bash: |
+      git add .
+      cranko release-workflow commit
+      git show HEAD
+    displayName: Make release commit
+
+  - bash: |
+      artifact_dir="$(Build.ArtifactStagingDirectory)/binary-$TARGET"
+      mkdir -p "$artifact_dir"
+      cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --release
+    displayName: Package binaries
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish packaged binary artifact(s)
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/binary-$(TARGET)'
+      artifactName: binary-$(TARGET)
+
+  # If, further, we're the primary build on the `rc` branch, export ours as the
+  # canonical release commit.
+
+  - ${{ if eq(parameters.primaryRcBuild, true) }}:
+    - bash: |
+        artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
+        mkdir -p "$artifact_dir"
+        git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
+      displayName: "Generate and bundle release commit"
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish git bundle artifact
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/git-release'
+        artifactName: git-release

@@ -1,0 +1,43 @@
+# Copyright 2016-2020 the Tectonic Project
+# Licensed under the MIT License.
+#
+# Generic setup for Azure Pipelines builds. Expected variables:
+#
+# - TOOLCHAIN: the rust toolchain type (e.g., "stable", "beta-x86_64-pc-windows-msvc")
+
+steps:
+- checkout: self
+
+- bash: |
+    set -ex
+    rustup set profile minimal
+    rustup component remove --toolchain=$TOOLCHAIN rust-docs || echo "already removed"
+    rustup update --no-self-update $TOOLCHAIN
+    rustup default $TOOLCHAIN
+    # Helpful versions
+    rustup -V
+    rustc -Vv
+    cargo -V
+  displayName: Setup Rust
+
+- bash: |
+    d="$(mktemp -d /tmp/cranko.XXXXXX)"
+    cd "$d"
+    curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
+    echo "##vso[task.prependpath]$d"
+  displayName: Install latest Cranko (not Windows)
+  condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
+
+- pwsh: |
+    $d = Join-Path $Env:Temp cranko-$(New-Guid)
+    [void][System.IO.Directory]::CreateDirectory($d)
+    cd $d
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+    iex ((New-Object System.Net.WebClient).DownloadString('https://pkgw.github.io/cranko/fetch-latest.ps1'))
+    echo "##vso[task.prependpath]$d"
+  displayName: Install latest Cranko (Windows)
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
+- bash: |
+    cranko release-workflow apply-versions
+  displayName: "cranko release-workflow apply-versions"

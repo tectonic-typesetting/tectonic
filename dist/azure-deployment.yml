@@ -1,0 +1,61 @@
+# Copyright 2016-2020 the Tectonic Project
+# Licensed under the MIT License.
+#
+# Deployment pipeline, run when all CI tests pass on `master` or `rc`.
+
+parameters:
+- name: rcBuild
+  type: boolean
+  default: false
+
+steps:
+- bash: |
+    cd $(Pipeline.Workspace)
+    mkdir binary-collection
+    cp binary-*/* binary-collection/
+  displayName: Collect release artifacts
+
+- publish: $(Pipeline.Workspace)/binary-collection
+  displayName: Publish release artifacts
+  artifact: binary-collection
+
+# if we're on the `rc` branch, the release has been fully vetted and the
+# internal artifacts have been gathered -- time to lock in a new `release`
+# commit and invoke the full release processes.
+
+- ${{ if eq(parameters.rcBuild, true) }}:
+  - checkout: self
+
+  - bash: |
+      d="$(mktemp -d /tmp/cranko.XXXXXX)"
+      cd "$d"
+      curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
+      echo "##vso[task.prependpath]$d"
+    displayName: Install latest Cranko
+
+  - bash: |
+      git switch -c release
+      git pull --ff-only $(Pipeline.Workspace)/git-release/release.bundle
+      git show
+      cranko release-workflow tag
+    displayName: Prepare release commit and tags
+
+  - bash: |
+      cranko github install-credential-helper
+      git push --tags origin release:release
+    displayName: Update release branch
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+  - bash: |
+      cranko cargo foreach-released publish
+    displayName: Publish updated Cargo crates
+    env:
+      CARGO_REGISTRY_TOKEN: $(CARGO_REGISTRY_TOKEN)
+
+  - bash: |
+      cranko github create-releases
+      cranko github upload-artifacts tectonic $(Pipeline.Workspace)/binary-collection/*
+    displayName: Create GitHub releases
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
