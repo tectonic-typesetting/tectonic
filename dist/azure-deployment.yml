@@ -48,7 +48,7 @@ steps:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
 
   - bash: |
-      cranko cargo foreach-released publish
+      cranko cargo foreach-released publish --no-verify
     displayName: Publish updated Cargo crates
     env:
       CARGO_REGISTRY_TOKEN: $(CARGO_REGISTRY_TOKEN)
