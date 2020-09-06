@@ -7,8 +7,6 @@ multilingual = false
 src = "src"
 
 [output.html]
-# see lively issue: https://github.com/rust-lang-nursery/mdBook/issues/847
-google-analytics = false
 # FIXME these do not seem to appear anywhere?
 git-repository-url = "https://github.com/tectonic-typesetting/tectonic"
 git-repository-icon = "fa-github"
