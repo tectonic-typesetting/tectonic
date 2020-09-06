@@ -1,3 +1,7 @@
+[![Build Status](https://dev.azure.com/tectonic-typesetting/tectonic/_apis/build/status/tectonic-typesetting.tectonic?branchName=master)](https://dev.azure.com/tectonic-typesetting/tectonic/_build/latest?definitionId=11&branchName=master)
+[![](http://meritbadge.herokuapp.com/tectonic)](https://crates.io/crates/tectonic)
+[![codecov](https://codecov.io/gh/tectonic-typesetting/tectonic/branch/master/graph/badge.svg)](https://codecov.io/gh/tectonic-typesetting/tectonic)
+
 # Tectonic
 
 Tectonic is a modernized, complete, self-contained
@@ -13,9 +17,6 @@ page is primarily aimed at folks interested in how Tectonic works “under the h
 
 ## Developer dashboard
 
-[![Build Status](https://travis-ci.org/tectonic-typesetting/tectonic.svg?branch=master)](https://travis-ci.org/tectonic-typesetting/tectonic)
-[![](http://meritbadge.herokuapp.com/tectonic)](https://crates.io/crates/tectonic)
-[![codecov](https://codecov.io/gh/tectonic-typesetting/tectonic/branch/master/graph/badge.svg)](https://codecov.io/gh/tectonic-typesetting/tectonic)
 <a href="https://repology.org/metapackage/tectonic">
     <img src="https://repology.org/badge/vertical-allrepos/tectonic.svg" alt="Packaging status" align="right">
 </a>
@@ -32,10 +33,9 @@ page is primarily aimed at folks interested in how Tectonic works “under the h
 
 If you’re interested in Tectonic as a software tool, you might also want to check out:
 
-- You can use Tectonic as a
-  [GitHub Action](https://github.com/features/actions) with
-  [compile-latex](https://github.com/marketplace/actions/compile-latex),
-  thanks to [Vinay Sharma](https://github.com/vinay0410).
+- [compile-latex](https://github.com/marketplace/actions/compile-latex) is a
+  [GitHub Action](https://github.com/features/actions) contributed by [Vinay
+  Sharma](https://github.com/vinay0410), which is powered by Tectonic.
 - [tt.ente.ninja](https://tt.ente.ninja), which runs Tectonic against a subset
   of the [arxiv.org](https://arxiv.org/) corpus à la the Rust tool
   [Crater](https://github.com/rust-lang/crater) — a
@@ -72,15 +72,15 @@ for more information. (Or at least, more words on the topic.)
 
 The Tectonic build can be customized with the following features:
 
-##### serialization (enabled by default)
+##### `serialization` (enabled by default)
 
 This feature enables (de)serialization using the [serde](https://serde.rs/)
 crate. At the moment, this is only used to read per-user configuration from a
-[TOML](https://github.com/toml-lang/toml) file. If this feature is disabled,
-the per-user configuration file will be silently ignored.
+[TOML](https://github.com/toml-lang/toml) file. If this feature is disabled, the
+per-user configuration file will be silently ignored. This feature is provided
+because serialization requires the `serde_derive` crate, which in turn uses
+Rust’s `proc_macro` feature. The `proc_macro` functionality is difficult to
+build with statically linked targets, although Tectonic’s CI system
+[demonstrates how to make it work][static-proc-macro].
 
-This functionality is optional because it requires the `serde_derive` crate,
-which in turn uses Rust’s `proc_macro` feature. The `proc_macro` functionality
-[is not available on musl targets](https://github.com/rust-lang/rust/issues/40174),
-and so must be turned off if you wish to build a completely static Tectonic
-executable.
+[static-proc-macro]: https://github.com/tectonic-typesetting/tectonic-ci-support/tree/master/cross-images#readme
