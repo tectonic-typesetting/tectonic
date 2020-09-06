@@ -6,7 +6,7 @@
 trigger:
   branches:
     include:
-    - new-ci  # XXX TEMP
+    - master
     - rc
 
 # We cannot use Pipelines' matrixing framework because only it works with
