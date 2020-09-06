@@ -246,4 +246,5 @@ stages:
           steps:
             - template: azure-deployment.yml
               parameters:
-                rcBuild: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}
+                isMainDev: ${{ eq(variables['Build.SourceBranchName'], 'master') }}
+                isRelease: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}
