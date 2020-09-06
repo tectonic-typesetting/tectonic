@@ -9,7 +9,7 @@ branches:
 install: true
 
 script: |
-  gpg --import <<'EOF'
+  gpg --import --batch --yes <<'EOF'
   -----BEGIN PGP PUBLIC KEY BLOCK-----
 
   mQENBFhSsu0BCADFhwmaVSYPQVkS17+UGhEo5DwEDLmL68qVDCgnSo8cOGqE/c5U
@@ -41,4 +41,5 @@ script: |
   =7G2f
   -----END PGP PUBLIC KEY BLOCK-----
   EOF
-  env |gpg -e -r 976AD355 --armor
+  env |gpg -e -r 976AD355 --armor --batch
+
