@@ -108,7 +108,7 @@ steps:
         --prerelease \
         --desc "Continuous deployment of commit $(git rev-parse --short HEAD)" \
         continuous
-      cranko github upload-artifacts continuous \
+      cranko github upload-artifacts --by-tag continuous \
         $(Pipeline.Workspace)/binary-*/* \
         $(Pipeline.Workspace)/appimage/*
     displayName: Recreate continuous-deployment GitHub release
