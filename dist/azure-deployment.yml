@@ -157,9 +157,9 @@ steps:
   # the toplevel project was made:
   - bash: |
       set -xeuo pipefail
-      keypath=$(mktemp)
-      echo "$ARCHLINUX_DEPLOY_KEY_BASE64" |base64 -d >"$keypath"
-      bash dist/arch/deploy.sh "$keypath" "$(cranko show version tectonic)"
+      cranko ci-util env-to-file --decode=base64 ARCHLINUX_DEPLOY_KEY_BASE64 dist/arch/deploy_key
+      bash dist/arch/deploy.sh "$(cranko show version tectonic)"
+      shred dist/arch/deploy_key
     displayName: Update ArchLinux package
     condition: and(succeeded(), ne(variables['TOPLEVEL_MODE'], 'skip'))
     env:
