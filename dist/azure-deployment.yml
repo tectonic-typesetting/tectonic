@@ -164,3 +164,11 @@ steps:
     condition: and(succeeded(), ne(variables['TOPLEVEL_MODE'], 'skip'))
     env:
       ARCHLINUX_DEPLOY_KEY_BASE64: $(ARCHLINUX_DEPLOY_KEY_BASE64)
+
+  - bash: |
+      set -xeuo pipefail
+      bash dist/update-website.sh
+    displayName: Update GitHub Pages website
+    condition: and(succeeded(), ne(variables['TOPLEVEL_MODE'], 'skip'))
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
