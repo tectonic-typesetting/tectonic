@@ -1,3 +1,43 @@
+# tectonic 0.1.13 (2020-09-07)
+
+It has once more been a long time since the last release. But this new release
+features a move to a new release automation framework, [Cranko], which is
+intended to promote a more aggressive release policy going forward. Cranko is
+the result of a *lot* of careful thinking and design — resulting in a scheme
+called [just-in-time versioning][jitv] — and it should offer a tractable and
+low-friction framework for making releases even when there are many crates in
+one repository.
+
+[Cranko]: https://github.com/pkgw/cranko
+[jitv]: https://pkgw.github.io/cranko/book/latest/jit-versioning/
+
+User-facing improvements:
+
+- Select core TeX warnings — notably, over/underfull boxes — are now surfaced as
+  Tectonic warnings, and not just reported in the detailed log files! The
+  infrastructure is now available to capture many more such warnings as needed.
+  (#625; @ralismark, @pkgw)
+- Fix a few algorithmic mistakes introduced in manual editing of the C code.
+  Great catches by @burrbull! (#617, #624)
+- Improve log formatting with backticks around filenames and human-friendly file
+  sizes (#539; @as-f)
+- Fix segfaults (!) upon errors (#579, #606; @fmgoncalves)
+- Default bibtex's `min_crossrefs` to 2, not 0 (#534; @jneem)
+- Help debug "lost characters" with their detailed hex codes (#600; @pkgw)
+
+Developer-facing improvements:
+
+- CI system has been completely revamped to use [Cranko] and route entirely
+  through Azure Pipelines. Maintainability should be massively improved (@pkgw)
+- Releases should now include pre-built binaries for a variety of architectures
+  (@pkgw).
+- Switched to `app_dirs2`, since `app_dirs` is unmaintained (#620; @kornelski)
+- Enable reproducible-ish builds through `cargo vcpkg` (#593; @mcgoo)
+- Update to the 0.9 series of the `rust-crypto` packages (#596; @pkgw)
+- Attempt to fix automated Arch Linux build (#587; @thomaseizinger)
+- Fix a memory leak (#536; @elliott-wen)
+- The usual large number of dependency updates with DependaBot.
+
 # 0.1.12 (2019 Dec 6)
 
 It has been just more than a year since the last Tectonic release, mainly
