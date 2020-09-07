@@ -1,4 +1,4 @@
-// Copyright 2019 the Tectonic Project
+// Copyright 2019-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 //! This support crate helps deal with `CARGO_CFG_TARGET_*` variables. When

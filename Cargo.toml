@@ -93,6 +93,6 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
-tectonic_cfg_support = "34d6bda41d9834eb179c337a4f7cedc31d3f305d"
+tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
 
