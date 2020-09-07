@@ -38,7 +38,7 @@ cc = "^1.0.58"
 pkg-config = "^0.3"
 regex = "^1.3"
 sha2 = "^0.9"
-tectonic_cfg_support = { path = "cfg_support", version ="^0.0.3"}
+tectonic_cfg_support = { path = "cfg_support", version ="^0.1.0"}
 vcpkg = "0.2.10"
 
 [dependencies]
@@ -93,6 +93,6 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
-tectonic_cfg_support = "34d6bda41d9834eb179c337a4f7cedc31d3f305d"
+tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
 
