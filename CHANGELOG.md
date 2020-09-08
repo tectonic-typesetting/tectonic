@@ -1,4 +1,10 @@
-# rc: force 0.1.13
+# rc: micro bump
+
+- No code changes from 0.1.13. Just trying to iron out some of the automated
+  deployment systems. Is this the time that the Arch Linux auto-deployment
+  finally works??
+
+# tectonic 0.1.13 (2020-09-07)
 
 It has once more been a long time since the last release. But this new release
 features a move to a new release automation framework, [Cranko], which is
