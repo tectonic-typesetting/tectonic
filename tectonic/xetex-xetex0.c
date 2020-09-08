@@ -3985,14 +3985,19 @@ void group_warning(void)
         i--;
     }
     if (w) {
-        print_nl_cstr("Warning: end of ");
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of ");
         print_group(true);
         print_cstr(" of a different file");
         print_ln();
+
         if (INTPAR(tracing_nesting) > 1)
             show_context();
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
+
+        capture_to_diagnostic(NULL);
     }
 }
 
@@ -4017,7 +4022,10 @@ void if_warning(void)
         i--;
     }
     if (w) {
-        print_nl_cstr("Warning: end of ");
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of ");
+
         print_cmd_chr(IF_TEST, cur_if);
         if (if_line != 0) {
             print_cstr(" entered on line ");
@@ -4027,6 +4035,8 @@ void if_warning(void)
         print_ln();
         if (INTPAR(tracing_nesting) > 1)
             show_context();
+
+        capture_to_diagnostic(NULL);
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
     }
@@ -4044,11 +4054,15 @@ void file_warning(void)
     c = cur_group;
     save_ptr = cur_boundary;
     while (grp_stack[in_open] != save_ptr) {
-
         cur_level--;
-        print_nl_cstr("Warning: end of file when ");
+
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of file when ");
         print_group(true);
         print_cstr(" is incomplete");
+        capture_to_diagnostic(NULL);
+
         cur_group = save_stack[save_ptr].b16.s0;
         save_ptr = save_stack[save_ptr].b32.s1;
     }
@@ -4060,8 +4074,9 @@ void file_warning(void)
     c = cur_if;
     i = if_line;
     while (if_stack[in_open] != cond_ptr) {
-
-        print_nl_cstr("Warning: end of file when ");
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of file when ");
         print_cmd_chr(IF_TEST, cur_if);
         if (if_limit == FI_CODE)
             print_esc_cstr("else");
@@ -4070,6 +4085,8 @@ void file_warning(void)
             print_int(if_line);
         }
         print_cstr(" is incomplete");
+        capture_to_diagnostic(NULL);
+
         if_line = mem[cond_ptr + 1].b32.s1;
         cur_if = mem[cond_ptr].b16.s0;
         if_limit = mem[cond_ptr].b16.s1;
@@ -4080,8 +4097,11 @@ void file_warning(void)
     cur_if = c;
     if_line = i;
     print_ln();
-    if (INTPAR(tracing_nesting) > 1)
+    if (INTPAR(tracing_nesting) > 1) {
+        diagnostic_begin_capture_warning_here();
         show_context();
+        capture_to_diagnostic(NULL);
+    }
     if (history == HISTORY_SPOTLESS)
         history = HISTORY_WARNING_ISSUED;
 }
