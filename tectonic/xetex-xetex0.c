@@ -4547,6 +4547,7 @@ void print_meaning(void)
     }
 }
 
+// Used just to trace commands - all gated behind INTPAR(tracing_commands)
 void show_cur_cmd_chr(void)
 {
     int32_t n;
@@ -4554,6 +4555,9 @@ void show_cur_cmd_chr(void)
     int32_t p;
 
     begin_diagnostic();
+
+    diagnostic_begin_capture_warning_here();
+
     print_nl('{');
     if (cur_list.mode != shown_mode) {
         print_mode(cur_list.mode);
@@ -4594,6 +4598,9 @@ void show_cur_cmd_chr(void)
         }
     }
     print_char('}');
+
+    capture_to_diagnostic(NULL);
+
     end_diagnostic(false);
 }
 
@@ -4855,6 +4862,7 @@ begin_token_list(int32_t p, uint16_t t)
 
             if (INTPAR(tracing_macros) > 1) {
                 begin_diagnostic();
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("");
                 switch (t) {
                 case MARK_TEXT:
@@ -4869,6 +4877,7 @@ begin_token_list(int32_t p, uint16_t t)
                 }
                 print_cstr("->");
                 token_show(p);
+                capture_to_diagnostic(NULL);
                 end_diagnostic(false);
             }
         }
@@ -5643,8 +5652,14 @@ macro_call(void)
     if (INTPAR(tracing_macros) > 0) { /*419:*/
         begin_diagnostic();
         print_ln();
+
+        diagnostic_begin_capture_warning_here();
+
         print_cs(warning_index);
         token_show(ref_count);
+
+        capture_to_diagnostic(NULL);
+
         end_diagnostic(false);
     }
 
@@ -5895,10 +5910,12 @@ macro_call(void)
 
                 if (INTPAR(tracing_macros) > 0) {
                     begin_diagnostic();
+                    diagnostic_begin_capture_warning_here();
                     print_nl(match_chr);
                     print_int(n);
                     print_cstr("<-");
                     show_token_list(pstack[n - 1], TEX_NULL, 1000);
+                    capture_to_diagnostic(NULL);
                     end_diagnostic(false);
                 }
             }
@@ -10296,9 +10313,11 @@ conditional(void)
 
         if (INTPAR(tracing_commands) > 1) {
             begin_diagnostic();
+            diagnostic_begin_capture_warning_here();
             print_cstr("{case ");
             print_int(n);
             print_char('}');
+            capture_to_diagnostic(NULL);
             end_diagnostic(false);
         }
 
@@ -10344,10 +10363,12 @@ conditional(void)
 
     if (INTPAR(tracing_commands) > 1) { /*521:*/
         begin_diagnostic();
+        diagnostic_begin_capture_warning_here();
         if (b)
             print_cstr("{true}");
         else
             print_cstr("{false}");
+        capture_to_diagnostic(NULL);
         end_diagnostic(false);
     }
 
@@ -10815,6 +10836,7 @@ void char_warning(internal_font_number f, int32_t c)
             INTPAR(tracing_online) = 1;
 
         begin_diagnostic();
+        diagnostic_begin_capture_warning_here();
         print_nl_cstr("Missing character: There is no ");
         if (c < 65536L)
             print(c);
@@ -10823,6 +10845,7 @@ void char_warning(internal_font_number f, int32_t c)
         print_cstr(" in font ");
         print(font_name[f]);
         print_char('!');
+        capture_to_diagnostic(NULL);
         end_diagnostic(false);
 
         INTPAR(tracing_online) = old_setting;
@@ -10965,6 +10988,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 void font_feature_warning(const void *featureNameP, int32_t featLen, const void *settingNameP, int32_t setLen)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     print_nl_cstr("Unknown ");
     if (setLen > 0) {
         print_cstr("selector `");
@@ -10977,12 +11001,14 @@ void font_feature_warning(const void *featureNameP, int32_t featLen, const void 
     for (int32_t i = 0; name_of_file[i] != 0; i++)
         print_raw_char(name_of_file[i], true);
     print_cstr("'.");
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
 void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int32_t warningType)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     if (warningType == 0)
         print_nl_cstr("Loaded mapping `");
     else
@@ -11007,18 +11033,21 @@ void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int3
         print_cstr("'.");
         break;
     }
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
 void graphite_warning(void)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     print_nl_cstr("Font `");
 
     for (int32_t i = 0; name_of_file[i] != 0; i++)
         print_raw_char(name_of_file[i], true);
 
     print_cstr("' does not support Graphite. Trying OpenType layout instead.");
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
@@ -11221,6 +11250,7 @@ void do_locale_linebreaks(int32_t s, int32_t len)
 void bad_utf8_warning(void)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     print_nl_cstr("Invalid UTF-8 byte or sequence");
     if (cur_input.name == 0)
         print_cstr(" in terminal input");
@@ -11230,6 +11260,7 @@ void bad_utf8_warning(void)
         print_int(line);
     }
     print_cstr(" replaced by U+FFFD.");
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
@@ -11274,6 +11305,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
 
     if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
+        diagnostic_begin_capture_warning_here();
         print_nl_cstr("Requested font \"");
         print_c_string(name_of_file);
         print('"');
@@ -11285,6 +11317,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             print_scaled(s);
             print_cstr("pt");
         }
+        capture_to_diagnostic(NULL);
         end_diagnostic(false);
     }
 
@@ -11696,14 +11729,17 @@ done:
         ttstub_input_close (tfm_file);
 
     if (INTPAR(xetex_tracing_fonts) > 0) {
-        if (g == FONT_BASE) {
+        if (g == FONT_BASE || file_opened) {
             begin_diagnostic();
-            print_nl_cstr(" -> font not found, using \"nullfont\"");
-            end_diagnostic(false);
-        } else if (file_opened) {
-            begin_diagnostic();
+            diagnostic_begin_capture_warning_here();
+
             print_nl_cstr(" -> ");
-            print_c_string(name_of_file);
+            if (g == FONT_BASE)
+                print_c_string("font not found, using \"nullfont\"");
+            else
+                print_c_string(name_of_file);
+
+            capture_to_diagnostic(NULL);
             end_diagnostic(false);
         }
     }
@@ -13846,12 +13882,17 @@ void print_totals(void)
 
 void box_error(eight_bits n)
 {
-
     error();
+
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
+
     print_nl_cstr("The following box has been deleted:");
     show_box(BOX_REG(n));
+
+    capture_to_diagnostic(NULL);
     end_diagnostic(true);
+
     flush_node_list(BOX_REG(n));
     BOX_REG(n) = TEX_NULL;
 }
@@ -14924,8 +14965,12 @@ void build_discretionary(void)
                             }
                             error();
                             begin_diagnostic();
+                            diagnostic_begin_capture_warning_here();
+
                             print_nl_cstr("The following discretionary sublist has been deleted:");
                             show_box(p);
+
+                            capture_to_diagnostic(NULL);
                             end_diagnostic(true);
                             flush_node_list(p);
                             mem[q].b32.s1 = TEX_NULL;
@@ -16057,6 +16102,9 @@ void show_whatever(void)
     int32_t l;
     int32_t n;
 
+    // In all cases we eventually call error().
+    diagnostic_begin_capture_warning_here();
+
     switch (cur_chr) {
     case 3:
         {
@@ -16155,6 +16203,7 @@ void show_whatever(void)
         }
         break;
     }
+    capture_to_diagnostic(NULL);
     end_diagnostic(true);
     {
         if (file_line_error_style_p)
@@ -16173,6 +16222,7 @@ void show_whatever(void)
     }
 
 common_ending:
+    capture_to_diagnostic(NULL); // calling with null twice is fine
     if (interaction < ERROR_STOP_MODE) {
         help_ptr = 0;
         error_count--;
