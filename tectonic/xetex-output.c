@@ -59,7 +59,6 @@ error_here_with_diagnostic(const char* message)
 {
     diagnostic_t error = ttstub_diag_error_begin();
     diagnostic_print_file_line(error);
-    capture_to_diagnostic(error);
     ttstub_diag_printf(error, "%s", message);
 
     if (file_line_error_style_p)
@@ -67,6 +66,8 @@ error_here_with_diagnostic(const char* message)
     else
         print_nl_cstr("! ");
     print_cstr(message);
+
+    capture_to_diagnostic(error);
 
     return error;
 }
