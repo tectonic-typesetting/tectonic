@@ -132,11 +132,8 @@ ship_out(int32_t p)
         BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset) > MAX_HALFWORD ||
         BOX_width(p) + DIMENPAR(h_offset) > MAX_HALFWORD)
     {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Huge page cannot be shipped out");
+        error_here_with_diagnostic("Huge page cannot be shipped out");
+        capture_to_diagnostic(NULL);
         help_ptr = 2;
         help_line[1] = "The page just created is more than 18 feet tall or";
         help_line[0] = "more than 18 feet wide, so I suspect something went wrong.";
@@ -2137,11 +2134,8 @@ write_out(int32_t p)
     get_token();
 
     if (cur_tok != CS_TOKEN_FLAG + END_WRITE) { /*1412:*/
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Unbalanced write command");
+        error_here_with_diagnostic("Unbalanced write command");
+        capture_to_diagnostic(NULL);
         help_ptr = 2;
         help_line[1] = "On this page there's a \\write with fewer real {'s than }'s.";
         help_line[0] = "I can't handle that very well; good luck.";

@@ -364,13 +364,8 @@ void math_limit_switch(void)
             return;
         }
     }
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Limit controls must follow a math operator");
-    }
+    error_here_with_diagnostic("Limit controls must follow a math operator");
+    capture_to_diagnostic(NULL);
     {
         help_ptr = 1;
         help_line[0] = "I'm ignoring this misplaced \\limits or \\nolimits command.";
@@ -473,15 +468,10 @@ void math_ac(void)
     int32_t c;
 
     if (cur_cmd == ACCENT) {   /*1201: */
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Please use ");
-        }
+        error_here_with_diagnostic("Please use ");
         print_esc_cstr("mathaccent");
         print_cstr(" for accents in math mode");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 2;
             help_line[1] = "I'm changing \\accent to \\mathaccent here; wish me luck.";
@@ -618,26 +608,16 @@ void sub_sup(void)
         p = cur_list.tail + 2 + cur_cmd - 7;
         if (t != EMPTY) {
             if (cur_cmd == SUP_MARK) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Double superscript");
-                }
+                error_here_with_diagnostic("Double superscript");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 1;
                     help_line[0] = "I treat `x^1^2' essentially like `x^1{}^2'.";
                 }
             } else {
 
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Double subscript");
-                }
+                error_here_with_diagnostic("Double subscript");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 1;
                     help_line[0] = "I treat `x_1_2' essentially like `x_1{}_2'.";
@@ -719,13 +699,7 @@ void math_left_right(void)
     if ((t != LEFT_NOAD) && (cur_group != MATH_LEFT_GROUP)) { /*1227: */
         if (cur_group == MATH_SHIFT_GROUP) {
             scan_delimiter(GARBAGE, false);
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Extra ");
-            }
+            error_here_with_diagnostic("Extra ");
             if (t == 1) {
                 print_esc_cstr("middle");
                 {
@@ -740,6 +714,7 @@ void math_left_right(void)
                     help_line[0] = "I'm ignoring a \\right that had no matching \\left.";
                 }
             }
+            capture_to_diagnostic(NULL);
             error();
         } else
             off_save();
@@ -926,13 +901,8 @@ void after_math(void)
             &&
             (!((font_area[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Math formula deleted: Insufficient symbol fonts");
-        }
+        error_here_with_diagnostic("Math formula deleted: Insufficient symbol fonts");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 3;
             help_line[2] = "Sorry, but I can't typeset math unless \\textfont 2";
@@ -955,13 +925,8 @@ void after_math(void)
                 &&
                 (!((font_area[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                    && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Math formula deleted: Insufficient extension fonts");
-        }
+        error_here_with_diagnostic("Math formula deleted: Insufficient extension fonts");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 3;
             help_line[2] = "Sorry, but I can't typeset math unless \\textfont 3";
@@ -979,13 +944,8 @@ void after_math(void)
         {
             get_x_token();
             if (cur_cmd != MATH_SHIFT) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Display math should end with $$");
-                }
+                error_here_with_diagnostic("Display math should end with $$");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 2;
                     help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
@@ -1019,13 +979,8 @@ void after_math(void)
                 &&
                 (!((font_area[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                    && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Math formula deleted: Insufficient symbol fonts");
-            }
+            error_here_with_diagnostic("Math formula deleted: Insufficient symbol fonts");
+            capture_to_diagnostic(NULL);
             {
                 help_ptr = 3;
                 help_line[2] = "Sorry, but I can't typeset math unless \\textfont 2";
@@ -1049,13 +1004,8 @@ void after_math(void)
                     (!((font_area[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] == OTGR_FONT_FLAG)
                        &&
                        (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Math formula deleted: Insufficient extension fonts");
-            }
+            error_here_with_diagnostic("Math formula deleted: Insufficient extension fonts");
+            capture_to_diagnostic(NULL);
             {
                 help_ptr = 3;
                 help_line[2] = "Sorry, but I can't typeset math unless \\textfont 3";
@@ -1093,13 +1043,8 @@ void after_math(void)
         if (a == TEX_NULL) { /*1232: */
             get_x_token();
             if (cur_cmd != MATH_SHIFT) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Display math should end with $$");
-                }
+                error_here_with_diagnostic("Display math should end with $$");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 2;
                     help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
@@ -1743,19 +1688,14 @@ fetch(int32_t a)
     cur_f = MATH_FONT((mem[a].b16.s1 % 256) + cur_size);
     cur_c = cur_c + (mem[a].b16.s1 / 256) * 65536L;
     if (cur_f == FONT_BASE) {   /*749: */
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("");
-        }
+        error_here_with_diagnostic("");
         print_size(cur_size);
         print_char(' ');
         print_int((mem[a].b16.s1 % 256));
         print_cstr(" is undefined (character ");
         print(cur_c);
         print_char(')');
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 4;
             help_line[3] = "Somewhere in the math formula just ended, you used the";
