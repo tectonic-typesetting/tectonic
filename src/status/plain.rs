@@ -47,9 +47,17 @@ impl StatusBackend for PlainStatusBackend {
         }
     }
 
-    fn dump_to_stderr(&mut self, output: &[u8]) {
+    fn dump_error_logs(&mut self, output: &[u8]) {
+        eprintln!(
+            "==============================================================================="
+        );
+
         io::stderr()
             .write_all(output)
             .expect("write to stderr failed");
+
+        eprintln!(
+            "==============================================================================="
+        );
     }
 }

@@ -79,7 +79,9 @@ pub trait StatusBackend {
         )
     }
 
-    fn dump_to_stderr(&mut self, output: &[u8]);
+    /// This is used to print TeX engine logs after it encountered errors. This prints the log,
+    /// surrounded by lines of equal signs.
+    fn dump_error_logs(&mut self, output: &[u8]);
 }
 
 /// Report a formatted informational message to the user.
@@ -136,5 +138,5 @@ impl NoopStatusBackend {
 
 impl StatusBackend for NoopStatusBackend {
     fn report(&mut self, _kind: MessageKind, _args: Arguments, _err: Option<&Error>) {}
-    fn dump_to_stderr(&mut self, _output: &[u8]) {}
+    fn dump_error_logs(&mut self, _output: &[u8]) {}
 }

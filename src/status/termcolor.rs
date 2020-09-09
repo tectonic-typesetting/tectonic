@@ -180,9 +180,19 @@ impl StatusBackend for TermcolorStatusBackend {
         }
     }
 
-    fn dump_to_stderr(&mut self, output: &[u8]) {
+    fn dump_error_logs(&mut self, output: &[u8]) {
+        tt_error_styled!(
+            self,
+            "==============================================================================="
+        );
+
         self.stderr
             .write_all(output)
             .expect("write to stderr failed");
+
+        tt_error_styled!(
+            self,
+            "==============================================================================="
+        );
     }
 }

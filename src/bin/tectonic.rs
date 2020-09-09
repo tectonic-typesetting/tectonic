@@ -187,10 +187,7 @@ fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBack
                     engine
                 );
 
-                tt_error!(status, "===============================================================================");
-                status.dump_to_stderr(&output);
-                tt_error!(status, "===============================================================================");
-                tt_error!(status, "");
+                status.dump_error_logs(&output);
             }
         }
     }
