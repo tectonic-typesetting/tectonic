@@ -3598,65 +3598,49 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
 void not_aat_font_error(int32_t cmd, int32_t c, int32_t f)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Cannot use ");
-    }
+    error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
     print(font_name[f]);
     print_cstr("; not an AAT font");
+    capture_to_diagnostic(NULL);
+
     error();
 }
 
 void not_aat_gr_font_error(int32_t cmd, int32_t c, int32_t f)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Cannot use ");
-    }
+    error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
     print(font_name[f]);
     print_cstr("; not an AAT or Graphite font");
+    capture_to_diagnostic(NULL);
+
     error();
 }
 
 void not_ot_font_error(int32_t cmd, int32_t c, int32_t f)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Cannot use ");
-    }
+    error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
     print(font_name[f]);
     print_cstr("; not an OpenType Layout font");
+    capture_to_diagnostic(NULL);
+
     error();
 }
 
 void not_native_font_error(int32_t cmd, int32_t c, int32_t f)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Cannot use ");
-    }
+    error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
     print(font_name[f]);
     print_cstr("; not a native platform font");
+    capture_to_diagnostic(NULL);
+
     error();
 }
 
@@ -3985,14 +3969,19 @@ void group_warning(void)
         i--;
     }
     if (w) {
-        print_nl_cstr("Warning: end of ");
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of ");
         print_group(true);
         print_cstr(" of a different file");
         print_ln();
+
         if (INTPAR(tracing_nesting) > 1)
             show_context();
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
+
+        capture_to_diagnostic(NULL);
     }
 }
 
@@ -4017,7 +4006,10 @@ void if_warning(void)
         i--;
     }
     if (w) {
-        print_nl_cstr("Warning: end of ");
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of ");
+
         print_cmd_chr(IF_TEST, cur_if);
         if (if_line != 0) {
             print_cstr(" entered on line ");
@@ -4027,6 +4019,8 @@ void if_warning(void)
         print_ln();
         if (INTPAR(tracing_nesting) > 1)
             show_context();
+
+        capture_to_diagnostic(NULL);
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
     }
@@ -4044,11 +4038,15 @@ void file_warning(void)
     c = cur_group;
     save_ptr = cur_boundary;
     while (grp_stack[in_open] != save_ptr) {
-
         cur_level--;
-        print_nl_cstr("Warning: end of file when ");
+
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of file when ");
         print_group(true);
         print_cstr(" is incomplete");
+        capture_to_diagnostic(NULL);
+
         cur_group = save_stack[save_ptr].b16.s0;
         save_ptr = save_stack[save_ptr].b32.s1;
     }
@@ -4060,8 +4058,9 @@ void file_warning(void)
     c = cur_if;
     i = if_line;
     while (if_stack[in_open] != cond_ptr) {
-
-        print_nl_cstr("Warning: end of file when ");
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("end of file when ");
         print_cmd_chr(IF_TEST, cur_if);
         if (if_limit == FI_CODE)
             print_esc_cstr("else");
@@ -4070,6 +4069,8 @@ void file_warning(void)
             print_int(if_line);
         }
         print_cstr(" is incomplete");
+        capture_to_diagnostic(NULL);
+
         if_line = mem[cond_ptr + 1].b32.s1;
         cur_if = mem[cond_ptr].b16.s0;
         if_limit = mem[cond_ptr].b16.s1;
@@ -4080,8 +4081,11 @@ void file_warning(void)
     cur_if = c;
     if_line = i;
     print_ln();
-    if (INTPAR(tracing_nesting) > 1)
+    if (INTPAR(tracing_nesting) > 1) {
+        diagnostic_begin_capture_warning_here();
         show_context();
+        capture_to_diagnostic(NULL);
+    }
     if (history == HISTORY_SPOTLESS)
         history = HISTORY_WARNING_ISSUED;
 }
@@ -4490,16 +4494,14 @@ void prepare_mag(void)
 {
 
     if (mag_set > 0 && INTPAR(mag) != mag_set) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Incompatible magnification (");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Incompatible magnification (");
         print_int(INTPAR(mag));
         print_cstr(");");
         print_nl_cstr(" the previous value will be retained");
+
+        ttstub_diag_printf(errmsg, " (%d)", mag_set);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "I can handle only one magnification ratio per job. So I've";
@@ -4509,13 +4511,10 @@ void prepare_mag(void)
         geq_word_define(INT_BASE + INT_PAR__mag, mag_set);
     }
     if ((INTPAR(mag) <= 0) || (INTPAR(mag) > 32768L)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Illegal magnification has been changed to 1000");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
+        ttstub_diag_printf(errmsg, " (%d)", INTPAR(mag));
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 1;
             help_line[0] = "The magnification ratio must be between 1 and 32768.";
@@ -4547,6 +4546,7 @@ void print_meaning(void)
     }
 }
 
+// Used just to trace commands - all gated behind INTPAR(tracing_commands)
 void show_cur_cmd_chr(void)
 {
     int32_t n;
@@ -4554,6 +4554,9 @@ void show_cur_cmd_chr(void)
     int32_t p;
 
     begin_diagnostic();
+
+    diagnostic_begin_capture_warning_here();
+
     print_nl('{');
     if (cur_list.mode != shown_mode) {
         print_mode(cur_list.mode);
@@ -4594,6 +4597,9 @@ void show_cur_cmd_chr(void)
         }
     }
     print_char('}');
+
+    capture_to_diagnostic(NULL);
+
     end_diagnostic(false);
 }
 
@@ -4855,6 +4861,7 @@ begin_token_list(int32_t p, uint16_t t)
 
             if (INTPAR(tracing_macros) > 1) {
                 begin_diagnostic();
+                diagnostic_begin_capture_warning_here();
                 print_nl_cstr("");
                 switch (t) {
                 case MARK_TEXT:
@@ -4869,6 +4876,7 @@ begin_token_list(int32_t p, uint16_t t)
                 }
                 print_cstr("->");
                 token_show(p);
+                capture_to_diagnostic(NULL);
                 end_diagnostic(false);
             }
         }
@@ -5020,19 +5028,10 @@ check_outer_validity(void)
             runaway();
 
             if (cur_cs == 0) {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("File ended");
+                error_here_with_diagnostic("File ended");
             } else {
                 cur_cs = 0;
-
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Forbidden control sequence found");
+                error_here_with_diagnostic("Forbidden control sequence found");
             }
 
             p = get_avail();
@@ -5067,6 +5066,7 @@ check_outer_validity(void)
             begin_token_list(p, INSERTED);
             print_cstr(" of ");
             sprint_cs(warning_index);
+            capture_to_diagnostic(NULL);
             help_ptr = 4;
             help_line[3] = "I suspect you have forgotten a `}', causing me";
             help_line[2] = "to read past where you wanted me to stop.";
@@ -5074,14 +5074,11 @@ check_outer_validity(void)
             help_line[0] = "you'd better type `E' or `X' now and fix your file.";
             error();
         } else {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Incomplete ");
+            error_here_with_diagnostic("Incomplete ");
             print_cmd_chr(IF_TEST, cur_if);
             print_cstr("; all text was ignored after line ");
             print_int(skip_line);
+            capture_to_diagnostic(NULL);
             help_ptr = 3;
             help_line[2] = "A forbidden control sequence occurred in skipped text.";
             help_line[1] = "This kind of error happens when you say `\\if...' and forget";
@@ -5384,11 +5381,9 @@ restart:
                 break;
 
             ANY_STATE_PLUS(INVALID_CHAR):
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Text line contains an invalid character");
+                error_here_with_diagnostic("Text line contains an invalid character");
+                capture_to_diagnostic(NULL);
+
                 help_ptr = 2;
                 help_line[1] = "A funny symbol that I can't read has just been input.";
                 help_line[0] = "Continue, and I'll forget that it ever happened.";
@@ -5643,8 +5638,14 @@ macro_call(void)
     if (INTPAR(tracing_macros) > 0) { /*419:*/
         begin_diagnostic();
         print_ln();
+
+        diagnostic_begin_capture_warning_here();
+
         print_cs(warning_index);
         token_show(ref_count);
+
+        capture_to_diagnostic(NULL);
+
         end_diagnostic(false);
     }
 
@@ -5687,13 +5688,10 @@ macro_call(void)
 
             if (s != r) {
                 if (s == TEX_NULL) { /*416:*/
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Use of ");
+                    error_here_with_diagnostic("Use of ");
                     sprint_cs(warning_index);
                     print_cstr(" doesn't match its definition");
+                    capture_to_diagnostic(NULL);
                     help_ptr = 4;
                     help_line[3] = "If you say, e.g., `\\def\\a1{...}', then you must always";
                     help_line[2] = "put `1' after `\\a', since control sequence names are";
@@ -5743,13 +5741,10 @@ macro_call(void)
                 if (long_state != LONG_CALL) { /*414:*/
                     if (long_state == CALL) {
                         runaway();
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl_cstr("! ");
-                        print_cstr("Paragraph ended before ");
+                        error_here_with_diagnostic("Paragraph ended before ");
                         sprint_cs(warning_index);
                         print_cstr(" was complete");
+                        capture_to_diagnostic(NULL);
                         help_ptr = 3;
                         help_line[2] = "I suspect you've forgotten a `}', causing me to apply this";
                         help_line[1] = "control sequence to too much text. How can we recover?";
@@ -5790,13 +5785,10 @@ macro_call(void)
                             if (long_state != LONG_CALL) { /*414:*/
                                 if (long_state == CALL) {
                                     runaway();
-                                    if (file_line_error_style_p)
-                                        print_file_line();
-                                    else
-                                        print_nl_cstr("! ");
-                                    print_cstr("Paragraph ended before ");
+                                    error_here_with_diagnostic("Paragraph ended before ");
                                     sprint_cs(warning_index);
                                     print_cstr(" was complete");
+                                    capture_to_diagnostic(NULL);
                                     help_ptr = 3;
                                     help_line[2] = "I suspect you've forgotten a `}', causing me to apply this";
                                     help_line[1] = "control sequence to too much text. How can we recover?";
@@ -5836,13 +5828,11 @@ macro_call(void)
                 } else { /*413:*/
                     back_input();
 
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Argument of ");
+                    error_here_with_diagnostic("Argument of ");
                     sprint_cs(warning_index);
                     print_cstr(" has an extra }");
+                    capture_to_diagnostic(NULL);
+
                     help_ptr = 6;
                     help_line[5] = "I've run across a `}' that doesn't seem to match anything.";
                     help_line[4] = "For example, `\\def\\a#1{...}' and `\\a}' would produce";
@@ -5895,10 +5885,12 @@ macro_call(void)
 
                 if (INTPAR(tracing_macros) > 0) {
                     begin_diagnostic();
+                    diagnostic_begin_capture_warning_here();
                     print_nl(match_chr);
                     print_int(n);
                     print_cstr("<-");
                     show_token_list(pstack[n - 1], TEX_NULL, 1000);
+                    capture_to_diagnostic(NULL);
                     end_diagnostic(false);
                 }
             }
@@ -6169,15 +6161,12 @@ reswitch:
                     goto reswitch;
                 }
 
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("You can't use `");
+                error_here_with_diagnostic("You can't use `");
                 print_esc_cstr("unless");
                 print_cstr("' before `");
                 print_cmd_chr(cur_cmd, cur_chr);
                 print_char('\'');
+                capture_to_diagnostic(NULL);
                 help_ptr = 1;
                 help_line[0] = "Continue, and I'll forget that it ever happened.";
                 back_error();
@@ -6247,13 +6236,11 @@ reswitch:
             } while (cur_cs == 0);
 
             if (cur_cmd != END_CS_NAME) { /*391:*/
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Missing ");
+                error_here_with_diagnostic("Missing ");
                 print_esc_cstr("endcsname");
                 print_cstr(" inserted");
+                capture_to_diagnostic(NULL);
+
                 help_ptr = 2;
                 help_line[1] = "The control sequence marked <to be read again> should";
                 help_line[0] = "not appear between \\csname and \\endcsname.";
@@ -6316,12 +6303,10 @@ reswitch:
                 if (if_limit == IF_CODE) {
                     insert_relax();
                 } else {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Extra ");
+                    error_here_with_diagnostic("Extra ");
                     print_cmd_chr(FI_OR_ELSE, cur_chr);
+                    capture_to_diagnostic(NULL);
+
                     help_ptr = 1;
                     help_line[0] = "I'm ignoring this; it doesn't match any \\if.";
                     error();
@@ -6353,11 +6338,9 @@ reswitch:
             break;
 
         default:
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Undefined control sequence");
+            error_here_with_diagnostic("Undefined control sequence");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 5;
             help_line[4] = "The control sequence at the end of the top line";
             help_line[3] = "of your error message was never \\def'ed. If you have";
@@ -6432,11 +6415,9 @@ scan_left_brace(void)
     } while (cur_cmd == SPACER || cur_cmd == RELAX);
 
     if (cur_cmd != LEFT_BRACE) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Missing { inserted");
+        error_here_with_diagnostic("Missing { inserted");
+        capture_to_diagnostic(NULL);
+
         help_ptr = 4;
         help_line[3] = "A left brace was mandatory here, so I've put one in.";
         help_line[2] = "You might want to delete and/or insert some corrections";
@@ -6518,17 +6499,11 @@ bool scan_keyword(const char* s)
 
 void mu_error(void)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Incompatible glue units");
-    }
-    {
-        help_ptr = 1;
-        help_line[0] = "I'm going to assume that 1mu=1pt when they're mixed.";
-    }
+    error_here_with_diagnostic("Incompatible glue units");
+    capture_to_diagnostic(NULL);
+
+    help_ptr = 1;
+    help_line[0] = "I'm going to assume that 1mu=1pt when they're mixed.";
     error();
 }
 
@@ -6554,13 +6529,10 @@ void scan_char_class(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad character class");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad character class");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "A character class must be between 0 and 4096.";
@@ -6575,13 +6547,10 @@ void scan_char_class_not_ignored(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad character class");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad character class");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "A class for inter-character transitions must be between 0 and 4095.";
@@ -6596,13 +6565,10 @@ void scan_eight_bit_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 255)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad register code");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad register code");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "A register code or char class must be between 0 and 255.";
@@ -6617,13 +6583,10 @@ void scan_usv_num(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_USV)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad character code");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad character code");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "A Unicode scalar value must be between 0 and \"10FFFF.";
@@ -6638,13 +6601,10 @@ void scan_char_num(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_CHAR)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad character code");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad character code");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "A character number must be between 0 and 65535.";
@@ -6660,13 +6620,10 @@ void scan_xetex_math_char_int(void)
     scan_int();
     if (math_char(cur_val) == ACTIVE_MATH_CHAR) {
         if (cur_val != ACTIVE_MATH_CHAR) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Bad active XeTeX math code");
-            }
+            diagnostic_t errmsg = error_here_with_diagnostic("Bad active XeTeX math code");
+            ttstub_diag_printf(errmsg, " (%d)", cur_val);
+            capture_to_diagnostic(NULL);
+
             {
                 help_ptr = 2;
                 help_line[1] = "Since I ignore class and family for active math chars,";
@@ -6676,13 +6633,10 @@ void scan_xetex_math_char_int(void)
             cur_val = ACTIVE_MATH_CHAR;
         }
     } else if (math_char(cur_val) > BIGGEST_USV) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad XeTeX math character code");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad XeTeX math character code");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "Since I expected a character number between 0 and \"10FFFF,";
@@ -6827,13 +6781,10 @@ void scan_math_class_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 7)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad math class");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad math class");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "Since I expected to read a number between 0 and 7,";
@@ -6848,13 +6799,10 @@ void scan_math_fam_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > (NUMBER_MATH_FAMILIES - 1))) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad math family");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad math family");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "Since I expected to read a number between 0 and 255,";
@@ -6869,13 +6817,10 @@ void scan_four_bit_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 15)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad number");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad number");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "Since I expected to read a number between 0 and 15,"; /* ... "between 0 and 15" */
@@ -6890,13 +6835,10 @@ void scan_fifteen_bit_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 32767)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad mathchar");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad mathchar");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "A mathchar number must be between 0 and 32767.";
@@ -6914,11 +6856,10 @@ scan_delimiter_int(void)
     scan_int();
 
     if (cur_val < 0 || cur_val > 0x7FFFFFF) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Bad delimiter code");
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad delimiter code");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         help_ptr = 2;
         help_line[1] = "A numeric delimiter code must be between 0 and 2^{27}-1.";
         help_line[0] = "I changed this one to zero.";
@@ -6932,13 +6873,10 @@ void scan_register_num(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > max_reg_num)) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad register code");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad register code");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = max_reg_help_line;
@@ -6953,13 +6891,10 @@ void scan_four_bit_int_or_18(void)
 {
     scan_int();
     if ((cur_val < 0) || ((cur_val > 15) && (cur_val != 18))) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad number");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad number");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "Since I expected to read a number between 0 and 15,"; /* ... "between 0 and 15" */
@@ -7016,14 +6951,8 @@ void scan_font_ident(void)
         scan_math_fam_int();
         f = eqtb[m + cur_val].b32.s1;
     } else {
-
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing font identifier");
-        }
+        error_here_with_diagnostic("Missing font identifier");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 2;
             help_line[1] = "I was looking for a control sequence whose";
@@ -7070,17 +6999,12 @@ void find_font_dimen(bool writing)
             cur_val = n + param_base[f];
     }
     if (cur_val == fmem_ptr) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Font ");
-        }
+        error_here_with_diagnostic("Font ");
         print_esc(hash[FONT_ID_BASE + f].s1);
         print_cstr(" has only ");
         print_int(font_params[f]);
         print_cstr(" fontdimen parameters");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 2;
             help_line[1] = "To increase the number of font parameters, you must";
@@ -7111,11 +7035,10 @@ scan_something_internal(small_number level, bool negative)
             if (math_char(cur_val1) == ACTIVE_MATH_CHAR) {
                 cur_val1 = 0x8000;
             } else if (math_class(cur_val1) > 7 || math_fam(cur_val1) > 15 || math_char(cur_val1) > 255) {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Extended mathchar used as mathchar");
+                diagnostic_t errmsg = error_here_with_diagnostic("Extended mathchar used as mathchar");
+                ttstub_diag_printf(errmsg, " (%d)", cur_val1);
+                capture_to_diagnostic(NULL);
+
                 help_ptr = 2;
                 help_line[1] = "A mathchar number must be between 0 and \"7FFF.";
                 help_line[0] = "I changed this one to zero.";
@@ -7129,11 +7052,9 @@ scan_something_internal(small_number level, bool negative)
         } else if (m == DEL_CODE_BASE) {
             cur_val1 = DEL_CODE(cur_val);
             if (cur_val1 >= 0x40000000) {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Extended delcode used as delcode");
+                error_here_with_diagnostic("Extended delcode used as delcode");
+                capture_to_diagnostic(NULL);
+
                 help_ptr = 2;
                 help_line[1] = "I can only go up to 2147483647='17777777777=\"7FFFFFFF,";
                 help_line[0] = "I changed this one to zero.";
@@ -7166,11 +7087,9 @@ scan_something_internal(small_number level, bool negative)
             cur_val = MATH_CODE(cur_val);
             cur_val_level = INT_VAL;
         } else if (m == MATH_CODE_BASE + 1) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Can't use \\Umathcode as a number (try \\Umathcodenum)");
+            error_here_with_diagnostic("Can't use \\Umathcode as a number (try \\Umathcodenum)");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 2;
             help_line[1] = "\\Umathcode is for setting a mathcode from separate values;";
             help_line[0] = "use \\Umathcodenum to access them as single values.";
@@ -7181,11 +7100,9 @@ scan_something_internal(small_number level, bool negative)
             cur_val = DEL_CODE(cur_val);
             cur_val_level = INT_VAL;
         } else {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Can't use \\Udelcode as a number (try \\Udelcodenum)");
+            error_here_with_diagnostic("Can't use \\Udelcode as a number (try \\Udelcodenum)");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 2;
             help_line[1] = "\\Udelcode is for setting a delcode from separate values;";
             help_line[0] = "use \\Udelcodenum to access them as single values.";
@@ -7201,11 +7118,9 @@ scan_something_internal(small_number level, bool negative)
     case SET_FONT:
     case DEF_FONT:
         if (level != TOK_VAL) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing number, treated as zero");
+            error_here_with_diagnostic("Missing number, treated as zero");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 3;
             help_line[2] = "A number should have been here; I inserted `0'.";
             help_line[1] = "(If you can't figure out why I needed to see a number,";
@@ -7272,12 +7187,10 @@ scan_something_internal(small_number level, bool negative)
 
     case SET_AUX:
         if (abs(cur_list.mode) != m) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Improper ");
+            error_here_with_diagnostic("Improper ");
             print_cmd_chr(SET_AUX, m);
+            capture_to_diagnostic(NULL);
+
             help_ptr = 4;
             help_line[3] = "You can refer to \\spacefactor only in horizontal mode;";
             help_line[2] = "you can refer to \\prevdepth only in vertical mode; and";
@@ -7514,13 +7427,11 @@ scan_something_internal(small_number level, bool negative)
                         scan_int();
                         n = cur_val;
                         if (n < 1 || n > 4) {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl_cstr("! ");
-                            print_cstr("\\\\XeTeXglyphbounds requires an edge index from 1 to 4;");
+                            error_here_with_diagnostic("\\\\XeTeXglyphbounds requires an edge index from 1 to 4;");
                             print_nl_cstr("I don't know anything about edge ");
                             print_int(n);
+                            capture_to_diagnostic(NULL);
+
                             error();
                             cur_val = 0;
                         } else {
@@ -7981,14 +7892,12 @@ scan_something_internal(small_number level, bool negative)
         break;
 
     default:
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("You can't use `");
+        error_here_with_diagnostic("You can't use `");
         print_cmd_chr(cur_cmd, cur_chr);
         print_cstr("' after ");
         print_esc_cstr("the");
+        capture_to_diagnostic(NULL);
+
         help_ptr = 1;
         help_line[0] = "I'm forgetting what you said and using zero instead.";
         error();
@@ -8066,11 +7975,9 @@ scan_int(void)
         }
 
         if (cur_val > BIGGEST_USV) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Improper alphabetic constant");
+            error_here_with_diagnostic("Improper alphabetic constant");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 2;
             help_line[1] = "A one-character control sequence belongs after a ` mark.";
             help_line[0] = "So I'm essentially inserting \\0 here.";
@@ -8118,11 +8025,9 @@ scan_int(void)
 
             if (cur_val >= m && (cur_val > m || d > 7 || radix != 10)) {
                 if (OK_so_far) {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Number too big");
+                    error_here_with_diagnostic("Number too big");
+                    capture_to_diagnostic(NULL);
+
                     help_ptr = 2;
                     help_line[1] = "I can only go up to 2147483647='17777777777=\"7FFFFFFF,";
                     help_line[0] = "so I'm using that number instead of yours.";
@@ -8138,11 +8043,9 @@ scan_int(void)
         } /*:463*/
 
         if (vacuous) { /*464:*/
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing number, treated as zero");
+            error_here_with_diagnostic("Missing number, treated as zero");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 3;
             help_line[2] = "A number should have been here; I inserted `0'.";
             help_line[1] = "(If you can't figure out why I needed to see a number,";
@@ -8283,13 +8186,11 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
                 while (scan_keyword("l")) {
                     if (cur_order == FILLL) {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl_cstr("! ");
-                        print_cstr("Illegal unit of measure (");
-                        print_cstr("replaced by filll)");
+                        error_here_with_diagnostic("Illegal unit of measure (replaced with filll)");
+                        capture_to_diagnostic(NULL);
+
                         help_ptr = 1;
+                        // "ddon't" looks like wordplay from Knuth inspired by "filll"
                         help_line[0] = "I dddon't go any higher than filll.";
                         error();
                     } else {
@@ -8350,12 +8251,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             if (scan_keyword("mu")) {
                 goto attach_fraction;
             } else {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Illegal unit of measure (");
-                print_cstr("mu inserted)");
+                error_here_with_diagnostic("Illegal unit of measure (mu inserted)");
+                capture_to_diagnostic(NULL);
+
                 help_ptr = 4;
                 help_line[3] = "The unit of measurement in math glue must be mu.";
                 help_line[2] = "To recover gracefully from this error, it's best to";
@@ -8403,12 +8301,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         } else if (scan_keyword("sp")) {
             goto done;
         } else { /*478:*/
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Illegal unit of measure (");
-            print_cstr("pt inserted)");
+            error_here_with_diagnostic("Illegal unit of measure (pt inserted)");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 6;
             help_line[5] = "Dimensions can be in units of em, ex, in, pt, pc,";
             help_line[4] = "cm, mm, dd, cc, bp, or sp; but yours is a new one!";
@@ -8447,11 +8342,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
 attach_sign:
     if (arith_error || abs(cur_val) >= 0x40000000) { /*479:*/
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Dimension too large");
+        error_here_with_diagnostic("Dimension too large");
+        capture_to_diagnostic(NULL);
+
         help_ptr = 2;
         help_line[1] = "I can't work with sizes bigger than about 19 feet.";
         help_line[0] = "Continue and I'll use the largest value I can.";
@@ -8757,13 +8650,9 @@ found: /*1572:*//*424:*/
             if (cur_cmd != RELAX)
                 back_input();
         } else if (cur_tok != (OTHER_TOKEN + 41)) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Missing ) inserted for expression");
-            }
+            error_here_with_diagnostic("Missing ) inserted for expression");
+            capture_to_diagnostic(NULL);
+
             {
                 help_ptr = 1;
                 help_line[0] = "I was expecting to see `+', `-', `*', `/', or `)'. Didn't.";
@@ -8892,13 +8781,9 @@ found: /*1572:*//*424:*/
         goto found;
     }
     if (b) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Arithmetic overflow");
-        }
+        error_here_with_diagnostic("Arithmetic overflow");
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "I can't evaluate this expression,";
@@ -9309,13 +9194,11 @@ conv_toks(void)
         scan_int();
 
         if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Invalid code (");
+            error_here_with_diagnostic("Invalid code (");
             print_int(cur_val);
             print_cstr("), should be in the ranges 1..4, 6..8, 10..12");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 1;
             help_line[0] = "I'm going to use 12 instead of that illegal code value.";
             error();
@@ -9670,13 +9553,8 @@ int32_t scan_toks(bool macro_def, bool xpand)
                     goto done;
                 }
                 if (t == (ZERO_TOKEN + 9)) {
-                    {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl_cstr("! ");
-                        print_cstr("You already have nine parameters");
-                    }
+                    error_here_with_diagnostic("You already have nine parameters");
+                    capture_to_diagnostic(NULL);
                     {
                         help_ptr = 1;
                         help_line[0] = "I'm going to ignore the # sign you just used.";
@@ -9686,13 +9564,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
 
                     t++;
                     if (cur_tok != t) {
-                        {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl_cstr("! ");
-                            print_cstr("Parameters must be numbered consecutively");
-                        }
+                        error_here_with_diagnostic("Parameters must be numbered consecutively");
                         {
                             help_ptr = 2;
                             help_line[1] = "I've inserted the digit you should have used after the #.";
@@ -9718,11 +9590,9 @@ int32_t scan_toks(bool macro_def, bool xpand)
             p = q;
         }
         if (cur_cmd == RIGHT_BRACE) {   /*494: */
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing { inserted");
+            error_here_with_diagnostic("Missing { inserted");
+            capture_to_diagnostic(NULL);
+
             align_state++;
             help_ptr = 2;
             help_line[1] = "Where was the left brace? You said something like `\\def\\a}',";
@@ -9786,14 +9656,9 @@ int32_t scan_toks(bool macro_def, bool xpand)
                 if (cur_cmd != MAC_PARAM) {
 
                     if ((cur_tok <= ZERO_TOKEN) || (cur_tok > t)) {
-                        {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl_cstr("! ");
-                            print_cstr("Illegal parameter number in definition of ");
-                        }
+                        error_here_with_diagnostic("Illegal parameter number in definition of ");
                         sprint_cs(warning_index);
+                        capture_to_diagnostic(NULL);
                         {
                             help_ptr = 3;
                             help_line[2] = "You meant to type ## instead of #, right?";
@@ -9872,12 +9737,9 @@ read_toks(int32_t n, int32_t r, int32_t j)
                 read_open[m] = CLOSED;
                 if (align_state != 1000000L) {
                     runaway();
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("File ended within ");
+                    error_here_with_diagnostic("File ended within ");
                     print_esc_cstr("read");
+                    capture_to_diagnostic(NULL);
                     help_ptr = 1;
                     help_line[0] = "This \\read has unbalanced braces.";
                     align_state = 1000000L;
@@ -10080,16 +9942,14 @@ conditional(void)
         if (cur_tok >= OTHER_TOKEN + 60 && cur_tok <= OTHER_TOKEN + 62) {
             r = cur_tok - OTHER_TOKEN;
         } else {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing = inserted for ");
+            error_here_with_diagnostic("Missing = inserted for ");
             print_cmd_chr(IF_TEST, this_if);
+            capture_to_diagnostic(NULL);
+
             help_ptr = 1;
             help_line[0] = "I was expecting to see `<', `=', or `>'. Didn't.";
             back_error();
-            r = '=' ;
+            r = '=';
         }
 
         if (this_if == IF_INT_CODE)
@@ -10231,13 +10091,11 @@ conditional(void)
         } while (cur_cs == 0);
 
         if (cur_cmd != END_CS_NAME) { /*391:*/
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing ");
+            error_here_with_diagnostic("Missing ");
             print_esc_cstr("endcsname");
             print_cstr(" inserted");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 2;
             help_line[1] = "The control sequence marked <to be read again> should";
             help_line[0] = "not appear between \\csname and \\endcsname.";
@@ -10296,9 +10154,11 @@ conditional(void)
 
         if (INTPAR(tracing_commands) > 1) {
             begin_diagnostic();
+            diagnostic_begin_capture_warning_here();
             print_cstr("{case ");
             print_int(n);
             print_char('}');
+            capture_to_diagnostic(NULL);
             end_diagnostic(false);
         }
 
@@ -10344,10 +10204,12 @@ conditional(void)
 
     if (INTPAR(tracing_commands) > 1) { /*521:*/
         begin_diagnostic();
+        diagnostic_begin_capture_warning_here();
         if (b)
             print_cstr("{true}");
         else
             print_cstr("{false}");
+        capture_to_diagnostic(NULL);
         end_diagnostic(false);
     }
 
@@ -10363,12 +10225,10 @@ conditional(void)
             if (cur_chr != OR_CODE)
                 goto common_ending;
 
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Extra ");
+            error_here_with_diagnostic("Extra ");
             print_esc_cstr("or");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 1;
             help_line[0] = "I'm ignoring this; it doesn't match any \\if.";
             error();
@@ -10815,6 +10675,7 @@ void char_warning(internal_font_number f, int32_t c)
             INTPAR(tracing_online) = 1;
 
         begin_diagnostic();
+        diagnostic_begin_capture_warning_here();
         print_nl_cstr("Missing character: There is no ");
         if (c < 65536L)
             print(c);
@@ -10823,6 +10684,7 @@ void char_warning(internal_font_number f, int32_t c)
         print_cstr(" in font ");
         print(font_name[f]);
         print_char('!');
+        capture_to_diagnostic(NULL);
         end_diagnostic(false);
 
         INTPAR(tracing_online) = old_setting;
@@ -10965,6 +10827,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 void font_feature_warning(const void *featureNameP, int32_t featLen, const void *settingNameP, int32_t setLen)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     print_nl_cstr("Unknown ");
     if (setLen > 0) {
         print_cstr("selector `");
@@ -10977,12 +10840,14 @@ void font_feature_warning(const void *featureNameP, int32_t featLen, const void 
     for (int32_t i = 0; name_of_file[i] != 0; i++)
         print_raw_char(name_of_file[i], true);
     print_cstr("'.");
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
 void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int32_t warningType)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     if (warningType == 0)
         print_nl_cstr("Loaded mapping `");
     else
@@ -11007,18 +10872,21 @@ void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int3
         print_cstr("'.");
         break;
     }
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
 void graphite_warning(void)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     print_nl_cstr("Font `");
 
     for (int32_t i = 0; name_of_file[i] != 0; i++)
         print_raw_char(name_of_file[i], true);
 
     print_cstr("' does not support Graphite. Trying OpenType layout instead.");
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
@@ -11070,12 +10938,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         num_font_dimens = 8;
 
     if (font_ptr == font_max || fmem_ptr + num_font_dimens > font_mem_size) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-
-        print_cstr("Font ");
+        error_here_with_diagnostic("Font ");
         sprint_cs(u);
         print_char('=');
         if (file_name_quote_char != 0)
@@ -11092,6 +10955,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
             print_int(-(int32_t) s);
         }
         print_cstr(" not loaded: Not enough room left");
+        capture_to_diagnostic(NULL);
 
         help_ptr = 4;
         help_line[3] = "I'm afraid I won't be able to make use of this font,";
@@ -11221,6 +11085,7 @@ void do_locale_linebreaks(int32_t s, int32_t len)
 void bad_utf8_warning(void)
 {
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
     print_nl_cstr("Invalid UTF-8 byte or sequence");
     if (cur_input.name == 0)
         print_cstr(" in terminal input");
@@ -11230,6 +11095,7 @@ void bad_utf8_warning(void)
         print_int(line);
     }
     print_cstr(" replaced by U+FFFD.");
+    capture_to_diagnostic(NULL);
     end_diagnostic(false);
 }
 
@@ -11274,6 +11140,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
 
     if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
+        diagnostic_begin_capture_warning_here();
         print_nl_cstr("Requested font \"");
         print_c_string(name_of_file);
         print('"');
@@ -11285,6 +11152,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             print_scaled(s);
             print_cstr("pt");
         }
+        capture_to_diagnostic(NULL);
         end_diagnostic(false);
     }
 
@@ -11653,11 +11521,7 @@ bad_tfm:
     if (INTPAR(suppress_fontnotfound_error) == 0) {
         /* NOTE: must preserve this path to keep passing the TRIP tests */
 
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Font ");
+        error_here_with_diagnostic("Font ");
         sprint_cs(u);
         print_char('=');
         if (file_name_quote_char != 0)
@@ -11680,6 +11544,7 @@ bad_tfm:
             print_cstr(" not loadable: Metric (TFM) file name too long");
         else
             print_cstr(" not loadable: Metric (TFM) file or installed font not found");
+        capture_to_diagnostic(NULL);
 
         help_ptr = 5;
         help_line[4] = "I wasn't able to read the size data for this font,";
@@ -11696,14 +11561,17 @@ done:
         ttstub_input_close (tfm_file);
 
     if (INTPAR(xetex_tracing_fonts) > 0) {
-        if (g == FONT_BASE) {
+        if (g == FONT_BASE || file_opened) {
             begin_diagnostic();
-            print_nl_cstr(" -> font not found, using \"nullfont\"");
-            end_diagnostic(false);
-        } else if (file_opened) {
-            begin_diagnostic();
+            diagnostic_begin_capture_warning_here();
+
             print_nl_cstr(" -> ");
-            print_c_string(name_of_file);
+            if (g == FONT_BASE)
+                print_c_string("font not found, using \"nullfont\"");
+            else
+                print_c_string(name_of_file);
+
+            capture_to_diagnostic(NULL);
             end_diagnostic(false);
         }
     }
@@ -12640,13 +12508,10 @@ init_align(void)
     align_state = -1000000L;
 
     if (cur_list.mode == MMODE && (cur_list.tail != cur_list.head || cur_list.aux.b32.s1 != TEX_NULL)) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Improper ");
+        error_here_with_diagnostic("Improper ");
         print_esc_cstr("halign");
         print_cstr(" inside $$'s");
+        capture_to_diagnostic(NULL);
         help_ptr = 3;
         help_line[2] = "Displays can use special alignments (like \\eqalignno)";
         help_line[1] = "only if nothing but the alignment itself is between $$'s.";
@@ -12690,11 +12555,8 @@ init_align(void)
                 if (p == HOLD_HEAD && cur_loop == TEX_NULL && cur_cmd == TAB_MARK) {
                     cur_loop = cur_align;
                 } else {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Missing # inserted in alignment preamble");
+                    error_here_with_diagnostic("Missing # inserted in alignment preamble");
+                    capture_to_diagnostic(NULL);
                     help_ptr = 3;
                     help_line[2] = "There should be exactly one # between &'s, when an";
                     help_line[1] = "\\halign or \\valign is being set up. In this case you had";
@@ -12725,11 +12587,9 @@ init_align(void)
                 goto done2;
 
             if (cur_cmd == MAC_PARAM) {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Only one # is allowed per tab");
+                error_here_with_diagnostic("Only one # is allowed per tab");
+                capture_to_diagnostic(NULL);
+
                 help_ptr = 3;
                 help_line[2] = "There should be exactly one # between &'s, when an";
                 help_line[1] = "\\halign or \\valign is being set up. In this case you had";
@@ -12855,15 +12715,10 @@ bool fin_col(void)
             cur_loop = LLIST_link(cur_loop);
             mem[p].b32.s1 = new_glue(mem[cur_loop + 1].b32.s0);
         } else {
-
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Extra alignment tab has been changed to ");
-            }
+            error_here_with_diagnostic("Extra alignment tab has been changed to ");
             print_esc_cstr("cr");
+            capture_to_diagnostic(NULL);
+
             {
                 help_ptr = 3;
                 help_line[2] = "You have given more \\span or & marks than there were";
@@ -13235,13 +13090,8 @@ void fin_align(void)
     if (cur_list.mode == MMODE) {       /*1241: */
         do_assignments();
         if (cur_cmd != MATH_SHIFT) {    /*1242: */
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Missing $$ inserted");
-            }
+            error_here_with_diagnostic("Missing $$ inserted");
+            capture_to_diagnostic(NULL);
             {
                 help_ptr = 2;
                 help_line[1] = "Displays can use special alignments (like \\eqalignno)";
@@ -13252,13 +13102,8 @@ void fin_align(void)
 
             get_x_token();
             if (cur_cmd != MATH_SHIFT) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Display math should end with $$");
-                }
+                error_here_with_diagnostic("Display math should end with $$");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 2;
                     help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
@@ -13336,14 +13181,10 @@ int32_t max_hyphenatable_length(void)
 bool eTeX_enabled(bool b, uint16_t j, int32_t k)
 {
     if (!b) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Improper ");
-        }
+        error_here_with_diagnostic("Improper ");
         print_cmd_chr(j, k);
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 1;
             help_line[0] = "Sorry, this optional e-TeX feature has been disabled.";
@@ -13671,13 +13512,8 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
             active_width[2 + mem[q].b16.s1] = active_width[2 + mem[q].b16.s1] + mem[q + 2].b32.s1;
             active_width[6] = active_width[6] + mem[q + 3].b32.s1;
             if ((mem[q].b16.s0 != NORMAL) && (mem[q + 3].b32.s1 != 0)) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Infinite glue shrinkage found in box being split");
-                }
+                error_here_with_diagnostic("Infinite glue shrinkage found in box being split");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 4;
                     help_line[3] = "The box you are \\vsplitting contains some infinitely";
@@ -13741,16 +13577,12 @@ int32_t vsplit(int32_t n, scaled_t h)
         return TEX_NULL;
     }
     if (NODE_type(v) != VLIST_NODE) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("");
-        }
+        error_here_with_diagnostic("");
         print_esc_cstr("vsplit");
         print_cstr(" needs a ");
         print_esc_cstr("vbox");
+        capture_to_diagnostic(NULL);
+
         {
             help_ptr = 2;
             help_line[1] = "The box you are trying to split is an \\hbox.";
@@ -13846,12 +13678,17 @@ void print_totals(void)
 
 void box_error(eight_bits n)
 {
-
     error();
+
     begin_diagnostic();
+    diagnostic_begin_capture_warning_here();
+
     print_nl_cstr("The following box has been deleted:");
     show_box(BOX_REG(n));
+
+    capture_to_diagnostic(NULL);
     end_diagnostic(true);
+
     flush_node_list(BOX_REG(n));
     BOX_REG(n) = TEX_NULL;
 }
@@ -13910,15 +13747,10 @@ insert_dollar_sign(void)
 
 void you_cant(void)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("You can't use `");
-    }
+    error_here_with_diagnostic("You can't use `");
     print_cmd_chr(cur_cmd, cur_chr);
     print_in_mode(cur_list.mode);
+    capture_to_diagnostic(NULL);
 }
 
 void report_illegal_case(void)
@@ -14024,12 +13856,10 @@ off_save(void)
     int32_t p;
 
     if (cur_group == BOTTOM_LEVEL) { /*1101:*/
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Extra ");
+        error_here_with_diagnostic("Extra ");
         print_cmd_chr(cur_cmd, cur_chr);
+        capture_to_diagnostic(NULL);
+
         help_ptr = 1;
         help_line[0] = "Things are pretty mixed up, but I think the worst is over.";
         error();
@@ -14038,11 +13868,7 @@ off_save(void)
         p = get_avail();
         mem[TEMP_HEAD].b32.s1 = p;
 
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Missing ");
+        error_here_with_diagnostic("Missing ");
 
         switch (cur_group) {
         case SEMI_SIMPLE_GROUP:
@@ -14068,6 +13894,8 @@ off_save(void)
 
         print_cstr(" inserted");
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
+        capture_to_diagnostic(NULL);
+
         help_ptr = 5;
         help_line[4] = "I've inserted something that you may have forgotten.";
         help_line[3] = "(See the <inserted text> above.)";
@@ -14082,11 +13910,7 @@ off_save(void)
 void
 extra_right_brace(void)
 {
-    if (file_line_error_style_p)
-        print_file_line();
-    else
-        print_nl_cstr("! ");
-    print_cstr("Extra }, or forgotten ");
+    error_here_with_diagnostic("Extra }, or forgotten ");
 
     switch (cur_group) {
     case SEMI_SIMPLE_GROUP:
@@ -14099,6 +13923,8 @@ extra_right_brace(void)
         print_esc_cstr("right");
         break;
     }
+
+    capture_to_diagnostic(NULL);
 
     help_ptr = 5;
     help_line[4] = "I've deleted a group-closing symbol because it seems to be";
@@ -14210,11 +14036,9 @@ box_end(int32_t box_context)
                 mem[cur_list.tail].b16.s0 = box_context - (LEADER_FLAG - A_LEADERS);
                 mem[cur_list.tail + 1].b32.s1 = cur_box;
             } else {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Leaders not followed by proper glue");
+                error_here_with_diagnostic("Leaders not followed by proper glue");
+                capture_to_diagnostic(NULL);
+
                 help_ptr = 3;
                 help_line[2] = "You should say `\\leaders <box or rule><hskip or vskip>'.";
                 help_line[1] = "I found the <box or rule>, but there's no suitable";
@@ -14364,11 +14188,9 @@ begin_box(int32_t box_context)
         n = cur_val;
 
         if (!scan_keyword("to")) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing `to' inserted");
+            error_here_with_diagnostic("Missing `to' inserted");
+            capture_to_diagnostic(NULL);
+
             help_ptr = 2;
             help_line[1] = "I'm working on `\\vsplit<box number> to <dimen>';";
             help_line[0] = "will look for the <dimen> next.";
@@ -14430,11 +14252,9 @@ scan_box(int32_t box_context)
         cur_box = scan_rule_spec();
         box_end(box_context);
     } else {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("A <box> was supposed to be here");
+        error_here_with_diagnostic("A <box> was supposed to be here");
+        capture_to_diagnostic(NULL);
+
         help_ptr = 3;
         help_line[2] = "I was expecting to see \\hbox or \\vbox or \\copy or \\box or";
         help_line[1] = "something like that. So you might find something missing in";
@@ -14555,16 +14375,11 @@ void head_for_vmode(void)
         if (cur_cmd != HRULE)
             off_save();
         else {
-
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("You can't use `");
-            }
+            error_here_with_diagnostic("You can't use `");
             print_esc_cstr("hrule");
             print_cstr("' here except with leaders");
+            capture_to_diagnostic(NULL);
+
             {
                 help_ptr = 2;
                 help_line[1] = "To put a horizontal rule in an hbox or an alignment,";
@@ -14605,15 +14420,11 @@ void begin_insert_or_adjust(void)
 
         scan_eight_bit_int();
         if (cur_val == 255) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("You can't ");
-            }
+            error_here_with_diagnostic("You can't ");
             print_esc_cstr("insert");
             print_int(255);
+            capture_to_diagnostic(NULL);
+
             {
                 help_ptr = 1;
                 help_line[0] = "I'm changing to \\insert0; box 255 is special.";
@@ -14779,13 +14590,8 @@ void unpackage(void)
     if ((abs(cur_list.mode) == MMODE)
         || ((abs(cur_list.mode) == VMODE) && (NODE_type(p) != VLIST_NODE))
         || ((abs(cur_list.mode) == HMODE) && (NODE_type(p) != HLIST_NODE))) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Incompatible list can't be unboxed");
-        }
+        error_here_with_diagnostic("Incompatible list can't be unboxed");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 3;
             help_line[2] = "Sorry, Pandora. (You sneaky devil.)";
@@ -14911,21 +14717,21 @@ void build_discretionary(void)
                             || ((mem[p].b16.s0 != NATIVE_WORD_NODE)
                                 && (mem[p].b16.s0 != NATIVE_WORD_NODE_AT)
                                 && (mem[p].b16.s0 != GLYPH_NODE))) {
-                            {
-                                if (file_line_error_style_p)
-                                    print_file_line();
-                                else
-                                    print_nl_cstr("! ");
-                                print_cstr("Improper discretionary list");
-                            }
+                            error_here_with_diagnostic("Improper discretionary list");
+                            capture_to_diagnostic(NULL);
                             {
                                 help_ptr = 1;
                                 help_line[0] = "Discretionary lists must contain only boxes and kerns.";
                             }
                             error();
+
                             begin_diagnostic();
+                            diagnostic_begin_capture_warning_here();
+
                             print_nl_cstr("The following discretionary sublist has been deleted:");
                             show_box(p);
+
+                            capture_to_diagnostic(NULL);
                             end_diagnostic(true);
                             flush_node_list(p);
                             mem[q].b32.s1 = TEX_NULL;
@@ -14952,14 +14758,10 @@ done:
     case 2:
         {
             if ((n > 0) && (abs(cur_list.mode) == MMODE)) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Illegal math ");
-                }
+                error_here_with_diagnostic("Illegal math ");
                 print_esc_cstr("discretionary");
+                capture_to_diagnostic(NULL);
+
                 {
                     help_ptr = 2;
                     help_line[1] = "Sorry: The third part of a discretionary break must be";
@@ -14973,14 +14775,9 @@ done:
             if (n <= UINT16_MAX)
                 mem[cur_list.tail].b16.s0 = n;
             else {
+                error_here_with_diagnostic("Discretionary list is too long");
+                capture_to_diagnostic(NULL);
 
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Discretionary list is too long");
-                }
                 {
                     help_ptr = 2;
                     help_line[1] = "Wow---I never thought anybody would tweak me here.";
@@ -15074,14 +14871,10 @@ void make_accent(void)
 void align_error(void)
 {
     if (abs(align_state) > 2) {      /*1163: */
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Misplaced ");
-        }
+        error_here_with_diagnostic("Misplaced ");
         print_cmd_chr(cur_cmd, cur_chr);
+        capture_to_diagnostic(NULL);
+
         if (cur_tok == (TAB_TOKEN + 38)) {
             {
                 help_ptr = 6;
@@ -15108,24 +14901,13 @@ void align_error(void)
 
         back_input();
         if (align_state < 0) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Missing { inserted");
-            }
+            error_here_with_diagnostic("Missing { inserted");
+            capture_to_diagnostic(NULL);
             align_state++;
             cur_tok = (LEFT_BRACE_TOKEN + 123);
         } else {
-
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Missing } inserted");
-            }
+            error_here_with_diagnostic("Missing } inserted");
+            capture_to_diagnostic(NULL);
             align_state--;
             cur_tok = (RIGHT_BRACE_TOKEN + 125);
         }
@@ -15141,14 +14923,10 @@ void align_error(void)
 
 void no_align_error(void)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Misplaced ");
-    }
+    error_here_with_diagnostic("Misplaced ");
     print_esc_cstr("noalign");
+    capture_to_diagnostic(NULL);
+
     {
         help_ptr = 2;
         help_line[1] = "I expect to see \\noalign only after the \\cr of";
@@ -15159,14 +14937,10 @@ void no_align_error(void)
 
 void omit_error(void)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Misplaced ");
-    }
+    error_here_with_diagnostic("Misplaced ");
     print_esc_cstr("omit");
+    capture_to_diagnostic(NULL);
+
     {
         help_ptr = 2;
         help_line[1] = "I expect to see \\omit only after tab marks or the \\cr of";
@@ -15195,14 +14969,9 @@ void do_endv(void)
 
 void cs_error(void)
 {
-    {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Extra ");
-    }
+    error_here_with_diagnostic("Extra ");
     print_esc_cstr("endcsname");
+    capture_to_diagnostic(NULL);
     {
         help_ptr = 1;
         help_line[0] = "I'm ignoring this, since I wasn't doing a \\csname.";
@@ -15451,11 +15220,9 @@ restart:
     } while (cur_tok == SPACE_TOKEN);
 
     if (cur_cs == 0 || cur_cs > eqtb_top || (cur_cs > FROZEN_CONTROL_SEQUENCE && cur_cs <= EQTB_SIZE)) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Missing control sequence inserted");
+        error_here_with_diagnostic("Missing control sequence inserted");
+        capture_to_diagnostic(NULL);
+
         help_ptr = 5;
         help_line[4] = "Please don't say `\\def cs{...}', say `\\def\\cs{...}'.";
         help_line[3] = "I've inserted an inaccessible control sequence so that your";
@@ -15505,14 +15272,12 @@ do_register_command(small_number a)
         }
 
         if (cur_cmd != REGISTER) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("You can't use `");
+            error_here_with_diagnostic("You can't use `");
             print_cmd_chr(cur_cmd, cur_chr);
             print_cstr("' after ");
             print_cmd_chr(q, 0);
+            capture_to_diagnostic(NULL);
+
             help_ptr = 1;
             help_line[0] = "I'm forgetting what you said and not changing anything.";
             error();
@@ -15639,11 +15404,9 @@ found:
     }
 
     if (arith_error) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Arithmetic overflow");
+        error_here_with_diagnostic("Arithmetic overflow");
+        capture_to_diagnostic(NULL);
+
         help_ptr = 2;
         help_line[1] = "I can't carry out that multiplication or division,";
         help_line[0] = "since the result is out of range.";
@@ -15697,13 +15460,10 @@ void alter_aux(void)
 
             scan_int();
             if ((cur_val <= 0) || (cur_val > 32767)) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Bad space factor");
-                }
+                diagnostic_t errmsg = error_here_with_diagnostic("Bad space factor");
+                ttstub_diag_printf(errmsg, " (%d)", cur_val);
+                capture_to_diagnostic(NULL);
+
                 {
                     help_ptr = 1;
                     help_line[0] = "I allow only values in the range 1..32767 here.";
@@ -15725,14 +15485,10 @@ void alter_prev_graf(void)
     scan_optional_equals();
     scan_int();
     if (cur_val < 0) {
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Bad ");
-        }
+        diagnostic_t errmsg = error_here_with_diagnostic("Bad ");
+        ttstub_diag_printf(errmsg, " (%d)", cur_val);
         print_esc_cstr("prevgraf");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 1;
             help_line[0] = "I allow only nonnegative values here.";
@@ -15764,13 +15520,9 @@ void alter_integer(void)
         dead_cycles = /*1483: */ cur_val;
     else if (c == 2) {
         if ((cur_val < BATCH_MODE) || (cur_val > ERROR_STOP_MODE)) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Bad interaction mode");
-            }
+            diagnostic_t errmsg = error_here_with_diagnostic("Bad interaction mode");
+            ttstub_diag_printf(errmsg, " (%d)", cur_val);
+            capture_to_diagnostic(NULL);
             {
                 help_ptr = 2;
                 help_line[1] = "Modes are 0=batch, 1=nonstop, 2=scroll, and";
@@ -15854,15 +15606,10 @@ void new_font(small_number a)
         scan_dimen(false, false, false);
         s = cur_val;
         if ((s <= 0) || (s >= 0x8000000)) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Improper `at' size (");
-            }
+            error_here_with_diagnostic("Improper `at' size (");
             print_scaled(s);
             print_cstr("pt), replaced by 10pt");
+            capture_to_diagnostic(NULL);
             {
                 help_ptr = 2;
                 help_line[1] = "I can only handle fonts at positive sizes that are";
@@ -15875,13 +15622,10 @@ void new_font(small_number a)
         scan_int();
         s = -(int32_t) cur_val;
         if ((cur_val <= 0) || (cur_val > 32768L)) {
-            {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Illegal magnification has been changed to 1000");
-            }
+            diagnostic_t errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
+            ttstub_diag_printf(errmsg, " (%d)", cur_val);
+            capture_to_diagnostic(NULL);
+
             {
                 help_ptr = 1;
                 help_line[0] = "The magnification ratio must be between 1 and 32768.";
@@ -15985,15 +15729,10 @@ void issue_message(void)
         print(s);
         ttstub_output_flush (rust_stdout);
     } else {                    /*1318: */
-
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("");
-        }
+        error_here_with_diagnostic("");
         print(s);
+        capture_to_diagnostic(NULL);
+
         if (LOCAL(err_help) != TEX_NULL)
             use_err_help = true;
         else if (long_help_seen) {
@@ -16056,6 +15795,9 @@ void show_whatever(void)
     unsigned char /*or_code */ m;
     int32_t l;
     int32_t n;
+
+    // In all cases we eventually call error().
+    diagnostic_begin_capture_warning_here();
 
     switch (cur_chr) {
     case 3:
@@ -16155,6 +15897,7 @@ void show_whatever(void)
         }
         break;
     }
+    capture_to_diagnostic(NULL);
     end_diagnostic(true);
     {
         if (file_line_error_style_p)
@@ -16173,6 +15916,7 @@ void show_whatever(void)
     }
 
 common_ending:
+    capture_to_diagnostic(NULL); // calling with null twice is fine
     if (interaction < ERROR_STOP_MODE) {
         help_ptr = 0;
         error_count--;
@@ -16316,13 +16060,10 @@ void do_extension(void)
                     new_whatsit(GLYPH_NODE, GLYPH_NODE_SIZE);
                     scan_int();
                     if ((cur_val < 0) || (cur_val > 65535L)) {
-                        {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl_cstr("! ");
-                            print_cstr("Bad glyph number");
-                        }
+                        diagnostic_t errmsg = error_here_with_diagnostic("Bad glyph number");
+                        ttstub_diag_printf(errmsg, " (%d)", cur_val);
+                        capture_to_diagnostic(NULL);
+
                         {
                             help_ptr = 2;
                             help_line[1] = "A glyph number must be between 0 and 65535.";
@@ -16345,13 +16086,8 @@ void do_extension(void)
             scan_and_pack_name();
             i = get_encoding_mode_and_info(&j);
             if (i == XETEX_INPUT_MODE_AUTO) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Encoding mode `auto' is not valid for \\XeTeXinputencoding");
-                }
+                error_here_with_diagnostic("Encoding mode `auto' is not valid for \\XeTeXinputencoding");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 2;
                     help_line[1] = "You can't use `auto' encoding here, only for \\XeTeXdefaultencoding.";
@@ -16462,11 +16198,8 @@ handle_right_brace(void)
         break;
 
     case BOTTOM_LEVEL:
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Too many }'s");
+        error_here_with_diagnostic("Too many }'s");
+        capture_to_diagnostic(NULL);
         help_ptr = 2;
         help_line[1] = "You've closed more groups than you opened.";
         help_line[0] = "Such booboos are generally harmless, so keep going.";
@@ -16536,11 +16269,8 @@ handle_right_brace(void)
 
     case OUTPUT_GROUP: /*1062:*/
         if (cur_input.loc != TEX_NULL || (cur_input.index != OUTPUT_TEXT && cur_input.index != BACKED_UP)) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Unbalanced output routine");
+            error_here_with_diagnostic("Unbalanced output routine");
+            capture_to_diagnostic(NULL);
             help_ptr = 2;
             help_line[1] = "Your sneaky output routine has problematic {'s and/or }'s.";
             help_line[0] = "I can't handle that very well; good luck.";
@@ -16558,13 +16288,11 @@ handle_right_brace(void)
         insert_penalties = 0;
 
         if (BOX_REG(255) != TEX_NULL) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Output routine didn't use all of ");
+            error_here_with_diagnostic("Output routine didn't use all of ");
             print_esc_cstr("box");
             print_int(255);
+            capture_to_diagnostic(NULL);
+
             help_ptr = 3;
             help_line[2] = "Your \\output commands should empty \\box255,";
             help_line[1] = "e.g., by saying `\\shipout\\box255'.";
@@ -16599,13 +16327,12 @@ handle_right_brace(void)
     case ALIGN_GROUP:
         back_input();
         cur_tok = CS_TOKEN_FLAG + FROZEN_CR;
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Missing ");
+
+        error_here_with_diagnostic("Missing ");
         print_esc_cstr("cr");
         print_cstr(" inserted");
+        capture_to_diagnostic(NULL);
+
         help_ptr = 1;
         help_line[0] = "I'm guessing that you meant to end an alignment here.";
         ins_error();
