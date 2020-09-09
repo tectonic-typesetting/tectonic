@@ -38,7 +38,7 @@ struct CliOptions {
     #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
     chatter_level: String,
     /// Enable/disable colorful log output.
-    #[structopt(long, name = "color", default_value = "auto", possible_values(&["always", "auto", "never"]))]
+    #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
     cli_color: String,
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
