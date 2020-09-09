@@ -8190,7 +8190,8 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                         capture_to_diagnostic(NULL);
 
                         help_ptr = 1;
-                        help_line[0] = "I don't go any higher than filll.";
+                        // "ddon't" looks like wordplay from Knuth inspired by "filll"
+                        help_line[0] = "I dddon't go any higher than filll.";
                         error();
                     } else {
                         cur_order++;
