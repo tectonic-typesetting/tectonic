@@ -16,6 +16,10 @@ impl PlainStatusBackend {
 
 impl StatusBackend for PlainStatusBackend {
     fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>) {
+        if kind == MessageKind::Note && self.chatter <= ChatterLevel::Minimal {
+            return;
+        }
+
         let prefix = match kind {
             MessageKind::Note => "note:",
             MessageKind::Warning => "warning:",
