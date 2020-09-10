@@ -424,16 +424,11 @@ load_picture(bool is_pdf)
         } else if (scan_keyword("width")) {
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Improper image ");
-                }
+                error_here_with_diagnostic("Improper image ");
                 print_cstr("size (");
                 print_scaled(cur_val);
                 print_cstr("pt) will be ignored");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 2;
                     help_line[1] = "I can't scale images to zero or negative sizes,";
@@ -445,16 +440,11 @@ load_picture(bool is_pdf)
         } else if (scan_keyword("height")) {
             scan_dimen(false, false, false);
             if (cur_val <= 0) {
-                {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Improper image ");
-                }
+                error_here_with_diagnostic("Improper image ");
                 print_cstr("size (");
                 print_scaled(cur_val);
                 print_cstr("pt) will be ignored");
+                capture_to_diagnostic(NULL);
                 {
                     help_ptr = 2;
                     help_line[1] = "I can't scale images to zero or negative sizes,";
@@ -646,15 +636,10 @@ load_picture(bool is_pdf)
         free(pic_path);
     } else {
 
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Unable to load picture or PDF file '");
-        }
+        error_here_with_diagnostic("Unable to load picture or PDF file '");
         print_file_name(cur_name, cur_area, cur_ext);
         print('\'');
+        capture_to_diagnostic(NULL);
         if (result == -43) {
             {
                 help_ptr = 2;

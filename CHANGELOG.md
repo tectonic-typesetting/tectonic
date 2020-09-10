@@ -1,3 +1,10 @@
+# tectonic 0.1.15 (2020-09-10)
+
+- Building on the work done in 0.1.13, we now capture and report diagnostics
+  nearly everywhere! Great work contributed by @ralismark (#635).
+- Yet more revisions to the automated deployment system. Maybe *this* will be
+  the time that it all works (@pkgw, #637).
+
 # tectonic 0.1.14 (2020-09-08)
 
 - No code changes from 0.1.13. Just trying to iron out some of the automated
