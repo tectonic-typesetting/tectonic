@@ -36,7 +36,7 @@ jobs:
         set -xeuo pipefail
         cranko github delete-release continuous
         git tag -f continuous HEAD
-        git push -f --tags origin continuous
+        git push -f origin refs/tags/continuous
         cranko github create-custom-release \
           --name "Continuous Deployment" \
           --prerelease \
@@ -88,6 +88,7 @@ jobs:
         CARGO_REGISTRY_TOKEN: $(CARGO_REGISTRY_TOKEN)
 
   - job: github_releases
+    dependsOn: branch_and_tag # otherwise, GitHub will create the tag itself
     pool:
       vmImage: ubuntu-20.04
     variables:
@@ -160,7 +161,7 @@ jobs:
         GITHUB_TOKEN: $(GITHUB_TOKEN)
 
   - job: update_arch_linux
-    dependsOn: cargo_publish  # <= note!
+    dependsOn: cargo_publish # need to download the crate file and calc its digest
     pool:
       vmImage: ubuntu-20.04
     variables:
