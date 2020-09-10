@@ -50,7 +50,7 @@ steps:
     git show HEAD
   displayName: Make release commit
 
-- bash: RUNNING_COVERAGE=1 cargo kcov --no-clean-rebuild
+- bash: cargo kcov --no-clean-rebuild
   displayName: cargo kcov
 
 - bash: |

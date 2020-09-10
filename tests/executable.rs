@@ -102,8 +102,14 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
         .prefix("tectonic_executable_test")
         .tempdir()
         .unwrap();
-    let executable_test_dir =
-        PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("tests/executable");
+
+    // `cargo kcov` (0.5.2) does not set this variable:
+    let executable_test_dir = if let Some(v) = env::var_os("CARGO_MANIFEST_DIR") {
+        PathBuf::from(v)
+    } else {
+        PathBuf::new()
+    }
+    .join("tests/executable");
 
     for file in files {
         // Create parent directories, if the file is not at the root of `tests/executable/`
@@ -165,60 +171,36 @@ fn check_file(tempdir: &TempDir, rest: &str) {
 
 #[test]
 fn bad_chatter_1() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["-", "--chatter=reticent"]);
     error_or_panic(output);
 }
 
 #[test]
 fn bad_input_path_1() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["/"]);
     error_or_panic(output);
 }
 
 #[test]
 fn bad_input_path_2() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
     error_or_panic(output);
 }
 
 #[test]
 fn bad_outfmt_1() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["-", "--outfmt=dd"]);
     error_or_panic(output);
 }
 
 #[test]
 fn help_flag() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["-h"]);
     success_or_panic(output);
 }
 
 #[test] // GitHub #31
 fn relative_include() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[
         "subdirectory/relative_include.tex",
@@ -235,10 +217,6 @@ fn relative_include() {
 
 #[test]
 fn stdin_content() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     // No input files here, but output files are created.
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[]);
@@ -253,10 +231,6 @@ fn stdin_content() {
 // Regression #36
 #[test]
 fn test_space() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
@@ -266,10 +240,6 @@ fn test_space() {
 
 #[test]
 fn test_outdir() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
@@ -290,10 +260,6 @@ fn test_outdir() {
 // panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
 #[cfg(not(all(target_arch = "arm", target_env = "musl")))]
 fn test_bad_outdir() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        panic!()
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
@@ -313,10 +279,6 @@ fn test_bad_outdir() {
 // panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
 #[cfg(not(all(target_arch = "arm", target_env = "musl")))]
 fn test_outdir_is_file() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        panic!()
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
 
@@ -333,10 +295,6 @@ fn test_outdir_is_file() {
 
 #[test]
 fn test_keep_logs_on_error() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     // No input files here, but output files are created.
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[]);
@@ -358,10 +316,6 @@ fn test_keep_logs_on_error() {
 
 #[test]
 fn test_no_color() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     // No input files here, but output files are created.
     let fmt_arg = get_plain_format_arg();
 
