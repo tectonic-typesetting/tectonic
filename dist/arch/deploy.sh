@@ -16,8 +16,8 @@ fi
 
 # Get the settings that we need
 version="$(cranko show version tectonic)"
-url="https://crates.io/api/v1/crates/tectonic/$version/download" -O tectonic.crate.gz
-wget -q --progress=dot "$url"
+url="https://crates.io/api/v1/crates/tectonic/$version/download"
+wget -q --progress=dot "$url" -O tectonic.crate.gz
 sha512="$(sha512sum tectonic.crate.gz |cut -d' ' -f1)"
 
 # Set up to run makepkg

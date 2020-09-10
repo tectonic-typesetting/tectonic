@@ -57,11 +57,8 @@ ensure_vbox(eight_bits n)
     if (NODE_type(p) != HLIST_NODE)
         return;
 
-    if (file_line_error_style_p)
-        print_file_line();
-    else
-        print_nl_cstr("! ");
-    print_cstr("Insertions can only be added to a vbox");
+    error_here_with_diagnostic("Insertions can only be added to a vbox");
+    capture_to_diagnostic(NULL);
     help_ptr = 3;
     help_line[2] = "Tut tut: You're trying to \\insert into a";
     help_line[1] = "\\box register that now contains an \\hbox.";
@@ -125,13 +122,10 @@ fire_up(int32_t c)
         best_page_break = TEX_NULL; /* "c not yet linked in" */
 
     if (BOX_REG(255) != TEX_NULL) { /*1050:*/
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("");
+        error_here_with_diagnostic("");
         print_esc_cstr("box");
         print_cstr("255 is not void");
+        capture_to_diagnostic(NULL);
         help_ptr = 2;
         help_line[1] = "You shouldn't use \\box255 except in \\output routines.";
         help_line[0] = "Proceed, and I'll discard its present contents.";
@@ -358,13 +352,10 @@ fire_up(int32_t c)
     if (LOCAL(output_routine) != TEX_NULL && !semantic_pagination_enabled) {
         if (dead_cycles >= INTPAR(max_dead_cycles)) {
             /*1059: "Explain that too many dead cycles have happened in a row." */
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Output loop---");
+            error_here_with_diagnostic("Output loop---");
             print_int(dead_cycles);
             print_cstr(" consecutive dead cycles");
+            capture_to_diagnostic(NULL);
             help_ptr = 3;
             help_line[2] = "I've concluded that your \\output is awry; it never does a";
             help_line[1] = "\\shipout, so I'm shipping \\box255 out myself. Next time";
@@ -595,13 +586,10 @@ build_page(void)
                 page_so_far[6] += GLUE_SPEC_shrink(q);
 
                 if (GLUE_SPEC_shrink_order(q) != NORMAL && GLUE_SPEC_shrink(q) != 0) {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Infinite glue shrinkage inserted from ");
+                    error_here_with_diagnostic("Infinite glue shrinkage inserted from ");
                     print_esc_cstr("skip");
                     print_int(n);
+                    capture_to_diagnostic(NULL);
                     help_ptr = 3;
                     help_line[2] = "The correction glue for page breaking with insertions";
                     help_line[1] = "must have finite shrinkability. But you may proceed,";
@@ -747,11 +735,8 @@ build_page(void)
             page_so_far[6] += GLUE_SPEC_shrink(q);
 
             if (GLUE_SPEC_shrink_order(q) != NORMAL && GLUE_SPEC_shrink(q) != 0) {
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Infinite glue shrinkage found on current page");
+                error_here_with_diagnostic("Infinite glue shrinkage found on current page");
+                capture_to_diagnostic(NULL);
 
                 help_ptr = 4;
                 help_line[3] = "The page about to be output contains some infinitely";

@@ -2377,13 +2377,8 @@ finite_shrink(int32_t p)
     int32_t q;
     if (no_shrink_error_yet) {
         no_shrink_error_yet = false;
-        {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Infinite glue shrinkage found in a paragraph");
-        }
+        error_here_with_diagnostic("Infinite glue shrinkage found in a paragraph");
+        capture_to_diagnostic(NULL);
         {
             help_ptr = 5;
             help_line[4] = "The paragraph just ended includes some glue that has";

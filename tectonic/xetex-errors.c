@@ -26,10 +26,7 @@ pre_error_message (void)
     if (interaction == BATCH_MODE)
         selector--;
 
-    if (file_line_error_style_p)
-        print_file_line();
-    else
-        print_nl_cstr("! ");
+    error_here_with_diagnostic("");
 }
 
 
@@ -37,6 +34,8 @@ pre_error_message (void)
 static void
 post_error_message(int need_to_print_it)
 {
+    capture_to_diagnostic(NULL);
+
     if (interaction == ERROR_STOP_MODE)
         interaction = SCROLL_MODE;
 
@@ -102,6 +101,8 @@ fatal_error(const char* s)
     pre_error_message();
     print_cstr("Emergency stop");
     print_nl_cstr(s);
+    capture_to_diagnostic(NULL); // started in pre_error_message
+
     close_files_and_terminate();
     tt_cleanup();
     ttstub_output_flush(rust_stdout);

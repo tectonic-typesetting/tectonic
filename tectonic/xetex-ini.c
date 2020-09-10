@@ -813,11 +813,8 @@ new_patterns(void)
                         cur_chr = LC_CODE(cur_chr);
 
                         if (cur_chr == 0) {
-                            if (file_line_error_style_p)
-                                print_file_line();
-                            else
-                                print_nl_cstr("! ");
-                            print_cstr("Nonletter");
+                            error_here_with_diagnostic("Nonletter");
+                            capture_to_diagnostic(NULL);
                             help_ptr = 1;
                             help_line[0] = "(See Appendix H.)";
                             error();
@@ -893,11 +890,8 @@ new_patterns(void)
                     }
 
                     if (trie_o[q] != MIN_TRIE_OP) {
-                        if (file_line_error_style_p)
-                            print_file_line();
-                        else
-                            print_nl_cstr("! ");
-                        print_cstr("Duplicate pattern");
+                        error_here_with_diagnostic("Duplicate pattern");
+                        capture_to_diagnostic(NULL);
                         help_ptr = 1;
                         help_line[0] = "(See Appendix H.)";
                         error();
@@ -915,12 +909,9 @@ new_patterns(void)
                 break;
 
             default:
-                if (file_line_error_style_p)
-                    print_file_line();
-                else
-                    print_nl_cstr("! ");
-                print_cstr("Bad ");
+                error_here_with_diagnostic("Bad ");
                 print_esc_cstr("patterns");
+                capture_to_diagnostic(NULL);
                 help_ptr = 1;
                 help_line[0] = "(See Appendix H.)";
                 error();
@@ -990,12 +981,9 @@ new_patterns(void)
                 trie_r[q] = 0; /*:1644*/
         }
     } else {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("Too late for ");
+        error_here_with_diagnostic("Too late for ");
         print_esc_cstr("patterns");
+        capture_to_diagnostic(NULL);
         help_ptr = 1;
         help_line[0] = "All patterns must be given before typesetting begins.";
         error();
@@ -1198,11 +1186,8 @@ not_found1: /*970:*/
                     hc[0] = trie_tro[hyph_index + cur_chr];
 
                 if (hc[0] == 0) {
-                    if (file_line_error_style_p)
-                        print_file_line();
-                    else
-                        print_nl_cstr("! ");
-                    print_cstr("Not a letter");
+                    error_here_with_diagnostic("Not a letter");
+                    capture_to_diagnostic(NULL);
                     help_ptr = 2;
                     help_line[1] = "Letters in \\hyphenation words must have \\lccode>0.";
                     help_line[0] = "Proceed; I'll ignore the character I just read.";
@@ -1300,13 +1285,10 @@ not_found1: /*970:*/
             break;
 
         default:
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Improper ");
+            error_here_with_diagnostic("Improper ");
             print_esc_cstr("hyphenation");
             print_cstr(" will be flushed");
+            capture_to_diagnostic(NULL);
             help_ptr = 2;
             help_line[1] = "Hyphenation exceptions must contain only letters";
             help_line[0] = "and hyphens. But continue; I'll forgive and forget.";
@@ -1339,13 +1321,10 @@ prefixed_command(void)
         } while (cur_cmd == SPACER || cur_cmd == RELAX);
 
         if (cur_cmd <= MAX_NON_PREFIXED_COMMAND) { /*1247:*/
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("You can't use a prefix with `");
+            error_here_with_diagnostic("You can't use a prefix with `");
             print_cmd_chr(cur_cmd, cur_chr);
             print_char('\'');
+            capture_to_diagnostic(NULL);
             help_ptr = 1;
             help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\global or \\protected.";
             back_error();
@@ -1365,21 +1344,18 @@ prefixed_command(void)
     }
 
     if (cur_cmd != DEF && (a % 4 != 0 || j != 0)) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-        print_cstr("You can't use `");
+        error_here_with_diagnostic("You can't use `");
         print_esc_cstr("long");
         print_cstr("' or `");
         print_esc_cstr("outer");
-        help_ptr = 1;
-        help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\protected here.";
         print_cstr("' or `");
         print_esc_cstr("protected");
         print_cstr("' with `");
         print_cmd_chr(cur_cmd, cur_chr);
         print_char('\'');
+        capture_to_diagnostic(NULL);
+        help_ptr = 1;
+        help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\protected here.";
         error();
     }
 
@@ -1614,11 +1590,8 @@ prefixed_command(void)
         scan_int();
         n = cur_val;
         if (!scan_keyword("to")) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Missing `to' inserted");
+            error_here_with_diagnostic("Missing `to' inserted");
+            capture_to_diagnostic(NULL);
             help_ptr = 2;
             help_line[1] = "You should have said `\\read<number> to \\cs'.";
             help_line[0] = "I'm going to look for the \\cs now.";
@@ -1890,17 +1863,14 @@ prefixed_command(void)
         scan_int();
 
         if ((cur_val < 0 && p < DEL_CODE_BASE) || cur_val > n) {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Invalid code (");
+            error_here_with_diagnostic("Invalid code (");
             print_int(cur_val);
             if (p < DEL_CODE_BASE)
                 print_cstr("), should be in the range 0..");
             else
                 print_cstr("), should be at most ");
             print_int(n);
+            capture_to_diagnostic(NULL);
             help_ptr = 1;
             help_line[0] = "I'm going to use 0 instead of that illegal code value.";
             error();
@@ -1967,12 +1937,9 @@ prefixed_command(void)
         if (set_box_allowed) {
             scan_box(n);
         } else {
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Improper ");
+            error_here_with_diagnostic("Improper ");
             print_esc_cstr("setbox");
+            capture_to_diagnostic(NULL);
             help_ptr = 2;
             help_line[1] = "Sorry, \\setbox is not allowed after \\halign in a display,";
             help_line[0] = "or between \\accent and an accented character.";
@@ -2047,11 +2014,8 @@ prefixed_command(void)
                 goto done;
             }
 
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Patterns can be loaded only by INITEX");
+            error_here_with_diagnostic("Patterns can be loaded only by INITEX");
+            capture_to_diagnostic(NULL);
             help_ptr = 0;
             error();
 
@@ -2139,12 +2103,8 @@ store_fmt_file(void)
     rust_output_handle_t fmt_out;
 
     if (save_ptr != 0) {
-        if (file_line_error_style_p)
-            print_file_line();
-        else
-            print_nl_cstr("! ");
-
-        print_cstr("You can't dump inside a group");
+        error_here_with_diagnostic("You can't dump inside a group");
+        capture_to_diagnostic(NULL);
         help_ptr = 1;
         help_line[0] = "`{...\\dump}' is a no-no.";
 
@@ -2405,11 +2365,8 @@ store_fmt_file(void)
         if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
             print_file_name(font_name[k], EMPTY_STRING, EMPTY_STRING);
 
-            if (file_line_error_style_p)
-                print_file_line();
-            else
-                print_nl_cstr("! ");
-            print_cstr("Can't \\dump a format with native fonts or font-mappings");
+            error_here_with_diagnostic("Can't \\dump a format with native fonts or font-mappings");
+            capture_to_diagnostic(NULL);
 
             help_ptr = 3;
             help_line[2] = "You really, really don't want to do this.";

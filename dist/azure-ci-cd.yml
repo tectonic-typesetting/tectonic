@@ -231,20 +231,7 @@ stages:
 - stage: Deploy
   condition: and(succeeded('BuildAndTest'), not(eq(variables['build.reason'], 'PullRequest')))
   jobs:
-  - deployment: Deploy
-    environment: Deploy
-    displayName: Deploy
-    pool:
-      vmImage: ubuntu-20.04
-
-    variables:
-    - group: Deployment Credentials
-
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-            - template: azure-deployment.yml
-              parameters:
-                isMainDev: ${{ eq(variables['Build.SourceBranchName'], 'master') }}
-                isRelease: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}
+  - template: azure-deployment.yml
+    parameters:
+      isMainDev: ${{ eq(variables['Build.SourceBranchName'], 'master') }}
+      isRelease: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}
