@@ -355,3 +355,33 @@ fn test_keep_logs_on_error() {
 
     assert!(log.contains(r"job aborted, no legal \end found"));
 }
+
+#[test]
+fn test_no_color() {
+    if env::var("RUNNING_COVERAGE").is_ok() {
+        return;
+    }
+
+    // No input files here, but output files are created.
+    let fmt_arg = get_plain_format_arg();
+
+    let tempdir = setup_and_copy_files(&[]);
+    let output_nocolor = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "--color=never"],
+        "no end to this file",
+    );
+
+    // Output is not a terminal, so these two should be the same
+    let tempdir = setup_and_copy_files(&[]);
+    let output_autocolor = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "--color=auto"],
+        "no end to this file",
+    );
+
+    assert_eq!(output_nocolor, output_autocolor);
+
+    error_or_panic(output_nocolor);
+    error_or_panic(output_autocolor);
+}
