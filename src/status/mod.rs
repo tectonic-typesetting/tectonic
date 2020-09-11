@@ -4,6 +4,7 @@
 
 //! A framework for showing status messages to the user.
 
+pub mod plain;
 pub mod termcolor;
 
 use std::cmp;
@@ -77,6 +78,10 @@ pub trait StatusBackend {
             None,
         )
     }
+
+    /// This is used to print TeX engine logs after it encountered errors. This prints the log,
+    /// surrounded by lines of equal signs.
+    fn dump_error_logs(&mut self, output: &[u8]);
 }
 
 /// Report a formatted informational message to the user.
@@ -133,4 +138,5 @@ impl NoopStatusBackend {
 
 impl StatusBackend for NoopStatusBackend {
     fn report(&mut self, _kind: MessageKind, _args: Arguments, _err: Option<&Error>) {}
+    fn dump_error_logs(&mut self, _output: &[u8]) {}
 }

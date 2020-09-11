@@ -633,7 +633,7 @@ impl ProcessingSession {
     /// Assess whether we need to rerun an engine. This is the case if there
     /// was a file that the engine read and then rewrote, and the rewritten
     /// version is different than the version that it read in.
-    fn is_rerun_needed<S: StatusBackend>(&self, status: &mut S) -> Option<RerunReason> {
+    fn is_rerun_needed(&self, status: &mut dyn StatusBackend) -> Option<RerunReason> {
         // TODO: we should probably wire up diagnostics since I expect this
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
@@ -664,7 +664,7 @@ impl ProcessingSession {
     }
 
     #[allow(dead_code)]
-    fn _dump_access_info<S: StatusBackend>(&self, status: &mut S) {
+    fn _dump_access_info(&self, status: &mut dyn StatusBackend) {
         for (name, info) in &self.events.0 {
             if info.access_pattern != AccessPattern::Read {
                 let r = match info.read_digest {
@@ -697,7 +697,7 @@ impl ProcessingSession {
     /// - run BibTeX, if it seems to be required
     /// - repeat the last two steps as often as needed
     /// - write the output files to disk, including a Makefile if it was requested.
-    pub fn run<S: StatusBackend>(&mut self, status: &mut S) -> Result<()> {
+    pub fn run(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
         // Do we need to generate the format file?
 
         let generate_format = if self.output_format == OutputFormat::Format {
@@ -817,10 +817,10 @@ impl ProcessingSession {
         Ok(())
     }
 
-    fn write_files<S: StatusBackend>(
+    fn write_files(
         &mut self,
         mut mf_dest_maybe: Option<&mut File>,
-        status: &mut S,
+        status: &mut dyn StatusBackend,
         only_logs: bool,
     ) -> Result<u32> {
         let root = match self.output_path {
@@ -909,11 +909,7 @@ impl ProcessingSession {
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
-    fn default_pass<S: StatusBackend>(
-        &mut self,
-        bibtex_first: bool,
-        status: &mut S,
-    ) -> Result<i32> {
+    fn default_pass(&mut self, bibtex_first: bool, status: &mut dyn StatusBackend) -> Result<i32> {
         // If `bibtex_first` is true, we start by running bibtex, and run
         // proceed with the standard rerun logic. Otherwise, we run TeX,
         // auto-detect whether we need to run bibtex, possibly run it, and
@@ -1011,7 +1007,7 @@ impl ProcessingSession {
     }
 
     /// Use the TeX engine to generate a format file.
-    fn make_format_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
+    fn make_format_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         if self.io.bundle.is_none() {
             return Err(
                 ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into(),
@@ -1089,10 +1085,10 @@ impl ProcessingSession {
     }
 
     /// Run one pass of the TeX engine.
-    fn tex_pass<S: StatusBackend>(
+    fn tex_pass(
         &mut self,
         rerun_explanation: Option<&str>,
-        status: &mut S,
+        status: &mut dyn StatusBackend,
     ) -> Result<Option<&'static str>> {
         let result = {
             let mut stack = self.io.as_stack();
@@ -1131,7 +1127,7 @@ impl ProcessingSession {
         Ok(warnings)
     }
 
-    fn bibtex_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
+    fn bibtex_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         let result = {
             let mut stack = self.io.as_stack();
             let mut engine = BibtexEngine::new();
@@ -1167,7 +1163,7 @@ impl ProcessingSession {
         Ok(0)
     }
 
-    fn xdvipdfmx_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
+    fn xdvipdfmx_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
             let mut engine = XdvipdfmxEngine::new().with_date(self.build_date);
@@ -1185,7 +1181,7 @@ impl ProcessingSession {
         Ok(0)
     }
 
-    fn spx2html_pass<S: StatusBackend>(&mut self, status: &mut S) -> Result<i32> {
+    fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
             let mut engine = Spx2HtmlEngine::new();

@@ -137,12 +137,6 @@ impl TermcolorStatusBackend {
             });
         }
     }
-
-    pub fn dump_to_stderr(&mut self, output: &[u8]) {
-        self.stderr
-            .write_all(output)
-            .expect("write to stderr failed");
-    }
 }
 
 /// Show formatted text to the user, styled as an error message.
@@ -184,5 +178,21 @@ impl StatusBackend for TermcolorStatusBackend {
             self.stdout.reset().expect("write to stdout failed");
             writeln!(self.stdout, "{}", after).expect("write to stdout failed");
         }
+    }
+
+    fn dump_error_logs(&mut self, output: &[u8]) {
+        tt_error_styled!(
+            self,
+            "==============================================================================="
+        );
+
+        self.stderr
+            .write_all(output)
+            .expect("write to stderr failed");
+
+        tt_error_styled!(
+            self,
+            "==============================================================================="
+        );
     }
 }
