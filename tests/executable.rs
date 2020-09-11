@@ -23,6 +23,7 @@ lazy_static! {
         root.push("tests");
         root
     };
+
     static ref TARGET_RUNNER_WORDS: Vec<String> = {
         // compile-time environment variable from build.rs:
         let target = env!("TARGET").to_owned();
@@ -31,6 +32,17 @@ lazy_static! {
 
         // run-time environment variable check:
         if let Ok(runtext) = env::var(format!("CARGO_TARGET_{}_RUNNER", target)) {
+            runtext.split_whitespace().map(|x| x.to_owned()).collect()
+        } else {
+            vec![]
+        }
+    };
+
+    // Special coverage-collection mode. This implementation is quite tuned for
+    // the Tectonic CI/CD system, so if you're trying to use it manually, expect
+    // some rough edges.
+    static ref KCOV_WORDS: Vec<String> = {
+        if let Ok(runtext) = env::var("TECTONIC_EXETEST_KCOV_RUNNER") {
             runtext.split_whitespace().map(|x| x.to_owned()).collect()
         } else {
             vec![]
@@ -61,9 +73,31 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     println!("using tectonic binary at {:?}", tectonic);
     println!("using cwd {:?}", cwd);
 
+    // We may need to wrap the Tectonic invocation. If we're cross-compiling, we
+    // might need to use something like QEMU to actually be able to run the
+    // executable. If we're collecting code coverage information with kcov, we
+    // need to wrap the invocation with that program.
     let mut command = if TARGET_RUNNER_WORDS.len() > 0 {
         let mut cmd = Command::new(&TARGET_RUNNER_WORDS[0]);
         cmd.args(&TARGET_RUNNER_WORDS[1..]).arg(tectonic);
+        cmd
+    } else if KCOV_WORDS.len() > 0 {
+        let mut cmd = Command::new(&KCOV_WORDS[0]);
+        cmd.args(&KCOV_WORDS[1..]);
+
+        // Give kcov a directory into which to put its output. We use
+        // mktemp-like functionality to automatically create such directories
+        // uniquely so that we don't have to manually bookkeep. This does mean
+        // that successive runs will build up new data directories indefinitely.
+        let mut root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        root.push("target");
+        root.push("cov");
+        root.push("exetest.");
+        let tempdir = tempfile::Builder::new().prefix(&root).tempdir().unwrap();
+        let tempdir = tempdir.into_path();
+        cmd.arg(tempdir);
+
+        cmd.arg(tectonic);
         cmd
     } else {
         Command::new(tectonic)
