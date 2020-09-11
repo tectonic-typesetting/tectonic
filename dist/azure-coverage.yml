@@ -69,7 +69,7 @@ steps:
 - bash: |
     set -xeou pipefail
     cd target/cov
-    rm -rf amber.png bcov.css data glass.png index.html index.json \
+    rm -rf amber.png bcov.css data glass.png index.html index.js* \
       kcov-merged merged-kcov-output
     kcov --merge . *
   displayName: Merge coverage reports
