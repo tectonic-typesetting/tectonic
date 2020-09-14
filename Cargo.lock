@@ -2196,9 +2196,9 @@ checksum = "d089681aa106a86fade1b0128fb5daf07d5867a509ab036d99988dec80429a57"
 
 [[package]]
 name = "zip"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d30de6e58104bb7b9a94f34b52a2bdabb8a40b678a64201cd0069e3d7119b5ff"
+checksum = "543adf038106b64cfca4711c82c917d785e3540e04f7996554488f988ec43124"
 dependencies = [
  "byteorder",
  "crc32fast",
