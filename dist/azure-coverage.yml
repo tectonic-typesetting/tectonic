@@ -50,7 +50,10 @@ steps:
     git show HEAD
   displayName: Make release commit
 
-- bash: cargo kcov --no-clean-rebuild
+- bash: |
+    set -xeuo pipefail
+    p="$(pwd)"
+    cargo kcov --no-clean-rebuild -- --include-pattern="$p/src,$p/tectonic,$p/xdv"
   displayName: cargo kcov
 
 # Our "executable" test executes the actual Tectonic binary. In order to collect
@@ -58,7 +61,8 @@ steps:
 # support in the test harness to wrap the invocations in `kcov` calls.
 - bash: |
     set -xeuo pipefail
-    export TECTONIC_EXETEST_KCOV_RUNNER="kcov --exclude-pattern=$HOME/.cargo --verify"
+    p="$(pwd)"
+    export TECTONIC_EXETEST_KCOV_RUNNER="kcov --include-pattern=$p/src,$p/tectonic,$p/xdv"
     cargo test --test executable
   displayName: Special-case executable tests
 
