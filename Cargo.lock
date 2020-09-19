@@ -178,6 +178,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "cbindgen"
+version = "0.14.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e783d38a7700989e0209d0b0ed224c34ade92d3603da0cf15dc502ebada685a6"
+dependencies = [
+ "clap",
+ "heck",
+ "log",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn",
+ "tempfile",
+ "toml",
+]
+
+[[package]]
 name = "cc"
 version = "1.0.59"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1634,6 +1652,7 @@ dependencies = [
  "app_dirs2",
  "atty",
  "byte-unit",
+ "cbindgen",
  "cc",
  "cfg-if",
  "error-chain",

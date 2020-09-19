@@ -9,6 +9,8 @@
 /// TODO: this surely needs to become much smarter and more flexible.
 use tectonic_cfg_support::*;
 
+extern crate cbindgen;
+
 use std::env;
 use std::path::{Path, PathBuf};
 
@@ -183,6 +185,16 @@ impl Default for DepState {
 fn main() {
     let target = env::var("TARGET").unwrap();
     let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
+
+    // Generate C bindings
+    let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
+    cbindgen::generate(&crate_dir)
+        .unwrap()
+        .write_to_file("tectonic/core-bindgen.h");
+
+    // Most of `core-bindgen.h` comes from this file, so this should catch most of the changes.
+    // TODO better detect when cbindgen needs to be run, or we need to rebuild.
+    println!("cargo:rerun-if-changed=src/engines/mod.rs");
 
     // Re-export $TARGET during the build so that our executable tests know
     // what environment variable CARGO_TARGET_@TARGET@_RUNNER to check when
