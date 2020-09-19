@@ -186,6 +186,7 @@ fn main() {
     let target = env::var("TARGET").unwrap();
     let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
 
+    // TODO make this be always run
     // Generate C bindings
     let crate_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
     cbindgen::generate(&crate_dir)

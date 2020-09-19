@@ -7,6 +7,7 @@
 #define TECTONIC_CORE_BRIDGE_H
 
 #include "core-foundation.h"
+#include "core-bindgen.h"
 
 /* Both XeTeX and bibtex use this enum: */
 
@@ -87,14 +88,6 @@ typedef struct tt_bridge_api_t {
 
 
 BEGIN_EXTERN_C
-
-/* These functions are not meant to be used in the C/C++ code. They define the
- * API that we expose to the Rust side of things. */
-
-const char *tt_get_error_message(void);
-int tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name, time_t build_date);
-int dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool compress, bool deterministic_tags, time_t build_date);
-int bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name);
 
 /* The internal, C/C++ interface: */
 
