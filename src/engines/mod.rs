@@ -677,42 +677,38 @@ pub extern "C" fn input_open(
     name: *const libc::c_char,
     format: libc::c_int,
     is_gz: libc::c_int,
-) -> *mut libc::c_void {
+) -> *mut InputHandle {
     let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
 
     match rformat {
-        Some(fmt) => es.input_open(&rname, fmt, ris_gz) as *mut _,
+        Some(fmt) => es.input_open(&rname, fmt, ris_gz),
         None => ptr::null_mut(),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn input_open_primary(es: &mut ExecutionState) -> *mut libc::c_void {
-    es.input_open_primary() as *mut _
+pub extern "C" fn input_open_primary(es: &mut ExecutionState) -> *mut InputHandle {
+    es.input_open_primary()
 }
 
 #[no_mangle]
 pub extern "C" fn input_get_size(
     es: &mut ExecutionState,
-    handle: *mut libc::c_void,
+    handle: *mut InputHandle,
 ) -> libc::size_t {
-    let rhandle = handle as *mut InputHandle;
-
-    es.input_get_size(rhandle)
+    es.input_get_size(handle)
 }
 
 #[no_mangle]
 pub extern "C" fn input_seek(
     es: &mut ExecutionState,
-    handle: *mut libc::c_void,
+    handle: *mut InputHandle,
     offset: libc::ssize_t,
     whence: libc::c_int,
     internal_error: *mut libc::c_int,
 ) -> libc::size_t {
-    let rhandle = handle as *mut InputHandle;
-
     let rwhence = match whence {
         libc::SEEK_SET => SeekFrom::Start(offset as u64),
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
@@ -730,7 +726,7 @@ pub extern "C" fn input_seek(
         }
     };
 
-    match es.input_seek(rhandle, rwhence) {
+    match es.input_seek(handle, rwhence) {
         Ok(pos) => pos as libc::size_t,
         Err(e) => {
             // TODO: Handle the error better. Report the error properly to the caller?
@@ -741,13 +737,11 @@ pub extern "C" fn input_seek(
 }
 
 #[no_mangle]
-pub extern "C" fn input_getc(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
-    let rhandle = handle as *mut InputHandle;
-
+pub extern "C" fn input_getc(es: &mut ExecutionState, handle: *mut InputHandle) -> libc::c_int {
     // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
     // No need to complain. Fun match statement here.
 
-    match es.input_getc(rhandle) {
+    match es.input_getc(handle) {
         Ok(b) => libc::c_int::from(b),
         Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => {
             libc::EOF
@@ -762,12 +756,10 @@ pub extern "C" fn input_getc(es: &mut ExecutionState, handle: *mut libc::c_void)
 #[no_mangle]
 pub extern "C" fn input_ungetc(
     es: &mut ExecutionState,
-    handle: *mut libc::c_void,
+    handle: *mut InputHandle,
     ch: libc::c_int,
 ) -> libc::c_int {
-    let rhandle = handle as *mut InputHandle;
-
-    match es.input_ungetc(rhandle, ch as u8) {
+    match es.input_ungetc(handle, ch as u8) {
         Ok(_) => 0,
         Err(e) => {
             tt_warning!(es.status, "ungetc() failed"; e);
@@ -779,14 +771,13 @@ pub extern "C" fn input_ungetc(
 #[no_mangle]
 pub extern "C" fn input_read(
     es: &mut ExecutionState,
-    handle: *mut libc::c_void,
+    handle: *mut InputHandle,
     data: *mut u8,
     len: libc::size_t,
 ) -> libc::ssize_t {
-    let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
 
-    match es.input_read(rhandle, rdata) {
+    match es.input_read(handle, rdata) {
         Ok(_) => len as isize,
         Err(e) => {
             tt_warning!(es.status, "{}-byte read failed", len; e);
@@ -796,14 +787,12 @@ pub extern "C" fn input_read(
 }
 
 #[no_mangle]
-pub extern "C" fn input_close(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
+pub extern "C" fn input_close(es: &mut ExecutionState, handle: *mut InputHandle) -> libc::c_int {
     if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    let rhandle = handle as *mut InputHandle;
-
-    if es.input_close(rhandle) {
+    if es.input_close(handle) {
         1
     } else {
         0
