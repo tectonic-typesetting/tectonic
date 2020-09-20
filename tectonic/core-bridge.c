@@ -113,32 +113,32 @@ bibtex_simple_main(const tt_bridge_api_t *api, const char *aux_file_name)
 diagnostic_t
 ttstub_diag_warn_begin(void)
 {
-    return TGB->diag_warn_begin();
+    return diag_warn_begin();
 }
 
 diagnostic_t
 ttstub_diag_error_begin(void)
 {
-    return TGB->diag_error_begin();
+    return diag_error_begin();
 }
 
 void
 ttstub_diag_finish(diagnostic_t diag)
 {
-    TGB->diag_finish(TGB->context, diag);
+    diag_finish(TGB->context, diag);
 }
 
 void
 ttstub_diag_append(diagnostic_t diag, char const *text)
 {
-    TGB->diag_append(diag, text);
+    diag_append(diag, text);
 }
 
 PRINTF_FUNC(2,0) void
 ttstub_diag_vprintf(diagnostic_t diag, const char *format, va_list ap)
 {
     vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
-    TGB->diag_append(diag, error_buf);
+    ttstub_diag_append(diag, error_buf);
 }
 
 PRINTF_FUNC(2,3) void
@@ -159,7 +159,7 @@ ttstub_issue_warning(const char *format, ...)
     va_start(ap, format);
     vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
     va_end(ap);
-    TGB->issue_warning(TGB->context, error_buf);
+    issue_warning(TGB->context, error_buf);
 }
 
 PRINTF_FUNC(1,2) void
@@ -170,7 +170,7 @@ ttstub_issue_error(const char *format, ...)
     va_start(ap, format);
     vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
     va_end(ap);
-    TGB->issue_error(TGB->context, error_buf);
+    issue_error(TGB->context, error_buf);
 }
 
 PRINTF_FUNC(2,3) int
@@ -197,13 +197,15 @@ ttstub_fprintf(rust_output_handle_t handle, const char *format, ...)
 int
 ttstub_get_file_md5(char const *path, char *digest)
 {
-    return TGB->get_file_md5(TGB->context, path, digest);
+    // TODO change uses of ttstub_get_file_md5 to pass uint8_t*
+    return get_file_md5(TGB->context, path, (uint8_t*) digest);
 }
 
 int
 ttstub_get_data_md5(char const *data, size_t len, char *digest)
 {
-    return TGB->get_data_md5(TGB->context, data, len, digest);
+    // TODO change uses of ttstub_get_data_md5 to pass uint8_t*
+    return get_data_md5(TGB->context, (uint8_t const*) data, len, (uint8_t*) digest);
 }
 
 rust_output_handle_t

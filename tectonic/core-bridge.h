@@ -51,7 +51,7 @@ typedef enum
 
 typedef void *rust_output_handle_t;
 typedef void *rust_input_handle_t;
-typedef void *diagnostic_t;
+typedef Diagnostic *diagnostic_t;
 
 /* Bridge API. Keep synchronized with src/engines/mod.rs. */
 

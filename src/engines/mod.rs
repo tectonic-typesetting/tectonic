@@ -12,6 +12,9 @@
 //! substantial private API that defines the interface between Tectonic's Rust
 //! code and the C/C++ code that the backends are (currently) implemented in.
 
+// Mostly for the bridge functions
+#![allow(clippy::not_unsafe_ptr_arg_deref)]
+
 use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};
 use lazy_static::lazy_static;
@@ -122,7 +125,7 @@ lazy_static! {
 /// The methods on ExecutionState pretty much all work to implement for the
 /// "bridge" API (C/C++ => Rust) defined below.
 
-struct ExecutionState<'a> {
+pub struct ExecutionState<'a> {
     io: &'a mut dyn IoProvider,
     events: &'a mut dyn IoEventBackend,
     status: &'a mut dyn StatusBackend,
@@ -521,12 +524,13 @@ extern "C" {
 
 // Entry points for the C/C++ API functions.
 
-struct Diagnostic {
+pub struct Diagnostic {
     message: String,
     kind: MessageKind,
 }
 
-extern "C" fn diag_warn_begin() -> *mut Diagnostic {
+#[no_mangle]
+pub extern "C" fn diag_warn_begin() -> *mut Diagnostic {
     let warning = Box::new(Diagnostic {
         message: String::new(),
         kind: MessageKind::Warning,
@@ -534,7 +538,8 @@ extern "C" fn diag_warn_begin() -> *mut Diagnostic {
     Box::into_raw(warning)
 }
 
-extern "C" fn diag_error_begin() -> *mut Diagnostic {
+#[no_mangle]
+pub extern "C" fn diag_error_begin() -> *mut Diagnostic {
     let warning = Box::new(Diagnostic {
         message: String::new(),
         kind: MessageKind::Error,
@@ -542,7 +547,8 @@ extern "C" fn diag_error_begin() -> *mut Diagnostic {
     Box::into_raw(warning)
 }
 
-extern "C" fn diag_finish(es: *mut ExecutionState, diag: *mut Diagnostic) {
+#[no_mangle]
+pub extern "C" fn diag_finish(es: *mut ExecutionState, diag: *mut Diagnostic) {
     let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
     let es = unsafe { &mut *es };
 
@@ -550,28 +556,32 @@ extern "C" fn diag_finish(es: *mut ExecutionState, diag: *mut Diagnostic) {
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
 }
 
-extern "C" fn diag_append(diag: *mut Diagnostic, text: *const libc::c_char) {
+#[no_mangle]
+pub extern "C" fn diag_append(diag: *mut Diagnostic, text: *const libc::c_char) {
     let rdiag = unsafe { &mut *diag };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     rdiag.message.push_str(&rtext.to_string_lossy());
 }
 
-extern "C" fn issue_warning(es: *mut ExecutionState, text: *const libc::c_char) {
+#[no_mangle]
+pub extern "C" fn issue_warning(es: *mut ExecutionState, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn issue_error(es: *mut ExecutionState, text: *const libc::c_char) {
+#[no_mangle]
+pub extern "C" fn issue_error(es: *mut ExecutionState, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn get_file_md5(
+#[no_mangle]
+pub extern "C" fn get_file_md5(
     es: *mut ExecutionState,
     path: *const libc::c_char,
     digest: *mut u8,
@@ -587,7 +597,8 @@ extern "C" fn get_file_md5(
     }
 }
 
-extern "C" fn get_data_md5(
+#[no_mangle]
+pub extern "C" fn get_data_md5(
     _es: *mut ExecutionState,
     data: *const u8,
     len: libc::size_t,
