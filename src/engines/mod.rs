@@ -122,8 +122,8 @@ lazy_static! {
 /// The methods on ExecutionState pretty much all work to implement for the
 /// "bridge" API (C/C++ => Rust) defined below.
 
-struct ExecutionState<'a, I: 'a + IoProvider> {
-    io: &'a mut I,
+struct ExecutionState<'a> {
+    io: &'a mut dyn IoProvider,
     events: &'a mut dyn IoEventBackend,
     status: &'a mut dyn StatusBackend,
     #[allow(clippy::vec_box)]
@@ -132,12 +132,12 @@ struct ExecutionState<'a, I: 'a + IoProvider> {
     output_handles: Vec<Box<OutputHandle>>,
 }
 
-impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
+impl<'a> ExecutionState<'a> {
     pub fn new(
-        io: &'a mut I,
+        io: &'a mut dyn IoProvider,
         events: &'a mut dyn IoEventBackend,
         status: &'a mut dyn StatusBackend,
-    ) -> ExecutionState<'a, I> {
+    ) -> ExecutionState<'a> {
         ExecutionState {
             io,
             events,
@@ -542,10 +542,7 @@ extern "C" fn diag_error_begin() -> *mut Diagnostic {
     Box::into_raw(warning)
 }
 
-extern "C" fn diag_finish<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    diag: *mut Diagnostic,
-) {
+extern "C" fn diag_finish(es: *mut ExecutionState, diag: *mut Diagnostic) {
     let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
     let es = unsafe { &mut *es };
 
@@ -560,28 +557,22 @@ extern "C" fn diag_append(diag: *mut Diagnostic, text: *const libc::c_char) {
     rdiag.message.push_str(&rtext.to_string_lossy());
 }
 
-extern "C" fn issue_warning<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    text: *const libc::c_char,
-) {
+extern "C" fn issue_warning(es: *mut ExecutionState, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn issue_error<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    text: *const libc::c_char,
-) {
+extern "C" fn issue_error(es: *mut ExecutionState, text: *const libc::c_char) {
     let es = unsafe { &mut *es };
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn get_file_md5<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn get_file_md5(
+    es: *mut ExecutionState,
     path: *const libc::c_char,
     digest: *mut u8,
 ) -> libc::c_int {
@@ -596,8 +587,8 @@ extern "C" fn get_file_md5<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn get_data_md5<'a, I: 'a + IoProvider>(
-    _es: *mut ExecutionState<'a, I>,
+extern "C" fn get_data_md5(
+    _es: *mut ExecutionState,
     data: *const u8,
     len: libc::size_t,
     digest: *mut u8,
@@ -614,8 +605,8 @@ extern "C" fn get_data_md5<'a, I: 'a + IoProvider>(
     0
 }
 
-extern "C" fn output_open<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn output_open(
+    es: *mut ExecutionState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
 ) -> *const libc::c_void {
@@ -626,16 +617,14 @@ extern "C" fn output_open<'a, I: 'a + IoProvider>(
     es.output_open(&rname, ris_gz) as *const _
 }
 
-extern "C" fn output_open_stdout<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-) -> *const libc::c_void {
+extern "C" fn output_open_stdout(es: *mut ExecutionState) -> *const libc::c_void {
     let es = unsafe { &mut *es };
 
     es.output_open_stdout() as *const _
 }
 
-extern "C" fn output_putc<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn output_putc(
+    es: *mut ExecutionState,
     handle: *mut libc::c_void,
     c: libc::c_int,
 ) -> libc::c_int {
@@ -650,8 +639,8 @@ extern "C" fn output_putc<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn output_write<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn output_write(
+    es: *mut ExecutionState,
     handle: *mut libc::c_void,
     data: *const u8,
     len: libc::size_t,
@@ -669,10 +658,7 @@ extern "C" fn output_write<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn output_flush<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
+extern "C" fn output_flush(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
 
@@ -683,10 +669,7 @@ extern "C" fn output_flush<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn output_close<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
+extern "C" fn output_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle.is_null() {
@@ -702,8 +685,8 @@ extern "C" fn output_close<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_open<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn input_open(
+    es: *mut ExecutionState,
     name: *const libc::c_char,
     format: libc::c_int,
     is_gz: libc::c_int,
@@ -719,26 +702,21 @@ extern "C" fn input_open<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_open_primary<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-) -> *const libc::c_void {
+extern "C" fn input_open_primary(es: *mut ExecutionState) -> *const libc::c_void {
     let es = unsafe { &mut *es };
 
     es.input_open_primary() as *const _
 }
 
-extern "C" fn input_get_size<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::size_t {
+extern "C" fn input_get_size(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
     es.input_get_size(rhandle)
 }
 
-extern "C" fn input_seek<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn input_seek(
+    es: *mut ExecutionState,
     handle: *mut libc::c_void,
     offset: libc::ssize_t,
     whence: libc::c_int,
@@ -774,10 +752,7 @@ extern "C" fn input_seek<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_getc<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
+extern "C" fn input_getc(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -796,8 +771,8 @@ extern "C" fn input_getc<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_ungetc<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn input_ungetc(
+    es: *mut ExecutionState,
     handle: *mut libc::c_void,
     ch: libc::c_int,
 ) -> libc::c_int {
@@ -813,8 +788,8 @@ extern "C" fn input_ungetc<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_read<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+extern "C" fn input_read(
+    es: *mut ExecutionState,
     handle: *mut libc::c_void,
     data: *mut u8,
     len: libc::size_t,
@@ -832,10 +807,7 @@ extern "C" fn input_read<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_close<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
+extern "C" fn input_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle.is_null() {
@@ -854,31 +826,31 @@ extern "C" fn input_close<'a, I: 'a + IoProvider>(
 // All of these entry points are used to populate the bridge API struct:
 
 impl TectonicBridgeApi {
-    fn new<'a, I: 'a + IoProvider>(exec_state: &ExecutionState<'a, I>) -> TectonicBridgeApi {
+    fn new(exec_state: &ExecutionState) -> TectonicBridgeApi {
         TectonicBridgeApi {
-            context: (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
+            context: (exec_state as *const ExecutionState) as *const libc::c_void,
             diag_warn_begin: diag_warn_begin as *const libc::c_void,
             diag_error_begin: diag_error_begin as *const libc::c_void,
-            diag_finish: diag_finish::<'a, I> as *const libc::c_void,
+            diag_finish: diag_finish as *const libc::c_void,
             diag_append: diag_append as *const libc::c_void,
-            issue_warning: issue_warning::<'a, I> as *const libc::c_void,
-            issue_error: issue_error::<'a, I> as *const libc::c_void,
-            get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,
-            get_data_md5: get_data_md5::<'a, I> as *const libc::c_void,
-            output_open: output_open::<'a, I> as *const libc::c_void,
-            output_open_stdout: output_open_stdout::<'a, I> as *const libc::c_void,
-            output_putc: output_putc::<'a, I> as *const libc::c_void,
-            output_write: output_write::<'a, I> as *const libc::c_void,
-            output_flush: output_flush::<'a, I> as *const libc::c_void,
-            output_close: output_close::<'a, I> as *const libc::c_void,
-            input_open: input_open::<'a, I> as *const libc::c_void,
-            input_open_primary: input_open_primary::<'a, I> as *const libc::c_void,
-            input_get_size: input_get_size::<'a, I> as *const libc::c_void,
-            input_seek: input_seek::<'a, I> as *const libc::c_void,
-            input_read: input_read::<'a, I> as *const libc::c_void,
-            input_getc: input_getc::<'a, I> as *const libc::c_void,
-            input_ungetc: input_ungetc::<'a, I> as *const libc::c_void,
-            input_close: input_close::<'a, I> as *const libc::c_void,
+            issue_warning: issue_warning as *const libc::c_void,
+            issue_error: issue_error as *const libc::c_void,
+            get_file_md5: get_file_md5 as *const libc::c_void,
+            get_data_md5: get_data_md5 as *const libc::c_void,
+            output_open: output_open as *const libc::c_void,
+            output_open_stdout: output_open_stdout as *const libc::c_void,
+            output_putc: output_putc as *const libc::c_void,
+            output_write: output_write as *const libc::c_void,
+            output_flush: output_flush as *const libc::c_void,
+            output_close: output_close as *const libc::c_void,
+            input_open: input_open as *const libc::c_void,
+            input_open_primary: input_open_primary as *const libc::c_void,
+            input_get_size: input_get_size as *const libc::c_void,
+            input_seek: input_seek as *const libc::c_void,
+            input_read: input_read as *const libc::c_void,
+            input_getc: input_getc as *const libc::c_void,
+            input_ungetc: input_ungetc as *const libc::c_void,
+            input_close: input_close as *const libc::c_void,
         }
     }
 }
