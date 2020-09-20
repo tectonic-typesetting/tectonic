@@ -247,26 +247,26 @@ ttstub_output_close(rust_output_handle_t handle)
 rust_input_handle_t
 ttstub_input_open(char const *path, tt_input_format_type format, int is_gz)
 {
-    return TGB->input_open(TGB->context, path, format, is_gz);
+    return input_open(TGB->context, path, format, is_gz);
 }
 
 rust_input_handle_t
 ttstub_input_open_primary(void)
 {
-    return TGB->input_open_primary(TGB->context);
+    return input_open_primary(TGB->context);
 }
 
 size_t
 ttstub_input_get_size(rust_input_handle_t handle)
 {
-    return TGB->input_get_size(TGB->context, handle);
+    return input_get_size(TGB->context, handle);
 }
 
 size_t
 ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
 {
     int internal_error = 0;
-    size_t rv = TGB->input_seek(TGB->context, handle, offset, whence, &internal_error);
+    size_t rv = input_seek(TGB->context, handle, offset, whence, &internal_error);
     if (internal_error) {
         // Nonzero indicates a serious internal error.
         longjmp(jump_buffer, 1);
@@ -277,25 +277,25 @@ ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
 ssize_t
 ttstub_input_read(rust_input_handle_t handle, char *data, size_t len)
 {
-    return TGB->input_read(TGB->context, handle, data, len);
+    return input_read(TGB->context, handle, (uint8_t*) data, len);
 }
 
 int
 ttstub_input_getc(rust_input_handle_t handle)
 {
-    return TGB->input_getc(TGB->context, handle);
+    return input_getc(TGB->context, handle);
 }
 
 int
 ttstub_input_ungetc(rust_input_handle_t handle, int ch)
 {
-    return TGB->input_ungetc(TGB->context, handle, ch);
+    return input_ungetc(TGB->context, handle, ch);
 }
 
 int
 ttstub_input_close(rust_input_handle_t handle)
 {
-    if (TGB->input_close(TGB->context, handle)) {
+    if (input_close(TGB->context, handle)) {
         // Nonzero return value indicates a serious internal error.
         longjmp(jump_buffer, 1);
     }

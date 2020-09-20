@@ -370,41 +370,41 @@ impl<'a> ExecutionState<'a> {
         rv
     }
 
-    fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *const InputHandle {
+    fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *mut InputHandle {
         let ih = match self.input_open_name_format_gz(name, format, is_gz) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
                 self.events.input_not_available(name);
-                return ptr::null();
+                return ptr::null_mut();
             }
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of input {} failed", name.to_string_lossy(); e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
         // the file name may have had an extension added, so we use ih.name() here:
         self.events.input_opened(ih.name(), ih.origin());
         self.input_handles.push(Box::new(ih));
-        &*self.input_handles[self.input_handles.len() - 1]
+        &mut **self.input_handles.last_mut().unwrap()
     }
 
-    fn input_open_primary(&mut self) -> *const InputHandle {
+    fn input_open_primary(&mut self) -> *mut InputHandle {
         let ih = match self.io.input_open_primary(self.status) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
-                return ptr::null();
+                return ptr::null_mut();
             }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "open of primary input failed"; e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
         self.events.primary_input_opened(ih.origin());
         self.input_handles.push(Box::new(ih));
-        &*self.input_handles[self.input_handles.len() - 1]
+        &mut **self.input_handles.last_mut().unwrap()
     }
 
     fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
@@ -702,37 +702,44 @@ pub extern "C" fn output_close(es: *mut ExecutionState, handle: *mut libc::c_voi
     }
 }
 
-extern "C" fn input_open(
+#[no_mangle]
+pub extern "C" fn input_open(
     es: *mut ExecutionState,
     name: *const libc::c_char,
     format: libc::c_int,
     is_gz: libc::c_int,
-) -> *const libc::c_void {
+) -> *mut libc::c_void {
     let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
 
     match rformat {
-        Some(fmt) => es.input_open(&rname, fmt, ris_gz) as *const _,
-        None => ptr::null(),
+        Some(fmt) => es.input_open(&rname, fmt, ris_gz) as *mut _,
+        None => ptr::null_mut(),
     }
 }
 
-extern "C" fn input_open_primary(es: *mut ExecutionState) -> *const libc::c_void {
+#[no_mangle]
+pub extern "C" fn input_open_primary(es: *mut ExecutionState) -> *mut libc::c_void {
     let es = unsafe { &mut *es };
 
-    es.input_open_primary() as *const _
+    es.input_open_primary() as *mut _
 }
 
-extern "C" fn input_get_size(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::size_t {
+#[no_mangle]
+pub extern "C" fn input_get_size(
+    es: *mut ExecutionState,
+    handle: *mut libc::c_void,
+) -> libc::size_t {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
     es.input_get_size(rhandle)
 }
 
-extern "C" fn input_seek(
+#[no_mangle]
+pub extern "C" fn input_seek(
     es: *mut ExecutionState,
     handle: *mut libc::c_void,
     offset: libc::ssize_t,
@@ -769,7 +776,8 @@ extern "C" fn input_seek(
     }
 }
 
-extern "C" fn input_getc(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
+#[no_mangle]
+pub extern "C" fn input_getc(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
@@ -788,7 +796,8 @@ extern "C" fn input_getc(es: *mut ExecutionState, handle: *mut libc::c_void) -> 
     }
 }
 
-extern "C" fn input_ungetc(
+#[no_mangle]
+pub extern "C" fn input_ungetc(
     es: *mut ExecutionState,
     handle: *mut libc::c_void,
     ch: libc::c_int,
@@ -805,7 +814,8 @@ extern "C" fn input_ungetc(
     }
 }
 
-extern "C" fn input_read(
+#[no_mangle]
+pub extern "C" fn input_read(
     es: *mut ExecutionState,
     handle: *mut libc::c_void,
     data: *mut u8,
@@ -824,7 +834,8 @@ extern "C" fn input_read(
     }
 }
 
-extern "C" fn input_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
+#[no_mangle]
+pub extern "C" fn input_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle.is_null() {
