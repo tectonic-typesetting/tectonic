@@ -50,7 +50,7 @@ typedef enum
 } tt_input_format_type;
 
 typedef OutputHandle *rust_output_handle_t;
-typedef void *rust_input_handle_t;
+typedef InputHandle *rust_input_handle_t;
 typedef Diagnostic *diagnostic_t;
 
 BEGIN_EXTERN_C
