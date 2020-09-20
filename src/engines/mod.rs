@@ -604,28 +604,27 @@ pub extern "C" fn output_open(
     es: &mut ExecutionState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
-) -> *mut libc::c_void {
+) -> *mut OutputHandle {
     let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
     let ris_gz = is_gz != 0;
 
-    es.output_open(&rname, ris_gz) as *mut _
+    es.output_open(&rname, ris_gz)
 }
 
 #[no_mangle]
-pub extern "C" fn output_open_stdout(es: &mut ExecutionState) -> *mut libc::c_void {
-    es.output_open_stdout() as *mut _
+pub extern "C" fn output_open_stdout(es: &mut ExecutionState) -> *mut OutputHandle {
+    es.output_open_stdout()
 }
 
 #[no_mangle]
 pub extern "C" fn output_putc(
     es: &mut ExecutionState,
-    handle: *mut libc::c_void,
+    handle: *mut OutputHandle,
     c: libc::c_int,
 ) -> libc::c_int {
-    let rhandle = handle as *mut OutputHandle;
     let rc = c as u8;
 
-    if es.output_write(rhandle, &[rc]) {
+    if es.output_write(handle, &[rc]) {
         libc::EOF
     } else {
         c
@@ -635,16 +634,15 @@ pub extern "C" fn output_putc(
 #[no_mangle]
 pub extern "C" fn output_write(
     es: &mut ExecutionState,
-    handle: *mut libc::c_void,
+    handle: *mut OutputHandle,
     data: *const u8,
     len: libc::size_t,
 ) -> libc::size_t {
-    let rhandle = handle as *mut OutputHandle;
     let rdata = unsafe { slice::from_raw_parts(data, len) };
 
     // NOTE: we use f.write_all() so partial writes are not gonna be a thing.
 
-    if es.output_write(rhandle, rdata) {
+    if es.output_write(handle, rdata) {
         0
     } else {
         len
@@ -652,10 +650,8 @@ pub extern "C" fn output_write(
 }
 
 #[no_mangle]
-pub extern "C" fn output_flush(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
-    let rhandle = handle as *mut OutputHandle;
-
-    if es.output_flush(rhandle) {
+pub extern "C" fn output_flush(es: &mut ExecutionState, handle: *mut OutputHandle) -> libc::c_int {
+    if es.output_flush(handle) {
         1
     } else {
         0
@@ -663,14 +659,12 @@ pub extern "C" fn output_flush(es: &mut ExecutionState, handle: *mut libc::c_voi
 }
 
 #[no_mangle]
-pub extern "C" fn output_close(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
+pub extern "C" fn output_close(es: &mut ExecutionState, handle: *mut OutputHandle) -> libc::c_int {
     if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    let rhandle = handle as *mut OutputHandle;
-
-    if es.output_close(rhandle) {
+    if es.output_close(handle) {
         1
     } else {
         0

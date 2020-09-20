@@ -49,7 +49,7 @@ typedef enum
     TTIF_TECTONIC_PRIMARY = 59, /* quasi-hack to get the primary input */
 } tt_input_format_type;
 
-typedef void *rust_output_handle_t;
+typedef OutputHandle *rust_output_handle_t;
 typedef void *rust_input_handle_t;
 typedef Diagnostic *diagnostic_t;
 
