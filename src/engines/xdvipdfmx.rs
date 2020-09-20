@@ -57,8 +57,8 @@ impl XdvipdfmxEngine {
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 
-        let /*mut*/ state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&state);
+        let mut state = ExecutionState::new(io, events, status);
+        let bridge = TectonicBridgeApi::new(&mut state);
 
         unsafe {
             match super::dvipdfmx_simple_main(

@@ -468,46 +468,33 @@ impl<'a> ExecutionState<'a> {
 // call back into our code. Keep synchronized with **tectonic/core-bridge.h**.
 
 #[repr(C)]
-struct TectonicBridgeApi {
-    context: *const libc::c_void,
-    diag_warn_begin: *const libc::c_void,
-    diag_error_begin: *const libc::c_void,
-    diag_finish: *const libc::c_void,
-    diag_append: *const libc::c_void,
-    issue_warning: *const libc::c_void,
-    issue_error: *const libc::c_void,
-    get_file_md5: *const libc::c_void,
-    get_data_md5: *const libc::c_void,
-    output_open: *const libc::c_void,
-    output_open_stdout: *const libc::c_void,
-    output_putc: *const libc::c_void,
-    output_write: *const libc::c_void,
-    output_flush: *const libc::c_void,
-    output_close: *const libc::c_void,
-    input_open: *const libc::c_void,
-    input_open_primary: *const libc::c_void,
-    input_get_size: *const libc::c_void,
-    input_seek: *const libc::c_void,
-    input_read: *const libc::c_void,
-    input_getc: *const libc::c_void,
-    input_ungetc: *const libc::c_void,
-    input_close: *const libc::c_void,
+pub struct TectonicBridgeApi<'a> {
+    context: *mut ExecutionState<'a>,
 }
 
+// This silences the warning that ExecutionState is not FFI-safe. The C side only passes the
+// pointer around and doesn't actually look into the struct, so we can ignore this warning.
+
+#[allow(improper_ctypes)]
 extern "C" {
+
     fn tt_get_error_message() -> *const libc::c_char;
+
     fn tt_xetex_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
+
     #[allow(dead_code)] // currently unused
     fn tt_xetex_set_string_variable(
         var_name: *const libc::c_char,
         value: *const libc::c_char,
     ) -> libc::c_int;
+
     fn tex_simple_main(
         api: *const TectonicBridgeApi,
         dump_name: *const libc::c_char,
         input_file_name: *const libc::c_char,
         build_date: libc::time_t,
     ) -> libc::c_int;
+
     fn dvipdfmx_simple_main(
         api: *const TectonicBridgeApi,
         dviname: *const libc::c_char,
@@ -516,10 +503,12 @@ extern "C" {
         deterministic_tags: bool,
         build_date: libc::time_t,
     ) -> libc::c_int;
+
     fn bibtex_simple_main(
         api: *const TectonicBridgeApi,
         aux_file_name: *const libc::c_char,
     ) -> libc::c_int;
+
 }
 
 // Entry points for the C/C++ API functions.
@@ -853,32 +842,10 @@ pub extern "C" fn input_close(es: *mut ExecutionState, handle: *mut libc::c_void
 
 // All of these entry points are used to populate the bridge API struct:
 
-impl TectonicBridgeApi {
-    fn new(exec_state: &ExecutionState) -> TectonicBridgeApi {
+impl TectonicBridgeApi<'_> {
+    fn new<'a>(exec_state: &'a mut ExecutionState<'a>) -> TectonicBridgeApi<'a> {
         TectonicBridgeApi {
-            context: (exec_state as *const ExecutionState) as *const libc::c_void,
-            diag_warn_begin: diag_warn_begin as *const libc::c_void,
-            diag_error_begin: diag_error_begin as *const libc::c_void,
-            diag_finish: diag_finish as *const libc::c_void,
-            diag_append: diag_append as *const libc::c_void,
-            issue_warning: issue_warning as *const libc::c_void,
-            issue_error: issue_error as *const libc::c_void,
-            get_file_md5: get_file_md5 as *const libc::c_void,
-            get_data_md5: get_data_md5 as *const libc::c_void,
-            output_open: output_open as *const libc::c_void,
-            output_open_stdout: output_open_stdout as *const libc::c_void,
-            output_putc: output_putc as *const libc::c_void,
-            output_write: output_write as *const libc::c_void,
-            output_flush: output_flush as *const libc::c_void,
-            output_close: output_close as *const libc::c_void,
-            input_open: input_open as *const libc::c_void,
-            input_open_primary: input_open_primary as *const libc::c_void,
-            input_get_size: input_get_size as *const libc::c_void,
-            input_seek: input_seek as *const libc::c_void,
-            input_read: input_read as *const libc::c_void,
-            input_getc: input_getc as *const libc::c_void,
-            input_ungetc: input_ungetc as *const libc::c_void,
-            input_close: input_close as *const libc::c_void,
+            context: exec_state,
         }
     }
 }
