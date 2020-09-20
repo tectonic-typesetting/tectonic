@@ -537,33 +537,29 @@ pub extern "C" fn diag_error_begin() -> *mut Diagnostic {
 }
 
 #[no_mangle]
-pub extern "C" fn diag_finish(es: *mut ExecutionState, diag: *mut Diagnostic) {
+pub extern "C" fn diag_finish(es: &mut ExecutionState, diag: *mut Diagnostic) {
     let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
-    let es = unsafe { &mut *es };
 
     es.status
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
 }
 
 #[no_mangle]
-pub extern "C" fn diag_append(diag: *mut Diagnostic, text: *const libc::c_char) {
-    let rdiag = unsafe { &mut *diag };
+pub extern "C" fn diag_append(diag: &mut Diagnostic, text: *const libc::c_char) {
     let rtext = unsafe { CStr::from_ptr(text) };
 
-    rdiag.message.push_str(&rtext.to_string_lossy());
+    diag.message.push_str(&rtext.to_string_lossy());
 }
 
 #[no_mangle]
-pub extern "C" fn issue_warning(es: *mut ExecutionState, text: *const libc::c_char) {
-    let es = unsafe { &mut *es };
+pub extern "C" fn issue_warning(es: &mut ExecutionState, text: *const libc::c_char) {
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
 #[no_mangle]
-pub extern "C" fn issue_error(es: *mut ExecutionState, text: *const libc::c_char) {
-    let es = unsafe { &mut *es };
+pub extern "C" fn issue_error(es: &mut ExecutionState, text: *const libc::c_char) {
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
@@ -571,11 +567,10 @@ pub extern "C" fn issue_error(es: *mut ExecutionState, text: *const libc::c_char
 
 #[no_mangle]
 pub extern "C" fn get_file_md5(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     path: *const libc::c_char,
     digest: *mut u8,
 ) -> libc::c_int {
-    let es = unsafe { &mut *es };
     let rpath = osstr_from_cstr(unsafe { CStr::from_ptr(path) });
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
@@ -588,12 +583,11 @@ pub extern "C" fn get_file_md5(
 
 #[no_mangle]
 pub extern "C" fn get_data_md5(
-    _es: *mut ExecutionState,
+    _es: &mut ExecutionState,
     data: *const u8,
     len: libc::size_t,
     digest: *mut u8,
 ) -> libc::c_int {
-    //let es = unsafe { &mut *es };
     let rdata = unsafe { slice::from_raw_parts(data, len) };
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
@@ -607,11 +601,10 @@ pub extern "C" fn get_data_md5(
 
 #[no_mangle]
 pub extern "C" fn output_open(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
 ) -> *mut libc::c_void {
-    let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
     let ris_gz = is_gz != 0;
 
@@ -619,19 +612,16 @@ pub extern "C" fn output_open(
 }
 
 #[no_mangle]
-pub extern "C" fn output_open_stdout(es: *mut ExecutionState) -> *mut libc::c_void {
-    let es = unsafe { &mut *es };
-
+pub extern "C" fn output_open_stdout(es: &mut ExecutionState) -> *mut libc::c_void {
     es.output_open_stdout() as *mut _
 }
 
 #[no_mangle]
 pub extern "C" fn output_putc(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     handle: *mut libc::c_void,
     c: libc::c_int,
 ) -> libc::c_int {
-    let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
     let rc = c as u8;
 
@@ -644,12 +634,11 @@ pub extern "C" fn output_putc(
 
 #[no_mangle]
 pub extern "C" fn output_write(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     handle: *mut libc::c_void,
     data: *const u8,
     len: libc::size_t,
 ) -> libc::size_t {
-    let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
     let rdata = unsafe { slice::from_raw_parts(data, len) };
 
@@ -663,8 +652,7 @@ pub extern "C" fn output_write(
 }
 
 #[no_mangle]
-pub extern "C" fn output_flush(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
-    let es = unsafe { &mut *es };
+pub extern "C" fn output_flush(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut OutputHandle;
 
     if es.output_flush(rhandle) {
@@ -675,9 +663,7 @@ pub extern "C" fn output_flush(es: *mut ExecutionState, handle: *mut libc::c_voi
 }
 
 #[no_mangle]
-pub extern "C" fn output_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
-    let es = unsafe { &mut *es };
-
+pub extern "C" fn output_close(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
@@ -693,12 +679,11 @@ pub extern "C" fn output_close(es: *mut ExecutionState, handle: *mut libc::c_voi
 
 #[no_mangle]
 pub extern "C" fn input_open(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     name: *const libc::c_char,
     format: libc::c_int,
     is_gz: libc::c_int,
 ) -> *mut libc::c_void {
-    let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
@@ -710,18 +695,15 @@ pub extern "C" fn input_open(
 }
 
 #[no_mangle]
-pub extern "C" fn input_open_primary(es: *mut ExecutionState) -> *mut libc::c_void {
-    let es = unsafe { &mut *es };
-
+pub extern "C" fn input_open_primary(es: &mut ExecutionState) -> *mut libc::c_void {
     es.input_open_primary() as *mut _
 }
 
 #[no_mangle]
 pub extern "C" fn input_get_size(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     handle: *mut libc::c_void,
 ) -> libc::size_t {
-    let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
     es.input_get_size(rhandle)
@@ -729,13 +711,12 @@ pub extern "C" fn input_get_size(
 
 #[no_mangle]
 pub extern "C" fn input_seek(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     handle: *mut libc::c_void,
     offset: libc::ssize_t,
     whence: libc::c_int,
     internal_error: *mut libc::c_int,
 ) -> libc::size_t {
-    let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
     let rwhence = match whence {
@@ -766,8 +747,7 @@ pub extern "C" fn input_seek(
 }
 
 #[no_mangle]
-pub extern "C" fn input_getc(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
-    let es = unsafe { &mut *es };
+pub extern "C" fn input_getc(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let rhandle = handle as *mut InputHandle;
 
     // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
@@ -787,11 +767,10 @@ pub extern "C" fn input_getc(es: *mut ExecutionState, handle: *mut libc::c_void)
 
 #[no_mangle]
 pub extern "C" fn input_ungetc(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     handle: *mut libc::c_void,
     ch: libc::c_int,
 ) -> libc::c_int {
-    let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
 
     match es.input_ungetc(rhandle, ch as u8) {
@@ -805,12 +784,11 @@ pub extern "C" fn input_ungetc(
 
 #[no_mangle]
 pub extern "C" fn input_read(
-    es: *mut ExecutionState,
+    es: &mut ExecutionState,
     handle: *mut libc::c_void,
     data: *mut u8,
     len: libc::size_t,
 ) -> libc::ssize_t {
-    let es = unsafe { &mut *es };
     let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
 
@@ -824,9 +802,7 @@ pub extern "C" fn input_read(
 }
 
 #[no_mangle]
-pub extern "C" fn input_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
-    let es = unsafe { &mut *es };
-
+pub extern "C" fn input_close(es: &mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
