@@ -284,13 +284,13 @@ impl<'a> ExecutionState<'a> {
         error_occurred
     }
 
-    fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
+    fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *mut OutputHandle {
         let mut oh = match self.io.output_open_name(name) {
             OpenResult::Ok(oh) => oh,
-            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of output {} failed", name.to_string_lossy(); e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
@@ -304,22 +304,22 @@ impl<'a> ExecutionState<'a> {
 
         self.events.output_opened(oh.name());
         self.output_handles.push(Box::new(oh));
-        &*self.output_handles[self.output_handles.len() - 1]
+        &mut **self.output_handles.last_mut().unwrap()
     }
 
-    fn output_open_stdout(&mut self) -> *const OutputHandle {
+    fn output_open_stdout(&mut self) -> *mut OutputHandle {
         let oh = match self.io.output_open_stdout() {
             OpenResult::Ok(oh) => oh,
-            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of stdout failed"; e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
         self.events.stdout_opened();
         self.output_handles.push(Box::new(oh));
-        &*self.output_handles[self.output_handles.len() - 1]
+        &mut **self.output_handles.last_mut().unwrap()
     }
 
     fn output_write(&mut self, handle: *mut OutputHandle, buf: &[u8]) -> bool {
@@ -616,25 +616,28 @@ pub extern "C" fn get_data_md5(
     0
 }
 
-extern "C" fn output_open(
+#[no_mangle]
+pub extern "C" fn output_open(
     es: *mut ExecutionState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
-) -> *const libc::c_void {
+) -> *mut libc::c_void {
     let es = unsafe { &mut *es };
     let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
     let ris_gz = is_gz != 0;
 
-    es.output_open(&rname, ris_gz) as *const _
+    es.output_open(&rname, ris_gz) as *mut _
 }
 
-extern "C" fn output_open_stdout(es: *mut ExecutionState) -> *const libc::c_void {
+#[no_mangle]
+pub extern "C" fn output_open_stdout(es: *mut ExecutionState) -> *mut libc::c_void {
     let es = unsafe { &mut *es };
 
-    es.output_open_stdout() as *const _
+    es.output_open_stdout() as *mut _
 }
 
-extern "C" fn output_putc(
+#[no_mangle]
+pub extern "C" fn output_putc(
     es: *mut ExecutionState,
     handle: *mut libc::c_void,
     c: libc::c_int,
@@ -650,7 +653,8 @@ extern "C" fn output_putc(
     }
 }
 
-extern "C" fn output_write(
+#[no_mangle]
+pub extern "C" fn output_write(
     es: *mut ExecutionState,
     handle: *mut libc::c_void,
     data: *const u8,
@@ -669,7 +673,8 @@ extern "C" fn output_write(
     }
 }
 
-extern "C" fn output_flush(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
+#[no_mangle]
+pub extern "C" fn output_flush(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
     let rhandle = handle as *mut OutputHandle;
 
@@ -680,7 +685,8 @@ extern "C" fn output_flush(es: *mut ExecutionState, handle: *mut libc::c_void) -
     }
 }
 
-extern "C" fn output_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
+#[no_mangle]
+pub extern "C" fn output_close(es: *mut ExecutionState, handle: *mut libc::c_void) -> libc::c_int {
     let es = unsafe { &mut *es };
 
     if handle.is_null() {

@@ -211,37 +211,37 @@ ttstub_get_data_md5(char const *data, size_t len, char *digest)
 rust_output_handle_t
 ttstub_output_open(char const *path, int is_gz)
 {
-    return TGB->output_open(TGB->context, path, is_gz);
+    return output_open(TGB->context, path, is_gz);
 }
 
 rust_output_handle_t
 ttstub_output_open_stdout(void)
 {
-    return TGB->output_open_stdout(TGB->context);
+    return output_open_stdout(TGB->context);
 }
 
 int
 ttstub_output_putc(rust_output_handle_t handle, int c)
 {
-    return TGB->output_putc(TGB->context, handle, c);
+    return output_putc(TGB->context, handle, c);
 }
 
 size_t
 ttstub_output_write(rust_output_handle_t handle, const char *data, size_t len)
 {
-    return TGB->output_write(TGB->context, handle, data, len);
+    return output_write(TGB->context, handle, (const uint8_t*) data, len);
 }
 
 int
 ttstub_output_flush(rust_output_handle_t handle)
 {
-    return TGB->output_flush(TGB->context, handle);
+    return output_flush(TGB->context, handle);
 }
 
 int
 ttstub_output_close(rust_output_handle_t handle)
 {
-    return TGB->output_close(TGB->context, handle);
+    return output_close(TGB->context, handle);
 }
 
 rust_input_handle_t
