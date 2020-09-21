@@ -205,7 +205,7 @@ int
 ttstub_get_data_md5(char const *data, size_t len, char *digest)
 {
     // TODO change uses of ttstub_get_data_md5 to pass uint8_t*
-    return get_data_md5(TGB->context, (uint8_t const*) data, len, (uint8_t*) digest);
+    return get_data_md5((uint8_t const*) data, len, (uint8_t*) digest);
 }
 
 rust_output_handle_t

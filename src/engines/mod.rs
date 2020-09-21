@@ -462,10 +462,9 @@ impl<'a> ExecutionState<'a> {
     }
 }
 
-// Now, here' the actual C API. There are two parts to this: the functions in
-// the backing C/C++ code that *we* call, and the API bridge -- a struct of
-// function pointers that we pass to the C/C++ entry points so that they can
-// call back into our code. Keep synchronized with **tectonic/core-bridge.h**.
+// The bridge only contains the ExecutionState now. It used to hold pointers to the below bridge
+// api functions (which would allow the C code to call back into our code), but those are now
+// exported using cbindgen.
 
 #[repr(C)]
 pub struct TectonicBridgeApi<'a> {
@@ -489,14 +488,14 @@ extern "C" {
     ) -> libc::c_int;
 
     fn tex_simple_main(
-        api: *const TectonicBridgeApi,
+        api: &TectonicBridgeApi,
         dump_name: *const libc::c_char,
         input_file_name: *const libc::c_char,
         build_date: libc::time_t,
     ) -> libc::c_int;
 
     fn dvipdfmx_simple_main(
-        api: *const TectonicBridgeApi,
+        api: &TectonicBridgeApi,
         dviname: *const libc::c_char,
         pdfname: *const libc::c_char,
         enable_compression: bool,
@@ -505,7 +504,7 @@ extern "C" {
     ) -> libc::c_int;
 
     fn bibtex_simple_main(
-        api: *const TectonicBridgeApi,
+        api: &TectonicBridgeApi,
         aux_file_name: *const libc::c_char,
     ) -> libc::c_int;
 
@@ -582,12 +581,7 @@ pub extern "C" fn get_file_md5(
 }
 
 #[no_mangle]
-pub extern "C" fn get_data_md5(
-    _es: &mut ExecutionState,
-    data: *const u8,
-    len: libc::size_t,
-    digest: *mut u8,
-) -> libc::c_int {
+pub extern "C" fn get_data_md5(data: *const u8, len: libc::size_t, digest: *mut u8) -> libc::c_int {
     let rdata = unsafe { slice::from_raw_parts(data, len) };
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
@@ -799,8 +793,6 @@ pub extern "C" fn input_close(es: &mut ExecutionState, handle: *mut InputHandle)
     }
 }
 
-// All of these entry points are used to populate the bridge API struct:
-
 impl TectonicBridgeApi<'_> {
     fn new<'a>(exec_state: &'a mut ExecutionState<'a>) -> TectonicBridgeApi<'a> {
         TectonicBridgeApi {
@@ -812,6 +804,8 @@ impl TectonicBridgeApi<'_> {
 // Finally, some support -- several of the C API functions pass arguments that
 // are "file format" enumerations. This code bridges the two. See the
 // `tt_input_format_type` enum in <tectonic/core-bridge.h>.
+//
+// TODO use cbindgen to export this so we don't need to synchronise definitions
 
 #[derive(Clone, Copy, Debug)]
 enum FileFormat {
