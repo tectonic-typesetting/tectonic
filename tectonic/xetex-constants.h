@@ -1030,10 +1030,4 @@
 #define MOV_D_FIXED 6
 #define MOV_Z_SEEN 12
 
-/* Increase this whenever the engine internals change such that the contents
- * of the "format" files must be regenerated -- this includes changes to the
- * string pool. KEEP SYNCHRONIZED WITH src/lib.rs!!! */
-
-#define FORMAT_SERIAL 28
-
 #endif /* not TECTONIC_CONSTANTS_H */

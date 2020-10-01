@@ -76,7 +76,7 @@ read_thumbnail (const char *thumb_filename)
 {
   pdf_obj *image_ref;
   int      xobj_id;
-  rust_input_handle_t *handle = NULL;
+  rust_input_handle_t handle = NULL;
   load_options options = {1, 0, NULL};
 
   handle = ttstub_input_open(thumb_filename, TTIF_PICT, 0);

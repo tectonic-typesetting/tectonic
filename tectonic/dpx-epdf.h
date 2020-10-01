@@ -37,7 +37,7 @@
 #define pdfbox_trim  4
 #define pdfbox_art   5
 
-int pdf_copy_clip (FILE *image_file, int page_index,
+int pdf_copy_clip (rust_input_handle_t image_file, int page_index,
                           double x_user, double y_user);
 
 int pdf_include_page (pdf_ximage * ximage, rust_input_handle_t handle,

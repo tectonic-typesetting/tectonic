@@ -1321,7 +1321,7 @@ t1_load_UnicodeCMap (const char *font_name,
 {
     int       cmap_id = -1;
     cff_font *cffont;
-    rust_input_handle_t *handle = NULL;
+    rust_input_handle_t handle = NULL;
 
     if (!font_name)
         return -1;

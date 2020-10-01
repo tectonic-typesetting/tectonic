@@ -1349,7 +1349,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
   ssize_t nb_read;
   char    *ident, *instring, *fullname;
   pdf_obj *tmp;
-  rust_input_handle_t *handle = NULL;
+  rust_input_handle_t handle = NULL;
 
   skip_white(&args->curptr, args->endptr);
 
