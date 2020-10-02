@@ -12,6 +12,9 @@
 //! substantial private API that defines the interface between Tectonic's Rust
 //! code and the C/C++ code that the backends are (currently) implemented in.
 
+// Mostly for the bridge functions
+#![allow(clippy::not_unsafe_ptr_arg_deref)]
+
 use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};
 use lazy_static::lazy_static;
@@ -122,8 +125,8 @@ lazy_static! {
 /// The methods on ExecutionState pretty much all work to implement for the
 /// "bridge" API (C/C++ => Rust) defined below.
 
-struct ExecutionState<'a, I: 'a + IoProvider> {
-    io: &'a mut I,
+pub struct ExecutionState<'a> {
+    io: &'a mut dyn IoProvider,
     events: &'a mut dyn IoEventBackend,
     status: &'a mut dyn StatusBackend,
     #[allow(clippy::vec_box)]
@@ -132,12 +135,12 @@ struct ExecutionState<'a, I: 'a + IoProvider> {
     output_handles: Vec<Box<OutputHandle>>,
 }
 
-impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
+impl<'a> ExecutionState<'a> {
     pub fn new(
-        io: &'a mut I,
+        io: &'a mut dyn IoProvider,
         events: &'a mut dyn IoEventBackend,
         status: &'a mut dyn StatusBackend,
-    ) -> ExecutionState<'a, I> {
+    ) -> ExecutionState<'a> {
         ExecutionState {
             io,
             events,
@@ -281,13 +284,13 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         error_occurred
     }
 
-    fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *const OutputHandle {
+    fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *mut OutputHandle {
         let mut oh = match self.io.output_open_name(name) {
             OpenResult::Ok(oh) => oh,
-            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of output {} failed", name.to_string_lossy(); e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
@@ -301,22 +304,22 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
 
         self.events.output_opened(oh.name());
         self.output_handles.push(Box::new(oh));
-        &*self.output_handles[self.output_handles.len() - 1]
+        &mut **self.output_handles.last_mut().unwrap()
     }
 
-    fn output_open_stdout(&mut self) -> *const OutputHandle {
+    fn output_open_stdout(&mut self) -> *mut OutputHandle {
         let oh = match self.io.output_open_stdout() {
             OpenResult::Ok(oh) => oh,
-            OpenResult::NotAvailable => return ptr::null(),
+            OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of stdout failed"; e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
         self.events.stdout_opened();
         self.output_handles.push(Box::new(oh));
-        &*self.output_handles[self.output_handles.len() - 1]
+        &mut **self.output_handles.last_mut().unwrap()
     }
 
     fn output_write(&mut self, handle: *mut OutputHandle, buf: &[u8]) -> bool {
@@ -367,41 +370,41 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
         rv
     }
 
-    fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *const InputHandle {
+    fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *mut InputHandle {
         let ih = match self.input_open_name_format_gz(name, format, is_gz) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
                 self.events.input_not_available(name);
-                return ptr::null();
+                return ptr::null_mut();
             }
             OpenResult::Err(e) => {
                 tt_warning!(self.status, "open of input {} failed", name.to_string_lossy(); e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
         // the file name may have had an extension added, so we use ih.name() here:
         self.events.input_opened(ih.name(), ih.origin());
         self.input_handles.push(Box::new(ih));
-        &*self.input_handles[self.input_handles.len() - 1]
+        &mut **self.input_handles.last_mut().unwrap()
     }
 
-    fn input_open_primary(&mut self) -> *const InputHandle {
+    fn input_open_primary(&mut self) -> *mut InputHandle {
         let ih = match self.io.input_open_primary(self.status) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
-                return ptr::null();
+                return ptr::null_mut();
             }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "open of primary input failed"; e);
-                return ptr::null();
+                return ptr::null_mut();
             }
         };
 
         self.events.primary_input_opened(ih.origin());
         self.input_handles.push(Box::new(ih));
-        &*self.input_handles[self.input_handles.len() - 1]
+        &mut **self.input_handles.last_mut().unwrap()
     }
 
     fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
@@ -459,70 +462,63 @@ impl<'a, I: 'a + IoProvider> ExecutionState<'a, I> {
     }
 }
 
-// Now, here' the actual C API. There are two parts to this: the functions in
-// the backing C/C++ code that *we* call, and the API bridge -- a struct of
-// function pointers that we pass to the C/C++ entry points so that they can
-// call back into our code. Keep synchronized with **tectonic/core-bridge.h**.
+// The bridge only contains the ExecutionState now. It used to hold pointers to the below bridge
+// api functions (which would allow the C code to call back into our code), but those are now
+// exported using cbindgen.
 
 #[repr(C)]
-struct TectonicBridgeApi {
-    context: *const libc::c_void,
-    diag_warn_begin: *const libc::c_void,
-    diag_error_begin: *const libc::c_void,
-    diag_finish: *const libc::c_void,
-    diag_append: *const libc::c_void,
-    issue_warning: *const libc::c_void,
-    issue_error: *const libc::c_void,
-    get_file_md5: *const libc::c_void,
-    get_data_md5: *const libc::c_void,
-    output_open: *const libc::c_void,
-    output_open_stdout: *const libc::c_void,
-    output_putc: *const libc::c_void,
-    output_write: *const libc::c_void,
-    output_flush: *const libc::c_void,
-    output_close: *const libc::c_void,
-    input_open: *const libc::c_void,
-    input_open_primary: *const libc::c_void,
-    input_get_size: *const libc::c_void,
-    input_seek: *const libc::c_void,
-    input_read: *const libc::c_void,
-    input_getc: *const libc::c_void,
-    input_ungetc: *const libc::c_void,
-    input_close: *const libc::c_void,
+pub struct TectonicBridgeApi<'a> {
+    context: *mut ExecutionState<'a>,
 }
 
+// This silences the warning that ExecutionState is not FFI-safe. The C side only passes the
+// pointer around and doesn't actually look into the struct, so we can ignore this warning.
+
+#[allow(improper_ctypes)]
 extern "C" {
+
     fn tt_get_error_message() -> *const libc::c_char;
+
     fn tt_xetex_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
-    //fn tt_xetex_set_string_variable(var_name: *const libc::c_char, value: *const libc::c_char) -> libc::c_int;
+
+    #[allow(dead_code)] // currently unused
+    fn tt_xetex_set_string_variable(
+        var_name: *const libc::c_char,
+        value: *const libc::c_char,
+    ) -> libc::c_int;
+
     fn tex_simple_main(
-        api: *const TectonicBridgeApi,
+        api: &TectonicBridgeApi,
         dump_name: *const libc::c_char,
         input_file_name: *const libc::c_char,
         build_date: libc::time_t,
     ) -> libc::c_int;
+
     fn dvipdfmx_simple_main(
-        api: *const TectonicBridgeApi,
+        api: &TectonicBridgeApi,
         dviname: *const libc::c_char,
         pdfname: *const libc::c_char,
         enable_compression: bool,
         deterministic_tags: bool,
         build_date: libc::time_t,
     ) -> libc::c_int;
+
     fn bibtex_simple_main(
-        api: *const TectonicBridgeApi,
+        api: &TectonicBridgeApi,
         aux_file_name: *const libc::c_char,
     ) -> libc::c_int;
+
 }
 
 // Entry points for the C/C++ API functions.
 
-struct Diagnostic {
+pub struct Diagnostic {
     message: String,
     kind: MessageKind,
 }
 
-extern "C" fn diag_warn_begin() -> *mut Diagnostic {
+#[no_mangle]
+pub extern "C" fn diag_warn_begin() -> *mut Diagnostic {
     let warning = Box::new(Diagnostic {
         message: String::new(),
         kind: MessageKind::Warning,
@@ -530,7 +526,8 @@ extern "C" fn diag_warn_begin() -> *mut Diagnostic {
     Box::into_raw(warning)
 }
 
-extern "C" fn diag_error_begin() -> *mut Diagnostic {
+#[no_mangle]
+pub extern "C" fn diag_error_begin() -> *mut Diagnostic {
     let warning = Box::new(Diagnostic {
         message: String::new(),
         kind: MessageKind::Error,
@@ -538,50 +535,41 @@ extern "C" fn diag_error_begin() -> *mut Diagnostic {
     Box::into_raw(warning)
 }
 
-extern "C" fn diag_finish<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    diag: *mut Diagnostic,
-) {
+#[no_mangle]
+pub extern "C" fn diag_finish(es: &mut ExecutionState, diag: *mut Diagnostic) {
     let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
-    let es = unsafe { &mut *es };
 
     es.status
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
 }
 
-extern "C" fn diag_append(diag: *mut Diagnostic, text: *const libc::c_char) {
-    let rdiag = unsafe { &mut *diag };
+#[no_mangle]
+pub extern "C" fn diag_append(diag: &mut Diagnostic, text: *const libc::c_char) {
     let rtext = unsafe { CStr::from_ptr(text) };
 
-    rdiag.message.push_str(&rtext.to_string_lossy());
+    diag.message.push_str(&rtext.to_string_lossy());
 }
 
-extern "C" fn issue_warning<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    text: *const libc::c_char,
-) {
-    let es = unsafe { &mut *es };
+#[no_mangle]
+pub extern "C" fn issue_warning(es: &mut ExecutionState, text: *const libc::c_char) {
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn issue_error<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    text: *const libc::c_char,
-) {
-    let es = unsafe { &mut *es };
+#[no_mangle]
+pub extern "C" fn issue_error(es: &mut ExecutionState, text: *const libc::c_char) {
     let rtext = unsafe { CStr::from_ptr(text) };
 
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
-extern "C" fn get_file_md5<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+#[no_mangle]
+pub extern "C" fn get_file_md5(
+    es: &mut ExecutionState,
     path: *const libc::c_char,
     digest: *mut u8,
 ) -> libc::c_int {
-    let es = unsafe { &mut *es };
     let rpath = osstr_from_cstr(unsafe { CStr::from_ptr(path) });
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
@@ -592,13 +580,8 @@ extern "C" fn get_file_md5<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn get_data_md5<'a, I: 'a + IoProvider>(
-    _es: *mut ExecutionState<'a, I>,
-    data: *const u8,
-    len: libc::size_t,
-    digest: *mut u8,
-) -> libc::c_int {
-    //let es = unsafe { &mut *es };
+#[no_mangle]
+pub extern "C" fn get_data_md5(data: *const u8, len: libc::size_t, digest: *mut u8) -> libc::c_int {
     let rdata = unsafe { slice::from_raw_parts(data, len) };
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
@@ -610,139 +593,116 @@ extern "C" fn get_data_md5<'a, I: 'a + IoProvider>(
     0
 }
 
-extern "C" fn output_open<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+#[no_mangle]
+pub extern "C" fn output_open(
+    es: &mut ExecutionState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
-) -> *const libc::c_void {
-    let es = unsafe { &mut *es };
+) -> *mut OutputHandle {
     let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
     let ris_gz = is_gz != 0;
 
-    es.output_open(&rname, ris_gz) as *const _
+    es.output_open(&rname, ris_gz)
 }
 
-extern "C" fn output_open_stdout<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-) -> *const libc::c_void {
-    let es = unsafe { &mut *es };
-
-    es.output_open_stdout() as *const _
+#[no_mangle]
+pub extern "C" fn output_open_stdout(es: &mut ExecutionState) -> *mut OutputHandle {
+    es.output_open_stdout()
 }
 
-extern "C" fn output_putc<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
+#[no_mangle]
+pub extern "C" fn output_putc(
+    es: &mut ExecutionState,
+    handle: *mut OutputHandle,
     c: libc::c_int,
 ) -> libc::c_int {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut OutputHandle;
     let rc = c as u8;
 
-    if es.output_write(rhandle, &[rc]) {
+    if es.output_write(handle, &[rc]) {
         libc::EOF
     } else {
         c
     }
 }
 
-extern "C" fn output_write<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
+#[no_mangle]
+pub extern "C" fn output_write(
+    es: &mut ExecutionState,
+    handle: *mut OutputHandle,
     data: *const u8,
     len: libc::size_t,
 ) -> libc::size_t {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut OutputHandle;
     let rdata = unsafe { slice::from_raw_parts(data, len) };
 
     // NOTE: we use f.write_all() so partial writes are not gonna be a thing.
 
-    if es.output_write(rhandle, rdata) {
+    if es.output_write(handle, rdata) {
         0
     } else {
         len
     }
 }
 
-extern "C" fn output_flush<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut OutputHandle;
-
-    if es.output_flush(rhandle) {
+#[no_mangle]
+pub extern "C" fn output_flush(es: &mut ExecutionState, handle: *mut OutputHandle) -> libc::c_int {
+    if es.output_flush(handle) {
         1
     } else {
         0
     }
 }
 
-extern "C" fn output_close<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
-    let es = unsafe { &mut *es };
-
+#[no_mangle]
+pub extern "C" fn output_close(es: &mut ExecutionState, handle: *mut OutputHandle) -> libc::c_int {
     if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    let rhandle = handle as *mut OutputHandle;
-
-    if es.output_close(rhandle) {
+    if es.output_close(handle) {
         1
     } else {
         0
     }
 }
 
-extern "C" fn input_open<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
+#[no_mangle]
+pub extern "C" fn input_open(
+    es: &mut ExecutionState,
     name: *const libc::c_char,
     format: libc::c_int,
     is_gz: libc::c_int,
-) -> *const libc::c_void {
-    let es = unsafe { &mut *es };
+) -> *mut InputHandle {
     let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
 
     match rformat {
-        Some(fmt) => es.input_open(&rname, fmt, ris_gz) as *const _,
-        None => ptr::null(),
+        Some(fmt) => es.input_open(&rname, fmt, ris_gz),
+        None => ptr::null_mut(),
     }
 }
 
-extern "C" fn input_open_primary<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-) -> *const libc::c_void {
-    let es = unsafe { &mut *es };
-
-    es.input_open_primary() as *const _
+#[no_mangle]
+pub extern "C" fn input_open_primary(es: &mut ExecutionState) -> *mut InputHandle {
+    es.input_open_primary()
 }
 
-extern "C" fn input_get_size<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
+#[no_mangle]
+pub extern "C" fn input_get_size(
+    es: &mut ExecutionState,
+    handle: *mut InputHandle,
 ) -> libc::size_t {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut InputHandle;
-
-    es.input_get_size(rhandle)
+    es.input_get_size(handle)
 }
 
-extern "C" fn input_seek<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
+#[no_mangle]
+pub extern "C" fn input_seek(
+    es: &mut ExecutionState,
+    handle: *mut InputHandle,
     offset: libc::ssize_t,
     whence: libc::c_int,
     internal_error: *mut libc::c_int,
 ) -> libc::size_t {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut InputHandle;
-
     let rwhence = match whence {
         libc::SEEK_SET => SeekFrom::Start(offset as u64),
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
@@ -760,7 +720,7 @@ extern "C" fn input_seek<'a, I: 'a + IoProvider>(
         }
     };
 
-    match es.input_seek(rhandle, rwhence) {
+    match es.input_seek(handle, rwhence) {
         Ok(pos) => pos as libc::size_t,
         Err(e) => {
             // TODO: Handle the error better. Report the error properly to the caller?
@@ -770,17 +730,12 @@ extern "C" fn input_seek<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_getc<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut InputHandle;
-
+#[no_mangle]
+pub extern "C" fn input_getc(es: &mut ExecutionState, handle: *mut InputHandle) -> libc::c_int {
     // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
     // No need to complain. Fun match statement here.
 
-    match es.input_getc(rhandle) {
+    match es.input_getc(handle) {
         Ok(b) => libc::c_int::from(b),
         Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => {
             libc::EOF
@@ -792,15 +747,13 @@ extern "C" fn input_getc<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_ungetc<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
+#[no_mangle]
+pub extern "C" fn input_ungetc(
+    es: &mut ExecutionState,
+    handle: *mut InputHandle,
     ch: libc::c_int,
 ) -> libc::c_int {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut InputHandle;
-
-    match es.input_ungetc(rhandle, ch as u8) {
+    match es.input_ungetc(handle, ch as u8) {
         Ok(_) => 0,
         Err(e) => {
             tt_warning!(es.status, "ungetc() failed"; e);
@@ -809,17 +762,16 @@ extern "C" fn input_ungetc<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_read<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
+#[no_mangle]
+pub extern "C" fn input_read(
+    es: &mut ExecutionState,
+    handle: *mut InputHandle,
     data: *mut u8,
     len: libc::size_t,
 ) -> libc::ssize_t {
-    let es = unsafe { &mut *es };
-    let rhandle = handle as *mut InputHandle;
     let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
 
-    match es.input_read(rhandle, rdata) {
+    match es.input_read(handle, rdata) {
         Ok(_) => len as isize,
         Err(e) => {
             tt_warning!(es.status, "{}-byte read failed", len; e);
@@ -828,53 +780,23 @@ extern "C" fn input_read<'a, I: 'a + IoProvider>(
     }
 }
 
-extern "C" fn input_close<'a, I: 'a + IoProvider>(
-    es: *mut ExecutionState<'a, I>,
-    handle: *mut libc::c_void,
-) -> libc::c_int {
-    let es = unsafe { &mut *es };
-
+#[no_mangle]
+pub extern "C" fn input_close(es: &mut ExecutionState, handle: *mut InputHandle) -> libc::c_int {
     if handle.is_null() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    let rhandle = handle as *mut InputHandle;
-
-    if es.input_close(rhandle) {
+    if es.input_close(handle) {
         1
     } else {
         0
     }
 }
 
-// All of these entry points are used to populate the bridge API struct:
-
-impl TectonicBridgeApi {
-    fn new<'a, I: 'a + IoProvider>(exec_state: &ExecutionState<'a, I>) -> TectonicBridgeApi {
+impl TectonicBridgeApi<'_> {
+    fn new<'a>(exec_state: &'a mut ExecutionState<'a>) -> TectonicBridgeApi<'a> {
         TectonicBridgeApi {
-            context: (exec_state as *const ExecutionState<'a, I>) as *const libc::c_void,
-            diag_warn_begin: diag_warn_begin as *const libc::c_void,
-            diag_error_begin: diag_error_begin as *const libc::c_void,
-            diag_finish: diag_finish::<'a, I> as *const libc::c_void,
-            diag_append: diag_append as *const libc::c_void,
-            issue_warning: issue_warning::<'a, I> as *const libc::c_void,
-            issue_error: issue_error::<'a, I> as *const libc::c_void,
-            get_file_md5: get_file_md5::<'a, I> as *const libc::c_void,
-            get_data_md5: get_data_md5::<'a, I> as *const libc::c_void,
-            output_open: output_open::<'a, I> as *const libc::c_void,
-            output_open_stdout: output_open_stdout::<'a, I> as *const libc::c_void,
-            output_putc: output_putc::<'a, I> as *const libc::c_void,
-            output_write: output_write::<'a, I> as *const libc::c_void,
-            output_flush: output_flush::<'a, I> as *const libc::c_void,
-            output_close: output_close::<'a, I> as *const libc::c_void,
-            input_open: input_open::<'a, I> as *const libc::c_void,
-            input_open_primary: input_open_primary::<'a, I> as *const libc::c_void,
-            input_get_size: input_get_size::<'a, I> as *const libc::c_void,
-            input_seek: input_seek::<'a, I> as *const libc::c_void,
-            input_read: input_read::<'a, I> as *const libc::c_void,
-            input_getc: input_getc::<'a, I> as *const libc::c_void,
-            input_ungetc: input_ungetc::<'a, I> as *const libc::c_void,
-            input_close: input_close::<'a, I> as *const libc::c_void,
+            context: exec_state,
         }
     }
 }
@@ -882,6 +804,8 @@ impl TectonicBridgeApi {
 // Finally, some support -- several of the C API functions pass arguments that
 // are "file format" enumerations. This code bridges the two. See the
 // `tt_input_format_type` enum in <tectonic/core-bridge.h>.
+//
+// TODO use cbindgen to export this so we don't need to synchronise definitions
 
 #[derive(Clone, Copy, Debug)]
 enum FileFormat {

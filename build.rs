@@ -1,16 +1,15 @@
 // build.rs -- build helper script for Tectonic.
-// Copyright 2016-2019 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 /// The Tectonic build script. Not only do we have internal C/C++ code, we
 /// also depend on several external C/C++ libraries, so there's a lot to do
 /// here. It would be great to streamline things.
-///
-/// TODO: this surely needs to become much smarter and more flexible.
+use std::{
+    env,
+    path::{Path, PathBuf},
+};
 use tectonic_cfg_support::*;
-
-use std::env;
-use std::path::{Path, PathBuf};
 
 #[cfg(not(target_os = "macos"))]
 const PKGCONFIG_LIBS: &str =
@@ -183,6 +182,18 @@ impl Default for DepState {
 fn main() {
     let target = env::var("TARGET").unwrap();
     let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
+
+    // Generate bindings for the C/C++ code to interface with backend Rust code.
+    // As a heuristic we trigger rebuilds on changes to src/engines/mod.rs since
+    // most of `core-bindgen.h` comes from this file.
+    let mut cbindgen_header_path: PathBuf = env::var("OUT_DIR").unwrap().into();
+    cbindgen_header_path.push("core-bindgen.h");
+
+    cbindgen::generate(env::var("CARGO_MANIFEST_DIR").unwrap())
+        .unwrap()
+        .write_to_file(&cbindgen_header_path);
+
+    println!("cargo:rerun-if-changed=src/engines/mod.rs");
 
     // Re-export $TARGET during the build so that our executable tests know
     // what environment variable CARGO_TARGET_@TARGET@_RUNNER to check when
@@ -365,6 +376,7 @@ fn main() {
         .define("HAVE_ZLIB", "1")
         .define("HAVE_ZLIB_COMPRESS2", "1")
         .define("ZLIB_CONST", "1")
+        .include(env::var("OUT_DIR").unwrap())
         .include(".");
 
     let cppflags = [
@@ -413,6 +425,7 @@ fn main() {
         .file("tectonic/xetex-XeTeXFontMgr.cpp")
         .file("tectonic/xetex-XeTeXLayoutInterface.cpp")
         .file("tectonic/xetex-XeTeXOTMath.cpp")
+        .include(env::var("OUT_DIR").unwrap())
         .include(".");
 
     dep_state.foreach_include_path(|p| {

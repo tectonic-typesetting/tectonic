@@ -578,7 +578,7 @@ static struct operator
 
 
 int
-pdf_copy_clip (FILE *image_file, int pageNo, double x_user, double y_user)
+pdf_copy_clip (rust_input_handle_t image_file, int pageNo, double x_user, double y_user)
 {
   pdf_obj *page_tree, *contents;
   int depth = 0, top = -1;

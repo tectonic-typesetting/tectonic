@@ -64,7 +64,7 @@ pdf_font_open_type1c (pdf_font *font)
 {
     char     *fontname;
     char     *ident;
-    rust_input_handle_t *handle = NULL;
+    rust_input_handle_t handle = NULL;
     sfnt     *sfont;
     cff_font *cffont;
     pdf_obj  *descriptor, *tmp;
@@ -230,7 +230,7 @@ pdf_font_load_type1c (pdf_font *font)
     pdf_obj      *pdfcharset; /* Actually string object */
     char         *usedchars;
     char         *fontname, *uniqueTag, *ident, *fullname;
-    rust_input_handle_t *handle;
+    rust_input_handle_t handle;
     int           encoding_id;
     pdf_obj      *fontfile, *stream_dict;
     char        **enc_vec;

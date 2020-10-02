@@ -3942,7 +3942,7 @@ tt_cleanup(void) {
 }
 
 tt_history_t
-tt_run_engine(char *dump_name, char *input_file_name, time_t build_date)
+tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_date)
 {
     int32_t font_k;
 

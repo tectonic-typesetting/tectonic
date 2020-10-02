@@ -68,7 +68,11 @@ pub use crate::engines::tex::{TexEngine, TexResult};
 pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
-const FORMAT_SERIAL: u32 = 28; // keep synchronized with tectonic/xetex-constants.h!!
+// Increase this whenever the engine internals change such that the contents
+// of the "format" files must be regenerated -- this includes changes to the
+// string pool.
+
+pub const FORMAT_SERIAL: u32 = 28;
 
 /// Compile LaTeX text to a PDF.
 ///

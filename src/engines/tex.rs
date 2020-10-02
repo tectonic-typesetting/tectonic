@@ -115,8 +115,8 @@ impl TexEngine {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
-        let /*mut*/ state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&state);
+        let mut state = ExecutionState::new(io, events, status);
+        let bridge = TectonicBridgeApi::new(&mut state);
 
         // initialize globals
         let v = if self.halt_on_error { 1 } else { 0 };

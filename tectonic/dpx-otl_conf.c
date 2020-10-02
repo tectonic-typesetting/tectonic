@@ -457,7 +457,7 @@ otl_read_conf (const char *conf_name)
 {
   pdf_obj *rule;
   pdf_obj *gclass;
-  rust_input_handle_t *handle = NULL;
+  rust_input_handle_t handle = NULL;
   char    *filename, *wbuf, *p, *endptr;
   const char *pp;
   int      size, len;

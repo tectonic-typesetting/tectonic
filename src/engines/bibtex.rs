@@ -29,8 +29,8 @@ impl BibtexEngine {
 
         let caux = CString::new(aux)?;
 
-        let /*mut*/ state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&state);
+        let mut state = ExecutionState::new(io, events, status);
+        let bridge = TectonicBridgeApi::new(&mut state);
 
         unsafe {
             match super::bibtex_simple_main(&bridge, caux.as_ptr()) {

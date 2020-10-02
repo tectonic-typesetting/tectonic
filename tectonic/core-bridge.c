@@ -20,7 +20,7 @@
 /* The global variable that represents the Rust API. Some fine day we'll get
  * rid of all of the globals ... */
 
-static tt_bridge_api_t *tectonic_global_bridge = NULL;
+static const tt_bridge_api_t *tectonic_global_bridge = NULL;
 
 
 /* Highest-level abort/error handling. */
@@ -52,7 +52,7 @@ tt_get_error_message(void)
  * setjmp aborts and error message extraction. */
 
 int
-tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name, time_t build_date)
+tex_simple_main(const tt_bridge_api_t *api, const char *dump_name, const char *input_file_name, time_t build_date)
 {
     int rv;
 
@@ -70,7 +70,7 @@ tex_simple_main(tt_bridge_api_t *api, char *dump_name, char *input_file_name, ti
 
 
 int
-dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool compress, bool deterministic_tags, time_t build_date)
+dvipdfmx_simple_main(const tt_bridge_api_t *api, const char *dviname, const char *pdfname, bool compress, bool deterministic_tags, time_t build_date)
 {
     int rv;
 
@@ -89,7 +89,7 @@ dvipdfmx_simple_main(tt_bridge_api_t *api, char *dviname, char *pdfname, bool co
 
 
 int
-bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
+bibtex_simple_main(const tt_bridge_api_t *api, const char *aux_file_name)
 {
     int rv;
 
@@ -113,32 +113,32 @@ bibtex_simple_main(tt_bridge_api_t *api, char *aux_file_name)
 diagnostic_t
 ttstub_diag_warn_begin(void)
 {
-    return TGB->diag_warn_begin();
+    return diag_warn_begin();
 }
 
 diagnostic_t
 ttstub_diag_error_begin(void)
 {
-    return TGB->diag_error_begin();
+    return diag_error_begin();
 }
 
 void
 ttstub_diag_finish(diagnostic_t diag)
 {
-    TGB->diag_finish(TGB->context, diag);
+    diag_finish(TGB->context, diag);
 }
 
 void
 ttstub_diag_append(diagnostic_t diag, char const *text)
 {
-    TGB->diag_append(diag, text);
+    diag_append(diag, text);
 }
 
 PRINTF_FUNC(2,0) void
 ttstub_diag_vprintf(diagnostic_t diag, const char *format, va_list ap)
 {
     vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
-    TGB->diag_append(diag, error_buf);
+    ttstub_diag_append(diag, error_buf);
 }
 
 PRINTF_FUNC(2,3) void
@@ -159,7 +159,7 @@ ttstub_issue_warning(const char *format, ...)
     va_start(ap, format);
     vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
     va_end(ap);
-    TGB->issue_warning(TGB->context, error_buf);
+    issue_warning(TGB->context, error_buf);
 }
 
 PRINTF_FUNC(1,2) void
@@ -170,7 +170,7 @@ ttstub_issue_error(const char *format, ...)
     va_start(ap, format);
     vsnprintf(error_buf, BUF_SIZE, format, ap); /* Not ideal to (ab)use error_buf here */
     va_end(ap);
-    TGB->issue_error(TGB->context, error_buf);
+    issue_error(TGB->context, error_buf);
 }
 
 PRINTF_FUNC(2,3) int
@@ -197,74 +197,76 @@ ttstub_fprintf(rust_output_handle_t handle, const char *format, ...)
 int
 ttstub_get_file_md5(char const *path, char *digest)
 {
-    return TGB->get_file_md5(TGB->context, path, digest);
+    // TODO change uses of ttstub_get_file_md5 to pass uint8_t*
+    return get_file_md5(TGB->context, path, (uint8_t*) digest);
 }
 
 int
 ttstub_get_data_md5(char const *data, size_t len, char *digest)
 {
-    return TGB->get_data_md5(TGB->context, data, len, digest);
+    // TODO change uses of ttstub_get_data_md5 to pass uint8_t*
+    return get_data_md5((uint8_t const*) data, len, (uint8_t*) digest);
 }
 
 rust_output_handle_t
 ttstub_output_open(char const *path, int is_gz)
 {
-    return TGB->output_open(TGB->context, path, is_gz);
+    return output_open(TGB->context, path, is_gz);
 }
 
 rust_output_handle_t
 ttstub_output_open_stdout(void)
 {
-    return TGB->output_open_stdout(TGB->context);
+    return output_open_stdout(TGB->context);
 }
 
 int
 ttstub_output_putc(rust_output_handle_t handle, int c)
 {
-    return TGB->output_putc(TGB->context, handle, c);
+    return output_putc(TGB->context, handle, c);
 }
 
 size_t
 ttstub_output_write(rust_output_handle_t handle, const char *data, size_t len)
 {
-    return TGB->output_write(TGB->context, handle, data, len);
+    return output_write(TGB->context, handle, (const uint8_t*) data, len);
 }
 
 int
 ttstub_output_flush(rust_output_handle_t handle)
 {
-    return TGB->output_flush(TGB->context, handle);
+    return output_flush(TGB->context, handle);
 }
 
 int
 ttstub_output_close(rust_output_handle_t handle)
 {
-    return TGB->output_close(TGB->context, handle);
+    return output_close(TGB->context, handle);
 }
 
 rust_input_handle_t
 ttstub_input_open(char const *path, tt_input_format_type format, int is_gz)
 {
-    return TGB->input_open(TGB->context, path, format, is_gz);
+    return input_open(TGB->context, path, format, is_gz);
 }
 
 rust_input_handle_t
 ttstub_input_open_primary(void)
 {
-    return TGB->input_open_primary(TGB->context);
+    return input_open_primary(TGB->context);
 }
 
 size_t
 ttstub_input_get_size(rust_input_handle_t handle)
 {
-    return TGB->input_get_size(TGB->context, handle);
+    return input_get_size(TGB->context, handle);
 }
 
 size_t
 ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
 {
     int internal_error = 0;
-    size_t rv = TGB->input_seek(TGB->context, handle, offset, whence, &internal_error);
+    size_t rv = input_seek(TGB->context, handle, offset, whence, &internal_error);
     if (internal_error) {
         // Nonzero indicates a serious internal error.
         longjmp(jump_buffer, 1);
@@ -275,25 +277,25 @@ ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
 ssize_t
 ttstub_input_read(rust_input_handle_t handle, char *data, size_t len)
 {
-    return TGB->input_read(TGB->context, handle, data, len);
+    return input_read(TGB->context, handle, (uint8_t*) data, len);
 }
 
 int
 ttstub_input_getc(rust_input_handle_t handle)
 {
-    return TGB->input_getc(TGB->context, handle);
+    return input_getc(TGB->context, handle);
 }
 
 int
 ttstub_input_ungetc(rust_input_handle_t handle, int ch)
 {
-    return TGB->input_ungetc(TGB->context, handle, ch);
+    return input_ungetc(TGB->context, handle, ch);
 }
 
 int
 ttstub_input_close(rust_input_handle_t handle)
 {
-    if (TGB->input_close(TGB->context, handle)) {
+    if (input_close(TGB->context, handle)) {
         // Nonzero return value indicates a serious internal error.
         longjmp(jump_buffer, 1);
     }

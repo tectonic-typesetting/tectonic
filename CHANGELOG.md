@@ -1,3 +1,14 @@
+# tectonic 0.1.16 (2020-10-02)
+
+- Add a "plain" backend for reporting status, used when the program is not
+  attached to a TTY. It will print out reports with colorization. (#636,
+  @ralismark)
+- Start adding infrastructure to automate the creation of bindings from the
+  C/C++ code to the Rust code, using `cbindgen`. (#643, @ralismark)
+- Update the code-coverage infrastructure to gather coverage information
+  from invocations of the CLI executable inside the test suite (@pkgw)
+- Fully automated deployment should really actually totally work this time.
+
 # tectonic 0.1.15 (2020-09-10)
 
 - Building on the work done in 0.1.13, we now capture and report diagnostics

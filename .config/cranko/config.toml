@@ -1,0 +1,5 @@
+[repo]
+upstream_urls = [
+  'git@github.com:tectonic-typesetting/tectonic.git',
+  'https://github.com/tectonic-typesetting/tectonic.git',
+]
