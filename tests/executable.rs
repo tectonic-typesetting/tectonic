@@ -23,6 +23,7 @@ lazy_static! {
         root.push("tests");
         root
     };
+
     static ref TARGET_RUNNER_WORDS: Vec<String> = {
         // compile-time environment variable from build.rs:
         let target = env!("TARGET").to_owned();
@@ -31,6 +32,17 @@ lazy_static! {
 
         // run-time environment variable check:
         if let Ok(runtext) = env::var(format!("CARGO_TARGET_{}_RUNNER", target)) {
+            runtext.split_whitespace().map(|x| x.to_owned()).collect()
+        } else {
+            vec![]
+        }
+    };
+
+    // Special coverage-collection mode. This implementation is quite tuned for
+    // the Tectonic CI/CD system, so if you're trying to use it manually, expect
+    // some rough edges.
+    static ref KCOV_WORDS: Vec<String> = {
+        if let Ok(runtext) = env::var("TECTONIC_EXETEST_KCOV_RUNNER") {
             runtext.split_whitespace().map(|x| x.to_owned()).collect()
         } else {
             vec![]
@@ -61,9 +73,31 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     println!("using tectonic binary at {:?}", tectonic);
     println!("using cwd {:?}", cwd);
 
+    // We may need to wrap the Tectonic invocation. If we're cross-compiling, we
+    // might need to use something like QEMU to actually be able to run the
+    // executable. If we're collecting code coverage information with kcov, we
+    // need to wrap the invocation with that program.
     let mut command = if TARGET_RUNNER_WORDS.len() > 0 {
         let mut cmd = Command::new(&TARGET_RUNNER_WORDS[0]);
         cmd.args(&TARGET_RUNNER_WORDS[1..]).arg(tectonic);
+        cmd
+    } else if KCOV_WORDS.len() > 0 {
+        let mut cmd = Command::new(&KCOV_WORDS[0]);
+        cmd.args(&KCOV_WORDS[1..]);
+
+        // Give kcov a directory into which to put its output. We use
+        // mktemp-like functionality to automatically create such directories
+        // uniquely so that we don't have to manually bookkeep. This does mean
+        // that successive runs will build up new data directories indefinitely.
+        let mut root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        root.push("target");
+        root.push("cov");
+        root.push("exetest.");
+        let tempdir = tempfile::Builder::new().prefix(&root).tempdir().unwrap();
+        let tempdir = tempdir.into_path();
+        cmd.arg(tempdir);
+
+        cmd.arg(tectonic);
         cmd
     } else {
         Command::new(tectonic)
@@ -102,8 +136,14 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
         .prefix("tectonic_executable_test")
         .tempdir()
         .unwrap();
-    let executable_test_dir =
-        PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap()).join("tests/executable");
+
+    // `cargo kcov` (0.5.2) does not set this variable:
+    let executable_test_dir = if let Some(v) = env::var_os("CARGO_MANIFEST_DIR") {
+        PathBuf::from(v)
+    } else {
+        PathBuf::new()
+    }
+    .join("tests/executable");
 
     for file in files {
         // Create parent directories, if the file is not at the root of `tests/executable/`
@@ -165,60 +205,36 @@ fn check_file(tempdir: &TempDir, rest: &str) {
 
 #[test]
 fn bad_chatter_1() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["-", "--chatter=reticent"]);
     error_or_panic(output);
 }
 
 #[test]
 fn bad_input_path_1() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["/"]);
     error_or_panic(output);
 }
 
 #[test]
 fn bad_input_path_2() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
     error_or_panic(output);
 }
 
 #[test]
 fn bad_outfmt_1() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["-", "--outfmt=dd"]);
     error_or_panic(output);
 }
 
 #[test]
 fn help_flag() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let output = run_tectonic(&PathBuf::from("."), &["-h"]);
     success_or_panic(output);
 }
 
 #[test] // GitHub #31
 fn relative_include() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[
         "subdirectory/relative_include.tex",
@@ -235,10 +251,6 @@ fn relative_include() {
 
 #[test]
 fn stdin_content() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     // No input files here, but output files are created.
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[]);
@@ -253,10 +265,6 @@ fn stdin_content() {
 // Regression #36
 #[test]
 fn test_space() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
@@ -266,10 +274,6 @@ fn test_space() {
 
 #[test]
 fn test_outdir() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
@@ -290,10 +294,6 @@ fn test_outdir() {
 // panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
 #[cfg(not(all(target_arch = "arm", target_env = "musl")))]
 fn test_bad_outdir() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        panic!()
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
 
@@ -313,10 +313,6 @@ fn test_bad_outdir() {
 // panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
 #[cfg(not(all(target_arch = "arm", target_env = "musl")))]
 fn test_outdir_is_file() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        panic!()
-    }
-
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
 
@@ -333,10 +329,6 @@ fn test_outdir_is_file() {
 
 #[test]
 fn test_keep_logs_on_error() {
-    if env::var("RUNNING_COVERAGE").is_ok() {
-        return;
-    }
-
     // No input files here, but output files are created.
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[]);
@@ -354,4 +346,30 @@ fn test_keep_logs_on_error() {
         .expect("Cannot read `texput.log`");
 
     assert!(log.contains(r"job aborted, no legal \end found"));
+}
+
+#[test]
+fn test_no_color() {
+    // No input files here, but output files are created.
+    let fmt_arg = get_plain_format_arg();
+
+    let tempdir = setup_and_copy_files(&[]);
+    let output_nocolor = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "--color=never"],
+        "no end to this file",
+    );
+
+    // Output is not a terminal, so these two should be the same
+    let tempdir = setup_and_copy_files(&[]);
+    let output_autocolor = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "--color=auto"],
+        "no end to this file",
+    );
+
+    assert_eq!(output_nocolor, output_autocolor);
+
+    error_or_panic(output_nocolor);
+    error_or_panic(output_autocolor);
 }

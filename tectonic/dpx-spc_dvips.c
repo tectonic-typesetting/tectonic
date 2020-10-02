@@ -60,7 +60,7 @@ static int
 spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
 {
     char *pro;
-    rust_input_handle_t *ps_header;
+    rust_input_handle_t ps_header;
 
     skip_white(&args->curptr, args->endptr);
     if (args->curptr + 1 >= args->endptr || args->curptr[0] != '=') {
