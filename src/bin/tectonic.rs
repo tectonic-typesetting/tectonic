@@ -16,6 +16,7 @@ use tectonic::errors::{ErrorKind, Result};
 use tectonic::status::plain::PlainStatusBackend;
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::{ChatterLevel, StatusBackend};
+use tectonic::unstable_opts::UnstableOptions;
 use tectonic::{errmsg, tt_error, tt_note};
 
 #[derive(Debug, StructOpt)]
@@ -73,11 +74,21 @@ struct CliOptions {
     /// The directory in which to place output files [default: the directory containing <input>]
     #[structopt(name = "outdir", short, long, parse(from_os_str))]
     outdir: Option<PathBuf>,
+    /// Unstable options
+    #[structopt(
+        name = "options",
+        short = "Z",
+        number_of_values = 1,
+        empty_values = false
+    )]
+    unstable: Vec<String>,
 }
 fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<()> {
+    let unstable = UnstableOptions::from_strings(args.unstable.iter().map(String::as_str))?;
     let mut sess_builder = ProcessingSessionBuilder::default();
     let format_path = args.format;
     sess_builder
+        .unstables(unstable)
         .format_name(&format_path)
         .keep_logs(args.keep_logs)
         .keep_intermediates(args.keep_intermediates)

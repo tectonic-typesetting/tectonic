@@ -26,6 +26,7 @@ use crate::engines::IoEventBackend;
 use crate::errors::{ErrorKind, Result, ResultExt};
 use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
 use crate::status::StatusBackend;
+use crate::unstable_opts::UnstableOptions;
 use crate::{ctry, errmsg, tt_error, tt_note, tt_warning};
 use crate::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
 use std::result::Result as StdResult;
@@ -326,6 +327,7 @@ pub struct ProcessingSessionBuilder {
     keep_logs: bool,
     synctex: bool,
     build_date: Option<SystemTime>,
+    unstables: UnstableOptions,
 }
 
 impl ProcessingSessionBuilder {
@@ -471,6 +473,12 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Loads unstable options into the processing session
+    pub fn unstables(&mut self, opts: UnstableOptions) -> &mut Self {
+        self.unstables = opts;
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         let mut io = IoSetupBuilder::default();
@@ -558,6 +566,7 @@ impl ProcessingSessionBuilder {
             keep_logs: self.keep_logs,
             synctex_enabled: self.synctex,
             build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
+            unstables: self.unstables,
         })
     }
 }
@@ -622,6 +631,8 @@ pub struct ProcessingSession {
 
     /// See `TexEngine::with_date` and `XdvipdfmxEngine::with_date`.
     build_date: SystemTime,
+
+    unstables: UnstableOptions,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
