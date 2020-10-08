@@ -9,6 +9,7 @@ use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
 use crate::errors::{ErrorKind, Result};
 use crate::io::IoStack;
 use crate::status::StatusBackend;
+use crate::unstable_opts::UnstableOptions;
 
 pub struct XdvipdfmxEngine {
     enable_compression: bool,
@@ -51,6 +52,7 @@ impl XdvipdfmxEngine {
         status: &mut dyn StatusBackend,
         dvi: &str,
         pdf: &str,
+        unstables: &UnstableOptions,
     ) -> Result<i32> {
         let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
 

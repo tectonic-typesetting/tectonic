@@ -9,6 +9,7 @@ use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
 use crate::errors::{ErrorKind, Result};
 use crate::io::IoStack;
 use crate::status::StatusBackend;
+use crate::unstable_opts::UnstableOptions;
 
 #[derive(Default)]
 pub struct BibtexEngine {}
@@ -24,6 +25,7 @@ impl BibtexEngine {
         events: &mut dyn IoEventBackend,
         status: &mut dyn StatusBackend,
         aux: &str,
+        unstables: &UnstableOptions,
     ) -> Result<TexResult> {
         let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
 

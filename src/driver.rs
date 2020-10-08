@@ -1051,7 +1051,14 @@ impl ProcessingSession {
             TexEngine::new()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .process(&mut stack, &mut self.events, status, "UNUSED.fmt", "texput")
+                .process(
+                    &mut stack,
+                    &mut self.events,
+                    status,
+                    "UNUSED.fmt",
+                    "texput",
+                    &self.unstables,
+                )
         };
 
         match result {
@@ -1121,6 +1128,7 @@ impl ProcessingSession {
                     status,
                     &self.format_name,
                     &self.primary_input_tex_path,
+                    &self.unstables,
                 )
         };
 
@@ -1148,6 +1156,7 @@ impl ProcessingSession {
                 &mut self.events,
                 status,
                 &self.tex_aux_path.to_str().unwrap(),
+                &self.unstables,
             )
         };
 
@@ -1185,6 +1194,7 @@ impl ProcessingSession {
                 status,
                 &self.tex_xdv_path.to_str().unwrap(),
                 &self.tex_pdf_path.to_str().unwrap(),
+                &self.unstables,
             )?;
         }
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
+use std::default::Default;
 use std::path::Path;
 use std::time;
 
@@ -112,8 +113,14 @@ impl TestCase {
             let mut events = NoopIoEventBackend::new();
             let mut status = NoopStatusBackend::new();
 
-            let tex_res =
-                TexEngine::new().process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
+            let tex_res = TexEngine::new().process(
+                &mut io,
+                &mut events,
+                &mut status,
+                "plain.fmt",
+                &texname,
+                &Default::default(),
+            );
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
                 XdvipdfmxEngine::new()
@@ -124,7 +131,14 @@ impl TestCase {
                             .checked_add(time::Duration::from_secs(1_456_304_492))
                             .unwrap(),
                     )
-                    .process(&mut io, &mut events, &mut status, &xdvname, &pdfname)
+                    .process(
+                        &mut io,
+                        &mut events,
+                        &mut status,
+                        &xdvname,
+                        &pdfname,
+                        &Default::default(),
+                    )
                     .unwrap();
             }
 
