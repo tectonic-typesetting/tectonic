@@ -46,7 +46,7 @@ cbindgen = "0.14.6"
 app_dirs = { version = "2", package = "app_dirs2" }
 atty = "0.2"
 byte-unit = "^4.0"
-cfg-if = "0.1"
+cfg-if = "1.0"
 structopt = "0.3"
 error-chain = "^0.12"
 flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
