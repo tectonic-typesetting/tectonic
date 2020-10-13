@@ -15,6 +15,8 @@ use std::str::FromStr;
 const HELPMSG: &str = r#"Available unstable options:
 
     -Z help                     Lists all unstable options
+    -Z min-crossrefs=<num>      Equivalent to bibtex's -min-crossrefs flag - "include after <num>
+                                    crossrefs" [default: 2]
     -Z paper-size=<spec>        Change the default paper size [default: letter]
     -Z shell-escape             Enable \write18
 "#;
@@ -24,6 +26,7 @@ const HELPMSG: &str = r#"Available unstable options:
 pub enum UnstableArg {
     Help,
     PaperSize(String),
+    MinCrossrefs(i32),
     ShellEscapeEnabled,
 }
 
@@ -42,6 +45,15 @@ impl FromStr for UnstableArg {
         match arg {
             "help" => Ok(UnstableArg::Help),
 
+            "min-crossrefs" => value
+                .ok_or_else(|| {
+                    "'-Z min-crossrefs <spec>' requires a value but none was supplied".into()
+                })
+                .and_then(|s| {
+                    FromStr::from_str(s).map_err(|e| format!("-Z min-crossrefs: {}", e).into())
+                })
+                .map(UnstableArg::MinCrossrefs),
+
             "paper-size" => value
                 .ok_or_else(|| {
                     "'-Z paper-size <spec>' requires a value but none was supplied".into()
@@ -59,6 +71,7 @@ impl FromStr for UnstableArg {
 pub struct UnstableOptions {
     pub paper_size: Option<String>,
     pub shell_escape: bool,
+    pub min_crossrefs: Option<i32>,
 }
 
 impl UnstableOptions {
@@ -75,6 +88,7 @@ impl UnstableOptions {
                     print!("{}", HELPMSG);
                     std::process::exit(0);
                 }
+                MinCrossrefs(num) => opts.min_crossrefs = Some(num),
                 PaperSize(size) => opts.paper_size = Some(size),
                 ShellEscapeEnabled => opts.shell_escape = true,
             }
