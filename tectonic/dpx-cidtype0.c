@@ -208,7 +208,7 @@ add_CIDVMetrics (sfnt *sfont, pdf_obj *fontdict,
         vertOriginX   = PDFUNIT(hmtx[gid].advance*0.5);
         vertOriginY   = defaultVertOriginY;
         for (i = 0;
-             i < vorg->numVertOriginYMetrics && gid > vorg->vertOriginYMetrics[i].glyphIndex;
+             i < vorg->numVertOriginYMetrics && gid >= vorg->vertOriginYMetrics[i].glyphIndex;
              i++) {
             if (gid == vorg->vertOriginYMetrics[i].glyphIndex)
                 vertOriginY = PDFUNIT(vorg->vertOriginYMetrics[i].vertOriginY);

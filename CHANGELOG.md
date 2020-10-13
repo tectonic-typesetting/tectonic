@@ -1,3 +1,11 @@
+# tectonic 0.1.17 (2020-10-13)
+
+- Fix source-based installation by updating to cbindgen 0.15, after later
+  releases in the 0.14 series were yanked (@qtfkwk, #656)
+- Fix unreachable code in the CID/Type0 code (@burrbull, @pkgw, #639, #646)
+- Update the `cargo vcpkg` build process to use a newer version of `vcpkg`, fixing
+  Windows builds when msys2.org is unreliable (@pkgw).
+
 # tectonic 0.1.16 (2020-10-02)
 
 - Add a "plain" backend for reporting status, used when the program is not
