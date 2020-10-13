@@ -40,13 +40,13 @@ regex = "^1.3"
 sha2 = "^0.9"
 tectonic_cfg_support = { path = "cfg_support", version = "0.0.0-dev.0" }
 vcpkg = "0.2.10"
-cbindgen = "0.14.4"
+cbindgen = "0.15.0"
 
 [dependencies]
 app_dirs = { version = "2", package = "app_dirs2" }
 atty = "0.2"
 byte-unit = "^4.0"
-cfg-if = "0.1"
+cfg-if = "1.0"
 structopt = "0.3"
 error-chain = "^0.12"
 flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
@@ -87,7 +87,7 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "ff1d20fd9a72d72d51a549c27b669cd6040fb7d9"
+rev = "76a7e9248fb3c57350b559966dcaa2d52a5e4458"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
