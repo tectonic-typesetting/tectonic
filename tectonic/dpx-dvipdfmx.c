@@ -55,6 +55,8 @@
 #include "dpx-vf.h"
 #include "dpx-tt_aux.h"
 
+const char* paperspec = "letter";
+
 typedef struct page_range
 {
   int first;
@@ -263,16 +265,6 @@ select_pages (
   *ret_num_page_ranges = num_page_ranges;
 }
 
-static void
-system_default (void)
-{
-  if (systempapername() != NULL) {
-    select_paper(systempapername());
-  } else if (defaultpapername() != NULL) {
-    select_paper(defaultpapername());
-  }
-}
-
 #define SWAP(v1,v2) do {\
    double _tmp = (v1);\
    (v1) = (v2);\
@@ -411,8 +403,6 @@ dvipdfmx_main (
   pdf_set_compression(compress ? 9 : 0);
   pdf_font_set_deterministic_unique_tags(deterministic_tags ? 1 : 0);
 
-  system_default();
-
   pdf_init_fontmaps(); /* This must come before parsing options... */
 
   /* We used to read the config file here. It synthesized command-line
@@ -420,7 +410,7 @@ dvipdfmx_main (
    * code bits. */
 
   pdf_set_version (5);
-  select_paper("letter");
+  select_paper(paperspec);
   annot_grow = 0;
   bookmark_open = 0;
   key_bits = 40;
