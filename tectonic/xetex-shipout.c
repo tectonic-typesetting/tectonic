@@ -2174,15 +2174,27 @@ write_out(int32_t p)
         if (!log_opened)
             selector = SELECTOR_TERM_ONLY;
 
+        // Existing warning for shell-escape
+        diagnostic_begin_capture_warning_here();
+
         print_nl_cstr("runsystem(");
         for (d = 0; d <= (cur_length()) - 1; d++)
             print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
 
         print_cstr(")...");
-        print_cstr("disabled");
-        print_char('.');
+        if (!shell_escape_enabled) {
+            print_cstr("disabled");
+            print_char('.');
+        } else {
+            print_cstr("enabled but not implemented yet!");
+        }
+
+        capture_to_diagnostic(NULL);
+
         print_nl_cstr("");
         print_ln();
+
+        // Clear shell escape command
         pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     }
 
