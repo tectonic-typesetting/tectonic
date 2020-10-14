@@ -416,7 +416,7 @@ static buf_pointer num_text_chars;
 static unsigned char /*bad_conversion */ conversion_type;
 static bool prev_colon;
 static int verbose;
-static int32_t min_crossrefs;
+int32_t min_crossrefs = MIN_CROSSREFS;
 
 /*:473*//*12: *//*3: */
 
@@ -7302,7 +7302,6 @@ bibtex_main(const char *aux_file_name)
     max_glob_strs = MAX_GLOB_STRS;
     max_fields = MAX_FIELDS;
     max_cites = MAX_CITES;
-    min_crossrefs = MIN_CROSSREFS;
     wiz_fn_space = WIZ_FN_SPACE;
     lit_stk_size = LIT_STK_SIZE;
 

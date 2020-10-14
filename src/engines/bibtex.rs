@@ -11,6 +11,11 @@ use crate::io::IoStack;
 use crate::status::StatusBackend;
 use crate::unstable_opts::UnstableOptions;
 
+#[no_mangle]
+extern "C" {
+    static mut min_crossrefs: i32;
+}
+
 #[derive(Default)]
 pub struct BibtexEngine {}
 
@@ -33,6 +38,10 @@ impl BibtexEngine {
 
         let mut state = ExecutionState::new(io, events, status);
         let bridge = TectonicBridgeApi::new(&mut state);
+
+        if let Some(num) = unstables.min_crossrefs {
+            unsafe { min_crossrefs = num }
+        }
 
         unsafe {
             match super::bibtex_simple_main(&bridge, caux.as_ptr()) {
