@@ -2186,6 +2186,10 @@ write_out(int32_t p)
             print_cstr("disabled");
             print_char('.');
         } else {
+            // Currently, -Z shell-escape is implemented but hidden (see
+            // src/unstable_opts.rs). When this gets actually implemented,
+            // uncomment the relevant parts in that file.
+
             print_cstr("enabled but not implemented yet!");
         }
 
