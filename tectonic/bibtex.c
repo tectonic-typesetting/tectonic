@@ -145,7 +145,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define aux_stack_size 20
 #define MAX_BIB_FILES 20
 #define POOL_SIZE 65000L
-#define MIN_CROSSREFS 2
 #define MAX_STRINGS 35307
 #define MAX_CITES 750
 #define WIZ_FN_SPACE 3000
@@ -416,7 +415,8 @@ static buf_pointer num_text_chars;
 static unsigned char /*bad_conversion */ conversion_type;
 static bool prev_colon;
 static int verbose;
-int32_t min_crossrefs = MIN_CROSSREFS;
+
+const BibtexConfig* bibtex_config;
 
 /*:473*//*12: *//*3: */
 
@@ -6695,7 +6695,7 @@ static void bst_read_command(void)
                                     mark_warning();
                                 }
                                 if (((!all_entries) && (cite_parent_ptr >= old_num_cites)
-                                     && (cite_info[cite_parent_ptr] < min_crossrefs)))
+                                     && (cite_info[cite_parent_ptr] < bibtex_config->min_crossrefs)))
                                     field_info[field_ptr] = 0 /*missing */ ;
                             }
                         }
@@ -6709,7 +6709,7 @@ static void bst_read_command(void)
 
                     if (type_list[cite_ptr] == 0 /*empty */ )
                         print_missing_entry(cite_list[cite_ptr]);
-                    else if ((all_entries) || (cite_ptr < old_num_cites) || (cite_info[cite_ptr] >= min_crossrefs)) {
+                    else if ((all_entries) || (cite_ptr < old_num_cites) || (cite_info[cite_ptr] >= bibtex_config->min_crossrefs)) {
                         if (cite_ptr > cite_xptr) {   /*286: */
                             if ((cite_xptr + 1) * num_fields > max_fields) {
                                 puts_log("field_info index is out of range");

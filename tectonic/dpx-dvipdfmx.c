@@ -55,8 +55,6 @@
 #include "dpx-vf.h"
 #include "dpx-tt_aux.h"
 
-const char* paperspec = "letter";
-
 typedef struct page_range
 {
   int first;
@@ -65,6 +63,7 @@ typedef struct page_range
 
 int is_xdv = 0;
 int translate_origin = 0;
+const XdvipdfmxConfig* dpx_config;
 
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
 #define OPT_CIDFONT_FIXEDPITCH    (1 << 2)
@@ -410,7 +409,7 @@ dvipdfmx_main (
    * code bits. */
 
   pdf_set_version (5);
-  select_paper(paperspec);
+  select_paper(dpx_config->paperspec);
   annot_grow = 0;
   bookmark_open = 0;
   key_bits = 40;
