@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
-use std::default::Default;
 use std::path::Path;
 use std::time;
 
@@ -13,6 +12,7 @@ use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::status::NoopStatusBackend;
 use tectonic::{TexEngine, XdvipdfmxEngine};
+use tectonic::unstable_opts::UnstableOptions;
 
 #[path = "util/mod.rs"]
 mod util;
@@ -24,6 +24,7 @@ struct TestCase {
     check_synctex: bool,
     check_pdf: bool,
     extra_io: Vec<Box<dyn IoProvider>>,
+    unstables: UnstableOptions,
 }
 
 impl TestCase {
@@ -34,6 +35,7 @@ impl TestCase {
             check_synctex: false,
             check_pdf: false,
             extra_io: Vec::new(),
+            unstables: UnstableOptions::default(),
         }
     }
 
@@ -54,6 +56,11 @@ impl TestCase {
             false,
             HashSet::new(),
         )));
+        self
+    }
+
+    fn with_unstables(&mut self, unstables: UnstableOptions) -> &mut Self {
+        self.unstables = unstables;
         self
     }
 
@@ -119,7 +126,7 @@ impl TestCase {
                 &mut status,
                 "plain.fmt",
                 &texname,
-                &Default::default(),
+                &self.unstables,
             );
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
@@ -137,7 +144,7 @@ impl TestCase {
                         &mut status,
                         &xdvname,
                         &pdfname,
-                        &Default::default(),
+                        &self.unstables,
                     )
                     .unwrap();
             }
@@ -273,4 +280,14 @@ fn tectoniccodatokens_ok() {
 #[test]
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
+}
+
+#[test]
+fn a4paper() {
+    let mut unstables = UnstableOptions::default();
+    unstables.paper_size = Some(String::from("a4"));
+    TestCase::new("a4paper")
+        .with_unstables(unstables)
+        .check_pdf(true)
+        .go()
 }
