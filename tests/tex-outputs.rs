@@ -11,8 +11,8 @@ use tectonic::errors::{DefinitelySame, ErrorKind, Result};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::status::NoopStatusBackend;
-use tectonic::{TexEngine, XdvipdfmxEngine};
 use tectonic::unstable_opts::UnstableOptions;
+use tectonic::{TexEngine, XdvipdfmxEngine};
 
 #[path = "util/mod.rs"]
 mod util;
