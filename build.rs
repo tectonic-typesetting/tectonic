@@ -164,8 +164,9 @@ impl DepState {
 
             DepState::VcPkg(_) => {
                 for dep in VCPKG_LIBS {
-                    vcpkg::find_package(dep)
-                        .unwrap_or_else(|e| panic!("failed to load package {} from vcpkg: {}", dep, e));
+                    vcpkg::find_package(dep).unwrap_or_else(|e| {
+                        panic!("failed to load package {} from vcpkg: {}", dep, e)
+                    });
                 }
                 if target.contains("-linux-") {
                     // add icudata to the end of the list of libs as vcpkg-rs
