@@ -467,7 +467,7 @@ pub trait Bundle: IoProvider {
             OpenResult::NotAvailable => {
                 // Broken or un-cacheable backend.
                 return Err(ErrorKind::Msg(
-                    "itar-format bundle does not provide needed SHA256SUM file".to_owned(),
+                    "bundle does not provide needed SHA256SUM file".to_owned(),
                 )
                 .into());
             }
