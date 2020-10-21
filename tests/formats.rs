@@ -15,6 +15,7 @@
 /// to disk, which may be helpful in debugging. There is probably a less gross
 /// way to implement that option.
 use std::collections::{HashMap, HashSet};
+use std::default::Default;
 use std::ffi::{OsStr, OsString};
 use std::str::FromStr;
 
@@ -103,6 +104,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
                 &mut NoopStatusBackend::new(),
                 "unused.fmt",
                 texname,
+                &Default::default(),
             )
             .unwrap();
     }

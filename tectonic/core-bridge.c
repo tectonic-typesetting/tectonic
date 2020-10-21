@@ -70,7 +70,7 @@ tex_simple_main(const tt_bridge_api_t *api, const char *dump_name, const char *i
 
 
 int
-dvipdfmx_simple_main(const tt_bridge_api_t *api, const char *dviname, const char *pdfname, bool compress, bool deterministic_tags, time_t build_date)
+dvipdfmx_simple_main(const tt_bridge_api_t *api, const XdvipdfmxConfig* config, const char *dviname, const char *pdfname, bool compress, bool deterministic_tags, time_t build_date)
 {
     int rv;
 
@@ -81,6 +81,7 @@ dvipdfmx_simple_main(const tt_bridge_api_t *api, const char *dviname, const char
         return 99;
     }
 
+    dpx_config = config;
     rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, compress, deterministic_tags, false, 0, build_date);
     tectonic_global_bridge = NULL;
 
@@ -89,7 +90,7 @@ dvipdfmx_simple_main(const tt_bridge_api_t *api, const char *dviname, const char
 
 
 int
-bibtex_simple_main(const tt_bridge_api_t *api, const char *aux_file_name)
+bibtex_simple_main(const tt_bridge_api_t *api, const BibtexConfig *config, const char *aux_file_name)
 {
     int rv;
 
@@ -100,6 +101,7 @@ bibtex_simple_main(const tt_bridge_api_t *api, const char *aux_file_name)
         return 99;
     }
 
+    bibtex_config = config;
     rv = bibtex_main(aux_file_name);
     tectonic_global_bridge = NULL;
     return rv;

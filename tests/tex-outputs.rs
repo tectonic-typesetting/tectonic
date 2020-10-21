@@ -11,6 +11,7 @@ use tectonic::errors::{DefinitelySame, ErrorKind, Result};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::status::NoopStatusBackend;
+use tectonic::unstable_opts::UnstableOptions;
 use tectonic::{TexEngine, XdvipdfmxEngine};
 
 #[path = "util/mod.rs"]
@@ -23,6 +24,7 @@ struct TestCase {
     check_synctex: bool,
     check_pdf: bool,
     extra_io: Vec<Box<dyn IoProvider>>,
+    unstables: UnstableOptions,
 }
 
 impl TestCase {
@@ -33,6 +35,7 @@ impl TestCase {
             check_synctex: false,
             check_pdf: false,
             extra_io: Vec::new(),
+            unstables: UnstableOptions::default(),
         }
     }
 
@@ -53,6 +56,11 @@ impl TestCase {
             false,
             HashSet::new(),
         )));
+        self
+    }
+
+    fn with_unstables(&mut self, unstables: UnstableOptions) -> &mut Self {
+        self.unstables = unstables;
         self
     }
 
@@ -112,8 +120,14 @@ impl TestCase {
             let mut events = NoopIoEventBackend::new();
             let mut status = NoopStatusBackend::new();
 
-            let tex_res =
-                TexEngine::new().process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
+            let tex_res = TexEngine::new().process(
+                &mut io,
+                &mut events,
+                &mut status,
+                "plain.fmt",
+                &texname,
+                &self.unstables,
+            );
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
                 XdvipdfmxEngine::new()
@@ -124,7 +138,14 @@ impl TestCase {
                             .checked_add(time::Duration::from_secs(1_456_304_492))
                             .unwrap(),
                     )
-                    .process(&mut io, &mut events, &mut status, &xdvname, &pdfname)
+                    .process(
+                        &mut io,
+                        &mut events,
+                        &mut status,
+                        &xdvname,
+                        &pdfname,
+                        &self.unstables,
+                    )
                     .unwrap();
             }
 
@@ -259,4 +280,14 @@ fn tectoniccodatokens_ok() {
 #[test]
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
+}
+
+#[test]
+fn a4paper() {
+    let mut unstables = UnstableOptions::default();
+    unstables.paper_size = Some(String::from("a4"));
+    TestCase::new("a4paper")
+        .with_unstables(unstables)
+        .check_pdf(true)
+        .go()
 }
