@@ -1,3 +1,19 @@
+# tectonic 0.2.0 (2020-10-21)
+
+The 0.2 series finally adds "unstable" `-Z` flags! These allow you to configure
+engine options that are relatively low-level. The hope is to eventually set
+these kinds of things in a `Tectonic.toml` file, so their use is mildly
+discouraged, and long-term availability is not guaranteed. But there are plenty
+of times when such flags can be helpful. The currently supported options are:
+
+- `-Z min-crossrefs=<num>` controls the `-min-crossrefs` option of standalone `bibtex`
+- `-Z paper-size=<spec>` lets you control the output paper size, rather than
+  hardcoding it to be US Letter.
+
+Enormous thanks to @ralismark for finally implementing this! (#657) Now that the
+infrastructure is in place, suggestions for additional flags are more than
+welcome.
+
 # tectonic 0.1.17 (2020-10-13)
 
 - Fix source-based installation by updating to cbindgen 0.15, after later

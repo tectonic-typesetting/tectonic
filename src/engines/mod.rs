@@ -496,6 +496,7 @@ extern "C" {
 
     fn dvipdfmx_simple_main(
         api: &TectonicBridgeApi,
+        config: &xdvipdfmx::XdvipdfmxConfig,
         dviname: *const libc::c_char,
         pdfname: *const libc::c_char,
         enable_compression: bool,
@@ -505,6 +506,7 @@ extern "C" {
 
     fn bibtex_simple_main(
         api: &TectonicBridgeApi,
+        config: &bibtex::BibtexConfig,
         aux_file_name: *const libc::c_char,
     ) -> libc::c_int;
 

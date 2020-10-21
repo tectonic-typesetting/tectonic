@@ -312,11 +312,7 @@ impl<T> OpenResult<T> {
 
     /// Returns true if this result is of the NotAvailable variant.
     pub fn is_not_available(&self) -> bool {
-        if let OpenResult::NotAvailable = *self {
-            true
-        } else {
-            false
-        }
+        matches!(*self, OpenResult::NotAvailable)
     }
 
     /// Convert this object into a plain Result, erroring if the item was not available.
@@ -471,7 +467,7 @@ pub trait Bundle: IoProvider {
             OpenResult::NotAvailable => {
                 // Broken or un-cacheable backend.
                 return Err(ErrorKind::Msg(
-                    "itar-format bundle does not provide needed SHA256SUM file".to_owned(),
+                    "bundle does not provide needed SHA256SUM file".to_owned(),
                 )
                 .into());
             }

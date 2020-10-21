@@ -13,6 +13,7 @@
 
 use ::flate2::read::GzDecoder;
 use std::collections::{HashMap, HashSet};
+use std::default::Default;
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fs::File;
@@ -85,6 +86,7 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
                     &mut NoopStatusBackend::new(),
                     "UNUSED.fmt",
                     "plain.tex",
+                    &Default::default(),
                 )?;
         }
 

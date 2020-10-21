@@ -9,6 +9,7 @@
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
 
 /* All the following variables are declared in xetex-xetexd.h */
+bool shell_escape_enabled = false;
 memory_word *eqtb;
 int32_t bad;
 char *name_of_file;

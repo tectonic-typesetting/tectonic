@@ -63,6 +63,7 @@ typedef struct page_range
 
 int is_xdv = 0;
 int translate_origin = 0;
+const XdvipdfmxConfig* dpx_config;
 
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
 #define OPT_CIDFONT_FIXEDPITCH    (1 << 2)
@@ -263,16 +264,6 @@ select_pages (
   *ret_num_page_ranges = num_page_ranges;
 }
 
-static void
-system_default (void)
-{
-  if (systempapername() != NULL) {
-    select_paper(systempapername());
-  } else if (defaultpapername() != NULL) {
-    select_paper(defaultpapername());
-  }
-}
-
 #define SWAP(v1,v2) do {\
    double _tmp = (v1);\
    (v1) = (v2);\
@@ -411,8 +402,6 @@ dvipdfmx_main (
   pdf_set_compression(compress ? 9 : 0);
   pdf_font_set_deterministic_unique_tags(deterministic_tags ? 1 : 0);
 
-  system_default();
-
   pdf_init_fontmaps(); /* This must come before parsing options... */
 
   /* We used to read the config file here. It synthesized command-line
@@ -420,7 +409,7 @@ dvipdfmx_main (
    * code bits. */
 
   pdf_set_version (5);
-  select_paper("letter");
+  select_paper(dpx_config->paperspec);
   annot_grow = 0;
   bookmark_open = 0;
   key_bits = 40;

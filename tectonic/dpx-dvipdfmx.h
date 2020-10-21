@@ -34,6 +34,7 @@
 extern int is_xdv;
 extern int translate_origin;
 extern time_t source_date_epoch;
+extern const XdvipdfmxConfig* dpx_config;
 
 int extractbb(int argc, char *argv[]);
 int dvipdfmx_main(
