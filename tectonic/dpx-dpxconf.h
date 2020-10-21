@@ -34,10 +34,6 @@ struct paper {
   double pswidth, psheight;
 };
 
-#ifndef DEFAULT_PAPER_NAME
-#define DEFAULT_PAPER_NAME "a4"
-#endif
-
 extern const struct paper  paperspecs[];
 const struct paper *paperinfo (const char *ppformat);
 
@@ -46,14 +42,9 @@ const struct paper *paperinfo (const char *ppformat);
 #define papername(p)       (((p) && (p)->name) ? p->name : NULL)
 #define paperfirst()       &(paperspecs[0])
 #define papernext(p)       ((((p)+1) && ((p)+1)->name) ? (p+1) : NULL)
-
-#define defaultpapername() DEFAULT_PAPER_NAME
-#define systempapername()  DEFAULT_PAPER_NAME
-
-#define defaultpapersizefile() NULL
-#define systempapersizefile()  NULL
 #endif /* HAVE_LIBPAPER */
 
 void dumppaperinfo (void);
+extern const char* paperspec;
 
 #endif /* _DPXCONF_H_ */

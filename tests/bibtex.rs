@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
+use std::default::Default;
 
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::stdstreams::GenuineStdoutIo;
@@ -49,7 +50,13 @@ impl TestCase {
         let mut status = NoopStatusBackend::new();
 
         BibtexEngine::new()
-            .process(&mut io, &mut events, &mut status, &auxname)
+            .process(
+                &mut io,
+                &mut events,
+                &mut status,
+                &auxname,
+                &Default::default(),
+            )
             .unwrap();
 
         // Check that outputs match expectations.

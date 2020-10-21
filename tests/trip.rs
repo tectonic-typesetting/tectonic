@@ -2,6 +2,7 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
+use std::default::Default;
 /// Our incarnation of the classic TRIP test. Unfortunately, the test is
 /// defined in terms of the precise terminal output and error handling behavior
 /// of the engine, so you can't do anything to improve the (incredibly poor) UX
@@ -62,6 +63,7 @@ fn trip_test() {
                 &mut NoopStatusBackend::new(),
                 "INITEX",
                 "trip",
+                &Default::default(),
             )
             .unwrap();
     }
@@ -78,6 +80,7 @@ fn trip_test() {
                 &mut NoopStatusBackend::new(),
                 "trip.fmt",
                 "trip",
+                &Default::default(),
             )
             .unwrap();
     }
@@ -127,6 +130,7 @@ fn etrip_test() {
                 &mut NoopStatusBackend::new(),
                 "INITEX",
                 "etrip",
+                &Default::default(),
             )
             .unwrap();
     }
@@ -143,6 +147,7 @@ fn etrip_test() {
                 &mut NoopStatusBackend::new(),
                 "etrip.fmt",
                 "etrip",
+                &Default::default(),
             )
             .unwrap();
     }

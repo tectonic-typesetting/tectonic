@@ -9,6 +9,12 @@ use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
 use crate::errors::{ErrorKind, Result};
 use crate::io::IoStack;
 use crate::status::StatusBackend;
+use crate::unstable_opts::UnstableOptions;
+
+#[repr(C)]
+pub struct XdvipdfmxConfig {
+    paperspec: *const libc::c_char,
+}
 
 pub struct XdvipdfmxEngine {
     enable_compression: bool,
@@ -51,8 +57,28 @@ impl XdvipdfmxEngine {
         status: &mut dyn StatusBackend,
         dvi: &str,
         pdf: &str,
+        unstables: &UnstableOptions,
     ) -> Result<i32> {
         let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
+
+        // This conversion is probably way too complex, because we need to convert String to
+        // something which holds a CStr (which needs to be a local so it doesn't disappear). And
+        // all of this happens in an Option.
+
+        // Keep a local reference so the string doesn't get dropped too early
+        let paperspec_str = unstables
+            .paper_size
+            .as_ref()
+            .and_then(|s| CString::new(s.clone()).ok());
+
+        // We default to "letter" paper size by default
+        let paperspec_default = CStr::from_bytes_with_nul(b"letter\0").unwrap();
+
+        let config = XdvipdfmxConfig {
+            paperspec: paperspec_str
+                .as_ref()
+                .map_or(paperspec_default.as_ptr(), |s| s.as_ptr()),
+        };
 
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
@@ -63,6 +89,7 @@ impl XdvipdfmxEngine {
         unsafe {
             match super::dvipdfmx_simple_main(
                 &bridge,
+                &config,
                 cdvi.as_ptr(),
                 cpdf.as_ptr(),
                 self.enable_compression,

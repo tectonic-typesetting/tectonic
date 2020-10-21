@@ -356,8 +356,8 @@ void remember_source_info(str_number, int);
 /* variables! */
 
 /* All the following variables are defined in xetexini.c */
+extern bool shell_escape_enabled;
 extern memory_word *eqtb;
-
 extern int32_t bad;
 extern char *name_of_file;
 extern UTF16_code *name_of_file16;

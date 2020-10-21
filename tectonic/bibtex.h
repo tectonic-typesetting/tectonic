@@ -10,4 +10,7 @@
 
 tt_history_t bibtex_main(const char *aux_file_name);
 
+// Passed in from rust side
+extern const BibtexConfig* bibtex_config;
+
 #endif
