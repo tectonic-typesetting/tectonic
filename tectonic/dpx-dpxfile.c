@@ -371,21 +371,3 @@ dpx_file_apply_filter (const char *cmdtmpl,
     /* Tectonic: defused */
     return -1;
 }
-
-#if defined(WIN32)
-FILE *generic_fsyscp_fopen (const char *filename, const char *mode)
-{
-  FILE *f;
-
-  f = fsyscp_fopen (filename, mode);
-
-  if (f == NULL && file_system_codepage != win32_codepage) {
-    int tmpcp = file_system_codepage;
-    file_system_codepage = win32_codepage;
-    f = fsyscp_fopen (filename, mode);
-    file_system_codepage = tmpcp;
-  }
-
-  return f;
-}
-#endif /* WIN32 */

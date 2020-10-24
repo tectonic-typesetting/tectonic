@@ -315,11 +315,6 @@ error:
     return -1;
 }
 
-
-#if defined(WIN32)
-int utf8name_failed = 0;
-#endif /* WIN32 */
-
 int
 pdf_ximage_findresource (const char *ident, load_options options)
 {
