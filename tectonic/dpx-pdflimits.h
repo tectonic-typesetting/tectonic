@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,9 +30,9 @@
  * NOTE: Don't forget to update CIDFont_stdcc_def[] in cid.c
  * if you increase PDF_VERSION_MAX!
  */
-#define PDF_VERSION_MIN  3
-#define PDF_VERSION_MAX  7
-#define PDF_VERSION_DEFAULT 5
+#define PDF_VERSION_MIN  13
+#define PDF_VERSION_MAX  20
+#define PDF_VERSION_DEFAULT 15
 
 /*
  * PDF_NAME_LEN_MAX: see, Appendix C of PDF Ref. v1.3, 2nd. ed.

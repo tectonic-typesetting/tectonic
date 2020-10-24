@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2008-2017 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2008-2018 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -33,13 +33,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 
 #include "core-bridge.h"
 #include "dpx-agl.h"
 #include "dpx-cid.h"
 #include "dpx-cidtype0.h"
 #include "dpx-cmap.h"
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-pdfencoding.h"
@@ -52,27 +52,7 @@
 #include "dpx-type1.h"
 #include "dpx-type1c.h"
 
-static int __verbose = 0;
-
 #define MREC_HAS_TOUNICODE(m) ((m) && (m)->opt.tounicode)
-
-void
-pdf_font_set_verbose (int level)
-{
-  __verbose = level;
-  CMap_set_verbose(level);
-  Type0Font_set_verbose(level);
-  CIDFont_set_verbose(level);
-  pdf_encoding_set_verbose(level);
-  agl_set_verbose(level);
-  otf_cmap_set_verbose(level);
-}
-
-int
-pdf_font_get_verbose (void)
-{
-  return __verbose;
-}
 
 void
 pdf_font_set_dpi (int font_dpi)
@@ -436,7 +416,7 @@ try_load_ToUnicode_CMap (pdf_font *font)
       pdf_add_dict(fontdict,
                    pdf_new_name("ToUnicode"),
                    pdf_ref_obj (tounicode)); /* _FIXME_ */
-      if (__verbose)
+      if (dpx_conf.verbose_level > 0)
         dpx_message("pdf_font>> ToUnicode CMap \"%s\" attached to font id=\"%s\".\n",
              cmap_name, font->map_name);
     }
@@ -457,19 +437,19 @@ pdf_close_fonts (void)
 
     font = GET_FONT(font_id);
 
-    if (__verbose) {
+    if (dpx_conf.verbose_level > 0) {
       if (font->subtype != PDF_FONT_FONTTYPE_TYPE0) {
         dpx_message("(%s", pdf_font_get_ident(font));
-        if (__verbose > 2 &&
+        if (dpx_conf.verbose_level > 2 &&
             !pdf_font_get_flag(font, PDF_FONT_FLAG_NOEMBED)) {
           dpx_message("[%s+%s]",
                pdf_font_get_uniqueTag(font),
                pdf_font_get_fontname(font));
-        } else if (__verbose > 1) {
+        } else if (dpx_conf.verbose_level > 1) {
           dpx_message("[%s]",
                pdf_font_get_fontname(font));
         }
-        if (__verbose > 1) {
+        if (dpx_conf.verbose_level > 1) {
           if (pdf_font_get_encoding(font) >= 0) {
             dpx_message("[%s]",
                  pdf_encoding_get_name(pdf_font_get_encoding(font)));
@@ -487,23 +467,23 @@ pdf_close_fonts (void)
     /* Type 0 is handled separately... */
     switch (font->subtype) {
     case PDF_FONT_FONTTYPE_TYPE1:
-      if (__verbose)
+      if (dpx_conf.verbose_level > 0)
         dpx_message("[Type1]");
       if (!pdf_font_get_flag(font, PDF_FONT_FLAG_BASEFONT))
         pdf_font_load_type1(font);
       break;
     case PDF_FONT_FONTTYPE_TYPE1C:
-      if (__verbose)
+      if (dpx_conf.verbose_level > 0)
         dpx_message("[Type1C]");
       pdf_font_load_type1c(font);
       break;
     case PDF_FONT_FONTTYPE_TRUETYPE:
-      if (__verbose)
+      if (dpx_conf.verbose_level > 0)
         dpx_message("[TrueType]");
       pdf_font_load_truetype(font);
       break;
     case PDF_FONT_FONTTYPE_TYPE3:
-      if (__verbose)
+      if (dpx_conf.verbose_level > 0)
         dpx_message("[Type3/PK]");
       pdf_font_load_pkfont (font);
       break;
@@ -517,7 +497,7 @@ pdf_close_fonts (void)
     if (font->encoding_id >= 0 && font->subtype != PDF_FONT_FONTTYPE_TYPE0)
       pdf_encoding_add_usedchars(font->encoding_id, font->usedchars);
 
-    if (__verbose) {
+    if (dpx_conf.verbose_level > 0) {
       if (font->subtype != PDF_FONT_FONTTYPE_TYPE0)
         dpx_message(")");
     }
@@ -533,16 +513,20 @@ pdf_close_fonts (void)
       pdf_obj *tounicode;
 
       /* Predefined encodings (and those simplified to them) are embedded
-         as direct objects, but this is purely a matter of taste. */
+       * as direct objects, but this is purely a matter of taste. 
+       */
       if (enc_obj)
         pdf_add_dict(font->resource,
                      pdf_new_name("Encoding"),
                      PDF_OBJ_NAMETYPE(enc_obj) ? pdf_link_obj(enc_obj) : pdf_ref_obj(enc_obj));
-
+      /* For built-in encoding, each font loader create ToUnicode CMap. */
       if (!pdf_lookup_dict(font->resource, "ToUnicode")
-          && (tounicode = pdf_encoding_get_tounicode(font->encoding_id)))
-        pdf_add_dict(font->resource,
-                     pdf_new_name("ToUnicode"), pdf_ref_obj(tounicode));
+          && (tounicode = pdf_encoding_get_tounicode(font->encoding_id))) {
+          if (tounicode) {
+            pdf_add_dict(font->resource,
+                        pdf_new_name("ToUnicode"), pdf_ref_obj(tounicode));
+          }
+      }
     } else if (font->subtype == PDF_FONT_FONTTYPE_TRUETYPE) {
       /* encoding_id < 0 means MacRoman here (but not really)
        * We use MacRoman as "default" encoding. */
@@ -582,7 +566,35 @@ pdf_font_findresource (const char *tex_name,
    * point sizes would be looked up twice unecessarily.)
    */
   fontname = mrec ? mrec->font_name : tex_name;
-  if (mrec && mrec->enc_name) {
+  /* XeTeX specific...
+   * First try loading GID-to-CID mapping from CFF CID-keyed OpenType font.
+   * There was a serious bug in xdv support... It was implemented with the wrong
+   * assumption that CID always equals to GID. 
+   * TODO: There is a possibility that GID-to-CID mapping is not one-to-one.
+   * Use internal glyph ordering rather than map GID to CIDs.
+   */
+  if (mrec && mrec->opt.use_glyph_encoding) {
+    int wmode = 0;
+    /* Should be always Identity-H or Identity-V for XeTeX output. */
+    if (mrec->enc_name) {
+      if (!strcmp(mrec->enc_name, "Identity-V"))
+        wmode = 1;
+      else if (!strcmp(mrec->enc_name, "Identity-H"))
+        wmode = 0;
+      else {
+        dpx_warning("Unexpected encoding specified for xdv: %s", mrec->enc_name);
+      }
+    /* cmap_id < 0 is returned if ...
+     *  Font is not a CFF font
+     *  GID to CID mapping is identity mapping
+     * 
+     * TODO: fontmap record still has Identity CMap assigned but actually different CMap
+     * can be attached to the font here. Should we fix mrec->enc_name here?
+     */
+      cmap_id = otf_try_load_GID_to_CID_map(mrec->font_name, mrec->opt.index, wmode);
+    }
+  }
+  if (cmap_id < 0 && mrec && mrec->enc_name) {
 #define MAYBE_CMAP(s) (!strstr((s), ".enc") || strstr((s), ".cmap"))
     if (MAYBE_CMAP(mrec->enc_name)) {
       cmap_id = CMap_cache_find(mrec->enc_name);
@@ -605,13 +617,14 @@ pdf_font_findresource (const char *tex_name,
          * Turn on map option.
          */
         if (minbytes == 2 && mrec->opt.mapc < 0) {
-          if (__verbose) {
+          if (dpx_conf.verbose_level > 0) {
             dpx_message("\n");
             dpx_message("pdf_font>> Input encoding \"%s\" requires at least 2 bytes.\n",
                  CMap_get_name(cmap));
             dpx_message("pdf_font>> The -m <00> option will be assumed for \"%s\".\n", mrec->font_name);
           }
-          mrec->opt.mapc = 0; /* _FIXME_ */
+          /* FIXME: The following code modifies mrec. */
+          mrec->opt.mapc = 0;
         }
       } else if (streq_ptr(mrec->enc_name, "unicode")) {
         cmap_id = otf_load_Unicode_CMap(mrec->font_name,
@@ -631,7 +644,6 @@ pdf_font_findresource (const char *tex_name,
         _tt_abort("Could not find encoding file \"%s\".", mrec->enc_name);
     }
   }
-
   if (mrec && cmap_id >= 0) {
     /*
      * Composite Font
@@ -650,7 +662,7 @@ pdf_font_findresource (const char *tex_name,
           font->font_id == type0_id &&
           font->encoding_id == cmap_id) {
         found = 1;
-        if (__verbose) {
+        if (dpx_conf.verbose_level > 0) {
           dpx_message("\npdf_font>> Type0 font \"%s\" (cmap_id=%d) found at font_id=%d.\n",
                mrec->font_name, cmap_id, font_id);
         }
@@ -673,7 +685,7 @@ pdf_font_findresource (const char *tex_name,
 
       font_cache.count++;
 
-      if (__verbose) {
+      if (dpx_conf.verbose_level > 0) {
         dpx_message("\npdf_font>> Type0 font \"%s\"", fontname);
         dpx_message(" cmap_id=<%s,%d>", mrec->enc_name, font->encoding_id);
         dpx_message(" opened at font_id=<%s,%d>.\n", tex_name, font_id);
@@ -724,7 +736,7 @@ pdf_font_findresource (const char *tex_name,
       }
 
       if (found) {
-        if (__verbose) {
+        if (dpx_conf.verbose_level > 0) {
           dpx_message("\npdf_font>> Simple font \"%s\" (enc_id=%d) found at id=%d.\n",
                fontname, encoding_id, font_id);
         }
@@ -767,7 +779,7 @@ pdf_font_findresource (const char *tex_name,
 
       font_cache.count++;
 
-      if (__verbose) {
+      if (dpx_conf.verbose_level > 0) {
         dpx_message("\npdf_font>> Simple font \"%s\"", fontname);
         dpx_message(" enc_id=<%s,%d>",
              (mrec && mrec->enc_name) ? mrec->enc_name : "builtin", font->encoding_id);

@@ -1,5 +1,5 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
-   Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2007-2019 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -32,6 +32,7 @@
 #include <dirent.h>
 #endif
 
+#include "dpx-dpxconf.h"
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
 #include "dpx-system.h"
@@ -40,17 +41,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-static int verbose = 0;
-int keep_cache = 0;
-
-void
-dpx_file_set_verbose (int level)
-{
-    verbose = level;
-}
-
-
 
 static char _sbuf[128];
 /*
@@ -353,7 +343,7 @@ dpx_delete_old_cache (int life)
      * it would have been annoying to port to Windows. */
 
     if (life == -2)
-        keep_cache = -1;
+        dpx_conf.file.keep_cache = -1;
 }
 
 void
@@ -361,7 +351,7 @@ dpx_delete_temp_file (char *tmp, int force)
 {
     if (!tmp)
         return;
-    if (force || keep_cache != 1) remove (tmp);
+    if (force || dpx_conf.file.keep_cache != 1) remove (tmp);
     free(tmp);
 
     return;
@@ -376,9 +366,26 @@ dpx_delete_temp_file (char *tmp, int force)
  */
 int
 dpx_file_apply_filter (const char *cmdtmpl,
-                       const char *input, const char *output,
-                       unsigned char version)
+                       const char *input, const char *output, int version)
 {
     /* Tectonic: defused */
     return -1;
 }
+
+#if defined(WIN32)
+FILE *generic_fsyscp_fopen (const char *filename, const char *mode)
+{
+  FILE *f;
+
+  f = fsyscp_fopen (filename, mode);
+
+  if (f == NULL && file_system_codepage != win32_codepage) {
+    int tmpcp = file_system_codepage;
+    file_system_codepage = win32_codepage;
+    f = fsyscp_fopen (filename, mode);
+    file_system_codepage = tmpcp;
+  }
+
+  return f;
+}
+#endif /* WIN32 */

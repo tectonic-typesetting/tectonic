@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2008-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+   Copyright (C) 2008-2018 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -34,6 +34,7 @@
 #include "dpx-cff_dict.h"
 #include "dpx-cff_limits.h"
 #include "dpx-cff_types.h"
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
@@ -499,15 +500,13 @@ pdf_font_load_type1 (pdf_font *font)
     double       *widths;
     card16       *GIDMap, num_glyphs = 0;
     int           offset;
-    int           code, verbose;
+    int           code;
     rust_input_handle_t handle;
 
     assert(font);
 
     if (!pdf_font_is_in_use(font))
         return 0;
-
-    verbose     = pdf_font_get_verbose();
 
     encoding_id = pdf_font_get_encoding  (font);
     fontdict    = pdf_font_get_resource  (font);
@@ -604,7 +603,7 @@ pdf_font_load_type1 (pdf_font *font)
         if (gid < 0)
             _tt_abort("Type 1 font with no \".notdef\" glyph???");
         GIDMap[0] = (card16) gid;
-        if (verbose > 2)
+        if (dpx_conf.verbose_level > 2)
             dpx_message("[glyphs:/.notdef");
         num_glyphs = 1;
 
@@ -654,7 +653,7 @@ pdf_font_load_type1 (pdf_font *font)
                 prev = code;
                 num_glyphs++;
 
-                if (verbose > 2)
+                if (dpx_conf.verbose_level > 2)
                     dpx_message("/%s", glyph);
 
                 /* CharSet is actually string object. */
@@ -743,11 +742,16 @@ pdf_font_load_type1 (pdf_font *font)
                 }
 
                 if (i == num_glyphs) {
-                    if (verbose > 2)
+                    if (dpx_conf.verbose_level > 2)
                         dpx_message("/%s", achar_name);
                     GIDMap[num_glyphs++] = achar_gid;
                     charset->data.glyphs[charset->num_entries] = cff_get_seac_sid(cffont, achar_name);
                     charset->num_entries += 1;
+                    /* CharSet is actually string object. */
+                    {
+                        pdf_add_stream(pdfcharset, "/", 1);
+                        pdf_add_stream(pdfcharset, achar_name, strlen(achar_name));
+                    }
                 }
 
                 for (i = 0; i < num_glyphs; i++) {
@@ -755,11 +759,16 @@ pdf_font_load_type1 (pdf_font *font)
                         break;
                 }
                 if (i == num_glyphs) {
-                    if (verbose > 2)
+                    if (dpx_conf.verbose_level > 2)
                         dpx_message("/%s", bchar_name);
                     GIDMap[num_glyphs++] = bchar_gid;
                     charset->data.glyphs[charset->num_entries] = cff_get_seac_sid(cffont, bchar_name);
                     charset->num_entries += 1;
+                    /* CharSet is actually string object. */
+                    {
+                        pdf_add_stream(pdfcharset, "/", 1);
+                        pdf_add_stream(pdfcharset, achar_name, strlen(achar_name));
+                    }
                 }
             }
             widths[gid] = gm.wx;
@@ -777,7 +786,7 @@ pdf_font_load_type1 (pdf_font *font)
         cffont->charsets = charset;
     }
 
-    if (verbose > 2)
+    if (dpx_conf.verbose_level > 2)
         dpx_message("]");
 
     /* Now we can update the String Index */
@@ -788,7 +797,7 @@ pdf_font_load_type1 (pdf_font *font)
     add_metrics(font, cffont, enc_vec, widths, num_glyphs);
 
     offset = write_fontfile(font, cffont, pdfcharset);
-    if (verbose > 1)
+    if (dpx_conf.verbose_level > 1)
         dpx_message("[%u glyphs][%d bytes]", num_glyphs, offset);
 
     pdf_release_obj(pdfcharset);
@@ -805,6 +814,5 @@ pdf_font_load_type1 (pdf_font *font)
     free(widths);
     free(GIDMap);
 
-    /* Maybe writing Charset is recommended for subsetted font. */
     return 0;
 }

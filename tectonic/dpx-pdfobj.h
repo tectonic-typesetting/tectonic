@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -59,17 +59,17 @@ typedef struct pdf_obj  pdf_obj;
 typedef struct pdf_file pdf_file;
 
 /* External interface to pdf routines */
-
-int      pdf_obj_get_verbose (void);
-void     pdf_obj_set_verbose (int level);
 void     pdf_obj_reset_global_state (void);
 void     pdf_error_cleanup   (void);
 
 void     pdf_out_init      (const char *filename,
-                                   bool enable_encrypt, bool enable_object_stream);
+                                   bool enable_encrypt, bool enable_objstm,
+                                   bool enable_predictor);
 void     pdf_out_flush     (void);
-void     pdf_set_version   (unsigned version);
-unsigned int pdf_get_version   (void);
+void     pdf_set_version   (int version);
+int pdf_get_version (void);
+int pdf_get_version_major (void);
+int pdf_get_version_minor (void);
 
 void     pdf_release_obj (pdf_obj *object);
 int      pdf_obj_typeof  (pdf_obj *object);
@@ -148,11 +148,6 @@ pdf_obj    *pdf_new_stream        (int flags);
 void        pdf_add_stream        (pdf_obj *stream,
                                           const void *stream_data_ptr,
                                           int stream_data_len);
-#if HAVE_ZLIB
-int         pdf_add_stream_flate  (pdf_obj *stream,
-                                          const void *stream_data_ptr,
-                                          int stream_data_len);
-#endif
 int         pdf_concat_stream     (pdf_obj *dst, pdf_obj *src);
 pdf_obj    *pdf_stream_dict       (pdf_obj *stream);
 int         pdf_stream_length     (pdf_obj *stream);
@@ -169,7 +164,6 @@ int         pdf_compare_reference (pdf_obj *ref1, pdf_obj *ref2);
  */
 
 void      pdf_set_compression (int level);
-void      pdf_set_use_predictor (int bval);
 
 void      pdf_set_info     (pdf_obj *obj);
 void      pdf_set_root     (pdf_obj *obj);
@@ -182,8 +176,8 @@ int       check_for_pdf     (rust_input_handle_t handle);
 pdf_file *pdf_open          (const char *ident, rust_input_handle_t handle);
 void      pdf_close         (pdf_file *pf);
 pdf_obj  *pdf_file_get_trailer (pdf_file *pf);
-unsigned int  pdf_file_get_version (pdf_file *pf);
 pdf_obj  *pdf_file_get_catalog (pdf_file *pf);
+int  pdf_file_get_version (pdf_file *pf);
 
 pdf_obj *pdf_deref_obj     (pdf_obj *object);
 pdf_obj *pdf_import_object (pdf_obj *object);
@@ -192,5 +186,6 @@ size_t pdfobj_escape_str (char *buffer, size_t size, const unsigned char *s, siz
 
 pdf_obj *pdf_new_indirect  (pdf_file *pf, unsigned label, unsigned short generation);
 
+int pdf_check_version (int major, int minor);
 
 #endif  /* _PDFOBJ_H_ */

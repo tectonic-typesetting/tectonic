@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -49,6 +49,12 @@
  */
 
 static double Xorigin, Yorigin;
+static int    translate_origin = 0;
+
+void
+mps_set_translate_origin (int v) {
+  translate_origin = v;
+}
 
 /*
  * In PDF, current path is not a part of graphics state parameter.
@@ -79,9 +85,24 @@ static struct mp_font
 } font_stack[PDF_GSAVE_MAX] = {
   {NULL, -1, -1, -1, 0}
 };
-static int currentfont = -1;
+static int currentfont = 0;
 
 #define CURRENT_FONT() ((currentfont < 0) ? NULL : &font_stack[currentfont])
+#define FONT_DEFINED(f) ((f) && (f)->font_name && ((f)->font_id >= 0))
+
+static void
+clear_mp_font_struct (struct mp_font *font)
+{
+  assert(font);
+
+  if (font->font_name)
+    free(font->font_name);
+  font->font_name  = NULL;
+  font->font_id    = -1;
+  font->tfm_id     = -1;
+  font->subfont_id = -1;
+  font->pt_size    = 0.0;
+}
 
 /* Compatibility */
 #define MP_CMODE_MPOST    0
@@ -98,17 +119,6 @@ mp_setfont (const char *font_name, double pt_size)
   fontmap_rec    *mrec;
 
   font = CURRENT_FONT();
-
-  if (font) {
-    if (streq_ptr(font->font_name, font_name) &&
-        font->pt_size == pt_size)
-      return  0;
-  } else { /* No currentfont */
-/* ***TODO*** Here some problem exists! */
-    font = &font_stack[0];
-    font->font_name = NULL;
-    currentfont = 0;
-  }
 
   mrec = pdf_lookup_fontmap_record(font_name);
   if (mrec && mrec->charmap.sfd_name && mrec->charmap.subfont_id) {
@@ -143,23 +153,22 @@ save_font (void)
 {
   struct mp_font *current, *next;
 
-  if (currentfont < 0) {
-    font_stack[0].font_name  = NEW(strlen("Courier") + 1, char);
-    strcpy(font_stack[0].font_name, "Courier");
-    font_stack[0].pt_size    = 1;
-    font_stack[0].tfm_id     = 0;
-    font_stack[0].subfont_id = 0;
-    currentfont = 0;
-  }
-
   current = &font_stack[currentfont++];
   next    = &font_stack[currentfont  ];
-  next->font_name  = NEW(strlen(current->font_name)+1, char);
-  strcpy(next->font_name, current->font_name);
-  next->pt_size    = current->pt_size;
-
-  next->subfont_id = current->subfont_id;
-  next->tfm_id     = current->tfm_id;
+  if (FONT_DEFINED(current)) {
+    next->font_name = NEW(strlen(current->font_name)+1, char);
+    strcpy(next->font_name, current->font_name);
+    next->font_id    = current->font_id;
+    next->pt_size    = current->pt_size;
+    next->subfont_id = current->subfont_id;
+    next->tfm_id     = current->tfm_id;    
+  } else {
+    next->font_name  = NULL;
+    next->font_id    = -1;
+    next->pt_size    = 0.0;
+    next->subfont_id = -1;
+    next->tfm_id     = -1;
+  }
 }
 
 static void
@@ -169,9 +178,7 @@ restore_font (void)
 
   current = CURRENT_FONT();
   if (current) {
-    current->font_name = mfree(current->font_name);
-  } else {
-    _tt_abort("No currentfont...");
+    clear_mp_font_struct(current);
   }
 
   currentfont--;
@@ -181,7 +188,7 @@ static void
 clear_fonts (void)
 {
   while (currentfont >= 0) {
-    free(font_stack[currentfont].font_name);
+    clear_mp_font_struct(&font_stack[currentfont]);
     currentfont--;
   }
 }
@@ -713,7 +720,7 @@ do_currentfont (void)
   pdf_obj        *font_dict;
 
   font = CURRENT_FONT();
-  if (!font) {
+  if (!FONT_DEFINED(font)) {
     dpx_warning("Currentfont undefined...");
     return 1;
   } else {
@@ -750,7 +757,7 @@ do_show (void)
   double          text_width;
 
   font = CURRENT_FONT();
-  if (!font) {
+  if (!FONT_DEFINED(font)) {
     dpx_warning("Currentfont not set."); /* Should not be error... */
     return 1;
   }

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2008-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+   Copyright (C) 2008-2019 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "core-bridge.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
@@ -40,17 +41,9 @@ static bool     is_similar_charset (char **encoding, const char **encoding2);
 static pdf_obj *make_encoding_differences (char **encoding, char **baseenc,
                                            const char *is_used);
 
-static unsigned char verbose = 0;
-
 static const char *MacRomanEncoding[256];
 static const char *MacExpertEncoding[256];
 static const char *WinAnsiEncoding[256];
-
-void
-pdf_encoding_set_verbose (int level)
-{
-    verbose = level;
-}
 
 /*
  * ident:  File name, e.g., 8a.enc.
@@ -268,7 +261,7 @@ load_encoding_file (const char *filename)
     if (!filename)
         return -1;
 
-    if (verbose)
+    if (dpx_conf.verbose_level > 0)
         dpx_message("(Encoding:%s", filename);
 
     handle = dpx_tt_open(filename, ".enc", TTIF_ENC);
@@ -314,14 +307,14 @@ load_encoding_file (const char *filename)
                                        filename, enc_vec, NULL, 0);
 
     if (enc_name) {
-        if (verbose > 1)
+        if (dpx_conf.verbose_level > 1)
             dpx_message("[%s]", pdf_name_value(enc_name));
         pdf_release_obj(enc_name);
     }
 
     pdf_release_obj(encoding_array);
 
-    if (verbose)
+    if (dpx_conf.verbose_level > 0)
         dpx_message(")");
 
     return enc_id;
@@ -447,7 +440,7 @@ void pdf_encoding_complete (void)
              * we do use a base encodings for PDF versions >= 1.3.
              */
             int with_base = !(encoding->flags & FLAG_USED_BY_TYPE3)
-                || pdf_get_version() >= 4;
+                || pdf_check_version(1, 4) >= 0;
             assert(!encoding->resource);
             encoding->resource = create_encoding_resource(encoding,
                                                           with_base ? encoding->baseenc : NULL);
@@ -615,6 +608,10 @@ pdf_encoding_get_tounicode (int encoding_id)
  * Note: The PDF 1.4 reference is not consistent: Section 5.9 describes
  * the Unicode mapping of PDF 1.3 and Section 9.7.2 (in the context of
  * Tagged PDF) the one of PDF 1.5.
+ * 
+ * CHANGED: 20180906
+ * Always create ToUnicode CMap unless there is missing mapping.
+ * Change made on rev.7557 broke ToUnicode CMap support. Now reverted.
  */
 pdf_obj *
 pdf_create_ToUnicode_CMap (const char *enc_name,
@@ -622,11 +619,14 @@ pdf_create_ToUnicode_CMap (const char *enc_name,
 {
     pdf_obj  *stream;
     CMap     *cmap;
-    int       code, all_predef;
+    int       code, count, total_fail;
     char     *cmap_name;
     unsigned char *p, *endptr;
 
     assert(enc_name && enc_vec);
+
+    if (!is_used)
+        return NULL;
 
     cmap_name = NEW(strlen(enc_name)+strlen("-UTF16")+1, char);
     sprintf(cmap_name, "%s-UTF16", enc_name);
@@ -640,32 +640,33 @@ pdf_create_ToUnicode_CMap (const char *enc_name,
 
     CMap_add_codespacerange(cmap, range_min, range_max, 1);
 
-    all_predef = 1;
+    count = 0;
+    total_fail = 0;
     for (code = 0; code <= 0xff; code++) {
         if (is_used && !is_used[code])
             continue;
 
         if (enc_vec[code]) {
-            int32_t len;
+            size_t len;
             int    fail_count = 0;
-            agl_name *agln = agl_lookup_list(enc_vec[code]);
-            /* Adobe glyph naming conventions are not used by viewers,
-             * hence even ligatures (e.g, "f_i") must be explicitly defined
-             */
-            if (pdf_get_version() < 5 || !agln || !agln->is_predef) {
-                wbuf[0] = (code & 0xff);
-                p      = wbuf + 1;
-                endptr = wbuf + WBUF_SIZE;
-                len = agl_sput_UTF16BE(enc_vec[code], &p, endptr, &fail_count);
-                if (len >= 1 && !fail_count) {
-                    CMap_add_bfchar(cmap, wbuf, 1, wbuf + 1, len);
-                    all_predef &= agln && agln->is_predef;
-                }
-            }
+            wbuf[0] = (code & 0xff);
+            p       = wbuf + 1;
+            endptr  = wbuf + WBUF_SIZE;
+            len = agl_sput_UTF16BE(enc_vec[code], &p, endptr, &fail_count);
+            if (len < 1 && fail_count > 0) {
+                total_fail++;
+            } else {
+                CMap_add_bfchar(cmap, wbuf, 1, wbuf + 1, len);
+                count++;
+            }         
         }
     }
 
-    stream = all_predef ? NULL : CMap_create_stream(cmap);
+    if (total_fail > 0) {
+        if (dpx_conf.verbose_level > 0)
+            dpx_warning("Glyphs with no Unicode mapping found. Removing ToUnicode CMap.");
+    }
+    stream = (count == 0 || total_fail > 0) ? NULL : CMap_create_stream(cmap);
 
     CMap_release(cmap);
     free(cmap_name);
@@ -697,7 +698,7 @@ pdf_load_ToUnicode_stream (const char *ident)
     if (CMap_parse(cmap, handle) < 0) {
         dpx_warning("Reading CMap file \"%s\" failed.", ident);
     } else {
-        if (verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("(CMap:%s)", ident);
 
         stream = CMap_create_stream(cmap);

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -52,8 +52,6 @@ typedef struct
   char*  spot_color_name;
   double values[PDF_COLOR_COMPONENT_MAX];
 } pdf_color;
-
-void       pdf_color_set_verbose   (int level);
 
 int        pdf_color_rgbcolor      (pdf_color *color,
                                            double r, double g, double b);

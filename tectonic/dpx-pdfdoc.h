@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,18 +30,54 @@
 #include "dpx-pdfobj.h"
 #include "dpx-pdfdev.h"
 
+enum pdf_page_boundary
+{
+    pdf_page_boundary__auto = 0,
+    pdf_page_boundary_mediabox,
+    pdf_page_boundary_cropbox,
+    pdf_page_boundary_artbox,
+    pdf_page_boundary_trimbox,
+    pdf_page_boundary_bleedbox
+};
+
 #define PDF_DOC_GRABBING_NEST_MAX 4
 
-void     pdf_doc_set_verbose (int level);
+struct pdf_dev_setting {
+    double      dvi2pts;   /* conversion unit */
+    int         precision; /* number of decimal digits kept */
+    int         ignore_colors; /* 1 for black or white */
+};
 
-void     pdf_open_document  (const char *filename,
-                                    bool enable_encrypt,
-                                    bool enable_object_stream,
-                                    double media_width, double media_height,
-                                    double annot_grow_amount,
-                                    int bookmark_open_depth,
-                                    int check_gotos);
-void     pdf_close_document (void);
+struct pdf_enc_setting {
+    int         key_size;
+    uint32_t    permission;
+    const char *uplain, *oplain; /* password */
+    int         use_aes;
+    int         encrypt_metadata;
+};
+
+struct pdf_obj_setting {
+    int         enable_objstm;
+    int         enable_predictor;
+};
+
+struct pdf_setting
+{
+    double media_width, media_height;
+    double annot_grow_amount;
+    int    outline_open_depth;
+    int    check_gotos;
+    int    enable_encrypt;
+    struct pdf_enc_setting encrypt;
+    struct pdf_dev_setting device;
+    struct pdf_obj_setting object;
+};
+
+void pdf_open_document (const char *filename,
+                        const char *creator,
+                        const unsigned char *id1, const unsigned char *id2,
+                        struct pdf_setting settings);
+void pdf_close_document (void);
 
 
 /* PDF document metadata */
@@ -51,23 +87,23 @@ void     pdf_doc_set_creator (const char *creator);
 /* They just return PDF dictionary object.
  * Callers are completely responsible for doing right thing...
  */
-pdf_obj *pdf_doc_get_dictionary (const char *category);
-pdf_obj *pdf_doc_get_reference  (const char *category);
+pdf_obj *pdf_doc_get_dictionary(const char *category);
+pdf_obj *pdf_doc_get_reference(const char *category);
 
 #define pdf_doc_page_tree() pdf_doc_get_dictionary("Pages")
-#define pdf_doc_catalog()   pdf_doc_get_dictionary("Catalog")
-#define pdf_doc_docinfo()   pdf_doc_get_dictionary("Info")
-#define pdf_doc_names()     pdf_doc_get_dictionary("Names")
+#define pdf_doc_catalog() pdf_doc_get_dictionary("Catalog")
+#define pdf_doc_docinfo() pdf_doc_get_dictionary("Info")
+#define pdf_doc_names() pdf_doc_get_dictionary("Names")
 #define pdf_doc_this_page() pdf_doc_get_dictionary("@THISPAGE")
 
-int      pdf_doc_get_page_count (pdf_file *pf);
-pdf_obj *pdf_doc_get_page (pdf_file *pf, int page_no, int options,
+int pdf_doc_get_page_count (pdf_file *pf);
+pdf_obj *pdf_doc_get_page (pdf_file *pf, int page_no, enum pdf_page_boundary opt_bbox,
                            pdf_rect *bbox, pdf_tmatrix *matrix, pdf_obj **resources_p);
 
-int      pdf_doc_current_page_number    (void);
-pdf_obj *pdf_doc_current_page_resources (void);
+int pdf_doc_current_page_number(void);
+pdf_obj *pdf_doc_current_page_resources(void);
 
-pdf_obj *pdf_doc_ref_page (unsigned page_no);
+pdf_obj *pdf_doc_ref_page(unsigned page_no);
 #define pdf_doc_this_page_ref() pdf_doc_get_reference("@THISPAGE")
 #define pdf_doc_next_page_ref() pdf_doc_get_reference("@NEXTPAGE")
 #define pdf_doc_prev_page_ref() pdf_doc_get_reference("@PREVPAGE")

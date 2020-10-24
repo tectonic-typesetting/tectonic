@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dpx-dpxconf.h"
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,6 +30,8 @@
 #include  "dpx-mfileio.h"
 #include  "dpx-pdfdev.h"
 #include  "dpx-pdfximage.h"
+
+void mps_set_translate_origin (int boolean_value);
 
 int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);
 
