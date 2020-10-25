@@ -32,12 +32,13 @@
 
 enum pdf_page_boundary
 {
+    /* Tectonic note: enum values must align with XeTeX notions */
     pdf_page_boundary__auto = 0,
-    pdf_page_boundary_mediabox,
-    pdf_page_boundary_cropbox,
-    pdf_page_boundary_artbox,
-    pdf_page_boundary_trimbox,
-    pdf_page_boundary_bleedbox
+    pdf_page_boundary_mediabox = 2,
+    pdf_page_boundary_cropbox = 1,
+    pdf_page_boundary_artbox = 3,
+    pdf_page_boundary_trimbox = 4,
+    pdf_page_boundary_bleedbox = 5
 };
 
 #define PDF_DOC_GRABBING_NEST_MAX 4
