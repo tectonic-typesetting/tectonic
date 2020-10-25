@@ -490,7 +490,7 @@ pdf_ximage_set_form (pdf_ximage *I, void *form_info, pdf_obj *resource)
      */
     p1.x = info->bbox.llx; p1.y = info->bbox.lly;
     pdf_dev_transform(&p1, &info->matrix);
-    p2.x = info->bbox.urx; p1.y = info->bbox.lly;
+    p2.x = info->bbox.urx; p2.y = info->bbox.lly;
     pdf_dev_transform(&p2, &info->matrix);
     p3.x = info->bbox.urx; p3.y = info->bbox.ury;
     pdf_dev_transform(&p3, &info->matrix);
