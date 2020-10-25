@@ -220,6 +220,8 @@ print_char(int32_t s)
             print_raw_char('0' + l, true);
         else
             print_raw_char('a' + l - 10, true);
+    } else if (selector == SELECTOR_PSEUDO) {
+        print_raw_char(s, true);
     } else {
         if (s < 2048) {
             print_raw_char(192 + s / 64, false);
@@ -411,7 +413,10 @@ print_cs(int32_t p)
     } else if (hash[p].s1 >= str_ptr) {
         print_esc_cstr("NONEXISTENT.");
     } else {
-        print_esc(hash[p].s1);
+        if (p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT)
+            print_esc(prim[p - PRIM_EQTB_BASE].s1 - 1);
+        else
+            print_esc(hash[p].s1);
         print_char(' ');
     }
 }
@@ -429,8 +434,11 @@ sprint_cs(int32_t p)
             print_esc_cstr("csname");
             print_esc_cstr("endcsname");
         }
-    } else
+    } else if (p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT) {
+        print_esc(prim[p - PRIM_EQTB_BASE].s1 - 1);
+    } else {
         print_esc(hash[p].s1);
+    }
 }
 
 

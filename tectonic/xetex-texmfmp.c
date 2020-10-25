@@ -10,10 +10,105 @@
 #include "xetex-ext.h"
 
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
-
+#include <sys/time.h>
 
 static char *last_source_name = NULL;
 static int last_lineno;
+
+
+
+#define TIME_STR_SIZE 30
+static time_t start_time = 0;
+char start_time_str[TIME_STR_SIZE];
+static char time_str[TIME_STR_SIZE];
+/* minimum size for time_str is 24: "D:YYYYmmddHHMMSS+HH'MM'" */
+
+static void
+makepdftime(time_t t, char *time_str, bool utc)
+{
+#if 0
+    struct tm lt, gmt;
+    size_t size;
+    int i, off, off_hours, off_mins;
+
+    /* get the time */
+    if (utc) {
+        lt = *gmtime(&t);
+    }
+    else {
+        lt = *localtime(&t);
+    }
+    size = strftime(time_str, TIME_STR_SIZE, "D:%Y%m%d%H%M%S", &lt);
+    /* expected format: "YYYYmmddHHMMSS" */
+    if (size == 0) {
+        /* unexpected, contents of time_str is undefined */
+        time_str[0] = '\0';
+        return;
+    }
+
+    /* correction for seconds: %S can be in range 00..61,
+       the PDF reference expects 00..59,
+       therefore we map "60" and "61" to "59" */
+    if (time_str[14] == '6') {
+        time_str[14] = '5';
+        time_str[15] = '9';
+        time_str[16] = '\0';    /* for safety */
+    }
+
+    /* get the time zone offset */
+    gmt = *gmtime(&t);
+
+    /* this calculation method was found in exim's tod.c */
+    off = 60 * (lt.tm_hour - gmt.tm_hour) + lt.tm_min - gmt.tm_min;
+    if (lt.tm_year != gmt.tm_year) {
+        off += (lt.tm_year > gmt.tm_year) ? 1440 : -1440;
+    } else if (lt.tm_yday != gmt.tm_yday) {
+        off += (lt.tm_yday > gmt.tm_yday) ? 1440 : -1440;
+    }
+
+    if (off == 0) {
+        time_str[size++] = 'Z';
+        time_str[size] = 0;
+    } else {
+        off_hours = off / 60;
+        off_mins = abs(off - off_hours * 60);
+        i = snprintf(&time_str[size], 9, "%+03d'%02d'", off_hours, off_mins);
+        check_nprintf(i, 9);
+    }
+#endif
+}
+
+void
+init_start_time(void)
+{
+  /* set start_time */
+  makepdftime (start_time, start_time_str, /* utc= */true);
+}
+
+void getcreationdate(void)
+{
+#if 0
+    size_t len;
+    int i;
+
+    init_start_time();
+    /* put creation date on top of string pool and update pool_ptr */
+    len = strlen(start_time_str);
+
+    /* In e-pTeX, "init len => call init_start_time()" (as pdftexdir/utils.c)
+       yields  unintentional output. */
+
+    if ((unsigned) (pool_ptr + len) >= (unsigned) (pool_size)) {
+        pool_ptr = pool_size;
+        /* error by str_toks that calls str_room(1) */
+        return;
+    }
+
+    for (i = 0; i < len; i++)
+        str_pool[pool_ptr++] = (uint16_t)start_time_str[i];
+#endif
+}
+
 
 void
 get_date_and_time (time_t source_date_epoch,
@@ -25,6 +120,155 @@ get_date_and_time (time_t source_date_epoch,
   *day = tmptr->tm_mday;
   *month = tmptr->tm_mon + 1;
   *year = tmptr->tm_year + 1900;
+}
+
+void
+get_seconds_and_micros (int32_t *seconds,  int32_t *micros)
+{
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  *seconds = tv.tv_sec;
+  *micros  = tv.tv_usec;
+}
+
+
+void getfilemoddate(int32_t s)
+{
+#if 0
+    struct stat file_data;
+
+    char *file_name = find_input_file(s);
+    if (file_name == NULL) {
+        return;                 /* empty string */
+    }
+    if (! kpse_in_name_ok(file_name)) {
+       return;                  /* no permission */
+    }
+
+    recorder_record_input(file_name);
+    /* get file status */
+#ifdef _WIN32
+    if (fsyscp_stat(file_name, &file_data) == 0) {
+#else
+    if (stat(file_name, &file_data) == 0) {
+#endif
+        size_t len;
+	bool use_utc = FORCE_SOURCE_DATE_set && SOURCE_DATE_EPOCH_set;
+        makepdftime(file_data.st_mtime, time_str, use_utc);
+        len = strlen(time_str);
+        if ((unsigned) (pool_ptr + len) >= (unsigned) (pool_size)) {
+            pool_ptr = pool_size;
+            /* error by str_toks that calls str_room(1) */
+        } else {
+            int i;
+
+            for (i = 0; i < len; i++)
+                str_pool[pool_ptr++] = (uint16_t)time_str[i];
+        }
+    }
+    /* else { errno contains error code } */
+
+    xfree(file_name);
+#endif
+}
+
+void getfilesize(int32_t s)
+{
+#if 0
+    struct stat file_data;
+    int i;
+
+    char *file_name = find_input_file(s);
+    if (file_name == NULL) {
+        return;                 /* empty string */
+    }
+    if (! kpse_in_name_ok(file_name)) {
+       return;                  /* no permission */
+    }
+
+    recorder_record_input(file_name);
+    /* get file status */
+#ifdef _WIN32
+    if (fsyscp_stat(file_name, &file_data) == 0) {
+#else
+    if (stat(file_name, &file_data) == 0) {
+#endif
+        size_t len;
+        char buf[20];
+
+        /* st_size has type off_t */
+        i = snprintf(buf, sizeof(buf),
+                     "%lu", (long unsigned int) file_data.st_size);
+        check_nprintf(i, sizeof(buf));
+        len = strlen(buf);
+        if ((unsigned) (pool_ptr + len) >= (unsigned) (pool_size)) {
+            pool_ptr = pool_size;
+            /* error by str_toks that calls str_room(1) */
+        } else {
+            for (i = 0; i < len; i++)
+                str_pool[pool_ptr++] = (uint16_t)buf[i];
+        }
+    }
+    /* else { errno contains error code } */
+
+    xfree(file_name);
+#endif
+}
+
+void getfiledump(int32_t s, int offset, int length)
+{
+#if 0
+    FILE *f;
+    int read, i;
+    unsigned char *readbuffer;
+    char strbuf[3];
+    int j, k;
+    char *file_name;
+
+    if (length == 0) {
+        /* empty result string */
+        return;
+    }
+
+    if (pool_ptr + 2 * length + 1 >= pool_size) {
+        /* no place for result */
+        pool_ptr = pool_size;
+        /* error by str_toks that calls str_room(1) */
+        return;
+    }
+
+    file_name = find_input_file(s);
+    if (file_name == NULL) {
+        return;                 /* empty string */
+    }
+    if (! kpse_in_name_ok(file_name)) {
+       return;                  /* no permission */
+    }
+
+    /* read file data */
+    f = fopen(file_name, FOPEN_RBIN_MODE);
+    if (f == NULL) {
+        xfree(file_name);
+        return;
+    }
+    recorder_record_input(file_name);
+    if (fseek(f, offset, SEEK_SET) != 0) {
+        xfree(file_name);
+        return;
+    }
+
+    readbuffer = (unsigned char *)xmalloc (length + 1);
+    read = fread(readbuffer, sizeof(char), length, f);
+    fclose(f);
+    for (j = 0; j < read; j++) {
+        i = snprintf (strbuf, 3, "%.2X", (unsigned int)readbuffer[j]);
+        check_nprintf(i, 3);
+        for (k = 0; k < i; k++)
+            str_pool[pool_ptr++] = (uint16_t)strbuf[k];
+    }
+    xfree (readbuffer);
+    xfree(file_name);
+#endif
 }
 
 

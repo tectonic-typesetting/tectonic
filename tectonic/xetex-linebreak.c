@@ -372,7 +372,10 @@ line_break(bool d)
                                         if (LC_CODE(c) != 0) {
                                             hf = NATIVE_NODE_font(s);
                                             prev_s = s;
-                                            goto done2;
+                                            if (LC_CODE(c) == c || INTPAR(uc_hyph) > 0)
+                                                goto done2;
+                                            else
+                                                goto done1;
                                         }
 
                                         if (c >= 65536L)

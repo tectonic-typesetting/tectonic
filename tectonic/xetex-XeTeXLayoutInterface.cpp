@@ -39,8 +39,11 @@ authorization from the copyright holders.
 
 #include <graphite2/Font.h>
 #include <graphite2/Segment.h>
+#include <hb.h>
 #include <harfbuzz/hb-graphite2.h>
+#if !HB_VERSION_ATLEAST(2,5,0)
 #include <harfbuzz/hb-icu.h>
+#endif
 #include <harfbuzz/hb-ot.h>
 
 #include "xetex-web.h"
@@ -732,6 +735,7 @@ deleteLayoutEngine(XeTeXLayoutEngine engine)
     delete engine;
 }
 
+#if !HB_VERSION_ATLEAST(2,5,0)
 static unsigned int
 _decompose_compat(hb_unicode_funcs_t* ufuncs,
                   hb_codepoint_t      u,
@@ -748,8 +752,7 @@ _get_unicode_funcs(void)
     hb_unicode_funcs_set_decompose_compatibility_func(ufuncs, _decompose_compat, NULL, NULL);
     return ufuncs;
 }
-
-static hb_unicode_funcs_t* hbUnicodeFuncs = NULL;
+#endif
 
 int
 layoutChars(XeTeXLayoutEngine engine, uint16_t chars[], int32_t offset, int32_t count, int32_t max,
@@ -770,11 +773,15 @@ layoutChars(XeTeXLayoutEngine engine, uint16_t chars[], int32_t offset, int32_t 
 
     script = hb_ot_tag_to_script (engine->script);
 
+    hb_buffer_reset(engine->hbBuffer);
+
+#if !HB_VERSION_ATLEAST(2,5,0)
+    static hb_unicode_funcs_t* hbUnicodeFuncs = NULL;
     if (hbUnicodeFuncs == NULL)
         hbUnicodeFuncs = _get_unicode_funcs();
-
-    hb_buffer_reset(engine->hbBuffer);
     hb_buffer_set_unicode_funcs(engine->hbBuffer, hbUnicodeFuncs);
+#endif
+
     hb_buffer_add_utf16(engine->hbBuffer, chars, max, offset, count);
     hb_buffer_set_direction(engine->hbBuffer, direction);
     hb_buffer_set_script(engine->hbBuffer, script);

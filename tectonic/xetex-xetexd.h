@@ -303,6 +303,11 @@ typedef union {
 
 #define TOKEN_LIST_ref_count(p) mem[p].b32.s0
 
+/* e-TeX sparse arrays for large-numebered registers, etc. */
+#define ETEX_SA_ref(p) mem[(p) + 1].b32.s0
+#define ETEX_SA_ptr(p) mem[(p) + 1].b32.s1
+#define ETEX_SA_num(p) ETEX_SA_ptr(p)
+
 /* e-TeX extended marks stuff ... not sure where to put these */
 #define ETEX_MARK_sa_top_mark(p) mem[(p) + 1].b32.s0 /* \topmarks<n> */
 #define ETEX_MARK_sa_first_mark(p) mem[(p) + 1].b32.s1 /* \firstmarks<n> */
@@ -343,7 +348,15 @@ typedef struct {
 /* Functions originating in texmfmp.c */
 
 void getmd5sum(int32_t s, bool file);
+
+void init_start_time(void);
 void get_date_and_time (time_t, int32_t *, int32_t *, int32_t *, int32_t *);
+void get_seconds_and_micros (int32_t *seconds,  int32_t *micros);
+
+void getcreationdate(void);
+void getfilemoddate(int32_t s);
+void getfilesize(int32_t s);
+void getfiledump(int32_t s, int offset, int length);
 
 char *gettexstring(str_number);
 bool is_new_source(str_number, int);
@@ -425,6 +438,11 @@ extern unsigned char help_ptr;
 extern bool use_err_help;
 extern bool arith_error;
 extern scaled_t tex_remainder;
+extern int32_t randoms[55];
+extern unsigned char j_random;
+extern scaled_t random_seed;
+extern int32_t two_to_the[31];
+extern int32_t spec_log[29];
 extern int32_t temp_ptr;
 extern memory_word *mem;
 extern int32_t lo_mem_max;
@@ -458,7 +476,6 @@ extern bool no_new_control_sequence;
 extern int32_t cs_count;
 extern b32x2 prim[501];
 extern int32_t prim_used;
-extern memory_word prim_eqtb[501];
 extern memory_word *save_stack;
 extern int32_t save_ptr;
 extern int32_t max_save_stack;
@@ -569,6 +586,8 @@ extern int32_t dead_cycles;
 extern bool doing_leaders;
 extern scaled_t rule_ht, rule_dp, rule_wd;
 extern scaled_t cur_h, cur_v; /* should be internal to shipout, but accessed by synctex */
+extern int32_t epochseconds;
+extern int32_t microseconds;
 extern scaled_t total_stretch[4], total_shrink[4];
 extern int32_t last_badness;
 extern int32_t adjust_tail;
@@ -728,6 +747,7 @@ int32_t new_penalty(int32_t m);
 void check_mem(bool print_locs);
 void search_mem(int32_t p);
 int32_t prev_rightmost(int32_t s, int32_t e);
+int32_t get_microinterval(void);
 scaled_t round_xn_over_d(scaled_t x, int32_t n, int32_t d);
 void short_display(int32_t p);
 void print_font_and_char(int32_t p);
@@ -1099,6 +1119,9 @@ int32_t half(int32_t x);
 scaled_t mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer);
 scaled_t x_over_n(scaled_t x, int32_t n);
 scaled_t xn_over_d(scaled_t x, int32_t n, int32_t d);
+void init_randoms(int32_t seed);
+int32_t unif_rand(int32_t x);
+int32_t norm_rand(void);
 
 /* xetex-shipout */
 
