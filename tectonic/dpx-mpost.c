@@ -161,7 +161,7 @@ save_font (void)
     next->font_id    = current->font_id;
     next->pt_size    = current->pt_size;
     next->subfont_id = current->subfont_id;
-    next->tfm_id     = current->tfm_id;    
+    next->tfm_id     = current->tfm_id;
   } else {
     next->font_name  = NULL;
     next->font_id    = -1;
@@ -181,7 +181,8 @@ restore_font (void)
     clear_mp_font_struct(current);
   }
 
-  currentfont--;
+  if (currentfont > 0) /* Tectonic safety fix */
+    currentfont--;
 }
 
 static void
@@ -191,6 +192,8 @@ clear_fonts (void)
     clear_mp_font_struct(&font_stack[currentfont]);
     currentfont--;
   }
+
+  currentfont = 0; /* Tectonic fix */
 }
 
 static bool
@@ -1544,4 +1547,18 @@ mps_do_page (FILE *image_file)
    * PDF inclusion may not be made so.
    */
   return (error ? -1 : 0);
+}
+
+void
+mps_reset_global_state(void) /* Tectonic */
+{
+  translate_origin = 0;
+  currentfont = 0;
+  font_stack[0].font_name = NULL;
+  font_stack[0].font_id = -1;
+  font_stack[0].tfm_id = -1;
+  font_stack[0].subfont_id = -1;
+  font_stack[0].pt_size = 0.0;
+  mp_cmode = MP_CMODE_MPOST;
+  top_stack = 0;
 }

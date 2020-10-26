@@ -31,6 +31,8 @@
 #include  "dpx-pdfdev.h"
 #include  "dpx-pdfximage.h"
 
+void mps_reset_global_state(void); /* Tectonic */
+
 void mps_set_translate_origin (int boolean_value);
 
 int  mps_scan_bbox    (const char **pp, const char *endptr, pdf_rect *bbox);

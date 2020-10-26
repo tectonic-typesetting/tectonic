@@ -419,6 +419,7 @@ dvipdfmx_main (
   max_page_ranges = 0;
 
   dvi_reset_global_state();
+  mps_reset_global_state();
   tfm_reset_global_state();
   vf_reset_global_state();
   pdf_dev_reset_global_state();
