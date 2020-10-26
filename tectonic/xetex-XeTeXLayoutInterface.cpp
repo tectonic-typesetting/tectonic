@@ -39,7 +39,7 @@ authorization from the copyright holders.
 
 #include <graphite2/Font.h>
 #include <graphite2/Segment.h>
-#include <hb.h>
+#include <harfbuzz/hb.h>
 #include <harfbuzz/hb-graphite2.h>
 #if !HB_VERSION_ATLEAST(2,5,0)
 #include <harfbuzz/hb-icu.h>
