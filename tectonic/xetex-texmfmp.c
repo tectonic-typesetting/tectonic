@@ -22,7 +22,7 @@ static int last_lineno;
 #define TIME_STR_SIZE 30
 static time_t start_time = 0;
 char start_time_str[TIME_STR_SIZE];
-static char time_str[TIME_STR_SIZE];
+static char filemod_time_str[TIME_STR_SIZE];
 /* minimum size for time_str is 24: "D:YYYYmmddHHMMSS+HH'MM'" */
 
 static void
@@ -85,7 +85,8 @@ init_start_time(time_t source_date_epoch)
   makepdftime (start_time, start_time_str, /* utc= */true);
 }
 
-void getcreationdate(void)
+void
+getcreationdate(void)
 {
     size_t len;
     int i;
@@ -120,6 +121,7 @@ get_date_and_time (time_t source_date_epoch,
   *year = tmptr->tm_year + 1900;
 }
 
+
 void
 get_seconds_and_micros (int32_t *seconds,  int32_t *micros)
 {
@@ -130,143 +132,118 @@ get_seconds_and_micros (int32_t *seconds,  int32_t *micros)
 }
 
 
-void getfilemoddate(int32_t s)
+/* Given a file name stored in the string pool, insert into the string pool text
+ * giving its modification date in PDF-style format. */
+void
+getfilemoddate(str_number s)
 {
 #if 0
-    struct stat file_data;
+  char *xname;
+  time_t mtime = 0;
+  size_t len;
 
-    char *file_name = find_input_file(s);
-    if (file_name == NULL) {
-        return;                 /* empty string */
-    }
-    if (! kpse_in_name_ok(file_name)) {
-       return;                  /* no permission */
-    }
+  xname = gettexstring(s);
 
-    recorder_record_input(file_name);
-    /* get file status */
-#ifdef _WIN32
-    if (fsyscp_stat(file_name, &file_data) == 0) {
-#else
-    if (stat(file_name, &file_data) == 0) {
-#endif
-        size_t len;
-	bool use_utc = FORCE_SOURCE_DATE_set && SOURCE_DATE_EPOCH_set;
-        makepdftime(file_data.st_mtime, time_str, use_utc);
-        len = strlen(time_str);
-        if ((unsigned) (pool_ptr + len) >= (unsigned) (pool_size)) {
-            pool_ptr = pool_size;
-            /* error by str_toks that calls str_room(1) */
-        } else {
-            int i;
+  /* .... get mtime ... */
 
-            for (i = 0; i < len; i++)
-                str_pool[pool_ptr++] = (uint16_t)time_str[i];
-        }
-    }
-    /* else { errno contains error code } */
+  free(file_name);
+  makepdftime(mtime, filemod_time_str, use_utc);
+  len = strlen(time_str);
 
-    xfree(file_name);
+  if ((unsigned) (pool_ptr + len) >= (unsigned) pool_size) {
+      pool_ptr = pool_size;
+      /* error by str_toks that calls str_room(1) */
+  } else {
+      int i;
+
+      for (i = 0; i < len; i++)
+          str_pool[pool_ptr++] = (uint16_t) time_str[i];
+  }
 #endif
 }
 
-void getfilesize(int32_t s)
+/* Given a file name stored in the string pool, insert into the string pool text
+ * giving its size in bytes. */
+void
+getfilesize(str_number s)
 {
-#if 0
-    struct stat file_data;
-    int i;
+  char *name;
+  size_t file_len, text_len;
+  rust_input_handle_t handle;
+  char buf[20];
+  int i;
 
-    char *file_name = find_input_file(s);
-    if (file_name == NULL) {
-        return;                 /* empty string */
-    }
-    if (! kpse_in_name_ok(file_name)) {
-       return;                  /* no permission */
-    }
+  name = gettexstring(s);
+  handle = ttstub_input_open(name, TTIF_TEX, 0);
+  free(name);
 
-    recorder_record_input(file_name);
-    /* get file status */
-#ifdef _WIN32
-    if (fsyscp_stat(file_name, &file_data) == 0) {
-#else
-    if (stat(file_name, &file_data) == 0) {
-#endif
-        size_t len;
-        char buf[20];
+  if (handle == NULL)
+    return; /* => evaluate to the empty string; intentional */
 
-        /* st_size has type off_t */
-        i = snprintf(buf, sizeof(buf),
-                     "%lu", (long unsigned int) file_data.st_size);
-        check_nprintf(i, sizeof(buf));
-        len = strlen(buf);
-        if ((unsigned) (pool_ptr + len) >= (unsigned) (pool_size)) {
-            pool_ptr = pool_size;
-            /* error by str_toks that calls str_room(1) */
-        } else {
-            for (i = 0; i < len; i++)
-                str_pool[pool_ptr++] = (uint16_t)buf[i];
-        }
-    }
-    /* else { errno contains error code } */
+  file_len = ttstub_input_get_size(handle);
+  ttstub_input_close(handle);
 
-    xfree(file_name);
-#endif
+  i = snprintf(buf, sizeof(buf), "%lu", (long unsigned int) file_len);
+  check_nprintf(i, sizeof(buf));
+  text_len = strlen(buf);
+
+  if ((unsigned) (pool_ptr + text_len) >= (unsigned) pool_size) {
+      pool_ptr = pool_size;
+      /* error by str_toks that calls str_room(1) */
+  } else {
+      int i;
+
+      for (i = 0; i < text_len; i++)
+          str_pool[pool_ptr++] = (uint16_t) buf[i];
+  }
 }
 
 void getfiledump(int32_t s, int offset, int length)
 {
-#if 0
-    FILE *f;
-    int read, i;
-    unsigned char *readbuffer;
-    char strbuf[3];
-    int j, k;
-    char *file_name;
+  char *name;
+  size_t text_len;
+  rust_input_handle_t handle;
+  unsigned char *buffer;
+  int i, j, k;
+  ssize_t actual;
+  char strbuf[3];
 
-    if (length == 0) {
-        /* empty result string */
-        return;
-    }
+  if (length == 0)
+    return; /* => evaluate to the empty string; intentional */
 
-    if (pool_ptr + 2 * length + 1 >= pool_size) {
-        /* no place for result */
-        pool_ptr = pool_size;
-        /* error by str_toks that calls str_room(1) */
-        return;
-    }
+  if (pool_ptr + 2 * length + 1 >= pool_size) {
+      /* not enough room to hold the result; trigger an error back in TeX: */
+      pool_ptr = pool_size;
+      return;
+  }
 
-    file_name = find_input_file(s);
-    if (file_name == NULL) {
-        return;                 /* empty string */
-    }
-    if (! kpse_in_name_ok(file_name)) {
-       return;                  /* no permission */
-    }
+  buffer = (unsigned char *) xmalloc(length + 1);
+  if (buffer == NULL) {
+      pool_ptr = pool_size;
+      return;
+  }
 
-    /* read file data */
-    f = fopen(file_name, FOPEN_RBIN_MODE);
-    if (f == NULL) {
-        xfree(file_name);
-        return;
-    }
-    recorder_record_input(file_name);
-    if (fseek(f, offset, SEEK_SET) != 0) {
-        xfree(file_name);
-        return;
-    }
+  name = gettexstring(s);
+  handle = ttstub_input_open(name, TTIF_TEX, 0);
+  free(name);
 
-    readbuffer = (unsigned char *)xmalloc (length + 1);
-    read = fread(readbuffer, sizeof(char), length, f);
-    fclose(f);
-    for (j = 0; j < read; j++) {
-        i = snprintf (strbuf, 3, "%.2X", (unsigned int)readbuffer[j]);
-        check_nprintf(i, 3);
-        for (k = 0; k < i; k++)
-            str_pool[pool_ptr++] = (uint16_t)strbuf[k];
-    }
-    xfree (readbuffer);
-    xfree(file_name);
-#endif
+  if (handle == NULL) {
+    free(buffer);
+    return; /* => evaluate to the empty string; intentional */
+  }
+
+  ttstub_input_seek(handle, offset, SEEK_SET);
+  actual = ttstub_input_read(handle, (char *) buffer, length);
+  ttstub_input_close(handle);
+
+  for (j = 0; j < actual; j++) {
+    i = snprintf(strbuf, 3, "%.2X", (unsigned int) buffer[j]);
+    check_nprintf(i, 3);
+    for (k = 0; k < i; k++)
+        str_pool[pool_ptr++] = (uint16_t) strbuf[k];
+  }
+
+  free(buffer);
 }
 
 
