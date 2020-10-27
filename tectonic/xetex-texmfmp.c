@@ -15,7 +15,9 @@
 static char *last_source_name = NULL;
 static int last_lineno;
 
-
+#define check_nprintf(size_get, size_want) \
+    if ((unsigned)(size_get) >= (unsigned)(size_want)) \
+        _tt_abort ("snprintf failed: file %s, line %d", __FILE__, __LINE__);
 
 #define TIME_STR_SIZE 30
 static time_t start_time = 0;
@@ -26,7 +28,6 @@ static char time_str[TIME_STR_SIZE];
 static void
 makepdftime(time_t t, char *time_str, bool utc)
 {
-#if 0
     struct tm lt, gmt;
     size_t size;
     int i, off, off_hours, off_mins;
@@ -75,23 +76,21 @@ makepdftime(time_t t, char *time_str, bool utc)
         i = snprintf(&time_str[size], 9, "%+03d'%02d'", off_hours, off_mins);
         check_nprintf(i, 9);
     }
-#endif
 }
 
 void
-init_start_time(void)
+init_start_time(time_t source_date_epoch)
 {
-  /* set start_time */
+  start_time = source_date_epoch;
   makepdftime (start_time, start_time_str, /* utc= */true);
 }
 
 void getcreationdate(void)
 {
-#if 0
     size_t len;
     int i;
 
-    init_start_time();
+    /* init_start_time(); -- Tectonic: not needed*/
     /* put creation date on top of string pool and update pool_ptr */
     len = strlen(start_time_str);
 
@@ -106,7 +105,6 @@ void getcreationdate(void)
 
     for (i = 0; i < len; i++)
         str_pool[pool_ptr++] = (uint16_t)start_time_str[i];
-#endif
 }
 
 

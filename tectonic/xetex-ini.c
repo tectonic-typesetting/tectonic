@@ -3214,8 +3214,6 @@ initialize_more_variables(void)
     for (k = 0; k <= 17; k++)
         write_open[k] = false;
 
-    get_seconds_and_micros(&epochseconds, &microseconds);
-    init_start_time();
     LR_ptr = TEX_NULL;
     LR_problems = 0;
     cur_dir = LEFT_TO_RIGHT;
@@ -4119,6 +4117,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     initialize_math_variables();
     initialize_pagebuilder_variables();
     initialize_shipout_variables();
+
+    get_seconds_and_micros(&epochseconds, &microseconds);
+    init_start_time(build_date);
 
     selector = SELECTOR_TERM_ONLY;
     tally = 0;

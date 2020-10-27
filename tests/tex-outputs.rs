@@ -181,6 +181,32 @@ impl TestCase {
 
 // Keep these alphabetized.
 
+#[test]
+fn a4paper() {
+    let mut unstables = UnstableOptions::default();
+    unstables.paper_size = Some(String::from("a4"));
+    TestCase::new("a4paper")
+        .with_unstables(unstables)
+        .check_pdf(true)
+        .go()
+}
+
+#[test]
+fn creationdate() {
+    TestCase::new("creationdate").go()
+}
+
+#[test]
+fn file_encoding() {
+    // Need to do this here since we call test_path unusually early.
+    util::set_test_root();
+
+    TestCase::new("file_encoding.tex")
+        .with_fs(&test_path(&["tex-outputs"]))
+        .expect(Ok(TexResult::Warnings))
+        .go()
+}
+
 /// An issue triggered by a bug in how the I/O subsystem reported file offsets
 /// after an ungetc() call.
 #[test]
@@ -240,17 +266,6 @@ fn unicode_file_name() {
 }
 
 #[test]
-fn file_encoding() {
-    // Need to do this here since we call test_path unusually early.
-    util::set_test_root();
-
-    TestCase::new("file_encoding.tex")
-        .with_fs(&test_path(&["tex-outputs"]))
-        .expect(Ok(TexResult::Warnings))
-        .go()
-}
-
-#[test]
 fn tectoniccodatokens_errinside() {
     TestCase::new("tectoniccodatokens_errinside")
         .expect_msg("halted on potentially-recoverable error as specified")
@@ -280,14 +295,4 @@ fn tectoniccodatokens_ok() {
 #[test]
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
-}
-
-#[test]
-fn a4paper() {
-    let mut unstables = UnstableOptions::default();
-    unstables.paper_size = Some(String::from("a4"));
-    TestCase::new("a4paper")
-        .with_unstables(unstables)
-        .check_pdf(true)
-        .go()
 }

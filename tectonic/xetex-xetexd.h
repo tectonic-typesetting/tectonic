@@ -349,8 +349,8 @@ typedef struct {
 
 void getmd5sum(int32_t s, bool file);
 
-void init_start_time(void);
-void get_date_and_time (time_t, int32_t *, int32_t *, int32_t *, int32_t *);
+void init_start_time(time_t source_date_epoch);
+void get_date_and_time (time_t source_date_epoch, int32_t *minutes, int32_t *day, int32_t *month, int32_t *year);
 void get_seconds_and_micros (int32_t *seconds,  int32_t *micros);
 
 void getcreationdate(void);
