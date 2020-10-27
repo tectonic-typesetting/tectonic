@@ -19,11 +19,9 @@ static int last_lineno;
     if ((unsigned)(size_get) >= (unsigned)(size_want)) \
         _tt_abort ("snprintf failed: file %s, line %d", __FILE__, __LINE__);
 
-#define TIME_STR_SIZE 30
-static time_t start_time = 0;
-char start_time_str[TIME_STR_SIZE];
-static char filemod_time_str[TIME_STR_SIZE];
 /* minimum size for time_str is 24: "D:YYYYmmddHHMMSS+HH'MM'" */
+#define TIME_STR_SIZE 30
+static char start_time_str[TIME_STR_SIZE];
 
 static void
 makepdftime(time_t t, char *time_str, bool utc)
@@ -78,12 +76,13 @@ makepdftime(time_t t, char *time_str, bool utc)
     }
 }
 
+
 void
 init_start_time(time_t source_date_epoch)
 {
-  start_time = source_date_epoch;
-  makepdftime (start_time, start_time_str, /* utc= */true);
+  makepdftime(source_date_epoch, start_time_str, /* utc= */true);
 }
+
 
 void
 getcreationdate(void)
@@ -137,29 +136,35 @@ get_seconds_and_micros (int32_t *seconds,  int32_t *micros)
 void
 getfilemoddate(str_number s)
 {
-#if 0
-  char *xname;
-  time_t mtime = 0;
-  size_t len;
+  char *name;
+  time_t mtime;
+  size_t text_len;
+  rust_input_handle_t handle;
+  char buf[20];
+  int i;
 
-  xname = gettexstring(s);
+  name = gettexstring(s);
+  handle = ttstub_input_open(name, TTIF_TEX, 0);
+  free(name);
 
-  /* .... get mtime ... */
+  if (handle == NULL)
+    return; /* => evaluate to the empty string; intentional */
 
-  free(file_name);
-  makepdftime(mtime, filemod_time_str, use_utc);
-  len = strlen(time_str);
+  mtime = ttstub_input_get_mtime(handle);
+  ttstub_input_close(handle);
 
-  if ((unsigned) (pool_ptr + len) >= (unsigned) pool_size) {
-      pool_ptr = pool_size;
-      /* error by str_toks that calls str_room(1) */
+  makepdftime(mtime, buf, /* utc= */true);
+  text_len = strlen(buf);
+
+  if ((unsigned) (pool_ptr + text_len) >= (unsigned) pool_size) {
+    pool_ptr = pool_size;
+    /* error by str_toks that calls str_room(1) */
   } else {
-      int i;
+    int i;
 
-      for (i = 0; i < len; i++)
-          str_pool[pool_ptr++] = (uint16_t) time_str[i];
+    for (i = 0; i < text_len; i++)
+      str_pool[pool_ptr++] = (uint16_t) buf[i];
   }
-#endif
 }
 
 /* Given a file name stored in the string pool, insert into the string pool text
