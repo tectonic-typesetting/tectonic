@@ -192,11 +192,6 @@ fn a4paper() {
 }
 
 #[test]
-fn creationdate() {
-    TestCase::new("creationdate").go()
-}
-
-#[test]
 fn file_encoding() {
     // Need to do this here since we call test_path unusually early.
     util::set_test_root();
@@ -231,6 +226,21 @@ fn otf_basic() {
     TestCase::new("otf_basic")
         .expect(Ok(TexResult::Warnings))
         .go()
+}
+
+#[test]
+fn prim_creationdate() {
+    TestCase::new("prim_creationdate").go()
+}
+
+#[test]
+fn prim_filedump() {
+    TestCase::new("prim_filedump").go()
+}
+
+#[test]
+fn prim_filesize() {
+    TestCase::new("prim_filesize").go()
 }
 
 #[test]
