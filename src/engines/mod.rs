@@ -418,6 +418,23 @@ impl<'a> ExecutionState<'a> {
         }
     }
 
+    fn input_get_mtime(&mut self, handle: *mut InputHandle) -> libc::time_t {
+        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+        let maybe_time = match rhandle.get_unix_mtime() {
+            Ok(t) => t,
+            Err(e) => {
+                tt_warning!(self.status, "failed to get the modification time of an input"; e);
+                Some(0)
+            }
+        };
+
+        if let Some(t) = maybe_time {
+            t as libc::time_t
+        } else {
+            1 // Intentionally make this distinguishable from the error value 0
+        }
+    }
+
     fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
         rhandle.try_seek(pos)
@@ -695,6 +712,14 @@ pub extern "C" fn input_get_size(
     handle: *mut InputHandle,
 ) -> libc::size_t {
     es.input_get_size(handle)
+}
+
+#[no_mangle]
+pub extern "C" fn input_get_mtime(
+    es: &mut ExecutionState,
+    handle: *mut InputHandle,
+) -> libc::time_t {
+    es.input_get_mtime(handle)
 }
 
 #[no_mangle]

@@ -149,7 +149,7 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     };
 
     match files.remove(OsStr::new("texput.pdf")) {
-        Some(data) => Ok(data),
+        Some(file) => Ok(file.data),
         None => Err(errmsg!(
             "LaTeX didn't report failure, but no PDF was created (??)"
         )),

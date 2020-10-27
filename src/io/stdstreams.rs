@@ -52,6 +52,10 @@ impl InputFeatures for Cursor<SharedByteBuffer> {
         Ok(self.get_ref().0.len())
     }
 
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        Ok(None)
+    }
+
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
         Ok(self.seek(pos)?)
     }

@@ -161,6 +161,15 @@ impl InputFeatures for File {
         Ok(self.metadata()?.len() as usize)
     }
 
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        let sys_time = self.metadata()?.modified()?;
+
+        // No cleaner way to convert a SystemTime to time_t, as far as I can
+        // tell.
+        let dur = sys_time.duration_since(std::time::SystemTime::UNIX_EPOCH)?;
+        Ok(Some(dur.as_secs() as i64))
+    }
+
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
         Ok(self.seek(pos)?)
     }
@@ -169,6 +178,12 @@ impl InputFeatures for File {
 impl InputFeatures for BufReader<File> {
     fn get_size(&mut self) -> Result<usize> {
         Ok(self.get_mut().metadata()?.len() as usize)
+    }
+
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        let sys_time = self.get_mut().metadata()?.modified()?;
+        let dur = sys_time.duration_since(std::time::SystemTime::UNIX_EPOCH)?;
+        Ok(Some(dur.as_secs() as i64))
     }
 
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
