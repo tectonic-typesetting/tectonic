@@ -97,11 +97,11 @@ protected:
     class Family;
 
     struct OpSizeRec {
-        unsigned int    designSize;
+        double    designSize;
+        double    minSize;
+        double    maxSize;
         unsigned int    subFamilyID;
         unsigned int    nameCode;
-        unsigned int    minSize;
-        unsigned int    maxSize;
     };
 
     class Font {
@@ -112,7 +112,7 @@ protected:
                                 , fontRef(ref), weight(0), width(0), slant(0)
                                 , isReg(false), isBold(false), isItalic(false)
                                 { opSizeInfo.subFamilyID = 0;
-                                  opSizeInfo.designSize = 100; } /* default to 10bp */
+                                  opSizeInfo.designSize = 10.0; } /* default to 10.0pt */
                             ~Font()
                                 { delete m_fullName; delete m_psName; }
 

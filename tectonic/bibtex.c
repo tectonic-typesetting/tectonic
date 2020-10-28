@@ -727,12 +727,38 @@ aux_err_white_space_in_argument_print(void)
     puts_log("White space in argument");
 }
 
+static bool
+str_ends_with(str_number s, str_number ext)
+{
+    int32_t str_idx, ext_idx;
+    ASCII_code str_char, ext_char;
+
+    if ((str_start[ext + 1] - str_start[ext]) > (str_start[s + 1] - str_start[s]))
+        return false;
+
+    str_idx = (str_start[s + 1] - str_start[s]) - 1;
+    ext_idx = (str_start[ext + 1] - str_start[ext]) - 1;
+
+    while (ext_idx >= 0) {
+        str_char = str_pool[str_start[s] + str_idx];
+        ext_char = str_pool[str_start[ext] + ext_idx];
+
+        if (str_char != ext_char)
+            return false;
+
+        str_idx--;
+        ext_idx--;
+    }
+
+    return true;
+}
 
 static void
 print_bib_name(void)
 {
     print_a_pool_str(bib_list[bib_ptr]);
-    print_a_pool_str(s_bib_extension);
+    if (!str_ends_with(bib_list[bib_ptr], s_bib_extension))
+        print_a_pool_str(s_bib_extension);
     putc_log('\n');
 }
 
@@ -741,7 +767,8 @@ static void
 log_pr_bib_name(void)
 {
     out_pool_str(log_file, bib_list[bib_ptr]);
-    out_pool_str(log_file, s_bib_extension);
+    if (!str_ends_with(bib_list[bib_ptr], s_bib_extension))
+        out_pool_str(log_file, s_bib_extension);
     ttstub_output_putc (log_file, '\n');
 }
 
@@ -975,12 +1002,6 @@ static void bib_equals_sign_print(void)
 static void bib_unbalanced_braces_print(void)
 {
     puts_log("Unbalanced braces");
-    bib_err_print();
-}
-
-static void bib_field_too_long_print(void)
-{
-    printf_log("Your field is more than %ld characters", (long) buf_size);
     bib_err_print();
 }
 
@@ -2128,13 +2149,12 @@ static bool compress_bib_white(void)
 {
     {
         if (ex_buf_ptr == buf_size) {
-            bib_field_too_long_print();
-            return false;
-        } else {
-
-            ex_buf[ex_buf_ptr] = 32 /*space */ ;
-            ex_buf_ptr = ex_buf_ptr + 1;
+            ttstub_fprintf(log_file, "Field filled up at ' ', reallocating.\n");
+            buffer_overflow();
         }
+
+        ex_buf[ex_buf_ptr] = 32 /*space */ ;
+        ex_buf_ptr = ex_buf_ptr + 1;
     }
     while ((!scan_white_space())) {
 
@@ -2171,18 +2191,17 @@ static bool scan_balanced_braces(void)
     if (store_field) {        /*257: */
         while ((buffer[buf_ptr2] != right_str_delim))
             switch ((buffer[buf_ptr2])) {
-            case 123:
+            case 123: /*'{'*/
                 {
                     bib_brace_level = bib_brace_level + 1;
                     {
-                        if (ex_buf_ptr == buf_size) {
-                            bib_field_too_long_print();
-                            return false;
-                        } else {
-
-                            ex_buf[ex_buf_ptr] = 123 /*left_brace */ ;
-                            ex_buf_ptr = ex_buf_ptr + 1;
+                        if (ex_buf_ptr >= buf_size) {
+                            ttstub_fprintf(log_file, "Field filled up at '{', reallocating.\n");
+                            buffer_overflow();
                         }
+
+                        ex_buf[ex_buf_ptr] = 123 /*left_brace */ ;
+                        ex_buf_ptr = ex_buf_ptr + 1;
                     }
                     buf_ptr2 = buf_ptr2 + 1;
                     {
@@ -2195,18 +2214,17 @@ static bool scan_balanced_braces(void)
                     {
                         while (true)
                             switch ((buffer[buf_ptr2])) {
-                            case 125:
+                            case 125: /*'}'*/
                                 {
                                     bib_brace_level = bib_brace_level - 1;
                                     {
-                                        if (ex_buf_ptr == buf_size) {
-                                            bib_field_too_long_print();
-                                            return false;
-                                        } else {
-
-                                            ex_buf[ex_buf_ptr] = 125 /*right_brace */ ;
-                                            ex_buf_ptr = ex_buf_ptr + 1;
+                                        if (ex_buf_ptr >= buf_size) {
+                                            ttstub_fprintf(log_file, "Field filled up at '}', reallocating.\n");
+                                            buffer_overflow();
                                         }
+
+                                        ex_buf[ex_buf_ptr] = 125 /*right_brace */ ;
+                                        ex_buf_ptr = ex_buf_ptr + 1;
                                     }
                                     buf_ptr2 = buf_ptr2 + 1;
                                     {
@@ -2221,18 +2239,17 @@ static bool scan_balanced_braces(void)
                                         goto loop_exit;
                                 }
                                 break;
-                            case 123:
+                            case 123: /*'{'*/
                                 {
                                     bib_brace_level = bib_brace_level + 1;
                                     {
-                                        if (ex_buf_ptr == buf_size) {
-                                            bib_field_too_long_print();
-                                            return false;
-                                        } else {
-
-                                            ex_buf[ex_buf_ptr] = 123 /*left_brace */ ;
-                                            ex_buf_ptr = ex_buf_ptr + 1;
+                                        if (ex_buf_ptr >= buf_size) {
+                                            ttstub_fprintf(log_file, "Field filled up at '{', reallocating.\n");
+                                            buffer_overflow();
                                         }
+
+                                        ex_buf[ex_buf_ptr] = 123 /*left_brace */ ;
+                                        ex_buf_ptr = ex_buf_ptr + 1;
                                     }
                                     buf_ptr2 = buf_ptr2 + 1;
                                     {
@@ -2248,14 +2265,13 @@ static bool scan_balanced_braces(void)
                             default:
                                 {
                                     {
-                                        if (ex_buf_ptr == buf_size) {
-                                            bib_field_too_long_print();
-                                            return false;
-                                        } else {
-
-                                            ex_buf[ex_buf_ptr] = buffer[buf_ptr2];
-                                            ex_buf_ptr = ex_buf_ptr + 1;
+                                        if (ex_buf_ptr >= buf_size) {
+                                            ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) buffer[buf_ptr2]);
+                                            buffer_overflow();
                                         }
+
+                                        ex_buf[ex_buf_ptr] = buffer[buf_ptr2];
+                                        ex_buf_ptr = ex_buf_ptr + 1;
                                     }
                                     buf_ptr2 = buf_ptr2 + 1;
                                     {
@@ -2283,14 +2299,13 @@ static bool scan_balanced_braces(void)
             default:
                 {
                     {
-                        if (ex_buf_ptr == buf_size) {
-                            bib_field_too_long_print();
-                            return false;
-                        } else {
-
-                            ex_buf[ex_buf_ptr] = buffer[buf_ptr2];
-                            ex_buf_ptr = ex_buf_ptr + 1;
+                        if (ex_buf_ptr >= buf_size) {
+                            ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) buffer[buf_ptr2]);
+                            buffer_overflow();
                         }
+
+                        ex_buf[ex_buf_ptr] = buffer[buf_ptr2];
+                        ex_buf_ptr = ex_buf_ptr + 1;
                     }
                     buf_ptr2 = buf_ptr2 + 1;
                     {
@@ -2402,14 +2417,13 @@ static bool scan_a_field_token_and_eat_white(void)
                 while ((tmp_ptr < buf_ptr2)) {
 
                     {
-                        if (ex_buf_ptr == buf_size) {
-                            bib_field_too_long_print();
-                            return false;
-                        } else {
-
-                            ex_buf[ex_buf_ptr] = buffer[tmp_ptr];
-                            ex_buf_ptr = ex_buf_ptr + 1;
+                        if (ex_buf_ptr >= buf_size) {
+                            ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) buffer[tmp_ptr]);
+                            buffer_overflow();
                         }
+
+                        ex_buf[ex_buf_ptr] = buffer[tmp_ptr];
+                        ex_buf_ptr = ex_buf_ptr + 1;
                     }
                     tmp_ptr = tmp_ptr + 1;
                 }
@@ -2457,14 +2471,13 @@ static bool scan_a_field_token_and_eat_white(void)
 
                         if ((tmp_ptr < tmp_end_ptr) && (lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ )) {
                             {
-                                if (ex_buf_ptr == buf_size) {
-                                    bib_field_too_long_print();
-                                    return false;
-                                } else {
-
-                                    ex_buf[ex_buf_ptr] = 32 /*space */ ;
-                                    ex_buf_ptr = ex_buf_ptr + 1;
+                                if (ex_buf_ptr >= buf_size) {
+                                    ttstub_fprintf(log_file, "Field filled up at ' ', reallocating.\n");
+                                    buffer_overflow();
                                 }
+
+                                ex_buf[ex_buf_ptr] = 32 /*space */ ;
+                                ex_buf_ptr = ex_buf_ptr + 1;
                             }
                             tmp_ptr = tmp_ptr + 1;
                             while ((tmp_ptr < tmp_end_ptr) && (lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ ))
@@ -2474,23 +2487,21 @@ static bool scan_a_field_token_and_eat_white(void)
                     while ((tmp_ptr < tmp_end_ptr)) {
 
                         if (lex_class[str_pool[tmp_ptr]] != 1 /*white_space */ ) {
-                            if (ex_buf_ptr == buf_size) {
-                                bib_field_too_long_print();
-                                return false;
-                            } else {
-
-                                ex_buf[ex_buf_ptr] = str_pool[tmp_ptr];
-                                ex_buf_ptr = ex_buf_ptr + 1;
+                            if (ex_buf_ptr >= buf_size) {
+                                ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) str_pool[tmp_ptr]);
+                                buffer_overflow();
                             }
+
+                            ex_buf[ex_buf_ptr] = str_pool[tmp_ptr];
+                            ex_buf_ptr = ex_buf_ptr + 1;
                         } else if (ex_buf[ex_buf_ptr - 1] != 32 /*space */ ) {
-                            if (ex_buf_ptr == buf_size) {
-                                bib_field_too_long_print();
-                                return false;
-                            } else {
-
-                                ex_buf[ex_buf_ptr] = 32 /*space */ ;
-                                ex_buf_ptr = ex_buf_ptr + 1;
+                            if (ex_buf_ptr >= buf_size) {
+                                ttstub_fprintf(log_file, "Field filled up at ' ', reallocating.\n");
+                                buffer_overflow();
                             }
+
+                            ex_buf[ex_buf_ptr] = 32 /*space */ ;
+                            ex_buf_ptr = ex_buf_ptr + 1;
                         }
                         tmp_ptr = tmp_ptr + 1;
                     }
@@ -5411,7 +5422,7 @@ static void aux_input_command(void)
             }
 
             printf_log("A level-%ld auxiliary file: ", (long) aux_ptr);
-            print_aux_name();
+            log_pr_aux_name();
             aux_ln_stack[aux_ptr] = 0;
         }
     }

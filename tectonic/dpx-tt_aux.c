@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -24,19 +24,13 @@
 #include <string.h>
 
 #include "core-bridge.h"
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-numbers.h"
 #include "dpx-pdfobj.h"
 #include "dpx-sfnt.h"
 #include "dpx-tt_post.h"
 #include "dpx-tt_table.h"
-
-static int verbose = 0;
-
-void tt_aux_set_verbose(int level)
-{
-  verbose = level;
-}
 
 ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)
 {
@@ -177,17 +171,17 @@ pdf_obj *tt_get_fontdesc (sfnt *sfont, int *embed, int stemv, int type, const ch
       /* the least restrictive license granted takes precedence. */
       *embed = 1;
     } else if (os2->fsType & 0x0004) {
-      if (verbose > 0)
+      if (dpx_conf.verbose_level > 0)
         dpx_warning("Font \"%s\" permits \"Preview & Print\" embedding only **\n", fontname);
       *embed = 1;
     } else {
-      if (always_embed) {
-        if (verbose > 0)
+      if (dpx_conf.ignore_font_license) {
+        if (dpx_conf.verbose_level > 0)
           dpx_warning("Font \"%s\" may be subject to embedding restrictions **\n", fontname);
         *embed = 1;
       }
       else {
-        if (verbose > 0)
+        if (dpx_conf.verbose_level > 0)
           dpx_warning("Embedding of font \"%s\" disabled due to license restrictions", fontname);
         *embed = 0;
       }

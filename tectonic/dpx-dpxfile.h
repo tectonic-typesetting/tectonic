@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -47,16 +47,12 @@ rust_input_handle_t dpx_open_truetype_file (const char *filename);
 rust_input_handle_t dpx_open_opentype_file (const char *filename);
 rust_input_handle_t dpx_open_dfont_file (const char *filename);
 
-void  dpx_file_set_verbose  (int level);
-
 int   dpx_file_apply_filter (const char *cmdtmpl,
                                    const char *input, const char *output,
-                                   unsigned char version);
+                                   int version);
 char *dpx_create_temp_file  (void);
 void  dpx_delete_old_cache  (int life);
 void  dpx_delete_temp_file  (char *tmp, int force); /* tmp freed here */
-
-extern int   keep_cache;
 
 /* Tectonic-enabled I/O alternatives */
 

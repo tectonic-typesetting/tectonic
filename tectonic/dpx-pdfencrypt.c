@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,9 @@
 #include <time.h>
 
 #include "core-bridge.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxcrypt.h"
+#include "dpx-dpxutil.h"
 #include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
@@ -41,6 +43,9 @@
  *
  * TODO: Convert password to PDFDocEncoding. SASLPrep stringpref for AESV3.
  */
+
+static void pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
+                                const char *oplain, const char *uplain);
 
 /* PDF-2.0 is not published yet. */
 #define USE_ADOBE_EXTENSION 1
@@ -64,6 +69,7 @@ static struct pdf_sec {
    struct {
      int use_aes;
      int encrypt_metadata;
+     int need_adobe_extension;
    } setting;
 
    struct {
@@ -79,57 +85,28 @@ static const unsigned char padding_bytes[32] = {
   0x2f, 0x0c, 0xa9, 0xfe, 0x64, 0x53, 0x69, 0x7a
 };
 
-static unsigned char verbose = 0;
-
-void pdf_enc_set_verbose (int level)
+int
+pdf_init_encryption (struct pdf_enc_setting settings, const unsigned char *trailer_id)
 {
-  verbose = level;
-}
-
-static void
-pdf_enc_init (int use_aes, int encrypt_metadata)
-{
+  time_t          current_time;
   struct pdf_sec *p = &sec_data;
 
-  srand(source_date_epoch); /* For AES IV */
-  p->setting.use_aes = use_aes;
-  p->setting.encrypt_metadata = encrypt_metadata;
-}
+  if (trailer_id) {
+    memcpy(p->ID, trailer_id, 16);
+  } else {
+    memset(p->ID, 0, 16);
+  }
+  current_time = dpx_util_get_unique_time_if_given();
+  if (current_time == INVALID_EPOCH_VALUE)
+    current_time = time(NULL);
+  srand(current_time); /* For AES IV */
+  p->setting.use_aes = settings.use_aes;
+  p->setting.encrypt_metadata = settings.encrypt_metadata;
+  p->setting.need_adobe_extension = 0;
 
-#define PRODUCER \
-"%s-%s, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata"
-
-void
-pdf_enc_compute_id_string (const char *dviname, const char *pdfname)
-{
-  struct pdf_sec *p = &sec_data;
-  char *date_string, *producer;
-  struct tm *bd_time;
-  MD5_CONTEXT     md5;
-
-  /* FIXME: This should be placed in main() or somewhere. */
-  pdf_enc_init(1, 1);
-
-  MD5_init(&md5);
-
-  date_string = NEW(15, char);
-  bd_time = gmtime(&source_date_epoch);
-  sprintf(date_string, "%04d%02d%02d%02d%02d%02d",
-          bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
-          bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec);
-  MD5_write(&md5, (unsigned char *)date_string, strlen(date_string));
-  free(date_string);
-
-  producer = NEW(strlen(PRODUCER)+strlen(DVIPDFMX_PROG_NAME)+strlen(DPX_VERSION), char);
-  sprintf(producer, PRODUCER, DVIPDFMX_PROG_NAME, DPX_VERSION);
-  MD5_write(&md5, (unsigned char *)producer, strlen(producer));
-  free(producer);
-
-  if (dviname)
-    MD5_write(&md5, (const unsigned char *) dviname, strlen(dviname));
-  if (pdfname)
-    MD5_write(&md5, (const unsigned char *) pdfname, strlen(pdfname));
-  MD5_final(p->ID, &md5);
+  pdf_enc_set_passwd(settings.key_size, settings.permission,
+                     settings.oplain, settings.uplain);
+  return 0;
 }
 
 static void
@@ -177,16 +154,16 @@ compute_owner_password (struct pdf_sec *p,
 
     ARC4(&arc4, 32, padded, tmp1);
     if (p->R >= 3) {
-    for (i = 1; i <= 19; i++) {
+      for (i = 1; i <= 19; i++) {
         memcpy(tmp2, tmp1, 32);
         for (j = 0; j < p->key_size; j++)
           key[j] = hash[j] ^ i;
         ARC4_set_key(&arc4, p->key_size, key);
         ARC4(&arc4, 32, tmp2, tmp1);
+      }
     }
-    }
+    memcpy(p->O, tmp1, 32);
   }
-  memcpy(p->O, hash, 32);
 }
 
 static void
@@ -281,17 +258,20 @@ compute_hash_V5 (unsigned char       *hash,
                  const unsigned char *salt,
                  const unsigned char *user_key, int R /* revision */)
 {
-  SHA256_CONTEXT sha;
   unsigned char  K[64];
   size_t         K_len;
   int            nround;
 
-  SHA256_init (&sha);
-  SHA256_write(&sha, (const unsigned char *)passwd, strlen(passwd));
-  SHA256_write(&sha, salt, 8);
-  if (user_key)
-    SHA256_write(&sha, user_key, 48);
-  SHA256_final(hash, &sha);
+  {
+    SHA256_CONTEXT sha;
+
+    SHA256_init (&sha);
+    SHA256_write(&sha, (const unsigned char *)passwd, strlen(passwd));
+    SHA256_write(&sha, salt, 8);
+    if (user_key)
+      SHA256_write(&sha, user_key, 48);
+    SHA256_final(hash, &sha);
+  }
 
   assert( R ==5 || R == 6 );
 
@@ -415,17 +395,21 @@ compute_user_password_V5 (struct pdf_sec *p, const char *uplain)
 static void
 check_version (struct pdf_sec *p, int version)
 {
-  if (p->V > 2 && version < 4) {
+  if (p->V > 2 && version < 14) {
     dpx_warning("Current encryption setting requires PDF version >= 1.4.");
     p->V = 1;
     p->key_size = 5;
-  } else if (p->V == 4 && version < 5) {
+  } else if (p->V == 4 && version < 15) {
     dpx_warning("Current encryption setting requires PDF version >= 1.5.");
     p->V = 2;
-  } else if (p->V ==5 && version < 7) {
+  } else if (p->V ==5 && version < 17) {
     dpx_warning("Current encryption setting requires PDF version >= 1.7" \
          " (plus Adobe Extension Level 3).");
     p->V = 4;
+    p->key_size = 16;
+  }
+  if (p->V == 5 && version < 20) {
+    p->setting.need_adobe_extension = 1;
   }
 }
 
@@ -499,16 +483,14 @@ preproc_password (const char *passwd, char *outbuf, int V)
   return error;
 }
 
-void
+static void
 pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
                     const char *oplain, const char *uplain)
 {
   struct pdf_sec *p = &sec_data;
   char            opasswd[128], upasswd[128];
   int             version;
-
-  assert(oplain);
-  assert(uplain);
+  char            empty_passwd[1] = "\0";
 
   version = pdf_get_version();
 
@@ -527,6 +509,9 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
   check_version(p, version);
 
   p->P = (int32_t) (perm | 0xC0U);
+  /* Bit position 10 shall be always set to 1 for PDF >= 2.0. */
+  if (version >= 20)
+    p->P |= (1 << 9);
   switch (p->V) {
   case 1:
     p->R = (p->P < 0x100L) ? 2 : 3;
@@ -553,11 +538,19 @@ pdf_enc_set_passwd (unsigned int bits, unsigned int perm,
   memset(opasswd, 0, 128);
   memset(upasswd, 0, 128);
   /* Password must be preprocessed. */
-  if (preproc_password(oplain, opasswd, p->V) < 0)
-    dpx_warning("Invaid UTF-8 string for password.");
+  if (oplain) {
+    if (preproc_password(oplain, opasswd, p->V) < 0)
+      dpx_warning("Invaid UTF-8 string for password.");
+  } else {
+    preproc_password(empty_passwd, opasswd, p->V);
+  }
 
-  if (preproc_password(uplain, upasswd, p->V) < 0)
-    dpx_warning("Invalid UTF-8 string for passowrd.");
+  if (uplain) {
+    if (preproc_password(uplain, upasswd, p->V) < 0)
+      dpx_warning("Invalid UTF-8 string for passowrd.");
+  } else {
+    preproc_password(empty_passwd, upasswd, p->V);    
+  }
 
   if (p->R >= 3)
     p->P |= 0xFFFFF000U;
@@ -715,7 +708,7 @@ pdf_encrypt_obj (void)
   }
 
 #ifdef USE_ADOBE_EXTENSION
-  if (p->R > 5) {
+  if (p->R > 5 && p->setting.need_adobe_extension != 0) {
     pdf_obj *catalog = pdf_doc_catalog();
     pdf_obj *ext  = pdf_new_dict();
     pdf_obj *adbe = pdf_new_dict();
@@ -729,17 +722,6 @@ pdf_encrypt_obj (void)
 #endif
 
   return doc_encrypt;
-}
-
-pdf_obj *pdf_enc_id_array (void)
-{
-  struct pdf_sec *p = &sec_data;
-  pdf_obj *id = pdf_new_array();
-
-  pdf_add_array(id, pdf_new_string(p->ID, 16));
-  pdf_add_array(id, pdf_new_string(p->ID, 16));
-
-  return id;
 }
 
 void pdf_enc_set_label (unsigned label)

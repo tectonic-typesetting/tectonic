@@ -126,10 +126,16 @@ impl TexEngine {
         unsafe {
             super::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
         }
-        let v = if self.halt_on_error { 1 } else { 0 };
+
+        let mut halt_on_error = self.halt_on_error;
+        if unstables.continue_on_errors {
+            halt_on_error = false; // command-line override
+        }
+        let v = if halt_on_error { 1 } else { 0 };
         unsafe {
             super::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
         }
+
         let v = if self.initex_mode { 1 } else { 0 };
         unsafe {
             super::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);

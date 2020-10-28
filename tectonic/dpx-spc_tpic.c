@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -175,7 +175,7 @@ set_fillstyle (double g, double a, int f_ais)
 {
   pdf_obj *dict;
   char     resname[32];
-  char     buf[38];
+  char     buf[256];
   int      alp, len = 0;
 
   if (a > 0.0) {
@@ -758,7 +758,8 @@ spc_handler_tpic__init (struct spc_env *spe, void *dp)
   tp->num_points = 0;
   tp->max_points = 0;
 
-  if (tp->mode.fill != TPIC_MODE__FILL_SOLID && pdf_get_version() < 4) {
+  if (tp->mode.fill != TPIC_MODE__FILL_SOLID &&
+      pdf_check_version(1, 4) < 0) {
       spc_warn(spe, "Tpic shading support requires PDF version 1.4.");
     tp->mode.fill = TPIC_MODE__FILL_SOLID;
   }
@@ -949,7 +950,7 @@ spc_handler_tpic__setopts (struct spc_env *spe,
   error = pdf_foreach_dict(dict, tpic_filter_getopts, tp);
   if (!error) {
     if (tp->mode.fill != TPIC_MODE__FILL_SOLID &&
-        pdf_get_version() < 4) {
+        pdf_check_version(1, 4) < 0) {
       spc_warn(spe, "Transparent fill mode requires PDF version 1.4.");
       tp->mode.fill = TPIC_MODE__FILL_SOLID;
     }

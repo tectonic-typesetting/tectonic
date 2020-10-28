@@ -2,7 +2,7 @@
 
     DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
-    Copyright (C) 2002-2017 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2002-2020 by Jin-Hwan Cho, Matthias Franz, Shunsaku Hirata,
     the DVIPDFMx project team.
 
     Copyright (c) 2006 SIL. (xdvipdfmx extensions for XeTeX support)
@@ -36,12 +36,14 @@
 #include "core-bridge.h"
 #include "dpx-cid.h"
 #include "dpx-dpxconf.h"
+#include "dpx-dpxcrypt.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
 #include "dpx-dvi.h"
 #include "dpx-error.h"
 #include "dpx-fontmap.h"
 #include "dpx-mem.h"
+#include "dpx-mpost.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdoc.h"
 #include "dpx-pdfencrypt.h"
@@ -49,6 +51,7 @@
 #include "dpx-pdflimits.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
+#include "dpx-pdfximage.h"
 #include "dpx-spc_tpic.h"
 #include "dpx-specials.h"
 #include "dpx-tfm.h"
@@ -61,8 +64,6 @@ typedef struct page_range
   int last;
 } PageRange;
 
-int is_xdv = 0;
-int translate_origin = 0;
 const XdvipdfmxConfig* dpx_config;
 
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
@@ -72,11 +73,16 @@ const XdvipdfmxConfig* dpx_config;
 #define OPT_PDFOBJ_NO_PREDICTOR   (1 << 5)
 #define OPT_PDFOBJ_NO_OBJSTM      (1 << 6)
 
+static int    pdf_version_major = 1;
+static int    pdf_version_minor = 5;
+static int    compression_level = 9;
+
 static char     ignore_colors = 0;
 static double   annot_grow    = 0.0;
 static int      bookmark_open = 0;
 static double   mag           = 1.0;
 static int      font_dpi      = 600;
+static int      enable_thumbnail = 0;
 
 /*
  * Precision is essentially limited to 0.01pt.
@@ -89,6 +95,9 @@ static int pdfdecimaldigits = 3;
 /* -1 means erase all old images and also erase new images */
 /* -2 means ignore image cache (default) */
 static int image_cache_life = -2;
+/* Image format conversion filter template */
+static char   *filter_template  = NULL;
+
 
 /* Encryption */
 static int     do_encryption = 0;
@@ -103,8 +112,8 @@ double paper_height = 842.0;
 static double x_offset = 72.0;
 static double y_offset = 72.0;
 int    landscape_mode  = 0;
+static int translate_origin = 0;
 
-int always_embed = 0; /* always embed fonts, regardless of licensing flags */
 
 /* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
 static int
@@ -203,15 +212,13 @@ select_paper (const char *paperspec)
     _tt_abort("Invalid paper size: %s (%.2fx%.2f)", paperspec, paper_width, paper_height);
 }
 
+PageRange *page_ranges = NULL;
+int num_page_ranges = 0;
+int max_page_ranges = 0;
+
 static void
-select_pages (
-  const char *pagespec,
-  PageRange **ret_page_ranges,
-  unsigned int *ret_num_page_ranges)
+select_pages (const char *pagespec)
 {
-  PageRange *page_ranges = NULL;
-  unsigned int num_page_ranges = 0;
-  unsigned int max_page_ranges = 0;
   char  *q;
   const char *p = pagespec;
 
@@ -259,9 +266,6 @@ select_pages (
         _tt_abort("Bad page range specification: %s", p);
     }
   }
-
-  *ret_page_ranges = page_ranges;
-  *ret_num_page_ranges = num_page_ranges;
 }
 
 #define SWAP(v1,v2) do {\
@@ -271,7 +275,7 @@ select_pages (
  } while (0)
 
 static void
-do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
+do_dvi_pages (void)
 {
   int      page_no, step;
   unsigned int page_count, i;
@@ -280,6 +284,16 @@ do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
   pdf_rect mediabox;
 
   spc_exec_at_begin_document();
+
+  if (num_page_ranges == 0) {
+    if (!page_ranges) {
+      page_ranges = NEW(1, struct page_range);
+      max_page_ranges = 1;
+    }
+    page_ranges[0].first = 0;
+    page_ranges[0].last  = -1; /* last page */
+    num_page_ranges = 1;
+  }
 
   init_paper_width  = page_width  = paper_width;
   init_paper_height = page_height = paper_height;
@@ -308,8 +322,10 @@ do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
         page_width = paper_width; page_height = paper_height;
         w = page_width; h = page_height; lm = landscape_mode;
         xo = x_offset; yo = y_offset;
-        dvi_scan_specials(page_no, &w, &h, &xo, &yo, &lm, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-        if (lm != landscape_mode) {
+        dvi_scan_specials(page_no,
+                          &w, &h, &xo, &yo, &lm,
+                          NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        if (lm != landscape_mode) { /* already swapped for the first page */
           SWAP(w, h);
           landscape_mode = lm;
         }
@@ -353,6 +369,25 @@ do_dvi_pages (PageRange *page_ranges, unsigned int num_page_ranges)
   spc_exec_at_end_document();
 }
 
+static void
+compute_id_string (unsigned char *id, const char *producer,
+                   const char *dviname, const char *pdfname)
+{
+  char        datestr[32];
+  MD5_CONTEXT md5;
+
+  MD5_init(&md5);
+  /* Don't use timezone for compatibility */
+  dpx_util_format_asn_date(datestr, 0);
+  MD5_write(&md5, (const unsigned char *)datestr, strlen(datestr));
+  if (producer)
+    MD5_write(&md5, (const unsigned char *)producer, strlen(producer));
+  if (dviname)
+    MD5_write(&md5, (const unsigned char *)dviname, strlen(dviname));
+  if (pdfname)
+    MD5_write(&md5, (const unsigned char *)pdfname, strlen(pdfname));
+  MD5_final(id, &md5);
+}
 
 int
 dvipdfmx_main (
@@ -367,18 +402,24 @@ dvipdfmx_main (
   unsigned int verbose,
   time_t build_date)
 {
-  bool enable_object_stream = true;
   double dvi2pts;
-  unsigned int num_page_ranges = 0;
-  PageRange *page_ranges = NULL;
+  const char *creator = NULL;
+  char oplain[128] = "", uplain[128] = "";
+  int has_id = 0;
+  unsigned char id1[16], id2[16];
+  struct pdf_setting settings;
 
   assert(pdf_filename);
   assert(dvi_filename);
 
   translate_origin = translate;
 
+  page_ranges = NULL;
+  num_page_ranges = 0;
+  max_page_ranges = 0;
 
   dvi_reset_global_state();
+  mps_reset_global_state();
   tfm_reset_global_state();
   vf_reset_global_state();
   pdf_dev_reset_global_state();
@@ -388,18 +429,9 @@ dvipdfmx_main (
   if (quiet) {
     shut_up(2);
   } else {
-
-    dvi_set_verbose(verbose);
-    pdf_dev_set_verbose(verbose);
-    pdf_doc_set_verbose(verbose);
-    pdf_enc_set_verbose(verbose);
-    pdf_obj_set_verbose(verbose);
-    pdf_fontmap_set_verbose(verbose);
-    dpx_file_set_verbose(verbose);
-    tt_aux_set_verbose(verbose);
+    dpx_conf.verbose_level = verbose;
   }
 
-  pdf_set_compression(compress ? 9 : 0);
   pdf_font_set_deterministic_unique_tags(deterministic_tags ? 1 : 0);
 
   pdf_init_fontmaps(); /* This must come before parsing options... */
@@ -423,15 +455,7 @@ dvipdfmx_main (
   pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);
 
   if (pagespec) {
-    select_pages(pagespec, &page_ranges, &num_page_ranges);
-  }
-  if (!page_ranges) {
-    page_ranges = NEW(1, PageRange);
-  }
-  if (num_page_ranges == 0) {
-    page_ranges[0].first = 0;
-    page_ranges[0].last  = -1; /* last page */
-    num_page_ranges = 1;
+    select_pages(pagespec);
   }
 
   /*kpse_init_prog("", font_dpi, NULL, NULL);
@@ -439,76 +463,93 @@ dvipdfmx_main (
   pdf_font_set_dpi(font_dpi);
   dpx_delete_old_cache(image_cache_life);
 
-  pdf_enc_compute_id_string(dvi_filename, pdf_filename);
-
   {
-    int ver_major = 0,  ver_minor = 0;
-    char owner_pw[MAX_PWD_LEN], user_pw[MAX_PWD_LEN];
     /* Dependency between DVI and PDF side is rather complicated... */
     dvi2pts = dvi_init(dvi_filename, mag);
     if (dvi2pts == 0.0)
       _tt_abort("dvi_init() failed!");
 
-    pdf_doc_set_creator(dvi_comment());
-
+    creator = dvi_comment(); /* Set PDF Creator entry */
     dvi_scan_specials(0,
                       &paper_width, &paper_height,
                       &x_offset, &y_offset, &landscape_mode,
-                      &ver_major, &ver_minor,
-                      &do_encryption, &key_bits, &permission, owner_pw, user_pw);
-    if (ver_minor >= PDF_VERSION_MIN && ver_minor <= PDF_VERSION_MAX) {
-      pdf_set_version(ver_minor);
-    }
-    if (do_encryption) {
-      if (!(key_bits >= 40 && key_bits <= 128 && (key_bits % 8 == 0)) &&
-            key_bits != 256)
-        _tt_abort("Invalid encryption key length specified: %u", key_bits);
-      else if (key_bits > 40 && pdf_get_version() < 4)
-        _tt_abort("Chosen key length requires at least PDF 1.4. " \
-              "Use \"-V 4\" to change.");
-      do_encryption = 1;
-      pdf_enc_set_passwd(key_bits, permission, owner_pw, user_pw);
-    }
-    if (landscape_mode) {
-      SWAP(paper_width, paper_height);
-    }
+                      &pdf_version_major, &pdf_version_minor,
+                      &do_encryption, &key_bits, &permission, oplain, uplain,
+                      &has_id, id1, id2);
   }
 
-  pdf_files_init();
+  /* Encryption and Other Settings */
+  {
+    memset(&settings.encrypt, 0, sizeof(struct pdf_enc_setting));
+    settings.enable_encrypt = do_encryption;
+    settings.encrypt.use_aes          = 1;
+    settings.encrypt.encrypt_metadata = 1;
+    settings.encrypt.key_size   = key_bits;
+    settings.encrypt.permission = permission;
+    settings.encrypt.uplain     = uplain;
+    settings.encrypt.oplain     = oplain;
+  }
 
-  if (opt_flags & OPT_PDFOBJ_NO_OBJSTM)
-    enable_object_stream = false;
+  if (opt_flags & OPT_PDFOBJ_NO_OBJSTM) {
+    settings.object.enable_objstm = 0;
+  } else {
+    settings.object.enable_objstm = 1;
+  }
+  if (opt_flags & OPT_PDFOBJ_NO_PREDICTOR) {
+    settings.object.enable_predictor = 0;
+  } else {
+    settings.object.enable_predictor = 1;
+  }
 
   /* Set default paper size here so that all page's can inherite it.
    * annot_grow:    Margin of annotation.
    * bookmark_open: Miximal depth of open bookmarks.
    */
-  pdf_open_document(pdf_filename, do_encryption, enable_object_stream,
-                    paper_width, paper_height, annot_grow, bookmark_open,
-                    !(opt_flags & OPT_PDFDOC_NO_DEST_REMOVE));
+  if (landscape_mode) {
+    SWAP(paper_width, paper_height);
+  }
+  settings.media_width        = paper_width;
+  settings.media_height       = paper_height;
+  settings.annot_grow_amount  = annot_grow;
+  settings.outline_open_depth = bookmark_open;
+  settings.check_gotos        = !(opt_flags & OPT_PDFDOC_NO_DEST_REMOVE);
 
-  /* Ignore_colors placed here since
-   * they are considered as device's capacity.
+  settings.device.dvi2pts     = dvi2pts;
+  settings.device.precision   = pdfdecimaldigits;
+  settings.device.ignore_colors = ignore_colors;
+
+  set_distiller_template(filter_template);
+  /* This must come before pdf_open_document where initialization
+   * of pdf_enc takes place.
    */
   pdf_init_device(dvi2pts, pdfdecimaldigits, ignore_colors);
+  {
+    int version = pdf_version_major * 10 + pdf_version_minor;
+    pdf_set_version(version);
+  }
+  pdf_set_compression(compress ? compression_level : 0);
+  if (enable_thumbnail)
+    pdf_doc_enable_manual_thumbnails();
+
+  if (!has_id) {
+    const char *producer = "xdvipdfmx-0.1, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata";
+    compute_id_string(id1, producer, dvi_filename, pdf_filename);
+    memcpy(id2, id1, 16);
+  }
+
+  /* Initialize PDF document creation routine. */
+  pdf_open_document(pdf_filename, creator, id1, id2, settings);
 
   if (opt_flags & OPT_CIDFONT_FIXEDPITCH)
     CIDFont_set_flags(CIDFONT_FORCE_FIXEDPITCH);
-
   /* Please move this to spc_init_specials(). */
   if (opt_flags & OPT_TPIC_TRANSPARENT_FILL)
     tpic_set_fill_mode(1);
+  if (translate_origin)
+    mps_set_translate_origin(1);
 
-  if (opt_flags & OPT_PDFOBJ_NO_PREDICTOR)
-    pdf_set_use_predictor(0); /* No prediction */
+  do_dvi_pages();
 
-  do_dvi_pages(page_ranges, num_page_ranges);
-
-  pdf_files_close();
-
-  /* Order of close... */
-  pdf_close_device  ();
-  /* pdf_close_document flushes XObject (image) and other resources. */
   pdf_close_document();
 
   pdf_close_fontmaps(); /* pdf_font may depend on fontmap. */

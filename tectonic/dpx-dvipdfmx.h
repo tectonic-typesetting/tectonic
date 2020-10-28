@@ -1,6 +1,6 @@
 /*  DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the DVIPDFMx project team.
 
     Copyright (c) 2006 SIL. (xdvipdfmx extensions for XeTeX support)
@@ -31,8 +31,6 @@
 
 #define DVIPDFMX_PROG_NAME "xdvipdfmx"
 
-extern int is_xdv;
-extern int translate_origin;
 extern time_t source_date_epoch;
 extern const XdvipdfmxConfig* dpx_config;
 

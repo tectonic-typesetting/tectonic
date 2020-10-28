@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -32,6 +32,7 @@
  *
  */
 
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
@@ -202,7 +203,7 @@ png_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
     bpc        = png_get_bit_depth   (png_ptr, png_info_ptr);
 
     if (bpc > 8) {
-        if (pdf_get_version() < 5) {
+        if (pdf_check_version(1, 5) < 0) {
             /* Ask libpng to convert down to 8-bpc. */
             dpx_warning("%s: 16-bpc PNG requires PDF version 1.5.", PNG_DEBUG_STR);
             png_set_strip_16(png_ptr);
@@ -372,7 +373,7 @@ png_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
      * flag of iTxt chunks.
      */
 #if PNG_LIBPNG_VER >= 10614
-    if (pdf_get_version() >= 4) {
+    if (pdf_check_version(1, 4) >= 0) {
         png_textp text_ptr;
         pdf_obj  *XMP_stream, *XMP_stream_dict;
         int       i, num_text;
@@ -456,13 +457,11 @@ static int
 check_transparency (png_structp png_ptr, png_infop info_ptr)
 {
     int           trans_type;
-    unsigned int pdf_version;
     png_byte      color_type;
     png_color_16p trans_values;
     png_bytep     trans;
     int           num_trans;
 
-    pdf_version = pdf_get_version();
     color_type  = png_get_color_type(png_ptr, info_ptr);
 
     /*
@@ -504,8 +503,8 @@ check_transparency (png_structp png_ptr, png_infop info_ptr)
      * We can convert alpha cahnnels to explicit mask via user supplied alpha-
      * threshold value. But I will not do that.
      */
-    if (( pdf_version < 3 && trans_type != PDF_TRANS_TYPE_NONE   ) ||
-        ( pdf_version < 4 && trans_type == PDF_TRANS_TYPE_ALPHA )) {
+    if (( pdf_check_version(1, 3) < 0 && trans_type != PDF_TRANS_TYPE_NONE   ) ||
+        ( pdf_check_version(1, 4) < 0 && trans_type == PDF_TRANS_TYPE_ALPHA )) {
         /*
          *   No transparency supported but PNG uses transparency, or Soft-Mask
          * required but no support for it is available in this version of PDF.
@@ -522,9 +521,9 @@ check_transparency (png_structp png_ptr, png_infop info_ptr)
         bg.red = 255; bg.green = 255; bg.blue  = 255; bg.gray = 255; bg.index = 0;
         png_set_background(png_ptr, &bg, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
         dpx_warning("%s: Transparency will be ignored. (no support in PDF ver. < 1.3)", PNG_DEBUG_STR);
-        if (pdf_version < 3)
+        if (pdf_check_version(1, 3) < 0)
             dpx_warning("%s: Please use -V 3 option to enable binary transparency support.", PNG_DEBUG_STR);
-        if (pdf_version < 4)
+        if (pdf_check_version(1, 4) < 0)
             dpx_warning("%s: Please use -V 4 option to enable full alpha channel support.", PNG_DEBUG_STR);
         trans_type = PDF_TRANS_TYPE_NONE;
     }
@@ -973,12 +972,16 @@ create_soft_mask (png_structp png_ptr, png_infop info_ptr,
     png_bytep   trans;
     int         num_trans;
     png_uint_32 i;
+    png_byte    bpc, mask, shift;
 
     if (!png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS) ||
         !png_get_tRNS(png_ptr, info_ptr, &trans, &num_trans, NULL)) {
         dpx_warning("%s: PNG does not have valid tRNS chunk but tRNS is requested.", PNG_DEBUG_STR);
         return NULL;
     }
+    bpc   = png_get_bit_depth(png_ptr, info_ptr);
+    mask  = 0xff >> (8 - bpc);
+    shift = 8 - bpc;
 
     smask = pdf_new_stream(STREAM_COMPRESS);
     dict  = pdf_stream_dict(smask);
@@ -990,7 +993,8 @@ create_soft_mask (png_structp png_ptr, png_infop info_ptr,
     pdf_add_dict(dict, pdf_new_name("ColorSpace"), pdf_new_name("DeviceGray"));
     pdf_add_dict(dict, pdf_new_name("BitsPerComponent"), pdf_new_number(8));
     for (i = 0; i < width*height; i++) {
-        png_byte idx = image_data_ptr[i];
+        /* data is packed for 1/2/4 bpc formats, msb first */
+        png_byte idx = (image_data_ptr[bpc * i / 8] >> (shift - bpc * i % 8)) & mask;
         smask_data_ptr[i] = (idx < num_trans) ? trans[idx] : 0xff;
     }
     pdf_add_stream(smask, (char *)smask_data_ptr, width*height);

@@ -31,22 +31,22 @@ l.442 ...l\tracingoutput1\global\escapechar256\end
 {end-group character }}
 > 3.
 <output> {Āshowthe Ādeadcycles 
-                                 Āglobal Āadvance Ācountz by1Āglobal Āg...
+                               Āglobal Āadvance Ācountz by1Āglobal Āglobalde...
 <to be read again> 
                    Āend 
 l.442 ...l\tracingoutput1\global\escapechar256\end
                                                   
 ! You can't use `Āend' in internal vertical mode.
 <recently read> Āend 
-                      
-<output> ...-1 Āgdef Ālocal {}Āunvbox 255Āend 
+                     
+<output> ...efs -1 Āgdef Ālocal {}Āunvbox 255Āend 
                                                   Ārb }
 <to be read again> 
                    Āend 
 l.442 ...l\tracingoutput1\global\escapechar256\end
                                                   
 ! Unbalanced output routine.
-<output> ...gdef Ālocal {}Āunvbox 255Āend Ārb 
+<output> ...-1 Āgdef Ālocal {}Āunvbox 255Āend Ārb 
                                                   }
 <to be read again> 
                    Āend 
@@ -62,7 +62,7 @@ Completed box being shipped out [-1.2.-1118806.0.11.196608.327680.1572864.10737
 41823]
 ! Unbalanced write command.
 <write> Āif 01{Āelse unbal}Āfi 
-                                  
+                               
 <inserted text> 
                 }Āendwrite 
 <to be read again> 

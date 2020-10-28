@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -24,7 +24,7 @@
 #define _PDFXIMAGE_H_
 
 #include "dpx-core.h"
-
+#include "dpx-pdfdoc.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfobj.h"
 
@@ -54,13 +54,11 @@ typedef struct {
 
 typedef struct {
   int      page_no;
-  int      bbox_type;
+  enum pdf_page_boundary bbox_type;
   pdf_obj *dict;
 } load_options;
 
 typedef struct pdf_ximage_ pdf_ximage;
-
-void     pdf_ximage_set_verbose    (int level);
 
 void     pdf_init_images           (void);
 void     pdf_close_images          (void);

@@ -105,7 +105,7 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
 {
     std::string nameStr(name);
     Font* font = NULL;
-    int dsize = 100;
+    double dsize = 10.0;
     loaded_font_design_size = 655360L;
 
     for (int pass = 0; pass < 2; ++pass) {
@@ -113,7 +113,7 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
         std::map<std::string,Font*>::iterator i = m_nameToFont.find(nameStr);
         if (i != m_nameToFont.end()) {
             font = i->second;
-            if (font->opSizeInfo.designSize != 0)
+            if (font->opSizeInfo.designSize != 0.0)
                 dsize = font->opSizeInfo.designSize;
             break;
         }
@@ -128,7 +128,7 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
                 i = f->second->styles->find(style);
                 if (i != f->second->styles->end()) {
                     font = i->second;
-                    if (font->opSizeInfo.designSize != 0)
+                    if (font->opSizeInfo.designSize != 0.0)
                         dsize = font->opSizeInfo.designSize;
                     break;
                 }
@@ -139,7 +139,7 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
         i = m_psNameToFont.find(nameStr);
         if (i != m_psNameToFont.end()) {
             font = i->second;
-            if (font->opSizeInfo.designSize != 0)
+            if (font->opSizeInfo.designSize != 0.0)
                 dsize = font->opSizeInfo.designSize;
             break;
         }
@@ -372,9 +372,8 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
 
     // if there's optical size info, try to apply it
     if (ptSize < 0.0)
-        ptSize = dsize / 10.0;
+        ptSize = dsize;
     if (font != NULL && font->opSizeInfo.subFamilyID != 0 && ptSize > 0.0) {
-        ptSize = ptSize * 10.0; // convert to decipoints for comparison with the opSize values
         double bestMismatch = my_fmax(font->opSizeInfo.minSize - ptSize, ptSize - font->opSizeInfo.maxSize);
         if (bestMismatch > 0.0) {
             Font* bestMatch = font;
@@ -393,8 +392,8 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
         }
     }
 
-    if (font != NULL && font->opSizeInfo.designSize != 0)
-        loaded_font_design_size = (font->opSizeInfo.designSize << 16L) / 10;
+    if (font != NULL && font->opSizeInfo.designSize != 0.0)
+        loaded_font_design_size = unsigned(font->opSizeInfo.designSize * 65536.0 + 0.5);
 
     if (get_tracing_fonts_state() > 0) {
         begin_diagnostic();
@@ -469,15 +468,21 @@ XeTeXFontMgr::getOpSize(XeTeXFont font)
     hb_face_t *face = hb_font_get_face(hbFont);
     OpSizeRec *pSizeRec = (OpSizeRec*) xmalloc(sizeof(OpSizeRec));
 
+    unsigned int designSize, minSize, maxSize;
     bool ok = hb_ot_layout_get_size_params(face,
-                                           &pSizeRec->designSize,
+                                           &designSize,
                                            &pSizeRec->subFamilyID,
                                            &pSizeRec->nameCode,
-                                           &pSizeRec->minSize,
-                                           &pSizeRec->maxSize);
+                                           &minSize,
+                                           &maxSize);
 
-    if (ok)
+    if (ok) {
+        // Convert sizes from PostScript deci-points to TeX points
+        pSizeRec->designSize = designSize * 72.27 / 72.0 / 10.0;
+        pSizeRec->minSize = minSize * 72.27 / 72.0 / 10.0;
+        pSizeRec->maxSize = maxSize * 72.27 / 72.0 / 10.0;
         return pSizeRec;
+    }
 
     free(pSizeRec);
     return NULL;
@@ -492,7 +497,8 @@ XeTeXFontMgr::getDesignSize(XeTeXFont font)
     if (pSizeRec == NULL)
         return 10.0;
 
-    double result = pSizeRec->designSize / 10.0;
+    /* Tectonic: make sure not to leak pSizeRec */
+    double result = pSizeRec->designSize;
     free(pSizeRec);
     return result;
 }
@@ -510,8 +516,9 @@ XeTeXFontMgr::getOpSizeRecAndStyleFlags(Font* theFont)
             theFont->opSizeInfo.designSize = pSizeRec->designSize;
             if (pSizeRec->subFamilyID == 0
                 && pSizeRec->nameCode == 0
-                && pSizeRec->minSize == 0
-                && pSizeRec->maxSize == 0) {
+                && pSizeRec->minSize == 0.0
+                && pSizeRec->maxSize == 0.0) {
+                /* Tectonic: make sure not to leak pSizeRec */
                 free(pSizeRec);
                 goto done_size; // feature is valid, but no 'size' range
             }

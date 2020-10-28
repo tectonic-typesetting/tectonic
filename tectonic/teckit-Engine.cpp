@@ -403,12 +403,12 @@ Pass::Pass(const TableHeader* inTable, Converter* cnv)
 	bSupplementaryChars	= (READ(tableHeader->flags) & kTableFlags_Supplementary) != 0;
 
 	numPageMaps = 1;
-	pageBase		= (const Byte*)tableHeader + READ(tableHeader->pageBase);
-	lookupBase		= (const Lookup*)((const Byte*)tableHeader + READ(tableHeader->lookupBase));
-	matchClassBase	= (const Byte*)tableHeader + READ(tableHeader->matchClassBase);
-	repClassBase	= (const Byte*)tableHeader + READ(tableHeader->repClassBase);
-	stringListBase	= (const Byte*)tableHeader + READ(tableHeader->stringListBase);
-	stringRuleData	= (const Byte*)tableHeader + READ(tableHeader->stringRuleData);
+	pageBase		= reinterpret_cast<const Byte*>(tableHeader) + READ(tableHeader->pageBase);
+	lookupBase		= reinterpret_cast<const Lookup*>(reinterpret_cast<const Byte*>(tableHeader) + READ(tableHeader->lookupBase));
+	matchClassBase	= reinterpret_cast<const Byte*>(tableHeader) + READ(tableHeader->matchClassBase);
+	repClassBase	= reinterpret_cast<const Byte*>(tableHeader) + READ(tableHeader->repClassBase);
+	stringListBase	= reinterpret_cast<const Byte*>(tableHeader) + READ(tableHeader->stringListBase);
+	stringRuleData	= reinterpret_cast<const Byte*>(tableHeader) + READ(tableHeader->stringRuleData);
 
 	if (bInputIsUnicode && bSupplementaryChars) {
 		// support supplementary plane chars
@@ -583,7 +583,7 @@ binary_search(const T* array, UInt32 count, UInt32 value)
 long
 Pass::classMatch(UInt32 classNumber, UInt32 inChar) const
 {
-	const UInt32*	classPtr = (const UInt32*)(matchClassBase + READ(*((const UInt32*)matchClassBase + classNumber)));
+	const UInt32*	classPtr = reinterpret_cast<const UInt32*>(matchClassBase + READ(*(reinterpret_cast<const UInt32*>(matchClassBase) + classNumber)));
 	UInt32			memberCount = READ(*classPtr++);
 	if (bInputIsUnicode) {
 		if (bSupplementaryChars) {
@@ -594,16 +594,16 @@ Pass::classMatch(UInt32 classNumber, UInt32 inChar) const
 		}
 		else {
 			// classes are 16-bit
-			const UInt16*	p = binary_search((const UInt16*)classPtr, memberCount, inChar);
+			const UInt16*	p = binary_search(reinterpret_cast<const UInt16*>(classPtr), memberCount, inChar);
 			if (READ(*p) == inChar)
-				return p - (const UInt16*)classPtr;
+				return p - reinterpret_cast<const UInt16*>(classPtr);
 		}
 	}
 	else {
 		// classes are 8-bit
-		const UInt8*	p = binary_search((const UInt8*)classPtr, memberCount, inChar);
+		const UInt8*	p = binary_search(reinterpret_cast<const UInt8*>(classPtr), memberCount, inChar);
 		if (READ(*p) == inChar)
-			return p - (const UInt8*)classPtr;
+			return p - reinterpret_cast<const UInt8*>(classPtr);
 	}
 	return -1;
 }
@@ -611,16 +611,16 @@ Pass::classMatch(UInt32 classNumber, UInt32 inChar) const
 UInt32
 Pass::repClassMember(UInt32 classNumber, UInt32 index) const
 {
-	const UInt32*	classPtr = (const UInt32*)(repClassBase + READ(*((const UInt32*)repClassBase + classNumber)));
+	const UInt32*	classPtr = reinterpret_cast<const UInt32*>(repClassBase + READ(*(reinterpret_cast<const UInt32*>(repClassBase) + classNumber)));
 	UInt32			memberCount = READ(*classPtr++);
 	if (index < memberCount)
 		if (bOutputIsUnicode)
 			if (bSupplementaryChars)
 				return READ(classPtr[index]);
 			else
-				return READ(((const UInt16*)classPtr)[index]);
+				return READ(reinterpret_cast<const UInt16*>(classPtr)[index]);
 		else {
-			return READ(((const UInt8*)classPtr)[index]);
+			return READ(reinterpret_cast<const UInt8*>(classPtr)[index]);
 		}
 	else
 		return 0;	// this can't happen if the compiler is right!
@@ -1000,7 +1000,7 @@ Pass::DoMapping()
 	if (bInputIsUnicode) {
 		// Unicode lookup
 		UInt16	charIndex = 0;
-		if ((const UInt8*)lookupBase == pageBase) {
+		if (reinterpret_cast<const UInt8*>(lookupBase) == pageBase) {
 			// leave charIndex == 0 : pass with no rules
 		}
 		else {
@@ -1008,7 +1008,7 @@ Pass::DoMapping()
 			const UInt8*	pageMap = 0;
 			if (bSupplementaryChars) {
 				if ((plane < 17) && (READ(planeMap[plane]) != 0xff)) {
-					pageMap = (const UInt8*)(pageBase + 256 * READ(planeMap[plane]));
+					pageMap = reinterpret_cast<const UInt8*>(pageBase + 256 * READ(planeMap[plane]));
 					goto GOT_PAGE_MAP;
 				}
 			}
@@ -1017,7 +1017,7 @@ Pass::DoMapping()
 			GOT_PAGE_MAP:
 				UInt8	page = (inChar >> 8) & 0xff;
 				if (READ(pageMap[page]) != 0xff) {
-					const UInt16*	charMapBase = (const UInt16*)(pageBase + 256 * numPageMaps);
+					const UInt16*	charMapBase = reinterpret_cast<const UInt16*>(pageBase + 256 * numPageMaps);
 					const UInt16*	charMap = charMapBase + 256 * READ(pageMap[page]);
 					charIndex = READ(charMap[inChar & 0xff]);
 				}
@@ -1027,7 +1027,7 @@ Pass::DoMapping()
 	}
 	else {
 		// byte-oriented lookup
-		if (pageBase != (const Byte*)tableHeader) {
+		if (pageBase != reinterpret_cast<const Byte*>(tableHeader)) {
 			// dbcsPage present
 			long	pageNumber = READ(pageBase[inChar]);
 			if (pageNumber == 0)
@@ -1057,14 +1057,14 @@ Pass::DoMapping()
 	UInt8	ruleType = READ(lookup->rules.type);
 	if (ruleType == kLookupType_StringRules || (ruleType & kLookupType_RuleTypeMask) == kLookupType_ExtStringRules) {
 		// process string rule list
-		const UInt32*	ruleList = (const UInt32*)stringListBase + READ(lookup->rules.ruleIndex);
+		const UInt32*	ruleList = reinterpret_cast<const UInt32*>(stringListBase) + READ(lookup->rules.ruleIndex);
 		bool			matched = false;
 		bool			allowInsertion = true;
 		int ruleCount = READ(lookup->rules.ruleCount);
 		if ((ruleType & kLookupType_RuleTypeMask) == kLookupType_ExtStringRules)
 			ruleCount += 256 * (ruleType & kLookupType_ExtRuleCountMask);
 		for ( ; ruleCount > 0; --ruleCount) {
-			const StringRule*	rule = (const StringRule*)(stringRuleData + READ(*ruleList));
+			const StringRule*	rule = reinterpret_cast<const StringRule*>(stringRuleData + READ(*ruleList));
 #ifdef TRACING
 if (traceLevel > 0) {
 	cerr << "** trying match: ";
@@ -1078,7 +1078,7 @@ if (traceLevel > 0) {
 			if (matchElems == 0 && allowInsertion == false)
 				continue;
 			patternLength = matchElems + READ(rule->postLength);
-			pattern = (const MatchElem*)(rule + 1);	// point past the defined struct for the rule header
+			pattern = reinterpret_cast<const MatchElem*>(rule + 1);	// point past the defined struct for the rule header
 			direction = 1;
 			infoLimit = matchElems;
 
@@ -1119,7 +1119,7 @@ if (traceLevel > 0) {
 	cerr << "** GENERATES:";
 }
 #endif
-					const RepElem*	r = (const RepElem*)(pattern + patternLength);
+					const RepElem*	r = reinterpret_cast<const RepElem*>(pattern + patternLength);
 					for (int i = 0; i < READ(rule->repLength); ++i, ++r) {
 #ifdef TRACING
 if (traceLevel > 0)
@@ -1288,11 +1288,11 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 	finalStage = this;
 	UInt16	normForm = 0;
 	if (inTable != 0) {
-		const FileHeader*	fh = (const FileHeader*)inTable;
+		const FileHeader*	fh = reinterpret_cast<const FileHeader*>(inTable);
 		if (READ(fh->type) == kMagicNumberCmp) {
 			// the table is compressed; allocate a new buffer and decompress
 			unsigned long	uncompressedLen = READ(fh->version);
-			table = (Byte*)malloc(uncompressedLen);
+			table = static_cast<Byte*>(malloc(uncompressedLen));
 			if (table == 0) {
 				status = kStatus_OutOfMemory;
 				return;
@@ -1302,7 +1302,7 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 				status = kStatus_InvalidMapping;
 				return;
 			}
-			fh = (const FileHeader*)table;
+			fh = reinterpret_cast<const FileHeader*>(table);
 		}
 
 		if (READ(fh->type) != kMagicNumber) {
@@ -1315,7 +1315,7 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 		}
 
 		if (table == 0) {
-			table = (Byte*)malloc(inTableSize);
+			table = static_cast<Byte*>(malloc(inTableSize));
 			if (table == 0) {
 				status = kStatus_OutOfMemory;
 				return;
@@ -1323,8 +1323,8 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 			memcpy(table, inTable, inTableSize);
 		}
 
-		fh = (const FileHeader*)table;
-		const UInt32*	nameOffsets = (const UInt32*)(table + sizeof(FileHeader));
+		fh = reinterpret_cast<const FileHeader*>(table);
+		const UInt32*	nameOffsets = reinterpret_cast<const UInt32*>(table + sizeof(FileHeader));
 		const UInt32*	tableBase = nameOffsets + READ(fh->numNames);
 		UInt32			numTables = READ(fh->numFwdTables);
 		if (!forward) {
@@ -1379,7 +1379,7 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 
 		// create the processing pipeline
 		for (UInt32 i = 0; i < numTables; ++i) {
-			const TableHeader*	t = (const TableHeader*)(table + READ(tableBase[i]));
+			const TableHeader*	t = reinterpret_cast<const TableHeader*>(table + READ(tableBase[i]));
 			Stage*	p = 0;
 			switch (READ(t->type)) {
 				case kTableType_BB:
@@ -1690,7 +1690,7 @@ Converter::IsForward() const
 void
 Converter::GetFlags(UInt32& sourceFlags, UInt32& targetFlags) const
 {
-	const FileHeader*	fh = (const FileHeader*)table;
+	const FileHeader*	fh = reinterpret_cast<const FileHeader*>(table);
 	if (forward) {
 		sourceFlags = READ(fh->formFlagsLHS);
 		targetFlags = READ(fh->formFlagsRHS);
@@ -1704,13 +1704,13 @@ Converter::GetFlags(UInt32& sourceFlags, UInt32& targetFlags) const
 static bool
 getNamePtrFromTable(const Byte* table, UInt16 nameID, const Byte*& outNamePtr, UInt32& outNameLen)
 {
-	const FileHeader*	fh = (const FileHeader*)table;
-	const UInt32*		nameOffsets = (const UInt32*)(table + sizeof(FileHeader));
+	const FileHeader*	fh = reinterpret_cast<const FileHeader*>(table);
+	const UInt32*		nameOffsets = reinterpret_cast<const UInt32*>(table + sizeof(FileHeader));
 	for (UInt32 i = 0; i < READ(fh->numNames); ++i) {
-		const NameRec*	n = (const NameRec*)(table + READ(nameOffsets[i]));
+		const NameRec*	n = reinterpret_cast<const NameRec*>(table + READ(nameOffsets[i]));
 		if (READ(n->nameID) == nameID) {
 			outNameLen = READ(n->nameLength);
-			outNamePtr = (const Byte*)n + sizeof(NameRec);
+			outNamePtr = reinterpret_cast<const Byte*>(n) + sizeof(NameRec);
 			return true;
 		}
 	}
@@ -1917,7 +1917,7 @@ Converter::Validate(const Converter* cnv)
 	if (cnv->status != kStatus_NoError)
 		return false;
 	if (cnv->table != 0) {
-		const FileHeader*	fh = (const FileHeader*)cnv->table;
+		const FileHeader*	fh = reinterpret_cast<const FileHeader*>(cnv->table);
 		if (READ(fh->type) != kMagicNumber)
 			return false;
 	}
@@ -1940,7 +1940,7 @@ TECkit_CreateConverter(
 	cnv = new Converter(mapping, mappingSize, mapForward, inputForm, outputForm);
 	status = cnv->creationStatus();
 	if (status == kStatus_NoError)
-		*converter = (TECkit_Converter)cnv;
+		*converter = reinterpret_cast<TECkit_Converter>(cnv);
 	else
 		delete cnv;
 	return status;
@@ -1952,7 +1952,7 @@ TECkit_DisposeConverter(
 	TECkit_Converter	converter)
 {
 	TECkit_Status	status = kStatus_NoError;
-	Converter*	cnv = (Converter*)converter;
+	Converter*	cnv = reinterpret_cast<Converter*>(converter);
 	if (!Converter::Validate(cnv))
 		status = kStatus_InvalidConverter;
 	else
@@ -1970,7 +1970,7 @@ TECkit_GetConverterName(
 	UInt32*				nameLength)
 {
 	TECkit_Status	status = kStatus_NoError;
-	Converter*	cnv = (Converter*)converter;
+	Converter*	cnv = reinterpret_cast<Converter*>(converter);
 	if (!Converter::Validate(cnv))
 		status = kStatus_InvalidConverter;
 	else {
@@ -1994,7 +1994,7 @@ TECkit_GetConverterFlags(
 	UInt32*				targetFlags)
 {
 	TECkit_Status	status = kStatus_NoError;
-	Converter*	cnv = (Converter*)converter;
+	Converter*	cnv = reinterpret_cast<Converter*>(converter);
 	if (!Converter::Validate(cnv))
 		status = kStatus_InvalidConverter;
 	else
@@ -2008,7 +2008,7 @@ TECkit_ResetConverter(
 	TECkit_Converter	converter)
 {
 	TECkit_Status	status = kStatus_NoError;
-	Converter*	cnv = (Converter*)converter;
+	Converter*	cnv = reinterpret_cast<Converter*>(converter);
 	if (!Converter::Validate(cnv))
 		status = kStatus_InvalidConverter;
 	else
@@ -2030,7 +2030,7 @@ TECkit_ConvertBufferOpt(
 	UInt32*				lookaheadCount)
 {
 	TECkit_Status	status = kStatus_NoError;
-	Converter*	cnv = (Converter*)converter;
+	Converter*	cnv = reinterpret_cast<Converter*>(converter);
 	if (!Converter::Validate(cnv))
 		status = kStatus_InvalidConverter;
 	else
@@ -2065,7 +2065,7 @@ TECkit_FlushOpt(
 	UInt32*				lookaheadCount)
 {
 	TECkit_Status	status = kStatus_NoError;
-	Converter*	cnv = (Converter*)converter;
+	Converter*	cnv = reinterpret_cast<Converter*>(converter);
 	if (!Converter::Validate(cnv))
 		status = kStatus_InvalidConverter;
 	else
@@ -2097,12 +2097,12 @@ TECkit_GetMappingFlags(
 	if (mapping == 0)
 		status = kStatus_InvalidMapping;
 	else {
-		const FileHeader*	fh = (const FileHeader*)mapping;
+		const FileHeader*	fh = reinterpret_cast<const FileHeader*>(mapping);
 		FileHeader			header;
 		if (READ(fh->type) == kMagicNumberCmp) {
 			// compressed mapping, so we need to decompress enough of it to read the flags
 			unsigned long	uncompressedLen = sizeof(FileHeader);
-			int	result = uncompress((Byte*)&header, &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
+			int	result = uncompress(reinterpret_cast<Byte*>(&header), &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
 			if (result != Z_BUF_ERROR)
 				status = kStatus_InvalidMapping;
 			fh = &header;
@@ -2136,13 +2136,13 @@ TECkit_GetMappingName(
 	if (mapping == 0)
 		status = kStatus_InvalidMapping;
 	else {
-		const FileHeader*	fh = (const FileHeader*)mapping;
+		const FileHeader*	fh = reinterpret_cast<const FileHeader*>(mapping);
 		FileHeader			header;
 		if (READ(fh->type) == kMagicNumberCmp) {
 			// compressed mapping, so we need to decompress the fixed header to read the headerLength field,
 			// and then decompress the complete header to get the names
 			unsigned long	uncompressedLen = sizeof(FileHeader);
-			int	result = uncompress((Byte*)&header, &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
+			int	result = uncompress(reinterpret_cast<Byte*>(&header), &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
 			if (result != Z_BUF_ERROR)
 				status = kStatus_InvalidMapping;
 			else {
@@ -2152,10 +2152,10 @@ TECkit_GetMappingName(
 				if (buf == 0)
 					status = kStatus_OutOfMemory;
 				else {
-					result = uncompress((Byte*)buf, &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
+					result = uncompress(static_cast<Byte*>(buf), &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
 					if (result != Z_BUF_ERROR)
 						status = kStatus_InvalidMapping;
-					fh = (const FileHeader*)buf;
+					fh = static_cast<const FileHeader*>(buf);
 				}
 			}
 		}
@@ -2164,7 +2164,7 @@ TECkit_GetMappingName(
 				status = kStatus_BadMappingVersion;
 			else {
 				const Byte*	namePtr;
-				if (getNamePtrFromTable((const Byte*)fh, nameID, namePtr, *nameLength)) {
+				if (getNamePtrFromTable(reinterpret_cast<const Byte*>(fh), nameID, namePtr, *nameLength)) {
 					UInt16	copyBytes = *nameLength < bufferSize ? *nameLength : bufferSize;
 					if (copyBytes > 0)
 						memcpy(nameBuffer, namePtr, copyBytes);

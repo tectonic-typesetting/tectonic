@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -40,7 +40,6 @@ extern int    landscape_mode;
 double get_origin (int x);
 
 void  dvi_reset_global_state (void);
-void  dvi_set_verbose (int level);
 
 /* returns scale (dvi2pts) */
 double dvi_init  (const char *dvi_filename, double mag); /* may append .dvi or .xdv to filename */
@@ -81,7 +80,7 @@ void  dvi_scan_specials (int page_no,
                                 double *x_offset, double *y_offset, int *landscape,
                                 int *majorversion, int *minorversion,
                                 int *do_enc, int *keybits, int32_t *perm,
-                                char *opasswd, char *upasswd);
+                                char *opasswd, char *upasswd, int *has_id, unsigned char *id1, unsigned char *id2);
 unsigned int dvi_locate_font (const char *name, spt_t ptsize);
 
 /* link or nolink:

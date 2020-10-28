@@ -195,7 +195,7 @@ fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBack
                     engine
                 );
 
-                status.dump_error_logs(&output);
+                status.dump_error_logs(&output.data);
             }
         }
     }

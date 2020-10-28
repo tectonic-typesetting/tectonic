@@ -1,12 +1,17 @@
 // src/io/memory.rs -- I/O to in-memory buffers
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::ffi::{OsStr, OsString};
-use std::io::{self, Cursor, Read, Seek, SeekFrom, Write};
-use std::rc::Rc;
+//! MemoryIo is an IoProvider that stores "files" in in-memory buffers.
+
+use std::{
+    cell::RefCell,
+    collections::HashMap,
+    ffi::{OsStr, OsString},
+    io::{self, Cursor, Read, Seek, SeekFrom, Write},
+    rc::Rc,
+    time::SystemTime,
+};
 
 use super::{
     normalize_tex_path, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult,
@@ -15,41 +20,70 @@ use super::{
 use crate::errors::Result;
 use crate::status::StatusBackend;
 
-// MemoryIo is an IoProvider that stores "files" in in-memory buffers.
-//
-// When a file is "opened", we create a MemoryIoItem struct that tracks the
-// data, seek cursor state, etc.
-
-struct MemoryIoItem {
+/// Information about a file created or used inside the memory-backed I/O
+/// provider.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct MemoryFileInfo {
     // TODO: smarter buffering structure than Vec<u8>? E.g., linked list of 4k
     // chunks or something. In the current scheme reallocations will get
     // expensive.
-    files: Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
+    pub data: Vec<u8>,
+    pub unix_mtime: Option<i64>,
+}
+
+/// A collection of files created or used inside a memory-backed I/O provider.
+pub type MemoryFileCollection = HashMap<OsString, MemoryFileInfo>;
+
+/// When a file is "opened", we create a MemoryIoItem struct that tracks the
+/// data, seek cursor state, etc.
+struct MemoryIoItem {
+    // This is the best way I can come up with to allow the file object to
+    // update its data in its parent data structure.
+    files: Rc<RefCell<MemoryFileCollection>>,
+
     name: OsString,
     state: Cursor<Vec<u8>>,
+    unix_mtime: Option<i64>,
+    was_modified: bool,
+}
+
+/// Get the current time as a Unix time, in a manner consistent with our Unix
+/// file modification time API. We choose to make this function infallible
+/// rather than injecting a bunch of Results.
+fn now_as_unix_time() -> Option<i64> {
+    // No cleaner way to convert a SystemTime to time_t, as far as I can
+    // tell.
+    let now = SystemTime::now();
+    let dur = match now.duration_since(SystemTime::UNIX_EPOCH) {
+        Ok(d) => d,
+        Err(_) => return Some(0), // indicates error to C code, if it cres
+    };
+    Some(dur.as_secs() as i64)
 }
 
 impl MemoryIoItem {
     pub fn new(
-        files: &Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
+        files: &Rc<RefCell<MemoryFileCollection>>,
         name: &OsStr,
         truncate: bool,
     ) -> MemoryIoItem {
-        let cur = match files.borrow_mut().remove(name) {
-            Some(data) => {
+        let (cur_data, cur_mtime) = match files.borrow_mut().remove(name) {
+            Some(info) => {
                 if truncate {
-                    Vec::new()
+                    (Vec::new(), now_as_unix_time())
                 } else {
-                    data
+                    (info.data, info.unix_mtime)
                 }
             }
-            None => Vec::new(),
+            None => (Vec::new(), now_as_unix_time()),
         };
 
         MemoryIoItem {
             files: files.clone(),
             name: name.to_os_string(),
-            state: Cursor::new(cur),
+            state: Cursor::new(cur_data),
+            unix_mtime: cur_mtime,
+            was_modified: false,
         }
     }
 }
@@ -62,6 +96,7 @@ impl Read for MemoryIoItem {
 
 impl Write for MemoryIoItem {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.was_modified = true;
         self.state.write(buf)
     }
 
@@ -81,6 +116,10 @@ impl InputFeatures for MemoryIoItem {
         Ok(self.state.get_ref().len())
     }
 
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        Ok(self.unix_mtime)
+    }
+
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
         Ok(self.state.seek(pos)?)
     }
@@ -88,16 +127,28 @@ impl InputFeatures for MemoryIoItem {
 
 impl Drop for MemoryIoItem {
     fn drop(&mut self) {
+        let unix_mtime = if self.was_modified {
+            now_as_unix_time()
+        } else {
+            self.unix_mtime
+        };
+
         // I think split_off() is an efficient way to move our data vector
         // back into the hashmap? Ideally we could "consume" self but I don't
         // believe that's possible in a Drop implementation.
         let mut mfiles = self.files.borrow_mut();
-        mfiles.insert(self.name.clone(), self.state.get_mut().split_off(0));
+        mfiles.insert(
+            self.name.clone(),
+            MemoryFileInfo {
+                data: self.state.get_mut().split_off(0),
+                unix_mtime,
+            },
+        );
     }
 }
 
 pub struct MemoryIo {
-    pub files: Rc<RefCell<HashMap<OsString, Vec<u8>>>>,
+    pub files: Rc<RefCell<MemoryFileCollection>>,
     stdout_allowed: bool,
 }
 
@@ -111,7 +162,13 @@ impl MemoryIo {
 
     pub fn create_entry(&mut self, name: &OsStr, data: Vec<u8>) {
         let mut mfiles = self.files.borrow_mut();
-        mfiles.insert(name.to_os_string(), data);
+        mfiles.insert(
+            name.to_os_string(),
+            MemoryFileInfo {
+                data,
+                unix_mtime: now_as_unix_time(),
+            },
+        );
     }
 
     pub fn stdout_key(&self) -> &OsStr {

@@ -63,6 +63,7 @@ error_chain! {
         Reqwest(reqwest::Error);
         ConfigRead(ReadError);
         ConfigWrite(WriteError);
+        Time(std::time::SystemTimeError);
         Utf8(str::Utf8Error);
         Xdv(tectonic_xdv::XdvError);
         Zip(ZipError);

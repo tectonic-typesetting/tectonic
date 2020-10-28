@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,6 +30,7 @@
 #include <sys/types.h>
 
 #include "core-bridge.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
@@ -39,8 +40,6 @@
 #define OFM_FORMAT 2
 
 #define FWBASE ((double) (1<<20))
-
-static int verbose = 0;
 
 #define CHARACTER_INDEX(i)  ((i))
 
@@ -260,13 +259,6 @@ fms_need (unsigned n)
         fms = RENEW(fms, max_fms, struct font_metric);
     }
 }
-
-void
-tfm_set_verbose (int level)
-{
-    verbose = level;
-}
-
 
 static int
 fread_fwords (fixword *words, uint32_t nmemb, rust_input_handle_t handle)
@@ -742,7 +734,7 @@ tfm_open (const char *tfm_name, int must_exist)
         return -1;
     }
 
-    if (verbose) {
+    if (dpx_conf.verbose_level > 0) {
         if (format == TFM_FORMAT)
             dpx_message("(TFM:%s", tfm_name);
         else if (format == OFM_FORMAT)
@@ -768,7 +760,7 @@ tfm_open (const char *tfm_name, int must_exist)
     fms[numfms].tex_name = NEW(strlen(tfm_name)+1, char);
     strcpy(fms[numfms].tex_name, tfm_name);
 
-    if (verbose)
+    if (dpx_conf.verbose_level > 0)
         dpx_message(")");
 
     return numfms++;

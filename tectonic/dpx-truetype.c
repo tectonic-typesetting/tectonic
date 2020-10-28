@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2007-2019 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    This program is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 
 #include "core-bridge.h"
 #include "dpx-agl.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
@@ -122,18 +123,7 @@ pdf_font_open_truetype (pdf_font *font)
         length = tt_get_ps_fontname(sfont, fontname, 255);
         if (length < 1) {
             length = MIN(strlen(ident), 255);
-/* Suppress some warnings on GCC. Clang supports the same warning control
- * #pragmas (and #defines __GNUC__!), but not these particular warnings, which
- * leads to a meta-warning if they're left unguarded. */
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
-            strncpy(fontname, ident, length);
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+            memcpy(fontname, ident, length);
         }
         fontname[length] = '\0';
         for (n = 0; n < length; n++) {
@@ -275,8 +265,6 @@ do_widths (pdf_font *font, double *widths)
     return;
 }
 
-static int verbose = 0;
-
 #define PDFUNIT(v) ((double) (ROUND(1000.0*(v)/(glyphs->emsize), 1)))
 
 /*
@@ -316,7 +304,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
 
     glyphs = tt_build_init();
 
-    if (verbose > 2)
+    if (dpx_conf.verbose_level > 2)
         dpx_message("[glyphs:/.notdef");
 
     count = 1; /* .notdef */
@@ -324,7 +312,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
         if (!usedchars[code])
             continue;
 
-        if (verbose > 2)
+        if (dpx_conf.verbose_level > 2)
             dpx_message("/.c0x%02x", code);
 
         gid = tt_cmap_lookup(ttcm, code);
@@ -342,7 +330,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
     }
     tt_cmap_release(ttcm);
 
-    if (verbose > 2)
+    if (dpx_conf.verbose_level > 2)
         dpx_message("]");
 
     if (tt_build_tables(sfont, glyphs) < 0) {
@@ -362,7 +350,7 @@ do_builtin_encoding (pdf_font *font, const char *usedchars, sfnt *sfont)
     }
     do_widths(font, widths);
 
-    if (verbose > 1)
+    if (dpx_conf.verbose_level > 1)
         dpx_message("[%d glyphs]", glyphs->num_glyphs);
 
     tt_build_finish(glyphs);
@@ -426,7 +414,7 @@ select_gsub (const char *feat, struct glyph_mapper *gm)
     if (idx >= 0)
         return  0;
 
-    if (verbose > 1)
+    if (dpx_conf.verbose_level > 1)
         dpx_message("\ntrutype>> Try loading OTL GSUB for \"*.*.%s\"...", feat);
     error = otl_gsub_add_feat(gm->gsub, "*", "*", feat, gm->sfont);
     if (!error) {
@@ -643,11 +631,11 @@ findparanoiac (const char *glyphname, USHORT *gid, struct glyph_mapper *gm)
             if (agln->n_components == 1)
                 idx = tt_cmap_lookup(gm->codetogid, agln->unicodes[0]);
             else if (agln->n_components > 1) {
-                if (verbose >= 0) /* give warning */
+                if (dpx_conf.verbose_level >= 0) /* give warning */
                     dpx_warning("Glyph \"%s\" looks like a composite glyph...",
                                 agln->name);
                 error = composeuchar(agln->unicodes, agln->n_components, NULL, gm, &idx);
-                if (verbose >= 0) {
+                if (dpx_conf.verbose_level >= 0) {
                     if (error)
                         dpx_warning("Not found...");
                     else {
@@ -822,7 +810,7 @@ do_custom_encoding (pdf_font *font,
                 dpx_warning("Glyph \"%s\" not available in font \"%s\".",
                             encoding[code], pdf_font_get_ident(font));
             } else {
-                if (verbose > 1)
+                if (dpx_conf.verbose_level > 1)
                     dpx_message("truetype>> Glyph glyph-name=\"%s\" found at glyph-id=\"%u\".\n", encoding[code], gid);
             }
             idx = tt_find_glyph(glyphs, gid);
@@ -852,7 +840,7 @@ do_custom_encoding (pdf_font *font,
     }
     do_widths(font, widths);
 
-    if (verbose > 1)
+    if (dpx_conf.verbose_level > 1)
         dpx_message("[%d glyphs]", glyphs->num_glyphs);
 
     tt_build_finish(glyphs);
@@ -881,8 +869,6 @@ pdf_font_load_truetype (pdf_font *font)
 
     if (!pdf_font_is_in_use(font))
         return  0;
-
-    verbose = pdf_font_get_verbose();
 
     handle = dpx_open_truetype_file(ident);
     if (handle == NULL) {
@@ -969,7 +955,7 @@ pdf_font_load_truetype (pdf_font *font)
     sfnt_close(sfont);
     ttstub_input_close(handle);
 
-    if (verbose > 1)
+    if (dpx_conf.verbose_level > 1)
         dpx_message("[%d bytes]", pdf_stream_length(fontfile));
 
     pdf_add_dict(descriptor,

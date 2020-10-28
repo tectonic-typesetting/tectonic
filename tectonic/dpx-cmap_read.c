@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,12 +30,11 @@
 
 #include "dpx-cid.h"
 #include "dpx-cmap.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-pst.h"
-
-static int __verbose = 0;
 
 #define CMAP_PARSE_DEBUG_STR "CMap_parse:"
 #define CMAP_PARSE_DEBUG     3
@@ -88,8 +87,6 @@ ifreader_read (ifreader *reader, size_t size)
     assert(reader);
     bytesrem = (size_t) reader->endptr - (size_t) reader->cursor;
     if (size > reader->max) {
-        if (__verbose)
-            dpx_message("\nExtending buffer (%"PRIuZ" bytes)...\n", size);
         reader->buf = RENEW(reader->buf, size+1, unsigned char);
         reader->max = size;
     }
@@ -102,8 +99,6 @@ ifreader_read (ifreader *reader, size_t size)
             _tt_abort("Reading file failed.");
         reader->endptr += bytesread;
         reader->unread -= bytesread;
-        if (__verbose)
-            dpx_message("Reading more %"PRIuZ" bytes (%"PRIuZ" bytes remains in buffer)...\n", bytesread, bytesrem);
     }
 
     *reader->endptr = 0;

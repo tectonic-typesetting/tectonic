@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -76,8 +76,6 @@ typedef struct
 #define INFO_DO_HIDE       (1 << 4)
 void   transform_info_clear (transform_info *info);
 
-
-void   pdf_dev_set_verbose (int level);
 void   pdf_dev_reset_global_state (void);
 
 /* Not in spt_t. */

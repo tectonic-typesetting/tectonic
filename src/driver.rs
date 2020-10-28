@@ -18,18 +18,25 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
+use std::result::Result as StdResult;
 use std::str::FromStr;
 use std::time::SystemTime;
 
-use crate::digest::DigestData;
-use crate::engines::IoEventBackend;
-use crate::errors::{ErrorKind, Result, ResultExt};
-use crate::io::{Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder, OpenResult};
-use crate::status::StatusBackend;
-use crate::unstable_opts::UnstableOptions;
-use crate::{ctry, errmsg, tt_error, tt_note, tt_warning};
-use crate::{BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine};
-use std::result::Result as StdResult;
+use crate::{
+    ctry,
+    digest::DigestData,
+    engines::IoEventBackend,
+    errmsg,
+    errors::{ErrorKind, Result, ResultExt},
+    io::{
+        memory::MemoryFileCollection, Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder,
+        OpenResult,
+    },
+    status::StatusBackend,
+    tt_error, tt_note, tt_warning,
+    unstable_opts::UnstableOptions,
+    BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine,
+};
 
 /// Different patterns with which files may have been accessed by the
 /// underlying engines. Once a file is marked as ReadThenWritten or
@@ -845,7 +852,7 @@ impl ProcessingSession {
 
         let mut n_skipped_intermediates = 0;
 
-        for (name, contents) in &*self.io.mem.files.borrow() {
+        for (name, file) in &*self.io.mem.files.borrow() {
             if name == self.io.mem.stdout_key() {
                 continue;
             }
@@ -882,7 +889,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            if contents.is_empty() {
+            if file.data.is_empty() {
                 status.note_highlighted(
                     "Not writing ",
                     &format!("`{}`", sname),
@@ -892,7 +899,7 @@ impl ProcessingSession {
             }
 
             let real_path = root.join(name);
-            let byte_len = Byte::from_bytes(contents.len() as u128);
+            let byte_len = Byte::from_bytes(file.data.len() as u128);
             status.note_highlighted(
                 "Writing ",
                 &format!("`{}`", real_path.to_string_lossy()),
@@ -900,7 +907,7 @@ impl ProcessingSession {
             );
 
             let mut f = File::create(&real_path)?;
-            f.write_all(contents)?;
+            f.write_all(&file.data)?;
             summ.got_written_to_disk = true;
 
             if let Some(ref mut mf_dest) = mf_dest_maybe {
@@ -1009,10 +1016,10 @@ impl ProcessingSession {
             .files
             .borrow()
             .get(&self.tex_aux_path)
-            .map(|data| {
+            .map(|file| {
                 // We used to use aho-corasick crate here, but it was removed to reduce the code
                 // size.
-                data.windows(BIBDATA.len()).any(|s| s == BIBDATA)
+                file.data.windows(BIBDATA.len()).any(|s| s == BIBDATA)
             })
             .unwrap_or(false)
     }
@@ -1081,7 +1088,7 @@ impl ProcessingSession {
 
         let format_cache = &mut *self.io.format_cache.as_mut().unwrap();
 
-        for (name, contents) in &*self.io.mem.files.borrow() {
+        for (name, file) in &*self.io.mem.files.borrow() {
             if name == self.io.mem.stdout_key() {
                 continue;
             }
@@ -1093,7 +1100,7 @@ impl ProcessingSession {
             }
 
             // Note that we intentionally pass 'stem', not 'name'.
-            ctry!(format_cache.write_format(stem, contents, status); "cannot write format file {}", sname);
+            ctry!(format_cache.write_format(stem, &file.data, status); "cannot write format file {}", sname);
         }
 
         // All done. Clear the memory layer since this was a special preparatory step.
@@ -1229,7 +1236,7 @@ impl ProcessingSession {
     /// This will panic if you there are multiple strong references to the
     /// `files` map. This should only happen if you create and keep a clone of
     /// the `Rc<>` wrapping it before calling this function.
-    pub fn into_file_data(self) -> HashMap<OsString, Vec<u8>> {
+    pub fn into_file_data(self) -> MemoryFileCollection {
         Rc::try_unwrap(self.io.mem.files)
             .expect("multiple strong refs to MemoryIo files")
             .into_inner()

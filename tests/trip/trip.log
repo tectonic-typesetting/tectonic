@@ -4009,14 +4009,18 @@ Completed box being shipped out [-2.2.-1118806.0.11.196608.327680.1572864.10737
 ou can't use a prefix with `\unskip'.
 <to be read again> 
                    \unskip 
-l.345 \newlinechar`Y\global\unskip
-                                  \show^^Y\newlinechar\lastpenalty\unpenalty...
+l.345 \newlinechar`
+\global\unskip
+                                  \show^^
+\newlinechar\lastpenalty\unpenalty...
 I'll pretend you didn't say \long or \outer or \global or \protected.
 
 {\unskip}
 {\show}
 > the character ^^Y.
-l.345 \newlinechar`Y\global\unskip\show^^Y
+l.345 \newlinechar`
+\global\unskip\show^^
+
                                           \newlinechar\lastpenalty\unpenalty...
 
 
@@ -6230,7 +6234,7 @@ my insertion and my current dilemma will both disappear.
 {internal vertical mode: Āshowthe}
 > 3.
 <output> {Āshowthe Ādeadcycles 
-                                 Āglobal Āadvance Ācountz by1Āglobal Āg...
+                               Āglobal Āadvance Ācountz by1Āglobal Āglobalde...
 <to be read again> 
                    Āend 
 l.442 ...l\tracingoutput1\global\escapechar256\end
@@ -6243,8 +6247,8 @@ l.442 ...l\tracingoutput1\global\escapechar256\end
 {Āend}
 ! You can't use `Āend' in internal vertical mode.
 <recently read> Āend 
-                      
-<output> ...-1 Āgdef Ālocal {}Āunvbox 255Āend 
+                     
+<output> ...efs -1 Āgdef Ālocal {}Āunvbox 255Āend 
                                                   Ārb }
 <to be read again> 
                    Āend 
@@ -6257,7 +6261,7 @@ return to the right one by typing `I}' or `I$' or `I\par'.
 
 {end-group character }}
 ! Unbalanced output routine.
-<output> ...gdef Ālocal {}Āunvbox 255Āend Ārb 
+<output> ...-1 Āgdef Ālocal {}Āunvbox 255Āend Ārb 
                                                   }
 <to be read again> 
                    Āend 
@@ -6295,7 +6299,7 @@ Completed box being shipped out [-1.2.-1118806.0.11.196608.327680.1572864.10737
 
 ! Unbalanced write command.
 <write> Āif 01{Āelse unbal}Āfi 
-                                  
+                               
 <inserted text> 
                 }Āendwrite 
 <to be read again> 

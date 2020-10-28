@@ -318,6 +318,7 @@ fn main() {
         .file("tectonic/dpx-mem.c")
         .file("tectonic/dpx-mfileio.c")
         .file("tectonic/dpx-mpost.c")
+        .file("tectonic/dpx-mt19937ar.c")
         .file("tectonic/dpx-numbers.c")
         .file("tectonic/dpx-otl_conf.c")
         .file("tectonic/dpx-otl_opt.c")

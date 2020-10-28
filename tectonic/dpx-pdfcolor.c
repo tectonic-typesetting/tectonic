@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -32,17 +32,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
 #include "dpx-pdfdev.h"
-
-static int verbose = 0;
-void
-pdf_color_set_verbose (int level)
-{
-  verbose = level;
-}
 
 /* This function returns PDF_COLORSPACE_TYPE_GRAY,
  * PDF_COLORSPACE_TYPE_RGB, PDF_COLORSPACE_TYPE_CMYK or
@@ -329,7 +323,7 @@ pdf_color_set (pdf_color *sc, pdf_color *fc)
 {
   pdf_color_copycolor(&color_stack.stroke[color_stack.current], sc);
   pdf_color_copycolor(&color_stack.fill[color_stack.current], fc);
-  pdf_dev_reset_color(0);
+  pdf_dev_reset_color(1);
 }
 
 void
@@ -351,7 +345,7 @@ pdf_color_pop (void)
     dpx_warning("Color stack underflow. Just ignore.");
   } else {
     color_stack.current--;
-    pdf_dev_reset_color(0);
+    pdf_dev_reset_color(1);
   }
   return;
 }
@@ -390,19 +384,22 @@ static struct
   {0x04, 0x00}, /* PDF-1.5 */
   {0x04, 0x00}, /* PDF-1.6 */
   {0x04, 0x20}, /* PDF-1.7 */
+  {0x04, 0x20}, /* Dummy(1.8)*/
+  {0x04, 0x20}, /* Dummy(1.9) */
+  {0x04, 0x20}  /* PDF-2.0 */
 };
 
 static int
 iccp_version_supported (int major, int minor)
 {
-  int  pdf_ver;
+  int  idx;
 
-  pdf_ver = pdf_get_version();
-  if (pdf_ver < 8) {
-    if (icc_versions[pdf_ver].major < major)
+  idx = pdf_get_version() - 10;
+  if (idx < 11) {
+    if (icc_versions[idx].major < major)
       return 0;
-    else if (icc_versions[pdf_ver].major == major &&
-             icc_versions[pdf_ver].minor <  minor)
+    else if (icc_versions[idx].major == major &&
+             icc_versions[idx].minor <  minor)
       return 0;
     else {
       return 1;
@@ -965,12 +962,12 @@ iccp_load_profile (const char *ident,
   cspc_id = pdf_colorspace_findresource(ident,
                                         PDF_COLORSPACE_TYPE_ICCBASED, cdata);
   if (cspc_id >= 0) {
-    if (verbose)
+    if (dpx_conf.verbose_level > 0)
       dpx_message("(ICCP:[id=%d])", cspc_id);
     release_iccbased_cdata(cdata);
     return cspc_id;
   }
-  if (verbose > 1) {
+  if (dpx_conf.verbose_level > 1) {
     print_iccp_header(&icch, checksum);
   }
 
@@ -1113,9 +1110,9 @@ pdf_colorspace_defineresource (const char *ident,
   colorspace->cdata    = cdata;
   colorspace->resource = resource;
 
-  if (verbose) {
+  if (dpx_conf.verbose_level > 0) {
     dpx_message("(ColorSpace:%s", ident);
-    if (verbose > 1) {
+    if (dpx_conf.verbose_level > 1) {
       switch (subtype) {
       case PDF_COLORSPACE_TYPE_ICCBASED:
         dpx_message("[ICCBased]");
