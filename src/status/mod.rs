@@ -63,7 +63,24 @@ pub enum MessageKind {
 
 pub trait StatusBackend {
     /// Report a message to the status backend.
+    ///
+    /// If `err` is not None, it represents an error that somehow caused the
+    /// current message to be reported. It should be displayed in some
+    /// appropriate fashion.
     fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>);
+
+    /// Report an error to the status backend.
+    ///
+    /// Unlike the basic `report` function, in this case there is no additional
+    /// contextual information provided. The default implementation delegates to
+    /// `report()` with a generic lead-in message of "an error occurred".
+    fn report_error(&mut self, err: &Error) {
+        self.report(
+            MessageKind::Error,
+            format_args!("an error occurred"),
+            Some(err),
+        )
+    }
 
     /// Issue a note-level status, idealy highlighting a particular phrase.
     ///
