@@ -261,12 +261,12 @@ fn main() {
         "this is a BETA release; ask questions and report bugs at https://tectonic.newton.cx/"
     );
 
-    // Now that we've got colorized output, we're to pass off to the inner
-    // function ... all so that we can print out the word "error:" in red.
-    // This code parallels various bits of the `error_chain` crate.
+    // Now that we've got colorized output, pass off to the inner function ...
+    // all so that we can print out the word "error:" in red. This code
+    // parallels various bits of the `error_chain` crate.
 
     if let Err(ref e) = inner(args, config, &mut *status) {
-        tt_error!(status, ""; e);
+        status.report_error(e);
         process::exit(1)
     }
 }

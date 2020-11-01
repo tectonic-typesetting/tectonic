@@ -168,6 +168,27 @@ impl StatusBackend for TermcolorStatusBackend {
         }
     }
 
+    fn report_error(&mut self, err: &Error) {
+        let mut first = true;
+        let kind = MessageKind::Error;
+
+        for item in err.iter() {
+            if first {
+                self.generic_message(kind, None, format_args!("{}", item));
+                first = false;
+            } else {
+                self.generic_message(kind, Some("caused by:"), format_args!("{}", item));
+            }
+        }
+
+        if let Some(backtrace) = err.backtrace() {
+            self.generic_message(kind, Some("debugging:"), format_args!("backtrace follows:"));
+            self.with_stream(kind, |s| {
+                writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
+            });
+        }
+    }
+
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
         if self.chatter > ChatterLevel::Minimal {
             write!(self.stdout, "{}", before).expect("write to stdout failed");
