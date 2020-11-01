@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 
@@ -66,6 +67,69 @@ max4 (double x1, double x2, double x3, double x4)
     return v;
 }
 
+
+
+#if defined(_MSC_VER)
+#define strtoll _strtoi64
+#endif
+
+/* If an environment variable SOURCE_DATE_EPOCH is correctly defined like
+ * SOURCE_DATE_EPOCH=1456304492, then returns this value, to be used as the
+ * 'current time', otherwise returns INVALID_EPOCH_VALUE (= (time_t)-1).
+ * In the case of Microsoft Visual Studio 2010, the value should be less
+ * than 32535291600.
+ */
+
+time_t
+dpx_util_get_unique_time_if_given(void)
+{
+  const char *source_date_epoch;
+  int64_t epoch;
+  char *endptr;
+  time_t ret = INVALID_EPOCH_VALUE;
+
+  source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+  if (source_date_epoch) {
+    errno = 0;
+    epoch = strtoll(source_date_epoch, &endptr, 10);
+    if (!(epoch < 0 || *endptr != '\0' || errno != 0)) {
+      ret = (time_t) epoch;
+#if defined(_MSC_VER)
+      if (ret > 32535291599ULL)
+        ret = 32535291599ULL;
+#endif
+    }
+  }
+  return ret;
+}
+
+
+/*
+ * Docinfo
+ */
+int
+dpx_util_format_asn_date (char *date_string, int need_timezone)
+{
+  int32_t     tz_offset = 0;
+  struct tm  *bd_time = gmtime(&source_date_epoch);
+
+  if (need_timezone) {
+    if (bd_time->tm_isdst > 0) {
+      tz_offset += 3600;
+    }
+    sprintf(date_string, "D:%04d%02d%02d%02d%02d%02d%c%02d'%02d'",
+            bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
+            bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec,
+            (tz_offset > 0) ? '+' : '-', abs(tz_offset) / 3600,
+                                        (abs(tz_offset) / 60) % 60);
+  } else {
+    sprintf(date_string, "D:%04d%02d%02d%02d%02d%02d",
+            bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
+            bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec);
+  }
+
+  return strlen(date_string);
+}
 
 void
 skip_white_spaces (unsigned char **s, unsigned char *endptr)

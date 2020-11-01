@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
@@ -85,7 +86,9 @@ check_for_bmp (rust_input_handle_t handle)
 static void
 get_density (double *xdensity, double *ydensity, struct hdr_info *hdr)
 {
-    if (hdr->x_pix_per_meter > 0 && hdr->y_pix_per_meter > 0) { /* 0 for undefined. FIXME */
+    if (dpx_conf.compat_mode == dpx_mode_compat_mode)
+        *xdensity = *ydensity = 72.0 / 100.0;
+    else if (hdr->x_pix_per_meter > 0 && hdr->y_pix_per_meter > 0) { /* 0 for undefined. FIXME */
         *xdensity = 72.0 / (hdr->x_pix_per_meter * 0.0254);
         *ydensity = 72.0 / (hdr->y_pix_per_meter * 0.0254);
     } else {

@@ -90,7 +90,7 @@ fn trip_test() {
     expected_log.test_from_collection(files);
     expected_xdv.test_from_collection(files);
     expected_os.test_from_collection(files);
-    expected_fot.test_data(files.get(OsStr::new("")).unwrap());
+    expected_fot.test_data(&files.get(OsStr::new("")).unwrap().data);
 }
 
 #[test]
@@ -157,5 +157,5 @@ fn etrip_test() {
     expected_log.test_from_collection(files);
     expected_xdv.test_from_collection(files);
     expected_out.test_from_collection(files);
-    expected_fot.test_data(files.get(OsStr::new("")).unwrap());
+    expected_fot.test_data(&files.get(OsStr::new("")).unwrap().data);
 }

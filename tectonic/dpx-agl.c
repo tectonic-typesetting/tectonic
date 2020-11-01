@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -37,6 +37,7 @@
 #include <sys/types.h>
 
 #include "core-bridge.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 /* Hash */
 #include "dpx-dpxutil.h"
@@ -47,14 +48,6 @@
 #include "dpx-unicode.h"
 
 static int agl_load_listfile (const char *filename, int format);
-
-static int verbose = 0;
-
-void
-agl_set_verbose (int level)
-{
-  verbose = level;
-}
 
 static agl_name *
 agl_new_name (void)
@@ -403,7 +396,7 @@ agl_load_listfile (const char *filename, int is_predef)
     return -1;
   }
 
-  if (verbose)
+  if (dpx_conf.verbose_level > 0)
     dpx_message("<AGL:%s", filename);
 
   while ((p = tt_mfgets(wbuf, WBUF_SIZE, handle)) != NULL) {
@@ -472,7 +465,7 @@ agl_load_listfile (const char *filename, int is_predef)
       duplicate->alternate = agln;
     }
 
-    if (verbose > 3) {
+    if (dpx_conf.verbose_level > 5) {
       if (agln->suffix)
         dpx_message("agl: %s [%s.%s] -->", name, agln->name, agln->suffix);
       else
@@ -493,7 +486,7 @@ agl_load_listfile (const char *filename, int is_predef)
 
   ttstub_input_close(handle);
 
-  if (verbose)
+  if (dpx_conf.verbose_level)
     dpx_message(">");
 
   return count;
@@ -700,7 +693,7 @@ agl_sput_UTF16BE (const char *glyphstr,
                      IS_PUA(agln1->unicodes[0]))) {
         agln0 = agl_normalized_name(name);
         if (agln0) {
-          if (verbose > 1 && agln0->suffix) {
+          if (dpx_conf.verbose_level > 1 && agln0->suffix) {
             dpx_warning("agl: fix %s --> %s.%s",
                  name, agln0->name, agln0->suffix);
           }
@@ -713,7 +706,7 @@ agl_sput_UTF16BE (const char *glyphstr,
           len += UC_UTF16BE_encode_char(agln1->unicodes[i], dstpp, limptr);
         }
       } else {
-        if (verbose) {
+        if (dpx_conf.verbose_level) {
           dpx_warning("No Unicode mapping for glyph name \"%s\" found.", name);
         }
         count++;
@@ -790,7 +783,7 @@ agl_get_unicodes (const char *glyphstr,
                      IS_PUA(agln1->unicodes[0]))) {
         agln0 = agl_normalized_name(name);
         if (agln0) {
-          if (verbose > 1 && agln0->suffix) {
+          if (dpx_conf.verbose_level > 1 && agln0->suffix) {
             dpx_warning("agl: fix %s --> %s.%s",
                  name, agln0->name, agln0->suffix);
           }
@@ -807,7 +800,7 @@ agl_get_unicodes (const char *glyphstr,
           unicodes[count++] = agln1->unicodes[i];
         }
       } else {
-        if (verbose > 1)
+        if (dpx_conf.verbose_level > 1)
           dpx_warning("No Unicode mapping for glyph name \"%s\" found.", name);
         free(name);
         return -1;

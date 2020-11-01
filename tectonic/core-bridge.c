@@ -264,6 +264,12 @@ ttstub_input_get_size(rust_input_handle_t handle)
     return input_get_size(TGB->context, handle);
 }
 
+time_t
+ttstub_input_get_mtime (rust_input_handle_t handle)
+{
+    return input_get_mtime(TGB->context, handle);
+}
+
 size_t
 ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence)
 {

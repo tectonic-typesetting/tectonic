@@ -32,16 +32,16 @@ Description:
 #include "teckit-Common.h"
 
 /* formFlags bits for normalization; if none are set, then this side of the mapping is normalization-form-agnostic on input, and may generate an unspecified mixture */
-#define kFlags_ExpectsNFC		0x00000001	/* expects fully composed text (NC) */
-#define kFlags_ExpectsNFD		0x00000002	/* expects fully decomposed text (NCD) */
-#define kFlags_GeneratesNFC		0x00000004	/* generates fully composed text (NC) */
-#define kFlags_GeneratesNFD		0x00000008	/* generates fully decomposed text (NCD) */
+#define kFlags_ExpectsNFC		0x00000001U	/* expects fully composed text (NC) */
+#define kFlags_ExpectsNFD		0x00000002U	/* expects fully decomposed text (NCD) */
+#define kFlags_GeneratesNFC		0x00000004U	/* generates fully composed text (NC) */
+#define kFlags_GeneratesNFD		0x00000008U	/* generates fully decomposed text (NCD) */
 
 /* if VisualOrder is set, this side of the mapping deals with visual-order rather than logical-order text (only relevant for bidi scripts) */
-#define kFlags_VisualOrder		0x00008000	/* visual rather than logical order */
+#define kFlags_VisualOrder		0x00008000U	/* visual rather than logical order */
 
 /* if Unicode is set, the encoding is Unicode on this side of the mapping */
-#define kFlags_Unicode			0x00010000	/* this is Unicode rather than a byte encoding */
+#define kFlags_Unicode			0x00010000U	/* this is Unicode rather than a byte encoding */
 
 /* required names */
 #define kNameID_LHS_Name		0		/* "source" or LHS encoding name, e.g. "SIL-EEG_URDU-2001" */

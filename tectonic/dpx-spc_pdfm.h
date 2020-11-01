@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -31,6 +31,8 @@
 
 int  spc_pdfm_at_begin_document (void);
 int  spc_pdfm_at_end_document   (void);
+
+int  spc_pdfm_at_end_page (void);
 
 bool spc_pdfm_check_special (const char *buffer, int size);
 int  spc_pdfm_setup_handler (struct spc_handler *handle,

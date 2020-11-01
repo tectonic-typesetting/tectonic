@@ -78,6 +78,11 @@ unsigned char help_ptr;
 bool use_err_help;
 bool arith_error;
 scaled_t tex_remainder;
+int32_t randoms[55];
+unsigned char j_random;
+scaled_t random_seed;
+int32_t two_to_the[31];
+int32_t spec_log[29];
 int32_t temp_ptr;
 memory_word *mem;
 int32_t lo_mem_max;
@@ -111,7 +116,6 @@ bool no_new_control_sequence;
 int32_t cs_count;
 b32x2 prim[501];
 int32_t prim_used;
-memory_word prim_eqtb[501];
 memory_word *save_stack;
 int32_t save_ptr;
 int32_t max_save_stack;
@@ -222,6 +226,8 @@ int32_t dead_cycles;
 bool doing_leaders;
 scaled_t rule_ht, rule_dp, rule_wd;
 scaled_t cur_h, cur_v;
+int32_t epochseconds;
+int32_t microseconds;
 scaled_t total_stretch[4], total_shrink[4];
 int32_t last_badness;
 int32_t adjust_tail;
@@ -607,9 +613,9 @@ primitive(const char* ident, uint16_t c, int32_t o)
     eqtb[cur_val].b16.s0 = LEVEL_ONE;
     eqtb[cur_val].b16.s1 = c;
     eqtb[cur_val].b32.s1 = o;
-    prim_eqtb[prim_val].b16.s0 = LEVEL_ONE;
-    prim_eqtb[prim_val].b16.s1 = c;
-    prim_eqtb[prim_val].b32.s1 = o;
+    eqtb[PRIM_EQTB_BASE + prim_val].b16.s0 = LEVEL_ONE;
+    eqtb[PRIM_EQTB_BASE + prim_val].b16.s1 = c;
+    eqtb[PRIM_EQTB_BASE + prim_val].b32.s1 = o;
 }
 
 /*:925*//*977: */
@@ -2303,9 +2309,6 @@ store_fmt_file(void)
     for (p = 0; p <= PRIM_SIZE; p++)
         dump_b32(prim[p]);
 
-    for (p = 0; p <= PRIM_SIZE; p++)
-        dump_b64(prim_eqtb[p]);
-
     /* control sequences */
 
     dump_int(hash_used);
@@ -2714,9 +2717,6 @@ load_fmt_file(void)
     for (p = 0; p <= PRIM_SIZE; p++)
         undump_b32(prim[p]);
 
-    for (p = 0; p <= PRIM_SIZE; p++)
-        undump_b64(prim_eqtb[p]);
-
     undump_int(x);
     if (x < HASH_BASE || x > FROZEN_CONTROL_SEQUENCE)
         goto bad_fmt;
@@ -3087,6 +3087,27 @@ initialize_more_variables(void)
     help_ptr = 0;
     use_err_help = false;
 
+    two_to_the[0] = 1;
+    for (k = 1; k <= 30; k++)
+        two_to_the[k] = 2 * two_to_the[k - 1];
+
+    spec_log[1] = 93032640L;
+    spec_log[2] = 38612034L;
+    spec_log[3] = 17922280L;
+    spec_log[4] = 8662214L;
+    spec_log[5] = 4261238L;
+    spec_log[6] = 2113709L;
+    spec_log[7] = 1052693L;
+    spec_log[8] = 525315L;
+    spec_log[9] = 262400L;
+    spec_log[10] = 131136L;
+    spec_log[11] = 65552L;
+    spec_log[12] = 32772L;
+    spec_log[13] = 16385;
+    for (k = 14; k <= 27; k++)
+        spec_log[k] = two_to_the[27 - k];
+    spec_log[28] = 1;
+
     nest_ptr = 0;
     max_nest_stack = 0;
     cur_list.mode = VMODE;
@@ -3102,6 +3123,7 @@ initialize_more_variables(void)
     last_glue = MAX_HALFWORD;
     last_penalty = 0;
     last_kern = 0;
+    last_node_type = -1;
     page_so_far[7] = 0;
 
     for (k = INT_BASE; k <= EQTB_SIZE; k++)
@@ -3113,13 +3135,6 @@ initialize_more_variables(void)
 
     for (k = 1; k <= PRIM_SIZE; k++)
         prim[k] = prim[0];
-
-    prim_eqtb[0].b16.s0 = LEVEL_ZERO;
-    prim_eqtb[0].b16.s1 = UNDEFINED_CS;
-    prim_eqtb[0].b32.s1 = TEX_NULL;
-
-    for (k = 1; k <= PRIM_SIZE; k++)
-        prim_eqtb[k] = prim_eqtb[0];
 
     save_ptr = 0;
     cur_level = LEVEL_ONE;
@@ -3615,15 +3630,29 @@ initialize_primitives(void)
     primitive("lastskip", LAST_ITEM, GLUE_VAL);
     primitive("inputlineno", LAST_ITEM, INPUT_LINE_NO_CODE);
     primitive("badness", LAST_ITEM, BADNESS_CODE);
+    primitive("pdflastxpos", LAST_ITEM, PDF_LAST_X_POS_CODE);
+    primitive("pdflastypos", LAST_ITEM, PDF_LAST_Y_POS_CODE);
+    primitive("elapsedtime", LAST_ITEM, ELAPSED_TIME_CODE);
+    primitive("shellescape", LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
+    primitive("randomseed", LAST_ITEM, RANDOM_SEED_CODE);
 
     primitive("number", CONVERT, NUMBER_CODE);
     primitive("romannumeral", CONVERT, ROMAN_NUMERAL_CODE);
     primitive("string", CONVERT, STRING_CODE);
     primitive("meaning", CONVERT, MEANING_CODE);
     primitive("fontname", CONVERT, FONT_NAME_CODE);
-    primitive("jobname", CONVERT, JOB_NAME_CODE);
+    primitive("expanded", CONVERT, EXPANDED_CODE);
     primitive("leftmarginkern", CONVERT, LEFT_MARGIN_KERN_CODE);
     primitive("rightmarginkern", CONVERT, RIGHT_MARGIN_KERN_CODE);
+    primitive("creationdate", CONVERT, PDF_CREATION_DATE_CODE);
+    primitive("filemoddate", CONVERT, PDF_FILE_MOD_DATE_CODE);
+    primitive("filesize", CONVERT, PDF_FILE_SIZE_CODE);
+    primitive("mdfivesum", CONVERT, PDF_MDFIVE_SUM_CODE);
+    primitive("filedump", CONVERT, PDF_FILE_DUMP_CODE);
+    primitive("strcmp", CONVERT, PDF_STRCMP_CODE);
+    primitive("uniformdeviate", CONVERT, UNIFORM_DEVIATE_CODE);
+    primitive("normaldeviate", CONVERT, NORMAL_DEVIATE_CODE);
+    primitive("jobname", CONVERT, JOB_NAME_CODE);
     primitive("Uchar", CONVERT, XETEX_UCHAR_CODE);
     primitive("Ucharcat", CONVERT, XETEX_UCHARCAT_CODE);
 
@@ -3838,6 +3867,8 @@ initialize_primitives(void)
     eqtb[FROZEN_SPECIAL] = eqtb[cur_val];
     primitive("immediate", EXTENSION, IMMEDIATE_CODE);
     primitive("setlanguage", EXTENSION, SET_LANGUAGE_CODE);
+    primitive("resettimer", EXTENSION, RESET_TIMER_CODE);
+    primitive("setrandomseed", EXTENSION, SET_RANDOM_SEED_CODE);
 
     primitive("synctex", ASSIGN_INT, INT_BASE + INT_PAR__synctex);
 
@@ -4087,6 +4118,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     initialize_pagebuilder_variables();
     initialize_shipout_variables();
 
+    get_seconds_and_micros(&epochseconds, &microseconds);
+    init_start_time(build_date);
+
     selector = SELECTOR_TERM_ONLY;
     tally = 0;
     term_offset = 0;
@@ -4137,7 +4171,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         primitive("XeTeXpdffile", EXTENSION, PDF_FILE_CODE);
         primitive("XeTeXglyph", EXTENSION, GLYPH_CODE);
         primitive("XeTeXlinebreaklocale", EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
-        primitive("pdfsavepos", EXTENSION, PDFTEX_FIRST_EXTENSION_CODE + 0);
+        primitive("pdfsavepos", EXTENSION, PDF_SAVE_POS_NODE);
 
         primitive("lastnodetype", LAST_ITEM, LAST_NODE_TYPE_CODE);
         primitive("eTeXversion", LAST_ITEM, ETEX_VERSION_CODE);
@@ -4183,16 +4217,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         primitive("XeTeXfonttype", LAST_ITEM, XETEX_FONT_TYPE_CODE);
         primitive("XeTeXfirstfontchar", LAST_ITEM, XETEX_FIRST_CHAR_CODE);
         primitive("XeTeXlastfontchar", LAST_ITEM, XETEX_LAST_CHAR_CODE);
-        primitive("pdflastxpos", LAST_ITEM, PDF_LAST_X_POS_CODE);
-        primitive("pdflastypos", LAST_ITEM, PDF_LAST_Y_POS_CODE);
-
-        primitive("strcmp", CONVERT, PDF_STRCMP_CODE);
-        primitive("mdfivesum", CONVERT, PDF_MDFIVE_SUM_CODE);
-        primitive("pdfmdfivesum", CONVERT, PDF_MDFIVE_SUM_CODE);
-
-        primitive("shellescape", LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
         primitive("XeTeXpdfpagecount", LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
-
+        /* everyeof moved to be with other assign_toks */
 
         primitive("tracingassigns", ASSIGN_INT, INT_BASE + INT_PAR__tracing_assigns);
         primitive("tracinggroups", ASSIGN_INT, INT_BASE + INT_PAR__tracing_groups);
@@ -4394,6 +4420,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     font_used = xmalloc_array(bool, font_max);
     for (font_k = 0; font_k <= font_max; font_k++)
         font_used[font_k] = false;
+
+    random_seed = (microseconds * 1000) + (epochseconds % 1000000L);
+    init_randoms(random_seed);
 
     if (interaction == BATCH_MODE)
         selector = SELECTOR_NO_PRINT;

@@ -1,5 +1,75 @@
 # rc: minor bump
 
+The 0.3 series updates the core Tectonic engines to align with the code in
+[TeXLive 2020.0][tl2020.0]. The default “bundle” of support files will soon be
+updated to match TeXLive 2020.0 as well. Standard usages should work if you use
+an older version of Tectonic with the new bundle, and vice versa, but we
+recommend that you update your installations to the 0.3 promptly if you can.
+
+[tl2020.0]: https://www.tug.org/texlive/
+
+This release introduces a straightforward but **breaking change** to the API of
+the `tectonic` Rust crate, documented below.
+
+For context, Tectonic’s core TeX implementation is forked from the [XeTeX]
+engine. Accumulated changes to XeTeX are periodically reviewed and imported into
+Tectonic, a process that must be done manually because Tectonic’s modernized
+developer and user experiences demand a huge amount of customization. (The
+scripts to support the first stage of this process may be found in the
+[tectonic-staging] repository.) It has been a while since the last
+synchronization, but this release incorporates the new changes introduced
+between the last update and the release of TeXLive 2020.0.
+
+[XeTeX]: https://tug.org/xetex/
+[tectonic-staging]: https://github.com/tectonic-typesetting/tectonic-staging
+
+The changes for TeXLive 2020.0 include:
+
+- New low-level primitives including `\filemoddate`, `\filedump`,
+  `\uniformvariate`, `\elapsedtime`, and a few others.
+- Tweaks to how font design sizes are mapped to TeX values
+- New magic numbers used in PDF last x/y position accounting,
+  instead of `cur_[hv]_offset`.
+- Don't `print_raw_char` in `show_context` with `trick_buf`
+- Back up `cur_cs` in `scan_keyword` and `compare_strings`.
+- Handle `XETEX_MATH_GIVEN` in `scan_something_internal`
+- If encountering an unexpandable primitive in `scan_something_internal`,
+  try to deal with it. Ditto for `scan_int`.
+- Do something different with active characters in `str_toks_cat`
+- Rework how file names are scanned.
+- Defend against undefined eTeX registers in `main_control`
+- Some `uc_hyph` tweak deep in the linebreaking algorithm
+
+There are also numerous changes in Tectonic’s included `xdvipdfmx`.
+
+The implementation of the `\filemoddate` API required a **breaking change** to
+the API of the `tectonic` Rust crate:
+
+- We needed to add more data to the data structures of the `MemoryIo` provider.
+  Migration should be pretty easy: instead of `files` containing a bunch of
+  `Vec<u8>`s, it now contains a bunch of `MemoryFileInfo` structs that contain a
+  `Vec<u8>` field named `data`. So you just need to add some `.data` field
+  accessors to existing code. This API clearly needs some polish to allow
+  greater stability going forward.
+
+Other changes:
+
+- Issue a warning if `xdvipdfmx` needs to translate a VF font to PK format,
+  which is unimplemented in Tectonic (it relies on `mktexpk`) and so causes
+  failures on certain documents that work with XeTeX.
+- The Windows [vcpkg]-based build is temporarily disabled, as vcpkg currently has
+  [a debilitating issue][vcpkg-issue] relating to SSL on Windows.
+- There is a new `-Z continue-on-errors` unstable option that tells the engine
+  to emulate the classic TeX style of plunging on ahead even in the face of
+  severe errors. This is a nice example of the possibilities unlocked by the new
+  `-Z` infrastructure introduced in 0.2!
+
+[vcpkg]: https://github.com/microsoft/vcpkg
+[vcpkg-issue]: https://github.com/tectonic-typesetting/tectonic/issues/668
+
+
+# tectonic 0.2.0 (2020-10-21)
+
 The 0.2 series finally adds "unstable" `-Z` flags! These allow you to configure
 engine options that are relatively low-level. The hope is to eventually set
 these kinds of things in a `Tectonic.toml` file, so their use is mildly

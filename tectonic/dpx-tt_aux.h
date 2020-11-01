@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,6 @@
 #include "dpx-sfnt.h"
 
 extern int always_embed; /* flag declared in dvipdfmx.c */
-
-void tt_aux_set_verbose(int level);
 
 /* TTC (TrueType Collection) */
 ULONG    ttc_read_offset (sfnt *sfont, int ttc_idx);

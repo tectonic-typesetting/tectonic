@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -26,8 +26,6 @@
 #include "dpx-core.h"
 
 #include "dpx-pdfobj.h"
-
-void      pdf_encoding_set_verbose    (int level);
 
 void      pdf_init_encodings          (void);
 void      pdf_close_encodings         (void);

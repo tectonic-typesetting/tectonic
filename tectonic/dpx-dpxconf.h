@@ -1,6 +1,6 @@
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -26,6 +26,23 @@
 #include "dpx-core.h"
 
 #include <stddef.h>
+
+enum dpx_mode {
+  dpx_mode_normal_mode,
+  dpx_mode_compat_mode,
+  dpx_mode_xdv_mode,
+  dpx_mode_mpost_mode
+};
+
+extern struct _dpx_conf {
+  int            verbose_level;
+  enum dpx_mode  compat_mode;
+  int            ignore_font_license;
+  struct {
+    int keep_cache;
+  } file;
+} dpx_conf;
+
 #ifdef  HAVE_LIBPAPER
 #include <paper.h>
 #else

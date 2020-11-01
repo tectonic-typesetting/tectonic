@@ -782,8 +782,9 @@ hlist_out(void)
                     break;
 
                 case PDF_SAVE_POS_NODE:
-                    pdf_last_x_pos = cur_h + cur_h_offset;
-                    pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset;
+                    /* These magic numbers are in the original XeTeX source. */
+                    pdf_last_x_pos = cur_h + 4736286L;
+                    pdf_last_y_pos = cur_page_height - cur_v - 4736286L;
                     break;
 
                 default:
@@ -1282,8 +1283,9 @@ vlist_out(void)
                     break;
 
                 case PDF_SAVE_POS_NODE:
-                    pdf_last_x_pos = cur_h + cur_h_offset;
-                    pdf_last_y_pos = cur_page_height - cur_v - cur_v_offset;
+                    /* These magic numbers are in the original XeTeX source. */
+                    pdf_last_x_pos = cur_h + 4736286L;
+                    pdf_last_y_pos = cur_page_height - cur_v - 4736286L;
                     break;
 
                 default:

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2007-2019 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    This program is free software; you can redistribute it and/or modify
@@ -45,6 +45,7 @@
 #include "dpx-cmap.h"
 #include "dpx-cmap_write.h"
 #include "dpx-cs_type2.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
@@ -62,14 +63,7 @@
 #include "dpx-tt_table.h"
 #include "dpx-type0.h"
 
-static int  verbose   = 0;
 static int  opt_flags = 0;
-
-void
-CIDFont_type0_set_verbose (int level)
-{
-    verbose = level;
-}
 
 void
 CIDFont_type0_set_flags (int flags)
@@ -765,7 +759,7 @@ CIDFont_type0_dofont (CIDFont *font)
 
     CIDFontInfo_close(&info);
 
-    if (verbose > 1)
+    if (dpx_conf.verbose_level > 1)
         dpx_message("[%u/%u glyphs][%d bytes]", num_glyphs, cs_count, destlen);
 
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);
@@ -838,12 +832,6 @@ CIDFont_type0_open (CIDFont *font, const char *name,
                 ttstub_input_close(handle);
             return -1;
         }
-
-        if (is_cid_font) {
-            cff_read_charsets(cffont);
-            opt->cff_charsets = cffont->charsets;
-            cffont->charsets = NULL;
-        }
     } else {
         if (!handle)
             return -1;
@@ -880,7 +868,7 @@ CIDFont_type0_open (CIDFont *font, const char *name,
             _tt_abort("Inconsistent CMap specified for this font.");
         }
         if (csi->supplement < cmap_csi->supplement) {
-            dpx_warning("CMap have higher supplmement number.");
+            dpx_warning("CMap have higher supplement number.");
             dpx_warning("Some characters may not be displayed or printed.");
         }
     }
@@ -1218,7 +1206,7 @@ CIDFont_type0_t1cdofont (CIDFont *font)
 
     CIDFontInfo_close(&info);
 
-    if (verbose > 1)
+    if (dpx_conf.verbose_level > 1)
         dpx_message("[%u glyphs][%d bytes]", num_glyphs, destlen);
 
     CIDFont_type0_add_CIDSet(font, used_chars, last_cid);

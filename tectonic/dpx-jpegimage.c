@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -56,6 +56,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-mfileio.h"
@@ -269,7 +270,7 @@ jpeg_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
     pdf_add_dict(stream_dict, pdf_new_name("Filter"), pdf_new_name("DCTDecode"));
 
     /* XMP Metadata */
-    if (pdf_get_version() >= 4) {
+    if (pdf_check_version(1, 4) >= 0) {
         if (j_info.flags & HAVE_APPn_XMP) {
             pdf_obj *XMP_stream;
 
@@ -943,6 +944,12 @@ JPEG_copy_stream (struct JPEG_info *j_info, pdf_obj *stream, rust_input_handle_t
     return (found_SOFn ? 0 : -1);
 }
 
+/* Adobe Technical Note #5116 "Supporting the DCT Filters in PostScript Level 2" 
+ * 6. "DCTDecode Filter Summary"
+ *    ... APPn (application-specific) markers are skipped over harmlessly except
+ *   for the Adobe reserved marker described later.
+ *
+ */
 #define SET_SKIP(j,c) if ((c) < MAX_COUNT) {                    \
         (j)->skipbits[(c) / 8] |= (1 << (7 - ((c) % 8)));       \
     }
@@ -978,11 +985,17 @@ JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
                         return -1;
                     length -= 5;
                     if (!memcmp(app_sig, "JFIF\000", 5)) {
+                        /* APP0 JFIF marker preserved */
                         j_info->flags |= HAVE_APPn_JFIF;
                         length -= read_APP0_JFIF(j_info, handle);
                     } else if (!memcmp(app_sig, "JFXX", 5)) {
                         length -= read_APP0_JFXX(handle, length);
+                        SET_SKIP(j_info, count);
+                    } else {
+                        SET_SKIP(j_info, count);
                     }
+                } else {
+                    SET_SKIP(j_info, count);
                 }
                 ttstub_input_seek(handle, length, SEEK_CUR);
                 break;
@@ -992,6 +1005,7 @@ JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
                         return -1;
                     length -= 5;
                     if (!memcmp(app_sig, "Exif\000", 5)) {
+                        /* APP1 Exif marker preserved */
                         j_info->flags |= HAVE_APPn_Exif;
                         length -= read_APP1_Exif(j_info, handle, length);
                     } else if (!memcmp(app_sig, "http:", 5) && length > 24) {
@@ -1001,9 +1015,11 @@ JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
                         if (!memcmp(app_sig, "//ns.adobe.com/xap/1.0/\000", 24)) {
                             j_info->flags |= HAVE_APPn_XMP;
                             length -= read_APP1_XMP(j_info, handle, length);
-                            SET_SKIP(j_info, count);
                         }
+                        SET_SKIP(j_info, count);
                     }
+                } else {
+                    SET_SKIP(j_info, count);
                 }
                 ttstub_input_seek(handle, length, SEEK_CUR);
                 break;
@@ -1015,10 +1031,10 @@ JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
                     if (!memcmp(app_sig, "ICC_PROFILE\000", 12)) {
                         j_info->flags |= HAVE_APPn_ICC;
                         length -= read_APP2_ICC(j_info, handle, length);
-                        SET_SKIP(j_info, count);
                     }
                 }
                 ttstub_input_seek(handle, length, SEEK_CUR);
+                SET_SKIP(j_info, count);
                 break;
             case JM_APP14:
                 if (length > 5) {
@@ -1026,11 +1042,14 @@ JPEG_scan_file (struct JPEG_info *j_info, rust_input_handle_t handle)
                         return -1;
                     length -= 5;
                     if (!memcmp(app_sig, "Adobe", 5)) {
+                        /* APP14 Adobe marker preserved */
                         j_info->flags |= HAVE_APPn_ADOBE;
                         length -= read_APP14_Adobe(j_info, handle);
                     } else {
                         SET_SKIP(j_info, count);
                     }
+                } else {
+                    SET_SKIP(j_info, count);
                 }
                 ttstub_input_seek(handle, length, SEEK_CUR);
                 break;

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2007-2020 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dpx-dpxconf.h"
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
@@ -66,6 +67,7 @@ struct pdf_obj
     unsigned int refcount;  /* Number of links to this object */
     int      flags;
     void    *data;
+    /* Tectonic: not including PDFOBJ_DEBUG #ifdefs */
 };
 
 struct pdf_boolean
@@ -200,7 +202,7 @@ static pdf_obj *xref_stream;
 
 /* Internal static routines */
 
-static int parse_pdf_version (rust_input_handle_t handle, unsigned int *ret_version);
+static int check_for_pdf_version (rust_input_handle_t handle);
 
 static void pdf_flush_obj (pdf_obj *object, rust_output_handle_t handle);
 static void pdf_label_obj (pdf_obj *object);
@@ -240,7 +242,6 @@ static void release_dict (pdf_dict *dict);
 static void write_stream   (pdf_stream *stream, rust_output_handle_t handle);
 static void release_stream (pdf_stream *stream);
 
-static int  verbose = 0;
 static char compression_level = 9;
 static char compression_use_predictor = 1;
 
@@ -264,16 +265,10 @@ pdf_set_compression (int level)
     return;
 }
 
-void
-pdf_set_use_predictor (int bval)
-{
-    compression_use_predictor = bval ? 1 : 0;
-}
-
-static unsigned int pdf_version = PDF_VERSION_DEFAULT;
+static int pdf_version = PDF_VERSION_DEFAULT;
 
 void
-pdf_set_version (unsigned version)
+pdf_set_version (int version)
 {
     /* Don't forget to update CIDFont_stdcc_def[] in cid.c too! */
     if (version >= PDF_VERSION_MIN && version <= PDF_VERSION_MAX) {
@@ -281,22 +276,28 @@ pdf_set_version (unsigned version)
     }
 }
 
-unsigned int
+int
 pdf_get_version (void)
 {
     return pdf_version;
 }
 
 int
-pdf_obj_get_verbose(void)
+pdf_get_version_major (void)
 {
-    return verbose;
+    return pdf_version/10;
 }
 
-void
-pdf_obj_set_verbose(int level)
+int
+pdf_get_version_minor (void)
 {
-    verbose = level;
+    return pdf_version%10;
+}
+
+int
+pdf_check_version (int major, int minor)
+{
+  return (pdf_version >= major*10+minor) ? 0 : -1;
 }
 
 static pdf_obj *current_objstm = NULL;
@@ -319,7 +320,8 @@ add_xref_entry (unsigned label, unsigned char type, unsigned int field2, unsigne
 
 #define BINARY_MARKER "%\344\360\355\370\n"
 void
-pdf_out_init (const char *filename, bool do_encryption, bool enable_object_stream)
+pdf_out_init (const char *filename,
+              bool do_encryption, bool enable_objstm, bool enable_predictor)
 {
     char v;
 
@@ -328,8 +330,8 @@ pdf_out_init (const char *filename, bool do_encryption, bool enable_object_strea
     add_xref_entry(0, 0, 0, 0xffff);
     next_label = 1;
 
-    if (pdf_version >= 5) {
-        if (enable_object_stream) {
+    if (pdf_version >= 15) {
+        if (enable_objstm) {
             xref_stream = pdf_new_stream(STREAM_COMPRESS);
             xref_stream->flags |= OBJ_NO_ENCRYPT;
             trailer_dict = pdf_stream_dict(xref_stream);
@@ -358,14 +360,18 @@ pdf_out_init (const char *filename, bool do_encryption, bool enable_object_strea
             _tt_abort("Unable to open file.");
     }
 
-    pdf_out(pdf_output_handle, "%PDF-1.", strlen("%PDF-1."));
-    v = '0' + pdf_version;
+    pdf_out(pdf_output_handle, "%PDF-", strlen("%PDF-"));
+    v = '0' + (pdf_version / 10);
+    pdf_out(pdf_output_handle, &v, 1);
+    pdf_out(pdf_output_handle, ".", 1);
+    v = '0' + (pdf_version % 10);
     pdf_out(pdf_output_handle, &v, 1);
     pdf_out(pdf_output_handle, "\n", 1);
     pdf_out(pdf_output_handle, BINARY_MARKER, strlen(BINARY_MARKER));
 
     enc_mode = false;
     doc_enc_mode = do_encryption;
+    compression_use_predictor = enable_predictor;
 }
 
 static void
@@ -493,14 +499,16 @@ pdf_out_flush (void)
         pdf_out(pdf_output_handle, format_buffer, length);
         pdf_out(pdf_output_handle, "%%EOF\n", 6);
 
-        if (verbose) {
+        if (dpx_conf.verbose_level > 0) {
             if (compression_level > 0) {
                 dpx_message("Compression saved %d bytes%s\n", compression_saved,
-                     pdf_version < 5 ? ". Try \"-V 5\" for better compression" : "");
+                     pdf_version < 15 ? ". Try \"-V 1.5\" for better compression" : "");
             }
         }
 
         ttstub_output_close(pdf_output_handle);
+        pdf_output_file_position = 0;
+        pdf_output_line_position = 0;
         pdf_output_handle = NULL;
     }
 }
@@ -872,20 +880,20 @@ pdf_new_string (const void *str, size_t length)
     pdf_obj    *result;
     pdf_string *data;
 
-    assert(str);
-
     result = pdf_new_obj(PDF_STRING);
     data   = NEW(1, pdf_string);
     result->data = data;
     data->length = length;
 
-    if (length) {
+    if (str && length) {
         data->string = NEW(length+1, unsigned char);
         memcpy(data->string, str, length);
         /* Shouldn't assume NULL terminated. */
         data->string[length] = '\0';
-    } else
+    } else {
         data->string = NULL;
+        data->length = 0;
+    }
 
     return result;
 }
@@ -1622,20 +1630,6 @@ filter_PNG15_apply_filter (unsigned char *raster,
     return  dst;
 }
 
-/* TIFF predictor filter support
- *
- * Many PDF viewers seems to have broken TIFF 2 predictor support?
- * Ony GhostScript and MuPDF render 4bpc grayscale image with TIFF 2 predictor
- * filter applied correctly.
- *
- *  Acrobat Reader DC  2015.007.20033  NG
- *  Adobe Acrobat X    10.1.13         NG
- *  Foxit Reader       4.1.5.425       NG
- *  GhostScript        9.16            OK
- *  SumatraPDF(MuPDF)  v3.0            OK
- *  Evince(poppler)    2.32.0.145      NG (1bit and 4bit broken)
- */
-
 /* This modifies "raster" itself! */
 static void
 apply_filter_TIFF2_1_2_4 (unsigned char *raster,
@@ -1699,8 +1693,9 @@ apply_filter_TIFF2_1_2_4 (unsigned char *raster,
             }
         }
 
-        if (outbits > 0)
+        if (outbits > 0) {
             raster[k] = outbuf << (8 - outbits);
+        }
     }
 
     free(prev);
@@ -2023,48 +2018,9 @@ pdf_add_stream (pdf_obj *stream, const void *stream_data, int length)
 
 #if HAVE_ZLIB
 #define WBUF_SIZE 4096
-int
-pdf_add_stream_flate (pdf_obj *dst, const void *data, int len)
-{
-    z_stream z;
-    Bytef    wbuf[WBUF_SIZE];
-
-    z.zalloc = Z_NULL; z.zfree = Z_NULL; z.opaque = Z_NULL;
-
-    z.next_in  = data; z.avail_in  = len;
-    z.next_out = (Bytef *) wbuf; z.avail_out = WBUF_SIZE;
-
-    if (inflateInit(&z) != Z_OK) {
-        dpx_warning("inflateInit() failed.");
-        return -1;
-    }
-
-    for (;;) {
-        int status;
-        status = inflate(&z, Z_NO_FLUSH);
-        if (status == Z_STREAM_END)
-            break;
-        else if (status != Z_OK) {
-            dpx_warning("inflate() failed. Broken PDF file?");
-            inflateEnd(&z);
-            return -1;
-        }
-
-        if (z.avail_out == 0) {
-            pdf_add_stream(dst, wbuf, WBUF_SIZE);
-            z.next_out  = wbuf;
-            z.avail_out = WBUF_SIZE;
-        }
-    }
-
-    if (WBUF_SIZE - z.avail_out > 0)
-        pdf_add_stream(dst, wbuf, WBUF_SIZE - z.avail_out);
-
-    return (inflateEnd(&z) == Z_OK ? 0 : -1);
-}
 
 static int
-get_decode_parms (struct decode_parms *parms, pdf_obj *dict)
+filter_get_DecodeParms_FlateDecode (struct decode_parms *parms, pdf_obj *dict)
 {
     pdf_obj *tmp;
 
@@ -2078,18 +2034,25 @@ get_decode_parms (struct decode_parms *parms, pdf_obj *dict)
     parms->columns   = 1;
 
     tmp = pdf_deref_obj(pdf_lookup_dict(dict, "Predictor"));
-    if (tmp)
+    if (tmp) {
         parms->predictor = pdf_number_value(tmp);
+        pdf_release_obj(tmp);
+    }
     tmp = pdf_deref_obj(pdf_lookup_dict(dict, "Colors"));
-    if (tmp)
+    if (tmp) {
         parms->colors = pdf_number_value(tmp);
+        pdf_release_obj(tmp);
+    }
     tmp = pdf_deref_obj(pdf_lookup_dict(dict, "BitsPerComponent"));
-    if (tmp)
+    if (tmp) {
         parms->bits_per_component = pdf_number_value(tmp);
+        pdf_release_obj(tmp);
+    }
     tmp = pdf_deref_obj(pdf_lookup_dict(dict, "Columns"));
-    if (tmp)
+    if (tmp) {
         parms->columns = pdf_number_value(tmp);
-
+        pdf_release_obj(tmp);
+    }
     if (parms->bits_per_component != 1 &&
         parms->bits_per_component != 2 &&
         parms->bits_per_component != 4 &&
@@ -2154,10 +2117,10 @@ filter_row_TIFF2 (unsigned char *dst, const unsigned char *src,
  * Especially, calling pdf_add_stream() for each 4 bytes append is highly
  * inefficient.
  */
-static int
-filter_decoded (pdf_obj *dst, const void *src, int srclen,
-                struct decode_parms *parms)
+static pdf_obj *
+filter_stream_decode_Predictor (const void *src, size_t srclen, struct decode_parms *parms)
 {
+    pdf_obj             *dst;
     const unsigned char *p = (const unsigned char *) src;
     const unsigned char *endptr = p + srclen;
     unsigned char *prev, *buf;
@@ -2165,6 +2128,8 @@ filter_decoded (pdf_obj *dst, const void *src, int srclen,
     int bytes_per_pixel = (bits_per_pixel + 7) / 8;
     int length = (parms->columns * bits_per_pixel + 7) / 8;
     int i, error = 0;
+
+    dst = pdf_new_stream(0);
 
     prev = NEW(length, unsigned char);
     buf  = NEW(length, unsigned char);
@@ -2291,16 +2256,21 @@ filter_decoded (pdf_obj *dst, const void *src, int srclen,
     free(prev);
     free(buf);
 
-    return error;
+    if (error) {
+        pdf_release_obj(dst);
+        dst = NULL;
+    }
+
+    return dst;
 }
 
-static int
-pdf_add_stream_flate_filtered (pdf_obj *dst, const void *data, int len, struct decode_parms *parms)
+static pdf_obj *
+filter_stream_decode_FlateDecode (const void *data, size_t len, struct decode_parms *parms)
 {
+    pdf_obj *dst;
     pdf_obj *tmp;
     z_stream z;
     Bytef    wbuf[WBUF_SIZE];
-    int      error;
 
     z.zalloc = Z_NULL; z.zfree = Z_NULL; z.opaque = Z_NULL;
 
@@ -2309,19 +2279,22 @@ pdf_add_stream_flate_filtered (pdf_obj *dst, const void *data, int len, struct d
 
     if (inflateInit(&z) != Z_OK) {
         dpx_warning("inflateInit() failed.");
-        return -1;
+        return NULL;
     }
 
     tmp = pdf_new_stream(0);
     for (;;) {
         int status;
         status = inflate(&z, Z_NO_FLUSH);
-        if (status == Z_STREAM_END)
+        if (status == Z_STREAM_END) {
             break;
-        else if (status != Z_OK) {
-            dpx_warning("inflate() failed. Broken PDF file?");
+        } else if (status == Z_DATA_ERROR && z.avail_in == 0) {
+            dpx_warning("Ignoring zlib error: status=%d, message=\"%s\"", status, z.msg);
+        } else if (status != Z_OK) {
+            dpx_warning("inflate() failed (status=%d, message=\"%s\"", status, z.msg);
             inflateEnd(&z);
-            return -1;
+            pdf_release_obj(tmp);
+            return NULL;
         }
 
         if (z.avail_out == 0) {
@@ -2334,83 +2307,312 @@ pdf_add_stream_flate_filtered (pdf_obj *dst, const void *data, int len, struct d
     if (WBUF_SIZE - z.avail_out > 0)
         pdf_add_stream(tmp, wbuf, WBUF_SIZE - z.avail_out);
 
-    error = filter_decoded(dst, pdf_stream_dataptr(tmp), pdf_stream_length(tmp), parms);
+    if (inflateEnd(&z) == Z_OK) {
+        if (parms) {
+            dst = filter_stream_decode_Predictor(pdf_stream_dataptr(tmp), pdf_stream_length(tmp), parms);
+        } else {
+            dst = pdf_link_obj(tmp);
+        }
+    } else {
+        dst = NULL;
+    }
     pdf_release_obj(tmp);
 
-    return ((!error && inflateEnd(&z) == Z_OK) ? 0 : -1);
+    return dst;
 }
 #endif
+
+static pdf_obj *
+filter_stream_decode_ASCIIHexDecode (const void *data, size_t len)
+{
+  pdf_obj       *dst;
+  int            eod, error;
+  const char    *p = (const char *) data;
+  const char    *endptr = p + len;
+  unsigned char *buf, ch;
+  size_t         pos, n;
+
+  buf = NEW((len+1)/2, unsigned char);
+  skip_white(&p, endptr);
+  ch = 0; n = 0; pos = 0; eod = 0; error = 0;
+  while (p < endptr && !error && !eod) {
+    char c1, val;
+    c1 = p[0];
+    if (c1 >= 'A' && c1 <= 'F') {
+      val = c1 - 'A' + 10;
+    } else if (c1 >= 'a' && c1 <= 'f') {
+      val = c1 - 'a' + 10;
+    } else if (c1 >= '0' && c1 <= '9') {
+      val = c1 - '0';
+    } else if (c1 == '>') {
+      val = 0;
+      eod = 1;
+      if ((pos % 2) == 0)
+        break;
+    } else {
+      error = -1;
+      break;
+    }
+    if (pos % 2) {
+      buf[n] = ch + val;
+      n++;
+      ch = 0;
+    } else {
+      ch = val << 4;
+    }
+    pos++; p++;
+    skip_white(&p, endptr);
+  }
+  if (error || !eod) {
+    dpx_warning("Invalid ASCIIHex data seen: %s", error ? "Invalid character" : "No EOD marker");
+    dst = NULL;
+  } else {
+    dst = pdf_new_stream(0);
+    pdf_add_stream(dst, buf, n);
+  }
+  free(buf);
+
+  return dst;
+}
+
+/* Percent sign is not start of comment here.
+ * We need this for reading Ascii85 encoded data.
+ */
+#define is_space(c) ((c) == ' '  || (c) == '\t' || (c) == '\f' || \
+                    (c) == '\r' || (c) == '\n' || (c) == '\0')
+static void
+skip_white_a85 (const char **p, const char *endptr)
+{
+  while (*p < endptr && (is_space(**p))) {
+    (*p)++;
+  }
+}
+
+static pdf_obj *
+filter_stream_decode_ASCII85Decode (const void *data, size_t len)
+{
+  pdf_obj       *dst;
+  int            eod, error;
+  const char    *p = (const char *) data;
+  const char    *endptr = p + len;
+  unsigned char *buf;
+  size_t         n;
+
+  buf = NEW(((len+4)/5)*4, unsigned char);
+  skip_white_a85(&p, endptr);
+  n = 0; eod = 0; error = 0;
+  while (p < endptr && !error && !eod) {
+    char q[5] = {'u', 'u', 'u', 'u', 'u'};
+    int  m;
+    char ch;
+
+    ch = p[0];
+    p++;
+    skip_white_a85(&p, endptr);
+    if (ch == 'z') {
+      memset(buf+n, 0, 4);
+      n += 4;
+      continue;
+    } else if (ch == '~') {
+      if (p < endptr && p[0] == '>') {
+        eod = 1;
+        p++;
+      } else {
+        error = -1;
+      }
+      break;
+    }
+    q[0] = ch;
+    for (m = 1; m < 5 && p < endptr; m++) {
+      ch = p[0];
+      p++;
+      skip_white_a85(&p, endptr);
+      if (ch == '~') {
+        if (p < endptr && p[0] == '>') {
+          eod = 1;
+          p++;
+        } else {
+          error = -1;
+        }
+        break;
+      } else if (ch < '!' || ch > 'u') {
+        error = -1;
+        break;
+      } else {
+        q[m] = ch;
+      }
+    }
+    if (!error) {
+      uint32_t val = 0;
+      int      i;
+      if (m <= 1) {
+        error = -1;
+        break;
+      }
+      val = 85*85*85*(q[0] - '!') + 85*85*(q[1] - '!')
+              + 85*(q[2] - '!') + (q[3] - '!');
+      /* Check overflow */
+      if (val > UINT32_MAX / 85) {
+        error = -1;
+        break;
+      } else {
+        val = 85 * val;
+        if (val > UINT32_MAX - (q[4] - '!')) {
+          error = -1;
+          break;
+        }
+        val += (q[4] - '!');
+      }
+      if (!error) {
+        for (i = 3; i >= 0; i--) {
+          buf[n + i] = val & 0xff;
+          val /= 256;
+        }
+        n += m - 1;
+      }
+    }
+  }
+
+  if (error) {
+    dpx_warning("Error in reading ASCII85 data.");
+  } else if (!eod) {
+    dpx_warning("Error in reading ASCII85 data: No EOD");
+    dst = NULL;
+  } else {
+    dst = pdf_new_stream(0);
+    pdf_add_stream(dst, buf, n);
+  }
+  free(buf);
+
+  return dst;
+}
+
+static pdf_obj *
+filter_stream_decode (const char *filter_name, pdf_obj *src, pdf_obj *parm)
+{
+    pdf_obj    *dec;
+    const char *stream_data;
+    size_t stream_length;
+
+    if (!filter_name)
+        return pdf_link_obj(src);
+
+    stream_data   = pdf_stream_dataptr(src);
+    stream_length = pdf_stream_length(src);
+
+  if (!strcmp(filter_name, "ASCIIHexDecode")) {
+    dec = filter_stream_decode_ASCIIHexDecode(stream_data, stream_length);
+  } else if (!strcmp(filter_name, "ASCII85Decode")) {
+    dec = filter_stream_decode_ASCII85Decode(stream_data, stream_length);
+#if HAVE_ZLIB
+  } else if (!strcmp(filter_name, "FlateDecode")) {
+    struct decode_parms decode_parm;
+    if (parm)
+      filter_get_DecodeParms_FlateDecode(&decode_parm, parm);
+    dec = filter_stream_decode_FlateDecode(stream_data, stream_length, parm ? &decode_parm : NULL);
+#endif /* HAVE_ZLIB */
+  } else {
+    dpx_warning("DecodeFilter \"%s\" not supported.", filter_name);
+    dec = NULL;
+  }
+
+  return dec;
+}
 
 int
 pdf_concat_stream (pdf_obj *dst, pdf_obj *src)
 {
-    const char *stream_data;
-    int         stream_length;
-    pdf_obj    *stream_dict;
-    pdf_obj    *filter;
-    int         error = 0;
+  pdf_obj *filtered;
+  pdf_obj *stream_dict;
+  pdf_obj *filter, *parms;
+  int      error = 0;
 
-    if (!PDF_OBJ_STREAMTYPE(dst) || !PDF_OBJ_STREAMTYPE(src))
-        _tt_abort("Invalid type.");
+  if (!PDF_OBJ_STREAMTYPE(dst) || !PDF_OBJ_STREAMTYPE(src)) {
+    dpx_warning("Passed invalid type in pdf_concat_stream().");
+    return -1;
+  }
 
-    stream_data   = pdf_stream_dataptr(src);
-    stream_length = pdf_stream_length (src);
-    stream_dict   = pdf_stream_dict   (src);
+  stream_dict = pdf_stream_dict(src);
 
-    filter = pdf_lookup_dict(stream_dict, "Filter");
-    if (!filter) {
-        pdf_add_stream(dst, stream_data, stream_length);
+  filter = pdf_lookup_dict(stream_dict, "Filter");
+  if (!filter) {
+    pdf_add_stream(dst, pdf_stream_dataptr(src), pdf_stream_length(src));
+    return 0;
+  }
+  if (pdf_lookup_dict(stream_dict, "DecodeParms")) {
+    /* Dictionary or array */
+    parms = pdf_deref_obj(pdf_lookup_dict(stream_dict, "DecodeParms"));
+    if (!parms) {
+      dpx_warning("Failed to deref DeocdeParms...");
+      return -1;
+    } else if (!PDF_OBJ_ARRAYTYPE(parms) && !PDF_OBJ_DICTTYPE(parms)) {
+      dpx_warning("PDF dict or array expected for DecodeParms...");
+      pdf_release_obj(parms);
+      return -1;
     }
-#if HAVE_ZLIB
-    else {
-        struct decode_parms parms;
-        int    have_parms = 0;
+  } else {
+    parms = NULL;
+  }
+  if (PDF_OBJ_ARRAYTYPE(filter)) {
+    int      i, num;
+    pdf_obj *prev = NULL;
 
-        if (pdf_lookup_dict(stream_dict, "DecodeParms")) {
-            pdf_obj *tmp;
-
-            /* Dictionary or array */
-            tmp = pdf_deref_obj(pdf_lookup_dict(stream_dict, "DecodeParms"));
-            if (PDF_OBJ_ARRAYTYPE(tmp)) {
-                if (pdf_array_length(tmp) > 1) {
-                    dpx_warning("Unexpected size for DecodeParms array.");
-                    return -1;
-                }
-                tmp = pdf_deref_obj(pdf_get_array(tmp, 0));
-            }
-            if (!PDF_OBJ_DICTTYPE(tmp)) {
-                dpx_warning("PDF dict expected for DecodeParms...");
-                return -1;
-            }
-            error = get_decode_parms(&parms, tmp);
-            if (error)
-                _tt_abort("Invalid value(s) in DecodeParms dictionary.");
-            have_parms = 1;
-        }
-        if (PDF_OBJ_ARRAYTYPE(filter)) {
-            if (pdf_array_length(filter) > 1) {
-                dpx_warning("Multiple DecodeFilter not supported.");
-                return -1;
-            }
-            filter = pdf_get_array(filter, 0);
-        }
-        if (PDF_OBJ_NAMETYPE(filter)) {
-            char  *filter_name = pdf_name_value(filter);
-            if (streq_ptr(filter_name, "FlateDecode")) {
-                if (have_parms)
-                    error = pdf_add_stream_flate_filtered(dst, stream_data, stream_length, &parms);
-                else
-                    error = pdf_add_stream_flate(dst, stream_data, stream_length);
-            } else {
-                dpx_warning("DecodeFilter \"%s\" not supported.", filter_name);
-                error = -1;
-            }
-        } else
-            _tt_abort("Broken PDF file?");
+    num = pdf_array_length(filter);
+    if (parms) {
+      if (!PDF_OBJ_ARRAYTYPE(parms) || pdf_array_length(parms) != num) {
+        dpx_warning("Invalid DecodeParam object found.");
+        pdf_release_obj(parms);
+        return -1;
+      }
     }
-#endif /* HAVE_ZLIB */
+    if (num == 0) {
+      filtered = pdf_link_obj(src);
+    } else {
+      filtered = NULL;
+      prev = pdf_link_obj(src);
+      for (i = 0; i < num && prev != NULL; i++) {
+        pdf_obj *tmp1, *tmp2;
 
-    return error;
+        tmp1 = pdf_deref_obj(pdf_get_array(filter, i));
+        if (parms) {
+          tmp2 = pdf_deref_obj(pdf_get_array(parms, i));
+        } else {
+          tmp2 = NULL;
+        }
+        if (PDF_OBJ_NAMETYPE(tmp1)) {
+          filtered = filter_stream_decode(pdf_name_value(tmp1), prev, tmp2);
+        } else if (PDF_OBJ_NULLTYPE(tmp1)) {
+          filtered = pdf_link_obj(prev);
+        } else {
+          dpx_warning("Unexpected object found for /Filter...");
+          filtered = NULL;
+        }
+        if (prev)
+          pdf_release_obj(prev);
+        if (tmp1)
+          pdf_release_obj(tmp1);
+        if (tmp2)
+          pdf_release_obj(tmp2);
+        prev = filtered;
+      }
+    }
+  } else if (PDF_OBJ_NAMETYPE(filter)) {
+    filtered = filter_stream_decode(pdf_name_value(filter), src, parms);
+  } else {
+    dpx_warning("Invalid value for /Filter found.");
+    filtered = NULL;
+  }
+  if (parms)
+    pdf_release_obj(parms);
+  if (filtered) {
+    pdf_add_stream(dst, pdf_stream_dataptr(filtered), pdf_stream_length(filtered));
+    pdf_release_obj(filtered);
+    error = 0;
+  } else {
+    error = -1;
+  }
+
+  return error;
 }
 
 static pdf_obj *
@@ -3405,11 +3607,9 @@ parse_xref_stream (pdf_file *pf, int xref_pos, pdf_obj **trailer)
         while (i < index_len) {
             pdf_obj *first = pdf_get_array(index_obj, i++);
             size_obj  = pdf_get_array(index_obj, i++);
-            if (!PDF_OBJ_NUMBERTYPE(first) ||
-                !PDF_OBJ_NUMBERTYPE(size_obj) ||
+            if (!PDF_OBJ_NUMBERTYPE(first) || !PDF_OBJ_NUMBERTYPE(size_obj) ||
                 parse_xrefstm_subsec(pf, &p, &length, W, wsum,
-                                     (int) pdf_number_value(first),
-                                     (int) pdf_number_value(size_obj)))
+                                     (int) pdf_number_value(first), (int) pdf_number_value(size_obj)))
                 goto error;
         }
     } else if (parse_xrefstm_subsec(pf, &p, &length, W, wsum, 0, size))
@@ -3548,7 +3748,7 @@ pdf_files_init (void)
     ht_init_table(pdf_files, (void (*)(void *)) pdf_file_free);
 }
 
-unsigned int
+int
 pdf_file_get_version (pdf_file *pf)
 {
     assert(pf);
@@ -3562,6 +3762,10 @@ pdf_file_get_trailer (pdf_file *pf)
     return pdf_link_obj(pf->trailer);
 }
 
+/* FIXME:
+ * pdf_file_get_trailer() does pdf_link_obj() but
+ * pdf_file_get_catalog() does not. Why?
+ */
 pdf_obj *
 pdf_file_get_catalog (pdf_file *pf)
 {
@@ -3583,16 +3787,15 @@ pdf_open (const char *ident, rust_input_handle_t handle)
         pf->handle = handle;
     } else {
         pdf_obj *new_version;
-        unsigned int version = 0;
-        int r = parse_pdf_version(handle, &version);
+        int version = check_for_pdf_version(handle);
 
-        if (r < 0 || version < 1 || version > pdf_version) {
-            dpx_warning("pdf_open: Not a PDF 1.[1-%u] file.", pdf_version);
-/*
-  Try to embed the PDF image, even if the PDF version is newer than
-  the setting.
-  return NULL;
-*/
+        if (version < 10)
+            dpx_warning("Unrecognized PDF version specified for input PDF file: %d.%d",
+                pdf_version/10, pdf_version%10);
+        else if (version > pdf_version) {
+            dpx_warning("Trying to include PDF file with version (%d.%d), which is " \
+                "newer than current output PDF setting (%d.%d).",
+                version/10, version%10, pdf_version/10, pdf_version%10);
         }
 
         pf = pdf_file_new(handle);
@@ -3614,17 +3817,17 @@ pdf_open (const char *ident, rust_input_handle_t handle)
 
         new_version = pdf_deref_obj(pdf_lookup_dict(pf->catalog, "Version"));
         if (new_version) {
-            unsigned int minor;
+            unsigned int major, minor;
 
             if (!PDF_OBJ_NAMETYPE(new_version) ||
-                sscanf(pdf_name_value(new_version), "1.%u", &minor) != 1) {
+                sscanf(pdf_name_value(new_version), "%u.%u", &major, &minor) != 2) {
                 pdf_release_obj(new_version);
                 dpx_warning("Illegal Version entry in document catalog. Broken PDF file?");
                 goto error;
             }
 
-            if (pf->version < minor)
-                pf->version = minor;
+            if (pf->version < major*10+minor)
+                pf->version = major*10+minor;
 
             pdf_release_obj(new_version);
         }
@@ -3656,37 +3859,33 @@ pdf_files_close (void)
 }
 
 static int
-parse_pdf_version (rust_input_handle_t handle, unsigned int *ret_version)
+check_for_pdf_version (rust_input_handle_t handle)
 {
     char buffer[10] = "\0\0\0\0\0\0\0\0\0";
-    unsigned int minor;
+    unsigned int major, minor;
 
     ttstub_input_seek(handle, 0, SEEK_SET);
     if (ttstub_input_read(handle, buffer, sizeof(buffer) - 1) != sizeof(buffer) - 1)
         return -1;
 
-    if (sscanf(buffer, "%%PDF-1.%u", &minor) != 1)
+    if (sscanf(buffer, "%%PDF-%u.%u", &major, &minor) != 2)
         return -1;
 
-    *ret_version = minor;
-
-    return 0;
+    return major*10+minor;
 }
 
 int
 check_for_pdf (rust_input_handle_t handle)
 {
-    int r;
-    unsigned int version;
+    int version;
 
-    r = parse_pdf_version(handle, &version);
-    if (r < 0)  /* not a PDF file */
+    version = check_for_pdf_version(handle);
+    if (version < 0)  /* not a PDF file */
         return 0;
 
     if (version <= pdf_version)
         return 1;
 
-    dpx_warning("Version of PDF file (1.%d) is newer than version limit specification.", version);
     return 1;
 }
 
@@ -3707,15 +3906,12 @@ import_dict (pdf_obj *key, pdf_obj *value, void *pdata)
     return 0;
 }
 
-static pdf_obj loop_marker = { PDF_OBJ_INVALID, 0, 0, 0, 0, NULL };
-
 static pdf_obj *
 pdf_import_indirect (pdf_obj *object)
 {
     pdf_file *pf = OBJ_FILE(object);
     unsigned int obj_num = OBJ_NUM(object);
     unsigned short obj_gen = OBJ_GEN(object);
-
     pdf_obj *ref;
 
     assert(pf);
@@ -3725,12 +3921,9 @@ pdf_import_indirect (pdf_obj *object)
         return pdf_new_null();
     }
 
-    if ((ref = pf->xref_table[obj_num].indirect)) {
-        if (ref == &loop_marker)
-            _tt_abort("Loop in object hierarchy detected. Broken PDF file?");
-        return  pdf_link_obj(ref);
-    } else {
-        pdf_obj *obj, *tmp;
+    ref = pf->xref_table[obj_num].indirect;
+    if (!ref) {
+        pdf_obj *obj, *reserved, *imported;
 
         obj = pdf_get_object(pf, obj_num, obj_gen);
         if (!obj) {
@@ -3738,18 +3931,35 @@ pdf_import_indirect (pdf_obj *object)
             return NULL;
         }
 
-        /* We mark the reference to be able to detect loops */
-        pf->xref_table[obj_num].indirect = &loop_marker;
+        /* Fix for circular reference issue
+        *
+        * Older version of dvipdfmx disallowed the following case of
+        * circular reference:
+        *   obj #1 --> << /Kids [2 0 R] >>
+        *   obj #2 --> << /Parents [1 0 R] >>
+        * The problem is in that dvipdfmx gives new labels to objects after they
+        * are completely read.
+        */
+        reserved = pdf_new_null(); /* for reservation of label */
+        pf->xref_table[obj_num].indirect = ref = pdf_new_ref(reserved);
+        imported = pdf_import_object(obj);
+        if (imported) {
+            if (imported->label) {
+                dpx_warning("Imported object already has a label: obj_id=%u", imported->label);
+            }
+            OBJ_OBJ(ref) = imported;
+            imported->label = reserved->label;
+            imported->generation = reserved->generation;
+            reserved->label = 0;
+            reserved->generation = 0;
+            pdf_release_obj(imported);
+        }
 
-        tmp = pdf_import_object(obj);
-
-        pf->xref_table[obj_num].indirect = ref = pdf_ref_obj(tmp);
-
-        pdf_release_obj(tmp);
+        pdf_release_obj(reserved);
         pdf_release_obj(obj);
-
-        return  pdf_link_obj(ref);
     }
+
+    return pdf_link_obj(ref);
 }
 
 /*

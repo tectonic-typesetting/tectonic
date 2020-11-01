@@ -84,17 +84,10 @@ truedpi (const char *ident, double point_size, unsigned int bdpi)
 static FILE *
 dpx_open_pk_font_at (const char *ident, unsigned int dpi)
 {
-  FILE  *fp;
-  char  *fqpn;
   /*kpse_glyph_file_type kpse_file_info;*/
-
-  fqpn = NULL; /*kpse_find_glyph(ident, dpi, kpse_pk_format, &kpse_file_info);*/
-  if (!fqpn)
-    return  NULL;
-  fp   = fopen(fqpn, FOPEN_RBIN_MODE);
-  free(fqpn);
-
-  return  fp;
+  /*char * fqpn = kpse_find_glyph(ident, dpi, kpse_pk_format, &kpse_file_info);*/
+  dpx_warning("Tectonic unable to generate PK font \"%s\" (dpi %u) on-the-fly", ident, dpi);
+  return NULL;
 }
 
 

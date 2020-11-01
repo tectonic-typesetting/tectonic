@@ -73,7 +73,9 @@ impl DepState {
         let mut include_paths = vec![];
 
         for dep in VCPKG_LIBS {
-            let library = vcpkg::find_package(dep)
+            let library = vcpkg::Config::new()
+                .cargo_metadata(false)
+                .find_package(dep)
                 .unwrap_or_else(|e| panic!("failed to load package {} from vcpkg: {}", dep, e));
             include_paths.extend(library.include_paths.iter().cloned());
         }
@@ -161,6 +163,11 @@ impl DepState {
             }
 
             DepState::VcPkg(_) => {
+                for dep in VCPKG_LIBS {
+                    vcpkg::find_package(dep).unwrap_or_else(|e| {
+                        panic!("failed to load package {} from vcpkg: {}", dep, e)
+                    });
+                }
                 if target.contains("-linux-") {
                     // add icudata to the end of the list of libs as vcpkg-rs
                     // does not order individual libraries as a single pass
@@ -311,6 +318,7 @@ fn main() {
         .file("tectonic/dpx-mem.c")
         .file("tectonic/dpx-mfileio.c")
         .file("tectonic/dpx-mpost.c")
+        .file("tectonic/dpx-mt19937ar.c")
         .file("tectonic/dpx-numbers.c")
         .file("tectonic/dpx-otl_conf.c")
         .file("tectonic/dpx-otl_opt.c")
