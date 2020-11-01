@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -25,6 +25,8 @@
 
 #include "dpx-core.h"
 
+#include <time.h>
+
 #undef  MIN
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #undef  MAX
@@ -34,6 +36,10 @@
 
 extern double min4(double v1, double v2, double v3, double v4);
 extern double max4(double v1, double v2, double v3, double v4);
+
+#define INVALID_EPOCH_VALUE ((time_t)-1)
+extern time_t dpx_util_get_unique_time_if_given (void);
+extern int    dpx_util_format_asn_date (char *date_string, int need_timezone);
 
 #ifndef is_space
 #define is_space(c) ((c) == ' '  || (c) == '\t' || (c) == '\f' || \

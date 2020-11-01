@@ -70,10 +70,9 @@ pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
 // Increase this whenever the engine internals change such that the contents
-// of the "format" files must be regenerated -- this includes changes to the
-// string pool.
+// of the "format" files must be regenerated.
 
-pub const FORMAT_SERIAL: u32 = 28;
+pub const FORMAT_SERIAL: u32 = 29;
 
 /// Compile LaTeX text to a PDF.
 ///
@@ -150,7 +149,7 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     };
 
     match files.remove(OsStr::new("texput.pdf")) {
-        Some(data) => Ok(data),
+        Some(file) => Ok(file.data),
         None => Err(errmsg!(
             "LaTeX didn't report failure, but no PDF was created (??)"
         )),

@@ -30,6 +30,13 @@ pub mod zipbundle;
 pub trait InputFeatures: Read {
     fn get_size(&mut self) -> Result<usize>;
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64>;
+
+    /// Get the modification time of this file as a Unix time. If that quantity
+    /// is not meaningfully defined for this input, return `Ok(None)`. This is
+    /// what the default implementation does.
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        Ok(None)
+    }
 }
 
 /// What kind of source an input file ultimately came from. We keep track of
@@ -205,6 +212,10 @@ impl Read for InputHandle {
 impl InputFeatures for InputHandle {
     fn get_size(&mut self) -> Result<usize> {
         self.inner.get_size()
+    }
+
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        self.inner.get_unix_mtime()
     }
 
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
@@ -494,6 +505,13 @@ impl<R: Read> InputFeatures for GzDecoder<R> {
         Err(ErrorKind::NotSizeable.into())
     }
 
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        // In principle we could arrange to potentially get an mtime from the
+        // underlying stream, but this API is only used for the \filemodtime
+        // primitive which shouldn't be getting access to gzipped streams.
+        Ok(None)
+    }
+
     fn try_seek(&mut self, _: SeekFrom) -> Result<u64> {
         Err(ErrorKind::NotSeekable.into())
     }
@@ -502,6 +520,10 @@ impl<R: Read> InputFeatures for GzDecoder<R> {
 impl InputFeatures for Cursor<Vec<u8>> {
     fn get_size(&mut self) -> Result<usize> {
         Ok(self.get_ref().len())
+    }
+
+    fn get_unix_mtime(&mut self) -> Result<Option<i64>> {
+        Ok(None)
     }
 
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {

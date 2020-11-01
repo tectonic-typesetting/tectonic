@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-   Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+   Copyright (C) 2007-2019 by Jin-Hwan Cho and Shunsaku Hirata,
    the dvipdfmx project team.
 
    Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -30,6 +30,7 @@
 
 #include "core-bridge.h"
 #include "dpx-bmpimage.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
 #include "dpx-epdf.h"
@@ -87,18 +88,12 @@ struct pdf_ximage_
 /* verbose, verbose, verbose... */
 struct opt_
 {
-    int    verbose;
     char  *cmdtmpl;
 };
 
 static struct opt_ _opts = {
-    0, NULL
+    NULL
 };
-
-void pdf_ximage_set_verbose (int level) {
-    _opts.verbose = level;
-}
-
 
 struct ic_
 {
@@ -172,7 +167,7 @@ pdf_close_images (void)
                  * We also use this to convert a PS file only once if multiple
                  * pages are imported from that file.
                  */
-                if (_opts.verbose > 1 && keep_cache != 1)
+                if (dpx_conf.verbose_level > 1 && dpx_conf.file.keep_cache != 1)
                     dpx_message("pdf_image>> deleting temporary file \"%s\"\n", I->filename);
                 dpx_delete_temp_file(I->filename, false); /* temporary filename freed here */
                 I->filename = NULL;
@@ -247,14 +242,14 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
 
     switch (format) {
     case IMAGE_TYPE_JPEG:
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("[JPEG]");
         if (jpeg_include_image(I, handle) < 0)
             goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
         break;
     case IMAGE_TYPE_JP2:
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("[JP2]");
         /*if (jp2_include_image(I, fp) < 0)*/
         dpx_warning("Tectonic: JP2 not yet supported");
@@ -262,21 +257,21 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         /*I->subtype = PDF_XOBJECT_TYPE_IMAGE;
           break;*/
     case IMAGE_TYPE_PNG:
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("[PNG]");
         if (png_include_image(I, handle) < 0)
             goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
         break;
     case IMAGE_TYPE_BMP:
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("[BMP]");
         if (bmp_include_image(I, handle) < 0)
             goto error;
         I->subtype = PDF_XOBJECT_TYPE_IMAGE;
         break;
     case IMAGE_TYPE_PDF:
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("[PDF]");
         {
             int result = pdf_include_page(I, handle, fullname, options);
@@ -284,18 +279,18 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
             if (result != 0)
                 goto error;
         }
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message(",Page:%d", I->attr.page_no);
         I->subtype  = PDF_XOBJECT_TYPE_FORM;
         break;
     case IMAGE_TYPE_EPS:
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("[EPS]");
         dpx_warning("sorry, PostScript images are not supported by Tectonic");
         dpx_warning("for details, please see https://github.com/tectonic-typesetting/tectonic/issues/27");
         goto error;
     default:
-        if (_opts.verbose)
+        if (dpx_conf.verbose_level > 0)
             dpx_message("[UNKNOWN]");
         /* Tectonic: this used to try ps_include_page() */
         goto error;
@@ -319,7 +314,6 @@ error:
     pdf_clean_ximage_struct(I);
     return -1;
 }
-
 
 int
 pdf_ximage_findresource (const char *ident, load_options options)
@@ -361,7 +355,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
         return -1;
     }
 
-    if (_opts.verbose)
+    if (dpx_conf.verbose_level > 0)
         dpx_message("(Image:%s", ident);
 
     format = source_image_type(handle);
@@ -369,7 +363,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
 
     ttstub_input_close(handle);
 
-    if (_opts.verbose)
+    if (dpx_conf.verbose_level > 0)
         dpx_message(")");
 
     if (id < 0)
@@ -496,7 +490,7 @@ pdf_ximage_set_form (pdf_ximage *I, void *form_info, pdf_obj *resource)
      */
     p1.x = info->bbox.llx; p1.y = info->bbox.lly;
     pdf_dev_transform(&p1, &info->matrix);
-    p2.x = info->bbox.urx; p1.y = info->bbox.lly;
+    p2.x = info->bbox.urx; p2.y = info->bbox.lly;
     pdf_dev_transform(&p2, &info->matrix);
     p3.x = info->bbox.urx; p3.y = info->bbox.ury;
     pdf_dev_transform(&p3, &info->matrix);

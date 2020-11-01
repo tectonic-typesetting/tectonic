@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2008-2017 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    Copyright (C) 2008-2019 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -36,6 +36,7 @@
 #include <time.h>
 
 #include "core-bridge.h"
+#include "dpx-dpxconf.h"
 #include "dpx-dpxutil.h"
 #include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
@@ -57,8 +58,6 @@
 #define PDFDOC_PAGES_ALLOC_SIZE   128u
 #define PDFDOC_ARTICLE_ALLOC_SIZE 16
 #define PDFDOC_BEAD_ALLOC_SIZE    16
-
-static int verbose = 0;
 
 static char  manual_thumb_enabled  = 0;
 static char *thumb_basename = NULL;
@@ -101,15 +100,6 @@ read_thumbnail (const char *thumb_filename)
   }
 
   return image_ref;
-}
-
-void
-pdf_doc_set_verbose (int level)
-{
-  verbose = level;
-  pdf_font_set_verbose(level);
-  pdf_color_set_verbose(level);
-  pdf_ximage_set_verbose(level);
 }
 
 typedef struct pdf_form
@@ -418,23 +408,6 @@ pdf_doc_set_eop_content (const char *content, unsigned int length)
   return;
 }
 
-/*
- * Docinfo
- */
-static int
-asn_date (char *date_string, time_t date)
-{
-  int32_t     tz_offset = 0;
-  struct tm  *bd_time = gmtime(&date);
-  sprintf(date_string, "D:%04d%02d%02d%02d%02d%02d%c%02d'%02d'",
-          bd_time->tm_year + 1900, bd_time->tm_mon + 1, bd_time->tm_mday,
-          bd_time->tm_hour, bd_time->tm_min, bd_time->tm_sec,
-          (tz_offset > 0) ? '+' : '-', abs(tz_offset) / 3600,
-                                      (abs(tz_offset) / 60) % 60);
-
-  return strlen(date_string);
-}
-
 static void
 pdf_doc_init_docinfo (pdf_doc *p)
 {
@@ -495,7 +468,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
   if (!pdf_lookup_dict(docinfo, "CreationDate") && source_date_epoch) {
     char now[80];
 
-    asn_date(now, source_date_epoch);
+    dpx_util_format_asn_date(now, 1);
     pdf_add_dict(docinfo,
                  pdf_new_name ("CreationDate"),
                  pdf_new_string(now, strlen(now)));
@@ -536,6 +509,9 @@ pdf_doc_get_page_resources (pdf_doc *p, const char *category)
   if (!resources) {
     resources = pdf_new_dict();
     pdf_add_dict(res_dict, pdf_new_name(category), resources);
+  } else if (pdf_obj_typeof(resources) == PDF_INDIRECT) {
+    resources = pdf_deref_obj(resources); /* FIXME: deref_obj increment link count */
+    pdf_release_obj(resources); /* FIXME: just to decrement link count */
   }
 
   return resources;
@@ -549,10 +525,6 @@ pdf_doc_add_page_resource (const char *category,
   pdf_obj *resources;
   pdf_obj *duplicate;
 
-  if (!PDF_OBJ_INDIRECTTYPE(resource_ref)) {
-    dpx_warning("Passed non indirect reference...");
-    resource_ref = pdf_ref_obj(resource_ref); /* leak */
-  }
   resources = pdf_doc_get_page_resources(p, category);
   duplicate = pdf_lookup_dict(resources, resource_name);
   if (duplicate && pdf_compare_reference(duplicate, resource_ref)) {
@@ -858,6 +830,184 @@ pdf_doc_get_page_count (pdf_file *pf)
   return count;
 }
 
+static int
+set_bounding_box (pdf_rect *bbox, enum pdf_page_boundary opt_bbox,
+                  pdf_obj *media_box, pdf_obj *crop_box,
+                  pdf_obj *art_box, pdf_obj *trim_box, pdf_obj *bleed_box)
+{
+  pdf_obj *box = NULL;
+
+  if (!media_box) {
+    dpx_warning("MediaBox not found in included PDF...");
+    return -1;
+  }
+#define VALIDATE_BOX(o) if ((o)) {\
+  if (!PDF_OBJ_ARRAYTYPE((o)) || pdf_array_length((o)) != 4) \
+    return -1;\
+}
+  VALIDATE_BOX(media_box);
+  VALIDATE_BOX(crop_box);
+  VALIDATE_BOX(art_box);
+  VALIDATE_BOX(trim_box);
+  VALIDATE_BOX(bleed_box);
+
+  if (opt_bbox == pdf_page_boundary__auto) {
+    if (crop_box)
+      box = pdf_link_obj(crop_box);
+    else if (art_box)
+      box = pdf_link_obj(art_box);
+    else if (trim_box)
+      box = pdf_link_obj(trim_box);
+    else if (bleed_box)
+      box = pdf_link_obj(bleed_box);
+    else {
+      box = pdf_link_obj(media_box);
+    }
+  } else {
+    if (!crop_box) {
+      crop_box = pdf_link_obj(media_box);
+    }
+    if (!art_box) {
+      art_box = pdf_link_obj(crop_box);
+    }
+    if (!trim_box) {
+      trim_box = pdf_link_obj(crop_box);
+    }
+    if (!bleed_box) {
+      bleed_box = pdf_link_obj(crop_box);
+    }
+    /* At this point all boxes must be defined. */
+    switch (opt_bbox) {
+    case pdf_page_boundary_cropbox:
+      box = pdf_link_obj(crop_box);
+      break;
+    case pdf_page_boundary_mediabox:
+      box = pdf_link_obj(media_box);
+      break;
+    case pdf_page_boundary_artbox:
+      box = pdf_link_obj(art_box);
+      break;
+    case pdf_page_boundary_trimbox:
+      box = pdf_link_obj(trim_box);
+      break;
+    case pdf_page_boundary_bleedbox:
+      box = pdf_link_obj(bleed_box);
+      break;
+    default:
+      box = pdf_link_obj(crop_box);
+      break;
+    }
+  }
+
+  if (!box) {
+    /* Impossible */
+    dpx_warning("No appropriate page boudary box found???");
+    return -1;
+  } else {
+    int i;
+
+    for (i = 4; i--; ) {
+      double x;
+      pdf_obj *tmp = pdf_deref_obj(pdf_get_array(box, i));
+      if (!PDF_OBJ_NUMBERTYPE(tmp)) {
+        pdf_release_obj(tmp);
+        pdf_release_obj(box);
+        return -1;
+      }
+      x = pdf_number_value(tmp);
+      switch (i) {
+      case 0: bbox->llx = x; break;
+      case 1: bbox->lly = x; break;
+      case 2: bbox->urx = x; break;
+      case 3: bbox->ury = x; break;
+      }
+      pdf_release_obj(tmp);
+    }
+
+    /* New scheme only for XDV files */
+    if (dpx_conf.compat_mode == dpx_mode_xdv_mode ||
+        opt_bbox != pdf_page_boundary__auto) {
+      for (i = 4; i--; ) {
+        double x;
+        pdf_obj *tmp = pdf_deref_obj(pdf_get_array(media_box, i));
+        if (!PDF_OBJ_NUMBERTYPE(tmp)) {
+          pdf_release_obj(tmp);
+          pdf_release_obj(box);
+          return -1;
+        }
+        x = pdf_number_value(tmp);
+        switch (i) {
+        case 0: if (bbox->llx < x) bbox->llx = x; break;
+        case 1: if (bbox->lly < x) bbox->lly = x; break;
+        case 2: if (bbox->urx > x) bbox->urx = x; break;
+        case 3: if (bbox->ury > x) bbox->ury = x; break;
+        }
+        pdf_release_obj(tmp);
+      }
+    }
+  }
+  pdf_release_obj(box);
+
+  return 0;
+}
+
+static int
+set_transform_matrix (pdf_tmatrix *matrix, pdf_rect *bbox, pdf_obj *rotate)
+{
+  double deg;
+  int    rot;
+
+  matrix->a = matrix->d = 1.0;
+  matrix->b = matrix->c = 0.0;
+  matrix->e = matrix->f = 0.0;
+  /* Handle Rotate */
+  if (rotate) {
+    if (!PDF_OBJ_NUMBERTYPE(rotate)) {
+      return -1;
+    } else {
+      deg = pdf_number_value(rotate);
+      if (deg - (int)deg != 0.0) {
+        dpx_warning("Invalid value specified for /Rotate: %f", deg);
+        return -1;
+      } else if (deg != 0.0) {
+        rot = (int) deg;
+        if (rot % 90 != 0.0) {
+          dpx_warning("Invalid value specified for /Rotate: %f", deg);
+        } else {
+          rot = rot % 360;
+          if (rot < 0) rot += 360;
+          switch (rot) {
+          case 90:
+            matrix->a = matrix->d = 0;
+            matrix->b = -1;
+            matrix->c = 1;
+            matrix->e = bbox->llx - bbox->lly;
+            matrix->f = bbox->lly + bbox->urx;
+            break;
+          case 180:
+            matrix->a = matrix->d = -1;
+            matrix->b = matrix->c = 0;
+            matrix->e = bbox->llx + bbox->urx;
+            matrix->f = bbox->lly + bbox->ury;
+            break;
+          case 270:
+            matrix->a = matrix->d = 0;
+            matrix->b = 1;
+            matrix->c = -1;
+            matrix->e = bbox->llx + bbox->ury;
+            matrix->f = bbox->lly - bbox->llx;
+           break;
+           default:
+            dpx_warning("Invalid value specified for /Rotate: %f", deg);
+            break;
+          }
+        }
+      }
+    }
+  }
+  return 0;
+}
+
 /*
  * From PDFReference15_v6.pdf (p.119 and p.834)
  *
@@ -915,27 +1065,29 @@ pdf_doc_get_page_count (pdf_file *pf)
  */
 pdf_obj *
 pdf_doc_get_page (pdf_file *pf,
-                  int page_no, int options,             /* load options */
+                  int page_no, enum pdf_page_boundary opt_bbox, /* load options */
                   pdf_rect *bbox, pdf_tmatrix *matrix,  /* returned value */
                   pdf_obj **resources_p /* returned values */
                   ) {
-  pdf_obj *page_tree = NULL;
-  pdf_obj *resources = NULL, *box = NULL, *rotate = NULL, *medbox = NULL;
-  pdf_obj *catalog;
+  pdf_obj *catalog = NULL, *page_tree = NULL;
+  pdf_obj *resources = NULL, *rotate = NULL;
+  pdf_obj *art_box = NULL, *trim_box = NULL, *bleed_box = NULL;
+  pdf_obj *media_box = NULL, *crop_box = NULL;
+  int      error = 0;
 
   catalog = pdf_file_get_catalog(pf);
 
   page_tree = pdf_deref_obj(pdf_lookup_dict(catalog, "Pages"));
 
   if (!PDF_OBJ_DICTTYPE(page_tree))
-    goto error;
+    goto error_exit;
 
   {
     int count;
     pdf_obj *tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
     if (!PDF_OBJ_NUMBERTYPE(tmp)) {
       pdf_release_obj(tmp);
-      goto error;
+      goto error_exit;
     }
     count = pdf_number_value(tmp);
     pdf_release_obj(tmp);
@@ -950,42 +1102,35 @@ pdf_doc_get_page (pdf_file *pf,
    * (Note that these entries can be inherited.)
    */
   {
-    pdf_obj *art_box = NULL, *trim_box = NULL, *bleed_box = NULL;
-    pdf_obj *media_box = NULL, *crop_box = NULL, *kids, *tmp;
-    int depth = PDF_OBJ_MAX_DEPTH;
-    int page_idx = page_no-1, kids_length = 1, i = 0;
+    pdf_obj *kids, *tmp;
+    int      depth = PDF_OBJ_MAX_DEPTH;
+    int      page_idx = page_no - 1, kids_length = 1, i = 0;
 
     while (--depth && i != kids_length) {
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "MediaBox")))) {
         pdf_release_obj(media_box);
         media_box = tmp;
       }
-
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "CropBox")))) {
         pdf_release_obj(crop_box);
         crop_box = tmp;
       }
-
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "ArtBox")))) {
         pdf_release_obj(art_box);
         art_box = tmp;
       }
-
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "TrimBox")))) {
         pdf_release_obj(trim_box);
         trim_box = tmp;
       }
-
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "BleedBox")))) {
         pdf_release_obj(bleed_box);
         bleed_box = tmp;
       }
-
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Rotate")))) {
         pdf_release_obj(rotate);
         rotate = tmp;
       }
-
       if ((tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Resources")))) {
         pdf_release_obj(resources);
         resources = tmp;
@@ -996,7 +1141,7 @@ pdf_doc_get_page (pdf_file *pf,
         break;
       else if (!PDF_OBJ_ARRAYTYPE(kids)) {
         pdf_release_obj(kids);
-        goto error;
+        goto error_exit;
       }
       kids_length = pdf_array_length(kids);
 
@@ -1006,7 +1151,7 @@ pdf_doc_get_page (pdf_file *pf,
         pdf_release_obj(page_tree);
         page_tree = pdf_deref_obj(pdf_get_array(kids, i));
         if (!PDF_OBJ_DICTTYPE(page_tree))
-          goto error;
+          goto error_exit;
 
         tmp = pdf_deref_obj(pdf_lookup_dict(page_tree, "Count"));
         if (PDF_OBJ_NUMBERTYPE(tmp)) {
@@ -1018,187 +1163,50 @@ pdf_doc_get_page (pdf_file *pf,
           count = 1;
         else {
           pdf_release_obj(tmp);
-          goto error;
+          goto error_exit;
         }
-
         if (page_idx < count)
           break;
-
         page_idx -= count;
       }
-
       pdf_release_obj(kids);
     }
-
-    if (!depth || kids_length == i) {
-     pdf_release_obj(media_box);
-      pdf_release_obj(crop_box);
-      goto error;
-    }
-
-    /* Nasty BBox selection... */
-    if (options == 0 || options == 1) {
-      if (crop_box)
-        box = crop_box;
-      else
-        if (!(box = media_box) &&
-            !(box = bleed_box) &&
-            !(box = trim_box) &&
-            art_box) {
-            box = art_box;
-        }
-    } else if (options == 2) {
-      if (media_box)
-        box = media_box;
-      else
-        if (!(box = crop_box) &&
-            !(box = bleed_box) &&
-            !(box = trim_box) &&
-            art_box) {
-            box = art_box;
-        }
-    } else if (options == 3) {
-      if (art_box)
-        box = art_box;
-      else
-        if (!(box = crop_box) &&
-            !(box = media_box) &&
-            !(box = bleed_box) &&
-            trim_box) {
-            box = trim_box;
-        }
-    } else if (options == 4) {
-      if (trim_box)
-        box = trim_box;
-      else
-        if (!(box = crop_box) &&
-            !(box = media_box) &&
-            !(box = bleed_box) &&
-            art_box) {
-            box = art_box;
-        }
-    } else if (options == 5) {
-      if (bleed_box)
-        box = bleed_box;
-      else
-        if (!(box = crop_box) &&
-            !(box = media_box) &&
-            !(box = trim_box) &&
-            art_box) {
-            box = art_box;
-        }
-    }
-    medbox = media_box;
+    if (!depth || kids_length == i)
+      goto error_exit;
   }
 
-  if (!PDF_OBJ_ARRAYTYPE(box) || pdf_array_length(box) != 4 ||
-      !PDF_OBJ_DICTTYPE(resources))
-    goto error;
-
-  {
-    int i;
-
-    for (i = 4; i--; ) {
-      double x;
-      pdf_obj *tmp = pdf_deref_obj(pdf_get_array(box, i));
-      if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-        pdf_release_obj(tmp);
-        goto error;
-      }
-      x = pdf_number_value(tmp);
-      switch (i) {
-      case 0: bbox->llx = x; break;
-      case 1: bbox->lly = x; break;
-      case 2: bbox->urx = x; break;
-      case 3: bbox->ury = x; break;
-      }
-      pdf_release_obj(tmp);
-    }
-
-    /* New scheme only for XDV files */
-    if (medbox && (is_xdv || options)) {
-      for (i = 4; i--; ) {
-        double x;
-        pdf_obj *tmp = pdf_deref_obj(pdf_get_array(medbox, i));
-        if (!PDF_OBJ_NUMBERTYPE(tmp)) {
-          pdf_release_obj(tmp);
-          goto error;
-        }
-        x = pdf_number_value(tmp);
-        switch (i) {
-        case 0: if (bbox->llx < x) bbox->llx = x; break;
-        case 1: if (bbox->lly < x) bbox->lly = x; break;
-        case 2: if (bbox->urx > x) bbox->urx = x; break;
-        case 3: if (bbox->ury > x) bbox->ury = x; break;
-        }
-        pdf_release_obj(tmp);
-      }
-    }
-  }
-
-  pdf_release_obj(box);
-
-  matrix->a = matrix->d = 1.0;
-  matrix->b = matrix->c = 0.0;
-  matrix->e = matrix->f = 0.0;
-  if (PDF_OBJ_NUMBERTYPE(rotate)) {
-    double deg = pdf_number_value(rotate);
-    if (deg - (int)deg != 0.0)
-      dpx_warning("Invalid value specified for /Rotate: %f", deg);
-    else if (deg != 0.0) {
-      int rot = (int) deg;
-      if (rot % 90 != 0.0) {
-        dpx_warning("Invalid value specified for /Rotate: %f", deg);
-      } else {
-        rot = rot % 360;
-        if (rot < 0) rot += 360;
-        switch (rot) {
-        case 90:
-          matrix->a = matrix->d = 0;
-          matrix->b = -1;
-          matrix->c = 1;
-          matrix->e = bbox->llx - bbox->lly;
-          matrix->f = bbox->lly + bbox->urx;
-          break;
-        case 180:
-          matrix->a = matrix->d = -1;
-          matrix->b = matrix->c = 0;
-          matrix->e = bbox->llx + bbox->urx;
-          matrix->f = bbox->lly + bbox->ury;
-          break;
-        case 270:
-          matrix->a = matrix->d = 0;
-          matrix->b = 1;
-          matrix->c = -1;
-          matrix->e = bbox->llx + bbox->ury;
-          matrix->f = bbox->lly - bbox->llx;
-          break;
-        }
-      }
-    }
-    pdf_release_obj(rotate);
-    rotate = NULL;
-  } else if (rotate) {
-    goto error;
-  }
-
+  if (!PDF_OBJ_DICTTYPE(resources))
+    goto error_exit;
   if (resources_p)
-    *resources_p = resources;
-  else {
-    pdf_release_obj(resources);
-  }
+    *resources_p = pdf_link_obj(resources);
 
-  return page_tree;
+  /* Select page boundary box */
+  error = set_bounding_box(bbox, opt_bbox, media_box, crop_box, art_box, trim_box, bleed_box);
+  if (error)
+    goto error_exit;
+  /* Set transformation matrix */
+  error = set_transform_matrix(matrix, bbox, rotate);
+  if (error)
+    goto error_exit;
 
- error:
-  dpx_warning("Cannot parse document. Broken PDF file?");
+  goto clean_exit; /* Success */
+
+ error_exit:
+  dpx_warning("Error found in including PDF image.");
  error_silent:
-  pdf_release_obj(box);
+  pdf_release_obj(page_tree);
+  page_tree = NULL;
+
+clean_exit:
+  pdf_release_obj(crop_box);
+  pdf_release_obj(bleed_box);
+  pdf_release_obj(trim_box);
+  pdf_release_obj(art_box);
+  pdf_release_obj(media_box);
   pdf_release_obj(rotate);
   pdf_release_obj(resources);
-  pdf_release_obj(page_tree);
 
-  return NULL;
+  return page_tree;
 }
 
 #ifndef BOOKMARKS_OPEN_DEFAULT
@@ -1674,7 +1682,7 @@ pdf_doc_close_names (pdf_doc *p)
       else {
         name_tree = pdf_names_create_tree(data, &count, &pdoc.gotos);
 
-        if (verbose && count < data->count)
+        if (dpx_conf.verbose_level > 0 && count < data->count)
           dpx_message("\nRemoved %d unused PDF destinations\n", data->count-count);
 
         if (count < pdoc.gotos.count)
@@ -1728,7 +1736,6 @@ pdf_doc_add_annot (unsigned page_no, const pdf_rect *rect,
   pdf_doc  *p = &pdoc;
   pdf_page *page;
   pdf_obj  *rect_array;
-  double    annot_grow = p->opt.annot_grow;
   double    xpos, ypos;
   pdf_rect  annbox;
 
@@ -1760,10 +1767,10 @@ pdf_doc_add_annot (unsigned page_no, const pdf_rect *rect,
   }
 
   rect_array = pdf_new_array();
-  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.llx - annot_grow, 0.001)));
-  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.lly - annot_grow, 0.001)));
-  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.urx + annot_grow, 0.001)));
-  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.ury + annot_grow, 0.001)));
+  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.llx, 0.001)));
+  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.lly, 0.001)));
+  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.urx, 0.001)));
+  pdf_add_array(rect_array, pdf_new_number(ROUND(annbox.ury, 0.001)));
   pdf_add_dict (annot_dict, pdf_new_name("Rect"), rect_array);
 
   pdf_add_array(page->annots, pdf_ref_obj(annot_dict));
@@ -2432,23 +2439,24 @@ pdf_doc_add_page_content (const char *buffer, unsigned int length)
   return;
 }
 
-static char *doccreator = NULL; /* Ugh */
-
 void
 pdf_open_document (const char *filename,
-                   bool enable_encrypt, bool enable_object_stream,
-                   double media_width, double media_height,
-                   double annot_grow_amount, int bookmark_open_depth,
-                   int check_gotos)
+                   const char *creator, const unsigned char *id1, const unsigned char *id2,
+                   struct pdf_setting settings)
 {
   pdf_doc *p = &pdoc;
 
-  pdf_out_init(filename, enable_encrypt, enable_object_stream);
+  if (settings.enable_encrypt)
+    pdf_init_encryption(settings.encrypt, id1);
+
+  pdf_out_init(filename, settings.enable_encrypt,
+               settings.object.enable_objstm, settings.object.enable_predictor);
+  pdf_files_init();
 
   pdf_doc_init_catalog(p);
 
-  p->opt.annot_grow = annot_grow_amount;
-  p->opt.outline_open_depth = bookmark_open_depth;
+  p->opt.annot_grow = settings.annot_grow_amount;
+  p->opt.outline_open_depth = settings.outline_open_depth;
 
   pdf_init_resources();
   pdf_init_colors();
@@ -2457,26 +2465,31 @@ pdf_open_document (const char *filename,
   pdf_init_images();
 
   pdf_doc_init_docinfo(p);
-  if (doccreator) {
+  if (creator) {
     pdf_add_dict(p->info,
                  pdf_new_name("Creator"),
-                 pdf_new_string(doccreator, strlen(doccreator)));
-    doccreator = mfree(doccreator);
+                 pdf_new_string(creator, strlen(creator)));
   }
 
-  pdf_doc_init_bookmarks(p, bookmark_open_depth);
+  pdf_doc_init_bookmarks(p, settings.outline_open_depth);
   pdf_doc_init_articles (p);
-  pdf_doc_init_names    (p, check_gotos);
-  pdf_doc_init_page_tree(p, media_width, media_height);
+  pdf_doc_init_names    (p, settings.check_gotos);
+  pdf_doc_init_page_tree(p, settings.media_width, settings.media_height);
 
   pdf_doc_set_bgcolor(NULL);
 
-  if (enable_encrypt) {
+  if (settings.enable_encrypt) {
     pdf_obj *encrypt = pdf_encrypt_obj();
     pdf_set_encrypt(encrypt);
     pdf_release_obj(encrypt);
   }
-  pdf_set_id(pdf_enc_id_array());
+  if (id1 && id2) {
+    pdf_obj *id_obj = pdf_new_array();
+
+    pdf_add_array(id_obj, pdf_new_string(id1, 16));
+    pdf_add_array(id_obj, pdf_new_string(id2, 16));
+    pdf_set_id(id_obj);
+  }
 
   /* Create a default name for thumbnail image files */
   if (manual_thumb_enabled) {
@@ -2494,25 +2507,18 @@ pdf_open_document (const char *filename,
 
   p->pending_forms = NULL;
 
+  pdf_init_device(settings.device.dvi2pts, settings.device.precision,
+                  settings.device.ignore_colors);
+
   return;
 }
-
-void
-pdf_doc_set_creator (const char *creator)
-{
-  if (!creator ||
-      creator[0] == '\0')
-    return;
-
-  doccreator = NEW(strlen(creator)+1, char);
-  strcpy(doccreator, creator); /* Ugh */
-}
-
 
 void
 pdf_close_document (void)
 {
   pdf_doc *p = &pdoc;
+
+  pdf_close_device();
 
   /*
    * Following things were kept around so user can add dictionary items.
@@ -2531,6 +2537,7 @@ pdf_close_document (void)
 
   pdf_close_resources(); /* Should be at last. */
 
+  pdf_files_close();
   pdf_out_flush();
 
   free(thumb_basename);
@@ -2744,13 +2751,22 @@ pdf_doc_end_annot (void)
 void
 pdf_doc_break_annot (void)
 {
+  pdf_doc *p = &pdoc;
+  double   g = p->opt.annot_grow;
+
   if (breaking_state.dirty) {
     pdf_obj  *annot_dict;
+    pdf_rect  rect;
 
     /* Copy dict */
     annot_dict = pdf_new_dict();
     pdf_merge_dict(annot_dict, breaking_state.annot_dict);
-    pdf_doc_add_annot(pdf_doc_current_page_number(), &(breaking_state.rect),
+    rect = breaking_state.rect;
+    rect.llx -= g;
+    rect.lly -= g;
+    rect.urx += g;
+    rect.ury += g;
+    pdf_doc_add_annot(pdf_doc_current_page_number(), &rect,
                       annot_dict, !breaking_state.broken);
     pdf_release_obj(annot_dict);
 

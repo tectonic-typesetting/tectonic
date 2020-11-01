@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -218,6 +218,74 @@ write_map (mapDef *mtab, size_t count,
   return count;
 }
 
+/* duplicated from pdfobj.c */
+static void
+write_string (char **outptr, char *endptr, const char *strptr)
+{
+  const char *s;
+  char       *p;
+  int         i, length;
+
+  s      = strptr;
+  length = strptr ? strlen(strptr) : 0;
+  p      = *outptr;
+
+  *p++ = '(';
+  for (i = 0; i < length; i++) {
+    unsigned char ch;
+
+    ch = s[i];
+    if (ch < 32 || ch > 126) {
+      p += sprintf(p, "\\%03o", ch);
+    } else {
+      switch (ch) {
+      case '(': case ')': case '\\':
+        *p++ = '\\';
+        *p++ = ch;
+        break;
+      default:
+        *p++ = ch;
+      break;
+      }
+    }
+  }
+  *p++ = ')';
+
+  *outptr = p;
+}
+
+static void
+write_name (char **outptr, char *endptr, const char *name)
+{
+  const char *s;
+  char       *p;
+  int         i, length;
+
+  s      = name;
+  length = name ? strlen(name) : 0;
+  p      = *outptr;
+#ifndef is_delim
+  /* Avoid '{' and '}' for PostScript compatibility? */
+#define is_delim(c) ((c) == '(' || (c) == ')' || \
+                     (c) == '/' || \
+                     (c) == '<' || (c) == '>' || \
+                     (c) == '[' || (c) == ']' || \
+                     (c) == '{' || (c) == '}' || \
+                     (c) == '%')
+#endif
+  *p++ = '/';
+  for (i = 0; i < length; i++) {
+    if (s[i] < '!' || s[i] > '~' || s[i] == '#' || is_delim(s[i])) {
+      /*     ^ "space" is here. */
+      *p++ = '#';
+      sputx(s[i], &p, endptr);
+    } else {
+      *p++ = s[i];
+    }
+  }
+  *outptr = p;
+}
+
 #define CMAP_BEGIN "\
 /CIDInit /ProcSet findresource begin\n\
 12 dict begin\n\
@@ -326,7 +394,7 @@ CMap_create_stream (CMap *cmap)
     }
   }
 
-#define WBUF_SIZE 4096
+#define WBUF_SIZE 40960
   wbuf.buf = NEW(WBUF_SIZE, char);
   codestr  = NEW(cmap->profile.maxBytesIn, unsigned char);
   memset(codestr, 0, cmap->profile.maxBytesIn);
@@ -338,7 +406,9 @@ CMap_create_stream (CMap *cmap)
   /* Start CMap */
   pdf_add_stream(stream, (const void *) CMAP_BEGIN, strlen(CMAP_BEGIN));
 
-  wbuf.curptr += sprintf(wbuf.curptr, "/CMapName /%s def\n", cmap->name);
+  wbuf.curptr += sprintf(wbuf.curptr, "/CMapName ");
+  write_name(&wbuf.curptr, wbuf.limptr, cmap->name);
+  wbuf.curptr += sprintf(wbuf.curptr, " def\n");
   wbuf.curptr += sprintf(wbuf.curptr, "/CMapType %d def\n" , cmap->type);
   if (cmap->wmode != 0 &&
       cmap->type != CMAP_TYPE_TO_UNICODE)
@@ -349,8 +419,15 @@ CMap_create_stream (CMap *cmap)
   /Ordering (%s)\n\
   /Supplement %d\n\
 >> def\n"
-  wbuf.curptr += sprintf(wbuf.curptr, CMAP_CSI_FMT,
-                         csi->registry, csi->ordering, csi->supplement);
+  wbuf.curptr += sprintf(wbuf.curptr, "/CIDSystemInfo <<\n");
+  wbuf.curptr += sprintf(wbuf.curptr, "  /Registry ");
+  write_string(&wbuf.curptr, wbuf.limptr, csi->registry);
+  wbuf.curptr += sprintf(wbuf.curptr, "\n");
+  wbuf.curptr += sprintf(wbuf.curptr, "  /Ordering ");
+  write_string(&wbuf.curptr, wbuf.limptr, csi->ordering);
+  wbuf.curptr += sprintf(wbuf.curptr, "\n");
+  wbuf.curptr += sprintf(wbuf.curptr, "  /Supplement %d\n>> def\n",
+    csi->supplement);
   pdf_add_stream(stream, wbuf.buf, (int)(wbuf.curptr - wbuf.buf));
   wbuf.curptr = wbuf.buf;
 

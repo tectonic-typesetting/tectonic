@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,6 @@
 #define _SUBFONT_H_
 
 #include "dpx-core.h"
-
-void   subfont_set_verbose (int level);
 
 void   release_sfd_record  (void);
 

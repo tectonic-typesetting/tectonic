@@ -1,5 +1,5 @@
 /* tectonic/core-bridge.h: declarations of C/C++ => Rust bridge API
-   Copyright 2016-2018 the Tectonic Project
+   Copyright 2016-2020 the Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -8,6 +8,8 @@
 
 #include "core-foundation.h"
 #include "core-bindgen.h"
+
+#include <time.h> /* time_t */
 
 /* Both XeTeX and bibtex use this enum: */
 
@@ -97,6 +99,7 @@ int ttstub_output_close (rust_output_handle_t handle);
 rust_input_handle_t ttstub_input_open (char const *path, tt_input_format_type format, int is_gz);
 rust_input_handle_t ttstub_input_open_primary (void);
 size_t ttstub_input_get_size (rust_input_handle_t handle);
+time_t ttstub_input_get_mtime (rust_input_handle_t handle);
 size_t ttstub_input_seek (rust_input_handle_t handle, ssize_t offset, int whence);
 ssize_t ttstub_input_read (rust_input_handle_t handle, char *data, size_t len);
 int ttstub_input_getc (rust_input_handle_t handle);

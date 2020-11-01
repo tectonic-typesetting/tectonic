@@ -181,6 +181,27 @@ impl TestCase {
 
 // Keep these alphabetized.
 
+#[test]
+fn a4paper() {
+    let mut unstables = UnstableOptions::default();
+    unstables.paper_size = Some(String::from("a4"));
+    TestCase::new("a4paper")
+        .with_unstables(unstables)
+        .check_pdf(true)
+        .go()
+}
+
+#[test]
+fn file_encoding() {
+    // Need to do this here since we call test_path unusually early.
+    util::set_test_root();
+
+    TestCase::new("file_encoding.tex")
+        .with_fs(&test_path(&["tex-outputs"]))
+        .expect(Ok(TexResult::Warnings))
+        .go()
+}
+
 /// An issue triggered by a bug in how the I/O subsystem reported file offsets
 /// after an ungetc() call.
 #[test]
@@ -205,6 +226,33 @@ fn otf_basic() {
     TestCase::new("otf_basic")
         .expect(Ok(TexResult::Warnings))
         .go()
+}
+
+#[test]
+fn prim_creationdate() {
+    TestCase::new("prim_creationdate").go()
+}
+
+#[test]
+fn prim_filedump() {
+    TestCase::new("prim_filedump").go()
+}
+
+#[test]
+fn prim_filemoddate() {
+    // Git doesn't preserve mtimes, so manually force the mtime of the input
+    // file to something repeatable.
+    util::set_test_root();
+    let path = test_path(&["tex-outputs", "prim_filemoddate.tex"]);
+    let t = filetime::FileTime::from_unix_time(1_603_835_905, 0);
+    filetime::set_file_mtime(path, t).expect("failed to set input file mtime");
+
+    TestCase::new("prim_filemoddate").go()
+}
+
+#[test]
+fn prim_filesize() {
+    TestCase::new("prim_filesize").go()
 }
 
 #[test]
@@ -240,17 +288,6 @@ fn unicode_file_name() {
 }
 
 #[test]
-fn file_encoding() {
-    // Need to do this here since we call test_path unusually early.
-    util::set_test_root();
-
-    TestCase::new("file_encoding.tex")
-        .with_fs(&test_path(&["tex-outputs"]))
-        .expect(Ok(TexResult::Warnings))
-        .go()
-}
-
-#[test]
 fn tectoniccodatokens_errinside() {
     TestCase::new("tectoniccodatokens_errinside")
         .expect_msg("halted on potentially-recoverable error as specified")
@@ -269,25 +306,7 @@ fn tectoniccodatokens_ok() {
     TestCase::new("tectoniccodatokens_ok").go()
 }
 
-// FIXME(#244): For reasons I absolutely cannot figure out, this test
-// currently (2018 Oct) fails on AppVeyor's CI, while it works on both GNU and
-// MSVC Windows toolchains when I (PKGW) run it manually. (The failure is that
-// the observed PDF doesn't match the expected one.) Seeing as everything else
-// seems to work and this test doesn't cover anything that special compared to
-// the other tests in this file, just skip it on Windows so that we can keep
-// on CI'ing.
-#[cfg(not(target_os = "windows"))]
 #[test]
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
-}
-
-#[test]
-fn a4paper() {
-    let mut unstables = UnstableOptions::default();
-    unstables.paper_size = Some(String::from("a4"));
-    TestCase::new("a4paper")
-        .with_unstables(unstables)
-        .check_pdf(true)
-        .go()
 }

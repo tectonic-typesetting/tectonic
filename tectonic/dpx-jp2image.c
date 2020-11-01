@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Matthias Franz,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Matthias Franz,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -32,6 +32,7 @@
 #include <math.h>
 
 #include "core-bridge.h"
+#include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mfileio.h"
 #include "dpx-numbers.h"
@@ -353,14 +354,12 @@ check_for_jp2 (FILE *fp)
 int
 jp2_include_image (pdf_ximage *ximage, FILE *fp)
 {
-  unsigned int pdf_version;
   int      smask = 0;
   pdf_obj *stream, *stream_dict;
   ximage_info info;
 
-  pdf_version = pdf_get_version();
-  if (pdf_version < 5) {
-    dpx_warning("JPEG 2000 support requires PDF version >= 1.5 (Current setting 1.%d)\n", pdf_version);
+  if (pdf_check_version(1, 5) < 0) {
+    dpx_warning("JPEG 2000 support requires PDF version >= 1.5  (Current setting %d.%d)\n", pdf_get_version_major(), pdf_get_version_minor());
     return -1;
   }
 

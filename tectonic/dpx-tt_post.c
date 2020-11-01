@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -42,28 +42,12 @@ read_v2_post_names (struct tt_post_table *post, sfnt *sfont)
 
   indices     = NEW(post->numberOfGlyphs, USHORT);
   maxidx = 257;
-  for (i = 0;
-       i < post->numberOfGlyphs; i++) {
+  for (i = 0; i < post->numberOfGlyphs; i++) {
     idx = sfnt_get_ushort(sfont);
     if (idx >= 258) {
       if (idx > maxidx)
         maxidx = idx;
-      if (idx > 32767) {
-        /* Although this is strictly speaking out of spec, it seems to work
-           and there are real-life fonts that use it.
-           We show a warning only once, instead of thousands of times */
-        static char warning_issued = 0;
-        if (!warning_issued) {
-          dpx_warning("TrueType post table name index %u > 32767", idx);
-          warning_issued = 1;
-        }
-        /* In a real-life large font, (x)dvipdfmx crashes if we use
-           nonvanishing idx in the case of idx > 32767.
-           If we set idx = 0, (x)dvipdfmx works fine for the font and
-           created pdf seems fine. The post table may not be important
-           in such a case */
-        idx = 0;
-      }
+      /* Tectonic: #if 0 stanza removed */
     }
     indices[i] = idx;
   }
@@ -156,9 +140,8 @@ tt_lookup_post_table (struct tt_post_table *post, const char *glyphname)
 
   assert(post && glyphname);
 
-  for (gid = 0; gid < post->count; gid++) {
-    if (post->glyphNamePtr[gid] &&
-        streq_ptr(glyphname, post->glyphNamePtr[gid])) {
+  for (gid = 0; gid < post->numberOfGlyphs; gid++) {
+    if (post->glyphNamePtr[gid] && streq_ptr(glyphname, post->glyphNamePtr[gid])) {
       return  gid;
     }
   }
@@ -169,7 +152,7 @@ tt_lookup_post_table (struct tt_post_table *post, const char *glyphname)
 char*
 tt_get_glyphname (struct tt_post_table *post, USHORT gid)
 {
-  if (gid < post->count && post->glyphNamePtr[gid])
+  if (gid < post->numberOfGlyphs && post->glyphNamePtr[gid])
     return xstrdup(post->glyphNamePtr[gid]);
   return NULL;
 }

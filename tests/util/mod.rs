@@ -1,4 +1,4 @@
-// Copyright 2018 the Tectonic Project
+// Copyright 2018-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Note: we need to store this code as `tests/util/mod.rs` rather than
@@ -10,18 +10,19 @@
 // using this testing setup...
 #![allow(dead_code)]
 
+use flate2::read::GzDecoder;
+use std::{
+    collections::HashSet,
+    default::Default,
+    env,
+    ffi::{OsStr, OsString},
+    fs::File,
+    io::{Read, Write},
+    path::{Path, PathBuf},
+};
 
-use ::flate2::read::GzDecoder;
-use std::collections::{HashMap, HashSet};
-use std::default::Default;
-use std::env;
-use std::ffi::{OsStr, OsString};
-use std::fs::File;
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
-
-use ::tectonic::errors::Result;
-pub use ::tectonic::test_util::{test_path, TestBundle};
+pub use tectonic::test_util::{test_path, TestBundle};
+use tectonic::{errors::Result, io::memory::MemoryFileCollection};
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
@@ -94,7 +95,13 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
             .prefix("plain_fmt")
             .rand_bytes(6)
             .tempfile_in(test_path(&[]))?;
-        temp_fmt.write_all(mem.files.borrow().get(OsStr::new("plain.fmt")).unwrap())?;
+        temp_fmt.write_all(
+            &mem.files
+                .borrow()
+                .get(OsStr::new("plain.fmt"))
+                .unwrap()
+                .data,
+        )?;
         temp_fmt.persist(&fmt_path)?;
     }
 
@@ -194,10 +201,10 @@ impl ExpectedInfo {
         );
     }
 
-    pub fn test_from_collection(&self, files: &HashMap<OsString, Vec<u8>>) {
+    pub fn test_from_collection(&self, files: &MemoryFileCollection) {
         if !self.gzipped {
-            if let Some(data) = files.get(&self.name) {
-                self.test_data(data)
+            if let Some(file) = files.get(&self.name) {
+                self.test_data(&file.data)
             } else {
                 panic!(
                     "{:?} not in {:?}",
@@ -207,7 +214,7 @@ impl ExpectedInfo {
             }
         } else {
             let mut buf = Vec::new();
-            let mut dec = GzDecoder::new(&files.get(&self.name).unwrap()[..]);
+            let mut dec = GzDecoder::new(&files.get(&self.name).unwrap().data[..]);
             dec.read_to_end(&mut buf).unwrap();
             self.test_data(&buf);
         }

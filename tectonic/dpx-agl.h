@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -59,7 +59,6 @@ const char *agl_suffix_to_otltag (const char *suffix);
 
 agl_name   *agl_lookup_list     (const char *glyphname);
 
-void  agl_set_verbose (int level);
 void  agl_init_map    (void);
 void  agl_close_map   (void);
 

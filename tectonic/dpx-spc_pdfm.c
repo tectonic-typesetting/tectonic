@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2007-2017 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2007-2020 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
 #include "dpx-dvipdfmx.h"
@@ -66,13 +67,15 @@ struct spc_pdf_
    int               lowest_level; /* current min level of outlines */
    struct ht_table  *resourcemap;  /* see remark below (somewhere)  */
    struct tounicode  cd;           /* For to-UTF16-BE conversion :( */
+   pdf_obj          *pageresources; /* Add to all page resource dict */
 };
 
 static struct spc_pdf_  _pdf_stat = {
   NULL,
   255,
   NULL,
-  { -1, 0, NULL }
+  { -1, 0, NULL },
+  NULL
 };
 
 /* PLEASE REMOVE THIS */
@@ -139,6 +142,7 @@ spc_handler_pdfm__init (void *dp)
     pdf_add_array(sd->cd.taintkeys,
                   pdf_new_name(default_taintkeys[i]));
   }
+  sd->pageresources = NULL;
 
   return 0;
 }
@@ -162,6 +166,9 @@ spc_handler_pdfm__clean (void *dp)
 
   pdf_release_obj(sd->cd.taintkeys);
   sd->cd.taintkeys = NULL;
+  if (sd->pageresources)
+    pdf_release_obj(sd->pageresources);
+  sd->pageresources = NULL;
 
   return 0;
 }
@@ -230,10 +237,6 @@ safeputresdent (pdf_obj *kp, pdf_obj *vp, void *dp)
   return 0;
 }
 
-#ifndef pdf_obj_isaref
-#define pdf_obj_isaref(o) (pdf_obj_typeof((o)) == PDF_INDIRECT)
-#endif
-
 static int
 safeputresdict (pdf_obj *kp, pdf_obj *vp, void *dp)
 {
@@ -245,7 +248,7 @@ safeputresdict (pdf_obj *kp, pdf_obj *vp, void *dp)
   key  = pdf_name_value(kp);
   dict = pdf_lookup_dict(dp, key);
 
-  if (pdf_obj_isaref(vp)) {
+  if (pdf_obj_typeof(vp) == PDF_INDIRECT) {
     pdf_add_dict(dp, pdf_new_name(key), pdf_link_obj(vp));
   } else if (pdf_obj_typeof(vp) == PDF_DICT) {
     if (dict)
@@ -261,6 +264,94 @@ safeputresdict (pdf_obj *kp, pdf_obj *vp, void *dp)
   return 0;
 }
 
+static
+int putpageresources (pdf_obj *kp, pdf_obj *vp, void *dp)
+{
+  char *resource_name;
+
+  assert(kp && vp);
+
+  resource_name = pdf_name_value(kp);
+  pdf_doc_add_page_resource(dp, resource_name, pdf_link_obj(vp));
+
+  return 0;
+}
+
+static
+int forallresourcecategory (pdf_obj *kp, pdf_obj *vp, void *dp)
+{
+  int   r = -1;
+  char *category;
+
+  assert(kp && vp);
+
+  category = pdf_name_value(kp);
+  switch (pdf_obj_typeof(vp)) {
+  case PDF_DICT:
+    r = pdf_foreach_dict(vp, putpageresources, category);
+    break;
+  case PDF_INDIRECT:
+    {
+      /* In case pdf:pageresouces << /Category @res >> */
+      pdf_obj *obj;
+      obj = pdf_deref_obj(vp);
+      if (!obj) {
+        dpx_warning("Can't deref object for page resource: %s", category);
+        r = -1;
+      } else if (pdf_obj_typeof(obj) != PDF_DICT) {
+        dpx_warning("Invalid object type for page resource: %s", category);
+        r = -1;
+      } else {
+        pdf_obj *res_dict, *dict;
+
+        res_dict = pdf_doc_current_page_resources();
+        dict     = pdf_lookup_dict(res_dict, category);
+        if (!dict) {
+          pdf_add_dict(res_dict, pdf_new_name(category), pdf_link_obj(vp));
+        } else {
+          if (pdf_obj_typeof(dict) == PDF_INDIRECT) {
+            dict = pdf_deref_obj(dict);
+            pdf_release_obj(dict); /* FIXME: jus to decrement link counter */
+          }
+#if 1
+          /* This will leave garbage (object "res") since object "res"
+           * supplied as resource dictionary will have label but we copy the
+           * content of res here and never use reference to it.
+           */
+          pdf_foreach_dict(obj, safeputresdent, dict);
+#else
+          /* With the below code resource dictionary is replaced by user
+           * supplied one, @res. However, there is a problem that all
+           * resources including internally generated one may go into single
+           * dictionary referenced by @res, and will be visible from any
+           * subsequent pages. 
+           */
+          pdf_foreach_dict(dict, safeputresdent, obj);
+          pdf_add_dict(res_dict, pdf_new_name(category), pdf_link_obj(vp));
+#endif
+        }
+        pdf_release_obj(obj);
+      }
+    }
+    break;
+  default:
+    dpx_warning("Invalid object type for page resource specified for \"%s\"", category);
+  }
+
+  return r;
+}
+
+int
+spc_pdfm_at_end_page (void)
+{
+  struct spc_pdf_ *sd = &_pdf_stat;
+
+  if (sd->pageresources) {
+    pdf_foreach_dict(sd->pageresources, forallresourcecategory, NULL);
+  }
+
+  return 0;
+}
 
 /* Think what happens if you do
  *
@@ -492,7 +583,7 @@ modstrings (pdf_obj *kp, pdf_obj *vp, void *dp)
       CMap *cmap = CMap_cache_get(cd->cmap_id);
       if (needreencode(kp, vp, cd))
         r = reencodestring(cmap, vp);
-    } else if (is_xdv && cd && cd->taintkeys) {
+    } else if ((dpx_conf.compat_mode == dpx_mode_xdv_mode) && cd && cd->taintkeys) {
       /* Please fix this... PDF string object is not always a text string.
        * needreencode() is assumed to do a simple check if given string
        * object is actually a text string.
@@ -520,7 +611,7 @@ parse_pdf_dict_with_tounicode (const char **pp, const char *endptr, struct touni
   pdf_obj  *dict;
 
   /* disable this test for XDV files, as we do UTF8 reencoding with no cmap */
-  if (!is_xdv && cd->cmap_id < 0)
+  if ((dpx_conf.compat_mode != dpx_mode_xdv_mode) && cd->cmap_id < 0)
     return  parse_pdf_dict(pp, endptr, NULL);
 
   /* :( */
@@ -535,6 +626,7 @@ parse_pdf_dict_with_tounicode (const char **pp, const char *endptr, struct touni
   return  dict;
 }
 
+#define SPC_PDFM_SUPPORT_ANNOT_TRANS 1
 static int
 spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
 {
@@ -542,7 +634,6 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
   pdf_obj       *annot_dict;
   pdf_rect       rect;
   char          *ident = NULL;
-  pdf_coord      cp;
   transform_info ti;
 
   skip_white(&args->curptr, args->endptr);
@@ -576,19 +667,96 @@ spc_handler_pdfm_annot (struct spc_env *spe, struct spc_arg *args)
     return  -1;
   }
 
-  cp.x = spe->x_user; cp.y = spe->y_user;
-  pdf_dev_transform(&cp, NULL);
-  if (ti.flags & INFO_HAS_USER_BBOX) {
-    rect.llx = ti.bbox.llx + cp.x;
-    rect.lly = ti.bbox.lly + cp.y;
-    rect.urx = ti.bbox.urx + cp.x;
-    rect.ury = ti.bbox.ury + cp.y;
-  } else {
-    rect.llx = cp.x;
-    rect.lly = cp.y - spe->mag * ti.depth;
-    rect.urx = cp.x + spe->mag * ti.width;
-    rect.ury = cp.y + spe->mag * ti.height;
+#ifdef SPC_PDFM_SUPPORT_ANNOT_TRANS
+  {
+    pdf_coord cp1, cp2, cp3, cp4;
+    /* QuadPoints not working? */
+#ifdef USE_QUADPOINTS
+    pdf_obj  *qpoints;
+#endif
+    if (ti.flags & INFO_HAS_USER_BBOX) {
+      cp1.x = spe->x_user + ti.bbox.llx;
+      cp1.y = spe->y_user + ti.bbox.lly;
+      cp2.x = spe->x_user + ti.bbox.urx;
+      cp2.y = spe->y_user + ti.bbox.lly;
+      cp3.x = spe->x_user + ti.bbox.urx;
+      cp3.y = spe->y_user + ti.bbox.ury;
+      cp4.x = spe->x_user + ti.bbox.llx;
+      cp4.y = spe->y_user + ti.bbox.ury;
+    } else {
+      cp1.x = spe->x_user;
+      cp1.y = spe->y_user - spe->mag * ti.depth;
+      cp2.x = spe->x_user + spe->mag * ti.width;
+      cp2.y = spe->y_user - spe->mag * ti.depth;
+      cp3.x = spe->x_user + spe->mag * ti.width;
+      cp3.y = spe->y_user + spe->mag * ti.height;
+      cp4.x = spe->x_user;
+      cp4.y = spe->y_user + spe->mag * ti.height;
+    }
+    pdf_dev_transform(&cp1, NULL);
+    pdf_dev_transform(&cp2, NULL);
+    pdf_dev_transform(&cp3, NULL);
+    pdf_dev_transform(&cp4, NULL);
+    rect.llx = cp1.x;
+    if (cp2.x < rect.llx)
+      rect.llx = cp2.x;
+    if (cp3.x < rect.llx)
+      rect.llx = cp3.x;
+    if (cp4.x < rect.llx)
+      rect.llx = cp4.x;
+    rect.urx = cp1.x;
+    if (cp2.x > rect.urx)
+      rect.urx = cp2.x;
+    if (cp3.x > rect.urx)
+      rect.urx = cp3.x;
+    if (cp4.x > rect.urx)
+      rect.urx = cp4.x;
+    rect.lly = cp1.y;
+    if (cp2.y < rect.lly)
+      rect.lly = cp2.y;
+    if (cp3.y < rect.lly)
+      rect.lly = cp3.y;
+    if (cp4.y < rect.lly)
+      rect.lly = cp4.y;
+    rect.ury = cp1.y;
+    if (cp2.y > rect.ury)
+      rect.ury = cp2.y;
+    if (cp3.y > rect.ury)
+      rect.ury = cp3.y;
+    if (cp4.y > rect.ury)
+      rect.ury = cp4.y;
+#ifdef USE_QUADPOINTS
+    qpoints = pdf_new_array();
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp1.x, 0.01)));
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp1.y, 0.01)));
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp2.x, 0.01)));
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp2.y, 0.01)));
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp3.x, 0.01)));
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp3.y, 0.01)));
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp4.x, 0.01)));
+    pdf_add_array(qpoints, pdf_new_number(ROUND(cp4.y, 0.01)));
+    pdf_add_dict(annot_dict, pdf_new_name("QuadPoints"), qpoints);
+#endif    
   }
+#else
+  {
+    pdf_coord cp;
+
+    cp.x = spe->x_user; cp.y = spe->y_user;
+    pdf_dev_transform(&cp, NULL);
+    if (ti.flags & INFO_HAS_USER_BBOX) {
+      rect.llx = ti.bbox.llx + cp.x;
+      rect.lly = ti.bbox.lly + cp.y;
+      rect.urx = ti.bbox.urx + cp.x;
+      rect.ury = ti.bbox.ury + cp.y;
+    } else {
+      rect.llx = cp.x;
+      rect.lly = cp.y - spe->mag * ti.depth;
+      rect.urx = cp.x + spe->mag * ti.width;
+      rect.ury = cp.y + spe->mag * ti.height;
+    }
+  }
+#endif
 
   /* Order is important... */
   if (ident)
@@ -1407,8 +1575,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     break;
   case STRING_STREAM:
     fstream = pdf_new_stream(STREAM_COMPRESS);
-    if (instring)
-      pdf_add_stream(fstream, instring, strlen(instring));
+    pdf_add_stream(fstream, pdf_string_value(tmp), pdf_string_length(tmp));
     break;
   default:
     pdf_release_obj(tmp);
@@ -1562,7 +1729,8 @@ spc_handler_pdfm_bform (struct spc_env *spe, struct spc_arg *args)
 static int
 spc_handler_pdfm_eform (struct spc_env *spe, struct spc_arg *args)
 {
-  pdf_obj   *attrib = NULL;
+  pdf_obj         *attrib = NULL;
+  struct spc_pdf_ *sd     = &_pdf_stat;
 
   skip_white(&args->curptr, args->endptr);
 
@@ -1572,6 +1740,10 @@ spc_handler_pdfm_eform (struct spc_env *spe, struct spc_arg *args)
       pdf_release_obj(attrib);
       attrib = NULL;
     }
+  }
+  /* pageresources here too */
+  if (sd->pageresources) {
+    pdf_foreach_dict(sd->pageresources, forallresourcecategory, NULL);
   }
   pdf_doc_end_grabbing(attrib);
 
@@ -1687,15 +1859,17 @@ spc_handler_pdfm_bgcolor (struct spc_env *spe, struct spc_arg *args)
   return  error;
 }
 
+#define THEBUFFLENGTH 1024
 static int
 spc_handler_pdfm_mapline (struct spc_env *spe, struct spc_arg *ap)
 {
   fontmap_rec *mrec;
   char        *map_name, opchr;
   int          error = 0;
-  static char  buffer[1024];
+  static char  buffer[THEBUFFLENGTH];
   const char  *p;
   char        *q;
+  int         count;
 
   skip_white(&ap->curptr, ap->endptr);
   if (ap->curptr >= ap->endptr) {
@@ -1723,8 +1897,16 @@ spc_handler_pdfm_mapline (struct spc_env *spe, struct spc_arg *ap)
   default:
     p = ap->curptr;
     q = buffer;
-    while (p < ap->endptr)
+    count = 0;
+    while (p < ap->endptr && count < THEBUFFLENGTH - 1) {
       *q++ = *p++;
+      count++;
+    }
+    if (count == THEBUFFLENGTH - 1) {
+      spc_warn(spe, "Invalid fontmap line: Too long a line.");
+      *q = 0;
+      return -1;
+    }
     *q = '\0';
     mrec = NEW(1, fontmap_rec);
     pdf_init_fontmap_record(mrec);
@@ -1787,6 +1969,7 @@ spc_handler_pdfm_tounicode (struct spc_env *spe, struct spc_arg *args)
 {
   struct spc_pdf_ *sd = &_pdf_stat;
   char *cmap_name;
+  pdf_obj *taint_keys;
 
   /* First clear */
   sd->cd.cmap_id = -1;
@@ -1827,9 +2010,70 @@ spc_handler_pdfm_tounicode (struct spc_env *spe, struct spc_arg *args)
       sd->cd.unescape_backslash = 1;
   }
   free(cmap_name);
+
+  /* Additional "taint key"
+   * An array of PDF name objects can be supplied optionally.
+   * Dictionary entries specified by this option will be added to the list
+   * of dictionary keys to be treated as the target of "ToUnicode" conversion.
+   */
+  skip_white(&args->curptr, args->endptr);
+  if (args->curptr < args->endptr) {
+    taint_keys = parse_pdf_object(&args->curptr, args->endptr, NULL);
+    if (taint_keys) {
+      if (PDF_OBJ_ARRAYTYPE(taint_keys)) {
+        int i;
+        for (i = 0; i < pdf_array_length(taint_keys); i++) {
+          pdf_obj *key;
+        
+          key = pdf_get_array(taint_keys, i);
+          if (PDF_OBJ_NAMETYPE(key))
+            pdf_add_array(sd->cd.taintkeys, pdf_link_obj(key));
+          else {
+            spc_warn(spe, "Invalid argument specified in pdf:tounicode special.");
+          }
+        }
+      } else {
+        spc_warn(spe, "Invalid argument specified in pdf:unicode special.");
+      }
+      pdf_release_obj(taint_keys);
+    }
+  }
+
   return 0;
 }
 
+static int
+spc_handler_pdfm_pageresources (struct spc_env *spe, struct spc_arg *args)
+{
+  struct spc_pdf_ *sd = &_pdf_stat;
+  pdf_obj *dict;
+
+  dict = parse_pdf_object(&args->curptr, args->endptr, NULL);
+  if (!dict) {
+    spc_warn(spe, "Dictionary object expected but not found.");
+    return  -1;
+  }
+
+  if (sd->pageresources)
+    pdf_release_obj(sd->pageresources);
+  sd->pageresources = dict;
+
+  return 0;
+}
+
+static int
+spc_handler_pdft_compat_page (struct spc_env *spe, struct spc_arg *args)
+{
+  skip_white(&args->curptr, args->endptr);
+  if (args->curptr < args->endptr) {
+    pdf_doc_add_page_content(" ", 1);  /* op: */
+    pdf_doc_add_page_content(args->curptr, (int) (args->endptr - args->curptr));  /* op: ANY */
+  }
+
+  args->curptr = args->endptr;
+
+  return 0;
+}
 
 static struct spc_handler pdfm_handlers[] = {
   {"annotation", spc_handler_pdfm_annot},
@@ -1939,7 +2183,20 @@ static struct spc_handler pdfm_handlers[] = {
   {"code",       spc_handler_pdfm_code},
 
   {"minorversion", spc_handler_pdfm_do_nothing},
+  {"majorversion", spc_handler_pdfm_do_nothing},
   {"encrypt",      spc_handler_pdfm_do_nothing},
+
+  {"pageresources", spc_handler_pdfm_pageresources},
+  {"trailerid", spc_handler_pdfm_do_nothing},
+};
+
+static struct spc_handler pdft_compat_handlers[] = {
+  /* Text supplied to "direct" command should go inside of BT/ET block
+   * but dvipdfmx currently can't be implemented so.
+   * Here, "direct" is for the moment just an alias of "page".
+   */
+  {"direct", spc_handler_pdft_compat_page},
+  {"page", spc_handler_pdft_compat_page},
 };
 
 bool
@@ -1980,15 +2237,34 @@ spc_pdfm_setup_handler (struct spc_handler *sph,
   skip_white(&ap->curptr, ap->endptr);
   q = parse_c_ident(&ap->curptr, ap->endptr);
   if (q) {
-    for (i = 0;
-         i < sizeof(pdfm_handlers) / sizeof(struct spc_handler); i++) {
-      if (streq_ptr(q, pdfm_handlers[i].key)) {
-        ap->command = pdfm_handlers[i].key;
-        sph->key   = "pdf:";
-        sph->exec  = pdfm_handlers[i].exec;
-        skip_white(&ap->curptr, ap->endptr);
-        error = 0;
-        break;
+    int is_pdft_compat = 0;
+    if (ap->curptr < ap->endptr) {
+      if (ap->curptr[0] == ':') {
+        is_pdft_compat = 1;
+        ap->curptr++;
+      }
+    }
+    if (is_pdft_compat) {
+      for (i = 0; i < sizeof(pdft_compat_handlers) / sizeof(struct spc_handler); i++) {
+        if (!strcmp(q, pdft_compat_handlers[i].key)) {
+          ap->command = pdft_compat_handlers[i].key;
+          sph->key   = "pdf:";
+          sph->exec  = pdft_compat_handlers[i].exec;
+          skip_white(&ap->curptr, ap->endptr);
+          error = 0;
+          break;
+        }
+      }
+    } else {
+      for (i = 0; i < sizeof(pdfm_handlers) / sizeof(struct spc_handler); i++) {
+        if (!strcmp(q, pdfm_handlers[i].key)) {
+          ap->command = pdfm_handlers[i].key;
+          sph->key   = "pdf:";
+          sph->exec  = pdfm_handlers[i].exec;
+          skip_white(&ap->curptr, ap->endptr);
+          error = 0;
+          break;
+        }
       }
     }
     free(q);

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -34,4 +34,13 @@ void *renew (void *p, uint32_t size);
 #define NEW(n,type)     (type *) new(((uint32_t)(n))*sizeof(type))
 #define RENEW(p,n,type) (type *) renew(p,((uint32_t)(n))*sizeof(type))
 
+/* 
+ * mem.h is not suitable for the following, but it is the only common
+ * header file for dpxcrypt.c, pdfencrypt.c, and pdffont.c, which use
+ * the function rand().
+ */
+void init_genrand(unsigned long long s);
+long genrand_int31(void);
+#define srand(x) init_genrand((x))
+#define rand()   genrand_int31()
 #endif /* _MEM_H_ */

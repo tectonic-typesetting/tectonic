@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -869,7 +869,7 @@ do_operator2 (t1_chardesc *cd, card8 **data, card8 *endptr)
      * (See, Adobe Technical Note #5177, Appendix C)
      */
     if (!(cd->flags & T1_CS_FLAG_USE_HINTMASK)) {
-      if (__verbose > 1)
+      if (dpx_conf.verbose_level > 1)
         dpx_warning("Obsolete Type 1 charstring operator \"dotsection\" not supported.");
     }
 #endif

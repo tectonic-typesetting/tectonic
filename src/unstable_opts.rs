@@ -15,6 +15,7 @@ use std::str::FromStr;
 const HELPMSG: &str = r#"Available unstable options:
 
     -Z help                     Lists all unstable options
+    -Z continue-on-errors       Keep compiling even when severe errors occur
     -Z min-crossrefs=<num>      Equivalent to bibtex's -min-crossrefs flag - "include after <num>
                                     crossrefs" [default: 2]
     -Z paper-size=<spec>        Change the default paper size [default: letter]
@@ -26,9 +27,10 @@ const HELPMSG: &str = r#"Available unstable options:
 // Each entry of this should correspond to a field of UnstableOptions.
 #[derive(Debug)]
 pub enum UnstableArg {
+    ContinueOnErrors,
     Help,
-    PaperSize(String),
     MinCrossrefs(i32),
+    PaperSize(String),
     ShellEscapeEnabled,
 }
 
@@ -46,6 +48,8 @@ impl FromStr for UnstableArg {
 
         match arg {
             "help" => Ok(UnstableArg::Help),
+
+            "continue-on-errors" => Ok(UnstableArg::ContinueOnErrors),
 
             "min-crossrefs" => value
                 .ok_or_else(|| {
@@ -71,6 +75,7 @@ impl FromStr for UnstableArg {
 
 #[derive(Debug, Default)]
 pub struct UnstableOptions {
+    pub continue_on_errors: bool,
     pub paper_size: Option<String>,
     pub shell_escape: bool,
     pub min_crossrefs: Option<i32>,
@@ -90,6 +95,7 @@ impl UnstableOptions {
                     print!("{}", HELPMSG);
                     std::process::exit(0);
                 }
+                ContinueOnErrors => opts.continue_on_errors = true,
                 MinCrossrefs(num) => opts.min_crossrefs = Some(num),
                 PaperSize(size) => opts.paper_size = Some(size),
                 ShellEscapeEnabled => opts.shell_escape = true,

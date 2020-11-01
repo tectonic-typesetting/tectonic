@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2019 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -71,7 +71,7 @@ UC_UTF16BE_is_valid_string (const unsigned char *p, const unsigned char *endptr)
 bool
 UC_UTF8_is_valid_string (const unsigned char *p, const unsigned char *endptr)
 {
-  if (p + 1 >= endptr)
+  if (p >= endptr)
    return false;
   while (p < endptr) {
     int32_t ucv = UC_UTF8_decode_char(&p, endptr);
@@ -116,7 +116,7 @@ UC_UTF16BE_encode_char (int32_t ucv, unsigned char **pp, unsigned char *endptr)
   unsigned char *p = *pp;
 
   if (ucv >= 0 && ucv <= 0xFFFF) {
-    if (p + 2 >= endptr)
+    if (p + 2 > endptr)
       return 0;
     p[0] = (ucv >> 8) & 0xff;
     p[1] = ucv & 0xff;
@@ -124,7 +124,7 @@ UC_UTF16BE_encode_char (int32_t ucv, unsigned char **pp, unsigned char *endptr)
   } else if (ucv >= 0x010000 && ucv <= 0x10FFFF) {
     unsigned short high, low;
 
-    if (p + 4 >= endptr)
+    if (p + 4 > endptr)
       return 0;
     ucv  -= 0x00010000;
     high = (ucv >> UC_SUR_SHIFT) + UC_SUR_HIGH_START;
@@ -135,7 +135,7 @@ UC_UTF16BE_encode_char (int32_t ucv, unsigned char **pp, unsigned char *endptr)
     p[3] = (low & 0xff);
     count = 4;
   } else {
-    if (p + 2 >= endptr)
+    if (p + 2 > endptr)
       return 0;
     p[0] = (UC_REPLACEMENT_CHAR >> 8) & 0xff;
     p[1] = (UC_REPLACEMENT_CHAR & 0xff);
@@ -200,25 +200,25 @@ UC_UTF8_encode_char (int32_t ucv, unsigned char **pp, unsigned char *endptr)
     return 0;
 
   if (ucv < 0x7f) {
-    if (p >= endptr - 1)
+    if (p + 1 > endptr)
       return 0;
     p[0]  = (unsigned char) ucv;
     count = 1;
   } else if (ucv <= 0x7ff) {
-    if (p >= endptr -2)
+    if (p + 2 > endptr)
       return 0;
     p[0] = (unsigned char) (0xc0 | (ucv >> 6));
     p[1] = (unsigned char) (0x80 | (ucv & 0x3f));
     count = 2;
   } else if (ucv <= 0xffff) {
-    if (p >= endptr - 3)
+    if (p + 3 > endptr)
       return 0;
     p[0] = (unsigned char) (0xe0 | (ucv >> 12));
     p[1] = (unsigned char) (0x80 | ((ucv >> 6) & 0x3f));
     p[2] = (unsigned char) (0x80 | (ucv & 0x3f));
     count = 3;
   } else if (ucv <= 0x1fffff) {
-    if (p >= endptr - 4)
+    if (p + 4 > endptr)
       return 0;
     p[0] = (unsigned char) (0xf0 | (ucv >> 18));
     p[1] = (unsigned char) (0x80 | ((ucv >> 12) & 0x3f));
@@ -226,7 +226,7 @@ UC_UTF8_encode_char (int32_t ucv, unsigned char **pp, unsigned char *endptr)
     p[3] = (unsigned char) (0x80 | (ucv & 0x3f));
     count = 4;
   } else if (ucv <= 0x3ffffff) {
-    if (p >= endptr - 5)
+    if (p + 5 > endptr)
       return 0;
     p[0] = (unsigned char) (0xf8 | (ucv >> 24));
     p[1] = (unsigned char) (0x80 | ((ucv >> 18) & 0x3f));
@@ -235,7 +235,7 @@ UC_UTF8_encode_char (int32_t ucv, unsigned char **pp, unsigned char *endptr)
     p[4] = (unsigned char) (0x80 | (ucv & 0x3f));
     count = 5;
   } else if (ucv <= 0x7fffffff) {
-     if (p >= endptr - 6)
+     if (p + 6 > endptr)
       return 0;
     p[0] = (unsigned char) (0xfc | (ucv >> 30));
     p[1] = (unsigned char) (0x80 | ((ucv >> 24) & 0x3f));

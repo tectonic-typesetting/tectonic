@@ -1,6 +1,6 @@
 /* This is DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     Copyright (C) 1998, 1999 by Mark A. Wicks <mwicks@kettering.edu>
@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 
+
+struct _dpx_conf dpx_conf = {0, dpx_mode_normal_mode, 0, {0}};
 
 #ifndef  HAVE_LIBPAPER
 const struct paper paperspecs[] = {

@@ -1,6 +1,6 @@
 /* This is dvipdfmx, an eXtended version of dvipdfm by Mark A. Wicks.
 
-    Copyright (C) 2002-2016 by Jin-Hwan Cho and Shunsaku Hirata,
+    Copyright (C) 2002-2018 by Jin-Hwan Cho and Shunsaku Hirata,
     the dvipdfmx project team.
 
     This program is free software; you can redistribute it and/or modify
@@ -98,8 +98,6 @@ struct CMap {
     size_t minBytesOut;
     size_t maxBytesOut;
   } profile;
-
-  int *reverseMap;
 };
 
 #endif /* _CMAP_P_H_ */

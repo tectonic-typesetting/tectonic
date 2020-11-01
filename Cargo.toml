@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 build = "build.rs"
 description = """
@@ -79,6 +79,7 @@ profile = []
 # libz-sys = "^1.0"
 
 [dev-dependencies]
+filetime = "^0.2"
 futures = "0.1"
 headers = "0.2"
 hyper = "0.12"
@@ -87,7 +88,7 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "76a7e9248fb3c57350b559966dcaa2d52a5e4458"
+rev = "527c0e04332db88a7906e469dca1d9f0a35726fc"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
