@@ -1,4 +1,10 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix compilation on Windows/MSVC (`sys/time.h` is not available)
+- Don't print an empty `error:` line in the CLI (#665, #670)
+
+
+# tectonic 0.3.0 (2020-11-01)
 
 The 0.3 series updates the core Tectonic engines to align with the code in
 [TeXLive 2020.0][tl2020.0]. The default “bundle” of support files will soon be
