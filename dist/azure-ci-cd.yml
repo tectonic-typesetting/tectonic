@@ -80,15 +80,12 @@ parameters:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
 
-  # Temporarily disabled due to vcpkg brokenness that looks like it
-  # will take a little while to resolve. Tracking issue:
-  # https://github.com/tectonic-typesetting/tectonic/issues/668
-  # - name: windows
-  #   vmImage: windows-2019
-  #   params: {}
-  #   vars:
-  #     TARGET: x86_64-pc-windows-msvc
-  #     TOOLCHAIN: stable-x86_64-pc-windows-msvc
+  - name: windows
+    vmImage: windows-2019
+    params: {}
+    vars:
+      TARGET: x86_64-pc-windows-msvc
+      TOOLCHAIN: stable-x86_64-pc-windows-msvc
 
 - name: crossBuilds
   type: object

@@ -10,7 +10,10 @@
 #include "xetex-ext.h"
 
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
+#ifndef _MSC_VER
 #include <sys/time.h>
+#define HAVE_GETTIMEOFDAY
+#endif
 
 static char *last_source_name = NULL;
 static int last_lineno;
@@ -124,10 +127,18 @@ get_date_and_time (time_t source_date_epoch,
 void
 get_seconds_and_micros (int32_t *seconds,  int32_t *micros)
 {
+#ifdef HAVE_GETTIMEOFDAY
   struct timeval tv;
   gettimeofday(&tv, NULL);
   *seconds = tv.tv_sec;
   *micros  = tv.tv_usec;
+#else
+  /* This is what we use on Windows/MSVC. Less than ideal.
+   * We should replace this with a Rust-backed cross-platform API. */
+  time_t myclock = time((time_t *) NULL);
+  *seconds = myclock;
+  *micros  = 0;
+#endif
 }
 
 

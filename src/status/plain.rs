@@ -41,6 +41,20 @@ impl StatusBackend for PlainStatusBackend {
         }
     }
 
+    fn report_error(&mut self, err: &Error) {
+        let mut prefix = "error";
+
+        for item in err.iter() {
+            eprintln!("{}: {}", prefix, item);
+            prefix = "caused by";
+        }
+
+        if let Some(backtrace) = err.backtrace() {
+            eprintln!("debugging: backtrace follows:");
+            eprintln!("{:?}", backtrace);
+        }
+    }
+
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
         if self.chatter > ChatterLevel::Minimal {
             self.report(
