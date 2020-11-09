@@ -36,7 +36,7 @@ crate-type = ["rlib"]
 [build-dependencies]
 cc = "^1.0.58"
 pkg-config = "^0.3"
-regex = "^1.3"
+regex = "^1.4"
 sha2 = "^0.9"
 tectonic_cfg_support = { path = "cfg_support", version = "0.0.0-dev.0" }
 vcpkg = "0.2.10"
