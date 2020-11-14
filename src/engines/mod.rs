@@ -163,24 +163,31 @@ impl<'a> ExecutionState<'a> {
             self.io.input_open_name(name, self.status)
         };
 
-        let path = Path::new(name);
-
         match r {
-            OpenResult::NotAvailable if path.extension().is_some() =>
-            // Do not change the extension if provided.
-            {
-                return OpenResult::NotAvailable;
-            }
             OpenResult::NotAvailable => {}
             r => return r,
         }
 
-        if path.file_name().is_none() {
-            // No file name, Path::set_extension will not do anything, so why even try?
+        // It wasn't available under the immediately-given name. Try alternatives.
+
+        let path = Path::new(name);
+        let mut ext = path.to_owned();
+
+        if let Some(fname) = path.file_name() {
+            // If the filename has no extension right now, we're all set.
+            // Otherwise, add a temporary extra extension because set_extension
+            // *replaces*, and we want to maintain what we've got. This case
+            // inspired by lipsum in TeXLive 2020, which asks for
+            // `lipsum.ltd.tex` under the name `lipsum.ltd`.
+            if path.extension().is_some() {
+                let mut fname = fname.to_owned();
+                fname.push(".x");
+                ext.set_file_name(fname);
+            }
+        } else {
+            // If no file name, Path::set_extension will not do anything, so why even try?
             return OpenResult::NotAvailable;
         }
-
-        let mut ext = path.to_owned();
 
         for e in format_to_extension(format) {
             ext.set_extension(e);

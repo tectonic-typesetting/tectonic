@@ -1,3 +1,13 @@
+# tectonic 0.3.2 (2020-11-14)
+
+- Slightly alter how some filenames are looked up. Before, if the TeX code
+  requested a file whose name contained an extension, e.g. `foo.bar`, if no such
+  file was available in the bundle we gave up immediately. Now we also check for
+  `foo.bar.tex` and friends. This fixes the `lipsum` package in TeXLive 2020.0
+  (#669, #680, @pkgw), and quite possibly some other miscellaneous packages as
+  well.
+
+
 # tectonic 0.3.1 (2020-11-02)
 
 - Fix compilation on Windows/MSVC (`sys/time.h` is not available)
