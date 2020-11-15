@@ -1,5 +1,12 @@
 # rc: micro bump
 
+- When testing whether the engine needs rerunning, compare the new file to the
+  entire old file, not just the part that was read by the engine. Should fix
+  unnecessary reruns in some less-common cases. (#679, #681, @pkgw)
+
+
+# tectonic 0.3.2 (2020-11-14)
+
 - Slightly alter how some filenames are looked up. Before, if the TeX code
   requested a file whose name contained an extension, e.g. `foo.bar`, if no such
   file was available in the bundle we gave up immediately. Now we also check for
