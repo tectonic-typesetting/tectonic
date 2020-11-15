@@ -141,6 +141,37 @@ impl InputHandle {
         self.inner
     }
 
+    /// Read any remaining data in the file and incorporate them into the
+    /// digest. This helps the rerun detection logic work correctly in
+    /// the somewhat-unusual case that a file is read then written, but
+    /// only part of the file is read, not the entire thing. This seems
+    /// to happen with biblatex XML state files.
+    pub fn scan_remainder(&mut self) -> Result<()> {
+        const BUFSIZE: usize = 1024;
+        let mut buf: [u8; BUFSIZE] = [0; BUFSIZE];
+
+        loop {
+            let n = match self.inner.read(&mut buf[..]) {
+                Ok(n) => n,
+
+                // There are times when the engine tries to open and read
+                // directories. When closing out such a handle, we'll get this
+                // error, but we should ignore it.
+                Err(ref ioe) if ioe.raw_os_error() == Some(libc::EISDIR) => return Ok(()),
+
+                Err(e) => return Err(e.into()),
+            };
+
+            if n == 0 {
+                break;
+            }
+
+            self.digest.update(&buf[..n]);
+        }
+
+        Ok(())
+    }
+
     /// Consumes the object and returns the SHA256 sum of the content that was
     /// read. No digest is returned if there was ever a seek on the input
     /// stream, since in that case the results will not be reliable. We also

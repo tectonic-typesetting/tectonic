@@ -469,12 +469,20 @@ impl<'a> ExecutionState<'a> {
             let p: *const InputHandle = &*self.input_handles[i];
 
             if p == handle {
-                let ih = self.input_handles.swap_remove(i);
+                let mut ih = self.input_handles.swap_remove(i);
+                let mut rv = false;
+
+                if let Err(e) = ih.scan_remainder() {
+                    tt_warning!(self.status, "error closing out input {}", ih.name().to_string_lossy(); e);
+                    rv = true;
+                }
+
                 let (name, digest_opt) = ih.into_name_digest();
                 self.events.input_closed(name, digest_opt);
-                return false;
+                return rv;
             }
         }
+
         // TODO: Handle the error better. This indicates a bug in the engine.
         tt_error!(
             self.status,
