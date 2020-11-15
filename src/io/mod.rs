@@ -151,7 +151,16 @@ impl InputHandle {
         let mut buf: [u8; BUFSIZE] = [0; BUFSIZE];
 
         loop {
-            let n = self.inner.read(&mut buf[..])?;
+            let n = match self.inner.read(&mut buf[..]) {
+                Ok(n) => n,
+
+                // There are times when the engine tries to open and read
+                // directories. When closing out such a handle, we'll get this
+                // error, but we should ignore it.
+                Err(ref ioe) if ioe.raw_os_error() == Some(libc::EISDIR) => return Ok(()),
+
+                Err(e) => return Err(e.into()),
+            };
 
             if n == 0 {
                 break;
