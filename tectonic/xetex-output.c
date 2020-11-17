@@ -247,7 +247,7 @@ print(int32_t s)
 
     if (s >= str_ptr)
         return print_cstr("???");
-    else if (s < BIGGEST_CHAR) {
+    else if (s <= BIGGEST_CHAR) {
         if (s < 0)
             return print_cstr("???");
         else {
