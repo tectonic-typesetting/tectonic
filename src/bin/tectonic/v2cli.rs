@@ -1,7 +1,7 @@
 // Copyright 2020 the Tectonic Project
 // Licensed under the MIT License.
 
-//! The "newcli" command-line interface -- a "multitool" interface resembling
+//! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
 use std::{ffi::OsString, path::PathBuf, process, str::FromStr};
@@ -16,14 +16,14 @@ use tectonic::{
     tt_note,
 };
 
-/// The main options for the "V2"/"newcli" command-line interface.
+/// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
 #[structopt(
     name = "tectonic -X",
     about = "Process (La)TeX documents",
     setting(AppSettings::NoBinaryName)
 )]
-struct NewCliOptions {
+struct V2CliOptions {
     /// How much chatter to print when running
     #[structopt(
         long = "chatter",
@@ -47,16 +47,16 @@ struct NewCliOptions {
     command: Commands,
 }
 
-/// The main function for the Cargo-like, "new" CLI. This intentionally
+/// The main function for the Cargo-like, "V2" CLI. This intentionally
 /// duplicates a lot of the "old" main() function, so that the implementation
 /// can drift over time as needed.
-pub fn new_main(effective_args: &[OsString]) {
+pub fn v2_main(effective_args: &[OsString]) {
     // See main() -- we have a test mode that might need activating.
 
     tectonic::test_util::maybe_activate_test_mode();
 
     // I like the idea of not having any global config at all, but as we migrate
-    // to the new CLI we'll keep it for now.
+    // to the V2 CLI we'll keep it for now.
 
     let config = match PersistentConfig::open(false) {
         Ok(c) => c,
@@ -68,7 +68,7 @@ pub fn new_main(effective_args: &[OsString]) {
 
     // Parse args -- this will exit if there are problems.
 
-    let args = NewCliOptions::from_iter(effective_args);
+    let args = V2CliOptions::from_iter(effective_args);
 
     // Set up colorized output.
 

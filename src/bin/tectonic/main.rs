@@ -19,7 +19,7 @@ use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::unstable_opts::{UnstableArg, UnstableOptions};
 use tectonic::{errmsg, tt_error, tt_note};
 
-mod newcli;
+mod v2cli;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
@@ -214,19 +214,19 @@ fn main() {
     // while, well swap the defaults and make `-Y` required if you want to use
     // the classic interface. Finally, we'll remove it altogether.
 
-    let mut newcli_enabled = false;
+    let mut v2cli_enabled = false;
     let os_args: Vec<_> = env::args_os().collect();
-    let mut newcli_arg_idx = 1;
+    let mut v2cli_arg_idx = 1;
 
     if os_args.len() > 0 && os_args[0].to_str().map(|s| s.contains("nextonic")) == Some(true) {
-        newcli_enabled = true;
+        v2cli_enabled = true;
     } else if os_args.len() > 1 && os_args[1] == "-X" {
-        newcli_enabled = true;
-        newcli_arg_idx = 2;
+        v2cli_enabled = true;
+        v2cli_arg_idx = 2;
     }
 
-    if newcli_enabled {
-        newcli::new_main(&os_args[newcli_arg_idx..]);
+    if v2cli_enabled {
+        v2cli::v2_main(&os_args[v2cli_arg_idx..]);
         return;
     }
 
