@@ -1,5 +1,5 @@
 // src/bin/tectonic.rs -- Command-line driver for the Tectonic engine.
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 use structopt::StructOpt;
@@ -18,6 +18,8 @@ use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::unstable_opts::{UnstableArg, UnstableOptions};
 use tectonic::{errmsg, tt_error, tt_note};
+
+mod newcli;
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
@@ -203,6 +205,33 @@ fn inner(args: CliOptions, config: PersistentConfig, status: &mut dyn StatusBack
 }
 
 fn main() {
+    // Migration to the "cargo-style" command-line interface. If the first
+    // argument is `-X`, or argv[0] contains `nextonic`, we activate the
+    // alternative operation mode. Once this experimental mode is working OK,
+    // we'll start printing a message telling people to prefer the `-X` option
+    // and optionally accept a leading `-Y` option for the "classic"
+    // ("rustc"-style, current) interface. After that's been in place for a
+    // while, well swap the defaults and make `-Y` required if you want to use
+    // the classic interface. Finally, we'll remove it altogether.
+
+    let mut newcli_enabled = false;
+    let os_args: Vec<_> = env::args_os().collect();
+    let mut newcli_arg_idx = 0;
+
+    if os_args.len() > 1 && os_args[0].to_str().map(|s| s.contains("nextonic")) == Some(true) {
+        newcli_enabled = true;
+    } else if os_args.len() > 1 && os_args[1] == "-X" {
+        newcli_enabled = true;
+        newcli_arg_idx = 1;
+    }
+
+    if newcli_enabled {
+        newcli::new_main(&os_args[newcli_arg_idx..]);
+        return;
+    }
+
+    // OK, we're still using the "rustc-style" CLI. Proceed here.
+
     let args = CliOptions::from_args();
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
