@@ -1722,7 +1722,8 @@ add_ToUnicode_single (CMap *cmap, char *used_chars,
                       uint16_t *GIDToCIDMap)
 {
   int     count = 0;
-  USHORT  i, idx, gid;
+  int idx;
+  USHORT  i, gid;
   USHORT  gid_sub;
 
   assert(subtab);
