@@ -4,7 +4,7 @@
 //! The "newcli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{ffi::OsString, process, str::FromStr};
+use std::{ffi::OsString, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
@@ -25,12 +25,26 @@ use tectonic::{
 )]
 struct NewCliOptions {
     /// How much chatter to print when running
-    #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
+    #[structopt(
+        long = "chatter",
+        short,
+        name = "level",
+        default_value = "default",
+        possible_values(&["default", "minimal"])
+    )]
     chatter_level: String,
 
     /// Control colorization of output
-    #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
+    #[structopt(
+        long = "color",
+        name = "when",
+        default_value = "auto",
+        possible_values(&["always", "auto", "never"])
+    )]
     cli_color: String,
+
+    #[structopt(subcommand)]
+    command: Commands,
 }
 
 /// The main function for the Cargo-like, "new" CLI. This intentionally
@@ -81,17 +95,37 @@ pub fn new_main(effective_args: &[OsString]) {
 
     // Now that we've got colorized output, pass off to the inner function.
 
-    if let Err(ref e) = new_inner(args, config, &mut *status) {
+    if let Err(ref e) = args.command.execute(config, &mut *status) {
         status.report_error(e);
         process::exit(1)
     }
 }
 
-fn new_inner(
-    _args: NewCliOptions,
-    _config: PersistentConfig,
-    status: &mut dyn StatusBackend,
-) -> Result<()> {
-    tt_note!(status, "not implemented");
-    Ok(())
+#[derive(Debug, PartialEq, StructOpt)]
+enum Commands {
+    #[structopt(name = "new")]
+    /// Create a new document
+    New(NewCommand),
+}
+
+impl Commands {
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        match self {
+            Commands::New(o) => o.execute(config, status),
+        }
+    }
+}
+
+/// `new`: Create a new document
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct NewCommand {
+    /// The name of the document directory to create.
+    path: PathBuf,
+}
+
+impl NewCommand {
+    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        tt_note!(status, "not implemented");
+        Ok(0)
+    }
 }
