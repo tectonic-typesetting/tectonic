@@ -84,7 +84,7 @@ pub trait StatusBackend {
 
     /// Issue a note-level status, idealy highlighting a particular phrase.
     ///
-    /// This is a bit of a hack. For [`driver::ProcessingSession::run`], I
+    /// This is a bit of a hack. For [`crate::driver::ProcessingSession::run`], I
     /// like the UX when we issue notes in this style. It's a bit more
     /// high-level than intended for this trait, but we can provide a nice
     /// sensible default implementation, so whatever.

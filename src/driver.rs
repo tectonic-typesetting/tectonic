@@ -360,7 +360,7 @@ impl ProcessingSessionBuilder {
     /// This value will be used to infer the names of the output files; for example, if
     /// `tex_input_name` is set to `"texput.tex"` then the pdf output file will be `"texput.pdf"`.
     /// As such, this parameter is mandatory, even if the real input is coming from stdin (if it is
-    /// not provided, [`create`] will panic).
+    /// not provided, [`ProcessingSessionBuilder::create`] will panic).
     pub fn tex_input_name(&mut self, s: &str) -> &mut Self {
         self.tex_input_name = Some(s.to_owned());
         self
@@ -388,8 +388,9 @@ impl ProcessingSessionBuilder {
 
     /// The name of the `.fmt` file used to initialize the TeX engine.
     ///
-    /// This file does not necessarily have to exist already; it will be created if it doesn't.
-    /// This parameter is mandatory (if it is not provided, [`create`] will panic).
+    /// This file does not necessarily have to exist already; it will be created
+    /// if it doesn't. This parameter is mandatory (if it is not provided,
+    /// [`ProcessingSessionBuilder::create`] will panic).
     pub fn format_name(&mut self, p: &str) -> &mut Self {
         self.format_name = Some(p.to_owned());
         self
