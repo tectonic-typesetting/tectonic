@@ -19,7 +19,22 @@ use tectonic::status::{ChatterLevel, StatusBackend};
 use tectonic::unstable_opts::{UnstableArg, UnstableOptions};
 use tectonic::{errmsg, tt_error, tt_note};
 
+#[cfg(feature = "serialization")]
 mod v2cli;
+
+// Defused V2 support if serialization is unavailable.
+#[cfg(not(feature = "serialization"))]
+mod v2cli {
+    use std::{ffi::OsString, process};
+
+    pub fn v2_main(_effective_args: &[OsString]) {
+        eprintln!(
+            "fatal error: the \"V2\" Tectonic CLI requires the code to have been built \
+            with the \"serialization\" Cargo feature active. This one wasn't."
+        );
+        process::exit(1);
+    }
+}
 
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
