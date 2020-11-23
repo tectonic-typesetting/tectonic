@@ -9,11 +9,12 @@ use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
     config::PersistentConfig,
+    ctry,
     errors::Result,
     status::{
         plain::PlainStatusBackend, termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend,
     },
-    tt_note,
+    tt_note, workspace,
 };
 
 /// The main options for the "V2" command-line interface.
@@ -120,12 +121,23 @@ impl Commands {
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct NewCommand {
     /// The name of the document directory to create.
+    #[structopt(default_value = ".")]
     path: PathBuf,
 }
 
 impl NewCommand {
     fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        tt_note!(status, "not implemented");
+        tt_note!(
+            status,
+            "creating new document in directory `{}`",
+            self.path.display()
+        );
+
+        let wc = workspace::WorkspaceCreator::new(self.path);
+        ctry!(
+            wc.create();
+            "failed to create the new Tectonic workspace"
+        );
         Ok(0)
     }
 }
