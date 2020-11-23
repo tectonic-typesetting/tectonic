@@ -102,8 +102,12 @@ pub fn v2_main(effective_args: &[OsString]) {
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, StructOpt)]
 enum Commands {
+    #[structopt(name = "compile")]
+    /// Run a standalone (La)TeX compilation
+    Compile(crate::compile::CompileOptions),
+
     #[structopt(name = "new")]
     /// Create a new document
     New(NewCommand),
@@ -112,6 +116,7 @@ enum Commands {
 impl Commands {
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         match self {
+            Commands::Compile(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
         }
     }
