@@ -61,7 +61,7 @@ fn main() {
     let os_args: Vec<_> = env::args_os().collect();
     let mut v2cli_arg_idx = 1;
 
-    if os_args.len() > 0 && os_args[0].to_str().map(|s| s.contains("nextonic")) == Some(true) {
+    if !os_args.is_empty() && os_args[0].to_str().map(|s| s.contains("nextonic")) == Some(true) {
         v2cli_enabled = true;
     } else if os_args.len() > 1 && os_args[1] == "-X" {
         v2cli_enabled = true;

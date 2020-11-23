@@ -8,7 +8,6 @@ use std::{
     io::Write,
     path::{Component, PathBuf},
 };
-use toml;
 
 use crate::{ctry, errors::Result, workspace::WorkspaceCreator};
 
