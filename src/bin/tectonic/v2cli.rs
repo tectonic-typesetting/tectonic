@@ -130,7 +130,23 @@ impl Commands {
 
 /// `build`: Build a document
 #[derive(Debug, PartialEq, StructOpt)]
-pub struct BuildCommand {}
+pub struct BuildCommand {
+    /// Use only resource files cached locally
+    #[structopt(short = "C", long)]
+    only_cached: bool,
+
+    /// Keep the intermediate files generated during processing
+    #[structopt(short, long)]
+    keep_intermediates: bool,
+
+    /// Keep the log files generated during processing
+    #[structopt(long)]
+    keep_logs: bool,
+
+    /// Print the engine's chatter during processing
+    #[structopt(long = "print", short)]
+    print_stdout: bool,
+}
 
 impl BuildCommand {
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
@@ -139,7 +155,11 @@ impl BuildCommand {
 
         for output_name in doc.output_names() {
             let mut opts = doc.build_options_for(output_name);
-            opts.format_cache_path(config.format_cache_path()?);
+            opts.format_cache_path(config.format_cache_path()?)
+                .only_cached(self.only_cached)
+                .keep_intermediates(self.keep_intermediates)
+                .keep_logs(self.keep_logs)
+                .print_stdout(self.print_stdout);
             doc.build(output_name, &opts, status)?;
         }
 

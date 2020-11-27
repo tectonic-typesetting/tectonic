@@ -22,7 +22,7 @@ use crate::{
         Bundle,
     },
     status::StatusBackend,
-    tt_error,
+    tt_error, tt_note,
     workspace::WorkspaceCreator,
 };
 
@@ -192,14 +192,38 @@ pub enum BuildTargetType {
 }
 
 /// Temporary options for a document build.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct BuildOptions {
     format_cache_path: Option<PathBuf>,
+    only_cached: bool,
+    keep_intermediates: bool,
+    keep_logs: bool,
+    print_stdout: bool,
 }
 
 impl BuildOptions {
     pub fn format_cache_path<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
         self.format_cache_path = Some(p.as_ref().to_owned());
+        self
+    }
+
+    pub fn only_cached(&mut self, value: bool) -> &mut Self {
+        self.only_cached = value;
+        self
+    }
+
+    pub fn keep_intermediates(&mut self, value: bool) -> &mut Self {
+        self.keep_intermediates = value;
+        self
+    }
+
+    pub fn keep_logs(&mut self, value: bool) -> &mut Self {
+        self.keep_logs = value;
+        self
+    }
+
+    pub fn print_stdout(&mut self, value: bool) -> &mut Self {
+        self.print_stdout = value;
         self
     }
 }
@@ -224,13 +248,15 @@ impl Document {
     /// Panics if the output name is not one of the ones associated with this
     /// document.
     pub fn build_options_for(&self, _output_profile: &str) -> BuildOptions {
-        BuildOptions {
-            format_cache_path: None,
-        }
+        BuildOptions::default()
     }
 
     /// Get the bundle used by this document.
-    pub fn bundle(&self, status: &mut dyn StatusBackend) -> Result<Box<dyn Bundle>> {
+    pub fn bundle(
+        &self,
+        only_cached: bool,
+        status: &mut dyn StatusBackend,
+    ) -> Result<Box<dyn Bundle>> {
         fn bundle_from_path(p: PathBuf) -> Result<Box<dyn Bundle>> {
             if p.is_dir() {
                 Ok(Box::new(DirBundle::new(p)))
@@ -241,7 +267,7 @@ impl Document {
 
         if let Ok(url) = Url::parse(&self.bundle_loc) {
             if url.scheme() != "file" {
-                let bundle = CachedITarBundle::new(&self.bundle_loc, false, None, status)?;
+                let bundle = CachedITarBundle::new(&self.bundle_loc, only_cached, None, status)?;
                 Ok(Box::new(bundle))
             } else {
                 let file_path = url.to_file_path().map_err(|_| {
@@ -268,12 +294,22 @@ impl Document {
         };
 
         let mut sess_builder = ProcessingSessionBuilder::default();
-        sess_builder.output_format(output_format);
-        sess_builder.format_name(&profile.format);
-        sess_builder.pass(PassSetting::Default);
-        sess_builder.primary_input_buffer(DEFAULT_PRIMARY_INPUT);
-        sess_builder.tex_input_name(output_profile);
-        sess_builder.bundle(self.bundle(status)?);
+        sess_builder
+            .output_format(output_format)
+            .format_name(&profile.format)
+            .pass(PassSetting::Default)
+            .primary_input_buffer(DEFAULT_PRIMARY_INPUT)
+            .tex_input_name(output_profile)
+            .keep_logs(options.keep_logs)
+            .keep_intermediates(options.keep_intermediates)
+            .print_stdout(options.print_stdout);
+
+        if options.only_cached {
+            tt_note!(status, "using only cached resource files");
+        }
+        sess_builder.bundle(self.bundle(options.only_cached, status)?);
+
+        // keep intermed, keep logs, print stdout
 
         if let Some(ref p) = options.format_cache_path {
             sess_builder.format_cache_path(p);
