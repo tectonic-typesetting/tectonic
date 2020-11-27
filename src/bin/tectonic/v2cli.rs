@@ -131,7 +131,7 @@ pub struct NewCommand {
 }
 
 impl NewCommand {
-    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         tt_note!(
             status,
             "creating new document in directory `{}`",
@@ -140,7 +140,7 @@ impl NewCommand {
 
         let wc = workspace::WorkspaceCreator::new(self.path);
         ctry!(
-            wc.create();
+            wc.create(&config, status);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)

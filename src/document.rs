@@ -9,7 +9,10 @@ use std::{
     path::{Component, PathBuf},
 };
 
-use crate::{ctry, errors::Result, workspace::WorkspaceCreator};
+use crate::{
+    config, ctry, errors::Result, io::cached_itarbundle::resolve_url, status::StatusBackend,
+    workspace::WorkspaceCreator,
+};
 
 /// A Tectonic document.
 #[derive(Debug)]
@@ -25,12 +28,20 @@ pub struct Document {
     /// like, and so should be relatively filesystem-friendly. It does not
     /// need to be the same as the document title.
     name: String,
+
+    /// The name of core TeX file bundle upon which this document is based.
+    /// Either a URL or a local path.
+    bundle_loc: String,
 }
 
 impl Document {
     /// Create a new in-memory Document, based on the settings of a
     /// WorkspaceCreator object.
-    pub(crate) fn new_for_creator(wc: &WorkspaceCreator) -> Self {
+    pub(crate) fn new_for_creator(
+        wc: &WorkspaceCreator,
+        config: &config::PersistentConfig,
+        status: &mut dyn StatusBackend,
+    ) -> Result<Self> {
         let src_dir = wc.root_dir().to_owned();
 
         let mut build_dir = src_dir.clone();
@@ -70,12 +81,17 @@ impl Document {
             name
         };
 
+        // Determine the bundle URL that we'll put in as the default.
+
+        let bundle_loc = resolve_url(config.default_bundle_loc(), status)?;
+
         // All done.
-        Document {
+        Ok(Document {
             src_dir,
             build_dir,
             name,
-        }
+            bundle_loc,
+        })
     }
 
     /// Write out this document's state as a new TOML file. This should only be
@@ -85,6 +101,7 @@ impl Document {
         let doc = syntax::Document {
             doc: syntax::DocSection {
                 name: self.name.clone(),
+                bundle: self.bundle_loc.clone(),
             },
         };
 
@@ -117,5 +134,6 @@ mod syntax {
     #[derive(Debug, Deserialize, Serialize)]
     pub struct DocSection {
         pub name: String,
+        pub bundle: String,
     }
 }

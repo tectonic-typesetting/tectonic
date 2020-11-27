@@ -12,7 +12,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{ctry, document::Document, errors::Result};
+use crate::{
+    config::PersistentConfig, ctry, document::Document, errors::Result, status::StatusBackend,
+};
 
 /// A Tectonic workspace.
 #[derive(Debug)]
@@ -58,8 +60,12 @@ impl WorkspaceCreator {
     }
 
     /// Consume this object and attempt to create the new workspace.
-    pub fn create(self) -> Result<Workspace> {
-        let doc = Document::new_for_creator(&self);
+    pub fn create(
+        self,
+        config: &PersistentConfig,
+        status: &mut dyn StatusBackend,
+    ) -> Result<Workspace> {
+        let doc = Document::new_for_creator(&self, config, status)?;
 
         ctry!(
             fs::create_dir_all(&self.root_dir);

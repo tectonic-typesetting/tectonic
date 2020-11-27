@@ -130,6 +130,10 @@ impl PersistentConfig {
         Ok(bundle)
     }
 
+    pub fn default_bundle_loc(&self) -> &str {
+        &self.default_bundles[0].url
+    }
+
     pub fn default_bundle(
         &self,
         only_cached: bool,
