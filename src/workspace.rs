@@ -8,7 +8,8 @@
 //! world where one workspace can contain multiple documents.
 
 use std::{
-    env, fs, io,
+    env, fs,
+    io::{self, Write},
     path::{Path, PathBuf},
 };
 
@@ -98,12 +99,51 @@ impl WorkspaceCreator {
     ) -> Result<Workspace> {
         let doc = Document::new_for_creator(&self, config, status)?;
 
+        let mut tex_dir = self.root_dir.clone();
+        tex_dir.push("src");
+
         ctry!(
-            fs::create_dir_all(&self.root_dir);
-            "couldn\'t create workspace directory `{}`", self.root_dir.display()
+            fs::create_dir_all(&tex_dir);
+            "couldn\'t create workspace directory `{}`", tex_dir.display()
         );
 
         doc.create_toml()?;
+
+        // Stub out the TeX.
+
+        {
+            tex_dir.push("_preamble.tex");
+            let mut f = fs::File::create(&tex_dir)?;
+            f.write_all(
+                br#"\documentclass{article}
+\title{My Title}
+\begin{document}
+"#,
+            )?;
+            tex_dir.pop();
+        }
+
+        {
+            tex_dir.push("index.tex");
+            let mut f = fs::File::create(&tex_dir)?;
+            f.write_all(
+                br#"Hello, world.
+"#,
+            )?;
+            tex_dir.pop();
+        }
+
+        {
+            tex_dir.push("_postamble.tex");
+            let mut f = fs::File::create(&tex_dir)?;
+            f.write_all(
+                br#"\end{document}
+"#,
+            )?;
+            tex_dir.pop();
+        }
+
+        // All done.
 
         Ok(Workspace {
             root_dir: self.root_dir,
