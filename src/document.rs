@@ -5,13 +5,13 @@
 
 use std::{
     env, fs,
-    io::Write,
+    io::{Read, Write},
     path::{Component, PathBuf},
 };
 
 use crate::{
-    config, ctry, errors::Result, io::cached_itarbundle::resolve_url, status::StatusBackend,
-    workspace::WorkspaceCreator,
+    config, ctry, driver::ProcessingSessionBuilder, errors::Result,
+    io::cached_itarbundle::resolve_url, status::StatusBackend, workspace::WorkspaceCreator,
 };
 
 /// A Tectonic document.
@@ -35,6 +35,24 @@ pub struct Document {
 }
 
 impl Document {
+    /// Initialize a Document based on a TOML specification
+    pub(crate) fn new_from_toml<R: Read>(
+        src_dir: PathBuf,
+        build_dir: PathBuf,
+        toml_data: &mut R,
+    ) -> Result<Self> {
+        let mut toml_text = String::new();
+        toml_data.read_to_string(&mut toml_text)?;
+        let doc: syntax::Document = toml::from_str(&toml_text)?;
+
+        Ok(Document {
+            src_dir,
+            build_dir,
+            name: doc.doc.name,
+            bundle_loc: doc.doc.bundle,
+        })
+    }
+
     /// Create a new in-memory Document, based on the settings of a
     /// WorkspaceCreator object.
     pub(crate) fn new_for_creator(

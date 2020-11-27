@@ -14,7 +14,8 @@ use tectonic::{
     status::{
         plain::PlainStatusBackend, termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend,
     },
-    tt_note, workspace,
+    tt_note,
+    workspace::{self, Workspace},
 };
 
 /// The main options for the "V2" command-line interface.
@@ -104,6 +105,10 @@ pub fn v2_main(effective_args: &[OsString]) {
 
 #[derive(Debug, StructOpt)]
 enum Commands {
+    #[structopt(name = "build")]
+    /// Build a document
+    Build(BuildCommand),
+
     #[structopt(name = "compile")]
     /// Run a standalone (La)TeX compilation
     Compile(crate::compile::CompileOptions),
@@ -116,9 +121,21 @@ enum Commands {
 impl Commands {
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         match self {
+            Commands::Build(o) => o.execute(config, status),
             Commands::Compile(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
         }
+    }
+}
+
+/// `build`: Build a document
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct BuildCommand {}
+
+impl BuildCommand {
+    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let ws = Workspace::open_from_environment()?;
+        Ok(0)
     }
 }
 

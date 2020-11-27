@@ -8,12 +8,13 @@
 //! world where one workspace can contain multiple documents.
 
 use std::{
-    fs,
+    env, fs, io,
     path::{Path, PathBuf},
 };
 
 use crate::{
-    config::PersistentConfig, ctry, document::Document, errors::Result, status::StatusBackend,
+    config::PersistentConfig, ctry, document::Document, errmsg, errors::Result,
+    status::StatusBackend,
 };
 
 /// A Tectonic workspace.
@@ -41,6 +42,36 @@ impl Workspace {
     /// in the future.
     pub fn first_document_mut(&mut self) -> &mut Document {
         &mut self.doc
+    }
+
+    /// Open up a workspace baced on the current process environment.
+    pub fn open_from_environment() -> Result<Self> {
+        let mut root_dir = env::current_dir()?;
+        root_dir.push("tmp"); // simplifies loop logic
+
+        while root_dir.pop() {
+            root_dir.push("Tectonic.toml");
+
+            let mut doc_file = match fs::File::open(&root_dir) {
+                Ok(f) => f,
+                Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+                    root_dir.pop(); // remove "Tectonic.toml"
+                    continue; // this will pop up one directory and try again
+                }
+                Err(e) => return Err(e.into()),
+            };
+
+            root_dir.pop();
+            let mut doc_build_dir = root_dir.clone();
+            doc_build_dir.push("build");
+            let doc = Document::new_from_toml(root_dir.clone(), doc_build_dir, &mut doc_file)?;
+
+            return Ok(Workspace { root_dir, doc });
+        }
+
+        Err(errmsg!(
+            "No `Tectonic.toml` found in current directory or any of its parents"
+        ))
     }
 }
 
