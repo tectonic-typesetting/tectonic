@@ -133,12 +133,13 @@ impl Commands {
 pub struct BuildCommand {}
 
 impl BuildCommand {
-    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let ws = Workspace::open_from_environment()?;
         let doc = ws.first_document();
 
         for output_name in doc.output_names() {
-            let opts = doc.build_options_for(output_name);
+            let mut opts = doc.build_options_for(output_name);
+            opts.format_cache_path(config.format_cache_path()?);
             doc.build(output_name, &opts, status)?;
         }
 

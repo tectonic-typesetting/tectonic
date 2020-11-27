@@ -193,7 +193,16 @@ pub enum BuildTargetType {
 
 /// Temporary options for a document build.
 #[derive(Clone, Debug)]
-pub struct BuildOptions {}
+pub struct BuildOptions {
+    format_cache_path: Option<PathBuf>,
+}
+
+impl BuildOptions {
+    pub fn format_cache_path<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
+        self.format_cache_path = Some(p.as_ref().to_owned());
+        self
+    }
+}
 
 const DEFAULT_PRIMARY_INPUT: &[u8] = br#"
 \input _preamble.tex
@@ -215,7 +224,9 @@ impl Document {
     /// Panics if the output name is not one of the ones associated with this
     /// document.
     pub fn build_options_for(&self, _output_profile: &str) -> BuildOptions {
-        BuildOptions {}
+        BuildOptions {
+            format_cache_path: None,
+        }
     }
 
     /// Get the bundle used by this document.
@@ -247,7 +258,7 @@ impl Document {
     pub fn build(
         &self,
         output_profile: &str,
-        _options: &BuildOptions,
+        options: &BuildOptions,
         status: &mut dyn StatusBackend,
     ) -> Result<i32> {
         let profile = self.outputs.get(output_profile).unwrap();
@@ -263,6 +274,10 @@ impl Document {
         sess_builder.primary_input_buffer(DEFAULT_PRIMARY_INPUT);
         sess_builder.tex_input_name(output_profile);
         sess_builder.bundle(self.bundle(status)?);
+
+        if let Some(ref p) = options.format_cache_path {
+            sess_builder.format_cache_path(p);
+        }
 
         let mut tex_dir = self.src_dir.clone();
         tex_dir.push("src");
