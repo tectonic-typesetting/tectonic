@@ -1,4 +1,4 @@
-# “V2” Command-Line Interface
+# “V2” (Prototype) Command-Line Interface
 
 The “V2” command-line interface to Tectonic is substantially new interface to
 the Tectonic engine introduced in the 0.4.x release series.

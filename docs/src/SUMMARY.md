@@ -5,12 +5,12 @@
 - [Introduction](introduction/index.md)
 - [Installation](installation/index.md)
 - [Getting Started](getting-started/index.md)
-- [Tectonic’s Command Line Interface](cli/index.md)
 - [The Tectonic Implementation of the TeX Language](lang-impl/index.md)
 
 # Reference Material
 
 - [The `Tectonic.toml` File](ref/tectonic-toml.md)
+- [“V1” Command-Line Interface](ref/v1cli.md)
 - [“V2” Command-Line Interface](ref/v2cli.md)
 
 # Cookbooks
