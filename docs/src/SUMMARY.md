@@ -7,7 +7,12 @@
 - [Getting Started](getting-started/index.md)
 - [The Tectonic Implementation of the TeX Language](lang-impl/index.md)
 
-# Reference Material
+# “V2” Command-Line Interface
+
+- [`tectonic -X buid`](v2cli/build.md)
+- [`tectonic -X new`](v2cli/new.md)
+
+# Concept Reference
 
 - [The `Tectonic.toml` File](ref/tectonic-toml.md)
 - [“V1” Command-Line Interface](ref/v1cli.md)
