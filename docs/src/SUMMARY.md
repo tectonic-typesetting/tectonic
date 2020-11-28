@@ -9,14 +9,16 @@
 
 # “V2” Command-Line Interface
 
-- [`tectonic -X buid`](v2cli/build.md)
+- [`tectonic -X build`](v2cli/build.md)
 - [`tectonic -X new`](v2cli/new.md)
 
 # Concept Reference
 
+- [Documents](ref/documents.md)
 - [The `Tectonic.toml` File](ref/tectonic-toml.md)
 - [“V1” Command-Line Interface](ref/v1cli.md)
 - [“V2” Command-Line Interface](ref/v2cli.md)
+- [Workspaces](ref/workspaces.md)
 
 # Cookbooks
 
