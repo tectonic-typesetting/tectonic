@@ -5,21 +5,34 @@ stack is that all of Tectonic’s functionality is delivered in a single
 executable file — not the usual tree of thousands of interlocking data files and
 binary tools.
 
+***Know what you want? [Download the latest pre-built Tectonic binaries
+here][gh-latest].***
+
 You have several options for installing the Tectonic executable. The best choice
 depends on your computing environment and your needs.
 
+- [Direct download](#direct-download)
 - [Pre-built binary packages](#pre-built-binary-packages)
-  - Currently available for Arch Linux, [nixpkgs,
-    nixOS](https://nixos.org/nixos/packages.html#tectonic) and MacPorts/Homebrew
-    on macOS/OS X
 - [The `cargo install` method](#the-cargo-install-method)
-  - Easiest if you already have C++ and Rust development tools installed
-- [The Anaconda method](#the-anaconda-method)
-  - Reliable and cross-platform
 
-If unsure, try [the Anaconda method](#the-anaconda-method). It involves a few
-steps in the command line and a few downloads, but it is straightforward and
-reliable.
+The [direct download](#direct-download) method should meet your needs unless
+you’re hoping to run Tectonic on an unusual platform, in which case you will
+probably need to [install Tectonic using Cargo](#the-cargo-install-method).
+
+
+## Direct download
+
+You can [download the latest release of Tectonic][gh-latest] from GitHub. Each
+release is published with precompiled executables attached. Because Tectonic is
+distributed as a single executable, all you need to do is download the
+appropriate archive for your platform.
+
+[gh-latest]: https://github.com/tectonic-typesetting/tectonic/releases/latest
+
+For instance, on most Linux systems, you’ll want to download the file with the
+name looking like `tectonic-<VERSION>-x86_64-unknown-linux-gnu.tar.gz`. This
+tarball will unpack to a single file, `tectonic`, that is the Tectonic
+executable.
 
 
 ## Pre-built binary packages
@@ -32,6 +45,32 @@ repository][repo] for an up-to-date listing.
 
 In most cases, the package name will be `tectonic` and it will provide a
 command-line tool also named `tectonic`.
+
+### Pre-built packages for Anaconda
+
+Tectonic is available for the [Conda package manager][conda], which has the
+advantages of (1) not requiring any administrator privileges and (2) supporting
+Windows, macOS, and Linux. If you’d like to install Tectonic using a package
+manager and you’re not aware of a different option that’s a better fit for your
+needs, we recommend using Conda.
+
+[conda]: https://docs.conda.io/
+
+If you don’t already have Conda installed, we recommend that you [install the
+“Miniconda” package][miniconda] provided by [Anaconda, Inc.][anaconda]. Once
+complete, the command `conda` will now be available in your terminal.
+
+[miniconda]: https://docs.conda.io/en/latest/miniconda.html
+[anaconda]: https://www.anaconda.com/
+
+Once the `conda` command is available, you can install Tectonic and its support
+libraries using [conda-forge](http://conda-forge.github.io/), a community-led
+Conda packaing project. To install Tectonic you must activate conda-forge, which
+can be done temporarily like so:
+
+```
+conda install -c conda-forge tectonic
+```
 
 
 ## The `cargo install` method
@@ -119,29 +158,6 @@ brew install --build-from-source tectonic
 ```
 
 
-## The Anaconda method
-
-If the other installation methods do not or cannot work for you, another
-reliable installation method is based on the Anaconda Python framework, even
-though nothing in Tectonic uses Python.
-
-If you don’t already have an Anaconda environment set up, we recommend that you
-use Continuum’s “Miniconda” installer to get set up quickly. First, install
-Miniconda [according to these official
-instructions](https://conda.io/docs/install/quick.html). Once Miniconda is
-installed you may need to open a new terminal in order for its changes to take
-effect. If all went well, the command `conda` will now be available in your
-terminal.
-
-Once the `conda` command is available, installation is straightforward. Tectonic
-and its support libraries are provided through
-[conda-forge](http://conda-forge.github.io/), a community-led project that
-emulates and updates the official Anaconda system. To install Tectonic you must
-activate conda-forge, which can be done temporarily like so:
-
-```
-conda install -c conda-forge tectonic
-```
 
 
 
