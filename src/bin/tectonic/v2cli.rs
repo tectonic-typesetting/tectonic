@@ -103,6 +103,7 @@ pub fn v2_main(effective_args: &[OsString]) {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, StructOpt)]
 enum Commands {
     #[structopt(name = "build")]
