@@ -68,7 +68,7 @@ libraries using [conda-forge](http://conda-forge.github.io/), a community-led
 Conda packaing project. To install Tectonic you must activate conda-forge, which
 can be done temporarily like so:
 
-```
+```sh
 conda install -c conda-forge tectonic
 ```
 
@@ -97,14 +97,14 @@ ease the build process, but the above is where things currently stand.
 
 Ensure that the requisite packages are installed with the following command:
 
-```
+```sh
 sudo apt-get install libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev
 ```
 
 Once that is done, the following should be sufficient to download and install
 the latest Tectonic release:
 
-```
+```sh
 cargo install tectonic
 ```
 
@@ -112,14 +112,14 @@ cargo install tectonic
 
 Ensure that the requisite packages are installed with the following command:
 
-```
+```sh
 sudo dnf install fontconfig-devel graphite2-devel harfbuzz-devel libicu-devel openssl-devel zlib-devel
 ```
 
 Once that is done, the following should be sufficient to download and install
 the latest Tectonic release:
 
-```
+```sh
 cargo install tectonic
 ```
 
@@ -131,21 +131,21 @@ you can also just directly install `tectonic`  with Homebrew as well. If you
 want to compile it yourself, the following commands will install the required
 formulae:
 
-```
+```sh
 brew install --only-dependencies tectonic
 brew install pkg-config
 ```
 
 If the Rust build program `cargo` not available, also run:
 
-```
+```sh
 brew install rust
 ```
 
 The `cargo` invocation is then as normal, but you must set up some auxiliary
 environment variables as well:
 
-```
+```sh
 export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include
 export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
 cargo install tectonic
@@ -153,12 +153,9 @@ cargo install tectonic
 
 Alternatively, you can build tectonic from source by running
 
-```
+```sh
 brew install --build-from-source tectonic
 ```
-
-
-
 
 
 ## Other methods

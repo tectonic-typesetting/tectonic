@@ -26,7 +26,7 @@ need to take special steps, as described in [its documentation](./v2cli.md).
 The V1 interface takes an input TeX file and compiles it. Basic usage is often
 as simple as:
 
-```
+```sh
 tectonic myfile.tex
 ```
 

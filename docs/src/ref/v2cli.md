@@ -23,7 +23,7 @@ Because the V2 interface is not the current default, it must be explicitly
 activated. There are several ways to do this. One way is to use `-X` for the
 very first command-line argument to the `tectonic` executable, like so:
 
-```
+```sh
 tectonic -X build
 ```
 
@@ -33,7 +33,7 @@ Alternatively, if the Tectonic executable is run under a name containing the
 string `nextonic`, the V2 interface will also be enabled. In this case, no `-X`
 is needed (or allowed, at the moment):
 
-```
+```sh
 nextonic build
 ```
 

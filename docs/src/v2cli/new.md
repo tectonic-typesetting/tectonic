@@ -10,7 +10,7 @@ CLI), see [its reference page][v1cli-ref].***
 
 #### Usage Synopsis
 
-```
+```sh
 tectonic -X new [DIRECTORY]
 ```
 
