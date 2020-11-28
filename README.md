@@ -15,6 +15,19 @@ If you just want to compile TeX documents, you should probably **click through t
 [the main Tectonic website](https://tectonic-typesetting.github.io/)**. This
 page is primarily aimed at folks interested in how Tectonic works “under the hood.”
 
+## Dockerization
+We provide `typesetting/tectonic` docker image that was build from `Dockerfile` in this repo.
+
+You can run it as `docker run -v ./host/dir:/data typesetting/tectonic`
+
+It contains everything but starting command, extend it with
+```dockerfile
+# based on arch linux
+FROM typesetting/tectonic
+
+CMD ["tectonic", "my.tex"]
+```
+
 ## Developer dashboard
 
 <a href="https://repology.org/metapackage/tectonic">
