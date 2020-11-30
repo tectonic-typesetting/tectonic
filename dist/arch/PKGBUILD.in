@@ -17,7 +17,7 @@ pkgdesc='Modernized, complete, self-contained TeX/LaTeX engine, powered by XeTeX
 url=https://tectonic-typesetting.github.io/
 license=('MIT')
 depends=('fontconfig' 'harfbuzz-icu' 'openssl')
-makedepends=('rust')
+makedepends=('rust' 'gcc' 'pkg-config')
 source=("$pkgname-$pkgver.tar.gz::https://crates.io/api/v1/crates/$pkgname/$pkgver/download")
 sha512sums=('@sha512@')
 
