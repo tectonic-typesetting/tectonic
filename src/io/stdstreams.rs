@@ -33,17 +33,17 @@ impl IoProvider for GenuineStdoutIo {
 /// Rc<Vec<u8>> since none of the types or traits come from the Tectonic
 /// crate.
 #[derive(Clone, Debug, Eq, PartialEq)]
-struct SharedByteBuffer(Rc<Vec<u8>>);
+struct SharedByteBuffer(Rc<[u8]>);
 
 impl SharedByteBuffer {
     fn new(data: Vec<u8>) -> SharedByteBuffer {
-        SharedByteBuffer(Rc::new(data))
+        SharedByteBuffer(data.into())
     }
 }
 
 impl AsRef<[u8]> for SharedByteBuffer {
     fn as_ref(&self) -> &[u8] {
-        &*self.0
+        &self.0
     }
 }
 
