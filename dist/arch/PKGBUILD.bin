@@ -1,0 +1,27 @@
+# Maintainer: tectonic-deploy <sasha+tectonic@hackafe.net>
+# Maintainer: Daniel M. Capella <polyzen@archlinux.org>
+# Contributor: Jan Tojnar <jtojnar@gmail.com>
+
+# The master version of this file is maintained here:
+#
+#   https://github.com/tectonic-typesetting/tectonic/blob/master/dist/arch/PKGBUILD.in
+#
+# The version on aur.archlinux.org is updated automatically by the Tectonic
+# CI/CD system # when new versions are released.
+
+pkgname=tectonic
+pkgver=0.3.3
+pkgrel=0
+arch=('x86_64')
+pkgdesc='Modernized, complete, self-contained TeX/LaTeX engine, powered by XeTeX and TeXLive'
+url=https://tectonic-typesetting.github.io/
+license=('MIT')
+depends=('fontconfig' 'harfbuzz-icu' 'openssl')
+makedepends=('rust')
+source=("$pkgname-$pkgver.tar.gz::https://downloader.disk.yandex.ru/disk/47cc21dcf1946440ca098f101f8c61ea6b77c3f37439e6f1ac992ab1ac4e86b8/5fd6ce61/jHPLzTQRj2952-DqNlFxRk9eBLuCYStdc4wyNjIVb3eh77r6YG0uMG2zGEVJ99kyhUP1VzhfqYavpZ6qmPZg3Q%3D%3D?uid=0&filename=tectonic.tar.gz&disposition=attachment&hash=16VTQ6nekxWAR4TtQQd8LgvUv9uvZSm3pJxeOT1faC4f8OpzJEw/mTJnz6lHQj5%2Bq/J6bpmRyOJonT3VoXnDag%3D%3D&limit=0&content_type=application%2Fx-gzip&owner_uid=441928204&fsize=2962135&hid=a66f4bc3cc29805051e529361a8b475a&media_type=compressed&tknv=v2")
+sha512sums=('d555604788ec10c6db21f9cd346e7a52cdc2f044ffffdaf3bc08451f9fb269fe01be5cbd64835897421300e013edb97583aac44798df721f64761dbc7d8e0b88')
+
+package() {
+	install -Dm755 usr/bin/tectonic "$pkgdir"/usr/bin/tectonic
+	install -Dm644 usr/share/licenses/"$pkgname"/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
