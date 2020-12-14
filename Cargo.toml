@@ -39,7 +39,7 @@ pkg-config = "^0.3"
 regex = "^1.4"
 sha2 = "^0.9"
 tectonic_cfg_support = { path = "cfg_support", version = "0.0.0-dev.0" }
-vcpkg = "0.2.10"
+vcpkg = "0.2.11"
 cbindgen = "0.15.0"
 
 [dependencies]
