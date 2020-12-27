@@ -38,6 +38,10 @@ Enter this new directory in your command prompt.
 
 [workspace]: ../ref/workspaces.md
 
+```sh
+$ cd myfirstdoc
+```
+
 **Note:** *The `-X` flag activates the V2 interface. Don’t forget it! Eventually
 it will become unnecessary and you’ll just be able to write `tectonic new`, but
 that changeover hasn’t happened yet.*
@@ -46,7 +50,13 @@ that changeover hasn’t happened yet.*
 ## Basic document source structure
 
 The source code to your document is stored in the `src` subdirectory of your new
-document. If you look in that file, you’ll see three files:
+document. Check it out:
+
+```sh
+$ ls src
+```
+
+You’ll see three files that were created by the [`new`][cli-new] command:
 
 - `_preamble.tex`
 - `index.tex`
@@ -80,30 +90,34 @@ same document that invoke different preamble or postamble contents.
 To compile your document, run:
 
 ```sh
-tectonic -X build
+$ tectonic -X build
 ```
 
-If you haven’t run Tectonic before on your computer, this command will take a
+If you haven’t run Tectonic on your computer before, this command will take a
 minute or two as it downloads the support files that it needs and generates the
 LaTeX “format file” storing the default macro collection. Tectonic will cache
 these files and avoid downloading them again. Test it out by running the build
 again:
 
 ```sh
-tectonic -X build
+$ tectonic -X build
 ```
 
 This time the command should finish much more quickly, with no messages about
 downloading files. The output PDF document will be placed at the path
-`build/default/default.pdf` relative to your document directory.
+`build/default/default.pdf` relative to your document directory:
+
+```sh
+$ ls -l build/default/
+```
 
 If you’re familiar with traditional TeX engines, you’ll have noticed that
 Tectonic’s “user experience” is substantially different from those engines:
 
 1. Tectonic doesn’t print out the usual chatter — unless there’s an error.
 2. Tectonic automatically reruns the TeX stage until its output stabilizes.
-3. Tectonic doesn’t write out intermediate files such as (`texput.aux`,
-   `texput.log`) unless you ask it to.
+3. By default, Tectonic doesn’t write out intermediate files such as
+   (`texput.aux`, `texput.log`).
 4. You ought not have seen this yet, but if you make a mistake in your TeX,
    Tectonic will quit with an error message, rather than asking you to type `X2`
    or whatever.
