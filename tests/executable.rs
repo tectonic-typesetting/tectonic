@@ -233,102 +233,8 @@ fn help_flag() {
     success_or_panic(output);
 }
 
-#[test] // GitHub #31
-fn relative_include() {
-    let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&[
-        "subdirectory/relative_include.tex",
-        "subdirectory/content/1.tex",
-    ]);
-
-    let output = run_tectonic(
-        tempdir.path(),
-        &[&fmt_arg, "subdirectory/relative_include.tex"],
-    );
-    success_or_panic(output);
-    check_file(&tempdir, "subdirectory/relative_include.pdf");
-}
-
 #[test]
-fn stdin_content() {
-    // No input files here, but output files are created.
-    let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&[]);
-    let output = run_tectonic_with_stdin(
-        tempdir.path(),
-        &[&fmt_arg, "-"],
-        "Standard input content.\\bye",
-    );
-    success_or_panic(output);
-}
-
-// Regression #36
-#[test]
-fn test_space() {
-    let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&["test space.tex"]);
-
-    let output = run_tectonic(tempdir.path(), &[&fmt_arg, "test space.tex"]);
-    success_or_panic(output);
-}
-
-#[test]
-fn test_outdir() {
-    let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
-
-    let output = run_tectonic(
-        tempdir.path(),
-        &[
-            &fmt_arg,
-            "subdirectory/content/1.tex",
-            "--outdir=subdirectory",
-        ],
-    );
-    success_or_panic(output);
-    check_file(&tempdir, "subdirectory/1.pdf");
-}
-
-#[test]
-#[should_panic]
-// panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
-#[cfg(not(all(target_arch = "arm", target_env = "musl")))]
-fn test_bad_outdir() {
-    let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
-
-    let output = run_tectonic(
-        tempdir.path(),
-        &[
-            &fmt_arg,
-            "subdirectory/content/1.tex",
-            "--outdir=subdirectory/non_existent",
-        ],
-    );
-    success_or_panic(output);
-}
-
-#[test]
-#[should_panic]
-// panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
-#[cfg(not(all(target_arch = "arm", target_env = "musl")))]
-fn test_outdir_is_file() {
-    let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
-
-    let output = run_tectonic(
-        tempdir.path(),
-        &[
-            &fmt_arg,
-            "subdirectory/content/1.tex",
-            "--outdir=test space.tex",
-        ],
-    );
-    success_or_panic(output);
-}
-
-#[test]
-fn test_keep_logs_on_error() {
+fn keep_logs_on_error() {
     // No input files here, but output files are created.
     let fmt_arg = get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[]);
@@ -349,7 +255,7 @@ fn test_keep_logs_on_error() {
 }
 
 #[test]
-fn test_no_color() {
+fn no_color_option() {
     // No input files here, but output files are created.
     let fmt_arg = get_plain_format_arg();
 
@@ -372,4 +278,98 @@ fn test_no_color() {
 
     error_or_panic(output_nocolor);
     error_or_panic(output_autocolor);
+}
+
+#[test]
+fn outdir_option() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
+
+    let output = run_tectonic(
+        tempdir.path(),
+        &[
+            &fmt_arg,
+            "subdirectory/content/1.tex",
+            "--outdir=subdirectory",
+        ],
+    );
+    success_or_panic(output);
+    check_file(&tempdir, "subdirectory/1.pdf");
+}
+
+#[test]
+#[should_panic]
+// panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
+#[cfg(not(all(target_arch = "arm", target_env = "musl")))]
+fn outdir_option_bad() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
+
+    let output = run_tectonic(
+        tempdir.path(),
+        &[
+            &fmt_arg,
+            "subdirectory/content/1.tex",
+            "--outdir=subdirectory/non_existent",
+        ],
+    );
+    success_or_panic(output);
+}
+
+#[test]
+#[should_panic]
+// panic unwinding broken: https://github.com/rust-embedded/cross/issues/343
+#[cfg(not(all(target_arch = "arm", target_env = "musl")))]
+fn outdir_option_is_file() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&["test space.tex", "subdirectory/content/1.tex"]);
+
+    let output = run_tectonic(
+        tempdir.path(),
+        &[
+            &fmt_arg,
+            "subdirectory/content/1.tex",
+            "--outdir=test space.tex",
+        ],
+    );
+    success_or_panic(output);
+}
+
+#[test] // GitHub #31
+fn relative_include() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[
+        "subdirectory/relative_include.tex",
+        "subdirectory/content/1.tex",
+    ]);
+
+    let output = run_tectonic(
+        tempdir.path(),
+        &[&fmt_arg, "subdirectory/relative_include.tex"],
+    );
+    success_or_panic(output);
+    check_file(&tempdir, "subdirectory/relative_include.pdf");
+}
+
+// Regression #36
+#[test]
+fn space_in_filename() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&["test space.tex"]);
+
+    let output = run_tectonic(tempdir.path(), &[&fmt_arg, "test space.tex"]);
+    success_or_panic(output);
+}
+
+#[test]
+fn stdin_content() {
+    // No input files here, but output files are created.
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-"],
+        "Standard input content.\\bye",
+    );
+    success_or_panic(output);
 }
