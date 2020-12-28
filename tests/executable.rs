@@ -2,13 +2,14 @@
 // Licensed under the MIT License.
 
 use lazy_static::lazy_static;
-
-use std::env;
-use std::fs::{self, File};
-use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
-use std::process::{Command, Output, Stdio};
-use std::str;
+use std::{
+    env,
+    fs::{self, File, OpenOptions},
+    io::{Read, Write},
+    path::{Path, PathBuf},
+    process::{Command, Output, Stdio},
+    str,
+};
 use tempfile::TempDir;
 
 #[path = "util/mod.rs"]
@@ -371,5 +372,57 @@ fn stdin_content() {
         &[&fmt_arg, "-"],
         "Standard input content.\\bye",
     );
+    success_or_panic(output);
+}
+
+#[test]
+fn v2_new_build() {
+    util::set_test_root();
+
+    let tempdir = setup_and_copy_files(&[]);
+    let mut temppath = tempdir.path().to_owned();
+    let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
+    success_or_panic(output);
+
+    temppath.push("doc");
+
+    // To run a build in our test setup, we can only use plain TeX. So, jankily
+    // change the format ...
+
+    {
+        let mut toml_path = temppath.clone();
+        toml_path.push("Tectonic.toml");
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(toml_path)
+            .unwrap();
+        writeln!(file, "tex_format = 'plain'").unwrap();
+    }
+
+    // ... and write some files that are plain TeX.
+
+    {
+        let mut path = temppath.clone();
+        path.push("src");
+
+        {
+            path.push("_preamble.tex");
+            let mut file = File::create(&path).unwrap();
+            writeln!(file).unwrap();
+            path.pop();
+        }
+
+        {
+            path.push("_postamble.tex");
+            let mut file = File::create(&path).unwrap();
+            writeln!(file, "\\end").unwrap();
+            path.pop();
+        }
+    }
+
+    // Now we can build.
+
+    let output = run_tectonic(&temppath, &["-X", "build"]);
     success_or_panic(output);
 }
