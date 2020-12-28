@@ -377,6 +377,7 @@ mod syntax {
     use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
     #[derive(Debug, Deserialize, Serialize)]
+    #[serde(deny_unknown_fields)]
     pub struct Document {
         pub doc: DocSection,
 
@@ -385,12 +386,14 @@ mod syntax {
     }
 
     #[derive(Debug, Deserialize, Serialize)]
+    #[serde(deny_unknown_fields)]
     pub struct DocSection {
         pub name: String,
         pub bundle: String,
     }
 
     #[derive(Debug, Deserialize, Serialize)]
+    #[serde(deny_unknown_fields)]
     pub struct OutputProfile {
         pub name: String,
         #[serde(rename = "type")]
