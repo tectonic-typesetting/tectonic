@@ -321,6 +321,7 @@ pub struct ProcessingSessionBuilder {
     primary_input: PrimaryInputMode,
     tex_input_name: Option<String>,
     output_dest: OutputDestination,
+    filesystem_root: Option<PathBuf>,
     format_name: Option<String>,
     format_cache_path: Option<PathBuf>,
     output_format: OutputFormat,
@@ -360,9 +361,19 @@ impl ProcessingSessionBuilder {
     /// This value will be used to infer the names of the output files; for example, if
     /// `tex_input_name` is set to `"texput.tex"` then the pdf output file will be `"texput.pdf"`.
     /// As such, this parameter is mandatory, even if the real input is coming from stdin (if it is
-    /// not provided, [`create`] will panic).
+    /// not provided, [`ProcessingSessionBuilder::create`] will panic).
     pub fn tex_input_name(&mut self, s: &str) -> &mut Self {
         self.tex_input_name = Some(s.to_owned());
+        self
+    }
+
+    /// Set the directory that serves as the root for finding files on disk.
+    ///
+    /// If unspecified, and there is a primary input file, the directory
+    /// containing that file will serve as the filesystem root. Otherwise, it is
+    /// set to the current directory.
+    pub fn filesystem_root<P: AsRef<Path>>(&mut self, p: P) -> &mut Self {
+        self.filesystem_root = Some(p.as_ref().to_owned());
         self
     }
 
@@ -388,8 +399,9 @@ impl ProcessingSessionBuilder {
 
     /// The name of the `.fmt` file used to initialize the TeX engine.
     ///
-    /// This file does not necessarily have to exist already; it will be created if it doesn't.
-    /// This parameter is mandatory (if it is not provided, [`create`] will panic).
+    /// This file does not necessarily have to exist already; it will be created
+    /// if it doesn't. This parameter is mandatory (if it is not provided,
+    /// [`ProcessingSessionBuilder::create`] will panic).
     pub fn format_name(&mut self, p: &str) -> &mut Self {
         self.format_name = Some(p.to_owned());
         self
@@ -530,6 +542,10 @@ impl ProcessingSessionBuilder {
                 (None, "".into())
             }
         };
+
+        if let Some(fsr) = self.filesystem_root {
+            io.filesystem_root(fsr);
+        }
 
         let output_path = match self.output_dest {
             OutputDestination::Default => Some(default_output_path),

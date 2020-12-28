@@ -1,4 +1,18 @@
-# rc: micro bump
+# rc: minor bump
+
+- Introduce a prototype new “V2” command line interface, accessible by running
+  Tectonic with an initial `-X` argument: `tectonic -X new`. This interface is
+  oriented around a new document model defined by a `Tectonic.toml` definition
+  file. Documentation is under development in [the
+  book](https://tectonic-typesetting.github.io/book/latest/). Eventually, this
+  new interface will become the default, after a migration period. It is
+  currently fairly basic, but will be fleshed out in the 0.4.x release series.
+- Handle USV 0xFFFF in `print()` (#678, #682, @burrbull, @pkgw)
+- Update the Arch Linux `makedepends` definitions (#691, @snowinmars)
+- Update various Cargo dependencies.
+
+
+# tectonic 0.3.3 (2020-11-16)
 
 - When testing whether the engine needs rerunning, compare the new file to the
   entire old file, not just the part that was read by the engine. Should fix
