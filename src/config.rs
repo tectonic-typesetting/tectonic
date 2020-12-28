@@ -37,6 +37,11 @@ pub fn activate_config_test_mode(forced: bool) {
     CONFIG_TEST_MODE_ACTIVATED.store(forced, Ordering::SeqCst);
 }
 
+#[doc(hidden)]
+pub fn is_config_test_mode_activated() -> bool {
+    CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst)
+}
+
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PersistentConfig {
     default_bundles: Vec<BundleInfo>,

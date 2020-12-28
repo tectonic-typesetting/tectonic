@@ -23,7 +23,7 @@ use crate::{
         Bundle,
     },
     status::StatusBackend,
-    tt_error, tt_note,
+    test_util, tt_error, tt_note,
     workspace::WorkspaceCreator,
 };
 
@@ -153,7 +153,11 @@ impl Document {
 
         // Determine the bundle URL that we'll put in as the default.
 
-        let bundle_loc = resolve_url(config.default_bundle_loc(), status)?;
+        let bundle_loc = if config::is_config_test_mode_activated() {
+            "test-bundle".to_owned()
+        } else {
+            resolve_url(config.default_bundle_loc(), status)?
+        };
 
         // All done.
         Ok(Document {
@@ -289,7 +293,9 @@ impl Document {
             }
         }
 
-        if let Ok(url) = Url::parse(&self.bundle_loc) {
+        if config::is_config_test_mode_activated() {
+            Ok(Box::new(test_util::TestBundle::default()))
+        } else if let Ok(url) = Url::parse(&self.bundle_loc) {
             if url.scheme() != "file" {
                 let bundle = CachedITarBundle::new(&self.bundle_loc, only_cached, None, status)?;
                 Ok(Box::new(bundle))
