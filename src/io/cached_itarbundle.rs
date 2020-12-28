@@ -93,7 +93,11 @@ fn get_index(url: &str, status: &mut dyn StatusBackend) -> Result<GzDecoder<Resp
     Ok(GzDecoder::new(res))
 }
 
-fn resolve_url(url: &str, status: &mut dyn StatusBackend) -> Result<String> {
+/// Starting with an input URL, follow redirections to get a final URL.
+///
+/// But we attempt to detect redirects into CDNs/S3/etc and *stop* following
+/// before we get that deep.
+pub fn resolve_url(url: &str, status: &mut dyn StatusBackend) -> Result<String> {
     tt_note!(status, "connecting to {}", url);
 
     // First, we actually do a HEAD request on the URL for the data file.
@@ -102,7 +106,7 @@ fn resolve_url(url: &str, status: &mut dyn StatusBackend) -> Result<String> {
     // one with the redirect setup, which would be confusing and annoying.
 
     let redirect_policy = RedirectPolicy::custom(|attempt| {
-        // In the process of resolving the file url it might be neccesary
+        // In the process of resolving the file url it might be necessary
         // to stop at a certain level of redirection. This might be required
         // because some hosts might redirect to a version of the url where
         // it isn't possible to select the index file by appending .index.gz.
