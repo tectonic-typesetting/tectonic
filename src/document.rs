@@ -14,6 +14,7 @@ use std::{
 use crate::{
     config, ctry,
     driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
+    errmsg,
     errors::{ErrorKind, Result},
     io::{
         cached_itarbundle::{resolve_url, CachedITarBundle},
@@ -59,7 +60,7 @@ fn default_outputs() -> HashMap<String, OutputProfile> {
         OutputProfile {
             name: "default".to_owned(),
             target_type: BuildTargetType::Pdf,
-            format: "latex".to_owned(),
+            tex_format: "latex".to_owned(),
         },
     );
     outputs
@@ -76,8 +77,24 @@ impl Document {
         toml_data.read_to_string(&mut toml_text)?;
         let doc: syntax::Document = toml::from_str(&toml_text)?;
 
-        // TODO: serialize outputs in the TOML
-        let outputs = default_outputs();
+        let mut outputs = HashMap::new();
+
+        for toml_output in &doc.outputs {
+            let output = toml_output.to_runtime();
+
+            if outputs.insert(output.name.clone(), output).is_some() {
+                return Err(errmsg!(
+                    "duplicated output name `{}` in TOML specification",
+                    &toml_output.name
+                ));
+            }
+        }
+
+        if outputs.is_empty() {
+            return Err(errmsg!(
+                "TOML specification must define at least one output"
+            ));
+        }
 
         Ok(Document {
             src_dir,
@@ -152,11 +169,18 @@ impl Document {
     /// used when creating a totally new document; otherwise TOML rewriting
     /// should be used.
     pub(crate) fn create_toml(&self) -> Result<()> {
+        let outputs = self
+            .outputs
+            .values()
+            .map(|r| syntax::OutputProfile::from_runtime(r))
+            .collect();
+
         let doc = syntax::Document {
             doc: syntax::DocSection {
                 name: self.name.clone(),
                 bundle: self.bundle_loc.clone(),
             },
+            outputs,
         };
 
         let toml_text = toml::to_string_pretty(&doc)?;
@@ -181,11 +205,11 @@ impl Document {
 pub struct OutputProfile {
     name: String,
     target_type: BuildTargetType,
-    format: String,
+    tex_format: String,
 }
 
 /// The output target type of a document build.
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum BuildTargetType {
     /// Output to the Portable Document Format (PDF).
     Pdf,
@@ -280,7 +304,7 @@ impl Document {
         }
     }
 
-    /// Build the document.
+    /// Build one of the document’s outputs.
     pub fn build(
         &self,
         output_profile: &str,
@@ -296,7 +320,7 @@ impl Document {
         let mut sess_builder = ProcessingSessionBuilder::default();
         sess_builder
             .output_format(output_format)
-            .format_name(&profile.format)
+            .format_name(&profile.tex_format)
             .pass(PassSetting::Default)
             .primary_input_buffer(DEFAULT_PRIMARY_INPUT)
             .tex_input_name(output_profile)
@@ -350,16 +374,98 @@ impl Document {
 
 /// The concrete syntax for saving document state, wired up via serde.
 mod syntax {
-    use serde::{Deserialize, Serialize};
+    use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
     #[derive(Debug, Deserialize, Serialize)]
     pub struct Document {
         pub doc: DocSection,
+
+        #[serde(rename = "output")]
+        pub outputs: Vec<OutputProfile>,
     }
 
     #[derive(Debug, Deserialize, Serialize)]
     pub struct DocSection {
         pub name: String,
         pub bundle: String,
+    }
+
+    #[derive(Debug, Deserialize, Serialize)]
+    pub struct OutputProfile {
+        pub name: String,
+        #[serde(rename = "type")]
+        pub target_type: BuildTargetType,
+        pub tex_format: Option<String>,
+    }
+
+    impl OutputProfile {
+        pub fn from_runtime(rt: &super::OutputProfile) -> Self {
+            let tex_format = if rt.tex_format == "latex" {
+                None
+            } else {
+                Some(rt.tex_format.clone())
+            };
+
+            OutputProfile {
+                name: rt.name.clone(),
+                target_type: BuildTargetType::from_runtime(&rt.target_type),
+                tex_format,
+            }
+        }
+
+        pub fn to_runtime(&self) -> super::OutputProfile {
+            super::OutputProfile {
+                name: self.name.clone(),
+                target_type: self.target_type.to_runtime(),
+                tex_format: self
+                    .tex_format
+                    .as_ref()
+                    .map(|s| s.as_ref())
+                    .unwrap_or("latex")
+                    .to_owned(),
+            }
+        }
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    pub enum BuildTargetType {
+        Pdf,
+    }
+
+    impl BuildTargetType {
+        pub fn from_runtime(rt: &super::BuildTargetType) -> Self {
+            match rt {
+                super::BuildTargetType::Pdf => BuildTargetType::Pdf,
+            }
+        }
+
+        pub fn to_runtime(&self) -> super::BuildTargetType {
+            match self {
+                BuildTargetType::Pdf => super::BuildTargetType::Pdf,
+            }
+        }
+    }
+
+    impl Serialize for BuildTargetType {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            serializer.serialize_str(match *self {
+                BuildTargetType::Pdf => "pdf",
+            })
+        }
+    }
+    impl<'de> Deserialize<'de> for BuildTargetType {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            let s = String::deserialize(deserializer)?;
+            Ok(match s.as_str() {
+                "pdf" => BuildTargetType::Pdf,
+                other => return Err(<D as Deserializer>::Error::unknown_variant(other, &["pdf"])),
+            })
+        }
     }
 }
