@@ -51,12 +51,16 @@
 mod app_dirs;
 pub mod config;
 pub mod digest;
+#[cfg(feature = "serialization")]
+pub mod document;
 pub mod driver;
 pub mod engines;
 pub mod errors;
 pub mod io;
 pub mod status;
 pub mod unstable_opts;
+#[cfg(feature = "serialization")]
+pub mod workspace;
 
 // Note: this module is intentionally *not* gated by #[cfg(test)] -- see its
 // docstring for details.

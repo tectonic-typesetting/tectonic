@@ -152,7 +152,6 @@ getfilemoddate(str_number s)
   size_t text_len;
   rust_input_handle_t handle;
   char buf[20];
-  int i;
 
   name = gettexstring(s);
   handle = ttstub_input_open(name, TTIF_TEX, 0);
@@ -217,7 +216,6 @@ getfilesize(str_number s)
 void getfiledump(int32_t s, int offset, int length)
 {
   char *name;
-  size_t text_len;
   rust_input_handle_t handle;
   unsigned char *buffer;
   int i, j, k;

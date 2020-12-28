@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.3.3"
+version = "0.4.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 build = "build.rs"
 description = """
@@ -34,13 +34,13 @@ name = "tectonic"
 crate-type = ["rlib"]
 
 [build-dependencies]
-cc = "^1.0.62"
+cc = "^1.0.66"
 pkg-config = "^0.3"
 regex = "^1.4"
 sha2 = "^0.9"
 tectonic_cfg_support = { path = "cfg_support", version ="^0.1.0"}
-vcpkg = "0.2.10"
-cbindgen = "0.15.0"
+vcpkg = "0.2.11"
+cbindgen = "0.16.0"
 
 [dependencies]
 app_dirs = { version = "2", package = "app_dirs2" }
