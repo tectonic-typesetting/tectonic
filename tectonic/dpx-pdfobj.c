@@ -2265,17 +2265,20 @@ filter_stream_decode_Predictor (const void *src, size_t srclen, struct decode_pa
 }
 
 static pdf_obj *
-filter_stream_decode_FlateDecode (const void *data, size_t len, struct decode_parms *parms)
+filter_stream_decode_FlateDecode(const void *data, size_t len, struct decode_parms *parms)
 {
     pdf_obj *dst;
     pdf_obj *tmp;
     z_stream z;
     Bytef    wbuf[WBUF_SIZE];
 
-    z.zalloc = Z_NULL; z.zfree = Z_NULL; z.opaque = Z_NULL;
-
-    z.next_in  = data; z.avail_in  = len;
-    z.next_out = (Bytef *) wbuf; z.avail_out = WBUF_SIZE;
+    z.zalloc = Z_NULL;
+    z.zfree = Z_NULL;
+    z.opaque = Z_NULL;
+    z.next_in = data;
+    z.avail_in = len;
+    z.next_out = (Bytef *) wbuf;
+    z.avail_out = WBUF_SIZE;
 
     if (inflateInit(&z) != Z_OK) {
         dpx_warning("inflateInit() failed.");
@@ -2283,9 +2286,10 @@ filter_stream_decode_FlateDecode (const void *data, size_t len, struct decode_pa
     }
 
     tmp = pdf_new_stream(0);
+
     for (;;) {
-        int status;
-        status = inflate(&z, Z_NO_FLUSH);
+        int status = inflate(&z, Z_NO_FLUSH);
+
         if (status == Z_STREAM_END) {
             break;
         } else if (status == Z_DATA_ERROR && z.avail_in == 0) {
@@ -2316,8 +2320,8 @@ filter_stream_decode_FlateDecode (const void *data, size_t len, struct decode_pa
     } else {
         dst = NULL;
     }
-    pdf_release_obj(tmp);
 
+    pdf_release_obj(tmp);
     return dst;
 }
 #endif
