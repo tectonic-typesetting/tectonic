@@ -27,7 +27,10 @@ travis-ci = { repository = "tectonic-typesetting/tectonic" }
 codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 
 [workspace]
-members = ["crates/xdv"]
+members = [
+  "crates/bridge_flate",
+  "crates/xdv",
+]
 
 [lib]
 name = "tectonic"
@@ -59,6 +62,7 @@ md-5 = "^0.9"
 reqwest = "^0.9"
 sha2 = "^0.9"
 serde = { version = "^1.0", features = ["derive"], optional = true }
+tectonic_bridge_flate = { path = "crates/bridge_flate", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "crates/xdv", version = "0.0.0-dev.0" }
 termcolor = "^1.1"
 toml = { version = "^0.5", optional = true }
@@ -73,10 +77,6 @@ serialization = ["serde", "toml"]
 
 # developer feature to compile with the necessary flags for profiling tectonic.
 profile = []
-
-# freetype-sys = "^0.4"
-# harfbuzz-sys = "^0.1"
-# libz-sys = "^1.0"
 
 [dev-dependencies]
 filetime = "^0.2"
@@ -96,6 +96,7 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
+tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
 

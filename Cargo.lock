@@ -1753,6 +1753,7 @@ dependencies = [
  "serde",
  "sha2",
  "structopt",
+ "tectonic_bridge_flate",
  "tectonic_cfg_support",
  "tectonic_xdv",
  "tempfile",
@@ -1761,6 +1762,15 @@ dependencies = [
  "toml",
  "vcpkg",
  "zip",
+]
+
+[[package]]
+name = "tectonic_bridge_flate"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "flate2",
+ "libc",
 ]
 
 [[package]]
