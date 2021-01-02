@@ -1,11 +1,11 @@
-# The `tectonic_bridge_flate` create
+# The `tectonic_bridge_flate` crate
 
 [![](http://meritbadge.herokuapp.com/tectonic_bridge_flate)](https://crates.io/crates/tectonic_bridge_flate)
 
 This crate is part of [the Tectonic
-project](https://tectonic-typesetting.github.io/en-US/). It provides a C API to
-the [flate2] crate. This API is consumed by other Tectonic crates that include C
-implementations.
+project](https://tectonic-typesetting.github.io/en-US/). It provides a limited C
+API to the [flate2] crate. This API is consumed by other Tectonic crates that
+include C code that require flate2 functionality.
 
 [flate2]: https://github.com/rust-lang/flate2-rs
 
