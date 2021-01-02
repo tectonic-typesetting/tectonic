@@ -1,6 +1,8 @@
 // Copyright 2020 the Tectonic Project
 // Licensed under the MIT License.
 
+#![deny(missing_docs)]
+
 //! This crate provides a few extern "C" functions that expose the functionality
 //! of the flate2 crate in a C API that can be consumed by other C/C++ code in
 //! the Tectonic codebase.
@@ -17,9 +19,17 @@ pub use flate2;
 /// Outcomes of (de)flate operations.
 #[repr(C)]
 pub enum FlateResult {
+    /// The operation succeeded.
     Success = 0,
+
+    /// The operation succeeded and encountered the end of the input.
     StreamEnd = 1,
+
+    /// The operation failed because a buffer was not big enough or full enough.
     BufError = -1,
+
+    /// The operation failed due to an error other than the ones enumerated
+    /// here.
     OtherError = -2,
 }
 
