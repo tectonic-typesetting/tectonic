@@ -161,7 +161,7 @@ jobs:
         GITHUB_TOKEN: $(GITHUB_TOKEN)
 
   - job: update_arch_linux
-    dependsOn: cargo_publish # need to download the crate file and calc its digest
+    dependsOn: ['cargo_publish', 'github_releases'] # need artifacts to calculate digests
     pool:
       vmImage: ubuntu-20.04
     variables:
