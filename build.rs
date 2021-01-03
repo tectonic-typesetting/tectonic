@@ -12,12 +12,11 @@ use std::{
 use tectonic_cfg_support::*;
 
 #[cfg(not(target_os = "macos"))]
-const PKGCONFIG_LIBS: &str =
-    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng";
+const PKGCONFIG_LIBS: &str = "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng";
 
 // No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
-const PKGCONFIG_LIBS: &str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng";
+const PKGCONFIG_LIBS: &str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng";
 
 /// Build-script state when using pkg-config as the backend.
 #[derive(Debug)]
@@ -27,10 +26,10 @@ struct PkgConfigState {
 
 // Need a way to check that the vcpkg harfbuzz port has graphite2 and icu options enabled.
 #[cfg(not(target_os = "macos"))]
-const VCPKG_LIBS: &[&str] = &["fontconfig", "harfbuzz", "freetype", "graphite2"];
+const VCPKG_LIBS: &[&str] = &["fontconfig", "harfbuzz", "freetype"];
 
 #[cfg(target_os = "macos")]
-const VCPKG_LIBS: &[&str] = &["harfbuzz", "freetype", "graphite2"];
+const VCPKG_LIBS: &[&str] = &["harfbuzz", "freetype"];
 
 /// Build-script state when using vcpkg as the backend.
 #[derive(Clone, Debug)]
@@ -227,6 +226,7 @@ fn main() {
     // Include paths exported by our internal dependencies.
 
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
+    let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
 
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
@@ -387,6 +387,7 @@ fn main() {
         .file("tectonic/xetex-xetex0.c")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&graphite2_include_dir)
         .include(&flate_include_dir);
 
     let cppflags = [
@@ -437,6 +438,7 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&graphite2_include_dir)
         .include(&flate_include_dir);
 
     dep_state.foreach_include_path(|p| {
