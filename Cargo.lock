@@ -1746,6 +1746,7 @@ dependencies = [
  "tectonic_bridge_flate",
  "tectonic_bridge_graphite2",
  "tectonic_cfg_support",
+ "tectonic_dep_support",
  "tectonic_xdv",
  "tempfile",
  "termcolor",

@@ -45,6 +45,7 @@ pkg-config = "^0.3"
 regex = "^1.4"
 sha2 = "^0.9"
 tectonic_cfg_support = { path = "crates/cfg_support", version = "0.0.0-dev.0" }
+tectonic_dep_support = { path = "crates/dep_support", version = "0.0.0-dev.0" }
 vcpkg = "0.2.11"
 cbindgen = "0.16.0"
 
@@ -104,5 +105,6 @@ x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfi
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
+tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
 
