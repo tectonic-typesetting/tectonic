@@ -1,0 +1,22 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_bridge_graphite2"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Expose the graphite2 library to Rust/Cargo.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_bridge_graphite2"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+links = "graphite2"
+
+[build-dependencies]
+tectonic_dep_support = { path = "../dep_support" }
