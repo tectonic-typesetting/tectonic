@@ -1,0 +1,26 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_bridge_flate"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Exposing flate compression to the Tectonic C code.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+links = "tectonic_bridge_flate"
+
+[dependencies]
+flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
+libc = "^0.2"
+
+[build-dependencies]
+cbindgen = "^0.16"

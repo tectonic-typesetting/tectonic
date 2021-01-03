@@ -37,13 +37,11 @@
 #include "dpx-pdflimits.h"
 #include "dpx-pdfparse.h"
 
-#ifdef HAVE_ZLIB
-#include <zlib.h>
-#endif /* HAVE_ZLIB */
-
 #include "dpx-pdfobj.h"
 
 #include "dpx-pdfdev.h"
+
+#include "tectonic_bridge_flate.h"
 
 #define STREAM_ALLOC_SIZE      4096u
 #define ARRAY_ALLOC_SIZE       256
@@ -248,21 +246,11 @@ static char compression_use_predictor = 1;
 void
 pdf_set_compression (int level)
 {
-#ifndef   HAVE_ZLIB
-    _tt_abort("You don't have compression compiled in. Possibly libz wasn't found by configure.");
-#else
-#ifndef HAVE_ZLIB_COMPRESS2
-    if (level != 0)
-        dpx_warning("Unable to set compression level -- your zlib doesn't have compress2().");
-#endif
-    if (level >= 0 && level <= 9)
+    if (level >= 0 && level <= 9) {
         compression_level = level;
-    else {
+    } else {
         _tt_abort("set_compression: invalid compression level: %d", level);
     }
-#endif /* !HAVE_ZLIB */
-
-    return;
 }
 
 static int pdf_version = PDF_VERSION_DEFAULT;
@@ -1786,11 +1774,7 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
 {
     unsigned char *filtered;
     unsigned int   filtered_length;
-#ifdef HAVE_ZLIB
-    uLong          buffer_length;
-#else
-    unsigned int   buffer_length;
-#endif
+    size_t         buffer_length;
     unsigned char *buffer;
 
     /*
@@ -1810,7 +1794,6 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
         }
     }
 
-#ifdef HAVE_ZLIB
     /* Apply compression filter if requested */
     if (stream->stream_length > 0 &&
         (stream->_flags & STREAM_COMPRESS) &&
@@ -1882,17 +1865,17 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
                  */
                 pdf_add_dict(stream->dict, pdf_new_name("Filter"), filter_name);
         }
-#ifdef HAVE_ZLIB_COMPRESS2
-        if (compress2(buffer, &buffer_length, filtered,
-                      filtered_length, compression_level)) {
+
+        if (tectonic_flate_compress(
+                buffer,
+                &buffer_length,
+                filtered,
+                filtered_length,
+                compression_level
+            ) < 0) {
             _tt_abort("Zlib error");
         }
-#else
-        if (compress(buffer, &buffer_length, filtered,
-                     filtered_length)) {
-            _tt_abort("Zlib error");
-        }
-#endif /* HAVE_ZLIB_COMPRESS2 */
+
         free(filtered);
         compression_saved += filtered_length - buffer_length
             - (filters ? strlen("/FlateDecode "): strlen("/Filter/FlateDecode\n"));
@@ -1900,7 +1883,6 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
         filtered        = buffer;
         filtered_length = buffer_length;
     }
-#endif /* HAVE_ZLIB */
 
     /* AES will change the size of data! */
     if (enc_mode) {
@@ -2015,9 +1997,6 @@ pdf_add_stream (pdf_obj *stream, const void *stream_data, int length)
     memcpy(data->stream + data->stream_length, stream_data, length);
     data->stream_length += length;
 }
-
-#if HAVE_ZLIB
-#define WBUF_SIZE 4096
 
 static int
 filter_get_DecodeParms_FlateDecode (struct decode_parms *parms, pdf_obj *dict)
@@ -2264,63 +2243,51 @@ filter_stream_decode_Predictor (const void *src, size_t srclen, struct decode_pa
     return dst;
 }
 
+#define WBUF_SIZE 4096
+
 static pdf_obj *
-filter_stream_decode_FlateDecode (const void *data, size_t len, struct decode_parms *parms)
+filter_stream_decode_FlateDecode(const void *data, size_t len, struct decode_parms *parms)
 {
     pdf_obj *dst;
     pdf_obj *tmp;
-    z_stream z;
-    Bytef    wbuf[WBUF_SIZE];
+    uint8_t  wbuf[WBUF_SIZE];
+    void    *flate_handle;
 
-    z.zalloc = Z_NULL; z.zfree = Z_NULL; z.opaque = Z_NULL;
-
-    z.next_in  = data; z.avail_in  = len;
-    z.next_out = (Bytef *) wbuf; z.avail_out = WBUF_SIZE;
-
-    if (inflateInit(&z) != Z_OK) {
-        dpx_warning("inflateInit() failed.");
+    flate_handle = tectonic_flate_new_decompressor(data, (uint64_t) len);
+    if (flate_handle == NULL) {
+        dpx_warning("tectonic_flate_new_decompressor() failed");
         return NULL;
     }
 
     tmp = pdf_new_stream(0);
+
     for (;;) {
-        int status;
-        status = inflate(&z, Z_NO_FLUSH);
-        if (status == Z_STREAM_END) {
-            break;
-        } else if (status == Z_DATA_ERROR && z.avail_in == 0) {
-            dpx_warning("Ignoring zlib error: status=%d, message=\"%s\"", status, z.msg);
-        } else if (status != Z_OK) {
-            dpx_warning("inflate() failed (status=%d, message=\"%s\"", status, z.msg);
-            inflateEnd(&z);
+        uint64_t out_size = WBUF_SIZE;
+
+        if (tectonic_flate_decompress_chunk(flate_handle, wbuf, &out_size)) {
+            dpx_warning("tectonic_flate_decompress() failed");
+            tectonic_flate_free_decompressor(flate_handle);
             pdf_release_obj(tmp);
             return NULL;
         }
 
-        if (z.avail_out == 0) {
-            pdf_add_stream(tmp, wbuf, WBUF_SIZE);
-            z.next_out  = wbuf;
-            z.avail_out = WBUF_SIZE;
-        }
+        if (out_size == 0)
+            break;
+
+        pdf_add_stream(tmp, wbuf, out_size);
     }
 
-    if (WBUF_SIZE - z.avail_out > 0)
-        pdf_add_stream(tmp, wbuf, WBUF_SIZE - z.avail_out);
+    tectonic_flate_free_decompressor(flate_handle);
 
-    if (inflateEnd(&z) == Z_OK) {
-        if (parms) {
-            dst = filter_stream_decode_Predictor(pdf_stream_dataptr(tmp), pdf_stream_length(tmp), parms);
-        } else {
-            dst = pdf_link_obj(tmp);
-        }
+    if (parms) {
+        dst = filter_stream_decode_Predictor(pdf_stream_dataptr(tmp), pdf_stream_length(tmp), parms);
     } else {
-        dst = NULL;
+        dst = pdf_link_obj(tmp);
     }
-    pdf_release_obj(tmp);
 
+    pdf_release_obj(tmp);
     return dst;
 }
-#endif
 
 static pdf_obj *
 filter_stream_decode_ASCIIHexDecode (const void *data, size_t len)
@@ -2504,13 +2471,11 @@ filter_stream_decode (const char *filter_name, pdf_obj *src, pdf_obj *parm)
     dec = filter_stream_decode_ASCIIHexDecode(stream_data, stream_length);
   } else if (!strcmp(filter_name, "ASCII85Decode")) {
     dec = filter_stream_decode_ASCII85Decode(stream_data, stream_length);
-#if HAVE_ZLIB
   } else if (!strcmp(filter_name, "FlateDecode")) {
     struct decode_parms decode_parm;
     if (parm)
       filter_get_DecodeParms_FlateDecode(&decode_parm, parm);
     dec = filter_stream_decode_FlateDecode(stream_data, stream_length, parm ? &decode_parm : NULL);
-#endif /* HAVE_ZLIB */
   } else {
     dpx_warning("DecodeFilter \"%s\" not supported.", filter_name);
     dec = NULL;

@@ -183,8 +183,10 @@ impl TestCase {
 
 #[test]
 fn a4paper() {
-    let mut unstables = UnstableOptions::default();
-    unstables.paper_size = Some(String::from("a4"));
+    let unstables = UnstableOptions {
+        paper_size: Some(String::from("a4")),
+        ..Default::default()
+    };
     TestCase::new("a4paper")
         .with_unstables(unstables)
         .check_pdf(true)

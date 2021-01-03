@@ -13,11 +13,11 @@ use tectonic_cfg_support::*;
 
 #[cfg(not(target_os = "macos"))]
 const PKGCONFIG_LIBS: &str =
-    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng";
 
 // No fontconfig on MacOS:
 #[cfg(target_os = "macos")]
-const PKGCONFIG_LIBS: &str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng zlib";
+const PKGCONFIG_LIBS: &str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng";
 
 /// Build-script state when using pkg-config as the backend.
 #[derive(Debug)]
@@ -224,6 +224,10 @@ fn main() {
         DepState::default()
     };
 
+    // Include paths exported by our internal dependencies.
+
+    let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
+
     // Actually I'm not 100% sure that I can't compile the C and C++ code
     // into one library, but who cares?
 
@@ -381,11 +385,9 @@ fn main() {
         .file("tectonic/xetex-synctex.c")
         .file("tectonic/xetex-texmfmp.c")
         .file("tectonic/xetex-xetex0.c")
-        .define("HAVE_ZLIB", "1")
-        .define("HAVE_ZLIB_COMPRESS2", "1")
-        .define("ZLIB_CONST", "1")
         .include(env::var("OUT_DIR").unwrap())
-        .include(".");
+        .include(".")
+        .include(&flate_include_dir);
 
     let cppflags = [
         "-std=c++14",
@@ -434,7 +436,8 @@ fn main() {
         .file("tectonic/xetex-XeTeXLayoutInterface.cpp")
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(env::var("OUT_DIR").unwrap())
-        .include(".");
+        .include(".")
+        .include(&flate_include_dir);
 
     dep_state.foreach_include_path(|p| {
         ccfg.include(p);
