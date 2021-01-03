@@ -5,7 +5,7 @@
 # Parameters:
 #
 # - `isMainDev`: this is an update to the main development branch; update
-#   continuous-deployment release
+#   continuous-deployment artifacts
 # - `isRelease`: this is an update to the `rc` branch; run the Official Release
 #   machinery
 
@@ -18,6 +18,32 @@ parameters:
   default: false
 
 jobs:
+
+# Things that should happen in either main-dev *or* release mode.
+- job: update_book
+  pool:
+    vmImage: ubuntu-20.04
+  variables:
+    - group: Deployment Credentials
+  steps:
+  - template: azure-deployment-setup.yml
+    parameters:
+      isMainDev: ${{ parameters.isMainDev }}
+      isRelease: ${{ parameters.isRelease }}
+      setupGit: true
+  - bash: |
+      set -xeuo pipefail
+
+      # Worth adding better Cranko support for this? reboot-branch is close
+      dist/force-push-tree.sh \
+        $(Pipeline.Workspace)/book \
+        https://github.com/tectonic-typesetting/book.git \
+        "$TOPLEVEL_MODE" \
+        "docs mdbook"
+    displayName: Update book HTML
+    condition: and(succeeded(), ne(variables['TOPLEVEL_MODE'], 'skip'))
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)
 
 # Things that only happen in main-dev mode:
 - ${{ if parameters.isMainDev }}:
@@ -116,30 +142,6 @@ jobs:
   # can only know if this is the case on the fly, so we have to launch all of
   # these jobs even if it turns out that `tectonic` was not released. (I.e.,
   # $TOPLEVEL_MODE is set in azure-deployment-setup.yml.)
-  - job: update_book
-    pool:
-      vmImage: ubuntu-20.04
-    variables:
-      - group: Deployment Credentials
-    steps:
-    - template: azure-deployment-setup.yml
-      parameters:
-        isMainDev: ${{ parameters.isMainDev }}
-        isRelease: ${{ parameters.isRelease }}
-        setupGit: true
-    - bash: |
-        set -xeuo pipefail
-
-        # Worth adding better Cranko support for this? reboot-branch is close
-        dist/force-push-tree.sh \
-          $(Pipeline.Workspace)/book \
-          https://github.com/tectonic-typesetting/book.git \
-          "$TOPLEVEL_MODE" \
-          "docs mdbook"
-      displayName: Update book HTML
-      condition: and(succeeded(), ne(variables['TOPLEVEL_MODE'], 'skip'))
-      env:
-        GITHUB_TOKEN: $(GITHUB_TOKEN)
 
   - job: update_website
     pool:
@@ -161,7 +163,7 @@ jobs:
         GITHUB_TOKEN: $(GITHUB_TOKEN)
 
   - job: update_arch_linux
-    dependsOn: cargo_publish # need to download the crate file and calc its digest
+    dependsOn: ['cargo_publish', 'github_releases'] # need artifacts to calculate digests
     pool:
       vmImage: ubuntu-20.04
     variables:
@@ -181,18 +183,3 @@ jobs:
       condition: and(succeeded(), ne(variables['TOPLEVEL_MODE'], 'skip'))
       env:
         ARCHLINUX_DEPLOY_KEY_BASE64: $(ARCHLINUX_DEPLOY_KEY_BASE64)
-
-# If neither main-dev nor release, we are probably a pull request. We need a
-# dummy job to keep Pipelines happy even though the stage won't run. Well, we
-# could work out a way to avoid that, but it also doesn't hurt to check that the
-# setup template is minimally functional.
-
-- ${{ if not(or(parameters.isMainDev, parameters.isRelease)) }}:
-  - job: dummy_setup_only
-    pool:
-      vmImage: ubuntu-20.04
-    # NB, no Deployment Credentials vars.
-    steps:
-    - template: azure-deployment-setup.yml
-      parameters:
-        setupGit: false

@@ -35,9 +35,7 @@ History:
 typedef unsigned char			UInt8;
 typedef unsigned short			UInt16;
 typedef unsigned int			UInt32;	/* NB: assumes int is 4 bytes */
-#ifndef ZCONF_H /* n.b. if also using zlib.h, it must precede TECkit headers */
 typedef UInt8					Byte;
-#endif
 typedef Byte*					BytePtr;
 typedef UInt16					UniChar;
 
