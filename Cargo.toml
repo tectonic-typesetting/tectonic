@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 build = "build.rs"
 description = """
@@ -88,10 +88,11 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "b7056e9f1f34f18b6648b1f1d9c4e9d31f04e91c"
+rev = "50ea8c0ab7aca3bb9245bba7fc877ad2f2a4464c"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
+aarch64-apple-darwin = { triplet = "arm64-osx", install = ["freetype","harfbuzz[icu,graphite2]"] }
 x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
