@@ -1,4 +1,10 @@
-# rc: minor bump
+# rc: micro bump
+
+- Add support for aarch64-apple-darwin when building with vcpkg
+- Prototype release automation infrastructure to update the new
+  [tectonic-bin](https://aur.archlinux.org/packages/tectonic-bin/) AUR package.
+
+# tectonic 0.4.0 (2020-12-28)
 
 - Introduce a prototype new “V2” command line interface, accessible by running
   Tectonic with an initial `-X` argument: `tectonic -X new`. This interface is
