@@ -160,6 +160,14 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     }
 }
 
+mod linkage {
+    // Import something from tectonic_bridge_flate so that we ensure that we
+    // actually link with the crate, to pull in the symbols defined in the C
+    // API.
+    #[allow(unused_imports)]
+    use tectonic_bridge_flate::flate2;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

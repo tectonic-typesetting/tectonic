@@ -54,6 +54,8 @@ Description:
 
 #include "teckit-cxx-Engine.h"
 
+#include "tectonic_bridge_flate.h"
+
 #ifdef TRACING
 #include <iostream>
 
@@ -63,8 +65,6 @@ int	traceLevel = 1;
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
-
-#include "zlib.h"
 
 static const UInt32 kNeedMoreInput = 0xfffffffeUL;
 static const UInt32 kInvalidChar   = 0xfffffffdUL;
@@ -1291,17 +1291,22 @@ Converter::Converter(const Byte* inTable, UInt32 inTableSize, bool inForward,
 		const FileHeader*	fh = reinterpret_cast<const FileHeader*>(inTable);
 		if (READ(fh->type) == kMagicNumberCmp) {
 			// the table is compressed; allocate a new buffer and decompress
-			unsigned long	uncompressedLen = READ(fh->version);
+			uint64_t uncompressedLen = READ(fh->version);
+
 			table = static_cast<Byte*>(malloc(uncompressedLen));
 			if (table == 0) {
 				status = kStatus_OutOfMemory;
 				return;
 			}
-			int	result = uncompress(table, &uncompressedLen, inTable + 2 * sizeof(UInt32), inTableSize - 2 * sizeof(UInt32));
-			if (result != Z_OK) {
+
+			if (tectonic_flate_decompress(
+						table, &uncompressedLen,
+						inTable + 2 * sizeof(UInt32), inTableSize - 2 * sizeof(UInt32)
+			) < 0) {
 				status = kStatus_InvalidMapping;
 				return;
 			}
+
 			fh = reinterpret_cast<const FileHeader*>(table);
 		}
 
@@ -2101,10 +2106,15 @@ TECkit_GetMappingFlags(
 		FileHeader			header;
 		if (READ(fh->type) == kMagicNumberCmp) {
 			// compressed mapping, so we need to decompress enough of it to read the flags
-			unsigned long	uncompressedLen = sizeof(FileHeader);
-			int	result = uncompress(reinterpret_cast<Byte*>(&header), &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
-			if (result != Z_BUF_ERROR)
+			uint64_t uncompressedLen = sizeof(FileHeader);
+
+			if (tectonic_flate_decompress(
+						reinterpret_cast<Byte*>(&header), &uncompressedLen,
+						mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32)
+			) != FlateResult_BufError) {
 				status = kStatus_InvalidMapping;
+			}
+
 			fh = &header;
 		}
 		if (status == kStatus_NoError && READ(fh->type) == kMagicNumber) {
@@ -2141,20 +2151,28 @@ TECkit_GetMappingName(
 		if (READ(fh->type) == kMagicNumberCmp) {
 			// compressed mapping, so we need to decompress the fixed header to read the headerLength field,
 			// and then decompress the complete header to get the names
-			unsigned long	uncompressedLen = sizeof(FileHeader);
-			int	result = uncompress(reinterpret_cast<Byte*>(&header), &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
-			if (result != Z_BUF_ERROR)
+			uint64_t uncompressedLen = sizeof(FileHeader);
+
+			if (tectonic_flate_decompress(
+						reinterpret_cast<Byte*>(&header), &uncompressedLen,
+						mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32)
+			) != FlateResult_BufError) {
 				status = kStatus_InvalidMapping;
-			else {
+			} else {
 				fh = &header;
 				uncompressedLen = READ(fh->headerLength);
 				buf = malloc(uncompressedLen);
+
 				if (buf == 0)
 					status = kStatus_OutOfMemory;
 				else {
-					result = uncompress(static_cast<Byte*>(buf), &uncompressedLen, mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32));
-					if (result != Z_BUF_ERROR)
+					if (tectonic_flate_decompress(
+								static_cast<Byte*>(buf), &uncompressedLen,
+								mapping + 2 * sizeof(UInt32), mappingSize - 2 * sizeof(UInt32)
+					) != FlateResult_BufError) {
 						status = kStatus_InvalidMapping;
+					}
+
 					fh = static_cast<const FileHeader*>(buf);
 				}
 			}
