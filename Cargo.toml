@@ -87,7 +87,7 @@ profile = []
 filetime = "^0.2"
 futures = "0.1"
 headers = "0.2"
-hyper = "0.12"
+hyper = "0.14"
 tempfile = "^3.1"
 tokio = "0.1.22"
 
