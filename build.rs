@@ -2,187 +2,38 @@
 // Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-/// The Tectonic build script. Not only do we have internal C/C++ code, we
-/// also depend on several external C/C++ libraries, so there's a lot to do
-/// here. It would be great to streamline things.
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
+//! The Tectonic build script. Not only do we have internal C/C++ code, we
+//! also depend on several external C/C++ libraries, so there's a lot to do
+//! here. It would be great to streamline things.
+
+use std::{env, path::PathBuf};
 use tectonic_cfg_support::*;
+use tectonic_dep_support::{Backend, Configuration, Dependency, Spec};
 
-#[cfg(not(target_os = "macos"))]
-const PKGCONFIG_LIBS: &str =
-    "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng";
+struct TectonicRestSpec;
 
-// No fontconfig on MacOS:
-#[cfg(target_os = "macos")]
-const PKGCONFIG_LIBS: &str = "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 graphite2 libpng";
-
-/// Build-script state when using pkg-config as the backend.
-#[derive(Debug)]
-struct PkgConfigState {
-    libs: pkg_config::Library,
-}
-
-// Need a way to check that the vcpkg harfbuzz port has graphite2 and icu options enabled.
-#[cfg(not(target_os = "macos"))]
-const VCPKG_LIBS: &[&str] = &["fontconfig", "harfbuzz", "freetype", "graphite2"];
-
-#[cfg(target_os = "macos")]
-const VCPKG_LIBS: &[&str] = &["harfbuzz", "freetype", "graphite2"];
-
-/// Build-script state when using vcpkg as the backend.
-#[derive(Clone, Debug)]
-struct VcPkgState {
-    include_paths: Vec<PathBuf>,
-}
-
-/// State for discovering and managing our dependencies, which may vary
-/// depending on the framework that we're using to discover them.
-///
-/// The basic gameplan is that we probe our dependencies to check that they're
-/// available and pull out the C/C++ include directories; then we emit info
-/// for building our C/C++ libraries; then we emit info for our dependencies.
-/// Building stuff pretty much always requires some level of hackery, though,
-/// so we don't try to be purist about the details.
-#[derive(Debug)]
-enum DepState {
-    /// pkg-config
-    PkgConfig(PkgConfigState),
-
-    /// vcpkg
-    VcPkg(VcPkgState),
-}
-
-impl DepState {
-    /// Probe for our dependent libraries using pkg-config.
-    fn new_pkg_config() -> Self {
-        let statik = env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC").is_ok();
-
-        let libs = pkg_config::Config::new()
-            .cargo_metadata(false)
-            .statik(statik)
-            .probe(PKGCONFIG_LIBS)
-            .unwrap();
-        DepState::PkgConfig(PkgConfigState { libs })
+impl Spec for TectonicRestSpec {
+    #[cfg(not(target_os = "macos"))]
+    fn get_pkgconfig_spec(&self) -> &str {
+        "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng"
     }
 
-    /// Probe for our dependent libraries using vcpkg.
-    fn new_vcpkg() -> Self {
-        let mut include_paths = vec![];
-
-        for dep in VCPKG_LIBS {
-            let library = vcpkg::Config::new()
-                .cargo_metadata(false)
-                .find_package(dep)
-                .unwrap_or_else(|e| panic!("failed to load package {} from vcpkg: {}", dep, e));
-            include_paths.extend(library.include_paths.iter().cloned());
-        }
-
-        DepState::VcPkg(VcPkgState { include_paths })
+    // No fontconfig on macOS.
+    #[cfg(target_os = "macos")]
+    fn get_pkgconfig_spec(&self) -> &str {
+        "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng"
     }
 
-    /// Invoke a callback for each C/C++ include directory injected by our
-    /// dependencies.
-    fn foreach_include_path<F>(&self, mut f: F)
-    where
-        F: FnMut(&Path),
-    {
-        match self {
-            DepState::PkgConfig(ref s) => {
-                for p in &s.libs.include_paths {
-                    f(p);
-                }
-            }
-
-            DepState::VcPkg(ref s) => {
-                for p in &s.include_paths {
-                    f(p);
-                }
-            }
-        }
+    // Would be nice to have a way to check that the vcpkg harfbuzz port has
+    // graphite2 and icu options enabled.
+    #[cfg(not(target_os = "macos"))]
+    fn get_vcpkg_spec(&self) -> &[&str] {
+        &["fontconfig", "harfbuzz", "freetype"]
     }
 
-    /// This function is called after we've emitted the cargo compilation info
-    /// for our own libraries. Now we can emit any special information
-    /// relating to our dependencies, which may depend on the dep-finding
-    /// backend or the target.
-    fn emit_late_extras(&self, target: &str) {
-        match self {
-            DepState::PkgConfig(ref state) => {
-                if env::var("TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC").is_ok() {
-                    // pkg-config will prevent "system libraries" from being
-                    // linked statically even when PKG_CONFIG_ALL_STATIC=1,
-                    // but its definition of a system library isn't always
-                    // perfect. For Debian cross builds, we'd like to make
-                    // binaries that are dynamically linked with things like
-                    // libc and libm but not libharfbuzz, etc. In this mode we
-                    // override pkg-config's logic by emitting the metadata
-                    // ourselves.
-                    for link_path in &state.libs.link_paths {
-                        println!("cargo:rustc-link-search=native={}", link_path.display());
-                    }
-
-                    for fw_path in &state.libs.framework_paths {
-                        println!("cargo:rustc-link-search=framework={}", fw_path.display());
-                    }
-
-                    for libbase in &state.libs.libs {
-                        let do_static = match libbase.as_ref() {
-                            "c" | "m" | "dl" | "pthread" => false,
-                            _ => {
-                                // Frustratingly, graphite2 seems to have
-                                // issues with static builds; e.g. static
-                                // graphite2 is not available on Debian. So
-                                // let's jump through the hoops of testing
-                                // whether the static archive seems findable.
-                                let libname = format!("lib{}.a", libbase);
-                                state
-                                    .libs
-                                    .link_paths
-                                    .iter()
-                                    .any(|d| d.join(&libname).exists())
-                            }
-                        };
-
-                        let mode = if do_static { "static=" } else { "" };
-                        println!("cargo:rustc-link-lib={}{}", mode, libbase);
-                    }
-
-                    for fw in &state.libs.frameworks {
-                        println!("cargo:rustc-link-lib=framework={}", fw);
-                    }
-                } else {
-                    // Just let pkg-config do its thing.
-                    pkg_config::Config::new()
-                        .cargo_metadata(true)
-                        .probe(PKGCONFIG_LIBS)
-                        .unwrap();
-                }
-            }
-
-            DepState::VcPkg(_) => {
-                for dep in VCPKG_LIBS {
-                    vcpkg::find_package(dep).unwrap_or_else(|e| {
-                        panic!("failed to load package {} from vcpkg: {}", dep, e)
-                    });
-                }
-                if target.contains("-linux-") {
-                    // add icudata to the end of the list of libs as vcpkg-rs
-                    // does not order individual libraries as a single pass
-                    // linker requires.
-                    println!("cargo:rustc-link-lib=icudata");
-                }
-            }
-        }
-    }
-}
-
-/// The default dependency-finding backend is pkg-config.
-impl Default for DepState {
-    fn default() -> Self {
-        DepState::new_pkg_config()
+    #[cfg(target_os = "macos")]
+    fn get_vcpkg_spec(&self) -> &[&str] {
+        &["harfbuzz", "freetype"]
     }
 }
 
@@ -193,6 +44,7 @@ fn main() {
     // Generate bindings for the C/C++ code to interface with backend Rust code.
     // As a heuristic we trigger rebuilds on changes to src/engines/mod.rs since
     // most of `core-bindgen.h` comes from this file.
+
     let mut cbindgen_header_path: PathBuf = env::var("OUT_DIR").unwrap().into();
     cbindgen_header_path.push("core-bindgen.h");
 
@@ -208,28 +60,19 @@ fn main() {
 
     println!("cargo:rustc-env=TARGET={}", target);
 
-    // OK, how are we finding our dependencies?
+    // Find our dependencies that aren't provided by any bridge or -sys crates.
 
-    println!("cargo:rerun-if-env-changed=TECTONIC_DEP_BACKEND");
-    println!("cargo:rerun-if-env-changed=TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC");
-
-    let dep_state = if let Ok(dep_backend_str) = env::var("TECTONIC_DEP_BACKEND") {
-        match dep_backend_str.as_ref() {
-            "pkg-config" => DepState::new_pkg_config(),
-            "vcpkg" => DepState::new_vcpkg(),
-            "default" => DepState::default(),
-            other => panic!("unrecognized TECTONIC_DEP_BACKEND setting {:?}", other),
-        }
-    } else {
-        DepState::default()
-    };
+    let dep_cfg = Configuration::default();
+    let dep = Dependency::probe(TectonicRestSpec, &dep_cfg);
 
     // Include paths exported by our internal dependencies.
 
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
+    let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
 
-    // Actually I'm not 100% sure that I can't compile the C and C++ code
-    // into one library, but who cares?
+    // Specify the C/C++ support libraries. Actually I'm not 100% sure that I
+    // can't compile the C and C++ code into one library, but it's no a big deal
+    // -- it all gets linked together in the end.
 
     let mut ccfg = cc::Build::new();
     let mut cppcfg = cc::Build::new();
@@ -280,6 +123,7 @@ fn main() {
     // compiler to include frame pointers. We whitelist platforms that are
     // known to be able to profile *without* frame pointers: currently, only
     // Linux/x86_64.
+
     let profile_target_requires_frame_pointer: bool =
         target_cfg!(not(all(target_os = "linux", target_arch = "x86_64")));
 
@@ -387,6 +231,7 @@ fn main() {
         .file("tectonic/xetex-xetex0.c")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&graphite2_include_dir)
         .include(&flate_include_dir);
 
     let cppflags = [
@@ -437,9 +282,10 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&graphite2_include_dir)
         .include(&flate_include_dir);
 
-    dep_state.foreach_include_path(|p| {
+    dep.foreach_include_path(|p| {
         ccfg.include(p);
         cppcfg.include(p);
     });
@@ -488,7 +334,17 @@ fn main() {
     ccfg.compile("libtectonic_c.a");
     cppcfg.compile("libtectonic_cpp.a");
 
-    dep_state.emit_late_extras(&target);
+    dep.emit();
+
+    // vcpkg-rs is not guaranteed to emit libraries in the order required by a
+    // single-pass linker, so we might need to make sure that's done right.
+
+    if dep_cfg.backend == Backend::Vcpkg && target.contains("-linux-") {
+        // add icudata to the end of the list of libs as vcpkg-rs
+        // does not order individual libraries as a single pass
+        // linker requires.
+        println!("cargo:rustc-link-lib=icudata");
+    }
 
     // Tell cargo to rerun build.rs only if files in the tectonic/ directory have changed.
     for file in PathBuf::from("tectonic").read_dir().unwrap() {

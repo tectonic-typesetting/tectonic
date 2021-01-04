@@ -29,6 +29,9 @@ codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 [workspace]
 members = [
   "crates/bridge_flate",
+  "crates/bridge_graphite2",
+  "crates/cfg_support",
+  "crates/dep_support",
   "crates/xdv",
 ]
 
@@ -42,6 +45,7 @@ pkg-config = "^0.3"
 regex = "^1.4"
 sha2 = "^0.9"
 tectonic_cfg_support = { path = "crates/cfg_support", version ="^0.1.0"}
+tectonic_dep_support = { path = "crates/dep_support", version ="^0.1.0"}
 vcpkg = "0.2.11"
 cbindgen = "0.16.0"
 
@@ -63,6 +67,7 @@ reqwest = "^0.9"
 sha2 = "^0.9"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 tectonic_bridge_flate = { path = "crates/bridge_flate", version ="^0.1.0"}
+tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version ="^0.1.0"}
 tectonic_xdv = { path = "crates/xdv", version ="^0.1.9"}
 termcolor = "^1.1"
 toml = { version = "^0.5", optional = true }
@@ -98,6 +103,8 @@ x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfi
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
+tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
+tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
 

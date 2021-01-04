@@ -1744,7 +1744,9 @@ dependencies = [
  "sha2",
  "structopt",
  "tectonic_bridge_flate",
+ "tectonic_bridge_graphite2",
  "tectonic_cfg_support",
+ "tectonic_dep_support",
  "tectonic_xdv",
  "tempfile",
  "termcolor",
@@ -1764,10 +1766,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_bridge_graphite2"
+version = "0.1.0"
+dependencies = [
+ "tectonic_dep_support",
+]
+
+[[package]]
 name = "tectonic_cfg_support"
 version = "0.1.1"
 dependencies = [
  "lazy_static",
+]
+
+[[package]]
+name = "tectonic_dep_support"
+version = "0.1.0"
+dependencies = [
+ "pkg-config",
+ "vcpkg",
 ]
 
 [[package]]

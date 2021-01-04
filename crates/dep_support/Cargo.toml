@@ -1,0 +1,20 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+[package]
+name = "tectonic_dep_support"
+version = "0.1.0"
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Support for finding third-party libraries using either pkg-config or vcpkg.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_dep_support"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+pkg-config = "^0.3"
+vcpkg = "^0.2.11"
