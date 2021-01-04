@@ -166,6 +166,10 @@ mod linkage {
     // API.
     #[allow(unused_imports)]
     use tectonic_bridge_flate::flate2;
+
+    #[allow(unused_imports)]
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_bridge_graphite2;
 }
 
 #[cfg(test)]
