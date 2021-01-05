@@ -32,6 +32,7 @@ members = [
   "crates/bridge_graphite2",
   "crates/cfg_support",
   "crates/dep_support",
+  "crates/errors",
   "crates/xdv",
 ]
 
