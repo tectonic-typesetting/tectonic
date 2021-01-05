@@ -1801,6 +1801,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_status_base"
+version = "0.0.0-dev.0"
+dependencies = [
+ "tectonic_errors",
+]
+
+[[package]]
 name = "tectonic_xdv"
 version = "0.0.0-dev.0"
 dependencies = [

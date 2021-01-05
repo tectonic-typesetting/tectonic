@@ -33,6 +33,7 @@ members = [
   "crates/cfg_support",
   "crates/dep_support",
   "crates/errors",
+  "crates/status_base",
   "crates/xdv",
 ]
 
