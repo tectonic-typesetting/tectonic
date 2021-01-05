@@ -1,0 +1,24 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+[package]
+name = "tectonic_io_base"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Basic types for Tectonic's pluggable I/O backend system
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_io_base"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
+libc = "^0.2" # for EISDIR :-(
+sha2 = "^0.9" # for digest computations
+thiserror = "1.0"
+tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
+tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }

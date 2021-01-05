@@ -1801,6 +1801,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_io_base"
+version = "0.0.0-dev.0"
+dependencies = [
+ "flate2",
+ "libc",
+ "sha2",
+ "tectonic_errors",
+ "tectonic_status_base",
+ "thiserror",
+]
+
+[[package]]
 name = "tectonic_status_base"
 version = "0.0.0-dev.0"
 dependencies = [
