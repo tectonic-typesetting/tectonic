@@ -32,6 +32,7 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include "xetex-core.h"
+#include "xetex-xetexd.h"
 
 #include <unicode/platform.h>   // We need this first
 #include <unicode/ubidi.h>
@@ -45,8 +46,6 @@ authorization from the copyright holders.
 #include <harfbuzz/hb-icu.h>
 #endif
 #include <harfbuzz/hb-ot.h>
-
-#include "xetex-web.h"
 
 #include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-XeTeXFontInst.h"
