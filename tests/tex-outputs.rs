@@ -255,6 +255,16 @@ fn prim_filesize() {
 }
 
 #[test]
+fn shell_escape() {
+    let mut unstables = UnstableOptions::default();
+    unstables.shell_escape = true;
+    TestCase::new("shell_escape")
+        .with_unstables(unstables)
+        .check_pdf(true)
+        .go()
+}
+
+#[test]
 fn tex_logo() {
     TestCase::new("tex_logo").go()
 }
