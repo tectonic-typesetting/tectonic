@@ -5,10 +5,10 @@ use std::collections::HashSet;
 use std::default::Default;
 
 use tectonic::engines::NoopIoEventBackend;
-use tectonic::io::stdstreams::GenuineStdoutIo;
 use tectonic::io::{FilesystemIo, IoProvider, IoStack, MemoryIo};
-use tectonic::status::NoopStatusBackend;
 use tectonic::BibtexEngine;
+use tectonic_io_base::stdstreams::GenuineStdoutIo;
+use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
@@ -47,7 +47,7 @@ impl TestCase {
         let mut io = IoStack::new(io_list);
 
         let mut events = NoopIoEventBackend::new();
-        let mut status = NoopStatusBackend::new();
+        let mut status = NoopStatusBackend::default();
 
         BibtexEngine::new()
             .process(

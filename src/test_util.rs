@@ -1,4 +1,4 @@
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 //! This inelegant module helps with testing.
@@ -35,15 +35,14 @@
 //! That call simultaneously tells this module where to find the test assets,
 //! and also activates the test mode.
 
-use std::collections::HashSet;
-use std::env;
-use std::ffi::OsStr;
-use std::path::PathBuf;
+use std::{collections::HashSet, env, ffi::OsStr, path::PathBuf};
+use tectonic_errors::Result;
 
-use crate::digest::DigestData;
-use crate::errors::Result;
-use crate::io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult};
-use crate::status::StatusBackend;
+use crate::{
+    digest::DigestData,
+    io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult},
+    status::StatusBackend,
+};
 
 /// The name of the environment variable that the test code will consult to
 /// figure out where to find the testing resource files.

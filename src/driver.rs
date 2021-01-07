@@ -27,7 +27,7 @@ use crate::{
     digest::DigestData,
     engines::IoEventBackend,
     errmsg,
-    errors::{ErrorKind, Result, ResultExt},
+    errors::{ChainErrCompatExt, ErrorKind, Result},
     io::{
         memory::MemoryFileCollection, Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder,
         OpenResult,
