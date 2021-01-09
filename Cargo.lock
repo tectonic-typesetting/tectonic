@@ -1752,6 +1752,7 @@ dependencies = [
  "tectonic_bridge_flate",
  "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
+ "tectonic_bridge_icu",
  "tectonic_cfg_support",
  "tectonic_dep_support",
  "tectonic_errors",
@@ -1784,6 +1785,13 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_graphite2"
+version = "0.0.0-dev.0"
+dependencies = [
+ "tectonic_dep_support",
+]
+
+[[package]]
+name = "tectonic_bridge_icu"
 version = "0.0.0-dev.0"
 dependencies = [
  "tectonic_dep_support",

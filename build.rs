@@ -15,13 +15,13 @@ struct TectonicRestSpec;
 impl Spec for TectonicRestSpec {
     #[cfg(not(target_os = "macos"))]
     fn get_pkgconfig_spec(&self) -> &str {
-        "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc libpng"
+        "fontconfig harfbuzz >= 1.4 harfbuzz-icu libpng"
     }
 
     // No fontconfig on macOS.
     #[cfg(target_os = "macos")]
     fn get_pkgconfig_spec(&self) -> &str {
-        "harfbuzz >= 1.4 harfbuzz-icu icu-uc libpng"
+        "harfbuzz >= 1.4 harfbuzz-icu libpng"
     }
 
     // Would be nice to have a way to check that the vcpkg harfbuzz port has
@@ -70,6 +70,7 @@ fn main() {
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
     let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
     let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
+    let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
 
     // Specify the C/C++ support libraries. Actually I'm not 100% sure that I
     // can't compile the C and C++ code into one library, but it's no a big deal
@@ -234,6 +235,7 @@ fn main() {
         .include(".")
         .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)
+        .include(&icu_include_dir)
         .include(&flate_include_dir);
 
     let cppflags = [
@@ -286,6 +288,7 @@ fn main() {
         .include(".")
         .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)
+        .include(&icu_include_dir)
         .include(&flate_include_dir);
 
     dep.foreach_include_path(|p| {
