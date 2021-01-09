@@ -1750,6 +1750,7 @@ dependencies = [
  "sha2",
  "structopt",
  "tectonic_bridge_flate",
+ "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_cfg_support",
  "tectonic_dep_support",
@@ -1772,6 +1773,13 @@ dependencies = [
  "cbindgen",
  "flate2",
  "libc",
+]
+
+[[package]]
+name = "tectonic_bridge_freetype2"
+version = "0.0.0-dev.0"
+dependencies = [
+ "tectonic_dep_support",
 ]
 
 [[package]]

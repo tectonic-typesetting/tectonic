@@ -15,25 +15,25 @@ struct TectonicRestSpec;
 impl Spec for TectonicRestSpec {
     #[cfg(not(target_os = "macos"))]
     fn get_pkgconfig_spec(&self) -> &str {
-        "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng"
+        "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc libpng"
     }
 
     // No fontconfig on macOS.
     #[cfg(target_os = "macos")]
     fn get_pkgconfig_spec(&self) -> &str {
-        "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng"
+        "harfbuzz >= 1.4 harfbuzz-icu icu-uc libpng"
     }
 
     // Would be nice to have a way to check that the vcpkg harfbuzz port has
     // graphite2 and icu options enabled.
     #[cfg(not(target_os = "macos"))]
     fn get_vcpkg_spec(&self) -> &[&str] {
-        &["fontconfig", "harfbuzz", "freetype"]
+        &["fontconfig", "harfbuzz"]
     }
 
     #[cfg(target_os = "macos")]
     fn get_vcpkg_spec(&self) -> &[&str] {
-        &["harfbuzz", "freetype"]
+        &["harfbuzz"]
     }
 }
 
@@ -68,6 +68,7 @@ fn main() {
     // Include paths exported by our internal dependencies.
 
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
+    let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
     let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
 
     // Specify the C/C++ support libraries. Actually I'm not 100% sure that I
@@ -231,6 +232,7 @@ fn main() {
         .file("tectonic/xetex-xetex0.c")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)
         .include(&flate_include_dir);
 
@@ -282,6 +284,7 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)
         .include(&flate_include_dir);
 

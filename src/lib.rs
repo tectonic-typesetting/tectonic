@@ -163,12 +163,16 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     }
 }
 
+/// Import something from our bridge crates so that we ensure that we actually
+/// link with them, to pull in the symbols defined in the C APIs.
 mod linkage {
-    // Import something from tectonic_bridge_flate so that we ensure that we
-    // actually link with the crate, to pull in the symbols defined in the C
-    // API.
     #[allow(unused_imports)]
-    use tectonic_bridge_flate::flate2;
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_bridge_flate;
+
+    #[allow(unused_imports)]
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_bridge_freetype2;
 
     #[allow(unused_imports)]
     #[allow(clippy::single_component_path_imports)]
