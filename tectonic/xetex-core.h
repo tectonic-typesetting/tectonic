@@ -1,5 +1,5 @@
 /* tectonic/xetex-core.h: core XeTeX types and #includes.
-   Copyright 2016 the Tectonic Project
+   Copyright 2016-2020 the Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -11,6 +11,7 @@
 #include "core-memory.h"
 #include "core-strutils.h"
 
+/* ICU */
 #include <unicode/utypes.h>
 #include <unicode/platform.h> // defines U_IS_BIG_ENDIAN for us
 
@@ -90,8 +91,6 @@ typedef enum {
 #include <ApplicationServices/ApplicationServices.h>
 typedef CTFontDescriptorRef PlatformFontRef;
 #else
-#include <ft2build.h>
-#include FT_FREETYPE_H
 typedef FcPattern* PlatformFontRef;
 #endif
 
