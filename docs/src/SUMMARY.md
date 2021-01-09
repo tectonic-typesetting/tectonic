@@ -28,5 +28,3 @@
 - [Building Tectonic](howto/build-tectonic/index.md)
   - [Install Dependencies Externally](howto/build-tectonic/external-dep-install.md)
   - [Install Dependencies With cargo-vcpkg](howto/build-tectonic/cargo-vcpkg-dep-install.md)
-- [Building Tectonic with `cargo vcpkg`](howto/cargo-vcpkg.md)
-- [Building Tectonic with manual vcpkg on macOS](howto/vcpkg.md)
