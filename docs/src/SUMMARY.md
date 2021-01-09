@@ -22,8 +22,8 @@
 - [“V2” Command-Line Interface](ref/v2cli.md)
 - [Workspaces](ref/workspaces.md)
 
-# Appendices
+# How-To Guides
 
-- [Installation Guide](installation/index.md)
-- [Building Tectonic with `cargo vcpkg`](cookbook/cargo-vcpkg.md)
-- [Building Tectonic with manual vcpkg on macOS](cookbook/vcpkg.md)
+- [Installing Tectonic](installation/index.md)
+- [Building Tectonic with `cargo vcpkg`](howto/cargo-vcpkg.md)
+- [Building Tectonic with manual vcpkg on macOS](howto/vcpkg.md)
