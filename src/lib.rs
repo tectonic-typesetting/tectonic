@@ -73,6 +73,9 @@ pub use crate::engines::tex::{TexEngine, TexResult};
 pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
+// Convenienece re-exports for migration into our multi-crate setup
+pub use tectonic_status_base::{tt_error, tt_note, tt_warning};
+
 // Increase this whenever the engine internals change such that the contents
 // of the "format" files must be regenerated.
 
@@ -119,7 +122,7 @@ pub const FORMAT_SERIAL: u32 = 29;
 pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     use std::ffi::OsStr;
 
-    let mut status = status::NoopStatusBackend::new();
+    let mut status = status::NoopStatusBackend::default();
 
     let auto_create_config_file = false;
     let config = ctry!(config::PersistentConfig::open(auto_create_config_file);

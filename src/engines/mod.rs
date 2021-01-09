@@ -27,7 +27,7 @@ use std::sync::Mutex;
 use std::{io, ptr, slice};
 
 use crate::digest::DigestData;
-use crate::errors::{Error, ErrorKind, Result};
+use crate::errors::{Error, ErrorKind, Result, SyncError};
 use crate::io::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 use crate::status::{MessageKind, StatusBackend};
 use crate::{tt_error, tt_warning};
@@ -444,7 +444,7 @@ impl<'a> ExecutionState<'a> {
 
     fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        rhandle.try_seek(pos)
+        Ok(rhandle.try_seek(pos)?)
     }
 
     fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
@@ -454,12 +454,12 @@ impl<'a> ExecutionState<'a> {
 
     fn input_getc(&mut self, handle: *mut InputHandle) -> Result<u8> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        rhandle.getc()
+        Ok(rhandle.getc()?)
     }
 
     fn input_ungetc(&mut self, handle: *mut InputHandle, byte: u8) -> Result<()> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        rhandle.ungetc(byte)
+        Ok(rhandle.ungetc(byte)?)
     }
 
     fn input_close(&mut self, handle: *mut InputHandle) -> bool {
@@ -766,7 +766,7 @@ pub extern "C" fn input_seek(
         Ok(pos) => pos as libc::size_t,
         Err(e) => {
             // TODO: Handle the error better. Report the error properly to the caller?
-            tt_error!(es.status, "input seek failed"; e);
+            tt_error!(es.status, "input seek failed"; SyncError::new(e).into());
             0
         }
     }
@@ -783,7 +783,7 @@ pub extern "C" fn input_getc(es: &mut ExecutionState, handle: *mut InputHandle) 
             libc::EOF
         }
         Err(e) => {
-            tt_warning!(es.status, "getc failed"; e);
+            tt_warning!(es.status, "getc failed"; SyncError::new(e).into());
             -1
         }
     }
@@ -798,7 +798,7 @@ pub extern "C" fn input_ungetc(
     match es.input_ungetc(handle, ch as u8) {
         Ok(_) => 0,
         Err(e) => {
-            tt_warning!(es.status, "ungetc() failed"; e);
+            tt_warning!(es.status, "ungetc() failed"; SyncError::new(e).into());
             -1
         }
     }
@@ -816,7 +816,7 @@ pub extern "C" fn input_read(
     match es.input_read(handle, rdata) {
         Ok(_) => len as isize,
         Err(e) => {
-            tt_warning!(es.status, "{}-byte read failed", len; e);
+            tt_warning!(es.status, "{}-byte read failed", len; SyncError::new(e).into());
             -1
         }
     }

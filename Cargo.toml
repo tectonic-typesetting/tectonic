@@ -32,6 +32,9 @@ members = [
   "crates/bridge_graphite2",
   "crates/cfg_support",
   "crates/dep_support",
+  "crates/errors",
+  "crates/io_base",
+  "crates/status_base",
   "crates/xdv",
 ]
 
@@ -68,6 +71,9 @@ sha2 = "^0.9"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 tectonic_bridge_flate = { path = "crates/bridge_flate", version = "0.0.0-dev.0" }
 tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version = "0.0.0-dev.0" }
+tectonic_errors = { path = "crates/errors", version = "0.0.0-dev.0" }
+tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
+tectonic_status_base = { path = "crates/status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "crates/xdv", version = "0.0.0-dev.0" }
 termcolor = "^1.1"
 toml = { version = "^0.5", optional = true }
@@ -106,5 +112,8 @@ tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
+tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
+tectonic_io_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
+tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
 

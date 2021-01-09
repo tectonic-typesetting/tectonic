@@ -34,6 +34,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ee67c11feeac938fae061b232e38e0b6d94f97a9df10e6271319325ac4c56a86"
+
+[[package]]
 name = "app_dirs2"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1747,6 +1753,9 @@ dependencies = [
  "tectonic_bridge_graphite2",
  "tectonic_cfg_support",
  "tectonic_dep_support",
+ "tectonic_errors",
+ "tectonic_io_base",
+ "tectonic_status_base",
  "tectonic_xdv",
  "tempfile",
  "termcolor",
@@ -1785,6 +1794,32 @@ version = "0.0.0-dev.0"
 dependencies = [
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "tectonic_errors"
+version = "0.0.0-dev.0"
+dependencies = [
+ "anyhow",
+]
+
+[[package]]
+name = "tectonic_io_base"
+version = "0.0.0-dev.0"
+dependencies = [
+ "flate2",
+ "libc",
+ "sha2",
+ "tectonic_errors",
+ "tectonic_status_base",
+ "thiserror",
+]
+
+[[package]]
+name = "tectonic_status_base"
+version = "0.0.0-dev.0"
+dependencies = [
+ "tectonic_errors",
 ]
 
 [[package]]

@@ -10,13 +10,12 @@ use tectonic::{
     self,
     config::PersistentConfig,
     ctry,
-    errors::Result,
-    status::{
-        plain::PlainStatusBackend, termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend,
-    },
+    errors::{Result, SyncError},
+    status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
     tt_note,
     workspace::{self, Workspace},
 };
+use tectonic_status_base::plain::PlainStatusBackend;
 
 /// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
@@ -97,8 +96,8 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     // Now that we've got colorized output, pass off to the inner function.
 
-    if let Err(ref e) = args.command.execute(config, &mut *status) {
-        status.report_error(e);
+    if let Err(e) = args.command.execute(config, &mut *status) {
+        status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }
 }

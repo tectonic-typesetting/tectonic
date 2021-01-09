@@ -4,10 +4,11 @@
 
 use std::{env, process, str::FromStr};
 use structopt::StructOpt;
+use tectonic_status_base::plain::PlainStatusBackend;
 
 use tectonic::{
     config::PersistentConfig,
-    status::plain::PlainStatusBackend,
+    errors::SyncError,
     status::termcolor::TermcolorStatusBackend,
     status::{ChatterLevel, StatusBackend},
     tt_note,
@@ -137,8 +138,8 @@ fn main() {
     // all so that we can print out the word "error:" in red. This code
     // parallels various bits of the `error_chain` crate.
 
-    if let Err(ref e) = args.compile.execute(config, &mut *status) {
-        status.report_error(e);
+    if let Err(e) = args.compile.execute(config, &mut *status) {
+        status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }
 }

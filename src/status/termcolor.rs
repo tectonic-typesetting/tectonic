@@ -7,11 +7,11 @@
 
 use std::fmt::Arguments;
 use std::io::Write;
-
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
+use tectonic_errors::Error;
+
 use super::{ChatterLevel, MessageKind, StatusBackend};
-use crate::errors::Error;
 
 pub struct TermcolorStatusBackend {
     chatter: ChatterLevel,
@@ -121,20 +121,9 @@ impl TermcolorStatusBackend {
     pub fn bare_error(&mut self, err: &Error) {
         let mut prefix = "error:";
 
-        for item in err.iter() {
+        for item in err.chain() {
             self.generic_message(MessageKind::Error, Some(prefix), format_args!("{}", item));
             prefix = "caused by:";
-        }
-
-        if let Some(backtrace) = err.backtrace() {
-            self.generic_message(
-                MessageKind::Error,
-                Some("debugging:"),
-                format_args!("backtrace follows:"),
-            );
-            self.with_stream(MessageKind::Error, |s| {
-                writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
-            });
         }
     }
 }
@@ -155,15 +144,8 @@ impl StatusBackend for TermcolorStatusBackend {
         self.generic_message(kind, None, args);
 
         if let Some(e) = err {
-            for item in e.iter() {
+            for item in e.chain() {
                 self.generic_message(kind, Some("caused by:"), format_args!("{}", item));
-            }
-
-            if let Some(backtrace) = e.backtrace() {
-                self.generic_message(kind, Some("debugging:"), format_args!("backtrace follows:"));
-                self.with_stream(kind, |s| {
-                    writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
-                });
             }
         }
     }
@@ -172,20 +154,13 @@ impl StatusBackend for TermcolorStatusBackend {
         let mut first = true;
         let kind = MessageKind::Error;
 
-        for item in err.iter() {
+        for item in err.chain() {
             if first {
                 self.generic_message(kind, None, format_args!("{}", item));
                 first = false;
             } else {
                 self.generic_message(kind, Some("caused by:"), format_args!("{}", item));
             }
-        }
-
-        if let Some(backtrace) = err.backtrace() {
-            self.generic_message(kind, Some("debugging:"), format_args!("backtrace follows:"));
-            self.with_stream(kind, |s| {
-                writeln!(s, "{:?}", backtrace).expect("backtrace dump failed");
-            });
         }
     }
 

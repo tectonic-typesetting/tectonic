@@ -1,25 +1,25 @@
-// src/io/cached_itarbundle.rs -- I/O on files in an indexed tar file "bundle" cached locally
-// Copyright 2017-2019 the Tectonic Project
+// Copyright 2017-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-use error_chain::bail;
 use flate2::read::GzDecoder;
 use fs2::FileExt;
 use reqwest::{header::HeaderMap, Client, RedirectPolicy, Response, StatusCode};
-use std::collections::HashMap;
-use std::ffi::OsStr;
-use std::fs::{self, File};
-use std::io::ErrorKind as IoErrorKind;
-use std::io::{BufRead, BufReader, Read, Write};
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
+use std::{
+    collections::HashMap,
+    ffi::OsStr,
+    fs::{self, File},
+    io::{BufRead, BufReader, Error as IoError, ErrorKind as IoErrorKind, Read, Write},
+    path::{Path, PathBuf},
+    str::FromStr,
+};
+use tectonic_errors::{anyhow::bail, atry, Result};
 
 use super::{try_open_file, Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use crate::app_dirs;
 use crate::digest::{self, Digest, DigestData};
-use crate::errors::{Error, ErrorKind, Result, ResultExt};
+use crate::errors::{Error as OldError, ErrorKind, SyncError};
 use crate::status::StatusBackend;
-use crate::{ctry, tt_note, tt_warning};
+use crate::{tt_note, tt_warning};
 
 const MAX_HTTP_REDIRECTS_ALLOWED: usize = 10;
 const MAX_HTTP_ATTEMPTS: usize = 4;
@@ -53,11 +53,13 @@ impl HttpRangeReader {
         let res = self.client.get(&self.url).headers(headers).send()?;
 
         if res.status() != StatusCode::PARTIAL_CONTENT {
-            return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
-                self.url.clone(),
-                res.status(),
-            )))
-            .chain_err(|| format!("read range expected {}", StatusCode::PARTIAL_CONTENT));
+            return Err(
+                SyncError::new(OldError::from(ErrorKind::UnexpectedHttpResponse(
+                    self.url.clone(),
+                    res.status(),
+                )))
+                .into(),
+            );
         }
 
         Ok(res)
@@ -83,11 +85,13 @@ fn get_index(url: &str, status: &mut dyn StatusBackend) -> Result<GzDecoder<Resp
 
     let res = Client::new().get(&index_url).send()?;
     if !res.status().is_success() {
-        return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
-            index_url,
-            res.status(),
-        )))
-        .chain_err(|| "couldn\'t fetch".to_string());
+        return Err(
+            SyncError::new(OldError::from(ErrorKind::UnexpectedHttpResponse(
+                index_url,
+                res.status(),
+            )))
+            .into(),
+        );
     }
 
     Ok(GzDecoder::new(res))
@@ -134,11 +138,13 @@ pub fn resolve_url(url: &str, status: &mut dyn StatusBackend) -> Result<String> 
         .send()?;
 
     if !(res.status().is_success() || res.status() == StatusCode::FOUND) {
-        return Err(Error::from(ErrorKind::UnexpectedHttpResponse(
-            url.to_string(),
-            res.status(),
-        )))
-        .chain_err(|| "couldn\'t probe".to_string());
+        return Err(
+            SyncError::new(OldError::from(ErrorKind::UnexpectedHttpResponse(
+                url.to_string(),
+                res.status(),
+            )))
+            .into(),
+        );
     }
 
     let final_url = res.url().clone().into_string();
@@ -248,7 +254,7 @@ fn get_everything(url: &str, status: &mut dyn StatusBackend) -> Result<(String, 
                     }
                 }
             }
-            ctry!(digest_info; "backend does not provide needed {} file", digest::DIGEST_NAME)
+            atry!(digest_info; ["backend does not provide needed {} file", digest::DIGEST_NAME])
         };
 
         let mut range_reader = HttpRangeReader::new(&url);
@@ -283,8 +289,15 @@ fn load_cache(
     // Convert file-not-found errors into None.
     match load_cache_inner(digest_path, redirect_base, index_base) {
         Ok(r) => Ok(Some(r)),
-        Err(Error(ErrorKind::Io(ref e), _)) if e.kind() == IoErrorKind::NotFound => Ok(None),
-        Err(e) => Err(e),
+        Err(e) => {
+            if let Some(ioe) = e.downcast_ref::<IoError>() {
+                if ioe.kind() == IoErrorKind::NotFound {
+                    return Ok(None);
+                }
+            }
+
+            Err(e)
+        }
     }
 }
 
@@ -377,7 +390,7 @@ impl CachedITarBundle {
                     file_create_write(make_txt_path(&index_base, &digest_text), |f| f.write_all(index.as_bytes()))?;
 
                     // Reload the cached files now when they were saved.
-                    ctry!(load_cache(&digest_path, &redirect_base, &index_base)?; "cache files missing even after they were created")
+                    atry!(load_cache(&digest_path, &redirect_base, &index_base)?; ["cache files missing even after they were created"])
                 }
             };
 
@@ -481,7 +494,7 @@ impl CachedITarBundle {
             .open(&self.manifest_path)?;
 
         // Lock will be released when file is closed at the end of this function.
-        ctry!(man.lock_exclusive(); "failed to lock manifest file \"{}\" for writing", self.manifest_path.display());
+        atry!(man.lock_exclusive(); ["failed to lock manifest file \"{}\" for writing", self.manifest_path.display()]);
 
         if !name.contains(|c| c == '\n' || c == '\r') {
             writeln!(man, "{} {} {}", name, length, digest_text)?;
@@ -533,7 +546,7 @@ impl CachedITarBundle {
         let (digest_text, _index, redirect_url) = get_everything(&self.url, status)?;
 
         let current_digest =
-            ctry!(DigestData::from_str(&digest_text); "bad SHA256 digest from bundle");
+            atry!(DigestData::from_str(&digest_text); ["bad SHA256 digest from bundle"]);
 
         if self.cached_digest != current_digest {
             // Crap! The backend isn't what we thought it was. Rewrite the
@@ -703,12 +716,12 @@ fn file_create_write<P, F, E>(path: P, write_fn: F) -> Result<()>
 where
     P: AsRef<Path>,
     F: FnOnce(&mut File) -> std::result::Result<(), E>,
-    std::result::Result<(), E>: crate::errors::ResultExt<()>,
+    E: std::error::Error + 'static + Sync + Send,
 {
     let path = path.as_ref();
-    let mut f = ctry!(File::create(path); "couldn't open {} for writing",
-                      path.display());
-    ctry!(write_fn(&mut f); "couldn't write to {}", path.display());
+    let mut f = atry!(File::create(path); ["couldn't open {} for writing",
+                      path.display()]);
+    atry!(write_fn(&mut f); ["couldn't write to {}", path.display()]);
     Ok(())
 }
 
@@ -718,9 +731,9 @@ fn cache_dir(path: &str, custom_cache_root: Option<&Path>) -> Result<PathBuf> {
             bail!("Custom cache path {} is not a directory", root.display());
         }
         let full_path = root.join(path);
-        ctry!(fs::create_dir_all(&full_path); "failed to create directory {}", full_path.display());
+        atry!(fs::create_dir_all(&full_path); ["failed to create directory {}", full_path.display()]);
         Ok(full_path)
     } else {
-        app_dirs::user_cache_dir(path)
+        Ok(app_dirs::user_cache_dir(path).map_err(SyncError::new)?)
     }
 }
