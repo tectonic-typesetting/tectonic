@@ -92,6 +92,8 @@ default = ["serialization"]
 # just get rid of this feature:
 serialization = ["serde", "toml"]
 
+external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
+
 # developer feature to compile with the necessary flags for profiling tectonic.
 profile = []
 
