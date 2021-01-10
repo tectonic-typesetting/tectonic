@@ -94,6 +94,7 @@ parameters:
   - name: windows_extdeps
     vmImage: windows-2019
     params:
+      canaryBuild: true
       externalDeps: true
     vars:
       TARGET: x86_64-pc-windows-gnu
