@@ -28,18 +28,39 @@ the [cargo install] command will meet your needs.
 [cargo install]: https://doc.rust-lang.org/cargo/commands/cargo-install.html
 
 
-## External Dependencies
+## Third-Party Dependencies
 
-Tectonic relies on a number of well-established external libraries that deal
-with fonts, Unicode, text shaping, and so on. To build Tectonic, your first task
-is to make sure that these external dependencies are available. You have two
-broad options:
+Tectonic relies on a number of well-established third-party libraries that deal
+with fonts, Unicode, text shaping, and so on. Specifically:
 
-- **Install the dependencies using an external system**, such as your OS’s
-  package manager. Read [how to install Tectonic’s dependencies
-  externally][external-dep-install] for quick recipes as to how to do that.
-- **Install the dependencies using cargo-vcpkg**, which will build local copies
-  of the needed libraries using [vcpkg]. Read [this
+- [fontconfig](https://fontconfig.org/) for discovering system fonts (except on
+  macOS)
+- [freetype2](https://www.freetype.org/) for parsing font files
+- [graphite2](https://graphite.sil.org/) for shaping certain unusual scripts
+- [Harfbuzz](https://harfbuzz.github.io/) for text shaping
+- [ICU4C](http://site.icu-project.org/home) for Unicode data and algorithms
+- [libpng](http://www.libpng.org/) for parsing PNG images
+- [OpenSSL](https://www.openssl.org/) for HTTPS if you’re not on a Mac or
+  Windows machine (or whichever SSL library is required for your system by the
+  [rust-native-tls] crate)
+- [zlib](https://zlib.net/) for compression algorithms
+
+[Harfbuzz]: https://harfbuzz.github.io/
+[rust-native-tls]: https://github.com/sfackler/rust-native-tls/#readme
+
+To build Tectonic, your first task is to decide where you want these library
+dependencies to come from.
+
+- Tectonic can provide some dependencies **internally** (“vendor” them). This is
+  the default for [Harfbuzz]. You can use [Cargo features][cargo-features],
+  described below, to control when this happens. For some third-party libraries
+  needed by Tectonic, vendoring is not possible.
+- You can install the dependencies **externally**, with a system such as your
+  OS’s package manager, and tell the Tectonic build system how to access them.
+  Read [how to install Tectonic’s dependencies externally][external-dep-install]
+  for quick recipes as to how to do that.
+- As an intermediate approach, you can **use cargo-vcpkg** to compile the
+  dependencies for Tectonic’s use with [vcpkg]. Read [this
   page][cargo-vcpkg-dep-install] to learn how to do that.
 
 [external-dep-install]: ./external-dep-install.md
@@ -47,7 +68,8 @@ broad options:
 [cargo-vcpkg-dep-install]: ./cargo-vcpkg-dep-install.md
 
 You’ll have to set up one of two ways for the Tectonic build system to gather
-the appropriate information about how to compile against these dependencies:
+the appropriate information about how to compile against the external
+dependencies:
 
 - **[pkg-config]**, the default system, is the appropriate choice in most cases.
   Generally all you need to do is make sure that the `pkg-config` program is
@@ -62,7 +84,7 @@ the appropriate information about how to compile against these dependencies:
 
 [pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
 
-If using [pkg-config], the setting the environment variable
+If using [pkg-config], setting the environment variable
 `TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC` will cause the build system to attempt to
 link with external libraries statically rather than dynamically. System
 libraries, such as `libc` and `libm` on Unix systems, will still be linked
@@ -77,6 +99,10 @@ control build options. Tectonic offers the following features:
 
 [cargo-features]: https://doc.rust-lang.org/cargo/reference/features.html
 
+- **`external-harfbuzz`**. By default, the Tectonic crates will build and link
+  to a “vendored” (static, internal) version of the [Harfbuzz] text shaping
+  library. If you would like to link to an externally-supplied version instead,
+  enable this feature.
 - **`serialization`** (enabled by default). Disabling this feature turns off all
   Tectonic features that require the [serde] crate. This option is provided
   because Tectonic’s use of serde requires [procedural macro][proc-macro]
