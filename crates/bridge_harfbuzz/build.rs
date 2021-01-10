@@ -66,6 +66,7 @@ mod inner {
 
         // Include paths exported by our internal dependencies:
         let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
+        let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
         let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
 
         let mut cfg = cc::Build::new();
@@ -79,6 +80,10 @@ mod inner {
             .include(&icu_include_dir)
             .file("harfbuzz/src/harfbuzz.cc")
             .file("harfbuzz/src/hb-icu.cc");
+
+        if graphite2_static {
+            cfg.define("GRAPHITE2_STATIC", "1");
+        }
 
         if !target.contains("windows") {
             cfg.define("HAVE_PTHREAD", "1");
