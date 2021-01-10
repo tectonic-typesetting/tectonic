@@ -62,6 +62,13 @@ the appropriate information about how to compile against these dependencies:
 
 [pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
 
+If using [pkg-config], the setting the environment variable
+`TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC` will cause the build system to attempt to
+link with external libraries statically rather than dynamically. System
+libraries, such as `libc` and `libm` on Unix systems, will still be linked
+dynamically. This mode is planned to be superseded by better support for
+“vendoring” dependent libraries.
+
 
 ## Choose Cargo Features
 
