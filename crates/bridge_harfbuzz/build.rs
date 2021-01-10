@@ -41,6 +41,29 @@ mod inner {
     pub fn build_harfbuzz() {
         let target = env::var("TARGET").unwrap();
 
+        // Check that the submodule has been checked out.
+
+        let src_dir = {
+            let mut p = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap());
+            p.push("harfbuzz");
+            p.push("src");
+            p
+        };
+
+        let test_file = src_dir.join("harfbuzz.cc");
+
+        if !test_file.exists() {
+            eprintln!("error: no such file {}", test_file.display());
+            eprintln!(
+                "   if you have checked out from Git, you probably need to fetch submodules:"
+            );
+            eprintln!("       git submodule update --init");
+            eprintln!(
+                "   This is needed because we are attempting to compile a local copy of Harfbuzz."
+            );
+            std::process::exit(1);
+        }
+
         // Include paths exported by our internal dependencies:
         let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
         let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
@@ -72,13 +95,6 @@ mod inner {
         cfg.compile("harfbuzz");
 
         // Copy the headers to have the same directory structure as a system install.alloc
-
-        let src_dir = {
-            let mut p = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap());
-            p.push("harfbuzz");
-            p.push("src");
-            p
-        };
 
         let include_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
         println!(
