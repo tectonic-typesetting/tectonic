@@ -27,6 +27,8 @@ use crate::{
     workspace::WorkspaceCreator,
 };
 
+use tectonic_status_base::MessageKind;
+
 /// A Tectonic document.
 #[derive(Debug)]
 pub struct Document {
@@ -227,6 +229,7 @@ pub struct BuildOptions {
     keep_intermediates: bool,
     keep_logs: bool,
     print_stdout: bool,
+    open: bool,
 }
 
 impl BuildOptions {
@@ -252,6 +255,11 @@ impl BuildOptions {
 
     pub fn print_stdout(&mut self, value: bool) -> &mut Self {
         self.print_stdout = value;
+        self
+    }
+
+    pub fn open(&mut self, value: bool) -> &mut Self {
+        self.open = value;
         self
     }
 }
@@ -372,6 +380,24 @@ impl Document {
                     status.dump_error_logs(&output.data);
                 }
             }
+        } else if options.open {
+            let out_file =
+                output_dir
+                    .join(&profile.name)
+                    .with_extension(match profile.target_type {
+                        BuildTargetType::Pdf => "pdf",
+                    });
+            status.note_highlighted("Opening ", &format!("`{}`", out_file.display()), "");
+            if open::that(&out_file).is_err() {
+                status.report(
+                    MessageKind::Error,
+                    format_args!(
+                        "Failed to open `{}` with system handler",
+                        out_file.display()
+                    ),
+                    None,
+                )
+            };
         }
 
         result.map(|_| 0)
