@@ -1755,7 +1755,6 @@ dependencies = [
  "open",
  "pkg-config",
  "regex",
- "reqwest",
  "serde",
  "sha2",
  "structopt",
@@ -1767,6 +1766,7 @@ dependencies = [
  "tectonic_cfg_support",
  "tectonic_dep_support",
  "tectonic_errors",
+ "tectonic_geturl",
  "tectonic_io_base",
  "tectonic_status_base",
  "tectonic_xdv",
@@ -1838,6 +1838,16 @@ name = "tectonic_errors"
 version = "0.0.0-dev.0"
 dependencies = [
  "anyhow",
+]
+
+[[package]]
+name = "tectonic_geturl"
+version = "0.0.0-dev.0"
+dependencies = [
+ "headers",
+ "reqwest",
+ "tectonic_errors",
+ "tectonic_status_base",
 ]
 
 [[package]]

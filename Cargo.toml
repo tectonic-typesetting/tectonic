@@ -36,6 +36,7 @@ members = [
   "crates/cfg_support",
   "crates/dep_support",
   "crates/errors",
+  "crates/geturl",
   "crates/io_base",
   "crates/status_base",
   "crates/xdv",
@@ -63,12 +64,10 @@ cfg-if = "1.0"
 error-chain = "^0.12"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 fs2 = "^0.4"
-headers = "^0.2"
 lazy_static = "^1.4"
 libc = "^0.2"
 md-5 = "^0.9"
 open = "1.4.0"
-reqwest = "^0.9"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
@@ -78,6 +77,7 @@ tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version = "0.0.0
 tectonic_bridge_harfbuzz = { path = "crates/bridge_harfbuzz", version = "0.0.0-dev.0" }
 tectonic_bridge_icu = { path = "crates/bridge_icu", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "crates/errors", version = "0.0.0-dev.0" }
+tectonic_geturl = { path = "crates/geturl", version = "0.0.0-dev.0" }
 tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "crates/status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "crates/xdv", version = "0.0.0-dev.0" }
@@ -125,6 +125,7 @@ tectonic_bridge_icu = "thiscommit:2021-01-09:diehoh1E"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
+tectonic_geturl = "thiscommit:2021-01-10:eiv5ohMe"
 tectonic_io_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"

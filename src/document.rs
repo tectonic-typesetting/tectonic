@@ -3,25 +3,20 @@
 
 //! Tectonic document definitions.
 
-use reqwest::Url;
 use std::{
     collections::HashMap,
     env, fs,
     io::{self, Read, Write},
     path::{Component, Path, PathBuf},
 };
+use tectonic_geturl::{DefaultBackend, GetUrlBackend, Url};
 
 use crate::{
     config, ctry,
     driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
     errmsg,
     errors::{ErrorKind, Result},
-    io::{
-        cached_itarbundle::{resolve_url, CachedITarBundle},
-        dirbundle::DirBundle,
-        zipbundle::ZipBundle,
-        Bundle,
-    },
+    io::{cached_itarbundle::CachedITarBundle, dirbundle::DirBundle, zipbundle::ZipBundle, Bundle},
     status::StatusBackend,
     test_util, tt_error, tt_note,
     workspace::WorkspaceCreator,
@@ -156,7 +151,8 @@ impl Document {
         let bundle_loc = if config::is_config_test_mode_activated() {
             "test-bundle".to_owned()
         } else {
-            resolve_url(config.default_bundle_loc(), status)?
+            let mut gub = DefaultBackend::default();
+            gub.resolve_url(config.default_bundle_loc(), status)?
         };
 
         // All done.

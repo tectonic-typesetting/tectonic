@@ -10,7 +10,6 @@
 #![allow(deprecated)]
 
 use error_chain::error_chain;
-use reqwest::StatusCode;
 use std::{convert, ffi, io, io::Write, num, result::Result as StdResult, str};
 use tectonic_errors::Error as NewError;
 use zip::result::ZipError;
@@ -58,7 +57,6 @@ error_chain! {
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
-        Reqwest(reqwest::Error);
         ConfigRead(ReadError);
         ConfigWrite(WriteError);
         NewStyle(NewError);
@@ -92,11 +90,6 @@ error_chain! {
         EngineError(engine: &'static str) {
             description("some engine had an unrecoverable error")
             display("the {} engine had an unrecoverable error", engine)
-        }
-
-        UnexpectedHttpResponse(url: String, status: StatusCode) {
-            description("unexpected HTTP response to URL")
-            display("unexpected HTTP response to URL {}: {}", url, status)
         }
     }
 }

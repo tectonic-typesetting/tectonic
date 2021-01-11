@@ -144,8 +144,8 @@ impl PersistentConfig {
         only_cached: bool,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        use reqwest::Url;
         use std::io;
+        use tectonic_geturl::Url;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             return Ok(Box::new(crate::test_util::TestBundle::default()));
