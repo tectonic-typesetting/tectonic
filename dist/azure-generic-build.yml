@@ -16,12 +16,28 @@ parameters:
 - name: primaryBuild
   type: boolean
   default: false
+- name: externalDeps
+  type: boolean
+  default: false
 
 steps:
-- bash: cargo build --all --release -v
+- bash: |
+    if [[ $EXTERNAL_DEPS == True ]] ; then
+      features="external-harfbuzz"
+    else
+      features=
+    fi
+
+    echo "Cargo features for this build: $features"
+    echo "##vso[task.setvariable variable=CARGO_FEATURES;]$features"
+  displayName: Set feature flags
+  env:
+    EXTERNAL_DEPS: ${{ parameters.externalDeps }}
+
+- bash: cargo build --all --release --features="$CARGO_FEATURES" -v
   displayName: "cargo build"
 
-- bash: cargo test --all --release
+- bash: cargo test --all --release --features="$CARGO_FEATURES"
   displayName: "cargo test"
 
 # For non-canary builds, export artifacts.

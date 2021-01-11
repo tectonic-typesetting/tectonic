@@ -31,10 +31,20 @@ parameters:
       TOOLCHAIN: stable
       TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: true
 
-  - name: linux_stable
+  - name: linux_stable_extdeps
     vmImage: ubuntu-20.04
     params:
       canaryBuild: true
+      externalDeps: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_stable_intdeps
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      externalDeps: false
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
@@ -55,17 +65,37 @@ parameters:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: nightly
 
-  - name: macos
+  - name: macos_intdeps
     vmImage: macos-10.15
     params:
       canaryBuild: true
+      externalDeps: false
     vars:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
 
-  - name: windows
+  - name: macos_extdeps
+    vmImage: macos-10.15
+    params:
+      canaryBuild: true
+      externalDeps: true
+    vars:
+      TARGET: x86_64-apple-darwin
+      TOOLCHAIN: stable
+
+  - name: windows_intdeps
     vmImage: windows-2019
-    params: {}
+    params:
+      externalDeps: false
+    vars:
+      TARGET: x86_64-pc-windows-gnu
+      TOOLCHAIN: stable-x86_64-pc-windows-gnu
+
+  - name: windows_extdeps
+    vmImage: windows-2019
+    params:
+      canaryBuild: true
+      externalDeps: true
     vars:
       TARGET: x86_64-pc-windows-gnu
       TOOLCHAIN: stable-x86_64-pc-windows-gnu

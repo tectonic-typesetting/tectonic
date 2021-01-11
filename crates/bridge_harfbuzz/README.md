@@ -5,7 +5,8 @@
 This crate is part of [the Tectonic
 project](https://tectonic-typesetting.github.io/en-US/). It exposes the *C* API
 of the [Harfbuzz] text shaping library the Rust/Cargo build framework, **with no
-Rust bindings**.
+Rust bindings**. By default, a static, local version of the Harfbuzz library is
+built.
 
 [Harfbuzz]: https://harfbuzz.github.io/
 
@@ -35,7 +36,13 @@ use tectonic_bridge_harfbuzz;
 
 ## Cargo features
 
-At the moment this crate does not provide any [Cargo features][features]. That
-will change!
+This crate provides the following [Cargo features][features]:
 
 [features]: https://doc.rust-lang.org/cargo/reference/features.html
+
+- **`external-harfbuzz`**: instead of building a local copy of Harfbuzz,
+  discover it as an external dependency using pkg-config or vcpkg, as determined
+  by the `tectonic_dep_support` crate. This requires that all libraries upon
+  which Harfbuzz depends also be found externally, since the external library can't
+  then link against a local vendored version.
+

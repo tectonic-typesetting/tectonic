@@ -4,6 +4,7 @@
 //! graphite2 build script. For now, we always find it externally. One day, we'd
 //! like to be able to vendor it.
 
+use std::env;
 use tectonic_dep_support::{Configuration, Dependency, Spec};
 
 struct Graphite2Spec;
@@ -31,4 +32,19 @@ fn main() {
     });
 
     dep.emit();
+
+    // As a special case, code that compiles against graphite2 must also
+    // sometimes provide -DGRAPHITE2_STATIC. We'd prefer not to get into the
+    // business of propagating arbitrary cflags through our build system, so we
+    // indicate it with a specialized variable.
+
+    let target = env::var("TARGET").unwrap();
+    let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
+    let define_static_flag = if target.contains("-msvc") && rustflags.contains("+crt-static") {
+        "1"
+    } else {
+        ""
+    };
+
+    println!("cargo:define_static={}", define_static_flag);
 }

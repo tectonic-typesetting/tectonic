@@ -39,7 +39,6 @@ impl Spec for TectonicRestSpec {
 
 fn main() {
     let target = env::var("TARGET").unwrap();
-    let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
 
     // Generate bindings for the C/C++ code to interface with backend Rust code.
     // As a heuristic we trigger rebuilds on changes to src/engines/mod.rs since
@@ -70,6 +69,7 @@ fn main() {
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
     let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
     let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
+    let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
     let harfbuzz_include_dir = env::var("DEP_HARFBUZZ_INCLUDE").unwrap();
     let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
 
@@ -299,6 +299,11 @@ fn main() {
         cppcfg.include(p);
     });
 
+    if graphite2_static {
+        ccfg.define("GRAPHITE2_STATIC", "1");
+        cppcfg.define("GRAPHITE2_STATIC", "1");
+    }
+
     // Platform-specific adjustments:
 
     let is_mac_os = target_cfg!(target_os = "macos");
@@ -332,10 +337,6 @@ fn main() {
     if target.contains("-msvc") {
         ccfg.flag("/EHsc");
         cppcfg.flag("/EHsc");
-        if rustflags.contains("+crt-static") {
-            ccfg.define("GRAPHITE2_STATIC", None);
-            cppcfg.define("GRAPHITE2_STATIC", None);
-        }
     }
 
     // OK, back to generic build rules.
