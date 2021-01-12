@@ -16,6 +16,7 @@ tectonic -X build
   [--keep-logs]
   [--only-cached]
   [--print]
+  [--open]
 ```
 
 #### Remarks
@@ -49,3 +50,5 @@ The `--print` option (or `-p` for short) will cause the engine to print the
 regular terminal output of the TeX engine. This output is similar to, but not
 identical to, the contents of the log file. By default, this output is only
 printed if the engine encounteres a fatal error.
+
+The `--open` option will open the built document using the system handler.
