@@ -1816,6 +1816,7 @@ dependencies = [
  "termcolor",
  "tokio",
  "toml",
+ "url 2.2.0",
  "vcpkg",
  "zip",
 ]

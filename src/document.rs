@@ -9,7 +9,8 @@ use std::{
     io::{self, Read, Write},
     path::{Component, Path, PathBuf},
 };
-use tectonic_geturl::{DefaultBackend, GetUrlBackend, Url};
+use tectonic_geturl::{DefaultBackend, GetUrlBackend};
+use url::Url;
 
 use crate::{
     config, ctry,

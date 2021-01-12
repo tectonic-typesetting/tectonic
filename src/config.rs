@@ -1,5 +1,5 @@
 // src/config.rs -- configuration for the Tectonic library.
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 //! User configuration settings for the Tectonic engine.
@@ -12,17 +12,22 @@
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+    sync::atomic::{AtomicBool, Ordering},
+};
+use url::Url;
 
-use crate::app_dirs;
-use crate::errors::{ErrorKind, Result};
-use crate::io::cached_itarbundle::CachedITarBundle;
-use crate::io::dirbundle::DirBundle;
-use crate::io::zipbundle::ZipBundle;
-use crate::io::Bundle;
-use crate::status::StatusBackend;
+use crate::{
+    app_dirs,
+    errors::{ErrorKind, Result},
+    io::cached_itarbundle::CachedITarBundle,
+    io::dirbundle::DirBundle,
+    io::zipbundle::ZipBundle,
+    io::Bundle,
+    status::StatusBackend,
+};
 
 /// Awesome hack time!!!
 ///
@@ -145,7 +150,6 @@ impl PersistentConfig {
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
         use std::io;
-        use tectonic_geturl::Url;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             return Ok(Box::new(crate::test_util::TestBundle::default()));

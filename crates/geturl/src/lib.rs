@@ -53,7 +53,6 @@ pub mod reqwest;
 cfg_if! {
     if #[cfg(feature = "reqwest")] {
         pub use crate::reqwest::ReqwestBackend as DefaultBackend;
-        pub use ::reqwest::Url;
     } else {
         pub use null::NullBackend as DefaultBackend;
     }
