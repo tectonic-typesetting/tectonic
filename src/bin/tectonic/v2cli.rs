@@ -4,7 +4,7 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{ffi::OsString, path::PathBuf, process, str::FromStr};
+use std::{borrow::ToOwned, ffi::OsString, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
@@ -12,7 +12,7 @@ use tectonic::{
     ctry,
     errors::{Result, SyncError},
     status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
-    tt_note,
+    tt_error, tt_note,
     workspace::{self, Workspace},
 };
 use tectonic_status_base::plain::PlainStatusBackend;
@@ -113,6 +113,10 @@ enum Commands {
     /// Run a standalone (La)TeX compilation
     Compile(crate::compile::CompileOptions),
 
+    #[structopt(name = "watch")]
+    /// Watch input files and execute commands on change
+    Watch(WatchCommand),
+
     #[structopt(name = "new")]
     /// Create a new document
     New(NewCommand),
@@ -123,6 +127,7 @@ impl Commands {
         match self {
             Commands::Build(o) => o.execute(config, status),
             Commands::Compile(o) => o.execute(config, status),
+            Commands::Watch(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
         }
     }
@@ -169,6 +174,103 @@ impl BuildCommand {
         }
 
         Ok(0)
+    }
+}
+
+/// `watch`: Watch input files and execute commands on change
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct WatchCommand {
+    /// Tectonic commands to execute on build [default: build]
+    #[structopt(long = "exec", short = "x")]
+    execute: Vec<String>,
+}
+
+impl WatchCommand {
+    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let mut cmds = Vec::new();
+        for x in self.execute.iter() {
+            let mut cmd = "tectonic -X ".to_owned();
+            let x = x.trim();
+            if !x.is_empty() {
+                cmd.push_str(x);
+                cmds.push(cmd)
+            }
+        }
+
+        if cmds.is_empty() {
+            cmds.push("tectonic -X build".to_owned())
+        }
+
+        let command = cmds.join(" && ");
+
+        let mut final_command = command.clone();
+        #[cfg(unix)]
+        final_command.push_str("; echo [Finished running. Exit status: $?]");
+        #[cfg(windows)]
+        final_command.push_str(" & echo [Finished running. Exit status: %ERRORLEVEL%]");
+        #[cfg(not(any(unix, windows)))]
+        final_command.push_str(" ; echo [Finished running]");
+
+        let split_command: Vec<String> = final_command
+            .split_whitespace()
+            .map(ToOwned::to_owned)
+            .collect();
+
+        let mut args = watchexec::ArgsBuilder::default();
+        args.cmd(split_command)
+            .paths(vec![std::env::current_dir()?])
+            .ignores(vec!["build".to_owned()]);
+
+        let exec_handler = watchexec::run::ExecHandler::new(args.build()?);
+        match exec_handler {
+            Err(e) => {
+                tt_error!(
+                    status,
+                    "failed to build arguments for watch ExecHandler";
+                    e.into()
+                );
+                Ok(1)
+            }
+            Ok(exec_handler) => {
+                let handler = Watcher {
+                    command,
+                    inner: exec_handler,
+                };
+                if let Err(e) = watchexec::watch(&handler) {
+                    tt_error!(status, "failed to execute watch"; e.into());
+                    Ok(1)
+                } else {
+                    Ok(0)
+                }
+            }
+        }
+    }
+}
+
+struct Watcher {
+    command: String,
+    inner: watchexec::run::ExecHandler,
+}
+
+impl watchexec::Handler for Watcher {
+    fn args(&self) -> watchexec::Args {
+        self.inner.args()
+    }
+
+    fn on_manual(&self) -> watchexec::error::Result<bool> {
+        self.start();
+        self.inner.on_manual()
+    }
+
+    fn on_update(&self, ops: &[watchexec::pathop::PathOp]) -> watchexec::error::Result<bool> {
+        self.start();
+        self.inner.on_update(ops)
+    }
+}
+
+impl Watcher {
+    fn start(&self) {
+        println!("[Running `{}`]", self.command)
     }
 }
 
