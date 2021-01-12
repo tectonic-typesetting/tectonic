@@ -4,7 +4,7 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{borrow::ToOwned, ffi::OsString, path::PathBuf, process, str::FromStr};
+use std::{ffi::OsString, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
@@ -211,13 +211,8 @@ impl WatchCommand {
         #[cfg(not(any(unix, windows)))]
         final_command.push_str(" ; echo [Finished running]");
 
-        let split_command: Vec<String> = final_command
-            .split_whitespace()
-            .map(ToOwned::to_owned)
-            .collect();
-
         let mut args = watchexec::ArgsBuilder::default();
-        args.cmd(split_command)
+        args.cmd(vec![final_command])
             .paths(vec![std::env::current_dir()?])
             .ignores(vec!["build".to_owned()]);
 
