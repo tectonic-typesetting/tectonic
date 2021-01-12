@@ -387,17 +387,15 @@ impl Document {
                     .with_extension(match profile.target_type {
                         BuildTargetType::Pdf => "pdf",
                     });
-            status.note_highlighted("Opening ", &format!("`{}`", out_file.display()), "");
-            if open::that(&out_file).is_err() {
-                status.report(
-                    MessageKind::Error,
-                    format_args!(
-                        "Failed to open `{}` with system handler",
-                        out_file.display()
-                    ),
-                    None,
+            tt_note!(status, "opening `{}`", out_file.display());
+            if let Err(e) = open::that(&out_file) {
+                tt_error!(
+                    status,
+                    "failed to open `{}` with system handler",
+                    out_file.display();
+                    e.into()
                 )
-            };
+            }
         }
 
         result.map(|_| 0)
