@@ -10,6 +10,7 @@
 //! intended that the choice of HTTP backend is a build-time one, not a runtime
 //! one.
 
+use cfg_if::cfg_if;
 use std::io::Read;
 use tectonic_errors::Result;
 use tectonic_status_base::StatusBackend;
@@ -44,13 +45,19 @@ pub trait GetUrlBackend: Default {
     fn open_range_reader(&self, url: &str) -> Self::RangeReader;
 }
 
-mod reqwest;
+pub mod null;
 
-/// The type of the default URL-get backend.
-pub use crate::reqwest::ReqwestBackend as DefaultBackend;
+#[cfg(feature = "reqwest")]
+pub mod reqwest;
 
-/// The URL type used by the default URL-get backend.
-pub use ::reqwest::Url;
+cfg_if! {
+    if #[cfg(feature = "reqwest")] {
+        pub use crate::reqwest::ReqwestBackend as DefaultBackend;
+        pub use ::reqwest::Url;
+    } else {
+        pub use null::NullBackend as DefaultBackend;
+    }
+}
 
-/// The range-reader type exposed by the URL-get backend (for convenience).
+/// The range-reader type exposed by the default URL-get backend (for convenience).
 pub type DefaultRangeReader = <DefaultBackend as GetUrlBackend>::RangeReader;

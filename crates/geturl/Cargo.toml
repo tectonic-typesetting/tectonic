@@ -16,10 +16,15 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
+cfg-if = "^1.0"
+curl = { version = "^0.4", optional = true }
 headers = "^0.2"
-reqwest = "^0.9"
+reqwest = { version = "^0.9", optional = true }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
+
+[features]
+default = ["reqwest"]
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"
