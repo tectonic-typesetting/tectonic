@@ -146,6 +146,10 @@ pub struct BuildCommand {
     /// Print the engine's chatter during processing
     #[structopt(long = "print", short)]
     print_stdout: bool,
+
+    /// Open built document using system handler
+    #[structopt(long)]
+    open: bool,
 }
 
 impl BuildCommand {
@@ -159,7 +163,8 @@ impl BuildCommand {
                 .only_cached(self.only_cached)
                 .keep_intermediates(self.keep_intermediates)
                 .keep_logs(self.keep_logs)
-                .print_stdout(self.print_stdout);
+                .print_stdout(self.print_stdout)
+                .open(self.open);
             doc.build(output_name, &opts, status)?;
         }
 

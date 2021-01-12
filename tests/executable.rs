@@ -113,6 +113,7 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
 
 fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     let mut command = prep_tectonic(cwd, args);
+    command.env("BROWSER", "echo");
     println!("running {:?}", command);
     command.output().expect("tectonic failed to start")
 }
@@ -424,5 +425,58 @@ fn v2_new_build() {
     // Now we can build.
 
     let output = run_tectonic(&temppath, &["-X", "build"]);
+    success_or_panic(output);
+}
+
+#[test]
+#[cfg(not(windows))] // `echo` may not be available
+fn v2_new_build_open() {
+    util::set_test_root();
+
+    let tempdir = setup_and_copy_files(&[]);
+    let mut temppath = tempdir.path().to_owned();
+    let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
+    success_or_panic(output);
+
+    temppath.push("doc");
+
+    // To run a build in our test setup, we can only use plain TeX. So, jankily
+    // change the format ...
+
+    {
+        let mut toml_path = temppath.clone();
+        toml_path.push("Tectonic.toml");
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(toml_path)
+            .unwrap();
+        writeln!(file, "tex_format = 'plain'").unwrap();
+    }
+
+    // ... and write some files that are plain TeX.
+
+    {
+        let mut path = temppath.clone();
+        path.push("src");
+
+        {
+            path.push("_preamble.tex");
+            let mut file = File::create(&path).unwrap();
+            writeln!(file).unwrap();
+            path.pop();
+        }
+
+        {
+            path.push("_postamble.tex");
+            let mut file = File::create(&path).unwrap();
+            writeln!(file, "\\end").unwrap();
+            path.pop();
+        }
+    }
+
+    // Now we can build.
+
+    let output = run_tectonic(&temppath, &["-X", "build", "--open"]);
     success_or_panic(output);
 }

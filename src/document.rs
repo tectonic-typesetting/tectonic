@@ -227,6 +227,7 @@ pub struct BuildOptions {
     keep_intermediates: bool,
     keep_logs: bool,
     print_stdout: bool,
+    open: bool,
 }
 
 impl BuildOptions {
@@ -252,6 +253,11 @@ impl BuildOptions {
 
     pub fn print_stdout(&mut self, value: bool) -> &mut Self {
         self.print_stdout = value;
+        self
+    }
+
+    pub fn open(&mut self, value: bool) -> &mut Self {
+        self.open = value;
         self
     }
 }
@@ -371,6 +377,22 @@ impl Document {
 
                     status.dump_error_logs(&output.data);
                 }
+            }
+        } else if options.open {
+            let out_file =
+                output_dir
+                    .join(&profile.name)
+                    .with_extension(match profile.target_type {
+                        BuildTargetType::Pdf => "pdf",
+                    });
+            tt_note!(status, "opening `{}`", out_file.display());
+            if let Err(e) = open::that(&out_file) {
+                tt_error!(
+                    status,
+                    "failed to open `{}` with system handler",
+                    out_file.display();
+                    e.into()
+                )
             }
         }
 
