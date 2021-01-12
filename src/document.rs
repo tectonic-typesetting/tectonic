@@ -27,8 +27,6 @@ use crate::{
     workspace::WorkspaceCreator,
 };
 
-use tectonic_status_base::MessageKind;
-
 /// A Tectonic document.
 #[derive(Debug)]
 pub struct Document {
