@@ -140,7 +140,7 @@ fn get_everything(
             atry!(digest_info; ["backend does not provide needed {} file", digest::DIGEST_NAME])
         };
 
-        let mut range_reader = DefaultRangeReader::new(&url);
+        let mut range_reader = backend.open_range_reader(&url);
         String::from_utf8(get_file(
             &mut range_reader,
             digest::DIGEST_NAME,
@@ -249,6 +249,7 @@ impl CachedITarBundle {
         custom_cache_root: Option<&Path>,
         status: &mut dyn StatusBackend,
     ) -> Result<CachedITarBundle> {
+        let mut backend = DefaultBackend::default();
         let digest_path = cache_dir("urls", custom_cache_root)?.join(app_dirs::sanitized(url));
 
         let redirect_base = &cache_dir("redirects", custom_cache_root)?;
@@ -264,7 +265,6 @@ impl CachedITarBundle {
                 None => {
                     // At least one of the cached files does not exists. We fetch everything from
                     // scratch and save the files.
-                    let mut backend = DefaultBackend::default();
                     let (digest_text, index, redirect_url) = get_everything(&mut backend, url, status)?;
                     let _ = DigestData::from_str(&digest_text)?;
                     checked_digest = true;
@@ -346,7 +346,7 @@ impl CachedITarBundle {
 
         // All set.
 
-        let tar_data = DefaultRangeReader::new(&redirect_url);
+        let tar_data = backend.open_range_reader(&redirect_url);
 
         Ok(CachedITarBundle {
             url: url.to_owned(),

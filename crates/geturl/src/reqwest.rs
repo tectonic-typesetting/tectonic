@@ -1,6 +1,8 @@
 // Copyright 2017-2020 the Tectonic Project
 // Licensed under the MIT License.
 
+//! A URL-get backend based on the `reqwest` crate.
+
 use reqwest::{header::HeaderMap, Client, RedirectPolicy, Response, StatusCode};
 use tectonic_errors::{anyhow::bail, Result};
 use tectonic_status_base::{tt_note, StatusBackend};
@@ -9,7 +11,7 @@ use crate::{GetUrlBackend, RangeReader};
 
 const MAX_HTTP_REDIRECTS_ALLOWED: usize = 10;
 
-/// URL-get backed implemented using the `reqwest` crate.
+/// URL-get backend implemented using the `reqwest` crate.
 #[derive(Debug, Default)]
 pub struct ReqwestBackend {}
 
@@ -92,7 +94,7 @@ pub struct ReqwestRangeReader {
 }
 
 impl ReqwestRangeReader {
-    pub fn new(url: &str) -> ReqwestRangeReader {
+    fn new(url: &str) -> ReqwestRangeReader {
         ReqwestRangeReader {
             url: url.to_owned(),
             client: Client::new(),
