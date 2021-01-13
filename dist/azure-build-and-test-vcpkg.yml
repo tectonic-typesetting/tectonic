@@ -75,4 +75,4 @@ steps:
 - template: azure-generic-build.yml
   parameters:
     canaryBuild: ${{ parameters.canaryBuild }}
-    externalDeps: true
+    explicitFeatures: "external-harfbuzz"

@@ -227,7 +227,7 @@ fn make_txt_path(base: &Path, digest_text: &str) -> PathBuf {
 }
 
 /// Bundle provided by an indexed tar file over http with a local cache.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct CachedITarBundle {
     url: String,
     redirect_url: String,

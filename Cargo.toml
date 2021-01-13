@@ -97,6 +97,7 @@ serialization = ["serde", "toml"]
 
 external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
 
+geturl-curl = ["tectonic_geturl/curl"]
 geturl-reqwest = ["tectonic_geturl/reqwest"]
 
 # developer feature to compile with the necessary flags for profiling tectonic.

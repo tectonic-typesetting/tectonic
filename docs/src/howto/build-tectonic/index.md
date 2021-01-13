@@ -103,9 +103,13 @@ control build options. Tectonic offers the following features:
   to a “vendored” (static, internal) version of the [Harfbuzz] text shaping
   library. If you would like to link to an externally-supplied version instead,
   enable this feature.
+- **`geturl-curl`**. Uses the [curl] crate to get URLs. In order for this to
+  take effect, you must use `--no-default-features` because `geturl-reqwest` is
+  a default feature and it takes precedence.
 - **`geturl-reqwest`** (enabled by default). Uses the [reqwest] crate to get
   URLs. This is a good portable default.
 
+[curl]: https://docs.rs/curl/
 [reqwest]: https://docs.rs/reqwest/
 
 Some lesser-used features are:

@@ -376,6 +376,7 @@ fn stdin_content() {
     success_or_panic(output);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_new_build() {
     util::set_test_root();
@@ -429,7 +430,7 @@ fn v2_new_build() {
 }
 
 #[test]
-#[cfg(not(windows))] // `echo` may not be available
+#[cfg(all(feature = "serialization", not(windows)))] // `echo` may not be available
 fn v2_new_build_open() {
     util::set_test_root();
 

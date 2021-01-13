@@ -35,7 +35,8 @@ parameters:
     vmImage: ubuntu-20.04
     params:
       canaryBuild: true
-      externalDeps: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
@@ -44,7 +45,7 @@ parameters:
     vmImage: ubuntu-20.04
     params:
       canaryBuild: true
-      externalDeps: false
+      installAllDeps: false
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
@@ -69,7 +70,7 @@ parameters:
     vmImage: macos-10.15
     params:
       canaryBuild: true
-      externalDeps: false
+      installAllDeps: false
     vars:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
@@ -78,7 +79,8 @@ parameters:
     vmImage: macos-10.15
     params:
       canaryBuild: true
-      externalDeps: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
     vars:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
@@ -86,7 +88,7 @@ parameters:
   - name: windows_intdeps
     vmImage: windows-2019
     params:
-      externalDeps: false
+      installAllDeps: false
     vars:
       TARGET: x86_64-pc-windows-gnu
       TOOLCHAIN: stable-x86_64-pc-windows-gnu
@@ -95,10 +97,42 @@ parameters:
     vmImage: windows-2019
     params:
       canaryBuild: true
-      externalDeps: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
     vars:
       TARGET: x86_64-pc-windows-gnu
       TOOLCHAIN: stable-x86_64-pc-windows-gnu
+
+  - name: linux_ftmtx_none
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: false
+      defaultFeatures: false
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_ftmtx_all
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: _all_
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_ftmtx_curl
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      defaultFeatures: false
+      explicitFeatures: "geturl-curl serialization"
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
 
 - name: vcpkgBuilds
   type: object
