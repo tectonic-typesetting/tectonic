@@ -20,12 +20,10 @@ impl GetUrlBackend for ReqwestBackend {
     type RangeReader = ReqwestRangeReader;
 
     fn get_url(&mut self, url: &str, status: &mut dyn StatusBackend) -> Result<Response> {
-        let index_url = format!("{}.index.gz", url);
-        tt_note!(status, "downloading index {}", index_url);
-        let res = Client::new().get(&index_url).send()?;
+        let res = Client::new().get(url).send()?;
         if !res.status().is_success() {
             // return UnexpectedHttpResponse(index_url, res.status())
-            bail!("unexpected HTTP resonse code for URL {}", url);
+            bail!("unexpected HTTP response code for URL {}", url);
         }
         Ok(res)
     }

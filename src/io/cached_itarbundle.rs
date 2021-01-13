@@ -121,7 +121,9 @@ fn get_everything(
 
     let index = {
         let mut index = String::new();
-        GzDecoder::new(backend.get_url(&url, status)?).read_to_string(&mut index)?;
+        let index_url = format!("{}.index.gz", &url);
+        tt_note!(status, "downloading index {}", index_url);
+        GzDecoder::new(backend.get_url(&index_url, status)?).read_to_string(&mut index)?;
         index
     };
 
