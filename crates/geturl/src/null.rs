@@ -48,7 +48,7 @@ impl GetUrlBackend for NullBackend {
 }
 
 /// The "null" URL-get range reader, which always fails.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct NullRangeReader {}
 
 impl RangeReader for NullRangeReader {

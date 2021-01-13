@@ -19,7 +19,7 @@ impl GetUrlBackend for ReqwestBackend {
     type Response = Response;
     type RangeReader = ReqwestRangeReader;
 
-    fn get_url(&mut self, url: &str, status: &mut dyn StatusBackend) -> Result<Response> {
+    fn get_url(&mut self, url: &str, _status: &mut dyn StatusBackend) -> Result<Response> {
         let res = Client::new().get(url).send()?;
         if !res.status().is_success() {
             // return UnexpectedHttpResponse(index_url, res.status())
@@ -85,7 +85,7 @@ impl GetUrlBackend for ReqwestBackend {
 /// A simple way to read chunks out of a big seekable byte stream. You could
 /// implement this for io::File pretty trivially but that's not currently
 /// needed.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct ReqwestRangeReader {
     url: String,
     client: Client,

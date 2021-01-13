@@ -47,12 +47,17 @@ pub trait GetUrlBackend: Default {
 
 pub mod null;
 
+#[cfg(feature = "curl")]
+pub mod curl;
+
 #[cfg(feature = "reqwest")]
 pub mod reqwest;
 
 cfg_if! {
     if #[cfg(feature = "reqwest")] {
         pub use crate::reqwest::ReqwestBackend as DefaultBackend;
+    } else if #[cfg(feature = "curl")] {
+        pub use crate::curl::CurlBackend as DefaultBackend;
     } else {
         pub use null::NullBackend as DefaultBackend;
     }
