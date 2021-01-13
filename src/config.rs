@@ -13,7 +13,6 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
-    fs::File,
     path::{Path, PathBuf},
     sync::atomic::{AtomicBool, Ordering},
 };
@@ -69,8 +68,11 @@ impl PersistentConfig {
     /// false, the default configuration is returned and the filesystem is not
     /// modified.
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
-        use std::io::ErrorKind as IoErrorKind;
-        use std::io::{Read, Write};
+        use std::{
+            fs::File,
+            io::{ErrorKind as IoErrorKind, Read, Write},
+        };
+
         let mut cfg_path = if auto_create_config_file {
             app_dirs::user_config()?
         } else {
