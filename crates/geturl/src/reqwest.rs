@@ -3,7 +3,12 @@
 
 //! A URL-get backend based on the `reqwest` crate.
 
-use reqwest::{header::HeaderMap, Client, RedirectPolicy, Response, StatusCode};
+use reqwest::{
+    blocking::{Client, Response},
+    header::{HeaderMap, RANGE},
+    redirect::Policy,
+    StatusCode,
+};
 use tectonic_errors::{anyhow::bail, Result};
 use tectonic_status_base::{tt_note, StatusBackend};
 
@@ -22,8 +27,11 @@ impl GetUrlBackend for ReqwestBackend {
     fn get_url(&mut self, url: &str, _status: &mut dyn StatusBackend) -> Result<Response> {
         let res = Client::new().get(url).send()?;
         if !res.status().is_success() {
-            // return UnexpectedHttpResponse(index_url, res.status())
-            bail!("unexpected HTTP response code for URL {}", url);
+            bail!(
+                "unexpected HTTP response code {} for URL {}",
+                res.status(),
+                url
+            );
         }
         Ok(res)
     }
@@ -35,14 +43,14 @@ impl GetUrlBackend for ReqwestBackend {
         // If it's redirected, we update our URL to follow the redirects. If
         // we didn't do this separately, the index file would have to be the
         // one with the redirect setup, which would be confusing and annoying.
-        let redirect_policy = RedirectPolicy::custom(|attempt| {
+        let redirect_policy = Policy::custom(|attempt| {
             // In the process of resolving the file url it might be necessary
             // to stop at a certain level of redirection. This might be required
             // because some hosts might redirect to a version of the url where
             // it isn't possible to select the index file by appending .index.gz.
             // (This mostly happens because CDNs redirect to the file hash.)
             if attempt.previous().len() >= MAX_HTTP_REDIRECTS_ALLOWED {
-                attempt.too_many_redirects()
+                attempt.error("too many redirections")
             } else if let Some(segments) = attempt.url().clone().path_segments() {
                 let follow = segments
                     .last()
@@ -65,8 +73,11 @@ impl GetUrlBackend for ReqwestBackend {
             .send()?;
 
         if !(res.status().is_success() || res.status() == StatusCode::FOUND) {
-            //return UnexpectedHttpResponse(url.to_string(), res.status())
-            bail!("unexpected HTTP resonse code for URL {}", url);
+            bail!(
+                "unexpected HTTP response code {} for URL {}",
+                res.status(),
+                url
+            );
         }
 
         let final_url = res.url().clone().into_string();
@@ -105,16 +116,19 @@ impl RangeReader for ReqwestRangeReader {
 
     fn read_range(&mut self, offset: u64, length: usize) -> Result<Response> {
         let end_inclusive = offset + length as u64 - 1;
+        let header_val = format!("bytes={}-{}", offset, end_inclusive).parse()?;
 
         let mut headers = HeaderMap::new();
-        use headers::HeaderMapExt;
-        headers.typed_insert(headers::Range::bytes(offset..=end_inclusive).unwrap());
+        headers.insert(RANGE, header_val);
 
         let res = self.client.get(&self.url).headers(headers).send()?;
 
         if res.status() != StatusCode::PARTIAL_CONTENT {
-            //return UnexpectedHttpResponse(self.url.clone(), res.status())
-            bail!("unexpected HTTP resonse code for URL {}", self.url);
+            bail!(
+                "unexpected HTTP response code {} for URL {}",
+                res.status(),
+                self.url
+            );
         }
 
         Ok(res)
