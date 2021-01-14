@@ -16,9 +16,15 @@ parameters:
 - name: primaryBuild
   type: boolean
   default: false
-- name: externalDeps
+- name: installAllDeps
   type: boolean
   default: false
+- name: defaultFeatures
+  type: boolean
+  default: true
+- name: explicitFeatures
+  type: string
+  default: ''
 
 steps:
 - template: azure-generic-build-setup.yml
@@ -33,7 +39,7 @@ steps:
       libssl-dev
       openssl
       zlib1g-dev"
-    if [[ $EXTERNAL_DEPS == True ]] ; then
+    if [[ $INSTALL_ALL_DEPS == True ]] ; then
       pkgs="$pkgs libharfbuzz-dev"
     fi
 
@@ -42,7 +48,7 @@ steps:
   displayName: "Install pkg-config dependencies (Ubuntu)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
   env:
-    EXTERNAL_DEPS: ${{ parameters.externalDeps }}  # maps to "True" or "False"
+    INSTALL_ALL_DEPS: ${{ parameters.installAllDeps }}  # maps to "True" or "False"
 
 - bash: |
     set -xeuo pipefail
@@ -53,7 +59,7 @@ steps:
       icu4c
       libpng
       openssl"
-    if [[ $EXTERNAL_DEPS == True ]] ; then
+    if [[ $INSTALL_ALL_DEPS == True ]] ; then
       pkgs="$pkgs harfbuzz"
     fi
 
@@ -65,7 +71,7 @@ steps:
   displayName: "Install pkg-config dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
   env:
-    EXTERNAL_DEPS: ${{ parameters.externalDeps }}
+    INSTALL_ALL_DEPS: ${{ parameters.installAllDeps }}
 
 - bash: |
     echo "##vso[task.prependpath]C:\msys64\usr\bin"
@@ -92,6 +98,7 @@ steps:
 
 - template: azure-generic-build.yml
   parameters:
-      canaryBuild: ${{ parameters.canaryBuild }}
-      primaryBuild: ${{ parameters.primaryBuild }}
-      externalDeps: ${{ parameters.externalDeps }}
+    canaryBuild: ${{ parameters.canaryBuild }}
+    primaryBuild: ${{ parameters.primaryBuild }}
+    defaultFeatures: ${{ parameters.defaultFeatures }}
+    explicitFeatures: ${{ parameters.explicitFeatures }}

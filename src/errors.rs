@@ -10,8 +10,16 @@
 #![allow(deprecated)]
 
 use error_chain::error_chain;
-use reqwest::StatusCode;
-use std::{convert, ffi, io, io::Write, num, result::Result as StdResult, str};
+use std::{
+    convert, ffi,
+    fmt::{self, Debug, Display},
+    io,
+    io::Write,
+    num,
+    result::Result as StdResult,
+    str,
+    sync::{Arc, Mutex, Weak},
+};
 use tectonic_errors::Error as NewError;
 use zip::result::ZipError;
 
@@ -20,14 +28,13 @@ cfg_if::cfg_if! {
         pub type ReadError = toml::de::Error;
         pub type WriteError = toml::ser::Error;
     } else {
-        use std::fmt::{self, Formatter, Display};
         use std::error;
 
         #[derive(Debug)]
         pub enum ReadError {}
 
         impl Display for ReadError {
-            fn fmt(&self, _fmt: &mut Formatter<'_>) -> fmt::Result {
+            fn fmt(&self, _fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
                 Ok(())
             }
         }
@@ -38,7 +45,7 @@ cfg_if::cfg_if! {
         pub enum WriteError {}
 
         impl Display for WriteError {
-            fn fmt(&self, _fmt: &mut Formatter<'_>) -> fmt::Result {
+            fn fmt(&self, _fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
                 Ok(())
             }
         }
@@ -58,7 +65,6 @@ error_chain! {
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
-        Reqwest(reqwest::Error);
         ConfigRead(ReadError);
         ConfigWrite(WriteError);
         NewStyle(NewError);
@@ -92,11 +98,6 @@ error_chain! {
         EngineError(engine: &'static str) {
             description("some engine had an unrecoverable error")
             display("the {} engine had an unrecoverable error", engine)
-        }
-
-        UnexpectedHttpResponse(url: String, status: StatusCode) {
-            description("unexpected HTTP response to URL")
-            display("unexpected HTTP response to URL {}: {}", url, status)
         }
     }
 }
@@ -246,11 +247,6 @@ impl<T: DefinitelySame, E: DefinitelySame> DefinitelySame for StdResult<T, E> {
 //
 // This is needed to be able to turn error_chain errors into anyhow errors,
 // since the latter requires that they are sync.
-
-use std::{
-    fmt::{self, Debug, Display},
-    sync::{Arc, Mutex, Weak},
-};
 
 pub struct SyncError<T: 'static> {
     inner: Arc<Mutex<T>>,

@@ -87,6 +87,21 @@ external library can be detected with either [pkg-config] or [vcpkg]. See the
 [vcpkg]: https://vcpkg.readthedocs.io/
 [howto-build]: https://tectonic-typesetting.github.io/book/latest/#update-link-when-published
 
+##### `geturl-curl`
+
+Use the [curl] crate to implement HTTP requests. In order for this to take
+effect, you must use `--no-default-features` because `geturl-reqwest` is a
+default feature and it takes precedence.
+
+[reqwest]: https://docs.rs/curl/
+
+##### `geturl-reqwest` (enabled by default)
+
+Use the [reqwest] crate to implement HTTP requests. This is the default
+selection.
+
+[reqwest]: https://docs.rs/reqwest/
+
 ##### `serialization` (enabled by default)
 
 This feature enables (de)serialization using the [serde](https://serde.rs/)
