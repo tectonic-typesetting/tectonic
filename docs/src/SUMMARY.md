@@ -12,6 +12,7 @@
 # “V2” Command-Line Interface
 
 - [`tectonic -X build`](v2cli/build.md)
+- [`tectonic -X compile`](v2cli/compile.md)
 - [`tectonic -X new`](v2cli/new.md)
 
 # Concept Reference
