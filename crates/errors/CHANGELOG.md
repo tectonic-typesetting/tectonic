@@ -1,8 +1,8 @@
-# rc: minor bump
+# See elsewhere for changelog
 
-Initial release. A new crate providing a generic boxed error type for Tectonic.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-We need a boxed error type because we have a bunch of optional dependencies, and
-we can't abstract around their errors without boxing them.
-
-Strongly derived from [Cranko](https://github.com/pkgw/cranko).
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/errors/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
