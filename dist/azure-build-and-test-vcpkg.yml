@@ -13,6 +13,9 @@ parameters:
 - name: canaryBuild
   type: boolean
   default: false
+- name: windowsVcpkgWorkaround
+  type: boolean
+  default: false
 
 steps:
 - template: azure-generic-build-setup.yml
@@ -23,18 +26,36 @@ steps:
   displayName: "Install vcpkg dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-- bash: |
-    set -xeuo pipefail
-    cargo install cargo-vcpkg
-  displayName: Install cargo-vcpkg
+- ${{ if parameters.windowsVcpkgWorkaround }}:
+  - download: current
 
-- bash: |
-    set -xeuo pipefail
-    cargo vcpkg -v build
-    ls target/vcpkg
-    echo target/vcpkg/installed/*
-    ls target/vcpkg/installed/*/lib
-  displayName: Build vcpkg deps
+  - bash: |
+      set -xeuo pipefail
+      BASH_WORKSPACE="$(Pipeline.Workspace)"
+
+      # work around https://github.com/microsoft/azure-pipelines-tasks/issues/10653
+      # (in an `if` statement for future-proofiness)
+      if [[ $AGENT_OS == Windows_NT ]] ; then
+        BASH_WORKSPACE=$(echo "$BASH_WORKSPACE" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
+      fi
+
+      mkdir -p target
+      mv $BASH_WORKSPACE/vcpkg-deps-windows target/vcpkg
+    displayName: Recover vcpkg deps from artifacts
+
+- ${{ if not(parameters.windowsVcpkgWorkaround) }}:
+  - bash: |
+      set -xeuo pipefail
+      cargo install cargo-vcpkg
+    displayName: Install cargo-vcpkg
+
+  - bash: |
+      set -xeuo pipefail
+      cargo vcpkg -v build
+      ls target/vcpkg
+      echo target/vcpkg/installed/*
+      ls target/vcpkg/installed/*/lib
+    displayName: Build vcpkg deps
 
 # Note: setvariable + `set -x` adds spurious single quotes at ends of variable values
 - bash: |
@@ -54,3 +75,4 @@ steps:
 - template: azure-generic-build.yml
   parameters:
     canaryBuild: ${{ parameters.canaryBuild }}
+    explicitFeatures: "external-harfbuzz"

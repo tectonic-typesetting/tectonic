@@ -14,9 +14,9 @@ makes Tectonic super easy to install.
 
 The quickest way to get started is to [download the latest release][gh-latest]
 from GitHub, or to [install a packaged version][inst-packaged] if one is
-available. If you’d like to see detailed instructions, go to the [Installation
-Reference][inst-ref]. But the short version of the GitHub approach is that you
-should:
+available. If you’d like to see detailed instructions, go to the [How To Install
+Tectonic][inst-ref] guide. But the short version of the GitHub approach is that
+you should:
 
 1. Click through to the most recent non-preview release
 2. Download the `.tar.gz` or `.zip` file that corresponds to your computer’s

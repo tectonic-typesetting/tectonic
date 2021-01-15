@@ -1,5 +1,5 @@
 // src/config.rs -- configuration for the Tectonic library.
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 //! User configuration settings for the Tectonic engine.
@@ -12,17 +12,21 @@
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::{
+    path::{Path, PathBuf},
+    sync::atomic::{AtomicBool, Ordering},
+};
+use url::Url;
 
-use crate::app_dirs;
-use crate::errors::{ErrorKind, Result};
-use crate::io::cached_itarbundle::CachedITarBundle;
-use crate::io::dirbundle::DirBundle;
-use crate::io::zipbundle::ZipBundle;
-use crate::io::Bundle;
-use crate::status::StatusBackend;
+use crate::{
+    app_dirs,
+    errors::{ErrorKind, Result},
+    io::cached_itarbundle::CachedITarBundle,
+    io::dirbundle::DirBundle,
+    io::zipbundle::ZipBundle,
+    io::Bundle,
+    status::StatusBackend,
+};
 
 /// Awesome hack time!!!
 ///
@@ -64,8 +68,11 @@ impl PersistentConfig {
     /// false, the default configuration is returned and the filesystem is not
     /// modified.
     pub fn open(auto_create_config_file: bool) -> Result<PersistentConfig> {
-        use std::io::ErrorKind as IoErrorKind;
-        use std::io::{Read, Write};
+        use std::{
+            fs::File,
+            io::{ErrorKind as IoErrorKind, Read, Write},
+        };
+
         let mut cfg_path = if auto_create_config_file {
             app_dirs::user_config()?
         } else {
@@ -144,7 +151,6 @@ impl PersistentConfig {
         only_cached: bool,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        use reqwest::Url;
         use std::io;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {

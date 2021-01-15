@@ -12,13 +12,13 @@ use std::{
     rc::Rc,
     time::SystemTime,
 };
+use tectonic_errors::Result;
+use tectonic_status_base::StatusBackend;
 
 use super::{
     normalize_tex_path, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult,
     OutputHandle,
 };
-use crate::errors::Result;
-use crate::status::StatusBackend;
 
 /// Information about a file created or used inside the memory-backed I/O
 /// provider.
@@ -237,7 +237,7 @@ mod tests {
     fn shrinking_file() {
         let mut mem = MemoryIo::new(false);
         let name = OsStr::new("test.tex");
-        let mut sb = NoopStatusBackend::new();
+        let mut sb = NoopStatusBackend::default();
 
         // Write a line to a file, then (implicitly) close it.
         {

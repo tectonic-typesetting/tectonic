@@ -1,0 +1,19 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+[package]
+name = "tectonic_errors"
+version = "0.1.0"
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+A boxed error type for Tectonic, with supporting utilities.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_errors"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+anyhow = "^1"

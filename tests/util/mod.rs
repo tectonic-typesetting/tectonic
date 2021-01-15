@@ -60,8 +60,8 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
     use ::tectonic::io::{
         try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo,
     };
-    use ::tectonic::status::NoopStatusBackend;
     use ::tectonic::TexEngine;
+    use tectonic_status_base::NoopStatusBackend;
 
     let fmt_path = test_path(&["plain.fmt"]);
 
@@ -84,7 +84,7 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
                 .process(
                     &mut io,
                     &mut NoopIoEventBackend::new(),
-                    &mut NoopStatusBackend::new(),
+                    &mut NoopStatusBackend::default(),
                     "UNUSED.fmt",
                     "plain.tex",
                     &Default::default(),

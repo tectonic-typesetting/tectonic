@@ -10,13 +10,12 @@ use tectonic::{
     self,
     config::PersistentConfig,
     ctry,
-    errors::Result,
-    status::{
-        plain::PlainStatusBackend, termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend,
-    },
+    errors::{Result, SyncError},
+    status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
     tt_note,
     workspace::{self, Workspace},
 };
+use tectonic_status_base::plain::PlainStatusBackend;
 
 /// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
@@ -97,8 +96,8 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     // Now that we've got colorized output, pass off to the inner function.
 
-    if let Err(ref e) = args.command.execute(config, &mut *status) {
-        status.report_error(e);
+    if let Err(e) = args.command.execute(config, &mut *status) {
+        status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }
 }
@@ -147,6 +146,10 @@ pub struct BuildCommand {
     /// Print the engine's chatter during processing
     #[structopt(long = "print", short)]
     print_stdout: bool,
+
+    /// Open built document using system handler
+    #[structopt(long)]
+    open: bool,
 }
 
 impl BuildCommand {
@@ -160,7 +163,8 @@ impl BuildCommand {
                 .only_cached(self.only_cached)
                 .keep_intermediates(self.keep_intermediates)
                 .keep_logs(self.keep_logs)
-                .print_stdout(self.print_stdout);
+                .print_stdout(self.print_stdout)
+                .open(self.open);
             doc.build(output_name, &opts, status)?;
         }
 

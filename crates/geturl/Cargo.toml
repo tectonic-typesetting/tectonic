@@ -1,0 +1,30 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+[package]
+name = "tectonic_geturl"
+version = "0.0.0"
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+A generic interface for HTTP GETs and byte-range requests, with pluggable backends.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_geturl"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+cfg-if = "^1.0"
+curl = { version = "^0.4", optional = true }
+reqwest = { version = "^0.11", optional = true, features = ["blocking"] }
+tectonic_errors = { path = "../errors", version ="^0.1.0"}
+tectonic_status_base = { path = "../status_base", version ="^0.1.0"}
+
+[features]
+default = ["reqwest"]
+
+[package.metadata.internal_dep_versions]
+tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"
+tectonic_status_base = "401387acfd98113133db6981c301426431f55ea3"

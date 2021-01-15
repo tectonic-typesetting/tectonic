@@ -73,6 +73,9 @@ pub use crate::engines::tex::{TexEngine, TexResult};
 pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
+// Convenienece re-exports for migration into our multi-crate setup
+pub use tectonic_status_base::{tt_error, tt_note, tt_warning};
+
 // Increase this whenever the engine internals change such that the contents
 // of the "format" files must be regenerated.
 
@@ -119,7 +122,7 @@ pub const FORMAT_SERIAL: u32 = 29;
 pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     use std::ffi::OsStr;
 
-    let mut status = status::NoopStatusBackend::new();
+    let mut status = status::NoopStatusBackend::default();
 
     let auto_create_config_file = false;
     let config = ctry!(config::PersistentConfig::open(auto_create_config_file);
@@ -160,16 +163,28 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     }
 }
 
+/// Import something from our bridge crates so that we ensure that we actually
+/// link with them, to pull in the symbols defined in the C APIs.
 mod linkage {
-    // Import something from tectonic_bridge_flate so that we ensure that we
-    // actually link with the crate, to pull in the symbols defined in the C
-    // API.
     #[allow(unused_imports)]
-    use tectonic_bridge_flate::flate2;
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_bridge_flate;
+
+    #[allow(unused_imports)]
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_bridge_freetype2;
 
     #[allow(unused_imports)]
     #[allow(clippy::single_component_path_imports)]
     use tectonic_bridge_graphite2;
+
+    #[allow(unused_imports)]
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_bridge_harfbuzz;
+
+    #[allow(unused_imports)]
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_bridge_icu;
 }
 
 #[cfg(test)]

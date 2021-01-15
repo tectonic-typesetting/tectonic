@@ -15,8 +15,10 @@ fn main() {
     let mut header_path: PathBuf = outdir.into();
     header_path.push("tectonic_bridge_flate.h");
 
-    let mut config = cbindgen::Config::default();
-    config.cpp_compat = true;
+    let mut config = cbindgen::Config {
+        cpp_compat: true,
+        ..Default::default()
+    };
     config.enumeration.prefix_with_name = true;
 
     let mut manifest_dir: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().into();

@@ -1,14 +1,17 @@
-// src/io/stdstreams.rs -- I/O to using standard input/output handles
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::ffi::OsStr;
-use std::io::{stdin, stdout, Cursor, Read, Seek, SeekFrom};
-use std::rc::Rc;
+//! Tectonic I/O trait implementations for the standard I/O streams.
+
+use std::{
+    ffi::OsStr,
+    io::{stdin, stdout, Cursor, Read, Seek, SeekFrom},
+    rc::Rc,
+};
+use tectonic_errors::Result;
+use tectonic_status_base::StatusBackend;
 
 use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
-use crate::errors::Result;
-use crate::status::StatusBackend;
 
 /// GenuineStdoutIo provides a mechanism for the "stdout" output to actually
 /// go to the process's stdout.
@@ -16,6 +19,9 @@ use crate::status::StatusBackend;
 pub struct GenuineStdoutIo {}
 
 impl GenuineStdoutIo {
+    /// Create a new object.
+    ///
+    /// TODO: this is redundant with `Default::default`.
     pub fn new() -> GenuineStdoutIo {
         Default::default()
     }
