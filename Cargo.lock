@@ -1844,7 +1844,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_freetype2"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "tectonic_dep_support",
 ]
@@ -1858,7 +1858,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_harfbuzz"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "cc",
  "tectonic_bridge_graphite2",
@@ -1868,7 +1868,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_icu"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "tectonic_dep_support",
 ]
