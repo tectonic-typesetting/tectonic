@@ -13,6 +13,8 @@
 #include "core-bridge.h"
 #include "xetex-constants.h"
 
+BEGIN_EXTERN_C
+
 #ifdef XETEX_MAC
 /* include this here to avoid conflict between clang's emmintrin.h and
  * texmfmem.h. Should be removed once a fixed clang is widely available
@@ -1191,6 +1193,8 @@ tt_history_t tt_run_engine(const char *dump_name, const char *input_file_name, t
 #define UTF16LE    3
 #define RAW        4
 #define ICUMAPPING 5
+
+END_EXTERN_C
 
 #include "xetex-stringpool.h"
 

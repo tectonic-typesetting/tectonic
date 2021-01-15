@@ -37,8 +37,6 @@ authorization from the copyright holders.
 #include "xetex-core.h"
 
 BEGIN_EXTERN_C
-extern char gPrefEngine;
-
 int getCachedGlyphBBox(uint16_t fontID, uint16_t glyphID, GlyphBBox* bbox);
 void cacheGlyphBBox(uint16_t fontID, uint16_t glyphID, const GlyphBBox* bbox);
 

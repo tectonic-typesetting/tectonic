@@ -19,8 +19,8 @@ use std::ffi::OsStr;
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
-use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
+use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
@@ -60,7 +60,7 @@ fn trip_test() {
             .process(
                 &mut io,
                 &mut NoopIoEventBackend::new(),
-                &mut NoopStatusBackend::new(),
+                &mut NoopStatusBackend::default(),
                 "INITEX",
                 "trip",
                 &Default::default(),
@@ -77,7 +77,7 @@ fn trip_test() {
             .process(
                 &mut io,
                 &mut NoopIoEventBackend::new(),
-                &mut NoopStatusBackend::new(),
+                &mut NoopStatusBackend::default(),
                 "trip.fmt",
                 "trip",
                 &Default::default(),
@@ -127,7 +127,7 @@ fn etrip_test() {
             .process(
                 &mut io,
                 &mut NoopIoEventBackend::new(),
-                &mut NoopStatusBackend::new(),
+                &mut NoopStatusBackend::default(),
                 "INITEX",
                 "etrip",
                 &Default::default(),
@@ -144,7 +144,7 @@ fn etrip_test() {
             .process(
                 &mut io,
                 &mut NoopIoEventBackend::new(),
-                &mut NoopStatusBackend::new(),
+                &mut NoopStatusBackend::default(),
                 "etrip.fmt",
                 "etrip",
                 &Default::default(),

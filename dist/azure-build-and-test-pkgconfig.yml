@@ -16,33 +16,62 @@ parameters:
 - name: primaryBuild
   type: boolean
   default: false
+- name: installAllDeps
+  type: boolean
+  default: false
+- name: defaultFeatures
+  type: boolean
+  default: true
+- name: explicitFeatures
+  type: string
+  default: ''
 
 steps:
 - template: azure-generic-build-setup.yml
 
 - bash: |
     set -xeuo pipefail
+
+    pkgs="
+      libgraphite2-dev
+      libfontconfig1-dev
+      libicu-dev
+      libssl-dev
+      openssl
+      zlib1g-dev"
+    if [[ $INSTALL_ALL_DEPS == True ]] ; then
+      pkgs="$pkgs libharfbuzz-dev"
+    fi
+
     sudo apt-get update
-    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
-      libgraphite2-dev \
-      libharfbuzz-dev \
-      libfontconfig1-dev \
-      libicu-dev \
-      libssl-dev \
-      openssl \
-      zlib1g-dev
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkgs
   displayName: "Install pkg-config dependencies (Ubuntu)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+  env:
+    INSTALL_ALL_DEPS: ${{ parameters.installAllDeps }}  # maps to "True" or "False"
 
 - bash: |
     set -xeuo pipefail
-    brew install harfbuzz openssl
+
+    pkgs="
+      freetype
+      graphite2
+      icu4c
+      libpng
+      openssl"
+    if [[ $INSTALL_ALL_DEPS == True ]] ; then
+      pkgs="$pkgs harfbuzz"
+    fi
+
+    brew install $pkgs
     icupcdir="$(echo /usr/local/Cellar/icu4c/*/lib/pkgconfig)"
     export PKG_CONFIG_PATH="$icupcdir"
     set +x  # `set -x` messes up setvariable
     echo "##vso[task.setvariable variable=PKG_CONFIG_PATH;]$PKG_CONFIG_PATH"
   displayName: "Install pkg-config dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+  env:
+    INSTALL_ALL_DEPS: ${{ parameters.installAllDeps }}
 
 - bash: |
     echo "##vso[task.prependpath]C:\msys64\usr\bin"
@@ -69,5 +98,7 @@ steps:
 
 - template: azure-generic-build.yml
   parameters:
-      canaryBuild: ${{ parameters.canaryBuild }}
-      primaryBuild: ${{ parameters.primaryBuild }}
+    canaryBuild: ${{ parameters.canaryBuild }}
+    primaryBuild: ${{ parameters.primaryBuild }}
+    defaultFeatures: ${{ parameters.defaultFeatures }}
+    explicitFeatures: ${{ parameters.explicitFeatures }}

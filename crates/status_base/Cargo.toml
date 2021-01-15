@@ -1,0 +1,22 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+[package]
+name = "tectonic_status_base"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Basic types for reporting status messages to a user.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_status_base"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
+
+[package.metadata.internal_dep_versions]
+tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"

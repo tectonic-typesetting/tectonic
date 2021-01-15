@@ -1,18 +1,22 @@
-// src/io/filesystem.rs -- I/O on the local filesystem.
-// Copyright 2016-2017 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::collections::HashSet;
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::{self, BufReader, Seek, SeekFrom};
-use std::path::{Path, PathBuf};
+//! Tectonic I/O implementations for `std::fs` types.
+
+use std::{
+    collections::HashSet,
+    ffi::OsStr,
+    fs::File,
+    io::{self, BufReader, Seek, SeekFrom},
+    path::{Path, PathBuf},
+};
+use tectonic_errors::Result;
+use tectonic_status_base::StatusBackend;
 
 use super::{
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
+    TectonicIoError,
 };
-use crate::errors::{ErrorKind, Result};
-use crate::status::StatusBackend;
 
 /// FilesystemPrimaryInputIo is an I/O provider that provides the TeX "primary input"
 /// file off of the filesystem. This can *pretty much* be achieved with
@@ -23,12 +27,14 @@ use crate::status::StatusBackend;
 /// TODO: it might be technically superior to open the path immediately and
 /// keep that handle open, rewinding as needed, but for now we're not doing
 /// that.
-
+#[derive(Debug)]
 pub struct FilesystemPrimaryInputIo {
     path: PathBuf,
 }
 
 impl FilesystemPrimaryInputIo {
+    /// Create a new I/O provider providing the Tectonic "primary input" from
+    /// the specified path.
     pub fn new<P: AsRef<Path>>(path: P) -> FilesystemPrimaryInputIo {
         FilesystemPrimaryInputIo {
             path: path.as_ref().to_owned(),
@@ -53,10 +59,11 @@ impl IoProvider for FilesystemPrimaryInputIo {
 }
 
 /// FilesystemIo is an I/O provider that reads, and optionally writes, files
-/// from a given root directory. NOTE: no effort is made to contain I/O within
-/// the specified root!! We have an option to disallow absolute paths, but we
-/// don't do anything about "../../../...." paths.
-
+/// from a given root directory.
+///
+/// NOTE: no effort is made to contain I/O within the specified root!! We have
+/// an option to disallow absolute paths, but we don't do anything about
+/// `../../../....` paths.
 pub struct FilesystemIo {
     root: PathBuf,
     writes_allowed: bool,
@@ -65,6 +72,7 @@ pub struct FilesystemIo {
 }
 
 impl FilesystemIo {
+    /// Create a new filesystem I/O provider rooted at the specified path.
     pub fn new(
         root: &Path,
         writes_allowed: bool,
@@ -83,8 +91,7 @@ impl FilesystemIo {
         let path = Path::new(name);
 
         if path.is_absolute() && !self.absolute_allowed {
-            let as_str = String::from(path.to_string_lossy());
-            return Err(ErrorKind::PathForbidden(as_str).into());
+            return Err(TectonicIoError::PathForbidden(path.to_owned()).into());
         }
 
         let mut combined = PathBuf::from(&self.root);

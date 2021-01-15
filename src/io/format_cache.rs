@@ -1,18 +1,19 @@
-// Copyright 2018 the Tectonic Project
+// Copyright 2018-2020 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
 
 //! Code for locally caching compiled format files.
 
-use std::ffi::OsStr;
-use std::io::{BufReader, Write};
-use std::path::PathBuf;
+use std::{
+    ffi::OsStr,
+    io::{BufReader, Write},
+    path::PathBuf,
+};
+use tectonic_errors::{anyhow::bail, Result};
 
 use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
-use crate::digest::DigestData;
-use crate::errors::{ErrorKind, Result};
-use crate::status::StatusBackend;
+use crate::{digest::DigestData, status::StatusBackend};
 
 /// A local cache for compiled format files.
 ///
@@ -47,11 +48,10 @@ impl FormatCache {
         let stem = match name.to_str().and_then(|s| s.splitn(2, '.').next()) {
             Some(s) => s,
             None => {
-                return Err(ErrorKind::Msg(format!(
+                bail!(
                     "incomprehensible format file name \"{}\"",
                     name.to_string_lossy()
-                ))
-                .into());
+                );
             }
         };
 

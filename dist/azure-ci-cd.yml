@@ -31,10 +31,21 @@ parameters:
       TOOLCHAIN: stable
       TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: true
 
-  - name: linux_stable
+  - name: linux_stable_extdeps
     vmImage: ubuntu-20.04
     params:
       canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_stable_intdeps
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: false
     vars:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: stable
@@ -55,20 +66,73 @@ parameters:
       TARGET: x86_64-unknown-linux-gnu
       TOOLCHAIN: nightly
 
-  - name: macos
+  - name: macos_intdeps
     vmImage: macos-10.15
     params:
       canaryBuild: true
+      installAllDeps: false
     vars:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
 
-  - name: windows
+  - name: macos_extdeps
+    vmImage: macos-10.15
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
+    vars:
+      TARGET: x86_64-apple-darwin
+      TOOLCHAIN: stable
+
+  - name: windows_intdeps
     vmImage: windows-2019
-    params: {}
+    params:
+      installAllDeps: false
     vars:
       TARGET: x86_64-pc-windows-gnu
       TOOLCHAIN: stable-x86_64-pc-windows-gnu
+
+  - name: windows_extdeps
+    vmImage: windows-2019
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
+    vars:
+      TARGET: x86_64-pc-windows-gnu
+      TOOLCHAIN: stable-x86_64-pc-windows-gnu
+
+  - name: linux_ftmtx_none
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: false
+      defaultFeatures: false
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_ftmtx_all
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: _all_
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_ftmtx_curl
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      defaultFeatures: false
+      explicitFeatures: "geturl-curl serialization"
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
 
 - name: vcpkgBuilds
   type: object
@@ -82,7 +146,8 @@ parameters:
 
   - name: windows
     vmImage: windows-2019
-    params: {}
+    params:
+      windowsVcpkgWorkaround: true
     vars:
       TARGET: x86_64-pc-windows-msvc
       TOOLCHAIN: stable-x86_64-pc-windows-msvc
@@ -125,6 +190,8 @@ stages:
   # TODO: I think Linux/vcpkg is broken: https://github.com/mcgoo/vcpkg-rs/issues/21
   - ${{ each build in parameters.vcpkgBuilds }}:
     - job: ${{ format('build_{0}_vcpkg', build.name) }}
+      ${{ if eq(build.name, 'windows') }}:  # work around timeouts with slow builds
+        dependsOn: windows_vcpkg_prebuild
       pool:
         vmImage: ${{ build.vmImage }}
       steps:
@@ -223,6 +290,37 @@ stages:
         artifactName: book
     - bash: cd docs && ../mdbook test
       displayName: mdbook test
+
+  # Hack to build Windows vcpkg deps in their own job, because it takes so long
+  # that the Windows jobs routinely hit the 60-minute timeout.
+  - job: windows_vcpkg_prebuild
+    pool:
+      vmImage: windows-2019
+    steps:
+    - bash: cargo install cargo-vcpkg
+      displayName: Install cargo-vcpkg
+
+    - bash: |
+        set -xeuo pipefail
+        cargo vcpkg -v build
+
+        # There is something weird about buildtrees/icu/ that prevents
+        # us from easily rm -rf'ing it. Too bad because that directory
+        # is easily the largest part of the vcpkg tree.
+        rm -rf target/vcpkg/downloads
+        cd target/vcpkg/buildtrees
+        for d in * ; do
+          if [ $d != icu ] ; then
+            rm -rf $d
+          fi
+        done
+      displayName: Build vcpkg deps
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish vcpkg deps as artifact
+      inputs:
+        targetPath: 'target/vcpkg'
+        artifactName: vcpkg-deps-windows
 
 
 # If all of those succeed and we're not in a pull request, run the deployment

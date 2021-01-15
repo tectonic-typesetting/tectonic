@@ -32,11 +32,11 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include "xetex-core.h"
+#include "xetex-xetexd.h"
 
 #include <algorithm>
 
 #include "xetex-XeTeXOTMath.h"
-#include "xetex-web.h"
 #include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-XeTeXFontInst.h"
 

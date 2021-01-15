@@ -1,3 +1,6 @@
 [submodule "reference_sources"]
 	path = reference_sources
 	url = https://github.com/tectonic-typesetting/tectonic-staging
+[submodule "crates/bridge_harfbuzz/harfbuzz"]
+	path = crates/bridge_harfbuzz/harfbuzz
+	url = https://github.com/harfbuzz/harfbuzz.git

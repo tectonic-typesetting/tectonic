@@ -15,31 +15,30 @@ struct TectonicRestSpec;
 impl Spec for TectonicRestSpec {
     #[cfg(not(target_os = "macos"))]
     fn get_pkgconfig_spec(&self) -> &str {
-        "fontconfig harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng"
+        "fontconfig libpng"
     }
 
     // No fontconfig on macOS.
     #[cfg(target_os = "macos")]
     fn get_pkgconfig_spec(&self) -> &str {
-        "harfbuzz >= 1.4 harfbuzz-icu icu-uc freetype2 libpng"
+        "libpng"
     }
 
     // Would be nice to have a way to check that the vcpkg harfbuzz port has
     // graphite2 and icu options enabled.
     #[cfg(not(target_os = "macos"))]
     fn get_vcpkg_spec(&self) -> &[&str] {
-        &["fontconfig", "harfbuzz", "freetype"]
+        &["fontconfig"]
     }
 
     #[cfg(target_os = "macos")]
     fn get_vcpkg_spec(&self) -> &[&str] {
-        &["harfbuzz", "freetype"]
+        &[]
     }
 }
 
 fn main() {
     let target = env::var("TARGET").unwrap();
-    let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
 
     // Generate bindings for the C/C++ code to interface with backend Rust code.
     // As a heuristic we trigger rebuilds on changes to src/engines/mod.rs since
@@ -68,7 +67,11 @@ fn main() {
     // Include paths exported by our internal dependencies.
 
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
+    let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
     let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
+    let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
+    let harfbuzz_include_dir = env::var("DEP_HARFBUZZ_INCLUDE").unwrap();
+    let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
 
     // Specify the C/C++ support libraries. Actually I'm not 100% sure that I
     // can't compile the C and C++ code into one library, but it's no a big deal
@@ -231,7 +234,10 @@ fn main() {
         .file("tectonic/xetex-xetex0.c")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&harfbuzz_include_dir)
+        .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)
+        .include(&icu_include_dir)
         .include(&flate_include_dir);
 
     let cppflags = [
@@ -282,13 +288,21 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&harfbuzz_include_dir)
+        .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)
+        .include(&icu_include_dir)
         .include(&flate_include_dir);
 
     dep.foreach_include_path(|p| {
         ccfg.include(p);
         cppcfg.include(p);
     });
+
+    if graphite2_static {
+        ccfg.define("GRAPHITE2_STATIC", "1");
+        cppcfg.define("GRAPHITE2_STATIC", "1");
+    }
 
     // Platform-specific adjustments:
 
@@ -323,10 +337,6 @@ fn main() {
     if target.contains("-msvc") {
         ccfg.flag("/EHsc");
         cppcfg.flag("/EHsc");
-        if rustflags.contains("+crt-static") {
-            ccfg.define("GRAPHITE2_STATIC", None);
-            cppcfg.define("GRAPHITE2_STATIC", None);
-        }
     }
 
     // OK, back to generic build rules.

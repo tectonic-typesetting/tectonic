@@ -1,14 +1,20 @@
-use std::collections::HashSet;
-use std::path::{Path, PathBuf};
+// Copyright 2018-2020 the Tectonic Project
+// Licensed under the MIT License.
 
-use crate::ctry;
-use crate::errors::Result;
-use crate::io::format_cache::FormatCache;
-use crate::io::stdstreams::BufferedPrimaryIo;
-use crate::io::{
-    Bundle, FilesystemIo, FilesystemPrimaryInputIo, GenuineStdoutIo, IoProvider, IoStack, MemoryIo,
+use std::{
+    collections::HashSet,
+    path::{Path, PathBuf},
 };
-use crate::status::StatusBackend;
+use tectonic_errors::{atry, Result};
+use tectonic_io_base::{
+    filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
+    stack::IoStack,
+    stdstreams::{BufferedPrimaryIo, GenuineStdoutIo},
+    IoProvider,
+};
+use tectonic_status_base::StatusBackend;
+
+use super::{format_cache::FormatCache, Bundle, MemoryIo};
 
 /// An `IoSetup` is essentially a typed, structured version of an [`IoStack`].
 ///
@@ -222,7 +228,7 @@ impl IoSetupBuilder {
 
         let pio: Box<dyn IoProvider> = match self.primary_input {
             PrimaryInputMode::Stdin => {
-                Box::new(ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input"))
+                Box::new(atry!(BufferedPrimaryIo::from_stdin(); ["error reading standard input"]))
             }
 
             PrimaryInputMode::Path(pip) => Box::new(FilesystemPrimaryInputIo::new(&pip)),

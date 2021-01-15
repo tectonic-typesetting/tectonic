@@ -24,16 +24,16 @@ sha512sums=('@source_sha512@')
 
 build() {
 	cd $pkgname-$pkgver
-	cargo build --release --target-dir "./target"
+	cargo build --release
 }
 
 check() {
 	cd $pkgname-$pkgver
-	cargo test --release --target-dir "./target"
+	cargo test --release
 }
 
 package() {
 	cd $pkgname-$pkgver
-	install -Dm755 target/release/tectonic "$pkgdir"/usr/bin/tectonic
+	install -Dm755 ${CARGO_TARGET_DIR:-target}/release/tectonic "$pkgdir"/usr/bin/tectonic
 	install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }

@@ -32,6 +32,7 @@ authorization from the copyright holders.
 \****************************************************************************/
 
 #include "xetex-core.h"
+#include "xetex-xetexd.h"
 
 #include <unicode/platform.h>   // We need this first
 #include <unicode/ubidi.h>
@@ -45,8 +46,6 @@ authorization from the copyright holders.
 #include <harfbuzz/hb-icu.h>
 #endif
 #include <harfbuzz/hb-ot.h>
-
-#include "xetex-web.h"
 
 #include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-XeTeXFontInst.h"
@@ -396,7 +395,7 @@ countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language)
         unsigned int scriptIndex, langIndex = 0;
         hb_tag_t tableTag = i == 0 ? HB_OT_TAG_GSUB : HB_OT_TAG_GPOS;
         if (hb_ot_layout_table_find_script(face, tableTag, script, &scriptIndex)) {
-            if (hb_ot_layout_script_find_language(face, tableTag, scriptIndex, language, &langIndex) || language == 0) {
+            if (hb_ot_layout_script_select_language(face, tableTag, scriptIndex, 1, &language, &langIndex) || language == 0) {
                 rval += hb_ot_layout_language_get_feature_tags(face, tableTag, scriptIndex, langIndex, 0, NULL, NULL);
             }
         }
@@ -416,7 +415,7 @@ getIndFeature(XeTeXFont font, hb_tag_t script, hb_tag_t language, unsigned int i
         unsigned int scriptIndex, langIndex = 0;
         hb_tag_t tableTag = i == 0 ? HB_OT_TAG_GSUB : HB_OT_TAG_GPOS;
         if (hb_ot_layout_table_find_script(face, tableTag, script, &scriptIndex)) {
-            if (hb_ot_layout_script_find_language(face, tableTag, scriptIndex, language, &langIndex) || language == 0) {
+            if (hb_ot_layout_script_select_language(face, tableTag, scriptIndex, 1, &language, &langIndex) || language == 0) {
                 unsigned int featCount = hb_ot_layout_language_get_feature_tags(face, tableTag, scriptIndex, langIndex, 0, NULL, NULL);
                 hb_tag_t* featList = (hb_tag_t*) xcalloc(featCount, sizeof(hb_tag_t*));
                 hb_ot_layout_language_get_feature_tags(face, tableTag, scriptIndex, langIndex, 0, &featCount, featList);
@@ -1014,9 +1013,10 @@ static int grTextLen;
 bool
 initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t* txtPtr, int txtLen)
 {
-    hb_face_t* hbFace = hb_font_get_face(engine->font->getHbFont());
+    hb_font_t* hbFont = engine->font->getHbFont();
+    hb_face_t* hbFace = hb_font_get_face(hbFont);
     gr_face* grFace = hb_graphite2_face_get_gr_face(hbFace);
-    gr_font* grFont = hb_graphite2_font_get_gr_font(engine->font->getHbFont());
+    gr_font* grFont = gr_make_font(hb_font_get_ptem(hbFont), grFace);
     if (grFace != NULL && grFont != NULL) {
         if (grSegment != NULL) {
             gr_seg_destroy(grSegment);

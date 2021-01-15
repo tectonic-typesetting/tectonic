@@ -16,12 +16,42 @@ parameters:
 - name: primaryBuild
   type: boolean
   default: false
+- name: defaultFeatures
+  type: boolean
+  default: true
+- name: explicitFeatures
+  type: string
+  default: ''
 
 steps:
-- bash: cargo build --all --release -v
+# We use two variables for feature flagging just because I'm worried about
+# quoting the `--features` argument, which will contain spaces.
+- bash: |
+    ffs=
+    fts=
+
+    if [[ $DEFAULT_FEATURES_FLAG == False ]] ; then
+      ffs="--no-default-features"
+    fi
+
+    if [[ $EXPLICIT_FEATURES == _all_ ]] ; then
+      ffs="--all-features"
+    else
+      fts="$EXPLICIT_FEATURES"
+    fi
+
+    echo "Cargo features for this build: $ffs --features=\"$fts\""
+    echo "##vso[task.setvariable variable=CARGO_FEATURES_EXPLICIT;]$fts"
+    echo "##vso[task.setvariable variable=CARGO_FEATURES_FLAGS;]$ffs"
+  displayName: Set feature flags
+  env:
+    DEFAULT_FEATURES_FLAG: ${{ parameters.defaultFeatures }}
+    EXPLICIT_FEATURES: ${{ parameters.explicitFeatures }}
+
+- bash: cargo build --all --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v
   displayName: "cargo build"
 
-- bash: cargo test --all --release
+- bash: cargo test --all --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT"
   displayName: "cargo test"
 
 # For non-canary builds, export artifacts.

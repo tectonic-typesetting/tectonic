@@ -1,4 +1,4 @@
-# Installing Tectonic
+# How To: Install Tectonic
 
 One of the big advantages that Tectonic offers compared to the traditional TeX
 stack is that all of Tectonic’s functionality is delivered in a single
@@ -8,24 +8,27 @@ binary tools.
 ***Know what you want? [Download the latest pre-built Tectonic binaries
 here][gh-latest].***
 
-You have several options for installing the Tectonic executable. The best choice
+You have several options for obtaining the Tectonic executable. The best choice
 depends on your computing environment and your needs.
 
-- [Direct download](#direct-download)
-- [Pre-built binary packages](#pre-built-binary-packages)
-- [The `cargo install` method](#the-cargo-install-method)
+- [Direct download](#direct-download) a Tectonic release
+- [Pre-built binary packages](#pre-built-binary-packages) for your favorite
+  operating system or package manager
+- [Compile it yourself](#compile-tectonic-yourself)
 
-The [direct download](#direct-download) method should meet your needs unless
-you’re hoping to run Tectonic on an unusual platform, in which case you will
-probably need to [install Tectonic using Cargo](#the-cargo-install-method).
+The [direct download](#direct-download) method should cover most use cases, but
+if you want better integration with your operating system or computing
+environment, [packaged versions](#pre-built-binary-packages) might make more
+sense. There should be no need to compile Tectonic yourself unless you want to,
+or you’re hoping to run it on an unusual platform.
 
 
 ## Direct download
 
-You can [download the latest release of Tectonic][gh-latest] from GitHub. Each
+You can [download the latest release of Tectonic here][gh-latest] on GitHub. Each
 release is published with precompiled executables attached. Because Tectonic is
 distributed as a single executable, all you need to do is download the
-appropriate archive for your platform.
+appropriate archive for your platform and unpack it.
 
 [gh-latest]: https://github.com/tectonic-typesetting/tectonic/releases/latest
 
@@ -46,7 +49,7 @@ repository][repo] for an up-to-date listing.
 In most cases, the package name will be `tectonic` and it will provide a
 command-line tool also named `tectonic`.
 
-### Pre-built packages for Anaconda
+### Pre-built packages for (Ana)conda
 
 Tectonic is available for the [Conda package manager][conda], which has the
 advantages of (1) not requiring any administrator privileges and (2) supporting
@@ -72,93 +75,31 @@ can be done temporarily like so:
 conda install -c conda-forge tectonic
 ```
 
+### Pre-built packages for Arch Linux
 
-## The `cargo install` method
+For users of [Arch Linux], there are two Tectonic packages available. The
+[tectonic-bin][arch-tectonic-bin] package on [AUR] provides actual pre-compiled
+binaries, while the [tectonic][arch-tectonic] will build the binary on your
+machine, which may take a while.
 
-If your system has C++ and Rust compilers installed, you can install Tectonic
-using Rust’s packaging tool, [cargo](http://doc.crates.io/index.html). Make sure
-that Rust's `bin` folder (`$HOME/.cargo/bin` by default) is in your `$PATH`.
+[Arch Linux]: https://archlinux.org/
+[arch-tectonic-bin]: https://aur.archlinux.org/packages/tectonic-bin/
+[AUR]: https://aur.archlinux.org/
+[arch-tectonic]: https://aur.archlinux.org/packages/tectonic/
 
-Tectonic currently requires various system support libraries to be installed.
-This is the most likely cause of difficulty installing Tectonic. These libraries are:
 
-- [fontconfig](https://fontconfig.org/) (except on macOS)
-- [freetype2](https://www.freetype.org/)
-- [graphite2](https://graphite.sil.org/)
-- [harfbuzz](https://harfbuzz.github.io/)
-- [ICU4C](http://site.icu-project.org/home)
-- [libpng](http://www.libpng.org/)
-- [zlib](https://zlib.net/)
+## Compile Tectonic Yourself
 
-There is significant interest in reducing the number of external dependencies to
-ease the build process, but the above is where things currently stand.
-
-### Debian and Ubuntu Linux
-
-Ensure that the requisite packages are installed with the following command:
-
-```sh
-sudo apt-get install libfontconfig1-dev libgraphite2-dev libharfbuzz-dev libicu-dev libssl-dev zlib1g-dev
-```
-
-Once that is done, the following should be sufficient to download and install
-the latest Tectonic release:
+You can always compile Tectonic yourself. If your system has C++ and Rust
+compilers installed, this may be as simple as running:
 
 ```sh
 cargo install tectonic
 ```
 
-### RHEL, CentOS, or Fedora Linux
+However, Tectonic requires various C/C++ support libraries that may not be
+available on your system by default. There are also various build options that
+you can turn on and off if you have more specialized needs. For all the details,
+consult the [How To Build Tectonic][howto-build] guide.
 
-Ensure that the requisite packages are installed with the following command:
-
-```sh
-sudo dnf install fontconfig-devel graphite2-devel harfbuzz-devel libicu-devel openssl-devel zlib-devel
-```
-
-Once that is done, the following should be sufficient to download and install
-the latest Tectonic release:
-
-```sh
-cargo install tectonic
-```
-
-### MacOS / OS X, with Homebrew
-
-To `cargo install` Tectonic on macOS, the recommended way to install the
-required dependencies is with [Homebrew](http://brew.sh). Note, however, that
-you can also just directly install `tectonic`  with Homebrew as well. If you
-want to compile it yourself, the following commands will install the required
-formulae:
-
-```sh
-brew install --only-dependencies tectonic
-brew install pkg-config
-```
-
-If the Rust build program `cargo` not available, also run:
-
-```sh
-brew install rust
-```
-
-The `cargo` invocation is then as normal, but you must set up some auxiliary
-environment variables as well:
-
-```sh
-export DEP_OPENSSL_INCLUDE=$(brew --prefix openssl)/include
-export PKG_CONFIG_PATH=/usr/local/opt/icu4c/lib/pkgconfig
-cargo install tectonic
-```
-
-Alternatively, you can build tectonic from source by running
-
-```sh
-brew install --build-from-source tectonic
-```
-
-
-## Other methods
-
-See also some pages in the “Cookbooks” section of this book for more specialized
-instructions.
+[howto-build]: ../howto/build-tectonic/index.md

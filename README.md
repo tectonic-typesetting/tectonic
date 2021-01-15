@@ -68,9 +68,39 @@ Please see
 for more information. (Or at least, more words on the topic.)
 
 
-## Features
+## Cargo Features
 
-The Tectonic build can be customized with the following features:
+The Tectonic build can be customized with the following [Cargo features]:
+
+[Cargo features]: https://doc.rust-lang.org/cargo/reference/features.html
+
+##### `external-harfbuzz`
+
+By default, the Tectonic crates will build and link to a “vendored” (static,
+internal) version of the [Harfbuzz] text shaping library. If you would like to
+link to an externally-supplied version instead, enable this feature. The
+external library can be detected with either [pkg-config] or [vcpkg]. See the
+[How To Build Tectonic][howto-build] guide for more details.
+
+[Harfbuzz]: https://harfbuzz.github.io/
+[pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
+[vcpkg]: https://vcpkg.readthedocs.io/
+[howto-build]: https://tectonic-typesetting.github.io/book/latest/#update-link-when-published
+
+##### `geturl-curl`
+
+Use the [curl] crate to implement HTTP requests. In order for this to take
+effect, you must use `--no-default-features` because `geturl-reqwest` is a
+default feature and it takes precedence.
+
+[reqwest]: https://docs.rs/curl/
+
+##### `geturl-reqwest` (enabled by default)
+
+Use the [reqwest] crate to implement HTTP requests. This is the default
+selection.
+
+[reqwest]: https://docs.rs/reqwest/
 
 ##### `serialization` (enabled by default)
 

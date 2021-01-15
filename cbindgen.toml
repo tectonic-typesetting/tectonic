@@ -4,6 +4,11 @@ include_version = true
 
 language = "C"
 
+header = """
+typedef struct InputHandle InputHandle;
+typedef struct OutputHandle OutputHandle;
+"""
+
 # typedef Name struct {} Name
 style = "both"
 

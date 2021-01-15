@@ -10,9 +10,9 @@ use tectonic::engines::NoopIoEventBackend;
 use tectonic::errors::{DefinitelySame, ErrorKind, Result};
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
-use tectonic::status::NoopStatusBackend;
 use tectonic::unstable_opts::UnstableOptions;
 use tectonic::{TexEngine, XdvipdfmxEngine};
+use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
@@ -118,7 +118,7 @@ impl TestCase {
             let mut io = IoStack::new(io_list);
 
             let mut events = NoopIoEventBackend::new();
-            let mut status = NoopStatusBackend::new();
+            let mut status = NoopStatusBackend::default();
 
             let tex_res = TexEngine::new().process(
                 &mut io,

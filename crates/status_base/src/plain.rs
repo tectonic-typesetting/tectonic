@@ -1,14 +1,24 @@
-use std::fmt::Arguments;
+// Copyright 2017-2020 the Tectonic Project
+// Licensed under the MIT License.
+
+//! A basic status-reporting backend that prints messages via stdio.
+
+use std::{
+    fmt::Arguments,
+    io::{self, Write},
+};
+use tectonic_errors::Error;
 
 use super::{ChatterLevel, MessageKind, StatusBackend};
-use crate::errors::Error;
-use std::io::{self, Write};
 
+/// A basic status-reporting backend that prints messages via stdio.
+#[derive(Clone, Debug, Default)]
 pub struct PlainStatusBackend {
     chatter: ChatterLevel,
 }
 
 impl PlainStatusBackend {
+    /// Create a new backend with the specified chatter level.
     pub fn new(chatter: ChatterLevel) -> Self {
         PlainStatusBackend { chatter }
     }
@@ -16,7 +26,7 @@ impl PlainStatusBackend {
 
 impl StatusBackend for PlainStatusBackend {
     fn report(&mut self, kind: MessageKind, args: Arguments, err: Option<&Error>) {
-        if kind == MessageKind::Note && self.chatter <= ChatterLevel::Minimal {
+        if self.chatter.suppress_message(kind) {
             return;
         }
 
@@ -25,18 +35,16 @@ impl StatusBackend for PlainStatusBackend {
             MessageKind::Warning => "warning:",
             MessageKind::Error => "error:",
         };
+
         if kind == MessageKind::Note {
             println!("{} {}", prefix, args);
         } else {
             eprintln!("{} {}", prefix, args);
         }
+
         if let Some(e) = err {
-            for item in e.iter() {
+            for item in e.chain() {
                 eprintln!("caused by: {}", item);
-            }
-            if let Some(backtrace) = e.backtrace() {
-                eprintln!("debugging: backtrace follows:");
-                eprintln!("{:?}", backtrace);
             }
         }
     }
@@ -44,25 +52,18 @@ impl StatusBackend for PlainStatusBackend {
     fn report_error(&mut self, err: &Error) {
         let mut prefix = "error";
 
-        for item in err.iter() {
+        for item in err.chain() {
             eprintln!("{}: {}", prefix, item);
             prefix = "caused by";
-        }
-
-        if let Some(backtrace) = err.backtrace() {
-            eprintln!("debugging: backtrace follows:");
-            eprintln!("{:?}", backtrace);
         }
     }
 
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
-        if self.chatter > ChatterLevel::Minimal {
-            self.report(
-                MessageKind::Note,
-                format_args!("{}{}{}", before, highlighted, after),
-                None,
-            );
-        }
+        self.report(
+            MessageKind::Note,
+            format_args!("{}{}{}", before, highlighted, after),
+            None,
+        );
     }
 
     fn dump_error_logs(&mut self, output: &[u8]) {

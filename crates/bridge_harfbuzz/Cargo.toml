@@ -1,0 +1,35 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_bridge_harfbuzz"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Expose the Harfbuzz C/C++ APIs to Rust/Cargo.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_bridge_harfbuzz"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+links = "harfbuzz"
+
+[dependencies]
+tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev.0" }
+tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
+
+[build-dependencies]
+cc = "^1.0.66"
+tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
+
+[features]
+external-harfbuzz = []
+
+[package.metadata.internal_dep_versions]
+tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
+tectonic_bridge_icu = "thiscommit:2021-01-09:diehoh1E"
+tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

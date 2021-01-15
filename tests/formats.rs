@@ -21,10 +21,10 @@ use std::str::FromStr;
 
 use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
-use tectonic::io::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
 use tectonic::io::{IoStack, MemoryIo};
-use tectonic::status::NoopStatusBackend;
 use tectonic::TexEngine;
+use tectonic_io_base::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
+use tectonic_status_base::NoopStatusBackend;
 
 mod util;
 use crate::util::test_path;
@@ -101,7 +101,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
             .process(
                 &mut io,
                 &mut events,
-                &mut NoopStatusBackend::new(),
+                &mut NoopStatusBackend::default(),
                 "unused.fmt",
                 texname,
                 &Default::default(),
