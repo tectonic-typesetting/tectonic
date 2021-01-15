@@ -46,6 +46,16 @@ $ cd myfirstdoc
 it will become unnecessary and you’ll just be able to write `tectonic new`, but
 that changeover hasn’t happened yet.*
 
+If you’ve got an existing TeX file, you can process it in in one-off fashion with:
+
+```sh
+$ tectonic -X compile myfile.tex
+```
+
+See [the `tectonic -X compile` documentation][cli-compile] for all of the options.
+
+[cli-compile]: ../v2cli/compile.md
+
 
 ## Basic document source structure
 

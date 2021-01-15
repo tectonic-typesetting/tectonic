@@ -779,10 +779,21 @@ pub extern "C" fn input_getc(es: &mut ExecutionState, handle: *mut InputHandle) 
 
     match es.input_getc(handle) {
         Ok(b) => libc::c_int::from(b),
-        Err(Error(ErrorKind::Io(ref ioe), _)) if ioe.kind() == io::ErrorKind::UnexpectedEof => {
-            libc::EOF
-        }
         Err(e) => {
+            if let Error(ErrorKind::Io(ref ioe), _) = e {
+                if ioe.kind() == io::ErrorKind::UnexpectedEof {
+                    return libc::EOF;
+                }
+            }
+
+            if let Error(ErrorKind::NewStyle(ref ns), _) = e {
+                if let Some(ioe) = ns.downcast_ref::<io::Error>() {
+                    if ioe.kind() == io::ErrorKind::UnexpectedEof {
+                        return libc::EOF;
+                    }
+                }
+            }
+
             tt_warning!(es.status, "getc failed"; SyncError::new(e).into());
             -1
         }
