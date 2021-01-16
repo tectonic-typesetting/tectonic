@@ -7,7 +7,6 @@
 
 use sha2::Digest;
 use std::{
-    ffi::{OsStr, OsString},
     fs::File,
     io::{self, Cursor, Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
@@ -104,7 +103,7 @@ pub enum InputOrigin {
 /// access to nonexistent files, which we treat as being equivalent to an
 /// existing empty file for these purposes.
 pub struct InputHandle {
-    name: OsString,
+    name: String,
     inner: Box<dyn InputFeatures>,
     /// Indicates that the file cannot be written to (provided by a read-only IoProvider) and
     /// therefore it is useless to compute the digest.
@@ -120,12 +119,12 @@ impl InputHandle {
     /// Create a new InputHandle wrapping an underlying type that implements
     /// `InputFeatures`.
     pub fn new<T: 'static + InputFeatures>(
-        name: &OsStr,
+        name: impl Into<String>,
         inner: T,
         origin: InputOrigin,
     ) -> InputHandle {
         InputHandle {
-            name: name.to_os_string(),
+            name: name.into(),
             inner: Box::new(inner),
             read_only: false,
             digest: Default::default(),
@@ -138,12 +137,12 @@ impl InputHandle {
 
     /// Create a new InputHandle in read-only mode.
     pub fn new_read_only<T: 'static + InputFeatures>(
-        name: &OsStr,
+        name: impl Into<String>,
         inner: T,
         origin: InputOrigin,
     ) -> InputHandle {
         InputHandle {
-            name: name.to_os_string(),
+            name: name.into(),
             inner: Box::new(inner),
             read_only: true,
             digest: Default::default(),
@@ -155,8 +154,8 @@ impl InputHandle {
     }
 
     /// Get the name associated with this handle.
-    pub fn name(&self) -> &OsStr {
-        self.name.as_os_str()
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// Get the "origin" associated with this handle.
@@ -207,7 +206,7 @@ impl InputHandle {
     /// return None if the stream was never read, which is another common
     /// TeX access pattern: files are opened, immediately closed, and then
     /// opened again. Finally, no digest is returned if the file is marked read-only.
-    pub fn into_name_digest(self) -> (OsString, Option<DigestData>) {
+    pub fn into_name_digest(self) -> (String, Option<DigestData>) {
         if self.did_unhandled_seek || !self.ever_read || self.read_only {
             (self.name, None)
         } else {
@@ -315,24 +314,24 @@ impl InputFeatures for InputHandle {
 
 /// A handle for Tectonic output streams.
 pub struct OutputHandle {
-    name: OsString,
+    name: String,
     inner: Box<dyn Write>,
     digest: digest::DigestComputer,
 }
 
 impl OutputHandle {
     /// Create a new output handle.
-    pub fn new<T: 'static + Write>(name: &OsStr, inner: T) -> OutputHandle {
+    pub fn new<T: 'static + Write>(name: impl Into<String>, inner: T) -> OutputHandle {
         OutputHandle {
-            name: name.to_os_string(),
+            name: name.into(),
             inner: Box::new(inner),
             digest: digest::create(),
         }
     }
 
     /// Get the name associated with this handle.
-    pub fn name(&self) -> &OsStr {
-        self.name.as_os_str()
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// Consumes the object and returns the underlying writable handle that
@@ -343,7 +342,7 @@ impl OutputHandle {
 
     /// Consumes the object and returns the SHA256 sum of the content that was
     /// written.
-    pub fn into_name_digest(self) -> (OsString, DigestData) {
+    pub fn into_name_digest(self) -> (String, DigestData) {
         (self.name, DigestData::from(self.digest))
     }
 }
@@ -422,12 +421,10 @@ impl<T: IoProvider> AsIoProviderMut for T {
 ///
 /// An IO provider is a source of handles. One wrinkle is that it's good to be
 /// able to distinguish between unavailability of a given name and error
-/// accessing it. We take file paths as OsStrs, although since we parse input
-/// files as Unicode it may not be possible to actually express zany non-Unicode
-/// Unix paths inside the engine.
+/// accessing it.
 pub trait IoProvider: AsIoProviderMut {
     /// Open the named file for output.
-    fn output_open_name(&mut self, _name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, _name: &str) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
     }
 
@@ -439,7 +436,7 @@ pub trait IoProvider: AsIoProviderMut {
     /// Open the named file for input.
     fn input_open_name(
         &mut self,
-        _name: &OsStr,
+        _name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
@@ -461,7 +458,7 @@ pub trait IoProvider: AsIoProviderMut {
     /// depend sensitively on the engine internals.
     fn input_open_format(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         self.input_open_name(name, status)
@@ -481,7 +478,7 @@ pub trait IoProvider: AsIoProviderMut {
 }
 
 impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
-    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         (**self).output_open_name(name)
     }
 
@@ -491,7 +488,7 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
 
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).input_open_name(name, status)
@@ -503,7 +500,7 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
 
     fn input_open_format(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).input_open_format(name, status)
@@ -560,13 +557,12 @@ pub fn try_open_file<P: AsRef<Path>>(path: P) -> OpenResult<File> {
 /// Some implementations for testing.
 pub mod testing {
     use super::*;
-    use std::ffi::{OsStr, OsString};
     use std::fs::File;
     use std::path::{Path, PathBuf};
 
     /// An I/O provider that provides a single named file.
     pub struct SingleInputFileIo {
-        name: OsString,
+        name: String,
         full_path: PathBuf,
     }
 
@@ -576,14 +572,14 @@ pub mod testing {
             let p = path.to_path_buf();
 
             SingleInputFileIo {
-                name: p.file_name().unwrap().to_os_string(),
+                name: p.file_name().unwrap().to_str().unwrap().to_owned(),
                 full_path: p,
             }
         }
     }
 
     impl IoProvider for SingleInputFileIo {
-        fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
+        fn output_open_name(&mut self, _: &str) -> OpenResult<OutputHandle> {
             OpenResult::NotAvailable
         }
 
@@ -593,7 +589,7 @@ pub mod testing {
 
         fn input_open_name(
             &mut self,
-            name: &OsStr,
+            name: &str,
             _status: &mut dyn StatusBackend,
         ) -> OpenResult<InputHandle> {
             if name == self.name {
