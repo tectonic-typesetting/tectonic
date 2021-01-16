@@ -93,7 +93,7 @@ Use the [curl] crate to implement HTTP requests. In order for this to take
 effect, you must use `--no-default-features` because `geturl-reqwest` is a
 default feature and it takes precedence.
 
-[reqwest]: https://docs.rs/curl/
+[curl]: https://docs.rs/curl/
 
 ##### `geturl-reqwest` (enabled by default)
 
@@ -101,6 +101,15 @@ Use the [reqwest] crate to implement HTTP requests. This is the default
 selection.
 
 [reqwest]: https://docs.rs/reqwest/
+
+##### `native-tls-vendored`
+
+If using [reqwest], activate the `vendored` option in the [native-tls] crate,
+causing OpenSSL to be vendored. This can be useful when cross-compiling or
+building static binaries, but is discouraged because that means that the
+resulting binaries won't benefit from security fixes to system TLS libraries.
+
+[native-tls]: https://github.com/sfackler/rust-native-tls
 
 ##### `serialization` (enabled by default)
 
