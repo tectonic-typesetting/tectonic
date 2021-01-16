@@ -1,7 +1,4 @@
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::BufReader;
-use std::path::PathBuf;
+use std::{fs::File, io::BufReader, path::PathBuf};
 
 use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use crate::status::StatusBackend;
@@ -19,7 +16,7 @@ impl DirBundle {
 impl IoProvider for DirBundle {
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let mut path = self.dir.clone();

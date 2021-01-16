@@ -13,7 +13,6 @@
 
 use byte_unit::Byte;
 use std::collections::{HashMap, HashSet};
-use std::ffi::{OsStr, OsString};
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -102,7 +101,7 @@ impl FileSummary {
 
 /// The IoEvents type implements the IoEventBackend. It is used to figure out when to rerun the TeX
 /// engine, to figure out which files should be written to disk, and to emit Makefile rules.
-pub struct IoEvents(pub HashMap<OsString, FileSummary>);
+pub struct IoEvents(pub HashMap<String, FileSummary>);
 
 impl IoEvents {
     fn new() -> IoEvents {
@@ -111,7 +110,7 @@ impl IoEvents {
 }
 
 impl IoEventBackend for IoEvents {
-    fn output_opened(&mut self, name: &OsStr) {
+    fn output_opened(&mut self, name: &str) {
         if let Some(summ) = self.0.get_mut(name) {
             summ.access_pattern = match summ.access_pattern {
                 AccessPattern::Read => AccessPattern::ReadThenWritten,
@@ -121,7 +120,7 @@ impl IoEventBackend for IoEvents {
         }
 
         self.0.insert(
-            name.to_os_string(),
+            name.to_owned(),
             FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
         );
     }
@@ -130,7 +129,7 @@ impl IoEventBackend for IoEvents {
         // Life is easier if we track stdout in the same way that we do other
         // output files.
 
-        if let Some(summ) = self.0.get_mut(OsStr::new("")) {
+        if let Some(summ) = self.0.get_mut("") {
             summ.access_pattern = match summ.access_pattern {
                 AccessPattern::Read => AccessPattern::ReadThenWritten,
                 c => c, // identity mapping makes sense for remaining options
@@ -139,12 +138,12 @@ impl IoEventBackend for IoEvents {
         }
 
         self.0.insert(
-            OsString::from(""),
+            String::from(""),
             FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
         );
     }
 
-    fn output_closed(&mut self, name: OsString, digest: DigestData) {
+    fn output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .0
             .get_mut(&name)
@@ -152,7 +151,7 @@ impl IoEventBackend for IoEvents {
         summ.write_digest = Some(digest);
     }
 
-    fn input_not_available(&mut self, name: &OsStr) {
+    fn input_not_available(&mut self, name: &str) {
         // For the purposes of file access pattern tracking, an attempt to
         // open a nonexistent file counts as a read of a zero-size file. I
         // don't see how such a file could have previously been written, but
@@ -172,10 +171,10 @@ impl IoEventBackend for IoEvents {
         // is the contents of the file the very first time it was read.
         let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
         fs.read_digest = Some(DigestData::of_nothing());
-        self.0.insert(name.to_os_string(), fs);
+        self.0.insert(name.to_owned(), fs);
     }
 
-    fn input_opened(&mut self, name: &OsStr, origin: InputOrigin) {
+    fn input_opened(&mut self, name: &str, origin: InputOrigin) {
         if let Some(summ) = self.0.get_mut(name) {
             summ.access_pattern = match summ.access_pattern {
                 AccessPattern::Written => AccessPattern::WrittenThenRead,
@@ -185,14 +184,14 @@ impl IoEventBackend for IoEvents {
         }
 
         self.0.insert(
-            name.to_os_string(),
+            name.to_owned(),
             FileSummary::new(AccessPattern::Read, origin),
         );
     }
 
     //fn primary_input_opened(&mut self, _origin: InputOrigin) {}
 
-    fn input_closed(&mut self, name: OsString, digest: Option<DigestData>) {
+    fn input_closed(&mut self, name: String, digest: Option<DigestData>) {
         let summ = self
             .0
             .get_mut(&name)
@@ -519,7 +518,7 @@ impl ProcessingSessionBuilder {
                     None => {
                         return Err(errmsg!(
                             "can't figure out a parent directory for input path \"{}\"",
-                            p.to_string_lossy()
+                            p.display()
                         ));
                     }
                 };
@@ -578,9 +577,9 @@ impl ProcessingSessionBuilder {
             primary_input_path,
             primary_input_tex_path: tex_input_name,
             format_name: self.format_name.unwrap(),
-            tex_aux_path: aux_path.into_os_string(),
-            tex_xdv_path: xdv_path.into_os_string(),
-            tex_pdf_path: pdf_path.into_os_string(),
+            tex_aux_path: aux_path.display().to_string(),
+            tex_xdv_path: xdv_path.display().to_string(),
+            tex_pdf_path: pdf_path.display().to_string(),
             output_format: self.output_format,
             makefile_output_path: self.makefile_output_path,
             output_path,
@@ -626,13 +625,10 @@ pub struct ProcessingSession {
     format_name: String,
 
     /// These are the paths of the various output files as TeX knows them --
-    /// just `primary_input_tex_path` with the extension changed. We store
-    /// them as OsStrings since that's what the main crate currently uses for
-    /// TeX paths, even though I've since realized that it should really just
-    /// use String.
-    tex_aux_path: OsString,
-    tex_xdv_path: OsString,
-    tex_pdf_path: OsString,
+    /// just `primary_input_tex_path` with the extension changed.
+    tex_aux_path: String,
+    tex_xdv_path: String,
+    tex_pdf_path: String,
 
     /// If we're writing out Makefile rules, this is where they go. The TeX
     /// engine doesn't know about this path at all.
@@ -682,14 +678,14 @@ impl ProcessingSession {
                         tt_warning!(
                             status,
                             "internal consistency problem when checking if {} changed",
-                            name.to_string_lossy()
+                            name
                         );
                         true
                     }
                 };
 
                 if file_changed {
-                    return Some(RerunReason::FileChange(name.to_string_lossy().into_owned()));
+                    return Some(RerunReason::FileChange(name.clone()));
                 }
             }
         }
@@ -712,7 +708,7 @@ impl ProcessingSession {
                 tt_note!(
                     status,
                     "ACCESS: {} {:?} {:?} {:?}",
-                    name.to_string_lossy(),
+                    name,
                     info.access_pattern,
                     r,
                     w
@@ -739,7 +735,7 @@ impl ProcessingSession {
         } else {
             let fmt_result = {
                 let mut stack = self.io.as_stack();
-                stack.input_open_format(OsStr::new(&self.format_name), status)
+                stack.input_open_format(&self.format_name, status)
             };
 
             match fmt_result {
@@ -811,7 +807,8 @@ impl ProcessingSession {
             ctry!(write!(mf_dest, ": "); "couldn't write to Makefile-rules file");
 
             if let Some(ref pip) = self.primary_input_path {
-                ctry!(mf_dest.write_all(pip.to_string_lossy().as_ref().as_bytes()); "couldn't write to Makefile-rules file");
+                let opip = ctry!(pip.to_str(); "Makefile-rules file path must be Unicode-able");
+                ctry!(mf_dest.write_all(opip.as_bytes()); "couldn't write to Makefile-rules file");
             }
 
             // The check above ensures that this is never None.
@@ -832,11 +829,7 @@ impl ProcessingSession {
                     // two-stage compilation involving the .aux file, the
                     // latter case is what arises unless --keep-intermediates
                     // is specified.
-                    tt_warning!(
-                        status,
-                        "omitting circular Makefile dependency for {}",
-                        name.to_string_lossy()
-                    );
+                    tt_warning!(status, "omitting circular Makefile dependency for {}", name);
                     continue;
                 }
 
@@ -873,7 +866,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            let sname = name.to_string_lossy();
+            let sname = name;
             let summ = self.events.0.get_mut(name).unwrap();
 
             if !only_logs && (self.output_format == OutputFormat::Aux) {
@@ -918,7 +911,7 @@ impl ProcessingSession {
             let byte_len = Byte::from_bytes(file.data.len() as u128);
             status.note_highlighted(
                 "Writing ",
-                &format!("`{}`", real_path.to_string_lossy()),
+                &format!("`{}`", real_path.display()),
                 &format!(" ({})", byte_len.get_appropriate_unit(true).to_string()),
             );
 
@@ -934,7 +927,7 @@ impl ProcessingSession {
                 //
                 // Not quite sure why, but I can't pull out the target path
                 // here. I think 'self' is borrow inside the loop?
-                ctry!(write!(mf_dest, "{} ", real_path.to_string_lossy()); "couldn't write to Makefile-rules file");
+                ctry!(write!(mf_dest, "{} ", real_path.display()); "couldn't write to Makefile-rules file");
             }
         }
 
@@ -1109,7 +1102,7 @@ impl ProcessingSession {
                 continue;
             }
 
-            let sname = name.to_string_lossy();
+            let sname = name;
 
             if !sname.ends_with(".fmt") {
                 continue;
@@ -1178,7 +1171,7 @@ impl ProcessingSession {
                 &mut stack,
                 &mut self.events,
                 status,
-                &self.tex_aux_path.to_str().unwrap(),
+                &self.tex_aux_path,
                 &self.unstables,
             )
         };
@@ -1215,8 +1208,8 @@ impl ProcessingSession {
                 &mut stack,
                 &mut self.events,
                 status,
-                &self.tex_xdv_path.to_str().unwrap(),
-                &self.tex_pdf_path.to_str().unwrap(),
+                &self.tex_xdv_path,
+                &self.tex_pdf_path,
                 &self.unstables,
             )?;
         }
@@ -1230,12 +1223,7 @@ impl ProcessingSession {
             let mut stack = self.io.as_stack();
             let mut engine = Spx2HtmlEngine::new();
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process(
-                &mut stack,
-                &mut self.events,
-                status,
-                &self.tex_xdv_path.to_str().unwrap(),
-            )?;
+            engine.process(&mut stack, &mut self.events, status, &self.tex_xdv_path)?;
         }
 
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);

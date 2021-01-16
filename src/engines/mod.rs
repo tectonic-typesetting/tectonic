@@ -19,10 +19,8 @@ use flate2::read::GzDecoder;
 use flate2::{Compression, GzBuilder};
 use lazy_static::lazy_static;
 use md5::{Digest, Md5};
-use std::borrow::Cow;
-use std::ffi::{CStr, OsStr, OsString};
+use std::ffi::CStr;
 use std::io::{Read, SeekFrom, Write};
-use std::path::Path;
 use std::sync::Mutex;
 use std::{io, ptr, slice};
 
@@ -44,16 +42,6 @@ pub use self::spx2html::Spx2HtmlEngine;
 pub use self::tex::TexEngine;
 pub use self::xdvipdfmx::XdvipdfmxEngine;
 
-#[cfg(unix)]
-fn osstr_from_cstr(s: &CStr) -> Cow<OsStr> {
-    use std::os::unix::ffi::OsStrExt;
-    Cow::Borrowed(OsStr::from_bytes(s.to_bytes()))
-}
-#[cfg(windows)]
-fn osstr_from_cstr(s: &CStr) -> Cow<OsStr> {
-    Cow::Owned(OsString::from(s.to_string_lossy().to_owned().to_string()))
-}
-
 // Now, the public API.
 
 /// The IoEventBackend trait allows the program driving the TeX engines to
@@ -66,7 +54,7 @@ fn osstr_from_cstr(s: &CStr) -> Cow<OsStr> {
 
 pub trait IoEventBackend {
     /// This function is called when a file is opened for output.
-    fn output_opened(&mut self, _name: &OsStr) {}
+    fn output_opened(&mut self, _name: &str) {}
 
     /// This function is called when the wrapped "standard output"
     /// ("console", "terminal") stream is opened.
@@ -76,24 +64,24 @@ pub trait IoEventBackend {
     /// argument specifies the cryptographic digest of the data that were
     /// written. Note that this function takes ownership of the name and
     /// digest.
-    fn output_closed(&mut self, _name: OsString, _digest: DigestData) {}
+    fn output_closed(&mut self, _name: String, _digest: DigestData) {}
 
     /// This function is called when a file is opened for input.
-    fn input_opened(&mut self, _name: &OsStr, _origin: InputOrigin) {}
+    fn input_opened(&mut self, _name: &str, _origin: InputOrigin) {}
 
     /// This function is called when the "primary input" stream is opened.
     fn primary_input_opened(&mut self, _origin: InputOrigin) {}
 
     /// This function is called when the engine attempted to open a file of
     /// the specified name but it was not available.
-    fn input_not_available(&mut self, _name: &OsStr) {}
+    fn input_not_available(&mut self, _name: &str) {}
 
     /// This function is called when an input file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
     /// read, if available. This digest is not always available, if the engine
     /// used seeks while reading the file. Note that this function takes
     /// ownership of the name and digest.
-    fn input_closed(&mut self, _name: OsString, _digest: Option<DigestData>) {}
+    fn input_closed(&mut self, _name: String, _digest: Option<DigestData>) {}
 }
 
 /// This struct implements the IoEventBackend trait but does nothing.
@@ -154,7 +142,7 @@ impl<'a> ExecutionState<'a> {
 
     fn input_open_name_format(
         &mut self,
-        name: &OsStr,
+        name: &str,
         format: FileFormat,
     ) -> OpenResult<InputHandle> {
         let r = if let FileFormat::Format = format {
@@ -168,37 +156,19 @@ impl<'a> ExecutionState<'a> {
             r => return r,
         }
 
-        // It wasn't available under the immediately-given name. Try alternatives.
-
-        let path = Path::new(name);
-        let mut ext = path.to_owned();
-
-        if let Some(fname) = path.file_name() {
-            // If the filename has no extension right now, we're all set.
-            // Otherwise, add a temporary extra extension because set_extension
-            // *replaces*, and we want to maintain what we've got. This case
-            // inspired by lipsum in TeXLive 2020, which asks for
-            // `lipsum.ltd.tex` under the name `lipsum.ltd`.
-            if path.extension().is_some() {
-                let mut fname = fname.to_owned();
-                fname.push(".x");
-                ext.set_file_name(fname);
-            }
-        } else {
-            // If no file name, Path::set_extension will not do anything, so why even try?
-            return OpenResult::NotAvailable;
-        }
+        // It wasn't available under the immediately-given name. Try adding
+        // extensions. Note that we always add a new extension here, even if the
+        // filename already has one. E.g., lipsum in TeXLive 2020 asks for
+        // `lipsum.ltd.tex` under the name `lipsum.ltd`.
 
         for e in format_to_extension(format) {
-            ext.set_extension(e);
+            let ext = format!("{}.{}", name, e);
 
             if let FileFormat::Format = format {
-                if let r @ OpenResult::Ok(_) = self.io.input_open_format(ext.as_ref(), self.status)
-                {
+                if let r @ OpenResult::Ok(_) = self.io.input_open_format(&ext, self.status) {
                     return r;
                 }
-            } else if let r @ OpenResult::Ok(_) = self.io.input_open_name(ext.as_ref(), self.status)
-            {
+            } else if let r @ OpenResult::Ok(_) = self.io.input_open_name(&ext, self.status) {
                 return r;
             }
         }
@@ -207,7 +177,7 @@ impl<'a> ExecutionState<'a> {
 
     fn input_open_name_format_gz(
         &mut self,
-        name: &OsStr,
+        name: &str,
         format: FileFormat,
         is_gz: bool,
     ) -> OpenResult<InputHandle> {
@@ -230,7 +200,7 @@ impl<'a> ExecutionState<'a> {
 
     // These functions are called from C through the bridge API.
 
-    fn get_file_md5(&mut self, name: &OsStr, dest: &mut [u8]) -> bool {
+    fn get_file_md5(&mut self, name: &str, dest: &mut [u8]) -> bool {
         let mut hash = Md5::default();
 
         // We could try to be fancy and look up the file in our cache to see
@@ -249,7 +219,7 @@ impl<'a> ExecutionState<'a> {
             }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
-                          name.to_string_lossy(); e);
+                          name; e);
                 return true;
             }
         };
@@ -270,7 +240,7 @@ impl<'a> ExecutionState<'a> {
                 Ok(n) => n,
                 Err(e) => {
                     tt_error!(self.status, "error reading file \"{}\" for MD5 calculation",
-                              ih.name().to_string_lossy(); e.into());
+                              ih.name(); e.into());
                     error_occurred = true;
                     break;
                 }
@@ -291,20 +261,20 @@ impl<'a> ExecutionState<'a> {
         error_occurred
     }
 
-    fn output_open(&mut self, name: &OsStr, is_gz: bool) -> *mut OutputHandle {
+    fn output_open(&mut self, name: &str, is_gz: bool) -> *mut OutputHandle {
         let mut oh = match self.io.output_open_name(name) {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of output {} failed", name.to_string_lossy(); e);
+                tt_warning!(self.status, "open of output {} failed", name; e);
                 return ptr::null_mut();
             }
         };
 
         if is_gz {
-            let name = oh.name().to_os_string();
+            let name = oh.name().to_owned();
             oh = OutputHandle::new(
-                &name,
+                name,
                 GzBuilder::new().write(oh.into_inner(), Compression::default()),
             );
         }
@@ -365,7 +335,7 @@ impl<'a> ExecutionState<'a> {
             if p == handle {
                 let mut oh = self.output_handles.swap_remove(i);
                 if let Err(e) = oh.flush() {
-                    tt_warning!(self.status, "error when closing output {}", oh.name().to_string_lossy(); e.into());
+                    tt_warning!(self.status, "error when closing output {}", oh.name(); e.into());
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
@@ -377,7 +347,7 @@ impl<'a> ExecutionState<'a> {
         rv
     }
 
-    fn input_open(&mut self, name: &OsStr, format: FileFormat, is_gz: bool) -> *mut InputHandle {
+    fn input_open(&mut self, name: &str, format: FileFormat, is_gz: bool) -> *mut InputHandle {
         let ih = match self.input_open_name_format_gz(name, format, is_gz) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
@@ -385,7 +355,7 @@ impl<'a> ExecutionState<'a> {
                 return ptr::null_mut();
             }
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of input {} failed", name.to_string_lossy(); e);
+                tt_warning!(self.status, "open of input {} failed", name; e);
                 return ptr::null_mut();
             }
         };
@@ -473,7 +443,7 @@ impl<'a> ExecutionState<'a> {
                 let mut rv = false;
 
                 if let Err(e) = ih.scan_remainder() {
-                    tt_warning!(self.status, "error closing out input {}", ih.name().to_string_lossy(); e);
+                    tt_warning!(self.status, "error closing out input {}", ih.name(); e);
                     rv = true;
                 }
 
@@ -604,7 +574,7 @@ pub extern "C" fn get_file_md5(
     path: *const libc::c_char,
     digest: *mut u8,
 ) -> libc::c_int {
-    let rpath = osstr_from_cstr(unsafe { CStr::from_ptr(path) });
+    let rpath = unsafe { CStr::from_ptr(path) }.to_string_lossy();
     let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
 
     if es.get_file_md5(rpath.as_ref(), rdest) {
@@ -633,7 +603,7 @@ pub extern "C" fn output_open(
     name: *const libc::c_char,
     is_gz: libc::c_int,
 ) -> *mut OutputHandle {
-    let rname = osstr_from_cstr(&unsafe { CStr::from_ptr(name) });
+    let rname = unsafe { CStr::from_ptr(name) }.to_string_lossy();
     let ris_gz = is_gz != 0;
 
     es.output_open(&rname, ris_gz)
@@ -706,7 +676,7 @@ pub extern "C" fn input_open(
     format: libc::c_int,
     is_gz: libc::c_int,
 ) -> *mut InputHandle {
-    let rname = osstr_from_cstr(unsafe { CStr::from_ptr(name) });
+    let rname = unsafe { CStr::from_ptr(name) }.to_string_lossy();
     let rformat = c_format_to_rust(format);
     let ris_gz = is_gz != 0;
 

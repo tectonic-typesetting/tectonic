@@ -5,7 +5,6 @@
 //!
 //! Yay, an engine actually written in pure Rust!
 
-use std::ffi::OsStr;
 use std::io::Write;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
@@ -30,7 +29,7 @@ impl Spx2HtmlEngine {
         status: &mut dyn StatusBackend,
         spx: &str,
     ) -> Result<()> {
-        let mut input = io.input_open_name(OsStr::new(spx), status).must_exist()?;
+        let mut input = io.input_open_name(spx, status).must_exist()?;
         events.input_opened(input.name(), input.origin());
 
         // FIXME? The engine should probably be responsible for choosing this.
@@ -114,7 +113,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
             return Err(errmsg!("file should be SPX format but got {}", filetype));
         }
 
-        self.cur_output = Some(match self.io.output_open_name(OsStr::new(&self.outname)) {
+        self.cur_output = Some(match self.io.output_open_name(&self.outname) {
             OpenResult::Ok(h) => h,
             OpenResult::NotAvailable => {
                 return Err(errmsg!("no way to write output file \"{}\"", self.outname));
@@ -124,7 +123,7 @@ impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
             }
         });
 
-        self.events.output_opened(OsStr::new(&self.outname));
+        self.events.output_opened(&self.outname);
 
         Ok(())
     }

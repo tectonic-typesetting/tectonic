@@ -16,7 +16,6 @@
 /// way to implement that option.
 use std::collections::{HashMap, HashSet};
 use std::default::Default;
-use std::ffi::{OsStr, OsString};
 use std::str::FromStr;
 
 use tectonic::digest::DigestData;
@@ -45,7 +44,7 @@ impl FileSummary {
 }
 
 /// Similarly, a stunted verion of CliIoEvents.
-struct FormatTestEvents(HashMap<OsString, FileSummary>);
+struct FormatTestEvents(HashMap<String, FileSummary>);
 
 impl FormatTestEvents {
     fn new() -> FormatTestEvents {
@@ -54,11 +53,11 @@ impl FormatTestEvents {
 }
 
 impl IoEventBackend for FormatTestEvents {
-    fn output_opened(&mut self, name: &OsStr) {
-        self.0.insert(name.to_os_string(), FileSummary::new());
+    fn output_opened(&mut self, name: &str) {
+        self.0.insert(name.to_owned(), FileSummary::new());
     }
 
-    fn output_closed(&mut self, name: OsString, digest: DigestData) {
+    fn output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .0
             .get_mut(&name)
@@ -114,7 +113,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
     let want_digest = DigestData::from_str(sha256).unwrap();
 
     for (name, info) in &events.0 {
-        if name.to_string_lossy() == fmtname {
+        if name == fmtname {
             let observed = info.write_digest.unwrap();
 
             if observed != want_digest {
