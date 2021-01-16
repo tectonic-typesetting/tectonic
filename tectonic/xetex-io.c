@@ -9,10 +9,7 @@
 #include "xetex-swap.h"
 #include "xetex-xetexd.h"
 
-#include <unicode/ubidi.h>
-#include <unicode/ubrk.h>
 #include <unicode/ucnv.h>
-
 
 char *name_of_input_file = NULL;
 
