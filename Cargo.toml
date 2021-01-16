@@ -77,7 +77,7 @@ tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version ="^0.1.0
 tectonic_bridge_harfbuzz = { path = "crates/bridge_harfbuzz", version ="^0.1.0"}
 tectonic_bridge_icu = { path = "crates/bridge_icu", version ="^0.1.0"}
 tectonic_errors = { path = "crates/errors", version ="^0.1.0"}
-tectonic_geturl = { path = "crates/geturl", version ="^0.0.0", default-features = false }
+tectonic_geturl = { path = "crates/geturl", version ="^0.1.0", default-features = false }
 tectonic_io_base = { path = "crates/io_base", version ="^0.1.0"}
 tectonic_status_base = { path = "crates/status_base", version ="^0.1.0"}
 tectonic_xdv = { path = "crates/xdv", version ="^0.1.9"}

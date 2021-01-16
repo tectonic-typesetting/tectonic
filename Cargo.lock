@@ -1835,7 +1835,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_flate"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cbindgen",
  "flate2",
@@ -1851,7 +1851,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_graphite2"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "tectonic_dep_support",
 ]
@@ -1875,7 +1875,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_cfg_support"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "lazy_static",
 ]
@@ -1897,7 +1897,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_geturl"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "cfg-if 1.0.0",
  "curl",
@@ -1927,7 +1927,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xdv"
-version = "0.1.10"
+version = "0.1.11"
 dependencies = [
  "byteorder",
  "clap",
