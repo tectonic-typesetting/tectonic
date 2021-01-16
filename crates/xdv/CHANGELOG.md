@@ -1,4 +1,4 @@
-# rc: minor bump
+# rc: micro bump
 
 - Bump `byteorder` dep from 1.3.x series to 1.4.x series
 
