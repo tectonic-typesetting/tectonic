@@ -1,8 +1,11 @@
-# See elsewhere for changelog
+# rc: micro bump
 
-This project’s release notes are curated from the Git history of its main
-branch. You can find them by looking at [the version of this file on the
-`release` branch][branch] or the [GitHub release history][gh-releases].
+- Fix a Clippy complaint
 
-[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_flate/CHANGELOG.md
-[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
+# tectonic_bridge_flate 0.1.0 (2021-01-03)
+
+Initial release of the `tectonic_bridge_flate` crate. This crate provides a
+simple C API to the flate2 crate — even though flate2 often wraps zlib, which
+has its own C API. This is the first step towards segmenting Tectonic's
+native-library dependencies and starting to be able to vendor them. This new
+crate doesn't change anything dramatic yet, but starts that process.

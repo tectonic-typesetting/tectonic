@@ -1,8 +1,9 @@
-# See elsewhere for changelog
+# rc: micro bump
 
-This project’s release notes are curated from the Git history of its main
-branch. You can find them by looking at [the version of this file on the
-`release` branch][branch] or the [GitHub release history][gh-releases].
+- Export information about the `GRAPHITE2_STATIC` C preprocessor define that is
+  sometimes needed.
 
-[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_graphite2/CHANGELOG.md
-[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
+# tectonic_bridge_graphite2 0.1.0 (2021-01-04)
+
+A new crate to encapsulate the location and use of the `graphite2` library used
+by Tectonic.
