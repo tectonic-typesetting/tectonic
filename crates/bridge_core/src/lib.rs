@@ -1,6 +1,8 @@
 // Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
+#![deny(missing_docs)]
+
 //! Core APIs for bridging the C and Rust portions of Tectonic’s processing
 //! backends.
 //!
@@ -91,6 +93,7 @@ pub struct CoreBridgeState<'a> {
 }
 
 impl<'a> CoreBridgeState<'a> {
+    /// Set up a new "core bridge state" handle.
     pub fn new(
         io: &'a mut dyn IoProvider,
         events: &'a mut dyn IoEventBackend,
@@ -429,28 +432,41 @@ impl<'a> CoreBridgeState<'a> {
 
 // The entry points.
 
+/// Issue a warning.
+///
+/// # Safety
+///
+/// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub extern "C" fn ttbc_issue_warning(es: &mut CoreBridgeState, text: *const libc::c_char) {
-    let rtext = unsafe { CStr::from_ptr(text) };
-
+pub unsafe extern "C" fn ttbc_issue_warning(es: &mut CoreBridgeState, text: *const libc::c_char) {
+    let rtext = CStr::from_ptr(text);
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
 
+/// Issue an error.
+///
+/// # Safety
+///
+/// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub extern "C" fn ttbc_issue_error(es: &mut CoreBridgeState, text: *const libc::c_char) {
-    let rtext = unsafe { CStr::from_ptr(text) };
-
+pub unsafe extern "C" fn ttbc_issue_error(es: &mut CoreBridgeState, text: *const libc::c_char) {
+    let rtext = CStr::from_ptr(text);
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
 
+/// Calculate the MD5 digest of a Tectonic file.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw pointers from C.
 #[no_mangle]
-pub extern "C" fn ttbc_get_file_md5(
+pub unsafe extern "C" fn ttbc_get_file_md5(
     es: &mut CoreBridgeState,
     path: *const libc::c_char,
     digest: *mut u8,
 ) -> libc::c_int {
-    let rpath = unsafe { CStr::from_ptr(path) }.to_string_lossy();
-    let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
+    let rpath = CStr::from_ptr(path).to_string_lossy();
+    let rdest = slice::from_raw_parts_mut(digest, 16);
 
     if es.get_file_md5(rpath.as_ref(), rdest) {
         1
@@ -459,14 +475,19 @@ pub extern "C" fn ttbc_get_file_md5(
     }
 }
 
+/// Calculate the MD5 digest of a block of binary data.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw pointers from C.
 #[no_mangle]
-pub extern "C" fn ttbc_get_data_md5(
+pub unsafe extern "C" fn ttbc_get_data_md5(
     data: *const u8,
     len: libc::size_t,
     digest: *mut u8,
 ) -> libc::c_int {
-    let rdata = unsafe { slice::from_raw_parts(data, len) };
-    let rdest = unsafe { slice::from_raw_parts_mut(digest, 16) };
+    let rdata = slice::from_raw_parts(data, len);
+    let rdest = slice::from_raw_parts_mut(digest, 16);
 
     let mut hash = Md5::default();
     hash.update(rdata);
@@ -476,23 +497,30 @@ pub extern "C" fn ttbc_get_data_md5(
     0
 }
 
+/// Open a Tectonic file for output.
+///
+/// # Safety
+///
+/// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub extern "C" fn ttbc_output_open(
+pub unsafe extern "C" fn ttbc_output_open(
     es: &mut CoreBridgeState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
 ) -> *mut OutputHandle {
-    let rname = unsafe { CStr::from_ptr(name) }.to_string_lossy();
+    let rname = CStr::from_ptr(name).to_string_lossy();
     let ris_gz = is_gz != 0;
 
     es.output_open(&rname, ris_gz)
 }
 
+/// Open the general user output stream as a Tectonic output file.
 #[no_mangle]
 pub extern "C" fn ttbc_output_open_stdout(es: &mut CoreBridgeState) -> *mut OutputHandle {
     es.output_open_stdout()
 }
 
+/// Write a single character to a Tectonic output file.
 #[no_mangle]
 pub extern "C" fn ttbc_output_putc(
     es: &mut CoreBridgeState,
@@ -508,14 +536,19 @@ pub extern "C" fn ttbc_output_putc(
     }
 }
 
+/// Write data to a Tectonic output file.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw C pointers.
 #[no_mangle]
-pub extern "C" fn ttbc_output_write(
+pub unsafe extern "C" fn ttbc_output_write(
     es: &mut CoreBridgeState,
     handle: *mut OutputHandle,
     data: *const u8,
     len: libc::size_t,
 ) -> libc::size_t {
-    let rdata = unsafe { slice::from_raw_parts(data, len) };
+    let rdata = slice::from_raw_parts(data, len);
 
     // NOTE: we use f.write_all() so partial writes are not gonna be a thing.
 
@@ -526,6 +559,7 @@ pub extern "C" fn ttbc_output_write(
     }
 }
 
+/// Flush pending writes to a Tectonic output file.
 #[no_mangle]
 pub extern "C" fn ttbc_output_flush(
     es: &mut CoreBridgeState,
@@ -538,6 +572,7 @@ pub extern "C" fn ttbc_output_flush(
     }
 }
 
+/// Close a Tectonic output file.
 #[no_mangle]
 pub extern "C" fn ttbc_output_close(
     es: &mut CoreBridgeState,
@@ -554,23 +589,30 @@ pub extern "C" fn ttbc_output_close(
     }
 }
 
+/// Open a Tectonic file for input.
+///
+/// # Safety
+///
+/// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub extern "C" fn ttbc_input_open(
+pub unsafe extern "C" fn ttbc_input_open(
     es: &mut CoreBridgeState,
     name: *const libc::c_char,
     format: FileFormat,
     is_gz: libc::c_int,
 ) -> *mut InputHandle {
-    let rname = unsafe { CStr::from_ptr(name) }.to_string_lossy();
+    let rname = CStr::from_ptr(name).to_string_lossy();
     let ris_gz = is_gz != 0;
     es.input_open(&rname, format, ris_gz)
 }
 
+/// Open the "primary input" file.
 #[no_mangle]
 pub extern "C" fn ttbc_input_open_primary(es: &mut CoreBridgeState) -> *mut InputHandle {
     es.input_open_primary()
 }
 
+/// Get the size of a Tectonic input file.
 #[no_mangle]
 pub extern "C" fn ttbc_input_get_size(
     es: &mut CoreBridgeState,
@@ -579,6 +621,7 @@ pub extern "C" fn ttbc_input_get_size(
     es.input_get_size(handle)
 }
 
+/// Get the modification time of a Tectonic input file.
 #[no_mangle]
 pub extern "C" fn ttbc_input_get_mtime(
     es: &mut CoreBridgeState,
@@ -587,8 +630,13 @@ pub extern "C" fn ttbc_input_get_mtime(
     es.input_get_mtime(handle)
 }
 
+/// Seek in a Tectonic input stream.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw pointers from C.
 #[no_mangle]
-pub extern "C" fn ttbc_input_seek(
+pub unsafe extern "C" fn ttbc_input_seek(
     es: &mut CoreBridgeState,
     handle: *mut InputHandle,
     offset: libc::ssize_t,
@@ -605,9 +653,7 @@ pub extern "C" fn ttbc_input_seek(
                 "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
                 whence
             );
-            unsafe {
-                *internal_error = 1;
-            }
+            *internal_error = 1;
             return 0;
         }
     };
@@ -622,6 +668,7 @@ pub extern "C" fn ttbc_input_seek(
     }
 }
 
+/// Get a single character from a Tectonic input file.
 #[no_mangle]
 pub extern "C" fn ttbc_input_getc(
     es: &mut CoreBridgeState,
@@ -645,6 +692,7 @@ pub extern "C" fn ttbc_input_getc(
     }
 }
 
+/// Put back a character that was obtained from a `getc` call.
 #[no_mangle]
 pub extern "C" fn ttbc_input_ungetc(
     es: &mut CoreBridgeState,
@@ -660,14 +708,19 @@ pub extern "C" fn ttbc_input_ungetc(
     }
 }
 
+/// Read data from a Tectonic input handle
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw C pointers.
 #[no_mangle]
-pub extern "C" fn ttbc_input_read(
+pub unsafe extern "C" fn ttbc_input_read(
     es: &mut CoreBridgeState,
     handle: *mut InputHandle,
     data: *mut u8,
     len: libc::size_t,
 ) -> libc::ssize_t {
-    let rdata = unsafe { slice::from_raw_parts_mut(data, len) };
+    let rdata = slice::from_raw_parts_mut(data, len);
 
     match es.input_read(handle, rdata) {
         Ok(_) => len as isize,
@@ -678,6 +731,7 @@ pub extern "C" fn ttbc_input_read(
     }
 }
 
+/// Close a Tectonic input file.
 #[no_mangle]
 pub extern "C" fn ttbc_input_close(
     es: &mut CoreBridgeState,
@@ -704,6 +758,7 @@ pub struct Diagnostic {
     kind: MessageKind,
 }
 
+/// Create a new diagnostic that will be reported as a warning.
 #[no_mangle]
 pub extern "C" fn ttbc_diag_begin_warning() -> *mut Diagnostic {
     let warning = Box::new(Diagnostic {
@@ -713,6 +768,7 @@ pub extern "C" fn ttbc_diag_begin_warning() -> *mut Diagnostic {
     Box::into_raw(warning)
 }
 
+/// Create a new diagnostic that will be reported as an error.
 #[no_mangle]
 pub extern "C" fn ttbc_diag_begin_error() -> *mut Diagnostic {
     let warning = Box::new(Diagnostic {
@@ -722,13 +778,18 @@ pub extern "C" fn ttbc_diag_begin_error() -> *mut Diagnostic {
     Box::into_raw(warning)
 }
 
+/// Append text to a diagnostic.
+///
+/// # Safety
+///
+/// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const libc::c_char) {
-    let rtext = unsafe { CStr::from_ptr(text) };
-
+pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const libc::c_char) {
+    let rtext = CStr::from_ptr(text);
     diag.message.push_str(&rtext.to_string_lossy());
 }
 
+/// "Finish" a diagnostic: report it to the driver and free the diagnostic object.
 #[no_mangle]
 pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
@@ -747,27 +808,70 @@ pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnost
 #[derive(Clone, Copy, Debug)]
 #[repr(C)]
 pub enum FileFormat {
+    /// An Adobe Font Metrics file.
     AFM = 4,
+
+    /// A BibTeX bibliography data file.
     Bib = 6,
+
+    /// A BibTeX style file.
     Bst = 7,
+
+    /// A character map data file.
     Cmap = 45,
+
+    /// An encoding data file.
     Enc = 44,
+
+    /// A TeX "format" file.
     Format = 10,
+
+    /// A font-map file.
     FontMap = 11,
+
+    /// A miscellaneous font file.
     MiscFonts = 41,
+
+    /// An OFM font metrics file.
     Ofm = 20,
+
+    /// An OpenType font file.
     OpenType = 47,
+
+    /// An OVF file.
     Ovf = 23,
+
+    /// An image file.
     Pict = 25,
+
+    /// A PK font file.
     Pk = 1,
+
+    /// A general program data file.
     ProgramData = 39,
+
+    /// An SFD file.
     Sfd = 46,
+
+    /// The Tectonic primary input file.
     TectonicPrimary = 59,
+
+    /// A TeX language file.
     Tex = 26,
+
+    /// A TeX PostScript header file.
     TexPsHeader = 30,
+
+    /// A TeX Font Metrics file.
     TFM = 3,
+
+    /// A TrueType font file.
     TrueType = 36,
+
+    /// A Type1 font file.
     Type1 = 32,
+
+    /// A Virtual Font file.
     Vf = 33,
 }
 
