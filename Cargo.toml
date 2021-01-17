@@ -71,6 +71,7 @@ open = "1.4.0"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
+tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
 tectonic_bridge_flate = { path = "crates/bridge_flate", version = "0.0.0-dev.0" }
 tectonic_bridge_freetype2 = { path = "crates/bridge_freetype2", version = "0.0.0-dev.0" }
 tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version = "0.0.0-dev.0" }
@@ -124,6 +125,7 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
+tectonic_bridge_core = "thiscommit:2021-01-16:wie2Ejoh"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
 tectonic_bridge_freetype2 = "thiscommit:2021-01-09:voo7ohK2"
