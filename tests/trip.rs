@@ -2,19 +2,19 @@
 // Copyright 2016-2018 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Our incarnation of the classic TRIP test. Unfortunately, the test is
+//! defined in terms of the precise terminal output and error handling behavior
+//! of the engine, so you can't do anything to improve the (incredibly poor) UX
+//! of the TeX engine without having to fudge what "the TRIP test" is. That is
+//! what we have done.
+//!
+//! Cargo tries to run tests in multiple simultaneous threads, which of course
+//! totally fails for Tectonic since the engine has tons of global state. The
+//! multithreading can be disabled by setting the RUST_TEST_THREADS environment
+//! variable to "1", but that's an annoying solution. So, we use a global mutex
+//! to achieve the same effect. Classy.
+
 use std::default::Default;
-/// Our incarnation of the classic TRIP test. Unfortunately, the test is
-/// defined in terms of the precise terminal output and error handling behavior
-/// of the engine, so you can't do anything to improve the (incredibly poor) UX
-/// of the TeX engine without having to fudge what "the TRIP test" is. That is
-/// what we have done.
-///
-/// Cargo tries to run tests in multiple simultaneous threads, which of course
-/// totally fails for Tectonic since the engine has tons of global state. The
-/// multithreading can be disabled by setting the RUST_TEST_THREADS environment
-/// variable to "1", but that's an annoying solution. So, we use a global mutex
-/// to achieve the same effect. Classy.
-use std::ffi::OsStr;
 
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::testing::SingleInputFileIo;
@@ -90,7 +90,7 @@ fn trip_test() {
     expected_log.test_from_collection(files);
     expected_xdv.test_from_collection(files);
     expected_os.test_from_collection(files);
-    expected_fot.test_data(&files.get(OsStr::new("")).unwrap().data);
+    expected_fot.test_data(&files.get("").unwrap().data);
 }
 
 #[test]
@@ -157,5 +157,5 @@ fn etrip_test() {
     expected_log.test_from_collection(files);
     expected_xdv.test_from_collection(files);
     expected_out.test_from_collection(files);
-    expected_fot.test_data(&files.get(OsStr::new("")).unwrap().data);
+    expected_fot.test_data(&files.get("").unwrap().data);
 }

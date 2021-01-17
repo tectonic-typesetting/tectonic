@@ -120,8 +120,6 @@ pub const FORMAT_SERIAL: u32 = 29;
 /// serial. The aim is to lift this limitation one day, but it will require
 /// extensive work on the underlying C/C++ code.
 pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
-    use std::ffi::OsStr;
-
     let mut status = status::NoopStatusBackend::default();
 
     let auto_create_config_file = false;
@@ -155,7 +153,7 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
         sess.into_file_data()
     };
 
-    match files.remove(OsStr::new("texput.pdf")) {
+    match files.remove("texput.pdf") {
         Some(file) => Ok(file.data),
         None => Err(errmsg!(
             "LaTeX didn't report failure, but no PDF was created (??)"

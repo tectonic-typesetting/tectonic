@@ -4,7 +4,6 @@
 //! Tectonic I/O trait implementations for the standard I/O streams.
 
 use std::{
-    ffi::OsStr,
     io::{stdin, stdout, Cursor, Read, Seek, SeekFrom},
     rc::Rc,
 };
@@ -30,7 +29,7 @@ impl GenuineStdoutIo {
 impl IoProvider for GenuineStdoutIo {
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
         // NOTE: keep in sync with io::memory::MemoryIo::stdout_key()
-        OpenResult::Ok(OutputHandle::new(OsStr::new(""), stdout()))
+        OpenResult::Ok(OutputHandle::new("", stdout()))
     }
 }
 
@@ -141,7 +140,7 @@ impl BufferedPrimaryIo {
 impl IoProvider for BufferedPrimaryIo {
     fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         OpenResult::Ok(InputHandle::new(
-            OsStr::new(""),
+            "",
             Cursor::new(self.buffer.clone()),
             InputOrigin::Other,
         ))

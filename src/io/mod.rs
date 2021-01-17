@@ -3,12 +3,7 @@
 
 //! Tectonic’s pluggable I/O backend.
 
-use std::{
-    borrow::Cow,
-    ffi::{OsStr, OsString},
-    io::Read,
-    str::FromStr,
-};
+use std::{borrow::Cow, io::Read, str::FromStr};
 use tectonic_errors::{anyhow::bail, atry, Result};
 use tectonic_status_base::StatusBackend;
 
@@ -56,7 +51,7 @@ pub trait Bundle: IoProvider {
     /// `SHA256SUM`, which is expected to contain the digest in hex-encoded
     /// format.
     fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData> {
-        let digest_text = match self.input_open_name(OsStr::new(digest::DIGEST_NAME), status) {
+        let digest_text = match self.input_open_name(digest::DIGEST_NAME, status) {
             OpenResult::Ok(h) => {
                 let mut text = String::new();
                 h.take(64).read_to_string(&mut text)?;
@@ -147,15 +142,8 @@ fn try_normalize_tex_path(path: &str) -> Option<String> {
 ///
 /// _TeX path_ is a path that obeys simplified semantics: Unix-like syntax (`/` for separators, etc.),
 /// must be Unicode-able, no symlinks allowed such that `..` can be stripped lexically.
-///
-/// TODO: This function should operate on `&str` someday, but we need to transition the internals
-/// away from `OsStr/OsString` before that can happen.
-fn normalize_tex_path(path: &OsStr) -> Cow<OsStr> {
-    if let Some(t) = path
-        .to_str()
-        .and_then(try_normalize_tex_path)
-        .map(OsString::from)
-    {
+fn normalize_tex_path(path: &str) -> Cow<str> {
+    if let Some(t) = try_normalize_tex_path(path).map(String::from) {
         Cow::Owned(t)
     } else {
         Cow::Borrowed(path)
@@ -167,12 +155,11 @@ fn normalize_tex_path(path: &OsStr) -> Cow<OsStr> {
 
 pub mod testing {
     use super::*;
-    use std::ffi::{OsStr, OsString};
     use std::fs::File;
     use std::path::{Path, PathBuf};
 
     pub struct SingleInputFileIo {
-        name: OsString,
+        name: String,
         full_path: PathBuf,
     }
 
@@ -181,14 +168,14 @@ pub mod testing {
             let p = path.to_path_buf();
 
             SingleInputFileIo {
-                name: p.file_name().unwrap().to_os_string(),
+                name: p.file_name().unwrap().to_str().unwrap().to_owned(),
                 full_path: p,
             }
         }
     }
 
     impl IoProvider for SingleInputFileIo {
-        fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
+        fn output_open_name(&mut self, _: &str) -> OpenResult<OutputHandle> {
             OpenResult::NotAvailable
         }
 
@@ -198,7 +185,7 @@ pub mod testing {
 
         fn input_open_name(
             &mut self,
-            name: &OsStr,
+            name: &str,
             _status: &mut dyn StatusBackend,
         ) -> OpenResult<InputHandle> {
             if name == self.name {

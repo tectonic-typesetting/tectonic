@@ -5,7 +5,6 @@
 
 use std::{
     collections::HashSet,
-    ffi::OsStr,
     fs::File,
     io::{self, BufReader, Seek, SeekFrom},
     path::{Path, PathBuf},
@@ -51,7 +50,7 @@ impl IoProvider for FilesystemPrimaryInputIo {
         };
 
         OpenResult::Ok(InputHandle::new(
-            OsStr::new(""),
+            "",
             BufReader::new(f),
             InputOrigin::Filesystem,
         ))
@@ -87,7 +86,7 @@ impl FilesystemIo {
         }
     }
 
-    fn construct_path(&mut self, name: &OsStr) -> Result<PathBuf> {
+    fn construct_path(&mut self, name: &str) -> Result<PathBuf> {
         let path = Path::new(name);
 
         if path.is_absolute() && !self.absolute_allowed {
@@ -101,7 +100,7 @@ impl FilesystemIo {
 }
 
 impl IoProvider for FilesystemIo {
-    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         if !self.writes_allowed {
             return OpenResult::NotAvailable;
         }
@@ -126,7 +125,7 @@ impl IoProvider for FilesystemIo {
 
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {

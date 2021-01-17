@@ -34,9 +34,7 @@ authorization from the copyright holders.
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 
-#include <unicode/platform.h>   // We need this first
-#include <unicode/ubidi.h>
-#include <unicode/utext.h>
+#include <unicode/ubidi.h>  /* Barely needed in this file. */
 
 #include <graphite2/Font.h>
 #include <graphite2/Segment.h>

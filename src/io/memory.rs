@@ -7,7 +7,6 @@
 use std::{
     cell::RefCell,
     collections::HashMap,
-    ffi::{OsStr, OsString},
     io::{self, Cursor, Read, Seek, SeekFrom, Write},
     rc::Rc,
     time::SystemTime,
@@ -32,7 +31,7 @@ pub struct MemoryFileInfo {
 }
 
 /// A collection of files created or used inside a memory-backed I/O provider.
-pub type MemoryFileCollection = HashMap<OsString, MemoryFileInfo>;
+pub type MemoryFileCollection = HashMap<String, MemoryFileInfo>;
 
 /// When a file is "opened", we create a MemoryIoItem struct that tracks the
 /// data, seek cursor state, etc.
@@ -41,7 +40,7 @@ struct MemoryIoItem {
     // update its data in its parent data structure.
     files: Rc<RefCell<MemoryFileCollection>>,
 
-    name: OsString,
+    name: String,
     state: Cursor<Vec<u8>>,
     unix_mtime: Option<i64>,
     was_modified: bool,
@@ -64,7 +63,7 @@ fn now_as_unix_time() -> Option<i64> {
 impl MemoryIoItem {
     pub fn new(
         files: &Rc<RefCell<MemoryFileCollection>>,
-        name: &OsStr,
+        name: &str,
         truncate: bool,
     ) -> MemoryIoItem {
         let (cur_data, cur_mtime) = match files.borrow_mut().remove(name) {
@@ -80,7 +79,7 @@ impl MemoryIoItem {
 
         MemoryIoItem {
             files: files.clone(),
-            name: name.to_os_string(),
+            name: name.to_owned(),
             state: Cursor::new(cur_data),
             unix_mtime: cur_mtime,
             was_modified: false,
@@ -160,10 +159,10 @@ impl MemoryIo {
         }
     }
 
-    pub fn create_entry(&mut self, name: &OsStr, data: Vec<u8>) {
+    pub fn create_entry(&mut self, name: &str, data: Vec<u8>) {
         let mut mfiles = self.files.borrow_mut();
         mfiles.insert(
-            name.to_os_string(),
+            name.to_owned(),
             MemoryFileInfo {
                 data,
                 unix_mtime: now_as_unix_time(),
@@ -171,13 +170,13 @@ impl MemoryIo {
         );
     }
 
-    pub fn stdout_key(&self) -> &OsStr {
-        OsStr::new("")
+    pub fn stdout_key(&self) -> &str {
+        ""
     }
 }
 
 impl IoProvider for MemoryIo {
-    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         if name.is_empty() {
             return OpenResult::NotAvailable;
         }
@@ -185,7 +184,7 @@ impl IoProvider for MemoryIo {
         let name = normalize_tex_path(name);
 
         OpenResult::Ok(OutputHandle::new(
-            &name,
+            name.to_owned(),
             MemoryIoItem::new(&self.files, &name, true),
         ))
     }
@@ -203,7 +202,7 @@ impl IoProvider for MemoryIo {
 
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         if name.is_empty() {
@@ -214,7 +213,7 @@ impl IoProvider for MemoryIo {
 
         if self.files.borrow().contains_key(&*name) {
             OpenResult::Ok(InputHandle::new(
-                &name,
+                name.to_owned(),
                 MemoryIoItem::new(&self.files, &name, false),
                 InputOrigin::Other,
             ))
@@ -236,7 +235,7 @@ mod tests {
     #[test]
     fn shrinking_file() {
         let mut mem = MemoryIo::new(false);
-        let name = OsStr::new("test.tex");
+        let name = "test.tex";
         let mut sb = NoopStatusBackend::default();
 
         // Write a line to a file, then (implicitly) close it.

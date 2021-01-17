@@ -5,7 +5,6 @@ use flate2::read::GzDecoder;
 use fs2::FileExt;
 use std::{
     collections::HashMap,
-    ffi::OsStr,
     fs::{self, File},
     io::{BufRead, BufReader, Error as IoError, ErrorKind as IoErrorKind, Read, Write},
     path::{Path, PathBuf},
@@ -564,16 +563,10 @@ impl CachedITarBundle {
 impl IoProvider for CachedITarBundle {
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
-        // CachedITarBundle only supports UTF8 filenames.
-        let name_utf8 = match name.to_str() {
-            Some(s) => s,
-            None => return OpenResult::NotAvailable,
-        };
-
-        let path = match self.path_for_name(name_utf8, status) {
+        let path = match self.path_for_name(name, status) {
             OpenResult::Ok(p) => p,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
