@@ -114,7 +114,7 @@ _ttbc_get_error_message(void)
 
 
 int
-ttstub_global_engine_entry(ttbc_state_t *api)
+ttbc_global_engine_enter(ttbc_state_t *api)
 {
     tectonic_global_bridge_core = api;
     return setjmp(jump_buffer);
@@ -122,7 +122,7 @@ ttstub_global_engine_entry(ttbc_state_t *api)
 
 
 void
-ttstub_global_engine_exit(void)
+ttbc_global_engine_exit(void)
 {
     tectonic_global_bridge_core = NULL;
 }

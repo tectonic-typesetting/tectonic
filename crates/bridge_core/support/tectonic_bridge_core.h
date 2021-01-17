@@ -202,13 +202,13 @@ PRINTF_FUNC(2,0) void ttstub_diag_vprintf(ttbc_diagnostic_t *diag, const char *f
  * ```
  * int myentrypoint(const ttbc_state_t *api)
  * {
- *     if (ttstub_global_engine_entry(api)) {
- *         ttstub_global_engine_exit();
+ *     if (ttbc_global_engine_enter(api)) {
+ *         ttbc_global_engine_exit();
  *         return MY_FATAL_ABORT_CODE;
  *     }
  *
  *     my_main_implementation();
- *     ttstub_global_engine_exit();
+ *     ttbc_global_engine_exit();
  *     return my_result_code;
  * }
  * ```
@@ -217,8 +217,8 @@ PRINTF_FUNC(2,0) void ttstub_diag_vprintf(ttbc_diagnostic_t *diag, const char *f
  * to understand how those functions work.
  */
 
-int ttstub_global_engine_entry(ttbc_state_t *api);
-void ttstub_global_engine_exit(void);
+int ttbc_global_engine_enter(ttbc_state_t *api);
+void ttbc_global_engine_exit(void);
 
 NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);
 

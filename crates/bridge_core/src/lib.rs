@@ -10,13 +10,28 @@
 //! providing I/O and other support services.
 //!
 //! [cbindgen]: https://github.com/eqrion/cbindgen
+//!
+//! In order to launch your C/C++ engine, you should expect to be given a
+//! reference to a `CoreBridgeLauncher` struct. You should use that struct's
+//! `with_global_lock` method to obtain a `CoreBridgeState` reference, and then
+//! pass that reference across the FFI layer. On the other side of the FFI
+//! divide, your code *must* call the functions `ttbc_global_engine_enter` and
+//! `ttbc_global_engine_exit` according to the pattern described in
+//! `tectonic_bridge_core.h`. If an abort is detected, the callback function
+//! must return `Err(EngineAbortedError::new_abort_indicator().into())`.
+//!
+//! (Unfortunately, this is the cleanest and most reliable API that we can
+//! provide because our abort handling uses `setjmp`/`longjmp` and those can't
+//! cross FFI boundaries.)
 
 use flate2::{read::GzDecoder, Compression, GzBuilder};
 use md5::{Digest, Md5};
 use std::{
     ffi::CStr,
+    fmt::{Display, Error as FmtError, Formatter},
     io::{self, Read, SeekFrom, Write},
     ptr, slice,
+    sync::Mutex,
 };
 use tectonic_errors::prelude::*;
 use tectonic_io_base::{
@@ -24,11 +39,6 @@ use tectonic_io_base::{
     OutputHandle,
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
-
-// Function defined in the C support code:
-extern "C" {
-    fn _ttbc_get_error_message() -> *const libc::c_char;
-}
 
 /// The IoEventBackend trait allows the program driving the TeX engines to track
 /// its input and output access patterns.
@@ -76,6 +86,99 @@ pub struct NoopIoEventBackend {}
 
 impl IoEventBackend for NoopIoEventBackend {}
 
+// Function defined in the C support code:
+extern "C" {
+    fn _ttbc_get_error_message() -> *const libc::c_char;
+}
+
+lazy_static::lazy_static! {
+    static ref ENGINE_LOCK: Mutex<u8> = Mutex::new(0u8);
+}
+
+/// An error type indicating the the FFI code aborted.
+///
+/// FFI bridge callbacks should return this type, which will then be filled in
+/// with error text extracted from the global FFI bridge framework.
+#[derive(Debug)]
+pub struct EngineAbortedError {
+    message: String,
+}
+
+impl EngineAbortedError {
+    /// Create an error indicating that the FFI engine aborted.
+    ///
+    /// Upon exit, the global bridge FFI framework will report an
+    /// error of this same type, but filled in with error text extracted
+    /// from the global FFI bridge framework.
+    pub fn new_abort_indicator() -> Self {
+        EngineAbortedError {
+            message: "[failed to extract detailed error message]".to_owned(),
+        }
+    }
+
+    unsafe fn new_with_details() -> Self {
+        let ptr = _ttbc_get_error_message();
+        let message = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+        EngineAbortedError { message }
+    }
+}
+
+impl Display for EngineAbortedError {
+    fn fmt(&self, f: &mut Formatter) -> StdResult<(), FmtError> {
+        write!(f, "{}", self.message)
+    }
+}
+
+impl std::error::Error for EngineAbortedError {}
+
+/// A mechanism for launching bridged FFI code.
+pub struct CoreBridgeLauncher<'a> {
+    io: &'a mut dyn IoProvider,
+    events: &'a mut dyn IoEventBackend,
+    status: &'a mut dyn StatusBackend,
+}
+
+impl<'a> CoreBridgeLauncher<'a> {
+    /// Set up a new context for launching bridged FFI code.
+    pub fn new(
+        io: &'a mut dyn IoProvider,
+        events: &'a mut dyn IoEventBackend,
+        status: &'a mut dyn StatusBackend,
+    ) -> Self {
+        CoreBridgeLauncher { io, events, status }
+    }
+
+    /// Invoke a function to launch a bridged FFI engine with a global mutex
+    /// held.
+    ///
+    /// This function *must* be used when invoking C code that makes use of the
+    /// global core bridge state functions. Unfortunately, because our error
+    /// reporting is based on setjmp/longjmp and it is Undefined Behavior to
+    /// setjmp/longjmp across FFI boundaries, we cannot provide a more foolproof
+    /// API.
+    ///
+    /// The invoked code *must* call the functions `ttbc_global_engine_enter`
+    /// and `ttbc_global_engine_exit` according to the pattern described in
+    /// `tectonic_bridge_core.h`. If an abort is detected, the callback function
+    /// should return `Err(EngineAbortedError::new_abort_indicator())`.
+    pub fn with_global_lock<F, T>(&mut self, callback: F) -> Result<T>
+    where
+        F: FnOnce(&mut CoreBridgeState<'_>) -> Result<T>,
+    {
+        let _guard = ENGINE_LOCK.lock().unwrap();
+        let mut state = CoreBridgeState::new(self.io, self.events, self.status);
+        let result = callback(&mut state);
+
+        if let Err(ref e) = result {
+            if let Some(_) = e.downcast_ref::<EngineAbortedError>() {
+                return Err(unsafe { EngineAbortedError::new_with_details() }.into());
+            }
+        }
+
+        result
+    }
+}
+
 /// The CoreBridgeState structure is a handle to Rust state that can be used by
 /// C/C++ engine code to perform basic I/O functions.
 ///
@@ -93,8 +196,7 @@ pub struct CoreBridgeState<'a> {
 }
 
 impl<'a> CoreBridgeState<'a> {
-    /// Set up a new "core bridge state" handle.
-    pub fn new(
+    fn new(
         io: &'a mut dyn IoProvider,
         events: &'a mut dyn IoEventBackend,
         status: &'a mut dyn StatusBackend,

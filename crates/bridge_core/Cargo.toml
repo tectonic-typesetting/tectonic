@@ -20,6 +20,7 @@ links = "tectonic_bridge_core"
 
 [dependencies]
 flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
+lazy_static = "^1.4"
 libc = "^0.2"
 md-5 = "^0.9"
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
