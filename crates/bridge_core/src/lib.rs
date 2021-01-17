@@ -23,6 +23,11 @@ use tectonic_io_base::{
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
 
+// Function defined in the C support code:
+extern "C" {
+    fn _ttbc_get_error_message() -> *const libc::c_char;
+}
+
 /// The IoEventBackend trait allows the program driving the TeX engines to track
 /// its input and output access patterns.
 ///
@@ -794,3 +799,7 @@ impl FileFormat {
         }
     }
 }
+
+/// Does our resulting executable link correctly?
+#[test]
+fn linkage() {}

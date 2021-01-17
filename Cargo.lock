@@ -1849,6 +1849,7 @@ name = "tectonic_bridge_core"
 version = "0.0.0-dev.0"
 dependencies = [
  "cbindgen",
+ "cc",
  "flate2",
  "libc",
  "md-5",
