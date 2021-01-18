@@ -170,7 +170,7 @@ impl<'a> CoreBridgeLauncher<'a> {
         let result = callback(&mut state);
 
         if let Err(ref e) = result {
-            if let Some(_) = e.downcast_ref::<EngineAbortedError>() {
+            if e.downcast_ref::<EngineAbortedError>().is_some() {
                 return Err(unsafe { EngineAbortedError::new_with_details() }.into());
             }
         }
