@@ -14,7 +14,7 @@ tex_simple_main(ttbc_state_t *api, const char *dump_name, const char *input_file
 {
     int rv;
 
-    if (ttbc_global_engine_enter(api)) {
+    if (setjmp(*ttbc_global_engine_enter(api))) {
         ttbc_global_engine_exit();
         return HISTORY_FATAL_ERROR;
     }
@@ -30,7 +30,7 @@ dvipdfmx_simple_main(ttbc_state_t *api, const XdvipdfmxConfig* config, const cha
 {
     int rv;
 
-    if (ttbc_global_engine_enter(api)) {
+    if (setjmp(*ttbc_global_engine_enter(api))) {
         ttbc_global_engine_exit();
         return 99;
     }

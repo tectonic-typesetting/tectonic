@@ -28,6 +28,7 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
+#include <setjmp.h> /* for global handling below */
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -202,12 +203,12 @@ PRINTF_FUNC(2,0) void ttstub_diag_vprintf(ttbc_diagnostic_t *diag, const char *f
  * ```
  * int myentrypoint(const ttbc_state_t *api)
  * {
- *     if (ttbc_global_engine_enter(api)) {
+ *     if (setjmp(*ttbc_global_engine_enter(api))) {
  *         ttbc_global_engine_exit();
  *         return MY_FATAL_ABORT_CODE;
  *     }
  *
- *     my_main_implementation();
+ *     my_result_code = my_main_implementation();
  *     ttbc_global_engine_exit();
  *     return my_result_code;
  * }
@@ -217,7 +218,7 @@ PRINTF_FUNC(2,0) void ttstub_diag_vprintf(ttbc_diagnostic_t *diag, const char *f
  * to understand how those functions work.
  */
 
-int ttbc_global_engine_enter(ttbc_state_t *api);
+jmp_buf *ttbc_global_engine_enter(ttbc_state_t *api);
 void ttbc_global_engine_exit(void);
 
 NORETURN PRINTF_FUNC(1,2) int _tt_abort(const char *format, ...);

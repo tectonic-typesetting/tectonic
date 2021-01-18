@@ -7460,7 +7460,7 @@ tt_engine_bibtex_main(ttbc_state_t *api, const BibtexConfig *config, const char 
 {
     History rv;
 
-    if (ttbc_global_engine_enter(api)) {
+    if (setjmp(*ttbc_global_engine_enter(api))) {
         ttbc_global_engine_exit();
         return HISTORY_ABORTED;
     }
