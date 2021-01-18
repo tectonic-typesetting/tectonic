@@ -23,11 +23,10 @@
 #ifndef _EPDF_H_
 #define _EPDF_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdio.h>
 
-#include "core-bridge.h"
 #include "dpx-mfileio.h"
 #include "dpx-pdfximage.h"
 

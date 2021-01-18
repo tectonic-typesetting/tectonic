@@ -29,7 +29,7 @@
 #ifndef _SPC_XTX_H_
 #define _SPC_XTX_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdbool.h>
 

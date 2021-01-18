@@ -66,6 +66,7 @@ fn main() {
 
     // Include paths exported by our internal dependencies.
 
+    let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
     let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
     let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
@@ -141,9 +142,7 @@ fn main() {
 
     profile_config(&mut ccfg);
 
-    ccfg.file("tectonic/bibtex.c")
-        .file("tectonic/core-bridge.c")
-        .file("tectonic/core-memory.c")
+    ccfg.file("tectonic/core-bridge.c")
         .file("tectonic/dpx-agl.c")
         .file("tectonic/dpx-bmpimage.c")
         .file("tectonic/dpx-cff.c")
@@ -234,6 +233,7 @@ fn main() {
         .file("tectonic/xetex-xetex0.c")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&core_include_dir)
         .include(&harfbuzz_include_dir)
         .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)
@@ -288,6 +288,7 @@ fn main() {
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&core_include_dir)
         .include(&harfbuzz_include_dir)
         .include(&freetype2_include_dir)
         .include(&graphite2_include_dir)

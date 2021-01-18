@@ -23,8 +23,7 @@
 #ifndef _DPXFILE_H_
 #define _DPXFILE_H_
 
-#include "dpx-core.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-mfileio.h"
 
 typedef enum {
@@ -57,6 +56,6 @@ void  dpx_delete_temp_file  (char *tmp, int force); /* tmp freed here */
 /* Tectonic-enabled I/O alternatives */
 
 rust_input_handle_t dpx_tt_open (const char *filename, const char *suffix,
-                                 tt_input_format_type format);
+                                 ttbc_file_format format);
 
 #endif /* _DPXFILE_H_ */

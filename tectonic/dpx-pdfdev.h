@@ -23,7 +23,7 @@
 #ifndef _PDFDEV_H_
 #define _PDFDEV_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stddef.h>
 #include <stdint.h>

@@ -25,12 +25,12 @@
 #ifndef _T1_LOAD_H_
 #define _T1_LOAD_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-cff.h"
 
 cff_font *t1_load_font (char **enc_vec, int mode, rust_input_handle_t handle);

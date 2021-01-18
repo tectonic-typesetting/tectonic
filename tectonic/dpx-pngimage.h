@@ -24,11 +24,10 @@
 #ifndef _PNGIMAGE_H_
 #define _PNGIMAGE_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdint.h>
 
-#include "core-bridge.h"
 #include "dpx-mfileio.h"
 #include "dpx-pdfximage.h"
 

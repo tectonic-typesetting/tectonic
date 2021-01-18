@@ -5,7 +5,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
 
 #define DVI_BUF_SIZE 16384

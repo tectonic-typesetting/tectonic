@@ -23,7 +23,7 @@
 #ifndef _TYPE1_H_
 #define _TYPE1_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include   "dpx-pdffont.h"
 

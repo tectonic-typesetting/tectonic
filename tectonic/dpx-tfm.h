@@ -23,7 +23,7 @@
 #ifndef _TFM_H_
 #define _TFM_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdbool.h>
 #include <stdint.h>

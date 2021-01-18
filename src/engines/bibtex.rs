@@ -1,20 +1,11 @@
-// src/engines/bibtex.rs -- Rustic interface to the bibtex processor.
-// Copyright 2017 the Tectonic Project
+// Copyright 2017-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::ffi::{CStr, CString};
+use tectonic_bridge_core::{CoreBridgeLauncher, IoEventBackend};
+use tectonic_engine_bibtex::{BibtexEngine as RealBibtexEngine, BibtexOutcome};
 
 use super::tex::TexResult;
-use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
-use crate::errors::{ErrorKind, Result};
-use crate::io::IoStack;
-use crate::status::StatusBackend;
-use crate::unstable_opts::UnstableOptions;
-
-#[repr(C)]
-pub struct BibtexConfig {
-    min_crossrefs: i32,
-}
+use crate::{errors::Result, io::IoStack, status::StatusBackend, unstable_opts::UnstableOptions};
 
 #[derive(Default)]
 pub struct BibtexEngine {}
@@ -32,33 +23,19 @@ impl BibtexEngine {
         aux: &str,
         unstables: &UnstableOptions,
     ) -> Result<TexResult> {
-        let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
+        let mut real_engine = RealBibtexEngine::default();
 
-        let caux = CString::new(aux)?;
+        if let Some(x) = unstables.min_crossrefs {
+            real_engine.min_crossrefs(x);
+        }
 
-        let mut state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&mut state);
-        let config = BibtexConfig {
-            min_crossrefs: unstables.min_crossrefs.unwrap_or(2),
-        };
+        let mut launcher = CoreBridgeLauncher::new(io, events, status);
+        let real_outcome = real_engine.process(&mut launcher, aux)?;
 
-        unsafe {
-            match super::bibtex_simple_main(&bridge, &config, caux.as_ptr()) {
-                0 => Ok(TexResult::Spotless),
-                1 => Ok(TexResult::Warnings),
-                2 => Ok(TexResult::Errors),
-                3 => Err(ErrorKind::Msg("unspecified fatal bibtex error".into()).into()),
-                99 => {
-                    let ptr = super::tt_get_error_message();
-                    let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                    Err(ErrorKind::Msg(msg).into())
-                }
-                x => Err(ErrorKind::Msg(format!(
-                    "internal error: unexpected 'history' value {}",
-                    x
-                ))
-                .into()),
-            }
+        match real_outcome {
+            BibtexOutcome::Spotless => Ok(TexResult::Spotless),
+            BibtexOutcome::Warnings => Ok(TexResult::Warnings),
+            BibtexOutcome::Errors => Ok(TexResult::Errors),
         }
     }
 }

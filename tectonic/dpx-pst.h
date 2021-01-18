@@ -23,7 +23,7 @@
 #ifndef _PST_H_
 #define _PST_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdio.h>
 

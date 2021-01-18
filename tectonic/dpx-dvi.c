@@ -33,7 +33,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-cff.h"
 #include "dpx-cff_dict.h"
 #include "dpx-cff_types.h"
@@ -1962,7 +1962,7 @@ dvi_init (const char *dvi_filename, double mag)
     if (!dvi_filename)
         _tt_abort("filename must be specified");
 
-    dvi_handle = ttstub_input_open (dvi_filename, TTIF_BINARY, 0);
+    dvi_handle = ttstub_input_open (dvi_filename, TTBC_FILE_FORMAT_PROGRAM_DATA, 0);
     if (dvi_handle == NULL)
         _tt_abort("cannot open \"%s\"", dvi_filename);
 

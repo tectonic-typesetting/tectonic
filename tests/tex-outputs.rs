@@ -12,6 +12,7 @@ use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::unstable_opts::UnstableOptions;
 use tectonic::{TexEngine, XdvipdfmxEngine};
+use tectonic_errors::anyhow::anyhow;
 use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
@@ -70,7 +71,7 @@ impl TestCase {
     }
 
     fn expect_msg(&mut self, msg: &str) -> &mut Self {
-        self.expect(Err(ErrorKind::Msg(msg.to_owned()).into()))
+        self.expect(Err(ErrorKind::NewStyle(anyhow!("{}", msg)).into()))
     }
 
     fn go(&mut self) {
@@ -117,7 +118,7 @@ impl TestCase {
             }
             let mut io = IoStack::new(io_list);
 
-            let mut events = NoopIoEventBackend::new();
+            let mut events = NoopIoEventBackend::default();
             let mut status = NoopStatusBackend::default();
 
             let tex_res = TexEngine::new().process(

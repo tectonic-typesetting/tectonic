@@ -1,0 +1,37 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_bridge_core"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Exposing core backend APIs to the Tectonic C/C++ code.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+links = "tectonic_bridge_core"
+
+[dependencies]
+flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
+lazy_static = "^1.4"
+libc = "^0.2"
+md-5 = "^0.9"
+tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
+tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
+tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
+
+[build-dependencies]
+cbindgen = "^0.16"
+cc = "^1.0.66"
+
+[package.metadata.internal_dep_versions]
+tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
+tectonic_io_base = "thiscommit:2021-01-16:go5rieNg"
+tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"

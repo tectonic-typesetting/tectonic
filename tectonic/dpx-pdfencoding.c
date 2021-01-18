@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-error.h"
@@ -264,7 +264,7 @@ load_encoding_file (const char *filename)
     if (dpx_conf.verbose_level > 0)
         dpx_message("(Encoding:%s", filename);
 
-    handle = dpx_tt_open(filename, ".enc", TTIF_ENC);
+    handle = dpx_tt_open(filename, ".enc", TTBC_FILE_FORMAT_ENC);
     if (handle == NULL)
         return -1;
 
@@ -685,7 +685,7 @@ pdf_load_ToUnicode_stream (const char *ident)
     if (!ident)
         return NULL;
 
-    handle = ttstub_input_open(ident, TTIF_CMAP, 0);
+    handle = ttstub_input_open(ident, TTBC_FILE_FORMAT_CMAP, 0);
     if (handle == NULL)
         return NULL;
 

@@ -1,12 +1,13 @@
 // src/engines/tex.rs -- Rustic interface to the core TeX engine.
-// Copyright 2017-2018 the Tectonic Project
+// Copyright 2017-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::ffi::{CStr, CString};
+use std::ffi::CString;
 use std::time::SystemTime;
+use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError, IoEventBackend};
+use tectonic_errors::anyhow::anyhow;
 
-use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
-use crate::errors::{DefinitelySame, ErrorKind, Result};
+use crate::errors::{DefinitelySame, Result};
 use crate::io::IoStack;
 use crate::status::StatusBackend;
 use crate::unstable_opts::UnstableOptions;
@@ -112,71 +113,73 @@ impl TexEngine {
         input_file_name: &str,
         unstables: &UnstableOptions,
     ) -> Result<TexResult> {
-        let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
-
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
-        let mut state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&mut state);
+        let mut launcher = CoreBridgeLauncher::new(io, events, status);
 
-        // initialize globals
+        launcher
+            .with_global_lock(|state| {
+                // Note that we have to do all of this setup while holding the
+                // lock, because we're modifying static state variables.
 
-        let v = if unstables.shell_escape { 1 } else { 0 };
-        unsafe {
-            super::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
-        }
-
-        let mut halt_on_error = self.halt_on_error;
-        if unstables.continue_on_errors {
-            halt_on_error = false; // command-line override
-        }
-        let v = if halt_on_error { 1 } else { 0 };
-        unsafe {
-            super::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
-        }
-
-        let v = if self.initex_mode { 1 } else { 0 };
-        unsafe {
-            super::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);
-        }
-        let v = if self.synctex_enabled { 1 } else { 0 };
-        unsafe {
-            super::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v);
-        }
-        let v = if self.semantic_pagination_enabled {
-            1
-        } else {
-            0
-        };
-        unsafe {
-            super::tt_xetex_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v);
-        }
-
-        unsafe {
-            match super::tex_simple_main(
-                &bridge,
-                cformat.as_ptr(),
-                cinput.as_ptr(),
-                self.build_date
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .expect("invalid build date")
-                    .as_secs() as libc::time_t,
-            ) {
-                0 => Ok(TexResult::Spotless),
-                1 => Ok(TexResult::Warnings),
-                2 => Ok(TexResult::Errors),
-                3 => {
-                    let ptr = super::tt_get_error_message();
-                    let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                    Err(ErrorKind::Msg(msg).into())
+                let v = if unstables.shell_escape { 1 } else { 0 };
+                unsafe {
+                    super::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
                 }
-                x => Err(ErrorKind::Msg(format!(
-                    "internal error: unexpected 'history' value {}",
-                    x
-                ))
-                .into()),
-            }
-        }
+
+                let mut halt_on_error = self.halt_on_error;
+                if unstables.continue_on_errors {
+                    halt_on_error = false; // command-line override
+                }
+
+                let v = if halt_on_error { 1 } else { 0 };
+                unsafe {
+                    super::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
+                }
+
+                let v = if self.initex_mode { 1 } else { 0 };
+                unsafe {
+                    super::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);
+                }
+
+                let v = if self.synctex_enabled { 1 } else { 0 };
+                unsafe {
+                    super::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v);
+                }
+
+                let v = if self.semantic_pagination_enabled {
+                    1
+                } else {
+                    0
+                };
+                unsafe {
+                    super::tt_xetex_set_int_variable(
+                        b"semantic_pagination_enabled\0".as_ptr() as _,
+                        v,
+                    );
+                }
+
+                let r = unsafe {
+                    super::tex_simple_main(
+                        state,
+                        cformat.as_ptr(),
+                        cinput.as_ptr(),
+                        self.build_date
+                            .duration_since(SystemTime::UNIX_EPOCH)
+                            .expect("invalid build date")
+                            .as_secs() as libc::time_t,
+                    )
+                };
+
+                match r {
+                    0 => Ok(TexResult::Spotless),
+                    1 => Ok(TexResult::Warnings),
+                    2 => Ok(TexResult::Errors),
+                    3 => Err(EngineAbortedError::new_abort_indicator().into()),
+                    x => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
+                }
+            })
+            .map_err(|e| e.into())
     }
 }

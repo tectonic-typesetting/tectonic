@@ -23,7 +23,7 @@
 #ifndef _SPC_TPIC_H_
 #define _SPC_TPIC_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdbool.h>
 

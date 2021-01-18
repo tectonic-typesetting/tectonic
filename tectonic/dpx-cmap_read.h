@@ -23,11 +23,10 @@
 #ifndef _CMAP_READ_H_
 #define _CMAP_READ_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdio.h>
 
-#include "core-bridge.h"
 #include "dpx-cmap.h"
 
 int CMap_parse_check_sig (rust_input_handle_t handle);

@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-bmpimage.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
@@ -349,7 +349,7 @@ pdf_ximage_findresource (const char *ident, load_options options)
      * } else { kpse_find_file() }
      */
 
-    handle = ttstub_input_open(ident, TTIF_PICT, 0);
+    handle = ttstub_input_open(ident, TTBC_FILE_FORMAT_PICT, 0);
     if (handle == NULL) {
         dpx_warning("Error locating image file \"%s\"", ident);
         return -1;

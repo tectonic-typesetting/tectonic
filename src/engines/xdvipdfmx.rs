@@ -4,9 +4,9 @@
 
 use std::ffi::{CStr, CString};
 use std::time::SystemTime;
+use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError, IoEventBackend};
 
-use super::{ExecutionState, IoEventBackend, TectonicBridgeApi};
-use crate::errors::{ErrorKind, Result};
+use crate::errors::Result;
 use crate::io::IoStack;
 use crate::status::StatusBackend;
 use crate::unstable_opts::UnstableOptions;
@@ -59,8 +59,6 @@ impl XdvipdfmxEngine {
         pdf: &str,
         unstables: &UnstableOptions,
     ) -> Result<i32> {
-        let _guard = super::ENGINE_LOCK.lock().unwrap(); // until we're thread-safe ...
-
         // This conversion is probably way too complex, because we need to convert String to
         // something which holds a CStr (which needs to be a local so it doesn't disappear). And
         // all of this happens in an Option.
@@ -83,30 +81,31 @@ impl XdvipdfmxEngine {
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
 
-        let mut state = ExecutionState::new(io, events, status);
-        let bridge = TectonicBridgeApi::new(&mut state);
+        let mut launcher = CoreBridgeLauncher::new(io, events, status);
 
-        unsafe {
-            match super::dvipdfmx_simple_main(
-                &bridge,
-                &config,
-                cdvi.as_ptr(),
-                cpdf.as_ptr(),
-                self.enable_compression,
-                self.deterministic_tags,
-                self.build_date
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .expect("invalid build date")
-                    .as_secs() as libc::time_t,
-            ) {
-                99 => {
-                    let ptr = super::tt_get_error_message();
-                    let msg = CStr::from_ptr(ptr).to_string_lossy().into_owned();
-                    Err(ErrorKind::Msg(msg).into())
+        launcher
+            .with_global_lock(|state| {
+                let r = unsafe {
+                    super::dvipdfmx_simple_main(
+                        state,
+                        &config,
+                        cdvi.as_ptr(),
+                        cpdf.as_ptr(),
+                        self.enable_compression,
+                        self.deterministic_tags,
+                        self.build_date
+                            .duration_since(SystemTime::UNIX_EPOCH)
+                            .expect("invalid build date")
+                            .as_secs() as libc::time_t,
+                    )
+                };
+
+                match r {
+                    99 => Err(EngineAbortedError::new_abort_indicator().into()),
+                    x => Ok(x as i32),
                 }
-                x => Ok(x as i32),
-            }
-        }
+            })
+            .map_err(|e| e.into())
     }
 }
 

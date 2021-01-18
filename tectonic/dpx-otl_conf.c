@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-agl.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
@@ -466,7 +466,7 @@ otl_read_conf (const char *conf_name)
   strcpy(filename, conf_name);
   strcat(filename, ".otl");
 
-  handle = ttstub_input_open(filename, TTIF_CNF, 0);
+  handle = ttstub_input_open(filename, TTBC_FILE_FORMAT_CNF, 0);
   if (handle == NULL) {
     free(filename);
     return NULL;

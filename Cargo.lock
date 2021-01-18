@@ -1822,6 +1822,7 @@ dependencies = [
  "serde",
  "sha2",
  "structopt",
+ "tectonic_bridge_core",
  "tectonic_bridge_flate",
  "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
@@ -1829,6 +1830,7 @@ dependencies = [
  "tectonic_bridge_icu",
  "tectonic_cfg_support",
  "tectonic_dep_support",
+ "tectonic_engine_bibtex",
  "tectonic_errors",
  "tectonic_geturl",
  "tectonic_io_base",
@@ -1841,6 +1843,21 @@ dependencies = [
  "url",
  "vcpkg",
  "zip",
+]
+
+[[package]]
+name = "tectonic_bridge_core"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "cc",
+ "flate2",
+ "lazy_static",
+ "libc",
+ "md-5",
+ "tectonic_errors",
+ "tectonic_io_base",
+ "tectonic_status_base",
 ]
 
 [[package]]
@@ -1896,6 +1913,17 @@ version = "0.0.0-dev.0"
 dependencies = [
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "tectonic_engine_bibtex"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "cc",
+ "libc",
+ "tectonic_bridge_core",
+ "tectonic_errors",
 ]
 
 [[package]]

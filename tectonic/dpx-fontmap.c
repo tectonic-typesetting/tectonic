@@ -22,7 +22,7 @@
 
 #include "dpx-fontmap.h"
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
@@ -965,7 +965,7 @@ pdf_load_fontmap_file (const char *filename, int mode)
     if (dpx_conf.verbose_level)
         dpx_message("<FONTMAP:");
 
-    handle = dpx_tt_open(filename, ".map", TTIF_FONTMAP);
+    handle = dpx_tt_open(filename, ".map", TTBC_FILE_FORMAT_FONT_MAP);
     if (handle == NULL) {
         dpx_warning("Couldn't open font map file \"%s\".", filename);
         return  -1;

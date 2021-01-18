@@ -23,7 +23,7 @@
 #ifndef _DVICODES_H_
 #define _DVICODES_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 /* DVI op codes */
 #define SET_CHAR_0 0

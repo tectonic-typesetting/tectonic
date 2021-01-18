@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dvi.h"
 #include "dpx-dvicodes.h"
@@ -256,10 +256,10 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
     if (i != num_vf_fonts)
         return i;
 
-    vf_handle = ttstub_input_open (tex_name, TTIF_VF, 0);
+    vf_handle = ttstub_input_open (tex_name, TTBC_FILE_FORMAT_VF, 0);
 
     if (vf_handle == NULL)
-        vf_handle = ttstub_input_open (tex_name, TTIF_OVF, 0);
+        vf_handle = ttstub_input_open (tex_name, TTBC_FILE_FORMAT_OVF, 0);
 
     if (vf_handle == NULL)
         return -1;

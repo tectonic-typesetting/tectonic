@@ -19,10 +19,10 @@ tt_xetex_open_input (int filefmt)
 {
     rust_input_handle_t handle;
 
-    if (filefmt == TTIF_TECTONIC_PRIMARY)
+    if (filefmt == TTBC_FILE_FORMAT_TECTONIC_PRIMARY)
         handle = ttstub_input_open_primary ();
     else
-        handle = ttstub_input_open (name_of_file, (tt_input_format_type) filefmt, 0);
+        handle = ttstub_input_open (name_of_file, (ttbc_file_format) filefmt, 0);
 
     if (handle == NULL)
         return NULL;
@@ -516,7 +516,7 @@ open_or_close_in(void)
         scan_file_name();
         pack_file_name(cur_name, cur_area, cur_ext);
 
-        if (u_open_in(&read_file[n], TTIF_TEX, "rb", INTPAR(xetex_default_input_mode),
+        if (u_open_in(&read_file[n], TTBC_FILE_FORMAT_TEX, "rb", INTPAR(xetex_default_input_mode),
                       INTPAR(xetex_default_input_encoding))) {
             make_utf16_name();
             name_in_progress = true;

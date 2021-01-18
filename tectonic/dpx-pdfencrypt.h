@@ -23,7 +23,7 @@
 #ifndef _PDFENCRYPT_H_
 #define _PDFENCRYPT_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stddef.h>
 

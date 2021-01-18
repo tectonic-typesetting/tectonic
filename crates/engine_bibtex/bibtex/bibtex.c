@@ -1,7 +1,9 @@
-#include "bibtex.h"
+/* Copyright 2020 the Tectonic Project
+ * Licensed under the MIT License.
+ */
 
-#include "core-bridge.h"
-#include "core-memory.h"
+#include "tectonic_bridge_core.h"
+#include "bibtex_bindings.h"
 
 #include <stdio.h> /* EOF, snprintf */
 
@@ -38,7 +40,7 @@ typedef struct {
 
 
 static peekable_input_t *
-peekable_open (const char *path, tt_input_format_type format)
+peekable_open (const char *path, ttbc_file_format format)
 {
     rust_input_handle_t handle;
     peekable_input_t *peekable;
@@ -1768,7 +1770,7 @@ static bool scan1(ASCII_code char1)
     buf_ptr1 = buf_ptr2;
     while ((buf_ptr2 < last) && (buffer[buf_ptr2] != char1))
         buf_ptr2 = buf_ptr2 + 1;
-    
+
     return buf_ptr2 < last;
 }
 
@@ -5107,7 +5109,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
     /* this code used to auto-add the .aux extension if needed; we don't */
 
     aux_ptr = 0;
-    if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file, TTIF_TEX)) == NULL) {
+    if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file, TTBC_FILE_FORMAT_TEX)) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
@@ -5200,7 +5202,7 @@ static void aux_bib_data_command(void)
                 return;
             }
             start_name(bib_list[bib_ptr]);
-            if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file, TTIF_BIB)) == NULL) {
+            if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file, TTBC_FILE_FORMAT_BIB)) == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
                 aux_err_print();
@@ -5252,7 +5254,7 @@ static void aux_bib_style_command(void)
             longjmp(error_jmpbuf, 1);
         }
         start_name(bst_str);
-        if ((bst_file = peekable_open ((char *) name_of_file, TTIF_BST)) == NULL) {
+        if ((bst_file = peekable_open ((char *) name_of_file, TTBC_FILE_FORMAT_BST)) == NULL) {
             puts_log("I couldn't open style file ");
             print_bst_name();
             bst_str = 0;
@@ -5413,7 +5415,7 @@ static void aux_input_command(void)
             start_name(aux_list[aux_ptr]);
             name_ptr = name_length;
             name_of_file[name_ptr] = 0;
-            if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file, TTIF_TEX)) == NULL) {
+            if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file, TTBC_FILE_FORMAT_TEX)) == NULL) {
                 puts_log("I couldn't open auxiliary file ");
                 print_aux_name();
                 aux_ptr = aux_ptr - 1;
@@ -7304,7 +7306,7 @@ initialize(const char *aux_file_name)
 }
 
 
-tt_history_t
+History
 bibtex_main(const char *aux_file_name)
 {
     pool_size = POOL_SIZE;
@@ -7450,4 +7452,21 @@ close_up_shop:
 
     ttstub_output_close (log_file);
     return history;
+}
+
+
+History
+tt_engine_bibtex_main(ttbc_state_t *api, const BibtexConfig *config, const char *aux_file_name)
+{
+    History rv;
+
+    if (setjmp(*ttbc_global_engine_enter(api))) {
+        ttbc_global_engine_exit();
+        return HISTORY_ABORTED;
+    }
+
+    bibtex_config = config;
+    rv = bibtex_main(aux_file_name);
+    ttbc_global_engine_exit();
+    return rv;
 }

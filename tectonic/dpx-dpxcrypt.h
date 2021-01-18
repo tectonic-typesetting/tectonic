@@ -21,7 +21,7 @@
 #ifndef _DPXCRYPT_H_
 #define _DPXCRYPT_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdio.h>
 #include <stdint.h>

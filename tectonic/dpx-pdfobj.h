@@ -23,7 +23,7 @@
 #ifndef _PDFOBJ_H_
 #define _PDFOBJ_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -31,7 +31,7 @@
 #include <sys/types.h>
 #include <time.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
 
 /* Here is the complete list of PDF object types */

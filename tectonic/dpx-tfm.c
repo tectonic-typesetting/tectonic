@@ -29,7 +29,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxutil.h"
 #include "dpx-error.h"
@@ -718,11 +718,11 @@ tfm_open (const char *tfm_name, int must_exist)
         ofm_name = NULL;
     }
 
-    if (ofm_name && (tfm_handle = ttstub_input_open(ofm_name, TTIF_OFM, 0)) != NULL) {
+    if (ofm_name && (tfm_handle = ttstub_input_open(ofm_name, TTBC_FILE_FORMAT_OFM, 0)) != NULL) {
         format = OFM_FORMAT;
-    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTIF_TFM, 0)) != NULL) {
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_TFM, 0)) != NULL) {
         format = TFM_FORMAT;
-    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTIF_OFM, 0)) != NULL) {
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_OFM, 0)) != NULL) {
         format = OFM_FORMAT;
     }
 
@@ -921,13 +921,13 @@ tfm_exists (const char *tfm_name)
 {
     rust_input_handle_t handle;
 
-    handle = ttstub_input_open(tfm_name, TTIF_OFM, 0);
+    handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_OFM, 0);
     if (handle) {
         ttstub_input_close(handle);
         return true;
     }
 
-    handle = ttstub_input_open(tfm_name, TTIF_TFM, 0);
+    handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_TFM, 0);
     if (handle) {
         ttstub_input_close(handle);
         return true;

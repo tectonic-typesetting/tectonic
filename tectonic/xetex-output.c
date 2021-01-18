@@ -6,12 +6,12 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
-static diagnostic_t current_diagnostic = 0;
+static ttbc_diagnostic_t *current_diagnostic = 0;
 
 void
-capture_to_diagnostic(diagnostic_t diagnostic)
+capture_to_diagnostic(ttbc_diagnostic_t *diagnostic)
 {
     if (current_diagnostic) {
         ttstub_diag_finish(current_diagnostic);
@@ -21,7 +21,7 @@ capture_to_diagnostic(diagnostic_t diagnostic)
 }
 
 static void
-diagnostic_print_file_line(diagnostic_t diagnostic)
+diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic)
 {
     // Add file/line number information
     // This duplicates logic from print_file_line
@@ -31,7 +31,7 @@ diagnostic_print_file_line(diagnostic_t diagnostic)
         level--;
 
     if (level == 0) {
-        ttstub_diag_append(diagnostic, "!");
+        ttbc_diag_append(diagnostic, "!");
     } else {
         int32_t source_line = line;
         if (level != in_open) {
@@ -44,20 +44,20 @@ diagnostic_print_file_line(diagnostic_t diagnostic)
     }
 }
 
-diagnostic_t
+ttbc_diagnostic_t *
 diagnostic_begin_capture_warning_here(void)
 {
-    diagnostic_t warning = ttstub_diag_warn_begin();
+    ttbc_diagnostic_t *warning = ttbc_diag_begin_warning();
     diagnostic_print_file_line(warning);
     capture_to_diagnostic(warning);
     return warning;
 }
 
 // This replaces the "print file+line number" block at the start of errors
-diagnostic_t
+ttbc_diagnostic_t *
 error_here_with_diagnostic(const char* message)
 {
-    diagnostic_t error = ttstub_diag_error_begin();
+    ttbc_diagnostic_t *error = ttbc_diag_begin_error();
     diagnostic_print_file_line(error);
     ttstub_diag_printf(error, "%s", message);
 
@@ -77,7 +77,7 @@ warn_char(int c)
 {
     if (current_diagnostic) {
         char bytes[2] = { c, 0 };
-        ttstub_diag_append(current_diagnostic, bytes);
+        ttbc_diag_append(current_diagnostic, bytes);
     }
 }
 

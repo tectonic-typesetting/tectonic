@@ -193,7 +193,7 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
     buffer[e - s] = 0;
     strcat(buffer, ".tec");
 
-    map = ttstub_input_open (buffer, TTIF_MISCFONTS, 0);
+    map = ttstub_input_open (buffer, TTBC_FILE_FORMAT_MISC_FONTS, 0);
     if (map) {
         size_t mappingSize = ttstub_input_get_size (map);
         Byte *mapping = xmalloc(mappingSize);

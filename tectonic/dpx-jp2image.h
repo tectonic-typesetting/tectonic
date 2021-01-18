@@ -23,7 +23,7 @@
 #ifndef _JP2IMAGE_H_
 #define _JP2IMAGE_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdio.h>
 

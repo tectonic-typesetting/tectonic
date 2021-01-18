@@ -31,7 +31,7 @@
 
 #include <math.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-error.h"
 #include "dpx-mfileio.h"

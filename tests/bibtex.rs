@@ -46,7 +46,7 @@ impl TestCase {
 
         let mut io = IoStack::new(io_list);
 
-        let mut events = NoopIoEventBackend::new();
+        let mut events = NoopIoEventBackend::default();
         let mut status = NoopStatusBackend::default();
 
         BibtexEngine::new()

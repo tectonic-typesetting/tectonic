@@ -23,7 +23,7 @@
 #ifndef _CID_P_H_
 #define _CID_P_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #define FONT_FLAG_NONE        0
 #define FONT_FLAG_BASEFONT    (1 << 0)

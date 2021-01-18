@@ -21,7 +21,7 @@
 #ifndef _OTL_OPT_H_
 #define _OTL_OPT_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 
 typedef struct otl_opt otl_opt;

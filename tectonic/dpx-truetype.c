@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-agl.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"

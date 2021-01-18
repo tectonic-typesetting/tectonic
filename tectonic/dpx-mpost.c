@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
 #include "dpx-fontmap.h"

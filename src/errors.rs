@@ -202,15 +202,26 @@ pub trait DefinitelySame {
 
 impl DefinitelySame for ErrorKind {
     fn definitely_same(&self, other: &Self) -> bool {
-        if let ErrorKind::Msg(ref s) = *self {
-            return if let ErrorKind::Msg(ref o) = *other {
-                s == o
-            } else {
-                false
-            };
-        }
+        match self {
+            ErrorKind::Msg(ref s) => {
+                if let ErrorKind::Msg(ref o) = *other {
+                    s == o
+                } else {
+                    false
+                }
+            }
 
-        false
+            // Hacky for tex-outputs test
+            ErrorKind::NewStyle(ref s) => {
+                if let ErrorKind::NewStyle(ref o) = *other {
+                    s.to_string() == o.to_string()
+                } else {
+                    false
+                }
+            }
+
+            _ => false,
+        }
     }
 }
 

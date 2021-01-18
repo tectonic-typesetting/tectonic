@@ -25,7 +25,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxcrypt.h"
 #include "dpx-dpxutil.h"

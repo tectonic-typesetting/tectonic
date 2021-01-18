@@ -12,7 +12,7 @@
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
 #define AWFUL_BAD 0x3FFFFFFF
 

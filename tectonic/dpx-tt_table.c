@@ -22,7 +22,7 @@
 
 #include <stdio.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-sfnt.h"
