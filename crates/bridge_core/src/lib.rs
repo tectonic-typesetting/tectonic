@@ -35,8 +35,8 @@ use std::{
 };
 use tectonic_errors::prelude::*;
 use tectonic_io_base::{
-    digest::DigestData, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult,
-    OutputHandle,
+    digest::DigestData, normalize_tex_path, InputFeatures, InputHandle, InputOrigin, IoProvider,
+    OpenResult, OutputHandle,
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
 
@@ -269,6 +269,7 @@ impl<'a> CoreBridgeState<'a> {
     }
 
     fn get_file_md5(&mut self, name: &str, dest: &mut [u8]) -> bool {
+        let name = normalize_tex_path(name);
         let mut hash = Md5::default();
 
         // We could try to be fancy and look up the file in our cache to see
@@ -276,7 +277,7 @@ impl<'a> CoreBridgeState<'a> {
         // truncated SHA256 digest as the MD5 ... but it seems like a better
         // idea to just go and read the file.
 
-        let mut ih = match self.input_open_name_format(name, FileFormat::Tex) {
+        let mut ih = match self.input_open_name_format(&name, FileFormat::Tex) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
                 // We could issue a warning here, but the standard LaTeX
@@ -330,7 +331,9 @@ impl<'a> CoreBridgeState<'a> {
     }
 
     fn output_open(&mut self, name: &str, is_gz: bool) -> *mut OutputHandle {
-        let mut oh = match self.io.output_open_name(name) {
+        let name = normalize_tex_path(name);
+
+        let mut oh = match self.io.output_open_name(&name) {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
@@ -416,10 +419,12 @@ impl<'a> CoreBridgeState<'a> {
     }
 
     fn input_open(&mut self, name: &str, format: FileFormat, is_gz: bool) -> *mut InputHandle {
-        let ih = match self.input_open_name_format_gz(name, format, is_gz) {
+        let name = normalize_tex_path(name);
+
+        let ih = match self.input_open_name_format_gz(&name, format, is_gz) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
-                self.events.input_not_available(name);
+                self.events.input_not_available(&name);
                 return ptr::null_mut();
             }
             OpenResult::Err(e) => {
@@ -578,6 +583,9 @@ pub unsafe extern "C" fn ttbc_get_file_md5(
 }
 
 /// Calculate the MD5 digest of a block of binary data.
+///
+/// This actually doesn't rely on the state and isn't really I/O, but we also
+/// have a get-file-MD5 routine so it's convenient to have this here.
 ///
 /// # Safety
 ///

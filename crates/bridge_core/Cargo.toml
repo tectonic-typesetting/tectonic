@@ -33,5 +33,5 @@ cc = "^1.0.66"
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
-tectonic_io_base = "thiscommit:2021-01-16:SaeK7eex"
+tectonic_io_base = "thiscommit:2021-01-16:go5rieNg"
 tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
