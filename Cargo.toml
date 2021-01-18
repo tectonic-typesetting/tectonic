@@ -35,6 +35,7 @@ members = [
   "crates/bridge_icu",
   "crates/cfg_support",
   "crates/dep_support",
+  "crates/engine_bibtex",
   "crates/errors",
   "crates/geturl",
   "crates/io_base",

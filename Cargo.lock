@@ -1851,6 +1851,7 @@ dependencies = [
  "cbindgen",
  "cc",
  "flate2",
+ "lazy_static",
  "libc",
  "md-5",
  "tectonic_errors",
@@ -1911,6 +1912,17 @@ version = "0.0.0-dev.0"
 dependencies = [
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "tectonic_engine_bibtex"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "cc",
+ "libc",
+ "tectonic_bridge_core",
+ "tectonic_errors",
 ]
 
 [[package]]
