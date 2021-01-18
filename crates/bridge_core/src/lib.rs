@@ -930,6 +930,9 @@ pub enum FileFormat {
     /// A character map data file.
     Cmap = 45,
 
+    /// A configuration file.
+    Cnf = 8,
+
     /// An encoding data file.
     Enc = 44,
 
@@ -992,6 +995,7 @@ impl FileFormat {
             FileFormat::Bib => &["bib"],
             FileFormat::Bst => &["bst"],
             FileFormat::Cmap => &[],
+            FileFormat::Cnf => &["cnf"],
             FileFormat::Enc => &["enc"],
             FileFormat::Format => &["fmt"],
             FileFormat::FontMap => &["map"],

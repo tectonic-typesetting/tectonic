@@ -59,7 +59,7 @@ fn trip_test() {
             .initex_mode(true)
             .process(
                 &mut io,
-                &mut NoopIoEventBackend::new(),
+                &mut NoopIoEventBackend::default(),
                 &mut NoopStatusBackend::default(),
                 "INITEX",
                 "trip",
@@ -76,7 +76,7 @@ fn trip_test() {
             .initex_mode(false)
             .process(
                 &mut io,
-                &mut NoopIoEventBackend::new(),
+                &mut NoopIoEventBackend::default(),
                 &mut NoopStatusBackend::default(),
                 "trip.fmt",
                 "trip",
@@ -126,7 +126,7 @@ fn etrip_test() {
             .initex_mode(true)
             .process(
                 &mut io,
-                &mut NoopIoEventBackend::new(),
+                &mut NoopIoEventBackend::default(),
                 &mut NoopStatusBackend::default(),
                 "INITEX",
                 "etrip",
@@ -143,7 +143,7 @@ fn etrip_test() {
             .initex_mode(false)
             .process(
                 &mut io,
-                &mut NoopIoEventBackend::new(),
+                &mut NoopIoEventBackend::default(),
                 &mut NoopStatusBackend::default(),
                 "etrip.fmt",
                 "etrip",

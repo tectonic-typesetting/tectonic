@@ -1830,6 +1830,7 @@ dependencies = [
  "tectonic_bridge_icu",
  "tectonic_cfg_support",
  "tectonic_dep_support",
+ "tectonic_engine_bibtex",
  "tectonic_errors",
  "tectonic_geturl",
  "tectonic_io_base",

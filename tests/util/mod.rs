@@ -82,7 +82,7 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
                 .initex_mode(true)
                 .process(
                     &mut io,
-                    &mut NoopIoEventBackend::new(),
+                    &mut NoopIoEventBackend::default(),
                     &mut NoopStatusBackend::default(),
                     "UNUSED.fmt",
                     "plain.tex",

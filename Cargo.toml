@@ -78,6 +78,7 @@ tectonic_bridge_freetype2 = { path = "crates/bridge_freetype2", version = "0.0.0
 tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version = "0.0.0-dev.0" }
 tectonic_bridge_harfbuzz = { path = "crates/bridge_harfbuzz", version = "0.0.0-dev.0" }
 tectonic_bridge_icu = { path = "crates/bridge_icu", version = "0.0.0-dev.0" }
+tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "crates/errors", version = "0.0.0-dev.0" }
 tectonic_geturl = { path = "crates/geturl", version = "0.0.0-dev.0", default-features = false }
 tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
@@ -134,6 +135,7 @@ tectonic_bridge_harfbuzz = "thiscommit:2021-01-09:Aer8ohng"
 tectonic_bridge_icu = "thiscommit:2021-01-09:diehoh1E"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
+tectonic_engine_bibtex = "thiscommit:2021-01-17:KuhaeG1e"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_geturl = "thiscommit:2021-01-16:Aikoob9c"
 tectonic_io_base = "thiscommit:2021-01-16:SaeK7eex"

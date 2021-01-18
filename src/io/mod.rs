@@ -3,7 +3,7 @@
 
 //! Tectonic’s pluggable I/O backend.
 
-use std::{borrow::Cow, io::Read, str::FromStr};
+use std::{io::Read, str::FromStr};
 use tectonic_errors::{anyhow::bail, atry, Result};
 use tectonic_status_base::StatusBackend;
 
@@ -19,6 +19,7 @@ pub mod zipbundle;
 pub use tectonic_io_base::{
     digest::{self, DigestData},
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
+    normalize_tex_path,
     stack::IoStack,
     stdstreams::GenuineStdoutIo,
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
@@ -78,78 +79,6 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
     }
 }
 
-/// Normalize a TeX path in a system independent™ way by stripping any `.`, `..`,
-/// or extra separators '/' so that it is of the form
-///
-/// ```text
-/// path/to/my/file.txt
-/// ../../path/to/parent/dir/file.txt
-/// /absolute/path/to/file.txt
-/// ```
-///
-/// Does not strip whitespace.
-///
-/// Returns `None` if the path refers to a parent of the root.
-fn try_normalize_tex_path(path: &str) -> Option<String> {
-    use std::iter::repeat;
-    if path.is_empty() {
-        return Some("".into());
-    }
-    let mut r = Vec::new();
-    let mut parent_level = 0;
-    let mut has_root = false;
-
-    // TODO: We need to handle a prefix on Windows (i.e. "C:").
-
-    for (i, c) in path.split('/').enumerate() {
-        match c {
-            "" if i == 0 => {
-                has_root = true;
-                r.push("");
-            }
-            "" | "." => {}
-            ".." => {
-                match r.pop() {
-                    // about to pop the root
-                    Some("") => return None,
-                    None => parent_level += 1,
-                    _ => {}
-                }
-            }
-            _ => r.push(c),
-        }
-    }
-
-    let r = repeat("..")
-        .take(parent_level)
-        .chain(r.into_iter())
-        // No `join` on `Iterator`.
-        .collect::<Vec<_>>()
-        .join("/");
-
-    if r.is_empty() {
-        if has_root {
-            Some("/".into())
-        } else {
-            Some(".".into())
-        }
-    } else {
-        Some(r)
-    }
-}
-
-/// Normalize a TeX path if possible, otherwise return the original path.
-///
-/// _TeX path_ is a path that obeys simplified semantics: Unix-like syntax (`/` for separators, etc.),
-/// must be Unicode-able, no symlinks allowed such that `..` can be stripped lexically.
-fn normalize_tex_path(path: &str) -> Cow<str> {
-    if let Some(t) = try_normalize_tex_path(path).map(String::from) {
-        Cow::Owned(t)
-    } else {
-        Cow::Borrowed(path)
-    }
-}
-
 // Helper for testing. FIXME: I want this to be conditionally compiled with
 // #[cfg(test)] but things break if I do that.
 
@@ -198,59 +127,5 @@ pub mod testing {
                 OpenResult::NotAvailable
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_try_normalize_tex_path() {
-        // edge cases
-        assert_eq!(try_normalize_tex_path(""), Some("".into()));
-        assert_eq!(try_normalize_tex_path("/"), Some("/".into()));
-        assert_eq!(try_normalize_tex_path("//"), Some("/".into()));
-        assert_eq!(try_normalize_tex_path("."), Some(".".into()));
-        assert_eq!(try_normalize_tex_path("./"), Some(".".into()));
-        assert_eq!(try_normalize_tex_path(".."), Some("..".into()));
-        assert_eq!(try_normalize_tex_path("././/./"), Some(".".into()));
-        assert_eq!(try_normalize_tex_path("/././/."), Some("/".into()));
-
-        assert_eq!(
-            try_normalize_tex_path("my/path/file.txt"),
-            Some("my/path/file.txt".into())
-        );
-        // preserve spaces
-        assert_eq!(
-            try_normalize_tex_path("  my/pa  th/file .txt "),
-            Some("  my/pa  th/file .txt ".into())
-        );
-        assert_eq!(
-            try_normalize_tex_path("/my/path/file.txt"),
-            Some("/my/path/file.txt".into())
-        );
-        assert_eq!(
-            try_normalize_tex_path("./my///path/././file.txt"),
-            Some("my/path/file.txt".into())
-        );
-        assert_eq!(
-            try_normalize_tex_path("./../my/../../../file.txt"),
-            Some("../../../file.txt".into())
-        );
-        assert_eq!(
-            try_normalize_tex_path("././my//../path/../here/file.txt"),
-            Some("here/file.txt".into())
-        );
-        assert_eq!(
-            try_normalize_tex_path("./my/.././/path/../../here//file.txt"),
-            Some("../here/file.txt".into())
-        );
-
-        assert_eq!(try_normalize_tex_path("/my/../../file.txt"), None);
-        assert_eq!(
-            try_normalize_tex_path("/my/./.././path//../../file.txt"),
-            None
-        );
     }
 }
