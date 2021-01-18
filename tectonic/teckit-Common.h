@@ -26,7 +26,7 @@ History:
 #ifndef __TECkit_Common_H__
 #define __TECkit_Common_H__
 
-#include "core-foundation.h"
+#include "tectonic_bridge_core.h"
 
 #define	kCurrentTECkitVersion	0x00020004	/* 16.16 version number */
 

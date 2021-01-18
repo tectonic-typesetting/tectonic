@@ -24,8 +24,7 @@
 #ifndef _BMPIMAGE_H_
 #define _BMPIMAGE_H_
 
-#include "dpx-core.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-mfileio.h"
 #include "dpx-pdfximage.h"
 

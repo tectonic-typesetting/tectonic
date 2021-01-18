@@ -4542,7 +4542,7 @@ void prepare_mag(void)
 {
 
     if (mag_set > 0 && INTPAR(mag) != mag_set) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Incompatible magnification (");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Incompatible magnification (");
         print_int(INTPAR(mag));
         print_cstr(");");
         print_nl_cstr(" the previous value will be retained");
@@ -4559,7 +4559,7 @@ void prepare_mag(void)
         geq_word_define(INT_BASE + INT_PAR__mag, mag_set);
     }
     if ((INTPAR(mag) <= 0) || (INTPAR(mag) > 32768L)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
         ttstub_diag_printf(errmsg, " (%d)", INTPAR(mag));
         capture_to_diagnostic(NULL);
 
@@ -6581,7 +6581,7 @@ void scan_char_class(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad character class");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character class");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6599,7 +6599,7 @@ void scan_char_class_not_ignored(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad character class");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character class");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6617,7 +6617,7 @@ void scan_eight_bit_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 255)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad register code");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad register code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6635,7 +6635,7 @@ void scan_usv_num(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_USV)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad character code");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6653,7 +6653,7 @@ void scan_char_num(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > BIGGEST_CHAR)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad character code");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6672,7 +6672,7 @@ void scan_xetex_math_char_int(void)
     scan_int();
     if (math_char(cur_val) == ACTIVE_MATH_CHAR) {
         if (cur_val != ACTIVE_MATH_CHAR) {
-            diagnostic_t errmsg = error_here_with_diagnostic("Bad active XeTeX math code");
+            ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad active XeTeX math code");
             ttstub_diag_printf(errmsg, " (%d)", cur_val);
             capture_to_diagnostic(NULL);
 
@@ -6685,7 +6685,7 @@ void scan_xetex_math_char_int(void)
             cur_val = ACTIVE_MATH_CHAR;
         }
     } else if (math_char(cur_val) > BIGGEST_USV) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad XeTeX math character code");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad XeTeX math character code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6833,7 +6833,7 @@ void scan_math_class_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 7)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad math class");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad math class");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6851,7 +6851,7 @@ void scan_math_fam_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > (NUMBER_MATH_FAMILIES - 1))) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad math family");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad math family");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6869,7 +6869,7 @@ void scan_four_bit_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 15)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad number");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad number");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6887,7 +6887,7 @@ void scan_fifteen_bit_int(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > 32767)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad mathchar");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad mathchar");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6908,7 +6908,7 @@ scan_delimiter_int(void)
     scan_int();
 
     if (cur_val < 0 || cur_val > 0x7FFFFFF) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad delimiter code");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad delimiter code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6925,7 +6925,7 @@ void scan_register_num(void)
 {
     scan_int();
     if ((cur_val < 0) || (cur_val > max_reg_num)) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad register code");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad register code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6943,7 +6943,7 @@ void scan_four_bit_int_or_18(void)
 {
     scan_int();
     if ((cur_val < 0) || ((cur_val > 15) && (cur_val != 18))) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad number");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad number");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -7088,7 +7088,7 @@ restart:
             if (math_char(cur_val1) == ACTIVE_MATH_CHAR) {
                 cur_val1 = 0x8000;
             } else if (math_class(cur_val1) > 7 || math_fam(cur_val1) > 15 || math_char(cur_val1) > 255) {
-                diagnostic_t errmsg = error_here_with_diagnostic("Extended mathchar used as mathchar");
+                ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Extended mathchar used as mathchar");
                 ttstub_diag_printf(errmsg, " (%d)", cur_val1);
                 capture_to_diagnostic(NULL);
 
@@ -10861,7 +10861,7 @@ open_log_file(void)
 void
 start_input(const char *primary_input_name)
 {
-    tt_input_format_type format = TTIF_TEX;
+    ttbc_file_format format = TTBC_FILE_FORMAT_TEX;
     str_number temp_str;
 
     if (primary_input_name != NULL) {
@@ -10871,7 +10871,7 @@ start_input(const char *primary_input_name)
          * a UTF-8 C string. It looks like the `cur_{name,area,ext}` strings
          * are hardly used so it'd be nice to get rid of them someday. */
 
-        format = TTIF_TECTONIC_PRIMARY;
+        format = TTBC_FILE_FORMAT_TECTONIC_PRIMARY;
 
         name_in_progress = true;
         begin_name();
@@ -11516,7 +11516,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     pack_file_name(nom, aire, EMPTY_STRING);
     check_for_tfm_font_mapping();
 
-    tfm_file = tt_xetex_open_input (TTIF_TFM);
+    tfm_file = tt_xetex_open_input (TTBC_FILE_FORMAT_TFM);
     if (tfm_file == NULL) {
         if (!quoted_filename) {
             g = load_native_font(u, nom, aire, s);
@@ -15807,7 +15807,7 @@ void alter_aux(void)
 
             scan_int();
             if ((cur_val <= 0) || (cur_val > 32767)) {
-                diagnostic_t errmsg = error_here_with_diagnostic("Bad space factor");
+                ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad space factor");
                 ttstub_diag_printf(errmsg, " (%d)", cur_val);
                 capture_to_diagnostic(NULL);
 
@@ -15832,7 +15832,7 @@ void alter_prev_graf(void)
     scan_optional_equals();
     scan_int();
     if (cur_val < 0) {
-        diagnostic_t errmsg = error_here_with_diagnostic("Bad ");
+        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad ");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         print_esc_cstr("prevgraf");
         capture_to_diagnostic(NULL);
@@ -15867,7 +15867,7 @@ void alter_integer(void)
         dead_cycles = /*1483: */ cur_val;
     else if (c == 2) {
         if ((cur_val < BATCH_MODE) || (cur_val > ERROR_STOP_MODE)) {
-            diagnostic_t errmsg = error_here_with_diagnostic("Bad interaction mode");
+            ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad interaction mode");
             ttstub_diag_printf(errmsg, " (%d)", cur_val);
             capture_to_diagnostic(NULL);
             {
@@ -15969,7 +15969,7 @@ void new_font(small_number a)
         scan_int();
         s = -(int32_t) cur_val;
         if ((cur_val <= 0) || (cur_val > 32768L)) {
-            diagnostic_t errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
+            ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
             ttstub_diag_printf(errmsg, " (%d)", cur_val);
             capture_to_diagnostic(NULL);
 
@@ -16430,7 +16430,7 @@ void do_extension(void)
                     new_whatsit(GLYPH_NODE, GLYPH_NODE_SIZE);
                     scan_int();
                     if ((cur_val < 0) || (cur_val > 65535L)) {
-                        diagnostic_t errmsg = error_here_with_diagnostic("Bad glyph number");
+                        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad glyph number");
                         ttstub_diag_printf(errmsg, " (%d)", cur_val);
                         capture_to_diagnostic(NULL);
 

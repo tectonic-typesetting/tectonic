@@ -6,7 +6,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdio.h>
 #include <stdarg.h>

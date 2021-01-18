@@ -23,7 +23,7 @@
 #ifndef _PDFXIMAGE_H_
 #define _PDFXIMAGE_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-pdfdoc.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfobj.h"

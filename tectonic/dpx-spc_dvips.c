@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dvi.h"
 #include "dpx-dvicodes.h"
@@ -74,7 +74,7 @@ spc_handler_ps_header (struct spc_env *spe, struct spc_arg *args)
     strncpy(pro, args->curptr, args->endptr - args->curptr);
     pro[args->endptr - args->curptr] = 0;
 
-    ps_header = ttstub_input_open(pro, TTIF_TEX_PS_HEADER, 0);
+    ps_header = ttstub_input_open(pro, TTBC_FILE_FORMAT_TEX_PS_HEADER, 0);
     if (!ps_header) {
         spc_warn(spe, "PS header %s not found.", pro);
         free(pro);

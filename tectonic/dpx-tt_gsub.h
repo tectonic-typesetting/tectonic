@@ -22,7 +22,7 @@
 #define _TT_GSUB_H_
 
 #include "dpx-cmap.h"
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-otl_opt.h"
 #include "dpx-sfnt.h"
 

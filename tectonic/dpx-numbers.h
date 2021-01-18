@@ -23,14 +23,14 @@
 #ifndef _NUMBERS_H_
 #define _NUMBERS_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <inttypes.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
 /* When reading numbers from binary files 1, 2, or 3 bytes are
    interpreted as either signed or unsigned.

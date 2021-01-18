@@ -21,7 +21,7 @@
 #ifndef _CMAP_H_
 #define _CMAP_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdbool.h>
 #include <stddef.h>

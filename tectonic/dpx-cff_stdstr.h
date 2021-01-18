@@ -21,7 +21,7 @@
 #ifndef _CFF_STDSTR_H_
 #define _CFF_STDSTR_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #define CFF_STDSTR_MAX 391
 

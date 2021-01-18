@@ -21,7 +21,7 @@
 #ifndef _CIDTYPE2_H_
 #define _CIDTYPE2_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include "dpx-cid.h"
 #include "dpx-cid_p.h"

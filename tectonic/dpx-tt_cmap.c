@@ -31,7 +31,7 @@
 
 #include "dpx-tt_cmap.h"
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-agl.h"
 /* Sorry for placing this here.
  * We need to rewrite TrueType font support code...

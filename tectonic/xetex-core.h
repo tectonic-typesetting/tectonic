@@ -6,10 +6,7 @@
 #ifndef TECTONIC_XETEX_CORE_H
 #define TECTONIC_XETEX_CORE_H
 
-#include "core-foundation.h"
-#include "core-bridge.h"
-#include "core-memory.h"
-#include "core-strutils.h"
+#include "tectonic_bridge_core.h"
 
 /* ICU */
 #include <unicode/utypes.h>

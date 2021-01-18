@@ -7,6 +7,7 @@
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
+#include "core-bindgen.h"
 
 /* All the following variables are declared in xetex-xetexd.h */
 bool shell_escape_enabled = false;
@@ -2490,7 +2491,7 @@ load_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    fmt_in = ttstub_input_open(name_of_file, TTIF_FORMAT, 0);
+    fmt_in = ttstub_input_open(name_of_file, TTBC_FILE_FORMAT_FORMAT, 0);
     if (fmt_in == NULL)
         _tt_abort("cannot open the format file \"%s\"", name_of_file);
 
@@ -3893,7 +3894,7 @@ void
 tt_cleanup(void) {
     /*
         Cleanup of all intermediate buffers.
-        Conceptually, final_cleanup() and close_files_and_terminate() also 
+        Conceptually, final_cleanup() and close_files_and_terminate() also
         belong here, but that requires a more thorough refactor as presently
         it would result in a segfault.
     */

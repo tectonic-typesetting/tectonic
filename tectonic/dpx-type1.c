@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-cff.h"
 #include "dpx-cff_dict.h"
 #include "dpx-cff_limits.h"
@@ -94,7 +94,7 @@ pdf_font_open_type1 (pdf_font *font)
     } else {
         rust_input_handle_t handle;
 
-        handle = ttstub_input_open(ident, TTIF_TYPE1, 0);
+        handle = ttstub_input_open(ident, TTBC_FILE_FORMAT_TYPE1, 0);
         /* NOTE: skipping qcheck_filetype() call in dpx_find_type1_file but we
          * call is_pfb() in just a second anyway.
          */
@@ -520,7 +520,7 @@ pdf_font_load_type1 (pdf_font *font)
     if (!usedchars || !ident || !fontname)
         _tt_abort("Type1: Unexpected error.");
 
-    handle = ttstub_input_open(ident, TTIF_TYPE1, 0);
+    handle = ttstub_input_open(ident, TTBC_FILE_FORMAT_TYPE1, 0);
     if (handle == NULL)
         _tt_abort("Type1: Could not open Type1 font: %s", ident);
 

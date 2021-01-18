@@ -165,7 +165,7 @@ ensuresuffix (const char *basename, const char *sfx)
 
 
 rust_input_handle_t
-dpx_tt_open (const char *filename, const char *suffix, tt_input_format_type format)
+dpx_tt_open (const char *filename, const char *suffix, ttbc_file_format format)
 {
     char *q;
     rust_input_handle_t handle;
@@ -189,7 +189,7 @@ dpx_open_type1_file (const char *filename)
 {
     rust_input_handle_t handle;
 
-    handle = ttstub_input_open (filename, TTIF_TYPE1, 0);
+    handle = ttstub_input_open (filename, TTBC_FILE_FORMAT_TYPE1, 0);
     if (handle == NULL)
         return NULL;
 
@@ -207,7 +207,7 @@ dpx_open_truetype_file (const char *filename)
 {
     rust_input_handle_t handle;
 
-    handle = ttstub_input_open (filename, TTIF_TRUETYPE, 0);
+    handle = ttstub_input_open (filename, TTBC_FILE_FORMAT_TRUE_TYPE, 0);
     if (handle == NULL)
         return NULL;
 
@@ -227,7 +227,7 @@ dpx_open_opentype_file (const char *filename)
     char *q;
 
     q = ensuresuffix(filename, ".otf");
-    handle = ttstub_input_open (q, TTIF_OPENTYPE, 0);
+    handle = ttstub_input_open (q, TTBC_FILE_FORMAT_OPEN_TYPE, 0);
     free (q);
 
     if (handle == NULL)
@@ -260,7 +260,7 @@ dpx_open_dfont_file (const char *filename)
         q = xstrdup (filename);
     }
 
-    handle = ttstub_input_open (q, TTIF_TRUETYPE, 0);
+    handle = ttstub_input_open (q, TTBC_FILE_FORMAT_TRUE_TYPE, 0);
     free (q);
     if (handle == NULL)
         return NULL;

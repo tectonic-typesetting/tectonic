@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 #include "dpx-error.h"
@@ -312,7 +312,7 @@ find_sfd_file (const char *sfd_name)
         init_sfd_file_(sfd);
         sfd->ident = NEW(strlen(sfd_name) + 1, char);
         strcpy(sfd->ident, sfd_name);
-        handle = ttstub_input_open(sfd->ident, TTIF_SFD, 0);
+        handle = ttstub_input_open(sfd->ident, TTBC_FILE_FORMAT_SFD, 0);
         if (handle == NULL) {
             clean_sfd_file_(sfd);
             return  -1;
@@ -385,7 +385,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
     }
 
     /* reopen */
-    handle = ttstub_input_open(sfd->ident, TTIF_SFD, 0);
+    handle = ttstub_input_open(sfd->ident, TTBC_FILE_FORMAT_SFD, 0);
     if (handle == NULL) {
         return  -1;
         /* _tt_abort("Could not open SFD file \"%s\"", sfd_name); */

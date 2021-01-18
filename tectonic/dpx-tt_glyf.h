@@ -21,7 +21,7 @@
 #ifndef _TT_GLYF_H_
 #define _TT_GLYF_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include "dpx-sfnt.h"
 

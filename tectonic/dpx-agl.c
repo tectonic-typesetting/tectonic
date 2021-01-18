@@ -36,7 +36,7 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxfile.h"
 /* Hash */
@@ -391,7 +391,7 @@ agl_load_listfile (const char *filename, int is_predef)
   if (!filename)
     return  -1;
 
-  handle = dpx_tt_open(filename, ".txt", TTIF_FONTMAP);
+  handle = dpx_tt_open(filename, ".txt", TTBC_FILE_FORMAT_FONT_MAP);
   if (!handle) {
     return -1;
   }

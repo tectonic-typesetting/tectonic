@@ -10,7 +10,7 @@
 #include "xetex-XeTeXOTMath.h"
 #include "teckit-Common.h"
 #include "xetex-ext.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "xetex-constants.h"
 
 BEGIN_EXTERN_C
@@ -346,6 +346,13 @@ typedef struct {
     int32_t name; /* string number: name of current file or magic value for terminal, etc. */
     int32_t synctex_tag;
 } input_state_t;
+
+typedef enum {
+    HISTORY_SPOTLESS = 0,
+    HISTORY_WARNING_ISSUED = 1,
+    HISTORY_ERROR_ISSUED = 2,
+    HISTORY_FATAL_ERROR = 3
+} tt_history_t;
 
 /* Functions originating in texmfmp.c */
 
@@ -1048,7 +1055,7 @@ void flush_math(void);
 // Duplicate messages printed to log/terminal into a warning diagnostic buffer,
 // until a call capture_to_diagnostic(0). A standard usage of this is
 //
-//     diagnostic_t warning = diagnostic_begin_capture_warning_here();
+//     ttbc_diagnostic_t *warning = diagnostic_begin_capture_warning_here();
 //
 //     ... XeTeX prints some errors using print_* functions ...
 //
@@ -1059,14 +1066,14 @@ void flush_math(void);
 //
 // NOTE: the only reason there isn't also an _error_ version of this function is
 // that we haven't yet wired up anything that uses it.
-diagnostic_t diagnostic_begin_capture_warning_here(void);
+ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
 
 // A lower-level API to begin or end the capture of messages into the diagnostic
 // buffer. You can start capture by obtaining a diagnostic_t and passing it to
 // this function -- however, the other functions in this API generally do this
 // for you. Complete capture by passing NULL. Either way, if a capture is in
 // progress when this function is called, it will be completed and reported.
-void capture_to_diagnostic(diagnostic_t diagnostic);
+void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 // A replacement for xetex print_file_line+print_nl_ctr blocks. e.g. Replace
 //
@@ -1078,12 +1085,12 @@ void capture_to_diagnostic(diagnostic_t diagnostic);
 //
 // with
 //
-//     diagnostic_t errmsg = error_here_with_diagnostic("Cannot use ");
+//     ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Cannot use ");
 //
 // This function calls capture_to_diagnostic(errmsg) to begin diagnostic
 // capture. You must call capture_to_diagnostic(NULL) to mark the capture as
 // complete.
-diagnostic_t error_here_with_diagnostic(const char* message);
+ttbc_diagnostic_t *error_here_with_diagnostic(const char* message);
 
 void print_ln(void);
 void print_raw_char(UTF16_code s, bool incr_offset);

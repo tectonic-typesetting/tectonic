@@ -21,7 +21,7 @@
 #ifndef _CFF_TYPES_H_
 #define _CFF_TYPES_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdint.h>
 

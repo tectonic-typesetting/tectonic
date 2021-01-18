@@ -23,12 +23,11 @@
 #ifndef _MFILEIO_H_
 #define _MFILEIO_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <stdio.h>
 #include <sys/types.h>
 
-#include "core-bridge.h"
 #include "dpx-numbers.h"
 
 void seek_relative (FILE *file, int32_t pos);

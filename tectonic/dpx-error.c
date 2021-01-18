@@ -25,7 +25,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
 typedef enum _message_type {
     DPX_MESG_INFO,

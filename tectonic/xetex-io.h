@@ -6,8 +6,7 @@
 #ifndef TECTONIC_XETEX_IO_H
 #define TECTONIC_XETEX_IO_H
 
-#include "core-foundation.h"
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 
 
 typedef struct {

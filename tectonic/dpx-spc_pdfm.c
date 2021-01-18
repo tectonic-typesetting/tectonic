@@ -1558,7 +1558,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
       free(ident);
       return  -1;
     }
-    handle = ttstub_input_open(fullname, TTIF_PICT, 0);
+    handle = ttstub_input_open(fullname, TTBC_FILE_FORMAT_PICT, 0);
     if (handle == NULL) {
       spc_warn(spe, "Could not open file: %s", instring);
       pdf_release_obj(tmp);

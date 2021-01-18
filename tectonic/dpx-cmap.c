@@ -42,7 +42,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-cmap_p.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxutil.h"
@@ -899,7 +899,7 @@ CMap_cache_find (const char *cmap_name)
             return id;
     }
 
-    handle = ttstub_input_open(cmap_name, TTIF_CMAP, 0);
+    handle = ttstub_input_open(cmap_name, TTBC_FILE_FORMAT_CMAP, 0);
     if (handle == NULL)
         return -1;
 

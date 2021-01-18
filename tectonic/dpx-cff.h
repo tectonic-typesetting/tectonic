@@ -21,12 +21,12 @@
 #ifndef _CFF_H_
 #define _CFF_H_
 
-#include "dpx-core.h"
+#include "tectonic_bridge_core.h"
 
 #include <fcntl.h>
 #include <stdio.h>
 
-#include "core-bridge.h"
+#include "tectonic_bridge_core.h"
 #include "dpx-cff_types.h"
 #include "dpx-mfileio.h"
 
