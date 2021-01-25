@@ -4,7 +4,7 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{ffi::OsString, path::PathBuf, process, str::FromStr};
+use std::{env, ffi::OsString, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
@@ -187,9 +187,13 @@ pub struct WatchCommand {
 
 impl WatchCommand {
     fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let exe_name = crate::watch::get_trimmed_exe_name()
+            .into_os_string()
+            .into_string()
+            .expect("Executable path wasn't valid UTF-8");
         let mut cmds = Vec::new();
         for x in self.execute.iter() {
-            let mut cmd = "tectonic -X ".to_owned();
+            let mut cmd = format!("{} -X ", exe_name);
             let x = x.trim();
             if !x.is_empty() {
                 cmd.push_str(x);
@@ -198,7 +202,7 @@ impl WatchCommand {
         }
 
         if cmds.is_empty() {
-            cmds.push("tectonic -X build".to_owned())
+            cmds.push(format!("{} -X build", exe_name))
         }
 
         let command = cmds.join(" && ");
@@ -213,7 +217,7 @@ impl WatchCommand {
 
         let mut args = watchexec::ArgsBuilder::default();
         args.cmd(vec![final_command])
-            .paths(vec![std::env::current_dir()?])
+            .paths(vec![env::current_dir()?])
             .ignores(vec!["build".to_owned()]);
 
         let exec_handler = watchexec::run::ExecHandler::new(args.build()?);
@@ -227,7 +231,7 @@ impl WatchCommand {
                 Ok(1)
             }
             Ok(exec_handler) => {
-                let handler = Watcher {
+                let handler = crate::watch::Watcher {
                     command,
                     inner: exec_handler,
                 };
@@ -239,33 +243,6 @@ impl WatchCommand {
                 }
             }
         }
-    }
-}
-
-struct Watcher {
-    command: String,
-    inner: watchexec::run::ExecHandler,
-}
-
-impl watchexec::Handler for Watcher {
-    fn args(&self) -> watchexec::Args {
-        self.inner.args()
-    }
-
-    fn on_manual(&self) -> watchexec::error::Result<bool> {
-        self.start();
-        self.inner.on_manual()
-    }
-
-    fn on_update(&self, ops: &[watchexec::pathop::PathOp]) -> watchexec::error::Result<bool> {
-        self.start();
-        self.inner.on_update(ops)
-    }
-}
-
-impl Watcher {
-    fn start(&self) {
-        println!("[Running `{}`]", self.command)
     }
 }
 
