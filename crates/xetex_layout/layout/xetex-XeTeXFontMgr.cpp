@@ -51,6 +51,7 @@ authorization from the copyright holders.
 
 XeTeXFontMgr* XeTeXFontMgr::sFontManager = NULL;
 char XeTeXFontMgr::sReqEngine = 0;
+Fixed loaded_font_design_size = 0; /* explicitly *not* static */
 
 /* use our own fmax function because it seems to be missing on certain platforms
    (solaris2.9, at least) */
