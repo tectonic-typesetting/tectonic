@@ -41,6 +41,7 @@ members = [
   "crates/io_base",
   "crates/status_base",
   "crates/xdv",
+  "crates/xetex_layout",
 ]
 
 [lib]

@@ -1,0 +1,43 @@
+# Copyright 2020 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_xetex_layout"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+XeTeX's font loading and layout interface encapsulation, as a crate.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+links = "tectonic_xetex_layout"
+
+[dependencies]
+tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
+tectonic_bridge_freetype2 = { path = "../bridge_freetype2", version = "0.0.0-dev.0" }
+tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev.0" }
+tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version = "0.0.0-dev.0" }
+tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
+
+[build-dependencies]
+cc = "^1.0.66"
+tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
+tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
+
+[features]
+external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
+
+[package.metadata.internal_dep_versions]
+tectonic_bridge_core = "thiscommit:2021-01-16:wie2Ejoh"
+tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
+tectonic_bridge_freetype2 = "thiscommit:2021-01-09:voo7ohK2"
+tectonic_bridge_harfbuzz = "thiscommit:2021-01-09:Aer8ohng"
+tectonic_bridge_icu = "thiscommit:2021-01-09:diehoh1E"
+tectonic_cfg_support = "thiscommit:aeRoo7oa"
+tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
