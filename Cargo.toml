@@ -85,6 +85,7 @@ tectonic_geturl = { path = "crates/geturl", version = "0.0.0-dev.0", default-fea
 tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "crates/status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "crates/xdv", version = "0.0.0-dev.0" }
+tectonic_xetex_layout = { path = "crates/xetex_layout", version = "0.0.0-dev.0" }
 tempfile = "^3.1"
 termcolor = "^1.1"
 toml = { version = "^0.5", optional = true }
@@ -142,3 +143,4 @@ tectonic_geturl = "thiscommit:2021-01-16:Aikoob9c"
 tectonic_io_base = "thiscommit:2021-01-16:SaeK7eex"
 tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
+tectonic_xetex_layout = "213f9a3a3e1fb4a90e01677d4ef6adca09083c68"

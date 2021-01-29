@@ -573,7 +573,6 @@ extern scaled_t *font_letter_space;
 extern void *loaded_font_mapping;
 extern char loaded_font_flags;
 extern scaled_t loaded_font_letter_space;
-extern scaled_t loaded_font_design_size;
 extern UTF16_code *mapped_text;
 extern char *xdv_buffer;
 extern int32_t *char_base;

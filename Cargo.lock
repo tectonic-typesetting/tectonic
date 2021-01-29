@@ -1836,6 +1836,7 @@ dependencies = [
  "tectonic_io_base",
  "tectonic_status_base",
  "tectonic_xdv",
+ "tectonic_xetex_layout",
  "tempfile",
  "termcolor",
  "tokio 0.1.22",

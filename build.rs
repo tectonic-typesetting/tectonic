@@ -1,5 +1,4 @@
-// build.rs -- build helper script for Tectonic.
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! The Tectonic build script. Not only do we have internal C/C++ code, we
@@ -10,30 +9,15 @@ use std::{env, path::PathBuf};
 use tectonic_cfg_support::*;
 use tectonic_dep_support::{Backend, Configuration, Dependency, Spec};
 
-struct TectonicRestSpec;
+struct LibpngSpec;
 
-impl Spec for TectonicRestSpec {
-    #[cfg(not(target_os = "macos"))]
-    fn get_pkgconfig_spec(&self) -> &str {
-        "fontconfig libpng"
-    }
-
-    // No fontconfig on macOS.
-    #[cfg(target_os = "macos")]
+impl Spec for LibpngSpec {
     fn get_pkgconfig_spec(&self) -> &str {
         "libpng"
     }
 
-    // Would be nice to have a way to check that the vcpkg harfbuzz port has
-    // graphite2 and icu options enabled.
-    #[cfg(not(target_os = "macos"))]
     fn get_vcpkg_spec(&self) -> &[&str] {
-        &["fontconfig"]
-    }
-
-    #[cfg(target_os = "macos")]
-    fn get_vcpkg_spec(&self) -> &[&str] {
-        &[]
+        &["libpng"]
     }
 }
 
@@ -59,13 +43,14 @@ fn main() {
 
     println!("cargo:rustc-env=TARGET={}", target);
 
-    // Find our dependencies that aren't provided by any bridge or -sys crates.
+    // Dependencies.
 
     let dep_cfg = Configuration::default();
-    let dep = Dependency::probe(TectonicRestSpec, &dep_cfg);
+    let dep = Dependency::probe(LibpngSpec, &dep_cfg);
 
     // Include paths exported by our internal dependencies.
 
+    let xetex_layout_include_dir = env::var("DEP_TECTONIC_XETEX_LAYOUT_INCLUDE").unwrap();
     let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
     let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
@@ -233,6 +218,7 @@ fn main() {
         .file("tectonic/xetex-xetex0.c")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&xetex_layout_include_dir)
         .include(&core_include_dir)
         .include(&harfbuzz_include_dir)
         .include(&freetype2_include_dir)
@@ -282,12 +268,10 @@ fn main() {
         .cpp(true)
         .flag("-Wall")
         .file("tectonic/teckit-Engine.cpp")
-        .file("tectonic/xetex-XeTeXFontInst.cpp")
-        .file("tectonic/xetex-XeTeXFontMgr.cpp")
-        .file("tectonic/xetex-XeTeXLayoutInterface.cpp")
         .file("tectonic/xetex-XeTeXOTMath.cpp")
         .include(env::var("OUT_DIR").unwrap())
         .include(".")
+        .include(&xetex_layout_include_dir)
         .include(&core_include_dir)
         .include(&harfbuzz_include_dir)
         .include(&freetype2_include_dir)
@@ -314,19 +298,6 @@ fn main() {
         ccfg.file("tectonic/xetex-macos.c");
 
         cppcfg.define("XETEX_MAC", Some("1"));
-        cppcfg.file("tectonic/xetex-XeTeXFontInst_Mac.cpp");
-        cppcfg.file("tectonic/xetex-XeTeXFontMgr_Mac.mm");
-
-        println!("cargo:rustc-link-lib=framework=Foundation");
-        println!("cargo:rustc-link-lib=framework=CoreFoundation");
-        println!("cargo:rustc-link-lib=framework=CoreGraphics");
-        println!("cargo:rustc-link-lib=framework=CoreText");
-        println!("cargo:rustc-link-lib=framework=AppKit");
-    }
-
-    if !is_mac_os {
-        // At the moment we use Fontconfig on both Linux and Windows.
-        cppcfg.file("tectonic/xetex-XeTeXFontMgr_FC.cpp");
     }
 
     let is_big_endian = target_cfg!(target_endian = "big");

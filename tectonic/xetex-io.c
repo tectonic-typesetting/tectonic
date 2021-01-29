@@ -5,7 +5,6 @@
 
 #include "xetex-core.h"
 #include "teckit-c-Engine.h"
-#include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-swap.h"
 #include "xetex-xetexd.h"
 

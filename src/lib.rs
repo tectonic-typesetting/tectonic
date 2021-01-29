@@ -183,6 +183,10 @@ mod linkage {
     #[allow(unused_imports)]
     #[allow(clippy::single_component_path_imports)]
     use tectonic_bridge_icu;
+
+    #[allow(unused_imports)]
+    #[allow(clippy::single_component_path_imports)]
+    use tectonic_xetex_layout;
 }
 
 #[cfg(test)]
