@@ -330,6 +330,7 @@ impl Document {
         sess_builder
             .output_format(output_format)
             .format_name(&profile.tex_format)
+            .build_date(std::time::SystemTime::now())
             .pass(PassSetting::Default)
             .primary_input_buffer(DEFAULT_PRIMARY_INPUT)
             .tex_input_name(output_profile)
