@@ -38,11 +38,7 @@ authorization from the copyright holders.
 
 #include "tectonic_bridge_core.h"
 
-/* freetype: only needed here for gFreeTypeLibrary */
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
-/* harfbuzz: hb_tag_t returned by a few APIs below */
+/* harfbuzz: hb_tag_t and hb_font_t used below */
 #include <harfbuzz/hb.h>
 
 
@@ -84,7 +80,6 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 BEGIN_EXTERN_C
 
 extern Fixed loaded_font_design_size;
-extern FT_Library gFreeTypeLibrary;
 
 #define LEFT_SIDE 0
 #define RIGHT_SIDE 1
@@ -196,6 +191,11 @@ char* getGraphiteFeatureLabel(XeTeXLayoutEngine engine, uint32_t feature);
 char* getGraphiteFeatureSettingLabel(XeTeXLayoutEngine engine, uint32_t feature, uint32_t setting);
 long findGraphiteFeatureNamed(XeTeXLayoutEngine engine, const char* name, int namelength);
 long findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine, uint32_t feature, const char* name, int namelength);
+
+/* Extra APIs needed to encapsulate across the crate boundaries */
+hb_font_t *ttxl_get_hb_font(XeTeXLayoutEngine engine);
+float ttxl_font_units_to_points(XeTeXFont font, float units);
+float ttxl_font_points_to_units(XeTeXFont font, float points);
 
 END_EXTERN_C
 

@@ -51,6 +51,8 @@ authorization from the copyright holders.
 #define kPreferredFamilyName    16
 #define kPreferredSubfamilyName 17
 
+extern FT_Library gFreeTypeLibrary;
+
 static UConverter* macRomanConv = NULL;
 static UConverter* utf16beConv = NULL;
 static UConverter* utf8Conv = NULL;

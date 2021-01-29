@@ -1101,3 +1101,23 @@ isOpenTypeMathFont(XeTeXLayoutEngine engine)
 {
     return hb_ot_math_has_data(hb_font_get_face(engine->font->getHbFont()));
 }
+
+/* New Tectonic APIs for crate encapsulation */
+
+hb_font_t *
+ttxl_get_hb_font(XeTeXLayoutEngine engine)
+{
+    return engine->font->getHbFont();
+}
+
+float
+ttxl_font_units_to_points(XeTeXFont font, float units)
+{
+    return ((XeTeXFontInst *) font)->unitsToPoints(units);
+}
+
+float
+ttxl_font_points_to_units(XeTeXFont font, float points)
+{
+    return ((XeTeXFontInst *) font)->pointsToUnits(points);
+}

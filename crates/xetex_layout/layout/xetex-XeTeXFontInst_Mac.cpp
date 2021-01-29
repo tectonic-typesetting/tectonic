@@ -42,6 +42,8 @@ authorization from the copyright holders.
 #include "tectonic_bridge_core.h"
 #include "xetex-XeTeXFontInst_Mac.h"
 
+extern FT_Library gFreeTypeLibrary;
+
 char*
 getNameFromCTFont(CTFontRef ctFontRef, CFStringRef nameKey)
 {
