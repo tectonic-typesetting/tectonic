@@ -170,10 +170,6 @@ mod linkage {
 
     #[allow(unused_imports)]
     #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_freetype2;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
     use tectonic_bridge_graphite2;
 
     #[allow(unused_imports)]

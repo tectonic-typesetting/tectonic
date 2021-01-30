@@ -9,6 +9,7 @@
 #include "xetex-xetexd.h"
 #include "xetex-ext.h"
 
+#include <stdio.h> /* For s(n)printf */
 #include <time.h> /* For `struct tm'.  Moved here for Visual Studio 2005.  */
 #ifndef _MSC_VER
 #include <sys/time.h>

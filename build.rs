@@ -54,7 +54,6 @@ fn main() {
     let xetex_layout_include_path = env::var("DEP_TECTONIC_XETEX_LAYOUT_INCLUDE_PATH").unwrap();
     let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
-    let freetype2_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
     let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
@@ -280,11 +279,6 @@ fn main() {
     }
 
     for item in harfbuzz_include_path.split(';') {
-        ccfg.include(item);
-        cppcfg.include(item);
-    }
-
-    for item in freetype2_include_path.split(';') {
         ccfg.include(item);
         cppcfg.include(item);
     }
