@@ -100,12 +100,12 @@ typedef void* CFDictionaryRef; /* dummy declaration just so the stubs can compil
 
 #ifdef XETEX_MAC
 extern const CFStringRef kXeTeXEmboldenAttributeName;
-#endif
-
+#else
 typedef struct {
     Fixed x;
     Fixed y;
 } FixedPoint;
+#endif
 
 BEGIN_EXTERN_C
 
@@ -193,8 +193,6 @@ char* GetGlyphNameFromCTFont(CTFontRef ctFontRef, uint16_t gid, int* len);
 CFDictionaryRef findDictionaryInArray(CFArrayRef array, const void* nameKey, const char* name, int nameLength);
 CFDictionaryRef findDictionaryInArrayWithIdentifier(CFArrayRef array, const void* identifierKey, int identifier);
 CFNumberRef findSelectorByName(CFDictionaryRef feature, const char* name, int nameLength);
-char* getNameFromCTFont(CTFontRef ctFontRef, CFStringRef nameKey);
-char* getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t* index);
 int GetFontCharRange_AAT(CFDictionaryRef fontAttrs, int reqFirst);
 CTFontRef fontFromAttributes(CFDictionaryRef fontAttrs);
 CTFontRef fontFromInteger(int32_t font);
