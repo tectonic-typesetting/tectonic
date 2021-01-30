@@ -75,11 +75,11 @@ fn main() {
     // Include paths and settings exported by our internal dependencies.
 
     let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
-    let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
-    let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
+    let freetype2_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
+    let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
-    let harfbuzz_include_dir = env::var("DEP_HARFBUZZ_INCLUDE").unwrap();
-    let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
+    let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
+    let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
 
     // Define the C++ support library.
 
@@ -130,19 +130,31 @@ fn main() {
         .cpp(true)
         .flag("-Wall")
         .include("layout")
-        .include(&core_include_dir)
-        .include(&harfbuzz_include_dir)
-        .include(&freetype2_include_dir)
-        .include(&graphite2_include_dir)
-        .include(&icu_include_dir);
-
-    compile(&mut cppcfg, "layout/xetex-XeTeXFontInst.cpp");
-    compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr.cpp");
-    compile(&mut cppcfg, "layout/xetex-XeTeXLayoutInterface.cpp");
+        .include(&core_include_dir);
 
     deps.foreach_include_path(|p| {
         cppcfg.include(p);
     });
+
+    for item in harfbuzz_include_path.split(';') {
+        cppcfg.include(item);
+    }
+
+    for item in freetype2_include_path.split(';') {
+        cppcfg.include(item);
+    }
+
+    for item in graphite2_include_path.split(';') {
+        cppcfg.include(item);
+    }
+
+    for item in icu_include_path.split(';') {
+        cppcfg.include(item);
+    }
+
+    compile(&mut cppcfg, "layout/xetex-XeTeXFontInst.cpp");
+    compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr.cpp");
+    compile(&mut cppcfg, "layout/xetex-XeTeXLayoutInterface.cpp");
 
     if graphite2_static {
         cppcfg.define("GRAPHITE2_STATIC", "1");
@@ -197,10 +209,28 @@ fn main() {
 
     std::fs::copy(&main_header_src, &main_header_dest).expect("failed to copy main header");
 
-    // Cargo exposes this as the environment variable DEP_XXX_INCLUDE, where XXX
-    // is the "links" setting in Cargo.toml. This is the key element that allows
-    // us to have a network of crates containing both C/C++ and Rust code that
-    // all interlink.
+    // Cargo exposes this as the environment variable DEP_XXX_INCLUDE_PATH,
+    // where XXX is the "links" setting in Cargo.toml. This is the key element
+    // that allows us to have a network of crates containing both C/C++ and Rust
+    // code that all interlink.
 
-    println!("cargo:include={}", out_dir);
+    print!("cargo:include-path={}", out_dir);
+
+    for item in harfbuzz_include_path.split(';') {
+        print!(";{}", item);
+    }
+
+    for item in freetype2_include_path.split(';') {
+        print!(";{}", item);
+    }
+
+    for item in graphite2_include_path.split(';') {
+        print!(";{}", item);
+    }
+
+    for item in icu_include_path.split(';') {
+        print!(";{}", item);
+    }
+
+    println!();
 }

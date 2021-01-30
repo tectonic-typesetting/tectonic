@@ -23,12 +23,13 @@ impl Spec for LibpngSpec {
 
 fn main() {
     let target = env::var("TARGET").unwrap();
+    let out_dir = env::var("OUT_DIR").unwrap();
 
     // Generate bindings for the C/C++ code to interface with backend Rust code.
     // As a heuristic we trigger rebuilds on changes to src/engines/mod.rs since
     // most of `core-bindgen.h` comes from this file.
 
-    let mut cbindgen_header_path: PathBuf = env::var("OUT_DIR").unwrap().into();
+    let mut cbindgen_header_path: PathBuf = out_dir.clone().into();
     cbindgen_header_path.push("core-bindgen.h");
 
     cbindgen::generate(env::var("CARGO_MANIFEST_DIR").unwrap())
@@ -50,14 +51,14 @@ fn main() {
 
     // Include paths exported by our internal dependencies.
 
-    let xetex_layout_include_dir = env::var("DEP_TECTONIC_XETEX_LAYOUT_INCLUDE").unwrap();
+    let xetex_layout_include_path = env::var("DEP_TECTONIC_XETEX_LAYOUT_INCLUDE_PATH").unwrap();
     let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
-    let freetype2_include_dir = env::var("DEP_FREETYPE2_INCLUDE").unwrap();
-    let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
+    let freetype2_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
+    let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
-    let harfbuzz_include_dir = env::var("DEP_HARFBUZZ_INCLUDE").unwrap();
-    let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
+    let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
+    let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
 
     // Specify the C/C++ support libraries. Actually I'm not 100% sure that I
     // can't compile the C and C++ code into one library, but it's no a big deal
@@ -215,16 +216,7 @@ fn main() {
         .file("tectonic/xetex-stringpool.c")
         .file("tectonic/xetex-synctex.c")
         .file("tectonic/xetex-texmfmp.c")
-        .file("tectonic/xetex-xetex0.c")
-        .include(env::var("OUT_DIR").unwrap())
-        .include(".")
-        .include(&xetex_layout_include_dir)
-        .include(&core_include_dir)
-        .include(&harfbuzz_include_dir)
-        .include(&freetype2_include_dir)
-        .include(&graphite2_include_dir)
-        .include(&icu_include_dir)
-        .include(&flate_include_dir);
+        .file("tectonic/xetex-xetex0.c");
 
     let cppflags = [
         "-std=c++14",
@@ -268,21 +260,44 @@ fn main() {
         .cpp(true)
         .flag("-Wall")
         .file("tectonic/teckit-Engine.cpp")
-        .file("tectonic/xetex-XeTeXOTMath.cpp")
-        .include(env::var("OUT_DIR").unwrap())
-        .include(".")
-        .include(&xetex_layout_include_dir)
-        .include(&core_include_dir)
-        .include(&harfbuzz_include_dir)
-        .include(&freetype2_include_dir)
-        .include(&graphite2_include_dir)
-        .include(&icu_include_dir)
-        .include(&flate_include_dir);
+        .file("tectonic/xetex-XeTeXOTMath.cpp");
+
+    // C/C++ preprocessor fun.
+
+    for p in &[&out_dir, ".", &core_include_dir, &flate_include_dir] {
+        ccfg.include(p);
+        cppcfg.include(p);
+    }
 
     dep.foreach_include_path(|p| {
         ccfg.include(p);
         cppcfg.include(p);
     });
+
+    for item in xetex_layout_include_path.split(';') {
+        ccfg.include(item);
+        cppcfg.include(item);
+    }
+
+    for item in harfbuzz_include_path.split(';') {
+        ccfg.include(item);
+        cppcfg.include(item);
+    }
+
+    for item in freetype2_include_path.split(';') {
+        ccfg.include(item);
+        cppcfg.include(item);
+    }
+
+    for item in graphite2_include_path.split(';') {
+        ccfg.include(item);
+        cppcfg.include(item);
+    }
+
+    for item in icu_include_path.split(';') {
+        ccfg.include(item);
+        cppcfg.include(item);
+    }
 
     if graphite2_static {
         ccfg.define("GRAPHITE2_STATIC", "1");

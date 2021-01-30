@@ -13,8 +13,9 @@ API*.
 - [Main Git repository](https://github.com/tectonic-typesetting/tectonic/).
 
 If your project depends on this crate, Cargo will export for your build script
-an environment variable named `DEP_TECTONIC_XETEX_LAYOUT_INCLUDE`, which will be
-the name of a directory containing the `tectonic_xetex_layout.h` include file.
+an environment variable named `DEP_TECTONIC_XETEX_LAYOUT_INCLUDE_PATH`, which
+will be a semicolon-separated list of directories enabling your code to include
+the `tectonic_xetex_layout.h` header.
 
 You will need to ensure that your Rust code actually references this crate in
 order for the linker to include linked libraries. A `use` statement will

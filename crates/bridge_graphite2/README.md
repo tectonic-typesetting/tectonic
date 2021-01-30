@@ -18,11 +18,11 @@ library without it needing to be installed on the system. However, this has not
 yet been implemented.
 
 If your project depends on this crate, Cargo will export for your build script
-an environment variable named `DEP_GRAPHITE2_INCLUDE`, which will be the name of
-a directory containing the `graphite2` directory which in turn contains the
-graphite2 C headers. It will also export an environment variable named
-`DEP_GRAPHITE2_DEFINE_STATIC`. If non-empty, C/C++ code compiled against this
-library should define the C preprocessor symbol `GRAPHITE2_STATIC`.
+an environment variable named `DEP_GRAPHITE2_INCLUDE_PATH`, which will be a
+semicolon-separated list of C incude directories, such that your code can
+include the `graphite2/*` C headers. It will also export an environment variable
+named `DEP_GRAPHITE2_DEFINE_STATIC`. If non-empty, C/C++ code compiled against
+this library should define the C preprocessor symbol `GRAPHITE2_STATIC`.
 
 You will need to ensure that your Rust code actually references this crate in
 order for the linker to include linked libraries. A `use` statement will

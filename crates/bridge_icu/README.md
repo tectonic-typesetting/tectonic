@@ -29,8 +29,9 @@ Ideally, though, one day this crate will be superseded by a true Rust “sys
 crate”.
 
 If your project depends on this crate, Cargo will export for your build script
-an environment variable named `DEP_ICUUC_INCLUDE`, which will be the name of
-a directory containing the `unicode` headers.
+an environment variable named `DEP_ICUUC_INCLUDE_PATH`, which will be a
+semicolon-separated list of C include directories enabling your code to include
+the `unicode/*` headers.
 
 You will need to ensure that your Rust code actually references this crate in
 order for the linker to include linked libraries. A `use` statement will
