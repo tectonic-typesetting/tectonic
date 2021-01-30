@@ -1121,3 +1121,9 @@ ttxl_font_points_to_units(XeTeXFont font, float points)
 {
     return ((XeTeXFontInst *) font)->pointsToUnits(points);
 }
+
+const char *
+ttxl_platfont_get_desc(PlatformFontRef fontRef)
+{
+    return XeTeXFontMgr::GetFontManager()->getPlatformFontDesc(fontRef).c_str();
+}

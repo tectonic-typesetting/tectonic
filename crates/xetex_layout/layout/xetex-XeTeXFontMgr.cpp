@@ -395,13 +395,8 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
     if (font != NULL && font->opSizeInfo.designSize != 0.0)
         loaded_font_design_size = unsigned(font->opSizeInfo.designSize * 65536.0 + 0.5);
 
-    //XXXXX if (get_tracing_fonts_state() > 0) {
-    //XXXXX     begin_diagnostic();
-    //XXXXX     print_nl(' ');
-    //XXXXX     printcstring("-> ");
-    //XXXXX     printcstring(getPlatformFontDesc(font->fontRef).c_str());
-    //XXXXX     end_diagnostic(0);
-    //XXXXX }
+    /* Tectonic: there used to be a bit of tracing code here, but we neede to
+     * move it to find_native_font() to preserve encapsulation. */
 
     return font->fontRef;
 }

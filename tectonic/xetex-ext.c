@@ -785,6 +785,18 @@ find_native_font(char* uname, int32_t scaled_size)
     } else {
         fontRef = findFontByName(nameString, varString, Fix2D(scaled_size));
 
+        /* Tectonic: this used to live in XeTeXFontMgr::findFont(), but we needed to
+         * move it here to preserve encapsulation.
+         */
+
+        if (get_tracing_fonts_state() > 0) {
+            begin_diagnostic();
+            print_nl(' ');
+            print_c_string("-> ");
+            print_c_string(ttxl_platfont_get_desc(fontRef));
+            end_diagnostic(0);
+        }
+
         if (fontRef) {
             /* update name_of_file to the full name of the font, for error messages during font loading */
             const char* fullName = getFullName(fontRef);
