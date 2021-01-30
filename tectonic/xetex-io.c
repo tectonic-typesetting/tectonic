@@ -5,10 +5,10 @@
 
 #include "xetex-core.h"
 #include "teckit-c-Engine.h"
-#include "xetex-XeTeXLayoutInterface.h"
 #include "xetex-swap.h"
 #include "xetex-xetexd.h"
 
+#include <stdio.h>
 #include <unicode/ucnv.h>
 
 char *name_of_input_file = NULL;

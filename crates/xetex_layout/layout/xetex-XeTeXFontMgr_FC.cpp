@@ -30,7 +30,7 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include "xetex-core.h"
+#include "tectonic_bridge_core.h"
 
 #include "xetex-XeTeXFontMgr_FC.h"
 
@@ -39,6 +39,7 @@ authorization from the copyright holders.
 #define FC_FULLNAME "fullname"
 #endif
 
+#include <ft2build.h>
 #include FT_SFNT_NAMES_H
 #include FT_TRUETYPE_IDS_H
 
@@ -49,6 +50,8 @@ authorization from the copyright holders.
 #define kFontFullName   4
 #define kPreferredFamilyName    16
 #define kPreferredSubfamilyName 17
+
+extern FT_Library gFreeTypeLibrary;
 
 static UConverter* macRomanConv = NULL;
 static UConverter* utf16beConv = NULL;

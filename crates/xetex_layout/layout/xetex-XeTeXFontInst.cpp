@@ -39,16 +39,10 @@ authorization from the copyright holders.
  *     originally based on PortableFontInstance.cpp from ICU
  */
 
-#include "xetex-core.h"
-
+#include "tectonic_xetex_layout.h"
 #include "xetex-XeTeXFontInst.h"
-#include "xetex-XeTeXLayoutInterface.h"
-#include "xetex-ext.h"
 
 #include <string.h>
-#include FT_GLYPH_H
-#include FT_ADVANCES_H
-
 
 /* Return NAME with any leading path stripped off.  This returns a
    pointer into NAME.  For example, `basename ("/foo/bar.baz")'

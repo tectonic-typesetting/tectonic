@@ -5,7 +5,7 @@
 /* TODO: we're migrating away from this setup. This file should go away. */
 
 #include "tectonic_bridge_core.h"
-#include "core-bindgen.h"
+#include "core-bindgen.h" /* declarations of these functions */
 #include "xetex-xetexd.h" /* HISTORY_FATAL_ERROR */
 #include "dpx-dvipdfmx.h" /* dpx_config */
 

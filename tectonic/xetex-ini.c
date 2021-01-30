@@ -7,7 +7,7 @@
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
-#include "core-bindgen.h"
+#include "core-bindgen.h" /* FORMAT_SERIAL */
 
 /* All the following variables are declared in xetex-xetexd.h */
 bool shell_escape_enabled = false;
@@ -205,7 +205,6 @@ scaled_t *font_letter_space;
 void *loaded_font_mapping;
 char loaded_font_flags;
 scaled_t loaded_font_letter_space;
-scaled_t loaded_font_design_size;
 UTF16_code *mapped_text;
 char *xdv_buffer;
 int32_t *char_base;

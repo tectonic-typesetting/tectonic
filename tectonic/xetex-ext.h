@@ -36,7 +36,13 @@ authorization from the copyright holders.
 #define __XETEXEXT_H
 
 #include "xetex-core.h"
-#include "xetex-XeTeXLayoutInterface.h"
+#include "tectonic_xetex_layout.h"
+
+#ifdef XETEX_MAC
+# include <CoreFoundation/CoreFoundation.h>
+#else
+typedef void* CFDictionaryRef; /* dummy declaration just so the stubs can compile */
+#endif
 
 #define AAT_FONT_FLAG   0xFFFFu
 #define OTGR_FONT_FLAG  0xFFFEu
@@ -72,9 +78,6 @@ authorization from the copyright holders.
 #define XeTeX_feature_name 8
 #define XeTeX_selector_name 9
 
-#define LEFT_SIDE 0
-#define RIGHT_SIDE 1
-
 /* accessing info in a native_word_node */
 #define width_offset 1
 #define depth_offset 2
@@ -97,6 +100,11 @@ authorization from the copyright holders.
 
 #ifdef XETEX_MAC
 extern const CFStringRef kXeTeXEmboldenAttributeName;
+#else
+typedef struct {
+    Fixed x;
+    Fixed y;
+} FixedPoint;
 #endif
 
 BEGIN_EXTERN_C
@@ -154,8 +162,6 @@ unsigned int read_rgb_a(const char** cp);
 int count_pdf_file_pages(void);
 
 int maketexstring(const char* s);
-void set_cp_code(int fontNum, unsigned int code, int side, int value);
-int get_cp_code(int fontNum, unsigned int code, int side);
 double Fix2D(Fixed f);
 Fixed D2Fix(double d);
 
@@ -187,8 +193,6 @@ char* GetGlyphNameFromCTFont(CTFontRef ctFontRef, uint16_t gid, int* len);
 CFDictionaryRef findDictionaryInArray(CFArrayRef array, const void* nameKey, const char* name, int nameLength);
 CFDictionaryRef findDictionaryInArrayWithIdentifier(CFArrayRef array, const void* identifierKey, int identifier);
 CFNumberRef findSelectorByName(CFDictionaryRef feature, const char* name, int nameLength);
-char* getNameFromCTFont(CTFontRef ctFontRef, CFStringRef nameKey);
-char* getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t* index);
 int GetFontCharRange_AAT(CFDictionaryRef fontAttrs, int reqFirst);
 CTFontRef fontFromAttributes(CFDictionaryRef fontAttrs);
 CTFontRef fontFromInteger(int32_t font);

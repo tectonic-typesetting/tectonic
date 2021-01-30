@@ -40,7 +40,6 @@ authorization from the copyright holders.
 #include "xetex-xetexd.h"
 #include "teckit-c-Engine.h"
 #include "xetex-ext.h"
-#include "xetex-XeTeXLayoutInterface.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -383,84 +382,6 @@ GetFontCharRange_AAT(CFDictionaryRef attributes, int reqFirst)
             --ch;
         return ch;
     }
-}
-
-char*
-getNameFromCTFont(CTFontRef ctFontRef, CFStringRef nameKey)
-{
-    char *buf;
-    CFStringRef name = CTFontCopyName(ctFontRef, nameKey);
-    CFIndex len = CFStringGetLength(name);
-    len = len * 6 + 1;
-    buf = xmalloc(len);
-    if (CFStringGetCString(name, buf, len, kCFStringEncodingUTF8))
-        return buf;
-    free(buf);
-    return NULL;
-}
-
-char*
-getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t *index)
-{
-    char *ret = NULL;
-    CFURLRef url = NULL;
-
-#if !defined(MAC_OS_X_VERSION_10_6) || MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
-    /* kCTFontURLAttribute was not avialable before 10.6 */
-    ATSFontRef atsFont;
-    FSRef fsref;
-    OSStatus status;
-    atsFont = CTFontGetPlatformFont(ctFontRef, NULL);
-    status = ATSFontGetFileReference(atsFont, &fsref);
-    if (status == noErr)
-        url = CFURLCreateFromFSRef(NULL, &fsref);
-#else
-    url = (CFURLRef) CTFontCopyAttribute(ctFontRef, kCTFontURLAttribute);
-#endif
-    if (url) {
-        UInt8 pathname[PATH_MAX];
-        if (CFURLGetFileSystemRepresentation(url, true, pathname, PATH_MAX)) {
-            FT_Error error;
-            FT_Face face;
-
-            *index = 0;
-
-            if (!gFreeTypeLibrary) {
-                error = FT_Init_FreeType(&gFreeTypeLibrary);
-                if (error)
-                    _tt_abort("FreeType initialization failed; error %d", error);
-            }
-
-            error = FT_New_Face(gFreeTypeLibrary, (char *) pathname, 0, &face);
-            if (!error) {
-                if (face->num_faces > 1) {
-                    int num_faces = face->num_faces;
-                    char *ps_name1 = getNameFromCTFont(ctFontRef, kCTFontPostScriptNameKey);
-                    int i;
-                    *index = -1;
-                    FT_Done_Face (face);
-                    for (i = 0; i < num_faces; i++) {
-                        error = FT_New_Face (gFreeTypeLibrary, (char *) pathname, i, &face);
-                        if (!error) {
-                            const char *ps_name2 = FT_Get_Postscript_Name(face);
-                            if (streq_ptr(ps_name1, ps_name2)) {
-                                *index = i;
-                                break;
-                            }
-                            FT_Done_Face (face);
-                        }
-                    }
-                    free(ps_name1);
-                }
-            }
-
-            if (*index != -1)
-                ret = strdup((char *) pathname);
-        }
-        CFRelease(url);
-    }
-
-    return ret;
 }
 
 CFDictionaryRef

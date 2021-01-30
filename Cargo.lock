@@ -1824,7 +1824,6 @@ dependencies = [
  "structopt",
  "tectonic_bridge_core",
  "tectonic_bridge_flate",
- "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_bridge_harfbuzz",
  "tectonic_bridge_icu",
@@ -1836,6 +1835,7 @@ dependencies = [
  "tectonic_io_base",
  "tectonic_status_base",
  "tectonic_xdv",
+ "tectonic_xetex_layout",
  "tempfile",
  "termcolor",
  "tokio 0.1.22",
@@ -1969,6 +1969,20 @@ version = "0.0.0-dev.0"
 dependencies = [
  "byteorder",
  "clap",
+]
+
+[[package]]
+name = "tectonic_xetex_layout"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cc",
+ "tectonic_bridge_core",
+ "tectonic_bridge_freetype2",
+ "tectonic_bridge_graphite2",
+ "tectonic_bridge_harfbuzz",
+ "tectonic_bridge_icu",
+ "tectonic_cfg_support",
+ "tectonic_dep_support",
 ]
 
 [[package]]

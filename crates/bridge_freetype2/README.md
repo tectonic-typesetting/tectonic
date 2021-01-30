@@ -30,8 +30,9 @@ This package is distinctive because:
 Ideally, one day this crate will be superseded by one of the above crates.
 
 If your project depends on this crate, Cargo will export for your build script
-an environment variable named `DEP_FREETYPE2_INCLUDE`, which will be the name of
-a directory containing the `ft2build.h` header.
+an environment variable named `DEP_FREETYPE2_INCLUDE_PATH`, which will be a
+semicolon-separated list of directories containing C headers, such that your
+code will be able to successfully include the `ft2build.h` header.
 
 You will need to ensure that your Rust code actually references this crate in
 order for the linker to include linked libraries. A `use` statement will

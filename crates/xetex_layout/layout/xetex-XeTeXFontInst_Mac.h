@@ -42,8 +42,7 @@ authorization from the copyright holders.
 #ifndef __XeTeXFontInst_Mac_H
 #define __XeTeXFontInst_Mac_H
 
-#include "xetex-core.h"
-
+#include "tectonic_bridge_core.h"
 #include "xetex-XeTeXFontInst.h"
 
 #include <ApplicationServices/ApplicationServices.h>

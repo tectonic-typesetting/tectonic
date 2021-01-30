@@ -42,8 +42,28 @@ authorization from the copyright holders.
 #ifndef __XeTeXFontInst_H
 #define __XeTeXFontInst_H
 
-#include "xetex-core.h"
+#include "tectonic_bridge_core.h"
 #include "xetex-XeTeXFontMgr.h"
+
+#include <ft2build.h>
+#include FT_GLYPH_H
+#include FT_ADVANCES_H
+#include FT_TRUETYPE_TABLES_H
+
+#include <unicode/umachine.h>
+
+static inline double
+Fix2D(Fixed f)
+{
+    return f / 65536.0;
+}
+
+static inline Fixed
+D2Fix(double d)
+{
+    return (int) (d * 65536.0 + 0.5);
+}
+
 
 // create specific subclasses for each supported platform
 

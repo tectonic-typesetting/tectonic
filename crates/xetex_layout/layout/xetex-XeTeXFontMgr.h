@@ -34,7 +34,7 @@ authorization from the copyright holders.
 #ifndef __XETEX_FONT_MANAGER_H
 #define __XETEX_FONT_MANAGER_H
 
-#include "xetex-core.h"
+#include "tectonic_xetex_layout.h"
 
 #include <string>
 #include <map>
@@ -79,6 +79,9 @@ public:
 
     void                            setReqEngine(char reqEngine) const { sReqEngine = reqEngine; }
 
+    // made public for Tectonic to enable encapsulation of some tracing code
+    virtual std::string             getPlatformFontDesc(PlatformFontRef font) const = 0;
+
 protected:
     static XeTeXFontMgr*            sFontManager;
     static char                     sReqEngine;
@@ -90,8 +93,6 @@ protected:
 
     virtual void                    initialize() = 0;
     virtual void                    terminate();
-
-    virtual std::string             getPlatformFontDesc(PlatformFontRef font) const = 0;
 
     class Font;
     class Family;

@@ -31,8 +31,7 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include "xetex-core.h"
-#include "xetex-xetexd.h"
+#include "tectonic_bridge_core.h"
 
 #include <unicode/ubidi.h>  /* Barely needed in this file. */
 
@@ -45,7 +44,8 @@ authorization from the copyright holders.
 #endif
 #include <harfbuzz/hb-ot.h>
 
-#include "xetex-XeTeXLayoutInterface.h"
+#include "tectonic_xetex_layout.h"
+
 #include "xetex-XeTeXFontInst.h"
 #ifdef XETEX_MAC
 #include "xetex-XeTeXFontInst_Mac.h"
@@ -1100,4 +1100,30 @@ bool
 isOpenTypeMathFont(XeTeXLayoutEngine engine)
 {
     return hb_ot_math_has_data(hb_font_get_face(engine->font->getHbFont()));
+}
+
+/* New Tectonic APIs for crate encapsulation */
+
+hb_font_t *
+ttxl_get_hb_font(XeTeXLayoutEngine engine)
+{
+    return engine->font->getHbFont();
+}
+
+float
+ttxl_font_units_to_points(XeTeXFont font, float units)
+{
+    return ((XeTeXFontInst *) font)->unitsToPoints(units);
+}
+
+float
+ttxl_font_points_to_units(XeTeXFont font, float points)
+{
+    return ((XeTeXFontInst *) font)->pointsToUnits(points);
+}
+
+const char *
+ttxl_platfont_get_desc(PlatformFontRef fontRef)
+{
+    return XeTeXFontMgr::GetFontManager()->getPlatformFontDesc(fontRef).c_str();
 }

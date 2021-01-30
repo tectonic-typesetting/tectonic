@@ -31,12 +31,62 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
+/* Formerly known as [xetex-]XeTeXLayoutInterface.h */
+
 #ifndef XETEX_LAYOUT_INTERFACE_H
 #define XETEX_LAYOUT_INTERFACE_H 1
 
-#include "xetex-core.h"
+#include "tectonic_bridge_core.h"
+
+/* harfbuzz: hb_tag_t and hb_font_t used below */
+#include <harfbuzz/hb.h>
+
+
+/* Set up our types */
+
+#ifdef XETEX_MAC
+
+#include <ApplicationServices/ApplicationServices.h>
+typedef CTFontDescriptorRef PlatformFontRef;
+
+#else /* XETEX_MAC */
+
+#include <fontconfig/fontconfig.h>
+typedef FcPattern* PlatformFontRef;
+typedef int32_t Fixed; /* macOS defines Fixed in system headers */
+
+#endif /* XETEX_MAC */
+
+typedef struct {
+    float x;
+    float y;
+} FloatPoint;
+
+typedef struct {
+    float xMin;
+    float yMin;
+    float xMax;
+    float yMax;
+} GlyphBBox;
+
+typedef uint32_t OTTag;
+typedef uint16_t GlyphID;
+
+typedef struct XeTeXFont_rec* XeTeXFont;
+typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
+
+/* Now we can defined our C APIs */
 
 BEGIN_EXTERN_C
+
+extern Fixed loaded_font_design_size;
+
+#define LEFT_SIDE 0
+#define RIGHT_SIDE 1
+
+void set_cp_code(int fontNum, unsigned int code, int side, int value);
+int get_cp_code(int fontNum, unsigned int code, int side);
+
 int getCachedGlyphBBox(uint16_t fontID, uint16_t glyphID, GlyphBBox* bbox);
 void cacheGlyphBBox(uint16_t fontID, uint16_t glyphID, const GlyphBBox* bbox);
 
@@ -141,6 +191,16 @@ char* getGraphiteFeatureLabel(XeTeXLayoutEngine engine, uint32_t feature);
 char* getGraphiteFeatureSettingLabel(XeTeXLayoutEngine engine, uint32_t feature, uint32_t setting);
 long findGraphiteFeatureNamed(XeTeXLayoutEngine engine, const char* name, int namelength);
 long findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine, uint32_t feature, const char* name, int namelength);
+
+/* Extra APIs needed to encapsulate across the crate boundaries */
+hb_font_t *ttxl_get_hb_font(XeTeXLayoutEngine engine);
+float ttxl_font_units_to_points(XeTeXFont font, float units);
+float ttxl_font_points_to_units(XeTeXFont font, float points);
+const char *ttxl_platfont_get_desc(PlatformFontRef fontRef);
+
+#ifdef XETEX_MAC
+char* getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t *index);
+#endif
 
 END_EXTERN_C
 

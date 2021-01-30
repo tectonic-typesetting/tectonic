@@ -1019,9 +1019,6 @@
 #define LP_CODE_BASE 2
 #define RP_CODE_BASE 3
 
-#define LEFT_SIDE 0
-#define RIGHT_SIDE 1
-
 /* modes to do_marks() */
 #define VSPLIT_INIT 0
 #define FIRE_UP_INIT 1

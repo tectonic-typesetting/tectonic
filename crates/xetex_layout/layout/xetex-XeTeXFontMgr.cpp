@@ -30,8 +30,7 @@ use or other dealings in this Software without prior written
 authorization from the copyright holders.
 \****************************************************************************/
 
-#include "xetex-core.h"
-#include "xetex-xetexd.h"
+#include "tectonic_xetex_layout.h"
 
 #ifdef XETEX_MAC
 #include "xetex-XeTeXFontMgr_Mac.h"
@@ -52,6 +51,7 @@ authorization from the copyright holders.
 
 XeTeXFontMgr* XeTeXFontMgr::sFontManager = NULL;
 char XeTeXFontMgr::sReqEngine = 0;
+Fixed loaded_font_design_size = 0; /* explicitly *not* static */
 
 /* use our own fmax function because it seems to be missing on certain platforms
    (solaris2.9, at least) */
@@ -395,13 +395,8 @@ XeTeXFontMgr::findFont(const char* name, char* variant, double ptSize)
     if (font != NULL && font->opSizeInfo.designSize != 0.0)
         loaded_font_design_size = unsigned(font->opSizeInfo.designSize * 65536.0 + 0.5);
 
-    if (get_tracing_fonts_state() > 0) {
-        begin_diagnostic();
-        print_nl(' ');
-        printcstring("-> ");
-        printcstring(getPlatformFontDesc(font->fontRef).c_str());
-        end_diagnostic(0);
-    }
+    /* Tectonic: there used to be a bit of tracing code here, but we neede to
+     * move it to find_native_font() to preserve encapsulation. */
 
     return font->fontRef;
 }
