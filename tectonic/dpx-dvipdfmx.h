@@ -26,7 +26,7 @@
 #define _DVIPDFMX_H_
 
 #include "tectonic_bridge_core.h"
-#include "core-bindgen.h"
+#include "core-bindgen.h" /* XdvipdfmxConfig */
 
 #include <stdbool.h>
 
