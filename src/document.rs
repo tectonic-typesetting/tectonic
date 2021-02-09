@@ -5,7 +5,9 @@
 
 use std::{
     collections::HashMap,
-    env, fs,
+    env,
+    fmt::Write as FmtWrite,
+    fs,
     io::{self, Read, Write},
     path::{Component, Path, PathBuf},
 };
@@ -22,6 +24,10 @@ use crate::{
     test_util, tt_error, tt_note,
     workspace::WorkspaceCreator,
 };
+
+const DEFAULT_PREAMBLE_FILE: &str = "_preamble.tex";
+const DEFAULT_INDEX_FILE: &str = "index.tex";
+const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
 
 /// A Tectonic document.
 #[derive(Debug)]
@@ -57,6 +63,9 @@ fn default_outputs() -> HashMap<String, OutputProfile> {
             name: "default".to_owned(),
             target_type: BuildTargetType::Pdf,
             tex_format: "latex".to_owned(),
+            preamble_file: DEFAULT_PREAMBLE_FILE.to_owned(),
+            index_file: DEFAULT_INDEX_FILE.to_owned(),
+            postamble_file: DEFAULT_POSTAMBLE_FILE.to_owned(),
         },
     );
     outputs
@@ -207,6 +216,9 @@ pub struct OutputProfile {
     name: String,
     target_type: BuildTargetType,
     tex_format: String,
+    preamble_file: String,
+    index_file: String,
+    postamble_file: String,
 }
 
 /// The output target type of a document build.
@@ -258,12 +270,6 @@ impl BuildOptions {
         self
     }
 }
-
-const DEFAULT_PRIMARY_INPUT: &[u8] = br#"
-\input _preamble.tex
-\input index.tex
-\input _postamble.tex
-"#;
 
 impl Document {
     /// Iterate over the names of the output profiles defined for this document.
@@ -326,13 +332,24 @@ impl Document {
             BuildTargetType::Pdf => OutputFormat::Pdf,
         };
 
+        let mut input_buffer = String::new();
+        if !profile.preamble_file.is_empty() {
+            writeln!(input_buffer, "\\input{{{}}}", profile.preamble_file)?;
+        }
+        if !profile.index_file.is_empty() {
+            writeln!(input_buffer, "\\input{{{}}}", profile.index_file)?;
+        }
+        if !profile.postamble_file.is_empty() {
+            writeln!(input_buffer, "\\input{{{}}}", profile.postamble_file)?;
+        }
+
         let mut sess_builder = ProcessingSessionBuilder::default();
         sess_builder
             .output_format(output_format)
             .format_name(&profile.tex_format)
             .build_date(std::time::SystemTime::now())
             .pass(PassSetting::Default)
-            .primary_input_buffer(DEFAULT_PRIMARY_INPUT)
+            .primary_input_buffer(input_buffer.as_bytes())
             .tex_input_name(output_profile)
             .keep_logs(options.keep_logs)
             .keep_intermediates(options.keep_intermediates)
@@ -400,6 +417,7 @@ impl Document {
 
 /// The concrete syntax for saving document state, wired up via serde.
 mod syntax {
+    use super::{DEFAULT_INDEX_FILE, DEFAULT_POSTAMBLE_FILE, DEFAULT_PREAMBLE_FILE};
     use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
     #[derive(Debug, Deserialize, Serialize)]
@@ -425,6 +443,12 @@ mod syntax {
         #[serde(rename = "type")]
         pub target_type: BuildTargetType,
         pub tex_format: Option<String>,
+        #[serde(rename = "preamble")]
+        pub preamble_file: Option<String>,
+        #[serde(rename = "index")]
+        pub index_file: Option<String>,
+        #[serde(rename = "postamble")]
+        pub postamble_file: Option<String>,
     }
 
     impl OutputProfile {
@@ -435,10 +459,31 @@ mod syntax {
                 Some(rt.tex_format.clone())
             };
 
+            let preamble_file = if rt.preamble_file == DEFAULT_PREAMBLE_FILE {
+                None
+            } else {
+                Some(rt.preamble_file.clone())
+            };
+
+            let index_file = if rt.index_file == DEFAULT_INDEX_FILE {
+                None
+            } else {
+                Some(rt.index_file.clone())
+            };
+
+            let postamble_file = if rt.postamble_file == DEFAULT_POSTAMBLE_FILE {
+                None
+            } else {
+                Some(rt.postamble_file.clone())
+            };
+
             OutputProfile {
                 name: rt.name.clone(),
                 target_type: BuildTargetType::from_runtime(&rt.target_type),
                 tex_format,
+                preamble_file,
+                index_file,
+                postamble_file,
             }
         }
 
@@ -452,6 +497,18 @@ mod syntax {
                     .map(|s| s.as_ref())
                     .unwrap_or("latex")
                     .to_owned(),
+                preamble_file: self
+                    .preamble_file
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_PREAMBLE_FILE.to_owned()),
+                index_file: self
+                    .index_file
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_INDEX_FILE.to_owned()),
+                postamble_file: self
+                    .postamble_file
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
             }
         }
     }
