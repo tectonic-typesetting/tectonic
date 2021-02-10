@@ -21,6 +21,9 @@ bundle = <url or filesystem path>  # the source of the TeX bundle
 name = <string>  # the output's name
 type = <"pdf">  # the output's type
 tex_format = [string]  # optional, defaults to "latex": the TeX format to use
+preamble = [string] # optional, defaults to "_preamble.tex": the preamble file to use (within `src`)
+index = [string] # optional, defaults to "index.tex": the index file to use (within `src`)
+postamble = [string] # optional, defaults to "_postamble.tex": the postamble file to use (within `src`)
 ```
 
 Unexpected items are not allowed.
@@ -68,3 +71,21 @@ which creates a [Portable Document Format][pdf] file.
 The TeX “format” of preloaded macros to use when compiling the document. The
 default is `"latex"`, corresponding to the standard LaTeX format. The exact set
 of formats that are supported will depend on the bundle that is being used.
+
+### `output.preamble`
+
+The preamble file to build the document with for this output. This defaults to
+`"_preamble.tex"` within the `src` directory. Typically this file will contain
+document setup steps.
+
+### `output.index`
+
+The index file to build the document with for this output. This defaults to
+`"index.tex"` within the `src` directory. Typically this file will contain
+the body of the document.
+
+### `output.postamble`
+
+The postamble file to build the document with for this output. This defaults to
+`"_postamble.tex"` within the `src` directory. Typically this file will contain
+document closing steps.
