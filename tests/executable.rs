@@ -505,15 +505,20 @@ fn v2_new_build_multiple_outputs() {
             .append(true)
             .open(toml_path)
             .unwrap();
-        writeln!(file, "tex_format = 'plain'").unwrap();
-        writeln!(file).unwrap();
-        writeln!(file, "[[output]]").unwrap();
-        writeln!(file, "name = 'alt'").unwrap();
-        writeln!(file, "type = 'pdf'").unwrap();
-        writeln!(file, "tex_format = 'plain'").unwrap();
-        writeln!(file, "preamble = '_preamble_alt.tex'").unwrap();
-        writeln!(file, "index = 'index_alt.tex'").unwrap();
-        writeln!(file, "postamble = '_postamble_alt.tex'").unwrap();
+        writeln!(
+            file,
+            "tex_format = 'plain'
+
+            [[output]]
+            name = 'alt'
+            type = 'pdf'
+            tex_format = 'plain'
+            preamble = '_preamble_alt.tex'
+            index = 'index_alt.tex'
+            postamble = '_postamble_alt.tex'
+            "
+        )
+        .unwrap();
     }
 
     // ... and write some files that are plain TeX.
