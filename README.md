@@ -33,8 +33,9 @@ page is primarily aimed at folks interested in how Tectonic works “under the h
 
 If you’re interested in Tectonic as a software tool, you might also want to check out:
 
-- [compile-latex](https://github.com/marketplace/actions/compile-latex) is a
-  [GitHub Action](https://github.com/features/actions) contributed by [Vinay
+- One of the following [GitHub Actions](https://github.com/features/actions)
+    - [setup-tectonic](https://github.com/marketplace/actions/setup-tectonic), which lets you use tectonic directly in your workflows (supports caching + optionally biber)
+    - [compile-latex](https://github.com/marketplace/actions/compile-latex) contributed by [Vinay
   Sharma](https://github.com/vinay0410), which is powered by Tectonic.
 - [tt.ente.ninja](https://tt.ente.ninja), which runs Tectonic against a subset
   of the [arxiv.org](https://arxiv.org/) corpus à la the Rust tool
