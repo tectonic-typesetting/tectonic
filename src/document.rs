@@ -120,13 +120,11 @@ impl Document {
             let mut name = "document".to_owned();
             let mut tried_src_path = false;
 
-            if let Some(c) = src_dir.components().next_back() {
-                if let Component::Normal(t) = c {
-                    tried_src_path = true;
+            if let Some(Component::Normal(t)) = src_dir.components().next_back() {
+                tried_src_path = true;
 
-                    if let Some(s) = t.to_str() {
-                        name = s.to_owned();
-                    }
+                if let Some(s) = t.to_str() {
+                    name = s.to_owned();
                 }
             }
 
@@ -134,11 +132,9 @@ impl Document {
                 if let Ok(cwd) = env::current_dir() {
                     let full_path = cwd.join(&src_dir);
 
-                    if let Some(c) = full_path.components().next_back() {
-                        if let Component::Normal(t) = c {
-                            if let Some(s) = t.to_str() {
-                                name = s.to_owned();
-                            }
+                    if let Some(Component::Normal(t)) = full_path.components().next_back() {
+                        if let Some(s) = t.to_str() {
+                            name = s.to_owned();
                         }
                     }
                 }

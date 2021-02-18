@@ -49,15 +49,15 @@ struct MemoryIoItem {
 /// Get the current time as a Unix time, in a manner consistent with our Unix
 /// file modification time API. We choose to make this function infallible
 /// rather than injecting a bunch of Results.
-fn now_as_unix_time() -> Option<i64> {
+fn now_as_unix_time() -> i64 {
     // No cleaner way to convert a SystemTime to time_t, as far as I can
     // tell.
     let now = SystemTime::now();
     let dur = match now.duration_since(SystemTime::UNIX_EPOCH) {
         Ok(d) => d,
-        Err(_) => return Some(0), // indicates error to C code, if it cres
+        Err(_) => return 0, // indicates error to C code, if it cares
     };
-    Some(dur.as_secs() as i64)
+    dur.as_secs() as i64
 }
 
 impl MemoryIoItem {
@@ -69,12 +69,12 @@ impl MemoryIoItem {
         let (cur_data, cur_mtime) = match files.borrow_mut().remove(name) {
             Some(info) => {
                 if truncate {
-                    (Vec::new(), now_as_unix_time())
+                    (Vec::new(), Some(now_as_unix_time()))
                 } else {
                     (info.data, info.unix_mtime)
                 }
             }
-            None => (Vec::new(), now_as_unix_time()),
+            None => (Vec::new(), Some(now_as_unix_time())),
         };
 
         MemoryIoItem {
@@ -127,7 +127,7 @@ impl InputFeatures for MemoryIoItem {
 impl Drop for MemoryIoItem {
     fn drop(&mut self) {
         let unix_mtime = if self.was_modified {
-            now_as_unix_time()
+            Some(now_as_unix_time())
         } else {
             self.unix_mtime
         };
@@ -165,7 +165,7 @@ impl MemoryIo {
             name.to_owned(),
             MemoryFileInfo {
                 data,
-                unix_mtime: now_as_unix_time(),
+                unix_mtime: Some(now_as_unix_time()),
             },
         );
     }
