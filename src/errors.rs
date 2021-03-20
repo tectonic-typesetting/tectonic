@@ -62,6 +62,7 @@ error_chain! {
     foreign_links {
         AppDirs(app_dirs::AppDirsError);
         Io(io::Error);
+        Fmt(fmt::Error);
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
