@@ -159,6 +159,10 @@ parameters:
     vars:
       TARGET: arm-unknown-linux-musleabihf
 
+  - name: i686_unknown_linux_gnu
+    vars:
+      TARGET: i686-unknown-linux-gnu
+
   - name: mips_unknown_linux_gnu
     vars:
       TARGET: mips-unknown-linux-gnu
