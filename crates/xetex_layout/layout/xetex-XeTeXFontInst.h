@@ -131,14 +131,17 @@ public:
     UChar32 getFirstCharCode();
     UChar32 getLastCharCode();
 
-    float unitsToPoints(float units) const
+    /* Tectonic: these are modified from the base XeTeX code to use doubles;
+     * otherwise roundoff errors can accumulate leading to differences in the
+     * XDV outputs. */
+    float unitsToPoints(double units) const
     {
-        return (units * m_pointSize) / (float) m_unitsPerEM;
+        return (units * m_pointSize) / m_unitsPerEM;
     }
 
-    float pointsToUnits(float points) const
+    float pointsToUnits(double points) const
     {
-        return (points * (float) m_unitsPerEM) / m_pointSize;
+        return (points * m_unitsPerEM) / m_pointSize;
     }
 };
 
