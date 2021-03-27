@@ -154,10 +154,11 @@ impl TestCase {
         };
 
         if !res.definitely_same(&self.expected_result) {
-            panic!(format!(
+            eprintln!(
                 "expected TeX result {:?}, got {:?}",
                 self.expected_result, res
-            ));
+            );
+            panic!("the TeX engine returned an unexpected result code");
         }
 
         // Check that outputs match expectations.
