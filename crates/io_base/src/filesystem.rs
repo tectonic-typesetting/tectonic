@@ -154,6 +154,21 @@ impl IoProvider for FilesystemIo {
             }
         };
 
+        // Issue #754 - if you run Tectonic on an input that is located in a
+        // directory containing a sub-directory named `latex`, you get a
+        // surprising error message because the engine tries to read that
+        // directory as the format file. I think the correct behavior here is to
+        // treat directories as NotAvailable for the purposes of the I/O stack.
+        let md = match f.metadata() {
+            Ok(m) => m,
+            Err(e) => return OpenResult::Err(e.into()),
+        };
+
+        if md.is_dir() {
+            return OpenResult::NotAvailable;
+        }
+
+        // Good to go.
         OpenResult::Ok(InputHandle::new(
             name,
             BufReader::new(f),
