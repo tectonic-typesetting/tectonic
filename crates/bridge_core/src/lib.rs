@@ -487,7 +487,7 @@ impl<'a> CoreBridgeState<'a> {
 
     fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        Ok(rhandle.try_seek(pos)?)
+        rhandle.try_seek(pos)
     }
 
     fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
@@ -497,12 +497,12 @@ impl<'a> CoreBridgeState<'a> {
 
     fn input_getc(&mut self, handle: *mut InputHandle) -> Result<u8> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        Ok(rhandle.getc()?)
+        rhandle.getc()
     }
 
     fn input_ungetc(&mut self, handle: *mut InputHandle, byte: u8) -> Result<()> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
-        Ok(rhandle.ungetc(byte)?)
+        rhandle.ungetc(byte)
     }
 
     fn input_close(&mut self, handle: *mut InputHandle) -> bool {
@@ -919,7 +919,7 @@ pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnost
 #[repr(C)]
 pub enum FileFormat {
     /// An Adobe Font Metrics file.
-    AFM = 4,
+    Afm = 4,
 
     /// A BibTeX bibliography data file.
     Bib = 6,
@@ -976,7 +976,7 @@ pub enum FileFormat {
     TexPsHeader = 30,
 
     /// A TeX Font Metrics file.
-    TFM = 3,
+    Tfm = 3,
 
     /// A TrueType font file.
     TrueType = 36,
@@ -991,7 +991,7 @@ pub enum FileFormat {
 impl FileFormat {
     fn extensions(&self) -> &[&str] {
         match *self {
-            FileFormat::AFM => &["afm"],
+            FileFormat::Afm => &["afm"],
             FileFormat::Bib => &["bib"],
             FileFormat::Bst => &["bst"],
             FileFormat::Cmap => &[],
@@ -1010,7 +1010,7 @@ impl FileFormat {
             FileFormat::TectonicPrimary => &[],
             FileFormat::Tex => &["tex", "sty", "cls", "fd", "aux", "bbl", "def", "clo", "ldf"],
             FileFormat::TexPsHeader => &["pro"],
-            FileFormat::TFM => &["tfm"],
+            FileFormat::Tfm => &["tfm"],
             FileFormat::TrueType => &["ttf", "ttc", "TTF", "TTC", "dfont"],
             FileFormat::Type1 => &["pfa", "pfb"],
             FileFormat::Vf => &["vf"],
