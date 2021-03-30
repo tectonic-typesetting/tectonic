@@ -1978,6 +1978,7 @@ dependencies = [
  "tectonic_cfg_support",
  "tectonic_dep_support",
  "tectonic_engine_bibtex",
+ "tectonic_engine_xdvipdfmx",
  "tectonic_errors",
  "tectonic_geturl",
  "tectonic_io_base",
@@ -2073,6 +2074,20 @@ dependencies = [
  "libc",
  "tectonic_bridge_core",
  "tectonic_errors",
+]
+
+[[package]]
+name = "tectonic_engine_xdvipdfmx"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "cc",
+ "libc",
+ "tectonic_bridge_core",
+ "tectonic_errors",
+ "tectonic_io_base",
+ "tectonic_pdf_io",
+ "tectonic_status_base",
 ]
 
 [[package]]
