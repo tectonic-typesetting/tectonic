@@ -2106,6 +2106,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_pdf_io"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cc",
+ "tectonic_bridge_core",
+ "tectonic_bridge_flate",
+ "tectonic_dep_support",
+]
+
+[[package]]
 name = "tectonic_status_base"
 version = "0.0.0-dev.0"
 dependencies = [

@@ -39,6 +39,7 @@ members = [
   "crates/errors",
   "crates/geturl",
   "crates/io_base",
+  "crates/pdf_io",
   "crates/status_base",
   "crates/xdv",
   "crates/xetex_layout",
