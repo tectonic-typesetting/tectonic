@@ -63,7 +63,6 @@ fn trip_test() {
                 &mut NoopStatusBackend::default(),
                 "INITEX",
                 "trip",
-                &Default::default(),
             )
             .unwrap();
     }
@@ -80,7 +79,6 @@ fn trip_test() {
                 &mut NoopStatusBackend::default(),
                 "trip.fmt",
                 "trip",
-                &Default::default(),
             )
             .unwrap();
     }
@@ -130,7 +128,6 @@ fn etrip_test() {
                 &mut NoopStatusBackend::default(),
                 "INITEX",
                 "etrip",
-                &Default::default(),
             )
             .unwrap();
     }
@@ -147,7 +144,6 @@ fn etrip_test() {
                 &mut NoopStatusBackend::default(),
                 "etrip.fmt",
                 "etrip",
-                &Default::default(),
             )
             .unwrap();
     }

@@ -35,6 +35,9 @@ cbindgen = "^0.16"
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 
+[features]
+external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
+
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "925a9a1566aaa4a55d4468d7bf239319828722fb"
 tectonic_bridge_flate = "5933308152efb6ba206b4dc01ab6814063b835c0"

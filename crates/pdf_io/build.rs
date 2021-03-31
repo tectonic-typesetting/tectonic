@@ -108,6 +108,7 @@ fn main() {
         "pdf_io/dpx-dpxfile.c",
         "pdf_io/dpx-dpxutil.c",
         "pdf_io/dpx-dvi.c",
+        "pdf_io/dpx-dvipdfmx.c",
         "pdf_io/dpx-epdf.c",
         "pdf_io/dpx-error.c",
         "pdf_io/dpx-fontmap.c",

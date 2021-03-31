@@ -90,6 +90,12 @@ impl TexEngine {
         self
     }
 
+    /// Configure whether the "shell escape" TeX feature is enabled.
+    pub fn shell_escape(&mut self, shell_escape_enabled: bool) -> &mut Self {
+        self.shell_escape_enabled = shell_escape_enabled;
+        self
+    }
+
     /// Sets the date and time used by the TeX engine. This affects things like
     /// LaTeX's \today command. When expecting reproducible builds, this should
     /// be set to a static value, like its default value UNIX_EPOCH.

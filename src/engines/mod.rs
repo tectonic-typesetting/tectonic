@@ -12,8 +12,6 @@
 //! substantial private API that defines the interface between Tectonic's Rust
 //! code and the C/C++ code that the backends are (currently) implemented in.
 
-use tectonic_bridge_core::CoreBridgeState;
-
 // Public sub-modules and reexports.
 
 pub mod bibtex;
@@ -26,33 +24,3 @@ pub use self::{
 };
 
 pub use tectonic_bridge_core::{IoEventBackend, NoopIoEventBackend};
-
-// This silences the warning that ExecutionState is not FFI-safe. The C side only passes the
-// pointer around and doesn't actually look into the struct, so we can ignore this warning.
-#[allow(improper_ctypes)]
-extern "C" {
-    fn tt_xetex_set_int_variable(var_name: *const libc::c_char, value: libc::c_int) -> libc::c_int;
-
-    #[allow(dead_code)] // currently unused
-    fn tt_xetex_set_string_variable(
-        var_name: *const libc::c_char,
-        value: *const libc::c_char,
-    ) -> libc::c_int;
-
-    fn tex_simple_main(
-        api: &mut CoreBridgeState,
-        dump_name: *const libc::c_char,
-        input_file_name: *const libc::c_char,
-        build_date: libc::time_t,
-    ) -> libc::c_int;
-
-    fn dvipdfmx_simple_main(
-        api: &mut CoreBridgeState,
-        config: &xdvipdfmx::XdvipdfmxConfig,
-        dviname: *const libc::c_char,
-        pdfname: *const libc::c_char,
-        enable_compression: bool,
-        deterministic_tags: bool,
-        build_date: libc::time_t,
-    ) -> libc::c_int;
-}
