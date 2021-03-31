@@ -37,6 +37,7 @@ members = [
   "crates/dep_support",
   "crates/engine_bibtex",
   "crates/engine_xdvipdfmx",
+  "crates/engine_xetex",
   "crates/errors",
   "crates/geturl",
   "crates/io_base",

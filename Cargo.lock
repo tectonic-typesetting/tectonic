@@ -2091,6 +2091,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_engine_xetex"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "cc",
+ "libc",
+ "tectonic_bridge_core",
+ "tectonic_bridge_flate",
+ "tectonic_bridge_graphite2",
+ "tectonic_bridge_harfbuzz",
+ "tectonic_cfg_support",
+ "tectonic_errors",
+ "tectonic_io_base",
+ "tectonic_pdf_io",
+ "tectonic_status_base",
+ "tectonic_xetex_layout",
+]
+
+[[package]]
 name = "tectonic_errors"
 version = "0.0.0-dev.0"
 dependencies = [
