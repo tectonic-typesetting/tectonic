@@ -69,7 +69,7 @@ impl XdvipdfmxEngine {
         // all of this happens in an Option.
 
         // Keep a local reference so the string doesn't get dropped too early
-        let paperspec_str = paperspec.and_then(|s| CString::new(s.clone()).ok());
+        let paperspec_str = paperspec.and_then(|s| CString::new(s).ok());
 
         // We default to "letter" paper size by default
         let paperspec_default = CStr::from_bytes_with_nul(b"letter\0").unwrap();
@@ -85,29 +85,27 @@ impl XdvipdfmxEngine {
 
         let mut launcher = CoreBridgeLauncher::new(io, events, status);
 
-        launcher
-            .with_global_lock(|state| {
-                let r = unsafe {
-                    c_api::tt_engine_xdvipdfmx_main(
-                        state,
-                        &config,
-                        cdvi.as_ptr(),
-                        cpdf.as_ptr(),
-                        self.enable_compression,
-                        self.deterministic_tags,
-                        self.build_date
-                            .duration_since(SystemTime::UNIX_EPOCH)
-                            .expect("invalid build date")
-                            .as_secs() as libc::time_t,
-                    )
-                };
+        launcher.with_global_lock(|state| {
+            let r = unsafe {
+                c_api::tt_engine_xdvipdfmx_main(
+                    state,
+                    &config,
+                    cdvi.as_ptr(),
+                    cpdf.as_ptr(),
+                    self.enable_compression,
+                    self.deterministic_tags,
+                    self.build_date
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .expect("invalid build date")
+                        .as_secs() as libc::time_t,
+                )
+            };
 
-                match r {
-                    99 => Err(EngineAbortedError::new_abort_indicator().into()),
-                    x => Ok(x as i32),
-                }
-            })
-            .map_err(|e| e.into())
+            match r {
+                99 => Err(EngineAbortedError::new_abort_indicator().into()),
+                x => Ok(x as i32),
+            }
+        })
     }
 }
 

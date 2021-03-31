@@ -121,64 +121,59 @@ impl TexEngine {
 
         let mut launcher = CoreBridgeLauncher::new(io, events, status);
 
-        launcher
-            .with_global_lock(|state| {
-                // Note that we have to do all of this setup while holding the
-                // lock, because we're modifying static state variables.
+        launcher.with_global_lock(|state| {
+            // Note that we have to do all of this setup while holding the
+            // lock, because we're modifying static state variables.
 
-                let v = if self.shell_escape_enabled { 1 } else { 0 };
-                unsafe {
-                    c_api::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
-                }
+            let v = if self.shell_escape_enabled { 1 } else { 0 };
+            unsafe {
+                c_api::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
+            }
 
-                let v = if self.halt_on_error { 1 } else { 0 };
-                unsafe {
-                    c_api::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
-                }
+            let v = if self.halt_on_error { 1 } else { 0 };
+            unsafe {
+                c_api::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
+            }
 
-                let v = if self.initex_mode { 1 } else { 0 };
-                unsafe {
-                    c_api::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);
-                }
+            let v = if self.initex_mode { 1 } else { 0 };
+            unsafe {
+                c_api::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);
+            }
 
-                let v = if self.synctex_enabled { 1 } else { 0 };
-                unsafe {
-                    c_api::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v);
-                }
+            let v = if self.synctex_enabled { 1 } else { 0 };
+            unsafe {
+                c_api::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v);
+            }
 
-                let v = if self.semantic_pagination_enabled {
-                    1
-                } else {
-                    0
-                };
-                unsafe {
-                    c_api::tt_xetex_set_int_variable(
-                        b"semantic_pagination_enabled\0".as_ptr() as _,
-                        v,
-                    );
-                }
+            let v = if self.semantic_pagination_enabled {
+                1
+            } else {
+                0
+            };
+            unsafe {
+                c_api::tt_xetex_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v);
+            }
 
-                let r = unsafe {
-                    c_api::tt_engine_xetex_main(
-                        state,
-                        cformat.as_ptr(),
-                        cinput.as_ptr(),
-                        self.build_date
-                            .duration_since(SystemTime::UNIX_EPOCH)
-                            .expect("invalid build date")
-                            .as_secs() as libc::time_t,
-                    )
-                };
+            let r = unsafe {
+                c_api::tt_engine_xetex_main(
+                    state,
+                    cformat.as_ptr(),
+                    cinput.as_ptr(),
+                    self.build_date
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .expect("invalid build date")
+                        .as_secs() as libc::time_t,
+                )
+            };
 
-                match r {
-                    0 => Ok(TexResult::Spotless),
-                    1 => Ok(TexResult::Warnings),
-                    2 => Ok(TexResult::Errors),
-                    3 => Err(EngineAbortedError::new_abort_indicator().into()),
-                    x => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
-                }
-            })
-            .map_err(|e| e.into())
+            match r {
+                0 => Ok(TexResult::Spotless),
+                1 => Ok(TexResult::Warnings),
+                2 => Ok(TexResult::Errors),
+                3 => Err(EngineAbortedError::new_abort_indicator().into()),
+                x => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
+            }
+        })
     }
 }
 
