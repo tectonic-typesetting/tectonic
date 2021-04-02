@@ -32,5 +32,8 @@
 #define DVIPDFMX_PROG_NAME "xdvipdfmx"
 
 extern time_t ttpi_source_date_epoch;
+extern int landscape_mode;
+extern double paper_height;
+extern double paper_width;
 
 #endif /* _DVIPDFMX_PDF_IO_INNER_H_ */

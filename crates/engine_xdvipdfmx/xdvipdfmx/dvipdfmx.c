@@ -107,11 +107,10 @@ static int     key_bits      = 40;
 static int32_t permission    = 0x003C;
 
 /* Page device */
-double paper_width  = 595.0;
-double paper_height = 842.0;
+/* Tectonic: landscape_mode, paper_width, paper_height used to be defined here,
+ * but are now defined in the `tectonic_pdf_io` crate. */
 static double x_offset = 72.0;
 static double y_offset = 72.0;
-int    landscape_mode  = 0;
 static int translate_origin = 0;
 
 

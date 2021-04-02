@@ -29,3 +29,6 @@
 #include "dpx-dvipdfmx.h"
 
 time_t ttpi_source_date_epoch = (time_t) -1;
+int landscape_mode = 0;
+double paper_height = 842.0;
+double paper_width = 595.0;
