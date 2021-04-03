@@ -14,11 +14,6 @@ use std::{
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
-#[repr(C)]
-pub struct XdvipdfmxConfig {
-    paperspec: *const libc::c_char,
-}
-
 pub struct XdvipdfmxEngine {
     enable_compression: bool,
     deterministic_tags: bool,
@@ -72,10 +67,17 @@ impl XdvipdfmxEngine {
         // We default to "letter" paper size by default
         let paperspec_default = CStr::from_bytes_with_nul(b"letter\0").unwrap();
 
-        let config = XdvipdfmxConfig {
+        let config = c_api::XdvipdfmxConfig {
             paperspec: paperspec_str
                 .as_ref()
                 .map_or(paperspec_default.as_ptr(), |s| s.as_ptr()),
+            enable_compression: if self.enable_compression { 1 } else { 0 },
+            deterministic_tags: if self.deterministic_tags { 1 } else { 0 },
+            build_date: self
+                .build_date
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .expect("invalid build date")
+                .as_secs() as libc::time_t,
         };
 
         let cdvi = CString::new(dvi)?;
@@ -83,18 +85,7 @@ impl XdvipdfmxEngine {
 
         launcher.with_global_lock(|state| {
             let r = unsafe {
-                c_api::tt_engine_xdvipdfmx_main(
-                    state,
-                    &config,
-                    cdvi.as_ptr(),
-                    cpdf.as_ptr(),
-                    self.enable_compression,
-                    self.deterministic_tags,
-                    self.build_date
-                        .duration_since(SystemTime::UNIX_EPOCH)
-                        .expect("invalid build date")
-                        .as_secs() as libc::time_t,
-                )
+                c_api::tt_engine_xdvipdfmx_main(state, &config, cdvi.as_ptr(), cpdf.as_ptr())
             };
 
             match r {
@@ -109,16 +100,22 @@ impl XdvipdfmxEngine {
 pub mod c_api {
     use tectonic_bridge_core::CoreBridgeState;
 
+    #[derive(Debug)]
+    #[repr(C)]
+    pub struct XdvipdfmxConfig {
+        pub paperspec: *const libc::c_char,
+        pub enable_compression: libc::c_uchar,
+        pub deterministic_tags: libc::c_uchar,
+        pub build_date: libc::time_t,
+    }
+
     #[allow(improper_ctypes)] // for CoreBridgeState
     extern "C" {
         pub fn tt_engine_xdvipdfmx_main(
             api: &mut CoreBridgeState,
-            cfg: &super::XdvipdfmxConfig,
+            cfg: &XdvipdfmxConfig,
             dviname: *const libc::c_char,
             pdfname: *const libc::c_char,
-            enable_compression: bool,
-            deterministic_tags: bool,
-            build_date: libc::time_t,
         ) -> libc::c_int;
     }
 }

@@ -566,10 +566,7 @@ tt_engine_xdvipdfmx_main(
   ttbc_state_t *api,
   const XdvipdfmxConfig* config,
   const char *dviname,
-  const char *pdfname,
-  bool compress,
-  bool deterministic_tags,
-  time_t build_date
+  const char *pdfname
 ) {
   int rv;
 
@@ -579,7 +576,19 @@ tt_engine_xdvipdfmx_main(
   }
 
   dpx_config = config;
-  rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, compress, deterministic_tags, false, 0, build_date);
+  rv = dvipdfmx_main(
+    pdfname,
+    dviname,
+    NULL, /* pagespec */
+    0, /* opt_flags */
+    false, /* translate */
+    (bool) config->enable_compression,
+    (bool) config->deterministic_tags,
+    false, /* quiet */
+    0, /* verbose */
+    config->build_date
+  );
+
   ttbc_global_engine_exit();
   return rv;
 }
