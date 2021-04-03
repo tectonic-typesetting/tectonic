@@ -136,9 +136,7 @@ impl TestCase {
                             .unwrap(),
                     )
                     .process(
-                        &mut io,
-                        &mut events,
-                        &mut status,
+                        &mut launcher,
                         &xdvname,
                         &pdfname,
                         self.unstables.paper_size.as_ref().map(|s| s.as_ref()),

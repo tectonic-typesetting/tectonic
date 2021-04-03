@@ -11,7 +11,7 @@ description = """
 The `xdvipdfmx` program as a reusable crate.
 """
 homepage = "https://tectonic-typesetting.github.io/"
-documentation = "https://docs.rs/tectonic"
+documentation = "https://docs.rs/tectonic_engine_xdvipdfmx"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
@@ -22,9 +22,7 @@ links = "tectonic_engine_xdvipdfmx"
 libc = "^0.2"
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
-tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
 tectonic_pdf_io = { path = "../pdf_io", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 
 [build-dependencies]
 cbindgen = "^0.16"
@@ -33,6 +31,4 @@ cc = "^1.0.66"
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2021-01-17:fohCh1sh"
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
-tectonic_io_base = "e33d4ebc956e23d26d2d3331a42cb74ff58d31ae"
 tectonic_pdf_io = "620fe47e87000cede22d5e5eafa0fda81f28b402"
-tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"

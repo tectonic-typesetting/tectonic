@@ -11,10 +11,8 @@ use std::{
     ffi::{CStr, CString},
     time::SystemTime,
 };
-use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError, IoEventBackend};
+use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
-use tectonic_io_base::stack::IoStack;
-use tectonic_status_base::StatusBackend;
 
 #[repr(C)]
 pub struct XdvipdfmxConfig {
@@ -59,9 +57,7 @@ impl XdvipdfmxEngine {
 
     pub fn process(
         &mut self,
-        io: &mut IoStack,
-        events: &mut dyn IoEventBackend,
-        status: &mut dyn StatusBackend,
+        launcher: &mut CoreBridgeLauncher,
         dvi: &str,
         pdf: &str,
         paperspec: Option<&str>,
@@ -84,8 +80,6 @@ impl XdvipdfmxEngine {
 
         let cdvi = CString::new(dvi)?;
         let cpdf = CString::new(pdf)?;
-
-        let mut launcher = CoreBridgeLauncher::new(io, events, status);
 
         launcher.with_global_lock(|state| {
             let r = unsafe {

@@ -1199,13 +1199,13 @@ impl ProcessingSession {
 
     fn xdvipdfmx_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         {
-            let mut stack = self.io.as_stack();
-            let mut engine = XdvipdfmxEngine::default().with_date(self.build_date);
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
+
+            let mut stack = self.io.as_stack();
+            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
+            let mut engine = XdvipdfmxEngine::default().with_date(self.build_date);
             engine.process(
-                &mut stack,
-                &mut self.events,
-                status,
+                &mut launcher,
                 &self.tex_xdv_path,
                 &self.tex_pdf_path,
                 self.unstables.paper_size.as_ref().map(|s| s.as_ref()),
