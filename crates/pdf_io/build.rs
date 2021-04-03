@@ -4,6 +4,7 @@
 //! Build script for the PDF+XDV+graphics I/O subsystem.
 
 use std::{env, path::PathBuf};
+use tectonic_cfg_support::*;
 use tectonic_dep_support::{Configuration, Dependency, Spec};
 
 struct LibpngSpec;
@@ -90,6 +91,11 @@ fn main() {
     dep.foreach_include_path(|p| {
         ccfg.include(p);
     });
+
+    let is_big_endian = target_cfg!(target_endian = "big");
+    if is_big_endian {
+        ccfg.define("WORDS_BIGENDIAN", "1");
+    }
 
     let files = [
         "pdf_io/dpx-agl.c",
