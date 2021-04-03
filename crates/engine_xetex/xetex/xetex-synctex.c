@@ -6,9 +6,10 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
-#include "tectonic_bridge_core.h"
+#include "core-bridge.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 
 #define SYNCTEX_VERSION 1
@@ -771,14 +772,14 @@ synctex_record_preamble(void)
 static inline int
 synctex_record_input(int32_t tag, char *name)
 {
-    char cwd[4096];
-    ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Failed to generate synctex info: ");
-    ttstub_diag_printf(errmsg, "?_?");
-    capture_to_diagnostic(errmsg);
-    if (getcwd(cwd, 4096) == NULL) {
-        fprintf(stderr, "Error during ");
-        fprintf(stderr, "Failed to get absolute path to current directory.\n");
-        fprintf(stderr, "Reason: %s\n", errno == ERANGE ? "directory path too long" : "unknown");
+    char cwd[PATH_MAX + 1];
+    if (getcwd(cwd, PATH_MAX + 1) == NULL) {
+        char errmsg[100];
+        sprintf(errmsg,
+            "Failed to generate synctex info: Failed to get absolute path to current directory: %s"
+            , (errno == ERANGE || errno == ENAMETOOLONG) ? "path too long" : strerror(errno)
+        );
+        fatal_error(errmsg);
         return -1;
     }
 
