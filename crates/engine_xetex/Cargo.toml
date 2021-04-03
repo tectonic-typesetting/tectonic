@@ -11,7 +11,7 @@ description = """
 The [XeTeX](http://xetex.sourceforge.net/) engine as a reusable crate.
 """
 homepage = "https://tectonic-typesetting.github.io/"
-documentation = "https://docs.rs/tectonic"
+documentation = "https://docs.rs/tectonic_engine_xetex"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
@@ -36,7 +36,10 @@ cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 
 [features]
-external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
+external-harfbuzz = [
+  "tectonic_bridge_harfbuzz/external-harfbuzz",
+  "tectonic_xetex_layout/external-harfbuzz",
+]
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "925a9a1566aaa4a55d4468d7bf239319828722fb"
