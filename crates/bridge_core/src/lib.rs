@@ -6,23 +6,26 @@
 //! Core APIs for bridging the C and Rust portions of Tectonic’s processing
 //! backends.
 //!
-//! We use [cbindgen] to generate C/C++ bindings that can invoke Rust functions
-//! providing I/O and other support services.
+//! This crate is used by the Tectonic “engines”, which are predominantly C/C++
+//! code derived from the original TeX codebase. It provides a framework so that
+//! the C/C++ code can invoke the support services provided by Tectonic, such as
+//! its pluggable I/O backends. The interfaces exposed to the C/C++ layers are
+//! created by [cbindgen].
 //!
 //! [cbindgen]: https://github.com/eqrion/cbindgen
 //!
-//! In order to launch your C/C++ engine, you should expect to be given a
-//! reference to a `CoreBridgeLauncher` struct. You should use that struct's
-//! `with_global_lock` method to obtain a `CoreBridgeState` reference, and then
-//! pass that reference across the FFI layer. On the other side of the FFI
-//! divide, your code *must* call the functions `ttbc_global_engine_enter` and
-//! `ttbc_global_engine_exit` according to the pattern described in
+//! In order to provide access to a C/C++ engine in Rust, you should create some
+//! kind of interface that expects to be given a reference to a
+//! [`CoreBridgeLauncher`] struct. You should use that struct's
+//! `with_global_lock` method to obtain a [`CoreBridgeState`] reference, and
+//! then pass that reference across the FFI layer. On the other side of the FFI
+//! divide, your code *must* call the functions `ttbc_global_engine_enter()` and
+//! `ttbc_global_engine_exit()` according to the pattern described in
 //! `tectonic_bridge_core.h`. If an abort is detected, the callback function
 //! must return `Err(EngineAbortedError::new_abort_indicator().into())`.
-//!
-//! (Unfortunately, this is the cleanest and most reliable API that we can
+//! Unfortunately, this is the cleanest and most reliable API that we can
 //! provide because our abort handling uses `setjmp`/`longjmp` and those can't
-//! cross FFI boundaries.)
+//! cross FFI boundaries.
 
 use flate2::{read::GzDecoder, Compression, GzBuilder};
 use md5::{Digest, Md5};
