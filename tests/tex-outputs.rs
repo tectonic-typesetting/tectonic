@@ -12,6 +12,7 @@ use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemIo, FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::unstable_opts::UnstableOptions;
 use tectonic::{TexEngine, XdvipdfmxEngine};
+use tectonic_bridge_core::CoreBridgeLauncher;
 use tectonic_errors::{anyhow::anyhow, Result};
 use tectonic_status_base::NoopStatusBackend;
 
@@ -117,13 +118,13 @@ impl TestCase {
                 io_list.push(&mut **io);
             }
             let mut io = IoStack::new(io_list);
-
             let mut events = NoopIoEventBackend::default();
             let mut status = NoopStatusBackend::default();
+            let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
 
             let tex_res = TexEngine::default()
                 .shell_escape(self.unstables.shell_escape)
-                .process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
+                .process(&mut launcher, "plain.fmt", &texname);
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
                 XdvipdfmxEngine::new()

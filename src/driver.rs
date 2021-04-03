@@ -1,5 +1,5 @@
 // src/driver.rs -- utilities for running and rerunning the tex engine
-// Copyright 2018 the Tectonic Project
+// Copyright 2018-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -12,14 +12,17 @@
 //! CLI program.
 
 use byte_unit::Byte;
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
-use std::result::Result as StdResult;
-use std::str::FromStr;
-use std::time::SystemTime;
+use std::{
+    collections::{HashMap, HashSet},
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+    rc::Rc,
+    result::Result as StdResult,
+    str::FromStr,
+    time::SystemTime,
+};
+use tectonic_bridge_core::CoreBridgeLauncher;
 
 use crate::{
     ctry,
@@ -1064,11 +1067,12 @@ impl ProcessingSession {
             let mut stack = self
                 .io
                 .as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
+            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
             TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
                 .shell_escape(self.unstables.shell_escape)
-                .process(&mut stack, &mut self.events, status, "UNUSED.fmt", "texput")
+                .process(&mut launcher, "UNUSED.fmt", "texput")
         };
 
         match result {
@@ -1126,6 +1130,8 @@ impl ProcessingSession {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
 
+            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
+
             TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(self.output_format == OutputFormat::Format)
@@ -1134,9 +1140,7 @@ impl ProcessingSession {
                 .shell_escape(self.unstables.shell_escape)
                 .build_date(self.build_date)
                 .process(
-                    &mut stack,
-                    &mut self.events,
-                    status,
+                    &mut launcher,
                     &self.format_name,
                     &self.primary_input_tex_path,
                 )

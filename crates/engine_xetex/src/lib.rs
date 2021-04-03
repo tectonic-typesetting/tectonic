@@ -21,10 +21,8 @@
 // engine has a nicer approach that we should probably start using.
 
 use std::{ffi::CString, time::SystemTime};
-use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError, IoEventBackend};
+use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
-use tectonic_io_base::stack::IoStack;
-use tectonic_status_base::StatusBackend;
 
 /// A serial number describing the detailed binary layout of the TeX “format
 /// files” used by this crate. This number will occasionally increment,
@@ -162,14 +160,8 @@ impl TexEngine {
 
     /// Process a document using the current engine configuration.
     ///
-    /// The *io* parameter gives the I/O context in which the engine will run,
-    /// both for reading TeX support files and writing outputs such as the log
-    /// and XDV output. The *events* backend receives notification about I/O
-    /// events, allowing the higher-level Tectonic code to determine if and when
-    /// the engine needs to be rerun to iterate to a final output.
-    ///
-    /// The *status* parameter gives the context for reporting status
-    /// information, such as warnings from the TeX engine.
+    /// The *launcher* parameter gives overarching environmental context in
+    /// which the engine will be run.
     ///
     /// The *format_file_name* is the name for the TeX “format file” giving
     /// preloaded engine state. It must be findable in the I/O stack, using the
@@ -185,20 +177,12 @@ impl TexEngine {
     /// traditional default value is `"texput"`.
     pub fn process(
         &mut self,
-        io: &mut IoStack,
-        events: &mut dyn IoEventBackend,
-        status: &mut dyn StatusBackend,
+        launcher: &mut CoreBridgeLauncher,
         format_file_name: &str,
         input_file_name: &str,
     ) -> Result<TexOutcome> {
-        // This function can't be generic across the IoProvider trait, for now,
-        // since the global pointer that stashes the ExecutionState must have a
-        // complete type. Bummer.
-
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
-
-        let mut launcher = CoreBridgeLauncher::new(io, events, status);
 
         launcher.with_global_lock(|state| {
             // Note that we have to do all of this setup while holding the

@@ -22,6 +22,7 @@ use tectonic::digest::DigestData;
 use tectonic::engines::IoEventBackend;
 use tectonic::io::{IoStack, MemoryIo};
 use tectonic::TexEngine;
+use tectonic_bridge_core::CoreBridgeLauncher;
 use tectonic_io_base::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
 use tectonic_status_base::NoopStatusBackend;
 
@@ -94,16 +95,12 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
         } else {
             IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support])
         };
+        let mut status = NoopStatusBackend::default();
+        let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
 
         TexEngine::default()
             .initex_mode(true)
-            .process(
-                &mut io,
-                &mut events,
-                &mut NoopStatusBackend::default(),
-                "unused.fmt",
-                texname,
-            )
+            .process(&mut launcher, "unused.fmt", texname)
             .unwrap();
     }
 

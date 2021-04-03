@@ -19,9 +19,10 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
 };
+use tectonic::{errors::Result, io::memory::MemoryFileCollection};
+use tectonic_bridge_core::CoreBridgeLauncher;
 
 pub use tectonic::test_util::{test_path, TestBundle};
-use tectonic::{errors::Result, io::memory::MemoryFileCollection};
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
@@ -76,17 +77,14 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
 
         {
             let mut io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
+            let mut events = NoopIoEventBackend::default();
+            let mut status = NoopStatusBackend::default();
+            let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
 
             TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .process(
-                    &mut io,
-                    &mut NoopIoEventBackend::default(),
-                    &mut NoopStatusBackend::default(),
-                    "UNUSED.fmt",
-                    "plain.tex",
-                )?;
+                .process(&mut launcher, "UNUSED.fmt", "plain.tex")?;
         }
 
         let mut temp_fmt = tempfile::Builder::new()
