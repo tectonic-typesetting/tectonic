@@ -1,8 +1,12 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//! No Rust API, for now. This crate exports a *C* API to code that performs I/O
-//! on PDF files, XDV files, and other image formats.
+//! This crate contains no Rust code, for now. It exists to export a *C* API for
+//! I/O on PDF, XDV, and graphics files, within the Cargo build framework used
+//! by [Tectonic]. Ideally, it will migrate to become a cbindgen C API to a Rust
+//! implementation.
+//!
+//! [Tectonic]: https://tectonic-typesetting.github.io/
 
 /// Import things from our bridge crates to ensure that we actually link with
 /// them.
