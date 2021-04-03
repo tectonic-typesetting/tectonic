@@ -127,21 +127,20 @@ impl TestCase {
                 .process(&mut launcher, "plain.fmt", &texname);
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
-                XdvipdfmxEngine::default()
+                let mut engine = XdvipdfmxEngine::default()
                     .enable_compression(false)
                     .enable_deterministic_tags(true)
                     .build_date(
                         time::SystemTime::UNIX_EPOCH
                             .checked_add(time::Duration::from_secs(1_456_304_492))
                             .unwrap(),
-                    )
-                    .process(
-                        &mut launcher,
-                        &xdvname,
-                        &pdfname,
-                        self.unstables.paper_size.as_ref().map(|s| s.as_ref()),
-                    )
-                    .unwrap();
+                    );
+
+                if let Some(ref ps) = self.unstables.paper_size {
+                    engine = engine.paper_spec(ps.clone());
+                }
+
+                engine.process(&mut launcher, &xdvname, &pdfname).unwrap();
             }
 
             tex_res

@@ -7,14 +7,12 @@
 //!
 //! [XeTeX]: http://xetex.sourceforge.net/
 
-use std::{
-    ffi::{CStr, CString},
-    time::SystemTime,
-};
+use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
 pub struct XdvipdfmxEngine {
+    paper_spec: String,
     enable_compression: bool,
     deterministic_tags: bool,
     build_date: SystemTime,
@@ -23,6 +21,7 @@ pub struct XdvipdfmxEngine {
 impl Default for XdvipdfmxEngine {
     fn default() -> Self {
         XdvipdfmxEngine {
+            paper_spec: "letter".to_owned(),
             enable_compression: true,
             deterministic_tags: false,
             build_date: SystemTime::UNIX_EPOCH,
@@ -50,27 +49,27 @@ impl XdvipdfmxEngine {
         self
     }
 
+    /// Set the initial paper size specification to be used.
+    ///
+    /// The default is `"letter"`, regardless of current locale.
+    pub fn paper_spec(mut self, paper_spec: String) -> Self {
+        self.paper_spec = paper_spec;
+        self
+    }
+
     pub fn process(
         &mut self,
         launcher: &mut CoreBridgeLauncher,
         dvi: &str,
         pdf: &str,
-        paperspec: Option<&str>,
     ) -> Result<i32> {
-        // This conversion is probably way too complex, because we need to convert String to
-        // something which holds a CStr (which needs to be a local so it doesn't disappear). And
-        // all of this happens in an Option.
-
-        // Keep a local reference so the string doesn't get dropped too early
-        let paperspec_str = paperspec.and_then(|s| CString::new(s).ok());
-
-        // We default to "letter" paper size by default
-        let paperspec_default = CStr::from_bytes_with_nul(b"letter\0").unwrap();
+        let paperspec_str = atry!(
+            CString::new(self.paper_spec.as_str());
+            ["paper_spec may not contain internal NULs"]
+        );
 
         let config = c_api::XdvipdfmxConfig {
-            paperspec: paperspec_str
-                .as_ref()
-                .map_or(paperspec_default.as_ptr(), |s| s.as_ptr()),
+            paperspec: paperspec_str.as_c_str().as_ptr(),
             enable_compression: if self.enable_compression { 1 } else { 0 },
             deterministic_tags: if self.deterministic_tags { 1 } else { 0 },
             build_date: self
