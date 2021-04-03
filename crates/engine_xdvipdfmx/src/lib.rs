@@ -1,16 +1,41 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 
 //! The `xdvipdfmx` program from [XeTeX] as a reusable crate.
 //!
 //! [XeTeX]: http://xetex.sourceforge.net/
+//!
+//! The `xdvipdfmx` progam converts XeTeX "XDV" intermediate files into PDF
+//! output files.
+//!
+//! This crate provides the `xdvipdfmx` implementation used by [Tectonic].
+//! However, in order to obtain the full Tectonic user experience, it must be
+//! combined with a variety of other utilities: the main XeTeX engine, code to
+//! fetch support files, and so on. Rather than using this crate directly you
+//! should probably use the main [`tectonic`] crate, which combines all of these
+//! pieces into a (semi) coherent whole.
+//!
+//! [Tectonic]: https://tectonic-typesetting.github.io/
+//! [`tectonic`]: https://docs.rs/tectonic/
 
 use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
+/// A struct for invoking the `xdvipdfmx` engine.
+///
+/// This struct has a fairly straightforward “builder” interface: you create it,
+/// apply any settings that you wish, and eventually run the
+/// [`process()`](Self::process) method.
+///
+/// Due to constraints of the gnarly C/C++ code underlying the engine
+/// implementation, only one engine may run at once in one process. The engine
+/// execution framework uses a global mutex to ensure that this is the case.
+/// This restriction applies not only to the [`XdvipdfmxEngine`] type but to
+/// *all* Tectonic engines. I.e., you can't run this engine and the XeTeX engine
+/// at the same time.
 pub struct XdvipdfmxEngine {
     paper_spec: String,
     enable_compression: bool,
@@ -30,20 +55,33 @@ impl Default for XdvipdfmxEngine {
 }
 
 impl XdvipdfmxEngine {
+    /// Set whether compression will be enabled in the output PDF.
+    ///
+    /// The default value is true. You might want to set this to false to
+    /// improve the reproducibility of your generated PDFs, since different
+    /// environments may create different compressed outputs even if their
+    /// inputs and algorithms are the same. If this is your interest,
+    /// see also [`enable_deterministic_tags`](Self::enable_deterministic_tags).
     pub fn enable_compression(&mut self, enable_compression: bool) -> &mut Self {
         self.enable_compression = enable_compression;
         self
     }
 
-    pub fn enable_deterministic_tags(&mut self, flag: bool) -> &mut Self {
-        self.deterministic_tags = flag;
+    /// Set whether font tags will be generated deterministically.
+    ///
+    /// The default is false: the engine includes some random characters when
+    /// creating font tags. Changing this to true helps create byte-for-byte
+    /// reproducible PDF outputs.
+    pub fn enable_deterministic_tags(&mut self, deterministic_tags: bool) -> &mut Self {
+        self.deterministic_tags = deterministic_tags;
         self
     }
 
-    /// Sets the date and time used by the xdvipdfmx engine. This value is used
-    /// as a source of entropy and is written to the output PDF. When expecting
-    /// reproducible builds, this should be set to a static value, like its
-    /// default value UNIX_EPOCH.
+    /// Sets the build date embedded in the output artifacts
+    ///
+    /// The default value is the Unix epoch, which is almost certainly not what
+    /// you want. This value is used as a source of entropy and is written to
+    /// the output PDF.
     pub fn build_date(&mut self, date: SystemTime) -> &mut Self {
         self.build_date = date;
         self
@@ -57,6 +95,16 @@ impl XdvipdfmxEngine {
         self
     }
 
+    /// Run xdvipdfmx.
+    ///
+    /// The *launcher* parameter gives overarching environmental context in
+    /// which the engine will be run.
+    ///
+    /// The *dvi* parameter gives the name of the DVI file, created by the TeX
+    /// engine, that will be processed. In Tectonic this is actually an XDV
+    /// file, containing extended features needed for XeTeX Unicode processing.
+    ///
+    /// The *pdf* parameter gives the name of the output PDF file to create.
     pub fn process(
         &mut self,
         launcher: &mut CoreBridgeLauncher,
