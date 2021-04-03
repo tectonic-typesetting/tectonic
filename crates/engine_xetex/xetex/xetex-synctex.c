@@ -782,8 +782,12 @@ synctex_record_input(int32_t tag, char *name)
         fatal_error(errmsg);
         return -1;
     }
-
-    int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s/%s\n", tag, cwd, name);
+    #ifdef _WIN32
+        char *sep = "\\";
+    #else
+        char *sep = "/";
+    #endif
+    int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s%s%s\n", tag, cwd, sep, name);
 
     if (len > 0) {
         synctex_ctxt.total_length += len;
