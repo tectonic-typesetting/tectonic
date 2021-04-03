@@ -12,6 +12,15 @@ providing only a C API*.
 - [API documentation](https://docs.rs/tectonic_pdf_io/).
 - [Main Git repository](https://github.com/tectonic-typesetting/tectonic/).
 
+This crate depends on [libpng], which it attempts to find externally using
+[pkg-config] or [vcpkg]. It should be possible to create another “bridge” crate
+so that this external dependency could be avoided, but this hasn’t been done
+yet.
+
+[libpng]: http://www.libpng.org/pub/png/libpng.html
+[pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
+[vcpkg]: https://github.com/microsoft/vcpkg
+
 If your project depends on this crate, Cargo will export for your build script
 an environment variable named `DEP_TECTONIC_PDF_IO_INCLUDE_PATH`, which will be
 a semicolon-separated list of directories enabling your code to include the
