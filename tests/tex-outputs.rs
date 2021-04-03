@@ -127,7 +127,7 @@ impl TestCase {
                 .process(&mut launcher, "plain.fmt", &texname);
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
-                XdvipdfmxEngine::new()
+                XdvipdfmxEngine::default()
                     .with_compression(false)
                     .with_deterministic_tags(true)
                     .with_date(

@@ -27,15 +27,17 @@ pub struct XdvipdfmxEngine {
     build_date: SystemTime,
 }
 
-impl XdvipdfmxEngine {
-    pub fn new() -> XdvipdfmxEngine {
+impl Default for XdvipdfmxEngine {
+    fn default() -> Self {
         XdvipdfmxEngine {
             enable_compression: true,
             deterministic_tags: false,
             build_date: SystemTime::UNIX_EPOCH,
         }
     }
+}
 
+impl XdvipdfmxEngine {
     pub fn with_compression(mut self, enable_compression: bool) -> Self {
         self.enable_compression = enable_compression;
         self
@@ -106,12 +108,6 @@ impl XdvipdfmxEngine {
                 x => Ok(x as i32),
             }
         })
-    }
-}
-
-impl Default for XdvipdfmxEngine {
-    fn default() -> Self {
-        XdvipdfmxEngine::new()
     }
 }
 

@@ -1200,7 +1200,7 @@ impl ProcessingSession {
     fn xdvipdfmx_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         {
             let mut stack = self.io.as_stack();
-            let mut engine = XdvipdfmxEngine::new().with_date(self.build_date);
+            let mut engine = XdvipdfmxEngine::default().with_date(self.build_date);
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
             engine.process(
                 &mut stack,
