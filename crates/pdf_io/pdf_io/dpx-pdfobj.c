@@ -1775,6 +1775,7 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
     unsigned char *filtered;
     unsigned int   filtered_length;
     size_t         buffer_length;
+    uint64_t       buffer_length64;
     unsigned char *buffer;
 
     /*
@@ -1866,15 +1867,19 @@ write_stream (pdf_stream *stream, rust_output_handle_t handle)
                 pdf_add_dict(stream->dict, pdf_new_name("Filter"), filter_name);
         }
 
+        buffer_length64 = (uint64_t) buffer_length;
+
         if (tectonic_flate_compress(
                 buffer,
-                &buffer_length,
+                &buffer_length64,
                 filtered,
                 filtered_length,
                 compression_level
             ) < 0) {
             _tt_abort("Zlib error");
         }
+
+        buffer_length = (size_t) buffer_length64;
 
         free(filtered);
         compression_saved += filtered_length - buffer_length
