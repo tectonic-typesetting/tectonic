@@ -103,7 +103,6 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
                 &mut NoopStatusBackend::default(),
                 "unused.fmt",
                 texname,
-                &Default::default(),
             )
             .unwrap();
     }

@@ -24,7 +24,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#include "dpx-dvipdfmx.h"
+#include "tectonic_bridge_core.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -33,13 +33,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "tectonic_bridge_core.h"
+#include "xdvipdfmx_bindings.h"
+
 #include "dpx-cid.h"
 #include "dpx-dpxconf.h"
 #include "dpx-dpxcrypt.h"
 #include "dpx-dpxfile.h"
 #include "dpx-dpxutil.h"
 #include "dpx-dvi.h"
+#include "dpx-dvipdfmx.h"
 #include "dpx-error.h"
 #include "dpx-fontmap.h"
 #include "dpx-mem.h"
@@ -104,14 +106,11 @@ static int     do_encryption = 0;
 static int     key_bits      = 40;
 static int32_t permission    = 0x003C;
 
-time_t source_date_epoch = (time_t) -1;
-
 /* Page device */
-double paper_width  = 595.0;
-double paper_height = 842.0;
+/* Tectonic: landscape_mode, paper_width, paper_height used to be defined here,
+ * but are now defined in the `tectonic_pdf_io` crate. */
 static double x_offset = 72.0;
 static double y_offset = 72.0;
-int    landscape_mode  = 0;
 static int translate_origin = 0;
 
 
@@ -449,7 +448,7 @@ dvipdfmx_main (
   font_dpi = 600;
   pdfdecimaldigits = 5;
   image_cache_life = -2;
-  source_date_epoch = build_date;
+  ttpi_source_date_epoch = build_date;
   pdf_load_fontmap_file("pdftex.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("kanjix.map", FONTMAP_RMODE_APPEND);
   pdf_load_fontmap_file("ckx.map", FONTMAP_RMODE_APPEND);
@@ -560,4 +559,27 @@ dvipdfmx_main (
   free(page_ranges);
 
   return 0;
+}
+
+int
+tt_engine_xdvipdfmx_main(
+  ttbc_state_t *api,
+  const XdvipdfmxConfig* config,
+  const char *dviname,
+  const char *pdfname,
+  bool compress,
+  bool deterministic_tags,
+  time_t build_date
+) {
+  int rv;
+
+  if (setjmp(*ttbc_global_engine_enter(api))) {
+    ttbc_global_engine_exit();
+    return 99;
+  }
+
+  dpx_config = config;
+  rv = dvipdfmx_main(pdfname, dviname, NULL, 0, false, compress, deterministic_tags, false, 0, build_date);
+  ttbc_global_engine_exit();
+  return rv;
 }

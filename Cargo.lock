@@ -1951,8 +1951,6 @@ dependencies = [
  "app_dirs2",
  "atty",
  "byte-unit",
- "cbindgen",
- "cc",
  "cfg-if 1.0.0",
  "error-chain",
  "filetime",
@@ -1965,19 +1963,13 @@ dependencies = [
  "libc",
  "md-5",
  "open",
- "pkg-config",
- "regex",
  "serde",
  "sha2",
  "structopt",
  "tectonic_bridge_core",
- "tectonic_bridge_flate",
- "tectonic_bridge_graphite2",
- "tectonic_bridge_harfbuzz",
- "tectonic_bridge_icu",
- "tectonic_cfg_support",
- "tectonic_dep_support",
  "tectonic_engine_bibtex",
+ "tectonic_engine_xdvipdfmx",
+ "tectonic_engine_xetex",
  "tectonic_errors",
  "tectonic_geturl",
  "tectonic_io_base",
@@ -1989,7 +1981,6 @@ dependencies = [
  "tokio 0.1.22",
  "toml",
  "url",
- "vcpkg",
  "watchexec",
  "zip",
 ]
@@ -2076,6 +2067,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_engine_xdvipdfmx"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "cc",
+ "libc",
+ "tectonic_bridge_core",
+ "tectonic_errors",
+ "tectonic_io_base",
+ "tectonic_pdf_io",
+ "tectonic_status_base",
+]
+
+[[package]]
+name = "tectonic_engine_xetex"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cbindgen",
+ "cc",
+ "libc",
+ "tectonic_bridge_core",
+ "tectonic_bridge_flate",
+ "tectonic_bridge_graphite2",
+ "tectonic_bridge_harfbuzz",
+ "tectonic_cfg_support",
+ "tectonic_errors",
+ "tectonic_io_base",
+ "tectonic_pdf_io",
+ "tectonic_status_base",
+ "tectonic_xetex_layout",
+]
+
+[[package]]
 name = "tectonic_errors"
 version = "0.0.0-dev.0"
 dependencies = [
@@ -2103,6 +2127,17 @@ dependencies = [
  "tectonic_errors",
  "tectonic_status_base",
  "thiserror",
+]
+
+[[package]]
+name = "tectonic_pdf_io"
+version = "0.0.0-dev.0"
+dependencies = [
+ "cc",
+ "tectonic_bridge_core",
+ "tectonic_bridge_flate",
+ "tectonic_cfg_support",
+ "tectonic_dep_support",
 ]
 
 [[package]]

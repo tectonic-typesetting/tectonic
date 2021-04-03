@@ -161,30 +161,6 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
     }
 }
 
-/// Import something from our bridge crates so that we ensure that we actually
-/// link with them, to pull in the symbols defined in the C APIs.
-mod linkage {
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_flate;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_graphite2;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_harfbuzz;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_icu;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_xetex_layout;
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

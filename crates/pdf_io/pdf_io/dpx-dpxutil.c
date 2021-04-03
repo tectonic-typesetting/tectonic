@@ -111,7 +111,7 @@ int
 dpx_util_format_asn_date (char *date_string, int need_timezone)
 {
   int32_t     tz_offset = 0;
-  struct tm  *bd_time = gmtime(&source_date_epoch);
+  struct tm  *bd_time = gmtime(&ttpi_source_date_epoch);
 
   if (need_timezone) {
     if (bd_time->tm_isdst > 0) {

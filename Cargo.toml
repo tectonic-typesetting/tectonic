@@ -6,7 +6,6 @@
 name = "tectonic"
 version = "0.0.0-dev.0"  # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
-build = "build.rs"
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
 extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
@@ -36,9 +35,12 @@ members = [
   "crates/cfg_support",
   "crates/dep_support",
   "crates/engine_bibtex",
+  "crates/engine_xdvipdfmx",
+  "crates/engine_xetex",
   "crates/errors",
   "crates/geturl",
   "crates/io_base",
+  "crates/pdf_io",
   "crates/status_base",
   "crates/xdv",
   "crates/xetex_layout",
@@ -47,16 +49,6 @@ members = [
 [lib]
 name = "tectonic"
 crate-type = ["rlib"]
-
-[build-dependencies]
-cc = "^1.0.66"
-pkg-config = "^0.3"
-regex = "^1.4"
-sha2 = "^0.9"
-tectonic_cfg_support = { path = "crates/cfg_support", version = "0.0.0-dev.0" }
-tectonic_dep_support = { path = "crates/dep_support", version = "0.0.0-dev.0" }
-vcpkg = "0.2.11"
-cbindgen = "0.16.0"
 
 [dependencies]
 app_dirs = { version = "2", package = "app_dirs2" }
@@ -74,11 +66,9 @@ serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
 tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
-tectonic_bridge_flate = { path = "crates/bridge_flate", version = "0.0.0-dev.0" }
-tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version = "0.0.0-dev.0" }
-tectonic_bridge_harfbuzz = { path = "crates/bridge_harfbuzz", version = "0.0.0-dev.0" }
-tectonic_bridge_icu = { path = "crates/bridge_icu", version = "0.0.0-dev.0" }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = "0.0.0-dev.0" }
+tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version = "0.0.0-dev.0" }
+tectonic_engine_xetex = { path = "crates/engine_xetex", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "crates/errors", version = "0.0.0-dev.0" }
 tectonic_geturl = { path = "crates/geturl", version = "0.0.0-dev.0", default-features = false }
 tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
@@ -100,7 +90,7 @@ default = ["geturl-reqwest", "serialization"]
 # just get rid of this feature:
 serialization = ["serde", "toml"]
 
-external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
+external-harfbuzz = ["tectonic_engine_xetex/external-harfbuzz"]
 
 geturl-curl = ["tectonic_geturl/curl"]
 geturl-reqwest = ["tectonic_geturl/reqwest"]
@@ -137,6 +127,8 @@ tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_engine_bibtex = "thiscommit:2021-01-17:KuhaeG1e"
+tectonic_engine_xdvipdfmx = "7dcbc52e58f9774b3d592919a9105377faeac509"
+tectonic_engine_xetex = "5d6ef9867613eee93361ed85c835b16f4b7fc450"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_geturl = "thiscommit:2021-01-16:Aikoob9c"
 tectonic_io_base = "thiscommit:2021-01-16:SaeK7eex"

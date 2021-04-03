@@ -1,6 +1,8 @@
-/*  DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
+/* This is (x)dvipdfmx, an extended version of...
 
-    Copyright (C) 2002-2018 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata,
+    DVIPDFMx, an eXtended version of DVIPDFM by Mark A. Wicks.
+
+    Copyright (C) 2002-2020 by Jin-Hwan Cho, Matthias Franz, Shunsaku Hirata,
     the DVIPDFMx project team.
 
     Copyright (c) 2006 SIL. (xdvipdfmx extensions for XeTeX support)
@@ -22,30 +24,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#ifndef _DVIPDFMX_H_
-#define _DVIPDFMX_H_
+/* Tectonic: truncated version for the pdf_io crate */
 
-#include "tectonic_bridge_core.h"
-#include "core-bindgen.h" /* XdvipdfmxConfig */
+#include "dpx-dvipdfmx.h"
 
-#include <stdbool.h>
-
-#define DVIPDFMX_PROG_NAME "xdvipdfmx"
-
-extern time_t source_date_epoch;
-extern const XdvipdfmxConfig* dpx_config;
-
-int extractbb(int argc, char *argv[]);
-int dvipdfmx_main(
-  const char *pdfname,
-  const char *dviname,
-  const char *pagespec,
-  int opt_flags,
-  bool translate,
-  bool compress,
-  bool deterministic_tags,
-  bool quiet,
-  unsigned int verbose,
-  time_t build_date);
-
-#endif /* _DVIPDFMX_H_ */
+time_t ttpi_source_date_epoch = (time_t) -1;
+int landscape_mode = 0;
+double paper_height = 842.0;
+double paper_width = 595.0;

@@ -1067,14 +1067,8 @@ impl ProcessingSession {
             TexEngine::new()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .process(
-                    &mut stack,
-                    &mut self.events,
-                    status,
-                    "UNUSED.fmt",
-                    "texput",
-                    &self.unstables,
-                )
+                .shell_escape(self.unstables.shell_escape)
+                .process(&mut stack, &mut self.events, status, "UNUSED.fmt", "texput")
         };
 
         match result {
@@ -1087,7 +1081,7 @@ impl ProcessingSession {
                 return Err(ErrorKind::Msg("unhandled TeX engine error".to_owned()).into());
             }
             Err(e) => {
-                return Err(e.chain_err(|| ErrorKind::EngineError("TeX")));
+                return Err(e.into());
             }
         }
 
@@ -1137,6 +1131,7 @@ impl ProcessingSession {
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
                 .semantic_pagination(self.output_format == OutputFormat::Html)
+                .shell_escape(self.unstables.shell_escape)
                 .build_date(self.build_date)
                 .process(
                     &mut stack,
@@ -1144,7 +1139,6 @@ impl ProcessingSession {
                     status,
                     &self.format_name,
                     &self.primary_input_tex_path,
-                    &self.unstables,
                 )
         };
 
@@ -1156,7 +1150,7 @@ impl ProcessingSession {
                     Some("errors were issued by the TeX engine, but were ignored; \
                          use --print and/or --keep-logs for details."),
             Err(e) =>
-                return Err(e.chain_err(|| ErrorKind::EngineError("TeX"))),
+                return Err(e.into()),
         };
 
         Ok(warnings)
@@ -1210,7 +1204,7 @@ impl ProcessingSession {
                 status,
                 &self.tex_xdv_path,
                 &self.tex_pdf_path,
-                &self.unstables,
+                self.unstables.paper_size.as_ref().map(|s| s.as_ref()),
             )?;
         }
 

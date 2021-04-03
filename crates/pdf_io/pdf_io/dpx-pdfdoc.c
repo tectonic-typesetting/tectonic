@@ -465,7 +465,7 @@ pdf_doc_close_docinfo (pdf_doc *p)
                  pdf_new_string(banner, strlen(banner)));
   }
 
-  if (!pdf_lookup_dict(docinfo, "CreationDate") && source_date_epoch) {
+  if (!pdf_lookup_dict(docinfo, "CreationDate") && ttpi_source_date_epoch) {
     char now[80];
 
     dpx_util_format_asn_date(now, 1);

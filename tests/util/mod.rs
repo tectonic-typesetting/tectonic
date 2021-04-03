@@ -86,7 +86,6 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
                     &mut NoopStatusBackend::default(),
                     "UNUSED.fmt",
                     "plain.tex",
-                    &Default::default(),
                 )?;
         }
 

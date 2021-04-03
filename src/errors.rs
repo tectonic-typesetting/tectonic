@@ -226,10 +226,10 @@ impl DefinitelySame for ErrorKind {
     }
 }
 
-impl DefinitelySame for Error {
-    /// Here we abuse DefinitelySame a bit and ignore the backtrace etc.
+impl DefinitelySame for NewError {
+    /// Hack alert! We only compare stringifications.
     fn definitely_same(&self, other: &Self) -> bool {
-        self.kind().definitely_same(other.kind())
+        self.to_string() == other.to_string()
     }
 }
 
