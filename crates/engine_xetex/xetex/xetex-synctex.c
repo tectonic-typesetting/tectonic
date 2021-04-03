@@ -771,7 +771,18 @@ synctex_record_preamble(void)
 static inline int
 synctex_record_input(int32_t tag, char *name)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
+    char cwd[4096];
+    ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Failed to generate synctex info: ");
+    ttstub_diag_printf(errmsg, "?_?");
+    capture_to_diagnostic(errmsg);
+    if (getcwd(cwd, 4096) == NULL) {
+        fprintf(stderr, "Error during ");
+        fprintf(stderr, "Failed to get absolute path to current directory.\n");
+        fprintf(stderr, "Reason: %s\n", errno == ERANGE ? "directory path too long" : "unknown");
+        return -1;
+    }
+
+    int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s/%s\n", tag, cwd, name);
 
     if (len > 0) {
         synctex_ctxt.total_length += len;
