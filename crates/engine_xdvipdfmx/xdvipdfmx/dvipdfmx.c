@@ -66,8 +66,6 @@ typedef struct page_range
   int last;
 } PageRange;
 
-const XdvipdfmxConfig* dpx_config;
-
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
 #define OPT_CIDFONT_FIXEDPITCH    (1 << 2)
 #define OPT_FONTMAP_FIRST_MATCH   (1 << 3)
@@ -399,7 +397,8 @@ dvipdfmx_main (
   bool deterministic_tags,
   bool quiet,
   unsigned int verbose,
-  time_t build_date)
+  time_t build_date,
+  const char *paperspec)
 {
   double dvi2pts;
   const char *creator = NULL;
@@ -440,7 +439,7 @@ dvipdfmx_main (
    * code bits. */
 
   pdf_set_version (5);
-  select_paper(dpx_config->paperspec);
+  select_paper(paperspec);
   annot_grow = 0;
   bookmark_open = 0;
   key_bits = 40;
@@ -564,7 +563,7 @@ dvipdfmx_main (
 int
 tt_engine_xdvipdfmx_main(
   ttbc_state_t *api,
-  const XdvipdfmxConfig* config,
+  const XdvipdfmxConfig *config,
   const char *dviname,
   const char *pdfname
 ) {
@@ -575,7 +574,6 @@ tt_engine_xdvipdfmx_main(
     return 99;
   }
 
-  dpx_config = config;
   rv = dvipdfmx_main(
     pdfname,
     dviname,
@@ -586,7 +584,8 @@ tt_engine_xdvipdfmx_main(
     (bool) config->deterministic_tags,
     false, /* quiet */
     0, /* verbose */
-    config->build_date
+    config->build_date,
+    config->paperspec
   );
 
   ttbc_global_engine_exit();
