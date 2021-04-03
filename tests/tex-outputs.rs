@@ -128,9 +128,9 @@ impl TestCase {
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
                 XdvipdfmxEngine::default()
-                    .with_compression(false)
-                    .with_deterministic_tags(true)
-                    .with_date(
+                    .enable_compression(false)
+                    .enable_deterministic_tags(true)
+                    .build_date(
                         time::SystemTime::UNIX_EPOCH
                             .checked_add(time::Duration::from_secs(1_456_304_492))
                             .unwrap(),
