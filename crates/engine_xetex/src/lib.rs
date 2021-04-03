@@ -6,6 +6,16 @@
 //! The [XeTeX] program as a reusable crate.
 //!
 //! [XeTeX]: http://www.xetex.org/
+//!
+//! This crate provides the core TeX engine implementation used by [Tectonic].
+//! However, in order to obtain the full Tectonic user experience, it must be
+//! combined with a variety of other utilities: the `xdvipdfmx` engine, code to
+//! fetch support files, and so on. Rather than using this crate directly you
+//! should probably use the main [`tectonic`] crate, which combines all of these
+//! pieces into a (semi) coherent whole.
+//!
+//! [Tectonic]: https://tectonic-typesetting.github.io/
+//! [`tectonic`]: https://docs.rs/tectonic/
 
 use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError, IoEventBackend};
@@ -50,6 +60,17 @@ pub enum TexResult {
 }
 
 /// A struct for invoking the (Xe)TeX engine.
+///
+/// This struct has a fairly straightforward “builder” interface: you create it,
+/// apply any settings that you wish, and eventually run the
+/// [`process()`](Self::process) method.
+///
+/// Due to constraints of the gnarly C/C++ code underlying the engine
+/// implementation, only one engine may run at once in one process. The engine
+/// execution framework uses a global mutex to ensure that this is the case.
+/// This restriction applies not only to the [`TexEngine`] type but to *all*
+/// Tectonic engines. I.e., you can't run this engine and the BibTeX engine at
+/// the same time.
 #[derive(Debug)]
 pub struct TexEngine {
     // One day, the engine will hold its own state. For the time being,
@@ -88,13 +109,15 @@ impl TexEngine {
 
     /// Configure the engine to run in "initex" mode, in which it generates a
     /// "format" file that serializes the engine state rather than a PDF
-    /// document.
+    /// document. The default is false.
     pub fn initex_mode(&mut self, initex: bool) -> &mut Self {
         self.initex_mode = initex;
         self
     }
 
     /// Configure the engine to produce SyncTeX data.
+    ///
+    /// The default is false.
     pub fn synctex(&mut self, synctex_enabled: bool) -> &mut Self {
         self.synctex_enabled = synctex_enabled;
         self
@@ -108,12 +131,16 @@ impl TexEngine {
     /// output by altering how paragraphs and pages are constructed. When this
     /// mode is activated, the engine output type changes from XDV to SPX
     /// (although the two formats are quite similar).
+    ///
+    /// The default is false.
     pub fn semantic_pagination(&mut self, enabled: bool) -> &mut Self {
         self.semantic_pagination_enabled = enabled;
         self
     }
 
     /// Configure whether the "shell escape" TeX feature is enabled.
+    ///
+    /// The default is false.
     pub fn shell_escape(&mut self, shell_escape_enabled: bool) -> &mut Self {
         self.shell_escape_enabled = shell_escape_enabled;
         self
@@ -130,10 +157,6 @@ impl TexEngine {
         self
     }
 
-    // This function can't be generic across the IoProvider trait, for now,
-    // since the global pointer that stashes the ExecutionState must have a
-    // complete type.
-
     /// Process a document using the current engine configuration.
     ///
     /// The *io* parameter gives the I/O context in which the engine will run,
@@ -146,7 +169,10 @@ impl TexEngine {
     /// information, such as warnings from the TeX engine.
     ///
     /// The *format_file_name* is the name for the TeX “format file” giving
-    /// preloaded engine state. It must be findable in the I/O stack.
+    /// preloaded engine state. It must be findable in the I/O stack, using the
+    /// special hooks that are provided for handing format files, which allow
+    /// updates to the file format to be handed (see [`FORMAT_SERIAL`]). If in
+    /// “initex” mode, this parameter will be ignored.
     ///
     /// The *input_file_name* is used to name the “primary input file”. The I/O
     /// system has special hooks for opening this primary input, so be aware
@@ -162,6 +188,10 @@ impl TexEngine {
         format_file_name: &str,
         input_file_name: &str,
     ) -> Result<TexResult> {
+        // This function can't be generic across the IoProvider trait, for now,
+        // since the global pointer that stashes the ExecutionState must have a
+        // complete type. Bummer.
+
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
