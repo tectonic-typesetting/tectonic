@@ -1,11 +1,23 @@
-// Copyright 2020 the Tectonic Project.
+// Copyright 2020-2021 the Tectonic Project.
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
 
 //! A simple, pluggable interface for HTTP GETs and range requests.
 //!
-//! The default interface is intentionally exposed as a concrete type, so that
+//! At the moment, there are three backends that might be available:
+//! 1. A “null” backend that is always available, but does nothing and always
+//!    fails.
+//! 2. A backend based on [reqwest](https://docs.rs/reqwest/).
+//! 3. A backend based on [curl](https://docs.rs/curl/).
+//!
+//! The actual backend availability is determined at build time using [Cargo
+//! features][features]. See the crate README for information about the features
+//! and how they interact.
+//!
+//! [features]: https://doc.rust-lang.org/cargo/reference/features.html
+//!
+//! The default backend is intentionally exposed as a concrete type, so that
 //! crates relying on this one need not use a lot of dyns and impl Traits. It is
 //! intended that the choice of HTTP backend is a build-time one, not a runtime
 //! one.
