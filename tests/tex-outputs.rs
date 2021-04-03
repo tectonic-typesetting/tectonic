@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::time;
 
-use tectonic::engines::tex::TexResult;
+use tectonic::engines::tex::TexOutcome;
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::errors::DefinitelySame;
 use tectonic::io::testing::SingleInputFileIo;
@@ -21,7 +21,7 @@ use crate::util::{ensure_plain_format, test_path, ExpectedInfo};
 
 struct TestCase {
     stem: String,
-    expected_result: Result<TexResult>,
+    expected_result: Result<TexOutcome>,
     check_synctex: bool,
     check_pdf: bool,
     extra_io: Vec<Box<dyn IoProvider>>,
@@ -32,7 +32,7 @@ impl TestCase {
     fn new(stem: &str) -> Self {
         TestCase {
             stem: stem.to_owned(),
-            expected_result: Ok(TexResult::Spotless),
+            expected_result: Ok(TexOutcome::Spotless),
             check_synctex: false,
             check_pdf: false,
             extra_io: Vec::new(),
@@ -65,7 +65,7 @@ impl TestCase {
         self
     }
 
-    fn expect(&mut self, result: Result<TexResult>) -> &mut Self {
+    fn expect(&mut self, result: Result<TexOutcome>) -> &mut Self {
         self.expected_result = result;
         self
     }
@@ -125,7 +125,7 @@ impl TestCase {
                 .shell_escape(self.unstables.shell_escape)
                 .process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
 
-            if self.check_pdf && tex_res.definitely_same(&Ok(TexResult::Spotless)) {
+            if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
                 XdvipdfmxEngine::new()
                     .with_compression(false)
                     .with_deterministic_tags(true)
@@ -197,7 +197,7 @@ fn file_encoding() {
 
     TestCase::new("file_encoding.tex")
         .with_fs(&test_path(&["tex-outputs"]))
-        .expect(Ok(TexResult::Warnings))
+        .expect(Ok(TexOutcome::Warnings))
         .go()
 }
 
@@ -206,7 +206,7 @@ fn file_encoding() {
 #[test]
 fn issue393_ungetc() {
     TestCase::new("issue393_ungetc")
-        .expect(Ok(TexResult::Warnings))
+        .expect(Ok(TexOutcome::Warnings))
         .go()
 }
 
@@ -223,7 +223,7 @@ fn negative_roman_numeral() {
 #[test]
 fn otf_basic() {
     TestCase::new("otf_basic")
-        .expect(Ok(TexResult::Warnings))
+        .expect(Ok(TexOutcome::Warnings))
         .go()
 }
 
@@ -282,7 +282,7 @@ fn synctex() {
 #[test]
 fn unicode_file_name() {
     TestCase::new("hallöchen 🐨 welt 🌍.tex")
-        .expect(Ok(TexResult::Warnings))
+        .expect(Ok(TexOutcome::Warnings))
         .go()
 }
 

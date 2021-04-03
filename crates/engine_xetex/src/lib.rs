@@ -17,6 +17,9 @@
 //! [Tectonic]: https://tectonic-typesetting.github.io/
 //! [`tectonic`]: https://docs.rs/tectonic/
 
+// TODO: the internal interface we're using here is pretty janky. The bibtex
+// engine has a nicer approach that we should probably start using.
+
 use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError, IoEventBackend};
 use tectonic_errors::prelude::*;
@@ -37,12 +40,12 @@ pub const FORMAT_SERIAL: u32 = 29;
 ///
 /// The classic TeX implementation provides a fourth outcome: “fatal error”. In
 /// Tectonic, this outcome is represented as an `Err` result rather than a
-/// [`TexResult`].
+/// [`TexOutcome`].
 ///
 /// The `Errors` possibility will only occur if the `halt_on_error` engine
 /// option is false: if it’s true, errors get upgraded to fatals.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum TexResult {
+pub enum TexOutcome {
     /// Nothing bad happened.
     Spotless,
 
@@ -187,7 +190,7 @@ impl TexEngine {
         status: &mut dyn StatusBackend,
         format_file_name: &str,
         input_file_name: &str,
-    ) -> Result<TexResult> {
+    ) -> Result<TexOutcome> {
         // This function can't be generic across the IoProvider trait, for now,
         // since the global pointer that stashes the ExecutionState must have a
         // complete type. Bummer.
@@ -243,9 +246,9 @@ impl TexEngine {
             };
 
             match r {
-                0 => Ok(TexResult::Spotless),
-                1 => Ok(TexResult::Warnings),
-                2 => Ok(TexResult::Errors),
+                0 => Ok(TexOutcome::Spotless),
+                1 => Ok(TexOutcome::Warnings),
+                2 => Ok(TexOutcome::Errors),
                 3 => Err(EngineAbortedError::new_abort_indicator().into()),
                 x => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
             }

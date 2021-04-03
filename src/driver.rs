@@ -34,7 +34,7 @@ use crate::{
     status::StatusBackend,
     tt_error, tt_note, tt_warning,
     unstable_opts::UnstableOptions,
-    BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine,
+    BibtexEngine, Spx2HtmlEngine, TexEngine, TexOutcome, XdvipdfmxEngine,
 };
 
 /// Different patterns with which files may have been accessed by the
@@ -1072,11 +1072,11 @@ impl ProcessingSession {
         };
 
         match result {
-            Ok(TexResult::Spotless) => {}
-            Ok(TexResult::Warnings) => {
+            Ok(TexOutcome::Spotless) => {}
+            Ok(TexOutcome::Warnings) => {
                 tt_warning!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
             }
-            Ok(TexResult::Errors) => {
+            Ok(TexOutcome::Errors) => {
                 tt_error!(status, "errors were issued by the TeX engine; use --print and/or --keep-logs for details.");
                 return Err(ErrorKind::Msg("unhandled TeX engine error".to_owned()).into());
             }
@@ -1143,10 +1143,10 @@ impl ProcessingSession {
         };
 
         let warnings = match result {
-            Ok(TexResult::Spotless) => None,
-            Ok(TexResult::Warnings) =>
+            Ok(TexOutcome::Spotless) => None,
+            Ok(TexOutcome::Warnings) =>
                     Some("warnings were issued by the TeX engine; use --print and/or --keep-logs for details."),
-            Ok(TexResult::Errors) =>
+            Ok(TexOutcome::Errors) =>
                     Some("errors were issued by the TeX engine, but were ignored; \
                          use --print and/or --keep-logs for details."),
             Err(e) =>
@@ -1171,14 +1171,14 @@ impl ProcessingSession {
         };
 
         match result {
-            Ok(TexResult::Spotless) => {}
-            Ok(TexResult::Warnings) => {
+            Ok(TexOutcome::Spotless) => {}
+            Ok(TexOutcome::Warnings) => {
                 tt_note!(
                     status,
                     "warnings were issued by BibTeX; use --print and/or --keep-logs for details."
                 );
             }
-            Ok(TexResult::Errors) => {
+            Ok(TexOutcome::Errors) => {
                 tt_warning!(
                     status,
                     "errors were issued by BibTeX, but were ignored; \

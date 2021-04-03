@@ -69,7 +69,7 @@ pub mod test_util;
 
 pub use crate::engines::bibtex::BibtexEngine;
 pub use crate::engines::spx2html::Spx2HtmlEngine;
-pub use crate::engines::tex::{TexEngine, TexResult};
+pub use crate::engines::tex::{TexEngine, TexOutcome};
 pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
