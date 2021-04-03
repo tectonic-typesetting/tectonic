@@ -76,11 +76,6 @@ impl Default for TexEngine {
 }
 
 impl TexEngine {
-    /// To be removed.
-    pub fn new() -> TexEngine {
-        TexEngine::default()
-    }
-
     /// Configure whether the engine will halt on errors.
     ///
     /// The default setting is true. If false, the engine will plunge on ahead

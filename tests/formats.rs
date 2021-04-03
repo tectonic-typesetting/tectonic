@@ -95,7 +95,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
             IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support])
         };
 
-        TexEngine::new()
+        TexEngine::default()
             .initex_mode(true)
             .process(
                 &mut io,

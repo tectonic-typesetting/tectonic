@@ -1064,7 +1064,7 @@ impl ProcessingSession {
             let mut stack = self
                 .io
                 .as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
-            TexEngine::new()
+            TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
                 .shell_escape(self.unstables.shell_escape)
@@ -1126,7 +1126,7 @@ impl ProcessingSession {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
 
-            TexEngine::new()
+            TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)

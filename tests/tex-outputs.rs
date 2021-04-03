@@ -121,7 +121,7 @@ impl TestCase {
             let mut events = NoopIoEventBackend::default();
             let mut status = NoopStatusBackend::default();
 
-            let tex_res = TexEngine::new()
+            let tex_res = TexEngine::default()
                 .shell_escape(self.unstables.shell_escape)
                 .process(&mut io, &mut events, &mut status, "plain.fmt", &texname);
 

@@ -77,7 +77,7 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
         {
             let mut io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
 
-            TexEngine::new()
+            TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
                 .process(
