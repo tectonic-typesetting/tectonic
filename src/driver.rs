@@ -1203,10 +1203,12 @@ impl ProcessingSession {
 
             let mut stack = self.io.as_stack();
             let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
-            let mut engine = XdvipdfmxEngine::default().build_date(self.build_date);
+            let mut engine = XdvipdfmxEngine::default();
+
+            engine.build_date(self.build_date);
 
             if let Some(ref ps) = self.unstables.paper_size {
-                engine = engine.paper_spec(ps.clone());
+                engine.paper_spec(ps.clone());
             }
 
             engine.process(&mut launcher, &self.tex_xdv_path, &self.tex_pdf_path)?;

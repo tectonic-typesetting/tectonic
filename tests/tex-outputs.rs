@@ -127,7 +127,9 @@ impl TestCase {
                 .process(&mut launcher, "plain.fmt", &texname);
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
-                let mut engine = XdvipdfmxEngine::default()
+                let mut engine = XdvipdfmxEngine::default();
+
+                engine
                     .enable_compression(false)
                     .enable_deterministic_tags(true)
                     .build_date(
@@ -137,7 +139,7 @@ impl TestCase {
                     );
 
                 if let Some(ref ps) = self.unstables.paper_size {
-                    engine = engine.paper_spec(ps.clone());
+                    engine.paper_spec(ps.clone());
                 }
 
                 engine.process(&mut launcher, &xdvname, &pdfname).unwrap();

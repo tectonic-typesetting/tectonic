@@ -30,12 +30,12 @@ impl Default for XdvipdfmxEngine {
 }
 
 impl XdvipdfmxEngine {
-    pub fn enable_compression(mut self, enable_compression: bool) -> Self {
+    pub fn enable_compression(&mut self, enable_compression: bool) -> &mut Self {
         self.enable_compression = enable_compression;
         self
     }
 
-    pub fn enable_deterministic_tags(mut self, flag: bool) -> Self {
+    pub fn enable_deterministic_tags(&mut self, flag: bool) -> &mut Self {
         self.deterministic_tags = flag;
         self
     }
@@ -44,7 +44,7 @@ impl XdvipdfmxEngine {
     /// as a source of entropy and is written to the output PDF. When expecting
     /// reproducible builds, this should be set to a static value, like its
     /// default value UNIX_EPOCH.
-    pub fn build_date(mut self, date: SystemTime) -> Self {
+    pub fn build_date(&mut self, date: SystemTime) -> &mut Self {
         self.build_date = date;
         self
     }
@@ -52,7 +52,7 @@ impl XdvipdfmxEngine {
     /// Set the initial paper size specification to be used.
     ///
     /// The default is `"letter"`, regardless of current locale.
-    pub fn paper_spec(mut self, paper_spec: String) -> Self {
+    pub fn paper_spec(&mut self, paper_spec: String) -> &mut Self {
         self.paper_spec = paper_spec;
         self
     }
