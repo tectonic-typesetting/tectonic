@@ -110,7 +110,7 @@ impl XdvipdfmxEngine {
         launcher: &mut CoreBridgeLauncher,
         dvi: &str,
         pdf: &str,
-    ) -> Result<i32> {
+    ) -> Result<()> {
         let paperspec_str = atry!(
             CString::new(self.paper_spec.as_str());
             ["paper_spec may not contain internal NULs"]
@@ -135,9 +135,11 @@ impl XdvipdfmxEngine {
                 c_api::tt_engine_xdvipdfmx_main(state, &config, cdvi.as_ptr(), cpdf.as_ptr())
             };
 
-            match r {
-                99 => Err(EngineAbortedError::new_abort_indicator().into()),
-                x => Ok(x as i32),
+            // At the moment, the only possible return codes are 0 and 99 (= abort).
+            if r == 99 {
+                Err(EngineAbortedError::new_abort_indicator().into())
+            } else {
+                Ok(())
             }
         })
     }
