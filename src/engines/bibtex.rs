@@ -4,7 +4,7 @@
 use tectonic_bridge_core::{CoreBridgeLauncher, IoEventBackend};
 use tectonic_engine_bibtex::{BibtexEngine as RealBibtexEngine, BibtexOutcome};
 
-use super::tex::TexResult;
+use super::tex::TexOutcome;
 use crate::{errors::Result, io::IoStack, status::StatusBackend, unstable_opts::UnstableOptions};
 
 #[derive(Default)]
@@ -22,7 +22,7 @@ impl BibtexEngine {
         status: &mut dyn StatusBackend,
         aux: &str,
         unstables: &UnstableOptions,
-    ) -> Result<TexResult> {
+    ) -> Result<TexOutcome> {
         let mut real_engine = RealBibtexEngine::default();
 
         if let Some(x) = unstables.min_crossrefs {
@@ -33,9 +33,9 @@ impl BibtexEngine {
         let real_outcome = real_engine.process(&mut launcher, aux)?;
 
         match real_outcome {
-            BibtexOutcome::Spotless => Ok(TexResult::Spotless),
-            BibtexOutcome::Warnings => Ok(TexResult::Warnings),
-            BibtexOutcome::Errors => Ok(TexResult::Errors),
+            BibtexOutcome::Spotless => Ok(TexOutcome::Spotless),
+            BibtexOutcome::Warnings => Ok(TexOutcome::Warnings),
+            BibtexOutcome::Errors => Ok(TexOutcome::Errors),
         }
     }
 }

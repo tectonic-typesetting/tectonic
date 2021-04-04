@@ -14,6 +14,9 @@ project](https://tectonic-typesetting.github.io/en-US/). It provides the
 
 ## Cargo features
 
-This crate does not currently provides any [Cargo features][features].
+This crate provides the following [Cargo features][features]:
 
 [features]: https://doc.rust-lang.org/cargo/reference/features.html
+
+- **`external-harfbuzz`**: activates the same-named feature in
+  the `tectonic_bridge_harfbuzz` dependency.

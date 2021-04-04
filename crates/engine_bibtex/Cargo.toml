@@ -1,4 +1,4 @@
-# Copyright 2020 the Tectonic Project
+# Copyright 2020-2021 the Tectonic Project
 # Licensed under the MIT License.
 
 # See README.md for discussion of features (or lack thereof) in this crate.
@@ -11,7 +11,7 @@ description = """
 The `bibtex` program as a reusable crate.
 """
 homepage = "https://tectonic-typesetting.github.io/"
-documentation = "https://docs.rs/tectonic"
+documentation = "https://docs.rs/tectonic_engine_bibtex"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"

@@ -1,5 +1,5 @@
 // src/driver.rs -- utilities for running and rerunning the tex engine
-// Copyright 2018 the Tectonic Project
+// Copyright 2018-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -12,14 +12,17 @@
 //! CLI program.
 
 use byte_unit::Byte;
-use std::collections::{HashMap, HashSet};
-use std::fs::File;
-use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
-use std::result::Result as StdResult;
-use std::str::FromStr;
-use std::time::SystemTime;
+use std::{
+    collections::{HashMap, HashSet},
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+    rc::Rc,
+    result::Result as StdResult,
+    str::FromStr,
+    time::SystemTime,
+};
+use tectonic_bridge_core::CoreBridgeLauncher;
 
 use crate::{
     ctry,
@@ -34,7 +37,7 @@ use crate::{
     status::StatusBackend,
     tt_error, tt_note, tt_warning,
     unstable_opts::UnstableOptions,
-    BibtexEngine, Spx2HtmlEngine, TexEngine, TexResult, XdvipdfmxEngine,
+    BibtexEngine, Spx2HtmlEngine, TexEngine, TexOutcome, XdvipdfmxEngine,
 };
 
 /// Different patterns with which files may have been accessed by the
@@ -1064,19 +1067,20 @@ impl ProcessingSession {
             let mut stack = self
                 .io
                 .as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
-            TexEngine::new()
+            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
+            TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
                 .shell_escape(self.unstables.shell_escape)
-                .process(&mut stack, &mut self.events, status, "UNUSED.fmt", "texput")
+                .process(&mut launcher, "UNUSED.fmt", "texput")
         };
 
         match result {
-            Ok(TexResult::Spotless) => {}
-            Ok(TexResult::Warnings) => {
+            Ok(TexOutcome::Spotless) => {}
+            Ok(TexOutcome::Warnings) => {
                 tt_warning!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
             }
-            Ok(TexResult::Errors) => {
+            Ok(TexOutcome::Errors) => {
                 tt_error!(status, "errors were issued by the TeX engine; use --print and/or --keep-logs for details.");
                 return Err(ErrorKind::Msg("unhandled TeX engine error".to_owned()).into());
             }
@@ -1126,7 +1130,9 @@ impl ProcessingSession {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
 
-            TexEngine::new()
+            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
+
+            TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
@@ -1134,19 +1140,17 @@ impl ProcessingSession {
                 .shell_escape(self.unstables.shell_escape)
                 .build_date(self.build_date)
                 .process(
-                    &mut stack,
-                    &mut self.events,
-                    status,
+                    &mut launcher,
                     &self.format_name,
                     &self.primary_input_tex_path,
                 )
         };
 
         let warnings = match result {
-            Ok(TexResult::Spotless) => None,
-            Ok(TexResult::Warnings) =>
+            Ok(TexOutcome::Spotless) => None,
+            Ok(TexOutcome::Warnings) =>
                     Some("warnings were issued by the TeX engine; use --print and/or --keep-logs for details."),
-            Ok(TexResult::Errors) =>
+            Ok(TexOutcome::Errors) =>
                     Some("errors were issued by the TeX engine, but were ignored; \
                          use --print and/or --keep-logs for details."),
             Err(e) =>
@@ -1171,14 +1175,14 @@ impl ProcessingSession {
         };
 
         match result {
-            Ok(TexResult::Spotless) => {}
-            Ok(TexResult::Warnings) => {
+            Ok(TexOutcome::Spotless) => {}
+            Ok(TexOutcome::Warnings) => {
                 tt_note!(
                     status,
                     "warnings were issued by BibTeX; use --print and/or --keep-logs for details."
                 );
             }
-            Ok(TexResult::Errors) => {
+            Ok(TexOutcome::Errors) => {
                 tt_warning!(
                     status,
                     "errors were issued by BibTeX, but were ignored; \
@@ -1195,17 +1199,19 @@ impl ProcessingSession {
 
     fn xdvipdfmx_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         {
-            let mut stack = self.io.as_stack();
-            let mut engine = XdvipdfmxEngine::new().with_date(self.build_date);
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
-            engine.process(
-                &mut stack,
-                &mut self.events,
-                status,
-                &self.tex_xdv_path,
-                &self.tex_pdf_path,
-                self.unstables.paper_size.as_ref().map(|s| s.as_ref()),
-            )?;
+
+            let mut stack = self.io.as_stack();
+            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
+            let mut engine = XdvipdfmxEngine::default();
+
+            engine.build_date(self.build_date);
+
+            if let Some(ref ps) = self.unstables.paper_size {
+                engine.paper_spec(ps.clone());
+            }
+
+            engine.process(&mut launcher, &self.tex_xdv_path, &self.tex_pdf_path)?;
         }
 
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
