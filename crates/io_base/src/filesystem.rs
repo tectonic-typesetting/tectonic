@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tectonic_errors::Result;
-use tectonic_status_base::StatusBackend;
+use tectonic_status_base::{tt_warning, StatusBackend};
 
 use super::{
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
@@ -83,6 +83,7 @@ pub struct FilesystemIo {
     writes_allowed: bool,
     absolute_allowed: bool,
     hidden_input_paths: HashSet<PathBuf>,
+    reported_paths: HashSet<PathBuf>,
 }
 
 impl FilesystemIo {
@@ -98,6 +99,7 @@ impl FilesystemIo {
             writes_allowed,
             absolute_allowed,
             hidden_input_paths,
+            reported_paths: HashSet::new(),
         }
     }
 
@@ -158,7 +160,7 @@ impl IoProvider for FilesystemIo {
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        _status: &mut dyn StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
@@ -216,6 +218,21 @@ impl IoProvider for FilesystemIo {
                 };
             }
         };
+
+        // Report the absolute path only if we're able to open it, since the xetex engine tries to
+        // read a lot of places.
+        //
+        // We check with the original requested name since construct_path might make relative paths
+        // into absolute paths (e.g. when self.root is absolute).
+        let name_path = Path::new(name);
+        if name_path.is_absolute() && !self.reported_paths.contains(name_path) {
+            tt_warning!(
+                status,
+                "accessing absolute path '{}'; build may not be reproducible on other systems",
+                name_path.display()
+            );
+            self.reported_paths.insert(name_path.to_owned());
+        }
 
         // Issue #754 - if you run Tectonic on an input that is located in a
         // directory containing a sub-directory named `latex`, you get a
