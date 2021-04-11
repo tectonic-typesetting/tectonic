@@ -248,6 +248,8 @@ int ttstub_input_close(rust_input_handle_t handle);
 
 int ttstub_get_file_md5(char const *path, char *digest);
 
+int ttstub_runsystem(const unsigned short *cmd, size_t len);
+
 END_EXTERN_C
 
 #endif /* not TECTONIC_CORE_BRIDGE_H */

@@ -33,6 +33,7 @@ use std::{
     ffi::CStr,
     fmt::{Display, Error as FmtError, Formatter},
     io::{self, Read, SeekFrom, Write},
+    process::Command,
     ptr, slice,
     sync::Mutex,
 };
@@ -910,6 +911,51 @@ pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnost
 
     es.status
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+}
+
+#[cfg(unix)]
+const SHELL: [&str; 2] = ["sh", "-c"];
+
+#[cfg(windows)]
+const SHELL: [&str; 2] = ["cmd.exe", "/c"];
+
+/// Run a shell command
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw pointers from C.
+#[no_mangle]
+pub unsafe extern "C" fn ttbc_runsystem(
+    es: &mut CoreBridgeState,
+    cmd: *const u16,
+    len: libc::size_t,
+) -> libc::c_int {
+    let rcmd = slice::from_raw_parts(cmd, len);
+    let rcmd = match String::from_utf16(rcmd) {
+        Ok(cmd) => cmd,
+        Err(err) => {
+            tt_error!(es.status, "command was not valid utf-16"; err.into());
+            return -1;
+        }
+    };
+
+    match Command::new(SHELL[0]).arg(SHELL[1]).arg(&rcmd).status() {
+        Ok(status) => match status.code() {
+            Some(0) => 0,
+            Some(n) => {
+                tt_warning!(es.status, "command finished with exit code {}", n);
+                n
+            }
+            None => {
+                tt_warning!(es.status, "command was terminated by signal");
+                -1 // TODO is this the right number to return in this case?
+            }
+        },
+        Err(err) => {
+            tt_error!(es.status, "failed to run command"; err.into());
+            -1
+        }
+    }
 }
 
 /// Different types of files that can be opened by TeX engines

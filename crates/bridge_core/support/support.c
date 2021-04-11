@@ -306,3 +306,9 @@ ttstub_get_file_md5(char const *path, char *digest)
 {
     return ttbc_get_file_md5(tectonic_global_bridge_core, path, (uint8_t *) digest);
 }
+
+int
+ttstub_runsystem(const unsigned short *cmd, size_t len)
+{
+    return ttbc_runsystem(tectonic_global_bridge_core, cmd, len);
+}
