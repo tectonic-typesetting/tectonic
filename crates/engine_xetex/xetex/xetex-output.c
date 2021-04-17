@@ -139,16 +139,20 @@ print_raw_char(UTF16_code s, bool incr_offset)
         ttstub_output_putc(log_file, s);
         if (incr_offset)
             file_offset++;
-        if (file_offset == max_print_line)
-            print_ln();
+        if (file_offset == max_print_line) {
+            ttstub_output_putc(log_file, '\n');
+            file_offset = 0;
+        }
         break;
     case SELECTOR_TERM_ONLY:
         warn_char(s);
         ttstub_output_putc(rust_stdout, s);
         if (incr_offset)
             term_offset++;
-        if (term_offset == max_print_line)
-            print_ln();
+        if (term_offset == max_print_line) {
+            ttstub_output_putc(rust_stdout, '\n');
+            term_offset = 0;
+        }
         break;
     case SELECTOR_NO_PRINT:
         break;
