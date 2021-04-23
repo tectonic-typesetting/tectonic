@@ -549,6 +549,11 @@ impl ProcessingSessionBuilder {
             io.filesystem_root(fsr);
         }
 
+        // TODO do we also need to handle OutputDestination::Default?
+        if let OutputDestination::Path(ref p) = self.output_dest {
+            io.include_path(p.clone());
+        }
+
         let output_path = match self.output_dest {
             OutputDestination::Default => Some(default_output_path),
             OutputDestination::Path(p) => Some(p),

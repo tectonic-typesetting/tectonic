@@ -32,7 +32,7 @@ pub struct IoSetup {
     primary_input: Box<dyn IoProvider>,
     pub bundle: Option<Box<dyn Bundle>>,
     pub mem: MemoryIo,
-    filesystem: FilesystemIo,
+    filesystems: Vec<FilesystemIo>,
     pub format_cache: Option<FormatCache>,
     genuine_stdout: Option<GenuineStdoutIo>,
     format_primary: Option<BufferedPrimaryIo>,
@@ -48,7 +48,9 @@ impl IoSetup {
 
         providers.push(&mut *self.primary_input);
         providers.push(&mut self.mem);
-        providers.push(&mut self.filesystem);
+        for fs in self.filesystems.iter_mut() {
+            providers.push(fs);
+        }
 
         if let Some(ref mut b) = self.bundle {
             providers.push(b.as_ioprovider_mut());
@@ -123,6 +125,7 @@ pub struct IoSetupBuilder {
     bundle: Option<Box<dyn Bundle>>,
     use_genuine_stdout: bool,
     hidden_input_paths: HashSet<PathBuf>,
+    include_paths: Vec<PathBuf>,
 }
 
 impl Default for IoSetupBuilder {
@@ -134,6 +137,7 @@ impl Default for IoSetupBuilder {
             bundle: None,
             use_genuine_stdout: false,
             hidden_input_paths: HashSet::new(),
+            include_paths: Vec::new(),
         }
     }
 }
@@ -212,6 +216,12 @@ impl IoSetupBuilder {
         self
     }
 
+    /// Add a directory to read files from
+    pub fn include_path<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
+        self.include_paths.push(path.as_ref().to_owned());
+        self
+    }
+
     /// Creates an `IoSetup`.
     ///
     /// # Panics
@@ -240,15 +250,26 @@ impl IoSetupBuilder {
             }
         };
 
+        let mut filesystems = vec![FilesystemIo::new(
+            &self.filesystem_root,
+            false,
+            true,
+            self.hidden_input_paths.clone(),
+        )];
+
+        for include_path in self.include_paths {
+            filesystems.push(FilesystemIo::new(
+                &include_path,
+                false,
+                false,
+                self.hidden_input_paths.clone(),
+            ));
+        }
+
         Ok(IoSetup {
             primary_input: pio,
             mem: MemoryIo::new(true),
-            filesystem: FilesystemIo::new(
-                &self.filesystem_root,
-                false,
-                true,
-                self.hidden_input_paths,
-            ),
+            filesystems,
             format_cache,
             bundle: self.bundle,
             genuine_stdout: if self.use_genuine_stdout {
