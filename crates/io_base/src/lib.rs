@@ -483,6 +483,14 @@ pub trait IoProvider: AsIoProviderMut {
     ) -> Result<()> {
         bail!("this I/O layer cannot save format files");
     }
+
+    /// Write all files to disk, even if we've configured it to not. Currently,
+    /// the only use for this is shell-escape. This isn't that nice, and should
+    /// be moved somewhere better, but currently this is the easiest place to
+    /// put it.
+    fn write_to_disk(&self, _base_path: &Path, _status: &mut dyn StatusBackend) -> Result<()> {
+        Ok(()) // by default, do nothing
+    }
 }
 
 impl<P: IoProvider + ?Sized> IoProvider for Box<P> {

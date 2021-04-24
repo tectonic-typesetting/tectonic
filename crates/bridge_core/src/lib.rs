@@ -931,7 +931,6 @@ pub unsafe extern "C" fn ttbc_runsystem(
     len: libc::size_t,
     working_dir: *const libc::c_char,
 ) -> libc::c_int {
-    let rworking_dir = CStr::from_ptr(working_dir).to_string_lossy();
     let rcmd = slice::from_raw_parts(cmd, len);
     let rcmd = match String::from_utf16(rcmd) {
         Ok(cmd) => cmd,
@@ -941,10 +940,18 @@ pub unsafe extern "C" fn ttbc_runsystem(
         }
     };
 
+    let rworking_dir = CStr::from_ptr(working_dir).to_string_lossy();
+    let working_dir_path = rworking_dir.as_ref().as_ref(); // Cow<str> -> str -> Path
+
+    if let Err(err) = es.io.write_to_disk(working_dir_path, es.status) {
+        tt_error!(es.status, "could not flush all files to disk"; err);
+        return -1;
+    }
+
     match Command::new(SHELL[0])
         .arg(SHELL[1])
         .arg(&rcmd)
-        .current_dir(&*rworking_dir)
+        .current_dir(working_dir_path)
         .status()
     {
         Ok(status) => match status.code() {

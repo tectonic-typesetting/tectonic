@@ -6,7 +6,8 @@
 
 use tectonic_status_base::StatusBackend;
 
-use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
+use super::{InputHandle, IoProvider, OpenResult, OutputHandle, Result};
+use std::path::Path;
 
 /// An IoStack is an IoProvider that delegates to an ordered list of
 /// subordinate IoProviders. It also checks the order in which files are read
@@ -96,5 +97,13 @@ impl<'a> IoProvider for IoStack<'a> {
         }
 
         OpenResult::NotAvailable
+    }
+
+    fn write_to_disk(&self, base_path: &Path, status: &mut dyn StatusBackend) -> Result<()> {
+        for item in &self.items {
+            item.write_to_disk(base_path, status)?;
+        }
+
+        Ok(())
     }
 }
