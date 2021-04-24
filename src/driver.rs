@@ -1041,6 +1041,19 @@ impl ProcessingSession {
             .unwrap_or(false)
     }
 
+    fn shell_escape_working_dir(&self) -> Option<PathBuf> {
+        if !self.unstables.shell_escape {
+            return None;
+        }
+
+        Some(match self.output_path.as_ref() {
+            None => ".".into(),
+            // "" is an invalid working dir, so we need to change it to "."
+            Some(p) if p.as_os_str().is_empty() => ".".into(),
+            Some(p) => p.clone(),
+        })
+    }
+
     /// Use the TeX engine to generate a format file.
     fn make_format_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         if self.io.bundle.is_none() {
@@ -1069,12 +1082,7 @@ impl ProcessingSession {
         let stem = r?;
 
         let result = {
-            let shell_escape_workingdir = if self.unstables.shell_escape {
-                self.output_path.clone().or_else(|| Some(".".into()))
-            } else {
-                None
-            };
-
+            let shell_escape_working_dir = self.shell_escape_working_dir();
             let mut stack = self
                 .io
                 .as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
@@ -1082,7 +1090,7 @@ impl ProcessingSession {
             TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .shell_escape(shell_escape_workingdir)
+                .shell_escape(shell_escape_working_dir)
                 .process(&mut launcher, "UNUSED.fmt", "texput")
         };
 
@@ -1134,18 +1142,14 @@ impl ProcessingSession {
         status: &mut dyn StatusBackend,
     ) -> Result<Option<&'static str>> {
         let result = {
+            let shell_escape_working_dir = self.shell_escape_working_dir();
+
             let mut stack = self.io.as_stack();
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
             } else {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
-
-            let shell_escape_workingdir = if self.unstables.shell_escape {
-                self.output_path.clone().or_else(|| Some(".".into()))
-            } else {
-                None
-            };
 
             let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
 
@@ -1154,7 +1158,7 @@ impl ProcessingSession {
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
                 .semantic_pagination(self.output_format == OutputFormat::Html)
-                .shell_escape(shell_escape_workingdir)
+                .shell_escape(shell_escape_working_dir)
                 .build_date(self.build_date)
                 .process(
                     &mut launcher,
