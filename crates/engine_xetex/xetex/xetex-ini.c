@@ -10,7 +10,6 @@
 #include "core-bindgen.h" /* FORMAT_SERIAL */
 
 /* All the following variables are declared in xetex-xetexd.h */
-bool shell_escape_enabled = false;
 char* shell_escape_working_dir;
 memory_word *eqtb;
 int32_t bad;

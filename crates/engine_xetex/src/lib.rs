@@ -200,15 +200,6 @@ impl TexEngine {
             // Note that we have to do all of this setup while holding the
             // lock, because we're modifying static state variables.
 
-            let v = if shell_escape_working_dir.is_some() {
-                1
-            } else {
-                0
-            };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
-            }
-
             let v = if let Some(ref p) = shell_escape_working_dir {
                 p.as_ptr()
             } else {

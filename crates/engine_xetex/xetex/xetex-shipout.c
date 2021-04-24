@@ -2184,7 +2184,7 @@ write_out(int32_t p)
             print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
 
         print_cstr(")...");
-        if (!shell_escape_enabled) {
+        if (!shell_escape_working_dir) {
             print_cstr("disabled");
             print_char('.');
 

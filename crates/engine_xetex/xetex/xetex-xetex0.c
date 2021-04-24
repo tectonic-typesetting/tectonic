@@ -7598,7 +7598,7 @@ restart:
                     // 0 if shellescape disabled
                     // 1 if enabled & unrestricted
                     // 2 if enabled but restricted (which isn't currently supported)
-                    if (shell_escape_enabled) {
+                    if (shell_escape_working_dir) {
                         cur_val = 1;
                     } else {
                         cur_val = 0;
@@ -10356,7 +10356,7 @@ conditional(void)
     case IF_EOF_CODE:
         scan_four_bit_int_or_18();
         if (cur_val == 18)
-            b = !shell_escape_enabled;
+            b = !shell_escape_working_dir;
         else
             b = (read_open[cur_val] == CLOSED);
         break;
