@@ -122,9 +122,11 @@ impl TestCase {
             let mut status = NoopStatusBackend::default();
             let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
 
-            let tex_res = TexEngine::default()
-                .shell_escape(self.unstables.shell_escape)
-                .process(&mut launcher, "plain.fmt", &texname);
+            let tex_res = TexEngine::default().shell_escape(Some(".".into())).process(
+                &mut launcher,
+                "plain.fmt",
+                &texname,
+            );
 
             if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
                 let mut engine = XdvipdfmxEngine::default();

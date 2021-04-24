@@ -44,8 +44,13 @@ tt_xetex_set_int_variable (const char *var_name, int value)
 int
 tt_xetex_set_string_variable (const char *var_name, const char *value)
 {
-    /* Currently unused; see Git history for how we used to set output_comment */
-    return 1;
+    /* see Git history for how we used to set output_comment */
+    if (streq_ptr(var_name, "shell_escape_working_dir"))
+        shell_escape_working_dir = value ? xstrdup(value) : NULL; // TODO this allocation gets leaked
+    else
+        return 1; /* Uh oh: unrecognized variable */
+
+    return 0; /* success */
 }
 
 int

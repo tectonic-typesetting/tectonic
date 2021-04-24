@@ -1069,6 +1069,12 @@ impl ProcessingSession {
         let stem = r?;
 
         let result = {
+            let shell_escape_workingdir = if self.unstables.shell_escape {
+                self.output_path.clone().or_else(|| Some(".".into()))
+            } else {
+                None
+            };
+
             let mut stack = self
                 .io
                 .as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
@@ -1076,7 +1082,7 @@ impl ProcessingSession {
             TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .shell_escape(self.unstables.shell_escape)
+                .shell_escape(shell_escape_workingdir)
                 .process(&mut launcher, "UNUSED.fmt", "texput")
         };
 
@@ -1135,6 +1141,12 @@ impl ProcessingSession {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
 
+            let shell_escape_workingdir = if self.unstables.shell_escape {
+                self.output_path.clone().or_else(|| Some(".".into()))
+            } else {
+                None
+            };
+
             let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
 
             TexEngine::default()
@@ -1142,7 +1154,7 @@ impl ProcessingSession {
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
                 .semantic_pagination(self.output_format == OutputFormat::Html)
-                .shell_escape(self.unstables.shell_escape)
+                .shell_escape(shell_escape_workingdir)
                 .build_date(self.build_date)
                 .process(
                     &mut launcher,
