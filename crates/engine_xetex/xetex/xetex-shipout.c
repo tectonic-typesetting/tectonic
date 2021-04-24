@@ -2193,7 +2193,7 @@ write_out(int32_t p)
             // finish diagnostic here to emit it *before* command gets run
             capture_to_diagnostic(NULL);
 
-            ttstub_runsystem(&str_pool[str_start[str_ptr - TOO_BIG_CHAR]], cur_length());
+            ttstub_runsystem(&str_pool[str_start[str_ptr - TOO_BIG_CHAR]], cur_length(), shell_escape_working_dir);
         }
 
         print_nl_cstr("");

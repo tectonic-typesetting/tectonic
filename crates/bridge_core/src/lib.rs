@@ -923,13 +923,15 @@ const SHELL: [&str; 2] = ["cmd.exe", "/c"];
 ///
 /// # Safety
 ///
-/// This function is unsafe because it dereferences raw pointers from C.
+/// This function is unsafe because it dereferences raw pointers from C and accepts a raw C string.
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_runsystem(
     es: &mut CoreBridgeState,
     cmd: *const u16,
     len: libc::size_t,
+    working_dir: *const libc::c_char,
 ) -> libc::c_int {
+    let rworking_dir = CStr::from_ptr(working_dir).to_string_lossy();
     let rcmd = slice::from_raw_parts(cmd, len);
     let rcmd = match String::from_utf16(rcmd) {
         Ok(cmd) => cmd,
@@ -939,7 +941,12 @@ pub unsafe extern "C" fn ttbc_runsystem(
         }
     };
 
-    match Command::new(SHELL[0]).arg(SHELL[1]).arg(&rcmd).status() {
+    match Command::new(SHELL[0])
+        .arg(SHELL[1])
+        .arg(&rcmd)
+        .current_dir(&*rworking_dir)
+        .status()
+    {
         Ok(status) => match status.code() {
             Some(0) => 0,
             Some(n) => {

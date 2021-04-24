@@ -248,7 +248,7 @@ int ttstub_input_close(rust_input_handle_t handle);
 
 int ttstub_get_file_md5(char const *path, char *digest);
 
-int ttstub_runsystem(const unsigned short *cmd, size_t len);
+int ttstub_runsystem(const unsigned short *cmd, size_t len, char const* working_dir);
 
 END_EXTERN_C
 
