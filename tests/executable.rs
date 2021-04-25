@@ -566,3 +566,18 @@ fn v2_new_build_multiple_outputs() {
     let output = run_tectonic(&temppath, &["-X", "build"]);
     success_or_panic(output);
 }
+
+#[test]
+fn z_shell_escape() {
+    // Test that shell escape actually runs the commands
+    let fmt_arg = get_plain_format_arg();
+    // We don't actually use this file for anything, only to create the directory
+    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "-Zshell-escape", "--outdir=subdirectory"],
+        "\\write18{echo 123 > shell-escape-output}\\bye",
+    );
+    success_or_panic(output);
+    check_file(&tempdir, "subdirectory/shell-escape-output");
+}

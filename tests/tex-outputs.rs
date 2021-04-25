@@ -122,7 +122,13 @@ impl TestCase {
             let mut status = NoopStatusBackend::default();
             let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
 
-            let tex_res = TexEngine::default().shell_escape(Some(".".into())).process(
+            let shell_escape = if self.unstables.shell_escape {
+                Some(".".into())
+            } else {
+                None
+            };
+
+            let tex_res = TexEngine::default().shell_escape(shell_escape).process(
                 &mut launcher,
                 "plain.fmt",
                 &texname,
@@ -263,6 +269,18 @@ fn shell_escape() {
         ..Default::default()
     };
     TestCase::new("shell_escape")
+        .with_unstables(unstables)
+        .check_pdf(true)
+        .go()
+}
+
+#[test]
+fn no_shell_escape() {
+    let unstables = tectonic::unstable_opts::UnstableOptions {
+        shell_escape: false,
+        ..Default::default()
+    };
+    TestCase::new("no_shell_escape")
         .with_unstables(unstables)
         .check_pdf(true)
         .go()
