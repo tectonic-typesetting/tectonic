@@ -1,0 +1,35 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: futures
+    versions:
+    - ">= 0.3.a, < 0.4"
+  - dependency-name: headers
+    versions:
+    - ">= 0.3.a, < 0.4"
+  - dependency-name: hyper
+    versions:
+    - "< 0.12, >= 0.11.a"
+  - dependency-name: hyper
+    versions:
+    - ">= 0.13.a, < 0.14"
+  - dependency-name: hyper
+    versions:
+    - ">= 0.14.a, < 0.15"
+  - dependency-name: reqwest
+    versions:
+    - ">= 0.10.a, < 0.11"
+  - dependency-name: tokio
+    versions:
+    - ">= 0.2.a, < 0.3"
+  - dependency-name: tokio
+    versions:
+    - ">= 0.3.a, < 0.4"
+  - dependency-name: tokio
+    versions:
+    - ">= 1.a, < 2"
