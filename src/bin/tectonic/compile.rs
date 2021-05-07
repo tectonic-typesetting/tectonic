@@ -189,7 +189,7 @@ impl CompileOptions {
         let build_date_str = env::var("SOURCE_DATE_EPOCH").ok();
         let build_date = match build_date_str {
             Some(s) => {
-                let epoch = u64::from_str_radix(&s, 10).expect("invalid build date (not a number)");
+                let epoch = s.parse::<u64>().expect("invalid build date (not a number)");
                 time::SystemTime::UNIX_EPOCH
                     .checked_add(time::Duration::from_secs(epoch))
                     .expect("time overflow")
