@@ -268,10 +268,11 @@ pub struct SyncError<T: 'static> {
 impl<T: std::error::Error + 'static> SyncError<T> {
     pub fn new(err: T) -> Self {
         let arc = Arc::new(Mutex::new(err));
-        let proxy = match arc.lock().unwrap().source() {
-            None => None,
-            Some(source) => Some(CauseProxy::new(source, Arc::downgrade(&arc), 0)),
-        };
+        let proxy = arc
+            .lock()
+            .unwrap()
+            .source()
+            .map(|s| CauseProxy::new(s, Arc::downgrade(&arc), 0));
 
         SyncError { inner: arc, proxy }
     }
@@ -331,10 +332,9 @@ impl<T: std::error::Error> CauseProxy<T> {
         CauseProxy {
             inner: weak.clone(),
             depth,
-            next: match err.source() {
-                None => None,
-                Some(source) => Some(Box::new(CauseProxy::new(source, weak, depth + 1))),
-            },
+            next: err
+                .source()
+                .map(|s| Box::new(CauseProxy::new(s, weak, depth + 1))),
         }
     }
 
