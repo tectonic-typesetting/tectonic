@@ -1,4 +1,4 @@
-// Copyright 2020 the Tectonic Project
+// Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
@@ -15,6 +15,7 @@ use tectonic::{
     tt_error, tt_note,
     workspace::{self, Workspace},
 };
+use tectonic_errors::Error as NewError;
 use tectonic_status_base::plain::PlainStatusBackend;
 
 /// The main options for the "V2" command-line interface.
@@ -215,12 +216,13 @@ impl WatchCommand {
         #[cfg(not(any(unix, windows)))]
         final_command.push_str(" ; echo [Finished running]");
 
-        let mut args = watchexec::ArgsBuilder::default();
+        let mut args = watchexec::config::ConfigBuilder::default();
         args.cmd(vec![final_command])
             .paths(vec![env::current_dir()?])
             .ignores(vec!["build".to_owned()]);
+        let args = args.build().map_err(NewError::from)?;
 
-        let exec_handler = watchexec::run::ExecHandler::new(args.build()?);
+        let exec_handler = watchexec::run::ExecHandler::new(args);
         match exec_handler {
             Err(e) => {
                 tt_error!(

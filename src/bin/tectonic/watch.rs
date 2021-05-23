@@ -7,7 +7,7 @@ pub(crate) struct Watcher {
 }
 
 impl watchexec::Handler for Watcher {
-    fn args(&self) -> watchexec::Args {
+    fn args(&self) -> watchexec::config::Config {
         self.inner.args()
     }
 
