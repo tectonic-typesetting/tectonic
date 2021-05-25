@@ -736,12 +736,7 @@ impl ProcessingSession {
         let generate_format = if self.output_format == OutputFormat::Format {
             false
         } else {
-            let fmt_result = {
-                let mut stack = self.io.as_stack();
-                stack.input_open_format(&self.format_name, status)
-            };
-
-            match fmt_result {
+            match self.io.input_open_format(&self.format_name, status) {
                 OpenResult::Ok(_) => false,
                 OpenResult::NotAvailable => true,
                 OpenResult::Err(e) => {
@@ -1139,14 +1134,13 @@ impl ProcessingSession {
         let result = {
             let shell_escape_working_dir = self.shell_escape_working_dir();
 
-            let mut stack = self.io.as_stack();
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
             } else {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
 
-            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
+            let mut launcher = CoreBridgeLauncher::new(&mut self.io, &mut self.events, status);
 
             TexEngine::default()
                 .halt_on_error_mode(true)
@@ -1211,8 +1205,7 @@ impl ProcessingSession {
         {
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
 
-            let mut stack = self.io.as_stack();
-            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
+            let mut launcher = CoreBridgeLauncher::new(&mut self.io, &mut self.events, status);
             let mut engine = XdvipdfmxEngine::default();
 
             engine.build_date(self.build_date);
@@ -1230,10 +1223,9 @@ impl ProcessingSession {
 
     fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         {
-            let mut stack = self.io.as_stack();
             let mut engine = Spx2HtmlEngine::new();
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process(&mut stack, &mut self.events, status, &self.tex_xdv_path)?;
+            engine.process(&mut self.io, &mut self.events, status, &self.tex_xdv_path)?;
         }
 
         self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);

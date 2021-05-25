@@ -39,28 +39,6 @@ pub struct IoSetup {
 }
 
 impl IoSetup {
-    pub fn as_stack(&mut self) -> IoStack {
-        let mut providers: Vec<&mut dyn IoProvider> = Vec::new();
-
-        if let Some(ref mut p) = self.genuine_stdout {
-            providers.push(p);
-        }
-
-        providers.push(&mut *self.primary_input);
-        providers.push(&mut self.mem);
-        providers.push(&mut self.filesystem);
-
-        if let Some(ref mut b) = self.bundle {
-            providers.push(b.as_ioprovider_mut());
-        }
-
-        if let Some(ref mut c) = self.format_cache {
-            providers.push(&mut *c);
-        }
-
-        IoStack::new(providers)
-    }
-
     /// Creates an `IoStack` for the specific purpose of writing out a format file.
     ///
     /// This differs from [`IoSetup::as_stack`] in two ways:
