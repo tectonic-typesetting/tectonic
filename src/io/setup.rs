@@ -10,7 +10,7 @@ use tectonic_io_base::{
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
     stack::IoStack,
     stdstreams::{BufferedPrimaryIo, GenuineStdoutIo},
-    IoProvider,
+    InputHandle, IoProvider, OpenResult, OutputHandle,
 };
 use tectonic_status_base::StatusBackend;
 
@@ -72,7 +72,6 @@ impl IoSetup {
     ///
     /// You can use the resulting `IoStack` to run the TeX engine with `initex_mode` set to `true`;
     /// then the resulting format file(s) can be read from the memory I/O layer (i.e. `self.mem`).
-
     pub fn as_stack_for_format<'a>(&'a mut self, format_file_name: &str) -> IoStack<'a> {
         let mut providers: Vec<&mut dyn IoProvider> = Vec::new();
 
@@ -96,6 +95,68 @@ impl IoSetup {
         }
 
         IoStack::new(providers)
+    }
+}
+
+macro_rules! ioprovider_try {
+    ($provider:expr, $($inner:tt)+) => {
+        let r = $provider.$($inner)+;
+        match r {
+            OpenResult::NotAvailable => {},
+            _ => return r,
+        };
+    }
+}
+
+macro_rules! ioprovider_cascade {
+    ($self:ident, $($inner:tt)+) => {
+        if let Some(ref mut p) = $self.genuine_stdout {
+            ioprovider_try!(p, $($inner)+);
+        }
+
+        ioprovider_try!($self.primary_input, $($inner)+);
+        ioprovider_try!($self.mem, $($inner)+);
+        ioprovider_try!($self.filesystem, $($inner)+);
+
+        if let Some(ref mut p) = $self.bundle {
+            ioprovider_try!(p.as_ioprovider_mut(), $($inner)+);
+        }
+
+        if let Some(ref mut c) = $self.format_cache {
+            ioprovider_try!(c, $($inner)+);
+        }
+
+        return OpenResult::NotAvailable;
+    }
+}
+
+impl IoProvider for IoSetup {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
+        ioprovider_cascade!(self, output_open_name(name));
+    }
+
+    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+        ioprovider_cascade!(self, output_open_stdout());
+    }
+
+    fn input_open_name(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        ioprovider_cascade!(self, input_open_name(name, status));
+    }
+
+    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+        ioprovider_cascade!(self, input_open_primary(status));
+    }
+
+    fn input_open_format(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        ioprovider_cascade!(self, input_open_format(name, status));
     }
 }
 
