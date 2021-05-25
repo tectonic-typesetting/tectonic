@@ -1,4 +1,4 @@
-// Copyright 2018-2020 the Tectonic Project
+// Copyright 2018-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Convert Tectonic’s SPX format to HTML
@@ -6,11 +6,12 @@
 //! Yay, an engine actually written in pure Rust!
 
 use std::io::Write;
+use tectonic_bridge_core::IoEventBackend;
+use tectonic_io_base::IoProvider;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
-use super::IoEventBackend;
 use crate::errors::{Error, Result};
-use crate::io::{IoProvider, IoStack, OpenResult, OutputHandle};
+use crate::io::{OpenResult, OutputHandle};
 use crate::status::StatusBackend;
 use crate::{errmsg, tt_warning};
 
@@ -24,7 +25,7 @@ impl Spx2HtmlEngine {
 
     pub fn process(
         &mut self,
-        io: &mut IoStack,
+        io: &mut dyn IoProvider,
         events: &mut dyn IoEventBackend,
         status: &mut dyn StatusBackend,
         spx: &str,
@@ -53,14 +54,13 @@ impl Spx2HtmlEngine {
 
         let (name, digest_opt) = input.into_name_digest();
         events.input_closed(name, digest_opt);
-
         Ok(())
     }
 }
 
-struct State<'a, 'b: 'a> {
+struct State<'a> {
     outname: String,
-    io: &'a mut IoStack<'b>,
+    io: &'a mut dyn IoProvider,
     events: &'a mut dyn IoEventBackend,
     status: &'a mut dyn StatusBackend,
     cur_output: Option<OutputHandle>,
@@ -68,10 +68,10 @@ struct State<'a, 'b: 'a> {
     buf: Vec<u8>,
 }
 
-impl<'a, 'b: 'a> State<'a, 'b> {
+impl<'a> State<'a> {
     pub fn new(
         outname: String,
-        io: &'a mut IoStack<'b>,
+        io: &'a mut dyn IoProvider,
         events: &'a mut dyn IoEventBackend,
         status: &'a mut dyn StatusBackend,
     ) -> Self {
@@ -96,7 +96,7 @@ fn as_printable_ascii(c: i32) -> Option<u8> {
     }
 }
 
-impl<'a, 'b: 'a> State<'a, 'b> {
+impl<'a> State<'a> {
     pub fn finished(self) {
         if let Some(oh) = self.cur_output {
             let (name, digest) = oh.into_name_digest();
@@ -105,7 +105,7 @@ impl<'a, 'b: 'a> State<'a, 'b> {
     }
 }
 
-impl<'a, 'b: 'a> XdvEvents for State<'a, 'b> {
+impl<'a> XdvEvents for State<'a> {
     type Error = Error;
 
     fn handle_header(&mut self, filetype: FileType, _comment: &[u8]) -> Result<()> {
