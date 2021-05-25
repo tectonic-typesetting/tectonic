@@ -1178,16 +1178,10 @@ impl ProcessingSession {
 
     fn bibtex_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         let result = {
-            let mut stack = self.io.as_stack();
-            let mut engine = BibtexEngine::new();
             status.note_highlighted("Running ", "BibTeX", " ...");
-            engine.process(
-                &mut stack,
-                &mut self.events,
-                status,
-                &self.tex_aux_path,
-                &self.unstables,
-            )
+            let mut launcher = CoreBridgeLauncher::new(&mut self.io, &mut self.events, status);
+            let mut engine = BibtexEngine::new();
+            engine.process(&mut launcher, &self.tex_aux_path, &self.unstables)
         };
 
         match result {

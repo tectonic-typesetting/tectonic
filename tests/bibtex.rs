@@ -1,4 +1,4 @@
-// Copyright 2016-2019 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
@@ -7,6 +7,7 @@ use std::default::Default;
 use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::{FilesystemIo, IoProvider, IoStack, MemoryIo};
 use tectonic::BibtexEngine;
+use tectonic_bridge_core::CoreBridgeLauncher;
 use tectonic_io_base::stdstreams::GenuineStdoutIo;
 use tectonic_status_base::NoopStatusBackend;
 
@@ -48,15 +49,10 @@ impl TestCase {
 
         let mut events = NoopIoEventBackend::default();
         let mut status = NoopStatusBackend::default();
+        let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
 
         BibtexEngine::new()
-            .process(
-                &mut io,
-                &mut events,
-                &mut status,
-                &auxname,
-                &Default::default(),
-            )
+            .process(&mut launcher, &auxname, &Default::default())
             .unwrap();
 
         // Check that outputs match expectations.
