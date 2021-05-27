@@ -1,15 +1,14 @@
-// src/driver.rs -- utilities for running and rerunning the tex engine
 // Copyright 2018-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
 
-//! This module contains the high-level interface that ties together the various engines. The main
-//! struct is [`ProcessingSession`], which knows how to run (and re-run if
-//! necessary) the various engines in the right order.
+//! This module contains the high-level interface that ties together the various
+//! engines. The main struct is [`ProcessingSession`], which knows how to run
+//! (and re-run if necessary) the various engines in the right order.
 //!
-//! For an example of how to use this module, see `src/bin/tectonic.rs`, which contains tectonic's main
-//! CLI program.
+//! For an example of how to use this module, see `src/bin/tectonic.rs`, which
+//! contains tectonic's main CLI program.
 
 use byte_unit::Byte;
 use std::{
@@ -22,17 +21,21 @@ use std::{
     str::FromStr,
     time::SystemTime,
 };
-use tectonic_bridge_core::CoreBridgeLauncher;
+use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks};
+use tectonic_io_base::{
+    digest::DigestData,
+    filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
+    stdstreams::{BufferedPrimaryIo, GenuineStdoutIo},
+    InputHandle, IoProvider, OpenResult, OutputHandle,
+};
 
 use crate::{
-    ctry,
-    digest::DigestData,
-    engines::IoEventBackend,
-    errmsg,
+    ctry, errmsg,
     errors::{ChainErrCompatExt, ErrorKind, Result},
     io::{
-        memory::MemoryFileCollection, Bundle, InputOrigin, IoProvider, IoSetup, IoSetupBuilder,
-        OpenResult,
+        format_cache::FormatCache,
+        memory::{MemoryFileCollection, MemoryIo},
+        Bundle, InputOrigin,
     },
     status::StatusBackend,
     tt_error, tt_note, tt_warning,
@@ -87,6 +90,7 @@ pub struct FileSummary {
     /// If this file was written, this is the digest of its contents at the time it was last
     /// written.
     pub write_digest: Option<DigestData>,
+
     got_written_to_disk: bool,
 }
 
@@ -98,113 +102,6 @@ impl FileSummary {
             read_digest: None,
             write_digest: None,
             got_written_to_disk: false,
-        }
-    }
-}
-
-/// The IoEvents type implements the IoEventBackend. It is used to figure out when to rerun the TeX
-/// engine, to figure out which files should be written to disk, and to emit Makefile rules.
-pub struct IoEvents(pub HashMap<String, FileSummary>);
-
-impl IoEvents {
-    fn new() -> IoEvents {
-        IoEvents(HashMap::new())
-    }
-}
-
-impl IoEventBackend for IoEvents {
-    fn output_opened(&mut self, name: &str) {
-        if let Some(summ) = self.0.get_mut(name) {
-            summ.access_pattern = match summ.access_pattern {
-                AccessPattern::Read => AccessPattern::ReadThenWritten,
-                c => c, // identity mapping makes sense for remaining options
-            };
-            return;
-        }
-
-        self.0.insert(
-            name.to_owned(),
-            FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
-        );
-    }
-
-    fn stdout_opened(&mut self) {
-        // Life is easier if we track stdout in the same way that we do other
-        // output files.
-
-        if let Some(summ) = self.0.get_mut("") {
-            summ.access_pattern = match summ.access_pattern {
-                AccessPattern::Read => AccessPattern::ReadThenWritten,
-                c => c, // identity mapping makes sense for remaining options
-            };
-            return;
-        }
-
-        self.0.insert(
-            String::from(""),
-            FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
-        );
-    }
-
-    fn output_closed(&mut self, name: String, digest: DigestData) {
-        let summ = self
-            .0
-            .get_mut(&name)
-            .expect("closing file that wasn't opened?");
-        summ.write_digest = Some(digest);
-    }
-
-    fn input_not_available(&mut self, name: &str) {
-        // For the purposes of file access pattern tracking, an attempt to
-        // open a nonexistent file counts as a read of a zero-size file. I
-        // don't see how such a file could have previously been written, but
-        // let's use the full update logic just in case.
-
-        if let Some(summ) = self.0.get_mut(name) {
-            summ.access_pattern = match summ.access_pattern {
-                AccessPattern::Written => AccessPattern::WrittenThenRead,
-                c => c, // identity mapping makes sense for remaining options
-            };
-            return;
-        }
-
-        // Unlike other cases, here we need to fill in the read_digest. `None`
-        // is not an appropriate value since, if the file is written and then
-        // read again later, the `None` will be overwritten; but what matters
-        // is the contents of the file the very first time it was read.
-        let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
-        fs.read_digest = Some(DigestData::of_nothing());
-        self.0.insert(name.to_owned(), fs);
-    }
-
-    fn input_opened(&mut self, name: &str, origin: InputOrigin) {
-        if let Some(summ) = self.0.get_mut(name) {
-            summ.access_pattern = match summ.access_pattern {
-                AccessPattern::Written => AccessPattern::WrittenThenRead,
-                c => c, // identity mapping makes sense for remaining options
-            };
-            return;
-        }
-
-        self.0.insert(
-            name.to_owned(),
-            FileSummary::new(AccessPattern::Read, origin),
-        );
-    }
-
-    //fn primary_input_opened(&mut self, _origin: InputOrigin) {}
-
-    fn input_closed(&mut self, name: String, digest: Option<DigestData>) {
-        let summ = self
-            .0
-            .get_mut(&name)
-            .expect("closing file that wasn't opened?");
-
-        // It's what was in the file the *first* time that it was read that
-        // matters, so don't replace the read digest if it's already got one.
-
-        if summ.read_digest.is_none() {
-            summ.read_digest = digest;
         }
     }
 }
@@ -314,6 +211,244 @@ enum OutputDestination {
 impl Default for OutputDestination {
     fn default() -> OutputDestination {
         OutputDestination::Default
+    }
+}
+
+/// The subset of the driver state that is captured when running a C/C++ engine.
+///
+/// The main purpose of this type is to implement the [`DriverHooks`] trait,
+/// which is defined by the `tectonic_core_bridge` crate and defines that
+/// interface that the C/C++ processing engines can use to access the outside
+/// world. While these engines are running, they hold a mutable reference to
+/// these data, so it is helpful to separate them out into a sub-structure of
+/// the larger [`ProcessingSession`] type.
+///
+/// Due to the needs of the C/C++ engines, this means that [`BridgeState`] must
+/// hold the fully-prepared I/O stack information as well as the “event”
+/// information that helps the driver implement the rerun logic.
+struct BridgeState {
+    primary_input: Box<dyn IoProvider>,
+    pub bundle: Box<dyn Bundle>,
+    pub mem: MemoryIo,
+    filesystem: FilesystemIo,
+    pub format_cache: FormatCache,
+    genuine_stdout: Option<GenuineStdoutIo>,
+    format_primary: Option<BufferedPrimaryIo>,
+
+    /// The I/O events that occurred while processing.
+    pub events: HashMap<String, FileSummary>,
+}
+
+impl BridgeState {
+    /// Tell the IoProvider implementation of the bridge state to enter “format
+    /// mode”, in which the “primary input” is fixed, based on the requested
+    /// format file name, and filesystem I/O is bypassed.
+    pub fn enter_format_mode(&mut self, format_file_name: &str) {
+        self.format_primary = Some(BufferedPrimaryIo::from_text(&format!(
+            "\\input {}",
+            format_file_name
+        )));
+    }
+
+    /// Leave “format mode”.
+    pub fn leave_format_mode(&mut self) {
+        self.format_primary = None;
+    }
+}
+
+macro_rules! bridgestate_ioprovider_try {
+    ($provider:expr, $($inner:tt)+) => {
+        let r = $provider.$($inner)+;
+        match r {
+            OpenResult::NotAvailable => {},
+            _ => return r,
+        };
+    }
+}
+
+macro_rules! bridgestate_ioprovider_cascade {
+    ($self:ident, $($inner:tt)+) => {
+        if let Some(ref mut p) = $self.genuine_stdout {
+            bridgestate_ioprovider_try!(p, $($inner)+);
+        }
+
+        let use_fs = if let Some(ref mut p) = $self.format_primary {
+            bridgestate_ioprovider_try!(p, $($inner)+);
+            false
+        } else {
+            bridgestate_ioprovider_try!($self.primary_input, $($inner)+);
+            true
+        };
+
+        bridgestate_ioprovider_try!($self.mem, $($inner)+);
+
+        if use_fs {
+            bridgestate_ioprovider_try!($self.filesystem, $($inner)+);
+        }
+
+        bridgestate_ioprovider_try!($self.bundle.as_ioprovider_mut(), $($inner)+);
+        bridgestate_ioprovider_try!($self.format_cache, $($inner)+);
+
+        return OpenResult::NotAvailable;
+    }
+}
+
+impl IoProvider for BridgeState {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
+        let r = (|| {
+            bridgestate_ioprovider_cascade!(self, output_open_name(name));
+        })();
+
+        if let OpenResult::Ok(_) = r {
+            if let Some(summ) = self.events.get_mut(name) {
+                summ.access_pattern = match summ.access_pattern {
+                    AccessPattern::Read => AccessPattern::ReadThenWritten,
+                    c => c, // identity mapping makes sense for remaining options
+                };
+            } else {
+                self.events.insert(
+                    name.to_owned(),
+                    FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
+                );
+            }
+        }
+
+        r
+    }
+
+    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+        let r = (|| {
+            bridgestate_ioprovider_cascade!(self, output_open_stdout());
+        })();
+
+        // Life is easier if we track stdout in the same way that we do other
+        // output files.
+
+        if let OpenResult::Ok(_) = r {
+            if let Some(summ) = self.events.get_mut("") {
+                summ.access_pattern = match summ.access_pattern {
+                    AccessPattern::Read => AccessPattern::ReadThenWritten,
+                    c => c, // identity mapping makes sense for remaining options
+                };
+            } else {
+                self.events.insert(
+                    String::from(""),
+                    FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
+                );
+            }
+        }
+
+        r
+    }
+
+    fn input_open_name(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        let r = (|| {
+            bridgestate_ioprovider_cascade!(self, input_open_name(name, status));
+        })();
+
+        match r {
+            OpenResult::Ok(ref ih) => {
+                if let Some(summ) = self.events.get_mut(name) {
+                    summ.access_pattern = match summ.access_pattern {
+                        AccessPattern::Written => AccessPattern::WrittenThenRead,
+                        c => c, // identity mapping makes sense for remaining options
+                    };
+                } else {
+                    self.events.insert(
+                        name.to_owned(),
+                        FileSummary::new(AccessPattern::Read, ih.origin()),
+                    );
+                }
+            }
+
+            OpenResult::NotAvailable => {
+                // For the purposes of file access pattern tracking, an attempt to
+                // open a nonexistent file counts as a read of a zero-size file. I
+                // don't see how such a file could have previously been written, but
+                // let's use the full update logic just in case.
+
+                if let Some(summ) = self.events.get_mut(name) {
+                    summ.access_pattern = match summ.access_pattern {
+                        AccessPattern::Written => AccessPattern::WrittenThenRead,
+                        c => c, // identity mapping makes sense for remaining options
+                    };
+                } else {
+                    // Unlike other cases, here we need to fill in the read_digest. `None`
+                    // is not an appropriate value since, if the file is written and then
+                    // read again later, the `None` will be overwritten; but what matters
+                    // is the contents of the file the very first time it was read.
+                    let mut fs = FileSummary::new(AccessPattern::Read, InputOrigin::NotInput);
+                    fs.read_digest = Some(DigestData::of_nothing());
+                    self.events.insert(name.to_owned(), fs);
+                }
+            }
+
+            OpenResult::Err(_) => {}
+        }
+
+        r
+    }
+
+    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+        bridgestate_ioprovider_cascade!(self, input_open_primary(status));
+    }
+
+    fn input_open_format(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        let r = (|| {
+            bridgestate_ioprovider_cascade!(self, input_open_format(name, status));
+        })();
+
+        if let OpenResult::Ok(ref ih) = r {
+            if let Some(summ) = self.events.get_mut(name) {
+                summ.access_pattern = match summ.access_pattern {
+                    AccessPattern::Written => AccessPattern::WrittenThenRead,
+                    c => c, // identity mapping makes sense for remaining options
+                };
+            } else {
+                self.events.insert(
+                    name.to_owned(),
+                    FileSummary::new(AccessPattern::Read, ih.origin()),
+                );
+            }
+        }
+
+        r
+    }
+}
+
+impl DriverHooks for BridgeState {
+    fn io(&mut self) -> &mut dyn IoProvider {
+        self
+    }
+
+    fn event_output_closed(&mut self, name: String, digest: DigestData) {
+        let summ = self
+            .events
+            .get_mut(&name)
+            .expect("closing file that wasn't opened?");
+        summ.write_digest = Some(digest);
+    }
+
+    fn event_input_closed(&mut self, name: String, digest: Option<DigestData>) {
+        let summ = self
+            .events
+            .get_mut(&name)
+            .expect("closing file that wasn't opened?");
+
+        // It's what was in the file the *first* time that it was read that
+        // matters, so don't replace the read digest if it's already got one.
+
+        if summ.read_digest.is_none() {
+            summ.read_digest = digest;
+        }
     }
 }
 
@@ -502,17 +637,14 @@ impl ProcessingSessionBuilder {
 
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
-        let mut io = IoSetupBuilder::default();
-        io.bundle(self.bundle.expect("a bundle must be specified"))
-            .use_genuine_stdout(self.print_stdout);
-        for p in &self.hidden_input_paths {
-            io.hide_path(p);
-        }
+        // First, work on the bridge state:
 
-        let (primary_input_path, default_output_path) = match self.primary_input {
+        let mut bundle = self.bundle.expect("a bundle must be specified");
+
+        let mut filesystem_root = self.filesystem_root.unwrap_or(PathBuf::new());
+
+        let (pio, primary_input_path, default_output_path) = match self.primary_input {
             PrimaryInputMode::Path(p) => {
-                io.primary_input_path(&p);
-
                 // Set the filesystem root (that's the directory we'll search
                 // for files in) to be the same directory as the main input
                 // file.
@@ -526,38 +658,64 @@ impl ProcessingSessionBuilder {
                     }
                 };
 
-                io.filesystem_root(&parent);
-                (Some(p), parent)
+                filesystem_root = parent.clone();
+                let pio: Box<dyn IoProvider> = Box::new(FilesystemPrimaryInputIo::new(&p));
+                (pio, Some(p), parent)
             }
 
             PrimaryInputMode::Stdin => {
                 // If the main input file is stdin, we don't set a filesystem
                 // root, which means we'll default to the current working
                 // directory.
-                io.primary_input_stdin();
-                (None, "".into())
+                //
+                // Note that, due to the expected need to rerun the engine
+                // multiple times, we'll need to buffer stdin in its entirety,
+                // so we might as well do that now.
+                let pio = ctry!(BufferedPrimaryIo::from_stdin(); "error reading standard input");
+                let pio: Box<dyn IoProvider> = Box::new(pio);
+                (pio, None, "".into())
             }
 
             PrimaryInputMode::Buffer(buf) => {
                 // Same behavior as with stdin.
-                io.primary_input_buffer(buf);
-                (None, "".into())
+                let pio: Box<dyn IoProvider> = Box::new(BufferedPrimaryIo::from_buffer(buf));
+                (pio, None, "".into())
             }
         };
 
-        if let Some(fsr) = self.filesystem_root {
-            io.filesystem_root(fsr);
-        }
+        let format_cache_path = self
+            .format_cache_path
+            .unwrap_or_else(|| filesystem_root.clone());
+        let format_cache = FormatCache::new(bundle.get_digest(status)?, format_cache_path);
+
+        let genuine_stdout = if self.print_stdout {
+            Some(GenuineStdoutIo::new())
+        } else {
+            None
+        };
+
+        let filesystem = FilesystemIo::new(&filesystem_root, false, true, self.hidden_input_paths);
+
+        let mem = MemoryIo::new(true);
+
+        let bs = BridgeState {
+            primary_input: pio,
+            mem,
+            filesystem,
+            format_cache,
+            bundle,
+            genuine_stdout,
+            format_primary: None,
+            events: HashMap::new(),
+        };
+
+        // Now we can do the rest
 
         let output_path = match self.output_dest {
             OutputDestination::Default => Some(default_output_path),
             OutputDestination::Path(p) => Some(p),
             OutputDestination::Nowhere => None,
         };
-
-        if let Some(ref p) = self.format_cache_path {
-            io.format_cache_path(p);
-        }
 
         let tex_input_name = self
             .tex_input_name
@@ -574,8 +732,7 @@ impl ProcessingSessionBuilder {
         pdf_path.set_extension("pdf");
 
         Ok(ProcessingSession {
-            io: io.create(status)?,
-            events: IoEvents::new(),
+            bs,
             pass: self.pass,
             primary_input_path,
             primary_input_tex_path: tex_input_name,
@@ -606,14 +763,9 @@ enum RerunReason {
 /// processing a file. It understands, for example, the need to re-run the TeX
 /// engine if the `.aux` file changed.
 pub struct ProcessingSession {
-    /// This contains the full I/O setup of the processing session. After
-    /// running the session, you can inspect this to see what I/O was
-    /// produced. (For example, the memory layer might contain some files that
-    /// were produced by the TeX engine but not actually written to disk.)
-    pub io: IoSetup,
-
-    /// This contains all the I/O events that occurred while processing.
-    pub events: IoEvents,
+    /// The subset of the session state that's can be mutated while the C/C++
+    /// engines are running. Importantly, this includes the full I/O stack.
+    bs: BridgeState,
 
     /// If our primary input is an actual file on disk, this is its path.
     primary_input_path: Option<PathBuf>,
@@ -671,7 +823,7 @@ impl ProcessingSession {
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
 
-        for (name, info) in &self.events.0 {
+        for (name, info) in &self.bs.events {
             if info.access_pattern == AccessPattern::ReadThenWritten {
                 let file_changed = match (&info.read_digest, &info.write_digest) {
                     (&Some(ref d1), &Some(ref d2)) => d1 != d2,
@@ -698,7 +850,7 @@ impl ProcessingSession {
 
     #[allow(dead_code)]
     fn _dump_access_info(&self, status: &mut dyn StatusBackend) {
-        for (name, info) in &self.events.0 {
+        for (name, info) in &self.bs.events {
             if info.access_pattern != AccessPattern::Read {
                 let r = match info.read_digest {
                     Some(ref d) => d.to_string(),
@@ -736,7 +888,7 @@ impl ProcessingSession {
         let generate_format = if self.output_format == OutputFormat::Format {
             false
         } else {
-            match self.io.input_open_format(&self.format_name, status) {
+            match self.bs.input_open_format(&self.format_name, status) {
                 OpenResult::Ok(_) => false,
                 OpenResult::NotAvailable => true,
                 OpenResult::Err(e) => {
@@ -812,7 +964,7 @@ impl ProcessingSession {
             // The check above ensures that this is never None.
             let root = self.output_path.as_ref().unwrap();
 
-            for (name, info) in &self.events.0 {
+            for (name, info) in &self.bs.events {
                 if info.input_origin != InputOrigin::Filesystem {
                     continue;
                 }
@@ -859,13 +1011,13 @@ impl ProcessingSession {
 
         let mut n_skipped_intermediates = 0;
 
-        for (name, file) in &*self.io.mem.files.borrow() {
-            if name == self.io.mem.stdout_key() {
+        for (name, file) in &*self.bs.mem.files.borrow() {
+            if name == self.bs.mem.stdout_key() {
                 continue;
             }
 
             let sname = name;
-            let summ = self.events.0.get_mut(name).unwrap();
+            let summ = self.bs.events.get_mut(name).unwrap();
 
             if !only_logs && (self.output_format == OutputFormat::Aux) {
                 // In this mode we're only writing the .aux file. I initially
@@ -979,7 +1131,7 @@ impl ProcessingSession {
             // can later know that it's OK to delete. I am not super confident
             // that the access_pattern data can just be left as-is when we do
             // this, but, uh, so far it seems to work.
-            for summ in self.events.0.values_mut() {
+            for summ in self.bs.events.values_mut() {
                 summ.read_digest = None;
             }
 
@@ -1018,7 +1170,7 @@ impl ProcessingSession {
     fn is_bibtex_needed(&self) -> bool {
         const BIBDATA: &[u8] = b"\\bibdata";
 
-        self.io
+        self.bs
             .mem
             .files
             .borrow()
@@ -1046,19 +1198,6 @@ impl ProcessingSession {
 
     /// Use the TeX engine to generate a format file.
     fn make_format_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
-        if self.io.bundle.is_none() {
-            return Err(
-                ErrorKind::Msg("cannot create formats without using a bundle".to_owned()).into(),
-            );
-        }
-
-        if self.io.format_cache.is_none() {
-            return Err(ErrorKind::Msg(
-                "cannot create formats without having a place to save them".to_owned(),
-            )
-            .into());
-        }
-
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for
         // some reason, which is why we use the `r` variable.
@@ -1073,15 +1212,16 @@ impl ProcessingSession {
 
         let result = {
             let shell_escape_working_dir = self.shell_escape_working_dir();
-            let mut stack = self
-                .io
-                .as_stack_for_format(&format!("tectonic-format-{}.tex", stem));
-            let mut launcher = CoreBridgeLauncher::new(&mut stack, &mut self.events, status);
-            TexEngine::default()
+            self.bs
+                .enter_format_mode(&format!("tectonic-format-{}.tex", stem));
+            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
+            let r = TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
                 .shell_escape(shell_escape_working_dir)
-                .process(&mut launcher, "UNUSED.fmt", "texput")
+                .process(&mut launcher, "UNUSED.fmt", "texput");
+            self.bs.leave_format_mode();
+            r
         };
 
         match result {
@@ -1102,10 +1242,8 @@ impl ProcessingSession {
         // principle we could stream the format file directly to the staging
         // area as we ran the TeX engine, but we don't bother.
 
-        let format_cache = &mut *self.io.format_cache.as_mut().unwrap();
-
-        for (name, file) in &*self.io.mem.files.borrow() {
-            if name == self.io.mem.stdout_key() {
+        for (name, file) in &*self.bs.mem.files.borrow() {
+            if name == self.bs.mem.stdout_key() {
                 continue;
             }
 
@@ -1116,11 +1254,11 @@ impl ProcessingSession {
             }
 
             // Note that we intentionally pass 'stem', not 'name'.
-            ctry!(format_cache.write_format(stem, &file.data, status); "cannot write format file {}", sname);
+            ctry!(self.bs.format_cache.write_format(stem, &file.data, status); "cannot write format file {}", sname);
         }
 
         // All done. Clear the memory layer since this was a special preparatory step.
-        self.io.mem.files.borrow_mut().clear();
+        self.bs.mem.files.borrow_mut().clear();
 
         Ok(0)
     }
@@ -1140,7 +1278,7 @@ impl ProcessingSession {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
 
-            let mut launcher = CoreBridgeLauncher::new(&mut self.io, &mut self.events, status);
+            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
 
             TexEngine::default()
                 .halt_on_error_mode(true)
@@ -1173,7 +1311,7 @@ impl ProcessingSession {
     fn bibtex_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         let result = {
             status.note_highlighted("Running ", "BibTeX", " ...");
-            let mut launcher = CoreBridgeLauncher::new(&mut self.io, &mut self.events, status);
+            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
             let mut engine = BibtexEngine::new();
             engine.process(&mut launcher, &self.tex_aux_path, &self.unstables)
         };
@@ -1205,7 +1343,7 @@ impl ProcessingSession {
         {
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
 
-            let mut launcher = CoreBridgeLauncher::new(&mut self.io, &mut self.events, status);
+            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
             let mut engine = XdvipdfmxEngine::default();
 
             engine.build_date(self.build_date);
@@ -1217,7 +1355,7 @@ impl ProcessingSession {
             engine.process(&mut launcher, &self.tex_xdv_path, &self.tex_pdf_path)?;
         }
 
-        self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
+        self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);
         Ok(0)
     }
 
@@ -1225,11 +1363,22 @@ impl ProcessingSession {
         {
             let mut engine = Spx2HtmlEngine::new();
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process(&mut self.io, &mut self.events, status, &self.tex_xdv_path)?;
+            engine.process(&mut self.bs, status, &self.tex_xdv_path)?;
         }
 
-        self.io.mem.files.borrow_mut().remove(&self.tex_xdv_path);
+        self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);
         Ok(0)
+    }
+
+    /// Get what was printed to standard output, if anything.
+    pub fn get_stdout_content(&self) -> Vec<u8> {
+        self.bs
+            .mem
+            .files
+            .borrow()
+            .get(self.bs.mem.stdout_key())
+            .map(|mfi| mfi.data.clone())
+            .unwrap_or_else(Vec::new)
     }
 
     /// Consume this session and return the current set of files in memory.
@@ -1243,7 +1392,7 @@ impl ProcessingSession {
     /// `files` map. This should only happen if you create and keep a clone of
     /// the `Rc<>` wrapping it before calling this function.
     pub fn into_file_data(self) -> MemoryFileCollection {
-        Rc::try_unwrap(self.io.mem.files)
+        Rc::try_unwrap(self.bs.mem.files)
             .expect("multiple strong refs to MemoryIo files")
             .into_inner()
     }

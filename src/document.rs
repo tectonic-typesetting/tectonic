@@ -379,14 +379,21 @@ impl Document {
 
         if let Err(e) = &result {
             if let ErrorKind::EngineError(engine) = e.kind() {
-                if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
+                let output = sess.get_stdout_content();
+
+                if output.is_empty() {
+                    tt_error!(
+                        status,
+                        "something bad happened inside {}, but no output was logged",
+                        engine
+                    );
+                } else {
                     tt_error!(
                         status,
                         "something bad happened inside {}; its output follows:\n",
                         engine
                     );
-
-                    status.dump_error_logs(&output.data);
+                    status.dump_error_logs(&output);
                 }
             }
         } else if options.open {
