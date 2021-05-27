@@ -47,7 +47,7 @@ use crate::{
 /// underlying engines. Once a file is marked as ReadThenWritten or
 /// WrittenThenRead, its pattern does not evolve further.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum AccessPattern {
+enum AccessPattern {
     /// This file is only ever read.
     Read,
 
@@ -72,7 +72,7 @@ pub enum AccessPattern {
 /// digest of the file when it was last read; and the cryptographic digest of
 /// the file as it was last written.
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct FileSummary {
+struct FileSummary {
     access_pattern: AccessPattern,
 
     /// If this file was read, where did it come from?
