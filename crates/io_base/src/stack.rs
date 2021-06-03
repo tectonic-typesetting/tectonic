@@ -4,7 +4,6 @@
 //! An "I/O stack" is an I/O provider that delegates requests to
 //! a series of sub-providers in turn.
 
-use std::ffi::OsStr;
 use tectonic_status_base::StatusBackend;
 
 use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
@@ -26,7 +25,7 @@ impl<'a> IoStack<'a> {
 }
 
 impl<'a> IoProvider for IoStack<'a> {
-    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         for item in &mut self.items {
             let r = item.output_open_name(name);
 
@@ -54,7 +53,7 @@ impl<'a> IoProvider for IoStack<'a> {
 
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         for item in &mut self.items {
@@ -84,7 +83,7 @@ impl<'a> IoProvider for IoStack<'a> {
 
     fn input_open_format(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         for item in &mut self.items {

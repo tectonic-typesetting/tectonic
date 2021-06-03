@@ -221,10 +221,9 @@ impl<T: XdvEvents> XdvParser<T> {
     {
         const BUF_SIZE: usize = 4096;
         let mut parser = Self::new(events);
-        let mut buf = Vec::with_capacity(BUF_SIZE);
-        unsafe {
-            buf.set_len(BUF_SIZE);
-        }
+        // Note that it is unsound to pass uninitialized data to a read() call,
+        // even though it *should* never cause problems ...
+        let mut buf = vec![0; BUF_SIZE];
         let mut n_saved_bytes = 0;
 
         loop {

@@ -20,8 +20,9 @@ smart font library). Hence this specialized crate.
 [graphite2]: https://graphite.sil.org/
 
 If your project depends on this crate, Cargo will export for your build script
-an environment variable named `DEP_HARFBUZZ_INCLUDE`, which will be the name of
-a directory containing the `harfbuzz/` header directory.
+an environment variable named `DEP_HARFBUZZ_INCLUDE_PATH`, which will be a
+semicolon-separated list of C include directories enabling your code to include
+the `harfbuzz/` headers.
 
 You will need to ensure that your Rust code actually references this crate in
 order for the linker to include linked libraries. A `use` statement will

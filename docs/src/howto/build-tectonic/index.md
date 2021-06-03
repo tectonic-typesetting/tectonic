@@ -108,9 +108,15 @@ control build options. Tectonic offers the following features:
   a default feature and it takes precedence.
 - **`geturl-reqwest`** (enabled by default). Uses the [reqwest] crate to get
   URLs. This is a good portable default.
+- **`native-tls-vendored`**. If using [reqwest], activate the `vendored` option
+  in the [native-tls] crate, causing OpenSSL to be vendored. This can be useful
+  when cross-compiling or building static binaries, but is discouraged because
+  that means that the resulting binaries won't benefit from security fixes to
+  system TLS libraries.
 
 [curl]: https://docs.rs/curl/
 [reqwest]: https://docs.rs/reqwest/
+[native-tls]: https://github.com/sfackler/rust-native-tls
 
 Some lesser-used features are:
 

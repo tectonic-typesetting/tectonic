@@ -1,0 +1,34 @@
+# Copyright 2021 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_pdf_io"
+version = "0.1.0"
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Xdvipdfmx’s PDF, XDV, and image I/O APIs in C, as a Rust crate.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_pdf_io"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+links = "tectonic_pdf_io"
+
+[dependencies]
+tectonic_bridge_core = { path = "../bridge_core", version =">=0.1.0,<1"}
+tectonic_bridge_flate = { path = "../bridge_flate", version =">=0.1.1,<1"}
+
+[build-dependencies]
+cc = "^1.0.66"
+tectonic_cfg_support = { path = "../cfg_support", version =">=0.1.2,<1"}
+tectonic_dep_support = { path = "../dep_support", version =">=0.1.0,<1"}
+
+[package.metadata.internal_dep_versions]
+tectonic_bridge_core = "925a9a1566aaa4a55d4468d7bf239319828722fb"
+tectonic_bridge_flate = "5933308152efb6ba206b4dc01ab6814063b835c0"
+tectonic_cfg_support = "9d5feb40c7ac6958ee3c50604af9271eb2db2b20"
+tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

@@ -5,7 +5,9 @@
 
 use std::{
     collections::HashMap,
-    env, fs,
+    env,
+    fmt::Write as FmtWrite,
+    fs,
     io::{self, Read, Write},
     path::{Component, Path, PathBuf},
 };
@@ -22,6 +24,10 @@ use crate::{
     test_util, tt_error, tt_note,
     workspace::WorkspaceCreator,
 };
+
+const DEFAULT_PREAMBLE_FILE: &str = "_preamble.tex";
+const DEFAULT_INDEX_FILE: &str = "index.tex";
+const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
 
 /// A Tectonic document.
 #[derive(Debug)]
@@ -57,6 +63,10 @@ fn default_outputs() -> HashMap<String, OutputProfile> {
             name: "default".to_owned(),
             target_type: BuildTargetType::Pdf,
             tex_format: "latex".to_owned(),
+            preamble_file: DEFAULT_PREAMBLE_FILE.to_owned(),
+            index_file: DEFAULT_INDEX_FILE.to_owned(),
+            postamble_file: DEFAULT_POSTAMBLE_FILE.to_owned(),
+            shell_escape: false,
         },
     );
     outputs
@@ -120,13 +130,11 @@ impl Document {
             let mut name = "document".to_owned();
             let mut tried_src_path = false;
 
-            if let Some(c) = src_dir.components().next_back() {
-                if let Component::Normal(t) = c {
-                    tried_src_path = true;
+            if let Some(Component::Normal(t)) = src_dir.components().next_back() {
+                tried_src_path = true;
 
-                    if let Some(s) = t.to_str() {
-                        name = s.to_owned();
-                    }
+                if let Some(s) = t.to_str() {
+                    name = s.to_owned();
                 }
             }
 
@@ -134,11 +142,9 @@ impl Document {
                 if let Ok(cwd) = env::current_dir() {
                     let full_path = cwd.join(&src_dir);
 
-                    if let Some(c) = full_path.components().next_back() {
-                        if let Component::Normal(t) = c {
-                            if let Some(s) = t.to_str() {
-                                name = s.to_owned();
-                            }
+                    if let Some(Component::Normal(t)) = full_path.components().next_back() {
+                        if let Some(s) = t.to_str() {
+                            name = s.to_owned();
                         }
                     }
                 }
@@ -207,6 +213,10 @@ pub struct OutputProfile {
     name: String,
     target_type: BuildTargetType,
     tex_format: String,
+    preamble_file: String,
+    index_file: String,
+    postamble_file: String,
+    shell_escape: bool,
 }
 
 /// The output target type of a document build.
@@ -258,12 +268,6 @@ impl BuildOptions {
         self
     }
 }
-
-const DEFAULT_PRIMARY_INPUT: &[u8] = br#"
-\input _preamble.tex
-\input index.tex
-\input _postamble.tex
-"#;
 
 impl Document {
     /// Iterate over the names of the output profiles defined for this document.
@@ -326,16 +330,33 @@ impl Document {
             BuildTargetType::Pdf => OutputFormat::Pdf,
         };
 
+        let mut input_buffer = String::new();
+        if !profile.preamble_file.is_empty() {
+            writeln!(input_buffer, "\\input{{{}}}", profile.preamble_file)?;
+        }
+        if !profile.index_file.is_empty() {
+            writeln!(input_buffer, "\\input{{{}}}", profile.index_file)?;
+        }
+        if !profile.postamble_file.is_empty() {
+            writeln!(input_buffer, "\\input{{{}}}", profile.postamble_file)?;
+        }
+
         let mut sess_builder = ProcessingSessionBuilder::default();
         sess_builder
             .output_format(output_format)
             .format_name(&profile.tex_format)
+            .build_date(std::time::SystemTime::now())
             .pass(PassSetting::Default)
-            .primary_input_buffer(DEFAULT_PRIMARY_INPUT)
+            .primary_input_buffer(input_buffer.as_bytes())
             .tex_input_name(output_profile)
             .keep_logs(options.keep_logs)
             .keep_intermediates(options.keep_intermediates)
             .print_stdout(options.print_stdout);
+
+        if profile.shell_escape {
+            // For now, this is the only option we allow.
+            sess_builder.shell_escape_with_temp_dir();
+        }
 
         if options.only_cached {
             tt_note!(status, "using only cached resource files");
@@ -365,14 +386,21 @@ impl Document {
 
         if let Err(e) = &result {
             if let ErrorKind::EngineError(engine) = e.kind() {
-                if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
+                let output = sess.get_stdout_content();
+
+                if output.is_empty() {
+                    tt_error!(
+                        status,
+                        "something bad happened inside {}, but no output was logged",
+                        engine
+                    );
+                } else {
                     tt_error!(
                         status,
                         "something bad happened inside {}; its output follows:\n",
                         engine
                     );
-
-                    status.dump_error_logs(&output.data);
+                    status.dump_error_logs(&output);
                 }
             }
         } else if options.open {
@@ -399,6 +427,7 @@ impl Document {
 
 /// The concrete syntax for saving document state, wired up via serde.
 mod syntax {
+    use super::{DEFAULT_INDEX_FILE, DEFAULT_POSTAMBLE_FILE, DEFAULT_PREAMBLE_FILE};
     use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
     #[derive(Debug, Deserialize, Serialize)]
@@ -424,6 +453,13 @@ mod syntax {
         #[serde(rename = "type")]
         pub target_type: BuildTargetType,
         pub tex_format: Option<String>,
+        #[serde(rename = "preamble")]
+        pub preamble_file: Option<String>,
+        #[serde(rename = "index")]
+        pub index_file: Option<String>,
+        #[serde(rename = "postamble")]
+        pub postamble_file: Option<String>,
+        pub shell_escape: Option<bool>,
     }
 
     impl OutputProfile {
@@ -434,10 +470,34 @@ mod syntax {
                 Some(rt.tex_format.clone())
             };
 
+            let preamble_file = if rt.preamble_file == DEFAULT_PREAMBLE_FILE {
+                None
+            } else {
+                Some(rt.preamble_file.clone())
+            };
+
+            let index_file = if rt.index_file == DEFAULT_INDEX_FILE {
+                None
+            } else {
+                Some(rt.index_file.clone())
+            };
+
+            let postamble_file = if rt.postamble_file == DEFAULT_POSTAMBLE_FILE {
+                None
+            } else {
+                Some(rt.postamble_file.clone())
+            };
+
+            let shell_escape = if !rt.shell_escape { None } else { Some(true) };
+
             OutputProfile {
                 name: rt.name.clone(),
                 target_type: BuildTargetType::from_runtime(&rt.target_type),
                 tex_format,
+                preamble_file,
+                index_file,
+                postamble_file,
+                shell_escape,
             }
         }
 
@@ -451,6 +511,19 @@ mod syntax {
                     .map(|s| s.as_ref())
                     .unwrap_or("latex")
                     .to_owned(),
+                preamble_file: self
+                    .preamble_file
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_PREAMBLE_FILE.to_owned()),
+                index_file: self
+                    .index_file
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_INDEX_FILE.to_owned()),
+                postamble_file: self
+                    .postamble_file
+                    .clone()
+                    .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
+                shell_escape: self.shell_escape.unwrap_or_default(),
             }
         }
     }

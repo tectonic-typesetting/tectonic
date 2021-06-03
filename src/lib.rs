@@ -12,23 +12,50 @@
 //! Tectonic would not be possible without the hard work that has gone into
 //! these projects.
 //!
-//! Because Tectonic is based on the XeTeX engine, it can take advantage of
-//! the features of modern fonts (TrueType, OpenType, etc.), outputs directly
-//! to the PDF file format, and supports Unicode inputs. Tectonic differs from
-//! other TeX engines in the following ways:
+//! Because Tectonic is based on the XeTeX engine, it can take advantage of the
+//! features of modern fonts (TrueType, OpenType, etc.), outputs directly to the
+//! PDF file format, and supports Unicode inputs. Tectonic differs from other
+//! TeX engines in the following ways:
 //!
 //! - Dependencies on environment variables and configuration files have been
 //!   eliminated.
 //! - All I/O is routed through pluggable backends. Support data can be fetched
 //!   from a single “bundle” file, and the engine’s (copious) output can be
 //!   hidden or postprocessed.
-//! - The command-line frontend, `tectonic`, has a modernized user interface that
-//!   never asks for user input.
-//! - The frontend is just a thin shim over the Tectonic Rust crate, so that
-//!   the full engine can be embedded anywhere you can run Rust code.
+//! - The command-line frontend, `tectonic`, has a modernized user interface
+//!   that never asks for user input.
+//! - The frontend is just a thin shim over the Tectonic Rust crate, so that the
+//!   full engine can be embedded anywhere you can run Rust code.
 //!
-//! The main module of this crate provides an all-in-wonder function for compiling
-//! LaTeX code to a PDF:
+//! As of version 0.5, this crate is more and more a “façade” for a set of
+//! sub-crates that combine to provide the Tectonic user experience. Those
+//! crates generally have APIs that are more carefully structured and better
+//! documented than this crate, which grew somewhat organically. The
+//! foundational crates are:
+//!
+//! - [`tectonic_errors`](https://docs.rs/tectonic_errors) for core error
+//!   handing types.
+//! - [`tectonic_status_base`](https://docs.rs/tectonic_status_base) for a basic
+//!   user-facing status-reporting framework.
+//! - [`tectonic_io_base`](https://docs.rs/tectonic_io_base) for the I/O
+//!   abstraction framework.
+//! - [`tectonic_bridge_core`](https://docs.rs/tectonic_bridge_core) for a
+//!   framework to launch unsafe (C/C++) “engines” through [FFI].
+//!
+//! [FFI]: https://doc.rust-lang.org/std/ffi/index.html
+//!
+//! Building on these and other support crates of less general interest are the
+//! following major pieces of Tectonic’s functionality:
+//!
+//! - [`tectonic_engine_xetex`](https://docs.rs/tectonic_engine_xetex) for the
+//!   XeTeX engine.
+//! - [`tectonic_engine_xdvipdfmx`](https://docs.rs/tectonic_engine_xdvipdfmx)
+//!   for the `xdvipdfmx` engine.
+//! - [`tectonic_engine_bibtex`](https://docs.rs/tectonic_engine_bibtex) for the
+//!   BibTeX engine.
+//!
+//! The main module of this crate provides an all-in-wonder function for
+//! compiling LaTeX code to a PDF:
 //!
 //! ```
 //! use tectonic;
@@ -69,7 +96,7 @@ pub mod test_util;
 
 pub use crate::engines::bibtex::BibtexEngine;
 pub use crate::engines::spx2html::Spx2HtmlEngine;
-pub use crate::engines::tex::{TexEngine, TexResult};
+pub use crate::engines::tex::{TexEngine, TexOutcome};
 pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
@@ -120,8 +147,6 @@ pub const FORMAT_SERIAL: u32 = 29;
 /// serial. The aim is to lift this limitation one day, but it will require
 /// extensive work on the underlying C/C++ code.
 pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
-    use std::ffi::OsStr;
-
     let mut status = status::NoopStatusBackend::default();
 
     let auto_create_config_file = false;
@@ -155,36 +180,12 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
         sess.into_file_data()
     };
 
-    match files.remove(OsStr::new("texput.pdf")) {
+    match files.remove("texput.pdf") {
         Some(file) => Ok(file.data),
         None => Err(errmsg!(
             "LaTeX didn't report failure, but no PDF was created (??)"
         )),
     }
-}
-
-/// Import something from our bridge crates so that we ensure that we actually
-/// link with them, to pull in the symbols defined in the C APIs.
-mod linkage {
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_flate;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_freetype2;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_graphite2;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_harfbuzz;
-
-    #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_icu;
 }
 
 #[cfg(test)]

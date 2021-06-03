@@ -102,4 +102,5 @@ the set of unstable options is subject to change at any time.
 | `-Z continue-on-errors`  | Keep compiling even when severe errors occur |
 | `-Z min-crossrefs=<num>` | Equivalent to bibtex's `-min-crossrefs` flag. Default vaue: 2 |
 | `-Z paper-size=<spec>`   | Change the initial paper size. Default: `letter` |
+| `-Z shell-escape`        | Enable `\write18` |
 

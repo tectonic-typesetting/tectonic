@@ -1,6 +1,9 @@
 [target.arm-unknown-linux-musleabihf]
 image = "tectonictypesetting/crossbuild:arm-unknown-linux-musleabihf"
 
+[target.i686-unknown-linux-gnu]
+image = "tectonictypesetting/crossbuild:i686-unknown-linux-gnu"
+
 [target.mips-unknown-linux-gnu]
 image = "tectonictypesetting/crossbuild:mips-unknown-linux-gnu"
 

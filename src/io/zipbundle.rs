@@ -1,13 +1,13 @@
 // src/io/zipbundle.rs -- I/O on files in a Zipped-up "bundle"
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io::{Cursor, Read, Seek};
-use std::path::Path;
-use zip::result::ZipError;
-use zip::ZipArchive;
+use std::{
+    fs::File,
+    io::{Cursor, Read, Seek},
+    path::Path,
+};
+use zip::{result::ZipError, ZipArchive};
 
 use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
 use crate::errors::Result;
@@ -34,22 +34,14 @@ impl ZipBundle<File> {
 impl<R: Read + Seek> IoProvider for ZipBundle<R> {
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         // We need to be able to look at other items in the Zip file while
         // reading this one, so the only path forward is to read the entire
         // contents into a buffer right now. RAM is cheap these days.
 
-        // If `name` cannot be converted to Unicode, we return NotAvailable. I
-        // *think* that's what we should do.
-
-        let namestr = match name.to_str() {
-            Some(s) => s,
-            None => return OpenResult::NotAvailable,
-        };
-
-        let mut zipitem = match self.zip.by_name(namestr) {
+        let mut zipitem = match self.zip.by_name(name) {
             Ok(f) => f,
             Err(e) => {
                 return match e {

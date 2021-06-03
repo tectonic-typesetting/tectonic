@@ -62,6 +62,7 @@ error_chain! {
     foreign_links {
         AppDirs(app_dirs::AppDirsError);
         Io(io::Error);
+        Fmt(fmt::Error);
         Nul(ffi::NulError);
         ParseInt(num::ParseIntError);
         Persist(tempfile::PersistError);
@@ -202,22 +203,33 @@ pub trait DefinitelySame {
 
 impl DefinitelySame for ErrorKind {
     fn definitely_same(&self, other: &Self) -> bool {
-        if let ErrorKind::Msg(ref s) = *self {
-            return if let ErrorKind::Msg(ref o) = *other {
-                s == o
-            } else {
-                false
-            };
-        }
+        match self {
+            ErrorKind::Msg(ref s) => {
+                if let ErrorKind::Msg(ref o) = *other {
+                    s == o
+                } else {
+                    false
+                }
+            }
 
-        false
+            // Hacky for tex-outputs test
+            ErrorKind::NewStyle(ref s) => {
+                if let ErrorKind::NewStyle(ref o) = *other {
+                    s.to_string() == o.to_string()
+                } else {
+                    false
+                }
+            }
+
+            _ => false,
+        }
     }
 }
 
-impl DefinitelySame for Error {
-    /// Here we abuse DefinitelySame a bit and ignore the backtrace etc.
+impl DefinitelySame for NewError {
+    /// Hack alert! We only compare stringifications.
     fn definitely_same(&self, other: &Self) -> bool {
-        self.kind().definitely_same(other.kind())
+        self.to_string() == other.to_string()
     }
 }
 
@@ -256,10 +268,11 @@ pub struct SyncError<T: 'static> {
 impl<T: std::error::Error + 'static> SyncError<T> {
     pub fn new(err: T) -> Self {
         let arc = Arc::new(Mutex::new(err));
-        let proxy = match arc.lock().unwrap().source() {
-            None => None,
-            Some(source) => Some(CauseProxy::new(source, Arc::downgrade(&arc), 0)),
-        };
+        let proxy = arc
+            .lock()
+            .unwrap()
+            .source()
+            .map(|s| CauseProxy::new(s, Arc::downgrade(&arc), 0));
 
         SyncError { inner: arc, proxy }
     }
@@ -319,10 +332,9 @@ impl<T: std::error::Error> CauseProxy<T> {
         CauseProxy {
             inner: weak.clone(),
             depth,
-            next: match err.source() {
-                None => None,
-                Some(source) => Some(Box::new(CauseProxy::new(source, weak, depth + 1))),
-            },
+            next: err
+                .source()
+                .map(|s| Box::new(CauseProxy::new(s, weak, depth + 1))),
         }
     }
 

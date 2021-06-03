@@ -6,7 +6,6 @@ use hyper::rt::Future;
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use std::collections::HashMap;
-use std::ffi::OsStr;
 use std::fs;
 use std::io::{self, Write};
 use std::net::SocketAddr;
@@ -320,22 +319,11 @@ fn test_cached_url_provider() {
                 .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
                 .unwrap();
 
-            match cache.input_open_name(OsStr::new("plain.tex"), &mut status) {
+            match cache.input_open_name("plain.tex", &mut status) {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open plain.tex"),
             }
-            match cache.input_open_name(OsStr::new("plain.tex"), &mut status) {
-                OpenResult::Ok(_) => {}
-                _ => panic!("Failed to open plain.tex"),
-            }
-        }
-        {
-            let mut cache = config
-                .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
-                .unwrap();
-
-            // should be cached
-            match cache.input_open_name(OsStr::new("plain.tex"), &mut status) {
+            match cache.input_open_name("plain.tex", &mut status) {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open plain.tex"),
             }
@@ -346,12 +334,23 @@ fn test_cached_url_provider() {
                 .unwrap();
 
             // should be cached
-            match cache.input_open_name(OsStr::new("plain.tex"), &mut status) {
+            match cache.input_open_name("plain.tex", &mut status) {
+                OpenResult::Ok(_) => {}
+                _ => panic!("Failed to open plain.tex"),
+            }
+        }
+        {
+            let mut cache = config
+                .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                .unwrap();
+
+            // should be cached
+            match cache.input_open_name("plain.tex", &mut status) {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open plain.tex"),
             }
             // in index, should check digest and download the file
-            match cache.input_open_name(OsStr::new("other.tex"), &mut status) {
+            match cache.input_open_name("other.tex", &mut status) {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open other.tex"),
             }
@@ -362,7 +361,7 @@ fn test_cached_url_provider() {
                 .unwrap();
 
             // not in index
-            match cache.input_open_name(OsStr::new("my-favourite-file.tex"), &mut status) {
+            match cache.input_open_name("my-favourite-file.tex", &mut status) {
                 OpenResult::NotAvailable => {}
                 _ => panic!("'my-favourite-file.tex' file exists?"),
             }
@@ -407,7 +406,7 @@ fn test_bundle_update() {
                     .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
                     .unwrap();
 
-                match cache.input_open_name(OsStr::new("only-first.tex"), &mut status) {
+                match cache.input_open_name("only-first.tex", &mut status) {
                     OpenResult::Ok(_) => {}
                     _ => panic!("Failed to open only-first.tex"),
                 }
@@ -439,19 +438,19 @@ fn test_bundle_update() {
                         .unwrap();
 
                     // This should be cached even thought the bundle does not contain it.
-                    match cache.input_open_name(OsStr::new("only-first.tex"), &mut status) {
+                    match cache.input_open_name("only-first.tex", &mut status) {
                         OpenResult::Ok(_) => {}
                         _ => panic!("Failed to open only-first.tex"),
                     }
 
                     // Not in index of the first bundle and therefore no digest check.
-                    match cache.input_open_name(OsStr::new("only-second.tex"), &mut status) {
+                    match cache.input_open_name("only-second.tex", &mut status) {
                         OpenResult::NotAvailable => {}
                         _ => panic!("File should not be in the first bundle"),
                     }
                     // File in the first bundle and the second bundle, but not cached yet. Should
                     // trigger a digest check.
-                    match cache.input_open_name(OsStr::new("file-in-both.tex"), &mut status) {
+                    match cache.input_open_name("file-in-both.tex", &mut status) {
                         OpenResult::Err(_) => {}
                         _ => panic!("Bundle digest changed but no error"),
                     }
