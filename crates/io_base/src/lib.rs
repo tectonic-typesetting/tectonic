@@ -1,13 +1,20 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
 
 //! Tectonic’s pluggable I/O backend.
+//!
+//! This crates defines the core traits and types used by Tectonic’s I/O
+//! subsystem, and provides implementations for common stdlib types. It provides
+//! a simplified I/O model compatible with TeX’s usage patterns, as encapsulated
+//! in the [`IoProvider`] trait. Files are exposed as [`InputHandle`] or
+//! [`OutputHandle`] structs, which add a layer of bookkeeping to allow the
+//! higher levels of Tectonic to determine when the engine needs to be re-run.
 
 use sha2::Digest;
 use std::{
-    ffi::{OsStr, OsString},
+    borrow::Cow,
     fs::File,
     io::{self, Cursor, Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
@@ -69,7 +76,7 @@ pub trait InputFeatures: Read {
 /// could add more.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum InputOrigin {
-    /// This file lives on the filesystem and might change under us. (That is
+    /// This file lives on the filesystem and might change under us. (That is,
     /// it is not a cached bundle file.)
     Filesystem,
 
@@ -104,7 +111,7 @@ pub enum InputOrigin {
 /// access to nonexistent files, which we treat as being equivalent to an
 /// existing empty file for these purposes.
 pub struct InputHandle {
-    name: OsString,
+    name: String,
     inner: Box<dyn InputFeatures>,
     /// Indicates that the file cannot be written to (provided by a read-only IoProvider) and
     /// therefore it is useless to compute the digest.
@@ -120,12 +127,12 @@ impl InputHandle {
     /// Create a new InputHandle wrapping an underlying type that implements
     /// `InputFeatures`.
     pub fn new<T: 'static + InputFeatures>(
-        name: &OsStr,
+        name: impl Into<String>,
         inner: T,
         origin: InputOrigin,
     ) -> InputHandle {
         InputHandle {
-            name: name.to_os_string(),
+            name: name.into(),
             inner: Box::new(inner),
             read_only: false,
             digest: Default::default(),
@@ -138,12 +145,12 @@ impl InputHandle {
 
     /// Create a new InputHandle in read-only mode.
     pub fn new_read_only<T: 'static + InputFeatures>(
-        name: &OsStr,
+        name: impl Into<String>,
         inner: T,
         origin: InputOrigin,
     ) -> InputHandle {
         InputHandle {
-            name: name.to_os_string(),
+            name: name.into(),
             inner: Box::new(inner),
             read_only: true,
             digest: Default::default(),
@@ -155,8 +162,8 @@ impl InputHandle {
     }
 
     /// Get the name associated with this handle.
-    pub fn name(&self) -> &OsStr {
-        self.name.as_os_str()
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// Get the "origin" associated with this handle.
@@ -207,7 +214,7 @@ impl InputHandle {
     /// return None if the stream was never read, which is another common
     /// TeX access pattern: files are opened, immediately closed, and then
     /// opened again. Finally, no digest is returned if the file is marked read-only.
-    pub fn into_name_digest(self) -> (OsString, Option<DigestData>) {
+    pub fn into_name_digest(self) -> (String, Option<DigestData>) {
         if self.did_unhandled_seek || !self.ever_read || self.read_only {
             (self.name, None)
         } else {
@@ -315,24 +322,24 @@ impl InputFeatures for InputHandle {
 
 /// A handle for Tectonic output streams.
 pub struct OutputHandle {
-    name: OsString,
+    name: String,
     inner: Box<dyn Write>,
     digest: digest::DigestComputer,
 }
 
 impl OutputHandle {
     /// Create a new output handle.
-    pub fn new<T: 'static + Write>(name: &OsStr, inner: T) -> OutputHandle {
+    pub fn new<T: 'static + Write>(name: impl Into<String>, inner: T) -> OutputHandle {
         OutputHandle {
-            name: name.to_os_string(),
+            name: name.into(),
             inner: Box::new(inner),
             digest: digest::create(),
         }
     }
 
     /// Get the name associated with this handle.
-    pub fn name(&self) -> &OsStr {
-        self.name.as_os_str()
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// Consumes the object and returns the underlying writable handle that
@@ -343,7 +350,7 @@ impl OutputHandle {
 
     /// Consumes the object and returns the SHA256 sum of the content that was
     /// written.
-    pub fn into_name_digest(self) -> (OsString, DigestData) {
+    pub fn into_name_digest(self) -> (String, DigestData) {
         (self.name, DigestData::from(self.digest))
     }
 }
@@ -422,12 +429,10 @@ impl<T: IoProvider> AsIoProviderMut for T {
 ///
 /// An IO provider is a source of handles. One wrinkle is that it's good to be
 /// able to distinguish between unavailability of a given name and error
-/// accessing it. We take file paths as OsStrs, although since we parse input
-/// files as Unicode it may not be possible to actually express zany non-Unicode
-/// Unix paths inside the engine.
+/// accessing it.
 pub trait IoProvider: AsIoProviderMut {
     /// Open the named file for output.
-    fn output_open_name(&mut self, _name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, _name: &str) -> OpenResult<OutputHandle> {
         OpenResult::NotAvailable
     }
 
@@ -439,7 +444,7 @@ pub trait IoProvider: AsIoProviderMut {
     /// Open the named file for input.
     fn input_open_name(
         &mut self,
-        _name: &OsStr,
+        _name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
@@ -461,7 +466,7 @@ pub trait IoProvider: AsIoProviderMut {
     /// depend sensitively on the engine internals.
     fn input_open_format(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         self.input_open_name(name, status)
@@ -481,7 +486,7 @@ pub trait IoProvider: AsIoProviderMut {
 }
 
 impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
-    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         (**self).output_open_name(name)
     }
 
@@ -491,7 +496,7 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
 
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).input_open_name(name, status)
@@ -503,7 +508,7 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
 
     fn input_open_format(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).input_open_format(name, status)
@@ -554,57 +559,135 @@ pub fn try_open_file<P: AsRef<Path>>(path: P) -> OpenResult<File> {
     }
 }
 
-// Helper for testing. FIXME: I want this to be conditionally compiled with
-// #[cfg(test)] but things break if I do that.
+// TeX path normalization:
 
-/// Some implementations for testing.
-pub mod testing {
+/// Normalize a path from a TeX build.
+///
+/// We attempt to do this in a system independent™ way by stripping any `.`,
+/// `..`, or extra separators '/' so that it is of the form.
+///
+/// ```text
+/// path/to/my/file.txt
+/// ../../path/to/parent/dir/file.txt
+/// /absolute/path/to/file.txt
+/// ```
+///
+/// Does not strip whitespace.
+///
+/// Returns `None` if the path refers to a parent of the root.
+fn try_normalize_tex_path(path: &str) -> Option<String> {
+    // TODO: we should normalize directory separators to "/".
+    // And do we need to handle Windows drive prefixes, etc?
+    use std::iter::repeat;
+
+    if path.is_empty() {
+        return Some("".into());
+    }
+
+    let mut r = Vec::new();
+    let mut parent_level = 0;
+    let mut has_root = false;
+
+    for (i, c) in path.split('/').enumerate() {
+        match c {
+            "" if i == 0 => {
+                has_root = true;
+                r.push("");
+            }
+            "" | "." => {}
+            ".." => {
+                match r.pop() {
+                    // about to pop the root
+                    Some("") => return None,
+                    None => parent_level += 1,
+                    _ => {}
+                }
+            }
+            _ => r.push(c),
+        }
+    }
+
+    let r = repeat("..")
+        .take(parent_level)
+        .chain(r.into_iter())
+        // No `join` on `Iterator`.
+        .collect::<Vec<_>>()
+        .join("/");
+
+    if r.is_empty() {
+        if has_root {
+            Some("/".into())
+        } else {
+            Some(".".into())
+        }
+    } else {
+        Some(r)
+    }
+}
+
+/// Normalize a TeX path if possible, otherwise return the original path.
+///
+/// A _TeX path_ is a path that obeys simplified semantics: Unix-like syntax (`/`
+/// for separators, etc.), must be Unicode-able, no symlinks allowed such that
+/// `..` can be stripped lexically.
+pub fn normalize_tex_path(path: &str) -> Cow<str> {
+    if let Some(t) = try_normalize_tex_path(path).map(String::from) {
+        Cow::Owned(t)
+    } else {
+        Cow::Borrowed(path)
+    }
+}
+
+#[cfg(test)]
+mod tests {
     use super::*;
-    use std::ffi::{OsStr, OsString};
-    use std::fs::File;
-    use std::path::{Path, PathBuf};
 
-    /// An I/O provider that provides a single named file.
-    pub struct SingleInputFileIo {
-        name: OsString,
-        full_path: PathBuf,
-    }
+    #[test]
+    fn test_try_normalize_tex_path() {
+        // edge cases
+        assert_eq!(try_normalize_tex_path(""), Some("".into()));
+        assert_eq!(try_normalize_tex_path("/"), Some("/".into()));
+        assert_eq!(try_normalize_tex_path("//"), Some("/".into()));
+        assert_eq!(try_normalize_tex_path("."), Some(".".into()));
+        assert_eq!(try_normalize_tex_path("./"), Some(".".into()));
+        assert_eq!(try_normalize_tex_path(".."), Some("..".into()));
+        assert_eq!(try_normalize_tex_path("././/./"), Some(".".into()));
+        assert_eq!(try_normalize_tex_path("/././/."), Some("/".into()));
 
-    impl SingleInputFileIo {
-        /// Create a new provider for the specified path.
-        pub fn new(path: &Path) -> SingleInputFileIo {
-            let p = path.to_path_buf();
+        assert_eq!(
+            try_normalize_tex_path("my/path/file.txt"),
+            Some("my/path/file.txt".into())
+        );
+        // preserve spaces
+        assert_eq!(
+            try_normalize_tex_path("  my/pa  th/file .txt "),
+            Some("  my/pa  th/file .txt ".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("/my/path/file.txt"),
+            Some("/my/path/file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("./my///path/././file.txt"),
+            Some("my/path/file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("./../my/../../../file.txt"),
+            Some("../../../file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("././my//../path/../here/file.txt"),
+            Some("here/file.txt".into())
+        );
+        assert_eq!(
+            try_normalize_tex_path("./my/.././/path/../../here//file.txt"),
+            Some("../here/file.txt".into())
+        );
 
-            SingleInputFileIo {
-                name: p.file_name().unwrap().to_os_string(),
-                full_path: p,
-            }
-        }
-    }
-
-    impl IoProvider for SingleInputFileIo {
-        fn output_open_name(&mut self, _: &OsStr) -> OpenResult<OutputHandle> {
-            OpenResult::NotAvailable
-        }
-
-        fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
-            OpenResult::NotAvailable
-        }
-
-        fn input_open_name(
-            &mut self,
-            name: &OsStr,
-            _status: &mut dyn StatusBackend,
-        ) -> OpenResult<InputHandle> {
-            if name == self.name {
-                OpenResult::Ok(InputHandle::new(
-                    name,
-                    File::open(&self.full_path).unwrap(),
-                    InputOrigin::Filesystem,
-                ))
-            } else {
-                OpenResult::NotAvailable
-            }
-        }
+        assert_eq!(try_normalize_tex_path("/my/../../file.txt"), None);
+        assert_eq!(
+            try_normalize_tex_path("/my/./.././path//../../file.txt"),
+            None
+        );
     }
 }

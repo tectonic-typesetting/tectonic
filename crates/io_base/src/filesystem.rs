@@ -5,7 +5,6 @@
 
 use std::{
     collections::HashSet,
-    ffi::OsStr,
     fs::File,
     io::{self, BufReader, Seek, SeekFrom},
     path::{Path, PathBuf},
@@ -51,7 +50,7 @@ impl IoProvider for FilesystemPrimaryInputIo {
         };
 
         OpenResult::Ok(InputHandle::new(
-            OsStr::new(""),
+            "",
             BufReader::new(f),
             InputOrigin::Filesystem,
         ))
@@ -87,7 +86,12 @@ impl FilesystemIo {
         }
     }
 
-    fn construct_path(&mut self, name: &OsStr) -> Result<PathBuf> {
+    /// Get the root filesystem path of this I/O provider.
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
+
+    fn construct_path(&mut self, name: &str) -> Result<PathBuf> {
         let path = Path::new(name);
 
         if path.is_absolute() && !self.absolute_allowed {
@@ -101,7 +105,7 @@ impl FilesystemIo {
 }
 
 impl IoProvider for FilesystemIo {
-    fn output_open_name(&mut self, name: &OsStr) -> OpenResult<OutputHandle> {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         if !self.writes_allowed {
             return OpenResult::NotAvailable;
         }
@@ -126,7 +130,7 @@ impl IoProvider for FilesystemIo {
 
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.construct_path(name) {
@@ -155,6 +159,21 @@ impl IoProvider for FilesystemIo {
             }
         };
 
+        // Issue #754 - if you run Tectonic on an input that is located in a
+        // directory containing a sub-directory named `latex`, you get a
+        // surprising error message because the engine tries to read that
+        // directory as the format file. I think the correct behavior here is to
+        // treat directories as NotAvailable for the purposes of the I/O stack.
+        let md = match f.metadata() {
+            Ok(m) => m,
+            Err(e) => return OpenResult::Err(e.into()),
+        };
+
+        if md.is_dir() {
+            return OpenResult::NotAvailable;
+        }
+
+        // Good to go.
         OpenResult::Ok(InputHandle::new(
             name,
             BufReader::new(f),

@@ -1,0 +1,6 @@
+# rc: minor bump
+
+This new crate encapsulates the font selection and layout code used by the
+`tectonic_engine_xetex` crate. While it mostly consists of C/C++ code at the
+moment and does not expose a Rust API, there is a hope that it can be made more
+flexible and that its implementation can be migrated to be more Rust-based.

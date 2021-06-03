@@ -118,7 +118,7 @@ impl IoProvider for TestBundle {
     // All other functions can default to NotAvailable/error.
     fn input_open_name(
         &mut self,
-        name: &OsStr,
+        name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         self.0.input_open_name(name, status)

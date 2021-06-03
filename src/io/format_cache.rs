@@ -6,7 +6,6 @@
 //! Code for locally caching compiled format files.
 
 use std::{
-    ffi::OsStr,
     io::{BufReader, Write},
     path::PathBuf,
 };
@@ -41,17 +40,14 @@ impl FormatCache {
 
     /// Get an on-disk path name for a given format file. This function simply
     /// produces a path that may or may not exist.
-    fn path_for_format(&mut self, name: &OsStr) -> Result<PathBuf> {
+    fn path_for_format(&mut self, name: &str) -> Result<PathBuf> {
         // Remove all extensions from the format name. PathBuf.file_stem() doesn't
         // do what we want since it only strips one extension, so here we go:
 
-        let stem = match name.to_str().and_then(|s| s.splitn(2, '.').next()) {
+        let stem = match name.splitn(2, '.').next() {
             Some(s) => s,
             None => {
-                bail!(
-                    "incomprehensible format file name \"{}\"",
-                    name.to_string_lossy()
-                );
+                bail!("incomprehensible format file name \"{}\"", name);
             }
         };
 
@@ -69,7 +65,7 @@ impl FormatCache {
 impl IoProvider for FormatCache {
     fn input_open_format(
         &mut self,
-        name: &OsStr,
+        name: &str,
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         let path = match self.path_for_format(name) {
@@ -96,7 +92,7 @@ impl IoProvider for FormatCache {
         data: &[u8],
         _status: &mut dyn StatusBackend,
     ) -> Result<()> {
-        let final_path = self.path_for_format(OsStr::new(name))?;
+        let final_path = self.path_for_format(name)?;
         let mut temp_dest = tempfile::Builder::new()
             .prefix("format_")
             .rand_bytes(6)

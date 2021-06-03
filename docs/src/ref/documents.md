@@ -23,9 +23,10 @@ multiple documents inside a single workspace.
 [workspace]: ./workspaces.md
 
 The TeX sources are stored in a `src` subdirectory of the document root. This
-directory should contain at least three files: `index.tex`, `_preamble.tex`, and
-`_postamble.tex`. The [`build` command][cli-build] will process these
-files in the following order:
+directory should contain at least three files: `index.tex`, `_preamble.tex`,
+and `_postamble.tex`. These filenames can be changed in the
+[Tectonic.toml][tectonic-toml] configuration file. The [`build`
+command][cli-build] will process these files in the following order:
 
 1. `src/_preamble.tex`
 2. `src/index.tex`

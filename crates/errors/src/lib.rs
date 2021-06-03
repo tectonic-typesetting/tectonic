@@ -27,7 +27,7 @@ use std::{error, fmt, result::Result as StdResult};
 pub use anyhow::Error;
 
 /// A preloaded result type where the error type is our generic error type.
-pub type Result<T> = StdResult<T, Error>;
+pub use anyhow::Result;
 
 /// The specific version of `anyhow` used by this crate.
 pub use anyhow;
@@ -137,6 +137,25 @@ macro_rules! a_ok_or {
             ar
         })?
     }};
+}
+
+/// A “prelude” module providing a collection of useful names, without
+/// causing compiler complaints about the ones you don’t use.
+///
+/// Provided names are:
+///
+/// - The core `anyhow::Error` type
+/// - The core `anyhow::Result` type, which is `Result<T, anyhow::Error>`
+/// - The `anyhow!` macro to create an Error value from a string-format expression
+/// - The `bail!` macro: `bail!(...)` = `return Err(anyhow!(...))`
+/// - The `ensure!` macro: `ensure!(cond, err)` = `if !cond { bail!(err); }`
+/// - The `atry!` macro for annotated question-mark behavior
+/// - The `a_ok_or!` macro for annotated, fallibale Option unwrapping
+/// - Rust's `std::result::Result` type aliased as StdResult for convenience
+pub mod prelude {
+    pub use crate::{a_ok_or, atry};
+    pub use anyhow::{anyhow, bail, ensure, Error, Result};
+    pub use std::result::Result as StdResult;
 }
 
 #[cfg(test)]

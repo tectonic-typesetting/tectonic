@@ -189,7 +189,7 @@ impl CompileOptions {
         let build_date_str = env::var("SOURCE_DATE_EPOCH").ok();
         let build_date = match build_date_str {
             Some(s) => {
-                let epoch = u64::from_str_radix(&s, 10).expect("invalid build date (not a number)");
+                let epoch = s.parse::<u64>().expect("invalid build date (not a number)");
                 time::SystemTime::UNIX_EPOCH
                     .checked_add(time::Duration::from_secs(epoch))
                     .expect("time overflow")
@@ -203,14 +203,21 @@ impl CompileOptions {
 
         if let Err(e) = &result {
             if let ErrorKind::EngineError(engine) = e.kind() {
-                if let Some(output) = sess.io.mem.files.borrow().get(sess.io.mem.stdout_key()) {
+                let output = sess.get_stdout_content();
+
+                if output.is_empty() {
+                    tt_error!(
+                        status,
+                        "something bad happened inside {}, but no output was logged",
+                        engine
+                    );
+                } else {
                     tt_error!(
                         status,
                         "something bad happened inside {}; its output follows:\n",
                         engine
                     );
-
-                    status.dump_error_logs(&output.data);
+                    status.dump_error_logs(&output);
                 }
             }
         }

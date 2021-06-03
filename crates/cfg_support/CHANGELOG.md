@@ -1,5 +1,9 @@
 # rc: micro bump
 
+- No code changes, just issuing a new release to make Cranko happy.
+
+# tectonic_cfg_support 0.1.2 (2021-01-16)
+
 - No code changes, just updating metadata
 
 # tectonic_cfg_support 0.1.1 (2020-10-21)

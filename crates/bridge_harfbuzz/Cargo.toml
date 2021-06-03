@@ -30,6 +30,6 @@ tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
 external-harfbuzz = []
 
 [package.metadata.internal_dep_versions]
-tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
-tectonic_bridge_icu = "thiscommit:2021-01-09:diehoh1E"
+tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

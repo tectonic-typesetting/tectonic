@@ -33,8 +33,9 @@ page is primarily aimed at folks interested in how Tectonic works “under the h
 
 If you’re interested in Tectonic as a software tool, you might also want to check out:
 
-- [compile-latex](https://github.com/marketplace/actions/compile-latex) is a
-  [GitHub Action](https://github.com/features/actions) contributed by [Vinay
+- One of the following [GitHub Actions](https://github.com/features/actions)
+    - [setup-tectonic](https://github.com/marketplace/actions/setup-tectonic), which lets you use tectonic directly in your workflows (supports caching + optionally biber)
+    - [compile-latex](https://github.com/marketplace/actions/compile-latex) contributed by [Vinay
   Sharma](https://github.com/vinay0410), which is powered by Tectonic.
 - [tt.ente.ninja](https://tt.ente.ninja), which runs Tectonic against a subset
   of the [arxiv.org](https://arxiv.org/) corpus à la the Rust tool
@@ -93,7 +94,7 @@ Use the [curl] crate to implement HTTP requests. In order for this to take
 effect, you must use `--no-default-features` because `geturl-reqwest` is a
 default feature and it takes precedence.
 
-[reqwest]: https://docs.rs/curl/
+[curl]: https://docs.rs/curl/
 
 ##### `geturl-reqwest` (enabled by default)
 
@@ -101,6 +102,15 @@ Use the [reqwest] crate to implement HTTP requests. This is the default
 selection.
 
 [reqwest]: https://docs.rs/reqwest/
+
+##### `native-tls-vendored`
+
+If using [reqwest], activate the `vendored` option in the [native-tls] crate,
+causing OpenSSL to be vendored. This can be useful when cross-compiling or
+building static binaries, but is discouraged because that means that the
+resulting binaries won't benefit from security fixes to system TLS libraries.
+
+[native-tls]: https://github.com/sfackler/rust-native-tls
 
 ##### `serialization` (enabled by default)
 

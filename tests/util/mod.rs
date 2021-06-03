@@ -1,4 +1,4 @@
-// Copyright 2018-2020 the Tectonic Project
+// Copyright 2018-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Note: we need to store this code as `tests/util/mod.rs` rather than
@@ -15,14 +15,14 @@ use std::{
     collections::HashSet,
     default::Default,
     env,
-    ffi::{OsStr, OsString},
     fs::File,
     io::{Read, Write},
     path::{Path, PathBuf},
 };
+use tectonic::{errors::Result, io::memory::MemoryFileCollection};
+use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 
 pub use tectonic::test_util::{test_path, TestBundle};
-use tectonic::{errors::Result, io::memory::MemoryFileCollection};
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
@@ -56,11 +56,10 @@ pub fn cargo_dir() -> PathBuf {
 /// the moment we just let everybody write and overwrite the file, but we
 /// could use a locking scheme to get smarter about this.
 pub fn ensure_plain_format() -> Result<PathBuf> {
-    use ::tectonic::engines::NoopIoEventBackend;
-    use ::tectonic::io::{
-        try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo,
+    use tectonic::{
+        io::{try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo},
+        TexEngine,
     };
-    use ::tectonic::TexEngine;
     use tectonic_status_base::NoopStatusBackend;
 
     let fmt_path = test_path(&["plain.fmt"]);
@@ -76,32 +75,22 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
         let mut fs_primary = FilesystemPrimaryInputIo::new(&assets_dir);
 
         {
-            let mut io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
+            let io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
+            let mut hooks = MinimalDriver::new(io);
+            let mut status = NoopStatusBackend::default();
+            let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
-            TexEngine::new()
+            TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .process(
-                    &mut io,
-                    &mut NoopIoEventBackend::new(),
-                    &mut NoopStatusBackend::default(),
-                    "UNUSED.fmt",
-                    "plain.tex",
-                    &Default::default(),
-                )?;
+                .process(&mut launcher, "UNUSED.fmt", "plain.tex")?;
         }
 
         let mut temp_fmt = tempfile::Builder::new()
             .prefix("plain_fmt")
             .rand_bytes(6)
             .tempfile_in(test_path(&[]))?;
-        temp_fmt.write_all(
-            &mem.files
-                .borrow()
-                .get(OsStr::new("plain.fmt"))
-                .unwrap()
-                .data,
-        )?;
+        temp_fmt.write_all(&mem.files.borrow().get("plain.fmt").unwrap().data)?;
         temp_fmt.persist(&fmt_path)?;
     }
 
@@ -111,7 +100,7 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
 /// Convenience structure for comparing expected and actual output in various
 /// tests.
 pub struct ExpectedInfo {
-    name: OsString,
+    name: String,
     contents: Vec<u8>,
     gzipped: bool,
 }
@@ -122,6 +111,8 @@ impl ExpectedInfo {
         let name = path
             .file_name()
             .unwrap_or_else(|| panic!("couldn't get file name of {:?}", path))
+            .to_str()
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", path))
             .to_owned();
 
         let mut f = File::open(path).unwrap_or_else(|_| panic!("failed to open {:?}", path));
@@ -142,7 +133,7 @@ impl ExpectedInfo {
 
     pub fn read_with_extension_gz(pbase: &mut PathBuf, extension: &str) -> Self {
         pbase.set_extension(extension);
-        let name = pbase.file_name().unwrap().to_owned();
+        let name = pbase.file_name().unwrap().to_str().unwrap().to_owned();
 
         let mut dec = GzDecoder::new(File::open(pbase).unwrap());
         let mut contents = Vec::new();
@@ -165,40 +156,21 @@ impl ExpectedInfo {
         // buffers.
         {
             let mut n = self.name.clone();
-            n.push(".expected");
-            let mut f = File::create(&n).unwrap_or_else(|_| {
-                panic!(
-                    "failed to create {} for test failure diagnosis",
-                    n.to_string_lossy()
-                )
-            });
-            f.write_all(&self.contents).unwrap_or_else(|_| {
-                panic!(
-                    "failed to write {} for test failure diagnosis",
-                    n.to_string_lossy()
-                )
-            });
+            n.push_str(".expected");
+            let mut f = File::create(&n)
+                .unwrap_or_else(|_| panic!("failed to create {} for test failure diagnosis", n));
+            f.write_all(&self.contents)
+                .unwrap_or_else(|_| panic!("failed to write {} for test failure diagnosis", n));
         }
         {
             let mut n = self.name.clone();
-            n.push(".observed");
-            let mut f = File::create(&n).unwrap_or_else(|_| {
-                panic!(
-                    "failed to create {} for test failure diagnosis",
-                    n.to_string_lossy()
-                )
-            });
-            f.write_all(observed).unwrap_or_else(|_| {
-                panic!(
-                    "failed to write {} for test failure diagnosis",
-                    n.to_string_lossy()
-                )
-            });
+            n.push_str(".observed");
+            let mut f = File::create(&n)
+                .unwrap_or_else(|_| panic!("failed to create {} for test failure diagnosis", n));
+            f.write_all(observed)
+                .unwrap_or_else(|_| panic!("failed to write {} for test failure diagnosis", n));
         }
-        panic!(
-            "difference in {}; contents saved to disk",
-            self.name.to_string_lossy()
-        );
+        panic!("difference in {}; contents saved to disk", self.name);
     }
 
     pub fn test_from_collection(&self, files: &MemoryFileCollection) {

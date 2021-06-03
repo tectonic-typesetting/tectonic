@@ -1,10 +1,10 @@
-// Copyright 2020 the Tectonic Project
+// Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{ffi::OsString, path::PathBuf, process, str::FromStr};
+use std::{env, ffi::OsString, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
@@ -12,9 +12,10 @@ use tectonic::{
     ctry,
     errors::{Result, SyncError},
     status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
-    tt_note,
+    tt_error, tt_note,
     workspace::{self, Workspace},
 };
+use tectonic_errors::Error as NewError;
 use tectonic_status_base::plain::PlainStatusBackend;
 
 /// The main options for the "V2" command-line interface.
@@ -113,6 +114,10 @@ enum Commands {
     /// Run a standalone (La)TeX compilation
     Compile(crate::compile::CompileOptions),
 
+    #[structopt(name = "watch")]
+    /// Watch input files and execute commands on change
+    Watch(WatchCommand),
+
     #[structopt(name = "new")]
     /// Create a new document
     New(NewCommand),
@@ -123,6 +128,7 @@ impl Commands {
         match self {
             Commands::Build(o) => o.execute(config, status),
             Commands::Compile(o) => o.execute(config, status),
+            Commands::Watch(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
         }
     }
@@ -169,6 +175,76 @@ impl BuildCommand {
         }
 
         Ok(0)
+    }
+}
+
+/// `watch`: Watch input files and execute commands on change
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct WatchCommand {
+    /// Tectonic commands to execute on build [default: build]
+    #[structopt(long = "exec", short = "x")]
+    execute: Vec<String>,
+}
+
+impl WatchCommand {
+    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let exe_name = crate::watch::get_trimmed_exe_name()
+            .into_os_string()
+            .into_string()
+            .expect("Executable path wasn't valid UTF-8");
+        let mut cmds = Vec::new();
+        for x in self.execute.iter() {
+            let mut cmd = format!("{} -X ", exe_name);
+            let x = x.trim();
+            if !x.is_empty() {
+                cmd.push_str(x);
+                cmds.push(cmd)
+            }
+        }
+
+        if cmds.is_empty() {
+            cmds.push(format!("{} -X build", exe_name))
+        }
+
+        let command = cmds.join(" && ");
+
+        let mut final_command = command.clone();
+        #[cfg(unix)]
+        final_command.push_str("; echo [Finished running. Exit status: $?]");
+        #[cfg(windows)]
+        final_command.push_str(" & echo [Finished running. Exit status: %ERRORLEVEL%]");
+        #[cfg(not(any(unix, windows)))]
+        final_command.push_str(" ; echo [Finished running]");
+
+        let mut args = watchexec::config::ConfigBuilder::default();
+        args.cmd(vec![final_command])
+            .paths(vec![env::current_dir()?])
+            .ignores(vec!["build".to_owned()]);
+        let args = args.build().map_err(NewError::from)?;
+
+        let exec_handler = watchexec::run::ExecHandler::new(args);
+        match exec_handler {
+            Err(e) => {
+                tt_error!(
+                    status,
+                    "failed to build arguments for watch ExecHandler";
+                    e.into()
+                );
+                Ok(1)
+            }
+            Ok(exec_handler) => {
+                let handler = crate::watch::Watcher {
+                    command,
+                    inner: exec_handler,
+                };
+                if let Err(e) = watchexec::watch(&handler) {
+                    tt_error!(status, "failed to execute watch"; e.into());
+                    Ok(1)
+                } else {
+                    Ok(0)
+                }
+            }
+        }
     }
 }
 

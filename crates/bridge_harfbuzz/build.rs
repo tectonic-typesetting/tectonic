@@ -7,6 +7,7 @@
 mod inner {
     use tectonic_dep_support::{Configuration, Dependency, Spec};
 
+    // TODO: ICU not necessary if Harfbuzz >= 2.5.
     struct HarfbuzzSpec;
 
     impl Spec for HarfbuzzSpec {
@@ -14,6 +15,7 @@ mod inner {
             "harfbuzz >= 1.4 harfbuzz-icu"
         }
 
+        // TODO: can we ensure that the ICU and graphite2 options are enabled?
         fn get_vcpkg_spec(&self) -> &[&str] {
             &["harfbuzz"]
         }
@@ -24,11 +26,17 @@ mod inner {
         let dep = Dependency::probe(HarfbuzzSpec, &cfg);
 
         // This is the key. What we print here will be propagated into depending
-        // crates' build scripts as the envirnoment variable DEP_HARFBUZZ_INCLUDE,
+        // crates' build scripts as the envirnoment variable DEP_HARFBUZZ_INCLUDE_PATH,
         // allowing them to find the headers internally.
+
+        let mut sep = "cargo:include-path=";
+
         dep.foreach_include_path(|p| {
-            println!("cargo:include={}", p.to_str().unwrap());
+            print!("{}{}", sep, p.to_str().unwrap());
+            sep = ";";
         });
+
+        println!();
 
         dep.emit();
     }
@@ -65,9 +73,9 @@ mod inner {
         }
 
         // Include paths exported by our internal dependencies:
-        let graphite2_include_dir = env::var("DEP_GRAPHITE2_INCLUDE").unwrap();
+        let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
         let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
-        let icu_include_dir = env::var("DEP_ICUUC_INCLUDE").unwrap();
+        let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
 
         let mut cfg = cc::Build::new();
 
@@ -76,10 +84,16 @@ mod inner {
             .warnings(false)
             .define("HAVE_GRAPHITE2", "1")
             .define("HAVE_ICU", "1")
-            .include(&graphite2_include_dir)
-            .include(&icu_include_dir)
             .file("harfbuzz/src/harfbuzz.cc")
             .file("harfbuzz/src/hb-icu.cc");
+
+        for item in graphite2_include_path.split(';') {
+            cfg.include(item);
+        }
+
+        for item in icu_include_path.split(';') {
+            cfg.include(item);
+        }
 
         if graphite2_static {
             cfg.define("GRAPHITE2_STATIC", "1");
@@ -99,13 +113,24 @@ mod inner {
 
         cfg.compile("harfbuzz");
 
-        // Copy the headers to have the same directory structure as a system install.alloc
+        // Copy the headers to have the same directory structure as a system install.
 
         let include_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
-        println!(
-            "cargo:include={}",
+
+        print!(
+            "cargo:include-path={}",
             include_dir.to_str().expect("non-string-friendly OUT_DIR")
         );
+
+        for item in graphite2_include_path.split(';') {
+            print!(";{}", item);
+        }
+
+        for item in icu_include_path.split(';') {
+            print!(";{}", item);
+        }
+
+        println!();
 
         let dest_dir = include_dir.join("harfbuzz");
         // CC build process already creates this for us:

@@ -1,12 +1,11 @@
 # Cargo.toml -- Cargo definition file for Tectonic.
-# Copyright 2016-2020 the Tectonic Project
+# Copyright 2016-2021 the Tectonic Project
 # Licensed under the MIT License.
 
 [package]
 name = "tectonic"
 version = "0.0.0-dev.0"  # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
-build = "build.rs"
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
 extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
@@ -35,26 +34,21 @@ members = [
   "crates/bridge_icu",
   "crates/cfg_support",
   "crates/dep_support",
+  "crates/engine_bibtex",
+  "crates/engine_xdvipdfmx",
+  "crates/engine_xetex",
   "crates/errors",
   "crates/geturl",
   "crates/io_base",
+  "crates/pdf_io",
   "crates/status_base",
   "crates/xdv",
+  "crates/xetex_layout",
 ]
 
 [lib]
 name = "tectonic"
 crate-type = ["rlib"]
-
-[build-dependencies]
-cc = "^1.0.66"
-pkg-config = "^0.3"
-regex = "^1.4"
-sha2 = "^0.9"
-tectonic_cfg_support = { path = "crates/cfg_support", version = "0.0.0-dev.0" }
-tectonic_dep_support = { path = "crates/dep_support", version = "0.0.0-dev.0" }
-vcpkg = "0.2.11"
-cbindgen = "0.16.0"
 
 [dependencies]
 app_dirs = { version = "2", package = "app_dirs2" }
@@ -71,20 +65,21 @@ open = "1.4.0"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
-tectonic_bridge_flate = { path = "crates/bridge_flate", version = "0.0.0-dev.0" }
-tectonic_bridge_freetype2 = { path = "crates/bridge_freetype2", version = "0.0.0-dev.0" }
-tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version = "0.0.0-dev.0" }
-tectonic_bridge_harfbuzz = { path = "crates/bridge_harfbuzz", version = "0.0.0-dev.0" }
-tectonic_bridge_icu = { path = "crates/bridge_icu", version = "0.0.0-dev.0" }
+tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
+tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = "0.0.0-dev.0" }
+tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version = "0.0.0-dev.0" }
+tectonic_engine_xetex = { path = "crates/engine_xetex", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "crates/errors", version = "0.0.0-dev.0" }
 tectonic_geturl = { path = "crates/geturl", version = "0.0.0-dev.0", default-features = false }
 tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "crates/status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "crates/xdv", version = "0.0.0-dev.0" }
+tectonic_xetex_layout = { path = "crates/xetex_layout", version = "0.0.0-dev.0" }
 tempfile = "^3.1"
 termcolor = "^1.1"
 toml = { version = "^0.5", optional = true }
 url = "^2.0"
+watchexec = "^1.15"
 zip = { version = "^0.5", default-features = false, features = ["deflate"] }
 
 [features]
@@ -95,10 +90,12 @@ default = ["geturl-reqwest", "serialization"]
 # just get rid of this feature:
 serialization = ["serde", "toml"]
 
-external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
+external-harfbuzz = ["tectonic_engine_xetex/external-harfbuzz"]
 
 geturl-curl = ["tectonic_geturl/curl"]
 geturl-reqwest = ["tectonic_geturl/reqwest"]
+
+native-tls-vendored = ["tectonic_geturl/native-tls-vendored"]
 
 # developer feature to compile with the necessary flags for profiling tectonic.
 profile = []
@@ -113,7 +110,7 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "50ea8c0ab7aca3bb9245bba7fc877ad2f2a4464c"
+rev = "5a10163c44526b5d42a67480ce7a692a36948761"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
@@ -122,15 +119,19 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
+tectonic_bridge_core = "thiscommit:2021-06-02:Oiyoowe2"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
-tectonic_bridge_graphite2 = "f135da463a65e731f05bafdd840edaa90137ec12"
-tectonic_bridge_freetype2 = "thiscommit:2021-01-09:voo7ohK2"
-tectonic_bridge_harfbuzz = "thiscommit:2021-01-09:Aer8ohng"
-tectonic_bridge_icu = "thiscommit:2021-01-09:diehoh1E"
+tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
+tectonic_engine_bibtex = "thiscommit:2021-01-17:KuhaeG1e"
+tectonic_engine_xdvipdfmx = "7dcbc52e58f9774b3d592919a9105377faeac509"
+tectonic_engine_xetex = "thiscommit:2021-06-02:nahbie2O"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
-tectonic_geturl = "thiscommit:2021-01-10:eiv5ohMe"
-tectonic_io_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
+tectonic_geturl = "thiscommit:2021-01-16:Aikoob9c"
+tectonic_io_base = "thiscommit:2021-01-16:SaeK7eex"
 tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
+tectonic_xetex_layout = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
