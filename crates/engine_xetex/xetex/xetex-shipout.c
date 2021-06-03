@@ -2176,28 +2176,25 @@ write_out(int32_t p)
         if (!log_opened)
             selector = SELECTOR_TERM_ONLY;
 
-        // Existing warning for shell-escape
-        diagnostic_begin_capture_warning_here();
+        // Tectonic: don't emit warnings for shell-escape invocations when
+        // enabled; we can provide a better UX inside the driver code.
 
-        print_nl_cstr("runsystem(");
-        for (d = 0; d <= (cur_length()) - 1; d++)
-            print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
+        if (!shell_escape_enabled) {
+            diagnostic_begin_capture_warning_here();
 
-        print_cstr(")...");
-        if (!shell_escape_working_dir) {
+            print_nl_cstr("runsystem(");
+            for (d = 0; d <= (cur_length()) - 1; d++)
+                print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
+
+            print_cstr(")...");
             print_cstr("disabled");
             print_char('.');
-
             capture_to_diagnostic(NULL);
+            print_nl_cstr("");
+            print_ln();
         } else {
-            // finish diagnostic here to emit it *before* command gets run
-            capture_to_diagnostic(NULL);
-
-            ttstub_runsystem(&str_pool[str_start[str_ptr - TOO_BIG_CHAR]], cur_length(), shell_escape_working_dir);
+            ttstub_shell_escape(&str_pool[str_start[str_ptr - TOO_BIG_CHAR]], cur_length());
         }
-
-        print_nl_cstr("");
-        print_ln();
 
         // Clear shell escape command
         pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];

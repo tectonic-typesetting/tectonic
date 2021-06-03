@@ -378,7 +378,7 @@ void remember_source_info(str_number, int);
 /* variables! */
 
 /* All the following variables are defined in xetexini.c */
-extern char* shell_escape_working_dir;
+extern bool shell_escape_enabled;
 extern memory_word *eqtb;
 extern int32_t bad;
 extern char *name_of_file;

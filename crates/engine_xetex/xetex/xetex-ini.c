@@ -10,7 +10,7 @@
 #include "core-bindgen.h" /* FORMAT_SERIAL */
 
 /* All the following variables are declared in xetex-xetexd.h */
-char* shell_escape_working_dir = NULL; // this gets initialised by tt_xetex_set_string_variable, which is run *before* tt_run_engine
+bool shell_escape_enabled = false;
 memory_word *eqtb;
 int32_t bad;
 char *name_of_file;
@@ -3971,10 +3971,6 @@ tt_cleanup(void) {
     trie_trl = mfree(trie_trl);
     trie_tro = mfree(trie_tro);
     trie_trc = mfree(trie_trc);
-
-    // we need to null since xetex may be run multiple times
-    free(shell_escape_working_dir);
-    shell_escape_working_dir = NULL;
 }
 
 tt_history_t

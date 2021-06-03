@@ -20,7 +20,7 @@
 // TODO: the internal interface we're using here is pretty janky. The bibtex
 // engine has a nicer approach that we should probably start using.
 
-use std::{ffi::CString, path::PathBuf, time::SystemTime};
+use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
@@ -80,9 +80,7 @@ pub struct TexEngine {
     initex_mode: bool,
     synctex_enabled: bool,
     semantic_pagination_enabled: bool,
-    // If this is set to Some(p), then shell-escape is enabled and commands are run from p.
-    // Otherwise, shell-escape is disabled.
-    shell_escape_working_dir: Option<PathBuf>,
+    shell_escape_enabled: bool,
     build_date: SystemTime,
 }
 
@@ -93,7 +91,7 @@ impl Default for TexEngine {
             initex_mode: false,
             synctex_enabled: false,
             semantic_pagination_enabled: false,
-            shell_escape_working_dir: None,
+            shell_escape_enabled: false,
             build_date: SystemTime::UNIX_EPOCH,
         }
     }
@@ -141,12 +139,11 @@ impl TexEngine {
         self
     }
 
-    /// Configure whether the "shell escape" TeX feature is enabled, and if so, what working
-    /// directory is used to run commands.
+    /// Configure whether the "shell escape" TeX feature is enabled.
     ///
-    /// The default is None i.e. shell escape is disabled.
-    pub fn shell_escape(&mut self, working_dir: Option<PathBuf>) -> &mut Self {
-        self.shell_escape_working_dir = working_dir;
+    /// The default is false.
+    pub fn shell_escape(&mut self, shell_escape_enabled: bool) -> &mut Self {
+        self.shell_escape_enabled = shell_escape_enabled;
         self
     }
 
@@ -187,26 +184,13 @@ impl TexEngine {
         let cformat = CString::new(format_file_name)?;
         let cinput = CString::new(input_file_name)?;
 
-        let shell_escape_working_dir = if let Some(ref p) = self.shell_escape_working_dir {
-            let pathstr = p
-                .to_str()
-                .ok_or_else(|| anyhow!("Shell escape working dir is not valid UTF-8"))?;
-            Some(CString::new(pathstr)?)
-        } else {
-            None
-        };
-
         launcher.with_global_lock(|state| {
             // Note that we have to do all of this setup while holding the
             // lock, because we're modifying static state variables.
 
-            let v = if let Some(ref p) = shell_escape_working_dir {
-                p.as_ptr()
-            } else {
-                std::ptr::null()
-            };
+            let v = if self.shell_escape_enabled { 1 } else { 0 };
             unsafe {
-                c_api::tt_xetex_set_string_variable(b"shell_escape_working_dir\0".as_ptr() as _, v);
+                c_api::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
             }
 
             let v = if self.halt_on_error { 1 } else { 0 };
@@ -265,11 +249,6 @@ pub mod c_api {
         pub fn tt_xetex_set_int_variable(
             var_name: *const libc::c_char,
             value: libc::c_int,
-        ) -> libc::c_int;
-
-        pub fn tt_xetex_set_string_variable(
-            var_name: *const libc::c_char,
-            value: *const libc::c_char,
         ) -> libc::c_int;
 
         pub fn tt_engine_xetex_main(
