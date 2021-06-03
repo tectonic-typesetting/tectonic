@@ -17,7 +17,6 @@
 use std::{
     collections::{HashMap, HashSet},
     default::Default,
-    path::Path,
     str::FromStr,
 };
 
@@ -112,10 +111,6 @@ impl<'a> IoProvider for FormatTestDriver<'a> {
     ) -> Result<()> {
         self.io.write_format(name, data, status)
     }
-
-    fn write_to_disk(&self, base_path: &Path, status: &mut dyn StatusBackend) -> Result<()> {
-        self.io.write_to_disk(base_path, status)
-    }
 }
 
 impl<'a> DriverHooks for FormatTestDriver<'a> {
@@ -123,7 +118,12 @@ impl<'a> DriverHooks for FormatTestDriver<'a> {
         self
     }
 
-    fn event_output_closed(&mut self, name: String, digest: DigestData) {
+    fn event_output_closed(
+        &mut self,
+        name: String,
+        digest: DigestData,
+        _status: &mut dyn StatusBackend,
+    ) {
         let summ = self
             .events
             .get_mut(&name)

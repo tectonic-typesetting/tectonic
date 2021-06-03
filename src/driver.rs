@@ -16,12 +16,13 @@ use std::{
     fs::File,
     io::Write,
     path::{Path, PathBuf},
+    process::Command,
     rc::Rc,
     result::Result as StdResult,
     str::FromStr,
     time::SystemTime,
 };
-use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks};
+use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SystemRequestError};
 use tectonic_io_base::{
     digest::DigestData,
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
@@ -227,23 +228,48 @@ impl Default for OutputDestination {
 /// hold the fully-prepared I/O stack information as well as the “event”
 /// information that helps the driver implement the rerun logic.
 struct BridgeState {
+    /// I/O for the primary input source. This is boxed since it can come
+    /// from different sources: maybe a file, maybe an in-memory buffer, etc.
     primary_input: Box<dyn IoProvider>,
-    pub bundle: Box<dyn Bundle>,
-    pub mem: MemoryIo,
+
+    /// I/O for the main backing bundle. This is boxed since there are several
+    /// different bundle implementations that might be used at runtime.
+    bundle: Box<dyn Bundle>,
+
+    /// Memory buffering for files written during processing.
+    mem: MemoryIo,
+
+    /// The main filesystem backing for input files in the project.
     filesystem: FilesystemIo,
-    pub format_cache: FormatCache,
+
+    /// Additional filesystem backing used if "shell escape" functionality is
+    /// activated. If None, we take that to mean that shell-escape is
+    /// disallowed. We have to use a persistent filesystem directory for this
+    /// since some packages perform a whole series of shell-escape operations
+    /// that assume continuity from one to the next.
+    shell_escape_work: Option<FilesystemIo>,
+
+    /// I/O for saving any generated format files.
+    format_cache: FormatCache,
+
+    /// Possible redirection of "standard output" writes to actual standard
+    /// output.
     genuine_stdout: Option<GenuineStdoutIo>,
+
+    /// A possible alternative "primary input" when generating format files. If
+    /// Some(), we're in format-file generation mode; in most cases this is
+    /// None.
     format_primary: Option<BufferedPrimaryIo>,
 
     /// The I/O events that occurred while processing.
-    pub events: HashMap<String, FileSummary>,
+    events: HashMap<String, FileSummary>,
 }
 
 impl BridgeState {
     /// Tell the IoProvider implementation of the bridge state to enter “format
     /// mode”, in which the “primary input” is fixed, based on the requested
     /// format file name, and filesystem I/O is bypassed.
-    pub fn enter_format_mode(&mut self, format_file_name: &str) {
+    fn enter_format_mode(&mut self, format_file_name: &str) {
         self.format_primary = Some(BufferedPrimaryIo::from_text(&format!(
             "\\input {}",
             format_file_name
@@ -251,7 +277,7 @@ impl BridgeState {
     }
 
     /// Leave “format mode”.
-    pub fn leave_format_mode(&mut self) {
+    fn leave_format_mode(&mut self) {
         self.format_primary = None;
     }
 }
@@ -272,6 +298,8 @@ macro_rules! bridgestate_ioprovider_cascade {
             bridgestate_ioprovider_try!(p, $($inner)+);
         }
 
+        // See enter_format_mode above. If creating a format file, disable local
+        // filesystem I/O.
         let use_fs = if let Some(ref mut p) = $self.format_primary {
             bridgestate_ioprovider_try!(p, $($inner)+);
             false
@@ -284,6 +312,14 @@ macro_rules! bridgestate_ioprovider_cascade {
 
         if use_fs {
             bridgestate_ioprovider_try!($self.filesystem, $($inner)+);
+
+            // With this ordering, we are preventing files created by
+            // shell-escape commands from overwriting/replacing source files.
+            // This seems very much like the behavior we want, unless there are
+            // some freaky shell-escape uses that depend on this behavior.
+            if let Some(ref mut p) = $self.shell_escape_work {
+                bridgestate_ioprovider_try!(p, $($inner)+);
+            }
         }
 
         bridgestate_ioprovider_try!($self.bundle.as_ioprovider_mut(), $($inner)+);
@@ -429,7 +465,12 @@ impl DriverHooks for BridgeState {
         self
     }
 
-    fn event_output_closed(&mut self, name: String, digest: DigestData) {
+    fn event_output_closed(
+        &mut self,
+        name: String,
+        digest: DigestData,
+        _status: &mut dyn StatusBackend,
+    ) {
         let summ = self
             .events
             .get_mut(&name)
@@ -437,7 +478,12 @@ impl DriverHooks for BridgeState {
         summ.write_digest = Some(digest);
     }
 
-    fn event_input_closed(&mut self, name: String, digest: Option<DigestData>) {
+    fn event_input_closed(
+        &mut self,
+        name: String,
+        digest: Option<DigestData>,
+        _status: &mut dyn StatusBackend,
+    ) {
         let summ = self
             .events
             .get_mut(&name)
@@ -449,6 +495,116 @@ impl DriverHooks for BridgeState {
         if summ.read_digest.is_none() {
             summ.read_digest = digest;
         }
+    }
+
+    fn sysrq_shell_escape(
+        &mut self,
+        command: &str,
+        status: &mut dyn StatusBackend,
+    ) -> StdResult<(), SystemRequestError> {
+        #[cfg(unix)]
+        const SHELL: &[&str] = &["sh", "-c"];
+
+        #[cfg(windows)]
+        const SHELL: &[&str] = &["cmd.exe", "/c"];
+
+        // Write any TeX-created files in the memory cache to the shell-escape
+        // working directory, since the shell-escape program may need to use
+        // them. (This is the case for `minted`.) We basically just hope that
+        // nothing will want to access the actual TeX source, which will live in
+        // a different directory.
+        //
+        // This is suboptimally slow since we'll be rewriting the same files
+        // repeatedly for repeated shell-escape invocations, but I don't feel
+        // like optimizing that I/O right now. Shell-escape is a gnarly hack
+        // anyway!
+
+        if let Some(work) = self.shell_escape_work.as_ref() {
+            for (name, file) in &*self.mem.files.borrow() {
+                // If it's in the `mem` backend, it's of interest here ...
+                // unless it's stdout.
+                if name == self.mem.stdout_key() {
+                    continue;
+                }
+
+                let real_path = work.root().join(name);
+                let mut f = File::create(&real_path).map_err(|e| {
+                    tt_error!(status, "failed to create file `{}`", real_path.display(); e.into());
+                    SystemRequestError::Failed
+                })?;
+                f.write_all(&file.data).map_err(|e| {
+                    tt_error!(status, "failed to write file `{}`", real_path.display(); e.into());
+                    SystemRequestError::Failed
+                })?;
+            }
+
+            // Now we can actually run the command.
+
+            tt_note!(status, "running shell command: `{}`", command);
+
+            match Command::new(SHELL[0])
+                .args(&SHELL[1..])
+                .arg(&command)
+                .current_dir(work.root())
+                .status()
+            {
+                Ok(s) => match s.code() {
+                    Some(0) => Ok(()),
+                    Some(n) => {
+                        tt_warning!(status, "command exited with error code {}", n);
+                        Err(SystemRequestError::Failed)
+                    }
+                    None => {
+                        tt_warning!(status, "command was terminated by signal");
+                        Err(SystemRequestError::Failed)
+                    }
+                },
+                Err(err) => {
+                    tt_warning!(status, "failed to run command"; err.into());
+                    Err(SystemRequestError::Failed)
+                }
+            }
+
+            // That's it! We shouldn't clean up here, because there might be
+            // multiple shell-escapes that build up in sequence, and any new
+            // files created by the shell-escape command will be picked up by
+            // the filesystem I/O.
+        } else {
+            // No shell-escape work directory. This "shouldn't happen" but means
+            // that shell-escape is supposed to be disabled anyway!
+            tt_error!(
+                status,
+                "the engine requested a shell-escape invocation but it's currently disabled"
+            );
+            Err(SystemRequestError::NotAllowed)
+        }
+    }
+}
+
+/// Possible modes for handling shell-escape functionality
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum ShellEscapeMode {
+    /// "Default" mode: shell-escape is disabled, unless it's been turned on in
+    /// the unstable options, in which case it will be allowed through a
+    /// temporary directory.
+    Defaulted,
+
+    /// Shell-escape is disabled, overriding any unstable-option setting.
+    Disabled,
+
+    /// Shell-escape is enabled, using a temporary work directory managed by the
+    /// processing session. The work directory will be deleted after processing
+    /// completes.
+    TempDir,
+
+    /// Shell-escape is enabled, using some other work directory that is managed
+    /// externally. The processing session won't delete this directory.
+    ExternallyManagedDir(PathBuf),
+}
+
+impl Default for ShellEscapeMode {
+    fn default() -> Self {
+        ShellEscapeMode::Defaulted
     }
 }
 
@@ -473,6 +629,7 @@ pub struct ProcessingSessionBuilder {
     synctex: bool,
     build_date: Option<SystemTime>,
     unstables: UnstableOptions,
+    shell_escape_mode: ShellEscapeMode,
 }
 
 impl ProcessingSessionBuilder {
@@ -635,13 +792,43 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Enable "shell escape" commands in the engines, and use the specified
+    /// directory for shell-escape work. The caller is responsible for the
+    /// creation and/or destruction of this directory. The default is to
+    /// disable shell-escape unless the [`UnstableOptions`] say otherwise,
+    /// in which case a driver-managed temporary directory will be used.
+    pub fn shell_escape_with_work_dir<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
+        self.shell_escape_mode = ShellEscapeMode::ExternallyManagedDir(path.as_ref().to_owned());
+        self
+    }
+
+    /// Forcibly enable shell-escape mode with a temporary directory, overriding
+    /// any [`UnstableOptions`] settings. The default is to disable shell-escape
+    /// unless the [`UnstableOptions`] say otherwise, in which case a
+    /// driver-managed temporary directory will be used.
+    pub fn shell_escape_with_temp_dir(&mut self) -> &mut Self {
+        self.shell_escape_mode = ShellEscapeMode::TempDir;
+        self
+    }
+
+    /// Forcibly disable shell-escape mode, overriding any [`UnstableOptions`]
+    /// settings. The default is to disable shell-escape unless the
+    /// [`UnstableOptions`] say otherwise, in which case a driver-managed
+    /// temporary directory will be used.
+    pub fn shell_escape_disabled(&mut self) -> &mut Self {
+        self.shell_escape_mode = ShellEscapeMode::Disabled;
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
-        // First, work on the bridge state:
+        // First, work on the "bridge state", which gathers the subset of our
+        // state that has to be held in a mutable reference while running the
+        // C/C++ engines:
 
         let mut bundle = self.bundle.expect("a bundle must be specified");
 
-        let mut filesystem_root = self.filesystem_root.unwrap_or(PathBuf::new());
+        let mut filesystem_root = self.filesystem_root.unwrap_or_default();
 
         let (pio, primary_input_path, default_output_path) = match self.primary_input {
             PrimaryInputMode::Path(p) => {
@@ -702,6 +889,7 @@ impl ProcessingSessionBuilder {
             primary_input: pio,
             mem,
             filesystem,
+            shell_escape_work: None,
             format_cache,
             bundle,
             genuine_stdout,
@@ -709,7 +897,7 @@ impl ProcessingSessionBuilder {
             events: HashMap::new(),
         };
 
-        // Now we can do the rest
+        // Now we can do the rest.
 
         let output_path = match self.output_dest {
             OutputDestination::Default => Some(default_output_path),
@@ -731,6 +919,18 @@ impl ProcessingSessionBuilder {
         let mut pdf_path = aux_path.clone();
         pdf_path.set_extension("pdf");
 
+        let shell_escape_mode = match self.shell_escape_mode {
+            ShellEscapeMode::Defaulted => {
+                if self.unstables.shell_escape {
+                    ShellEscapeMode::TempDir
+                } else {
+                    ShellEscapeMode::Disabled
+                }
+            }
+
+            other => other,
+        };
+
         Ok(ProcessingSession {
             bs,
             pass: self.pass,
@@ -749,6 +949,7 @@ impl ProcessingSessionBuilder {
             synctex_enabled: self.synctex,
             build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
             unstables: self.unstables,
+            shell_escape_mode,
         })
     }
 }
@@ -807,6 +1008,10 @@ pub struct ProcessingSession {
     build_date: SystemTime,
 
     unstables: UnstableOptions,
+
+    /// How to handle shell-escape. The `Defaulted` option will never
+    /// be used here.
+    shell_escape_mode: ShellEscapeMode,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -883,6 +1088,57 @@ impl ProcessingSession {
     /// - repeat the last two steps as often as needed
     /// - write the output files to disk, including a Makefile if it was requested.
     pub fn run(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
+        // Pre-invocation setup that requires cleanup even if the processing errors out.
+
+        let (shell_escape_work, clean_up_shell_escape) = match self.shell_escape_mode {
+            ShellEscapeMode::Disabled => (None, false),
+
+            ShellEscapeMode::ExternallyManagedDir(ref p) => (
+                Some(FilesystemIo::new(p, false, false, HashSet::new())),
+                false,
+            ),
+
+            ShellEscapeMode::TempDir => {
+                let tempdir = ctry!(tempfile::Builder::new().tempdir(); "can't create temporary directory for shell-escape work");
+                (
+                    Some(FilesystemIo::new(
+                        &tempdir.into_path(),
+                        false,
+                        false,
+                        HashSet::new(),
+                    )),
+                    true,
+                )
+            }
+
+            ShellEscapeMode::Defaulted => unreachable!(),
+        };
+
+        self.bs.shell_escape_work = shell_escape_work;
+
+        // Go-time!
+        let result = self.run_inner(status);
+
+        // Do that cleanup.
+
+        if clean_up_shell_escape {
+            let shell_escape_work = self.bs.shell_escape_work.take().unwrap();
+            let shell_escape_err = std::fs::remove_dir_all(shell_escape_work.root());
+
+            if let Err(e) = shell_escape_err {
+                tt_warning!(status, "an error occurred while cleaning up the \
+                    shell-escape temporary directory `{}`", shell_escape_work.root().display(); e.into());
+            }
+        }
+
+        // Propagate the actual result.
+        result
+    }
+
+    /// The bulk of the `run` implementation. We need to wrap it to manage the
+    /// lifecycle of resources like the shell-escape temporary directory, if
+    /// needed.
+    fn run_inner(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
         // Do we need to generate the format file?
 
         let generate_format = if self.output_format == OutputFormat::Format {
@@ -1183,19 +1439,6 @@ impl ProcessingSession {
             .unwrap_or(false)
     }
 
-    fn shell_escape_working_dir(&self) -> Option<PathBuf> {
-        if !self.unstables.shell_escape {
-            return None;
-        }
-
-        Some(match self.output_path.as_ref() {
-            None => ".".into(),
-            // "" is an invalid working dir, so we need to change it to "."
-            Some(p) if p.as_os_str().is_empty() => ".".into(),
-            Some(p) => p.clone(),
-        })
-    }
-
     /// Use the TeX engine to generate a format file.
     fn make_format_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         // PathBuf.file_stem() doesn't do what we want since it only strips
@@ -1211,14 +1454,13 @@ impl ProcessingSession {
         let stem = r?;
 
         let result = {
-            let shell_escape_working_dir = self.shell_escape_working_dir();
             self.bs
                 .enter_format_mode(&format!("tectonic-format-{}.tex", stem));
             let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
             let r = TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .shell_escape(shell_escape_working_dir)
+                .shell_escape(self.shell_escape_mode != ShellEscapeMode::Disabled)
                 .process(&mut launcher, "UNUSED.fmt", "texput");
             self.bs.leave_format_mode();
             r
@@ -1270,8 +1512,6 @@ impl ProcessingSession {
         status: &mut dyn StatusBackend,
     ) -> Result<Option<&'static str>> {
         let result = {
-            let shell_escape_working_dir = self.shell_escape_working_dir();
-
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
             } else {
@@ -1285,7 +1525,7 @@ impl ProcessingSession {
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
                 .semantic_pagination(self.output_format == OutputFormat::Html)
-                .shell_escape(shell_escape_working_dir)
+                .shell_escape(self.shell_escape_mode != ShellEscapeMode::Disabled)
                 .build_date(self.build_date)
                 .process(
                     &mut launcher,
@@ -1385,12 +1625,6 @@ impl ProcessingSession {
     ///
     /// This convenience function tries to help with the annoyances of getting
     /// access to the in-memory file data after the engine has been run.
-    ///
-    /// ### Panics
-    ///
-    /// This will panic if you there are multiple strong references to the
-    /// `files` map. This should only happen if you create and keep a clone of
-    /// the `Rc<>` wrapping it before calling this function.
     pub fn into_file_data(self) -> MemoryFileCollection {
         Rc::try_unwrap(self.bs.mem.files)
             .expect("multiple strong refs to MemoryIo files")

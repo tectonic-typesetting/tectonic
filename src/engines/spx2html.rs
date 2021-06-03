@@ -50,7 +50,7 @@ impl Spx2HtmlEngine {
         }
 
         let (name, digest_opt) = input.into_name_digest();
-        hooks.event_input_closed(name, digest_opt);
+        hooks.event_input_closed(name, digest_opt, status);
         Ok(())
     }
 }
@@ -94,7 +94,7 @@ impl<'a> State<'a> {
     pub fn finished(self) {
         if let Some(oh) = self.cur_output {
             let (name, digest) = oh.into_name_digest();
-            self.hooks.event_output_closed(name, digest);
+            self.hooks.event_output_closed(name, digest, self.status);
         }
     }
 }

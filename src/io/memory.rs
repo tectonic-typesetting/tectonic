@@ -7,9 +7,7 @@
 use std::{
     cell::RefCell,
     collections::HashMap,
-    fs::File,
     io::{self, Cursor, Read, Seek, SeekFrom, Write},
-    path::Path,
     rc::Rc,
     time::SystemTime,
 };
@@ -222,20 +220,6 @@ impl IoProvider for MemoryIo {
         } else {
             OpenResult::NotAvailable
         }
-    }
-
-    fn write_to_disk(&self, base_path: &Path, _status: &mut dyn StatusBackend) -> Result<()> {
-        for (name, file) in &*self.files.borrow() {
-            if name == self.stdout_key() {
-                continue;
-            }
-
-            let out_path = base_path.join(name);
-            let mut f = File::create(&out_path)?;
-            f.write_all(&file.data)?;
-        }
-
-        Ok(())
     }
 }
 
