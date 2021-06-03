@@ -7595,7 +7595,14 @@ restart:
                     break;
 
                 case PDF_SHELL_ESCAPE_CODE:
-                    cur_val = 0; /* shellenabledp */
+                    // 0 if shellescape disabled
+                    // 1 if enabled & unrestricted
+                    // 2 if enabled but restricted (which isn't currently supported)
+                    if (shell_escape_enabled) {
+                        cur_val = 1;
+                    } else {
+                        cur_val = 0;
+                    }
                     break;
 
                 case ETEX_VERSION_CODE:
@@ -10349,7 +10356,7 @@ conditional(void)
     case IF_EOF_CODE:
         scan_four_bit_int_or_18();
         if (cur_val == 18)
-            b = 1; /* !shellenabledp */
+            b = !shell_escape_enabled;
         else
             b = (read_open[cur_val] == CLOSED);
         break;

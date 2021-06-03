@@ -566,3 +566,25 @@ fn v2_new_build_multiple_outputs() {
     let output = run_tectonic(&temppath, &["-X", "build"]);
     success_or_panic(output);
 }
+
+/// Test that shell escape actually runs the commands
+#[test]
+fn shell_escape() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "-Zshell-escape"],
+        r#"\immediate\write18{mkdir shellwork}
+        \immediate\write18{echo 123 >shellwork/persist}
+        \ifnum123=\input{shellwork/persist}
+        a
+        \else
+        \ohnotheshellescapedidntwork
+        \fi
+        \bye
+        "#,
+    );
+    success_or_panic(output);
+}

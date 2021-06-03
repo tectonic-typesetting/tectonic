@@ -1,7 +1,7 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//! Tectonic’s pluggable I/O backend.
+//! Extensions to Tectonic’s pluggable I/O backend.
 
 use std::{io::Read, str::FromStr};
 use tectonic_errors::{anyhow::bail, atry, Result};
@@ -11,7 +11,6 @@ pub mod cached_itarbundle;
 pub mod dirbundle;
 pub mod format_cache;
 pub mod memory;
-pub mod setup;
 pub mod zipbundle;
 
 // Convenience re-exports.
@@ -27,10 +26,7 @@ pub use tectonic_io_base::{
 
 // Internal Reexports
 
-pub use self::{
-    memory::MemoryIo,
-    setup::{IoSetup, IoSetupBuilder},
-};
+pub use self::memory::MemoryIo;
 
 /// A special IoProvider that can make TeX format files.
 ///

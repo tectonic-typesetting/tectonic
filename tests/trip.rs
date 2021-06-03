@@ -16,11 +16,10 @@
 
 use std::default::Default;
 
-use tectonic::engines::NoopIoEventBackend;
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::TexEngine;
-use tectonic_bridge_core::CoreBridgeLauncher;
+use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
@@ -54,10 +53,10 @@ fn trip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
-        let mut events = NoopIoEventBackend::default();
+        let io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
+        let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
-        let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
+        let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
         TexEngine::default()
             .halt_on_error_mode(false)
@@ -68,10 +67,10 @@ fn trip_test() {
 
     // Second pass -- process it
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
-        let mut events = NoopIoEventBackend::default();
+        let io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
+        let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
-        let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
+        let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
         TexEngine::default()
             .halt_on_error_mode(false)
@@ -115,10 +114,10 @@ fn etrip_test() {
 
     // First engine pass -- make the format file.
     {
-        let mut io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
-        let mut events = NoopIoEventBackend::default();
+        let io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
+        let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
-        let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
+        let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
         TexEngine::default()
             .halt_on_error_mode(false)
@@ -129,10 +128,10 @@ fn etrip_test() {
 
     // Second pass -- process it
     {
-        let mut io = IoStack::new(vec![&mut mem, &mut tex, &mut tfm]);
-        let mut events = NoopIoEventBackend::default();
+        let io = IoStack::new(vec![&mut mem, &mut tex, &mut tfm]);
+        let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
-        let mut launcher = CoreBridgeLauncher::new(&mut io, &mut events, &mut status);
+        let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
         TexEngine::default()
             .halt_on_error_mode(false)

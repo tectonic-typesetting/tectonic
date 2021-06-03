@@ -1,4 +1,4 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -26,6 +26,11 @@
 //! Unfortunately, this is the cleanest and most reliable API that we can
 //! provide because our abort handling uses `setjmp`/`longjmp` and those can't
 //! cross FFI boundaries.
+//!
+//! In order to use a C/C++ engine, you need to provide something that
+//! implements the [`DriverHooks`] trait. The [`MinimalDriver`] struct provides
+//! a minimal implementation that only requires you to provide an [`IoProvider`]
+//! implementation.
 
 use flate2::{read::GzDecoder, Compression, GzBuilder};
 use md5::{Digest, Md5};
@@ -33,61 +38,132 @@ use std::{
     ffi::CStr,
     fmt::{Display, Error as FmtError, Formatter},
     io::{self, Read, SeekFrom, Write},
-    ptr, slice,
+    ptr,
+    result::Result as StdResult,
+    slice,
     sync::Mutex,
 };
 use tectonic_errors::prelude::*;
 use tectonic_io_base::{
-    digest::DigestData, normalize_tex_path, InputFeatures, InputHandle, InputOrigin, IoProvider,
-    OpenResult, OutputHandle,
+    digest::DigestData, normalize_tex_path, InputFeatures, InputHandle, IoProvider, OpenResult,
+    OutputHandle,
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
 
-/// The IoEventBackend trait allows the program driving the TeX engines to track
-/// its input and output access patterns.
-///
-/// The CLI program uses this information to intelligently decide when to rerun
-/// the TeX engine, to choose which files to actually save to disk, and to emit
-/// Makefile rules describing the dependency of the outputs on the inputs.
-///
-/// All of the trait methods have default implementations that do nothing.
-pub trait IoEventBackend {
-    /// This function is called when a file is opened for output.
-    fn output_opened(&mut self, _name: &str) {}
+/// Possible failures for “system request” calls to the driver.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SystemRequestError {
+    /// The driver does not implement this system request.
+    NotImplemented,
 
-    /// This function is called when the wrapped "standard output"
-    /// ("console", "terminal") stream is opened.
-    fn stdout_opened(&mut self) {}
+    /// The driver implements this system request but is not allowing it
+    /// to be used in this circumstance.
+    NotAllowed,
+
+    /// The driver tried to execute this system request but it failed in some
+    /// fashion. There's no facility for providing more detailed information
+    /// because the calling C/C++ code can't do anything useful with the
+    /// details.
+    Failed,
+}
+
+impl Display for SystemRequestError {
+    fn fmt(&self, f: &mut Formatter) -> StdResult<(), FmtError> {
+        write!(
+            f,
+            "{}",
+            match self {
+                SystemRequestError::NotImplemented => "not implemented by this driver",
+                SystemRequestError::NotAllowed => "not allowed by this driver",
+                SystemRequestError::Failed => "execution of the request failed",
+            }
+        )
+    }
+}
+
+/// The DriverHooks trait allows engines to interact with the higher-level code
+/// that is driving the TeX processing.
+///
+/// Drivers mainly manage interactions between the engines and the outside
+/// world. The primary way they do this is by exposing an [`IoProvider`]
+/// implementation.
+///
+/// Drivers can also implement handlers for additional events that help it track
+/// the input and output access patterns of the engines. The CLI program needs
+/// these to intelligently decide when to rerun the TeX engine, to choose which
+/// files to actually save to disk, and to emit Makefile rules describing the
+/// dependency of the outputs on the inputs. The relevant trait methods have
+/// default implementations that do nothing.
+pub trait DriverHooks {
+    /// Get the main I/O implementations of this driver.
+    fn io(&mut self) -> &mut dyn IoProvider;
 
     /// This function is called when an output file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
     /// written. Note that this function takes ownership of the name and
     /// digest.
-    fn output_closed(&mut self, _name: String, _digest: DigestData) {}
-
-    /// This function is called when a file is opened for input.
-    fn input_opened(&mut self, _name: &str, _origin: InputOrigin) {}
-
-    /// This function is called when the "primary input" stream is opened.
-    fn primary_input_opened(&mut self, _origin: InputOrigin) {}
-
-    /// This function is called when the engine attempted to open a file of
-    /// the specified name but it was not available.
-    fn input_not_available(&mut self, _name: &str) {}
+    fn event_output_closed(
+        &mut self,
+        _name: String,
+        _digest: DigestData,
+        _status: &mut dyn StatusBackend,
+    ) {
+    }
 
     /// This function is called when an input file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
     /// read, if available. This digest is not always available, if the engine
     /// used seeks while reading the file. Note that this function takes
     /// ownership of the name and digest.
-    fn input_closed(&mut self, _name: String, _digest: Option<DigestData>) {}
+    fn event_input_closed(
+        &mut self,
+        _name: String,
+        _digest: Option<DigestData>,
+        _status: &mut dyn StatusBackend,
+    ) {
+    }
+
+    /// The engine is requesting a “shell escape” evaluation.
+    ///
+    /// If the driver wishes to implement this request, it should run the
+    /// specified command using the OS’s default shell. Relevant files should be
+    /// available in the command's working directory, and if the command creates
+    /// any files, they should be incorporated into the I/O environment. The
+    /// shell-escape environment should persist across multiple invocations of
+    /// this system request, because some packages run a series of commands that
+    /// assume such persistence. Also note that the command text has to be
+    /// evaluated through a shell, not just with `exec()`, since shell features
+    /// such as redirections might be used. This is therefore a wildly insecure
+    /// feature.
+    ///
+    /// This function can only return a limited range of error values because
+    /// the C/C++ engines can't do anything useful with them. Detailed error
+    /// information should be logged or stored inside the hook function.
+    fn sysrq_shell_escape(
+        &mut self,
+        _command: &str,
+        _status: &mut dyn StatusBackend,
+    ) -> StdResult<(), SystemRequestError> {
+        Err(SystemRequestError::NotImplemented)
+    }
 }
 
-/// This struct implements the IoEventBackend trait but does nothing.
+/// This type provides a minimal [`DriverHooks`] implementation.
 #[derive(Clone, Debug, Default)]
-pub struct NoopIoEventBackend {}
+pub struct MinimalDriver<T: IoProvider>(T);
 
-impl IoEventBackend for NoopIoEventBackend {}
+impl<T: IoProvider> MinimalDriver<T> {
+    /// Create a new minimal driver.
+    pub fn new(io: T) -> Self {
+        MinimalDriver(io)
+    }
+}
+
+impl<T: IoProvider> DriverHooks for MinimalDriver<T> {
+    fn io(&mut self) -> &mut dyn IoProvider {
+        &mut self.0
+    }
+}
 
 // Function defined in the C support code:
 extern "C" {
@@ -136,19 +212,14 @@ impl std::error::Error for EngineAbortedError {}
 
 /// A mechanism for launching bridged FFI code.
 pub struct CoreBridgeLauncher<'a> {
-    io: &'a mut dyn IoProvider,
-    events: &'a mut dyn IoEventBackend,
+    hooks: &'a mut dyn DriverHooks,
     status: &'a mut dyn StatusBackend,
 }
 
 impl<'a> CoreBridgeLauncher<'a> {
     /// Set up a new context for launching bridged FFI code.
-    pub fn new(
-        io: &'a mut dyn IoProvider,
-        events: &'a mut dyn IoEventBackend,
-        status: &'a mut dyn StatusBackend,
-    ) -> Self {
-        CoreBridgeLauncher { io, events, status }
+    pub fn new(hooks: &'a mut dyn DriverHooks, status: &'a mut dyn StatusBackend) -> Self {
+        CoreBridgeLauncher { hooks, status }
     }
 
     /// Invoke a function to launch a bridged FFI engine with a global mutex
@@ -169,7 +240,7 @@ impl<'a> CoreBridgeLauncher<'a> {
         F: FnOnce(&mut CoreBridgeState<'_>) -> Result<T>,
     {
         let _guard = ENGINE_LOCK.lock().unwrap();
-        let mut state = CoreBridgeState::new(self.io, self.events, self.status);
+        let mut state = CoreBridgeState::new(self.hooks, self.status);
         let result = callback(&mut state);
 
         if let Err(ref e) = result {
@@ -189,24 +260,26 @@ impl<'a> CoreBridgeLauncher<'a> {
 /// these state structures into the C/C++ layer. It is essential that lifetimes
 /// be properly managed across the Rust/C boundary.
 pub struct CoreBridgeState<'a> {
-    io: &'a mut dyn IoProvider,
-    events: &'a mut dyn IoEventBackend,
+    /// The driver hooks associated with this engine invocation.
+    hooks: &'a mut dyn DriverHooks,
+
+    /// The status-reporting backend associated with this engine invocation.
     status: &'a mut dyn StatusBackend,
+
     #[allow(clippy::vec_box)]
     input_handles: Vec<Box<InputHandle>>,
+
     #[allow(clippy::vec_box)]
     output_handles: Vec<Box<OutputHandle>>,
 }
 
 impl<'a> CoreBridgeState<'a> {
     fn new(
-        io: &'a mut dyn IoProvider,
-        events: &'a mut dyn IoEventBackend,
+        hooks: &'a mut dyn DriverHooks,
         status: &'a mut dyn StatusBackend,
     ) -> CoreBridgeState<'a> {
         CoreBridgeState {
-            io,
-            events,
+            hooks,
             status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
@@ -218,10 +291,12 @@ impl<'a> CoreBridgeState<'a> {
         name: &str,
         format: FileFormat,
     ) -> OpenResult<InputHandle> {
+        let io = self.hooks.io();
+
         let r = if let FileFormat::Format = format {
-            self.io.input_open_format(name, self.status)
+            io.input_open_format(name, self.status)
         } else {
-            self.io.input_open_name(name, self.status)
+            io.input_open_name(name, self.status)
         };
 
         match r {
@@ -238,10 +313,10 @@ impl<'a> CoreBridgeState<'a> {
             let ext = format!("{}.{}", name, e);
 
             if let FileFormat::Format = format {
-                if let r @ OpenResult::Ok(_) = self.io.input_open_format(&ext, self.status) {
+                if let r @ OpenResult::Ok(_) = io.input_open_format(&ext, self.status) {
                     return r;
                 }
-            } else if let r @ OpenResult::Ok(_) = self.io.input_open_name(&ext, self.status) {
+            } else if let r @ OpenResult::Ok(_) = io.input_open_name(&ext, self.status) {
                 return r;
             }
         }
@@ -296,8 +371,6 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        self.events.input_opened(ih.name(), ih.origin());
-
         // No canned way to stream the whole file into the digest, it seems.
 
         const BUF_SIZE: usize = 1024;
@@ -323,7 +396,7 @@ impl<'a> CoreBridgeState<'a> {
         // Clean up.
 
         let (name, digest_opt) = ih.into_name_digest();
-        self.events.input_closed(name, digest_opt);
+        self.hooks.event_input_closed(name, digest_opt, self.status);
 
         if !error_occurred {
             let result = hash.finalize();
@@ -334,9 +407,10 @@ impl<'a> CoreBridgeState<'a> {
     }
 
     fn output_open(&mut self, name: &str, is_gz: bool) -> *mut OutputHandle {
+        let io = self.hooks.io();
         let name = normalize_tex_path(name);
 
-        let mut oh = match self.io.output_open_name(&name) {
+        let mut oh = match io.output_open_name(&name) {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
@@ -353,13 +427,14 @@ impl<'a> CoreBridgeState<'a> {
             );
         }
 
-        self.events.output_opened(oh.name());
         self.output_handles.push(Box::new(oh));
         &mut **self.output_handles.last_mut().unwrap()
     }
 
     fn output_open_stdout(&mut self) -> *mut OutputHandle {
-        let oh = match self.io.output_open_stdout() {
+        let io = self.hooks.io();
+
+        let oh = match io.output_open_stdout() {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
@@ -368,7 +443,6 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        self.events.stdout_opened();
         self.output_handles.push(Box::new(oh));
         &mut **self.output_handles.last_mut().unwrap()
     }
@@ -413,7 +487,7 @@ impl<'a> CoreBridgeState<'a> {
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
-                self.events.output_closed(name, digest);
+                self.hooks.event_output_closed(name, digest, self.status);
                 break;
             }
         }
@@ -427,7 +501,6 @@ impl<'a> CoreBridgeState<'a> {
         let ih = match self.input_open_name_format_gz(&name, format, is_gz) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
-                self.events.input_not_available(&name);
                 return ptr::null_mut();
             }
             OpenResult::Err(e) => {
@@ -436,14 +509,14 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        // the file name may have had an extension added, so we use ih.name() here:
-        self.events.input_opened(ih.name(), ih.origin());
         self.input_handles.push(Box::new(ih));
         &mut **self.input_handles.last_mut().unwrap()
     }
 
     fn input_open_primary(&mut self) -> *mut InputHandle {
-        let ih = match self.io.input_open_primary(self.status) {
+        let io = self.hooks.io();
+
+        let ih = match io.input_open_primary(self.status) {
             OpenResult::Ok(ih) => ih,
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
@@ -455,13 +528,13 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        self.events.primary_input_opened(ih.origin());
         self.input_handles.push(Box::new(ih));
         &mut **self.input_handles.last_mut().unwrap()
     }
 
     fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
+
         match rhandle.get_size() {
             Ok(s) => s,
             Err(e) => {
@@ -473,6 +546,7 @@ impl<'a> CoreBridgeState<'a> {
 
     fn input_get_mtime(&mut self, handle: *mut InputHandle) -> libc::time_t {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
+
         let maybe_time = match rhandle.get_unix_mtime() {
             Ok(t) => t,
             Err(e) => {
@@ -524,7 +598,7 @@ impl<'a> CoreBridgeState<'a> {
                 }
 
                 let (name, digest_opt) = ih.into_name_digest();
-                self.events.input_closed(name, digest_opt);
+                self.hooks.event_input_closed(name, digest_opt, self.status);
                 return rv;
             }
         }
@@ -537,6 +611,22 @@ impl<'a> CoreBridgeState<'a> {
         );
 
         true
+    }
+
+    fn shell_escape(&mut self, command: &str) -> bool {
+        match self.hooks.sysrq_shell_escape(command, self.status) {
+            Ok(_) => false,
+
+            Err(e) => {
+                tt_error!(
+                    self.status,
+                    "failed to execute the shell-escape command \"{}\": {}",
+                    command,
+                    e
+                );
+                true
+            }
+        }
     }
 }
 
@@ -907,9 +997,35 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
     let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
-
     es.status
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+}
+
+/// Run a shell command
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw pointers from C and accepts a raw C string.
+#[no_mangle]
+pub unsafe extern "C" fn ttbc_shell_escape(
+    es: &mut CoreBridgeState,
+    cmd: *const u16,
+    len: libc::size_t,
+) -> libc::c_int {
+    let rcmd = slice::from_raw_parts(cmd, len);
+    let rcmd = match String::from_utf16(rcmd) {
+        Ok(cmd) => cmd,
+        Err(err) => {
+            tt_error!(es.status, "command was not valid UTF-16"; err.into());
+            return -1;
+        }
+    };
+
+    if es.shell_escape(&rcmd) {
+        1
+    } else {
+        0
+    }
 }
 
 /// Different types of files that can be opened by TeX engines
