@@ -66,6 +66,7 @@ fn default_outputs() -> HashMap<String, OutputProfile> {
             preamble_file: DEFAULT_PREAMBLE_FILE.to_owned(),
             index_file: DEFAULT_INDEX_FILE.to_owned(),
             postamble_file: DEFAULT_POSTAMBLE_FILE.to_owned(),
+            shell_escape: false,
         },
     );
     outputs
@@ -215,6 +216,7 @@ pub struct OutputProfile {
     preamble_file: String,
     index_file: String,
     postamble_file: String,
+    shell_escape: bool,
 }
 
 /// The output target type of a document build.
@@ -351,6 +353,11 @@ impl Document {
             .keep_intermediates(options.keep_intermediates)
             .print_stdout(options.print_stdout);
 
+        if profile.shell_escape {
+            // For now, this is the only option we allow.
+            sess_builder.shell_escape_with_temp_dir();
+        }
+
         if options.only_cached {
             tt_note!(status, "using only cached resource files");
         }
@@ -452,6 +459,7 @@ mod syntax {
         pub index_file: Option<String>,
         #[serde(rename = "postamble")]
         pub postamble_file: Option<String>,
+        pub shell_escape: Option<bool>,
     }
 
     impl OutputProfile {
@@ -480,6 +488,8 @@ mod syntax {
                 Some(rt.postamble_file.clone())
             };
 
+            let shell_escape = if !rt.shell_escape { None } else { Some(true) };
+
             OutputProfile {
                 name: rt.name.clone(),
                 target_type: BuildTargetType::from_runtime(&rt.target_type),
@@ -487,6 +497,7 @@ mod syntax {
                 preamble_file,
                 index_file,
                 postamble_file,
+                shell_escape,
             }
         }
 
@@ -512,6 +523,7 @@ mod syntax {
                     .postamble_file
                     .clone()
                     .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
+                shell_escape: self.shell_escape.unwrap_or_default(),
             }
         }
     }
