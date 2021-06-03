@@ -210,8 +210,8 @@ select_paper (const char *paperspec)
 }
 
 PageRange *page_ranges = NULL;
-int num_page_ranges = 0;
-int max_page_ranges = 0;
+unsigned int num_page_ranges = 0;
+unsigned int max_page_ranges = 0;
 
 static void
 select_pages (const char *pagespec)
@@ -310,7 +310,7 @@ do_dvi_pages (void)
     step    = (page_ranges[i].first <= page_ranges[i].last) ? 1 : -1;
     page_no = page_ranges[i].first;
     while (dvi_npages()) {
-      if (page_no < dvi_npages()) {
+      if ((unsigned int) page_no < dvi_npages()) {
         double w, h, xo, yo;
         int    lm;
 
