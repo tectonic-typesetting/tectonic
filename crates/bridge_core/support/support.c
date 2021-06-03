@@ -1,4 +1,4 @@
-/* Copyright 2017-2020 the Tectonic Project
+/* Copyright 2017-2021 the Tectonic Project
  * Licensed under the MIT License.
 */
 
@@ -308,7 +308,7 @@ ttstub_get_file_md5(char const *path, char *digest)
 }
 
 int
-ttstub_runsystem(const unsigned short *cmd, size_t len, char const* working_dir)
+ttstub_shell_escape(const unsigned short *cmd, size_t len)
 {
-    return ttbc_runsystem(tectonic_global_bridge_core, cmd, len, working_dir);
+    return ttbc_shell_escape(tectonic_global_bridge_core, cmd, len);
 }

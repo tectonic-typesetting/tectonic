@@ -38,8 +38,9 @@ use std::{
     ffi::CStr,
     fmt::{Display, Error as FmtError, Formatter},
     io::{self, Read, SeekFrom, Write},
-    process::Command,
-    ptr, slice,
+    ptr,
+    result::Result as StdResult,
+    slice,
     sync::Mutex,
 };
 use tectonic_errors::prelude::*;
@@ -48,6 +49,37 @@ use tectonic_io_base::{
     OutputHandle,
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
+
+/// Possible failures for “system request” calls to the driver.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SystemRequestError {
+    /// The driver does not implement this system request.
+    NotImplemented,
+
+    /// The driver implements this system request but is not allowing it
+    /// to be used in this circumstance.
+    NotAllowed,
+
+    /// The driver tried to execute this system request but it failed in some
+    /// fashion. There's no facility for providing more detailed information
+    /// because the calling C/C++ code can't do anything useful with the
+    /// details.
+    Failed,
+}
+
+impl Display for SystemRequestError {
+    fn fmt(&self, f: &mut Formatter) -> StdResult<(), FmtError> {
+        write!(
+            f,
+            "{}",
+            match self {
+                SystemRequestError::NotImplemented => "not implemented by this driver",
+                SystemRequestError::NotAllowed => "not allowed by this driver",
+                SystemRequestError::Failed => "execution of the request failed",
+            }
+        )
+    }
+}
 
 /// The DriverHooks trait allows engines to interact with the higher-level code
 /// that is driving the TeX processing.
@@ -70,14 +102,50 @@ pub trait DriverHooks {
     /// argument specifies the cryptographic digest of the data that were
     /// written. Note that this function takes ownership of the name and
     /// digest.
-    fn event_output_closed(&mut self, _name: String, _digest: DigestData) {}
+    fn event_output_closed(
+        &mut self,
+        _name: String,
+        _digest: DigestData,
+        _status: &mut dyn StatusBackend,
+    ) {
+    }
 
     /// This function is called when an input file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
     /// read, if available. This digest is not always available, if the engine
     /// used seeks while reading the file. Note that this function takes
     /// ownership of the name and digest.
-    fn event_input_closed(&mut self, _name: String, _digest: Option<DigestData>) {}
+    fn event_input_closed(
+        &mut self,
+        _name: String,
+        _digest: Option<DigestData>,
+        _status: &mut dyn StatusBackend,
+    ) {
+    }
+
+    /// The engine is requesting a “shell escape” evaluation.
+    ///
+    /// If the driver wishes to implement this request, it should run the
+    /// specified command using the OS’s default shell. Relevant files should be
+    /// available in the command's working directory, and if the command creates
+    /// any files, they should be incorporated into the I/O environment. The
+    /// shell-escape environment should persist across multiple invocations of
+    /// this system request, because some packages run a series of commands that
+    /// assume such persistence. Also note that the command text has to be
+    /// evaluated through a shell, not just with `exec()`, since shell features
+    /// such as redirections might be used. This is therefore a wildly insecure
+    /// feature.
+    ///
+    /// This function can only return a limited range of error values because
+    /// the C/C++ engines can't do anything useful with them. Detailed error
+    /// information should be logged or stored inside the hook function.
+    fn sysrq_shell_escape(
+        &mut self,
+        _command: &str,
+        _status: &mut dyn StatusBackend,
+    ) -> StdResult<(), SystemRequestError> {
+        Err(SystemRequestError::NotImplemented)
+    }
 }
 
 /// This type provides a minimal [`DriverHooks`] implementation.
@@ -328,7 +396,7 @@ impl<'a> CoreBridgeState<'a> {
         // Clean up.
 
         let (name, digest_opt) = ih.into_name_digest();
-        self.hooks.event_input_closed(name, digest_opt);
+        self.hooks.event_input_closed(name, digest_opt, self.status);
 
         if !error_occurred {
             let result = hash.finalize();
@@ -419,7 +487,7 @@ impl<'a> CoreBridgeState<'a> {
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
-                self.hooks.event_output_closed(name, digest);
+                self.hooks.event_output_closed(name, digest, self.status);
                 break;
             }
         }
@@ -530,7 +598,7 @@ impl<'a> CoreBridgeState<'a> {
                 }
 
                 let (name, digest_opt) = ih.into_name_digest();
-                self.hooks.event_input_closed(name, digest_opt);
+                self.hooks.event_input_closed(name, digest_opt, self.status);
                 return rv;
             }
         }
@@ -543,6 +611,22 @@ impl<'a> CoreBridgeState<'a> {
         );
 
         true
+    }
+
+    fn shell_escape(&mut self, command: &str) -> bool {
+        match self.hooks.sysrq_shell_escape(command, self.status) {
+            Ok(_) => false,
+
+            Err(e) => {
+                tt_error!(
+                    self.status,
+                    "failed to execute the shell-escape command \"{}\": {}",
+                    command,
+                    e
+                );
+                true
+            }
+        }
     }
 }
 
@@ -917,62 +1001,30 @@ pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnost
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
 }
 
-#[cfg(unix)]
-const SHELL: [&str; 2] = ["sh", "-c"];
-
-#[cfg(windows)]
-const SHELL: [&str; 2] = ["cmd.exe", "/c"];
-
 /// Run a shell command
 ///
 /// # Safety
 ///
 /// This function is unsafe because it dereferences raw pointers from C and accepts a raw C string.
 #[no_mangle]
-pub unsafe extern "C" fn ttbc_runsystem(
+pub unsafe extern "C" fn ttbc_shell_escape(
     es: &mut CoreBridgeState,
     cmd: *const u16,
     len: libc::size_t,
-    working_dir: *const libc::c_char,
 ) -> libc::c_int {
     let rcmd = slice::from_raw_parts(cmd, len);
     let rcmd = match String::from_utf16(rcmd) {
         Ok(cmd) => cmd,
         Err(err) => {
-            tt_error!(es.status, "command was not valid utf-16"; err.into());
+            tt_error!(es.status, "command was not valid UTF-16"; err.into());
             return -1;
         }
     };
 
-    let rworking_dir = CStr::from_ptr(working_dir).to_string_lossy();
-    let working_dir_path = rworking_dir.as_ref().as_ref(); // Cow<str> -> str -> Path
-
-    if let Err(err) = es.hooks.io().write_to_disk(working_dir_path, es.status) {
-        tt_error!(es.status, "could not flush all files to disk"; err);
-        return -1;
-    }
-
-    match Command::new(SHELL[0])
-        .arg(SHELL[1])
-        .arg(&rcmd)
-        .current_dir(working_dir_path)
-        .status()
-    {
-        Ok(status) => match status.code() {
-            Some(0) => 0,
-            Some(n) => {
-                tt_warning!(es.status, "command finished with exit code {}", n);
-                n
-            }
-            None => {
-                tt_warning!(es.status, "command was terminated by signal");
-                -1 // TODO is this the right number to return in this case?
-            }
-        },
-        Err(err) => {
-            tt_error!(es.status, "failed to run command"; err.into());
-            -1
-        }
+    if es.shell_escape(&rcmd) {
+        1
+    } else {
+        0
     }
 }
 
