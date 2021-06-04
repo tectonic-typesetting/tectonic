@@ -1,6 +1,8 @@
-# rc: minor bump
+# See elsewhere for changelog
 
-This is the first release of the "core" bridge crate. It provides a baseline of
-APIs for C/C++ code to interact with an underlying "driver" implemented in Rust.
-Those APIs mainly revolve around basic I/O and diagnostics, although we do have
-a specialized "system request" to implement the TeX shell-escape feature.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
+
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_core/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

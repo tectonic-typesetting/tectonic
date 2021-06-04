@@ -1,7 +1,8 @@
-# rc: minor bump
+# See elsewhere for changelog
 
-This crate introduces the XeTeX engine as a standalone crate, building on the
-new "core bridge" functionality.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-Compared to the implementation previously provided in the main `tectonic` crate,
-it also adds shell-escape functionality and iterates the Rust API somewhat.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/engine_xetex/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

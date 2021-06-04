@@ -1,11 +1,8 @@
-# rc: minor bump
+# See elsewhere for changelog
 
-- Update the vendored Harfbuzz to 2.8.1.
-- Fix up handling of how C/C++ header file paths are exported to dependent
-  crates. This is a breaking change: we've moved from a single include directory
-  to a list of them.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-# tectonic_bridge_harfbuzz 0.1.0 (2021-01-15)
-
-Initial release of Harfbuzz "bridge" crate for Tectonic. Includes the ability to
-vendor Harfbuzz.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_harfbuzz/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

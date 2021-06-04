@@ -1,9 +1,8 @@
-# rc: minor bump
+# See elsewhere for changelog
 
-This crate introduces the `xdvipdfmx` engine as a standalone crate, building on
-the new "core bridge" functionality. The API is iterated somewhat from the one
-that was previously provided in the main `tectonic` crate.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-Note that the vast majority of the `xdvipdfmx` C/C++ code is found in the new
-`tectonic_pdf_io` crate, because both this crate and the XeTeX engine need to
-share library routines to do I/O on PDF files.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/engine_xdvipdfmx/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
