@@ -14,7 +14,7 @@ of support files.
 homepage = "https://tectonic-typesetting.github.io/"
 documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
-readme = "README.md"
+readme = "CARGO_README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
 categories = ["command-line-interface", "parser-implementations", "rendering", "science", "text-processing"]
 license = "MIT"
