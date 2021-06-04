@@ -11,9 +11,13 @@ engine, powered by [XeTeX](http://xetex.sourceforge.net/) and
 
 ## Read this first
 
-If you just want to compile TeX documents, you should probably **click through to
-[the main Tectonic website](https://tectonic-typesetting.github.io/)**. This
-page is primarily aimed at folks interested in how Tectonic works “under the hood.”
+If you just want to compile TeX documents, you should probably **click through
+to [the main Tectonic website](https://tectonic-typesetting.github.io/)**. This
+page is primarily aimed at folks interested in how Tectonic works “under the
+hood.” If you want to build the [`tectonic`][crate] Rust crate, check out [its
+README](./CARGO_README.md).
+
+[crate]: https://crates.io/crates/tectonic
 
 ## Developer dashboard
 
@@ -21,13 +25,13 @@ page is primarily aimed at folks interested in how Tectonic works “under the h
     <img src="https://repology.org/badge/vertical-allrepos/tectonic.svg" alt="Packaging status" align="right">
 </a>
 
-- [User website](https://tectonic-typesetting.github.io/).
-- [Community discussion forum](https://tectonic.newton.cx/).
-- [Installation](https://tectonic-typesetting.github.io/install.html).
-- [Developer documentation, including build instructions](https://tectonic-typesetting.github.io/develop.html).
-- [API documentation](https://docs.rs/tectonic/).
-- [Issues](https://github.com/tectonic-typesetting/tectonic/issues/).
-- [Changelog](./CHANGELOG.md).
+- [User website](https://tectonic-typesetting.github.io/)
+- [Community discussion forum](https://tectonic.newton.cx/)
+- [Installation](https://tectonic-typesetting.github.io/book/latest/installation/)
+- [Build instructions](https://tectonic-typesetting.github.io/book/latest/howto/build-tectonic/)
+- [API documentation](https://docs.rs/tectonic/)
+- [Issues](https://github.com/tectonic-typesetting/tectonic/issues/)
+- [Changelog](https://github.com/tectonic-typesetting/tectonic/blob/release/CHANGELOG.md)
 
 ## Technical ecosystem
 
@@ -67,60 +71,3 @@ any given time.
 Please see
 [the tectonic-staging README](https://github.com/tectonic-typesetting/tectonic-staging#readme)
 for more information. (Or at least, more words on the topic.)
-
-
-## Cargo Features
-
-The Tectonic build can be customized with the following [Cargo features]:
-
-[Cargo features]: https://doc.rust-lang.org/cargo/reference/features.html
-
-##### `external-harfbuzz`
-
-By default, the Tectonic crates will build and link to a “vendored” (static,
-internal) version of the [Harfbuzz] text shaping library. If you would like to
-link to an externally-supplied version instead, enable this feature. The
-external library can be detected with either [pkg-config] or [vcpkg]. See the
-[How To Build Tectonic][howto-build] guide for more details.
-
-[Harfbuzz]: https://harfbuzz.github.io/
-[pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
-[vcpkg]: https://vcpkg.readthedocs.io/
-[howto-build]: https://tectonic-typesetting.github.io/book/latest/#update-link-when-published
-
-##### `geturl-curl`
-
-Use the [curl] crate to implement HTTP requests. In order for this to take
-effect, you must use `--no-default-features` because `geturl-reqwest` is a
-default feature and it takes precedence.
-
-[curl]: https://docs.rs/curl/
-
-##### `geturl-reqwest` (enabled by default)
-
-Use the [reqwest] crate to implement HTTP requests. This is the default
-selection.
-
-[reqwest]: https://docs.rs/reqwest/
-
-##### `native-tls-vendored`
-
-If using [reqwest], activate the `vendored` option in the [native-tls] crate,
-causing OpenSSL to be vendored. This can be useful when cross-compiling or
-building static binaries, but is discouraged because that means that the
-resulting binaries won't benefit from security fixes to system TLS libraries.
-
-[native-tls]: https://github.com/sfackler/rust-native-tls
-
-##### `serialization` (enabled by default)
-
-This feature enables (de)serialization using the [serde](https://serde.rs/)
-crate. At the moment, this is only used to read per-user configuration from a
-[TOML](https://github.com/toml-lang/toml) file. If this feature is disabled, the
-per-user configuration file will be silently ignored. This feature is provided
-because serialization requires the `serde_derive` crate, which in turn uses
-Rust’s `proc_macro` feature. The `proc_macro` functionality is difficult to
-build with statically linked targets, although Tectonic’s CI system
-[demonstrates how to make it work][static-proc-macro].
-
-[static-proc-macro]: https://github.com/tectonic-typesetting/tectonic-ci-support/tree/master/cross-images#readme
