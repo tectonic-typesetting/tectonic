@@ -72,7 +72,7 @@ Conda packaging project. To install Tectonic you must activate conda-forge,
 which can be done temporarily like so:
 
 ```sh
-conda install -c conda-forge tectonic
+$ conda install -c conda-forge tectonic
 ```
 
 ### Arch Linux
@@ -92,8 +92,8 @@ machine, which may take a while.
 There is a `tectonic` package in [Homebrew](https://brew.sh/). If you already
 have Homebrew installed, installing Tectonic should be as simple as:
 
-```
-brew install tectonic
+```sh
+$ brew install tectonic
 ```
 
 We also have instructions about [installing Tectonic’s dependencies using
@@ -107,22 +107,22 @@ Homebrew-based computer.
 There is a `tectonic` port in [MacPorts](https://www.macports.org/). If you
 already have MacPorts installed, installing Tectonic should be as simple as:
 
-```
-sudo port install tectonic
+```sh
+$ sudo port install tectonic
 ```
 
 ### nix or nixOS
 
 If you're using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
 
-```
-nix-env -iA nixos.tectonic
+```sh
+$ nix-env -iA nixos.tectonic
 ```
 
 in your shell. You can also create a temporary environment using
 [`nix-shell`](https://nixos.org/nix/manual/#sec-nix-shell):
 
-```
+```sh
 $ nix-shell '<nixpkgs>' -A tectonic
 ```
 
@@ -134,8 +134,8 @@ $ nix-shell '<nixpkgs>' -A tectonic
 Void Linux has a `tectonic` package in the [void-packages] repository. To
 install it, run:
 
-```
-sudo xbps-install -S tectonic
+```sh
+$ sudo xbps-install -S tectonic
 ```
 
 [void-packages]: https://github.com/void-linux/void-packages/blob/master/srcpkgs/tectonic/template
@@ -148,7 +148,7 @@ You can always compile Tectonic yourself. If your system has C++ and Rust
 compilers installed, this may be as simple as running:
 
 ```sh
-cargo install tectonic
+$ cargo install tectonic
 ```
 
 However, Tectonic requires various C/C++ support libraries that may not be
