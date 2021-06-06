@@ -26,7 +26,7 @@ you should:
 4. Put that file in the appropriate location so that you can easily run it from
    your computer’s command prompt.
 
-[gh-latest]: https://github.com/tectonic-typesetting/tectonic/releases/latest
+[gh-latest]: https://tectonic-typesetting.github.io/latest.html
 [inst-packaged]: ../installation/index.md#pre-built-binary-packages
 [inst-ref]: ../installation/index.md
 
