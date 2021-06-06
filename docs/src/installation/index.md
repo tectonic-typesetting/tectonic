@@ -30,7 +30,7 @@ release is published with precompiled executables attached. Because Tectonic is
 distributed as a single executable, all you need to do is download the
 appropriate archive for your platform and unpack it.
 
-[gh-latest]: https://github.com/tectonic-typesetting/tectonic/releases/latest
+[gh-latest]: https://tectonic-typesetting.github.io/latest.html
 
 For instance, on most Linux systems, you’ll want to download the file with the
 name looking like `tectonic-<VERSION>-x86_64-unknown-linux-gnu.tar.gz`. This
@@ -68,14 +68,14 @@ complete, the command `conda` will now be available in your terminal.
 
 Once the `conda` command is available, you can install Tectonic and its support
 libraries using [conda-forge](http://conda-forge.github.io/), a community-led
-Conda packaing project. To install Tectonic you must activate conda-forge, which
-can be done temporarily like so:
+Conda packaging project. To install Tectonic you must activate conda-forge,
+which can be done temporarily like so:
 
 ```sh
-conda install -c conda-forge tectonic
+$ conda install -c conda-forge tectonic
 ```
 
-### Pre-built packages for Arch Linux
+### Arch Linux
 
 For users of [Arch Linux], there are two Tectonic packages available. The
 [tectonic-bin][arch-tectonic-bin] package on [AUR] provides actual pre-compiled
@@ -87,6 +87,60 @@ machine, which may take a while.
 [AUR]: https://aur.archlinux.org/
 [arch-tectonic]: https://aur.archlinux.org/packages/tectonic/
 
+### Homebrew
+
+There is a `tectonic` package in [Homebrew](https://brew.sh/). If you already
+have Homebrew installed, installing Tectonic should be as simple as:
+
+```sh
+$ brew install tectonic
+```
+
+We also have instructions about [installing Tectonic’s dependencies using
+Homebrew][homebrew-deps] if you’d like to compile Tectonic yourself on your
+Homebrew-based computer.
+
+[homebrew-deps]: /howto/build-tectonic/external-dep-install.md#homebrew-on-macos
+
+### MacPorts
+
+There is a `tectonic` port in [MacPorts](https://www.macports.org/). If you
+already have MacPorts installed, installing Tectonic should be as simple as:
+
+```sh
+$ sudo port install tectonic
+```
+
+### nix or nixOS
+
+If you're using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
+
+```sh
+$ nix-env -iA nixos.tectonic
+```
+
+in your shell. You can also create a temporary environment using
+[`nix-shell`](https://nixos.org/nix/manual/#sec-nix-shell):
+
+```sh
+$ nix-shell '<nixpkgs>' -A tectonic
+```
+
+[nix]: https://nixos.org/
+[nix-tectonic]: https://nixos.org/nixos/packages.html#tectonic
+
+### Void Linux
+
+Void Linux has a `tectonic` package in the [void-packages] repository. To
+install it, run:
+
+```sh
+$ sudo xbps-install -S tectonic
+```
+
+[void-packages]: https://github.com/void-linux/void-packages/blob/master/srcpkgs/tectonic/template
+
+
 
 ## Compile Tectonic Yourself
 
@@ -94,7 +148,7 @@ You can always compile Tectonic yourself. If your system has C++ and Rust
 compilers installed, this may be as simple as running:
 
 ```sh
-cargo install tectonic
+$ cargo install tectonic
 ```
 
 However, Tectonic requires various C/C++ support libraries that may not be

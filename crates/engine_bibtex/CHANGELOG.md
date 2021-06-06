@@ -1,10 +1,8 @@
-# rc: micro bump
+# See elsewhere for changelog
 
-No code changes; the Cargo package didn't publish because I hit the crates.io
-rate limit in the previous batch of updates!
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_engine_bibtex 0.1.0 (2021-06-03)
-
-This crate introduces the `bibtex` engine as a standalone crate, building on
-the new "core bridge" functionality.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/engine_bibtex/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
