@@ -19,10 +19,8 @@ const HELPMSG: &str = r#"Available unstable options:
     -Z min-crossrefs=<num>      Equivalent to bibtex's -min-crossrefs flag - "include after <num>
                                     crossrefs" [default: 2]
     -Z paper-size=<spec>        Change the default paper size [default: letter]
+    -Z shell-escape             Enable \write18
 "#;
-
-// Re-add this when \write18 gets implemented
-//    -Z shell-escape             Enable \write18
 
 // Each entry of this should correspond to a field of UnstableOptions.
 #[derive(Debug)]
@@ -66,8 +64,8 @@ impl FromStr for UnstableArg {
                 })
                 .map(|s| UnstableArg::PaperSize(s.to_string())),
 
-            // Re-add this when \write18 gets implemetned
-            // "shell-escape" => Ok(UnstableArg::ShellEscapeEnabled),
+            "shell-escape" => Ok(UnstableArg::ShellEscapeEnabled),
+
             _ => Err(format!("Unknown unstable option '{}'", arg).into()),
         }
     }

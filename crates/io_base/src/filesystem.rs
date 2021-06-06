@@ -86,6 +86,11 @@ impl FilesystemIo {
         }
     }
 
+    /// Get the root filesystem path of this I/O provider.
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
+
     fn construct_path(&mut self, name: &str) -> Result<PathBuf> {
         let path = Path::new(name);
 

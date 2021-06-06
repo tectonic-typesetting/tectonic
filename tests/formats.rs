@@ -14,16 +14,24 @@
 /// Temporarily set the constant DEBUG to true to dump out the generated files
 /// to disk, which may be helpful in debugging. There is probably a less gross
 /// way to implement that option.
-use std::collections::{HashMap, HashSet};
-use std::default::Default;
-use std::str::FromStr;
+use std::{
+    collections::{HashMap, HashSet},
+    default::Default,
+    str::FromStr,
+};
 
-use tectonic::digest::DigestData;
-use tectonic::engines::IoEventBackend;
-use tectonic::io::{IoStack, MemoryIo};
-use tectonic::TexEngine;
-use tectonic_io_base::filesystem::{FilesystemIo, FilesystemPrimaryInputIo};
-use tectonic_status_base::NoopStatusBackend;
+use tectonic::{
+    digest::DigestData,
+    io::{IoStack, MemoryIo},
+    TexEngine,
+};
+use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks};
+use tectonic_errors::Result;
+use tectonic_io_base::{
+    filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
+    InputHandle, IoProvider, OpenResult, OutputHandle,
+};
+use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 
 mod util;
 use crate::util::test_path;
@@ -43,23 +51,81 @@ impl FileSummary {
     }
 }
 
-/// Similarly, a stunted verion of CliIoEvents.
-struct FormatTestEvents(HashMap<String, FileSummary>);
+/// Similarly, a stunted DriverHooks implementation.
+struct FormatTestDriver<'a> {
+    io: IoStack<'a>,
+    events: HashMap<String, FileSummary>,
+}
 
-impl FormatTestEvents {
-    fn new() -> FormatTestEvents {
-        FormatTestEvents(HashMap::new())
+impl<'a> FormatTestDriver<'a> {
+    fn new(io: IoStack<'a>) -> FormatTestDriver {
+        FormatTestDriver {
+            io,
+            events: HashMap::new(),
+        }
     }
 }
 
-impl IoEventBackend for FormatTestEvents {
-    fn output_opened(&mut self, name: &str) {
-        self.0.insert(name.to_owned(), FileSummary::new());
+// We need to provide this whole wrapper implementation just to be able to add
+// file open events in `output_open_name`.
+impl<'a> IoProvider for FormatTestDriver<'a> {
+    fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
+        let r = self.io.output_open_name(name);
+
+        if let OpenResult::Ok(_) = r {
+            self.events.insert(name.to_owned(), FileSummary::new());
+        }
+
+        r
     }
 
-    fn output_closed(&mut self, name: String, digest: DigestData) {
+    fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {
+        self.io.output_open_stdout()
+    }
+
+    fn input_open_name(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        self.io.input_open_name(name, status)
+    }
+
+    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+        self.io.input_open_primary(status)
+    }
+
+    fn input_open_format(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        self.io.input_open_format(name, status)
+    }
+
+    fn write_format(
+        &mut self,
+        name: &str,
+        data: &[u8],
+        status: &mut dyn StatusBackend,
+    ) -> Result<()> {
+        self.io.write_format(name, data, status)
+    }
+}
+
+impl<'a> DriverHooks for FormatTestDriver<'a> {
+    fn io(&mut self) -> &mut dyn IoProvider {
+        self
+    }
+
+    fn event_output_closed(
+        &mut self,
+        name: String,
+        digest: DigestData,
+        _status: &mut dyn StatusBackend,
+    ) {
         let summ = self
-            .0
+            .events
             .get_mut(&name)
             .expect("closing file that wasn't opened?");
         summ.write_digest = Some(digest);
@@ -81,37 +147,32 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
     let mem_stdout_allowed = !DEBUG;
     let mut mem = MemoryIo::new(mem_stdout_allowed);
 
-    // IoEvents manager that will give us output SHA256 sums.
-    let mut events = FormatTestEvents::new();
-
     use tectonic::io::GenuineStdoutIo;
     let mut stdout = GenuineStdoutIo::new();
 
     // Run the engine!
-    {
-        let mut io = if DEBUG {
+    let hooks = {
+        let io = if DEBUG {
             IoStack::new(vec![&mut stdout, &mut fs_primary, &mut fs_support])
         } else {
             IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support])
         };
+        let mut hooks = FormatTestDriver::new(io);
+        let mut status = NoopStatusBackend::default();
+        let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
-        TexEngine::new()
+        TexEngine::default()
             .initex_mode(true)
-            .process(
-                &mut io,
-                &mut events,
-                &mut NoopStatusBackend::default(),
-                "unused.fmt",
-                texname,
-            )
+            .process(&mut launcher, "unused.fmt", texname)
             .unwrap();
-    }
+        hooks
+    };
 
     // Did we get what we expected?
 
     let want_digest = DigestData::from_str(sha256).unwrap();
 
-    for (name, info) in &events.0 {
+    for (name, info) in &hooks.events {
         if name == fmtname {
             let observed = info.write_digest.unwrap();
 

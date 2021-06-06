@@ -1,4 +1,4 @@
-// Copyright 2018-2020 the Tectonic Project
+// Copyright 2018-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Note: we need to store this code as `tests/util/mod.rs` rather than
@@ -19,9 +19,10 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
 };
+use tectonic::{errors::Result, io::memory::MemoryFileCollection};
+use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 
 pub use tectonic::test_util::{test_path, TestBundle};
-use tectonic::{errors::Result, io::memory::MemoryFileCollection};
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
@@ -55,11 +56,10 @@ pub fn cargo_dir() -> PathBuf {
 /// the moment we just let everybody write and overwrite the file, but we
 /// could use a locking scheme to get smarter about this.
 pub fn ensure_plain_format() -> Result<PathBuf> {
-    use ::tectonic::engines::NoopIoEventBackend;
-    use ::tectonic::io::{
-        try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo,
+    use tectonic::{
+        io::{try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo},
+        TexEngine,
     };
-    use ::tectonic::TexEngine;
     use tectonic_status_base::NoopStatusBackend;
 
     let fmt_path = test_path(&["plain.fmt"]);
@@ -75,18 +75,15 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
         let mut fs_primary = FilesystemPrimaryInputIo::new(&assets_dir);
 
         {
-            let mut io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
+            let io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
+            let mut hooks = MinimalDriver::new(io);
+            let mut status = NoopStatusBackend::default();
+            let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
-            TexEngine::new()
+            TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
-                .process(
-                    &mut io,
-                    &mut NoopIoEventBackend::default(),
-                    &mut NoopStatusBackend::default(),
-                    "UNUSED.fmt",
-                    "plain.tex",
-                )?;
+                .process(&mut launcher, "UNUSED.fmt", "plain.tex")?;
         }
 
         let mut temp_fmt = tempfile::Builder::new()

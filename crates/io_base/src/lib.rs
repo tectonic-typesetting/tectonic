@@ -1,9 +1,16 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
 
 //! Tectonic’s pluggable I/O backend.
+//!
+//! This crates defines the core traits and types used by Tectonic’s I/O
+//! subsystem, and provides implementations for common stdlib types. It provides
+//! a simplified I/O model compatible with TeX’s usage patterns, as encapsulated
+//! in the [`IoProvider`] trait. Files are exposed as [`InputHandle`] or
+//! [`OutputHandle`] structs, which add a layer of bookkeeping to allow the
+//! higher levels of Tectonic to determine when the engine needs to be re-run.
 
 use sha2::Digest;
 use std::{
