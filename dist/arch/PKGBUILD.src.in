@@ -24,12 +24,12 @@ sha512sums=('@source_sha512@')
 
 build() {
 	cd $pkgname-$pkgver
-	cargo build --release
+	cargo build --release --features external-harfbuzz
 }
 
 check() {
 	cd $pkgname-$pkgver
-	cargo test --release
+	cargo test --release --features external-harfbuzz
 }
 
 package() {

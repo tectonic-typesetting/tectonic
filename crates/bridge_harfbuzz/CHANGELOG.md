@@ -1,8 +1,23 @@
-# See elsewhere for changelog
+# rc: micro bump
 
-This project’s release notes are curated from the Git history of its main
-branch. You can find them by looking at [the version of this file on the
-`release` branch][branch] or the [GitHub release history][gh-releases].
+- No code changes
+- The 0.2.0 package didn't actually contain the vendored Harfbuzz source files,
+  breaking `cargo` builds. We’ve modified the CI scripts to attempt to fix this
+  ([#777], [@pkgw])
 
-[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_harfbuzz/CHANGELOG.md
-[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
+[#777]: https://github.com/tectonic-typesetting/tectonic/pull/777
+[@pkgw]: https://github.com/pkgw
+
+
+# tectonic_bridge_harfbuzz 0.2.0 (2021-06-03)
+
+- Update the vendored Harfbuzz to 2.8.1.
+- Fix up handling of how C/C++ header file paths are exported to dependent
+  crates. This is a breaking change: we've moved from a single include directory
+  to a list of them.
+
+
+# tectonic_bridge_harfbuzz 0.1.0 (2021-01-15)
+
+Initial release of Harfbuzz "bridge" crate for Tectonic. Includes the ability to
+vendor Harfbuzz.
