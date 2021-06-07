@@ -19,6 +19,7 @@ steps:
 - download: current
 
 - checkout: self
+  submodules: true
 
 - bash: |
     set -xeuo pipefail
