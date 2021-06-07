@@ -1,3 +1,14 @@
+# tectonic_bridge_harfbuzz 0.2.2 (2021-06-07)
+
+- Still no code changes
+- 0.2.1 didn't publish to Crates.io because our package file was too big for it;
+  we've eliminated some of the Harfbuzz support files that should fix this
+  ([#781], [@pkgw])
+
+[#781]: https://github.com/tectonic-typesetting/tectonic/pull/781
+[@pkgw]: https://github.com/pkgw
+
+
 # tectonic_bridge_harfbuzz 0.2.1 (2021-06-07)
 
 - No code changes

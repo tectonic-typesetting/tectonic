@@ -1,11 +1,11 @@
-# Copyright 2020 the Tectonic Project
+# Copyright 2020-2021 the Tectonic Project
 # Licensed under the MIT License.
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
 [package]
 name = "tectonic_bridge_harfbuzz"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose the Harfbuzz C/C++ APIs to Rust/Cargo.
@@ -17,6 +17,7 @@ readme = "README.md"
 license = "MIT"
 edition = "2018"
 links = "harfbuzz"
+exclude = ["/harfbuzz/docs/", "/harfbuzz/perf/", "/harfbuzz/test/"]
 
 [dependencies]
 tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version =">=0.2.0,<1"}

@@ -1,3 +1,18 @@
+# tectonic 0.5.1 (2021-06-07)
+
+**Note:** we have reports that the official 0.5.0 Windows executables don’t
+work, or don’t always work ([#780]). This is under investigation but hasn’t been
+addressed yet.
+
+- No code changes to the main crate
+- Update the Arch Linux specification files to comply better with guidelines
+  ([#779], [@lmartinez-mirror])
+
+[#779]: https://github.com/tectonic-typesetting/tectonic/pull/779
+[@lmartinez-mirror]: https://github.com/lmartinez-mirror
+[#780]: https://github.com/tectonic-typesetting/tectonic/issues/780
+
+
 # tectonic 0.5.0 (2021-06-06)
 
 This is an exciting release! After [literally years of requests][i38], Tectonic

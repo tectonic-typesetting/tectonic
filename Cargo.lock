@@ -1975,7 +1975,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.5.0"
+version = "0.5.1"
 dependencies = [
  "app_dirs2",
  "atty",
@@ -2054,7 +2054,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_harfbuzz"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "cc",
  "tectonic_bridge_graphite2",
