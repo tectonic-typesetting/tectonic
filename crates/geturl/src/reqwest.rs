@@ -80,7 +80,7 @@ impl GetUrlBackend for ReqwestBackend {
             );
         }
 
-        let final_url = res.url().clone().into_string();
+        let final_url: String = res.url().clone().into();
         if final_url != url {
             tt_note!(status, "resolved to {}", final_url);
         }
