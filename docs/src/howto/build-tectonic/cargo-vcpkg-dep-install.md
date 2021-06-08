@@ -30,3 +30,29 @@ export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
 ```
 
 [bash]: https://www.gnu.org/software/bash/
+
+If you’re building on Windows, you’ll likely want to make sure that your
+[`RUSTFLAGS`] variable includes a `+crt-static` [target feature] to get the
+[vcpkg] build scripts to use the `x64-windows-static` [vcpkg triplet], which is
+the default one used by our [cargo-vcpkg] setup, as opposed to
+`x64-windows-static-md`, which is activated otherwise. And if you’ve done the
+full vcpkg install, you might as well build with [an external Harfbuzz][external-harfbuzz].
+Therefore a full Windows build invocation — launched from bash — might look like
+this:
+
+[`RUSTFLAGS`]: https://doc.rust-lang.org/cargo/reference/environment-variables.html
+[target feature]: https://rust-lang.github.io/packed_simd/perf-guide/target-feature/rustflags.html
+[vcpkg triplet]: https://vcpkg.readthedocs.io/en/latest/users/triplets/
+[external-harfbuzz]: ./index.md#choose-cargo-features
+
+```sh
+cargo vcpkg build
+export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
+export RUSTFLAGS='-Ctarget-feature=+crt-static'  # Windows only
+export TECTONIC_DEP_BACKEND=vcpkg
+cargo build --features external-harfbuzz
+```
+
+Note that if you are going to run additional commands such as `cargo test`,
+you’re going to need to ensure that the same environment variables *and feature
+flags* are used consistently.
