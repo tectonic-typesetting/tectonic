@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
@@ -79,7 +79,7 @@ tempfile = "^3.1"
 termcolor = "^1.1"
 toml = { version = "^0.5", optional = true }
 url = "^2.0"
-watchexec = "^1.15"
+watchexec = "^1.15.3"
 zip = { version = "^0.5", default-features = false, features = ["deflate"] }
 
 [features]
