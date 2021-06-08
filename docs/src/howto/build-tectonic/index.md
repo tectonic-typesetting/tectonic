@@ -144,14 +144,15 @@ enabled with a flag such as `--features "serialization profile"`.
 ## Compile the Code
 
 To build the latest released version of Tectonic without needing to download its
-source code, run:
+source code, first *ensure that your build environment variables are set up
+properly* and determine what feature flags you need. Then run:
 
 ```sh
 cargo install tectonic
 ```
 
-adding any feature flags necessary, and ensuring that your build environment
-variables are set up properly. To install the latest version from Git, use:
+inserting any feature flags after the `install`. To install the latest version
+from Git, do the same but use:
 
 ```sh
 cargo install --git https://github.com/tectonic-typesetting/tectonic.git

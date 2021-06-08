@@ -1,5 +1,17 @@
 # rc: micro bump
 
+- Update dependencies, including [`watchexec`]. We believe that this should fix
+  the issues with the official Windows executables that have been reported
+  ([#780], [#782], [@pkgw])
+
+[`watchexec`]: https://github.com/watchexec/watchexec
+[#780]: https://github.com/tectonic-typesetting/tectonic/issues/780
+[#782]: https://github.com/tectonic-typesetting/tectonic/pull/782
+[@pkgw]: https://github.com/pkgw
+
+
+# tectonic 0.5.1 (2021-06-07)
+
 **Note:** we have reports that the official 0.5.0 Windows executables don’t
 work, or don’t always work ([#780]). This is under investigation but hasn’t been
 addressed yet.
