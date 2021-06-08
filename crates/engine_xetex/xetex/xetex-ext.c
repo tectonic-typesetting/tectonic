@@ -1021,10 +1021,10 @@ gr_print_font_name(int32_t what, void* pEngine, int32_t param1, int32_t param2)
     char* name = NULL;
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     switch (what) {
-        case XeTeX_feature_name:
+        case XETEX_FEATURE_NAME_CODE:
             name = getGraphiteFeatureLabel(engine, param1);
             break;
-        case XeTeX_selector_name:
+        case XETEX_SELECTOR_NAME_CODE:
             name = getGraphiteFeatureSettingLabel(engine, param1, param2);
             break;
     }

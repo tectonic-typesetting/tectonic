@@ -75,9 +75,6 @@ typedef void* CFDictionaryRef; /* dummy declaration just so the stubs can compil
 #define XeTeX_OT_feature_code 21
 #define XeTeX_map_char_to_glyph_code 22
 
-#define XeTeX_feature_name 8
-#define XeTeX_selector_name 9
-
 /* accessing info in a native_word_node */
 #define width_offset 1
 #define depth_offset 2

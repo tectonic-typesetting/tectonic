@@ -32,7 +32,7 @@ use tectonic_errors::prelude::*;
 /// should munge this serial number in the filename, or something along those
 /// lines, to make sure that when the engine is updated you don’t attempt to
 /// reuse old files.
-pub const FORMAT_SERIAL: u32 = 29;
+pub const FORMAT_SERIAL: u32 = 30;
 
 /// A possible outcome from a (Xe)TeX engine invocation.
 ///
