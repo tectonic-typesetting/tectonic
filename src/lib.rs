@@ -101,12 +101,8 @@ pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
 // Convenienece re-exports for migration into our multi-crate setup
+pub use tectonic_engine_xetex::FORMAT_SERIAL;
 pub use tectonic_status_base::{tt_error, tt_note, tt_warning};
-
-// Increase this whenever the engine internals change such that the contents
-// of the "format" files must be regenerated.
-
-pub const FORMAT_SERIAL: u32 = 29;
 
 /// Compile LaTeX text to a PDF.
 ///
