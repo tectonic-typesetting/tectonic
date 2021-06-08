@@ -4199,8 +4199,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         primitive("XeTeXisdefaultselector", LAST_ITEM, XETEX_IS_DEFAULT_SELECTOR_CODE);
 
         primitive("XeTeXvariationname", CONVERT, XETEX_VARIATION_NAME_CODE);
-        primitive("XeTeXfeaturename", CONVERT, XeTeX_feature_name);
-        primitive("XeTeXselectorname", CONVERT, XeTeX_selector_name);
+        primitive("XeTeXfeaturename", CONVERT, XETEX_FEATURE_NAME_CODE);
+        primitive("XeTeXselectorname", CONVERT, XETEX_SELECTOR_NAME_CODE);
 
         primitive("XeTeXOTcountscripts", LAST_ITEM, XETEX_OT_COUNT_SCRIPTS_CODE);
         primitive("XeTeXOTcountlanguages", LAST_ITEM, XETEX_OT_COUNT_LANGUAGES_CODE);
