@@ -238,6 +238,12 @@ ttstub_input_open_primary(void)
 }
 
 
+ssize_t
+ttstub_get_last_input_abspath(char *buffer, size_t len)
+{
+    return ttbc_get_last_input_abspath(tectonic_global_bridge_core, (uint8_t *) buffer, len);
+}
+
 size_t
 ttstub_input_get_size(rust_input_handle_t handle)
 {

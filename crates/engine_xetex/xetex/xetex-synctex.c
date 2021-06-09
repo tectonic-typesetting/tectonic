@@ -9,6 +9,7 @@
 #include "tectonic_bridge_core.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <stdarg.h>
 
 #define SYNCTEX_VERSION 1
@@ -129,14 +130,9 @@ static struct {
 static char *
 get_current_name (void)
 {
-    /* This used to always make the pathname absolute but I'm getting rid of
-     * that since it ends up adding dependencies on a bunch of functions I
-     * don't want to have to deal with. */
-
-    if (!name_of_input_file)
-        return xstrdup("");
-
-    return xstrdup(name_of_input_file);
+    /* Tectonic: this used to make pathnames absolute, but in the virtualized
+    * I/O system that information has to be provided externally. */
+    return xstrdup(abspath_of_input_file);
 }
 
 

@@ -382,12 +382,24 @@ impl IoProvider for BridgeState {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
+        match self.input_open_name_with_abspath(name, status) {
+            OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
+    }
+
+    fn input_open_name_with_abspath(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let r = (|| {
-            bridgestate_ioprovider_cascade!(self, input_open_name(name, status));
+            bridgestate_ioprovider_cascade!(self, input_open_name_with_abspath(name, status));
         })();
 
         match r {
-            OpenResult::Ok(ref ih) => {
+            OpenResult::Ok((ref ih, ref _path)) => {
                 if let Some(summ) = self.events.get_mut(name) {
                     summ.access_pattern = match summ.access_pattern {
                         AccessPattern::Written => AccessPattern::WrittenThenRead,
@@ -430,7 +442,18 @@ impl IoProvider for BridgeState {
     }
 
     fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
-        bridgestate_ioprovider_cascade!(self, input_open_primary(status));
+        match self.input_open_primary_with_abspath(status) {
+            OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
+    }
+
+    fn input_open_primary_with_abspath(
+        &mut self,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        bridgestate_ioprovider_cascade!(self, input_open_primary_with_abspath(status));
     }
 
     fn input_open_format(

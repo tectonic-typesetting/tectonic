@@ -35,9 +35,11 @@
 use flate2::{read::GzDecoder, Compression, GzBuilder};
 use md5::{Digest, Md5};
 use std::{
+    convert::TryInto,
     ffi::CStr,
     fmt::{Display, Error as FmtError, Formatter},
     io::{self, Read, SeekFrom, Write},
+    path::PathBuf,
     ptr,
     result::Result as StdResult,
     slice,
@@ -271,6 +273,15 @@ pub struct CoreBridgeState<'a> {
 
     #[allow(clippy::vec_box)]
     output_handles: Vec<Box<OutputHandle>>,
+
+    /// A semi-hack to allow us to feed input file path information to SyncTeX.
+    /// This field is updated every time a new input file is opened. The XeTeX
+    /// engine queries it when opening new source input files to get the
+    /// absolute filesystem path info that SyncTeX wants. This field might be
+    /// None because we're still reading the primary input, or because the most
+    /// recent input didn't have a filesystem path (it came from a bundle or
+    /// memory or something else).
+    latest_input_path: Option<PathBuf>,
 }
 
 impl<'a> CoreBridgeState<'a> {
@@ -283,6 +294,7 @@ impl<'a> CoreBridgeState<'a> {
             status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
+            latest_input_path: None,
         }
     }
 
@@ -290,18 +302,20 @@ impl<'a> CoreBridgeState<'a> {
         &mut self,
         name: &str,
         format: FileFormat,
-    ) -> OpenResult<InputHandle> {
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let io = self.hooks.io();
 
-        let r = if let FileFormat::Format = format {
-            io.input_open_format(name, self.status)
+        if let FileFormat::Format = format {
+            match io.input_open_format(name, self.status) {
+                OpenResult::NotAvailable => {}
+                OpenResult::Err(e) => return OpenResult::Err(e),
+                OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
+            }
         } else {
-            io.input_open_name(name, self.status)
-        };
-
-        match r {
-            OpenResult::NotAvailable => {}
-            r => return r,
+            match io.input_open_name_with_abspath(name, self.status) {
+                OpenResult::NotAvailable => {}
+                r => return r,
+            }
         }
 
         // It wasn't available under the immediately-given name. Try adding
@@ -313,13 +327,19 @@ impl<'a> CoreBridgeState<'a> {
             let ext = format!("{}.{}", name, e);
 
             if let FileFormat::Format = format {
-                if let r @ OpenResult::Ok(_) = io.input_open_format(&ext, self.status) {
-                    return r;
+                match io.input_open_format(&ext, self.status) {
+                    OpenResult::NotAvailable => {}
+                    OpenResult::Err(e) => return OpenResult::Err(e),
+                    OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
                 }
-            } else if let r @ OpenResult::Ok(_) = io.input_open_name(&ext, self.status) {
-                return r;
+            } else {
+                match io.input_open_name_with_abspath(&ext, self.status) {
+                    OpenResult::NotAvailable => {}
+                    r => return r,
+                }
             }
         }
+
         OpenResult::NotAvailable
     }
 
@@ -328,7 +348,7 @@ impl<'a> CoreBridgeState<'a> {
         name: &str,
         format: FileFormat,
         is_gz: bool,
-    ) -> OpenResult<InputHandle> {
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let base = self.input_open_name_format(name, format);
 
         if !is_gz {
@@ -336,11 +356,11 @@ impl<'a> CoreBridgeState<'a> {
         }
 
         match base {
-            OpenResult::Ok(ih) => {
+            OpenResult::Ok((ih, path)) => {
                 let origin = ih.origin();
                 let dr = GzDecoder::new(ih.into_inner());
 
-                OpenResult::Ok(InputHandle::new(name, dr, origin))
+                OpenResult::Ok((InputHandle::new(name, dr, origin), path))
             }
             _ => base,
         }
@@ -356,7 +376,7 @@ impl<'a> CoreBridgeState<'a> {
         // idea to just go and read the file.
 
         let mut ih = match self.input_open_name_format(&name, FileFormat::Tex) {
-            OpenResult::Ok(ih) => ih,
+            OpenResult::Ok((ih, _path)) => ih,
             OpenResult::NotAvailable => {
                 // We could issue a warning here, but the standard LaTeX
                 // "rerun check" implementations trigger it very often, which
@@ -498,8 +518,8 @@ impl<'a> CoreBridgeState<'a> {
     fn input_open(&mut self, name: &str, format: FileFormat, is_gz: bool) -> *mut InputHandle {
         let name = normalize_tex_path(name);
 
-        let ih = match self.input_open_name_format_gz(&name, format, is_gz) {
-            OpenResult::Ok(ih) => ih,
+        let (ih, path) = match self.input_open_name_format_gz(&name, format, is_gz) {
+            OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
                 return ptr::null_mut();
             }
@@ -510,14 +530,15 @@ impl<'a> CoreBridgeState<'a> {
         };
 
         self.input_handles.push(Box::new(ih));
+        self.latest_input_path = path;
         &mut **self.input_handles.last_mut().unwrap()
     }
 
     fn input_open_primary(&mut self) -> *mut InputHandle {
         let io = self.hooks.io();
 
-        let ih = match io.input_open_primary(self.status) {
-            OpenResult::Ok(ih) => ih,
+        let (ih, path) = match io.input_open_primary_with_abspath(self.status) {
+            OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
                 return ptr::null_mut();
@@ -529,6 +550,7 @@ impl<'a> CoreBridgeState<'a> {
         };
 
         self.input_handles.push(Box::new(ih));
+        self.latest_input_path = path;
         &mut **self.input_handles.last_mut().unwrap()
     }
 
@@ -813,6 +835,53 @@ pub unsafe extern "C" fn ttbc_input_open(
 #[no_mangle]
 pub extern "C" fn ttbc_input_open_primary(es: &mut CoreBridgeState) -> *mut InputHandle {
     es.input_open_primary()
+}
+
+/// Get the filesystem path of the most-recently-opened input file.
+///
+/// This function is needed by SyncTeX, because its output file should contain
+/// absolute filesystem paths to the input source files. In principle this
+/// functionality could be implemented in a few different ways, but the approach
+/// used here is the most backward-compatible. This function will fill in the
+/// caller's buffer with the filesystem path associated with the most
+/// recently-opened input file, including a terminating NUL, if possible.
+///
+/// It returns 0 if no such path is known, -1 if the path cannot be expressed
+/// UTF-8, -2 if the destination buffer is not big enough, or the number of
+/// bytes written into the buffer (including a terminating NUL) otherwise.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw C pointers.
+#[no_mangle]
+pub unsafe extern "C" fn ttbc_get_last_input_abspath(
+    es: &mut CoreBridgeState,
+    buffer: *mut u8,
+    len: libc::size_t,
+) -> libc::ssize_t {
+    match es.latest_input_path {
+        None => 0,
+
+        Some(ref p) => {
+            // In principle we could try to handle the full fun of
+            // cross-platform PathBuf/Unicode conversions, but synctex and
+            // friends will be treating our data as a traditional C string in
+            // the end. So play it safe and stick to UTF-8.
+            let p = match p.to_str() {
+                Some(s) => s.as_bytes(),
+                None => return -1,
+            };
+
+            let n = p.len();
+            if n + 1 > len {
+                return -2;
+            }
+
+            std::ptr::copy(p.as_ptr(), buffer, n);
+            *buffer.offset(n.try_into().unwrap()) = b'\0';
+            (n + 1).try_into().unwrap()
+        }
+    }
 }
 
 /// Get the size of a Tectonic input file.

@@ -238,6 +238,7 @@ int ttstub_output_close(rust_output_handle_t handle);
 
 rust_input_handle_t ttstub_input_open(char const *path, ttbc_file_format format, int is_gz);
 rust_input_handle_t ttstub_input_open_primary(void);
+ssize_t ttstub_get_last_input_abspath(char *buffer, size_t len);
 size_t ttstub_input_get_size(rust_input_handle_t handle);
 time_t ttstub_input_get_mtime(rust_input_handle_t handle);
 size_t ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence);
