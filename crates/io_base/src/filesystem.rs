@@ -1,10 +1,11 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Tectonic I/O implementations for `std::fs` types.
 
 use std::{
     collections::HashSet,
+    env,
     fs::File,
     io::{self, BufReader, Seek, SeekFrom},
     path::{Path, PathBuf},
@@ -62,12 +63,9 @@ impl IoProvider for FilesystemPrimaryInputIo {
 
         let handle = InputHandle::new("", BufReader::new(f), InputOrigin::Filesystem);
 
-        // For SyncTeX paths we need to make sure that we return an absolute path.
-        // The easiest way to do this (as far as I can see) is to canonicalize.
-
-        let path = match std::fs::canonicalize(&self.path) {
+        let path = match make_abspath(&self.path) {
             Ok(m) => m,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         OpenResult::Ok((handle, Some(path)))
@@ -202,12 +200,10 @@ impl IoProvider for FilesystemIo {
             return OpenResult::NotAvailable;
         }
 
-        // For SyncTeX paths we need to make sure that we return an absolute path.
-        // The easiest way to do this (as far as I can see) is to canonicalize.
-
-        let path = match std::fs::canonicalize(path) {
+        // SyncTeX requires absolute paths.
+        let path = match make_abspath(path) {
             Ok(m) => m,
-            Err(e) => return OpenResult::Err(e.into()),
+            Err(e) => return OpenResult::Err(e),
         };
 
         // Good to go.
@@ -249,4 +245,12 @@ impl InputFeatures for BufReader<File> {
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
         Ok(self.seek(pos)?)
     }
+}
+
+/// For SyncTeX paths we need to make sure that we return an absolute
+/// path. `std::fs::canonicalize` is a bit overkill and prefixes all of
+/// our paths with `\\?\` on Windows.
+fn make_abspath<P: AsRef<Path>>(path: P) -> Result<PathBuf> {
+    let cwd = env::current_dir()?;
+    Ok(cwd.join(path.as_ref()))
 }
