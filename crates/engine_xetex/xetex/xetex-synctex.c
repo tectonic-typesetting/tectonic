@@ -130,14 +130,9 @@ static struct {
 static char *
 get_current_name (void)
 {
-    /* This used to always make the pathname absolute but I'm getting rid of
-     * that since it ends up adding dependencies on a bunch of functions I
-     * don't want to have to deal with. */
-
-    if (!name_of_input_file)
-        return xstrdup("");
-
-    return xstrdup(name_of_input_file);
+    /* Tectonic: this used to make pathnames absolute, but in the virtualized
+    * I/O system that information has to be provided externally. */
+    return xstrdup(abspath_of_input_file);
 }
 
 
@@ -772,22 +767,7 @@ synctex_record_preamble(void)
 static inline int
 synctex_record_input(int32_t tag, char *name)
 {
-    char cwd[PATH_MAX + 1];
-    if (getcwd(cwd, PATH_MAX + 1) == NULL) {
-        char errmsg[100];
-        sprintf(errmsg,
-            "Failed to generate synctex info: Failed to get absolute path to current directory: %s"
-            , (errno == ERANGE || errno == ENAMETOOLONG) ? "path too long" : strerror(errno)
-        );
-        fatal_error(errmsg);
-        return -1;
-    }
-    #ifdef _WIN32
-        char *sep = "\\";
-    #else
-        char *sep = "/";
-    #endif
-    int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s%s%s\n", tag, cwd, sep, name);
+    int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
 
     if (len > 0) {
         synctex_ctxt.total_length += len;

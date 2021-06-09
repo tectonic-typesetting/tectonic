@@ -21,6 +21,7 @@ typedef struct {
 BEGIN_EXTERN_C
 
 extern char *name_of_input_file;
+extern char abspath_of_input_file[];
 extern const uint32_t offsetsFromUTF8[6];
 extern const uint8_t bytesFromUTF8[256];
 extern const uint8_t firstByteMark[7];

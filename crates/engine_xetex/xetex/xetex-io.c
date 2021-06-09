@@ -13,6 +13,11 @@
 
 char *name_of_input_file = NULL;
 
+// Tectonic: This buffer is used for SyncTeX, which needs to emit absolute
+// filesystem paths -- which are difficult to derive in our virtualized I/O
+// system. The most backwards-compatible way to expose this information to the
+// engine was to add the `ttstub_get_last_input_abspath()` API used below.
+char abspath_of_input_file[1024] = "";
 
 rust_input_handle_t
 tt_xetex_open_input (int filefmt)
@@ -26,6 +31,10 @@ tt_xetex_open_input (int filefmt)
 
     if (handle == NULL)
         return NULL;
+
+    if (ttstub_get_last_input_abspath(abspath_of_input_file, sizeof(abspath_of_input_file)) < 1) {
+        abspath_of_input_file[0] = '\0';
+    }
 
     name_length = strlen(name_of_file);
     free(name_of_input_file);
