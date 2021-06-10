@@ -2123,6 +2123,7 @@ dependencies = [
  "sha2",
  "structopt",
  "tectonic_bridge_core",
+ "tectonic_docmodel",
  "tectonic_engine_bibtex",
  "tectonic_engine_xdvipdfmx",
  "tectonic_engine_xetex",
@@ -2209,6 +2210,15 @@ version = "0.0.0-dev.0"
 dependencies = [
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "tectonic_docmodel"
+version = "0.0.0-dev.0"
+dependencies = [
+ "serde",
+ "tectonic_errors",
+ "toml",
 ]
 
 [[package]]
