@@ -67,7 +67,7 @@ serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
 tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
-tectonic_docmodel = { path = "crates/docmodel", version = "0.0.0-dev.0" }
+tectonic_docmodel = { path = "crates/docmodel", version = "0.0.0-dev.0", optional = true }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = "0.0.0-dev.0" }
 tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version = "0.0.0-dev.0" }
 tectonic_engine_xetex = { path = "crates/engine_xetex", version = "0.0.0-dev.0" }
@@ -87,10 +87,13 @@ zip = { version = "^0.5", default-features = false, features = ["deflate"] }
 [features]
 default = ["geturl-reqwest", "serialization"]
 
-# Note: we used to have this to couple "serde" and "serde-derive", but we've
-# adopted the newer scheme to avoid having to depend on both -- should maybe
-# just get rid of this feature:
-serialization = ["serde", "toml"]
+# The main motivation for this feature was to be able to compile without
+# proc-macros (via serde-derive), for statically-linked targets which can't use
+# them. In the CI, we now build for statically-linked targets using a
+# cross-compilation model that allows us to have proc-macros anyway. So maybe
+# this feature should go away? It's kind of annoying to support, and at this
+# point proc-macros may have snuck into the dependency tree elsewhere, anyway.
+serialization = ["serde", "tectonic_docmodel", "toml"]
 
 external-harfbuzz = ["tectonic_engine_xetex/external-harfbuzz"]
 

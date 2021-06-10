@@ -11,8 +11,7 @@ use tectonic::{
     config::PersistentConfig,
     ctry,
     docmodel::{DocumentExt, DocumentSetupOptions, WorkspaceCreatorExt},
-    driver::ProcessingSessionBuilder,
-    errors::{ErrorKind, Result, SyncError},
+    errors::{Result, SyncError},
     status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
     tt_error, tt_note,
 };
@@ -178,7 +177,7 @@ impl BuildCommand {
                 .keep_logs(self.keep_logs)
                 .print_stdout(self.print_stdout);
 
-            run_and_report(builder, status)?;
+            crate::compile::run_and_report(builder, status)?;
 
             if self.open {
                 let out_file = doc.output_main_file(output_name);
@@ -291,35 +290,4 @@ impl NewCommand {
         );
         Ok(0)
     }
-}
-
-pub(crate) fn run_and_report(
-    sess_builder: ProcessingSessionBuilder,
-    status: &mut dyn StatusBackend,
-) -> Result<i32> {
-    let mut sess = sess_builder.create(status)?;
-    let result = sess.run(status);
-
-    if let Err(e) = &result {
-        if let ErrorKind::EngineError(engine) = e.kind() {
-            let output = sess.get_stdout_content();
-
-            if output.is_empty() {
-                tt_error!(
-                    status,
-                    "something bad happened inside {}, but no output was logged",
-                    engine
-                );
-            } else {
-                tt_error!(
-                    status,
-                    "something bad happened inside {}; its output follows:\n",
-                    engine
-                );
-                status.dump_error_logs(&output);
-            }
-        }
-    }
-
-    result.map(|_| 0)
 }

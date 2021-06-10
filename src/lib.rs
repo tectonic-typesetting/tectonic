@@ -78,6 +78,7 @@
 mod app_dirs;
 pub mod config;
 pub mod digest;
+#[cfg(feature = "serialization")]
 pub mod docmodel;
 pub mod driver;
 pub mod engines;
