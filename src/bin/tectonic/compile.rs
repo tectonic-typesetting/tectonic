@@ -197,31 +197,37 @@ impl CompileOptions {
             None => time::SystemTime::now(),
         };
         sess_builder.build_date(build_date);
+        run_and_report(sess_builder, status)
+    }
+}
 
-        let mut sess = sess_builder.create(status)?;
-        let result = sess.run(status);
+pub(crate) fn run_and_report(
+    sess_builder: ProcessingSessionBuilder,
+    status: &mut dyn StatusBackend,
+) -> Result<i32> {
+    let mut sess = sess_builder.create(status)?;
+    let result = sess.run(status);
 
-        if let Err(e) = &result {
-            if let ErrorKind::EngineError(engine) = e.kind() {
-                let output = sess.get_stdout_content();
+    if let Err(e) = &result {
+        if let ErrorKind::EngineError(engine) = e.kind() {
+            let output = sess.get_stdout_content();
 
-                if output.is_empty() {
-                    tt_error!(
-                        status,
-                        "something bad happened inside {}, but no output was logged",
-                        engine
-                    );
-                } else {
-                    tt_error!(
-                        status,
-                        "something bad happened inside {}; its output follows:\n",
-                        engine
-                    );
-                    status.dump_error_logs(&output);
-                }
+            if output.is_empty() {
+                tt_error!(
+                    status,
+                    "something bad happened inside {}, but no output was logged",
+                    engine
+                );
+            } else {
+                tt_error!(
+                    status,
+                    "something bad happened inside {}; its output follows:\n",
+                    engine
+                );
+                status.dump_error_logs(&output);
             }
         }
-
-        result.map(|_| 0)
     }
+
+    result.map(|_| 0)
 }

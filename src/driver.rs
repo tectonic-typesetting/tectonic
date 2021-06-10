@@ -5,7 +5,11 @@
 
 //! This module contains the high-level interface that ties together the various
 //! engines. The main struct is [`ProcessingSession`], which knows how to run
-//! (and re-run if necessary) the various engines in the right order.
+//! (and re-run if necessary) the various engines in the right order. Such a
+//! session can be created with a [`ProcessingSessionBuilder`], which you might
+//! obtain from a [`tectonic_docmodel::document::Document`] using the
+//! [`crate::docmodel::DocumentExt::setup_session`] extension method, if you’re
+//! using the Tectonic document model.
 //!
 //! For an example of how to use this module, see `src/bin/tectonic.rs`, which
 //! contains tectonic's main CLI program.
@@ -632,8 +636,14 @@ impl Default for ShellEscapeMode {
 }
 
 /// A builder-style interface for creating a [`ProcessingSession`].
+///
+/// This uses standard builder patterns. See especially
+/// [`Self::disable_insecure`], which prevents any known-insecure features from
+/// being activated in the session. It should always be the first method you
+/// call if you are going to process input that is not totally trusted.
 #[derive(Default)]
 pub struct ProcessingSessionBuilder {
+    disable_insecures: bool,
     primary_input: PrimaryInputMode,
     tex_input_name: Option<String>,
     output_dest: OutputDestination,
@@ -656,6 +666,35 @@ pub struct ProcessingSessionBuilder {
 }
 
 impl ProcessingSessionBuilder {
+    /// Disable any known insecure settings.
+    ///
+    /// Some session options, like [`Self::shell_escape_with_temp_dir`], are
+    /// known to create security risks and should not be used with untrusted
+    /// input. This function disables any such settings. The intended usage is
+    /// that you can create a session builder, activate this feature, and then
+    /// hand the session builder off to other initializers confident in the
+    /// knowledge that they will be prevented from activating any insecure
+    /// settings. Therefore this operation is idempotent and irreversible.
+    ///
+    /// When you know that you are handling trusted input, on the other hand,
+    /// some of these known-insecure capabilities provide functionality that
+    /// users empirically want. This is why this setting isn't permanently
+    /// enabled.
+    ///
+    /// Of course, this approach is only as good as our understanding of
+    /// Tectonic’s security profile. Future versions might disable or restrict
+    /// different pieces of functionality as new risks are discovered.
+    pub fn disable_insecure(&mut self) -> &mut Self {
+        self.disable_insecures = true;
+        self
+    }
+
+    /// A very dumb helper to minimize the chances of boolean logic mistakes.
+    #[inline(always)]
+    fn allow_insecures(&self) -> bool {
+        !self.disable_insecures
+    }
+
     /// Sets the path to the primary input file.
     ///
     /// If a primary input path is not specified, we will default to reading it from stdin.
@@ -821,7 +860,10 @@ impl ProcessingSessionBuilder {
     /// disable shell-escape unless the [`UnstableOptions`] say otherwise,
     /// in which case a driver-managed temporary directory will be used.
     pub fn shell_escape_with_work_dir<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
-        self.shell_escape_mode = ShellEscapeMode::ExternallyManagedDir(path.as_ref().to_owned());
+        if self.allow_insecures() {
+            self.shell_escape_mode =
+                ShellEscapeMode::ExternallyManagedDir(path.as_ref().to_owned());
+        }
         self
     }
 
@@ -830,7 +872,9 @@ impl ProcessingSessionBuilder {
     /// unless the [`UnstableOptions`] say otherwise, in which case a
     /// driver-managed temporary directory will be used.
     pub fn shell_escape_with_temp_dir(&mut self) -> &mut Self {
-        self.shell_escape_mode = ShellEscapeMode::TempDir;
+        if self.allow_insecures() {
+            self.shell_escape_mode = ShellEscapeMode::TempDir;
+        }
         self
     }
 
@@ -942,16 +986,20 @@ impl ProcessingSessionBuilder {
         let mut pdf_path = aux_path.clone();
         pdf_path.set_extension("pdf");
 
-        let shell_escape_mode = match self.shell_escape_mode {
-            ShellEscapeMode::Defaulted => {
-                if self.unstables.shell_escape {
-                    ShellEscapeMode::TempDir
-                } else {
-                    ShellEscapeMode::Disabled
+        let shell_escape_mode = if self.disable_insecures {
+            ShellEscapeMode::Disabled
+        } else {
+            match self.shell_escape_mode {
+                ShellEscapeMode::Defaulted => {
+                    if self.unstables.shell_escape {
+                        ShellEscapeMode::TempDir
+                    } else {
+                        ShellEscapeMode::Disabled
+                    }
                 }
-            }
 
-            other => other,
+                other => other,
+            }
         };
 
         Ok(ProcessingSession {

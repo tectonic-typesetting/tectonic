@@ -1,4 +1,4 @@
-// Copyright 2020 the Tectonic Project
+// Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! A Tectonic document-build workspace.
@@ -8,17 +8,24 @@
 //! world where one workspace can contain multiple documents.
 
 use std::{
-    env, fs,
+    env,
+    error::Error,
+    fmt, fs,
     io::{self, Write},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
+use tectonic_errors::prelude::*;
 
-use crate::{
-    config::PersistentConfig, ctry, document::Document, errmsg, errors::Result,
-    status::StatusBackend,
-};
+use crate::document::Document;
 
 /// A Tectonic workspace.
+///
+/// For the time being, a Workspace is just a thin wrapper to provide access to
+/// a `Document` instance. In the future, it might become possible for one
+/// workspace to contain multiple documents.
+///
+/// In most cases, you will want to create a [`Workspace`] by opening an
+/// existing one using [`Workspace::open_from_environment`].
 #[derive(Debug)]
 pub struct Workspace {
     /// The root directory of the workspace.
@@ -45,7 +52,13 @@ impl Workspace {
         &mut self.doc
     }
 
-    /// Open up a workspace baced on the current process environment.
+    /// Open up a workspace based on the current process environment.
+    ///
+    /// This function searches the current directory and its parents for a
+    /// `Tectonic.toml` file. Because workspaces can currently only contain a
+    /// single document, the search stops when the first such file is found. If
+    /// no such file is found, an error downcastable into
+    /// [`NoWorkspaceFoundError`] is returned.
     pub fn open_from_environment() -> Result<Self> {
         let mut root_dir = env::current_dir()?;
         root_dir.push("tmp"); // simplifies loop logic
@@ -70,17 +83,28 @@ impl Workspace {
             return Ok(Workspace { root_dir, doc });
         }
 
-        Err(errmsg!(
-            "No `Tectonic.toml` found in current directory or any of its parents"
-        ))
+        Err(NoWorkspaceFoundError {}.into())
     }
 }
+
+/// An error for when the environment does not seem to contain a Tectonic
+/// workspace.
+#[derive(Debug)]
+pub struct NoWorkspaceFoundError {}
+
+impl fmt::Display for NoWorkspaceFoundError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> StdResult<(), fmt::Error> {
+        write!(f, "no get-URL backend was enabled")
+    }
+}
+
+impl Error for NoWorkspaceFoundError {}
 
 /// A type for creating a new workspace.
 #[derive(Debug)]
 pub struct WorkspaceCreator {
     /// The root directory of the workspace to be created.
-    root_dir: PathBuf,
+    pub(crate) root_dir: PathBuf,
 }
 
 impl WorkspaceCreator {
@@ -92,19 +116,15 @@ impl WorkspaceCreator {
     }
 
     /// Consume this object and attempt to create the new workspace.
-    pub fn create(
-        self,
-        config: &PersistentConfig,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Workspace> {
-        let doc = Document::new_for_creator(&self, config, status)?;
+    pub fn create(self, bundle_loc: String) -> Result<Workspace> {
+        let doc = Document::create_for(&self, bundle_loc)?;
 
         let mut tex_dir = self.root_dir.clone();
         tex_dir.push("src");
 
-        ctry!(
+        atry!(
             fs::create_dir_all(&tex_dir);
-            "couldn\'t create workspace directory `{}`", tex_dir.display()
+            ["couldn\'t create workspace directory `{}`", tex_dir.display()]
         );
 
         doc.create_toml()?;
@@ -149,10 +169,5 @@ impl WorkspaceCreator {
             root_dir: self.root_dir,
             doc,
         })
-    }
-
-    /// Get the root directory of the workspace.
-    pub fn root_dir(&self) -> &Path {
-        &self.root_dir
     }
 }
