@@ -16,6 +16,7 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
+app_dirs2 = "^2.3"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 libc = "^0.2" # for EISDIR :-(
 sha2 = "^0.9" # for digest computations
