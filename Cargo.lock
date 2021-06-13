@@ -2104,7 +2104,6 @@ dependencies = [
 name = "tectonic"
 version = "0.0.0-dev.0"
 dependencies = [
- "app_dirs2",
  "atty",
  "byte-unit",
  "cfg-if 1.0.0",
@@ -2283,6 +2282,7 @@ dependencies = [
 name = "tectonic_io_base"
 version = "0.0.0-dev.0"
 dependencies = [
+ "app_dirs2",
  "flate2",
  "libc",
  "sha2",

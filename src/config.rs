@@ -1,5 +1,4 @@
-// src/config.rs -- configuration for the Tectonic library.
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! User configuration settings for the Tectonic engine.
@@ -74,7 +73,7 @@ impl PersistentConfig {
         };
 
         let mut cfg_path = if auto_create_config_file {
-            app_dirs::user_config()?
+            app_dirs::ensure_user_config()?
         } else {
             app_dirs::get_user_config()?
         };
@@ -182,7 +181,7 @@ impl PersistentConfig {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             Ok(crate::test_util::test_path(&[]))
         } else {
-            Ok(app_dirs::user_cache_dir("formats")?)
+            Ok(app_dirs::ensure_user_cache_dir("formats")?)
         }
     }
 }
