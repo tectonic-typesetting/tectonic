@@ -497,7 +497,9 @@ impl ShowCommand {
 struct ShowUserCacheDirCommand {}
 
 impl ShowUserCacheDirCommand {
-    fn customize(&self, _cc: &mut CommandCustomizations) {}
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        cc.always_stderr = true;
+    }
 
     fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
         use tectonic_bundles::cache::Cache;
