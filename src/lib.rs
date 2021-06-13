@@ -75,7 +75,6 @@
 //! The [`driver`] module provides a high-level interface for driving the
 //! engines in more realistic circumstances.
 
-mod app_dirs;
 pub mod config;
 pub mod digest;
 #[cfg(feature = "serialization")]

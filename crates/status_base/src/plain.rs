@@ -15,12 +15,29 @@ use super::{ChatterLevel, MessageKind, StatusBackend};
 #[derive(Clone, Debug, Default)]
 pub struct PlainStatusBackend {
     chatter: ChatterLevel,
+    always_stderr: bool,
 }
 
 impl PlainStatusBackend {
     /// Create a new backend with the specified chatter level.
+    ///
+    /// To use the default chatter level, you can also use [`Self::default`].
     pub fn new(chatter: ChatterLevel) -> Self {
-        PlainStatusBackend { chatter }
+        PlainStatusBackend {
+            chatter,
+            always_stderr: false,
+        }
+    }
+
+    /// Configure this backend to always print to the standard error stream.
+    ///
+    /// This setting can be useful if you have a program that is printing output
+    /// to standard output that needs to be machine-parsable. By activating it
+    /// you can ensure that any status reports don't get mixed in with your
+    /// stdout output.
+    pub fn always_stderr(&mut self, setting: bool) -> &mut Self {
+        self.always_stderr = setting;
+        self
     }
 }
 
@@ -36,7 +53,7 @@ impl StatusBackend for PlainStatusBackend {
             MessageKind::Error => "error:",
         };
 
-        if kind == MessageKind::Note {
+        if kind == MessageKind::Note && !self.always_stderr {
             println!("{} {}", prefix, args);
         } else {
             eprintln!("{} {}", prefix, args);

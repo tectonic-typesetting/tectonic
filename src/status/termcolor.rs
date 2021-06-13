@@ -15,6 +15,7 @@ use super::{ChatterLevel, MessageKind, StatusBackend};
 
 pub struct TermcolorStatusBackend {
     chatter: ChatterLevel,
+    always_stderr: bool,
     stdout: StandardStream,
     stderr: StandardStream,
     note_spec: ColorSpec,
@@ -39,6 +40,7 @@ impl TermcolorStatusBackend {
 
         TermcolorStatusBackend {
             chatter,
+            always_stderr: false,
             stdout: StandardStream::stdout(ColorChoice::Auto),
             stderr: StandardStream::stderr(ColorChoice::Auto),
             note_spec,
@@ -46,6 +48,11 @@ impl TermcolorStatusBackend {
             warning_spec,
             error_spec,
         }
+    }
+
+    pub fn always_stderr(&mut self, setting: bool) -> &mut Self {
+        self.always_stderr = setting;
+        self
     }
 
     fn styled<F>(&mut self, kind: MessageKind, f: F)
@@ -57,7 +64,13 @@ impl TermcolorStatusBackend {
         }
 
         let (spec, stream) = match kind {
-            MessageKind::Note => (&self.note_spec, &mut self.stdout),
+            MessageKind::Note => {
+                if self.always_stderr {
+                    (&self.note_spec, &mut self.stderr)
+                } else {
+                    (&self.note_spec, &mut self.stdout)
+                }
+            }
             MessageKind::Warning => (&self.warning_spec, &mut self.stderr),
             MessageKind::Error => (&self.error_spec, &mut self.stderr),
         };
@@ -76,7 +89,13 @@ impl TermcolorStatusBackend {
         }
 
         let stream = match kind {
-            MessageKind::Note => &mut self.stdout,
+            MessageKind::Note => {
+                if self.always_stderr {
+                    &mut self.stderr
+                } else {
+                    &mut self.stdout
+                }
+            }
             MessageKind::Warning => &mut self.stderr,
             MessageKind::Error => &mut self.stderr,
         };
@@ -108,7 +127,11 @@ impl TermcolorStatusBackend {
 
     pub fn note_styled(&mut self, args: Arguments) {
         if self.chatter > ChatterLevel::Minimal {
-            writeln!(self.stdout, "{}", args).expect("write to stdout failed");
+            if self.always_stderr {
+                writeln!(self.stderr, "{}", args).expect("write to stderr failed");
+            } else {
+                writeln!(self.stdout, "{}", args).expect("write to stdout failed");
+            }
         }
     }
 
@@ -166,13 +189,19 @@ impl StatusBackend for TermcolorStatusBackend {
 
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
         if self.chatter > ChatterLevel::Minimal {
-            write!(self.stdout, "{}", before).expect("write to stdout failed");
-            self.stdout
+            let stream = if self.always_stderr {
+                &mut self.stderr
+            } else {
+                &mut self.stdout
+            };
+
+            write!(stream, "{}", before).expect("write failed");
+            stream
                 .set_color(&self.highlight_spec)
-                .expect("write to stdout failed");
-            write!(self.stdout, "{}", highlighted).expect("write to stdout failed");
-            self.stdout.reset().expect("write to stdout failed");
-            writeln!(self.stdout, "{}", after).expect("write to stdout failed");
+                .expect("write failed");
+            write!(stream, "{}", highlighted).expect("write failed");
+            stream.reset().expect("write failed");
+            writeln!(stream, "{}", after).expect("write failed");
         }
     }
 

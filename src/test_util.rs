@@ -35,12 +35,13 @@
 //! That call simultaneously tells this module where to find the test assets,
 //! and also activates the test mode.
 
-use std::{collections::HashSet, env, ffi::OsStr, path::PathBuf};
+use std::{env, ffi::OsStr, path::PathBuf};
+use tectonic_bundles::{dir::DirBundle, Bundle};
 use tectonic_errors::Result;
 
 use crate::{
     digest::DigestData,
-    io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult},
+    io::{InputHandle, IoProvider, OpenResult},
     status::StatusBackend,
 };
 
@@ -101,16 +102,15 @@ pub fn test_path(parts: &[&str]) -> PathBuf {
 }
 
 /// Utility for being able to treat the "assets/" directory as a bundle.
-pub struct TestBundle(FilesystemIo);
+///
+/// I think we want to always wrap DirBundle so that we can override
+/// `get_digest()`? But once DirBundle implements `get_digest()` for real we
+/// could consider just dropping this type altogether.
+pub struct TestBundle(DirBundle);
 
 impl Default for TestBundle {
     fn default() -> Self {
-        TestBundle(FilesystemIo::new(
-            &test_path(&["assets"]),
-            false,
-            false,
-            HashSet::new(),
-        ))
+        TestBundle(DirBundle::new(&test_path(&["assets"])))
     }
 }
 
@@ -128,5 +128,9 @@ impl IoProvider for TestBundle {
 impl Bundle for TestBundle {
     fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
         Ok(DigestData::zeros())
+    }
+
+    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+        self.0.all_files(status)
     }
 }

@@ -28,6 +28,7 @@ use thiserror::Error as ThisError;
 
 use crate::digest::DigestData;
 
+pub mod app_dirs;
 pub mod digest;
 pub mod filesystem;
 pub mod flate2;
@@ -452,7 +453,7 @@ pub trait IoProvider: AsIoProviderMut {
 
     /// Open the named file for input and return filesystem path information.
     ///
-    /// This method extends [`input_open_name`] to help support SyncTeX output.
+    /// This method extends [`Self::input_open_name`] to help support SyncTeX output.
     /// While SyncTeX output files should contain absolute source file paths,
     /// Tectonic’s pluggable I/O system makes it so that the mapping between
     /// input names and filesystem paths is not well-defined. This optional
@@ -464,7 +465,7 @@ pub trait IoProvider: AsIoProviderMut {
     /// that might provide path information, or you are implementing an I/O
     /// provider that delegates to other I/O providers, you should implement
     /// this function fully, and then provide a simple implementation of
-    /// [`input_open_name`] that drops the pathing information.
+    /// [`Self::input_open_name`] that drops the pathing information.
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
@@ -488,8 +489,8 @@ pub trait IoProvider: AsIoProviderMut {
 
     /// Open the primary input and return filesystem path information.
     ///
-    /// This method is as to [`input_open_primary`] as
-    /// [`input_open_name_with_abspath`] is to [`input_open_name`].
+    /// This method is as to [`Self::input_open_primary`] as
+    /// [`Self::input_open_name_with_abspath`] is to [`Self::input_open_name`].
     fn input_open_primary_with_abspath(
         &mut self,
         status: &mut dyn StatusBackend,

@@ -12,6 +12,9 @@ use std::{
     fs, io,
     path::{Path, PathBuf},
 };
+use tectonic_bundles::{
+    cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
+};
 use tectonic_docmodel::{
     document::{BuildTargetType, Document},
     workspace::{Workspace, WorkspaceCreator},
@@ -23,7 +26,6 @@ use crate::{
     config, ctry,
     driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
     errors::{ErrorKind, Result},
-    io::{cached_itarbundle::CachedITarBundle, dirbundle::DirBundle, zipbundle::ZipBundle, Bundle},
     status::StatusBackend,
     test_util, tt_note,
 };
@@ -109,10 +111,10 @@ impl DocumentExt for Document {
             Ok(Box::new(test_util::TestBundle::default()))
         } else if let Ok(url) = Url::parse(&self.bundle_loc) {
             if url.scheme() != "file" {
-                let bundle = CachedITarBundle::new(
+                let mut cache = Cache::get_user_default()?;
+                let bundle = cache.open::<IndexedTarBackend>(
                     &self.bundle_loc,
                     setup_options.only_cached,
-                    None,
                     status,
                 )?;
                 Ok(Box::new(bundle))

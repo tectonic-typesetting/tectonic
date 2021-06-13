@@ -1,23 +1,27 @@
-// src/io/zipbundle.rs -- I/O on files in a Zipped-up "bundle"
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
+
+//! ZIP files as Tectonic bundles.
 
 use std::{
     fs::File,
     io::{Cursor, Read, Seek},
     path::Path,
 };
+use tectonic_errors::prelude::*;
+use tectonic_io_base::{InputHandle, InputOrigin, IoProvider, OpenResult};
+use tectonic_status_base::StatusBackend;
 use zip::{result::ZipError, ZipArchive};
 
-use super::{Bundle, InputHandle, InputOrigin, IoProvider, OpenResult};
-use crate::errors::Result;
-use crate::status::StatusBackend;
+use crate::Bundle;
 
+/// A bundle backed by a ZIP file.
 pub struct ZipBundle<R: Read + Seek> {
     zip: ZipArchive<R>,
 }
 
 impl<R: Read + Seek> ZipBundle<R> {
+    /// Create a new ZIP bundle for a generic readable and seekable stream.
     pub fn new(reader: R) -> Result<ZipBundle<R>> {
         Ok(ZipBundle {
             zip: ZipArchive::new(reader)?,
@@ -26,6 +30,7 @@ impl<R: Read + Seek> ZipBundle<R> {
 }
 
 impl ZipBundle<File> {
+    /// Open a file on the filesystem as a ZIP bundle.
     pub fn open<P: AsRef<Path>>(path: P) -> Result<ZipBundle<File>> {
         Self::new(File::open(path)?)
     }
@@ -66,4 +71,8 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
     }
 }
 
-impl<R: Read + Seek> Bundle for ZipBundle<R> {}
+impl<R: Read + Seek> Bundle for ZipBundle<R> {
+    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+        Ok(self.zip.file_names().map(|s| s.to_owned()).collect())
+    }
+}
