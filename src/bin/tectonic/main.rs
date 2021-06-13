@@ -11,7 +11,6 @@ use tectonic::{
     errors::SyncError,
     status::termcolor::TermcolorStatusBackend,
     status::{ChatterLevel, StatusBackend},
-    tt_note,
 };
 
 mod compile;
@@ -127,13 +126,6 @@ fn main() {
     } else {
         Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
     };
-
-    // For now ...
-
-    tt_note!(
-        status,
-        "this is a BETA release; ask questions and report bugs at https://tectonic.newton.cx/"
-    );
 
     // Now that we've got colorized output, pass off to the inner function ...
     // all so that we can print out the word "error:" in red. This code
