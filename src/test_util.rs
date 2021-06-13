@@ -35,12 +35,13 @@
 //! That call simultaneously tells this module where to find the test assets,
 //! and also activates the test mode.
 
-use std::{collections::HashSet, env, ffi::OsStr, path::PathBuf};
+use std::{collections::HashSet, env, ffi::OsStr, fs, path::PathBuf};
+use tectonic_bundles::Bundle;
 use tectonic_errors::Result;
 
 use crate::{
     digest::DigestData,
-    io::{Bundle, FilesystemIo, InputHandle, IoProvider, OpenResult},
+    io::{FilesystemIo, InputHandle, IoProvider, OpenResult},
     status::StatusBackend,
 };
 
@@ -128,5 +129,23 @@ impl IoProvider for TestBundle {
 impl Bundle for TestBundle {
     fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
         Ok(DigestData::zeros())
+    }
+
+    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+        // XXX: this is copy/paste of DirBundle.
+        let mut files = Vec::new();
+
+        for entry in fs::read_dir(&self.0.root())? {
+            let entry = entry?;
+
+            // This catches both regular files and symlinks:`
+            if !entry.file_type()?.is_dir() {
+                if let Some(s) = entry.file_name().to_str() {
+                    files.push(s.to_owned());
+                }
+            }
+        }
+
+        Ok(files)
     }
 }

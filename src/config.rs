@@ -15,15 +15,14 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicBool, Ordering},
 };
+use tectonic_bundles::{
+    cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
+};
+use tectonic_io_base::app_dirs;
 use url::Url;
 
 use crate::{
-    app_dirs,
     errors::{ErrorKind, Result},
-    io::cached_itarbundle::CachedITarBundle,
-    io::dirbundle::DirBundle,
-    io::zipbundle::ZipBundle,
-    io::Bundle,
     status::StatusBackend,
 };
 
@@ -123,8 +122,13 @@ impl PersistentConfig {
         custom_cache_root: Option<&Path>,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        let bundle = CachedITarBundle::new(url, only_cached, custom_cache_root, status)?;
+        let mut cache = if let Some(root) = custom_cache_root {
+            Cache::get_for_custom_directory(root)
+        } else {
+            Cache::get_user_default()?
+        };
 
+        let bundle = cache.open::<IndexedTarBackend>(url, only_cached, status)?;
         Ok(Box::new(bundle) as _)
     }
 
@@ -190,7 +194,7 @@ impl Default for PersistentConfig {
     fn default() -> Self {
         PersistentConfig {
             default_bundles: vec![BundleInfo {
-                url: String::from("https://archive.org/services/purl/net/pkgwpub/tectonic-default"),
+                url: String::from(tectonic_bundles::FALLBACK_BUNDLE_URL),
             }],
         }
     }

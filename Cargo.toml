@@ -67,6 +67,7 @@ serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
 tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
+tectonic_bundles = { path = "crates/bundles", version = "0.0.0-dev.0", default-features = false }
 tectonic_docmodel = { path = "crates/docmodel", version = "0.0.0-dev.0", optional = true }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = "0.0.0-dev.0" }
 tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version = "0.0.0-dev.0" }
@@ -97,10 +98,10 @@ serialization = ["serde", "tectonic_docmodel", "toml"]
 
 external-harfbuzz = ["tectonic_engine_xetex/external-harfbuzz"]
 
-geturl-curl = ["tectonic_geturl/curl"]
-geturl-reqwest = ["tectonic_geturl/reqwest"]
+geturl-curl = ["tectonic_bundles/geturl-curl", "tectonic_geturl/curl"]
+geturl-reqwest = ["tectonic_bundles/geturl-reqwest", "tectonic_geturl/reqwest"]
 
-native-tls-vendored = ["tectonic_geturl/native-tls-vendored"]
+native-tls-vendored = ["tectonic_bundles/native-tls-vendored", "tectonic_geturl/native-tls-vendored"]
 
 # developer feature to compile with the necessary flags for profiling tectonic.
 profile = []
@@ -129,6 +130,7 @@ tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bundles = "thiscommit:2021-06-13:Q0esYor"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_docmodel = "cd77b60d48b1ae3ef80d708e6858ea91cd9fa812"

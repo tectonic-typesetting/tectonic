@@ -27,6 +27,7 @@ use std::{
     time::SystemTime,
 };
 use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SystemRequestError};
+use tectonic_bundles::Bundle;
 use tectonic_io_base::{
     digest::DigestData,
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
@@ -40,7 +41,7 @@ use crate::{
     io::{
         format_cache::FormatCache,
         memory::{MemoryFileCollection, MemoryIo},
-        Bundle, InputOrigin,
+        InputOrigin,
     },
     status::StatusBackend,
     tt_error, tt_note, tt_warning,
