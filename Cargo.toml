@@ -32,6 +32,7 @@ members = [
   "crates/bridge_graphite2",
   "crates/bridge_harfbuzz",
   "crates/bridge_icu",
+  "crates/bundles",
   "crates/cfg_support",
   "crates/dep_support",
   "crates/docmodel",
