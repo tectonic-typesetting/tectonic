@@ -36,6 +36,7 @@ tectonic -X compile  # full form
   [--print] [-p]
   [--reruns COUNT] [-r COUNT]
   [--synctex]
+  [--untrusted]
   [--web-bundle URL] [-w]
   [-Z UNSTABLE-OPTION]
   TEXPATH
@@ -63,6 +64,27 @@ This will compile the file and create `myfile.pdf` if nothing went wrong. You
 can use an input filename of `-` to have Tectonic process standard input. (In
 this case, the output file will be named `texput.pdf`.)
 
+##### Security
+
+By default, the document is compiled in a “trusted” mode. This means that the
+calling user can request to enable certain engine features that could raise
+security concerns if used with untrusted input: the classic example of this
+being TeX's “shell-escape” functionality. These features are *not* enabled by
+default, but they can be enabled on the command line; in the case of
+shell-escape, this is done with `-Z shell-escape`.
+
+If the command-line argument `--untrusted` is provided, these features cannot be
+enabled, regardless of other settings such as `-Z shell-escape`. So if you are
+going to process untrusted input in a command-line script, as long as you make
+sure that `--untrusted` is provided, the known-dangerous features will be
+disabled.
+
+Furthermore, if the environment variable `TECTONIC_UNTRUSTED_MODE` is set to a
+non-empty value, Tectonic will behave as if `--untrusted` were specified,
+regardless of the actual command-line arguments. Setting this variable can
+provide a modest extra layer of protection if the Tectonic engine is being run
+outside of its CLI form. Keep in mind that untrusted shell scripts and the like
+can trivially defeat this by explicitly clearing the environment variable.
 
 #### Options
 
@@ -87,6 +109,7 @@ The following are the available flags.
 | `-p`  | `--print`                 | Print the engine's chatter during processing |
 | `-r`  | `--reruns <COUNT>`        | Rerun the TeX engine exactly this many times after the first |
 |       | `--synctex`               | Generate SyncTeX data |
+|       | `--untrusted`             | Input is untrusted: disable all known-insecure features |
 | `-V`  | `--version`               | Prints version information |
 | `-w`  | `--web-bundle <URL>`      | Use this URL find resource files instead of the default |
 | `-Z`  | `-Z <UNSTABLE-OPTION>`    | Activate experimental “unstable” options |
@@ -102,5 +125,5 @@ the set of unstable options is subject to change at any time.
 | `-Z continue-on-errors`  | Keep compiling even when severe errors occur |
 | `-Z min-crossrefs=<num>` | Equivalent to bibtex's `-min-crossrefs` flag. Default vaue: 2 |
 | `-Z paper-size=<spec>`   | Change the initial paper size. Default: `letter` |
-| `-Z shell-escape`        | Enable `\write18` |
+| `-Z shell-escape`        | Enable `\write18` (unless `--untrusted` has been specified) |
 
