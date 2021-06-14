@@ -216,14 +216,32 @@ impl std::error::Error for EngineAbortedError {}
 pub struct CoreBridgeLauncher<'a> {
     hooks: &'a mut dyn DriverHooks,
     status: &'a mut dyn StatusBackend,
+    security: SecuritySettings,
 }
 
 impl<'a> CoreBridgeLauncher<'a> {
     /// Set up a new context for launching bridged FFI code.
+    ///
+    /// This function uses the default security stance, which disallows all
+    /// known-insecure engine features. Use [`Self::new_with_security`] to
+    /// provide your own security settings that can attempt to allow the use of
+    /// such features.
     pub fn new(hooks: &'a mut dyn DriverHooks, status: &'a mut dyn StatusBackend) -> Self {
-        CoreBridgeLauncher { hooks, status }
+        Self::new_with_security(hooks, status, SecuritySettings::default())
     }
 
+    /// Set up a new context for launching bridged FFI code.
+    pub fn new_with_security(
+        hooks: &'a mut dyn DriverHooks,
+        status: &'a mut dyn StatusBackend,
+        security: SecuritySettings,
+    ) -> Self {
+        CoreBridgeLauncher {
+            hooks,
+            status,
+            security,
+        }
+    }
     /// Invoke a function to launch a bridged FFI engine with a global mutex
     /// held.
     ///
@@ -242,7 +260,7 @@ impl<'a> CoreBridgeLauncher<'a> {
         F: FnOnce(&mut CoreBridgeState<'_>) -> Result<T>,
     {
         let _guard = ENGINE_LOCK.lock().unwrap();
-        let mut state = CoreBridgeState::new(self.hooks, self.status);
+        let mut state = CoreBridgeState::new(self.security.clone(), self.hooks, self.status);
         let result = callback(&mut state);
 
         if let Err(ref e) = result {
@@ -262,6 +280,9 @@ impl<'a> CoreBridgeLauncher<'a> {
 /// these state structures into the C/C++ layer. It is essential that lifetimes
 /// be properly managed across the Rust/C boundary.
 pub struct CoreBridgeState<'a> {
+    /// The security settings for this invocation
+    security: SecuritySettings,
+
     /// The driver hooks associated with this engine invocation.
     hooks: &'a mut dyn DriverHooks,
 
@@ -286,10 +307,12 @@ pub struct CoreBridgeState<'a> {
 
 impl<'a> CoreBridgeState<'a> {
     fn new(
+        security: SecuritySettings,
         hooks: &'a mut dyn DriverHooks,
         status: &'a mut dyn StatusBackend,
     ) -> CoreBridgeState<'a> {
         CoreBridgeState {
+            security,
             hooks,
             status,
             output_handles: Vec::new(),
@@ -636,19 +659,116 @@ impl<'a> CoreBridgeState<'a> {
     }
 
     fn shell_escape(&mut self, command: &str) -> bool {
-        match self.hooks.sysrq_shell_escape(command, self.status) {
-            Ok(_) => false,
+        if self.security.allow_shell_escape() {
+            match self.hooks.sysrq_shell_escape(command, self.status) {
+                Ok(_) => false,
 
-            Err(e) => {
-                tt_error!(
-                    self.status,
-                    "failed to execute the shell-escape command \"{}\": {}",
-                    command,
-                    e
-                );
-                true
+                Err(e) => {
+                    tt_error!(
+                        self.status,
+                        "failed to execute the shell-escape command \"{}\": {}",
+                        command,
+                        e
+                    );
+                    true
+                }
             }
+        } else {
+            tt_error!(
+                self.status,
+                "forbidden to execute shell-escape command \"{}\"",
+                command
+            );
+            true
         }
+    }
+}
+
+/// A type for storing settings about potentially insecure engine features.
+///
+/// This type encapsulates configuration about which potentially insecure engine
+/// features are enabled. Methods that configure or instantiate engines require
+/// values of this type, and values of this type can only be created through
+/// centralized methods that respect standard environment variables, ensuring
+/// that there is some level of uniform control over the activation of any
+/// known-insecure features.
+///
+/// The purpose of this framework is to manage the use of engine features that
+/// are known to create security risks with *untrusted* input, but that trusted
+/// users may wish to use due to the extra functionalities they bring. (This is
+/// why these are settings and not simply security flaws!) The primary example
+/// of this is the TeX engine’s shell-escape feature.
+///
+/// Of course, this framework is only as good as our understanding of Tectonic’s
+/// security profile. Future versions might disable or restrict different pieces
+/// of functionality as new risks are discovered.
+#[derive(Clone, Debug)]
+pub struct SecuritySettings {
+    /// While we might eventually gain finer-grained enable/disable settings,
+    /// there should always be a hard "disable everything known to be risky"
+    /// option that supersedes everything else.
+    disable_insecures: bool,
+}
+
+/// Different high-level security stances that can be adopted when creating
+/// [`SecuritySettings`].
+#[derive(Clone, Debug)]
+pub enum SecurityStance {
+    /// Ensure that all known-insecure features are disabled.
+    ///
+    /// Use this stance if you are processing untrusted input.
+    DisableInsecures,
+
+    /// Request to allow the use of known-insecure features.
+    ///
+    /// Use this stance if you are processing trusted input *and* there is some
+    /// user-level request to use such features. The request to allow insecure
+    /// features might be overridden if the environment variable
+    /// `TECTONIC_UNTRUSTED_MODE` is set.
+    MaybeAllowInsecures,
+}
+
+impl Default for SecurityStance {
+    fn default() -> Self {
+        // Obvi, the default is secure!!!
+        SecurityStance::DisableInsecures
+    }
+}
+
+impl SecuritySettings {
+    /// Create a new security configuration.
+    ///
+    /// The *stance* argument specifies the high-level security stance. If your
+    /// program will be run by a trusted user, they should be able to control
+    /// the setting through a command-line argument or something comparable.
+    /// Even if there is a request to enable known-insecure features, however,
+    /// such a request might be overridden by other mechanisms. In particular,
+    /// if the environment variable `TECTONIC_UNTRUSTED_MODE` is set to any
+    /// value, insecure features will always be disabled regardless of the
+    /// user-level setting. Other mechanisms for disable known-insecure features
+    /// may be added in the future.
+    pub fn new(stance: SecurityStance) -> Self {
+        let disable_insecures = if std::env::var_os("TECTONIC_UNTRUSTED_MODE").is_some() {
+            true
+        } else {
+            match stance {
+                SecurityStance::DisableInsecures => true,
+                SecurityStance::MaybeAllowInsecures => false,
+            }
+        };
+
+        SecuritySettings { disable_insecures }
+    }
+
+    /// Query whether the shell-escape TeX engine feature is allowed to be used.
+    pub fn allow_shell_escape(&self) -> bool {
+        !self.disable_insecures
+    }
+}
+
+impl Default for SecuritySettings {
+    fn default() -> Self {
+        SecuritySettings::new(SecurityStance::default())
     }
 }
 
