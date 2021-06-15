@@ -15,6 +15,7 @@ use tectonic::{
     status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
     tt_error, tt_note,
 };
+use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_errors::Error as NewError;
@@ -178,6 +179,10 @@ impl Commands {
 /// `build`: Build a document
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct BuildCommand {
+    /// Document is untrusted -- disable all known-insecure features
+    #[structopt(long)]
+    untrusted: bool,
+
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
     only_cached: bool,
@@ -206,8 +211,18 @@ impl BuildCommand {
         let ws = Workspace::open_from_environment()?;
         let doc = ws.first_document();
 
-        // XXX NO WAY TO DISABLE INSECURE FEATURES
-        let mut setup_options = DocumentSetupOptions::new(false);
+        // Default to allowing insecure since it would be super duper annoying
+        // to have to pass `--trusted` every time to build a personal document
+        // that uses shell-escape! This default can be overridden by setting the
+        // environment variable TECTONIC_UNTRUSTED_MODE to a nonempty value.
+        let stance = if self.untrusted {
+            SecurityStance::DisableInsecures
+        } else {
+            SecurityStance::MaybeAllowInsecures
+        };
+
+        let mut setup_options =
+            DocumentSetupOptions::new_with_security(SecuritySettings::new(stance));
         setup_options.only_cached(self.only_cached);
 
         for output_name in doc.output_names() {
@@ -283,7 +298,7 @@ fn get_a_bundle(
     match Workspace::open_from_environment() {
         Ok(ws) => {
             let doc = ws.first_document();
-            let mut options = DocumentSetupOptions::new(true);
+            let mut options: DocumentSetupOptions = Default::default();
             options.only_cached(only_cached);
             doc.bundle(&options, status)
         }

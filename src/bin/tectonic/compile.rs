@@ -1,11 +1,9 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Standalone compilation of TeX documents. This implements the "classic" /
 //! "V1" / "rustc-like" Tectonic command-line interface, as well as the
 //! `compile` subcommand of the "V2" / "cargo-like" interface.
-
-use structopt::StructOpt;
 
 use std::{
     env,
@@ -13,6 +11,8 @@ use std::{
     str::FromStr,
     time,
 };
+use structopt::StructOpt;
+use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 
 use tectonic::{
     config::PersistentConfig,
@@ -87,6 +87,10 @@ pub struct CompileOptions {
     #[structopt(name = "outdir", short, long, parse(from_os_str))]
     outdir: Option<PathBuf>,
 
+    /// Input is untrusted -- disable all known-insecure features
+    #[structopt(long)]
+    untrusted: bool,
+
     /// Unstable options. Pass -Zhelp to show a list
     // TODO we can't pass -Zhelp without also passing <input>
     #[structopt(name = "option", short = "Z", number_of_values = 1)]
@@ -97,7 +101,18 @@ impl CompileOptions {
     pub fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
-        let mut sess_builder = ProcessingSessionBuilder::default();
+        // Default to allowing insecure since it would be super duper annoying
+        // to have to pass `--trusted` every time to build a personal document
+        // that uses shell-escape! This default can be overridden by setting the
+        // environment variable TECTONIC_UNTRUSTED_MODE to a nonempty value.
+        let stance = if self.untrusted {
+            SecurityStance::DisableInsecures
+        } else {
+            SecurityStance::MaybeAllowInsecures
+        };
+
+        let mut sess_builder =
+            ProcessingSessionBuilder::new_with_security(SecuritySettings::new(stance));
         let format_path = self.format;
         sess_builder
             .unstables(unstable)

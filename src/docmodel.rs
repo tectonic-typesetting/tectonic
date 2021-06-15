@@ -12,6 +12,7 @@ use std::{
     fs, io,
     path::{Path, PathBuf},
 };
+use tectonic_bridge_core::SecuritySettings;
 use tectonic_bundles::{
     cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
 };
@@ -31,31 +32,23 @@ use crate::{
 };
 
 /// Options for setting up [`Document`] instances with the driver
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct DocumentSetupOptions {
     /// Disable requests to the network, if the document’s bundle happens to be
     /// network-based.
     only_cached: bool,
 
-    /// Disable all known-insecure engine features.
-    ///
-    /// This setting should be true if any untrusted input will be handled.
-    /// However, it is not always activated because sometimes users want the
-    /// functionality provided by known-insecure features (such as
-    /// shell-escape).
-    disable_insecure: bool,
+    /// Security settings for engine features.
+    security: SecuritySettings,
 }
 
 impl DocumentSetupOptions {
-    /// Create a new set of document setup options.
-    ///
-    /// This function primarily exists to *force* you to consider whether you
-    /// ought to disable known-insecure features. As usual, they should be
-    /// disabled if there is any untrusted input that will be handled.
-    pub fn new(disable_insecure: bool) -> Self {
+    /// Create a new set of document setup options with custom security
+    /// settings.
+    pub fn new_with_security(security: SecuritySettings) -> Self {
         DocumentSetupOptions {
             only_cached: false,
-            disable_insecure,
+            security,
         }
     }
 
@@ -157,12 +150,8 @@ impl DocumentExt for Document {
             writeln!(input_buffer, "\\input{{{}}}", profile.postamble_file)?;
         }
 
-        let mut sess_builder = ProcessingSessionBuilder::default();
-
-        // Do this before anything else!!!!
-        if setup_options.disable_insecure {
-            sess_builder.disable_insecure();
-        }
+        let mut sess_builder =
+            ProcessingSessionBuilder::new_with_security(setup_options.security.clone());
 
         sess_builder
             .output_format(output_format)

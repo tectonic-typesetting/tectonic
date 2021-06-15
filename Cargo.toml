@@ -125,7 +125,7 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
-tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"
+tectonic_bridge_core = "thiscommit:2021-06-14:3sp2O1O"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"

@@ -17,6 +17,7 @@ tectonic -X build
   [--only-cached]
   [--print]
   [--open]
+  [--untrusted]
 ```
 
 #### Remarks
@@ -52,3 +53,15 @@ identical to, the contents of the log file. By default, this output is only
 printed if the engine encounteres a fatal error.
 
 The `--open` option will open the built document using the system handler.
+
+Use the `--untrusted` option if building untrusted content. This is not the
+default because in most cases you *will* trust the document that you’re
+building, probably because you have created it yourself, and it would be very
+annoying to have to pass `--trusted` every time you build a document that uses
+shell-escape. See the security discussion in the documentation of the
+[compile](./compile.md) command for details. In actual usage, it would obviously
+be easy to forget to use this option; in cases where untrusted inputs are a
+genuine concern, we recommend setting the environment variable
+`TECTONIC_UNTRUSTED_MODE` to a non-empty value. This has the same effect as the
+`--untrusted` option. Note, however, that a hostile shell user can trivially
+clear this variable.
