@@ -1,3 +1,15 @@
+# tectonic_bridge_core 0.2.0 (2021-06-15)
+
+- Add a security infrastructure that gives a systematic way to control whether
+  features that can be abused by untrusted inputs, like shell-escape, are
+  enabled. The default is to disable all such features. Callers can request to
+  allow their use, but we use a centralized approach that ensures that such
+  requests will always be denied if the environment variable
+  `$TECTONIC_UNTRUSTED_MODE` is set to a nonempty value (@pkgw, #787).
+- Add a C API allowing us to expose the filesystem paths for just-opened
+  inputs. This is needed for correct SyncTeX support (@hullanson, @pkgw, #762).
+
+
 # tectonic_bridge_core 0.1.0 (2021-06-03)
 
 This is the first release of the "core" bridge crate. It provides a baseline of

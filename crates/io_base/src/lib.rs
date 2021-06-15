@@ -28,6 +28,7 @@ use thiserror::Error as ThisError;
 
 use crate::digest::DigestData;
 
+pub mod app_dirs;
 pub mod digest;
 pub mod filesystem;
 pub mod flate2;
@@ -450,6 +451,33 @@ pub trait IoProvider: AsIoProviderMut {
         OpenResult::NotAvailable
     }
 
+    /// Open the named file for input and return filesystem path information.
+    ///
+    /// This method extends [`Self::input_open_name`] to help support SyncTeX output.
+    /// While SyncTeX output files should contain absolute source file paths,
+    /// Tectonic’s pluggable I/O system makes it so that the mapping between
+    /// input names and filesystem paths is not well-defined. This optional
+    /// interface enables backends to provide filesystem information at the time
+    /// of opening.
+    ///
+    /// The default implementation returns None for the path information, to
+    /// preserve backwards compatibility. If you are implementing a new backend
+    /// that might provide path information, or you are implementing an I/O
+    /// provider that delegates to other I/O providers, you should implement
+    /// this function fully, and then provide a simple implementation of
+    /// [`Self::input_open_name`] that drops the pathing information.
+    fn input_open_name_with_abspath(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        match self.input_open_name(name, status) {
+            OpenResult::Ok(h) => OpenResult::Ok((h, None)),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
+    }
+
     /// Open the "primary" input file, which in the context of TeX is the main
     /// input that it's given. When the build is being done using the
     /// filesystem and the input is a file on the filesystem, this function
@@ -457,6 +485,21 @@ pub trait IoProvider: AsIoProviderMut {
     /// hold.
     fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
+    }
+
+    /// Open the primary input and return filesystem path information.
+    ///
+    /// This method is as to [`Self::input_open_primary`] as
+    /// [`Self::input_open_name_with_abspath`] is to [`Self::input_open_name`].
+    fn input_open_primary_with_abspath(
+        &mut self,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        match self.input_open_primary(status) {
+            OpenResult::Ok(h) => OpenResult::Ok((h, None)),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
     }
 
     /// Open a format file with the specified name. Format files have a
@@ -502,8 +545,23 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
         (**self).input_open_name(name, status)
     }
 
+    fn input_open_name_with_abspath(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        (**self).input_open_name_with_abspath(name, status)
+    }
+
     fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         (**self).input_open_primary(status)
+    }
+
+    fn input_open_primary_with_abspath(
+        &mut self,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        (**self).input_open_primary_with_abspath(status)
     }
 
     fn input_open_format(

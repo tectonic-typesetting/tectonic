@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_io_base"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Basic types for Tectonic's pluggable I/O backend system
@@ -16,6 +16,7 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
+app_dirs2 = "^2.3"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 libc = "^0.2" # for EISDIR :-(
 sha2 = "^0.9" # for digest computations

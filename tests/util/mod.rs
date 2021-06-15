@@ -131,13 +131,32 @@ impl ExpectedInfo {
         Self::read(pbase)
     }
 
-    pub fn read_with_extension_gz(pbase: &mut PathBuf, extension: &str) -> Self {
+    /// Special handling for synctex files -- we need to decode the gzip and
+    /// fill in the absolute paths of the output files (cf. #720)
+    pub fn read_with_extension_rooted_gz(pbase: &mut PathBuf, extension: &str) -> Self {
         pbase.set_extension(extension);
         let name = pbase.file_name().unwrap().to_str().unwrap().to_owned();
 
-        let mut dec = GzDecoder::new(File::open(pbase).unwrap());
+        let mut dec = GzDecoder::new(File::open(&pbase).unwrap());
         let mut contents = Vec::new();
         dec.read_to_end(&mut contents).unwrap();
+
+        // Special SyncTeX rooting. We need a *mega* hack since there is a
+        // byte-offset field whose value depends on the length of the file
+        // prefix.
+        let root = format!(
+            "{}{}",
+            pbase.parent().unwrap().to_str().unwrap(),
+            std::path::MAIN_SEPARATOR
+        );
+        let contents = String::from_utf8(contents)
+            .unwrap()
+            .replace("${ROOT}", &root)
+            .replace(
+                "${len(ROOT)+106}",
+                &(root.as_bytes().len() + 106).to_string(),
+            )
+            .into_bytes();
 
         ExpectedInfo {
             name,

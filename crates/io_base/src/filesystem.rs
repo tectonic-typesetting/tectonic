@@ -1,10 +1,11 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Tectonic I/O implementations for `std::fs` types.
 
 use std::{
     collections::HashSet,
+    env,
     fs::File,
     io::{self, BufReader, Seek, SeekFrom},
     path::{Path, PathBuf},
@@ -42,18 +43,32 @@ impl FilesystemPrimaryInputIo {
 }
 
 impl IoProvider for FilesystemPrimaryInputIo {
-    fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+        match self.input_open_primary_with_abspath(status) {
+            OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
+    }
+
+    fn input_open_primary_with_abspath(
+        &mut self,
+        _status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let f = match try_open_file(&self.path) {
             OpenResult::Ok(f) => f,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
         };
 
-        OpenResult::Ok(InputHandle::new(
-            "",
-            BufReader::new(f),
-            InputOrigin::Filesystem,
-        ))
+        let handle = InputHandle::new("", BufReader::new(f), InputOrigin::Filesystem);
+
+        let path = match make_abspath(&self.path) {
+            Ok(m) => m,
+            Err(e) => return OpenResult::Err(e),
+        };
+
+        OpenResult::Ok((handle, Some(path)))
     }
 }
 
@@ -131,8 +146,20 @@ impl IoProvider for FilesystemIo {
     fn input_open_name(
         &mut self,
         name: &str,
-        _status: &mut dyn StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
+        match self.input_open_name_with_abspath(name, status) {
+            OpenResult::Ok((h, _path)) => OpenResult::Ok(h),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
+    }
+
+    fn input_open_name_with_abspath(
+        &mut self,
+        name: &str,
+        _status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e),
@@ -142,7 +169,7 @@ impl IoProvider for FilesystemIo {
             return OpenResult::NotAvailable;
         }
 
-        let f = match File::open(path) {
+        let f = match File::open(&path) {
             Ok(f) => f,
             Err(e) => {
                 return if e.kind() == io::ErrorKind::NotFound {
@@ -173,12 +200,15 @@ impl IoProvider for FilesystemIo {
             return OpenResult::NotAvailable;
         }
 
+        // SyncTeX requires absolute paths.
+        let path = match make_abspath(path) {
+            Ok(m) => m,
+            Err(e) => return OpenResult::Err(e),
+        };
+
         // Good to go.
-        OpenResult::Ok(InputHandle::new(
-            name,
-            BufReader::new(f),
-            InputOrigin::Filesystem,
-        ))
+        let handle = InputHandle::new(name, BufReader::new(f), InputOrigin::Filesystem);
+        OpenResult::Ok((handle, Some(path)))
     }
 }
 
@@ -215,4 +245,12 @@ impl InputFeatures for BufReader<File> {
     fn try_seek(&mut self, pos: SeekFrom) -> Result<u64> {
         Ok(self.seek(pos)?)
     }
+}
+
+/// For SyncTeX paths we need to make sure that we return an absolute
+/// path. `std::fs::canonicalize` is a bit overkill and prefixes all of
+/// our paths with `\\?\` on Windows.
+fn make_abspath<P: AsRef<Path>>(path: P) -> Result<PathBuf> {
+    let cwd = env::current_dir()?;
+    Ok(cwd.join(path.as_ref()))
 }

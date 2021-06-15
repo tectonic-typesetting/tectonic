@@ -4,34 +4,36 @@
 # See README.md for discussion of features (or lack thereof) in this crate.
 
 [package]
-name = "tectonic_bridge_core"
-version = "0.2.0"
+name = "tectonic_bundles"
+version = "0.1.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
-Exposing core backend APIs to the Tectonic C/C++ code.
+Tectonic "bundle" (support file collection) implementations.
 """
 homepage = "https://tectonic-typesetting.github.io/"
-documentation = "https://docs.rs/tectonic_bridge_core"
+documentation = "https://docs.rs/tectonic_bundles"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
 edition = "2018"
-links = "tectonic_bridge_core"
 
 [dependencies]
-flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
-lazy_static = "^1.4"
-libc = "^0.2"
-md-5 = "^0.9"
+flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
+fs2 = "^0.4"
 tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
+tectonic_geturl = { path = "../geturl", version =">=0.2.0,<1", default-features = false }
 tectonic_io_base = { path = "../io_base", version =">=0.3.0,<1"}
 tectonic_status_base = { path = "../status_base", version =">=0.1.0,<1"}
+zip = { version = "^0.5", default-features = false, features = ["deflate"] }
 
-[build-dependencies]
-cbindgen = "^0.16"
-cc = "^1.0.66"
+[features]
+default = ["geturl-reqwest"]
+geturl-curl = ["tectonic_geturl/curl"]
+geturl-reqwest = ["tectonic_geturl/reqwest"]
+native-tls-vendored = ["tectonic_geturl/native-tls-vendored"]
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
-tectonic_io_base = "f7eeff461778f7082db7ed5097d93aa63119eb12"
+tectonic_geturl = "c828bee7361ebd30e28392507a1406d27dc8fdbb"
+tectonic_io_base = "thiscommit:2021-06-13:s9130zU"
 tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"

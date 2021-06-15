@@ -1,3 +1,8 @@
+# tectonic_geturl 0.2.1 (2021-06-15)
+
+- Fix a deprecation warning in the latest version of `reqwest`.
+
+
 # tectonic_geturl 0.2.0 (2021-06-03)
 
 - Expose a new `native-tls-vendored` Cargo feature, to allow people to control

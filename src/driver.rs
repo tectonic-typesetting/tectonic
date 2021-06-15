@@ -5,7 +5,11 @@
 
 //! This module contains the high-level interface that ties together the various
 //! engines. The main struct is [`ProcessingSession`], which knows how to run
-//! (and re-run if necessary) the various engines in the right order.
+//! (and re-run if necessary) the various engines in the right order. Such a
+//! session can be created with a [`ProcessingSessionBuilder`], which you might
+//! obtain from a [`tectonic_docmodel::document::Document`] using the
+//! [`crate::docmodel::DocumentExt::setup_session`] extension method, if you’re
+//! using the Tectonic document model.
 //!
 //! For an example of how to use this module, see `src/bin/tectonic.rs`, which
 //! contains tectonic's main CLI program.
@@ -22,7 +26,8 @@ use std::{
     str::FromStr,
     time::SystemTime,
 };
-use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SystemRequestError};
+use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SecuritySettings, SystemRequestError};
+use tectonic_bundles::Bundle;
 use tectonic_io_base::{
     digest::DigestData,
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
@@ -36,7 +41,7 @@ use crate::{
     io::{
         format_cache::FormatCache,
         memory::{MemoryFileCollection, MemoryIo},
-        Bundle, InputOrigin,
+        InputOrigin,
     },
     status::StatusBackend,
     tt_error, tt_note, tt_warning,
@@ -382,12 +387,24 @@ impl IoProvider for BridgeState {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
+        match self.input_open_name_with_abspath(name, status) {
+            OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
+    }
+
+    fn input_open_name_with_abspath(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let r = (|| {
-            bridgestate_ioprovider_cascade!(self, input_open_name(name, status));
+            bridgestate_ioprovider_cascade!(self, input_open_name_with_abspath(name, status));
         })();
 
         match r {
-            OpenResult::Ok(ref ih) => {
+            OpenResult::Ok((ref ih, ref _path)) => {
                 if let Some(summ) = self.events.get_mut(name) {
                     summ.access_pattern = match summ.access_pattern {
                         AccessPattern::Written => AccessPattern::WrittenThenRead,
@@ -430,7 +447,18 @@ impl IoProvider for BridgeState {
     }
 
     fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
-        bridgestate_ioprovider_cascade!(self, input_open_primary(status));
+        match self.input_open_primary_with_abspath(status) {
+            OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
+            OpenResult::Err(e) => OpenResult::Err(e),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+        }
+    }
+
+    fn input_open_primary_with_abspath(
+        &mut self,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        bridgestate_ioprovider_cascade!(self, input_open_primary_with_abspath(status));
     }
 
     fn input_open_format(
@@ -609,8 +637,15 @@ impl Default for ShellEscapeMode {
 }
 
 /// A builder-style interface for creating a [`ProcessingSession`].
+///
+/// This uses standard builder patterns. The `Default` implementation defaults
+/// to restrictive security settings that disable all known-insecure features
+/// that could be abused by untrusted inputs. Use
+/// [`ProcessingSessionBuilder::new_with_security()`] in order to have the
+/// option to enable potentially-insecure features such as shell-escape.
 #[derive(Default)]
 pub struct ProcessingSessionBuilder {
+    security: SecuritySettings,
     primary_input: PrimaryInputMode,
     tex_input_name: Option<String>,
     output_dest: OutputDestination,
@@ -633,6 +668,14 @@ pub struct ProcessingSessionBuilder {
 }
 
 impl ProcessingSessionBuilder {
+    /// Create a new builder with customized security settings.
+    pub fn new_with_security(security: SecuritySettings) -> Self {
+        ProcessingSessionBuilder {
+            security,
+            ..Default::default()
+        }
+    }
+
     /// Sets the path to the primary input file.
     ///
     /// If a primary input path is not specified, we will default to reading it from stdin.
@@ -798,7 +841,10 @@ impl ProcessingSessionBuilder {
     /// disable shell-escape unless the [`UnstableOptions`] say otherwise,
     /// in which case a driver-managed temporary directory will be used.
     pub fn shell_escape_with_work_dir<P: AsRef<Path>>(&mut self, path: P) -> &mut Self {
-        self.shell_escape_mode = ShellEscapeMode::ExternallyManagedDir(path.as_ref().to_owned());
+        if self.security.allow_shell_escape() {
+            self.shell_escape_mode =
+                ShellEscapeMode::ExternallyManagedDir(path.as_ref().to_owned());
+        }
         self
     }
 
@@ -807,7 +853,9 @@ impl ProcessingSessionBuilder {
     /// unless the [`UnstableOptions`] say otherwise, in which case a
     /// driver-managed temporary directory will be used.
     pub fn shell_escape_with_temp_dir(&mut self) -> &mut Self {
-        self.shell_escape_mode = ShellEscapeMode::TempDir;
+        if self.security.allow_shell_escape() {
+            self.shell_escape_mode = ShellEscapeMode::TempDir;
+        }
         self
     }
 
@@ -919,19 +967,24 @@ impl ProcessingSessionBuilder {
         let mut pdf_path = aux_path.clone();
         pdf_path.set_extension("pdf");
 
-        let shell_escape_mode = match self.shell_escape_mode {
-            ShellEscapeMode::Defaulted => {
-                if self.unstables.shell_escape {
-                    ShellEscapeMode::TempDir
-                } else {
-                    ShellEscapeMode::Disabled
+        let shell_escape_mode = if !self.security.allow_shell_escape() {
+            ShellEscapeMode::Disabled
+        } else {
+            match self.shell_escape_mode {
+                ShellEscapeMode::Defaulted => {
+                    if self.unstables.shell_escape {
+                        ShellEscapeMode::TempDir
+                    } else {
+                        ShellEscapeMode::Disabled
+                    }
                 }
-            }
 
-            other => other,
+                other => other,
+            }
         };
 
         Ok(ProcessingSession {
+            security: self.security,
             bs,
             pass: self.pass,
             primary_input_path,
@@ -964,6 +1017,9 @@ enum RerunReason {
 /// processing a file. It understands, for example, the need to re-run the TeX
 /// engine if the `.aux` file changed.
 pub struct ProcessingSession {
+    // Security settings.
+    security: SecuritySettings,
+
     /// The subset of the session state that's can be mutated while the C/C++
     /// engines are running. Importantly, this includes the full I/O stack.
     bs: BridgeState,
@@ -1456,7 +1512,8 @@ impl ProcessingSession {
         let result = {
             self.bs
                 .enter_format_mode(&format!("tectonic-format-{}.tex", stem));
-            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
+            let mut launcher =
+                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
             let r = TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
@@ -1518,7 +1575,8 @@ impl ProcessingSession {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
 
-            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
+            let mut launcher =
+                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
 
             TexEngine::default()
                 .halt_on_error_mode(true)
@@ -1551,7 +1609,8 @@ impl ProcessingSession {
     fn bibtex_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         let result = {
             status.note_highlighted("Running ", "BibTeX", " ...");
-            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
+            let mut launcher =
+                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
             let mut engine = BibtexEngine::new();
             engine.process(&mut launcher, &self.tex_aux_path, &self.unstables)
         };
@@ -1583,7 +1642,8 @@ impl ProcessingSession {
         {
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
 
-            let mut launcher = CoreBridgeLauncher::new(&mut self.bs, status);
+            let mut launcher =
+                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
             let mut engine = XdvipdfmxEngine::default();
 
             engine.build_date(self.build_date);

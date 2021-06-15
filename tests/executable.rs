@@ -567,6 +567,16 @@ fn v2_new_build_multiple_outputs() {
     success_or_panic(output);
 }
 
+const SHELL_ESCAPE_TEST_DOC: &str = r#"\immediate\write18{mkdir shellwork}
+\immediate\write18{echo 123 >shellwork/persist}
+\ifnum123=\input{shellwork/persist}
+a
+\else
+\ohnotheshellescapedidntwork
+\fi
+\bye
+"#;
+
 /// Test that shell escape actually runs the commands
 #[test]
 fn shell_escape() {
@@ -576,15 +586,49 @@ fn shell_escape() {
     let output = run_tectonic_with_stdin(
         tempdir.path(),
         &[&fmt_arg, "-", "-Zshell-escape"],
-        r#"\immediate\write18{mkdir shellwork}
-        \immediate\write18{echo 123 >shellwork/persist}
-        \ifnum123=\input{shellwork/persist}
-        a
-        \else
-        \ohnotheshellescapedidntwork
-        \fi
-        \bye
-        "#,
+        SHELL_ESCAPE_TEST_DOC,
     );
     success_or_panic(output);
+}
+
+/// Test that shell-escape can be killed by command-line-option
+#[test]
+fn shell_escape_cli_override() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "--untrusted", "-", "-Zshell-escape"],
+        SHELL_ESCAPE_TEST_DOC,
+    );
+    error_or_panic(output);
+}
+
+/// Test that shell-escape can be killed by environment variable
+#[test]
+fn shell_escape_env_override() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+
+    // Note that we intentionally set the variable to 0 below -- it takes it
+    // effect if it has ANY value, not just a "truthy" one.
+
+    let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-", "-Zshell-escape"]);
+    command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .env("TECTONIC_UNTRUSTED_MODE", "0");
+
+    println!("running {:?}", command);
+    let mut child = command.spawn().expect("tectonic failed to start");
+    write!(child.stdin.as_mut().unwrap(), "{}", SHELL_ESCAPE_TEST_DOC)
+        .expect("failed to send data to tectonic subprocess");
+
+    let output = child
+        .wait_with_output()
+        .expect("failed to wait on tectonic subprocess");
+
+    error_or_panic(output);
 }

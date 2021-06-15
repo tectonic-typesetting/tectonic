@@ -75,19 +75,16 @@
 //! The [`driver`] module provides a high-level interface for driving the
 //! engines in more realistic circumstances.
 
-mod app_dirs;
 pub mod config;
 pub mod digest;
 #[cfg(feature = "serialization")]
-pub mod document;
+pub mod docmodel;
 pub mod driver;
 pub mod engines;
 pub mod errors;
 pub mod io;
 pub mod status;
 pub mod unstable_opts;
-#[cfg(feature = "serialization")]
-pub mod workspace;
 
 // Note: this module is intentionally *not* gated by #[cfg(test)] -- see its
 // docstring for details.
@@ -101,12 +98,8 @@ pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
 pub use crate::errors::{Error, ErrorKind, Result};
 
 // Convenienece re-exports for migration into our multi-crate setup
+pub use tectonic_engine_xetex::FORMAT_SERIAL;
 pub use tectonic_status_base::{tt_error, tt_note, tt_warning};
-
-// Increase this whenever the engine internals change such that the contents
-// of the "format" files must be regenerated.
-
-pub const FORMAT_SERIAL: u32 = 29;
 
 /// Compile LaTeX text to a PDF.
 ///

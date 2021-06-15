@@ -1,3 +1,18 @@
+# tectonic_io_base 0.3.0 (2021-06-15)
+
+- Add new "abspath" methods to the IoProvider trait. We need a new API to
+  generate proper SyncTeX output in the XeTeX engine, and this is the best
+  approach that we could devise that does a good job of maintaining backwards
+  compatibility. However, implementors of the IoProvider trait that delegate to
+  inner implementations will need to make sure to explicitly implement the new
+  methods in order to provide correct behavior (#762).
+- Add a new `app_dirs` module for system-wide knowledge of per-user directories
+  (@pkgw, #768). It's valuable to put this low in the dependency stack so that
+  higher-level crates can just "know" where to go for per-user files such as the
+  bundle cache.
+- Correct some broken internal links in the docs.
+
+
 # tectonic_io_base 0.2.0 (2021-06-03)
 
 - BREAKING: use `&str` for TeX paths rather than `OsStr`. In principle this
