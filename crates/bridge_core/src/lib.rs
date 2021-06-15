@@ -35,9 +35,11 @@
 use flate2::{read::GzDecoder, Compression, GzBuilder};
 use md5::{Digest, Md5};
 use std::{
+    convert::TryInto,
     ffi::CStr,
     fmt::{Display, Error as FmtError, Formatter},
     io::{self, Read, SeekFrom, Write},
+    path::PathBuf,
     ptr,
     result::Result as StdResult,
     slice,
@@ -214,14 +216,32 @@ impl std::error::Error for EngineAbortedError {}
 pub struct CoreBridgeLauncher<'a> {
     hooks: &'a mut dyn DriverHooks,
     status: &'a mut dyn StatusBackend,
+    security: SecuritySettings,
 }
 
 impl<'a> CoreBridgeLauncher<'a> {
     /// Set up a new context for launching bridged FFI code.
+    ///
+    /// This function uses the default security stance, which disallows all
+    /// known-insecure engine features. Use [`Self::new_with_security`] to
+    /// provide your own security settings that can attempt to allow the use of
+    /// such features.
     pub fn new(hooks: &'a mut dyn DriverHooks, status: &'a mut dyn StatusBackend) -> Self {
-        CoreBridgeLauncher { hooks, status }
+        Self::new_with_security(hooks, status, SecuritySettings::default())
     }
 
+    /// Set up a new context for launching bridged FFI code.
+    pub fn new_with_security(
+        hooks: &'a mut dyn DriverHooks,
+        status: &'a mut dyn StatusBackend,
+        security: SecuritySettings,
+    ) -> Self {
+        CoreBridgeLauncher {
+            hooks,
+            status,
+            security,
+        }
+    }
     /// Invoke a function to launch a bridged FFI engine with a global mutex
     /// held.
     ///
@@ -240,7 +260,7 @@ impl<'a> CoreBridgeLauncher<'a> {
         F: FnOnce(&mut CoreBridgeState<'_>) -> Result<T>,
     {
         let _guard = ENGINE_LOCK.lock().unwrap();
-        let mut state = CoreBridgeState::new(self.hooks, self.status);
+        let mut state = CoreBridgeState::new(self.security.clone(), self.hooks, self.status);
         let result = callback(&mut state);
 
         if let Err(ref e) = result {
@@ -260,6 +280,9 @@ impl<'a> CoreBridgeLauncher<'a> {
 /// these state structures into the C/C++ layer. It is essential that lifetimes
 /// be properly managed across the Rust/C boundary.
 pub struct CoreBridgeState<'a> {
+    /// The security settings for this invocation
+    security: SecuritySettings,
+
     /// The driver hooks associated with this engine invocation.
     hooks: &'a mut dyn DriverHooks,
 
@@ -271,18 +294,30 @@ pub struct CoreBridgeState<'a> {
 
     #[allow(clippy::vec_box)]
     output_handles: Vec<Box<OutputHandle>>,
+
+    /// A semi-hack to allow us to feed input file path information to SyncTeX.
+    /// This field is updated every time a new input file is opened. The XeTeX
+    /// engine queries it when opening new source input files to get the
+    /// absolute filesystem path info that SyncTeX wants. This field might be
+    /// None because we're still reading the primary input, or because the most
+    /// recent input didn't have a filesystem path (it came from a bundle or
+    /// memory or something else).
+    latest_input_path: Option<PathBuf>,
 }
 
 impl<'a> CoreBridgeState<'a> {
     fn new(
+        security: SecuritySettings,
         hooks: &'a mut dyn DriverHooks,
         status: &'a mut dyn StatusBackend,
     ) -> CoreBridgeState<'a> {
         CoreBridgeState {
+            security,
             hooks,
             status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
+            latest_input_path: None,
         }
     }
 
@@ -290,18 +325,20 @@ impl<'a> CoreBridgeState<'a> {
         &mut self,
         name: &str,
         format: FileFormat,
-    ) -> OpenResult<InputHandle> {
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let io = self.hooks.io();
 
-        let r = if let FileFormat::Format = format {
-            io.input_open_format(name, self.status)
+        if let FileFormat::Format = format {
+            match io.input_open_format(name, self.status) {
+                OpenResult::NotAvailable => {}
+                OpenResult::Err(e) => return OpenResult::Err(e),
+                OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
+            }
         } else {
-            io.input_open_name(name, self.status)
-        };
-
-        match r {
-            OpenResult::NotAvailable => {}
-            r => return r,
+            match io.input_open_name_with_abspath(name, self.status) {
+                OpenResult::NotAvailable => {}
+                r => return r,
+            }
         }
 
         // It wasn't available under the immediately-given name. Try adding
@@ -313,13 +350,19 @@ impl<'a> CoreBridgeState<'a> {
             let ext = format!("{}.{}", name, e);
 
             if let FileFormat::Format = format {
-                if let r @ OpenResult::Ok(_) = io.input_open_format(&ext, self.status) {
-                    return r;
+                match io.input_open_format(&ext, self.status) {
+                    OpenResult::NotAvailable => {}
+                    OpenResult::Err(e) => return OpenResult::Err(e),
+                    OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
                 }
-            } else if let r @ OpenResult::Ok(_) = io.input_open_name(&ext, self.status) {
-                return r;
+            } else {
+                match io.input_open_name_with_abspath(&ext, self.status) {
+                    OpenResult::NotAvailable => {}
+                    r => return r,
+                }
             }
         }
+
         OpenResult::NotAvailable
     }
 
@@ -328,7 +371,7 @@ impl<'a> CoreBridgeState<'a> {
         name: &str,
         format: FileFormat,
         is_gz: bool,
-    ) -> OpenResult<InputHandle> {
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let base = self.input_open_name_format(name, format);
 
         if !is_gz {
@@ -336,11 +379,11 @@ impl<'a> CoreBridgeState<'a> {
         }
 
         match base {
-            OpenResult::Ok(ih) => {
+            OpenResult::Ok((ih, path)) => {
                 let origin = ih.origin();
                 let dr = GzDecoder::new(ih.into_inner());
 
-                OpenResult::Ok(InputHandle::new(name, dr, origin))
+                OpenResult::Ok((InputHandle::new(name, dr, origin), path))
             }
             _ => base,
         }
@@ -356,7 +399,7 @@ impl<'a> CoreBridgeState<'a> {
         // idea to just go and read the file.
 
         let mut ih = match self.input_open_name_format(&name, FileFormat::Tex) {
-            OpenResult::Ok(ih) => ih,
+            OpenResult::Ok((ih, _path)) => ih,
             OpenResult::NotAvailable => {
                 // We could issue a warning here, but the standard LaTeX
                 // "rerun check" implementations trigger it very often, which
@@ -498,8 +541,8 @@ impl<'a> CoreBridgeState<'a> {
     fn input_open(&mut self, name: &str, format: FileFormat, is_gz: bool) -> *mut InputHandle {
         let name = normalize_tex_path(name);
 
-        let ih = match self.input_open_name_format_gz(&name, format, is_gz) {
-            OpenResult::Ok(ih) => ih,
+        let (ih, path) = match self.input_open_name_format_gz(&name, format, is_gz) {
+            OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
                 return ptr::null_mut();
             }
@@ -510,14 +553,15 @@ impl<'a> CoreBridgeState<'a> {
         };
 
         self.input_handles.push(Box::new(ih));
+        self.latest_input_path = path;
         &mut **self.input_handles.last_mut().unwrap()
     }
 
     fn input_open_primary(&mut self) -> *mut InputHandle {
         let io = self.hooks.io();
 
-        let ih = match io.input_open_primary(self.status) {
-            OpenResult::Ok(ih) => ih,
+        let (ih, path) = match io.input_open_primary_with_abspath(self.status) {
+            OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
                 return ptr::null_mut();
@@ -529,6 +573,7 @@ impl<'a> CoreBridgeState<'a> {
         };
 
         self.input_handles.push(Box::new(ih));
+        self.latest_input_path = path;
         &mut **self.input_handles.last_mut().unwrap()
     }
 
@@ -614,19 +659,116 @@ impl<'a> CoreBridgeState<'a> {
     }
 
     fn shell_escape(&mut self, command: &str) -> bool {
-        match self.hooks.sysrq_shell_escape(command, self.status) {
-            Ok(_) => false,
+        if self.security.allow_shell_escape() {
+            match self.hooks.sysrq_shell_escape(command, self.status) {
+                Ok(_) => false,
 
-            Err(e) => {
-                tt_error!(
-                    self.status,
-                    "failed to execute the shell-escape command \"{}\": {}",
-                    command,
-                    e
-                );
-                true
+                Err(e) => {
+                    tt_error!(
+                        self.status,
+                        "failed to execute the shell-escape command \"{}\": {}",
+                        command,
+                        e
+                    );
+                    true
+                }
             }
+        } else {
+            tt_error!(
+                self.status,
+                "forbidden to execute shell-escape command \"{}\"",
+                command
+            );
+            true
         }
+    }
+}
+
+/// A type for storing settings about potentially insecure engine features.
+///
+/// This type encapsulates configuration about which potentially insecure engine
+/// features are enabled. Methods that configure or instantiate engines require
+/// values of this type, and values of this type can only be created through
+/// centralized methods that respect standard environment variables, ensuring
+/// that there is some level of uniform control over the activation of any
+/// known-insecure features.
+///
+/// The purpose of this framework is to manage the use of engine features that
+/// are known to create security risks with *untrusted* input, but that trusted
+/// users may wish to use due to the extra functionalities they bring. (This is
+/// why these are settings and not simply security flaws!) The primary example
+/// of this is the TeX engine’s shell-escape feature.
+///
+/// Of course, this framework is only as good as our understanding of Tectonic’s
+/// security profile. Future versions might disable or restrict different pieces
+/// of functionality as new risks are discovered.
+#[derive(Clone, Debug)]
+pub struct SecuritySettings {
+    /// While we might eventually gain finer-grained enable/disable settings,
+    /// there should always be a hard "disable everything known to be risky"
+    /// option that supersedes everything else.
+    disable_insecures: bool,
+}
+
+/// Different high-level security stances that can be adopted when creating
+/// [`SecuritySettings`].
+#[derive(Clone, Debug)]
+pub enum SecurityStance {
+    /// Ensure that all known-insecure features are disabled.
+    ///
+    /// Use this stance if you are processing untrusted input.
+    DisableInsecures,
+
+    /// Request to allow the use of known-insecure features.
+    ///
+    /// Use this stance if you are processing trusted input *and* there is some
+    /// user-level request to use such features. The request to allow insecure
+    /// features might be overridden if the environment variable
+    /// `TECTONIC_UNTRUSTED_MODE` is set.
+    MaybeAllowInsecures,
+}
+
+impl Default for SecurityStance {
+    fn default() -> Self {
+        // Obvi, the default is secure!!!
+        SecurityStance::DisableInsecures
+    }
+}
+
+impl SecuritySettings {
+    /// Create a new security configuration.
+    ///
+    /// The *stance* argument specifies the high-level security stance. If your
+    /// program will be run by a trusted user, they should be able to control
+    /// the setting through a command-line argument or something comparable.
+    /// Even if there is a request to enable known-insecure features, however,
+    /// such a request might be overridden by other mechanisms. In particular,
+    /// if the environment variable `TECTONIC_UNTRUSTED_MODE` is set to any
+    /// value, insecure features will always be disabled regardless of the
+    /// user-level setting. Other mechanisms for disable known-insecure features
+    /// may be added in the future.
+    pub fn new(stance: SecurityStance) -> Self {
+        let disable_insecures = if std::env::var_os("TECTONIC_UNTRUSTED_MODE").is_some() {
+            true
+        } else {
+            match stance {
+                SecurityStance::DisableInsecures => true,
+                SecurityStance::MaybeAllowInsecures => false,
+            }
+        };
+
+        SecuritySettings { disable_insecures }
+    }
+
+    /// Query whether the shell-escape TeX engine feature is allowed to be used.
+    pub fn allow_shell_escape(&self) -> bool {
+        !self.disable_insecures
+    }
+}
+
+impl Default for SecuritySettings {
+    fn default() -> Self {
+        SecuritySettings::new(SecurityStance::default())
     }
 }
 
@@ -813,6 +955,53 @@ pub unsafe extern "C" fn ttbc_input_open(
 #[no_mangle]
 pub extern "C" fn ttbc_input_open_primary(es: &mut CoreBridgeState) -> *mut InputHandle {
     es.input_open_primary()
+}
+
+/// Get the filesystem path of the most-recently-opened input file.
+///
+/// This function is needed by SyncTeX, because its output file should contain
+/// absolute filesystem paths to the input source files. In principle this
+/// functionality could be implemented in a few different ways, but the approach
+/// used here is the most backward-compatible. This function will fill in the
+/// caller's buffer with the filesystem path associated with the most
+/// recently-opened input file, including a terminating NUL, if possible.
+///
+/// It returns 0 if no such path is known, -1 if the path cannot be expressed
+/// UTF-8, -2 if the destination buffer is not big enough, or the number of
+/// bytes written into the buffer (including a terminating NUL) otherwise.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw C pointers.
+#[no_mangle]
+pub unsafe extern "C" fn ttbc_get_last_input_abspath(
+    es: &mut CoreBridgeState,
+    buffer: *mut u8,
+    len: libc::size_t,
+) -> libc::ssize_t {
+    match es.latest_input_path {
+        None => 0,
+
+        Some(ref p) => {
+            // In principle we could try to handle the full fun of
+            // cross-platform PathBuf/Unicode conversions, but synctex and
+            // friends will be treating our data as a traditional C string in
+            // the end. So play it safe and stick to UTF-8.
+            let p = match p.to_str() {
+                Some(s) => s.as_bytes(),
+                None => return -1,
+            };
+
+            let n = p.len();
+            if n + 1 > len {
+                return -2;
+            }
+
+            std::ptr::copy(p.as_ptr(), buffer, n);
+            *buffer.offset(n.try_into().unwrap()) = b'\0';
+            (n + 1).try_into().unwrap()
+        }
+    }
 }
 
 /// Get the size of a Tectonic input file.

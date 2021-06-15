@@ -2104,7 +2104,6 @@ dependencies = [
 name = "tectonic"
 version = "0.0.0-dev.0"
 dependencies = [
- "app_dirs2",
  "atty",
  "byte-unit",
  "cfg-if 1.0.0",
@@ -2123,6 +2122,8 @@ dependencies = [
  "sha2",
  "structopt",
  "tectonic_bridge_core",
+ "tectonic_bundles",
+ "tectonic_docmodel",
  "tectonic_engine_bibtex",
  "tectonic_engine_xdvipdfmx",
  "tectonic_engine_xetex",
@@ -2197,6 +2198,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_bundles"
+version = "0.0.0-dev.0"
+dependencies = [
+ "flate2",
+ "fs2",
+ "tectonic_errors",
+ "tectonic_geturl",
+ "tectonic_io_base",
+ "tectonic_status_base",
+ "zip",
+]
+
+[[package]]
 name = "tectonic_cfg_support"
 version = "0.0.0-dev.0"
 dependencies = [
@@ -2209,6 +2223,15 @@ version = "0.0.0-dev.0"
 dependencies = [
  "pkg-config",
  "vcpkg",
+]
+
+[[package]]
+name = "tectonic_docmodel"
+version = "0.0.0-dev.0"
+dependencies = [
+ "serde",
+ "tectonic_errors",
+ "toml",
 ]
 
 [[package]]
@@ -2273,6 +2296,7 @@ dependencies = [
 name = "tectonic_io_base"
 version = "0.0.0-dev.0"
 dependencies = [
+ "app_dirs2",
  "flate2",
  "libc",
  "sha2",

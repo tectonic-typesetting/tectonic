@@ -166,7 +166,8 @@ impl TestCase {
         }
 
         if self.check_synctex {
-            ExpectedInfo::read_with_extension_gz(&mut p, "synctex.gz").test_from_collection(&files);
+            ExpectedInfo::read_with_extension_rooted_gz(&mut p, "synctex.gz")
+                .test_from_collection(&files);
         }
 
         if self.check_pdf {

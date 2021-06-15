@@ -1,9 +1,10 @@
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! An "I/O stack" is an I/O provider that delegates requests to
 //! a series of sub-providers in turn.
 
+use std::path::PathBuf;
 use tectonic_status_base::StatusBackend;
 
 use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
@@ -68,9 +69,42 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
+    fn input_open_name_with_abspath(
+        &mut self,
+        name: &str,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        for item in &mut self.items {
+            let r = item.input_open_name_with_abspath(name, status);
+
+            match r {
+                OpenResult::NotAvailable => continue,
+                _ => return r,
+            };
+        }
+
+        OpenResult::NotAvailable
+    }
+
     fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
         for item in &mut self.items {
             let r = item.input_open_primary(status);
+
+            match r {
+                OpenResult::NotAvailable => continue,
+                _ => return r,
+            };
+        }
+
+        OpenResult::NotAvailable
+    }
+
+    fn input_open_primary_with_abspath(
+        &mut self,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        for item in &mut self.items {
+            let r = item.input_open_primary_with_abspath(status);
 
             match r {
                 OpenResult::NotAvailable => continue,

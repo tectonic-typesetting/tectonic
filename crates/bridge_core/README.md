@@ -28,6 +28,6 @@ use tectonic_bridge_core;
 
 ## Cargo features
 
-This crate does not currently provides any [Cargo features][features].
+This crate does not currently provide any [Cargo features][features].
 
 [features]: https://doc.rust-lang.org/cargo/reference/features.html

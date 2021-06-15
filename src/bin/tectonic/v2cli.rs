@@ -10,11 +10,14 @@ use tectonic::{
     self,
     config::PersistentConfig,
     ctry,
+    docmodel::{DocumentExt, DocumentSetupOptions, WorkspaceCreatorExt},
     errors::{Result, SyncError},
     status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
     tt_error, tt_note,
-    workspace::{self, Workspace},
 };
+use tectonic_bridge_core::{SecuritySettings, SecurityStance};
+use tectonic_bundles::Bundle;
+use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_errors::Error as NewError;
 use tectonic_status_base::plain::PlainStatusBackend;
 
@@ -49,6 +52,13 @@ struct V2CliOptions {
     command: Commands,
 }
 
+/// A semi-hack to allow command-specific customizations of the centralized app
+/// initialization.
+#[derive(Debug, Default)]
+struct CommandCustomizations {
+    always_stderr: bool,
+}
+
 /// The main function for the Cargo-like, "V2" CLI. This intentionally
 /// duplicates a lot of the "old" main() function, so that the implementation
 /// can drift over time as needed.
@@ -72,6 +82,13 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     let args = V2CliOptions::from_iter(effective_args);
 
+    // Command-specific customizations before we do our centralized setup.
+    // This is a semi-hack so that we can set up certain commands to ensure
+    // that status info is always printed to stderr.
+
+    let mut customizations = CommandCustomizations::default();
+    args.command.customize(&mut customizations);
+
     // Set up colorized output.
 
     let chatter_level = ChatterLevel::from_str(&args.chatter_level).unwrap();
@@ -83,9 +100,13 @@ pub fn v2_main(effective_args: &[OsString]) {
     };
 
     let mut status = if use_cli_color {
-        Box::new(TermcolorStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
+        let mut sb = TermcolorStatusBackend::new(chatter_level);
+        sb.always_stderr(customizations.always_stderr);
+        Box::new(sb) as Box<dyn StatusBackend>
     } else {
-        Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
+        let mut sb = PlainStatusBackend::new(chatter_level);
+        sb.always_stderr(customizations.always_stderr);
+        Box::new(sb) as Box<dyn StatusBackend>
     };
 
     // For now ...
@@ -110,26 +131,47 @@ enum Commands {
     /// Build a document
     Build(BuildCommand),
 
+    #[structopt(name = "bundle")]
+    /// Commands relating to this document’s TeX file bundle
+    Bundle(BundleCommand),
+
     #[structopt(name = "compile")]
     /// Run a standalone (La)TeX compilation
     Compile(crate::compile::CompileOptions),
 
-    #[structopt(name = "watch")]
-    /// Watch input files and execute commands on change
-    Watch(WatchCommand),
-
     #[structopt(name = "new")]
     /// Create a new document
     New(NewCommand),
+
+    #[structopt(name = "show")]
+    /// Display various useful pieces of information
+    Show(ShowCommand),
+
+    #[structopt(name = "watch")]
+    /// Watch input files and execute commands on change
+    Watch(WatchCommand),
 }
 
 impl Commands {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        match self {
+            Commands::Build(o) => o.customize(cc),
+            Commands::Bundle(o) => o.customize(cc),
+            Commands::Compile(_) => {} // avoid namespacing/etc issues
+            Commands::New(o) => o.customize(cc),
+            Commands::Show(o) => o.customize(cc),
+            Commands::Watch(o) => o.customize(cc),
+        }
+    }
+
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         match self {
             Commands::Build(o) => o.execute(config, status),
+            Commands::Bundle(o) => o.execute(config, status),
             Commands::Compile(o) => o.execute(config, status),
-            Commands::Watch(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
+            Commands::Show(o) => o.execute(config, status),
+            Commands::Watch(o) => o.execute(config, status),
         }
     }
 }
@@ -137,6 +179,10 @@ impl Commands {
 /// `build`: Build a document
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct BuildCommand {
+    /// Document is untrusted -- disable all known-insecure features
+    #[structopt(long)]
+    untrusted: bool,
+
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
     only_cached: bool,
@@ -159,19 +205,176 @@ pub struct BuildCommand {
 }
 
 impl BuildCommand {
+    fn customize(&self, _cc: &mut CommandCustomizations) {}
+
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let ws = Workspace::open_from_environment()?;
         let doc = ws.first_document();
 
+        // Default to allowing insecure since it would be super duper annoying
+        // to have to pass `--trusted` every time to build a personal document
+        // that uses shell-escape! This default can be overridden by setting the
+        // environment variable TECTONIC_UNTRUSTED_MODE to a nonempty value.
+        let stance = if self.untrusted {
+            SecurityStance::DisableInsecures
+        } else {
+            SecurityStance::MaybeAllowInsecures
+        };
+
+        let mut setup_options =
+            DocumentSetupOptions::new_with_security(SecuritySettings::new(stance));
+        setup_options.only_cached(self.only_cached);
+
         for output_name in doc.output_names() {
-            let mut opts = doc.build_options_for(output_name);
-            opts.format_cache_path(config.format_cache_path()?)
-                .only_cached(self.only_cached)
+            let mut builder = doc.setup_session(output_name, &setup_options, status)?;
+
+            builder
+                .format_cache_path(config.format_cache_path()?)
                 .keep_intermediates(self.keep_intermediates)
                 .keep_logs(self.keep_logs)
-                .print_stdout(self.print_stdout)
-                .open(self.open);
-            doc.build(output_name, &opts, status)?;
+                .print_stdout(self.print_stdout);
+
+            crate::compile::run_and_report(builder, status)?;
+
+            if self.open {
+                let out_file = doc.output_main_file(output_name);
+                tt_note!(status, "opening `{}`", out_file.display());
+                if let Err(e) = open::that(&out_file) {
+                    tt_error!(
+                        status,
+                        "failed to open `{}` with system handler",
+                        out_file.display();
+                        e.into()
+                    )
+                }
+            }
+        }
+
+        Ok(0)
+    }
+}
+
+/// `bundle`: Commands relating to Tectonic bundles
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct BundleCommand {
+    #[structopt(subcommand)]
+    command: BundleCommands,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+enum BundleCommands {
+    #[structopt(name = "cat")]
+    /// Dump the contents of a file in the bundle
+    Cat(BundleCatCommand),
+
+    #[structopt(name = "search")]
+    /// Filter the list of filenames contained in the bundle
+    Search(BundleSearchCommand),
+}
+
+impl BundleCommand {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        match &self.command {
+            BundleCommands::Cat(c) => c.customize(cc),
+            BundleCommands::Search(c) => c.customize(cc),
+        }
+    }
+
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        match self.command {
+            BundleCommands::Cat(c) => c.execute(config, status),
+            BundleCommands::Search(c) => c.execute(config, status),
+        }
+    }
+}
+
+fn get_a_bundle(
+    _config: PersistentConfig,
+    only_cached: bool,
+    status: &mut dyn StatusBackend,
+) -> Result<Box<dyn Bundle>> {
+    use tectonic_docmodel::workspace::NoWorkspaceFoundError;
+
+    match Workspace::open_from_environment() {
+        Ok(ws) => {
+            let doc = ws.first_document();
+            let mut options: DocumentSetupOptions = Default::default();
+            options.only_cached(only_cached);
+            doc.bundle(&options, status)
+        }
+
+        Err(e) => {
+            if e.downcast_ref::<NoWorkspaceFoundError>().is_none() {
+                Err(e.into())
+            } else {
+                tt_note!(
+                    status,
+                    "not in a document workspace; using the built-in default bundle"
+                );
+                Ok(Box::new(tectonic_bundles::get_fallback_bundle(
+                    only_cached,
+                    status,
+                )?))
+            }
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+struct BundleCatCommand {
+    /// Use only resource files cached locally
+    #[structopt(short = "C", long)]
+    only_cached: bool,
+
+    #[structopt(help = "The name of the file to dump")]
+    filename: String,
+}
+
+impl BundleCatCommand {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        cc.always_stderr = true;
+    }
+
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let mut bundle = get_a_bundle(config, self.only_cached, status)?;
+        let mut ih = bundle
+            .input_open_name(&self.filename, status)
+            .must_exist()?;
+        std::io::copy(&mut ih, &mut std::io::stdout())?;
+        Ok(0)
+    }
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+struct BundleSearchCommand {
+    /// Use only resource files cached locally
+    #[structopt(short = "C", long)]
+    only_cached: bool,
+
+    #[structopt(help = "The search term")]
+    term: Option<String>,
+}
+
+impl BundleSearchCommand {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        cc.always_stderr = true;
+    }
+
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let mut bundle = get_a_bundle(config, self.only_cached, status)?;
+        let files = bundle.all_files(status)?;
+
+        // Is there a better way to do this?
+        let filter: Box<dyn Fn(&str) -> bool> = if let Some(t) = self.term {
+            Box::new(move |s: &str| s.contains(&t))
+        } else {
+            Box::new(|_: &str| true)
+        };
+
+        for filename in &files {
+            if filter(filename) {
+                println!("{}", filename);
+            }
         }
 
         Ok(0)
@@ -187,6 +390,8 @@ pub struct WatchCommand {
 }
 
 impl WatchCommand {
+    fn customize(&self, _cc: &mut CommandCustomizations) {}
+
     fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let exe_name = crate::watch::get_trimmed_exe_name()
             .into_os_string()
@@ -257,6 +462,8 @@ pub struct NewCommand {
 }
 
 impl NewCommand {
+    fn customize(&self, _cc: &mut CommandCustomizations) {}
+
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         tt_note!(
             status,
@@ -264,11 +471,55 @@ impl NewCommand {
             self.path.display()
         );
 
-        let wc = workspace::WorkspaceCreator::new(self.path);
+        let wc = WorkspaceCreator::new(self.path);
         ctry!(
-            wc.create(&config, status);
+            wc.create_defaulted(&config, status);
             "failed to create the new Tectonic workspace"
         );
+        Ok(0)
+    }
+}
+
+/// `show`: Show various useful pieces of information.
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct ShowCommand {
+    #[structopt(subcommand)]
+    command: ShowCommands,
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+enum ShowCommands {
+    #[structopt(name = "user-cache-dir")]
+    /// Print the location of the default per-user cache directory
+    UserCacheDir(ShowUserCacheDirCommand),
+}
+
+impl ShowCommand {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        match &self.command {
+            ShowCommands::UserCacheDir(c) => c.customize(cc),
+        }
+    }
+
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        match self.command {
+            ShowCommands::UserCacheDir(c) => c.execute(config, status),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+struct ShowUserCacheDirCommand {}
+
+impl ShowUserCacheDirCommand {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        cc.always_stderr = true;
+    }
+
+    fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
+        use tectonic_bundles::cache::Cache;
+        let cache = Cache::get_user_default()?;
+        println!("{}", cache.root().display());
         Ok(0)
     }
 }

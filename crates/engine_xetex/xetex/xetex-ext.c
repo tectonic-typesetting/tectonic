@@ -1021,10 +1021,10 @@ gr_print_font_name(int32_t what, void* pEngine, int32_t param1, int32_t param2)
     char* name = NULL;
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;
     switch (what) {
-        case XeTeX_feature_name:
+        case XETEX_FEATURE_NAME_CODE:
             name = getGraphiteFeatureLabel(engine, param1);
             break;
-        case XeTeX_selector_name:
+        case XETEX_SELECTOR_NAME_CODE:
             name = getGraphiteFeatureSettingLabel(engine, param1, param2);
             break;
     }
@@ -2069,9 +2069,10 @@ aat_font_get_named_1(int what, CFDictionaryRef attributes, int param)
 void
 aat_print_font_name(int what, CFDictionaryRef attributes, int param1, int param2)
 {
+    /* Tectonic: this function is called for XETEX_VARIATION_NAME_CODE but doesn't handle it */
 #ifdef XETEX_MAC
     CFStringRef name = NULL;
-    if (what == XeTeX_feature_name || what == XeTeX_selector_name) {
+    if (what == XETEX_FEATURE_NAME_CODE || what == XETEX_SELECTOR_NAME_CODE) {
         CTFontRef font = fontFromAttributes(attributes);
         CFArrayRef features = CTFontCopyFeatures(font);
         if (features) {
@@ -2079,7 +2080,7 @@ aat_print_font_name(int what, CFDictionaryRef attributes, int param1, int param2
                                                                           kCTFontFeatureTypeIdentifierKey,
                                                                           param1);
             if (feature) {
-                if (what == XeTeX_feature_name)
+                if (what == XETEX_FEATURE_NAME_CODE)
                     name = CFDictionaryGetValue(feature, kCTFontFeatureTypeNameKey);
                 else {
                     CFArrayRef selectors = CFDictionaryGetValue(feature, kCTFontFeatureTypeSelectorsKey);

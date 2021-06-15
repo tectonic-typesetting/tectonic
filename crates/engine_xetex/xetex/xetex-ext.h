@@ -58,25 +58,22 @@ typedef void* CFDictionaryRef; /* dummy declaration just so the stubs can compil
 #define pdfbox_none 6
 
 /* command codes for XeTeX extension commands */
-#define XeTeX_count_glyphs 1
-#define XeTeX_count_features 8
-#define XeTeX_feature_code 9
-#define XeTeX_find_feature_by_name 10
-#define XeTeX_is_exclusive_feature 11
-#define XeTeX_count_selectors 12
-#define XeTeX_selector_code 13
-#define XeTeX_find_selector_by_name 14
-#define XeTeX_is_default_selector 15
-#define XeTeX_OT_count_scripts 16
-#define XeTeX_OT_count_languages 17
-#define XeTeX_OT_count_features 18
-#define XeTeX_OT_script_code 19
-#define XeTeX_OT_language_code 20
-#define XeTeX_OT_feature_code 21
-#define XeTeX_map_char_to_glyph_code 22
-
-#define XeTeX_feature_name 8
-#define XeTeX_selector_name 9
+#define XeTeX_count_glyphs (XETEX_COUNT_GLYPHS_CODE - XETEX_INT)
+#define XeTeX_count_features (XETEX_COUNT_FEATURES_CODE - XETEX_INT)
+#define XeTeX_feature_code (XETEX_FEATURE_CODE_CODE - XETEX_INT)
+#define XeTeX_find_feature_by_name (XETEX_FIND_FEATURE_BY_NAME_CODE - XETEX_INT)
+#define XeTeX_is_exclusive_feature (XETEX_IS_EXCLUSIVE_FEATURE_CODE - XETEX_INT)
+#define XeTeX_count_selectors (XETEX_COUNT_SELECTORS_CODE - XETEX_INT)
+#define XeTeX_selector_code (XETEX_SELECTOR_CODE_CODE - XETEX_INT)
+#define XeTeX_find_selector_by_name (XETEX_FIND_SELECTOR_BY_NAME_CODE - XETEX_INT)
+#define XeTeX_is_default_selector (XETEX_IS_DEFAULT_SELECTOR_CODE - XETEX_INT)
+#define XeTeX_OT_count_scripts (XETEX_OT_COUNT_SCRIPTS_CODE - XETEX_INT)
+#define XeTeX_OT_count_languages (XETEX_OT_COUNT_LANGUAGES_CODE - XETEX_INT)
+#define XeTeX_OT_count_features (XETEX_OT_COUNT_FEATURES_CODE - XETEX_INT)
+#define XeTeX_OT_script_code (XETEX_OT_SCRIPT_CODE - XETEX_INT)
+#define XeTeX_OT_language_code (XETEX_OT_LANGUAGE_CODE - XETEX_INT)
+#define XeTeX_OT_feature_code (XETEX_OT_FEATURE_CODE - XETEX_INT)
+#define XeTeX_map_char_to_glyph_code (XETEX_MAP_CHAR_TO_GLYPH_CODE - XETEX_INT)
 
 /* accessing info in a native_word_node */
 #define width_offset 1

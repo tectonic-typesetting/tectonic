@@ -1,4 +1,61 @@
-# rc: micro bump
+# rc: minor bump
+
+This release adds some helpful new utilities and internal cleanups, which
+involve breaking API changes (see below).
+
+- New V2 command `tectonic -X show user-cache-dir` to print out the
+  location of the per-user cache directory. FAQ, answered! (@pkgw, #786)
+- New V2 command `tectonic -X bundle search` to print out listings of files
+  contained in the "bundle" of TeX support files. If run in a workspace
+  containing a `Tectonic.toml` file, the workspace’s bundle is queried;
+  otherwise, the default bundle is queried. (@pkgw, #786)
+- New V2 command `tectonic -X bundle cat` to print out one of the support files,
+  with the same general behavior as the `search` command. You could also use
+  this to ensure that a particular file has been loaded into the local cache.
+  (@pkgw, #786).
+- Improved security model regarding the "shell-escape" feature, which has the
+  potential to be abused by untrusted inputs. A new `--untrusted` argument to
+  the V1 CLI and `tectonic -X build` disables the use of shell-escape, and any
+  other known-insecure features, regardless of the presence of `-Z shell-escape`
+  or any other options. Therefore, if you're writing a script that processes
+  untrusted input, if you make sure to run `tectonic --untrusted ...` you can be
+  confident that further command-line arguments can't undo your sandboxing.
+  Furthermore, if the environment variable `$TECTONIC_UNTRUSTED_MODE` is set to
+  a non-empty value, the effect is as if `--untrusted` had been provided.
+  (@pkgw, #787)
+- You know what ... get rid of the "beta" message in the V1 CLI.
+- Fix SyncTeX output, we hope (e.g., #720, #744; @hulloanson, @pkgw, #762).
+  Tectonic's SyncTeX files should now include correct, absolute filesystem paths
+  when appropriate.
+- Fix some broken low-level XeTeX built-ins, reported by @burrbull (@pkgw, #714,
+  #783)
+
+A few more more words on the security model: the terminology is a bit slippery
+here since we of course never intend to deliver a product that has security
+flaws. But features like shell-escape, while providing useful functionality, can
+certainly be abused to do malicious things given a hostile input. The default UX
+aims to be conservative about these features, but if a user wants to enable
+them, we'll allow them -- in the same way that Rust/Cargo will compile and run
+`build.rs` scripts that in principle could do just about anything on your
+machine. Our main security distinction is therefore whether the input is trusted
+by the user running Tectonic. The decision of whether to "trust" an input or not
+is something that fundamentally has to be made at a level higher above Tectonic
+itself. Therefore the goal of Tectonic in this area is to provide the user with
+straightforward and effective tools to express that decision.
+
+For developers, this release adds two new Cargo crates to the Tectonic
+ecosystem: `tectonic_docmodel`, allowing manipulation of `Tectonic.toml` files
+and their related data structures; and `tectonic_bundles`, allowing manipulation
+of the Tectonic support file bundles. In both cases, third-party tools might
+wish to use these formats without having to pull in all of the heavyweight
+dependencies of the main `tectonic` crate. And in both cases, the separation has
+led to many API improvements and cleanups that greatly improve the overall code
+structure. These changes break the API of the `tectonic` crate by removing some
+old modules and changing the particular traits and types used to implement these
+systems. (@pkgw, #785, #786)
+
+
+# tectonic 0.5.2 (2021-06-08)
 
 - Update dependencies, including [`watchexec`]. We believe that this should fix
   the issues with the official Windows executables that have been reported
