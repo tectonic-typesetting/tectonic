@@ -1,4 +1,10 @@
-# rc: minor bump
+# rc: micro bump
+
+- No code changes; the attempt to publish 0.6.0 to Crates.io failed spuriously,
+  so we're retriggering the release automation.
+
+
+# tectonic 0.6.0 (2021-06-15)
 
 This release adds some helpful new utilities and internal cleanups, which
 involve breaking API changes (see below).
