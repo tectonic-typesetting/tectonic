@@ -1,7 +1,7 @@
-// Copyright 2020 the Tectonic Project
+// Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::{env, fs, io::ErrorKind, path::PathBuf};
+use std::{env, path::PathBuf};
 
 fn main() {
     let outdir = env::var("OUT_DIR").unwrap();
@@ -80,11 +80,6 @@ typedef ttbc_output_handle_t *rust_output_handle_t;",
     // part of its packaging process. This isn't noticed in regular builds since
     // they occur in a workspace context. Lame but effective solution:
     // unconditionally blow away the file.
-
     manifest_dir.push("Cargo.lock");
-    if let Err(e) = fs::remove_file(&manifest_dir) {
-        if e.kind() != ErrorKind::NotFound {
-            panic!("unexpected error clearing local Cargo.lock: {}", e);
-        }
-    }
+    let _ignored = std::fs::remove_file(&manifest_dir);
 }

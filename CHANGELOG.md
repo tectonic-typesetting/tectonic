@@ -1,5 +1,12 @@
 # rc: micro bump
 
+- Attempt to fix the i686 Arch Linux package specification
+- Attempt to fix the docs.rs build, hopefully. We might have to try a few
+  different approaches here before we find one that works.
+
+
+# tectonic 0.6.1 (2021-06-15)
+
 - No code changes; the attempt to publish 0.6.0 to Crates.io failed spuriously,
   so we're retriggering the release automation.
 

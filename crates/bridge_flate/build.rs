@@ -1,7 +1,7 @@
-// Copyright 2020 the Tectonic Project
+// Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::{env, fs, io::ErrorKind, path::PathBuf};
+use std::{env, path::PathBuf};
 
 fn main() {
     let outdir = env::var("OUT_DIR").unwrap();
@@ -23,6 +23,15 @@ fn main() {
 
     let mut manifest_dir: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().into();
 
+    // Experimental (2021 June): currently the build of `tectonic` on docs.rs
+    // fails because cbindgen calls `cargo metadata`, which has to hit the
+    // network because the standalone crate has not Cargo.lock file -- and
+    // docs.rs disable network access. We can't control the Cargo command line,
+    // but hopefully this environment variable will tell Cargo not to try? I
+    // don't know if Cargo will succeed this way, but I think the only way to
+    // test is to make a release and see.
+    std::env::set_var("CARGO_NET_OFFLINE", "1");
+
     cbindgen::Builder::new()
         .with_config(config)
         .with_crate(&manifest_dir)
@@ -39,9 +48,5 @@ fn main() {
     // they occur in a workspace context. Lame but effective solution:
     // unconditionally blow away the file.
     manifest_dir.push("Cargo.lock");
-    if let Err(e) = fs::remove_file(&manifest_dir) {
-        if e.kind() != ErrorKind::NotFound {
-            panic!("unexpected error clearing local Cargo.lock: {}", e);
-        }
-    }
+    let _ignored = std::fs::remove_file(&manifest_dir);
 }
