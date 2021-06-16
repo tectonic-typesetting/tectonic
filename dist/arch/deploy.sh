@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
-# Copyright 2018-2020 the Tectonic Project
+# Copyright 2018-2021 the Tectonic Project
 # Licensed under the MIT license
 
 # Auto-update the Arch Linux AUR repos for Tectonic. This script is invoked in
@@ -26,6 +26,10 @@ source_sha512="$(sha512sum tectonic.crate.gz |cut -d' ' -f1)"
 url="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40$version/tectonic-$version-x86_64-unknown-linux-gnu.tar.gz"
 wget -q --progress=dot "$url" -O x86_64.tar.gz
 x86_64_sha512="$(sha512sum x86_64.tar.gz |cut -d' ' -f1)"
+
+url="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40$version/tectonic-$version-i686-unknown-linux-gnu.tar.gz"
+wget -q --progress=dot "$url" -O i686.tar.gz
+i686_sha512="$(sha512sum i686.tar.gz |cut -d' ' -f1)"
 
 url="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%40$version/tectonic-$version-arm-unknown-linux-musleabihf.tar.gz"
 wget -q --progress=dot "$url" -O armv7h.tar.gz
@@ -59,6 +63,7 @@ sed -e "s|@version@|$version|g" \
 
 sed -e "s|@version@|$version|g" \
     -e "s|@x86_64_sha512@|$x86_64_sha512|g" \
+    -e "s|@i686_sha512@|$i686_sha512|g" \
     -e "s|@armv7h_sha512@|$armv7h_sha512|g" \
     PKGBUILD.bin.in >aur-bin/PKGBUILD
 
