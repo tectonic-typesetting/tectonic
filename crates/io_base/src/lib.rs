@@ -516,7 +516,7 @@ pub trait IoProvider: AsIoProviderMut {
     }
 
     /// Save an a format dump in some way that this provider may be able to
-    /// recover in the future. This awkward interface is needed for to write
+    /// recover in the future. This awkward interface is needed to write
     /// formats with their special munged file names.
     fn write_format(
         &mut self,
@@ -601,7 +601,7 @@ impl InputFeatures for Cursor<Vec<u8>> {
 // Helpful.
 
 /// Try to open a file on the fileystem, returning an `OpenResult` type
-/// allowing easy handling if the file was not foun.
+/// allowing easy handling if the file was not found.
 pub fn try_open_file<P: AsRef<Path>>(path: P) -> OpenResult<File> {
     use std::io::ErrorKind::NotFound;
 
