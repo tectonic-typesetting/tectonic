@@ -30,7 +30,7 @@ fn main() {
     // but hopefully this environment variable will tell Cargo not to try? I
     // don't know if Cargo will succeed this way, but I think the only way to
     // test is to make a release and see.
-    std::env::set_var("CARGO_NET_OFFLINE", "1");
+    std::env::set_var("CARGO_NET_OFFLINE", "true");
 
     cbindgen::Builder::new()
         .with_config(config)
