@@ -1,6 +1,13 @@
+# tectonic_bridge_flate 0.1.2 (2021-06-16)
+
+- Try some workarounds to get docs building on docs.rs, both for this crate on
+  its own and for the toplevel `tectonic` crate.
+
+
 # tectonic_bridge_flate 0.1.1 (2021-01-16)
 
 - Fix a Clippy complaint
+
 
 # tectonic_bridge_flate 0.1.0 (2021-01-03)
 

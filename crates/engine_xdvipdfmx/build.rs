@@ -56,11 +56,6 @@ fn main() {
     // part of its packaging process. This isn't noticed in regular builds since
     // they occur in a workspace context. Lame but effective solution:
     // unconditionally blow away the file.
-
     manifest_dir.push("Cargo.lock");
-    if let Err(e) = std::fs::remove_file(&manifest_dir) {
-        if e.kind() != std::io::ErrorKind::NotFound {
-            panic!("unexpected error clearing local Cargo.lock: {}", e);
-        }
-    }
+    let _ignored = std::fs::remove_file(&manifest_dir);
 }

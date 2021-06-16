@@ -2102,7 +2102,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.6.1"
+version = "0.6.2"
 dependencies = [
  "atty",
  "byte-unit",
@@ -2159,7 +2159,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_flate"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cbindgen",
  "flate2",
