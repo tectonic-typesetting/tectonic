@@ -1,3 +1,9 @@
+# tectonic_bridge_flate 0.1.3 (2021-06-16)
+
+- Try again with our docs.rs workarounds. Looks like we need
+  `CARGO_NET_OFFLINE=true`, not `CARGO_NET_OFFLINE=1`.
+
+
 # tectonic_bridge_flate 0.1.2 (2021-06-16)
 
 - Try some workarounds to get docs building on docs.rs, both for this crate on
