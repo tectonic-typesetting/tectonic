@@ -23,14 +23,10 @@ fn main() {
 
     let mut manifest_dir: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().into();
 
-    // Experimental (2021 June): currently the build of `tectonic` on docs.rs
-    // fails because cbindgen calls `cargo metadata`, which has to hit the
-    // network because the standalone crate has not Cargo.lock file -- and
-    // docs.rs disable network access. We can't control the Cargo command line,
-    // but hopefully this environment variable will tell Cargo not to try? I
-    // don't know if Cargo will succeed this way, but I think the only way to
-    // test is to make a release and see.
-    std::env::set_var("CARGO_NET_OFFLINE", "true");
+    // 2021 June: work around https://github.com/tectonic-typesetting/tectonic/issues/788
+    if env::var_os("DOCS_RS").is_some() {
+        env::set_var("CARGO_NET_OFFLINE", "true");
+    }
 
     cbindgen::Builder::new()
         .with_config(config)
