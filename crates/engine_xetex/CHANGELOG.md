@@ -1,3 +1,14 @@
+# tectonic_engine_xetex 0.1.2 (2021-06-17)
+
+- Attempt to fix crate builds on docs.rs — see [#788]. This works around an
+  issue in Tectonic’s usage of [cbindgen] by configuring Cargo to operate in
+  offline mode when building on docs.rs, which builds crates with network access
+  turned off.
+
+[#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
+[cbindgen]: https://github.com/eqrion/cbindgen
+
+
 # tectonic_engine_xetex 0.1.1 (2021-06-15)
 
 - Fix SyncTeX output (@hulloanson, @pkgw, #720, #744). We needed to include

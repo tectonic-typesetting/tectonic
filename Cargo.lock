@@ -2144,7 +2144,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_core"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "cbindgen",
  "cc",
@@ -2159,7 +2159,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_flate"
-version = "0.1.3"
+version = "0.1.4"
 dependencies = [
  "cbindgen",
  "flate2",
@@ -2236,7 +2236,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_bibtex"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cbindgen",
  "cc",
@@ -2247,7 +2247,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xdvipdfmx"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cbindgen",
  "cc",
@@ -2259,7 +2259,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xetex"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cbindgen",
  "cc",

@@ -1,3 +1,14 @@
+# tectonic_bridge_flate 0.1.4 (2021-06-17)
+
+- Attempt to fix crate builds on docs.rs — see [#788]. This works around an
+  issue in Tectonic’s usage of [cbindgen] by configuring Cargo to operate in
+  offline mode when building on docs.rs, which builds crates with network access
+  turned off.
+
+[#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
+[cbindgen]: https://github.com/eqrion/cbindgen
+
+
 # tectonic_bridge_flate 0.1.3 (2021-06-16)
 
 - Try again with our docs.rs workarounds. Looks like we need

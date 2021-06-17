@@ -27,6 +27,11 @@ fn main() {
 
     let mut manifest_dir: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().into();
 
+    // 2021 June: work around https://github.com/tectonic-typesetting/tectonic/issues/788
+    if env::var_os("DOCS_RS").is_some() {
+        env::set_var("CARGO_NET_OFFLINE", "true");
+    }
+
     cbindgen::Builder::new()
         .with_config(config)
         .with_crate(&manifest_dir)
