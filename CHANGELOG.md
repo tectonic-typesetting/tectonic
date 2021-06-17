@@ -1,3 +1,9 @@
+# tectonic 0.6.4 (2021-06-17)
+
+- Yet another new release to try to fix the docs.rs build. I think this one may
+  get it right.
+
+
 # tectonic 0.6.3 (2021-06-17)
 
 - Another attempt to fix the docs.rs build.
