@@ -2102,7 +2102,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.6.2"
+version = "0.6.3"
 dependencies = [
  "atty",
  "byte-unit",

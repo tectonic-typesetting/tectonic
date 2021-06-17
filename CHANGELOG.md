@@ -1,3 +1,9 @@
+# tectonic 0.6.3 (2021-06-17)
+
+- Another attempt to fix the docs.rs build.
+- Update Cargo dependencies while we're at it.
+
+
 # tectonic 0.6.2 (2021-06-16)
 
 - Attempt to fix the i686 Arch Linux package specification
