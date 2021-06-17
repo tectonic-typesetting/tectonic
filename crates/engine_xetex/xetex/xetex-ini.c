@@ -7,7 +7,7 @@
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "dpx-pdfobj.h" /* pdf_files_{init,close} */
-#include "core-bindgen.h" /* FORMAT_SERIAL */
+#include "xetex_bindings.h" /* FORMAT_SERIAL */
 
 /* All the following variables are declared in xetex-xetexd.h */
 bool shell_escape_enabled = false;

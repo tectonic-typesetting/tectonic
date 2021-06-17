@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_flate"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing flate compression to the Tectonic C code.
@@ -22,5 +22,3 @@ links = "tectonic_bridge_flate"
 flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
 libc = "^0.2"
 
-[build-dependencies]
-cbindgen = "^0.16"

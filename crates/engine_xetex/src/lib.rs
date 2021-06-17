@@ -32,6 +32,9 @@ use tectonic_errors::prelude::*;
 /// should munge this serial number in the filename, or something along those
 /// lines, to make sure that when the engine is updated you don’t attempt to
 /// reuse old files.
+//
+// DEVELOPER NOTE: if you change this, rerun cbindgen! This value is exported
+// into the C/C++ code as a #define.
 pub const FORMAT_SERIAL: u32 = 30;
 
 /// A possible outcome from a (Xe)TeX engine invocation.

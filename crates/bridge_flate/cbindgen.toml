@@ -1,0 +1,7 @@
+language = "C"
+cpp_compat = true
+style = "type"
+include_guard = "TECTONIC_BRIDGE_FLATE_H"
+
+[enum]
+prefix_with_name = true
