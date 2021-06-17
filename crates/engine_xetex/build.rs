@@ -9,6 +9,11 @@ fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let mut manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
 
+    // 2021 June: work around https://github.com/tectonic-typesetting/tectonic/issues/788
+    if env::var_os("DOCS_RS").is_some() {
+        env::set_var("CARGO_NET_OFFLINE", "true");
+    }
+
     // cbindgen to generate the C header from our Rust code.
 
     let mut gen_header_path: PathBuf = out_dir.clone().into();
