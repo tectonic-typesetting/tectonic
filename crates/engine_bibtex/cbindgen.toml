@@ -1,0 +1,10 @@
+language = "C"
+cpp_compat = true
+style = "type"
+include_guard = "BIBTEX_BINDINGS_H"
+
+[export.rename]
+"CoreBridgeState" = "ttbc_state_t"
+
+[enum]
+prefix_with_name = true

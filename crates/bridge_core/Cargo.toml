@@ -28,7 +28,6 @@ tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 
 [build-dependencies]
-cbindgen = "^0.16"
 cc = "^1.0.66"
 
 [package.metadata.internal_dep_versions]

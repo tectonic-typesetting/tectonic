@@ -24,7 +24,6 @@ tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 
 [build-dependencies]
-cbindgen = "^0.16"
 cc = "^1.0.66"
 
 [package.metadata.internal_dep_versions]

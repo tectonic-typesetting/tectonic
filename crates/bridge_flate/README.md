@@ -37,3 +37,15 @@ libz here as well. Once the linking framework is built up, it will become
 possible to allow for more flexibility in this area.
 
 [features]: https://doc.rust-lang.org/cargo/reference/features.html
+
+
+## Updating the generated header
+
+This crate exposes Rust functions to C/C++ code using a header file created by
+[cbindgen]. To update the header, run:
+
+[cbindgen]: https://github.com/eqrion/cbindgen/
+
+```sh
+cbindgen --output include/tectonic_bridge_flate.h
+```

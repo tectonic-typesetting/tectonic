@@ -188,25 +188,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b700ce4376041dcd0a327fd0097c41095743c4c8af8887265942faf1100bd040"
 
 [[package]]
-name = "cbindgen"
-version = "0.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9344318b9c787667b95cd2c5124f5eaf2bde35e959dd01ea04fc5b234c542c11"
-dependencies = [
- "clap",
- "heck",
- "indexmap",
- "log",
- "proc-macro2",
- "quote",
- "serde",
- "serde_json",
- "syn",
- "tempfile",
- "toml",
-]
-
-[[package]]
 name = "cc"
 version = "1.0.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2146,7 +2127,6 @@ dependencies = [
 name = "tectonic_bridge_core"
 version = "0.0.0-dev.0"
 dependencies = [
- "cbindgen",
  "cc",
  "flate2",
  "lazy_static",
@@ -2161,7 +2141,6 @@ dependencies = [
 name = "tectonic_bridge_flate"
 version = "0.0.0-dev.0"
 dependencies = [
- "cbindgen",
  "flate2",
  "libc",
 ]
@@ -2238,7 +2217,6 @@ dependencies = [
 name = "tectonic_engine_bibtex"
 version = "0.0.0-dev.0"
 dependencies = [
- "cbindgen",
  "cc",
  "libc",
  "tectonic_bridge_core",
@@ -2249,7 +2227,6 @@ dependencies = [
 name = "tectonic_engine_xdvipdfmx"
 version = "0.0.0-dev.0"
 dependencies = [
- "cbindgen",
  "cc",
  "libc",
  "tectonic_bridge_core",
@@ -2261,7 +2238,6 @@ dependencies = [
 name = "tectonic_engine_xetex"
 version = "0.0.0-dev.0"
 dependencies = [
- "cbindgen",
  "cc",
  "libc",
  "tectonic_bridge_core",
