@@ -29,7 +29,6 @@ tectonic_pdf_io = { path = "../pdf_io", version = "0.0.0-dev.0" }
 tectonic_xetex_layout = { path = "../xetex_layout", version = "0.0.0-dev.0" }
 
 [build-dependencies]
-cbindgen = "^0.16"
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 

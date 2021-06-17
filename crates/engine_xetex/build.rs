@@ -6,43 +6,6 @@ use tectonic_cfg_support::*;
 
 fn main() {
     let target = env::var("TARGET").unwrap();
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let mut manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-
-    // 2021 June: work around https://github.com/tectonic-typesetting/tectonic/issues/788
-    if env::var_os("DOCS_RS").is_some() {
-        env::set_var("CARGO_NET_OFFLINE", "true");
-    }
-
-    // cbindgen to generate the C header from our Rust code.
-
-    let mut gen_header_path: PathBuf = out_dir.clone().into();
-    gen_header_path.push("core-bindgen.h");
-
-    println!("cargo:rerun-if-changed=src/lib.rs");
-
-    let mut config = cbindgen::Config {
-        cpp_compat: true,
-        ..Default::default()
-    };
-    config.enumeration.prefix_with_name = true;
-
-    cbindgen::Builder::new()
-        .with_config(config)
-        .with_crate(&manifest_dir)
-        .with_language(cbindgen::Language::C)
-        .with_include_guard("TECTONIC_ENGINE_XETEX_BINDGEN_H")
-        .with_style(cbindgen::Style::Type)
-        .rename_item("CoreBridgeState", "ttbc_state_t") // unfortunately we need to propagate this rename
-        .generate()
-        .expect("Unable to generate bindings")
-        .write_to_file(&gen_header_path);
-
-    // Re-export $TARGET during the build so that our executable tests know
-    // what environment variable CARGO_TARGET_@TARGET@_RUNNER to check when
-    // they want to spawn off executables.
-
-    println!("cargo:rustc-env=TARGET={}", target);
 
     // Include paths exported by our internal dependencies.
 
@@ -89,7 +52,7 @@ fn main() {
     profile_config(&mut c_cfg);
     profile_config(&mut cxx_cfg);
 
-    for p in &[&out_dir, ".", &core_include_dir, &flate_include_dir] {
+    for p in &[".", &core_include_dir, &flate_include_dir] {
         c_cfg.include(p);
         cxx_cfg.include(p);
     }
@@ -160,15 +123,6 @@ fn main() {
         let file = file.unwrap();
         println!("cargo:rerun-if-changed={}", file.path().display());
     }
-
-    // Workaround so that we can `cargo package` this crate. Cf
-    // https://github.com/eqrion/cbindgen/issues/560 . cbindgen calls `cargo
-    // metadata` which creates a new Cargo.lock file when building this crate as
-    // part of its packaging process. This isn't noticed in regular builds since
-    // they occur in a workspace context. Lame but effective solution:
-    // unconditionally blow away the file.
-    manifest_dir.push("Cargo.lock");
-    let _ignored = std::fs::remove_file(&manifest_dir);
 }
 
 const C_FLAGS: &[&str] = &[

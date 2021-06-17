@@ -25,7 +25,6 @@ tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_pdf_io = { path = "../pdf_io", version = "0.0.0-dev.0" }
 
 [build-dependencies]
-cbindgen = "^0.16"
 cc = "^1.0.66"
 
 [package.metadata.internal_dep_versions]
