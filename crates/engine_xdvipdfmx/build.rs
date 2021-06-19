@@ -20,5 +20,5 @@ fn main() {
     build.compile("libtectonic_engine_xdvipdfmx.a");
 
     println!("cargo:rerun-if-changed=xdvipdfmx/dvipdfmx.c");
-    println!("cargo:rerun-if-changed=xdvipdfmx/dvipdfmx_bindings.h");
+    println!("cargo:rerun-if-changed=xdvipdfmx/xdvipdfmx_bindings.h");
 }
