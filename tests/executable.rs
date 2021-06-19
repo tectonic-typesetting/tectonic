@@ -231,8 +231,8 @@ fn bad_outfmt_1() {
 
 fn run_with_biber(args: &str, stdin: &str) -> Output {
     let fmt_arg = get_plain_format_arg();
-    let cwd = &PathBuf::from(".");
-    let mut command = prep_tectonic(cwd, &[&fmt_arg, "-"]);
+    let tempdir = setup_and_copy_files(&[]);
+    let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
 
     let test_cmd = if cfg!(windows) {
         format!(
@@ -291,8 +291,8 @@ fn biber_failure() {
 #[test]
 fn biber_no_such_tool() {
     let fmt_arg = get_plain_format_arg();
-    let cwd = &PathBuf::from(".");
-    let mut command = prep_tectonic(cwd, &[&fmt_arg, "-"]);
+    let tempdir = setup_and_copy_files(&[]);
+    let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
 
     command.env("TECTONIC_TEST_FAKE_BIBER", "ohnothereisnobiberprogram");
 
