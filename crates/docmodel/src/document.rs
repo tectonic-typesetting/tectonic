@@ -404,7 +404,7 @@ mod syntax {
             }
         }
 
-        pub fn to_runtime(&self) -> super::BuildTargetType {
+        pub fn to_runtime(self) -> super::BuildTargetType {
             match self {
                 BuildTargetType::Pdf => super::BuildTargetType::Pdf,
             }
