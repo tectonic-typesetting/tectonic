@@ -267,12 +267,10 @@ pub mod c_api {
 /// them.
 mod linkage {
     #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_pdf_io;
+    use tectonic_pdf_io as clipyrenamehack1;
 
     #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_xetex_layout;
+    use tectonic_xetex_layout as clipyrenamehack2;
 }
 
 /// Does our resulting executable link correctly?

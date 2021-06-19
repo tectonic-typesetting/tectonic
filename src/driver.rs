@@ -3,22 +3,23 @@
 
 #![deny(missing_docs)]
 
-//! This module contains the high-level interface that ties together the various
-//! engines. The main struct is [`ProcessingSession`], which knows how to run
-//! (and re-run if necessary) the various engines in the right order. Such a
+//! The high-level Tectonic document processing interface.
+//!
+//! The main struct in this module is [`ProcessingSession`], which knows how to
+//! run (and re-run if necessary) the various engines in the right order. Such a
 //! session can be created with a [`ProcessingSessionBuilder`], which you might
 //! obtain from a [`tectonic_docmodel::document::Document`] using the
 //! [`crate::docmodel::DocumentExt::setup_session`] extension method, if you’re
-//! using the Tectonic document model.
+//! using the Tectonic document model. You can set one up manually if not.
 //!
-//! For an example of how to use this module, see `src/bin/tectonic.rs`, which
-//! contains tectonic's main CLI program.
+//! For an example of how to use this module, see `src/bin/tectonic/main.rs`,
+//! which contains tectonic's main CLI program.
 
 use byte_unit::Byte;
 use std::{
     collections::{HashMap, HashSet},
     fs::File,
-    io::Write,
+    io::{Read, Write},
     path::{Path, PathBuf},
     process::Command,
     rc::Rc,
@@ -284,6 +285,139 @@ impl BridgeState {
     /// Leave “format mode”.
     fn leave_format_mode(&mut self) {
         self.format_primary = None;
+    }
+
+    /// Invoke an external tool as a pass in the processing pipeline.
+    fn external_tool_pass(
+        &mut self,
+        tool: &ExternalToolPass,
+        status: &mut dyn StatusBackend,
+    ) -> Result<()> {
+        status.note_highlighted("Running external tool ", &tool.argv[0], " ...");
+
+        // Process the command arguments with our extremely-dumb fake globbing
+        // support. Filenames appearing in the arguments are treated as "read"
+        // for our rerun tracking.
+
+        let mut cmd = Command::new(&tool.argv[0]);
+        let mut read_files = HashSet::new();
+
+        {
+            let mem_files = &*self.mem.files.borrow();
+
+            for arg in &tool.argv[1..] {
+                // Primitive globbing: we replace "*.X" with matching files.
+                // This is pretty much a hack to support biber conveniently.
+                if arg.starts_with("*.") {
+                    let suffix = &arg[1..];
+
+                    for mfn in mem_files.keys() {
+                        if mfn.ends_with(suffix) {
+                            cmd.arg(mfn);
+                            read_files.insert(mfn.to_owned());
+                        }
+                    }
+                } else {
+                    cmd.arg(arg);
+
+                    if mem_files.contains_key(arg) {
+                        read_files.insert(arg.to_owned());
+                    }
+                }
+            }
+        }
+
+        // Now that we're validated, write those files to disk so that the tool
+        // can actually use them.
+
+        let tempdir = ctry!(
+            tempfile::Builder::new().tempdir();
+            "can't create temporary directory for external tool"
+        );
+
+        {
+            let mem_files = &*self.mem.files.borrow();
+
+            for name in &read_files {
+                let file = mem_files.get(name).unwrap();
+
+                let real_path = tempdir.path().join(name);
+                let mut f = ctry!(
+                    File::create(&real_path);
+                    "failed to create file `{}`", real_path.display()
+                );
+                ctry!(
+                    f.write_all(&file.data);
+                    "failed to write file `{}`", real_path.display()
+                );
+            }
+        }
+
+        // Now we can actually run the command.
+
+        let output = cmd.current_dir(tempdir.path()).output()?;
+
+        if let Some(0) = output.status.code() {
+        } else {
+            tt_error!(
+                status,
+                "the external tool exited with an error code; its stdout was:\n"
+            );
+            status.dump_error_logs(&output.stdout[..]);
+            tt_error!(status, "its stderr was:\n");
+            status.dump_error_logs(&output.stderr[..]);
+
+            return if let Some(n) = output.status.code() {
+                Err(errmsg!("the external tool exited with error code {}", n))
+            } else {
+                Err(errmsg!("the external tool was terminated by a signal"))
+            };
+        }
+
+        // Search for any files that the tool created, and import them into the
+        // memory layer.
+
+        for entry in std::fs::read_dir(tempdir.path())? {
+            let entry = entry?;
+
+            if !entry.file_type()?.is_file() {
+                continue;
+            }
+
+            if let Some(basename) = entry.file_name().to_str() {
+                if !self.mem.files.borrow().contains_key(basename) {
+                    let path = entry.path();
+                    let mut data = Vec::new();
+
+                    let mut f = ctry!(
+                        File::open(&path);
+                        "failed to open tool-created file `{}`", path.display()
+                    );
+                    ctry!(
+                        f.read_to_end(&mut data);
+                        "failed to read tool-created file `{}`", path.display()
+                    );
+
+                    self.mem.create_entry(basename, data);
+                    self.events.insert(
+                        basename.to_owned(),
+                        FileSummary::new(AccessPattern::Written, InputOrigin::NotInput),
+                    );
+                }
+            }
+        }
+
+        // Mark the input files as having been read, and we're done.
+
+        for name in &read_files {
+            let mut summ = self.events.get_mut(name).unwrap();
+            summ.access_pattern = match summ.access_pattern {
+                AccessPattern::Written => AccessPattern::WrittenThenRead,
+                c => c, // identity mapping makes sense for remaining options
+            };
+        }
+
+        Ok(())
     }
 }
 
@@ -633,6 +767,34 @@ enum ShellEscapeMode {
 impl Default for ShellEscapeMode {
     fn default() -> Self {
         ShellEscapeMode::Defaulted
+    }
+}
+
+/// A custom extra pass that invokes an external tool.
+///
+/// This is bad for reproducibility but comes in handy.
+#[derive(Debug)]
+struct ExternalToolPass {
+    argv: Vec<String>,
+}
+
+impl ExternalToolPass {
+    fn new_for_biber() -> Self {
+        // Testing support -- let the rig specify a custom executable to use,
+        // which lets us exercise different pieces of the external-tool
+        // behavior.
+
+        let s = (
+            crate::config::is_config_test_mode_activated(),
+            std::env::var("TECTONIC_TEST_FAKE_BIBER"),
+        );
+
+        let argv = match s {
+            (true, Ok(text)) => text.split_whitespace().map(|x| x.to_owned()).collect(),
+            _ => vec!["biber".to_owned(), "*.bcf".to_owned()],
+        };
+
+        ExternalToolPass { argv }
     }
 }
 
@@ -1009,6 +1171,7 @@ impl ProcessingSessionBuilder {
 
 #[derive(Debug, Clone)]
 enum RerunReason {
+    Biber,
     Bibtex,
     FileChange(String),
 }
@@ -1411,7 +1574,11 @@ impl ProcessingSession {
         } else {
             warnings = self.tex_pass(None, status)?;
 
-            if self.is_bibtex_needed() {
+            if self.is_biber_needed() {
+                self.bs
+                    .external_tool_pass(&ExternalToolPass::new_for_biber(), status)?;
+                Some(RerunReason::Biber)
+            } else if self.is_bibtex_needed() {
                 self.bibtex_pass(status)?;
                 Some(RerunReason::Bibtex)
             } else {
@@ -1431,6 +1598,7 @@ impl ProcessingSession {
                 "I was told to".to_owned()
             } else {
                 match rerun_result {
+                    Some(RerunReason::Biber) => "biber was run".to_owned(),
                     Some(RerunReason::Bibtex) => "bibtex was run".to_owned(),
                     Some(RerunReason::FileChange(ref s)) => format!("\"{}\" changed", s),
                     None => break,
@@ -1477,6 +1645,15 @@ impl ProcessingSession {
         }
 
         Ok(0)
+    }
+
+    fn is_biber_needed(&self) -> bool {
+        self.bs
+            .mem
+            .files
+            .borrow()
+            .keys()
+            .any(|filename| filename.ends_with(".bcf"))
     }
 
     fn is_bibtex_needed(&self) -> bool {

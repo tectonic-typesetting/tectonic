@@ -12,12 +12,10 @@
 /// them.
 mod linkage {
     #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_core;
+    use tectonic_bridge_core as clippyrenamehack1;
 
     #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_flate;
+    use tectonic_bridge_flate as clippyrenamehack2;
 }
 
 /// Does our resulting executable link correctly?
