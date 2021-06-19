@@ -1,3 +1,9 @@
+# tectonic_engine_xdvipdfmx 0.1.3 (2021-06-19)
+
+- Fix a `build.rs` typo causing nonstop rebuilds
+- Fixes for Clippy 1.53.0
+
+
 # tectonic_engine_xdvipdfmx 0.1.2 (2021-06-17)
 
 - Switch from running [cbindgen] at build time to having the developer run it

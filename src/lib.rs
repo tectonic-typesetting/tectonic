@@ -14,24 +14,22 @@
 //!
 //! Because Tectonic is based on the XeTeX engine, it can take advantage of the
 //! features of modern fonts (TrueType, OpenType, etc.), outputs directly to the
-//! PDF file format, and supports Unicode inputs. Tectonic differs from other
-//! TeX engines in the following ways:
+//! PDF file format, and supports Unicode inputs. Most importantly, the TeX
+//! experience delivered by Tectonic is completely embeddable: if you link with
+//! this crate you can fully process TeX documents, from source to PDF, without
+//! relying on any externally installed software, configuration, or resource
+//! files. This is possible because Tectonic bundles the traditional TeX tools
+//! and routes their I/O through a pluggable backend system.
 //!
-//! - Dependencies on environment variables and configuration files have been
-//!   eliminated.
-//! - All I/O is routed through pluggable backends. Support data can be fetched
-//!   from a single “bundle” file, and the engine’s (copious) output can be
-//!   hidden or postprocessed.
-//! - The command-line frontend, `tectonic`, has a modernized user interface
-//!   that never asks for user input.
-//! - The frontend is just a thin shim over the Tectonic Rust crate, so that the
-//!   full engine can be embedded anywhere you can run Rust code.
+//! This crate delivers command-line frontend, `tectonic`, that has a modernized
+//! user experience that hides TeX’s copious output (by default) and never asks
+//! for user input. Virtually all of the functionality of the frontend is
+//! accessible programmatically through the [`driver`] module of this crate.
 //!
-//! As of version 0.5, this crate is more and more a “façade” for a set of
-//! sub-crates that combine to provide the Tectonic user experience. Those
-//! crates generally have APIs that are more carefully structured and better
-//! documented than this crate, which grew somewhat organically. The
-//! foundational crates are:
+//! This crate joins a set of sub-crates that combine to provide the Tectonic
+//! user experience. Those crates generally have APIs that are more carefully
+//! structured and better documented than this crate, which grew somewhat
+//! organically. The foundational crates are:
 //!
 //! - [`tectonic_errors`](https://docs.rs/tectonic_errors) for core error
 //!   handing types.
@@ -47,6 +45,10 @@
 //! Building on these and other support crates of less general interest are the
 //! following major pieces of Tectonic’s functionality:
 //!
+//! - [`tectonic_bundles`](https://docs.rs/tectonic_bundles) for the“bundles” of
+//!   TeX support files underlying Tectonic processing.
+//! - [`tectonic_docmodel`](https://docs.rs/tectonic_docmodel) for the Tectonic
+//!   “document model” expressed in `Tectonic.toml` files.
 //! - [`tectonic_engine_xetex`](https://docs.rs/tectonic_engine_xetex) for the
 //!   XeTeX engine.
 //! - [`tectonic_engine_xdvipdfmx`](https://docs.rs/tectonic_engine_xdvipdfmx)
@@ -183,6 +185,7 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]

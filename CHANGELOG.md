@@ -1,3 +1,57 @@
+# tectonic 0.7.0 (2021-06-19)
+
+This release of Tectonic, at long last, adds support for [biber] to enable full
+use of [biblatex][biber]! Biber is a complex Perl program, so, unlike the other
+Tectonic “engines,” we can’t practically embed it within the Tectonic program.
+This means that document builds using biber will have lessened reproducibility
+and portability, but it’s better to have that than to fail to build the document
+at all.
+
+[biber]: http://biblatex-biber.sourceforge.net/
+
+Here's a sample document that should now get fully processed:
+
+```tex
+% adapted from https://tex.stackexchange.com/a/34136/135094:
+\documentclass{article}
+\usepackage[autostyle]{csquotes}
+\usepackage[
+    backend=biber,
+    style=authoryear-icomp,
+    sortlocale=de_DE,
+    natbib=true,
+    url=false,
+    doi=true,
+    eprint=false
+]{biblatex}
+\addbibresource{biblatex-examples.bib}
+
+\usepackage[]{hyperref}
+\hypersetup{
+    colorlinks=true,
+}
+
+\begin{document}
+
+Lorem ipsum dolor sit amet~\citep{kastenholz}. At vero eos et accusam et justo
+duo dolores et ea rebum~\citet{sigfridsson}.
+
+\printbibliography
+\end{document}
+```
+
+Tectonic’s new support detects a need to run `biber` by checking for the
+creation of a file whose name ends in `.bcf`, and executes the `biber` program
+inside a temporary directory, slurping any files that it creates into Tectonic’s
+virtualized I/O subsystem. We’ll probably need to add a few new “knobs” to allow
+users to control how and when biber is run — please file an issue if you run
+into any limitations!
+
+Under the hood, the implementation includes the beginnings of a more generic
+subsystem for including external tool programs in document builds. This may turn
+out to be more generally useful going forward.
+
+
 # tectonic 0.6.4 (2021-06-17)
 
 - Yet another new release to try to fix the docs.rs build. I think this one may

@@ -1,4 +1,4 @@
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 use lazy_static::lazy_static;
@@ -227,6 +227,115 @@ fn bad_input_path_2() {
 fn bad_outfmt_1() {
     let output = run_tectonic(&PathBuf::from("."), &["-", "--outfmt=dd"]);
     error_or_panic(output);
+}
+
+fn run_with_biber(args: &str, stdin: &str) -> Output {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+    let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
+
+    let test_cmd = if cfg!(windows) {
+        format!(
+            "cmd /c {} {}",
+            util::test_path(&["fake-biber.bat"]).display(),
+            args
+        )
+    } else {
+        format!("{} {}", util::test_path(&["fake-biber.sh"]).display(), args)
+    };
+
+    command.env("TECTONIC_TEST_FAKE_BIBER", &test_cmd);
+
+    command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    println!("running {:?}", command);
+    let mut child = command.spawn().expect("tectonic failed to start");
+
+    write!(child.stdin.as_mut().unwrap(), "{}", stdin)
+        .expect("failed to send data to tectonic subprocess");
+
+    child
+        .wait_with_output()
+        .expect("failed to wait on tectonic subprocess")
+}
+
+const BIBER_TRIGGER_TEX: &str = r#"
+% Test if we're on the second pass by seeing if the BCF already exists
+\newif\ifsecond
+\newread\rbcf
+\openin\rbcf=myfile.bcf
+\ifeof\rbcf
+\message{first pass}
+\secondfalse
+\else
+\message{second pass}
+\secondtrue
+\closein\rbcf
+\fi
+
+% Now create BCF
+\newwrite\wbcf
+\immediate\openout\wbcf=myfile.bcf\relax
+\immediate\write\wbcf{Hello BCF file}
+\immediate\closeout\wbcf
+"#;
+
+#[test]
+fn biber_failure() {
+    let output = run_with_biber("failure", BIBER_TRIGGER_TEX);
+    error_or_panic(output);
+}
+
+#[test]
+fn biber_no_such_tool() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+    let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
+
+    command.env("TECTONIC_TEST_FAKE_BIBER", "ohnothereisnobiberprogram");
+
+    const REST: &str = r#"\bye"#;
+    let tex = format!("{}{}", BIBER_TRIGGER_TEX, REST);
+
+    command
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    println!("running {:?}", command);
+    let mut child = command.spawn().expect("tectonic failed to start");
+
+    write!(child.stdin.as_mut().unwrap(), "{}", tex)
+        .expect("failed to send data to tectonic subprocess");
+
+    let output = child
+        .wait_with_output()
+        .expect("failed to wait on tectonic subprocess");
+    error_or_panic(output);
+}
+
+#[cfg(unix)]
+#[test]
+fn biber_signal() {
+    let output = run_with_biber("signal", BIBER_TRIGGER_TEX);
+    error_or_panic(output);
+}
+
+#[test]
+fn biber_success() {
+    const REST: &str = r#"
+\ifsecond
+\ifnum\input{biberout.qqq}=456\relax
+a
+\else
+\ohnothebiberdidntwork
+\fi
+\fi
+\bye"#;
+    let tex = format!("{}{}", BIBER_TRIGGER_TEX, REST);
+    let output = run_with_biber("success", &tex);
+    success_or_panic(output);
 }
 
 #[test]

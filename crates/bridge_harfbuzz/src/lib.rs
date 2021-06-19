@@ -8,10 +8,8 @@
 /// link with them, to pull in the symbols defined in the C APIs.
 mod linkage {
     #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_graphite2;
+    use tectonic_bridge_graphite2 as clippyrenamehack1;
 
     #[allow(unused_imports)]
-    #[allow(clippy::single_component_path_imports)]
-    use tectonic_bridge_icu;
+    use tectonic_bridge_icu as clippyrenamehack2;
 }
