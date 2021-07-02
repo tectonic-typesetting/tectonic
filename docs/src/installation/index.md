@@ -116,7 +116,7 @@ $ sudo port install tectonic
 If you're using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
 
 ```sh
-$ nix-env -iA nixos.tectonic
+$ nix-env -f '<nixpkgs>' -iA tectonic
 ```
 
 in your shell. You can also create a temporary environment using
