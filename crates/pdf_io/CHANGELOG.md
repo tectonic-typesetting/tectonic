@@ -1,3 +1,10 @@
+# tectonic_pdf_io 0.1.1 (2021-07-03)
+
+- Fix the build on Rust 1.46, needed for the conda-forge macOS build (which is
+  stuck on this version of Rust for the time being)
+- Fixes for complaints from Clippy 1.53.0
+
+
 # tectonic_pdf_io 0.1.0 (2021-06-03)
 
 This crate contains the vast majority of the C/C++ code from `xdvipdfmx`. It
