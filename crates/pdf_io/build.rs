@@ -75,7 +75,7 @@ fn main() {
         "-std=gnu11",
     ];
 
-    for flag in &cflags {
+    for flag in &cflags[..] {
         ccfg.flag_if_supported(flag);
     }
 
@@ -172,7 +172,7 @@ fn main() {
         "pdf_io/dpx-vf.c",
     ];
 
-    for fname in &files {
+    for fname in &files[..] {
         compile(&mut ccfg, fname);
     }
 
