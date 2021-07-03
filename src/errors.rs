@@ -68,6 +68,7 @@ error_chain! {
         ConfigRead(ReadError);
         ConfigWrite(WriteError);
         NewStyle(NewError);
+        QuickXml(quick_xml::Error);
         Time(std::time::SystemTimeError);
         Utf8(str::Utf8Error);
         Xdv(tectonic_xdv::XdvError);
