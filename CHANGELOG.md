@@ -1,3 +1,21 @@
+# tectonic 0.7.1 (2021-07-04)
+
+- Improve launching of `biber` by parsing the `.run.xml` file to find out which
+  resource files are needed. This should hopefully allow Tectonic to process
+  many more documents that use `biblatex` ([#796], [#804], [@pkgw]).
+- Avoid misplaced newlines in warning output ([#803], [@ralismark]).
+- Fix the build on Rust 1.46, which will be helpful for the conda-forge package.
+  We really ought to define and monitor a Minimum Supported Rust Version (MSRV)
+  for Tectonic, but we haven't set that up just yet ([#802], [@pkgw]).
+
+[#796]: https://github.com/tectonic-typesetting/tectonic/issues/796
+[#802]: https://github.com/tectonic-typesetting/tectonic/pull/802
+[#803]: https://github.com/tectonic-typesetting/tectonic/pull/803
+[#804]: https://github.com/tectonic-typesetting/tectonic/pull/804
+[@pkgw]: https://github.com/pkgw
+[@ralismark]: https://github.com/ralismark
+
+
 # tectonic 0.7.0 (2021-06-19)
 
 This release of Tectonic, at long last, adds support for [biber] to enable full
