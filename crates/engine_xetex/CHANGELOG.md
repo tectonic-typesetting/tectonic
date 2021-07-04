@@ -1,3 +1,12 @@
+# tectonic_engine_xetex 0.1.4 (2021-07-04)
+
+- Avoid misplaced newlines in warning output ([#803], [@ralismark])
+- Fix new warnings reported by Clippy 1.53.0
+
+[#803]: https://github.com/tectonic-typesetting/tectonic/pull/803
+[@ralismark]: https://github.com/ralismark
+
+
 # tectonic_engine_xetex 0.1.3 (2021-06-17)
 
 - Switch from running [cbindgen] at build time to having the developer run it
