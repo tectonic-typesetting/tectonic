@@ -264,22 +264,49 @@ fn run_with_biber(args: &str, stdin: &str) -> Output {
 const BIBER_TRIGGER_TEX: &str = r#"
 % Test if we're on the second pass by seeing if the BCF already exists
 \newif\ifsecond
-\newread\rbcf
-\openin\rbcf=myfile.bcf
-\ifeof\rbcf
+\newread\r
+\openin\r=texput.bcf
+\ifeof\r
 \message{first pass}
 \secondfalse
 \else
 \message{second pass}
 \secondtrue
-\closein\rbcf
+\closein\r
 \fi
 
 % Now create BCF
-\newwrite\wbcf
-\immediate\openout\wbcf=myfile.bcf\relax
-\immediate\write\wbcf{Hello BCF file}
-\immediate\closeout\wbcf
+\newwrite\w
+\immediate\openout\w=texput.bcf\relax
+\immediate\write\w{Hello BCF file}
+\immediate\closeout\w
+
+% Now create run.xml
+\immediate\openout\w=texput.run.xml\relax
+\immediate\write\w{
+<requests version="1.0">
+    <external package="biblatex" priority="5" active="1">
+        <generic>biber</generic>
+        <cmdline>
+            <binary>biber</binary>
+            <infile>texput</infile>
+        </cmdline>
+        <input>
+            <file>texput.bcf</file>
+        </input>
+        <output>
+            <file>texput.bbl</file>
+        </output>
+        <provides type="dynamic">
+            <file>texput.bbl</file>
+        </provides>
+        <requires type="dynamic">
+            <file>texput.bcf</file>
+        </requires>
+    </external>
+</requests>
+}
+\immediate\closeout\w
 "#;
 
 #[test]

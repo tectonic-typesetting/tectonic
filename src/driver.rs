@@ -16,10 +16,11 @@
 //! which contains tectonic's main CLI program.
 
 use byte_unit::Byte;
+use quick_xml::{events::Event, Reader};
 use std::{
     collections::{HashMap, HashSet},
     fs::File,
-    io::{Read, Write},
+    io::{Cursor, Read, Write},
     path::{Path, PathBuf},
     process::Command,
     rc::Rc,
@@ -295,34 +296,21 @@ impl BridgeState {
     ) -> Result<()> {
         status.note_highlighted("Running external tool ", &tool.argv[0], " ...");
 
-        // Process the command arguments with our extremely-dumb fake globbing
-        // support. Filenames appearing in the arguments are treated as "read"
-        // for our rerun tracking.
+        // Process the command arguments. Filenames appearing in the arguments
+        // are treated as "requirements" that will be placed in the tool's
+        // working directory.
 
         let mut cmd = Command::new(&tool.argv[0]);
-        let mut read_files = HashSet::new();
+        let mut read_files = tool.extra_requires.clone();
 
         {
             let mem_files = &*self.mem.files.borrow();
 
             for arg in &tool.argv[1..] {
-                // Primitive globbing: we replace "*.X" with matching files.
-                // This is pretty much a hack to support biber conveniently.
-                if arg.starts_with("*.") {
-                    let suffix = &arg[1..];
+                cmd.arg(arg);
 
-                    for mfn in mem_files.keys() {
-                        if mfn.ends_with(suffix) {
-                            cmd.arg(mfn);
-                            read_files.insert(mfn.to_owned());
-                        }
-                    }
-                } else {
-                    cmd.arg(arg);
-
-                    if mem_files.contains_key(arg) {
-                        read_files.insert(arg.to_owned());
-                    }
+                if mem_files.contains_key(arg) {
+                    read_files.insert(arg.to_owned());
                 }
             }
         }
@@ -336,19 +324,19 @@ impl BridgeState {
         );
 
         {
-            let mem_files = &*self.mem.files.borrow();
-
             for name in &read_files {
-                let file = mem_files.get(name).unwrap();
+                // We could try to be clever and symlink when the input file has
+                // an abspath or something, but ... meh.
+                let mut ih = self.input_open_name(name, status).must_exist()?;
 
-                let real_path = tempdir.path().join(name);
+                let tool_path = tempdir.path().join(name);
                 let mut f = ctry!(
-                    File::create(&real_path);
-                    "failed to create file `{}`", real_path.display()
+                    File::create(&tool_path);
+                    "failed to create file `{}`", tool_path.display()
                 );
                 ctry!(
-                    f.write_all(&file.data);
-                    "failed to write file `{}`", real_path.display()
+                    std::io::copy(&mut ih, &mut f);
+                    "failed to write file `{}`", tool_path.display()
                 );
             }
         }
@@ -776,26 +764,7 @@ impl Default for ShellEscapeMode {
 #[derive(Debug)]
 struct ExternalToolPass {
     argv: Vec<String>,
-}
-
-impl ExternalToolPass {
-    fn new_for_biber() -> Self {
-        // Testing support -- let the rig specify a custom executable to use,
-        // which lets us exercise different pieces of the external-tool
-        // behavior.
-
-        let s = (
-            crate::config::is_config_test_mode_activated(),
-            std::env::var("TECTONIC_TEST_FAKE_BIBER"),
-        );
-
-        let argv = match s {
-            (true, Ok(text)) => text.split_whitespace().map(|x| x.to_owned()).collect(),
-            _ => vec!["biber".to_owned(), "*.bcf".to_owned()],
-        };
-
-        ExternalToolPass { argv }
-    }
+    extra_requires: HashSet<String>,
 }
 
 /// A builder-style interface for creating a [`ProcessingSession`].
@@ -1573,10 +1542,10 @@ impl ProcessingSession {
             Some(RerunReason::Bibtex)
         } else {
             warnings = self.tex_pass(None, status)?;
+            let maybe_biber = self.check_biber_requirement()?;
 
-            if self.is_biber_needed() {
-                self.bs
-                    .external_tool_pass(&ExternalToolPass::new_for_biber(), status)?;
+            if let Some(biber) = maybe_biber {
+                self.bs.external_tool_pass(&biber, status)?;
                 Some(RerunReason::Biber)
             } else if self.is_bibtex_needed() {
                 self.bibtex_pass(status)?;
@@ -1645,15 +1614,6 @@ impl ProcessingSession {
         }
 
         Ok(0)
-    }
-
-    fn is_biber_needed(&self) -> bool {
-        self.bs
-            .mem
-            .files
-            .borrow()
-            .keys()
-            .any(|filename| filename.ends_with(".bcf"))
     }
 
     fn is_bibtex_needed(&self) -> bool {
@@ -1866,5 +1826,188 @@ impl ProcessingSession {
         Rc::try_unwrap(self.bs.mem.files)
             .expect("multiple strong refs to MemoryIo files")
             .into_inner()
+    }
+
+    /// See if we need to run `biber`, and parse the `.run.xml` file from the
+    /// `loqreq` package to figure out what files `biber` needs. This
+    /// functionality should probably become more generic, but I don't have a
+    /// great sense as to how widely-used `logreq` is.
+    fn check_biber_requirement(&self) -> Result<Option<ExternalToolPass>> {
+        // Is there a `.run.xml` file?
+
+        let mut run_xml_path = PathBuf::from(&self.primary_input_tex_path);
+        run_xml_path.set_extension("run.xml");
+        let run_xml_path = run_xml_path.display().to_string();
+
+        let mem_files = &*self.bs.mem.files.borrow();
+        let run_xml_entry = match mem_files.get(&run_xml_path) {
+            Some(e) => e,
+            None => return Ok(None),
+        };
+
+        // Yes, there is. Set up to potentially run biber. For testing support,
+        // we let the rig specify a custom executable to use, which lets us
+        // exercise different pieces of the external-tool behavior.
+
+        let s = (
+            crate::config::is_config_test_mode_activated(),
+            std::env::var("TECTONIC_TEST_FAKE_BIBER"),
+        );
+
+        let mut argv = match s {
+            (true, Ok(text)) => text.split_whitespace().map(|x| x.to_owned()).collect(),
+            _ => vec!["biber".to_owned()],
+        };
+
+        let mut extra_requires = HashSet::new();
+
+        // Do a sketchy XML parse to see if there's info about a biber
+        // invocation.
+
+        #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+        enum State {
+            /// Searching for the biber section
+            Searching,
+
+            /// In a <binary> element. Will its value be "biber"??!?
+            InBinaryName,
+
+            /// In the <cmdline> part of the biber section.
+            InBiberCmdline,
+
+            /// About to read an argument to the biber command.
+            InBiberArgument,
+
+            /// Reading through the post-cmdline part of the biber section.
+            InBiberRemainder,
+
+            /// In a "requirement" section like <input> or <requires> that contains
+            /// filenames we should provide
+            InBiberRequirementSection,
+
+            /// In a <file> requirement
+            InBiberFileRequirement,
+        }
+
+        let curs = Cursor::new(&run_xml_entry.data[..]);
+        let mut reader = Reader::from_reader(curs);
+        let mut buf = Vec::new();
+        let mut state = State::Searching;
+
+        loop {
+            let event = ctry!(
+                reader.read_event(&mut buf);
+                "error parsing run.xml file"
+            );
+
+            if let Event::Eof = event {
+                break;
+            }
+
+            match (state, event) {
+                (State::Searching, Event::Start(ref e)) => {
+                    let name = reader.decode(e.local_name())?;
+
+                    if name == "binary" {
+                        state = State::InBinaryName;
+                    }
+                }
+
+                (State::InBinaryName, Event::Text(ref e)) => {
+                    let text = e.unescape_and_decode(&reader)?;
+
+                    state = if &text == "biber" {
+                        State::InBiberCmdline
+                    } else {
+                        State::Searching
+                    };
+                }
+
+                (State::InBinaryName, _) => {
+                    state = State::Searching;
+                }
+
+                (State::InBiberCmdline, Event::Start(ref e)) => {
+                    let name = reader.decode(e.local_name())?;
+
+                    // Note that the "infile" might be `foo` without the `.bcf`
+                    // extension, so we can't use it for file-finding.
+                    state = match name {
+                        "infile" | "outfile" | "option" => State::InBiberArgument,
+                        _ => State::InBiberRemainder,
+                    }
+                }
+
+                (State::InBiberCmdline, Event::End(ref e)) => {
+                    let name = reader.decode(e.local_name())?;
+
+                    if name == "cmdline" {
+                        state = State::InBiberRemainder;
+                    }
+                }
+
+                (State::InBiberArgument, Event::Text(ref e)) => {
+                    argv.push(e.unescape_and_decode(&reader)?);
+                    state = State::InBiberCmdline;
+                }
+
+                (State::InBiberRemainder, Event::Start(ref e)) => {
+                    let name = reader.decode(e.local_name())?;
+
+                    state = match name {
+                        "input" | "requires" => State::InBiberRequirementSection,
+                        _ => State::InBiberRemainder,
+                    }
+                }
+
+                (State::InBiberRemainder, Event::End(ref e)) => {
+                    let name = reader.decode(e.local_name())?;
+
+                    if name == "external" {
+                        break;
+                    }
+                }
+
+                (State::InBiberRequirementSection, Event::Start(ref e)) => {
+                    let name = reader.decode(e.local_name())?;
+
+                    state = match name {
+                        "file" => State::InBiberFileRequirement,
+                        _ => State::InBiberRemainder,
+                    }
+                }
+
+                (State::InBiberRequirementSection, Event::End(ref e)) => {
+                    let name = reader.decode(e.local_name())?;
+
+                    if name == "input" || name == "requires" {
+                        state = State::InBiberRemainder;
+                    }
+                }
+
+                (State::InBiberFileRequirement, Event::Text(ref e)) => {
+                    extra_requires.insert(e.unescape_and_decode(&reader)?);
+                    state = State::InBiberRequirementSection;
+                }
+
+                (State::InBiberFileRequirement, _) => {
+                    state = State::InBiberRequirementSection;
+                }
+
+                _ => {}
+            }
+        }
+
+        // All done!
+
+        Ok(if state == State::Searching {
+            // No biber invocation, in the end.
+            None
+        } else {
+            Some(ExternalToolPass {
+                argv,
+                extra_requires,
+            })
+        })
     }
 }
