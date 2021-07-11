@@ -166,8 +166,18 @@ impl IoProvider for FilesystemIo {
             Err(e) => return OpenResult::Err(e),
         };
 
-        if self.hidden_input_paths.contains(&path) {
-            return OpenResult::NotAvailable;
+        if let Ok(canonical_path) = path.canonicalize() {
+            // Note: std::fs::canonicalize fails if the target doesn't exist.
+            let is_hidden = self
+                .hidden_input_paths
+                .iter()
+                .any(|p| match p.canonicalize() {
+                    Ok(p) => p == canonical_path,
+                    Err(_) => false,
+                });
+            if is_hidden {
+                return OpenResult::NotAvailable;
+            }
         }
 
         let f = match File::open(&path) {
