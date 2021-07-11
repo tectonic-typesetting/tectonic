@@ -165,17 +165,38 @@ impl IoProvider for FilesystemIo {
             Err(e) => return OpenResult::Err(e),
         };
 
-        if let Ok(canonical_path) = path.canonicalize() {
-            // Note: std::fs::canonicalize fails if the target doesn't exist.
-            let is_hidden = self
-                .hidden_input_paths
-                .iter()
-                .any(|p| match p.canonicalize() {
-                    Ok(p) => p == canonical_path,
-                    Err(_) => false,
-                });
-            if is_hidden {
-                return OpenResult::NotAvailable;
+        // The intention is to pretend that each of the entities pointed to by hidden_path doesn't
+        // exist. There's a couple issues you need to be careful of:
+        //
+        // 1. Paths may be relative or absolute, and both need to be handled correctly
+        // 2. Due to symlinks/etc., "./a/b/.." and "./a" may not point to the same place (e.g. if
+        //    a/b is symlinked to another folder)
+        // 3. `path` may traverse into hidden_path, the follow a symlink out, causing the overall
+        //    path to (canonically) be outside hidden_path
+        // 4. `path` may traverse a symlink to something inside hidden_path without actually
+        //    touching hidden_path
+        // 5. A hidden path might be a symlink.
+        //
+        // We're essentially hiding the real path pointed to by hidden_path, including resolving
+        // symlinks (i.e. 5). The way we're handling it, we'll correctly handle 1 and 2, and reject
+        // both 3 and 4 (though 3 and 4 can be changes somewhat easily).
+
+        // TODO do conversion at initialisation? We would fail to block files that get created
+        // halfway through.
+        // TODO this is a lot of canonicalize calls -- is this okay?
+        let canon_hidden_paths: Vec<PathBuf> = self
+            .hidden_input_paths
+            .iter()
+            .filter_map(|p| p.canonicalize().ok())
+            .collect();
+        for path_prefix in path.ancestors() {
+            if let Ok(path_prefix) = path_prefix.canonicalize() {
+                if canon_hidden_paths
+                    .iter()
+                    .any(|hp| hp.starts_with(&path_prefix))
+                {
+                    return OpenResult::NotAvailable;
+                }
             }
         }
 
