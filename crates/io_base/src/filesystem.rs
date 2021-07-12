@@ -182,10 +182,12 @@ impl IoProvider for FilesystemIo {
         // We're essentially hiding the real path pointed to by hidden_path, including resolving
         // symlinks (i.e. 5). The way we're handling it, we'll correctly handle 1 and 2, and reject
         // both 3 and 4 (though 3 and 4 can be changes somewhat easily).
+        //
+        // I'll admit that this may be more complex than necessary, but I'm not sure how much
+        // correctness we want.
 
-        // TODO do conversion at initialisation? We would fail to block files that get created
-        // halfway through.
-        // TODO this is a lot of canonicalize calls -- is this okay?
+        // TODO do conversion at initialisation? Doing that would fail to block files that get
+        // created halfway through.
         let canon_hidden_paths: Vec<PathBuf> = self
             .hidden_input_paths
             .iter()
