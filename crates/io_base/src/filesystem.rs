@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tectonic_errors::Result;
-use tectonic_status_base::StatusBackend;
+use tectonic_status_base::{tt_warning, StatusBackend};
 
 use super::{
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
@@ -83,6 +83,7 @@ pub struct FilesystemIo {
     writes_allowed: bool,
     absolute_allowed: bool,
     hidden_input_paths: HashSet<PathBuf>,
+    reported_paths: HashSet<PathBuf>,
 }
 
 impl FilesystemIo {
@@ -98,6 +99,7 @@ impl FilesystemIo {
             writes_allowed,
             absolute_allowed,
             hidden_input_paths,
+            reported_paths: HashSet::new(),
         }
     }
 
@@ -158,15 +160,48 @@ impl IoProvider for FilesystemIo {
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        _status: &mut dyn StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e),
         };
 
-        if self.hidden_input_paths.contains(&path) {
-            return OpenResult::NotAvailable;
+        // The intention is to pretend that each of the entities pointed to by hidden_path doesn't
+        // exist. There's a couple issues you need to be careful of:
+        //
+        // 1. Paths may be relative or absolute, and both need to be handled correctly
+        // 2. Due to symlinks/etc., "./a/b/.." and "./a" may not point to the same place (e.g. if
+        //    a/b is symlinked to another folder)
+        // 3. `path` may traverse into hidden_path, the follow a symlink out, causing the overall
+        //    path to (canonically) be outside hidden_path
+        // 4. `path` may traverse a symlink to something inside hidden_path without actually
+        //    touching hidden_path
+        // 5. A hidden path might be a symlink.
+        //
+        // We're essentially hiding the real path pointed to by hidden_path, including resolving
+        // symlinks (i.e. 5). The way we're handling it, we'll correctly handle 1 and 2, and reject
+        // both 3 and 4 (though 3 and 4 can be changes somewhat easily).
+        //
+        // I'll admit that this may be more complex than necessary, but I'm not sure how much
+        // correctness we want.
+
+        // TODO do conversion at initialisation? Doing that would fail to block files that get
+        // created halfway through.
+        let canon_hidden_paths: Vec<PathBuf> = self
+            .hidden_input_paths
+            .iter()
+            .filter_map(|p| p.canonicalize().ok())
+            .collect();
+        for path_prefix in path.ancestors() {
+            if let Ok(path_prefix) = path_prefix.canonicalize() {
+                if canon_hidden_paths
+                    .iter()
+                    .any(|hp| hp.starts_with(&path_prefix))
+                {
+                    return OpenResult::NotAvailable;
+                }
+            }
         }
 
         let f = match File::open(&path) {
@@ -185,6 +220,21 @@ impl IoProvider for FilesystemIo {
                 };
             }
         };
+
+        // Report the absolute path only if we're able to open it, since the xetex engine tries to
+        // read a lot of places.
+        //
+        // We check with the original requested name since construct_path might make relative paths
+        // into absolute paths (e.g. when self.root is absolute).
+        let name_path = Path::new(name);
+        if name_path.is_absolute() && !self.reported_paths.contains(name_path) {
+            tt_warning!(
+                status,
+                "accessing absolute path '{}'; build may not be reproducible on other systems",
+                name_path.display()
+            );
+            self.reported_paths.insert(name_path.to_owned());
+        }
 
         // Issue #754 - if you run Tectonic on an input that is located in a
         // directory containing a sub-directory named `latex`, you get a
