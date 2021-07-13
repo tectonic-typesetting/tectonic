@@ -1,16 +1,8 @@
-# tectonic_pdf_io 0.1.1 (2021-07-03)
+# See elsewhere for changelog
 
-- Fix the build on Rust 1.46, needed for the conda-forge macOS build (which is
-  stuck on this version of Rust for the time being)
-- Fixes for complaints from Clippy 1.53.0
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_pdf_io 0.1.0 (2021-06-03)
-
-This crate contains the vast majority of the C/C++ code from `xdvipdfmx`. It
-provides I/O services to both the `tectonic_engine_xdvipdfmx` and
-`tectonic_engine_xetex` crates through its C/C++ APIs. It does not provide a
-Rust API.
-
-This crate deals with general graphics I/O, not just PDF files, but the majority
-of its code is PDF-centric.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/pdf_io/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

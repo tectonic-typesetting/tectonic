@@ -20,6 +20,7 @@ use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_errors::Error as NewError;
 use tectonic_status_base::plain::PlainStatusBackend;
+use watchexec::run::OnBusyUpdate;
 
 /// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
@@ -424,7 +425,8 @@ impl WatchCommand {
         let mut args = watchexec::config::ConfigBuilder::default();
         args.cmd(vec![final_command])
             .paths(vec![env::current_dir()?])
-            .ignores(vec!["build".to_owned()]);
+            .ignores(vec!["build".to_owned()])
+            .on_busy_update(OnBusyUpdate::Queue);
         let args = args.build().map_err(NewError::from)?;
 
         let exec_handler = watchexec::run::ExecHandler::new(args);

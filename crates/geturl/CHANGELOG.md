@@ -1,16 +1,8 @@
-# tectonic_geturl 0.2.1 (2021-06-15)
+# See elsewhere for changelog
 
-- Fix a deprecation warning in the latest version of `reqwest`.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_geturl 0.2.0 (2021-06-03)
-
-- Expose a new `native-tls-vendored` Cargo feature, to allow people to control
-  vendoring in the `native-tls` dependency crate.
-- Work on the docs a bit.
-
-
-# tectonic_geturl 0.1.0 (2021-01-16)
-
-Initial release of "get-URL" support crate, with pluggable backends: either curl
-or reqwest. Or nothing, if you know that you're not going to need the network.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/geturl/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

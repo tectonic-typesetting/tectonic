@@ -1,6 +1,8 @@
-# tectonic_xetex_layout 0.1.0 (2021-06-03)
+# See elsewhere for changelog
 
-This new crate encapsulates the font selection and layout code used by the
-`tectonic_engine_xetex` crate. While it mostly consists of C/C++ code at the
-moment and does not expose a Rust API, there is a hope that it can be made more
-flexible and that its implementation can be migrated to be more Rust-based.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
+
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/xetex_layout/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

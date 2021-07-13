@@ -1,19 +1,8 @@
-# tectonic_xdv 0.1.12 (2021-06-03)
+# See elsewhere for changelog
 
-- Fix a potential source of undefined behavior (#752)
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_xdv 0.1.11 (2021-01-16)
-
-- Bump `byteorder` dep from 1.3.x series to 1.4.x series
-
-
-# tectonic_xdv 0.1.10 (2020-10-21)
-
-- No code changes; just issuing a new release to update deps and silence
-  Cranko's change detection.
-
-
-# tectonic_xdv 0.1.9 (2020-09-07)
-
-- No code changes; testing new Cranko-powered release workflow.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/xdv/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

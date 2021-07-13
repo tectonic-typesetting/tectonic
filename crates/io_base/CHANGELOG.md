@@ -1,34 +1,8 @@
-# tectonic_io_base 0.3.0 (2021-06-15)
+# See elsewhere for changelog
 
-- Add new "abspath" methods to the IoProvider trait. We need a new API to
-  generate proper SyncTeX output in the XeTeX engine, and this is the best
-  approach that we could devise that does a good job of maintaining backwards
-  compatibility. However, implementors of the IoProvider trait that delegate to
-  inner implementations will need to make sure to explicitly implement the new
-  methods in order to provide correct behavior (#762).
-- Add a new `app_dirs` module for system-wide knowledge of per-user directories
-  (@pkgw, #768). It's valuable to put this low in the dependency stack so that
-  higher-level crates can just "know" where to go for per-user files such as the
-  bundle cache.
-- Correct some broken internal links in the docs.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_io_base 0.2.0 (2021-06-03)
-
-- BREAKING: use `&str` for TeX paths rather than `OsStr`. In principle this
-  prevents users from asking the TeX engine to load up files whose names aren't
-  expressible in Unicode, but that whole use case really meshes poorly with
-  Tectonic's goal to provide a portable, uniform user experience. And using
-  `str` just makes many parts of life much easier.
-- Expose a new interface for TeX path normalization.
-- If an engine requests to open a file from a filesystem provider, and that name
-  exists but is a directory, pretend that it's not found. This is sensible behavior
-  and prevents some hard-to-understand failures (#754)
-- Add `FilesystemIo::root()` for users that want to query the root directory of
-  a filesystem I/O provider.
-- Work on the docs a bit
-
-
-# tectonic_io_base 0.1.0 (2021-01-15)
-
-Initial release: a new crate for basic Tectonic I/O types and traits.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/io_base/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

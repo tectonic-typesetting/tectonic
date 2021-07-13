@@ -1,5 +1,8 @@
-# tectonic_docmodel 0.1.0 (2021-06-15)
+# See elsewhere for changelog
 
-This crate isolates the file formats used by the Tectonic “document model”,
-primarily `Tectonic.toml`. This makes it possible to interact with these data
-formats without needing to link in with the full Tectonic dependency stack.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
+
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/docmodel/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

@@ -1,6 +1,8 @@
-# tectonic_dep_support 0.1.0 (2021-01-04)
+# See elsewhere for changelog
 
-A new crate to support Tectonic's searching for external libraries
-("dependencies"). Notably, this crate supports finding deps using either
-pkg-config or vcpkg. It does *not* (yet?) handle the question of deciding
-whether to find a dependency externally or vendor it (build it locally).
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
+
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/dep_support/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

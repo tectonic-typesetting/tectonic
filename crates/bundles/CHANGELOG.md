@@ -1,10 +1,8 @@
-# tectonic_bundles 0.1.0 (2021-06-15)
+# See elsewhere for changelog
 
-Add the `tectonic_bundles` crate! This separates out the implementation of the
-various Tectonic file “bundles” into a standalone crate, so that you can use
-them without having to link to harfbuzz and everything else pulled in by the
-main crate.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-As usual, separating out this crate led to some good API clarifications and
-improvements. The API offered here includes some nontrivial breakage compared to
-the old APIs in `tectonic::io::*`, but it's much more rationalized.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bundles/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
