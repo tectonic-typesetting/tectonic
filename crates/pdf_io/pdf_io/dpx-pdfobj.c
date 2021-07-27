@@ -2363,7 +2363,7 @@ skip_white_a85 (const char **p, const char *endptr)
 static pdf_obj *
 filter_stream_decode_ASCII85Decode (const void *data, size_t len)
 {
-  pdf_obj       *dst;
+  pdf_obj       *dst = NULL; /* Tectonic: avoid uninitialized warning */
   int            eod, error;
   const char    *p = (const char *) data;
   const char    *endptr = p + len;
