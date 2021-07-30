@@ -661,6 +661,74 @@ fn v2_build_multiple_outputs() {
     success_or_panic(&output);
 }
 
+#[test]
+#[cfg(feature = "serialization")]
+fn v2_dump_basic() {
+    let (_tempdir, temppath) = setup_v2();
+    let output = run_tectonic(&temppath, &["-X", "dump", "default.log"]);
+    success_or_panic(&output);
+
+    let t = std::str::from_utf8(&output.stdout[..]).unwrap();
+    let mut saw_it = false;
+
+    for line in t.lines() {
+        if line.contains("(default (_preamble.tex) (index.tex) (_postamble.tex [1] ) )") {
+            saw_it = true;
+            break;
+        }
+    }
+
+    assert!(saw_it);
+}
+
+#[test]
+#[cfg(feature = "serialization")]
+fn v2_dump_suffix() {
+    let (_tempdir, mut temppath) = setup_v2();
+
+    temppath.push("src");
+    temppath.push("index.tex");
+
+    {
+        let mut file = File::create(&temppath).unwrap();
+        writeln!(
+            file,
+            "{}", // <= works around {} fussiness in Rust format strings
+            r#"\newwrite\w
+\immediate\openout\w=first.demo\relax
+\immediate\write\w{content-un}
+\immediate\closeout\w
+\immediate\openout\w=second.demo\relax
+\immediate\write\w{content-deux}
+\immediate\closeout\w
+"#
+        )
+        .unwrap();
+    }
+
+    temppath.pop();
+    temppath.pop();
+
+    let output = run_tectonic(&temppath, &["-X", "dump", "-s", "demo"]);
+    success_or_panic(&output);
+
+    let t = std::str::from_utf8(&output.stdout[..]).unwrap();
+    let mut saw_first = false;
+    let mut saw_second = false;
+
+    for line in t.lines() {
+        if line.contains("content-un") {
+            saw_first = true;
+        }
+
+        if line.contains("content-deux") {
+            saw_second = true;
+        }
+    }
+
+    assert!(saw_first && saw_second);
+}
+
 const SHELL_ESCAPE_TEST_DOC: &str = r#"\immediate\write18{mkdir shellwork}
 \immediate\write18{echo 123 >shellwork/persist}
 \ifnum123=\input{shellwork/persist}
