@@ -161,7 +161,7 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
     tempdir
 }
 
-fn success_or_panic(output: Output) {
+fn success_or_panic(output: &Output) {
     if output.status.success() {
         println!("status: {}", output.status);
         println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
@@ -176,7 +176,7 @@ fn success_or_panic(output: Output) {
     }
 }
 
-fn error_or_panic(output: Output) {
+fn error_or_panic(output: &Output) {
     if !output.status.success() {
         println!("status: {}", output.status);
         println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
@@ -209,7 +209,7 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
     let tempdir = setup_and_copy_files(&[]);
     let mut temppath = tempdir.path().to_owned();
     let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 
     temppath.push("doc");
 
@@ -256,25 +256,25 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
 #[test]
 fn bad_chatter_1() {
     let output = run_tectonic(&PathBuf::from("."), &["-", "--chatter=reticent"]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
 fn bad_input_path_1() {
     let output = run_tectonic(&PathBuf::from("."), &["/"]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
 fn bad_input_path_2() {
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
 fn bad_outfmt_1() {
     let output = run_tectonic(&PathBuf::from("."), &["-", "--outfmt=dd"]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 fn run_with_biber(args: &str, stdin: &str) -> Output {
@@ -360,7 +360,7 @@ const BIBER_TRIGGER_TEX: &str = r#"
 #[test]
 fn biber_failure() {
     let output = run_with_biber("failure", BIBER_TRIGGER_TEX);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
@@ -387,14 +387,14 @@ fn biber_no_such_tool() {
     let output = child
         .wait_with_output()
         .expect("failed to wait on tectonic subprocess");
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[cfg(unix)]
 #[test]
 fn biber_signal() {
     let output = run_with_biber("signal", BIBER_TRIGGER_TEX);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
@@ -410,13 +410,13 @@ a
 \bye"#;
     let tex = format!("{}{}", BIBER_TRIGGER_TEX, REST);
     let output = run_with_biber("success", &tex);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
 fn help_flag() {
     let output = run_tectonic(&PathBuf::from("."), &["-h"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
@@ -429,7 +429,7 @@ fn keep_logs_on_error() {
         &[&fmt_arg, "-", "--keep-logs"],
         "no end to this file",
     );
-    error_or_panic(output);
+    error_or_panic(&output);
 
     let mut log = String::new();
     File::open(tempdir.path().join("texput.log"))
@@ -462,8 +462,8 @@ fn no_color_option() {
 
     assert_eq!(output_nocolor, output_autocolor);
 
-    error_or_panic(output_nocolor);
-    error_or_panic(output_autocolor);
+    error_or_panic(&output_nocolor);
+    error_or_panic(&output_autocolor);
 }
 
 #[test]
@@ -479,7 +479,7 @@ fn outdir_option() {
             "--outdir=subdirectory",
         ],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
     check_file(&tempdir, "subdirectory/1.pdf");
 }
 
@@ -499,7 +499,7 @@ fn outdir_option_bad() {
             "--outdir=subdirectory/non_existent",
         ],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
@@ -518,7 +518,7 @@ fn outdir_option_is_file() {
             "--outdir=test space.tex",
         ],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test] // GitHub #31
@@ -533,7 +533,7 @@ fn relative_include() {
         tempdir.path(),
         &[&fmt_arg, "subdirectory/relative_include.tex"],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
     check_file(&tempdir, "subdirectory/relative_include.pdf");
 }
 
@@ -544,7 +544,7 @@ fn space_in_filename() {
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
     let output = run_tectonic(tempdir.path(), &[&fmt_arg, "test space.tex"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
@@ -557,7 +557,7 @@ fn stdin_content() {
         &[&fmt_arg, "-"],
         "Standard input content.\\bye",
     );
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[cfg(feature = "serialization")]
@@ -565,7 +565,7 @@ fn stdin_content() {
 fn v2_build_basic() {
     let (_tempdir, temppath) = setup_v2();
     let output = run_tectonic(&temppath, &["-X", "build"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
@@ -573,7 +573,7 @@ fn v2_build_basic() {
 fn v2_build_open() {
     let (_tempdir, temppath) = setup_v2();
     let output = run_tectonic(&temppath, &["-X", "build", "--open"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[cfg(feature = "serialization")]
@@ -584,7 +584,7 @@ fn v2_build_multiple_outputs() {
     let tempdir = setup_and_copy_files(&[]);
     let mut temppath = tempdir.path().to_owned();
     let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 
     temppath.push("doc");
 
@@ -658,7 +658,7 @@ fn v2_build_multiple_outputs() {
     // Now we can build.
 
     let output = run_tectonic(&temppath, &["-X", "build"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 const SHELL_ESCAPE_TEST_DOC: &str = r#"\immediate\write18{mkdir shellwork}
@@ -682,7 +682,7 @@ fn shell_escape() {
         &[&fmt_arg, "-", "-Zshell-escape"],
         SHELL_ESCAPE_TEST_DOC,
     );
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 /// Test that shell-escape can be killed by command-line-option
@@ -696,7 +696,7 @@ fn shell_escape_cli_override() {
         &[&fmt_arg, "--untrusted", "-", "-Zshell-escape"],
         SHELL_ESCAPE_TEST_DOC,
     );
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 /// Test that shell-escape can be killed by environment variable
@@ -724,5 +724,5 @@ fn shell_escape_env_override() {
         .wait_with_output()
         .expect("failed to wait on tectonic subprocess");
 
-    error_or_panic(output);
+    error_or_panic(&output);
 }
