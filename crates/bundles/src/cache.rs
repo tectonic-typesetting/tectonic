@@ -386,7 +386,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
                     let digest = if digest == "-" {
                         continue;
                     } else {
-                        match DigestData::from_str(&digest) {
+                        match DigestData::from_str(digest) {
                             Ok(d) => d,
                             Err(e) => {
                                 tt_warning!(status, "ignoring bad digest data \"{}\" for \"{}\" in \"{}\"",
@@ -480,7 +480,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
         // fresh pull.
         if let Some(info) = self.index.get(digest::DIGEST_NAME) {
             if let Ok(Some((backend, digest))) =
-                CB::open_with_quick_check(&self.resolved_url, &info, status)
+                CB::open_with_quick_check(&self.resolved_url, info, status)
             {
                 if self.cached_digest == digest {
                     // We managed to pull some data that match the digest. We
