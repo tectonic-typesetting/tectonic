@@ -119,10 +119,15 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     // Now that we've got colorized output, pass off to the inner function.
 
-    if let Err(e) = args.command.execute(config, &mut *status) {
-        status.report_error(&SyncError::new(e).into());
-        process::exit(1)
-    }
+    let code = match args.command.execute(config, &mut *status) {
+        Ok(c) => c,
+        Err(e) => {
+            status.report_error(&SyncError::new(e).into());
+            1
+        }
+    };
+
+    process::exit(code)
 }
 
 #[allow(clippy::large_enum_variant)]
