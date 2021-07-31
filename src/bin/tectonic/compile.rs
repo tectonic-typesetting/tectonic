@@ -16,7 +16,7 @@ use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 
 use tectonic::{
     config::PersistentConfig,
-    driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
+    driver::{OutputFormat, PassSetting, ProcessingSession, ProcessingSessionBuilder},
     errmsg,
     errors::{ErrorKind, Result},
     status::StatusBackend,
@@ -212,14 +212,14 @@ impl CompileOptions {
             None => time::SystemTime::now(),
         };
         sess_builder.build_date(build_date);
-        run_and_report(sess_builder, status)
+        run_and_report(sess_builder, status).map(|_| 0)
     }
 }
 
 pub(crate) fn run_and_report(
     sess_builder: ProcessingSessionBuilder,
     status: &mut dyn StatusBackend,
-) -> Result<i32> {
+) -> Result<ProcessingSession> {
     let mut sess = sess_builder.create(status)?;
     let result = sess.run(status);
 
@@ -244,5 +244,5 @@ pub(crate) fn run_and_report(
         }
     }
 
-    result.map(|_| 0)
+    result.map(|_| sess)
 }

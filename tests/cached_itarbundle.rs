@@ -48,7 +48,7 @@ impl TarIndexBuilder {
         let _ = writeln!(&mut self.index, "{} {} {}", name, offset, len);
         self.map
             .insert((offset as u64, len as u64), name.to_owned());
-        self.tar.extend_from_slice(&content);
+        self.tar.extend_from_slice(content);
         self
     }
 
@@ -262,7 +262,7 @@ fn test_full_session() {
             let mut sess_builder = ProcessingSessionBuilder::default();
             sess_builder.bundle(Box::new(
                 config
-                    .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                    .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
                     .unwrap(),
             ));
             let input_path = Path::new(path);
@@ -316,7 +316,7 @@ fn test_cached_url_provider() {
 
         {
             let mut cache = config
-                .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
                 .unwrap();
 
             match cache.input_open_name("plain.tex", &mut status) {
@@ -330,7 +330,7 @@ fn test_cached_url_provider() {
         }
         {
             let mut cache = config
-                .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
                 .unwrap();
 
             // should be cached
@@ -341,7 +341,7 @@ fn test_cached_url_provider() {
         }
         {
             let mut cache = config
-                .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
                 .unwrap();
 
             // should be cached
@@ -357,7 +357,7 @@ fn test_cached_url_provider() {
         }
         {
             let mut cache = config
-                .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
                 .unwrap();
 
             // not in index
@@ -403,7 +403,7 @@ fn test_bundle_update() {
             // Run with first tar index.
             {
                 let mut cache = config
-                    .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                    .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
                     .unwrap();
 
                 match cache.input_open_name("only-first.tex", &mut status) {
@@ -434,7 +434,7 @@ fn test_bundle_update() {
 
                 {
                     let mut cache = config
-                        .make_cached_url_provider(&url, false, Some(tempdir.path()), &mut status)
+                        .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
                         .unwrap();
 
                     // This should be cached even thought the bundle does not contain it.
