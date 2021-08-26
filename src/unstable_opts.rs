@@ -8,6 +8,7 @@
 //! to be reliable or very polished. In particular, many of these prevent the build from being
 //! reproducible.
 
+use crate::errmsg;
 use crate::errors::{Error, Result};
 use std::default::Default;
 use std::path::PathBuf;
@@ -48,29 +49,30 @@ impl FromStr for UnstableArg {
         // For structopt/clap, if you pass a value to a flag which doesn't accept one, it's
         // silently ignored.
 
+        let require_value = |value_name| {
+            value.ok_or_else(|| {
+                errmsg!(
+                    "'-Z {}=<{}>' requires a value but none was supplied",
+                    arg,
+                    value_name
+                )
+            })
+        };
+
         match arg {
             "help" => Ok(UnstableArg::Help),
 
             "continue-on-errors" => Ok(UnstableArg::ContinueOnErrors),
 
-            "min-crossrefs" => value
-                .ok_or_else(|| {
-                    "'-Z min-crossrefs <spec>' requires a value but none was supplied".into()
-                })
+            "min-crossrefs" => require_value("num")
                 .and_then(|s| {
                     FromStr::from_str(s).map_err(|e| format!("-Z min-crossrefs: {}", e).into())
                 })
                 .map(UnstableArg::MinCrossrefs),
 
-            "paper-size" => value
-                .ok_or_else(|| {
-                    "'-Z paper-size <spec>' requires a value but none was supplied".into()
-                })
-                .map(|s| UnstableArg::PaperSize(s.to_string())),
+            "paper-size" => require_value("spec").map(|s| UnstableArg::PaperSize(s.to_string())),
 
-            "search-path" => value
-                .ok_or_else(|| "'-Z search-path <path>' requires a value but none was supplied".into())
-                .map(|s| UnstableArg::SearchPath(s.into())),
+            "search-path" => require_value("path").map(|s| UnstableArg::SearchPath(s.into())),
 
             "shell-escape" => Ok(UnstableArg::ShellEscapeEnabled),
 
