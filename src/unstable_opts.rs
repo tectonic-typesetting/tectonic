@@ -10,6 +10,7 @@
 
 use crate::errors::{Error, Result};
 use std::default::Default;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 const HELPMSG: &str = r#"Available unstable options:
@@ -19,6 +20,8 @@ const HELPMSG: &str = r#"Available unstable options:
     -Z min-crossrefs=<num>      Equivalent to bibtex's -min-crossrefs flag - "include after <num>
                                     crossrefs" [default: 2]
     -Z paper-size=<spec>        Change the default paper size [default: letter]
+    -Z search-path=<path>       Also look in <path> for files, like TEXINPUTS. Can be specified
+                                    multiple times.
     -Z shell-escape             Enable \write18
 "#;
 
@@ -29,6 +32,7 @@ pub enum UnstableArg {
     Help,
     MinCrossrefs(i32),
     PaperSize(String),
+    SearchPath(PathBuf),
     ShellEscapeEnabled,
 }
 
@@ -64,6 +68,10 @@ impl FromStr for UnstableArg {
                 })
                 .map(|s| UnstableArg::PaperSize(s.to_string())),
 
+            "search-path" => value
+                .ok_or_else(|| "'-Z search-path <path>' requires a value but none was supplied".into())
+                .map(|s| UnstableArg::SearchPath(s.into())),
+
             "shell-escape" => Ok(UnstableArg::ShellEscapeEnabled),
 
             _ => Err(format!("Unknown unstable option '{}'", arg).into()),
@@ -77,6 +85,7 @@ pub struct UnstableOptions {
     pub paper_size: Option<String>,
     pub shell_escape: bool,
     pub min_crossrefs: Option<i32>,
+    pub extra_search_paths: Vec<PathBuf>,
 }
 
 impl UnstableOptions {
@@ -97,6 +106,7 @@ impl UnstableOptions {
                 MinCrossrefs(num) => opts.min_crossrefs = Some(num),
                 PaperSize(size) => opts.paper_size = Some(size),
                 ShellEscapeEnabled => opts.shell_escape = true,
+                SearchPath(p) => opts.extra_search_paths.push(p),
             }
         }
 

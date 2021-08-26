@@ -249,6 +249,9 @@ struct BridgeState {
     /// The main filesystem backing for input files in the project.
     filesystem: FilesystemIo,
 
+    /// Extra paths we search through for files.
+    extra_search_paths: Vec<FilesystemIo>,
+
     /// Additional filesystem backing used if "shell escape" functionality is
     /// activated. If None, we take that to mean that shell-escape is
     /// disallowed. We have to use a persistent filesystem directory for this
@@ -446,6 +449,11 @@ macro_rules! bridgestate_ioprovider_cascade {
             // some freaky shell-escape uses that depend on this behavior.
             if let Some(ref mut p) = $self.shell_escape_work {
                 bridgestate_ioprovider_try!(p, $($inner)+);
+            }
+
+            // extra search paths
+            for fsio in $self.extra_search_paths.iter_mut() {
+                bridgestate_ioprovider_try!(fsio, $($inner)+);
             }
         }
 
@@ -1068,6 +1076,12 @@ impl ProcessingSessionBuilder {
             primary_input: pio,
             mem,
             filesystem,
+            extra_search_paths: self
+                .unstables
+                .extra_search_paths
+                .iter()
+                .map(|p| FilesystemIo::new(p, false, false, HashSet::new()))
+                .collect(),
             shell_escape_work: None,
             format_cache,
             bundle,

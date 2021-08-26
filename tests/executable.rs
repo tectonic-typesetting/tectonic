@@ -794,3 +794,17 @@ fn shell_escape_env_override() {
 
     error_or_panic(&output);
 }
+
+/// Test that include paths work
+#[test]
+fn extra_search_paths() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "-Zsearch-path=subdirectory/content"],
+        "\\input 1.tex\n\\bye",
+    );
+    success_or_panic(&output);
+}
