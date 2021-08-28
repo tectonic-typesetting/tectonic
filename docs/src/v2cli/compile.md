@@ -126,4 +126,4 @@ the set of unstable options is subject to change at any time.
 | `-Z min-crossrefs=<num>` | Equivalent to bibtex's `-min-crossrefs` flag. Default vaue: 2 |
 | `-Z paper-size=<spec>`   | Change the initial paper size. Default: `letter` |
 | `-Z shell-escape`        | Enable `\write18` (unless `--untrusted` has been specified) |
-
+| `-Z search-path=<path>`  | Also look in <path> for files, like TEXINPUTS. Can be specified multiple times |

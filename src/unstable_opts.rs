@@ -8,8 +8,10 @@
 //! to be reliable or very polished. In particular, many of these prevent the build from being
 //! reproducible.
 
-use crate::errmsg;
-use crate::errors::{Error, Result};
+use crate::{
+    errmsg,
+    errors::{Error, Result},
+};
 use std::default::Default;
 use std::path::PathBuf;
 use std::str::FromStr;
