@@ -1068,7 +1068,17 @@ impl ProcessingSessionBuilder {
             None
         };
 
-        let filesystem = FilesystemIo::new(&filesystem_root, false, true, self.hidden_input_paths);
+        // move this out of self to get around borrow checker issues
+        let hidden_input_paths = self.hidden_input_paths;
+
+        let extra_search_paths = self
+                .unstables
+                .extra_search_paths
+                .iter()
+                .map(|p| FilesystemIo::new(p, false, false, hidden_input_paths.clone()))
+                .collect();
+
+        let filesystem = FilesystemIo::new(&filesystem_root, false, true, hidden_input_paths);
 
         let mem = MemoryIo::new(true);
 
@@ -1076,12 +1086,7 @@ impl ProcessingSessionBuilder {
             primary_input: pio,
             mem,
             filesystem,
-            extra_search_paths: self
-                .unstables
-                .extra_search_paths
-                .iter()
-                .map(|p| FilesystemIo::new(p, false, false, HashSet::new()))
-                .collect(),
+            extra_search_paths,
             shell_escape_work: None,
             format_cache,
             bundle,

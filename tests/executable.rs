@@ -807,4 +807,16 @@ fn extra_search_paths() {
         "\\input 1.tex\n\\bye",
     );
     success_or_panic(&output);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[
+            &fmt_arg,
+            "-",
+            "--hide=subdirectory/content/1.tex",
+            "-Zsearch-path=subdirectory/content",
+        ],
+        "\\input 1.tex\n\\bye",
+    );
+    error_or_panic(&output);
 }
