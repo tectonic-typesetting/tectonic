@@ -451,7 +451,8 @@ macro_rules! bridgestate_ioprovider_cascade {
                 bridgestate_ioprovider_try!(p, $($inner)+);
             }
 
-            // extra search paths
+            // Extra search paths. This has higher priority than bundles but lower than current
+            // working dir to support the use case of overriding broken bundles (see issue #816).
             for fsio in $self.extra_search_paths.iter_mut() {
                 bridgestate_ioprovider_try!(fsio, $($inner)+);
             }
