@@ -1071,12 +1071,18 @@ impl ProcessingSessionBuilder {
         // move this out of self to get around borrow checker issues
         let hidden_input_paths = self.hidden_input_paths;
 
-        let extra_search_paths = self
-                .unstables
+        let extra_search_paths = if self.security.allow_extra_search_paths() {
+            self.unstables
                 .extra_search_paths
                 .iter()
                 .map(|p| FilesystemIo::new(p, false, false, hidden_input_paths.clone()))
-                .collect();
+                .collect()
+        } else {
+            if !self.unstables.extra_search_paths.is_empty() {
+                tt_warning!(status, "Extra search path(s) ignored due to security");
+            }
+            Vec::new()
+        };
 
         let filesystem = FilesystemIo::new(&filesystem_root, false, true, hidden_input_paths);
 

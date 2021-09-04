@@ -764,6 +764,11 @@ impl SecuritySettings {
     pub fn allow_shell_escape(&self) -> bool {
         !self.disable_insecures
     }
+
+    /// Query whether we're allowed to specify extra paths to read files from.
+    pub fn allow_extra_search_paths(&self) -> bool {
+        !self.disable_insecures
+    }
 }
 
 impl Default for SecuritySettings {

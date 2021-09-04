@@ -819,4 +819,16 @@ fn extra_search_paths() {
         "\\input 1.tex\n\\bye",
     );
     error_or_panic(&output);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[
+            &fmt_arg,
+            "-",
+            "-Zsearch-path=subdirectory/content",
+            "--untrusted",
+        ],
+        "\\input 1.tex\n\\bye",
+    );
+    error_or_panic(&output);
 }
