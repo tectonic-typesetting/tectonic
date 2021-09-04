@@ -1740,6 +1740,15 @@ impl ProcessingSession {
                 return Err(e.into()),
         };
 
+        if !self.bs.mem.files.borrow().contains_key(&self.tex_xdv_path) {
+            // TeX did not produce the expected output file
+            tt_warning!(
+                status,
+                "did not produce \"{}\"; this may mean that your document is empty",
+                self.tex_xdv_path
+            )
+        }
+
         Ok(warnings)
     }
 
