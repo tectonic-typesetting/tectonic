@@ -8,8 +8,12 @@
 //! to be reliable or very polished. In particular, many of these prevent the build from being
 //! reproducible.
 
-use crate::errors::{Error, Result};
+use crate::{
+    errmsg,
+    errors::{Error, Result},
+};
 use std::default::Default;
+use std::path::PathBuf;
 use std::str::FromStr;
 
 const HELPMSG: &str = r#"Available unstable options:
@@ -19,6 +23,8 @@ const HELPMSG: &str = r#"Available unstable options:
     -Z min-crossrefs=<num>      Equivalent to bibtex's -min-crossrefs flag - "include after <num>
                                     crossrefs" [default: 2]
     -Z paper-size=<spec>        Change the default paper size [default: letter]
+    -Z search-path=<path>       Also look in <path> for files, like TEXINPUTS. Can be specified
+                                    multiple times.
     -Z shell-escape             Enable \write18
 "#;
 
@@ -29,6 +35,7 @@ pub enum UnstableArg {
     Help,
     MinCrossrefs(i32),
     PaperSize(String),
+    SearchPath(PathBuf),
     ShellEscapeEnabled,
 }
 
@@ -44,25 +51,30 @@ impl FromStr for UnstableArg {
         // For structopt/clap, if you pass a value to a flag which doesn't accept one, it's
         // silently ignored.
 
+        let require_value = |value_name| {
+            value.ok_or_else(|| {
+                errmsg!(
+                    "'-Z {}=<{}>' requires a value but none was supplied",
+                    arg,
+                    value_name
+                )
+            })
+        };
+
         match arg {
             "help" => Ok(UnstableArg::Help),
 
             "continue-on-errors" => Ok(UnstableArg::ContinueOnErrors),
 
-            "min-crossrefs" => value
-                .ok_or_else(|| {
-                    "'-Z min-crossrefs <spec>' requires a value but none was supplied".into()
-                })
+            "min-crossrefs" => require_value("num")
                 .and_then(|s| {
                     FromStr::from_str(s).map_err(|e| format!("-Z min-crossrefs: {}", e).into())
                 })
                 .map(UnstableArg::MinCrossrefs),
 
-            "paper-size" => value
-                .ok_or_else(|| {
-                    "'-Z paper-size <spec>' requires a value but none was supplied".into()
-                })
-                .map(|s| UnstableArg::PaperSize(s.to_string())),
+            "paper-size" => require_value("spec").map(|s| UnstableArg::PaperSize(s.to_string())),
+
+            "search-path" => require_value("path").map(|s| UnstableArg::SearchPath(s.into())),
 
             "shell-escape" => Ok(UnstableArg::ShellEscapeEnabled),
 
@@ -77,6 +89,7 @@ pub struct UnstableOptions {
     pub paper_size: Option<String>,
     pub shell_escape: bool,
     pub min_crossrefs: Option<i32>,
+    pub extra_search_paths: Vec<PathBuf>,
 }
 
 impl UnstableOptions {
@@ -97,6 +110,7 @@ impl UnstableOptions {
                 MinCrossrefs(num) => opts.min_crossrefs = Some(num),
                 PaperSize(size) => opts.paper_size = Some(size),
                 ShellEscapeEnabled => opts.shell_escape = true,
+                SearchPath(p) => opts.extra_search_paths.push(p),
             }
         }
 
