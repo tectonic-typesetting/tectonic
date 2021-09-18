@@ -753,6 +753,22 @@ fn shell_escape() {
     success_or_panic(&output);
 }
 
+/// Initial revisions with shell-escape ignored any value specified.
+/// Rather than allow this to toggle shell-escape which won't work with old installs.
+/// Test that shell-escape=false gives an error.
+#[test]
+fn shell_escape_arg_err() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "-Zshell-escape=false"],
+        SHELL_ESCAPE_TEST_DOC,
+    );
+    error_or_panic(&output);
+}
+
 /// Test that shell-escape can be killed by command-line-option
 #[test]
 fn shell_escape_cli_override() {
