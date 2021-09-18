@@ -61,6 +61,18 @@ impl FromStr for UnstableArg {
             })
         };
 
+        let require_no_value = |unwanted_value: Option<&str>, builtin_value: UnstableArg| {
+            if let Some(value) = unwanted_value {
+                Err(format!(
+                    "'-Z {}={}', was supplied but '-Z {}' does not take a value.",
+                    arg, value, arg
+                )
+                .into())
+            } else {
+                Ok(builtin_value)
+            }
+        };
+
         match arg {
             "help" => Ok(UnstableArg::Help),
 
@@ -76,7 +88,7 @@ impl FromStr for UnstableArg {
 
             "search-path" => require_value("path").map(|s| UnstableArg::SearchPath(s.into())),
 
-            "shell-escape" => Ok(UnstableArg::ShellEscapeEnabled),
+            "shell-escape" => require_no_value(value, UnstableArg::ShellEscapeEnabled),
 
             _ => Err(format!("Unknown unstable option '{}'", arg).into()),
         }
