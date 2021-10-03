@@ -530,15 +530,18 @@ impl WatchCommand {
 
         let command = cmds.join(" && ");
 
+        let mut args = watchexec::config::ConfigBuilder::default();
         let mut final_command = command.clone();
         #[cfg(unix)]
         final_command.push_str("; echo [Finished running. Exit status: $?]");
         #[cfg(windows)]
-        final_command.push_str(" & echo [Finished running. Exit status: %ERRORLEVEL%]");
+        {
+            final_command.push_str(" & echo [Finished running. Exit status: %ERRORLEVEL%]");
+            args.shell(watchexec::Shell::Cmd);
+        }
         #[cfg(not(any(unix, windows)))]
         final_command.push_str(" ; echo [Finished running]");
 
-        let mut args = watchexec::config::ConfigBuilder::default();
         args.cmd(vec![final_command])
             .paths(vec![env::current_dir()?])
             .ignores(vec!["build".to_owned()])
