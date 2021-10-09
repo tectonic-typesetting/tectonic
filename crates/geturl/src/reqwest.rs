@@ -85,7 +85,10 @@ impl GetUrlBackend for ReqwestBackend {
             .head(url)
             .send()?;
 
-        if !(res.status().is_success() || res.status() == StatusCode::FOUND) {
+        if !(res.status().is_success()
+            || res.status() == StatusCode::FOUND
+            || res.status() == StatusCode::TEMPORARY_REDIRECT)
+        {
             bail!(
                 "unexpected HTTP response code {} for URL {}",
                 res.status(),
