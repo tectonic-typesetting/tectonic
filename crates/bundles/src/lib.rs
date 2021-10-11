@@ -103,13 +103,10 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 /// setting, so you should use that if you are in a position to do so.
 ///
 /// This URL will be embedded in the binaries that you create, which may be used
-/// for years into the future, so it needs to be durable and reliable. At the
-/// moment, the URL is hosted on `archive.org` and redirects to a web-based
-/// storage service that has changed a few times over the years. Note that
-/// `archive.org` is blocked in China, causing problems for that potential user
-/// base.
-pub const FALLBACK_BUNDLE_URL: &str =
-    "https://archive.org/services/purl/net/pkgwpub/tectonic-default";
+/// for years into the future, so it needs to be durable and reliable. We used
+/// `archive.org` for a while, but it had low-level reliability problems and was
+/// blocked in China. We now use a custom webservice.
+pub const FALLBACK_BUNDLE_URL: &str = "https://relay.fullyjustified.net/default_bundle.tar";
 
 /// Open the fallback bundle.
 ///
