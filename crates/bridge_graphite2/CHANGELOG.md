@@ -1,3 +1,8 @@
+# tectonic_bridge_graphite2 0.2.1 (2021-10-11)
+
+- Fix the build script for Rust >=1.55 (#820, @pkgw)
+
+
 # tectonic_bridge_graphite2 0.2.0 (2021-06-03)
 
 - Fix up handling of how C/C++ header file paths are exported to dependent

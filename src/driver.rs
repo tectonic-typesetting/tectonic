@@ -249,6 +249,9 @@ struct BridgeState {
     /// The main filesystem backing for input files in the project.
     filesystem: FilesystemIo,
 
+    /// Extra paths we search through for files.
+    extra_search_paths: Vec<FilesystemIo>,
+
     /// Additional filesystem backing used if "shell escape" functionality is
     /// activated. If None, we take that to mean that shell-escape is
     /// disallowed. We have to use a persistent filesystem directory for this
@@ -446,6 +449,12 @@ macro_rules! bridgestate_ioprovider_cascade {
             // some freaky shell-escape uses that depend on this behavior.
             if let Some(ref mut p) = $self.shell_escape_work {
                 bridgestate_ioprovider_try!(p, $($inner)+);
+            }
+
+            // Extra search paths. This has higher priority than bundles but lower than current
+            // working dir to support the use case of overriding broken bundles (see issue #816).
+            for fsio in $self.extra_search_paths.iter_mut() {
+                bridgestate_ioprovider_try!(fsio, $($inner)+);
             }
         }
 
@@ -1060,7 +1069,23 @@ impl ProcessingSessionBuilder {
             None
         };
 
-        let filesystem = FilesystemIo::new(&filesystem_root, false, true, self.hidden_input_paths);
+        // move this out of self to get around borrow checker issues
+        let hidden_input_paths = self.hidden_input_paths;
+
+        let extra_search_paths = if self.security.allow_extra_search_paths() {
+            self.unstables
+                .extra_search_paths
+                .iter()
+                .map(|p| FilesystemIo::new(p, false, false, hidden_input_paths.clone()))
+                .collect()
+        } else {
+            if !self.unstables.extra_search_paths.is_empty() {
+                tt_warning!(status, "Extra search path(s) ignored due to security");
+            }
+            Vec::new()
+        };
+
+        let filesystem = FilesystemIo::new(&filesystem_root, false, true, hidden_input_paths);
 
         let mem = MemoryIo::new(true);
 
@@ -1068,6 +1093,7 @@ impl ProcessingSessionBuilder {
             primary_input: pio,
             mem,
             filesystem,
+            extra_search_paths,
             shell_escape_work: None,
             format_cache,
             bundle,
@@ -1739,6 +1765,15 @@ impl ProcessingSession {
             Err(e) =>
                 return Err(e.into()),
         };
+
+        if !self.bs.mem.files.borrow().contains_key(&self.tex_xdv_path) {
+            // TeX did not produce the expected output file
+            tt_warning!(
+                status,
+                "did not produce \"{}\"; this may mean that your document is empty",
+                self.tex_xdv_path
+            )
+        }
 
         Ok(warnings)
     }

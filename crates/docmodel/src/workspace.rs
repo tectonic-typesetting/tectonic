@@ -60,7 +60,9 @@ impl Workspace {
     /// no such file is found, an error downcastable into
     /// [`NoWorkspaceFoundError`] is returned.
     pub fn open_from_environment() -> Result<Self> {
-        let mut root_dir = env::current_dir()?;
+        let initial_dir = env::current_dir()?;
+
+        let mut root_dir = initial_dir.clone();
         root_dir.push("tmp"); // simplifies loop logic
 
         while root_dir.pop() {
@@ -83,18 +85,24 @@ impl Workspace {
             return Ok(Workspace { root_dir, doc });
         }
 
-        Err(NoWorkspaceFoundError {}.into())
+        Err(NoWorkspaceFoundError { initial_dir }.into())
     }
 }
 
 /// An error for when the environment does not seem to contain a Tectonic
 /// workspace.
 #[derive(Debug)]
-pub struct NoWorkspaceFoundError {}
+pub struct NoWorkspaceFoundError {
+    initial_dir: PathBuf,
+}
 
 impl fmt::Display for NoWorkspaceFoundError {
     fn fmt(&self, f: &mut fmt::Formatter) -> StdResult<(), fmt::Error> {
-        write!(f, "no get-URL backend was enabled")
+        write!(
+            f,
+            "could not find `Tectonic.toml` in `{}` or any parent directory",
+            self.initial_dir.display()
+        )
     }
 }
 

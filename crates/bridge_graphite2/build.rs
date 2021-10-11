@@ -45,7 +45,10 @@ fn main() {
     // indicate it with a specialized variable.
 
     let target = env::var("TARGET").unwrap();
-    let rustflags = env::var("RUSTFLAGS").unwrap_or_default();
+
+    let rustflags = env::var("CARGO_ENCODED_RUSTFLAGS")
+        .unwrap_or_else(|_| env::var("RUSTFLAGS").unwrap_or_default());
+
     let define_static_flag = if target.contains("-msvc") && rustflags.contains("+crt-static") {
         "1"
     } else {

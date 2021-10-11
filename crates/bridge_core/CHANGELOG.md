@@ -1,3 +1,8 @@
+# tectonic_bridge_core 0.3.0 (2021-10-11)
+
+- Add `SecuritySettings::allow_extra_search_paths()` (#814, @ralismark).
+
+
 # tectonic_bridge_core 0.2.2 (2021-06-17)
 
 - Switch from running [cbindgen] at build time to having the developer run it

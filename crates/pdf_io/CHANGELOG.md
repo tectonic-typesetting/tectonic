@@ -1,3 +1,8 @@
+# tectonic_pdf_io 0.1.2 (2021-10-11)
+
+- Fix an incorrect warning issued when reading EXIF data (#822, @korrat)
+
+
 # tectonic_pdf_io 0.1.1 (2021-07-03)
 
 - Fix the build on Rust 1.46, needed for the conda-forge macOS build (which is
