@@ -1,3 +1,9 @@
+# tectonic_bridge_harfbuzz 0.2.3 (2021-10-11)
+
+- Update the vendored Harfbuzz source to
+- Fixes for Clippy 1.53.0
+
+
 # tectonic_bridge_harfbuzz 0.2.2 (2021-06-07)
 
 - Still no code changes

@@ -2210,7 +2210,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_harfbuzz"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "cc",
  "tectonic_bridge_graphite2",
@@ -2227,7 +2227,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bundles"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "flate2",
  "fs2",
@@ -2319,7 +2319,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_io_base"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "app_dirs2",
  "flate2",
@@ -2358,7 +2358,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xetex_layout"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cc",
  "tectonic_bridge_core",

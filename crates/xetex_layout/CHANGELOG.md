@@ -1,3 +1,10 @@
+# tectonic_xetex_layout 0.1.1 (2021-10-11)
+
+- Require the latest version of `tectonic_bridge_graphite2`, which contains a
+  Windows build fix.
+- Fixes for Clippy 1.53.0
+
+
 # tectonic_xetex_layout 0.1.0 (2021-06-03)
 
 This new crate encapsulates the font selection and layout code used by the

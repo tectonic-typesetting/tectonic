@@ -1,3 +1,8 @@
+# tectonic_io_base 0.3.1 (2021-10-11)
+
+- No code changes; fixing a couple of docstring typos.
+
+
 # tectonic_io_base 0.3.0 (2021-06-15)
 
 - Add new "abspath" methods to the IoProvider trait. We need a new API to

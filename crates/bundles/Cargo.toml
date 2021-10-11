@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bundles"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Tectonic "bundle" (support file collection) implementations.
@@ -21,7 +21,7 @@ edition = "2018"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 fs2 = "^0.4"
 tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
-tectonic_geturl = { path = "../geturl", version =">=0.2.0,<1", default-features = false }
+tectonic_geturl = { path = "../geturl", version =">=0.3.0,<1", default-features = false }
 tectonic_io_base = { path = "../io_base", version =">=0.3.0,<1"}
 tectonic_status_base = { path = "../status_base", version =">=0.1.0,<1"}
 zip = { version = "^0.5", default-features = false, features = ["deflate"] }
@@ -34,6 +34,6 @@ native-tls-vendored = ["tectonic_geturl/native-tls-vendored"]
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
-tectonic_geturl = "c828bee7361ebd30e28392507a1406d27dc8fdbb"
+tectonic_geturl = "68c5fc525c5fead75913bd90380043761bde9f61"
 tectonic_io_base = "thiscommit:2021-06-13:s9130zU"
 tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"

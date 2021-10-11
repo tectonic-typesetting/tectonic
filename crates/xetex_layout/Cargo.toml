@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_xetex_layout"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 XeTeX's font loading and layout interface encapsulation, as a crate.
@@ -21,7 +21,7 @@ links = "tectonic_xetex_layout"
 [dependencies]
 tectonic_bridge_core = { path = "../bridge_core", version =">=0.1.0,<1"}
 tectonic_bridge_freetype2 = { path = "../bridge_freetype2", version =">=0.2.0,<1"}
-tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version =">=0.2.0,<1"}
+tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version =">=0.2.1,<1"}
 tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version =">=0.2.0,<1"}
 tectonic_bridge_icu = { path = "../bridge_icu", version =">=0.2.0,<1"}
 
@@ -35,7 +35,7 @@ external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2021-01-16:wie2Ejoh"
-tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_graphite2 = "2722731f9e32c6963fe8c8566a201b33672c5c5a"
 tectonic_bridge_freetype2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
