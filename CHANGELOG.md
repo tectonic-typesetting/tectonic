@@ -1,3 +1,70 @@
+# tectonic 0.8.0 (2021-10-11)
+
+This release fixes a showstopping issue introduced by recent changes to the
+`archive.org` PURL ([persistent URL]) service. All users are advised to upgrade
+immediately, although it is possible to continue using older releases in some
+limited circumstances.
+
+[persistent URL]: https://purl.prod.archive.org/help
+
+By default, Tectonic downloads (La)TeX resource files from the internet as
+needed. Before this release, Tectonic would query a PURL in order to know where
+to locate the most recent “bundle” of resource files. On Wednesday,
+`archive.org` updated the implementation of its service in a way that interacted
+catastrophically with the way that Tectonic processes URL redirections. The
+result was that Tectonic became unable to download any of its resource files,
+breaking essential functionality. Thanks to [@rikhuijzer] for providing early
+reporting and diagnosis of the problem.
+
+[@rikhuijzer]: https://github.com/rikhuijzer
+
+This release fixes the redirection functionality ([#832], [@pkgw]), but more
+importantly it switches from querying `archive.org` to using a new dedicated
+webservice hosted on the domain `fullyjustified.net` ([#833], [@pkgw]). The
+motivation for this switch is that besides this particular incident,
+`archive.org` has had low-level reliability problems in the past, and more
+important, it is blocked in China, preventing a potentially large userbase from
+trying Tectonic.
+
+[#832]: https://github.com/tectonic-typesetting/tectonic/pulls/832
+[#833]: https://github.com/tectonic-typesetting/tectonic/pulls/833
+
+The new URL that is queried is:
+
+https://relay.fullyjustified.net/default_bundle.tar
+
+The redirection is implemented with a simple nginx server defined in the new
+[tectonic-relay-service] repo and hosted on Microsoft Azure cloud infrastructure
+defined in Terraform configuration in the [tectonic-cloud-infra] repo. [@pkgw] owns
+the domain name and Azure subscription.
+
+[tectonic-relay-service]: https://github.com/tectonic-typesetting/tectonic-relay-service
+[tectonic-cloud-infra]: https://github.com/tectonic-typesetting/tectonic-cloud-infra
+[@pkgw]: https://github.com/pkgw
+
+Along with the above change, this release contains the following improvements:
+
+- Add the [`tectonic -X dump`] V2 CLI command, which runs a partial document
+  build and outputs a requested intermediate file. This can help integrate
+  external tools into a Tectonic-based document processing workflow (#810,
+  @pkgw)
+- Add support for custom support file search directories with the `-Z
+  search-path=<path>` [unstable option][sp] (#814, @ralismark)
+- Fix the `watch` V2 CLI command on Windows (#828, @Sinofine)
+- Fix repeated updates in the `watch` V2 CLI command (#807, @jeffa5)
+- Fix an incorrect error message when running V2 CLI commands outside of a
+  workspace (#813, @ralismark)
+- Add a more helpful warning if an input produces empty output (#817,
+  @ralismark)
+- Prevent an incorrect warning when reading some kinds of EXIF metadata (#822,
+  @korrat)
+- Reject `-Z shell-escape=false`, which would be parsed as *enabling*
+  shell-escape (#823, @ratmice)
+
+[`tectonic -X dump`]: https://tectonic-typesetting.github.io/book/latest/v2cli/dump.html
+[sp]: https://tectonic-typesetting.github.io/book/latest/v2cli/compile.html#unstable-options
+
+
 # tectonic 0.7.1 (2021-07-04)
 
 - Improve launching of `biber` by parsing the `.run.xml` file to find out which

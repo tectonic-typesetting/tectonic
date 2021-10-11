@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.7.1"
+version = "0.8.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
