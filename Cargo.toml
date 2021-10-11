@@ -126,12 +126,12 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
-tectonic_bridge_core = "thiscommit:2021-06-14:3sp2O1O"
+tectonic_bridge_core = "526ff57d5dd9f80dff35a3a5dd856edc9f0f61aa"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bundles = "thiscommit:2021-06-13:Q0esYor"
+tectonic_bundles = "207e6e796b1827330ee03a4c395fe6db059bddd9"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_docmodel = "cd77b60d48b1ae3ef80d708e6858ea91cd9fa812"
@@ -139,7 +139,7 @@ tectonic_engine_bibtex = "thiscommit:2021-01-17:KuhaeG1e"
 tectonic_engine_xdvipdfmx = "7dcbc52e58f9774b3d592919a9105377faeac509"
 tectonic_engine_xetex = "b7a4085fa67c831d4532da6661bddafd1f9c24ff"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
-tectonic_geturl = "thiscommit:2021-01-16:Aikoob9c"
+tectonic_geturl = "68c5fc525c5fead75913bd90380043761bde9f61"
 tectonic_io_base = "thiscommit:2021-06-13:XFjtSsZ"
 tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
