@@ -719,6 +719,7 @@ read_APP1_Exif (struct JPEG_info *info, rust_input_handle_t handle, size_t lengt
                 res_unit = 2.54;
                 break;
             }
+            break;
         case JPEG_EXIF_TAG_RESUNIT_MS: /* PixelUnit */
             if (type != JPEG_EXIF_TYPE_BYTE || count != 1) {
                 dpx_warning("%s: Invalid data for ResolutionUnit in Exif chunk.", JPEG_DEBUG_STR);

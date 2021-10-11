@@ -4,13 +4,14 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{env, ffi::OsString, path::PathBuf, process, str::FromStr};
+use std::{env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
     config::PersistentConfig,
     ctry,
     docmodel::{DocumentExt, DocumentSetupOptions, WorkspaceCreatorExt},
+    driver::PassSetting,
     errors::{Result, SyncError},
     status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
     tt_error, tt_note,
@@ -20,6 +21,7 @@ use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_errors::Error as NewError;
 use tectonic_status_base::plain::PlainStatusBackend;
+use watchexec::run::OnBusyUpdate;
 
 /// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
@@ -57,6 +59,7 @@ struct V2CliOptions {
 #[derive(Debug, Default)]
 struct CommandCustomizations {
     always_stderr: bool,
+    minimal_chatter: bool,
 }
 
 /// The main function for the Cargo-like, "V2" CLI. This intentionally
@@ -91,7 +94,12 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     // Set up colorized output.
 
-    let chatter_level = ChatterLevel::from_str(&args.chatter_level).unwrap();
+    let chatter_level = if customizations.minimal_chatter {
+        ChatterLevel::Minimal
+    } else {
+        ChatterLevel::from_str(&args.chatter_level).unwrap()
+    };
+
     let use_cli_color = match &*args.cli_color {
         "always" => true,
         "auto" => atty::is(atty::Stream::Stdout),
@@ -118,10 +126,15 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     // Now that we've got colorized output, pass off to the inner function.
 
-    if let Err(e) = args.command.execute(config, &mut *status) {
-        status.report_error(&SyncError::new(e).into());
-        process::exit(1)
-    }
+    let code = match args.command.execute(config, &mut *status) {
+        Ok(c) => c,
+        Err(e) => {
+            status.report_error(&SyncError::new(e).into());
+            1
+        }
+    };
+
+    process::exit(code)
 }
 
 #[allow(clippy::large_enum_variant)]
@@ -138,6 +151,10 @@ enum Commands {
     #[structopt(name = "compile")]
     /// Run a standalone (La)TeX compilation
     Compile(crate::compile::CompileOptions),
+
+    #[structopt(name = "dump")]
+    /// Run a partial compilation and output an intermediate file
+    Dump(DumpCommand),
 
     #[structopt(name = "new")]
     /// Create a new document
@@ -158,6 +175,7 @@ impl Commands {
             Commands::Build(o) => o.customize(cc),
             Commands::Bundle(o) => o.customize(cc),
             Commands::Compile(_) => {} // avoid namespacing/etc issues
+            Commands::Dump(o) => o.customize(cc),
             Commands::New(o) => o.customize(cc),
             Commands::Show(o) => o.customize(cc),
             Commands::Watch(o) => o.customize(cc),
@@ -169,6 +187,7 @@ impl Commands {
             Commands::Build(o) => o.execute(config, status),
             Commands::Bundle(o) => o.execute(config, status),
             Commands::Compile(o) => o.execute(config, status),
+            Commands::Dump(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
             Commands::Show(o) => o.execute(config, status),
             Commands::Watch(o) => o.execute(config, status),
@@ -381,6 +400,104 @@ impl BundleSearchCommand {
     }
 }
 
+/// `dump`: Run a partial build and dump an intermediate file
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct DumpCommand {
+    /// Document is untrusted -- disable all known-insecure features
+    #[structopt(long)]
+    untrusted: bool,
+
+    /// Use only resource files cached locally
+    #[structopt(short = "C", long)]
+    only_cached: bool,
+
+    /// Use the specified output profile for the partial build
+    #[structopt(short = "p", long)]
+    profile: Option<String>,
+
+    /// Dump the file or files whose names end with the argument
+    #[structopt(long = "suffix", short)]
+    suffix_mode: bool,
+
+    /// The name of the intermediate file to dump
+    #[structopt()]
+    filename: String,
+}
+
+impl DumpCommand {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        cc.always_stderr = true;
+        cc.minimal_chatter = true;
+    }
+
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let ws = Workspace::open_from_environment()?;
+        let doc = ws.first_document();
+
+        // Default to allowing insecure since it would be super duper annoying
+        // to have to pass `--trusted` every time to build a personal document
+        // that uses shell-escape! This default can be overridden by setting the
+        // environment variable TECTONIC_UNTRUSTED_MODE to a nonempty value.
+        let stance = if self.untrusted {
+            SecurityStance::DisableInsecures
+        } else {
+            SecurityStance::MaybeAllowInsecures
+        };
+
+        let mut setup_options =
+            DocumentSetupOptions::new_with_security(SecuritySettings::new(stance));
+        setup_options.only_cached(self.only_cached);
+
+        // If output profile is unspecified, just grab one at (pseudo-)random.
+        let output_name = self
+            .profile
+            .as_ref()
+            .unwrap_or_else(|| doc.outputs.keys().next().unwrap());
+
+        let mut builder = doc.setup_session(output_name, &setup_options, status)?;
+
+        builder
+            .format_cache_path(config.format_cache_path()?)
+            .pass(PassSetting::Tex);
+
+        let sess = crate::compile::run_and_report(builder, status)?;
+        let files = sess.into_file_data();
+
+        if self.suffix_mode {
+            let mut found_any = false;
+
+            for (key, info) in &files {
+                if key.ends_with(&self.filename) {
+                    found_any = true;
+                    ctry!(
+                        std::io::stdout().write_all(&info.data[..]);
+                        "error dumping intermediate file `{}`", key
+                    );
+                }
+            }
+
+            if !found_any {
+                tt_error!(
+                    status,
+                    "found no intermediate files with names ending in `{}`",
+                    self.filename
+                );
+                return Ok(1);
+            }
+        } else {
+            let info = files
+                .get(&self.filename)
+                .ok_or_else(|| format!("no such intermediate file `{}`", self.filename))?;
+            ctry!(
+                std::io::stdout().write_all(&info.data[..]);
+                "error dumping intermediate file `{}`", self.filename
+            );
+        }
+
+        Ok(0)
+    }
+}
+
 /// `watch`: Watch input files and execute commands on change
 #[derive(Debug, PartialEq, StructOpt)]
 pub struct WatchCommand {
@@ -413,18 +530,22 @@ impl WatchCommand {
 
         let command = cmds.join(" && ");
 
+        let mut args = watchexec::config::ConfigBuilder::default();
         let mut final_command = command.clone();
         #[cfg(unix)]
         final_command.push_str("; echo [Finished running. Exit status: $?]");
         #[cfg(windows)]
-        final_command.push_str(" & echo [Finished running. Exit status: %ERRORLEVEL%]");
+        {
+            final_command.push_str(" & echo [Finished running. Exit status: %ERRORLEVEL%]");
+            args.shell(watchexec::Shell::Cmd);
+        }
         #[cfg(not(any(unix, windows)))]
         final_command.push_str(" ; echo [Finished running]");
 
-        let mut args = watchexec::config::ConfigBuilder::default();
         args.cmd(vec![final_command])
             .paths(vec![env::current_dir()?])
-            .ignores(vec!["build".to_owned()]);
+            .ignores(vec!["build".to_owned()])
+            .on_busy_update(OnBusyUpdate::Queue);
         let args = args.build().map_err(NewError::from)?;
 
         let exec_handler = watchexec::run::ExecHandler::new(args);

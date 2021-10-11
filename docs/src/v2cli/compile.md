@@ -18,6 +18,8 @@ tectonic -X compile myfile.tex
 
 #### Usage Synopsis
 
+<!-- Keep options alphabetized -->
+
 ```sh
 tectonic -X compile  # full form
   [--bundle PATH] [-b PATH]
@@ -90,6 +92,8 @@ can trivially defeat this by explicitly clearing the environment variable.
 
 The following are the available flags.
 
+<!-- Keep alphabetized by full name: -->
+
 | Short | Full                      | Explanation                                                                                    |
 |:------|:--------------------------|:-----------------------------------------------------------------------------------------------|
 | `-b`  | `--bundle <PATH>`         | Use this Zip-format bundle file to find resource files instead of the default |
@@ -119,11 +123,13 @@ The following are the available flags.
 The following unstable options may be available. As the name aims to indicate,
 the set of unstable options is subject to change at any time.
 
+<!-- Keep alphabetized: -->
+
 | Expression               | Explanation |
 |:-------------------------|:------------|
 | `-Z help`                | List all unstable options |
 | `-Z continue-on-errors`  | Keep compiling even when severe errors occur |
 | `-Z min-crossrefs=<num>` | Equivalent to bibtex's `-min-crossrefs` flag. Default vaue: 2 |
 | `-Z paper-size=<spec>`   | Change the initial paper size. Default: `letter` |
+| `-Z search-path=<path>`  | Also look in `<path>` for files (unless `--untrusted` has been specified), like TEXINPUTS. Can be specified multiple times. |
 | `-Z shell-escape`        | Enable `\write18` (unless `--untrusted` has been specified) |
-

@@ -112,7 +112,7 @@ impl CacheBackend for IndexedTarBackend {
             reader: DefaultBackend::default().open_range_reader(resolved_url),
         };
 
-        if let Ok(d) = cache_backend.get_file(digest::DIGEST_NAME, &digest_file_info, status) {
+        if let Ok(d) = cache_backend.get_file(digest::DIGEST_NAME, digest_file_info, status) {
             if let Ok(d) = String::from_utf8(d) {
                 if let Ok(d) = DigestData::from_str(&d) {
                     return Ok(Some((cache_backend, d)));

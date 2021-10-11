@@ -172,7 +172,7 @@ write_map (mapDef *mtab, size_t count,
   }
 
   if (num_blocks > 0) {
-    char fmt_buf[34]; /* Tectonic: larger buffer to prevent compiler warnings */
+    char fmt_buf[35]; /* Tectonic: larger buffer to prevent compiler warnings */
 
     if (count > 0) {
       sprintf(fmt_buf, "%"PRIuZ" beginbfchar\n", count);

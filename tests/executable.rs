@@ -161,7 +161,7 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
     tempdir
 }
 
-fn success_or_panic(output: Output) {
+fn success_or_panic(output: &Output) {
     if output.status.success() {
         println!("status: {}", output.status);
         println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
@@ -176,7 +176,7 @@ fn success_or_panic(output: Output) {
     }
 }
 
-fn error_or_panic(output: Output) {
+fn error_or_panic(output: &Output) {
     if !output.status.success() {
         println!("status: {}", output.status);
         println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
@@ -203,30 +203,78 @@ fn check_file(tempdir: &TempDir, rest: &str) {
     }
 }
 
+fn setup_v2() -> (tempfile::TempDir, PathBuf) {
+    util::set_test_root();
+
+    let tempdir = setup_and_copy_files(&[]);
+    let mut temppath = tempdir.path().to_owned();
+    let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
+    success_or_panic(&output);
+
+    temppath.push("doc");
+
+    // To run a build in our test setup, we can only use plain TeX. So, jankily
+    // change the format ...
+
+    {
+        let mut toml_path = temppath.clone();
+        toml_path.push("Tectonic.toml");
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(toml_path)
+            .unwrap();
+        writeln!(file, "tex_format = 'plain'").unwrap();
+    }
+
+    // ... and write some files that are plain TeX.
+
+    {
+        let mut path = temppath.clone();
+        path.push("src");
+
+        {
+            path.push("_preamble.tex");
+            let mut file = File::create(&path).unwrap();
+            writeln!(file).unwrap();
+            path.pop();
+        }
+
+        {
+            path.push("_postamble.tex");
+            let mut file = File::create(&path).unwrap();
+            writeln!(file, "\\end").unwrap();
+            path.pop();
+        }
+    }
+
+    (tempdir, temppath)
+}
+
 /* Keep tests alphabetized */
 
 #[test]
 fn bad_chatter_1() {
     let output = run_tectonic(&PathBuf::from("."), &["-", "--chatter=reticent"]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
 fn bad_input_path_1() {
     let output = run_tectonic(&PathBuf::from("."), &["/"]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
 fn bad_input_path_2() {
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
 fn bad_outfmt_1() {
     let output = run_tectonic(&PathBuf::from("."), &["-", "--outfmt=dd"]);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 fn run_with_biber(args: &str, stdin: &str) -> Output {
@@ -312,7 +360,7 @@ const BIBER_TRIGGER_TEX: &str = r#"
 #[test]
 fn biber_failure() {
     let output = run_with_biber("failure", BIBER_TRIGGER_TEX);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
@@ -339,14 +387,14 @@ fn biber_no_such_tool() {
     let output = child
         .wait_with_output()
         .expect("failed to wait on tectonic subprocess");
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[cfg(unix)]
 #[test]
 fn biber_signal() {
     let output = run_with_biber("signal", BIBER_TRIGGER_TEX);
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 #[test]
@@ -362,13 +410,13 @@ a
 \bye"#;
     let tex = format!("{}{}", BIBER_TRIGGER_TEX, REST);
     let output = run_with_biber("success", &tex);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
 fn help_flag() {
     let output = run_tectonic(&PathBuf::from("."), &["-h"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
@@ -381,7 +429,7 @@ fn keep_logs_on_error() {
         &[&fmt_arg, "-", "--keep-logs"],
         "no end to this file",
     );
-    error_or_panic(output);
+    error_or_panic(&output);
 
     let mut log = String::new();
     File::open(tempdir.path().join("texput.log"))
@@ -414,8 +462,8 @@ fn no_color_option() {
 
     assert_eq!(output_nocolor, output_autocolor);
 
-    error_or_panic(output_nocolor);
-    error_or_panic(output_autocolor);
+    error_or_panic(&output_nocolor);
+    error_or_panic(&output_autocolor);
 }
 
 #[test]
@@ -431,7 +479,7 @@ fn outdir_option() {
             "--outdir=subdirectory",
         ],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
     check_file(&tempdir, "subdirectory/1.pdf");
 }
 
@@ -451,7 +499,7 @@ fn outdir_option_bad() {
             "--outdir=subdirectory/non_existent",
         ],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
@@ -470,7 +518,7 @@ fn outdir_option_is_file() {
             "--outdir=test space.tex",
         ],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test] // GitHub #31
@@ -485,7 +533,7 @@ fn relative_include() {
         tempdir.path(),
         &[&fmt_arg, "subdirectory/relative_include.tex"],
     );
-    success_or_panic(output);
+    success_or_panic(&output);
     check_file(&tempdir, "subdirectory/relative_include.pdf");
 }
 
@@ -496,7 +544,7 @@ fn space_in_filename() {
     let tempdir = setup_and_copy_files(&["test space.tex"]);
 
     let output = run_tectonic(tempdir.path(), &[&fmt_arg, "test space.tex"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
@@ -509,124 +557,34 @@ fn stdin_content() {
         &[&fmt_arg, "-"],
         "Standard input content.\\bye",
     );
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[cfg(feature = "serialization")]
 #[test]
-fn v2_new_build() {
-    util::set_test_root();
-
-    let tempdir = setup_and_copy_files(&[]);
-    let mut temppath = tempdir.path().to_owned();
-    let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
-    success_or_panic(output);
-
-    temppath.push("doc");
-
-    // To run a build in our test setup, we can only use plain TeX. So, jankily
-    // change the format ...
-
-    {
-        let mut toml_path = temppath.clone();
-        toml_path.push("Tectonic.toml");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(toml_path)
-            .unwrap();
-        writeln!(file, "tex_format = 'plain'").unwrap();
-    }
-
-    // ... and write some files that are plain TeX.
-
-    {
-        let mut path = temppath.clone();
-        path.push("src");
-
-        {
-            path.push("_preamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
-            path.pop();
-        }
-
-        {
-            path.push("_postamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file, "\\end").unwrap();
-            path.pop();
-        }
-    }
-
-    // Now we can build.
-
+fn v2_build_basic() {
+    let (_tempdir, temppath) = setup_v2();
     let output = run_tectonic(&temppath, &["-X", "build"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[test]
 #[cfg(all(feature = "serialization", not(windows)))] // `echo` may not be available
-fn v2_new_build_open() {
-    util::set_test_root();
-
-    let tempdir = setup_and_copy_files(&[]);
-    let mut temppath = tempdir.path().to_owned();
-    let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
-    success_or_panic(output);
-
-    temppath.push("doc");
-
-    // To run a build in our test setup, we can only use plain TeX. So, jankily
-    // change the format ...
-
-    {
-        let mut toml_path = temppath.clone();
-        toml_path.push("Tectonic.toml");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(toml_path)
-            .unwrap();
-        writeln!(file, "tex_format = 'plain'").unwrap();
-    }
-
-    // ... and write some files that are plain TeX.
-
-    {
-        let mut path = temppath.clone();
-        path.push("src");
-
-        {
-            path.push("_preamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
-            path.pop();
-        }
-
-        {
-            path.push("_postamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file, "\\end").unwrap();
-            path.pop();
-        }
-    }
-
-    // Now we can build.
-
+fn v2_build_open() {
+    let (_tempdir, temppath) = setup_v2();
     let output = run_tectonic(&temppath, &["-X", "build", "--open"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 }
 
 #[cfg(feature = "serialization")]
 #[test]
-fn v2_new_build_multiple_outputs() {
+fn v2_build_multiple_outputs() {
     util::set_test_root();
 
     let tempdir = setup_and_copy_files(&[]);
     let mut temppath = tempdir.path().to_owned();
     let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
-    success_or_panic(output);
+    success_or_panic(&output);
 
     temppath.push("doc");
 
@@ -700,7 +658,75 @@ fn v2_new_build_multiple_outputs() {
     // Now we can build.
 
     let output = run_tectonic(&temppath, &["-X", "build"]);
-    success_or_panic(output);
+    success_or_panic(&output);
+}
+
+#[test]
+#[cfg(feature = "serialization")]
+fn v2_dump_basic() {
+    let (_tempdir, temppath) = setup_v2();
+    let output = run_tectonic(&temppath, &["-X", "dump", "default.log"]);
+    success_or_panic(&output);
+
+    let t = std::str::from_utf8(&output.stdout[..]).unwrap();
+    let mut saw_it = false;
+
+    for line in t.lines() {
+        if line.contains("(default (_preamble.tex) (index.tex) (_postamble.tex [1] ) )") {
+            saw_it = true;
+            break;
+        }
+    }
+
+    assert!(saw_it);
+}
+
+#[test]
+#[cfg(feature = "serialization")]
+fn v2_dump_suffix() {
+    let (_tempdir, mut temppath) = setup_v2();
+
+    temppath.push("src");
+    temppath.push("index.tex");
+
+    {
+        let mut file = File::create(&temppath).unwrap();
+        writeln!(
+            file,
+            "{}", // <= works around {} fussiness in Rust format strings
+            r#"\newwrite\w
+\immediate\openout\w=first.demo\relax
+\immediate\write\w{content-un}
+\immediate\closeout\w
+\immediate\openout\w=second.demo\relax
+\immediate\write\w{content-deux}
+\immediate\closeout\w
+"#
+        )
+        .unwrap();
+    }
+
+    temppath.pop();
+    temppath.pop();
+
+    let output = run_tectonic(&temppath, &["-X", "dump", "-s", "demo"]);
+    success_or_panic(&output);
+
+    let t = std::str::from_utf8(&output.stdout[..]).unwrap();
+    let mut saw_first = false;
+    let mut saw_second = false;
+
+    for line in t.lines() {
+        if line.contains("content-un") {
+            saw_first = true;
+        }
+
+        if line.contains("content-deux") {
+            saw_second = true;
+        }
+    }
+
+    assert!(saw_first && saw_second);
 }
 
 const SHELL_ESCAPE_TEST_DOC: &str = r#"\immediate\write18{mkdir shellwork}
@@ -724,7 +750,23 @@ fn shell_escape() {
         &[&fmt_arg, "-", "-Zshell-escape"],
         SHELL_ESCAPE_TEST_DOC,
     );
-    success_or_panic(output);
+    success_or_panic(&output);
+}
+
+/// Initial revisions with shell-escape ignored any value specified.
+/// Rather than allow this to toggle shell-escape which won't work with old installs.
+/// Test that shell-escape=false gives an error.
+#[test]
+fn shell_escape_arg_err() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[]);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "-Zshell-escape=false"],
+        SHELL_ESCAPE_TEST_DOC,
+    );
+    error_or_panic(&output);
 }
 
 /// Test that shell-escape can be killed by command-line-option
@@ -738,7 +780,7 @@ fn shell_escape_cli_override() {
         &[&fmt_arg, "--untrusted", "-", "-Zshell-escape"],
         SHELL_ESCAPE_TEST_DOC,
     );
-    error_or_panic(output);
+    error_or_panic(&output);
 }
 
 /// Test that shell-escape can be killed by environment variable
@@ -766,5 +808,43 @@ fn shell_escape_env_override() {
         .wait_with_output()
         .expect("failed to wait on tectonic subprocess");
 
-    error_or_panic(output);
+    error_or_panic(&output);
+}
+
+/// Test that include paths work
+#[test]
+fn extra_search_paths() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&["subdirectory/content/1.tex"]);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[&fmt_arg, "-", "-Zsearch-path=subdirectory/content"],
+        "\\input 1.tex\n\\bye",
+    );
+    success_or_panic(&output);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[
+            &fmt_arg,
+            "-",
+            "--hide=subdirectory/content/1.tex",
+            "-Zsearch-path=subdirectory/content",
+        ],
+        "\\input 1.tex\n\\bye",
+    );
+    error_or_panic(&output);
+
+    let output = run_tectonic_with_stdin(
+        tempdir.path(),
+        &[
+            &fmt_arg,
+            "-",
+            "-Zsearch-path=subdirectory/content",
+            "--untrusted",
+        ],
+        "\\input 1.tex\n\\bye",
+    );
+    error_or_panic(&output);
 }
