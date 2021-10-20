@@ -878,7 +878,7 @@ typedef struct pdf_gstate_
   pdf_obj *extgstate;
 } pdf_gstate;
 
-static dpx_stack gs_stack;
+static dpx_stack gs_stack = { 0, NULL, NULL };
 
 static void
 init_a_gstate (pdf_gstate *gs)
@@ -1111,6 +1111,16 @@ void
 pdf_dev_init_gstates (void)
 {
   pdf_gstate *gs;
+
+  /* Tectonic: this function is called twice in the xdvipdfmx driver init,
+   * resulting in a small amount of leaked memory. We statically initialize the
+   * stack variable to make it possible to safely avoid the leak in this
+   * situation. */
+
+  while ((gs = dpx_stack_pop(&gs_stack)) != NULL) {
+    clear_a_gstate(gs);
+    free(gs);
+  }
 
   dpx_stack_init(&gs_stack);
 

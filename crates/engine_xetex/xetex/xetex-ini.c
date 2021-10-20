@@ -3,6 +3,13 @@
    Licensed under the MIT License.
 */
 
+/* On Windows this can bring in a `#define INPUT` that clashes with
+ * xetex_format.h, so include it first and sanitize: */
+#include "teckit-c-Engine.h"
+#ifdef INPUT
+#undef INPUT
+#endif
+
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
@@ -2764,7 +2771,7 @@ load_fmt_file(void)
 
     font_ptr = x;
 
-    font_mapping = xmalloc_array(void *, font_max);
+    font_mapping = xcalloc_array(void *, font_max);
     font_layout_engine = xcalloc_array(void *, font_max);
     font_flags = xmalloc_array(char, font_max);
     font_letter_space = xmalloc_array(scaled_t, font_max);
@@ -3507,6 +3514,11 @@ tt_cleanup(void) {
         if (font_layout_engine[font_k] != NULL) {
             release_font_engine(font_layout_engine[font_k], font_area[font_k]);
             font_layout_engine[font_k] = NULL;
+        }
+
+        if (font_mapping[font_k] != NULL) {
+            TECkit_DisposeConverter((TECkit_Converter) font_mapping[font_k]);
+            font_mapping[font_k] = NULL;
         }
     }
 
