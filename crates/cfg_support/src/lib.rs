@@ -223,7 +223,7 @@ macro_rules! target_cfg {
             {$($current)+}
         ] [
             $($rest)*
-        ]);
+        ])
     };
 
     // This rule comes next. It fires when the next un-parsed token is *not* a
@@ -242,7 +242,7 @@ macro_rules! target_cfg {
             )*
         ] [
             $($rest)*
-        ] $($current)* $tok);
+        ] $($current)* $tok)
     };
 
     // This rule fires when there are no more tokens to parse in this list. We
@@ -260,7 +260,7 @@ macro_rules! target_cfg {
                 {$($grouped)+}
             )*
             {$($current)+}
-        );
+        )
     };
 
     // Finally, these are the "toplevel" syntaxes for specific tests that can
