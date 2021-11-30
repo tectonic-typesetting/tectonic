@@ -335,7 +335,7 @@ impl BridgeState {
                 let tool_path = tempdir.path().join(name);
                 let tool_parent = tool_path.parent().unwrap();
 
-                if tool_parent != tempdir.path() && !tool_parent.exists() {
+                if tool_parent != tempdir.path() {
                     ctry!(
                         std::fs::create_dir_all(&tool_parent);
                         "failed to create sub directory `{}`", tool_parent.display()
