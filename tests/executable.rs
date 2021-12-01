@@ -279,7 +279,7 @@ fn bad_outfmt_1() {
 
 fn run_with_biber(args: &str, stdin: &str) -> Output {
     let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&[]);
+    let tempdir = setup_and_copy_files(&["subdirectory/empty.bib"]);
     let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
 
     let test_cmd = if cfg!(windows) {
@@ -350,6 +350,9 @@ const BIBER_TRIGGER_TEX: &str = r#"
         </provides>
         <requires type="dynamic">
             <file>texput.bcf</file>
+        </requires>
+        <requires type="editable">
+            <file>subdirectory/empty.bib</file>
         </requires>
     </external>
 </requests>
