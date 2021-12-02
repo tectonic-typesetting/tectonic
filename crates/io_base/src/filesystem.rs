@@ -155,6 +155,7 @@ impl IoProvider for FilesystemIo {
         }
     }
 
+    #[allow(clippy::if_same_then_else)]
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
