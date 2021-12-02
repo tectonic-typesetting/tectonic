@@ -333,8 +333,9 @@ impl BridgeState {
                 if name.contains("../") {
                     return Err(errmsg!(
                         "relative parent paths are not supported for the \
-                        external tool. Got path `{}`.", name
-                    ))
+                        external tool. Got path `{}`.",
+                        name
+                    ));
                 }
 
                 // We could try to be clever and symlink when the input file has
