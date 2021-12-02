@@ -328,11 +328,29 @@ impl BridgeState {
 
         {
             for name in &read_files {
+                // If a relative parent is found in the file to open, this fn
+                // does not properly handle that. Thus, throw an error.
+                if name.contains("../") {
+                    return Err(errmsg!(
+                        "relative parent paths are not supported for the \
+                        external tool. Got path `{}`.",
+                        name
+                    ));
+                }
+
                 // We could try to be clever and symlink when the input file has
                 // an abspath or something, but ... meh.
                 let mut ih = self.input_open_name(name, status).must_exist()?;
 
                 let tool_path = tempdir.path().join(name);
+                let tool_parent = tool_path.parent().unwrap();
+
+                if tool_parent != tempdir.path() {
+                    ctry!(
+                        std::fs::create_dir_all(&tool_parent);
+                        "failed to create sub directory `{}`", tool_parent.display()
+                    );
+                }
                 let mut f = ctry!(
                     File::create(&tool_path);
                     "failed to create file `{}`", tool_path.display()
