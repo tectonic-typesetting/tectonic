@@ -2062,7 +2062,7 @@ void print_param(int32_t n)
     case INT_PAR__saving_vdiscards:
         print_esc_cstr("savingvdiscards");
         break;
-    case INT_PAR__saving_hyphs:
+    case INT_PAR__saving_hyph_codes:
         print_esc_cstr("savinghyphcodes");
         break;
     case INT_PAR__suppress_fontnotfound_error:

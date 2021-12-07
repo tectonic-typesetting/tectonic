@@ -927,7 +927,7 @@ new_patterns(void)
         }
 
     done: /*:996*/
-        if (INTPAR(saving_hyphs) > 0) { /*1643:*/
+        if (INTPAR(saving_hyph_codes) > 0) { /*1643:*/
             c = cur_lang;
             first_child = false;
             p = 0;
@@ -4228,7 +4228,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         primitive("predisplaydirection", ASSIGN_INT, INT_BASE + INT_PAR__pre_display_direction);
         primitive("lastlinefit", ASSIGN_INT, INT_BASE + INT_PAR__last_line_fit);
         primitive("savingvdiscards", ASSIGN_INT, INT_BASE + INT_PAR__saving_vdiscards);
-        primitive("savinghyphcodes", ASSIGN_INT, INT_BASE + INT_PAR__saving_hyphs);
+        primitive("savinghyphcodes", ASSIGN_INT, INT_BASE + INT_PAR__saving_hyph_codes);
 
         primitive("currentgrouplevel", LAST_ITEM, CURRENT_GROUP_LEVEL_CODE);
         primitive("currentgrouptype", LAST_ITEM, CURRENT_GROUP_TYPE_CODE);

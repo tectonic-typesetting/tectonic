@@ -244,7 +244,7 @@
 #define INT_PAR__pre_display_direction 63
 #define INT_PAR__last_line_fit 64
 #define INT_PAR__saving_vdiscards 65
-#define INT_PAR__saving_hyphs 66
+#define INT_PAR__saving_hyph_codes 66
 #define INT_PAR__suppress_fontnotfound_error 67
 #define INT_PAR__xetex_linebreak_locale 68
 #define INT_PAR__xetex_linebreak_penalty 69
