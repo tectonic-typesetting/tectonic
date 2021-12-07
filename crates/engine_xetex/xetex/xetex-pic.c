@@ -186,8 +186,9 @@ pdf_get_rect (char *filename, rust_input_handle_t handle, int page_num, int pdf_
 }
 
 
+/* Tectonic customization: use double-precision (see call site for explanation) */
 static int
-get_image_size_in_inches (rust_input_handle_t handle, float *width, float *height)
+get_image_size_in_inches (rust_input_handle_t handle, double *width, double *height)
 {
     int err = 1;
     unsigned int width_pix, height_pix;
@@ -235,9 +236,13 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
         /* if cmd was \XeTeXpdffile, use xpdflib to read it */
         err = pdf_get_rect (name_of_file, handle, page, pdfBoxType, bounds);
     } else {
-        err = get_image_size_in_inches (handle, &bounds->wd, &bounds->ht);
-        bounds->wd *= 72.27;
-        bounds->ht *= 72.27;
+        /* Tectonic customization: if we use single-precision math, we can
+         * sometimes get numerical results that vary depending on whether we're
+         * compiled in debug or release mode (?!) */
+        double wd, ht;
+        err = get_image_size_in_inches (handle, &wd, &ht);
+        bounds->wd = wd * 72.27;
+        bounds->ht = ht * 72.27;
     }
 
     if (err == 0)
