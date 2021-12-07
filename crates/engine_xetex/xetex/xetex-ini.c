@@ -3454,7 +3454,7 @@ initialize_primitives(void)
     primitive("errhelp", ASSIGN_TOKS, LOCAL_BASE + LOCAL__err_help);
     primitive("everyeof", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
     primitive("XeTeXinterchartoks", ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
-    primitive("TectonicCodaTokens", ASSIGN_TOKS, LOCAL_BASE + LOCAL__TectonicCodaTokens);
+    primitive("TectonicCodaTokens", ASSIGN_TOKS, LOCAL_BASE + LOCAL__tectonic_coda_tokens);
 
     primitive("pretolerance", ASSIGN_INT, INT_BASE + INT_PAR__pretolerance);
     primitive("tolerance", ASSIGN_INT, INT_BASE + INT_PAR__tolerance);

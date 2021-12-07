@@ -135,7 +135,7 @@
 #define LOCAL__err_help 9
 #define LOCAL__every_eof 10
 #define LOCAL__xetex_inter_char 11
-#define LOCAL__TectonicCodaTokens 12
+#define LOCAL__tectonic_coda_tokens 12
 #define NUM_LOCALS 13
 #define LOCAL(n) (eqtb[LOCAL_BASE + LOCAL__##n].b32.s1)
 

@@ -2339,7 +2339,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             case LOCAL_BASE + LOCAL__xetex_inter_char:
                 print_esc_cstr("XeTeXinterchartoks");
                 break;
-            case LOCAL_BASE + LOCAL__TectonicCodaTokens:
+            case LOCAL_BASE + LOCAL__tectonic_coda_tokens:
                 print_esc_cstr("TectonicCodaTokens");
                 break;
             default:
@@ -5571,9 +5571,9 @@ restart:
                  * \end or \dump has been seen. We just use a global state
                  * variable to make sure it only gets inserted once. */
 
-                if (!used_tectonic_coda_tokens && LOCAL(TectonicCodaTokens) != TEX_NULL) {
+                if (!used_tectonic_coda_tokens && LOCAL(tectonic_coda_tokens) != TEX_NULL) {
                     used_tectonic_coda_tokens = true;
-                    begin_token_list(LOCAL(TectonicCodaTokens), TECTONIC_CODA_TEXT);
+                    begin_token_list(LOCAL(tectonic_coda_tokens), TECTONIC_CODA_TEXT);
                     goto restart;
                 }
 
