@@ -1633,7 +1633,7 @@ prefixed_command(void)
             } else {
                 e = true;
             }
-        } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
+        } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
             scan_char_class_not_ignored();
             cur_ptr = cur_val;
             scan_char_class_not_ignored();
@@ -1666,7 +1666,7 @@ prefixed_command(void)
                     } else {
                         q = mem[cur_chr + 1].b32.s1;
                     }
-                } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
+                } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                     scan_char_class_not_ignored();
                     cur_ptr = cur_val;
                     scan_char_class_not_ignored();
@@ -3453,7 +3453,7 @@ initialize_primitives(void)
     primitive("everycr", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_cr);
     primitive("errhelp", ASSIGN_TOKS, LOCAL_BASE + LOCAL__err_help);
     primitive("everyeof", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
-    primitive("XeTeXinterchartoks", ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
+    primitive("XeTeXinterchartoks", ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char_toks);
     primitive("TectonicCodaTokens", ASSIGN_TOKS, LOCAL_BASE + LOCAL__tectonic_coda_tokens);
 
     primitive("pretolerance", ASSIGN_INT, INT_BASE + INT_PAR__pretolerance);

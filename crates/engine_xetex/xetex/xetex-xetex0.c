@@ -2336,7 +2336,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             case LOCAL_BASE + LOCAL__every_eof:
                 print_esc_cstr("everyeof");
                 break;
-            case LOCAL_BASE + LOCAL__xetex_inter_char:
+            case LOCAL_BASE + LOCAL__xetex_inter_char_toks:
                 print_esc_cstr("XeTeXinterchartoks");
                 break;
             case LOCAL_BASE + LOCAL__tectonic_coda_tokens:
@@ -7198,7 +7198,7 @@ restart:
                 } else {
                     cur_val = mem[m + 1].b32.s1;
                 }
-            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
+            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                 scan_char_class_not_ignored();
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
