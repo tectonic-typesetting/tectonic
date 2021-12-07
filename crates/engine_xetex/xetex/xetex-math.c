@@ -320,7 +320,7 @@ void init_math(void)
         eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__pre_display_size, w);
         cur_list.eTeX_aux = j;
-        eq_word_define(INT_BASE + INT_PAR__pre_display_correction, x);
+        eq_word_define(INT_BASE + INT_PAR__pre_display_direction, x);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_width, l);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_indent, s);
         if (LOCAL(every_display) != TEX_NULL)
@@ -763,7 +763,7 @@ app_display(int32_t j, int32_t b, scaled_t d)
     int32_t p, q, r, t, u;
 
     s = DIMENPAR(display_indent);
-    x = INTPAR(pre_display_correction);
+    x = INTPAR(pre_display_direction);
 
     if (x == 0)
         mem[b + 4].b32.s1 = s + d;
@@ -1069,7 +1069,7 @@ void after_math(void)
         w = mem[b + 1].b32.s1;
         z = DIMENPAR(display_width);
         s = DIMENPAR(display_indent);
-        if (INTPAR(pre_display_correction) < 0)
+        if (INTPAR(pre_display_direction) < 0)
             s = -(int32_t) s - z;
         if ((a == TEX_NULL) || danger) {
             e = 0;

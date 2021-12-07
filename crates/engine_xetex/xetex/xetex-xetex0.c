@@ -2053,7 +2053,7 @@ void print_param(int32_t n)
     case INT_PAR__tracing_nesting:
         print_esc_cstr("tracingnesting");
         break;
-    case INT_PAR__pre_display_correction:
+    case INT_PAR__pre_display_direction:
         print_esc_cstr("predisplaydirection");
         break;
     case INT_PAR__last_line_fit:

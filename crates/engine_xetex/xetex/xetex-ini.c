@@ -4225,7 +4225,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         primitive("tracingifs", ASSIGN_INT, INT_BASE + INT_PAR__tracing_ifs);
         primitive("tracingscantokens", ASSIGN_INT, INT_BASE + INT_PAR__tracing_scan_tokens);
         primitive("tracingnesting", ASSIGN_INT, INT_BASE + INT_PAR__tracing_nesting);
-        primitive("predisplaydirection", ASSIGN_INT, INT_BASE + INT_PAR__pre_display_correction);
+        primitive("predisplaydirection", ASSIGN_INT, INT_BASE + INT_PAR__pre_display_direction);
         primitive("lastlinefit", ASSIGN_INT, INT_BASE + INT_PAR__last_line_fit);
         primitive("savingvdiscards", ASSIGN_INT, INT_BASE + INT_PAR__saving_vdiscards);
         primitive("savinghyphcodes", ASSIGN_INT, INT_BASE + INT_PAR__saving_hyphs);
