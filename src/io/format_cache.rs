@@ -40,6 +40,7 @@ impl FormatCache {
 
     /// Get an on-disk path name for a given format file. This function simply
     /// produces a path that may or may not exist.
+    #[allow(clippy::manual_split_once)] // requires Rust 1.52 (note that we don't actually define our MSRV)
     fn path_for_format(&mut self, name: &str) -> Result<PathBuf> {
         // Remove all extensions from the format name. PathBuf.file_stem() doesn't
         // do what we want since it only strips one extension, so here we go:
