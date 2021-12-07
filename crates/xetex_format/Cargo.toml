@@ -1,0 +1,29 @@
+# Copyright 2021 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_xetex_format"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+Tectonic/XeTeX engine data structures and their expression in TeX "format" files.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_xetex_format"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+byteorder = "^1"
+nom = "^7"
+tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
+
+[dev-dependencies]
+clap = "^2.33"
+
+[package.metadata.internal_dep_versions]
+tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"
