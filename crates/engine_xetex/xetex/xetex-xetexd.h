@@ -11,6 +11,11 @@
 #include "teckit-Common.h"
 #include "xetex-ext.h"
 #include "tectonic_bridge_core.h"
+
+/* xetex_format.h needs this: */
+typedef unsigned char eight_bits;
+
+#include "xetex_format.h"
 #include "xetex-constants.h"
 
 BEGIN_EXTERN_C
@@ -39,7 +44,6 @@ BEGIN_EXTERN_C
 typedef unsigned short UTF16_code;
 typedef unsigned char UTF8_code;
 typedef int32_t UnicodeScalar;
-typedef unsigned char eight_bits;
 typedef int32_t pool_pointer;
 typedef int32_t str_number;
 typedef unsigned short packed_UTF16_code;

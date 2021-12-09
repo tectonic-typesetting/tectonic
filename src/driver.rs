@@ -1677,6 +1677,7 @@ impl ProcessingSession {
     }
 
     /// Use the TeX engine to generate a format file.
+    #[allow(clippy::manual_split_once)] // requires Rust 1.52 (note that we don't actually define our MSRV)
     fn make_format_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for

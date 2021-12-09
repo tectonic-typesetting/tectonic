@@ -2053,7 +2053,7 @@ void print_param(int32_t n)
     case INT_PAR__tracing_nesting:
         print_esc_cstr("tracingnesting");
         break;
-    case INT_PAR__pre_display_correction:
+    case INT_PAR__pre_display_direction:
         print_esc_cstr("predisplaydirection");
         break;
     case INT_PAR__last_line_fit:
@@ -2062,7 +2062,7 @@ void print_param(int32_t n)
     case INT_PAR__saving_vdiscards:
         print_esc_cstr("savingvdiscards");
         break;
-    case INT_PAR__saving_hyphs:
+    case INT_PAR__saving_hyph_codes:
         print_esc_cstr("savinghyphcodes");
         break;
     case INT_PAR__suppress_fontnotfound_error:
@@ -2336,10 +2336,10 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             case LOCAL_BASE + LOCAL__every_eof:
                 print_esc_cstr("everyeof");
                 break;
-            case LOCAL_BASE + LOCAL__xetex_inter_char:
+            case LOCAL_BASE + LOCAL__xetex_inter_char_toks:
                 print_esc_cstr("XeTeXinterchartoks");
                 break;
-            case LOCAL_BASE + LOCAL__TectonicCodaTokens:
+            case LOCAL_BASE + LOCAL__tectonic_coda_tokens:
                 print_esc_cstr("TectonicCodaTokens");
                 break;
             default:
@@ -2544,16 +2544,16 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         case LOCAL_BASE + LOCAL__par_shape:
             print_esc_cstr("parshape");
             break;
-        case INTER_LINE_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__inter_line_penalties:
             print_esc_cstr("interlinepenalties");
             break;
-        case CLUB_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__club_penalties:
             print_esc_cstr("clubpenalties");
             break;
-        case WIDOW_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__widow_penalties:
             print_esc_cstr("widowpenalties");
             break;
-        case DISPLAY_WIDOW_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__display_widow_penalties:
             print_esc_cstr("displaywidowpenalties");
             break;
         }
@@ -5571,9 +5571,9 @@ restart:
                  * \end or \dump has been seen. We just use a global state
                  * variable to make sure it only gets inserted once. */
 
-                if (!used_tectonic_coda_tokens && LOCAL(TectonicCodaTokens) != TEX_NULL) {
+                if (!used_tectonic_coda_tokens && LOCAL(tectonic_coda_tokens) != TEX_NULL) {
                     used_tectonic_coda_tokens = true;
-                    begin_token_list(LOCAL(TectonicCodaTokens), TECTONIC_CODA_TEXT);
+                    begin_token_list(LOCAL(tectonic_coda_tokens), TECTONIC_CODA_TEXT);
                     goto restart;
                 }
 
@@ -7198,7 +7198,7 @@ restart:
                 } else {
                     cur_val = mem[m + 1].b32.s1;
                 }
-            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
+            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                 scan_char_class_not_ignored();
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
@@ -14303,8 +14303,8 @@ void normal_paragraph(void)
         eq_word_define(INT_BASE + INT_PAR__hang_after, 1);
     if (LOCAL(par_shape) != TEX_NULL)
         eq_define(LOCAL_BASE + LOCAL__par_shape, SHAPE_REF, TEX_NULL);
-    if (eqtb[INTER_LINE_PENALTIES_LOC].b32.s1 != TEX_NULL)
-        eq_define(INTER_LINE_PENALTIES_LOC, SHAPE_REF, TEX_NULL);
+    if (ETEX_PENALTIES_PAR(inter_line_penalties) != TEX_NULL)
+        eq_define(ETEX_PEN_BASE + ETEX_PENALTIES_PAR__inter_line_penalties, SHAPE_REF, TEX_NULL);
 }
 
 

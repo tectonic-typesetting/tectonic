@@ -117,7 +117,7 @@ impl Document {
         let outputs = self
             .outputs
             .values()
-            .map(|r| syntax::OutputProfile::from_runtime(r))
+            .map(syntax::OutputProfile::from_runtime)
             .collect();
 
         let doc = syntax::Document {

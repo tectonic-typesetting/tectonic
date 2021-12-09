@@ -29,6 +29,7 @@ use crate::document::Document;
 #[derive(Debug)]
 pub struct Workspace {
     /// The root directory of the workspace.
+    #[allow(dead_code)] // We expect to use this eventually.
     root_dir: PathBuf,
 
     /// This workspace's document. In the future, there might be more than one.
