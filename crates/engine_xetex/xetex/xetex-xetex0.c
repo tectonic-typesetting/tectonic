@@ -2544,16 +2544,16 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         case LOCAL_BASE + LOCAL__par_shape:
             print_esc_cstr("parshape");
             break;
-        case INTER_LINE_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__inter_line_penalties:
             print_esc_cstr("interlinepenalties");
             break;
-        case CLUB_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__club_penalties:
             print_esc_cstr("clubpenalties");
             break;
-        case WIDOW_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__widow_penalties:
             print_esc_cstr("widowpenalties");
             break;
-        case DISPLAY_WIDOW_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__display_widow_penalties:
             print_esc_cstr("displaywidowpenalties");
             break;
         }
@@ -14303,8 +14303,8 @@ void normal_paragraph(void)
         eq_word_define(INT_BASE + INT_PAR__hang_after, 1);
     if (LOCAL(par_shape) != TEX_NULL)
         eq_define(LOCAL_BASE + LOCAL__par_shape, SHAPE_REF, TEX_NULL);
-    if (eqtb[INTER_LINE_PENALTIES_LOC].b32.s1 != TEX_NULL)
-        eq_define(INTER_LINE_PENALTIES_LOC, SHAPE_REF, TEX_NULL);
+    if (ETEX_PENALTIES_PAR(inter_line_penalties) != TEX_NULL)
+        eq_define(ETEX_PEN_BASE + ETEX_PENALTIES_PAR__inter_line_penalties, SHAPE_REF, TEX_NULL);
 }
 
 
