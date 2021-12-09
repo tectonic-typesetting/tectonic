@@ -391,7 +391,7 @@ impl EngineSettings {
             "#define FROZEN_CONTROL_SEQUENCE {}",
             self.frozen_control_sequence_base
         )?;
-        writeln!(stream, "#define PRIM_EQTB {}", self.prim_eqtb_base)?;
+        writeln!(stream, "#define PRIM_EQTB_BASE {}", self.prim_eqtb_base)?;
         writeln!(
             stream,
             "#define FROZEN_NULL_FONT {}",

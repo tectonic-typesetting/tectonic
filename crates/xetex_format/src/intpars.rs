@@ -512,7 +512,7 @@ pub fn emit_c_header_primitives<W: Write>(pars: &[IntPar], mut stream: W) -> Res
         if has_prim {
             writeln!(
                 stream,
-                "    {{ \"{}\", ASSIGN_INT, INT_BASE + INT_PAR__{} }}, \\",
+                "    {{ \"{}\", ASSIGN_INT, INT_BASE + INT_PAR__{}, xf_prim_init_none }}, \\",
                 prim_name.replace("_", ""),
                 par.name.to_lowercase(),
             )?;

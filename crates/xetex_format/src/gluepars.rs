@@ -176,7 +176,7 @@ pub fn emit_c_header_primitives<W: Write>(pars: &[GluePar], mut stream: W) -> Re
 
         writeln!(
             stream,
-            "    {{ \"{}\", {}, GLUE_BASE + GLUE_PAR__{} }}, \\",
+            "    {{ \"{}\", {}, GLUE_BASE + GLUE_PAR__{}, xf_prim_init_none }}, \\",
             par.name.replace("_", ""),
             cmd,
             par.name.to_lowercase(),

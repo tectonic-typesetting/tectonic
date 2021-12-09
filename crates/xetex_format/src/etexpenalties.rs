@@ -84,7 +84,7 @@ pub fn emit_c_header_primitives<W: Write>(pars: &[EtexPenaltiesPar], mut stream:
     for par in pars {
         writeln!(
             stream,
-            "    {{ \"{}\", SET_SHAPE, ETEX_PEN_BASE + ETEX_PENALTIES_PAR__{} }}, \\",
+            "    {{ \"{}\", SET_SHAPE, ETEX_PEN_BASE + ETEX_PENALTIES_PAR__{}, xf_prim_init_none }}, \\",
             par.name.replace("_", ""),
             par.name.to_lowercase(),
         )?;
