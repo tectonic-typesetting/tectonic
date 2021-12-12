@@ -4,11 +4,11 @@
 //! Decode a format file.
 
 use nom::{
-    error::{Error as NomError, ErrorKind as NomErrorKind, ParseError},
     multi::count,
     number::complete::{be_i16, be_i32, be_i64, be_u16},
     Err as NomErr, IResult,
 };
+use std::io::Write;
 use tectonic_errors::prelude::*;
 
 use crate::{
@@ -53,31 +53,28 @@ impl Format {
             Err(NomErr::Incomplete(_)) => bail!("incomplete input"),
         }
     }
+
+    pub fn dump_string_table<W: Write>(&self, stream: &mut W) -> Result<()> {
+        for sp in self.strings.all_sps() {
+            let value = self.strings.lookup(sp);
+            writeln!(stream, "{} = \"{}\"", sp, value)?;
+        }
+
+        Ok(())
+    }
 }
 
 fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
     let (input, _) = parseutils::satisfy_be_i32(HEADER_MAGIC)(input)?;
-    println!("OK header magic");
-
     let (input, serial) = be_i32(input)?;
-    println!("format serial: {}", serial);
-
     let engine = Engine::new_for_version(serial as FormatVersion);
 
     let (input, hash_high) = be_i32(input)?;
-    println!("hash_high: {}", hash_high);
-
-    let (input, mem_top) = be_i32(input)?;
-    println!("mem_top: {}", mem_top);
-
-    let (input, eqtb_size) = be_i32(input)?;
-    println!("eqtb_size: {}", eqtb_size);
-
-    let (input, hash_prime) = be_i32(input)?;
-    println!("hash_prime: {}", hash_prime);
-
-    let (input, hyph_prime) = be_i32(input)?;
-    println!("hyph_prime: {}", hyph_prime);
+    let (input, _mem_top) = parseutils::satisfy_be_i32(engine.settings.mem_top)(input)?;
+    let (input, _eqtb_size) = parseutils::satisfy_be_i32(engine.settings.eqtb_size)(input)?;
+    let (input, _hash_prime) =
+        parseutils::satisfy_be_i32(engine.settings.hash_prime as i32)(input)?;
+    let (input, _hyph_prime) = be_i32(input)?;
 
     // string table
 
@@ -91,28 +88,16 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
 
     let (input, eqtb) = eqtb::EquivalenciesTable::parse(input, &engine, hash_high)?;
 
-    if engine.settings.eqtb_size != eqtb_size {
-        println!("eqtb size problem!");
-        return Err(NomErr::Error(NomError::from_error_kind(
-            input,
-            NomErrorKind::Satisfy,
-        )));
-    }
-
-    println!("eqtb OK");
-
     // nominally hash_top, but hash_top = engine.settings.eqtb_top since hash_extra is nonzero
-    let (input, par_loc) = parseutils::ranged_be_i32(
+    let (input, _par_loc) = parseutils::ranged_be_i32(
         engine.settings.hash_base as i32,
         engine.settings.eqtb_top as i32,
     )(input)?;
-    println!("par_loc: {}", par_loc);
 
-    let (input, write_loc) = parseutils::ranged_be_i32(
+    let (input, _write_loc) = parseutils::ranged_be_i32(
         engine.settings.hash_base as i32,
         engine.settings.eqtb_top as i32,
     )(input)?;
-    println!("write_loc: {}", write_loc);
 
     // Primitives. TODO: figure out best type for `prims`.
 
@@ -121,18 +106,15 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
     // Control sequence names -- the hash table.
 
     let (input, cshash) = cshash::ControlSeqHash::parse(input, &engine, hash_high)?;
-    println!("multi-letter control-seq hash loaded OK");
 
     // font info
 
     let (input, fmem_ptr) = parseutils::ranged_be_i32(7, 147483647)(input)?;
-    println!("fmem_ptr: {}", fmem_ptr);
 
     let (input, _font_info) = count(be_i64, fmem_ptr as usize)(input)?;
 
     // NB: FONT_BASE = 0
     let (input, font_ptr) = parseutils::ranged_be_i32(0, engine.settings.max_fonts as i32)(input)?;
-    println!("font_ptr: {}", font_ptr);
 
     let n_fonts = font_ptr as usize + 1;
     let (input, _font_check) = count(be_i64, n_fonts)(input)?;
@@ -169,11 +151,10 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
     // Hyphenations!
 
     let (input, hyph_count) = be_i32(input)?;
-    println!("hyph_count: {}", hyph_count);
 
-    let (input, mut hyph_next) = be_i32(input)?;
-    println!("hyph_next: {}", hyph_next);
+    let (input, mut _hyph_next) = be_i32(input)?;
 
+    let mut hyph_next;
     let mut hyph_link = vec![0u16; HYPH_SIZE];
     let mut hyph_word = vec![0i32; HYPH_SIZE];
     let mut hyph_list = vec![0i32; HYPH_SIZE];
@@ -204,21 +185,17 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
     // trie
 
     let (input, trie_max) = be_i32(input)?;
-    println!("trie_max: {}", trie_max);
 
-    let (input, hyph_start) = parseutils::ranged_be_i32(0, trie_max)(input)?;
-    println!("hyph_start: {}", hyph_start);
+    let (input, _hyph_start) = parseutils::ranged_be_i32(0, trie_max)(input)?;
 
     let n_trie = trie_max as usize + 1;
     let (input, _trie_trl) = count(be_i32, n_trie)(input)?;
     let (input, _trie_tro) = count(be_i32, n_trie)(input)?;
     let (input, _trie_trc) = count(be_u16, n_trie)(input)?;
 
-    let (input, max_hyph_char) = be_i32(input)?;
-    println!("max_hyph_char: {}", max_hyph_char);
+    let (input, _max_hyph_char) = be_i32(input)?;
 
     let (input, trie_op_ptr) = parseutils::ranged_be_i32(0, TRIE_OP_SIZE)(input)?;
-    println!("trie_op_ptr: {}", trie_op_ptr);
 
     // IMPORTANT!!! XeTeX loads these into 1-based indices!
     let (input, _hyf_distance) = count(be_i16, trie_op_ptr as usize)(input)?;
@@ -245,26 +222,6 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
     // All done!
 
     let (input, _) = parseutils::satisfy_be_i32(FOOTER_MAGIC)(input)?;
-    println!("OK footer magic!");
-
-    // test control sequence lookup
-
-    for s in &strings.strings {
-        if let Some(ptr) = cshash.lookup(s, &strings) {
-            println!("mlcs: \\{} => {:?}", s, eqtb.decode(ptr));
-        }
-    }
-
-    let csname = "showhyphens";
-    let p = cshash.lookup(csname, &strings);
-    println!("cs {}? {:?}", csname, p);
-    if let Some(ptr) = p {
-        let ee = eqtb.decode(ptr);
-        assert!(ee.ty == 113);
-        crate::tokenlist::print_toklist(ee.value, &mem, &cshash, &strings, true);
-    }
-
-    // ok really all done
 
     let fmt = Format {
         engine,
