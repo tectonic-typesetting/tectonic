@@ -49,6 +49,7 @@ pub const LATEST_VERSION: FormatVersion = 30;
 mod parseutils;
 
 pub mod base;
+pub mod catcodes;
 pub mod commands;
 pub mod cshash;
 pub mod dimenpars;

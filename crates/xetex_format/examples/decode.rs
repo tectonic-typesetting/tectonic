@@ -18,6 +18,7 @@ struct Options {
 impl Options {
     fn execute(self) -> Result<()> {
         match self.command {
+            Commands::Catcodes(c) => c.execute_catcodes(),
             Commands::Strings(c) => c.execute_strings(),
         }
     }
@@ -25,6 +26,10 @@ impl Options {
 
 #[derive(Debug, StructOpt)]
 enum Commands {
+    #[structopt(name = "catcodes")]
+    /// Dump the character category codes
+    Catcodes(GenericCommand),
+
     #[structopt(name = "strings")]
     /// Dump the strings table
     Strings(GenericCommand),
@@ -43,6 +48,14 @@ impl GenericCommand {
         let mut data = Vec::new();
         file.read_to_end(&mut data)?;
         Format::parse(&data[..])
+    }
+
+    fn execute_catcodes(self) -> Result<()> {
+        let fmt = self.parse()?;
+        let stdout = std::io::stdout();
+        let mut lock = stdout.lock();
+        fmt.dump_catcodes(&mut lock)?;
+        Ok(())
     }
 
     fn execute_strings(self) -> Result<()> {

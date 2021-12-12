@@ -13,6 +13,7 @@ use tectonic_errors::prelude::*;
 
 use crate::{
     base::{MAX_HALFWORD, MIN_HALFWORD},
+    catcodes::CatCode,
     cshash,
     engine::Engine,
     eqtb, mem, parseutils, stringtable, FormatVersion,
@@ -44,6 +45,8 @@ const TRIE_OP_SIZE: i32 = 35111;
 
 const BIGGEST_LANG: usize = 255;
 
+const MAX_USV: i32 = crate::base::NUMBER_USVS as i32;
+
 impl Format {
     pub fn parse(input: &[u8]) -> Result<Self> {
         match parse_impl(input) {
@@ -61,6 +64,76 @@ impl Format {
         }
 
         Ok(())
+    }
+
+    pub fn dump_catcodes<W: Write>(&self, stream: &mut W) -> Result<()> {
+        let mut blocks = vec![Vec::new(); 16];
+        let mut start = 0;
+        let mut prev = start;
+        let mut cur_cat = self.eqtb_catcode(start)?;
+
+        for chr in 1..MAX_USV {
+            let cat = self.eqtb_catcode(chr)?;
+
+            if cat != cur_cat {
+                blocks[cur_cat as usize].push((start, prev));
+                start = chr;
+                cur_cat = cat;
+            }
+
+            prev = chr;
+        }
+
+        blocks[cur_cat as usize].push((start, prev));
+
+        for cat in 0..16 {
+            if cat > 0 {
+                writeln!(stream)?;
+            }
+
+            writeln!(stream, "{}:", CatCode::from_i32(cat).unwrap().description())?;
+
+            for block in &blocks[cat as usize] {
+                let (start, end) = *block;
+
+                if end == start {
+                    writeln!(stream, "    {}", fmt_usv(start))?;
+                } else {
+                    writeln!(stream, "    {} - {}", fmt_usv(start), fmt_usv(end))?;
+                }
+            }
+        }
+
+        fn fmt_usv(c: i32) -> String {
+            let maybe_chr = char::from_u32(c as u32);
+
+            if let Some(chr) = maybe_chr {
+                if chr == ' ' {
+                    format!("' ' (0x{:05x})", c)
+                } else if chr.is_control() || chr.is_whitespace() {
+                    format!("{} (0x{:05x})", chr.escape_default(), c)
+                } else {
+                    format!("{} (0x{:05x})", chr, c)
+                }
+            } else {
+                format!("0x{:05x}", c)
+            }
+        }
+
+        Ok(())
+    }
+
+    // Decoding various eqtb bits. These could just as well be methods on the Eqtb
+    // type, except it doesn't actually hold onto all of the magic offsets needed
+    // to index into it properly.
+
+    fn eqtb_catcode(&self, c: i32) -> Result<CatCode> {
+        assert!(c >= 0 && c < MAX_USV);
+        CatCode::from_i32(
+            self.eqtb
+                .decode(self.engine.settings.cat_code_base + c)
+                .value,
+        )
     }
 }
 
