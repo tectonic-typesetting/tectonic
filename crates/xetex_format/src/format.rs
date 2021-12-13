@@ -66,6 +66,28 @@ impl Format {
         Ok(())
     }
 
+    pub fn dump_actives<W: Write>(&self, stream: &mut W) -> Result<()> {
+        for chr in 0..MAX_USV {
+            let entry = self.eqtb_active(chr);
+
+            if entry.ty == self.engine.settings.undefined_cs_command {
+                continue;
+            }
+
+            let cur_cat = self.eqtb_catcode(chr)?;
+
+            writeln!(
+                stream,
+                "{} ({}) => {:?}",
+                fmt_usv(chr),
+                cur_cat.abbrev(),
+                entry
+            )?;
+        }
+
+        Ok(())
+    }
+
     pub fn dump_catcodes<W: Write>(&self, stream: &mut W) -> Result<()> {
         let mut blocks = vec![Vec::new(); 16];
         let mut start = 0;
@@ -104,28 +126,17 @@ impl Format {
             }
         }
 
-        fn fmt_usv(c: i32) -> String {
-            let maybe_chr = char::from_u32(c as u32);
-
-            if let Some(chr) = maybe_chr {
-                if chr == ' ' {
-                    format!("' ' (0x{:05x})", c)
-                } else if chr.is_control() || chr.is_whitespace() {
-                    format!("{} (0x{:05x})", chr.escape_default(), c)
-                } else {
-                    format!("{} (0x{:05x})", chr, c)
-                }
-            } else {
-                format!("0x{:05x}", c)
-            }
-        }
-
         Ok(())
     }
 
     // Decoding various eqtb bits. These could just as well be methods on the Eqtb
     // type, except it doesn't actually hold onto all of the magic offsets needed
     // to index into it properly.
+
+    fn eqtb_active(&self, c: i32) -> eqtb::EqtbEntry {
+        assert!(c >= 0 && c < MAX_USV);
+        self.eqtb.decode(self.engine.settings.active_base + c)
+    }
 
     fn eqtb_catcode(&self, c: i32) -> Result<CatCode> {
         assert!(c >= 0 && c < MAX_USV);
@@ -304,4 +315,28 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
         cshash,
     };
     Ok((input, fmt))
+}
+
+fn fmt_usv(c: i32) -> String {
+    // Valid inputs are valid USVs, which are as per the Unicode Glossary: "Any
+    // Unicode code point except high-surrogate and low-surrogate code points.
+    // In other words, the ranges of integers 0x0 to 0xD7FF and 0xE000 to
+    // 0x10FFFF, inclusive."
+    let maybe_chr = char::from_u32(c as u32);
+
+    if let Some(chr) = maybe_chr {
+        if chr == ' ' {
+            format!("' ' (0x{:06x})", c)
+        } else if chr == '\'' {
+            format!("\\' (0x{:06x})", c)
+        } else if chr == '\"' {
+            format!("\\\" (0x{:06x})", c)
+        } else if chr.is_control() || chr.is_whitespace() {
+            format!("{} (0x{:06x})", chr.escape_default(), c)
+        } else {
+            format!("{} (0x{:06x})", chr, c)
+        }
+    } else {
+        format!("*invalid* (0x{:06x})", c)
+    }
 }
