@@ -5,29 +5,27 @@
 
 //! The overall interface provided by the engine.
 
-use std::io::{Result, Write};
+use std::io::Write;
+use tectonic_errors::prelude::*;
 
 use crate::{
-    base,
-    commands::{self, CommandCode},
-    dimenpars,
-    eqtb::EqtbPointer,
-    etexpenalties, gluepars, intpars, locals,
-    mem::MemPointer,
+    commands::{self, Commands},
+    cshash, dimenpars, enums, eqtb, etexpenalties, gluepars, intpars, locals,
+    symbols::{SymbolCategory, SymbolTable},
     FormatVersion, LATEST_VERSION,
 };
 
 /// Information about the engine implementation.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Engine {
     /// The interface version implemented by this engine.
     pub version: FormatVersion,
 
-    /// Various precomputed numerical settings.
-    pub settings: EngineSettings,
+    /// The table of named symbols associated with this engine version.
+    pub symbols: SymbolTable,
 
     /// The low-level commands provided by the engine.
-    pub commands: Vec<commands::Command>,
+    pub commands: Commands,
 
     /// The integer parameters defined in this engine implementation.
     pub int_pars: Vec<intpars::IntPar>,
@@ -48,32 +46,44 @@ pub struct Engine {
 
 impl Engine {
     /// Get an engine definition for a specific version.
-    pub fn new_for_version(version: FormatVersion) -> Engine {
-        let int_pars = intpars::get_intpars_for_version(version);
-        let dimen_pars = dimenpars::get_dimenpars_for_version(version);
-        let glue_pars = gluepars::get_gluepars_for_version(version);
-        let local_pars = locals::get_local_pars_for_version(version);
-        let etex_penalties_pars = etexpenalties::get_etex_penalties_pars_for_version(version);
-        let commands = commands::get_commands_for_version(version);
-        let settings = EngineSettings::new(
-            &int_pars[..],
-            &dimen_pars[..],
-            &glue_pars[..],
-            &local_pars[..],
-            &etex_penalties_pars[..],
-            &commands[..],
-        );
+    pub fn new_for_version(version: FormatVersion) -> Result<Engine> {
+        let mut symbols = SymbolTable::default();
+        symbols.add(
+            SymbolCategory::FormatVersion,
+            "TECTONIC_FORMAT_VERSION",
+            version as isize,
+        )?;
 
-        Engine {
+        cshash::initialize_cshash_symbols(&mut symbols)?;
+
+        symbols.add(SymbolCategory::FixedArrays, "PRIM_SIZE", 500)?;
+        symbols.add(SymbolCategory::FixedArrays, "MAX_FONT_MAX", 9000)?;
+        symbols.add(SymbolCategory::FixedArrays, "MEM_TOP", 4_999_999)?;
+        symbols.add(SymbolCategory::FixedArrays, "NUMBER_MATH_FAMILIES", 256)?;
+
+        let int_pars = intpars::get_intpars_for_version(version, &mut symbols)?;
+        let dimen_pars = dimenpars::get_dimenpars_for_version(version, &mut symbols)?;
+        let glue_pars = gluepars::get_gluepars_for_version(version, &mut symbols)?;
+        let local_pars = locals::get_local_pars_for_version(version, &mut symbols)?;
+        let etex_penalties_pars =
+            etexpenalties::get_etex_penalties_pars_for_version(version, &mut symbols)?;
+
+        eqtb::initialize_eqtb_symbols(&mut symbols)?;
+        commands::initialize_command_code_symbols(version, &mut symbols);
+        enums::initialize_enum_symbols(version, &mut symbols)?;
+
+        let commands = commands::Commands::get_for_version(version, &mut symbols)?;
+
+        Ok(Engine {
             version,
-            settings,
+            symbols,
             commands,
             int_pars,
             dimen_pars,
             glue_pars,
             local_pars,
             etex_penalties_pars,
-        }
+        })
     }
 
     /// Create a C header file defining the WEB2C constants associated with this
@@ -86,24 +96,21 @@ impl Engine {
 
 #ifndef __TECTONIC_XETEX_FORMAT_ENGINE_HEADER__
 #define __TECTONIC_XETEX_FORMAT_ENGINE_HEADER__
+
+#undef IGNORE /* Windows OS headers sometimes define this */
 ",
             self.version
         )?;
 
-        self.settings.emit_c_header_stanza(&mut stream)?;
-        intpars::emit_c_header_stanza(&self.int_pars[..], &mut stream)?;
-        dimenpars::emit_c_header_stanza(&self.dimen_pars[..], &mut stream)?;
-        gluepars::emit_c_header_stanza(&self.glue_pars[..], &mut stream)?;
-        locals::emit_c_header_stanza(&self.local_pars[..], &mut stream)?;
-        etexpenalties::emit_c_header_stanza(&self.etex_penalties_pars[..], &mut stream)?;
+        self.symbols.emit_c_header_stanza(&mut stream)?;
 
-        commands::emit_c_header_beginning(&self.commands[..], &mut stream)?;
+        self.commands.emit_c_header_beginning(&mut stream)?;
         intpars::emit_c_header_primitives(&self.int_pars[..], &mut stream)?;
         dimenpars::emit_c_header_primitives(&self.dimen_pars[..], &mut stream)?;
         gluepars::emit_c_header_primitives(&self.glue_pars[..], &mut stream)?;
         locals::emit_c_header_primitives(&self.local_pars[..], &mut stream)?;
         etexpenalties::emit_c_header_primitives(&self.etex_penalties_pars[..], &mut stream)?;
-        commands::emit_c_header_ending(&self.commands[..], &mut stream)?;
+        self.commands.emit_c_header_ending(&mut stream)?;
 
         writeln!(stream, "#endif")?;
         Ok(())
@@ -112,322 +119,6 @@ impl Engine {
 
 impl Default for Engine {
     fn default() -> Self {
-        Engine::new_for_version(LATEST_VERSION)
-    }
-}
-
-/// Various parameters about engine arrays.
-///
-/// Most of these are compile-time constants in the engine code, but we express
-/// them as variables because the flexibility is good to have and we don't care
-/// about runtime performance.
-#[derive(Clone, Copy, Debug)]
-pub struct EngineSettings {
-    /// The size of the hash table for multi-letter control sequences --
-    /// so, the maximum number of allowed multi-letter control sequences.
-    pub hash_size: i32,
-
-    /// Extra space for the hash table. TODO: figure out the relationship
-    /// between this and `hash_size` better.
-    pub hash_extra: i32,
-
-    /// "smallest index in hash array"
-    pub hash_offset: i32,
-
-    /// The magic number for the multiletter control sequence hash table.
-    pub hash_prime: u32,
-
-    /// The size of the hash table for primitives --
-    /// so, the maximum number of allowed primitives.
-    pub prim_size: i32,
-
-    /// The maximum number of fonts that can be loaded (`max_font_max` in TeX)
-    pub max_fonts: i32,
-
-    /// The largest valid dynamic memory address
-    pub mem_top: MemPointer,
-
-    /// The eqtb location where the commands associated with active characters
-    /// are stored.
-    pub active_base: EqtbPointer,
-
-    /// The eqtb location where single-letter control sequence equivalents are
-    /// stored.
-    pub single_base: EqtbPointer,
-
-    /// The eqtb location where the multiletter control sequence hash table
-    /// starts.
-    pub hash_base: EqtbPointer,
-
-    /// The eqtb location where the hash table of primitives is stored.
-    pub prim_eqtb_base: EqtbPointer,
-
-    /// The eqtb location where glue parameters are stored.
-    pub glue_base: EqtbPointer,
-
-    /// The eqtb location where glue registeres are stored.
-    pub skip_base: EqtbPointer,
-
-    /// The eqtb location where math glue registers are stored.
-    pub mu_skip_base: EqtbPointer,
-
-    /// The eqtb location where the "local" parameters are stored.
-    pub local_base: EqtbPointer,
-
-    /// The eqtb location where token registers are stored.
-    pub toks_base: EqtbPointer,
-
-    /// The eqtb location where the e-TeX penalties parameters are stored.
-    pub etex_pen_base: EqtbPointer,
-
-    /// The eqtb location where box registers are stored.
-    pub box_base: EqtbPointer,
-
-    /// The eqtb location where the current font is stored.
-    pub cur_font_loc: EqtbPointer,
-
-    /// The eqtb location where math fonts are stored.
-    pub math_font_base: EqtbPointer,
-
-    /// The eqtb location where character category codes are stored.
-    pub cat_code_base: EqtbPointer,
-
-    /// The eqtb location where character lower-case codes are stored.
-    pub lc_code_base: EqtbPointer,
-
-    /// The eqtb location where character upper-case codes are stored.
-    pub uc_code_base: EqtbPointer,
-
-    /// The eqtb location where character space-factor codes are stored.
-    pub sf_code_base: EqtbPointer,
-
-    /// The eqtb location where character math codes are stored.
-    pub math_code_base: EqtbPointer,
-
-    /// The eqtb location where MLTeX character substitution codes are stored.
-    pub char_sub_code_base: EqtbPointer,
-
-    /// The eqtb location where integer parameters are stored.
-    pub int_base: EqtbPointer,
-
-    /// The eqtb location where integer registers are stored.
-    pub count_base: EqtbPointer,
-
-    /// The eqtb location where delimiter codes are stored.
-    pub del_code_base: EqtbPointer,
-
-    /// The eqtb location where length parameters are stored.
-    pub dimen_base: EqtbPointer,
-
-    /// The eqtb location where length registers are stored.
-    pub scaled_base: EqtbPointer,
-
-    /// The last address in the non-hash portion of the eqtb -- or, the size of
-    /// this portion minus one.
-    pub eqtb_size: EqtbPointer,
-
-    /// The very last legal address in the eqtb -- or, the size of the eqtb
-    /// minus one.
-    ///
-    /// By definition, `eqtb_top = eqtb_size + hash_extra`.
-    pub eqtb_top: EqtbPointer,
-
-    /// The eqtb location where special frozen control sequences are stored.
-    ///
-    /// In TeX this is `frozen_control_sequence`.
-    pub frozen_control_sequence_base: EqtbPointer,
-
-    /// The magic eqtb location that means "undefined control sequence".
-    ///
-    /// This position in the eqtb actually exists but I don't believe it's
-    /// ever accessed.
-    pub undefined_control_sequence: EqtbPointer,
-
-    /// The eqtb location for the "null" control sequence whose name is empty
-    /// (`\csname\endcsname`)
-    pub null_cs_loc: EqtbPointer,
-
-    /// The command code for an undefined control sequence.
-    pub undefined_cs_command: CommandCode,
-
-    /// The eqtb location where an immutable reference to the null font is
-    /// stored.
-    pub frozen_null_font_loc: EqtbPointer,
-}
-
-impl EngineSettings {
-    fn new(
-        int_pars: &[intpars::IntPar],
-        dimen_pars: &[dimenpars::DimenPar],
-        glue_pars: &[gluepars::GluePar],
-        local_pars: &[locals::LocalPar],
-        etex_penalties_pars: &[etexpenalties::EtexPenaltiesPar],
-        commands: &[commands::Command],
-    ) -> Self {
-        // Basic memory parameters
-
-        let hash_size = 15_000;
-        let hash_extra = 600_000;
-        let prim_size = 500;
-        let max_fonts = 9000;
-        let hash_offset = 514;
-        let hash_prime = 8501;
-        let mem_top = 4_999_999;
-
-        // The size of the eqtb is fixed at runtime but depends on many
-        // different settings. Figure it all out.
-
-        let n_frozen_primitives = 12;
-        let n_glue_pars = glue_pars.len() as i32;
-        let n_locals = local_pars.len() as i32;
-        let n_etex_pens = etex_penalties_pars.len() as i32;
-        let n_int_pars = int_pars.len() as i32;
-        let n_dimen_pars = dimen_pars.len() as i32;
-
-        let active_base = 1;
-        let single_base = active_base + base::NUMBER_USVS as i32;
-        let null_cs_loc = single_base + base::NUMBER_USVS as i32;
-        let hash_base = null_cs_loc + 1;
-        let frozen_control_sequence_base = hash_base + hash_size;
-        let prim_eqtb_base = frozen_control_sequence_base + n_frozen_primitives;
-        let frozen_null_font_loc = prim_eqtb_base + prim_size;
-        let undefined_control_sequence = frozen_null_font_loc + max_fonts + 1;
-        let glue_base = undefined_control_sequence + 1;
-        let skip_base = glue_base + n_glue_pars;
-        let mu_skip_base = skip_base + base::NUMBER_REGS as i32;
-        let local_base = mu_skip_base + base::NUMBER_REGS as i32;
-        let toks_base = local_base + n_locals;
-        let etex_pen_base = toks_base + base::NUMBER_REGS as i32;
-        let box_base = etex_pen_base + n_etex_pens;
-        let cur_font_loc = box_base + base::NUMBER_REGS as i32;
-        let math_font_base = cur_font_loc + 1;
-        let cat_code_base = math_font_base + base::NUMBER_MATH_FONTS as i32;
-        let lc_code_base = cat_code_base + base::NUMBER_USVS as i32;
-        let uc_code_base = lc_code_base + base::NUMBER_USVS as i32;
-        let sf_code_base = uc_code_base + base::NUMBER_USVS as i32;
-        let math_code_base = sf_code_base + base::NUMBER_USVS as i32;
-        let char_sub_code_base = math_code_base + base::NUMBER_USVS as i32;
-        let int_base = char_sub_code_base + base::NUMBER_USVS as i32;
-        let count_base = int_base + n_int_pars;
-        let del_code_base = count_base + base::NUMBER_REGS as i32;
-        let dimen_base = del_code_base + base::NUMBER_USVS as i32;
-        let scaled_base = dimen_base + n_dimen_pars;
-        let eqtb_size = scaled_base + base::NUMBER_REGS as i32 - 1; // XXXX note the minus-one
-        let eqtb_top = eqtb_size + hash_extra;
-
-        // Command codes of interest
-
-        let mut undefined_cs_command = -1;
-
-        for (index, cmd) in commands.iter().enumerate() {
-            if cmd.web2cname == "UNDEFINED_CS" {
-                undefined_cs_command = index as commands::CommandCode;
-            }
-        }
-
-        assert!(undefined_cs_command > 0);
-
-        // Finally we have everything
-
-        EngineSettings {
-            hash_size,
-            hash_extra,
-            prim_size,
-            max_fonts,
-            mem_top,
-            active_base,
-            single_base,
-            hash_base,
-            hash_offset,
-            hash_prime,
-            glue_base,
-            skip_base,
-            mu_skip_base,
-            local_base,
-            toks_base,
-            etex_pen_base,
-            box_base,
-            cur_font_loc,
-            math_font_base,
-            cat_code_base,
-            lc_code_base,
-            uc_code_base,
-            sf_code_base,
-            math_code_base,
-            char_sub_code_base,
-            int_base,
-            count_base,
-            del_code_base,
-            dimen_base,
-            scaled_base,
-            eqtb_size,
-            eqtb_top,
-            frozen_control_sequence_base,
-            undefined_control_sequence,
-            undefined_cs_command,
-            null_cs_loc,
-            prim_eqtb_base,
-            frozen_null_font_loc,
-        }
-    }
-
-    fn emit_c_header_stanza<W: Write>(&self, mut stream: W) -> Result<()> {
-        writeln!(stream, "/* Memory settings */\n")?;
-        writeln!(stream, "#define HASH_SIZE {}", self.hash_size)?;
-        writeln!(stream, "#define HASH_EXTRA {}", self.hash_extra)?;
-        writeln!(stream, "#define HASH_OFFSET {}", self.hash_offset)?;
-        writeln!(stream, "#define HASH_PRIME {}", self.hash_prime)?;
-        writeln!(stream, "#define PRIM_SIZE {}", self.prim_size)?;
-        writeln!(stream, "#define MAX_FONT_MAX {}", self.max_fonts)?;
-        writeln!(stream, "#define MEM_TOP {}", self.mem_top)?;
-
-        writeln!(stream, "\n/* Equivalents table addresses */\n")?;
-        writeln!(stream, "#define ACTIVE_BASE {}", self.active_base)?;
-        writeln!(stream, "#define SINGLE_BASE {}", self.single_base)?;
-        writeln!(stream, "#define NULL_CS {}", self.null_cs_loc)?;
-        writeln!(stream, "#define HASH_BASE {}", self.hash_base)?;
-        writeln!(
-            stream,
-            "#define FROZEN_CONTROL_SEQUENCE {}",
-            self.frozen_control_sequence_base
-        )?;
-        writeln!(stream, "#define PRIM_EQTB_BASE {}", self.prim_eqtb_base)?;
-        writeln!(
-            stream,
-            "#define FROZEN_NULL_FONT {}",
-            self.frozen_null_font_loc
-        )?;
-        writeln!(
-            stream,
-            "#define UNDEFINED_CONTROL_SEQUENCE {}",
-            self.undefined_control_sequence
-        )?;
-        writeln!(stream, "#define GLUE_BASE {}", self.glue_base)?;
-        writeln!(stream, "#define SKIP_BASE {}", self.skip_base)?;
-        writeln!(stream, "#define MU_SKIP_BASE {}", self.mu_skip_base)?;
-        writeln!(stream, "#define LOCAL_BASE {}", self.local_base)?;
-        writeln!(stream, "#define TOKS_BASE {}", self.toks_base)?;
-        writeln!(stream, "#define ETEX_PEN_BASE {}", self.etex_pen_base)?;
-        writeln!(stream, "#define BOX_BASE {}", self.box_base)?;
-        writeln!(stream, "#define CUR_FONT_LOC {}", self.cur_font_loc)?;
-        writeln!(stream, "#define MATH_FONT_BASE {}", self.math_font_base)?;
-        writeln!(stream, "#define CAT_CODE_BASE {}", self.cat_code_base)?;
-        writeln!(stream, "#define LC_CODE_BASE {}", self.lc_code_base)?;
-        writeln!(stream, "#define UC_CODE_BASE {}", self.uc_code_base)?;
-        writeln!(stream, "#define SF_CODE_BASE {}", self.sf_code_base)?;
-        writeln!(stream, "#define MATH_CODE_BASE {}", self.math_code_base)?;
-        writeln!(
-            stream,
-            "#define CHAR_SUB_CODE_BASE {}",
-            self.char_sub_code_base
-        )?;
-        writeln!(stream, "#define INT_BASE {}", self.int_base)?;
-        writeln!(stream, "#define COUNT_BASE {}", self.count_base)?;
-        writeln!(stream, "#define DEL_CODE_BASE {}", self.del_code_base)?;
-        writeln!(stream, "#define DIMEN_BASE {}", self.dimen_base)?;
-        writeln!(stream, "#define SCALED_BASE {}", self.scaled_base)?;
-        writeln!(stream, "#define EQTB_SIZE {}", self.eqtb_size)?;
-        writeln!(stream, "#define EQTB_TOP {}\n", self.eqtb_top)?;
-        Ok(())
+        Engine::new_for_version(LATEST_VERSION).unwrap()
     }
 }

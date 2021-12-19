@@ -14,9 +14,11 @@ use tectonic_errors::prelude::*;
 use crate::{
     base::{MAX_HALFWORD, MIN_HALFWORD},
     catcodes::CatCode,
+    commands::CommandCode,
     cshash,
     engine::Engine,
-    eqtb, mem, parseutils, stringtable, FormatVersion,
+    eqtb::{self, EqtbPointer},
+    mem, parseutils, stringtable, FormatVersion,
 };
 
 /// Saved Tectonic/XeTeX engine state, decoded into memory.
@@ -49,7 +51,16 @@ const MAX_USV: i32 = crate::base::NUMBER_USVS as i32;
 
 impl Format {
     pub fn parse(input: &[u8]) -> Result<Self> {
-        match parse_impl(input) {
+        let (input, serial) = match parse_header(input) {
+            Ok(t) => t,
+            Err(NomErr::Error(inner)) => bail!("parse error: {}", inner.code.description()),
+            Err(NomErr::Failure(inner)) => bail!("parse failure: {}", inner.code.description()),
+            Err(NomErr::Incomplete(_)) => bail!("incomplete input"),
+        };
+
+        let engine = Engine::new_for_version(serial as FormatVersion)?;
+
+        match parse_body(engine, input) {
             Ok((_remainder, result)) => Ok(result),
             Err(NomErr::Error(inner)) => bail!("parse error: {}", inner.code.description()),
             Err(NomErr::Failure(inner)) => bail!("parse failure: {}", inner.code.description()),
@@ -67,21 +78,24 @@ impl Format {
     }
 
     pub fn dump_actives<W: Write>(&self, stream: &mut W) -> Result<()> {
+        let undefined_cs_cmd = self.engine.symbols.lookup("UNDEFINED_CS") as CommandCode;
+
         for chr in 0..MAX_USV {
             let entry = self.eqtb_active(chr);
 
-            if entry.ty == self.engine.settings.undefined_cs_command {
+            if entry.ty == undefined_cs_cmd {
                 continue;
             }
 
             let cur_cat = self.eqtb_catcode(chr)?;
+            let cmd_desc = self.engine.commands.describe(entry.ty, entry.value);
 
             writeln!(
                 stream,
-                "{} ({}) => {:?}",
+                "{} ({}) => {}",
                 fmt_usv(chr),
                 cur_cat.abbrev(),
-                entry
+                cmd_desc
             )?;
         }
 
@@ -134,30 +148,39 @@ impl Format {
     // to index into it properly.
 
     fn eqtb_active(&self, c: i32) -> eqtb::EqtbEntry {
-        assert!(c >= 0 && c < MAX_USV);
-        self.eqtb.decode(self.engine.settings.active_base + c)
+        assert!((0..MAX_USV).contains(&c));
+        self.eqtb
+            .decode(self.engine.symbols.lookup("ACTIVE_BASE") as EqtbPointer + c)
     }
 
     fn eqtb_catcode(&self, c: i32) -> Result<CatCode> {
-        assert!(c >= 0 && c < MAX_USV);
+        assert!((0..MAX_USV).contains(&c));
         CatCode::from_i32(
             self.eqtb
-                .decode(self.engine.settings.cat_code_base + c)
+                .decode(self.engine.symbols.lookup("CAT_CODE_BASE") as EqtbPointer + c)
                 .value,
         )
     }
 }
 
-fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
+fn parse_header(input: &[u8]) -> IResult<&[u8], i32> {
     let (input, _) = parseutils::satisfy_be_i32(HEADER_MAGIC)(input)?;
-    let (input, serial) = be_i32(input)?;
-    let engine = Engine::new_for_version(serial as FormatVersion);
+    be_i32(input)
+}
+
+fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
+    let mem_top = engine.symbols.lookup("MEM_TOP") as i32;
+    let eqtb_size = engine.symbols.lookup("EQTB_SIZE") as i32;
+    let hash_prime = engine.symbols.lookup("HASH_PRIME") as i32;
+    let hash_base = engine.symbols.lookup("HASH_BASE") as i32;
+    let eqtb_top = engine.symbols.lookup("EQTB_TOP") as i32;
+    let prim_size = engine.symbols.lookup("PRIM_SIZE") as i32;
+    let max_fonts = engine.symbols.lookup("MAX_FONT_MAX") as i32;
 
     let (input, hash_high) = be_i32(input)?;
-    let (input, _mem_top) = parseutils::satisfy_be_i32(engine.settings.mem_top)(input)?;
-    let (input, _eqtb_size) = parseutils::satisfy_be_i32(engine.settings.eqtb_size)(input)?;
-    let (input, _hash_prime) =
-        parseutils::satisfy_be_i32(engine.settings.hash_prime as i32)(input)?;
+    let (input, _mem_top) = parseutils::satisfy_be_i32(mem_top)(input)?;
+    let (input, _eqtb_size) = parseutils::satisfy_be_i32(eqtb_size)(input)?;
+    let (input, _hash_prime) = parseutils::satisfy_be_i32(hash_prime as i32)(input)?;
     let (input, _hyph_prime) = be_i32(input)?;
 
     // string table
@@ -172,20 +195,14 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
 
     let (input, eqtb) = eqtb::EquivalenciesTable::parse(input, &engine, hash_high)?;
 
-    // nominally hash_top, but hash_top = engine.settings.eqtb_top since hash_extra is nonzero
-    let (input, _par_loc) = parseutils::ranged_be_i32(
-        engine.settings.hash_base as i32,
-        engine.settings.eqtb_top as i32,
-    )(input)?;
+    // nominally hash_top, but hash_top = eqtb_top since hash_extra is nonzero
+    let (input, _par_loc) = parseutils::ranged_be_i32(hash_base as i32, eqtb_top as i32)(input)?;
 
-    let (input, _write_loc) = parseutils::ranged_be_i32(
-        engine.settings.hash_base as i32,
-        engine.settings.eqtb_top as i32,
-    )(input)?;
+    let (input, _write_loc) = parseutils::ranged_be_i32(hash_base as i32, eqtb_top as i32)(input)?;
 
     // Primitives. TODO: figure out best type for `prims`.
 
-    let (input, _prims) = count(be_i64, engine.settings.prim_size as usize + 1)(input)?;
+    let (input, _prims) = count(be_i64, prim_size as usize + 1)(input)?;
 
     // Control sequence names -- the hash table.
 
@@ -198,7 +215,7 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
     let (input, _font_info) = count(be_i64, fmem_ptr as usize)(input)?;
 
     // NB: FONT_BASE = 0
-    let (input, font_ptr) = parseutils::ranged_be_i32(0, engine.settings.max_fonts as i32)(input)?;
+    let (input, font_ptr) = parseutils::ranged_be_i32(0, max_fonts as i32)(input)?;
 
     let n_fonts = font_ptr as usize + 1;
     let (input, _font_check) = count(be_i64, n_fonts)(input)?;
@@ -317,7 +334,7 @@ fn parse_impl(input: &[u8]) -> IResult<&[u8], Format> {
     Ok((input, fmt))
 }
 
-fn fmt_usv(c: i32) -> String {
+pub fn fmt_usv(c: i32) -> String {
     // Valid inputs are valid USVs, which are as per the Unicode Glossary: "Any
     // Unicode code point except high-surrogate and low-surrogate code points.
     // In other words, the ranges of integers 0x0 to 0xD7FF and 0xE000 to

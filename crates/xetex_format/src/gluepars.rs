@@ -5,9 +5,13 @@
 
 //! Glue parameters defined by the engine.
 
-use std::io::{Result, Write};
+use std::io::Write;
+use tectonic_errors::prelude::*;
 
-use super::FormatVersion;
+use crate::{
+    symbols::{SymbolCategory, SymbolTable},
+    FormatVersion,
+};
 
 /// Different kinds of glue parameters.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -130,40 +134,29 @@ const GLUE_PARS: &[GluePar] = &[
     },
 ];
 
-/// Get information about the glue parameters used in the latest engine format.
-pub fn get_latest_gluepars() -> &'static [GluePar] {
-    GLUE_PARS
-}
-
 /// Get information about the glue parameters used in a specific engine format
 /// version.
-pub fn get_gluepars_for_version(version: FormatVersion) -> Vec<GluePar> {
+pub fn get_gluepars_for_version(
+    version: FormatVersion,
+    symbols: &mut SymbolTable,
+) -> Result<Vec<GluePar>> {
     let mut r = Vec::new();
+    let mut n = 0;
 
     for p in GLUE_PARS {
         if version >= p.since {
-            r.push(*p)
+            r.push(*p);
+            symbols.add(
+                SymbolCategory::GluePars,
+                format!("GLUE_PAR__{}", p.name.to_lowercase()),
+                n,
+            )?;
+            n += 1;
         }
     }
 
-    r
-}
-
-/// Emit C header information for the glue parameters.
-pub fn emit_c_header_stanza<W: Write>(pars: &[GluePar], mut stream: W) -> Result<()> {
-    writeln!(stream, "/* Glue (\"skip\") parameters */\n")?;
-
-    for (index, par) in pars.iter().enumerate() {
-        writeln!(
-            stream,
-            "#define GLUE_PAR__{} {}",
-            par.name.to_lowercase(),
-            index
-        )?;
-    }
-
-    writeln!(stream, "#define GLUE_PARS {}\n", pars.len())?;
-    Ok(())
+    symbols.add(SymbolCategory::GluePars, "GLUE_PARS", n)?;
+    Ok(r)
 }
 
 /// Emit initializers for gluepar primitives in the C header.

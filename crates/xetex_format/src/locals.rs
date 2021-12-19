@@ -10,9 +10,13 @@
 //! there are a few more parameters controlled by the `SET_SHAPE` command:
 //! "e-TeX penalties" parameters defined in their own section of the eqtb.
 
-use std::io::{Result, Write};
+use std::io::Write;
+use tectonic_errors::prelude::*;
 
-use super::FormatVersion;
+use crate::{
+    symbols::{SymbolCategory, SymbolTable},
+    FormatVersion,
+};
 
 /// Different kinds of "local" parameters.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -121,41 +125,29 @@ const LOCAL_PARS: &[LocalPar] = &[
     },
 ];
 
-/// Get information about the local parameters used in the latest
-/// engine format.
-pub fn get_latest_local_pars() -> &'static [LocalPar] {
-    LOCAL_PARS
-}
-
 /// Get information about the local parameters used in a specific
 /// engine format version.
-pub fn get_local_pars_for_version(version: FormatVersion) -> Vec<LocalPar> {
+pub fn get_local_pars_for_version(
+    version: FormatVersion,
+    symbols: &mut SymbolTable,
+) -> Result<Vec<LocalPar>> {
     let mut r = Vec::new();
+    let mut n = 0;
 
     for p in LOCAL_PARS {
         if version >= p.since {
-            r.push(*p)
+            r.push(*p);
+            symbols.add(
+                SymbolCategory::LocalPars,
+                format!("LOCAL__{}", p.name.to_lowercase()),
+                n,
+            )?;
+            n += 1;
         }
     }
 
-    r
-}
-
-/// Emit C header information for the "locals" parameters.
-pub fn emit_c_header_stanza<W: Write>(pars: &[LocalPar], mut stream: W) -> Result<()> {
-    writeln!(stream, "/* \"Local\" parameters (mostly token lists) */\n")?;
-
-    for (index, par) in pars.iter().enumerate() {
-        writeln!(
-            stream,
-            "#define LOCAL__{} {}",
-            par.name.to_lowercase(),
-            index
-        )?;
-    }
-
-    writeln!(stream, "#define NUM_LOCALS {}\n", pars.len())?;
-    Ok(())
+    symbols.add(SymbolCategory::LocalPars, "NUM_LOCALS", n)?;
+    Ok(r)
 }
 
 /// Emit initializers for gluepar primitives in the C header.

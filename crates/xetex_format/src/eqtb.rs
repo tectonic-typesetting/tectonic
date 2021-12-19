@@ -71,12 +71,14 @@
 //! array is `eqtb_top + 1`.
 
 use nom::{multi::count, number::complete::be_u8, IResult};
+use tectonic_errors::prelude::*;
 
 use crate::{
     base::{self, SIZEOF_MEMORY_WORD, TEX_NULL},
     commands::CommandCode,
     engine::Engine,
     parseutils,
+    symbols::{SymbolCategory, SymbolTable},
 };
 
 #[derive(Debug)]
@@ -99,27 +101,24 @@ impl EquivalenciesTable {
         engine: &Engine,
         hash_high: i32,
     ) -> IResult<&'a [u8], Self> {
-        let mut eqtb = vec![0; (engine.settings.eqtb_top as usize + 1) * SIZEOF_MEMORY_WORD];
+        let eqtb_size = engine.symbols.lookup("EQTB_SIZE") as usize;
+        let eqtb_top = engine.symbols.lookup("EQTB_TOP") as usize;
+        let undefined_control_sequence =
+            engine.symbols.lookup("UNDEFINED_CONTROL_SEQUENCE") as EqtbPointer;
+        let undefined_cs_cmd = engine.symbols.lookup("UNDEFINED_CS") as CommandCode;
 
-        write_eqtb_type(
-            &mut eqtb[..],
-            engine.settings.undefined_control_sequence,
-            engine.settings.undefined_cs_command,
-        );
-        write_eqtb_value(
-            &mut eqtb[..],
-            engine.settings.undefined_control_sequence,
-            TEX_NULL,
-        );
-        write_eqtb_level(&mut eqtb[..], engine.settings.undefined_control_sequence, 0);
+        let mut eqtb = vec![0; (eqtb_top as usize + 1) * SIZEOF_MEMORY_WORD];
 
-        let ucs_ofs =
-            engine.settings.undefined_control_sequence as usize * base::SIZEOF_MEMORY_WORD;
+        write_eqtb_type(&mut eqtb[..], undefined_control_sequence, undefined_cs_cmd);
+        write_eqtb_value(&mut eqtb[..], undefined_control_sequence, TEX_NULL);
+        write_eqtb_level(&mut eqtb[..], undefined_control_sequence, 0);
 
-        for x in (engine.settings.eqtb_size + 1)..(engine.settings.eqtb_top + 1) {
+        let ucs_ofs = undefined_control_sequence as usize * base::SIZEOF_MEMORY_WORD;
+
+        for x in (eqtb_size + 1)..(eqtb_top + 1) {
             eqtb.copy_within(
                 ucs_ofs..ucs_ofs + SIZEOF_MEMORY_WORD,
-                x as usize * SIZEOF_MEMORY_WORD,
+                x * SIZEOF_MEMORY_WORD,
             );
         }
 
@@ -133,10 +132,7 @@ impl EquivalenciesTable {
             // consecutive entries of |eqtb|, with |m| extra copies of $x_n$, namely
             // $(x_1, \ldots, x_n, x_n, \ldots, x_n)$"
 
-            let (ii, n) = parseutils::ranged_be_i32(
-                1,
-                (engine.settings.eqtb_size as usize + 1 - k) as i32,
-            )(input)?;
+            let (ii, n) = parseutils::ranged_be_i32(1, (eqtb_size + 1 - k) as i32)(input)?;
 
             // TODO: read straight into eqtb?
             let nb = n as usize * SIZEOF_MEMORY_WORD;
@@ -144,10 +140,7 @@ impl EquivalenciesTable {
             eqtb[k * SIZEOF_MEMORY_WORD..k * SIZEOF_MEMORY_WORD + nb].copy_from_slice(&block[..]);
             k += n as usize;
 
-            let (ii, m) = parseutils::ranged_be_i32(
-                0,
-                (engine.settings.eqtb_size as usize + 1 - k) as i32,
-            )(ii)?;
+            let (ii, m) = parseutils::ranged_be_i32(0, (eqtb_size + 1 - k) as i32)(ii)?;
 
             for j in k..k + m as usize {
                 eqtb.copy_within(
@@ -159,7 +152,7 @@ impl EquivalenciesTable {
             input = ii;
             k += m as usize;
 
-            if k > engine.settings.eqtb_size as usize {
+            if k > eqtb_size {
                 break;
             }
         }
@@ -169,7 +162,7 @@ impl EquivalenciesTable {
             let nb = hash_high as usize * SIZEOF_MEMORY_WORD;
             let (new_input, block) = count(be_u8, nb)(input)?;
             input = new_input;
-            let ofs = (engine.settings.eqtb_size as usize + 1) * SIZEOF_MEMORY_WORD;
+            let ofs = (eqtb_size + 1) * SIZEOF_MEMORY_WORD;
             eqtb[ofs..ofs + nb].copy_from_slice(&block[..]);
         }
 
@@ -200,4 +193,125 @@ fn write_eqtb_type(arr: &mut [u8], index: i32, value: CommandCode) {
 #[inline(always)]
 fn write_eqtb_value(arr: &mut [u8], index: i32, value: i32) {
     base::memword_write_b32_s1(arr, index, value);
+}
+
+pub fn initialize_eqtb_symbols(symbols: &mut SymbolTable) -> Result<()> {
+    let n_frozen_primitives = 12;
+    let n_glue_pars = symbols.lookup("GLUE_PARS");
+    let n_locals = symbols.lookup("NUM_LOCALS");
+    let n_etex_pens = symbols.lookup("NUM_ETEX_PENALTIES");
+    let n_int_pars = symbols.lookup("INT_PARS");
+    let n_dimen_pars = symbols.lookup("DIMEN_PARS");
+    let hash_size = symbols.lookup("HASH_SIZE");
+    let hash_extra = symbols.lookup("HASH_EXTRA");
+    let prim_size = symbols.lookup("PRIM_SIZE");
+    let max_fonts = symbols.lookup("MAX_FONT_MAX");
+
+    let active_base = 1;
+    symbols.add(SymbolCategory::Eqtb, "ACTIVE_BASE", active_base)?;
+
+    let single_base = active_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "SINGLE_BASE", single_base)?;
+
+    let null_cs_loc = single_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "NULL_CS", null_cs_loc)?;
+
+    let hash_base = null_cs_loc + 1;
+    symbols.add(SymbolCategory::Eqtb, "HASH_BASE", hash_base)?;
+
+    let frozen_control_sequence_base = hash_base + hash_size;
+    symbols.add(
+        SymbolCategory::Eqtb,
+        "FROZEN_CONTROL_SEQUENCE",
+        frozen_control_sequence_base,
+    )?;
+
+    let prim_eqtb_base = frozen_control_sequence_base + n_frozen_primitives;
+    symbols.add(SymbolCategory::Eqtb, "PRIM_EQTB_BASE", prim_eqtb_base)?;
+
+    let frozen_null_font_loc = prim_eqtb_base + prim_size;
+    symbols.add(
+        SymbolCategory::Eqtb,
+        "FROZEN_NULL_FONT",
+        frozen_null_font_loc,
+    )?;
+
+    let undefined_control_sequence = frozen_null_font_loc + max_fonts + 1;
+    symbols.add(
+        SymbolCategory::Eqtb,
+        "UNDEFINED_CONTROL_SEQUENCE",
+        undefined_control_sequence,
+    )?;
+
+    let glue_base = undefined_control_sequence + 1;
+    symbols.add(SymbolCategory::Eqtb, "GLUE_BASE", glue_base)?;
+
+    let skip_base = glue_base + n_glue_pars;
+    symbols.add(SymbolCategory::Eqtb, "SKIP_BASE", skip_base)?;
+
+    let mu_skip_base = skip_base + base::NUMBER_REGS as isize;
+    symbols.add(SymbolCategory::Eqtb, "MU_SKIP_BASE", mu_skip_base)?;
+
+    let local_base = mu_skip_base + base::NUMBER_REGS as isize;
+    symbols.add(SymbolCategory::Eqtb, "LOCAL_BASE", local_base)?;
+
+    let toks_base = local_base + n_locals;
+    symbols.add(SymbolCategory::Eqtb, "TOKS_BASE", toks_base)?;
+
+    let etex_pen_base = toks_base + base::NUMBER_REGS as isize;
+    symbols.add(SymbolCategory::Eqtb, "ETEX_PEN_BASE", etex_pen_base)?;
+
+    let box_base = etex_pen_base + n_etex_pens;
+    symbols.add(SymbolCategory::Eqtb, "BOX_BASE", box_base)?;
+
+    let cur_font_loc = box_base + base::NUMBER_REGS as isize;
+    symbols.add(SymbolCategory::Eqtb, "CUR_FONT_LOC", cur_font_loc)?;
+
+    let math_font_base = cur_font_loc + 1;
+    symbols.add(SymbolCategory::Eqtb, "MATH_FONT_BASE", math_font_base)?;
+
+    let cat_code_base = math_font_base + base::NUMBER_MATH_FONTS as isize;
+    symbols.add(SymbolCategory::Eqtb, "CAT_CODE_BASE", cat_code_base)?;
+
+    let lc_code_base = cat_code_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "LC_CODE_BASE", lc_code_base)?;
+
+    let uc_code_base = lc_code_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "UC_CODE_BASE", uc_code_base)?;
+
+    let sf_code_base = uc_code_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "SF_CODE_BASE", sf_code_base)?;
+
+    let math_code_base = sf_code_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "MATH_CODE_BASE", math_code_base)?;
+
+    let char_sub_code_base = math_code_base + base::NUMBER_USVS as isize;
+    symbols.add(
+        SymbolCategory::Eqtb,
+        "CHAR_SUB_CODE_BASE",
+        char_sub_code_base,
+    )?;
+
+    let int_base = char_sub_code_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "INT_BASE", int_base)?;
+
+    let count_base = int_base + n_int_pars;
+    symbols.add(SymbolCategory::Eqtb, "COUNT_BASE", count_base)?;
+
+    let del_code_base = count_base + base::NUMBER_REGS as isize;
+    symbols.add(SymbolCategory::Eqtb, "DEL_CODE_BASE", del_code_base)?;
+
+    let dimen_base = del_code_base + base::NUMBER_USVS as isize;
+    symbols.add(SymbolCategory::Eqtb, "DIMEN_BASE", dimen_base)?;
+
+    let scaled_base = dimen_base + n_dimen_pars;
+    symbols.add(SymbolCategory::Eqtb, "SCALED_BASE", scaled_base)?;
+
+    let eqtb_size = scaled_base + base::NUMBER_REGS as isize - 1; // XXXX note the minus-one
+    symbols.add(SymbolCategory::Eqtb, "EQTB_SIZE", eqtb_size)?;
+
+    let eqtb_top = eqtb_size + hash_extra;
+    symbols.add(SymbolCategory::Eqtb, "EQTB_TOP", eqtb_top)?;
+
+    Ok(())
 }

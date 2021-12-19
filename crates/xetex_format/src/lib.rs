@@ -44,7 +44,7 @@
 pub type FormatVersion = usize;
 
 /// The latest format version number supported by this version of the crate.
-pub const LATEST_VERSION: FormatVersion = 30;
+pub const LATEST_VERSION: FormatVersion = 31;
 
 mod parseutils;
 
@@ -54,6 +54,7 @@ pub mod commands;
 pub mod cshash;
 pub mod dimenpars;
 pub mod engine;
+pub mod enums;
 pub mod eqtb;
 pub mod etexpenalties;
 pub mod format;
@@ -62,4 +63,5 @@ pub mod intpars;
 pub mod locals;
 pub mod mem;
 pub mod stringtable;
+pub mod symbols;
 pub mod tokenlist;

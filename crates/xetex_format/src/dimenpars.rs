@@ -5,9 +5,13 @@
 
 //! Dimensional parameters defined by the engine.
 
-use std::io::{Result, Write};
+use std::io::Write;
+use tectonic_errors::prelude::*;
 
-use super::FormatVersion;
+use crate::{
+    symbols::{SymbolCategory, SymbolTable},
+    FormatVersion,
+};
 
 /// Information about dimensional parameters.
 #[derive(Clone, Copy, Debug)]
@@ -114,41 +118,29 @@ const DIMEN_PARS: &[DimenPar] = &[
     },
 ];
 
-/// Get information about the dimension parameters used in the latest engine
-/// format.
-pub fn get_latest_dimenpars() -> &'static [DimenPar] {
-    DIMEN_PARS
-}
-
 /// Get information about the dimension parameters used in a specific engine
 /// format version.
-pub fn get_dimenpars_for_version(version: FormatVersion) -> Vec<DimenPar> {
+pub fn get_dimenpars_for_version(
+    version: FormatVersion,
+    symbols: &mut SymbolTable,
+) -> Result<Vec<DimenPar>> {
     let mut r = Vec::new();
+    let mut n = 0;
 
     for p in DIMEN_PARS {
         if version >= p.since {
-            r.push(*p)
+            r.push(*p);
+            symbols.add(
+                SymbolCategory::DimenPars,
+                format!("DIMEN_PAR__{}", p.name.to_lowercase()),
+                n,
+            )?;
+            n += 1;
         }
     }
 
-    r
-}
-
-/// Emit C header information for the dimensional parameters
-pub fn emit_c_header_stanza<W: Write>(pars: &[DimenPar], mut stream: W) -> Result<()> {
-    writeln!(stream, "/* Dimensional (length) parameters */\n")?;
-
-    for (index, par) in pars.iter().enumerate() {
-        writeln!(
-            stream,
-            "#define DIMEN_PAR__{} {}",
-            par.name.to_lowercase(),
-            index
-        )?;
-    }
-
-    writeln!(stream, "#define DIMEN_PARS {}\n", pars.len())?;
-    Ok(())
+    symbols.add(SymbolCategory::DimenPars, "DIMEN_PARS", n)?;
+    Ok(r)
 }
 
 /// Emit initializers for dimenpar primitives in the C header.

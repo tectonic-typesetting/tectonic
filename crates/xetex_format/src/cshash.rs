@@ -8,6 +8,7 @@ use nom::{
     number::complete::{be_i32, be_u8},
     IResult,
 };
+use tectonic_errors::prelude::*;
 
 use crate::{
     base::{self, SIZEOF_MEMORY_WORD},
@@ -15,7 +16,16 @@ use crate::{
     eqtb::EqtbPointer,
     parseutils,
     stringtable::{StrPointer, StringTable},
+    symbols::{SymbolCategory, SymbolTable},
 };
+
+pub fn initialize_cshash_symbols(symbols: &mut SymbolTable) -> Result<()> {
+    symbols.add(SymbolCategory::CsHash, "HASH_SIZE", 15_000)?;
+    symbols.add(SymbolCategory::CsHash, "HASH_EXTRA", 600_000)?;
+    symbols.add(SymbolCategory::CsHash, "HASH_OFFSET", 514)?;
+    symbols.add(SymbolCategory::CsHash, "HASH_PRIME", 8501)?;
+    Ok(())
+}
 
 #[derive(Debug)]
 pub struct ControlSeqHash {
@@ -41,25 +51,25 @@ impl ControlSeqHash {
         engine: &Engine,
         hash_high: i32,
     ) -> IResult<&'a [u8], Self> {
-        let hash_base = engine.settings.hash_base;
-        let hash_prime = engine.settings.hash_prime;
-        let hash_offset = engine.settings.hash_offset;
-        let single_base = engine.settings.single_base;
-        let null_cs_loc = engine.settings.null_cs_loc;
-        let undefined_cs_loc = engine.settings.undefined_control_sequence;
-        let eqtb_size = engine.settings.eqtb_size;
-        let eqtb_top = engine.settings.eqtb_top;
-        let prim_eqtb_base = engine.settings.prim_eqtb_base;
-        let frozen_null_font_loc = engine.settings.frozen_null_font_loc;
+        let hash_base = engine.symbols.lookup("HASH_BASE") as EqtbPointer;
+        let hash_prime = engine.symbols.lookup("HASH_PRIME") as u32;
+        let hash_offset = engine.symbols.lookup("HASH_OFFSET") as i32;
+        let single_base = engine.symbols.lookup("SINGLE_BASE") as EqtbPointer;
+        let null_cs_loc = engine.symbols.lookup("NULL_CS") as EqtbPointer;
+        let undefined_cs_loc = engine.symbols.lookup("UNDEFINED_CONTROL_SEQUENCE") as EqtbPointer;
+        let eqtb_size = engine.symbols.lookup("EQTB_SIZE") as EqtbPointer;
+        let eqtb_top = engine.symbols.lookup("EQTB_TOP") as EqtbPointer;
+        let prim_eqtb_base = engine.symbols.lookup("PRIM_EQTB_BASE") as EqtbPointer;
+        let frozen_null_font_loc = engine.symbols.lookup("FROZEN_NULL_FONT") as EqtbPointer;
 
         let index = |i: i32| (i - hash_offset) as usize * SIZEOF_MEMORY_WORD;
 
-        let high_hash_size = engine.settings.eqtb_top + 1 - hash_offset;
+        let high_hash_size = eqtb_top + 1 - hash_offset;
         let mut need_offset_hash = vec![0u8; high_hash_size as usize * SIZEOF_MEMORY_WORD];
 
         let (input, hash_used) = parseutils::ranged_be_i32(
             hash_base,
-            engine.settings.frozen_control_sequence_base,
+            engine.symbols.lookup("FROZEN_CONTROL_SEQUENCE") as i32,
         )(input)?;
 
         let mut p = hash_base - 1;
@@ -82,7 +92,8 @@ impl ControlSeqHash {
         }
 
         // TODO: load directly into `hash`?
-        let nb = ((engine.settings.undefined_control_sequence - 1) - hash_used) as usize
+        let nb = ((engine.symbols.lookup("UNDEFINED_CONTROL_SEQUENCE") as i32 - 1) - hash_used)
+            as usize
             * SIZEOF_MEMORY_WORD;
         let (input, block) = count(be_u8, nb)(input)?;
         let ofs = index(hash_used + 1);
@@ -94,7 +105,7 @@ impl ControlSeqHash {
             let nb = hash_high as usize * SIZEOF_MEMORY_WORD;
             let (new_input, block) = count(be_u8, nb)(input)?;
             input = new_input;
-            let ofs = index(engine.settings.eqtb_size + 1);
+            let ofs = index(eqtb_size + 1);
             need_offset_hash[ofs..ofs + nb].copy_from_slice(&block[..]);
         }
 
