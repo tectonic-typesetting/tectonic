@@ -186,8 +186,15 @@ impl ControlSeqHash {
                     let usv = (p - self.single_base) as u32;
                     return char::from_u32(usv).map(|c| c.to_string());
                 }
+            } else {
+                // The 1 here is formally ACTIVE_BASE
+                return Some(format!(
+                    "[active character {}]",
+                    crate::format::fmt_usv(p as i32 - 1)
+                ));
             }
         }
+
         if p >= self.undefined_cs_loc && p <= self.eqtb_size {
             return None;
         }
