@@ -47,7 +47,7 @@ macro_rules! declare {
                 if let Some(s) = self.args.get(&arg) {
                     format!("[{}]", s)
                 } else {
-                    format!("[{}?? {}]", stringify!(typename), arg)
+                    format!("[{}?? {}]", stringify!($typename), arg)
                 }
             }
 
@@ -451,7 +451,9 @@ declare! {
     }
 }
 
-// This is nominally FONT_BASE, but that's 0.
+// The 0 argument is nominally FONT_BASE.
+//
+// TODO: non-zero args correspond to fonts that have been loaded into memory.
 declare! {
     SetFont {
         nullfont [Unnamed(0)] [Frozen("FROZEN_NULL_FONT")],
