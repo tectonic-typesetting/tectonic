@@ -122,3 +122,180 @@ impl Default for Engine {
         Engine::new_for_version(LATEST_VERSION).unwrap()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    macro_rules! check {
+        ($engine:ident [$($symbol:ident = $value:literal,)+]) => {
+            $(
+                assert_eq!(
+                    $engine.symbols.lookup(stringify!($symbol)),
+                    $value,
+                    "expected value {} for symbol {} but got {} instead",
+                    $value,
+                    stringify!($symbol),
+                    $engine.symbols.lookup(stringify!($symbol)),
+                );
+            )+
+        };
+    }
+
+    #[test]
+    fn check_version_31() {
+        let eng = Engine::new_for_version(31).unwrap();
+
+        check!(
+            eng [
+                TECTONIC_FORMAT_VERSION = 31,
+                MEM_TOP = 4_999_999,
+
+                INT_PARS = 85,
+                DIMEN_PARS = 23,
+                GLUE_PARS = 19,
+                NUM_LOCALS = 13,
+                NUM_ETEX_PENALTIES = 4,
+
+                // eqtb
+                UNDEFINED_CONTROL_SEQUENCE = 2_252_739,
+                BOX_BASE = 2_253_544,
+                EQTB_SIZE = 10_053_972,
+                EQTB_TOP = 10_653_972,
+
+                // command codes
+                MAX_CHAR_CODE = 15,
+                MIN_INTERNAL = 68,
+                CHAR_GIVEN = 68,
+                MAX_NON_PREFIXED_COMMAND = 71,
+                LAST_ITEM = 71,
+                MAX_INTERNAL = 91,
+                REGISTER = 91,
+                MAX_COMMAND = 102,
+                SET_INTERACTION = 102,
+                DATA = 122,
+
+                HMODE = 104,
+                MMODE = 207,
+
+                UNSET_NODE = 13,
+                ORD_NOAD = 16,
+                RIGHT_NOAD = 31,
+
+                // Whatsit node subtypes
+                LANGUAGE_NODE = 4,
+                PDF_SAVE_POS_NODE = 21,
+                NATIVE_WORD_NODE = 40,
+                NATIVE_WORD_NODE_AT = 41,
+                GLYPH_NODE = 42,
+                PIC_NODE = 43,
+                PDF_NODE = 44,
+
+                VTOP_CODE = 4,
+                TT_VBOX_CODE = 5,
+                TT_HBOX_CODE = 108,
+
+                // CONVERT codes
+                ETEX_CONVERT_BASE = 5,
+                ETEX_REVISION_CODE = 5,
+                PDFTEX_FIRST_EXPAND_CODE = 7,
+                LEFT_MARGIN_KERN_CODE = 16,
+                PDF_CREATION_DATE_CODE = 22,
+                UNIFORM_DEVIATE_CODE = 29,
+                PDFTEX_CONVERT_CODES = 33,
+                XETEX_FIRST_EXPAND_CODE = 33,
+                XETEX_REVISION_CODE = 33,
+                XETEX_CONVERT_CODES = 40,
+                JOB_NAME_CODE = 40,
+
+                // EXTENSION codes
+                IMMEDIATE_CODE = 4,
+                RESET_TIMER_CODE = 31,
+                SET_RANDOM_SEED_CODE = 33,
+                PIC_FILE_CODE = 41,
+                PDF_FILE_CODE = 42,
+                GLYPH_CODE = 43,
+                XETEX_LINEBREAK_LOCALE_EXTENSION_CODE = 46,
+
+                // LAST_ITEM codes
+                LAST_NODE_TYPE_CODE = 3,
+                BADNESS_CODE = 5,
+                PDFTEX_FIRST_RINT_CODE = 6,
+                PDF_LAST_X_POS_CODE = 12,
+                ELAPSED_TIME_CODE = 16,
+                ETEX_INT = 19,
+                ETEX_VERSION_CODE = 19,
+                XETEX_INT = 27,
+                XETEX_VERSION_CODE = 27,
+                XETEX_PDF_PAGE_COUNT_CODE = 54,
+                XETEX_LAST_ITEM_CODES = 54,
+                XETEX_DIM = 55,
+                XETEX_GLYPH_BOUNDS_CODE = 55,
+                XETEX_LAST_DIM_CODES = 55,
+                ETEX_DIM = 56,
+                FONT_CHAR_WD_CODE = 56,
+                ETEX_GLUE = 65,
+                MU_TO_GLUE_CODE = 65,
+                ETEX_MU = 66,
+                GLUE_TO_MU_CODE = 66,
+                ETEX_EXPR = 67,
+                TT_ETEX_NUM_EXPR_CODE = 67,
+                TT_ETEX_MU_EXPR_CODE = 70,
+
+                SPAN_CODE = 1_114_113,
+            ]
+        );
+    }
+
+    /// Check the various "bad" conditions tested in the classical
+    /// implementation. Most of them have to do with parameters like
+    /// `min_halfword` that we don't change, so there are only a few to check.
+    #[test]
+    fn texbads() {
+        let eng = Engine::default();
+        let s = |sym| eng.symbols.lookup(sym);
+
+        // 5:
+        assert!(s("HASH_PRIME") <= s("HASH_SIZE"));
+
+        // 7:
+        assert!(s("MEM_TOP") >= 256 + 11);
+
+        // 21: the constant is CS_TOKEN_FLAG (see `tokenlist` module)
+        assert!(0x1FF_FFFF + s("EQTB_SIZE") + s("HASH_EXTRA") <= 0x7FFF_FFFF);
+
+        // 42:
+        assert!(s("HASH_OFFSET") >= 0);
+        assert!(s("HASH_OFFSET") <= s("HASH_BASE"));
+
+        // Here are the ones we don't test, given as conditions that must be true:
+        //
+        // 1a: half_error_line >= 30
+        // 1b: half_error_line <= error_line - 15
+        // 2: max_print_line >= 60
+        // 3: dvi_buf_size % 8 == 0
+        // 4: mem_bot + 1100 <= mem_top
+        // 6: max_in_open < 128
+        // 10a (initex only): mem_min == mem_bot
+        // 10b (initex only): mem_max == mem_top
+        // 10c: mem_min <= mem_bot
+        // 10d: mem_max >= mem_top
+        // 11a: min_quarterword <= 0
+        // 11b: max_quarterword >= 0x7FFF
+        // 12a: min_halfword <= 0
+        // 12b: max_halfword >= 0x3FFF_FFFF
+        // 13a: min_quarterword >= min_halfword
+        // 13b: max_quarterword <= max_halfword
+        // 14a: mem_bot - sup_main_memory >= min_halfword
+        // 14b: mem_top + sup_main_memory <= max_halfword
+        // 15a: max_font_max >= min_halfword
+        // 15b: max_font_max <= max_halfword
+        // 16: font_max <= font_base + max_font_max
+        // 17a: save_size <= max_halfword
+        // 17b: max_strings <= max_halfword
+        // 18: buf_size <= max_halfword
+        // 19: max_quarterword - min_quarterword >= 0xFFFF
+        // 31: format_default_length <= file_name_size
+        // 41: 2 * max_halfword >= mem_top - mem_min
+    }
+}
