@@ -12,13 +12,15 @@ use std::io::Write;
 use tectonic_errors::prelude::*;
 
 use crate::{
-    base::{MAX_HALFWORD, MIN_HALFWORD},
+    base::{MAX_HALFWORD, MIN_HALFWORD, TEX_NULL},
     catcodes::CatCode,
     commands::CommandCode,
     cshash,
     engine::Engine,
     eqtb::{self, EqtbPointer},
-    mem, parseutils, stringtable, FormatVersion,
+    mem, parseutils, stringtable,
+    tokenlist::Token,
+    FormatVersion,
 };
 
 /// Saved Tectonic/XeTeX engine state, decoded into memory.
@@ -143,7 +145,7 @@ impl Format {
         Ok(())
     }
 
-    pub fn dump_cseqs<W: Write>(&self, stream: &mut W) -> Result<()> {
+    pub fn dump_cseqs<W: Write>(&self, stream: &mut W, extended: bool) -> Result<()> {
         let undefined_cs_cmd = self.engine.symbols.lookup("UNDEFINED_CS") as CommandCode;
 
         for (name, ptr) in self.cseqs() {
@@ -153,15 +155,21 @@ impl Format {
                 continue;
             }
 
-            let cs_desc = match name.len() {
-                0 => "[null CS]".to_owned(),
-                1 => format!("'\\{}'", fmt_usv(name.chars().next().unwrap() as i32)),
-                _ => format!("\\{}", name),
+            let cs_desc = fmt_csname(name);
+
+            let (cmd_desc, extended) = if extended {
+                self.engine
+                    .commands
+                    .describe_extended(entry.ty, entry.value, self)
+            } else {
+                (self.engine.commands.describe(entry.ty, entry.value), None)
             };
 
-            let cmd_desc = self.engine.commands.describe(entry.ty, entry.value);
-
             writeln!(stream, "{} => {}", cs_desc, cmd_desc)?;
+
+            if let Some(e) = extended {
+                writeln!(stream, "--------\n{}\n--------", e)?;
+            }
         }
 
         Ok(())
@@ -197,6 +205,76 @@ impl Format {
             .collect();
 
         null_cs.chain(single_letters).chain(ml_data)
+    }
+
+    // Various stringifications that depend on the format data
+
+    pub fn fmt_toklist(&self, mut p: mem::MemPointer, is_macro: bool) -> String {
+        use std::fmt::Write;
+        let mut result = String::new();
+
+        if is_macro {
+            // Skip the reference count
+            p = self.mem.decode_toklist(p).1;
+            writeln!(result, "~~ macro template: ~~").unwrap();
+        }
+
+        const CCDESCS: &[&str] = &[
+            "ESC", "BGR", "EGR", "MTH", "TAB", "CAR", "MAC", "SUP", "SUB", "IGN", "SPC", "LET",
+            "OTH", "ACT", "COM", "INV",
+        ];
+
+        while p != TEX_NULL {
+            let (value, next) = self.mem.decode_toklist(p);
+            let tok = Token::from(value);
+
+            // TODO: condense output for runs of characters with same catcode
+            match tok {
+                Token::Char { cmd, chr } => match (is_macro, cmd) {
+                    (true, 14 /* END_MATCH */) => {
+                        writeln!(result, "~~ macro expansion: ~~").unwrap();
+                    }
+
+                    (true, 13 /* MATCH */) => {
+                        writeln!(result, "<macro parameter>").unwrap();
+                    }
+
+                    (true, 5 /* OUT_PARAM */) => {
+                        writeln!(result, "#{}", chr).unwrap();
+                    }
+
+                    _ => {
+                        // TODO: consider using fmt_csv
+                        if let Some(c) = char::from_u32(chr as u32) {
+                            writeln!(result, "{} {{{}}}", c, CCDESCS[cmd as usize]).unwrap();
+                        } else {
+                            writeln!(
+                                result,
+                                "[illegal USV char code 0x{:08x}] {{{}}}",
+                                chr, CCDESCS[cmd as usize]
+                            )
+                            .unwrap();
+                        }
+                    }
+                },
+
+                Token::ControlSeq { ptr } => {
+                    writeln!(result, "{}", self.fmt_cs_pointer(ptr)).unwrap();
+                }
+            }
+
+            p = next;
+        }
+
+        result
+    }
+
+    fn fmt_cs_pointer(&self, ptr: EqtbPointer) -> String {
+        if let Some(text) = self.cshash.stringify(ptr, &self.strings) {
+            fmt_csname(&text)
+        } else {
+            format!("[undecodable cseq pointer {}]", ptr)
+        }
     }
 
     // Decoding various eqtb bits. These could just as well be methods on the Eqtb
@@ -415,5 +493,17 @@ pub fn fmt_usv(c: i32) -> String {
         }
     } else {
         format!("*invalid* (0x{:06x})", c)
+    }
+}
+
+pub fn fmt_csname<S: AsRef<str>>(name: S) -> String {
+    let name = name.as_ref();
+    let has_ws = name.contains(char::is_whitespace);
+
+    match (name.len(), has_ws) {
+        (0, _) => "[null CS]".to_owned(),
+        (1, _) => format!("'\\{}'", fmt_usv(name.chars().next().unwrap() as i32)),
+        (_, false) => format!("\\{}", name),
+        (_, true) => format!("\"\\{}\"", name),
     }
 }

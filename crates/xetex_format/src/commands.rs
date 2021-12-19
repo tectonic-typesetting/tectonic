@@ -9,6 +9,7 @@ use std::{collections::BTreeMap, io::Write};
 use tectonic_errors::prelude::*;
 
 use crate::{
+    format::Format,
     symbols::{HasSymbol, SymbolCategory, SymbolTable},
     FormatVersion,
 };
@@ -107,6 +108,10 @@ struct CommandMetadata {
 trait Command: HasSymbol + std::fmt::Debug {
     fn describe(&self, _arg: CommandArgument) -> String;
     fn primitives(&self) -> Vec<CommandPrimitive>;
+
+    fn extended_info(&self, _arg: CommandArgument, _format: &Format) -> Option<String> {
+        None
+    }
 }
 
 macro_rules! foreach_command {
@@ -364,6 +369,19 @@ impl Commands {
             cmd.describe(arg)
         } else {
             format!("[??? {} {}]", code, arg)
+        }
+    }
+
+    pub fn describe_extended(
+        &self,
+        code: CommandCode,
+        arg: CommandArgument,
+        format: &Format,
+    ) -> (String, Option<String>) {
+        if let Some(cmd) = self.codes.get(&code) {
+            (cmd.describe(arg), cmd.extended_info(arg, format))
+        } else {
+            (format!("[??? {} {}]", code, arg), None)
         }
     }
 

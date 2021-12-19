@@ -20,7 +20,7 @@ impl Options {
         match self.command {
             Commands::Actives(c) => c.execute_actives(),
             Commands::Catcodes(c) => c.execute_catcodes(),
-            Commands::ControlSequences(c) => c.execute_cseqs(),
+            Commands::ControlSequences(c) => c.execute(),
             Commands::Strings(c) => c.execute_strings(),
         }
     }
@@ -38,7 +38,7 @@ enum Commands {
 
     #[structopt(name = "cseqs")]
     /// Dump the control sequences
-    ControlSequences(GenericCommand),
+    ControlSequences(CseqsCommand),
 
     #[structopt(name = "strings")]
     /// Dump the strings table
@@ -76,19 +76,39 @@ impl GenericCommand {
         Ok(())
     }
 
-    fn execute_cseqs(self) -> Result<()> {
-        let fmt = self.parse()?;
-        let stdout = std::io::stdout();
-        let mut lock = stdout.lock();
-        fmt.dump_cseqs(&mut lock)?;
-        Ok(())
-    }
-
     fn execute_strings(self) -> Result<()> {
         let fmt = self.parse()?;
         let stdout = std::io::stdout();
         let mut lock = stdout.lock();
         fmt.dump_string_table(&mut lock)?;
+        Ok(())
+    }
+}
+
+#[derive(Debug, PartialEq, StructOpt)]
+pub struct CseqsCommand {
+    /// Whether to dump extended information such as macro contents
+    #[structopt(long = "extended", short = "e")]
+    extended: bool,
+
+    /// The format filename.
+    #[structopt()]
+    path: PathBuf,
+}
+
+impl CseqsCommand {
+    fn parse(&self) -> Result<Format> {
+        let mut file = File::open(&self.path)?;
+        let mut data = Vec::new();
+        file.read_to_end(&mut data)?;
+        Format::parse(&data[..])
+    }
+
+    fn execute(self) -> Result<()> {
+        let fmt = self.parse()?;
+        let stdout = std::io::stdout();
+        let mut lock = stdout.lock();
+        fmt.dump_cseqs(&mut lock, self.extended)?;
         Ok(())
     }
 }
