@@ -20,6 +20,7 @@ impl Options {
         match self.command {
             Commands::Actives(c) => c.execute_actives(),
             Commands::Catcodes(c) => c.execute_catcodes(),
+            Commands::ControlSequences(c) => c.execute_cseqs(),
             Commands::Strings(c) => c.execute_strings(),
         }
     }
@@ -34,6 +35,10 @@ enum Commands {
     #[structopt(name = "catcodes")]
     /// Dump the character category codes
     Catcodes(GenericCommand),
+
+    #[structopt(name = "cseqs")]
+    /// Dump the control sequences
+    ControlSequences(GenericCommand),
 
     #[structopt(name = "strings")]
     /// Dump the strings table
@@ -68,6 +73,14 @@ impl GenericCommand {
         let stdout = std::io::stdout();
         let mut lock = stdout.lock();
         fmt.dump_catcodes(&mut lock)?;
+        Ok(())
+    }
+
+    fn execute_cseqs(self) -> Result<()> {
+        let fmt = self.parse()?;
+        let stdout = std::io::stdout();
+        let mut lock = stdout.lock();
+        fmt.dump_cseqs(&mut lock)?;
         Ok(())
     }
 

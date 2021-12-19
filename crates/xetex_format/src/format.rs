@@ -80,7 +80,7 @@ impl Format {
     pub fn dump_actives<W: Write>(&self, stream: &mut W) -> Result<()> {
         let undefined_cs_cmd = self.engine.symbols.lookup("UNDEFINED_CS") as CommandCode;
 
-        for chr in 0..MAX_USV {
+        for chr in valid_usvs() {
             let entry = self.eqtb_active(chr);
 
             if entry.ty == undefined_cs_cmd {
@@ -108,7 +108,7 @@ impl Format {
         let mut prev = start;
         let mut cur_cat = self.eqtb_catcode(start)?;
 
-        for chr in 1..MAX_USV {
+        for chr in valid_usvs().skip(1) {
             let cat = self.eqtb_catcode(chr)?;
 
             if cat != cur_cat {
@@ -141,6 +141,62 @@ impl Format {
         }
 
         Ok(())
+    }
+
+    pub fn dump_cseqs<W: Write>(&self, stream: &mut W) -> Result<()> {
+        let undefined_cs_cmd = self.engine.symbols.lookup("UNDEFINED_CS") as CommandCode;
+
+        for (name, ptr) in self.cseqs() {
+            let entry = self.eqtb.decode(ptr);
+
+            if entry.ty == undefined_cs_cmd {
+                continue;
+            }
+
+            let cs_desc = match name.len() {
+                0 => "[null CS]".to_owned(),
+                1 => format!("'\\{}'", fmt_usv(name.chars().next().unwrap() as i32)),
+                _ => format!("\\{}", name),
+            };
+
+            let cmd_desc = self.engine.commands.describe(entry.ty, entry.value);
+
+            writeln!(stream, "{} => {}", cs_desc, cmd_desc)?;
+        }
+
+        Ok(())
+    }
+
+    fn cseqs(&self) -> impl Iterator<Item = (String, EqtbPointer)> {
+        // This is lame; we shouldn't need to make a big buffer, but I'm too
+        // lazy to write real iterater implementation right now.
+
+        let null_cs = (
+            "".to_owned(),
+            self.engine.symbols.lookup("NULL_CS") as EqtbPointer,
+        );
+        let null_cs = std::iter::once(null_cs);
+
+        let single_base = self.engine.symbols.lookup("SINGLE_BASE");
+        let single_letters = valid_usvs().map(move |usv| {
+            (
+                char::from_u32(usv as u32).unwrap().to_string(),
+                single_base as i32 + usv,
+            )
+        });
+
+        let ml_data: Vec<(String, EqtbPointer)> = self
+            .strings
+            .all_sps()
+            .filter_map(|sp| {
+                let name = self.strings.lookup(sp).to_owned();
+                self.cshash
+                    .lookup(&name, &self.strings)
+                    .map(|ptr| (name, ptr))
+            })
+            .collect();
+
+        null_cs.chain(single_letters).chain(ml_data)
     }
 
     // Decoding various eqtb bits. These could just as well be methods on the Eqtb
@@ -332,6 +388,10 @@ fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
         cshash,
     };
     Ok((input, fmt))
+}
+
+fn valid_usvs() -> impl Iterator<Item = i32> {
+    (0..0xD800).chain(0xE000..0x11_0000)
 }
 
 pub fn fmt_usv(c: i32) -> String {
