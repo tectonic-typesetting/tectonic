@@ -36,6 +36,10 @@ impl StringTable {
         self.strings.len()
     }
 
+    pub fn all_sps(&self) -> impl Iterator<Item = StrPointer> {
+        0x10000..0x10000 + self.strings.len() as i32
+    }
+
     pub fn lookup(&self, sp: StrPointer) -> &str {
         assert!(sp > 0xFFFF);
         &self.strings[sp as usize - 0x10000]

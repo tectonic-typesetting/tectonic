@@ -9,9 +9,13 @@
 //! used to modify the `parshape` parameter, which is a "local". All of the
 //! other locals are token lists.
 
-use std::io::{Result, Write};
+use std::io::Write;
+use tectonic_errors::prelude::*;
 
-use super::FormatVersion;
+use crate::{
+    symbols::{SymbolCategory, SymbolTable},
+    FormatVersion,
+};
 
 /// Information about e-TeX penalties parameters.
 #[derive(Clone, Copy, Debug)]
@@ -42,41 +46,29 @@ const ETEX_PENALTIES_PARS: &[EtexPenaltiesPar] = &[
     },
 ];
 
-/// Get information about the e-TeX penalties parameters used in the latest
-/// engine format.
-pub fn get_latest_etex_penalties_pars() -> &'static [EtexPenaltiesPar] {
-    ETEX_PENALTIES_PARS
-}
-
 /// Get information about the e-TeX penalties parameters used in a specific
 /// engine format version.
-pub fn get_etex_penalties_pars_for_version(version: FormatVersion) -> Vec<EtexPenaltiesPar> {
+pub fn get_etex_penalties_pars_for_version(
+    version: FormatVersion,
+    symbols: &mut SymbolTable,
+) -> Result<Vec<EtexPenaltiesPar>> {
     let mut r = Vec::new();
+    let mut n = 0;
 
     for p in ETEX_PENALTIES_PARS {
         if version >= p.since {
-            r.push(*p)
+            r.push(*p);
+            symbols.add(
+                SymbolCategory::EtexPenaltiesPars,
+                format!("ETEX_PENALTIES_PAR__{}", p.name.to_lowercase()),
+                n,
+            )?;
+            n += 1;
         }
     }
 
-    r
-}
-
-/// Emit C header information for the e-TeX penalties parameters.
-pub fn emit_c_header_stanza<W: Write>(pars: &[EtexPenaltiesPar], mut stream: W) -> Result<()> {
-    writeln!(stream, "/* e-TeX penalties parameters */\n")?;
-
-    for (index, par) in pars.iter().enumerate() {
-        writeln!(
-            stream,
-            "#define ETEX_PENALTIES_PAR__{} {}",
-            par.name.to_lowercase(),
-            index
-        )?;
-    }
-
-    writeln!(stream, "#define NUM_ETEX_PENALTIES {}\n", pars.len())?;
-    Ok(())
+    symbols.add(SymbolCategory::EtexPenaltiesPars, "NUM_ETEX_PENALTIES", n)?;
+    Ok(r)
 }
 
 /// Emit initializers for gluepar primitives in the C header.

@@ -5,9 +5,13 @@
 
 //! Integer parameters defined by the engine.
 
-use std::io::{Result, Write};
+use std::io::Write;
+use tectonic_errors::prelude::*;
 
-use super::FormatVersion;
+use crate::{
+    symbols::{SymbolCategory, SymbolTable},
+    FormatVersion,
+};
 
 /// Information about the primitive associated with an integer parameter
 #[derive(Clone, Copy, Debug)]
@@ -463,41 +467,29 @@ const INT_PARS: &[IntPar] = &[
     },
 ];
 
-/// Get information about the integer parameters used in the latest engine
-/// format.
-pub fn get_latest_intpars() -> &'static [IntPar] {
-    INT_PARS
-}
-
 /// Get information about the integer parameters used in a specific engine
 /// format version.
-pub fn get_intpars_for_version(version: FormatVersion) -> Vec<IntPar> {
+pub fn get_intpars_for_version(
+    version: FormatVersion,
+    symbols: &mut SymbolTable,
+) -> Result<Vec<IntPar>> {
     let mut r = Vec::new();
+    let mut n = 0;
 
     for p in INT_PARS {
         if version >= p.since {
-            r.push(*p)
+            r.push(*p);
+            symbols.add(
+                SymbolCategory::IntPars,
+                format!("INT_PAR__{}", p.name.to_lowercase()),
+                n,
+            )?;
+            n += 1;
         }
     }
 
-    r
-}
-
-/// Emit C header information for the integer parameters
-pub fn emit_c_header_stanza<W: Write>(pars: &[IntPar], mut stream: W) -> Result<()> {
-    writeln!(stream, "/* Integer parameters */\n")?;
-
-    for (index, par) in pars.iter().enumerate() {
-        writeln!(
-            stream,
-            "#define INT_PAR__{} {}",
-            par.name.to_lowercase(),
-            index
-        )?;
-    }
-
-    writeln!(stream, "#define INT_PARS {}\n", pars.len())?;
-    Ok(())
+    symbols.add(SymbolCategory::IntPars, "INT_PARS", n)?;
+    Ok(r)
 }
 
 /// Emit initializers for intpar primitives in the C header.

@@ -2387,8 +2387,8 @@ name = "tectonic_xetex_format"
 version = "0.0.0-dev.0"
 dependencies = [
  "byteorder",
- "clap",
  "nom 7.1.0",
+ "structopt",
  "tectonic_errors",
 ]
 

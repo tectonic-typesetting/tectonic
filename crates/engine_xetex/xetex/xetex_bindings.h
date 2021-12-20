@@ -16,7 +16,7 @@
  * lines, to make sure that when the engine is updated you don’t attempt to
  * reuse old files.
  */
-#define FORMAT_SERIAL 30
+#define FORMAT_SERIAL 31
 
 #ifdef __cplusplus
 extern "C" {
