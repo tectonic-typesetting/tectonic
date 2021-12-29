@@ -9108,31 +9108,32 @@ void pseudo_start(void)
     }
 }
 
-int32_t str_toks_cat(pool_pointer b, small_number cat)
+int32_t
+str_toks_cat(pool_pointer b, small_number cat)
 {
     int32_t p;
     int32_t q;
     int32_t t;
     pool_pointer k;
-    {
-        if (pool_ptr + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
-    }
+
+    if (pool_ptr + 1 > pool_size)
+        overflow("pool size", pool_size - init_pool_ptr);
+
     p = TEMP_HEAD;
-    mem[p].b32.s1 = TEX_NULL;
+    LLIST_link(p) = TEX_NULL;
     k = b;
+
     while (k < pool_ptr) {
-
         t = str_pool[k];
-        if ((t == ' ' ) && (cat == 0))
-            t = SPACE_TOKEN;
-        else {
 
-            if ((t >= 0xD800) && (t < 0xDC00) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
-                && (str_pool[k + 1] < 0xE000)) {
+        if (t == ' ' && cat == 0) {
+            t = SPACE_TOKEN;
+        } else {
+            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr && str_pool[k + 1] >= 0xDC00 && str_pool[k + 1] < 0xE000) {
                 k++;
-                t = 65536L + (t - 0xD800) * 1024 + (str_pool[k] - 0xDC00);
+                t = 0x10000 + ((t - 0xD800) << 10) + (str_pool[k] - 0xDC00);
             }
+
             if (cat == 0)
                 t = OTHER_TOKEN + t;
             else if (cat == ACTIVE_CHAR)
@@ -9140,31 +9141,33 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             else
                 t = MAX_CHAR_VAL * cat + t;
         }
-        {
-            {
-                q = avail;
-                if (q == TEX_NULL)
-                    q = get_avail();
-                else {
 
-                    avail = mem[q].b32.s1;
-                    mem[q].b32.s1 = TEX_NULL;
-                }
-            }
-            mem[p].b32.s1 = q;
-            mem[q].b32.s0 = t;
-            p = q;
+        q = avail;
+
+        if (q == TEX_NULL) {
+            q = get_avail();
+        } else {
+            avail = LLIST_link(q);
+            LLIST_link(q) = TEX_NULL;
         }
+
+        LLIST_link(p) = q;
+        LLIST_info(q) = t;
+        p = q;
         k++;
     }
+
     pool_ptr = b;
     return p;
 }
 
-int32_t str_toks(pool_pointer b)
+
+int32_t
+str_toks(pool_pointer b)
 {
     return str_toks_cat(b, 0);
 }
+
 
 int32_t the_toks(void)
 {
