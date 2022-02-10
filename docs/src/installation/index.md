@@ -77,15 +77,16 @@ $ conda install -c conda-forge tectonic
 
 ### Arch Linux
 
-For users of [Arch Linux], there are two Tectonic packages available. The
-[tectonic-bin][arch-tectonic-bin] package on [AUR] provides actual pre-compiled
-binaries, while the [tectonic][arch-tectonic] will build the binary on your
-machine, which may take a while.
+For users of [Arch Linux], there are two Tectonic packages available: [tectonic][arch-tectonic] from the official repositories, which can be installed with
+```sh
+$ sudo pacman -S tectonic
+```
+and [tectonic-git][arch-tectonic-git] from the [AUR].
 
 [Arch Linux]: https://archlinux.org/
-[arch-tectonic-bin]: https://aur.archlinux.org/packages/tectonic-bin/
+[arch-tectonic]: https://aur.archlinux.org/packages/tectonic-bin/
 [AUR]: https://aur.archlinux.org/
-[arch-tectonic]: https://aur.archlinux.org/packages/tectonic/
+[arch-tectonic-git]: https://aur.archlinux.org/packages/tectonic/
 
 ### Homebrew
 
