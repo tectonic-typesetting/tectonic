@@ -1550,7 +1550,7 @@ impl ProcessingSession {
             status.note_highlighted(
                 "Writing ",
                 &format!("`{}`", real_path.display()),
-                &format!(" ({})", byte_len.get_appropriate_unit(true).to_string()),
+                &format!(" ({})", byte_len.get_appropriate_unit(true)),
             );
 
             let mut f = File::create(&real_path)?;

@@ -250,11 +250,7 @@ impl<T: XdvEvents> XdvParser<T> {
             if n_in_buffer != 0 && n_consumed == 0 {
                 // We're going to need a bigger buffer in order to handle whatever
                 // we're reading. Let's double it.
-                let len = buf.len();
-                buf.reserve(len);
-                unsafe {
-                    buf.set_len(2 * len);
-                }
+                buf.resize(2 * buf.len(), 0);
             }
 
             if n_read == 0 {
