@@ -323,6 +323,11 @@ void init_math(void)
         eq_word_define(INT_BASE + INT_PAR__pre_display_direction, x);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_width, l);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_indent, s);
+
+        /* Tectonic customization: flag canvas start */
+        if (semantic_pagination_enabled)
+            tt_insert_special("tdux:cs dmath");
+
         if (LOCAL(every_display) != TEX_NULL)
             begin_token_list(LOCAL(every_display), EVERY_DISPLAY_TEXT);
         if (nest_ptr == 1)
@@ -335,6 +340,11 @@ void init_math(void)
             eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
             if ((insert_src_special_every_math))
                 insert_src_special();
+
+            /* Tectonic customization: flag canvas start */
+            if (semantic_pagination_enabled)
+                tt_insert_special("tdux:cs math");
+
             if (LOCAL(every_math) != TEX_NULL)
                 begin_token_list(LOCAL(every_math), EVERY_MATH_TEXT);
         }
@@ -1037,6 +1047,11 @@ void after_math(void)
             cur_list.tail = LLIST_link(cur_list.tail);
         }
         cur_list.aux.b32.s0 = 1000;
+
+        /* Tectonic customization: flag canvas end */
+        if (semantic_pagination_enabled)
+            tt_insert_special("tdux:ce math");
+
         unsave();
     } else {
 
@@ -1170,6 +1185,11 @@ void after_math(void)
             cur_list.tail = LLIST_link(cur_list.tail);
         }
         flush_node_list(j);
+
+        /* Tectonic customization: flag canvas end */
+        if (semantic_pagination_enabled)
+            tt_insert_special("tdux:ce dmath");
+
         resume_after_display();
     }
 }
