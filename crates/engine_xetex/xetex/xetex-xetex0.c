@@ -9108,31 +9108,35 @@ void pseudo_start(void)
     }
 }
 
-int32_t str_toks_cat(pool_pointer b, small_number cat)
+/* "The token list created by str toks begins at `LLIST_link(TEMP_HEAD)` and
+ * ends at the value `p` that is returned. (If `p = temp head`, the list is
+ * empty.)" */
+int32_t
+str_toks_cat(pool_pointer b, small_number cat)
 {
     int32_t p;
     int32_t q;
     int32_t t;
     pool_pointer k;
-    {
-        if (pool_ptr + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
-    }
+
+    if (pool_ptr + 1 > pool_size)
+        overflow("pool size", pool_size - init_pool_ptr);
+
     p = TEMP_HEAD;
-    mem[p].b32.s1 = TEX_NULL;
+    LLIST_link(p) = TEX_NULL;
     k = b;
+
     while (k < pool_ptr) {
-
         t = str_pool[k];
-        if ((t == ' ' ) && (cat == 0))
-            t = SPACE_TOKEN;
-        else {
 
-            if ((t >= 0xD800) && (t < 0xDC00) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
-                && (str_pool[k + 1] < 0xE000)) {
+        if (t == ' ' && cat == 0) {
+            t = SPACE_TOKEN;
+        } else {
+            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr && str_pool[k + 1] >= 0xDC00 && str_pool[k + 1] < 0xE000) {
                 k++;
-                t = 65536L + (t - 0xD800) * 1024 + (str_pool[k] - 0xDC00);
+                t = 0x10000 + ((t - 0xD800) << 10) + (str_pool[k] - 0xDC00);
             }
+
             if (cat == 0)
                 t = OTHER_TOKEN + t;
             else if (cat == ACTIVE_CHAR)
@@ -9140,31 +9144,33 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             else
                 t = MAX_CHAR_VAL * cat + t;
         }
-        {
-            {
-                q = avail;
-                if (q == TEX_NULL)
-                    q = get_avail();
-                else {
 
-                    avail = mem[q].b32.s1;
-                    mem[q].b32.s1 = TEX_NULL;
-                }
-            }
-            mem[p].b32.s1 = q;
-            mem[q].b32.s0 = t;
-            p = q;
+        q = avail;
+
+        if (q == TEX_NULL) {
+            q = get_avail();
+        } else {
+            avail = LLIST_link(q);
+            LLIST_link(q) = TEX_NULL;
         }
+
+        LLIST_link(p) = q;
+        LLIST_info(q) = t;
+        p = q;
         k++;
     }
+
     pool_ptr = b;
     return p;
 }
 
-int32_t str_toks(pool_pointer b)
+
+int32_t
+str_toks(pool_pointer b)
 {
     return str_toks_cat(b, 0);
 }
+
 
 int32_t the_toks(void)
 {
@@ -14667,11 +14673,13 @@ small_number norm_min(int32_t h)
         return h;
 }
 
-void new_graf(bool indented)
+
+void
+new_graf(bool indented)
 {
     cur_list.prev_graf = 0;
 
-    if ((cur_list.mode == VMODE) || (cur_list.head != cur_list.tail)) {
+    if (cur_list.mode == VMODE || cur_list.head != cur_list.tail) {
         mem[cur_list.tail].b32.s1 = new_param_glue(GLUE_PAR__par_skip);
         cur_list.tail = LLIST_link(cur_list.tail);
     }
@@ -14679,25 +14687,34 @@ void new_graf(bool indented)
     push_nest();
     cur_list.mode = HMODE;
     cur_list.aux.b32.s0 = 1000;
+
     if (INTPAR(language) <= 0)
         cur_lang = 0;
     else if (INTPAR(language) > BIGGEST_LANG)
         cur_lang = 0;
     else
         cur_lang = INTPAR(language);
+
     cur_list.aux.b32.s1 = cur_lang;
     cur_list.prev_graf =
         (norm_min(INTPAR(left_hyphen_min)) * 64 +
          norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
+
     if (indented) {
         cur_list.tail = new_null_box();
         mem[cur_list.head].b32.s1 = cur_list.tail;
         mem[cur_list.tail + 1].b32.s1 = eqtb[DIMEN_BASE].b32.s1;
-        if ((insert_src_special_every_par))
+        if (insert_src_special_every_par)
             insert_src_special();
     }
+
+    /* Tectonic customization: insert <p> flagged as automatic */
+    if (semantic_pagination_enabled)
+        tt_insert_special("tdux:as p");
+
     if (LOCAL(every_par) != TEX_NULL)
         begin_token_list(LOCAL(every_par), EVERY_PAR_TEXT);
+
     if (nest_ptr == 1)
         build_page();
 }
@@ -14753,17 +14770,24 @@ void head_for_vmode(void)
     }
 }
 
-void end_graf(void)
+void
+end_graf(void)
 {
     if (cur_list.mode == HMODE) {
+        /* Tectonic customization: insert </p> flagged as automatic */
+        if (semantic_pagination_enabled)
+            tt_insert_special("tdux:ae p");
+
         if (cur_list.head == cur_list.tail)
             pop_nest();
         else
             line_break(false);
+
         if (cur_list.eTeX_aux != TEX_NULL) {
             flush_list(cur_list.eTeX_aux);
             cur_list.eTeX_aux = TEX_NULL;
         }
+
         normal_paragraph();
         error_count = 0;
     }
@@ -16563,6 +16587,40 @@ void append_src_special(void)
     }
 }
 
+
+/* Tectonic: insert a \special into the current token stream */
+void
+tt_insert_special(const char *ascii_text)
+{
+    int32_t toklist_start, p, q;
+    pool_pointer start_pool_ptr = pool_ptr;
+
+    /* Copy the text into the string pool so that we can use str_toks() */
+    if (pool_ptr + strlen(ascii_text) >= (size_t) pool_size)
+        _tt_abort("string pool overflow");
+
+    while (*ascii_text)
+        str_pool[pool_ptr++] = *ascii_text++;
+
+    /* Create the linked list of inserted tokens */
+    p = toklist_start = get_avail();
+    LLIST_info(p) = CS_TOKEN_FLAG + FROZEN_SPECIAL;
+
+    q = get_avail();
+    LLIST_info(q) = LEFT_BRACE_TOKEN + '{';
+    LLIST_link(p) = q;
+
+    /* NB: str_toks creates a list starting at LLIST_link(TEMP_HEAD) and ending at `p` */
+    p = str_toks(start_pool_ptr);
+    LLIST_link(q) = LLIST_link(TEMP_HEAD);
+
+    q = get_avail();
+    LLIST_info(q) = RIGHT_BRACE_TOKEN + '}';
+    LLIST_link(p) = q;
+
+    /* Queue it up and we're done. */
+    begin_token_list(toklist_start, INSERTED);
+}
 
 void
 handle_right_brace(void)

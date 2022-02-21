@@ -1173,6 +1173,8 @@ cur_length(void) {
 void tt_cleanup(void);
 tt_history_t tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_date);
 
+void tt_insert_special(const char *ascii_text);
+
 
 /* formerly xetex.h: */
 /* additional declarations we want to slip in for xetex */

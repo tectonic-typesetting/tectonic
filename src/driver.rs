@@ -1851,10 +1851,15 @@ impl ProcessingSession {
     }
 
     fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
+        let op = match self.output_path {
+            Some(ref p) => p,
+            None => return Err(errmsg!("HTML output must be saved directly to disk")),
+        };
+
         {
-            let mut engine = Spx2HtmlEngine::new();
+            let mut engine = Spx2HtmlEngine::default();
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process(&mut self.bs, status, &self.tex_xdv_path)?;
+            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path, op)?;
         }
 
         self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);

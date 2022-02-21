@@ -274,6 +274,13 @@ impl Read for InputHandle {
     }
 }
 
+impl Seek for InputHandle {
+    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        self.try_seek(pos)
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+    }
+}
+
 impl InputFeatures for InputHandle {
     fn get_size(&mut self) -> Result<usize> {
         self.inner.get_size()
