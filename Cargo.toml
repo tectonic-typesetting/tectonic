@@ -73,9 +73,9 @@ tectonic_bridge_core = { path = "crates/bridge_core", version =">=0.3.0,<1"}
 tectonic_bundles = { path = "crates/bundles", version =">=0.2.0,<1", default-features = false }
 tectonic_docmodel = { path = "crates/docmodel", version =">=0.1.2,<1", optional = true }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version =">=0.1.0,<1"}
-tectonic_engine_spx2html = { path = "crates/engine_spx2html", version =">=0.0.0,<1"}
+tectonic_engine_spx2html = { path = "crates/engine_spx2html", version =">=0.1.0,<1"}
 tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version =">=0.1.0,<1"}
-tectonic_engine_xetex = { path = "crates/engine_xetex", version =">=0.1.4,<1"}
+tectonic_engine_xetex = { path = "crates/engine_xetex", version =">=0.2.0,<1"}
 tectonic_errors = { path = "crates/errors", version =">=0.1.0,<1"}
 tectonic_geturl = { path = "crates/geturl", version =">=0.3.0,<1", default-features = false }
 tectonic_io_base = { path = "crates/io_base", version =">=0.3.0,<1"}

@@ -1,3 +1,20 @@
+# tectonic_engine_xetex 0.2.0 (2022-02-28)
+
+- Use the new `tectonic_xetex_format` crate as part of the build process (#851,
+  #848, @pkgw). This crate defines all of the metadata about the XeTeX engine
+  internals, with versioning, and generates the necessary header files and
+  macros. It also contains code for decoding XeTeX/Tectonic format files, so
+  that we'll be able to introspect engine data structures such as macro
+  definitions.
+- Plumb in some specials that will be used by the prototype HTML output
+  mode (#865, @pkgw)
+- Tidy up some of the auto-generated C code
+- Fix an internal transcription error: `pre_display_direction`, not
+  `pre_display_correction`
+- Fix a long-standing test issue with PNG image dimensions occasionally leading
+  to not-quite-reproducible output (#847, @pkgw)
+
+
 # tectonic_engine_xetex 0.1.4 (2021-07-04)
 
 - Avoid misplaced newlines in warning output ([#803], [@ralismark])
