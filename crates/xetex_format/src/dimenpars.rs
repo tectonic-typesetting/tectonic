@@ -149,7 +149,7 @@ pub fn emit_c_header_primitives<W: Write>(pars: &[DimenPar], mut stream: W) -> R
         writeln!(
             stream,
             "    {{ \"{}\", ASSIGN_DIMEN, DIMEN_BASE + DIMEN_PAR__{}, xf_prim_init_none }}, \\",
-            par.name.replace("_", ""),
+            par.name.replace('_', ""),
             par.name.to_lowercase(),
         )?;
     }

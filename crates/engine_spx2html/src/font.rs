@@ -512,12 +512,9 @@ fn load_math_variants(
         let c = map.get(glyph).unwrap().get_char();
 
         if let Some(vvars) = maybe_vcov
-            .map(|c| c.get(*glyph))
-            .flatten()
-            .map(|i| variants.vert_glyph_construction(i))
-            .flatten()
-            .map(|c| c.variants())
-            .flatten()
+            .and_then(|c| c.get(*glyph))
+            .and_then(|i| variants.vert_glyph_construction(i))
+            .and_then(|c| c.variants())
         {
             for (idx, vinfo) in vvars.iter().enumerate() {
                 map.insert(
@@ -528,12 +525,9 @@ fn load_math_variants(
         }
 
         if let Some(hvars) = maybe_hcov
-            .map(|c| c.get(*glyph))
-            .flatten()
-            .map(|i| variants.horiz_glyph_construction(i))
-            .flatten()
-            .map(|c| c.variants())
-            .flatten()
+            .and_then(|c| c.get(*glyph))
+            .and_then(|i| variants.horiz_glyph_construction(i))
+            .and_then(|c| c.variants())
         {
             for (idx, vinfo) in hvars.iter().enumerate() {
                 map.insert(

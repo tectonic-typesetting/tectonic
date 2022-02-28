@@ -45,7 +45,7 @@ impl FormatCache {
         // Remove all extensions from the format name. PathBuf.file_stem() doesn't
         // do what we want since it only strips one extension, so here we go:
 
-        let stem = match name.splitn(2, '.').next() {
+        let stem = match name.split('.').next() {
             Some(s) => s,
             None => {
                 bail!("incomprehensible format file name \"{}\"", name);

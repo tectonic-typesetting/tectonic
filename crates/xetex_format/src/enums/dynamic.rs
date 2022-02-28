@@ -117,7 +117,7 @@ impl<T: Copy + std::fmt::Debug> DynamicEnumResolver<T> {
 
             if let Some(v) = item.absval {
                 ensure!(
-                    !values.insert(cur_val, v).is_some(),
+                    values.insert(cur_val, v).is_none(),
                     "duplicated dynamic enum variant value"
                 );
             }

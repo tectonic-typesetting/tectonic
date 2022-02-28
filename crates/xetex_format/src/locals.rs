@@ -166,7 +166,7 @@ pub fn emit_c_header_primitives<W: Write>(pars: &[LocalPar], mut stream: W) -> R
         writeln!(
             stream,
             "    {{ \"{}\", {}, LOCAL_BASE + LOCAL__{}, xf_prim_init_none }}, \\",
-            prim_name.replace("_", ""),
+            prim_name.replace('_', ""),
             cmd,
             par.name.to_lowercase(),
         )?;
