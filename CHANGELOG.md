@@ -1,3 +1,46 @@
+# tectonic 0.8.1 (2022-02-28)
+
+- The most important change in this release is a fix for issue [#844], wherein
+  due to an implementation oversight Tectonic could obliterate `biber` input
+  files whose locations were given as absolute paths ([#868], @pkgw). This
+  should now be solved.
+- This release also includes improved (i.e., "not broken") handling of `biber`
+  inputs in subdirectories ([#843], [#845], @KevoSoftworks)
+- A long-standing issue where outputs could vary slightly from one platform to
+  the next, depending on system-dependent floating-point rounding with PNG images,
+  was fixed ([#847], @pkgw).
+
+There are also two big under-the-hood changes that won't make a noticeable difference
+for now, but lay the groundwork for future work:
+
+- The internal parameters and definitions of the Tectonic/XeTeX engine are now
+  introspectable thanks to a new crate, [`tectonic_xetex_format`][xf]. This
+  crate is now used to emit the C/C++ headers used to compile the engine. It is
+  also able to introspect the "format files" that store engine state, adding the
+  capability to answer questions such as "What are the definitions of all of the
+  control strings defined by this format?" This should enable some *really*
+  interesting supporting tools in the future!
+- *Very* preliminary support for native HTML output has been added ([#865],
+  @pkgw). This support isn't yet generally useful since it's undocumented and
+  requires a suite of support files that's still being developed, but
+  prototyping indicates that the generated output has promise for very
+  high-quality mathematical rendering. The new [`tectonic_engine_spx2html`][s2h]
+  crate provides the main new implementation. Hopefully there will be more to
+  report soon!
+
+[#843]: https://github.com/tectonic-typesetting/tectonic/issues/843
+[#844]: https://github.com/tectonic-typesetting/tectonic/issues/844
+[#845]: https://github.com/tectonic-typesetting/tectonic/pull/845
+[#847]: https://github.com/tectonic-typesetting/tectonic/pull/847
+[#865]: https://github.com/tectonic-typesetting/tectonic/pull/865
+[#868]: https://github.com/tectonic-typesetting/tectonic/pull/868
+[s2h]: https://crates.io/crates/tectonic_engine_spx2html
+[xf]: https://crates.io/crates/tectonic_xetex_format
+
+This release also includes the usual updates to internal dependencies, build and
+testing infrastructure, and so on.
+
+
 # tectonic 0.8.0 (2021-10-11)
 
 This release fixes a showstopping issue introduced by recent changes to the
@@ -26,8 +69,8 @@ motivation for this switch is that besides this particular incident,
 important, it is blocked in China, preventing a potentially large userbase from
 trying Tectonic.
 
-[#832]: https://github.com/tectonic-typesetting/tectonic/pulls/832
-[#833]: https://github.com/tectonic-typesetting/tectonic/pulls/833
+[#832]: https://github.com/tectonic-typesetting/tectonic/pull/832
+[#833]: https://github.com/tectonic-typesetting/tectonic/pull/833
 
 The new URL that is queried is:
 
