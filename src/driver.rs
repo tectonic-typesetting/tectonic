@@ -1682,7 +1682,7 @@ impl ProcessingSession {
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for
         // some reason, which is why we use the `r` variable.
-        let r: Result<&str> = self.format_name.splitn(2, '.').next().ok_or_else(|| {
+        let r: Result<&str> = self.format_name.split('.').next().ok_or_else(|| {
             ErrorKind::Msg(format!(
                 "incomprehensible format file name \"{}\"",
                 self.format_name
