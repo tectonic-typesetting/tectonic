@@ -338,9 +338,18 @@ impl BridgeState {
                     ));
                 }
 
-                // We could try to be clever and symlink when the input file has
-                // an abspath or something, but ... meh.
                 let mut ih = self.input_open_name(name, status).must_exist()?;
+
+                // If the input path is absolute, we don't need to create a
+                // version in the tempdir, and in fact the current
+                // implementation below will blow away the input file. However,
+                // we do want to try to open the input so that it gets
+                // registered with the I/O tracking system.
+
+                let path = Path::new(name);
+                if path.is_absolute() {
+                    continue;
+                }
 
                 let tool_path = tempdir.path().join(name);
                 let tool_parent = tool_path.parent().unwrap();
