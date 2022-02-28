@@ -416,6 +416,33 @@ a
     success_or_panic(&output);
 }
 
+/// #844: biber input with absolute path blows away the file
+///
+/// We need to create a separate temporary directory to see if the abspath input
+/// gets messed up.
+#[test]
+fn biber_issue_844() {
+    let temp_source = setup_and_copy_files(&[]);
+    let mut bibpath = std::fs::canonicalize(temp_source.path()).unwrap();
+    bibpath.push("single_entry.bib");
+
+    let contents = include_str!("bibtex/single_entry.bib");
+    std::fs::write(&bibpath, contents.as_bytes()).unwrap();
+
+    // Futz the basic template to reference our absolute path input file:
+    let tex = format!(
+        "{}{}",
+        BIBER_TRIGGER_TEX.replace(">texput.bcf<", &format!(">{}<", bibpath.to_str().unwrap())),
+        "kthx\\bye"
+    );
+
+    let output = run_with_biber("success", &tex);
+    success_or_panic(&output);
+
+    let stat = std::fs::metadata(&bibpath).unwrap();
+    assert_eq!(stat.len(), contents.len() as u64);
+}
+
 #[test]
 fn help_flag() {
     let output = run_tectonic(&PathBuf::from("."), &["-h"]);
