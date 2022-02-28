@@ -1,8 +1,12 @@
-# See elsewhere for changelog
+# rc: force 0.1.0
 
-This project’s release notes are curated from the Git history of its main
-branch. You can find them by looking at [the version of this file on the
-`release` branch][branch] or the [GitHub release history][gh-releases].
+Introduce this crate, which starts implementing Tectonic's HTML output. It uses
+[tera] for templating and a hacked version of [pinot] for parsing font files,
+which turns out to be important for precise typography.
 
-[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/engine_spx2html/CHANGELOG.md
-[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
+The implementation is still very much preliminary, and the associated HTML and
+CSS templates haven't yet been published anywhere, so it's not very useful as
+yet, but hopefully that will all be changing soon.
+
+[tera]: https://crates.io/crates/tera
+[pinot]: https://crates.io/crates/pinot
