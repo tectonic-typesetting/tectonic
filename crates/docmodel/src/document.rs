@@ -117,7 +117,7 @@ impl Document {
         let outputs = self
             .outputs
             .values()
-            .map(|r| syntax::OutputProfile::from_runtime(r))
+            .map(syntax::OutputProfile::from_runtime)
             .collect();
 
         let doc = syntax::Document {
@@ -178,10 +178,18 @@ impl Document {
 
         let mut p = self.build_dir.clone();
         p.push(&profile.name);
-        p.push(&profile.name);
-        p.set_extension(match profile.target_type {
-            BuildTargetType::Pdf => "pdf",
-        });
+
+        match profile.target_type {
+            BuildTargetType::Pdf => {
+                p.push(&profile.name);
+                p.set_extension("pdf");
+            }
+
+            BuildTargetType::Html => {
+                p.push("index.html");
+            }
+        }
+
         p
     }
 }
@@ -218,6 +226,9 @@ pub struct OutputProfile {
 /// The output target type of a document build.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum BuildTargetType {
+    /// Output a tree of HTML files
+    Html,
+
     /// Output to the Portable Document Format (PDF).
     Pdf,
 }
@@ -394,18 +405,21 @@ mod syntax {
 
     #[derive(Clone, Copy, Debug, Eq, PartialEq)]
     pub enum BuildTargetType {
+        Html,
         Pdf,
     }
 
     impl BuildTargetType {
         pub fn from_runtime(rt: &super::BuildTargetType) -> Self {
             match rt {
+                super::BuildTargetType::Html => BuildTargetType::Html,
                 super::BuildTargetType::Pdf => BuildTargetType::Pdf,
             }
         }
 
         pub fn to_runtime(self) -> super::BuildTargetType {
             match self {
+                BuildTargetType::Html => super::BuildTargetType::Html,
                 BuildTargetType::Pdf => super::BuildTargetType::Pdf,
             }
         }
@@ -417,6 +431,7 @@ mod syntax {
             S: Serializer,
         {
             serializer.serialize_str(match *self {
+                BuildTargetType::Html => "html",
                 BuildTargetType::Pdf => "pdf",
             })
         }
@@ -428,8 +443,14 @@ mod syntax {
         {
             let s = String::deserialize(deserializer)?;
             Ok(match s.as_str() {
+                "html" => BuildTargetType::Html,
                 "pdf" => BuildTargetType::Pdf,
-                other => return Err(<D as Deserializer>::Error::unknown_variant(other, &["pdf"])),
+                other => {
+                    return Err(<D as Deserializer>::Error::unknown_variant(
+                        other,
+                        &["html", "pdf"],
+                    ))
+                }
             })
         }
     }

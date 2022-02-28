@@ -1,3 +1,9 @@
+# tectonic_docmodel 0.1.2 (2022-02-28)
+
+- Define HTML options for build output (#865, @pkgw)
+- Fixes for newer versions of Clippy
+
+
 # tectonic_docmodel 0.1.1 (2021-10-11)
 
 - Fix the error message given when a "V2" command is run outside of a Tectonic

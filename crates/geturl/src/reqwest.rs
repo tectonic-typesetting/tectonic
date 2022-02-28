@@ -42,8 +42,7 @@ impl GetUrlBackend for ReqwestBackend {
         let parsed = Url::parse(url)?;
         let original_filename = parsed
             .path_segments()
-            .map(|s| s.last())
-            .flatten()
+            .and_then(|s| s.last())
             .unwrap_or(".") // if the filename is this, the `contains('.')` will already match
             .to_owned();
 

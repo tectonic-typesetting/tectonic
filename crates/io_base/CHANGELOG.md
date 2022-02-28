@@ -1,3 +1,9 @@
+# tectonic_io_base 0.4.0 (2022-02-28)
+
+- Implement `Seek` for `InputHandle` (#865, @pkgw)
+- Fixes for the latest versions of Clippy
+
+
 # tectonic_io_base 0.3.1 (2021-10-11)
 
 - No code changes; fixing a couple of docstring typos.

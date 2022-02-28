@@ -347,9 +347,7 @@ fire_up(int32_t c)
         TOKEN_LIST_ref_count(cur_mark[TOP_MARK_CODE])++;
     }
 
-    /* Tectonic: in semantic pagination mode, ignore the output routine. */
-
-    if (LOCAL(output_routine) != TEX_NULL && !semantic_pagination_enabled) {
+    if (LOCAL(output_routine) != TEX_NULL) {
         if (dead_cycles >= INTPAR(max_dead_cycles)) {
             /*1059: "Explain that too many dead cycles have happened in a row." */
             error_here_with_diagnostic("Output loop---");

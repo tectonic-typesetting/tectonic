@@ -242,7 +242,10 @@ stages:
     pool:
       vmImage: ubuntu-20.04
     steps:
-      - bash: rustup component add clippy
+      - template: azure-generic-build-setup.yml
+      - bash: |
+          rustup component add clippy
+          cargo clippy --version
         displayName: "Install clippy"
       # Ew, redundant with stock builds:
       - bash: |

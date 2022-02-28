@@ -1,3 +1,10 @@
+# tectonic_xdv 0.2.0 (2022-02-28)
+
+- Significant API reworks and extensions to support the forthcoming prototype
+  HTML output mode (#865, @pkgw)
+- Fix some new Clippy complaints
+
+
 # tectonic_xdv 0.1.12 (2021-06-03)
 
 - Fix a potential source of undefined behavior (#752)

@@ -328,11 +328,38 @@ impl BridgeState {
 
         {
             for name in &read_files {
-                // We could try to be clever and symlink when the input file has
-                // an abspath or something, but ... meh.
+                // If a relative parent is found in the file to open, this fn
+                // does not properly handle that. Thus, throw an error.
+                if name.contains("../") {
+                    return Err(errmsg!(
+                        "relative parent paths are not supported for the \
+                        external tool. Got path `{}`.",
+                        name
+                    ));
+                }
+
                 let mut ih = self.input_open_name(name, status).must_exist()?;
 
+                // If the input path is absolute, we don't need to create a
+                // version in the tempdir, and in fact the current
+                // implementation below will blow away the input file. However,
+                // we do want to try to open the input so that it gets
+                // registered with the I/O tracking system.
+
+                let path = Path::new(name);
+                if path.is_absolute() {
+                    continue;
+                }
+
                 let tool_path = tempdir.path().join(name);
+                let tool_parent = tool_path.parent().unwrap();
+
+                if tool_parent != tempdir.path() {
+                    ctry!(
+                        std::fs::create_dir_all(&tool_parent);
+                        "failed to create sub directory `{}`", tool_parent.display()
+                    );
+                }
                 let mut f = ctry!(
                     File::create(&tool_path);
                     "failed to create file `{}`", tool_path.display()
@@ -1532,7 +1559,7 @@ impl ProcessingSession {
             status.note_highlighted(
                 "Writing ",
                 &format!("`{}`", real_path.display()),
-                &format!(" ({})", byte_len.get_appropriate_unit(true).to_string()),
+                &format!(" ({})", byte_len.get_appropriate_unit(true)),
             );
 
             let mut f = File::create(&real_path)?;
@@ -1659,11 +1686,12 @@ impl ProcessingSession {
     }
 
     /// Use the TeX engine to generate a format file.
+    #[allow(clippy::manual_split_once)] // requires Rust 1.52 (note that we don't actually define our MSRV)
     fn make_format_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for
         // some reason, which is why we use the `r` variable.
-        let r: Result<&str> = self.format_name.splitn(2, '.').next().ok_or_else(|| {
+        let r: Result<&str> = self.format_name.split('.').next().ok_or_else(|| {
             ErrorKind::Msg(format!(
                 "incomprehensible format file name \"{}\"",
                 self.format_name
@@ -1832,10 +1860,15 @@ impl ProcessingSession {
     }
 
     fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
+        let op = match self.output_path {
+            Some(ref p) => p,
+            None => return Err(errmsg!("HTML output must be saved directly to disk")),
+        };
+
         {
-            let mut engine = Spx2HtmlEngine::new();
+            let mut engine = Spx2HtmlEngine::default();
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process(&mut self.bs, status, &self.tex_xdv_path)?;
+            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path, op)?;
         }
 
         self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);

@@ -1,3 +1,8 @@
+# tectonic_geturl 0.3.1 (2022-02-28)
+
+- No meaningful code changes; we're just fixing some new Clippy complaints.
+
+
 # tectonic_geturl 0.3.0 (2021-10-11)
 
 This release contains an essential fix for what has been the default Tectonic

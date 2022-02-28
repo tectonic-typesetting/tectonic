@@ -279,7 +279,7 @@ fn bad_outfmt_1() {
 
 fn run_with_biber(args: &str, stdin: &str) -> Output {
     let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&[]);
+    let tempdir = setup_and_copy_files(&["subdirectory/empty.bib"]);
     let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
 
     let test_cmd = if cfg!(windows) {
@@ -351,6 +351,9 @@ const BIBER_TRIGGER_TEX: &str = r#"
         <requires type="dynamic">
             <file>texput.bcf</file>
         </requires>
+        <requires type="editable">
+            <file>subdirectory/empty.bib</file>
+        </requires>
     </external>
 </requests>
 }
@@ -411,6 +414,38 @@ a
     let tex = format!("{}{}", BIBER_TRIGGER_TEX, REST);
     let output = run_with_biber("success", &tex);
     success_or_panic(&output);
+}
+
+/// #844: biber input with absolute path blows away the file
+///
+/// We need to create a separate temporary directory to see if the abspath input
+/// gets messed up.
+///
+/// Backslashes in Windows paths mess up our naive test. I can't figure out how
+/// to get them to work here (admittedly, not trying too hard) so I'm just
+/// skipping this test on that platform.
+#[test]
+#[cfg(not(windows))]
+fn biber_issue_844() {
+    let temp_source = setup_and_copy_files(&[]);
+    let mut bibpath = std::fs::canonicalize(temp_source.path()).unwrap();
+    bibpath.push("single_entry.bib");
+
+    let contents = include_str!("bibtex/single_entry.bib");
+    std::fs::write(&bibpath, contents.as_bytes()).unwrap();
+
+    // Futz the basic template to reference our absolute path input file:
+    let tex = format!(
+        "{}{}",
+        BIBER_TRIGGER_TEX.replace(">texput.bcf<", &format!(">{}<", bibpath.to_str().unwrap())),
+        "kthx\\bye"
+    );
+
+    let output = run_with_biber("success", &tex);
+    success_or_panic(&output);
+
+    let stat = std::fs::metadata(&bibpath).unwrap();
+    assert_eq!(stat.len(), contents.len() as u64);
 }
 
 #[test]

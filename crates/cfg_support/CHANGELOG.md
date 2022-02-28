@@ -1,3 +1,7 @@
+# tectonic_cfg_support 0.1.4 (2022-02-28)
+
+- Fix trailing semicolons in macro expressions
+
 # tectonic_cfg_support 0.1.3 (2021-06-03)
 
 - No code changes, just issuing a new release to make Cranko happy.

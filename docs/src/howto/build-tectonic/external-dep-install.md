@@ -41,7 +41,7 @@ Install Tectonic’s dependencies with:
 
 ```sh
 sudo dnf install \
-  fontconfig-devel graphite2-devel harfbuzz-devel libicu-devel openssl-devel zlib-devel
+  gcc-c++ fontconfig-devel graphite2-devel harfbuzz-devel libicu-devel openssl-devel zlib-devel
 ```
 
 

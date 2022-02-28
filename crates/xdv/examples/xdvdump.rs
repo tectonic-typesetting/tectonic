@@ -1,4 +1,4 @@
-// Copyright 2018 the Tectonic Project
+// Copyright 2018-2021 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Parse an XDV/SPX file and dump some stats about its contents.
@@ -66,6 +66,24 @@ impl tectonic_xdv::XdvEvents for Stats {
         Ok(())
     }
 
+    fn handle_define_native_font(
+        &mut self,
+        name: &str,
+        font_num: i32,
+        size: i32,
+        face_index: u32,
+        color_rgba: Option<u32>,
+        extend: Option<u32>,
+        slant: Option<u32>,
+        embolden: Option<u32>,
+    ) -> Result<(), Self::Error> {
+        println!(
+            "define native font: `{}` num={} size={} faceIndex={} color={:?} extend={:?} slant={:?} embolden={:?}",
+            name, font_num, size, face_index, color_rgba, extend, slant, embolden
+        );
+        Ok(())
+    }
+
     fn handle_begin_page(
         &mut self,
         counters: &[i32],
@@ -88,10 +106,10 @@ impl tectonic_xdv::XdvEvents for Stats {
         Ok(())
     }
 
-    fn handle_special(&mut self, contents: &[u8]) -> Result<(), Self::Error> {
+    fn handle_special(&mut self, x: i32, y: i32, contents: &[u8]) -> Result<(), Self::Error> {
         match str::from_utf8(contents) {
             Ok(s) => {
-                println!("special: {}", s);
+                println!("special: {} (@ {},{})", s, x, y);
             }
             Err(e) => {
                 println!("cannot UTF8-parse special: {}", e);
@@ -101,12 +119,28 @@ impl tectonic_xdv::XdvEvents for Stats {
         Ok(())
     }
 
-    fn handle_char_run(&mut self, chars: &[i32]) -> Result<(), Self::Error> {
+    fn handle_char_run(&mut self, font_num: i32, chars: &[i32]) -> Result<(), Self::Error> {
         let all_ascii_printable = chars.iter().all(|c| *c > 0x20 && *c < 0x7F);
         println!(
-            "chars: {:?} all_ascii_printable={:?}",
-            chars, all_ascii_printable
+            "chars font={}: {:?} all_ascii_printable={:?}",
+            font_num, chars, all_ascii_printable
         );
+        Ok(())
+    }
+
+    fn handle_glyph_run(
+        &mut self,
+        font_num: i32,
+        glyphs: &[u16],
+        x: &[i32],
+        y: &[i32],
+    ) -> Result<(), Self::Error> {
+        println!("glyphs font={}: {:?} (@ {:?}, {:?}", font_num, glyphs, x, y);
+        Ok(())
+    }
+
+    fn handle_rule(&mut self, x: i32, y: i32, height: i32, width: i32) -> Result<(), Self::Error> {
+        println!("rule W={} H={} @ {:?}, {:?}", width, height, x, y);
         Ok(())
     }
 }
@@ -115,6 +149,11 @@ fn main() {
     let matches = App::new("xdvdump")
         .version(crate_version!())
         .about("Parse an XDV or SPX file and report some stats about its contents")
+        .arg(
+            Arg::with_name("seek")
+                .long("seek")
+                .help("Seek around the file, parsing the trailers first"),
+        )
         .arg(
             Arg::with_name("PATH")
                 .help("The path to the XDV or SPX file")
@@ -137,17 +176,33 @@ fn main() {
         }
     };
 
-    let (_stats, n_bytes) = match tectonic_xdv::XdvParser::process(file, Stats::new()) {
-        Ok(x) => x,
-        Err(e) => {
-            eprintln!(
-                "error: failed to parse \"{}\": {}",
-                path.to_string_lossy(),
-                e
-            );
-            process::exit(1);
-        }
-    };
+    if matches.is_present("seek") {
+        match tectonic_xdv::XdvParser::process_with_seeks(file, Stats::new()) {
+            Ok(x) => x,
+            Err(e) => {
+                eprintln!(
+                    "error: failed to parse \"{}\": {}",
+                    path.to_string_lossy(),
+                    e
+                );
+                process::exit(1);
+            }
+        };
 
-    println!("{} bytes parsed.", n_bytes);
+        println!("Finished parsing the file.");
+    } else {
+        let (_stats, n_bytes) = match tectonic_xdv::XdvParser::process(file, Stats::new()) {
+            Ok(x) => x,
+            Err(e) => {
+                eprintln!(
+                    "error: failed to parse \"{}\": {}",
+                    path.to_string_lossy(),
+                    e
+                );
+                process::exit(1);
+            }
+        };
+
+        println!("{} bytes parsed.", n_bytes);
+    }
 }
