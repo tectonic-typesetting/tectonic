@@ -1271,7 +1271,7 @@ post_line_break(bool d)
         /* 919: Set `pen` to all of the penalties relevant to this line. */
 
         if (cur_line + 1 != best_line) {
-            q = eqtb[INTER_LINE_PENALTIES_LOC].b32.s1;
+            q = ETEX_PENALTIES_PAR(inter_line_penalties);
 
             if (q != TEX_NULL) {
                 r = cur_line;
@@ -1282,7 +1282,7 @@ post_line_break(bool d)
                 pen = INTPAR(inter_line_penalty);
             }
 
-            q = eqtb[CLUB_PENALTIES_LOC].b32.s1;
+            q = ETEX_PENALTIES_PAR(club_penalties);
 
             if (q != TEX_NULL) {
                 r = cur_line - cur_list.prev_graf;
@@ -1294,9 +1294,9 @@ post_line_break(bool d)
             }
 
             if (d)
-                q = eqtb[DISPLAY_WIDOW_PENALTIES_LOC].b32.s1;
+                q = ETEX_PENALTIES_PAR(display_widow_penalties);
             else
-                q = eqtb[WIDOW_PENALTIES_LOC].b32.s1;
+                q = ETEX_PENALTIES_PAR(widow_penalties);
 
             if (q != TEX_NULL) {
                 r = best_line - cur_line - 1;

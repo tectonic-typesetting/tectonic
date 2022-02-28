@@ -1,0 +1,37 @@
+# Copyright 2022 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of features (or lack thereof) in this crate.
+
+[package]
+name = "tectonic_engine_spx2html"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["Peter Williams <peter@newton.cx>"]
+description = """
+The Tectonic engine that converts SPX output to HTML.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_engine_spx2html"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2018"
+
+[dependencies]
+byteorder = "^1.4"
+percent-encoding = "^2.1"
+pinot = "^0.1"
+tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
+tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
+tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
+tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
+tectonic_xdv = { path = "../xdv", version = "0.0.0-dev.0" }
+tempfile = "^3.1"
+tera = "^1.13"
+
+[package.metadata.internal_dep_versions]
+tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"
+tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
+tectonic_io_base = "thiscommit:2022-02-20:gQ6H0Gx"
+tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
+tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"

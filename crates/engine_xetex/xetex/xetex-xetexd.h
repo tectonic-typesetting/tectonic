@@ -11,6 +11,11 @@
 #include "teckit-Common.h"
 #include "xetex-ext.h"
 #include "tectonic_bridge_core.h"
+
+/* xetex_format.h needs this: */
+typedef unsigned char eight_bits;
+
+#include "xetex_format.h"
 #include "xetex-constants.h"
 
 BEGIN_EXTERN_C
@@ -39,7 +44,6 @@ BEGIN_EXTERN_C
 typedef unsigned short UTF16_code;
 typedef unsigned char UTF8_code;
 typedef int32_t UnicodeScalar;
-typedef unsigned char eight_bits;
 typedef int32_t pool_pointer;
 typedef int32_t str_number;
 typedef unsigned short packed_UTF16_code;
@@ -1168,6 +1172,8 @@ cur_length(void) {
 /* Tectonic related functions */
 void tt_cleanup(void);
 tt_history_t tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_date);
+
+void tt_insert_special(const char *ascii_text);
 
 
 /* formerly xetex.h: */

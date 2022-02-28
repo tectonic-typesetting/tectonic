@@ -2053,7 +2053,7 @@ void print_param(int32_t n)
     case INT_PAR__tracing_nesting:
         print_esc_cstr("tracingnesting");
         break;
-    case INT_PAR__pre_display_correction:
+    case INT_PAR__pre_display_direction:
         print_esc_cstr("predisplaydirection");
         break;
     case INT_PAR__last_line_fit:
@@ -2062,7 +2062,7 @@ void print_param(int32_t n)
     case INT_PAR__saving_vdiscards:
         print_esc_cstr("savingvdiscards");
         break;
-    case INT_PAR__saving_hyphs:
+    case INT_PAR__saving_hyph_codes:
         print_esc_cstr("savinghyphcodes");
         break;
     case INT_PAR__suppress_fontnotfound_error:
@@ -2336,10 +2336,10 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             case LOCAL_BASE + LOCAL__every_eof:
                 print_esc_cstr("everyeof");
                 break;
-            case LOCAL_BASE + LOCAL__xetex_inter_char:
+            case LOCAL_BASE + LOCAL__xetex_inter_char_toks:
                 print_esc_cstr("XeTeXinterchartoks");
                 break;
-            case LOCAL_BASE + LOCAL__TectonicCodaTokens:
+            case LOCAL_BASE + LOCAL__tectonic_coda_tokens:
                 print_esc_cstr("TectonicCodaTokens");
                 break;
             default:
@@ -2544,16 +2544,16 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         case LOCAL_BASE + LOCAL__par_shape:
             print_esc_cstr("parshape");
             break;
-        case INTER_LINE_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__inter_line_penalties:
             print_esc_cstr("interlinepenalties");
             break;
-        case CLUB_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__club_penalties:
             print_esc_cstr("clubpenalties");
             break;
-        case WIDOW_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__widow_penalties:
             print_esc_cstr("widowpenalties");
             break;
-        case DISPLAY_WIDOW_PENALTIES_LOC:
+        case ETEX_PEN_BASE + ETEX_PENALTIES_PAR__display_widow_penalties:
             print_esc_cstr("displaywidowpenalties");
             break;
         }
@@ -5571,9 +5571,9 @@ restart:
                  * \end or \dump has been seen. We just use a global state
                  * variable to make sure it only gets inserted once. */
 
-                if (!used_tectonic_coda_tokens && LOCAL(TectonicCodaTokens) != TEX_NULL) {
+                if (!used_tectonic_coda_tokens && LOCAL(tectonic_coda_tokens) != TEX_NULL) {
                     used_tectonic_coda_tokens = true;
-                    begin_token_list(LOCAL(TectonicCodaTokens), TECTONIC_CODA_TEXT);
+                    begin_token_list(LOCAL(tectonic_coda_tokens), TECTONIC_CODA_TEXT);
                     goto restart;
                 }
 
@@ -7198,7 +7198,7 @@ restart:
                 } else {
                     cur_val = mem[m + 1].b32.s1;
                 }
-            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
+            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                 scan_char_class_not_ignored();
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
@@ -9108,31 +9108,35 @@ void pseudo_start(void)
     }
 }
 
-int32_t str_toks_cat(pool_pointer b, small_number cat)
+/* "The token list created by str toks begins at `LLIST_link(TEMP_HEAD)` and
+ * ends at the value `p` that is returned. (If `p = temp head`, the list is
+ * empty.)" */
+int32_t
+str_toks_cat(pool_pointer b, small_number cat)
 {
     int32_t p;
     int32_t q;
     int32_t t;
     pool_pointer k;
-    {
-        if (pool_ptr + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
-    }
+
+    if (pool_ptr + 1 > pool_size)
+        overflow("pool size", pool_size - init_pool_ptr);
+
     p = TEMP_HEAD;
-    mem[p].b32.s1 = TEX_NULL;
+    LLIST_link(p) = TEX_NULL;
     k = b;
+
     while (k < pool_ptr) {
-
         t = str_pool[k];
-        if ((t == ' ' ) && (cat == 0))
-            t = SPACE_TOKEN;
-        else {
 
-            if ((t >= 0xD800) && (t < 0xDC00) && (k + 1 < pool_ptr) && (str_pool[k + 1] >= 0xDC00)
-                && (str_pool[k + 1] < 0xE000)) {
+        if (t == ' ' && cat == 0) {
+            t = SPACE_TOKEN;
+        } else {
+            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr && str_pool[k + 1] >= 0xDC00 && str_pool[k + 1] < 0xE000) {
                 k++;
-                t = 65536L + (t - 0xD800) * 1024 + (str_pool[k] - 0xDC00);
+                t = 0x10000 + ((t - 0xD800) << 10) + (str_pool[k] - 0xDC00);
             }
+
             if (cat == 0)
                 t = OTHER_TOKEN + t;
             else if (cat == ACTIVE_CHAR)
@@ -9140,31 +9144,33 @@ int32_t str_toks_cat(pool_pointer b, small_number cat)
             else
                 t = MAX_CHAR_VAL * cat + t;
         }
-        {
-            {
-                q = avail;
-                if (q == TEX_NULL)
-                    q = get_avail();
-                else {
 
-                    avail = mem[q].b32.s1;
-                    mem[q].b32.s1 = TEX_NULL;
-                }
-            }
-            mem[p].b32.s1 = q;
-            mem[q].b32.s0 = t;
-            p = q;
+        q = avail;
+
+        if (q == TEX_NULL) {
+            q = get_avail();
+        } else {
+            avail = LLIST_link(q);
+            LLIST_link(q) = TEX_NULL;
         }
+
+        LLIST_link(p) = q;
+        LLIST_info(q) = t;
+        p = q;
         k++;
     }
+
     pool_ptr = b;
     return p;
 }
 
-int32_t str_toks(pool_pointer b)
+
+int32_t
+str_toks(pool_pointer b)
 {
     return str_toks_cat(b, 0);
 }
+
 
 int32_t the_toks(void)
 {
@@ -13805,7 +13811,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                     pi = 0;
                     break;
                 } else {
-                    goto lab90;
+                    goto update_heights;
                 }
             case 11:
                 if (mem[p].b32.s1 == TEX_NULL) {
@@ -13817,7 +13823,7 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                     pi = 0;
                     break;
                 } else {
-                    goto lab90;
+                    goto update_heights;
                 }
             case 12:
                 pi = mem[p + 1].b32.s1;
@@ -13859,7 +13865,9 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
         }
         if ((NODE_type(p) < GLUE_NODE) || (NODE_type(p) > KERN_NODE))
             goto not_found;
- lab90:/*update_heights *//*1011: */ if (NODE_type(p) == KERN_NODE)
+
+update_heights: /*1011: */
+        if (NODE_type(p) == KERN_NODE)
             q = p;
         else {
 
@@ -14303,8 +14311,8 @@ void normal_paragraph(void)
         eq_word_define(INT_BASE + INT_PAR__hang_after, 1);
     if (LOCAL(par_shape) != TEX_NULL)
         eq_define(LOCAL_BASE + LOCAL__par_shape, SHAPE_REF, TEX_NULL);
-    if (eqtb[INTER_LINE_PENALTIES_LOC].b32.s1 != TEX_NULL)
-        eq_define(INTER_LINE_PENALTIES_LOC, SHAPE_REF, TEX_NULL);
+    if (ETEX_PENALTIES_PAR(inter_line_penalties) != TEX_NULL)
+        eq_define(ETEX_PEN_BASE + ETEX_PENALTIES_PAR__inter_line_penalties, SHAPE_REF, TEX_NULL);
 }
 
 
@@ -14665,11 +14673,13 @@ small_number norm_min(int32_t h)
         return h;
 }
 
-void new_graf(bool indented)
+
+void
+new_graf(bool indented)
 {
     cur_list.prev_graf = 0;
 
-    if ((cur_list.mode == VMODE) || (cur_list.head != cur_list.tail)) {
+    if (cur_list.mode == VMODE || cur_list.head != cur_list.tail) {
         mem[cur_list.tail].b32.s1 = new_param_glue(GLUE_PAR__par_skip);
         cur_list.tail = LLIST_link(cur_list.tail);
     }
@@ -14677,25 +14687,34 @@ void new_graf(bool indented)
     push_nest();
     cur_list.mode = HMODE;
     cur_list.aux.b32.s0 = 1000;
+
     if (INTPAR(language) <= 0)
         cur_lang = 0;
     else if (INTPAR(language) > BIGGEST_LANG)
         cur_lang = 0;
     else
         cur_lang = INTPAR(language);
+
     cur_list.aux.b32.s1 = cur_lang;
     cur_list.prev_graf =
         (norm_min(INTPAR(left_hyphen_min)) * 64 +
          norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
+
     if (indented) {
         cur_list.tail = new_null_box();
         mem[cur_list.head].b32.s1 = cur_list.tail;
         mem[cur_list.tail + 1].b32.s1 = eqtb[DIMEN_BASE].b32.s1;
-        if ((insert_src_special_every_par))
+        if (insert_src_special_every_par)
             insert_src_special();
     }
+
+    /* Tectonic customization: insert <p> flagged as automatic */
+    if (semantic_pagination_enabled)
+        tt_insert_special("tdux:as p");
+
     if (LOCAL(every_par) != TEX_NULL)
         begin_token_list(LOCAL(every_par), EVERY_PAR_TEXT);
+
     if (nest_ptr == 1)
         build_page();
 }
@@ -14751,17 +14770,24 @@ void head_for_vmode(void)
     }
 }
 
-void end_graf(void)
+void
+end_graf(void)
 {
     if (cur_list.mode == HMODE) {
+        /* Tectonic customization: insert </p> flagged as automatic */
+        if (semantic_pagination_enabled)
+            tt_insert_special("tdux:ae p");
+
         if (cur_list.head == cur_list.tail)
             pop_nest();
         else
             line_break(false);
+
         if (cur_list.eTeX_aux != TEX_NULL) {
             flush_list(cur_list.eTeX_aux);
             cur_list.eTeX_aux = TEX_NULL;
         }
+
         normal_paragraph();
         error_count = 0;
     }
@@ -16562,6 +16588,40 @@ void append_src_special(void)
 }
 
 
+/* Tectonic: insert a \special into the current token stream */
+void
+tt_insert_special(const char *ascii_text)
+{
+    int32_t toklist_start, p, q;
+    pool_pointer start_pool_ptr = pool_ptr;
+
+    /* Copy the text into the string pool so that we can use str_toks() */
+    if (pool_ptr + strlen(ascii_text) >= (size_t) pool_size)
+        _tt_abort("string pool overflow");
+
+    while (*ascii_text)
+        str_pool[pool_ptr++] = *ascii_text++;
+
+    /* Create the linked list of inserted tokens */
+    p = toklist_start = get_avail();
+    LLIST_info(p) = CS_TOKEN_FLAG + FROZEN_SPECIAL;
+
+    q = get_avail();
+    LLIST_info(q) = LEFT_BRACE_TOKEN + '{';
+    LLIST_link(p) = q;
+
+    /* NB: str_toks creates a list starting at LLIST_link(TEMP_HEAD) and ending at `p` */
+    p = str_toks(start_pool_ptr);
+    LLIST_link(q) = LLIST_link(TEMP_HEAD);
+
+    q = get_avail();
+    LLIST_info(q) = RIGHT_BRACE_TOKEN + '}';
+    LLIST_link(p) = q;
+
+    /* Queue it up and we're done. */
+    begin_token_list(toklist_start, INSERTED);
+}
+
 void
 handle_right_brace(void)
 {
@@ -16780,7 +16840,8 @@ handle_right_brace(void)
 }
 
 
-void main_control(void)
+void
+main_control(void)
 {
     int32_t t;
 
@@ -16795,690 +16856,608 @@ reswitch:
 
     if (INTPAR(tracing_commands) > 0)
         show_cur_cmd_chr();
+
     switch (abs(cur_list.mode) + cur_cmd) {
-    case 115:
-    case 116:
-    case 172:
-        goto lab70;
+    case HMODE + LETTER:
+    case HMODE + OTHER_CHAR:
+    case HMODE + CHAR_GIVEN:
+        goto main_loop;
         break;
-    case 120:
-        {
-            scan_usv_num();
-            cur_chr = cur_val;
-            goto lab70;
-        }
+
+    case HMODE + CHAR_NUM:
+        scan_usv_num();
+        cur_chr = cur_val;
+        goto main_loop;
         break;
-    case 169:
-        {
-            get_x_token();
-            if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN)
-                || (cur_cmd == CHAR_NUM))
-                cancel_boundary = true;
-            goto reswitch;
-        }
-        break;
-    default:
-        {
-            if (abs(cur_list.mode) == HMODE) {
 
-                if ((INTPAR(xetex_inter_char_tokens) > 0) && (space_class != CHAR_CLASS_LIMIT)
-                    && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
-                    prev_class = ((CHAR_CLASS_LIMIT - 1));
-                    find_sa_element(INTER_CHAR_VAL,
-                                    space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)),
-                                    false);
-                    if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                        if (cur_cs == 0) {
-                            if (cur_cmd == CHAR_NUM)
-                                cur_cmd = OTHER_CHAR;
-                            cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
-                        } else
-                            cur_tok = CS_TOKEN_FLAG + cur_cs;
-                        back_input();
-                        begin_token_list(mem[cur_ptr + 1].b32.s1, INTER_CHAR_TEXT);
-                        goto big_switch;
-                    }
-                }
-            }
-            switch (abs(cur_list.mode) + cur_cmd) {
-            case 114:
-                if (cur_list.aux.b32.s0 == 1000)
-                    goto lab120;
-                else
-                    app_space();
-                break;
-            case 168:
-            case 271:
-                goto lab120;
-                break;
-            case 1:
-            case 104:
-            case 207:
-            case 11:
-            case 217:
-            case 272:
-                ;
-                break;
-            case 40:
-            case 143:
-            case 246:
-                {
-                    if (cur_chr == 0) {
-                        do {
-                            get_x_token();
-                        } while (cur_cmd == SPACER);
-                        goto reswitch;
-                    } else {
-
-                        t = scanner_status;
-                        scanner_status = NORMAL;
-                        get_next();
-                        scanner_status = t;
-                        if (cur_cs < HASH_BASE)
-                            cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
-                        else
-                            cur_cs = prim_lookup(hash[cur_cs].s1);
-                        if (cur_cs != UNDEFINED_PRIMITIVE) {
-                            cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
-                            cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
-                            cur_tok = CS_TOKEN_FLAG + PRIM_EQTB_BASE + cur_cs;
-                            goto reswitch;
-                        }
-                    }
-                }
-                break;
-            case 15:
-                if (its_all_over())
-                    return;
-                break;
-            case 23:
-            case 125:
-            case 228:
-            case 72:
-            case 175:
-            case 278:
-            case 39:
-            case 45:
-            case 49:
-            case 152:
-            case 7:
-            case 110:
-            case 213:
-                report_illegal_case();
-                break;
-            case 8:
-            case 111:
-            case 9:
-            case 112:
-            case 18:
-            case 121:
-            case 70:
-            case 173:
-            case 71:
-            case 174:
-            case 51:
-            case 154:
-            case 16:
-            case 119:
-            case 50:
-            case 153:
-            case 53:
-            case 156:
-            case 67:
-            case 170:
-            case 54:
-            case 157:
-            case 55:
-            case 158:
-            case 57:
-            case 160:
-            case 56:
-            case 159:
-            case 31:
-            case 134:
-            case 52:
-            case 155:
-            case 29:
-            case 132:
-            case 47:
-            case 150:
-            case 216:
-            case 220:
-            case 221:
-            case 234:
-            case 231:
-            case 240:
-            case 243:
-                insert_dollar_sign();
-                break;
-            case 37:
-            case 139:
-            case 242:
-                {
-                    {
-                        mem[cur_list.tail].b32.s1 = scan_rule_spec();
-                        cur_list.tail = LLIST_link(cur_list.tail);
-                    }
-                    if (abs(cur_list.mode) == VMODE)
-                        cur_list.aux.b32.s1 = IGNORE_DEPTH;
-                    else if (abs(cur_list.mode) == HMODE)
-                        cur_list.aux.b32.s0 = 1000;
-                }
-                break;
-            case 28:
-            case 130:
-            case 233:
-            case 235:
-                append_glue();
-                break;
-            case 30:
-            case 133:
-            case 236:
-            case 237:
-                append_kern();
-                break;
-            case 2:
-            case 105:
-                new_save_level(SIMPLE_GROUP);
-                break;
-            case 62:
-            case 165:
-            case 268:
-                new_save_level(SEMI_SIMPLE_GROUP);
-                break;
-            case 63:
-            case 166:
-            case 269:
-                if (cur_group == SEMI_SIMPLE_GROUP)
-                    unsave();
-                else
-                    off_save();
-                break;
-            case 3:
-            case 106:
-            case 209:
-                handle_right_brace();
-                break;
-            case 22:
-            case 126:
-            case 229:
-                {
-                    t = cur_chr;
-                    scan_dimen(false, false, false);
-                    if (t == 0)
-                        scan_box(cur_val);
-                    else
-                        scan_box(-(int32_t) cur_val);
-                }
-                break;
-            case 32:
-            case 135:
-            case 238:
-                scan_box(LEADER_FLAG - A_LEADERS + cur_chr);
-                break;
-            case 21:
-            case 124:
-            case 227:
-                begin_box(0);
-                break;
-            case 44:
-                new_graf(cur_chr > 0);
-                break;
-            case 12:
-            case 13:
-            case 17:
-            case 69:
-            case 4:
-            case 24:
-            case 36:
-            case 46:
-            case 48:
-            case 27:
-            case 34:
-            case 65:
-            case 66:
-                {
-                    back_input();
-                    new_graf(true);
-                }
-                break;
-            case 147:
-            case 250:
-                indent_in_hmode();
-                break;
-            case 14:
-                {
-                    normal_paragraph();
-                    if (cur_list.mode > 0)
-                        build_page();
-                }
-                break;
-            case 117:
-                {
-                    if (align_state < 0)
-                        off_save();
-                    end_graf();
-                    if (cur_list.mode == VMODE)
-                        build_page();
-                }
-                break;
-            case 118:
-            case 131:
-            case 140:
-            case 128:
-            case 136:
-                head_for_vmode();
-                break;
-            case 38:
-            case 141:
-            case 244:
-            case 142:
-            case 245:
-                begin_insert_or_adjust();
-                break;
-            case 19:
-            case 122:
-            case 225:
-                make_mark();
-                break;
-            case 43:
-            case 146:
-            case 249:
-                append_penalty();
-                break;
-            case 26:
-            case 129:
-            case 232:
-                delete_last();
-                break;
-            case 25:
-            case 127:
-            case 230:
-                unpackage();
-                break;
-            case 148:
-                append_italic_correction();
-                break;
-            case 251:
-                {
-                    mem[cur_list.tail].b32.s1 = new_kern(0);
-                    cur_list.tail = LLIST_link(cur_list.tail);
-                }
-                break;
-            case 151:
-            case 254:
-                append_discretionary();
-                break;
-            case 149:
-                make_accent();
-                break;
-            case 6:
-            case 109:
-            case 212:
-            case 5:
-            case 108:
-            case 211:
-                align_error();
-                break;
-            case 35:
-            case 138:
-            case 241:
-                no_align_error();
-                break;
-            case 64:
-            case 167:
-            case 270:
-                omit_error();
-                break;
-            case 33:
-                init_align();
-                break;
-            case 137:
-                if (cur_chr > 0) {
-                    if (eTeX_enabled(INTPAR(texxet) > 0, cur_cmd, cur_chr)) {
-                        mem[cur_list.tail].b32.s1 = new_math(0, cur_chr);
-                        cur_list.tail = LLIST_link(cur_list.tail);
-                    }
-                } else /*:1490 */
-                    init_align();
-                break;
-            case 239:
-                if (privileged()) {
-
-                    if (cur_group == MATH_SHIFT_GROUP)
-                        init_align();
-                    else
-                        off_save();
-                }
-                break;
-            case 10:
-            case 113:
-                do_endv();
-                break;
-            case 68:
-            case 171:
-            case 274:
-                cs_error();
-                break;
-            case 107:
-                init_math();
-                break;
-            case 255:
-                if (privileged()) {
-
-                    if (cur_group == MATH_SHIFT_GROUP)
-                        start_eq_no();
-                    else
-                        off_save();
-                }
-                break;
-            case 208:
-                {
-                    {
-                        mem[cur_list.tail].b32.s1 = new_noad();
-                        cur_list.tail = LLIST_link(cur_list.tail);
-                    }
-                    back_input();
-                    scan_math(cur_list.tail + 1);
-                }
-                break;
-            case 218:
-            case 219:
-            case 275:
-                set_math_char(MATH_CODE(cur_chr));
-                break;
-            case 223:
-                {
-                    scan_char_num();
-                    cur_chr = cur_val;
-                    set_math_char(MATH_CODE(cur_chr));
-                }
-                break;
-            case 224:
-                if (cur_chr == 2) {
-                    scan_math_class_int();
-                    t = set_class(cur_val);
-                    scan_math_fam_int();
-                    t = t + set_family(cur_val);
-                    scan_usv_num();
-                    t = t + cur_val;
-                    set_math_char(t);
-                } else if (cur_chr == 1) {
-                    scan_xetex_math_char_int();
-                    set_math_char(cur_val);
-                } else {
-
-                    scan_fifteen_bit_int();
-                    set_math_char(set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) +
-                                  (cur_val % 256));
-                }
-                break;
-            case 276:
-                {
-                    set_math_char(set_class(cur_chr / 4096) + set_family((cur_chr % 4096) / 256) +
-                                  (cur_chr % 256));
-                }
-                break;
-            case 277:
-                set_math_char(cur_chr);
-                break;
-            case 222:
-                {
-                    if (cur_chr == 1) {
-                        scan_math_class_int();
-                        t = set_class(cur_val);
-                        scan_math_fam_int();
-                        t = t + set_family(cur_val);
-                        scan_usv_num();
-                        t = t + cur_val;
-                        set_math_char(t);
-                    } else {
-
-                        scan_delimiter_int();
-                        cur_val = cur_val / 4096;
-                        set_math_char(set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) +
-                                      (cur_val % 256));
-                    }
-                }
-                break;
-            case 257:
-                {
-                    {
-                        mem[cur_list.tail].b32.s1 = new_noad();
-                        cur_list.tail = LLIST_link(cur_list.tail);
-                    }
-                    mem[cur_list.tail].b16.s1 = cur_chr;
-                    scan_math(cur_list.tail + 1);
-                }
-                break;
-            case 258:
-                math_limit_switch();
-                break;
-            case 273:
-                math_radical();
-                break;
-            case 252:
-            case 253:
-                math_ac();
-                break;
-            case 263:
-                {
-                    scan_spec(VCENTER_GROUP, false);
-                    normal_paragraph();
-                    push_nest();
-                    cur_list.mode = -1;
-                    cur_list.aux.b32.s1 = IGNORE_DEPTH;
-                    if ((insert_src_special_every_vbox))
-                        insert_src_special();
-                    if (LOCAL(every_vbox) != TEX_NULL)
-                        begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
-                }
-                break;
-            case 260:
-                {
-                    mem[cur_list.tail].b32.s1 = new_style(cur_chr);
-                    cur_list.tail = LLIST_link(cur_list.tail);
-                }
-                break;
-            case 262:
-                {
-                    {
-                        mem[cur_list.tail].b32.s1 = new_glue(0);
-                        cur_list.tail = LLIST_link(cur_list.tail);
-                    }
-                    mem[cur_list.tail].b16.s0 = COND_MATH_GLUE;
-                }
-                break;
-            case 261:
-                append_choices();
-                break;
-            case 215:
-            case 214:
-                sub_sup();
-                break;
-            case 259:
-                math_fraction();
-                break;
-            case 256:
-                math_left_right();
-                break;
-            case 210:
-                if (cur_group == MATH_SHIFT_GROUP)
-                    after_math();
-                else
-                    off_save();
-                break;
-            case 73:
-            case 176:
-            case 279:
-            case 74:
-            case 177:
-            case 280:
-            case 75:
-            case 178:
-            case 281:
-            case 76:
-            case 179:
-            case 282:
-            case 77:
-            case 180:
-            case 283:
-            case 78:
-            case 181:
-            case 284:
-            case 79:
-            case 182:
-            case 285:
-            case 80:
-            case 183:
-            case 286:
-            case 81:
-            case 184:
-            case 287:
-            case 82:
-            case 185:
-            case 288:
-            case 83:
-            case 186:
-            case 289:
-            case 84:
-            case 187:
-            case 290:
-            case 85:
-            case 188:
-            case 291:
-            case 86:
-            case 189:
-            case 292:
-            case 87:
-            case 190:
-            case 293:
-            case 88:
-            case 191:
-            case 294:
-            case 89:
-            case 192:
-            case 295:
-            case 90:
-            case 193:
-            case 296:
-            case 91:
-            case 194:
-            case 297:
-            case 92:
-            case 195:
-            case 298:
-            case 93:
-            case 196:
-            case 299:
-            case 94:
-            case 197:
-            case 300:
-            case 95:
-            case 198:
-            case 301:
-            case 96:
-            case 199:
-            case 302:
-            case 97:
-            case 200:
-            case 303:
-            case 98:
-            case 201:
-            case 304:
-            case 99:
-            case 202:
-            case 305:
-            case 100:
-            case 203:
-            case 306:
-            case 101:
-            case 204:
-            case 307:
-            case 102:
-            case 205:
-            case 308:
-            case 103:
-            case 206:
-            case 309:
-                prefixed_command();
-                break;
-            case 41:
-            case 144:
-            case 247:
-                {
-                    get_token();
-                    after_token = cur_tok;
-                }
-                break;
-            case 42:
-            case 145:
-            case 248:
-                {
-                    get_token();
-                    save_for_after(cur_tok);
-                }
-                break;
-            case 61:
-            case 164:
-            case 267:
-                open_or_close_in();
-                break;
-            case 59:
-            case 162:
-            case 265:
-                issue_message();
-                break;
-            case 58:
-            case 161:
-            case 264:
-                shift_case();
-                break;
-            case 20:
-            case 123:
-            case 226:
-                show_whatever();
-                break;
-            case 60:
-            case 163:
-            case 266:
-                do_extension();
-                break;
-            }
-        }
+    case HMODE + NO_BOUNDARY:
+        get_x_token();
+        if (cur_cmd == LETTER || cur_cmd == OTHER_CHAR || cur_cmd == CHAR_GIVEN || cur_cmd == CHAR_NUM)
+            cancel_boundary = true;
+        goto reswitch;
         break;
     }
+
+    if (abs(cur_list.mode) == HMODE) {
+        if (
+            INTPAR(xetex_inter_char_tokens) > 0
+            && space_class != CHAR_CLASS_LIMIT
+            && prev_class != CHAR_CLASS_LIMIT - 1
+        ) {
+            prev_class = CHAR_CLASS_LIMIT - 1;
+
+            find_sa_element(
+                INTER_CHAR_VAL,
+                space_class * CHAR_CLASS_LIMIT + CHAR_CLASS_LIMIT - 1,
+                false
+            );
+
+            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
+                if (cur_cs == 0) {
+                    if (cur_cmd == CHAR_NUM)
+                        cur_cmd = OTHER_CHAR;
+                    cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                } else
+                    cur_tok = CS_TOKEN_FLAG + cur_cs;
+
+                back_input();
+                begin_token_list(ETEX_SA_ptr(cur_ptr), INTER_CHAR_TEXT);
+                goto big_switch;
+            }
+        }
+    }
+
+    switch (abs(cur_list.mode) + cur_cmd) {
+    case HMODE + SPACER:
+        if (cur_list.aux.b32.s0 /*space_factor*/ == 1000)
+            goto append_normal_space;
+        else
+            app_space();
+        break;
+
+    case HMODE + EX_SPACE:
+    case MMODE + EX_SPACE:
+        goto append_normal_space;
+        break;
+
+    /* 1101*: Cases of main_control that are not part of the inner loop: */
+
+    #define ANY_MODE(cmd) \
+        HMODE + (cmd): \
+        case VMODE + (cmd): \
+        case MMODE + (cmd) /* note no leading "case" or trailing colon */
+
+    #define NON_MATH(cmd) \
+        VMODE + (cmd): \
+        case HMODE + (cmd) /* no leading "case", no trailing colon */
+
+    case ANY_MODE(RELAX):
+    case VMODE + SPACER:
+    case MMODE + SPACER:
+    case MMODE + NO_BOUNDARY:
+        break;
+
+    case ANY_MODE(IGNORE_SPACES):
+        if (cur_chr == 0) {
+            do {
+                get_x_token();
+            } while (cur_cmd == SPACER);
+        } else {
+            t = scanner_status;
+            scanner_status = NORMAL;
+            get_next();
+            scanner_status = t;
+
+            if (cur_cs < HASH_BASE)
+                cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
+            else
+                cur_cs = prim_lookup(hash[cur_cs].s1);
+
+            if (cur_cs != UNDEFINED_PRIMITIVE) {
+                cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
+                cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+                cur_tok = CS_TOKEN_FLAG + PRIM_EQTB_BASE + cur_cs;
+            }
+        }
+        goto reswitch;
+        break;
+
+    case VMODE + STOP:
+        if (its_all_over())
+            return; /* "this is the only way out" */
+        break;
+
+    case VMODE + VMOVE: /* 1104*: Forbidden cases detected in main_control */
+    case HMODE + HMOVE:
+    case MMODE + HMOVE:
+    case ANY_MODE(LAST_ITEM):
+    case VMODE + VADJUST:
+    case VMODE + ITAL_CORR:
+    case NON_MATH(EQ_NO):
+    case ANY_MODE(MAC_PARAM):
+        report_illegal_case();
+        break;
+
+    case NON_MATH(SUP_MARK): /* 1102*: math-only cases in non-math modes, or vice versa */
+    case NON_MATH(SUB_MARK):
+    case NON_MATH(MATH_CHAR_NUM):
+    case NON_MATH(MATH_GIVEN):
+    case NON_MATH(XETEX_MATH_GIVEN):
+    case NON_MATH(MATH_COMP):
+    case NON_MATH(DELIM_NUM):
+    case NON_MATH(LEFT_RIGHT):
+    case NON_MATH(ABOVE):
+    case NON_MATH(RADICAL):
+    case NON_MATH(MATH_STYLE):
+    case NON_MATH(MATH_CHOICE):
+    case NON_MATH(VCENTER):
+    case NON_MATH(NON_SCRIPT):
+    case NON_MATH(MKERN):
+    case NON_MATH(LIMIT_SWITCH):
+    case NON_MATH(MSKIP):
+    case NON_MATH(MATH_ACCENT):
+    case MMODE + ENDV:
+    case MMODE + PAR_END:
+    case MMODE + STOP:
+    case MMODE + VSKIP:
+    case MMODE + UN_VBOX:
+    case MMODE + VALIGN:
+    case MMODE + HRULE:
+        insert_dollar_sign();
+        break;
+
+    case VMODE + HRULE: /* 1112*: cases of main_control that build boxes and lists */
+    case HMODE + VRULE:
+    case MMODE + VRULE:
+        mem[cur_list.tail].b32.s1 = scan_rule_spec();
+        cur_list.tail = LLIST_link(cur_list.tail);
+
+        if (abs(cur_list.mode) == VMODE)
+            cur_list.aux.b32.s1 = IGNORE_DEPTH;
+        else if (abs(cur_list.mode) == HMODE)
+            cur_list.aux.b32.s0 = 1000;
+        break;
+
+    case VMODE + VSKIP:
+    case HMODE + HSKIP:
+    case MMODE + HSKIP:
+    case MMODE + MSKIP:
+        append_glue();
+        break;
+
+    case ANY_MODE(KERN):
+    case MMODE + MKERN:
+        append_kern();
+        break;
+
+    case NON_MATH(LEFT_BRACE):
+        new_save_level(SIMPLE_GROUP);
+        break;
+
+    case ANY_MODE(BEGIN_GROUP):
+        new_save_level(SEMI_SIMPLE_GROUP);
+        break;
+
+    case ANY_MODE(END_GROUP):
+        if (cur_group == SEMI_SIMPLE_GROUP)
+            unsave();
+        else
+            off_save();
+        break;
+
+    case ANY_MODE(RIGHT_BRACE):
+        handle_right_brace();
+        break;
+
+    case VMODE + HMOVE:
+    case HMODE + VMOVE:
+    case MMODE + VMOVE:
+        t = cur_chr;
+        scan_dimen(false, false, false);
+        if (t == 0)
+            scan_box(cur_val);
+        else
+            scan_box(-(int32_t) cur_val);
+        break;
+
+    case ANY_MODE(LEADER_SHIP):
+        scan_box(LEADER_FLAG - A_LEADERS + cur_chr);
+        break;
+
+    case ANY_MODE(MAKE_BOX):
+        begin_box(0);
+        break;
+
+    case VMODE + START_PAR:
+        new_graf(cur_chr > 0);
+        break;
+
+    case VMODE + LETTER:
+    case VMODE + OTHER_CHAR:
+    case VMODE + CHAR_NUM:
+    case VMODE + CHAR_GIVEN:
+    case VMODE + MATH_SHIFT:
+    case VMODE + UN_HBOX:
+    case VMODE + VRULE:
+    case VMODE + ACCENT:
+    case VMODE + DISCRETIONARY:
+    case VMODE + HSKIP:
+    case VMODE + VALIGN:
+    case VMODE + EX_SPACE:
+    case VMODE + NO_BOUNDARY:
+        back_input();
+        new_graf(true);
+        break;
+
+    case HMODE + START_PAR:
+    case MMODE + START_PAR:
+        indent_in_hmode();
+        break;
+
+    case VMODE + PAR_END:
+        normal_paragraph();
+        if (cur_list.mode > 0)
+            build_page();
+        break;
+
+    case HMODE + PAR_END:
+        if (align_state < 0)
+            off_save();
+        end_graf();
+        if (cur_list.mode == VMODE)
+            build_page();
+        break;
+
+    case HMODE + STOP:
+    case HMODE + VSKIP:
+    case HMODE + HRULE:
+    case HMODE + UN_VBOX:
+    case HMODE + HALIGN:
+        head_for_vmode();
+        break;
+
+    case ANY_MODE(INSERT):
+    case HMODE + VADJUST:
+    case MMODE + VADJUST:
+        begin_insert_or_adjust();
+        break;
+
+    case ANY_MODE(MARK):
+        make_mark();
+        break;
+
+    case ANY_MODE(BREAK_PENALTY):
+        append_penalty();
+        break;
+
+    case ANY_MODE(REMOVE_ITEM):
+        delete_last();
+        break;
+
+    case VMODE + UN_VBOX:
+    case HMODE + UN_HBOX:
+    case MMODE + UN_HBOX:
+        unpackage();
+        break;
+
+    case HMODE + ITAL_CORR: /* 1168*: */
+        append_italic_correction();
+        break;
+
+    case MMODE + ITAL_CORR:
+        mem[cur_list.tail].b32.s1 = new_kern(0);
+        cur_list.tail = LLIST_link(cur_list.tail);
+        break;
+
+    case HMODE + DISCRETIONARY:
+    case MMODE + DISCRETIONARY:
+        append_discretionary();
+        break;
+
+    case HMODE + ACCENT:
+        make_accent();
+        break;
+
+    case ANY_MODE(CAR_RET):
+    case ANY_MODE(TAB_MARK):
+        align_error();
+        break;
+
+    case ANY_MODE(NO_ALIGN):
+        no_align_error();
+        break;
+
+    case ANY_MODE(OMIT):
+        omit_error();
+        break;
+
+    case VMODE + HALIGN:
+        init_align();
+        break;
+
+    case HMODE + VALIGN:
+        if (cur_chr > 0) {
+            if (eTeX_enabled(INTPAR(texxet) > 0, cur_cmd, cur_chr)) {
+                mem[cur_list.tail].b32.s1 = new_math(0, cur_chr);
+                cur_list.tail = LLIST_link(cur_list.tail);
+            }
+        } else /*:1490 */
+            init_align();
+        break;
+
+    case MMODE + HALIGN:
+        if (privileged()) {
+            if (cur_group == MATH_SHIFT_GROUP)
+                init_align();
+            else
+                off_save();
+        }
+        break;
+
+    case VMODE + ENDV:
+    case HMODE + ENDV:
+        do_endv();
+        break;
+
+    case ANY_MODE(END_CS_NAME):
+        cs_error();
+        break;
+
+    /* Math-related commands */
+
+    case HMODE + MATH_SHIFT: /* 1193*: */
+        init_math();
+        break;
+
+    case MMODE + EQ_NO:
+        if (privileged()) {
+            if (cur_group == MATH_SHIFT_GROUP)
+                start_eq_no();
+            else
+                off_save();
+        }
+        break;
+
+    case MMODE + LEFT_BRACE:
+        mem[cur_list.tail].b32.s1 = new_noad();
+        cur_list.tail = LLIST_link(cur_list.tail);
+        back_input();
+        scan_math(cur_list.tail + 1);
+        break;
+
+    case MMODE + LETTER:
+    case MMODE + OTHER_CHAR:
+    case MMODE + CHAR_GIVEN:
+        set_math_char(MATH_CODE(cur_chr));
+        break;
+
+    case MMODE + CHAR_NUM:
+        scan_char_num();
+        cur_chr = cur_val;
+        set_math_char(MATH_CODE(cur_chr));
+        break;
+
+    case MMODE + MATH_CHAR_NUM:
+        if (cur_chr == 2) { /* \Umathchar? */
+            scan_math_class_int();
+            t = set_class(cur_val);
+            scan_math_fam_int();
+            t = t + set_family(cur_val);
+            scan_usv_num();
+            t = t + cur_val;
+            set_math_char(t);
+        } else if (cur_chr == 1) { /* \Umathcharnum/ */
+            scan_xetex_math_char_int();
+            set_math_char(cur_val);
+        } else {
+            scan_fifteen_bit_int();
+            set_math_char(set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) +
+                            (cur_val % 256));
+        }
+        break;
+
+    case MMODE + MATH_GIVEN:
+        set_math_char(
+            set_class(cur_chr / 4096) + set_family((cur_chr % 4096) / 256) + (cur_chr % 256)
+        );
+        break;
+
+    case MMODE + XETEX_MATH_GIVEN:
+        set_math_char(cur_chr);
+        break;
+
+    case MMODE + DELIM_NUM:
+        if (cur_chr == 1) { /* \Udelimiter? */
+            scan_math_class_int();
+            t = set_class(cur_val);
+            scan_math_fam_int();
+            t = t + set_family(cur_val);
+            scan_usv_num();
+            t = t + cur_val;
+            set_math_char(t);
+        } else {
+            scan_delimiter_int();
+            cur_val = cur_val / 4096;
+            set_math_char(set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) +
+                            (cur_val % 256));
+        }
+        break;
+
+    case MMODE + MATH_COMP:
+        mem[cur_list.tail].b32.s1 = new_noad();
+        cur_list.tail = LLIST_link(cur_list.tail);
+        mem[cur_list.tail].b16.s1 = cur_chr;
+        scan_math(cur_list.tail + 1);
+        break;
+
+    case MMODE + LIMIT_SWITCH:
+        math_limit_switch();
+        break;
+
+    case MMODE + RADICAL:
+        math_radical();
+        break;
+
+    case MMODE + ACCENT: /* 1220*: */
+    case MMODE + MATH_ACCENT:
+        math_ac();
+        break;
+
+    case MMODE + VCENTER:
+        scan_spec(VCENTER_GROUP, false);
+        normal_paragraph();
+        push_nest();
+        cur_list.mode = -1;
+        cur_list.aux.b32.s1 = IGNORE_DEPTH;
+        if ((insert_src_special_every_vbox))
+            insert_src_special();
+        if (LOCAL(every_vbox) != TEX_NULL)
+            begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
+        break;
+
+    case MMODE + MATH_STYLE:
+        mem[cur_list.tail].b32.s1 = new_style(cur_chr);
+        cur_list.tail = LLIST_link(cur_list.tail);
+        break;
+
+    case MMODE + NON_SCRIPT:
+        mem[cur_list.tail].b32.s1 = new_glue(0);
+        cur_list.tail = LLIST_link(cur_list.tail);
+        mem[cur_list.tail].b16.s0 = COND_MATH_GLUE;
+        break;
+
+    case MMODE + MATH_CHOICE:
+        append_choices();
+        break;
+
+    case MMODE + SUB_MARK:
+    case MMODE + SUP_MARK:
+        sub_sup();
+        break;
+
+    case MMODE + ABOVE:
+        math_fraction();
+        break;
+
+    case MMODE + LEFT_RIGHT:
+        math_left_right();
+        break;
+
+    case MMODE + MATH_SHIFT:
+        /* "Here is the only way out of math mode" */
+        if (cur_group == MATH_SHIFT_GROUP)
+            after_math();
+        else
+            off_save();
+        break;
+
+    /* 1266*: "cases of main_control that don't depend on mode" */
+
+    case ANY_MODE(TOKS_REGISTER):
+    case ANY_MODE(ASSIGN_TOKS):
+    case ANY_MODE(ASSIGN_INT):
+    case ANY_MODE(ASSIGN_DIMEN):
+    case ANY_MODE(ASSIGN_GLUE):
+    case ANY_MODE(ASSIGN_MU_GLUE):
+    case ANY_MODE(ASSIGN_FONT_DIMEN):
+    case ANY_MODE(ASSIGN_FONT_INT):
+    case ANY_MODE(SET_AUX):
+    case ANY_MODE(SET_PREV_GRAF):
+    case ANY_MODE(SET_PAGE_DIMEN):
+    case ANY_MODE(SET_PAGE_INT):
+    case ANY_MODE(SET_BOX_DIMEN):
+    case ANY_MODE(SET_SHAPE):
+    case ANY_MODE(DEF_CODE):
+    case ANY_MODE(XETEX_DEF_CODE):
+    case ANY_MODE(DEF_FAMILY):
+    case ANY_MODE(SET_FONT):
+    case ANY_MODE(DEF_FONT):
+    case ANY_MODE(REGISTER):
+    case ANY_MODE(ADVANCE):
+    case ANY_MODE(MULTIPLY):
+    case ANY_MODE(DIVIDE):
+    case ANY_MODE(PREFIX):
+    case ANY_MODE(LET):
+    case ANY_MODE(SHORTHAND_DEF):
+    case ANY_MODE(READ_TO_CS):
+    case ANY_MODE(DEF):
+    case ANY_MODE(SET_BOX):
+    case ANY_MODE(HYPH_DATA):
+    case ANY_MODE(SET_INTERACTION):
+        prefixed_command();
+        break;
+
+    case ANY_MODE(AFTER_ASSIGNMENT):
+        get_token();
+        after_token = cur_tok;
+        break;
+
+    case ANY_MODE(AFTER_GROUP):
+        get_token();
+        save_for_after(cur_tok);
+        break;
+
+    case ANY_MODE(IN_STREAM):
+        open_or_close_in();
+        break;
+
+    case ANY_MODE(MESSAGE):
+        issue_message();
+        break;
+
+    case ANY_MODE(CASE_SHIFT):
+        shift_case();
+        break;
+
+    case ANY_MODE(XRAY):
+        show_whatever();
+        break;
+
+    case ANY_MODE(EXTENSION): /* 1404*: extensions */
+        do_extension();
+        break;
+    }
+
     goto big_switch;
- lab70:                        /*main_loop *//*1069: */ if (((cur_list.head == cur_list.tail) && (cur_list.mode > 0))) {
-        if ((insert_src_special_auto))
+
+main_loop: /*1069: */
+    if (cur_list.head == cur_list.tail && cur_list.mode > 0) {
+        if (insert_src_special_auto)
             append_src_special();
     }
-    prev_class = ((CHAR_CLASS_LIMIT - 1));
-    if (((font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG)
-         || (font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG))) {
-        if (cur_list.mode > 0) {
 
+    prev_class = CHAR_CLASS_LIMIT - 1;
+
+    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG || font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+        if (cur_list.mode > 0) {
             if (INTPAR(language) != cur_list.aux.b32.s1)
                 fix_language();
         }
+
         main_h = 0;
         main_f = eqtb[CUR_FONT_LOC].b32.s1;
         native_len = 0;
- lab71:/*collect_native */ main_s = SF_CODE(cur_chr) % 65536L;
-        if (main_s == 1000)
+
+collect_native:
+        main_s = SF_CODE(cur_chr) % 65536L;
+
+        if (main_s == 1000) {
             cur_list.aux.b32.s0 = 1000;
-        else if (main_s < 1000) {
+        } else if (main_s < 1000) {
             if (main_s > 0)
                 cur_list.aux.b32.s0 = main_s;
-        } else if (cur_list.aux.b32.s0 < 1000)
+        } else if (cur_list.aux.b32.s0 < 1000) {
             cur_list.aux.b32.s0 = 1000;
-        else
+        } else {
             cur_list.aux.b32.s0 = main_s;
+        }
+
         cur_ptr = TEX_NULL;
         space_class = SF_CODE(cur_chr) / 65536L;
-        if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
-            if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
-                if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
+
+        if (INTPAR(xetex_inter_char_tokens) > 0 && space_class != CHAR_CLASS_LIMIT) {
+            if (prev_class == CHAR_CLASS_LIMIT - 1) {
+                if (cur_input.state != TOKEN_LIST || cur_input.index != BACKED_UP_CHAR) {
                     find_sa_element(INTER_CHAR_VAL,
                                     ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class,
                                     false);
@@ -17493,7 +17472,6 @@ reswitch:
                     }
                 }
             } else {
-
                 find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
                 if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
                     if (cur_cmd != LETTER)
@@ -17503,52 +17481,52 @@ reswitch:
                     cur_input.index = BACKED_UP_CHAR;
                     begin_token_list(mem[cur_ptr + 1].b32.s1, INTER_CHAR_TEXT);
                     prev_class = ((CHAR_CLASS_LIMIT - 1));
-                    goto lab72;
+                    goto collected;
                 }
             }
             prev_class = space_class;
         }
-        if ((cur_chr > 65535L)) {
+
+        if (cur_chr > 65535L) {
             while (native_text_size <= native_len + 2) {
-
                 native_text_size = native_text_size + 128;
                 native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
             }
-            {
-                native_text[native_len] = (cur_chr - 65536L) / 1024 + 0xD800;
-                native_len++;
-            }
-            {
-                native_text[native_len] = (cur_chr - 65536L) % 1024 + 0xDC00;
-                native_len++;
-            }
+
+            native_text[native_len] = (cur_chr - 65536L) / 1024 + 0xD800;
+            native_len++;
+            native_text[native_len] = (cur_chr - 65536L) % 1024 + 0xDC00;
+            native_len++;
         } else {
-
             while (native_text_size <= native_len + 1) {
-
                 native_text_size = native_text_size + 128;
                 native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
             }
-            {
-                native_text[native_len] = cur_chr;
-                native_len++;
-            }
+
+            native_text[native_len] = cur_chr;
+            native_len++;
         }
+
         is_hyph = (cur_chr == hyphen_char[main_f]) || ((INTPAR(xetex_dash_break) > 0)
                                                        && ((cur_chr == 8212) || (cur_chr == 8211)));
+
         if ((main_h == 0) && is_hyph)
             main_h = native_len;
+
         get_next();
-        if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN))
-            goto lab71;
+        if (cur_cmd == LETTER || cur_cmd == OTHER_CHAR || cur_cmd == CHAR_GIVEN)
+            goto collect_native;
+
         x_token();
-        if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN))
-            goto lab71;
+        if (cur_cmd == LETTER || cur_cmd == OTHER_CHAR || cur_cmd == CHAR_GIVEN)
+            goto collect_native;
+
         if (cur_cmd == CHAR_NUM) {
             scan_usv_num();
             cur_chr = cur_val;
-            goto lab71;
+            goto collect_native;
         }
+
         if ((INTPAR(xetex_inter_char_tokens) > 0) && (space_class != CHAR_CLASS_LIMIT)
             && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
             prev_class = ((CHAR_CLASS_LIMIT - 1));
@@ -17563,18 +17541,22 @@ reswitch:
                     cur_tok = CS_TOKEN_FLAG + cur_cs;
                 back_input();
                 begin_token_list(mem[cur_ptr + 1].b32.s1, INTER_CHAR_TEXT);
-                goto lab72;
+                goto collected;
             }
         }
- lab72:                        /*collected */ if ((font_mapping[main_f] != NULL)) {
+
+collected:
+        if ((font_mapping[main_f] != NULL)) {
             main_k = apply_mapping(font_mapping[main_f], native_text, native_len);
             native_len = 0;
-            while (native_text_size <= native_len + main_k) {
 
+            while (native_text_size <= native_len + main_k) {
                 native_text_size = native_text_size + 128;
                 native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
             }
+
             main_h = 0;
+
             {
                 register int32_t for_end;
                 main_p = 0;
@@ -17594,10 +17576,10 @@ reswitch:
                     while (main_p++ < for_end);
             }
         }
+
         if (INTPAR(tracing_lost_chars) > 0) {
             temp_ptr = 0;
             while ((temp_ptr < native_len)) {
-
                 main_k = native_text[temp_ptr];
                 temp_ptr++;
                 if ((main_k >= 0xD800) && (main_k < 0xDC00)) {
@@ -17609,8 +17591,10 @@ reswitch:
                     char_warning(main_f, main_k);
             }
         }
+
         main_k = native_len;
         main_pp = cur_list.tail;
+
         if (cur_list.mode == HMODE) {
             main_ppp = cur_list.head;
 
@@ -17627,26 +17611,33 @@ reswitch:
                             while (main_p++ < for_end);
                     }
                 }
+
                 if (main_ppp != main_pp)
                     main_ppp = LLIST_link(main_ppp);
             }
+
             temp_ptr = 0;
+
             do {
                 if (main_h == 0)
                     main_h = main_k;
+
                 if ((((main_pp) != TEX_NULL && (!(is_char_node(main_pp)))
                       && (NODE_type(main_pp) == WHATSIT_NODE)
                       && ((mem[main_pp].b16.s0 == NATIVE_WORD_NODE)
                           || (mem[main_pp].b16.s0 == NATIVE_WORD_NODE_AT))))
                     && (mem[main_pp + 4].b16.s2 == main_f) && (main_ppp != main_pp) && (!(is_char_node(main_ppp)))
-                    && (NODE_type(main_ppp) != DISC_NODE)) {
+                    && (NODE_type(main_ppp) != DISC_NODE)
+                ) {
                     main_k = main_h + mem[main_pp + 4].b16.s1;
-                    while (native_text_size <= native_len + main_k) {
 
+                    while (native_text_size <= native_len + main_k) {
                         native_text_size = native_text_size + 128;
                         native_text = xrealloc(native_text, native_text_size * sizeof(UTF16_code));
                     }
+
                     save_native_len = native_len;
+
                     {
                         register int32_t for_end;
                         main_p = 0;
@@ -17669,26 +17660,30 @@ reswitch:
                             }
                             while (main_p++ < for_end);
                     }
+
                     do_locale_linebreaks(save_native_len, main_k);
                     native_len = save_native_len;
                     main_k = native_len - main_h - temp_ptr;
                     temp_ptr = main_h;
                     main_h = 0;
+
                     while ((main_h < main_k) && (native_text[temp_ptr + main_h] != hyphen_char[main_f])
                            && ((!(INTPAR(xetex_dash_break) > 0))
                                || ((native_text[temp_ptr + main_h] != 8212)
                                    && (native_text[temp_ptr + main_h] != 8211))))
                         main_h++;
+
                     if ((main_h < main_k))
                         main_h++;
+
                     mem[main_ppp].b32.s1 = mem[main_pp].b32.s1;
                     mem[main_pp].b32.s1 = TEX_NULL;
                     flush_node_list(main_pp);
                     main_pp = cur_list.tail;
+
                     while ((mem[main_ppp].b32.s1 != main_pp))
                         main_ppp = LLIST_link(main_ppp);
                 } else {
-
                     do_locale_linebreaks(temp_ptr, main_h);
                     temp_ptr = temp_ptr + main_h;
                     main_k = main_k - main_h;
@@ -17701,17 +17696,16 @@ reswitch:
                     if ((main_h < main_k))
                         main_h++;
                 }
+
                 if ((main_k > 0) || is_hyph) {
-                    {
-                        mem[cur_list.tail].b32.s1 = new_disc();
-                        cur_list.tail = LLIST_link(cur_list.tail);
-                    }
+                    mem[cur_list.tail].b32.s1 = new_disc();
+                    cur_list.tail = LLIST_link(cur_list.tail);
                     main_pp = cur_list.tail;
                 }
             } while (!(main_k == 0));
         } else {
-
             main_ppp = cur_list.head;
+
             while (main_ppp != main_pp && mem[main_ppp].b32.s1 != main_pp) {
                 if (!is_char_node(main_ppp) && NODE_type(main_ppp) == DISC_NODE) {
                     temp_ptr = main_ppp;
@@ -17725,13 +17719,16 @@ reswitch:
                             while (main_p++ < for_end);
                     }
                 }
+
                 if (main_ppp != main_pp)
                     main_ppp = LLIST_link(main_ppp);
             }
+
             if ((((main_pp) != TEX_NULL && (!(is_char_node(main_pp))) && (NODE_type(main_pp) == WHATSIT_NODE)
                   && ((mem[main_pp].b16.s0 == NATIVE_WORD_NODE)
                       || (mem[main_pp].b16.s0 == NATIVE_WORD_NODE_AT)))) && (mem[main_pp + 4].b16.s2 == main_f)
-                && (main_ppp != main_pp) && (!(is_char_node(main_ppp))) && (NODE_type(main_ppp) != DISC_NODE)) {
+                && (main_ppp != main_pp) && (!(is_char_node(main_ppp))) && (NODE_type(main_ppp) != DISC_NODE)
+            ) {
                 mem[main_pp].b32.s1 = new_native_word_node(main_f, main_k + mem[main_pp + 4].b16.s1);
                 cur_list.tail = mem[main_pp].b32.s1;
                 {
@@ -17761,7 +17758,6 @@ reswitch:
                 mem[main_pp].b32.s1 = TEX_NULL;
                 flush_node_list(main_pp);
             } else {
-
                 mem[main_pp].b32.s1 = new_native_word_node(main_f, main_k);
                 cur_list.tail = mem[main_pp].b32.s1;
                 {
@@ -17776,6 +17772,7 @@ reswitch:
                 set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
             }
         }
+
         if (INTPAR(xetex_interword_space_shaping) > 0) {
             main_p = cur_list.head;
             main_pp = TEX_NULL;
@@ -17788,6 +17785,7 @@ reswitch:
                     main_pp = main_p;
                 main_p = LLIST_link(main_p);
             }
+
             if ((main_pp != TEX_NULL)) {
                 if (mem[main_pp + 4].b16.s2 == main_f) {
                     main_p = mem[main_pp].b32.s1;
@@ -17849,23 +17847,29 @@ reswitch:
                 }
             }
         }
+
         if (cur_ptr != TEX_NULL)
             goto big_switch;
         else
             goto reswitch;
     }
+
     main_s = SF_CODE(cur_chr) % 65536L;
-    if (main_s == 1000)
+
+    if (main_s == 1000) {
         cur_list.aux.b32.s0 = 1000;
-    else if (main_s < 1000) {
+    } else if (main_s < 1000) {
         if (main_s > 0)
             cur_list.aux.b32.s0 = main_s;
-    } else if (cur_list.aux.b32.s0 < 1000)
+    } else if (cur_list.aux.b32.s0 < 1000) {
         cur_list.aux.b32.s0 = 1000;
-    else
+    } else {
         cur_list.aux.b32.s0 = main_s;
+    }
+
     cur_ptr = TEX_NULL;
     space_class = SF_CODE(cur_chr) / 65536L;
+
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
@@ -17882,7 +17886,6 @@ reswitch:
                 }
             }
         } else {
-
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
             if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
                 if (cur_cmd != LETTER)
@@ -17895,16 +17898,19 @@ reswitch:
                 goto big_switch;
             }
         }
+
         prev_class = space_class;
     }
+
     main_f = eqtb[CUR_FONT_LOC].b32.s1;
     bchar = font_bchar[main_f];
     false_bchar = font_false_bchar[main_f];
-    if (cur_list.mode > 0) {
 
+    if (cur_list.mode > 0) {
         if (INTPAR(language) != cur_list.aux.b32.s1)
             fix_language();
     }
+
     {
         lig_stack = avail;
         if (lig_stack == TEX_NULL)
@@ -17915,26 +17921,33 @@ reswitch:
             mem[lig_stack].b32.s1 = TEX_NULL;
         }
     }
+
     mem[lig_stack].b16.s1 = main_f;
     cur_l = cur_chr;
     mem[lig_stack].b16.s0 = cur_l;
     cur_q = cur_list.tail;
+
     if (cancel_boundary) {
         cancel_boundary = false;
         main_k = NON_ADDRESS;
-    } else
+    } else {
         main_k = bchar_label[main_f];
+    }
+
     if (main_k == NON_ADDRESS)
-        goto lab92;
+        goto main_loop_move_2;
+
     cur_r = cur_l;
     cur_l = TOO_BIG_CHAR;
-    goto lab111;
- lab80:/*main_loop_wrapup *//*1070: */ if (cur_l < TOO_BIG_CHAR) {
-        if (mem[cur_q].b32.s1 > TEX_NULL) {
+    goto main_lig_loop_1;
 
+ main_loop_wrapup: /*1070: */
+    if (cur_l < TOO_BIG_CHAR) {
+        if (mem[cur_q].b32.s1 > TEX_NULL) {
             if (mem[cur_list.tail].b16.s0 == hyphen_char[main_f])
                 ins_disc = true;
         }
+
         if (ligature_present) {
             main_p = new_ligature(main_f, cur_l, mem[cur_q].b32.s1);
             if (lft_hit) {
@@ -17952,6 +17965,7 @@ reswitch:
             cur_list.tail = main_p;
             ligature_present = false;
         }
+
         if (ins_disc) {
             ins_disc = false;
             if (cur_list.mode > 0) {
@@ -17960,68 +17974,87 @@ reswitch:
             }
         }
     }
- lab90:                        /*main_loop_move *//*1071: */ if (lig_stack == TEX_NULL)
+
+main_loop_move: /*1071: */
+    if (lig_stack == TEX_NULL)
         goto reswitch;
+
     cur_q = cur_list.tail;
     cur_l = mem[lig_stack].b16.s0;
- lab91:                        /*main_loop_move 1 */ if (!(is_char_node(lig_stack)))
-        goto lab95;
- lab92:                        /*main_loop_move 2 */ if ((effective_char(false, main_f, cur_chr) > font_ec[main_f])
+
+main_loop_move_1:
+    if (!is_char_node(lig_stack))
+        goto main_loop_move_lig;
+
+main_loop_move_2:
+    if ((effective_char(false, main_f, cur_chr) > font_ec[main_f])
                               || (effective_char(false, main_f, cur_chr) < font_bc[main_f])) {
         char_warning(main_f, cur_chr);
-        {
-            mem[lig_stack].b32.s1 = avail;
-            avail = lig_stack;
-        }
+        mem[lig_stack].b32.s1 = avail;
+        avail = lig_stack;
         goto big_switch;
     }
+
     main_i = effective_char_info(main_f, cur_l);
+
     if (!(main_i.s3 > 0)) {
         char_warning(main_f, cur_chr);
-        {
-            mem[lig_stack].b32.s1 = avail;
-            avail = lig_stack;
-        }
+        mem[lig_stack].b32.s1 = avail;
+        avail = lig_stack;
         goto big_switch;
     }
+
     mem[cur_list.tail].b32.s1 = lig_stack;
-    cur_list.tail = /*:1071 */ lig_stack;
- lab100:                       /*main_loop_lookahead *//*1073: */ get_next();
+    cur_list.tail = lig_stack; /*:1071 */
+
+main_loop_lookahead: /*1073: */
+    get_next();
+
     if (cur_cmd == LETTER)
-        goto lab101;
+        goto main_loop_lookahead_1;
     if (cur_cmd == OTHER_CHAR)
-        goto lab101;
+        goto main_loop_lookahead_1;
     if (cur_cmd == CHAR_GIVEN)
-        goto lab101;
+        goto main_loop_lookahead_1;
+
     x_token();
     if (cur_cmd == LETTER)
-        goto lab101;
+        goto main_loop_lookahead_1;
     if (cur_cmd == OTHER_CHAR)
-        goto lab101;
+        goto main_loop_lookahead_1;
     if (cur_cmd == CHAR_GIVEN)
-        goto lab101;
+        goto main_loop_lookahead_1;
+
     if (cur_cmd == CHAR_NUM) {
         scan_char_num();
         cur_chr = cur_val;
-        goto lab101;
+        goto main_loop_lookahead_1;
     }
+
     if (cur_cmd == NO_BOUNDARY)
         bchar = TOO_BIG_CHAR;
+
     cur_r = bchar;
     lig_stack = TEX_NULL;
-    goto lab110;
- lab101:/*main_loop_lookahead 1 */ main_s = SF_CODE(cur_chr) % 65536L;
-    if (main_s == 1000)
+    goto main_lig_loop;
+
+main_loop_lookahead_1:
+    main_s = SF_CODE(cur_chr) % 65536L;
+
+    if (main_s == 1000) {
         cur_list.aux.b32.s0 = 1000;
-    else if (main_s < 1000) {
+    } else if (main_s < 1000) {
         if (main_s > 0)
             cur_list.aux.b32.s0 = main_s;
-    } else if (cur_list.aux.b32.s0 < 1000)
+    } else if (cur_list.aux.b32.s0 < 1000) {
         cur_list.aux.b32.s0 = 1000;
-    else
+    } else {
         cur_list.aux.b32.s0 = main_s;
+    }
+
     cur_ptr = TEX_NULL;
     space_class = SF_CODE(cur_chr) / 65536L;
+
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
             if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
@@ -18038,7 +18071,6 @@ reswitch:
                 }
             }
         } else {
-
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
             if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
                 if (cur_cmd != LETTER)
@@ -18053,6 +18085,7 @@ reswitch:
         }
         prev_class = space_class;
     }
+
     {
         lig_stack = avail;
         if (lig_stack == TEX_NULL)
@@ -18063,25 +18096,111 @@ reswitch:
             mem[lig_stack].b32.s1 = TEX_NULL;
         }
     }
+
     mem[lig_stack].b16.s1 = main_f;
     cur_r = cur_chr;
     mem[lig_stack].b16.s0 = cur_r;
+
     if (cur_r == false_bchar)
-        cur_r = TOO_BIG_CHAR/*:1073 */ ;
- lab110:/*main_lig_loop *//*1074: */ if (((main_i.s1) % 4) != LIG_TAG)
-        goto lab80;
+        cur_r = TOO_BIG_CHAR; /*:1073 */
+
+main_lig_loop: /*1074: */
+    if (((main_i.s1) % 4) != LIG_TAG)
+        goto main_loop_wrapup;
     if (cur_r == TOO_BIG_CHAR)
-        goto lab80;
+        goto main_loop_wrapup;
+
     main_k = lig_kern_base[main_f] + main_i.s0;
     main_j = font_info[main_k].b16;
     if (main_j.s3 <= 128)
-        goto lab112;
-    main_k = lig_kern_base[main_f] + 256 * main_j.s1 + main_j.s0 + 32768L - 256 * (128);
- lab111:                       /*main_lig_loop 1 */ main_j = font_info[main_k].b16;
- lab112:                       /*main_lig_loop 2 */ if (main_j.s2 == cur_r) {
+        goto main_lig_loop_2;
 
+    main_k = lig_kern_base[main_f] + 256 * main_j.s1 + main_j.s0 + 32768L - 256 * 128;
+
+main_lig_loop_1:
+    main_j = font_info[main_k].b16;
+
+main_lig_loop_2:
+    if (main_j.s2 == cur_r) {
         if (main_j.s3 <= 128) { /*1075: */
             if (main_j.s1 >= 128) {
+                if (cur_l < TOO_BIG_CHAR) {
+                    if (mem[cur_q].b32.s1 > TEX_NULL) {
+                        if (mem[cur_list.tail].b16.s0 == hyphen_char[main_f])
+                            ins_disc = true;
+                    }
+
+                    if (ligature_present) {
+                        main_p = new_ligature(main_f, cur_l, mem[cur_q].b32.s1);
+                        if (lft_hit) {
+                            mem[main_p].b16.s0 = 2;
+                            lft_hit = false;
+                        }
+                        if (rt_hit) {
+
+                            if (lig_stack == TEX_NULL) {
+                                mem[main_p].b16.s0++;
+                                rt_hit = false;
+                            }
+                        }
+                        mem[cur_q].b32.s1 = main_p;
+                        cur_list.tail = main_p;
+                        ligature_present = false;
+                    }
+
+                    if (ins_disc) {
+                        ins_disc = false;
+                        if (cur_list.mode > 0) {
+                            mem[cur_list.tail].b32.s1 = new_disc();
+                            cur_list.tail = LLIST_link(cur_list.tail);
+                        }
+                    }
+                }
+
+                mem[cur_list.tail].b32.s1 =
+                    new_kern(font_info[kern_base[main_f] + 256 * main_j.s1 + main_j.s0].b32.s1);
+                cur_list.tail = LLIST_link(cur_list.tail);
+                goto main_loop_move;
+            }
+
+            if (cur_l == TOO_BIG_CHAR)
+                lft_hit = true;
+            else if (lig_stack == TEX_NULL)
+                rt_hit = true;
+
+            switch (main_j.s1) {
+            case 1:
+            case 5:
+                cur_l = main_j.s0;
+                main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
+                ligature_present = true;
+                break;
+
+            case 2:
+            case 6:
+                cur_r = main_j.s0;
+
+                if (lig_stack == TEX_NULL) {
+                    lig_stack = new_lig_item(cur_r);
+                    bchar = TOO_BIG_CHAR;
+                } else if (is_char_node(lig_stack)) {
+                    main_p = lig_stack;
+                    lig_stack = new_lig_item(cur_r);
+                    mem[lig_stack + 1].b32.s1 = main_p;
+                } else {
+                    mem[lig_stack].b16.s0 = cur_r;
+                }
+                break;
+
+            case 3:
+                cur_r = main_j.s0;
+                main_p = lig_stack;
+                lig_stack = new_lig_item(cur_r);
+                mem[lig_stack].b32.s1 = main_p;
+                break;
+
+            case 7:
+            case 11:
                 if (cur_l < TOO_BIG_CHAR) {
                     if (mem[cur_q].b32.s1 > TEX_NULL) {
 
@@ -18094,7 +18213,7 @@ reswitch:
                             mem[main_p].b16.s0 = 2;
                             lft_hit = false;
                         }
-                        if (rt_hit) {
+                        if (false) {
 
                             if (lig_stack == TEX_NULL) {
                                 mem[main_p].b16.s0++;
@@ -18113,140 +18232,71 @@ reswitch:
                         }
                     }
                 }
-                {
-                    mem[cur_list.tail].b32.s1 =
-                        new_kern(font_info[kern_base[main_f] + 256 * main_j.s1 + main_j.s0].b32.s1);
-                    cur_list.tail = LLIST_link(cur_list.tail);
-                }
-                goto lab90;
-            }
-            if (cur_l == TOO_BIG_CHAR)
-                lft_hit = true;
-            else if (lig_stack == TEX_NULL)
-                rt_hit = true;
-            switch (main_j.s1) {
-            case 1:
-            case 5:
-                {
-                    cur_l = main_j.s0;
-                    main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
-                    ligature_present = true;
-                }
+                cur_q = cur_list.tail;
+                cur_l = main_j.s0;
+                main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
+                ligature_present = true;
                 break;
-            case 2:
-            case 6:
-                {
-                    cur_r = main_j.s0;
-                    if (lig_stack == TEX_NULL) {
-                        lig_stack = new_lig_item(cur_r);
-                        bchar = TOO_BIG_CHAR;
-                    } else if ((is_char_node(lig_stack))) {
-                        main_p = lig_stack;
-                        lig_stack = new_lig_item(cur_r);
-                        mem[lig_stack + 1].b32.s1 = main_p;
-                    } else
-                        mem[lig_stack].b16.s0 = cur_r;
-                }
-                break;
-            case 3:
-                {
-                    cur_r = main_j.s0;
-                    main_p = lig_stack;
-                    lig_stack = new_lig_item(cur_r);
-                    mem[lig_stack].b32.s1 = main_p;
-                }
-                break;
-            case 7:
-            case 11:
-                {
-                    if (cur_l < TOO_BIG_CHAR) {
-                        if (mem[cur_q].b32.s1 > TEX_NULL) {
 
-                            if (mem[cur_list.tail].b16.s0 == hyphen_char[main_f])
-                                ins_disc = true;
-                        }
-                        if (ligature_present) {
-                            main_p = new_ligature(main_f, cur_l, mem[cur_q].b32.s1);
-                            if (lft_hit) {
-                                mem[main_p].b16.s0 = 2;
-                                lft_hit = false;
-                            }
-                            if (false) {
-
-                                if (lig_stack == TEX_NULL) {
-                                    mem[main_p].b16.s0++;
-                                    rt_hit = false;
-                                }
-                            }
-                            mem[cur_q].b32.s1 = main_p;
-                            cur_list.tail = main_p;
-                            ligature_present = false;
-                        }
-                        if (ins_disc) {
-                            ins_disc = false;
-                            if (cur_list.mode > 0) {
-                                mem[cur_list.tail].b32.s1 = new_disc();
-                                cur_list.tail = LLIST_link(cur_list.tail);
-                            }
-                        }
-                    }
-                    cur_q = cur_list.tail;
-                    cur_l = main_j.s0;
-                    main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
-                    ligature_present = true;
-                }
-                break;
             default:
-                {
-                    cur_l = main_j.s0;
-                    ligature_present = true;
-                    if (lig_stack == TEX_NULL)
-                        goto lab80;
-                    else
-                        goto lab91;
-                }
+                cur_l = main_j.s0;
+                ligature_present = true;
+                if (lig_stack == TEX_NULL)
+                    goto main_loop_wrapup;
+                else
+                    goto main_loop_move_1;
                 break;
             }
-            if (main_j.s1 > 4) {
 
+            if (main_j.s1 > 4) {
                 if (main_j.s1 != 7)
-                    goto lab80;
+                    goto main_loop_wrapup;
             }
+
             if (cur_l < TOO_BIG_CHAR)
-                goto lab110;
+                goto main_lig_loop;
+
             main_k = bchar_label[main_f];
-            goto lab111;
+            goto main_lig_loop_1;
         }
     }
+
     if (main_j.s3 == 0)
         main_k++;
     else {
-
         if (main_j.s3 >= 128)
-            goto lab80;
+            goto main_loop_wrapup;
         main_k = main_k + main_j.s3 + 1;
     }
-    goto lab111;
- lab95:                        /*main_loop_move_lig *//*1072: */ main_p = mem[lig_stack + 1].b32.s1;
+
+    goto main_lig_loop_1;
+
+main_loop_move_lig: /*1072: */
+    main_p = mem[lig_stack + 1].b32.s1;
+
     if (main_p > TEX_NULL) {
         mem[cur_list.tail].b32.s1 = main_p;
         cur_list.tail = LLIST_link(cur_list.tail);
     }
+
     temp_ptr = lig_stack;
     lig_stack = mem[temp_ptr].b32.s1;
     free_node(temp_ptr, SMALL_NODE_SIZE);
     main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
     ligature_present = true;
-    if (lig_stack == TEX_NULL) {
 
+    if (lig_stack == TEX_NULL) {
         if (main_p > TEX_NULL)
-            goto lab100;
+            goto main_loop_lookahead;
         else
             cur_r = bchar;
     } else
         cur_r = mem[lig_stack].b16.s0;
-    goto lab110;
- lab120:/*append_normal_space */ if ((INTPAR(xetex_inter_char_tokens) > 0)
+
+    goto main_lig_loop;
+
+append_normal_space:
+    if ((INTPAR(xetex_inter_char_tokens) > 0)
                                  && (space_class != CHAR_CLASS_LIMIT)
                                  && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
         prev_class = ((CHAR_CLASS_LIMIT - 1));
@@ -18264,27 +18314,29 @@ reswitch:
             goto big_switch;
         }
     }
+
     if (GLUEPAR(space_skip) == 0) {
-        {
-            main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
-            if (main_p == TEX_NULL) {
-                main_p = new_spec(0);
-                main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
-                mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
-                mem[main_p + 2].b32.s1 = font_info[main_k + 1].b32.s1;
-                mem[main_p + 3].b32.s1 = font_info[main_k + 2].b32.s1;
-                font_glue[eqtb[CUR_FONT_LOC].b32.s1] = main_p;
-            }
+        main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
+        if (main_p == TEX_NULL) {
+            main_p = new_spec(0);
+            main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
+            mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
+            mem[main_p + 2].b32.s1 = font_info[main_k + 1].b32.s1;
+            mem[main_p + 3].b32.s1 = font_info[main_k + 2].b32.s1;
+            font_glue[eqtb[CUR_FONT_LOC].b32.s1] = main_p;
         }
         temp_ptr = new_glue(main_p);
     } else
         temp_ptr = new_param_glue(GLUE_PAR__space_skip);
+
     mem[cur_list.tail].b32.s1 = temp_ptr;
     cur_list.tail = temp_ptr;
     goto big_switch;
 }
 
-void give_err_help(void)
+
+void
+give_err_help(void)
 {
     token_show(LOCAL(err_help));
 }

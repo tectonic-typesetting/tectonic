@@ -136,6 +136,7 @@ impl DocumentExt for Document {
         })?;
 
         let output_format = match profile.target_type {
+            BuildTargetType::Html => OutputFormat::Html,
             BuildTargetType::Pdf => OutputFormat::Pdf,
         };
 

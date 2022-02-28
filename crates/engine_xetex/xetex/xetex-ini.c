@@ -927,7 +927,7 @@ new_patterns(void)
         }
 
     done: /*:996*/
-        if (INTPAR(saving_hyphs) > 0) { /*1643:*/
+        if (INTPAR(saving_hyph_codes) > 0) { /*1643:*/
             c = cur_lang;
             first_child = false;
             p = 0;
@@ -1633,7 +1633,7 @@ prefixed_command(void)
             } else {
                 e = true;
             }
-        } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
+        } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
             scan_char_class_not_ignored();
             cur_ptr = cur_val;
             scan_char_class_not_ignored();
@@ -1666,7 +1666,7 @@ prefixed_command(void)
                     } else {
                         q = mem[cur_chr + 1].b32.s1;
                     }
-                } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char) {
+                } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                     scan_char_class_not_ignored();
                     cur_ptr = cur_val;
                     scan_char_class_not_ignored();
@@ -3300,7 +3300,7 @@ initialize_more_initex_variables(void)
     eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s1 = SHAPE_REF;
     eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s0 = LEVEL_ONE;
 
-    for (k = ETEX_PEN_BASE; k <= ETEX_PENS - 1; k++)
+    for (k = ETEX_PEN_BASE; k <= NUM_ETEX_PENALTIES - 1; k++)
         eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
 
     for (k = LOCAL_BASE + LOCAL__output_routine; k <= TOKS_BASE + NUMBER_REGS - 1; k++)
@@ -3364,13 +3364,13 @@ initialize_more_initex_variables(void)
     INTPAR(tolerance) = 10000;
     INTPAR(hang_after) = 1;
     INTPAR(max_dead_cycles) = 25;
-    INTPAR(escape_char) = '\\' ;
+    INTPAR(escape_char) = '\\';
     INTPAR(end_line_char) = CARRIAGE_RETURN;
 
     for (k = 0; k <= NUMBER_USVS - 1; k++)
         DEL_CODE(k) = -1;
 
-    DEL_CODE(46) = 0;
+    DEL_CODE(46 /* '.' */) = 0;
 
     for (k = DIMEN_BASE; k <= EQTB_SIZE; k++)
         eqtb[k].b32.s1 = 0;
@@ -3379,12 +3379,6 @@ initialize_more_initex_variables(void)
     hash_used = FROZEN_CONTROL_SEQUENCE;
     hash_high = 0;
     cs_count = 0;
-    eqtb[FROZEN_DONT_EXPAND].b16.s1 = DONT_EXPAND;
-    hash[FROZEN_DONT_EXPAND].s1 = maketexstring("notexpanded:");
-    eqtb[FROZEN_PRIMITIVE].b16.s1 = IGNORE_SPACES;
-    eqtb[FROZEN_PRIMITIVE].b32.s1 = 1;
-    eqtb[FROZEN_PRIMITIVE].b16.s0 = LEVEL_ONE;
-    hash[FROZEN_PRIMITIVE].s1 = maketexstring("primitive");
 
     for (k = -(int32_t) TRIE_OP_SIZE; k <= TRIE_OP_SIZE; k++)
         TRIE_OP_HASH(k) = 0;
@@ -3395,14 +3389,8 @@ initialize_more_initex_variables(void)
     max_op_used = MIN_TRIE_OP;
     trie_op_ptr = 0;
     trie_not_ready = true;
-    hash[FROZEN_PROTECTION].s1 = maketexstring("inaccessible");
 
     format_ident = maketexstring(" (INITEX)");
-
-    hash[END_WRITE].s1 = maketexstring("endwrite");
-    eqtb[END_WRITE].b16.s0 = LEVEL_ONE;
-    eqtb[END_WRITE].b16.s1 = OUTER_CALL;
-    eqtb[END_WRITE].b32.s1 = TEX_NULL;
 
     max_reg_num = 32767;
     max_reg_help_line = "A register number must be between 0 and 32767.";
@@ -3418,459 +3406,64 @@ initialize_more_initex_variables(void)
 static void
 initialize_primitives(void)
 {
+    static xetex_format_primitive_def_t primitives[] = { XETEX_FORMAT_PRIMITIVE_INITIALIZERS };
+    int i;
 
     no_new_control_sequence = false;
     first = 0;
 
-    primitive("lineskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__line_skip);
-    primitive("baselineskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__baseline_skip);
-    primitive("parskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__par_skip);
-    primitive("abovedisplayskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__above_display_skip);
-    primitive("belowdisplayskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__below_display_skip);
-    primitive("abovedisplayshortskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__above_display_short_skip);
-    primitive("belowdisplayshortskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__below_display_short_skip);
-    primitive("leftskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__left_skip);
-    primitive("rightskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__right_skip);
-    primitive("topskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__top_skip);
-    primitive("splittopskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__split_top_skip);
-    primitive("tabskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__tab_skip);
-    primitive("spaceskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__space_skip);
-    primitive("xspaceskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__xspace_skip);
-    primitive("parfillskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__par_fill_skip);
-    primitive("XeTeXlinebreakskip", ASSIGN_GLUE, GLUE_BASE + GLUE_PAR__xetex_linebreak_skip);
+    for (i = 0; i < sizeof(primitives) / sizeof(primitives[0]); i++) {
+        xetex_format_primitive_def_t prim = primitives[i];
 
-    primitive("thinmuskip", ASSIGN_MU_GLUE, GLUE_BASE + GLUE_PAR__thin_mu_skip);
-    primitive("medmuskip", ASSIGN_MU_GLUE, GLUE_BASE + GLUE_PAR__med_mu_skip);
-    primitive("thickmuskip", ASSIGN_MU_GLUE, GLUE_BASE + GLUE_PAR__thick_mu_skip);
+        if (prim.name != NULL) {
+            primitive(prim.name, prim.cmd, prim.chr);
 
-    primitive("output", ASSIGN_TOKS, LOCAL_BASE + LOCAL__output_routine);
-    primitive("everypar", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_par);
-    primitive("everymath", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_math);
-    primitive("everydisplay", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_display);
-    primitive("everyhbox", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_hbox);
-    primitive("everyvbox", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_vbox);
-    primitive("everyjob", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_job);
-    primitive("everycr", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_cr);
-    primitive("errhelp", ASSIGN_TOKS, LOCAL_BASE + LOCAL__err_help);
-    primitive("everyeof", ASSIGN_TOKS, LOCAL_BASE + LOCAL__every_eof);
-    primitive("XeTeXinterchartoks", ASSIGN_TOKS, LOCAL_BASE + LOCAL__xetex_inter_char);
-    primitive("TectonicCodaTokens", ASSIGN_TOKS, LOCAL_BASE + LOCAL__TectonicCodaTokens);
+            switch (prim.extra_init) {
+                case xf_prim_init_none:
+                    break;
 
-    primitive("pretolerance", ASSIGN_INT, INT_BASE + INT_PAR__pretolerance);
-    primitive("tolerance", ASSIGN_INT, INT_BASE + INT_PAR__tolerance);
-    primitive("linepenalty", ASSIGN_INT, INT_BASE + INT_PAR__line_penalty);
-    primitive("hyphenpenalty", ASSIGN_INT, INT_BASE + INT_PAR__hyphen_penalty);
-    primitive("exhyphenpenalty", ASSIGN_INT, INT_BASE + INT_PAR__ex_hyphen_penalty);
-    primitive("clubpenalty", ASSIGN_INT, INT_BASE + INT_PAR__club_penalty);
-    primitive("widowpenalty", ASSIGN_INT, INT_BASE + INT_PAR__widow_penalty);
-    primitive("displaywidowpenalty", ASSIGN_INT, INT_BASE + INT_PAR__display_widow_penalty);
-    primitive("brokenpenalty", ASSIGN_INT, INT_BASE + INT_PAR__broken_penalty);
-    primitive("binoppenalty", ASSIGN_INT, INT_BASE + INT_PAR__bin_op_penalty);
-    primitive("relpenalty", ASSIGN_INT, INT_BASE + INT_PAR__rel_penalty);
-    primitive("predisplaypenalty", ASSIGN_INT, INT_BASE + INT_PAR__pre_display_penalty);
-    primitive("postdisplaypenalty", ASSIGN_INT, INT_BASE + INT_PAR__post_display_penalty);
-    primitive("interlinepenalty", ASSIGN_INT, INT_BASE + INT_PAR__inter_line_penalty);
-    primitive("doublehyphendemerits", ASSIGN_INT, INT_BASE + INT_PAR__double_hyphen_demerits);
-    primitive("finalhyphendemerits", ASSIGN_INT, INT_BASE + INT_PAR__final_hyphen_demerits);
-    primitive("adjdemerits", ASSIGN_INT, INT_BASE + INT_PAR__adj_demerits);
-    primitive("mag", ASSIGN_INT, INT_BASE + INT_PAR__mag);
-    primitive("delimiterfactor", ASSIGN_INT, INT_BASE + INT_PAR__delimiter_factor);
-    primitive("looseness", ASSIGN_INT, INT_BASE + INT_PAR__looseness);
-    primitive("time", ASSIGN_INT, INT_BASE + INT_PAR__time);
-    primitive("day", ASSIGN_INT, INT_BASE + INT_PAR__day);
-    primitive("month", ASSIGN_INT, INT_BASE + INT_PAR__month);
-    primitive("year", ASSIGN_INT, INT_BASE + INT_PAR__year);
-    primitive("showboxbreadth", ASSIGN_INT, INT_BASE + INT_PAR__show_box_breadth);
-    primitive("showboxdepth", ASSIGN_INT, INT_BASE + INT_PAR__show_box_depth);
-    primitive("hbadness", ASSIGN_INT, INT_BASE + INT_PAR__hbadness);
-    primitive("vbadness", ASSIGN_INT, INT_BASE + INT_PAR__vbadness);
-    primitive("pausing", ASSIGN_INT, INT_BASE + INT_PAR__pausing);
-    primitive("tracingonline", ASSIGN_INT, INT_BASE + INT_PAR__tracing_online);
-    primitive("tracingmacros", ASSIGN_INT, INT_BASE + INT_PAR__tracing_macros);
-    primitive("tracingstats", ASSIGN_INT, INT_BASE + INT_PAR__tracing_stats);
-    primitive("tracingparagraphs", ASSIGN_INT, INT_BASE + INT_PAR__tracing_paragraphs);
-    primitive("tracingpages", ASSIGN_INT, INT_BASE + INT_PAR__tracing_pages);
-    primitive("tracingoutput", ASSIGN_INT, INT_BASE + INT_PAR__tracing_output);
-    primitive("tracinglostchars", ASSIGN_INT, INT_BASE + INT_PAR__tracing_lost_chars);
-    primitive("tracingcommands", ASSIGN_INT, INT_BASE + INT_PAR__tracing_commands);
-    primitive("tracingrestores", ASSIGN_INT, INT_BASE + INT_PAR__tracing_restores);
-    primitive("uchyph", ASSIGN_INT, INT_BASE + INT_PAR__uc_hyph);
-    primitive("outputpenalty", ASSIGN_INT, INT_BASE + INT_PAR__output_penalty);
-    primitive("maxdeadcycles", ASSIGN_INT, INT_BASE + INT_PAR__max_dead_cycles);
-    primitive("hangafter", ASSIGN_INT, INT_BASE + INT_PAR__hang_after);
-    primitive("floatingpenalty", ASSIGN_INT, INT_BASE + INT_PAR__floating_penalty);
-    primitive("globaldefs", ASSIGN_INT, INT_BASE + INT_PAR__global_defs);
-    primitive("fam", ASSIGN_INT, INT_BASE + INT_PAR__cur_fam);
-    primitive("escapechar", ASSIGN_INT, INT_BASE + INT_PAR__escape_char);
-    primitive("defaulthyphenchar", ASSIGN_INT, INT_BASE + INT_PAR__default_hyphen_char);
-    primitive("defaultskewchar", ASSIGN_INT, INT_BASE + INT_PAR__default_skew_char);
-    primitive("endlinechar", ASSIGN_INT, INT_BASE + INT_PAR__end_line_char);
-    primitive("newlinechar", ASSIGN_INT, INT_BASE + INT_PAR__new_line_char);
-    primitive("language", ASSIGN_INT, INT_BASE + INT_PAR__language);
-    primitive("lefthyphenmin", ASSIGN_INT, INT_BASE + INT_PAR__left_hyphen_min);
-    primitive("righthyphenmin", ASSIGN_INT, INT_BASE + INT_PAR__right_hyphen_min);
-    primitive("holdinginserts", ASSIGN_INT, INT_BASE + INT_PAR__holding_inserts);
-    primitive("errorcontextlines", ASSIGN_INT, INT_BASE + INT_PAR__error_context_lines);
+                case xf_prim_init_par:
+                    par_loc = cur_val;
+                    par_token = CS_TOKEN_FLAG + par_loc;
+                    break;
 
-    primitive("XeTeXlinebreakpenalty", ASSIGN_INT, INT_BASE + 69);
-    primitive("XeTeXprotrudechars", ASSIGN_INT, INT_BASE + 70);
+                case xf_prim_init_write:
+                    write_loc = cur_val;
+                    break;
 
-    primitive("parindent", ASSIGN_DIMEN, DIMEN_BASE + 0);
-    primitive("mathsurround", ASSIGN_DIMEN, DIMEN_BASE + 1);
-    primitive("lineskiplimit", ASSIGN_DIMEN, DIMEN_BASE + 2);
-    primitive("hsize", ASSIGN_DIMEN, DIMEN_BASE + 3);
-    primitive("vsize", ASSIGN_DIMEN, DIMEN_BASE + 4);
-    primitive("maxdepth", ASSIGN_DIMEN, DIMEN_BASE + 5);
-    primitive("splitmaxdepth", ASSIGN_DIMEN, DIMEN_BASE + 6);
-    primitive("boxmaxdepth", ASSIGN_DIMEN, DIMEN_BASE + 7);
-    primitive("hfuzz", ASSIGN_DIMEN, DIMEN_BASE + 8);
-    primitive("vfuzz", ASSIGN_DIMEN, DIMEN_BASE + 9);
-    primitive("delimitershortfall", ASSIGN_DIMEN, DIMEN_BASE + 10);
-    primitive("nulldelimiterspace", ASSIGN_DIMEN, DIMEN_BASE + 11);
-    primitive("scriptspace", ASSIGN_DIMEN, DIMEN_BASE + 12);
-    primitive("predisplaysize", ASSIGN_DIMEN, DIMEN_BASE + 13);
-    primitive("displaywidth", ASSIGN_DIMEN, DIMEN_BASE + 14);
-    primitive("displayindent", ASSIGN_DIMEN, DIMEN_BASE + 15);
-    primitive("overfullrule", ASSIGN_DIMEN, DIMEN_BASE + 16);
-    primitive("hangindent", ASSIGN_DIMEN, DIMEN_BASE + 17);
-    primitive("hoffset", ASSIGN_DIMEN, DIMEN_BASE + 18);
-    primitive("voffset", ASSIGN_DIMEN, DIMEN_BASE + 19);
-    primitive("emergencystretch", ASSIGN_DIMEN, DIMEN_BASE + 20);
-    primitive("pdfpagewidth", ASSIGN_DIMEN, DIMEN_BASE + 21);
-    primitive("pdfpageheight", ASSIGN_DIMEN, DIMEN_BASE + 22);
-
-    primitive(" ", EX_SPACE, 0);
-    primitive("/", ITAL_CORR, 0);
-    primitive("accent", ACCENT, 0);
-    primitive("advance", ADVANCE, 0);
-    primitive("afterassignment", AFTER_ASSIGNMENT, 0);
-    primitive("aftergroup", AFTER_GROUP, 0);
-    primitive("begingroup", BEGIN_GROUP, 0);
-    primitive("char", CHAR_NUM, 0);
-    primitive("csname", CS_NAME, 0);
-    primitive("delimiter", DELIM_NUM, 0);
-    primitive("XeTeXdelimiter", DELIM_NUM, 1);
-    primitive("Udelimiter", DELIM_NUM, 1);
-    primitive("divide", DIVIDE, 0);
-    primitive("endcsname", END_CS_NAME, 0);
-    primitive("endgroup", END_GROUP, 0);
-    hash[FROZEN_END_GROUP].s1 = maketexstring("endgroup");
-    eqtb[FROZEN_END_GROUP] = eqtb[cur_val];
-    primitive("expandafter", EXPAND_AFTER, 0);
-    primitive("font", DEF_FONT, 0);
-    primitive("fontdimen", ASSIGN_FONT_DIMEN, 0);
-    primitive("halign", HALIGN, 0);
-    primitive("hrule", HRULE, 0);
-    primitive("ignorespaces", IGNORE_SPACES, 0);
-    primitive("insert", INSERT, 0);
-    primitive("mark", MARK, 0);
-    primitive("mathaccent", MATH_ACCENT, 0);
-    primitive("XeTeXmathaccent", MATH_ACCENT, 1);
-    primitive("Umathaccent", MATH_ACCENT, 1);
-    primitive("mathchar", MATH_CHAR_NUM, 0);
-    primitive("XeTeXmathcharnum", MATH_CHAR_NUM, 1);
-    primitive("Umathcharnum", MATH_CHAR_NUM, 1);
-    primitive("XeTeXmathchar", MATH_CHAR_NUM, 2);
-    primitive("Umathchar", MATH_CHAR_NUM, 2);
-    primitive("mathchoice", MATH_CHOICE, 0);
-    primitive("multiply", MULTIPLY, 0);
-    primitive("noalign", NO_ALIGN, 0);
-    primitive("noboundary", NO_BOUNDARY, 0);
-    primitive("noexpand", NO_EXPAND, 0);
-    primitive("primitive", NO_EXPAND, 1);
-    primitive("nonscript", NON_SCRIPT, 0);
-    primitive("omit", OMIT, 0);
-    primitive("parshape", SET_SHAPE, LOCAL_BASE + LOCAL__par_shape);
-    primitive("penalty", BREAK_PENALTY, 0);
-    primitive("prevgraf", SET_PREV_GRAF, 0);
-    primitive("radical", RADICAL, 0);
-    primitive("XeTeXradical", RADICAL, 1);
-    primitive("Uradical", RADICAL, 1);
-    primitive("read", READ_TO_CS, 0);
-    primitive("relax", RELAX, TOO_BIG_USV);
-    hash[FROZEN_RELAX].s1 = maketexstring("relax");
-    eqtb[FROZEN_RELAX] = eqtb[cur_val];
-    primitive("setbox", SET_BOX, 0);
-    primitive("the", THE, 0);
-    primitive("toks", TOKS_REGISTER, 0);
-    primitive("vadjust", VADJUST, 0);
-    primitive("valign", VALIGN, 0);
-    primitive("vcenter", VCENTER, 0);
-    primitive("vrule", VRULE, 0);
-    primitive("par", PAR_END, TOO_BIG_USV);
-    par_loc = cur_val;
-    par_token = CS_TOKEN_FLAG + par_loc;
-
-    primitive("input", INPUT, 0);
-    primitive("endinput", INPUT, 1);
-
-    primitive("topmark", TOP_BOT_MARK, TOP_MARK_CODE);
-    primitive("firstmark", TOP_BOT_MARK, FIRST_MARK_CODE);
-    primitive("botmark", TOP_BOT_MARK, BOT_MARK_CODE);
-    primitive("splitfirstmark", TOP_BOT_MARK, SPLIT_FIRST_MARK_CODE);
-    primitive("splitbotmark", TOP_BOT_MARK, SPLIT_BOT_MARK_CODE);
-
-    primitive("count", REGISTER, 0);
-    primitive("dimen", REGISTER, 1);
-    primitive("skip", REGISTER, 2);
-    primitive("muskip", REGISTER, 3);
-
-    primitive("spacefactor", SET_AUX, HMODE);
-    primitive("prevdepth", SET_AUX, VMODE);
-
-    primitive("deadcycles", SET_PAGE_INT, 0);
-    primitive("insertpenalties", SET_PAGE_INT, 1);
-
-    primitive("wd", SET_BOX_DIMEN, WIDTH_OFFSET);
-    primitive("ht", SET_BOX_DIMEN, HEIGHT_OFFSET);
-    primitive("dp", SET_BOX_DIMEN, DEPTH_OFFSET);
-
-    primitive("lastpenalty", LAST_ITEM, INT_VAL);
-    primitive("lastkern", LAST_ITEM, DIMEN_VAL);
-    primitive("lastskip", LAST_ITEM, GLUE_VAL);
-    primitive("inputlineno", LAST_ITEM, INPUT_LINE_NO_CODE);
-    primitive("badness", LAST_ITEM, BADNESS_CODE);
-    primitive("pdflastxpos", LAST_ITEM, PDF_LAST_X_POS_CODE);
-    primitive("pdflastypos", LAST_ITEM, PDF_LAST_Y_POS_CODE);
-    primitive("elapsedtime", LAST_ITEM, ELAPSED_TIME_CODE);
-    primitive("shellescape", LAST_ITEM, PDF_SHELL_ESCAPE_CODE);
-    primitive("randomseed", LAST_ITEM, RANDOM_SEED_CODE);
-
-    primitive("number", CONVERT, NUMBER_CODE);
-    primitive("romannumeral", CONVERT, ROMAN_NUMERAL_CODE);
-    primitive("string", CONVERT, STRING_CODE);
-    primitive("meaning", CONVERT, MEANING_CODE);
-    primitive("fontname", CONVERT, FONT_NAME_CODE);
-    primitive("expanded", CONVERT, EXPANDED_CODE);
-    primitive("leftmarginkern", CONVERT, LEFT_MARGIN_KERN_CODE);
-    primitive("rightmarginkern", CONVERT, RIGHT_MARGIN_KERN_CODE);
-    primitive("creationdate", CONVERT, PDF_CREATION_DATE_CODE);
-    primitive("filemoddate", CONVERT, PDF_FILE_MOD_DATE_CODE);
-    primitive("filesize", CONVERT, PDF_FILE_SIZE_CODE);
-    primitive("mdfivesum", CONVERT, PDF_MDFIVE_SUM_CODE);
-    primitive("filedump", CONVERT, PDF_FILE_DUMP_CODE);
-    primitive("strcmp", CONVERT, PDF_STRCMP_CODE);
-    primitive("uniformdeviate", CONVERT, UNIFORM_DEVIATE_CODE);
-    primitive("normaldeviate", CONVERT, NORMAL_DEVIATE_CODE);
-    primitive("jobname", CONVERT, JOB_NAME_CODE);
-    primitive("Uchar", CONVERT, XETEX_UCHAR_CODE);
-    primitive("Ucharcat", CONVERT, XETEX_UCHARCAT_CODE);
-
-    primitive("if", IF_TEST, IF_CHAR_CODE);
-    primitive("ifcat", IF_TEST, IF_CAT_CODE);
-    primitive("ifnum", IF_TEST, IF_INT_CODE);
-    primitive("ifdim", IF_TEST, IF_DIM_CODE);
-    primitive("ifodd", IF_TEST, IF_ODD_CODE);
-    primitive("ifvmode", IF_TEST, IF_VMODE_CODE);
-    primitive("ifhmode", IF_TEST, IF_HMODE_CODE);
-    primitive("ifmmode", IF_TEST, IF_MMODE_CODE);
-    primitive("ifinner", IF_TEST, IF_INNER_CODE);
-    primitive("ifvoid", IF_TEST, IF_VOID_CODE);
-    primitive("ifhbox", IF_TEST, IF_HBOX_CODE);
-    primitive("ifvbox", IF_TEST, IF_VBOX_CODE);
-    primitive("ifx", IF_TEST, IFX_CODE);
-    primitive("ifeof", IF_TEST, IF_EOF_CODE);
-    primitive("iftrue", IF_TEST, IF_TRUE_CODE);
-    primitive("iffalse", IF_TEST, IF_FALSE_CODE);
-    primitive("ifcase", IF_TEST, IF_CASE_CODE);
-    primitive("ifprimitive", IF_TEST, IF_PRIMITIVE_CODE);
-
-    primitive("fi", FI_OR_ELSE, FI_CODE);
-    hash[FROZEN_FI].s1 = maketexstring("fi");
-    eqtb[FROZEN_FI] = eqtb[cur_val];
-    primitive("or", FI_OR_ELSE, OR_CODE);
-    primitive("else", FI_OR_ELSE, ELSE_CODE);
-
-    primitive("nullfont", SET_FONT, FONT_BASE);
-    hash[FROZEN_NULL_FONT].s1 = maketexstring("nullfont");
-    eqtb[FROZEN_NULL_FONT] = eqtb[cur_val];
-
-    primitive("span", TAB_MARK, SPAN_CODE);
-    primitive("cr", CAR_RET, CR_CODE);
-    hash[FROZEN_CR].s1 = maketexstring("cr");
-    eqtb[FROZEN_CR] = eqtb[cur_val];
-    primitive("crcr", CAR_RET, CR_CR_CODE);
+                default:
+                    /* A "frozen" primitive */
+                    hash[prim.extra_init].s1 = maketexstring(prim.name);
+                    eqtb[prim.extra_init] = eqtb[cur_val];
+                    break;
+            }
+        }
+    }
 
     hash[FROZEN_END_TEMPLATE].s1 = maketexstring("endtemplate");
+    eqtb[FROZEN_END_TEMPLATE].b16.s1 = END_TEMPLATE;
+    eqtb[FROZEN_END_TEMPLATE].b32.s1 = NULL_LIST;
+    eqtb[FROZEN_END_TEMPLATE].b16.s0 = LEVEL_ONE;
+
     hash[FROZEN_ENDV].s1 = maketexstring("endtemplate");
     eqtb[FROZEN_ENDV].b16.s1 = ENDV;
     eqtb[FROZEN_ENDV].b32.s1 = NULL_LIST;
     eqtb[FROZEN_ENDV].b16.s0 = LEVEL_ONE;
-    eqtb[FROZEN_END_TEMPLATE] = eqtb[FROZEN_ENDV];
-    eqtb[FROZEN_END_TEMPLATE].b16.s1 = END_TEMPLATE;
 
-    primitive("pagegoal", SET_PAGE_DIMEN, 0);
-    primitive("pagetotal", SET_PAGE_DIMEN, 1);
-    primitive("pagestretch", SET_PAGE_DIMEN, 2);
-    primitive("pagefilstretch", SET_PAGE_DIMEN, 3);
-    primitive("pagefillstretch", SET_PAGE_DIMEN, 4);
-    primitive("pagefilllstretch", SET_PAGE_DIMEN, 5);
-    primitive("pageshrink", SET_PAGE_DIMEN, 6);
-    primitive("pagedepth", SET_PAGE_DIMEN, 7);
+    hash[FROZEN_DONT_EXPAND].s1 = maketexstring("notexpanded:");
+    eqtb[FROZEN_DONT_EXPAND].b16.s1 = DONT_EXPAND;
 
-    primitive("end", STOP, 0);
-    primitive("dump", STOP, 1);
+    hash[FROZEN_PRIMITIVE].s1 = maketexstring("primitive");
+    eqtb[FROZEN_PRIMITIVE].b16.s1 = IGNORE_SPACES;
+    eqtb[FROZEN_PRIMITIVE].b32.s1 = 1;
+    eqtb[FROZEN_PRIMITIVE].b16.s0 = LEVEL_ONE;
 
-    primitive("hskip", HSKIP, SKIP_CODE);
-    primitive("hfil", HSKIP, FIL_CODE);
-    primitive("hfill", HSKIP, FILL_CODE);
-    primitive("hss", HSKIP, SS_CODE);
-    primitive("hfilneg", HSKIP, FIL_NEG_CODE);
-    primitive("vskip", VSKIP, SKIP_CODE);
-    primitive("vfil", VSKIP, FIL_CODE);
-    primitive("vfill", VSKIP, FILL_CODE);
-    primitive("vss", VSKIP, SS_CODE);
-    primitive("vfilneg", VSKIP, FIL_NEG_CODE);
-    primitive("mskip", MSKIP, MSKIP_CODE);
+    hash[FROZEN_PROTECTION].s1 = maketexstring("inaccessible");
 
-    primitive("kern", KERN, EXPLICIT);
-    primitive("mkern", MKERN, MU_GLUE);
-    primitive("moveleft", HMOVE, 1);
-    primitive("moveright", HMOVE, 0);
-    primitive("raise", VMOVE, 1);
-    primitive("lower", VMOVE, 0);
-
-    primitive("box", MAKE_BOX, BOX_CODE);
-    primitive("copy", MAKE_BOX, COPY_CODE);
-    primitive("lastbox", MAKE_BOX, LAST_BOX_CODE);
-    primitive("vsplit", MAKE_BOX, VSPLIT_CODE);
-    primitive("vtop", MAKE_BOX, VTOP_CODE);
-    primitive("vbox", MAKE_BOX, VTOP_CODE + 1);
-    primitive("hbox", MAKE_BOX, VTOP_CODE + 104);
-
-    primitive("shipout", LEADER_SHIP, A_LEADERS - 1);
-    primitive("leaders", LEADER_SHIP, A_LEADERS);
-    primitive("cleaders", LEADER_SHIP, C_LEADERS);
-    primitive("xleaders", LEADER_SHIP, X_LEADERS);
-
-    primitive("indent", START_PAR, 1);
-    primitive("noindent", START_PAR, 0);
-    primitive("unpenalty", REMOVE_ITEM, PENALTY_NODE);
-    primitive("unkern", REMOVE_ITEM, KERN_NODE);
-    primitive("unskip", REMOVE_ITEM, GLUE_NODE);
-    primitive("unhbox", UN_HBOX, BOX_CODE);
-    primitive("unhcopy", UN_HBOX, COPY_CODE);
-    primitive("unvbox", UN_VBOX, BOX_CODE);
-    primitive("unvcopy", UN_VBOX, COPY_CODE);
-
-    primitive("-", DISCRETIONARY, 1);
-    primitive("discretionary", DISCRETIONARY, 0);
-
-    primitive("eqno", EQ_NO, 0);
-    primitive("leqno", EQ_NO, 1);
-
-    primitive("mathord", MATH_COMP, ORD_NOAD);
-    primitive("mathop", MATH_COMP, OP_NOAD);
-    primitive("mathbin", MATH_COMP, BIN_NOAD);
-    primitive("mathrel", MATH_COMP, REL_NOAD);
-    primitive("mathopen", MATH_COMP, OPEN_NOAD);
-    primitive("mathclose", MATH_COMP, CLOSE_NOAD);
-    primitive("mathpunct", MATH_COMP, PUNCT_NOAD);
-    primitive("mathinner", MATH_COMP, INNER_NOAD);
-    primitive("underline", MATH_COMP, UNDER_NOAD);
-    primitive("overline", MATH_COMP, OVER_NOAD);
-
-    primitive("displaylimits", LIMIT_SWITCH, NORMAL);
-    primitive("limits", LIMIT_SWITCH, LIMITS);
-    primitive("nolimits", LIMIT_SWITCH, NO_LIMITS);
-
-    primitive("displaystyle", MATH_STYLE, DISPLAY_STYLE);
-    primitive("textstyle", MATH_STYLE, TEXT_STYLE);
-    primitive("scriptstyle", MATH_STYLE, SCRIPT_STYLE);
-    primitive("scriptscriptstyle", MATH_STYLE, SCRIPT_SCRIPT_STYLE);
-
-    primitive("above", ABOVE, ABOVE_CODE);
-    primitive("over", ABOVE, OVER_CODE);
-    primitive("atop", ABOVE, ATOP_CODE);
-    primitive("abovewithdelims", ABOVE, DELIMITED_CODE + 0);
-    primitive("overwithdelims", ABOVE, DELIMITED_CODE + 1);
-    primitive("atopwithdelims", ABOVE, DELIMITED_CODE + 2);
-
-    primitive("left", LEFT_RIGHT, LEFT_NOAD);
-    primitive("right", LEFT_RIGHT, RIGHT_NOAD);
-    hash[FROZEN_RIGHT].s1 = maketexstring("right");
-    eqtb[FROZEN_RIGHT] = eqtb[cur_val];
-
-    primitive("long", PREFIX, 1);
-    primitive("outer", PREFIX, 2);
-    primitive("global", PREFIX, 4);
-    primitive("def", DEF, 0);
-    primitive("gdef", DEF, 1);
-    primitive("edef", DEF, 2);
-    primitive("xdef", DEF, 3);
-    primitive("let", LET, NORMAL);
-    primitive("futurelet", LET, NORMAL + 1);
-
-    primitive("chardef", SHORTHAND_DEF, CHAR_DEF_CODE);
-    primitive("mathchardef", SHORTHAND_DEF, MATH_CHAR_DEF_CODE);
-    primitive("XeTeXmathcharnumdef", SHORTHAND_DEF, XETEX_MATH_CHAR_NUM_DEF_CODE);
-    primitive("Umathcharnumdef", SHORTHAND_DEF, XETEX_MATH_CHAR_NUM_DEF_CODE);
-    primitive("XeTeXmathchardef", SHORTHAND_DEF, XETEX_MATH_CHAR_DEF_CODE);
-    primitive("Umathchardef", SHORTHAND_DEF, XETEX_MATH_CHAR_DEF_CODE);
-    primitive("countdef", SHORTHAND_DEF, COUNT_DEF_CODE);
-    primitive("dimendef", SHORTHAND_DEF, DIMEN_DEF_CODE);
-    primitive("skipdef", SHORTHAND_DEF, SKIP_DEF_CODE);
-    primitive("muskipdef", SHORTHAND_DEF, MU_SKIP_DEF_CODE);
-    primitive("toksdef", SHORTHAND_DEF, TOKS_DEF_CODE);
-
-    primitive("catcode", DEF_CODE, CAT_CODE_BASE);
-    primitive("mathcode", DEF_CODE, MATH_CODE_BASE);
-    primitive("XeTeXmathcodenum", XETEX_DEF_CODE, MATH_CODE_BASE);
-    primitive("Umathcodenum", XETEX_DEF_CODE, MATH_CODE_BASE);
-    primitive("XeTeXmathcode", XETEX_DEF_CODE, MATH_CODE_BASE + 1);
-    primitive("Umathcode", XETEX_DEF_CODE, MATH_CODE_BASE + 1);
-    primitive("lccode", DEF_CODE, LC_CODE_BASE);
-    primitive("uccode", DEF_CODE, UC_CODE_BASE);
-    primitive("sfcode", DEF_CODE, SF_CODE_BASE);
-    primitive("XeTeXcharclass", XETEX_DEF_CODE, SF_CODE_BASE);
-    primitive("delcode", DEF_CODE, DEL_CODE_BASE);
-    primitive("XeTeXdelcodenum", XETEX_DEF_CODE, DEL_CODE_BASE);
-    primitive("Udelcodenum", XETEX_DEF_CODE, DEL_CODE_BASE);
-    primitive("XeTeXdelcode", XETEX_DEF_CODE, DEL_CODE_BASE + 1);
-    primitive("Udelcode", XETEX_DEF_CODE, DEL_CODE_BASE + 1);
-
-    primitive("textfont", DEF_FAMILY, MATH_FONT_BASE + TEXT_SIZE);
-    primitive("scriptfont", DEF_FAMILY, MATH_FONT_BASE + SCRIPT_SIZE);
-    primitive("scriptscriptfont", DEF_FAMILY, MATH_FONT_BASE + SCRIPT_SCRIPT_SIZE);
-
-    primitive("hyphenation", HYPH_DATA, 0);
-    primitive("patterns", HYPH_DATA, 1);
-
-    primitive("hyphenchar", ASSIGN_FONT_INT, 0);
-    primitive("skewchar", ASSIGN_FONT_INT, 1);
-    primitive("lpcode", ASSIGN_FONT_INT, 2);
-    primitive("rpcode", ASSIGN_FONT_INT, 3);
-
-    primitive("batchmode", SET_INTERACTION, BATCH_MODE);
-    primitive("nonstopmode", SET_INTERACTION, NONSTOP_MODE);
-    primitive("scrollmode", SET_INTERACTION, SCROLL_MODE);
-    primitive("errorstopmode", SET_INTERACTION, ERROR_STOP_MODE);
-
-    primitive("openin", IN_STREAM, 1);
-    primitive("closein", IN_STREAM, 0);
-    primitive("message", MESSAGE, 0);
-    primitive("errmessage", MESSAGE, 1);
-    primitive("lowercase", CASE_SHIFT, LC_CODE_BASE);
-    primitive("uppercase", CASE_SHIFT, UC_CODE_BASE);
-
-    primitive("show", XRAY, SHOW_CODE);
-    primitive("showbox", XRAY, SHOW_BOX_CODE);
-    primitive("showthe", XRAY, SHOW_THE_CODE);
-    primitive("showlists", XRAY, SHOW_LISTS);
-
-    primitive("openout", EXTENSION, OPEN_NODE);
-    primitive("write", EXTENSION, WRITE_NODE);
-    write_loc = cur_val;
-    primitive("closeout", EXTENSION, CLOSE_NODE);
-    primitive("special", EXTENSION, SPECIAL_NODE);
-    hash[FROZEN_SPECIAL].s1 = maketexstring("special");
-    eqtb[FROZEN_SPECIAL] = eqtb[cur_val];
-    primitive("immediate", EXTENSION, IMMEDIATE_CODE);
-    primitive("setlanguage", EXTENSION, SET_LANGUAGE_CODE);
-    primitive("resettimer", EXTENSION, RESET_TIMER_CODE);
-    primitive("setrandomseed", EXTENSION, SET_RANDOM_SEED_CODE);
-
-    primitive("synctex", ASSIGN_INT, INT_BASE + INT_PAR__synctex);
+    hash[END_WRITE].s1 = maketexstring("endwrite");
+    eqtb[END_WRITE].b16.s0 = LEVEL_ONE;
+    eqtb[END_WRITE].b16.s1 = OUTER_CALL;
+    eqtb[END_WRITE].b32.s1 = TEX_NULL;
 
     no_new_control_sequence = true;
 }
@@ -4166,154 +3759,6 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     if (in_initex_mode) {
         no_new_control_sequence = false;
-
-        primitive("XeTeXpicfile", EXTENSION, PIC_FILE_CODE);
-        primitive("XeTeXpdffile", EXTENSION, PDF_FILE_CODE);
-        primitive("XeTeXglyph", EXTENSION, GLYPH_CODE);
-        primitive("XeTeXlinebreaklocale", EXTENSION, XETEX_LINEBREAK_LOCALE_EXTENSION_CODE);
-        primitive("pdfsavepos", EXTENSION, PDF_SAVE_POS_NODE);
-
-        primitive("lastnodetype", LAST_ITEM, LAST_NODE_TYPE_CODE);
-        primitive("eTeXversion", LAST_ITEM, ETEX_VERSION_CODE);
-
-        primitive("eTeXrevision", CONVERT, ETEX_REVISION_CODE);
-
-        primitive("XeTeXversion", LAST_ITEM, XETEX_VERSION_CODE);
-
-        primitive("XeTeXrevision", CONVERT, XETEX_REVISION_CODE);
-
-        primitive("XeTeXcountglyphs", LAST_ITEM, XETEX_COUNT_GLYPHS_CODE);
-        primitive("XeTeXcountvariations", LAST_ITEM, XETEX_COUNT_VARIATIONS_CODE);
-        primitive("XeTeXvariation", LAST_ITEM, XETEX_VARIATION_CODE);
-        primitive("XeTeXfindvariationbyname", LAST_ITEM, XETEX_FIND_VARIATION_BY_NAME_CODE);
-        primitive("XeTeXvariationmin", LAST_ITEM, XETEX_VARIATION_MIN_CODE);
-        primitive("XeTeXvariationmax", LAST_ITEM, XETEX_VARIATION_MAX_CODE);
-        primitive("XeTeXvariationdefault", LAST_ITEM, XETEX_VARIATION_DEFAULT_CODE);
-        primitive("XeTeXcountfeatures", LAST_ITEM, XETEX_COUNT_FEATURES_CODE);
-        primitive("XeTeXfeaturecode", LAST_ITEM, XETEX_FEATURE_CODE_CODE);
-        primitive("XeTeXfindfeaturebyname", LAST_ITEM, XETEX_FIND_FEATURE_BY_NAME_CODE);
-        primitive("XeTeXisexclusivefeature", LAST_ITEM, XETEX_IS_EXCLUSIVE_FEATURE_CODE);
-        primitive("XeTeXcountselectors", LAST_ITEM, XETEX_COUNT_SELECTORS_CODE);
-        primitive("XeTeXselectorcode", LAST_ITEM, XETEX_SELECTOR_CODE_CODE);
-        primitive("XeTeXfindselectorbyname", LAST_ITEM, XETEX_FIND_SELECTOR_BY_NAME_CODE);
-        primitive("XeTeXisdefaultselector", LAST_ITEM, XETEX_IS_DEFAULT_SELECTOR_CODE);
-
-        primitive("XeTeXvariationname", CONVERT, XETEX_VARIATION_NAME_CODE);
-        primitive("XeTeXfeaturename", CONVERT, XETEX_FEATURE_NAME_CODE);
-        primitive("XeTeXselectorname", CONVERT, XETEX_SELECTOR_NAME_CODE);
-
-        primitive("XeTeXOTcountscripts", LAST_ITEM, XETEX_OT_COUNT_SCRIPTS_CODE);
-        primitive("XeTeXOTcountlanguages", LAST_ITEM, XETEX_OT_COUNT_LANGUAGES_CODE);
-        primitive("XeTeXOTcountfeatures", LAST_ITEM, XETEX_OT_COUNT_FEATURES_CODE);
-        primitive("XeTeXOTscripttag", LAST_ITEM, XETEX_OT_SCRIPT_CODE);
-        primitive("XeTeXOTlanguagetag", LAST_ITEM, XETEX_OT_LANGUAGE_CODE);
-        primitive("XeTeXOTfeaturetag", LAST_ITEM, XETEX_OT_FEATURE_CODE);
-        primitive("XeTeXcharglyph", LAST_ITEM, XETEX_MAP_CHAR_TO_GLYPH_CODE);
-        primitive("XeTeXglyphindex", LAST_ITEM, XETEX_GLYPH_INDEX_CODE);
-        primitive("XeTeXglyphbounds", LAST_ITEM, XETEX_GLYPH_BOUNDS_CODE);
-
-        primitive("XeTeXglyphname", CONVERT, XETEX_GLYPH_NAME_CODE);
-
-        primitive("XeTeXfonttype", LAST_ITEM, XETEX_FONT_TYPE_CODE);
-        primitive("XeTeXfirstfontchar", LAST_ITEM, XETEX_FIRST_CHAR_CODE);
-        primitive("XeTeXlastfontchar", LAST_ITEM, XETEX_LAST_CHAR_CODE);
-        primitive("XeTeXpdfpagecount", LAST_ITEM, XETEX_PDF_PAGE_COUNT_CODE);
-        /* everyeof moved to be with other assign_toks */
-
-        primitive("tracingassigns", ASSIGN_INT, INT_BASE + INT_PAR__tracing_assigns);
-        primitive("tracinggroups", ASSIGN_INT, INT_BASE + INT_PAR__tracing_groups);
-        primitive("tracingifs", ASSIGN_INT, INT_BASE + INT_PAR__tracing_ifs);
-        primitive("tracingscantokens", ASSIGN_INT, INT_BASE + INT_PAR__tracing_scan_tokens);
-        primitive("tracingnesting", ASSIGN_INT, INT_BASE + INT_PAR__tracing_nesting);
-        primitive("predisplaydirection", ASSIGN_INT, INT_BASE + INT_PAR__pre_display_correction);
-        primitive("lastlinefit", ASSIGN_INT, INT_BASE + INT_PAR__last_line_fit);
-        primitive("savingvdiscards", ASSIGN_INT, INT_BASE + INT_PAR__saving_vdiscards);
-        primitive("savinghyphcodes", ASSIGN_INT, INT_BASE + INT_PAR__saving_hyphs);
-
-        primitive("currentgrouplevel", LAST_ITEM, CURRENT_GROUP_LEVEL_CODE);
-        primitive("currentgrouptype", LAST_ITEM, CURRENT_GROUP_TYPE_CODE);
-        primitive("currentiflevel", LAST_ITEM, CURRENT_IF_LEVEL_CODE);
-        primitive("currentiftype", LAST_ITEM, CURRENT_IF_TYPE_CODE);
-        primitive("currentifbranch", LAST_ITEM, CURRENT_IF_BRANCH_CODE);
-        primitive("fontcharwd", LAST_ITEM, FONT_CHAR_WD_CODE);
-        primitive("fontcharht", LAST_ITEM, FONT_CHAR_HT_CODE);
-        primitive("fontchardp", LAST_ITEM, FONT_CHAR_DP_CODE);
-        primitive("fontcharic", LAST_ITEM, FONT_CHAR_IC_CODE);
-        primitive("parshapelength", LAST_ITEM, PAR_SHAPE_LENGTH_CODE);
-        primitive("parshapeindent", LAST_ITEM, PAR_SHAPE_INDENT_CODE);
-        primitive("parshapedimen", LAST_ITEM, PAR_SHAPE_DIMEN_CODE);
-
-        primitive("showgroups", XRAY, SHOW_GROUPS);
-        primitive("showtokens", XRAY, SHOW_TOKENS);
-
-        primitive("unexpanded", THE, 1);
-        primitive("detokenize", THE, SHOW_TOKENS);
-
-        primitive("showifs", XRAY, SHOW_IFS);
-
-        primitive("interactionmode", SET_PAGE_INT, 2);
-
-        primitive("middle", LEFT_RIGHT, 1);
-
-        primitive("suppressfontnotfounderror", ASSIGN_INT, INT_BASE + INT_PAR__suppress_fontnotfound_error);
-
-        primitive("TeXXeTstate", ASSIGN_INT, INT_BASE + INT_PAR__texxet);
-        primitive("XeTeXupwardsmode", ASSIGN_INT, INT_BASE + INT_PAR__xetex_upwards);
-        primitive("XeTeXuseglyphmetrics", ASSIGN_INT, INT_BASE + INT_PAR__xetex_use_glyph_metrics);
-        primitive("XeTeXinterchartokenstate", ASSIGN_INT, INT_BASE + INT_PAR__xetex_inter_char_tokens);
-        primitive("XeTeXdashbreakstate", ASSIGN_INT, INT_BASE + INT_PAR__xetex_dash_break);
-        primitive("XeTeXinputnormalization", ASSIGN_INT, INT_BASE + INT_PAR__xetex_input_normalization);
-        primitive("XeTeXtracingfonts", ASSIGN_INT, INT_BASE + INT_PAR__xetex_tracing_fonts);
-        primitive("XeTeXinterwordspaceshaping", ASSIGN_INT, INT_BASE + INT_PAR__xetex_interword_space_shaping);
-        primitive("XeTeXgenerateactualtext", ASSIGN_INT, INT_BASE + INT_PAR__xetex_generate_actual_text);
-        primitive("XeTeXhyphenatablelength", ASSIGN_INT, INT_BASE + INT_PAR__xetex_hyphenatable_length);
-        primitive("pdfoutput", ASSIGN_INT, INT_BASE + INT_PAR__pdfoutput);
-
-        primitive("XeTeXinputencoding", EXTENSION, XETEX_INPUT_ENCODING_EXTENSION_CODE);
-        primitive("XeTeXdefaultencoding", EXTENSION, XETEX_DEFAULT_ENCODING_EXTENSION_CODE);
-
-        primitive("beginL", VALIGN, BEGIN_L_CODE);
-        primitive("endL", VALIGN, END_L_CODE);
-        primitive("beginR", VALIGN, BEGIN_R_CODE);
-        primitive("endR", VALIGN, END_R_CODE);
-
-        primitive("scantokens", INPUT, 2);
-        primitive("readline", READ_TO_CS, 1);
-        primitive("unless", EXPAND_AFTER, 1);
-
-        primitive("ifdefined", IF_TEST, IF_DEF_CODE);
-        primitive("ifcsname", IF_TEST, IF_CS_CODE);
-        primitive("iffontchar", IF_TEST, IF_FONT_CHAR_CODE);
-        primitive("ifincsname", IF_TEST, IF_IN_CSNAME_CODE);
-
-        primitive("protected", PREFIX, 8);
-
-        primitive("numexpr", LAST_ITEM, ETEX_EXPR + 0);
-        primitive("dimexpr", LAST_ITEM, ETEX_EXPR + 1);
-        primitive("glueexpr", LAST_ITEM, ETEX_EXPR + 2);
-        primitive("muexpr", LAST_ITEM, ETEX_EXPR + 3);
-        primitive("gluestretchorder", LAST_ITEM, GLUE_STRETCH_ORDER_CODE);
-        primitive("glueshrinkorder", LAST_ITEM, GLUE_SHRINK_ORDER_CODE);
-        primitive("gluestretch", LAST_ITEM, GLUE_STRETCH_CODE);
-        primitive("glueshrink", LAST_ITEM, GLUE_SHRINK_CODE);
-        primitive("mutoglue", LAST_ITEM, MU_TO_GLUE_CODE);
-        primitive("gluetomu", LAST_ITEM, GLUE_TO_MU_CODE);
-
-        primitive("marks", MARK, 5);
-        primitive("topmarks", TOP_BOT_MARK, TOP_MARK_CODE + 5);
-        primitive("firstmarks", TOP_BOT_MARK, FIRST_MARK_CODE + 5);
-        primitive("botmarks", TOP_BOT_MARK, BOT_MARK_CODE + 5);
-        primitive("splitfirstmarks", TOP_BOT_MARK, SPLIT_FIRST_MARK_CODE + 5);
-        primitive("splitbotmarks", TOP_BOT_MARK, SPLIT_BOT_MARK_CODE + 5);
-
-        primitive("pagediscards", UN_VBOX, LAST_BOX_CODE);
-        primitive("splitdiscards", UN_VBOX, VSPLIT_CODE);
-
-        primitive("interlinepenalties", SET_SHAPE, INTER_LINE_PENALTIES_LOC);
-        primitive("clubpenalties", SET_SHAPE, CLUB_PENALTIES_LOC);
-        primitive("widowpenalties", SET_SHAPE, WIDOW_PENALTIES_LOC);
-        primitive("displaywidowpenalties", SET_SHAPE, DISPLAY_WIDOW_PENALTIES_LOC);
-
         max_reg_num = 32767;
         max_reg_help_line = "A register number must be between 0 and 32767.";
     }
