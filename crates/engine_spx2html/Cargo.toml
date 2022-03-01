@@ -29,6 +29,12 @@ tectonic_xdv = { path = "../xdv", version = "0.0.0-dev.0" }
 tempfile = "^3.1"
 tera = "^1.13"
 
+# This statement currently (2022 Mar) leads to a warning on every Cargo invocation,
+# but I think that is needed for `cargo install tectonic` to work with released
+# packages: https://github.com/rust-lang/cargo/issues/10440 :-(
+[patch.crates-io]
+pinot = { git = 'https://github.com/tectonic-typesetting/pinot', branch = 'basic-math' }
+
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
