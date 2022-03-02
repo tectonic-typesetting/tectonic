@@ -73,7 +73,7 @@ tectonic_bridge_core = { path = "crates/bridge_core", version =">=0.3.0,<1"}
 tectonic_bundles = { path = "crates/bundles", version =">=0.2.0,<1", default-features = false }
 tectonic_docmodel = { path = "crates/docmodel", version =">=0.1.2,<1", optional = true }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version =">=0.1.0,<1"}
-tectonic_engine_spx2html = { path = "crates/engine_spx2html", version =">=0.1.0,<1"}
+tectonic_engine_spx2html = { path = "crates/engine_spx2html", version =">=0.1.1,<1"}
 tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version =">=0.1.0,<1"}
 tectonic_engine_xetex = { path = "crates/engine_xetex", version =">=0.2.0,<1"}
 tectonic_errors = { path = "crates/errors", version =">=0.1.0,<1"}
@@ -88,9 +88,6 @@ toml = { version = "^0.5", optional = true }
 url = "^2.0"
 watchexec = "^1.15.3"
 zip = { version = "^0.5", default-features = false, features = ["deflate"] }
-
-[patch.crates-io]
-pinot = { git = 'https://github.com/tectonic-typesetting/pinot', branch = 'basic-math' }
 
 [features]
 default = ["geturl-reqwest", "serialization"]
@@ -142,7 +139,7 @@ tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_docmodel = "thiscommit:2022-02-20:2SpEl4c"
 tectonic_engine_bibtex = "thiscommit:2021-01-17:KuhaeG1e"
-tectonic_engine_spx2html = "thiscommit:2021-10-29:96yOlD8"
+tectonic_engine_spx2html = "thiscommit:2022-03-02:IQWAncv"
 tectonic_engine_xdvipdfmx = "7dcbc52e58f9774b3d592919a9105377faeac509"
 tectonic_engine_xetex = "thiscommit:2022-02-20:J4dXT3x"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
