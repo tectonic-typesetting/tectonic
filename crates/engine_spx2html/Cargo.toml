@@ -20,7 +20,7 @@ edition = "2018"
 [dependencies]
 byteorder = "^1.4"
 percent-encoding = "^2.1"
-pinot = "^0.1"
+pinot = "^0.1.4"
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
