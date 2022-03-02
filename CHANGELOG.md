@@ -1,3 +1,15 @@
+# tectonic 0.8.2 (2022-03-02)
+
+No code changes here. This release uses the newly-released version 0.1.4 of the
+[pinot] font parsing crate, which includes what were previously
+Tectonic-specific extensions (#870, @pkgw). The "patching" build feature that we
+were using turned out to break `cargo install tectonic`. Thanks to [@dfrg] for
+prompt follow-up!
+
+[pinot]: https://crates.io/crates/pinot
+[@dfrg]: https://github.com/dfrg
+
+
 # tectonic 0.8.1 (2022-02-28)
 
 - The most important change in this release is a fix for issue [#844], wherein
