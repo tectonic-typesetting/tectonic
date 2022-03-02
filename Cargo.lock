@@ -1770,8 +1770,9 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 
 [[package]]
 name = "pinot"
-version = "0.1.3"
-source = "git+https://github.com/tectonic-typesetting/pinot?branch=basic-math#f93bac061c59a6efab309b43eb893bf041c93ee1"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe3ae90d2484923177d7f6157cf88d025e8ff0b802932fe2d7431dd2ce03f08f"
 
 [[package]]
 name = "pkg-config"
