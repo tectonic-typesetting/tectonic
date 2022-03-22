@@ -5040,18 +5040,21 @@ void begin_file_reading(void)
     cur_input.synctex_tag = 0;
 }
 
-void end_file_reading(void)
+void
+end_file_reading(void)
 {
     first = cur_input.start;
     line = line_stack[cur_input.index];
-    if ((cur_input.name == 18) || (cur_input.name == 19))
+
+    if (cur_input.name == 18 || cur_input.name == 19) {
         pseudo_close();
-    else if (cur_input.name > 17)
+    } else if (cur_input.name > 17) {
         u_close(input_file[cur_input.index]);
-    {
-        input_ptr--;
-        cur_input = input_stack[input_ptr];
+        input_file[cur_input.index] = NULL;
     }
+
+    input_ptr--;
+    cur_input = input_stack[input_ptr];
     in_open--;
 }
 

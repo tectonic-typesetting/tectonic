@@ -3510,6 +3510,12 @@ tt_cleanup(void) {
         }
     }
 
+    for (int i = 1; i <= in_open; i++) {
+        if (input_file[i] != NULL) {
+            u_close(input_file[i]);
+        }
+    }
+
     // Free the big allocated arrays
     free(buffer);
     free(nest);
