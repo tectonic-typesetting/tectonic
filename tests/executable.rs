@@ -883,3 +883,18 @@ fn extra_search_paths() {
     );
     error_or_panic(&output);
 }
+
+/// -X in non-initial position fails
+#[test]
+fn bad_v2_position() {
+    let output = run_tectonic(&PathBuf::from("."), &["-", "-X"]);
+    error_or_panic(&output);
+}
+
+#[cfg(feature = "serialization")]
+#[test]
+fn bad_v2_position_build() {
+    let (_tempdir, temppath) = setup_v2();
+    let output = run_tectonic(&temppath, &["build", "-X"]);
+    error_or_panic(&output);
+}
