@@ -37,17 +37,15 @@
 #include "dpx-mem.h"
 #include "dpx-numbers.h"
 #include "dpx-pdfdev.h"
+#include "dpx-pdfdoc.h"
+#include "dpx-pdfresource.h"
 
-/* This function returns PDF_COLORSPACE_TYPE_GRAY,
- * PDF_COLORSPACE_TYPE_RGB, PDF_COLORSPACE_TYPE_CMYK or
- * PDF_COLORSPACE_TYPE_SPOT.
- */
 int
 pdf_color_type (const pdf_color *color)
 {
   assert(color);
 
-  return -color->num_components;
+  return color->type;
 }
 
 int
@@ -71,6 +69,8 @@ pdf_color_rgbcolor (pdf_color *color, double r, double g, double b)
   color->values[1] = g;
   color->values[2] = b;
 
+  color->res_id = -1;
+  color->type = PDF_COLORSPACE_TYPE_RGB;
   color->num_components = 3;
 
   color->spot_color_name = NULL;
@@ -106,6 +106,8 @@ pdf_color_cmykcolor (pdf_color *color,
   color->values[2] = y;
   color->values[3] = k;
 
+  color->res_id = -1;
+  color->type = PDF_COLORSPACE_TYPE_CMYK;
   color->num_components = 4;
 
   color->spot_color_name = NULL;
@@ -125,6 +127,8 @@ pdf_color_graycolor (pdf_color *color, double g)
 
   color->values[0] = g;
 
+  color->res_id = -1;
+  color->type = PDF_COLORSPACE_TYPE_GRAY;
   color->num_components = 1;
 
   color->spot_color_name = NULL;
@@ -145,6 +149,8 @@ pdf_color_spotcolor (pdf_color *color, char* name, double c)
   color->values[0] = c;
   color->values[1] = 0.0; /* Dummy */
 
+  color->res_id = 1; /* ??? */
+  color->type = PDF_COLORSPACE_TYPE_SPOT;
   color->num_components = 2;
 
   color->spot_color_name = name;
@@ -167,13 +173,21 @@ pdf_color_brighten_color (pdf_color *dst, const pdf_color *src, double f)
 {
   assert(dst && src);
 
+  if (src->type != PDF_COLORSPACE_TYPE_RGB  &&
+      src->type != PDF_COLORSPACE_TYPE_CMYK &&
+      src->type != PDF_COLORSPACE_TYPE_GRAY) {
+    pdf_color_copycolor(dst, src);
+    return;
+  }
+
   if (f == 1.0) {
     pdf_color_white(dst);
   } else {
     double f0, f1;
     int n;
 
-    n = dst->num_components = src->num_components;
+    pdf_color_copycolor(dst, src);
+    n = src->num_components;
     f1 = n == 4 ? 0.0 : f;  /* n == 4 is CMYK, others are RGB and Gray */
     f0 = 1.0-f;
 
@@ -182,6 +196,10 @@ pdf_color_brighten_color (pdf_color *dst, const pdf_color *src, double f)
   }
 }
 
+/* TODO: remove "is_white"...
+ * pdfdoc.c only use this but not necessary if we have a flag have_bgcolor
+ * to indicate if bg color was set.
+ */
 bool
 pdf_color_is_white (const pdf_color *color)
 {
@@ -190,19 +208,19 @@ pdf_color_is_white (const pdf_color *color)
 
   assert(color);
 
-  n = color->num_components;
-  switch (n) {
-  case 1:  /* Gray */
-  case 3:  /* RGB */
+  switch (color->type) {
+  case PDF_COLORSPACE_TYPE_GRAY:
+  case PDF_COLORSPACE_TYPE_RGB:
     f = 1.0;
     break;
-  case 4:  /* CMYK */
+  case PDF_COLORSPACE_TYPE_CMYK:
     f = 0.0;
     break;
   default:
     return false;
   }
 
+  n = color->num_components;
   while (n--)
     if (color->values[n] != f)
       return false;
@@ -210,25 +228,162 @@ pdf_color_is_white (const pdf_color *color)
   return true;
 }
 
+/* TODO: make_resource_name() in pdfresource.c with configurable prefix. */
 int
-pdf_color_to_string (const pdf_color *color, char *buffer, char mask)
+pdf_color_set_color (const pdf_color *color, char *buffer, size_t buffer_len,char mask)
 {
-  int i, len = 0;
+  int len = 0;
+  int i;
 
-  if (pdf_color_type(color) == PDF_COLORSPACE_TYPE_SPOT) {
-    len = sprintf(buffer, " /%s %c%c %g %c%c",
-                          color->spot_color_name,
-                          'C' | mask, 'S' | mask,
-                          ROUND(color->values[0], 0.001),
-                          'S' | mask, 'C' | mask);
-  } else {
-     for (i = 0; i < color->num_components; i++) {
-       len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+  {
+    size_t estimate = 0;
+    if (color->num_components > 0) {
+      estimate += 5 * (color->num_components + 1) + 4; /* Assuming color values [0, 1]... */
+    }
+    estimate += strlen(" /DeiceGray CS");
+    if (estimate + 1 > buffer_len) {
+      dpx_warning("Not enough buffer space allocated for writing set_color op...");
+      return 0;
+    }
+  }
+
+  switch (pdf_color_type(color)) {
+  case PDF_COLORSPACE_TYPE_DEVICEGRAY:
+    {
+      len += sprintf(buffer+len, " /DeviceGray %c%c", 'C' | mask, 'S' | mask);
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
       }
+      len += sprintf(buffer+len, " %c%c", 'S' | mask, 'C' | mask);
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_DEVICERGB:
+    {
+      len += sprintf(buffer+len, " /DeviceRGB %c%c", 'C' | mask, 'S' | mask);
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
+      len += sprintf(buffer+len, " %c%c", 'S' | mask, 'C' | mask);
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_DEVICECMYK:
+    {
+      len += sprintf(buffer+len, " /DeviceCMYK %c%c", 'C' | mask, 'S' | mask);
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
+      len += sprintf(buffer+len, " %c%c", 'S' | mask, 'C' | mask);
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_GRAY:
+    {
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
+      len += sprintf(buffer+len, " %c", 'G' | mask);
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_RGB:
+    {
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
+      len += sprintf(buffer+len, " %c%c", 'R' | mask, 'G' | mask);
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_CMYK:
+    {
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
+      len += sprintf(buffer+len, " %c", 'K' | mask);
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_SPOT:
+    {
+      len = sprintf(buffer+len,
+                    " /%s %c%c %g %c%c",
+                    color->spot_color_name,
+                    'C' | mask, 'S' | mask,
+                    ROUND(color->values[0], 0.001),
+                    'S' | mask, 'C' | mask);
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_CALGRAY:
+  case PDF_COLORSPACE_TYPE_CALRGB:
+  case PDF_COLORSPACE_TYPE_LAB:
+  case PDF_COLORSPACE_TYPE_INDEXED:
+    {
+      char res_name[16];
+
+      snprintf(res_name, 16, "XC%d", color->res_id & 0xffff); /* TODO: Upper 16bits for category ID. See, pdfresource.c */
+      res_name[15] = 0;
+      len += sprintf(buffer+len, " /%s %c%c", res_name, 'C' | mask, 'S' | mask);
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
+      len += sprintf(buffer+len, " %c%c", 'S' | mask, 'C' | mask);
+      pdf_doc_add_page_resource("ColorSpace", res_name, pdf_get_resource_reference(color->res_id));
+    }
+    break;
+  case PDF_COLORSPACE_TYPE_PATTERN:
+    {
+      char res_name[16];
+
+      if (color->res_id < 0) {
+        len += sprintf(buffer+len, " /Pattern %c%c", 'C' | mask, 'S' | mask);
+        /* no color value but just a name */
+      } else {
+        snprintf(res_name, 16, "XC%d", color->res_id & 0xffff); /* TODO: Upper 16bits for category ID. See, pdfresource.c */
+        res_name[15] = 0;
+        len += sprintf(buffer+len, " /%s %c%c", res_name, 'C' | mask, 'S' | mask);
+        for (i = 0; i < color->num_components; i++) {
+          len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+        }
+        pdf_doc_add_page_resource("ColorSpace", res_name, pdf_get_resource_reference(color->res_id));
+      }
+      snprintf(res_name, 16, "XP%d", color->pattern_id & 0xffff); /* TODO: see below */
+      res_name[15] = 0;
+      len += sprintf(buffer+len, " /%s %c%c%c", res_name, 'S' | mask, 'C' | mask, 'N' | mask);
+
+      pdf_doc_add_page_resource("Pattern", res_name, pdf_get_resource_reference(color->pattern_id));
+    }
+    break;
+  default:
+    {
+      char res_name[16];
+
+      snprintf(res_name, 8, "XC%d", color->res_id & 0xffff); /* TODO: Upper 16bits for category ID. See, pdfresource.c */
+      res_name[8] = 0;
+      len += sprintf(buffer+len, " /%s %c%c", res_name, 'C' | mask, 'S' | mask);
+      for (i = 0; i < color->num_components; i++) {
+        len += sprintf(buffer+len, " %g", ROUND(color->values[i], 0.001));
+      }
+      len += sprintf(buffer+len, " %c%c%c", 'S' | mask, 'C' | mask, 'N' | mask);
+      pdf_doc_add_page_resource("ColorSpace", res_name, pdf_get_resource_reference(color->res_id));
+    }
   }
 
   return len;
 }
+
+pdf_color current_fill   = {
+  -1,
+  PDF_COLORSPACE_TYPE_GRAY,
+  1,
+  NULL,
+  {0.0},
+  -1
+};
+
+pdf_color current_stroke = {
+  -1,
+  PDF_COLORSPACE_TYPE_GRAY,
+  1,
+  NULL,
+  {0.0},
+  -1
+};
 
 /*
  * This routine is not a real color matching.
@@ -238,23 +393,25 @@ pdf_color_compare (const pdf_color *color1, const pdf_color *color2)
 {
   int n;
 
-  n = color1->num_components;
-  switch (n) {
-  case 1:  /* Gray */
-  case 2:  /* Spot */
-  case 3:  /* RGB */
-  case 4:  /* CMYK */
-    break;
-  default:
+  /* Tectonic: the logic in upstream cannot be right; I think our
+   * modified version gives what's intended? */
+  if ((color1->type != PDF_COLORSPACE_TYPE_GRAY &&
+      color1->type != PDF_COLORSPACE_TYPE_RGB  &&
+      color1->type != PDF_COLORSPACE_TYPE_CMYK &&
+      color1->type != PDF_COLORSPACE_TYPE_SPOT) ||
+      (color2->type != PDF_COLORSPACE_TYPE_GRAY &&
+      color2->type != PDF_COLORSPACE_TYPE_RGB  &&
+      color2->type != PDF_COLORSPACE_TYPE_CMYK &&
+      color2->type != PDF_COLORSPACE_TYPE_SPOT) ||
+      color1->type != color2->type) {
     return -1;
   }
 
-  if (n != color2->num_components)
-    return -1;
-
-  while (n--)
+  n = color1->num_components;
+  while (--n >= 0) {
     if (color1->values[n] != color2->values[n])
       return -1;
+  }
 
   if (color1->spot_color_name && color2->spot_color_name)
     return strcmp(color1->spot_color_name, color2->spot_color_name);
@@ -262,37 +419,15 @@ pdf_color_compare (const pdf_color *color1, const pdf_color *color2)
   return 0;
 }
 
-bool
-pdf_color_is_valid (const pdf_color *color)
-{
-  int  n;
-
-  n = color->num_components;
-  switch (n) {
-  case 1:  /* Gray */
-  case 2:  /* Spot */
-  case 3:  /* RGB */
-  case 4:  /* CMYK */
-    break;
-  default:
-    return false;
-  }
-
-  while (n--)
-    if (color->values[n] < 0.0 || color->values[n] > 1.0) {
-      dpx_warning("Invalid color value: %g", color->values[n]);
-      return false;
-    }
-
-  if (pdf_color_type(color) == PDF_COLORSPACE_TYPE_SPOT) {
-    if (!color->spot_color_name || color->spot_color_name[0] == '\0') {
-      dpx_warning("Invalid spot color: empty name");
-      return false;
-    }
-  }
-
-  return true;
-}
+/* Dvipdfm special */
+pdf_color default_color = {
+  -1,
+  PDF_COLORSPACE_TYPE_GRAY,
+  1,
+  NULL,
+  {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+  -1
+};
 
 #define DEV_COLOR_STACK_MAX 128
 
@@ -360,12 +495,9 @@ pdf_color_get_current (pdf_color **sc, pdf_color **fc)
 
 /***************************** COLOR SPACE *****************************/
 
-static int pdf_colorspace_defineresource (const char *ident,
-                                          int   subtype,
-                                          void *cdata, pdf_obj *resource);
-
-static int pdf_colorspace_findresource   (const char *ident,
-                                          int   subtype, const void *cdata);
+/* Currently only for ICCBased color loaded while reading images */
+static int pdf_colorspace_defineresource (const char *ident, int subtype, void *cdata, pdf_obj *resource);
+static int pdf_colorspace_findresource   (const char *ident, int subtype, const void *cdata);
 
 static unsigned char  nullbytes16[16] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -540,7 +672,7 @@ get_num_components_iccbased (const struct iccbased_cdata *cdata)
   case PDF_COLORSPACE_TYPE_GRAY:
     num_components = 1;
     break;
-  case PDF_COLORSPACE_TYPE_CIELAB:
+  case PDF_COLORSPACE_TYPE_LAB:
     num_components = 3;
     break;
   }

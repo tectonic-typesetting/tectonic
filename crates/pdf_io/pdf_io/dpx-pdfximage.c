@@ -40,6 +40,7 @@
 #include "dpx-mfileio.h"
 #include "dpx-pdfdev.h"
 #include "dpx-pdfdraw.h"
+#include "dpx-pdfnames.h"
 #include "dpx-pdfobj.h"
 #include "dpx-pngimage.h"
 
@@ -79,9 +80,10 @@ struct pdf_ximage_
     struct attr_ attr;
 
     char        *filename;
+    char *fullname;
     pdf_obj     *reference;
     pdf_obj     *resource;
-
+    int reserved;
 };
 
 
@@ -110,11 +112,13 @@ pdf_init_ximage_struct (pdf_ximage *I)
 {
     I->ident    = NULL;
     I->filename = NULL;
+    I->fullname = NULL;
 
     I->subtype  = -1;
     memset(I->res_name, 0, 16);
     I->reference = NULL;
     I->resource  = NULL;
+    I->reserved = 0;
 
     I->attr.width = I->attr.height = 0;
     I->attr.xdensity = I->attr.ydensity = 1.0;
@@ -134,6 +138,7 @@ pdf_clean_ximage_struct (pdf_ximage *I)
 {
     free(I->ident);
     free(I->filename);
+    free(I->fullname);
     pdf_release_obj(I->reference);
     pdf_release_obj(I->resource);/* unsafe? */
     pdf_release_obj(I->attr.dict);
@@ -171,6 +176,8 @@ pdf_close_images (void)
                     dpx_message("pdf_image>> deleting temporary file \"%s\"\n", I->filename);
                 dpx_delete_temp_file(I->filename, false); /* temporary filename freed here */
                 I->filename = NULL;
+                dpx_delete_temp_file(I->fullname, false); /* temporary filename freed here */
+                I->fullname = NULL;
             }
             pdf_clean_ximage_struct(I);
         }
@@ -212,28 +219,46 @@ source_image_type (rust_input_handle_t handle)
 }
 
 static int
-load_image (const char *ident, const char *fullname, int format, rust_input_handle_t handle,
+load_image (const char *ident, const char *filename, const char *fullname,
+            int format, rust_input_handle_t handle,
             load_options options)
 {
     struct ic_ *ic = &_ic;
-    int id = -1;
+    int id = -1, reserved = 0;
     pdf_ximage *I;
 
-    id = ic->count;
-    if (ic->count >= ic->capacity) {
-        ic->capacity += 16;
-        ic->ximages = RENEW(ic->ximages, ic->capacity, pdf_ximage);
-    }
-
-    I  = &ic->ximages[id];
-    pdf_init_ximage_struct(I);
     if (ident) {
-        I->ident = NEW(strlen(ident)+1, char);
-        strcpy(I->ident, ident);
+        for (id = 0; id < ic->count; id++) {
+            I = &ic->ximages[id];
+            if (I->ident && !strcmp(ident, I->ident)) {
+                if (I->reserved) {
+                    reserved = 1;
+                    break;
+                }
+            }
+        }
+    }
+    if (!reserved) {
+        id = ic->count;
+        if (ic->count >= ic->capacity) {
+            ic->capacity += 16;
+            ic->ximages   = RENEW(ic->ximages, ic->capacity, pdf_ximage);
+        }
+        I  = &ic->ximages[id];
+        pdf_init_ximage_struct(I);
+        if (ident) {
+            I->ident = NEW(strlen(ident)+1, char);
+            strcpy(I->ident, ident);
+        }
+        ic->count++;
+    }
+    if (filename) {
+        I->filename = NEW(strlen(filename)+1, char);
+        strcpy(I->filename, filename);
     }
     if (fullname) {
-        I->filename = NEW(strlen(fullname)+1, char);
-        strcpy(I->filename, fullname);
+        I->fullname = NEW(strlen(fullname)+1, char);
+        strcpy(I->fullname, fullname);
     }
 
     I->attr.page_no = options.page_no;
@@ -307,7 +332,6 @@ load_image (const char *ident, const char *fullname, int format, rust_input_hand
         _tt_abort("Unknown XObject subtype: %d", I->subtype);
     }
 
-    ic->count++;
     return id;
 
 error:
@@ -316,26 +340,32 @@ error:
 }
 
 int
-pdf_ximage_findresource (const char *ident, load_options options)
+pdf_ximage_load_image (const char *ident, const char *filename, load_options options)
 {
     struct ic_ *ic = &_ic;
-    int id = -1;
+    int i, id = -1;
     pdf_ximage *I;
     int format;
     rust_input_handle_t handle;
 
-    /* "I don't understand why there is comparision against I->attr.dict here...
-     * I->attr.dict and options.dict are simply pointers to PDF dictionaries."
-     */
-    for (id = 0; id < ic->count; id++) {
-        I = &ic->ximages[id];
-        if (I->ident && streq_ptr(ident, I->ident)) {
-            if (I->attr.page_no == options.page_no /* Not sure */
-                && I->attr.dict == options.dict    /* ????? */
-                && I->attr.bbox_type == options.bbox_type) {
-                return id;
-            }
+    for (i = 0; i < ic->count; i++) {
+        I = &ic->ximages[i];
+
+        if (I->filename && streq_ptr(filename, I->filename)) {
+            id = i;
+            break;
         }
+    }
+
+    if (id >= 0) {
+        if (I->attr.page_no == options.page_no &&
+            !pdf_compare_object(I->attr.dict, options.dict) && /* ????? */
+            I->attr.bbox_type == options.bbox_type) {
+            return id;
+        }
+
+        /* Tectonic: no filename futzing */
+        /* f = I->fullname; */
     }
 
     /* This happens if we've already inserted the image into the PDF output.
@@ -349,27 +379,54 @@ pdf_ximage_findresource (const char *ident, load_options options)
      * } else { kpse_find_file() }
      */
 
-    handle = ttstub_input_open(ident, TTBC_FILE_FORMAT_PICT, 0);
+    handle = ttstub_input_open(filename, TTBC_FILE_FORMAT_PICT, 0);
     if (handle == NULL) {
-        dpx_warning("Error locating image file \"%s\"", ident);
+        if (dpx_conf.compat_mode == dpx_mode_compat_mode) {
+            dpx_warning("Error opening image file \"%s\"", filename);
+        } else {
+            _tt_abort("Image inclusion failed for \"%s\".", filename);
+        }
         return -1;
     }
 
     if (dpx_conf.verbose_level > 0)
-        dpx_message("(Image:%s", ident);
+        dpx_message("(Image:%s", filename);
 
     format = source_image_type(handle);
-    id = load_image(ident, ident, format, handle, options);
+    /* Tectonic: no external tools to deal with funky image formats */
+    id = load_image(ident, filename, filename, format, handle, options);
 
     ttstub_input_close(handle);
 
     if (dpx_conf.verbose_level > 0)
         dpx_message(")");
 
-    if (id < 0)
-        dpx_warning("pdf: image inclusion failed for \"%s\".", ident);
+    if (id < 0) {
+        if (dpx_conf.compat_mode == dpx_mode_compat_mode) {
+            dpx_warning("pdf: image inclusion failed for \"%s\".", filename);
+        } else {
+            _tt_abort("pdf: image inclusion failed for \"%s\".", filename);
+        }
+    }
 
     return id;
+}
+
+int
+pdf_ximage_findresource (const char *ident)
+{
+    struct ic_ *ic = &_ic;
+    int         id = -1;
+    pdf_ximage *I;
+
+    for (id = 0; id < ic->count; id++) {
+        I = &ic->ximages[id];
+        if (I->ident && !strcmp(ident, I->ident)) {
+            return id;
+        }
+    }
+
+    return -1;
 }
 
 /* Reference: PDF Reference 1.5 v6, pp.321--322
@@ -460,8 +517,6 @@ pdf_ximage_set_image (pdf_ximage *I, void *image_info, pdf_obj *resource)
     I->attr.xdensity = info->xdensity;
     I->attr.ydensity = info->ydensity;
 
-    I->reference = pdf_ref_obj(resource);
-
     dict = pdf_stream_dict(resource);
     pdf_add_dict(dict, pdf_new_name("Type"),    pdf_new_name("XObject"));
     pdf_add_dict(dict, pdf_new_name("Subtype"), pdf_new_name("Image"));
@@ -472,6 +527,24 @@ pdf_ximage_set_image (pdf_ximage *I, void *image_info, pdf_obj *resource)
                      pdf_new_number(info->bits_per_component));
     if (I->attr.dict)
         pdf_merge_dict(dict, I->attr.dict);
+
+    if (I->ident) {
+        int error;
+
+        error = pdf_names_add_object(global_names, I->ident, strlen(I->ident), pdf_link_obj(resource));
+        if (I->reference)
+            pdf_release_obj(I->reference);
+        if (error) {
+            I->reference = pdf_ref_obj(resource);
+        } else {
+            /* Need to create object reference before closing it */
+            I->reference = pdf_names_lookup_reference(global_names, I->ident, strlen(I->ident));
+            pdf_names_close_object(global_names, I->ident, strlen(I->ident));
+        }
+        I->reserved = 0;
+    } else {
+        I->reference = pdf_ref_obj(resource);
+    }
 
     pdf_release_obj(resource); /* Caller don't know we are using reference. */
     I->resource  = NULL;
@@ -502,7 +575,23 @@ pdf_ximage_set_form (pdf_ximage *I, void *form_info, pdf_obj *resource)
     I->attr.bbox.urx = max4(p1.x, p2.x, p3.x, p4.x);
     I->attr.bbox.ury = max4(p1.y, p2.y, p3.y, p4.y);
 
-    I->reference = pdf_ref_obj(resource);
+    if (I->ident) {
+        int error;
+
+        error = pdf_names_add_object(global_names, I->ident, strlen(I->ident), pdf_link_obj(resource));
+        if (I->reference)
+            pdf_release_obj(I->reference);
+        if (error) {
+            I->reference = pdf_ref_obj(resource);
+        } else {
+            /* Need to create object reference before closing it */
+            I->reference = pdf_names_lookup_reference(global_names, I->ident, strlen(I->ident));
+            pdf_names_close_object(global_names, I->ident, strlen(I->ident));
+        }
+        I->reserved = 0;
+    } else {
+        I->reference = pdf_ref_obj(resource);
+    }
 
     pdf_release_obj(resource); /* Caller don't know we are using reference. */
     I->resource  = NULL;
@@ -530,7 +619,7 @@ pdf_ximage_get_reference (int id)
     CHECK_ID(ic, id);
 
     I = GET_IMAGE(ic, id);
-    if (!I->reference)
+    if (!I->reference && I->resource)
         I->reference = pdf_ref_obj(I->resource);
 
     return pdf_link_obj(I->reference);
@@ -542,8 +631,65 @@ pdf_ximage_defineresource (const char *ident,
                            int subtype, void *info, pdf_obj *resource)
 {
     struct ic_ *ic = &_ic;
+    int         id, reserved = 0;
+    pdf_ximage *I;
+
+    if (ident) {
+        for (id = 0; id < ic->count; id++) {
+            I = &ic->ximages[id];
+            if (I->ident && !strcmp(ident, I->ident) && I->reserved) {
+                reserved = 1;
+                break;
+            }
+        }
+    }
+
+    if (!reserved) {
+        id = ic->count;
+        if (ic->count >= ic->capacity) {
+            ic->capacity += 16;
+            ic->ximages   = RENEW(ic->ximages, ic->capacity, pdf_ximage);
+        }
+        I = &ic->ximages[id];
+        pdf_init_ximage_struct(I);
+
+        if (ident) {
+            I->ident = NEW(strlen(ident)+1, char);
+            strcpy(I->ident, ident);
+        }
+        ic->count++;
+    }
+
+    switch (subtype) {
+    case PDF_XOBJECT_TYPE_IMAGE:
+        pdf_ximage_set_image(I, info, resource);
+        sprintf(I->res_name, "Im%d", id);
+        break;
+    case PDF_XOBJECT_TYPE_FORM:
+        pdf_ximage_set_form (I, info, resource);
+        sprintf(I->res_name, "Fm%d", id);
+        break;
+    default:
+        _tt_abort("Unknown XObject subtype: %d", subtype);
+    }
+
+    return  id;
+}
+
+int
+pdf_ximage_reserve (const char *ident)
+{
+    struct ic_ *ic = &_ic;
     int         id;
     pdf_ximage *I;
+
+    for (id = 0; id < ic->count; id++) {
+        I = &ic->ximages[id];
+        if (I->ident && !strcmp(ident, I->ident)) {
+            dpx_warning("XObject ID \"%s\" already used!", ident);
+            return -1;
+        }
+    }
 
     id = ic->count;
     if (ic->count >= ic->capacity) {
@@ -559,24 +705,13 @@ pdf_ximage_defineresource (const char *ident,
         I->ident = NEW(strlen(ident)+1, char);
         strcpy(I->ident, ident);
     }
-
-    switch (subtype) {
-    case PDF_XOBJECT_TYPE_IMAGE:
-        pdf_ximage_set_image(I, info, resource);
-        sprintf(I->res_name, "Im%d", id);
-        break;
-    case PDF_XOBJECT_TYPE_FORM:
-        pdf_ximage_set_form (I, info, resource);
-        sprintf(I->res_name, "Fm%d", id);
-        break;
-    default:
-        _tt_abort("Unknown XObject subtype: %d", subtype);
-    }
+    I->reference  = pdf_names_reserve(global_names, ident, strlen(ident));
+    sprintf(I->res_name, "Fm%d", id);
+    I->reserved = 1;
     ic->count++;
 
-    return  id;
+    return id;
 }
-
 
 char *
 pdf_ximage_get_resname (int id)
@@ -816,6 +951,18 @@ pdf_ximage_scale_image (int            id,
             r->ury = I->attr.bbox.ury;
         }
         break;
+    default: /* maybe reserved */
+        if (p->flags & INFO_HAS_USER_BBOX) {
+            r->llx = p->bbox.llx;
+            r->lly = p->bbox.lly;
+            r->urx = p->bbox.urx;
+            r->ury = p->bbox.ury;
+        } else { /* I->attr.bbox from the image bounding box */
+            r->llx = 0.0;
+            r->lly = 0.0;
+            r->urx = 1.0;
+            r->ury = 1.0;
+        }
     }
 
     return  0;
@@ -849,4 +996,20 @@ check_for_ps (rust_input_handle_t handle)
     if (strstartswith(work_buffer, "%!"))
         return 1;
     return 0;
+}
+
+/* Cannot use _tt_abort() (dpx: "ERROR()") here */
+void
+pdf_error_cleanup_cache (void)
+{
+  struct ic_ *ic = &_ic;
+  int         i;
+  pdf_ximage *I;
+
+  for (i = 0; i < ic->count; i++) {
+    I = &ic->ximages[i];
+    if (I->attr.tempfile) {
+      dpx_delete_temp_file(I->fullname, false); /* temporary filename freed here */
+    }
+  }
 }

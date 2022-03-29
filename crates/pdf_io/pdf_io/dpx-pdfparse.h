@@ -50,6 +50,15 @@ pdf_obj *parse_pdf_dict    (const char **pp, const char *endptr, pdf_file *pf);
 pdf_obj *parse_pdf_array   (const char **pp, const char *endptr, pdf_file *pf);
 pdf_obj *parse_pdf_object  (const char **pp, const char *endptr, pdf_file *pf);
 
-pdf_obj *parse_pdf_tainted_dict (const char **pp, const char *endptr);
+extern pdf_obj *parse_pdf_object_extended (const char **pp, const char *endptr, pdf_file *pf,
+                                           pdf_obj* (*unknown_handler) (const char **pp,
+                                                                        const char *endptr,
+                                                                        void *user_data),
+                                           void *user_data);
+extern pdf_obj *parse_pdf_tainted_dict (const char **pp, const char *endptr,
+                                        pdf_obj* (*unknown_handler) (const char **pp,
+                                                                     const char *endptr,
+                                                                     void *user_data),
+                                        void *user_data);
 
 #endif /* _PDFPARSE_H_ */

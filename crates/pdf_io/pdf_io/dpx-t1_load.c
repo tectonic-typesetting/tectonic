@@ -57,8 +57,8 @@ t1_decrypt (unsigned short key,
 }
 /* T1CRYPT */
 
-#define MATCH_NAME(t,n) ((t) && PST_NAMETYPE((t))    && strstartswith(pst_data_ptr((t)),(n)))
-#define MATCH_OP(t,n)   ((t) && PST_UNKNOWNTYPE((t)) && strstartswith(pst_data_ptr((t)),(n)))
+#define MATCH_NAME(t,n) ((t) && PST_NAMETYPE((t))    && (pst_length_of((t)) == strlen((n))) && strstartswith(pst_data_ptr((t)),(n)))
+#define MATCH_OP(t,n)   ((t) && PST_UNKNOWNTYPE((t)) && (pst_length_of((t)) == strlen((n))) && strstartswith(pst_data_ptr((t)),(n)))
 
 #define free_TOK(t) if ((t) != NULL) {          \
         pst_release_obj((t));                   \

@@ -23,13 +23,10 @@
 
 #include "tectonic_bridge_core.h"
 
-#include "dpx-cid.h"
-#include "dpx-cid_p.h"
+#include "dpx-pdffont.h"
 
-void CIDFont_type2_set_flags   (int flags);
-
-int  CIDFont_type2_open    (CIDFont *font, const char *name,
-                                   CIDSysInfo *cmap_csi, cid_opt *opt);
-void CIDFont_type2_dofont  (CIDFont *font);
+extern int  CIDFont_type2_open    (pdf_font *font, const char *name,
+                                   int index, cid_opt *opt);
+extern int  CIDFont_type2_dofont  (pdf_font *font);
 
 #endif /* _CIDTYPE2_H_ */

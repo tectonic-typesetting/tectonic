@@ -35,6 +35,7 @@ enum dpx_mode {
 };
 
 extern struct _dpx_conf {
+  int            is_xbb;
   int            verbose_level;
   enum dpx_mode  compat_mode;
   int            ignore_font_license;
