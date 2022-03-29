@@ -9564,10 +9564,10 @@ conv_toks(void)
         saved_chr = cur_val;
         scan_int();
 
-        if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
+        if (cur_val < LEFT_BRACE || cur_val > ACTIVE_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
             error_here_with_diagnostic("Invalid code (");
             print_int(cur_val);
-            print_cstr("), should be in the ranges 1..4, 6..8, 10..12");
+            print_cstr("), should be in the ranges 1..4, 6..8, 10..13");
             capture_to_diagnostic(NULL);
 
             help_ptr = 1;
