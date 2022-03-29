@@ -1,10 +1,10 @@
 **
 (file_encoding.tex (file_encoding_utf8.txt
-Missing character: There is no 🌍 in font cmr10!
+Missing character: There is no 🌍 ("1F30D) in font cmr10!
 ) (file_encoding_utf16be.txt
-Missing character: There is no 🌍 in font cmr10!
+Missing character: There is no 🌍 ("1F30D) in font cmr10!
 )
 (file_encoding_utf16le.txt
-Missing character: There is no 🌍 in font cmr10!
+Missing character: There is no 🌍 ("1F30D) in font cmr10!
 ) [1] )
 Output written on file_encoding.xdv (1 page, 300 bytes).
