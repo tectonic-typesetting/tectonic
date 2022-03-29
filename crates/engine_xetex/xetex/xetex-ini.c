@@ -94,7 +94,7 @@ int32_t mem_end;
 int32_t rover;
 int32_t last_leftmost_char;
 int32_t last_rightmost_char;
-int32_t hlist_stack[513];
+int32_t hlist_stack[MAX_HLIST_STACK + 1];
 short hlist_stack_level;
 int32_t first_p;
 int32_t global_prev_p;
@@ -115,7 +115,7 @@ int32_t eqtb_top;
 int32_t hash_high;
 bool no_new_control_sequence;
 int32_t cs_count;
-b32x2 prim[501];
+b32x2 prim[PRIM_SIZE + 1];
 int32_t prim_used;
 memory_word *save_stack;
 int32_t save_ptr;
@@ -2961,8 +2961,13 @@ final_cleanup(void)
     small_number c;
 
     c = cur_chr;
+
+    if (c != 1)
+        INTPAR(new_line_char) = -1;
+
     if (job_name == 0)
         open_log_file();
+
     while (input_ptr > 0)
         if (cur_input.state == TOKEN_LIST)
             end_token_list();
