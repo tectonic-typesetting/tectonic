@@ -229,6 +229,7 @@ pdf_font_open_type0 (pdf_font *font, int cid_id, int wmode)
     break;
   }
 
+  free(fontname); /* Tectonic: fix memory leak */
   font->resource = pdf_new_dict();
   pdf_add_dict(font->resource, pdf_new_name ("Type"),    pdf_new_name ("Font"));
   pdf_add_dict(font->resource, pdf_new_name ("Subtype"), pdf_new_name ("Type0"));
