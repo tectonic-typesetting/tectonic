@@ -232,9 +232,18 @@ struct pdf_out {
  * object as a static variable. */
 static pdf_out pout;
 
+/* Tectonic: during the XeTeX pass, if a PDF is loaded as an image,
+ * the current_output can be accessed without init_pdf_out_struct having
+ * been called. So we add a flag to ensure that it's always initialized. */
+static int tectonic_pout_initialized = 0;
+static void init_pdf_out_struct (pdf_out *p);
+
 static pdf_out *
 current_output (void)
 {
+  if (!tectonic_pout_initialized)
+    init_pdf_out_struct(&pout);
+
   return &pout;
 }
 
@@ -275,6 +284,7 @@ init_pdf_out_struct (pdf_out *p)
 
   p->free_list = NEW((PDF_NUM_INDIRECT_MAX+1)/8, char);
   memset(p->free_list, 0, (PDF_NUM_INDIRECT_MAX+1)/8);
+  tectonic_pout_initialized = 1;
 }
 
 static void
@@ -4384,4 +4394,6 @@ pdf_obj_reset_global_state(void)
     p->output.file_position = 0;
     p->output.line_position = 0;
     p->output.compression_saved = 0;
+
+    tectonic_pout_initialized = 0;
 }
