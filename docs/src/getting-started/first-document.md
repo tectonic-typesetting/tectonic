@@ -105,7 +105,7 @@ $ tectonic -X build
 
 If you haven’t run Tectonic on your computer before, this command will take a
 minute or two as it downloads the support files that it needs and generates the
-LaTeX “format file” storing the default macro collection. Tectonic will cache
+LaTeX “format file” storing the default macro collection. Tectonic will [cache](#cache)
 these files and avoid downloading them again. Test it out by running the build
 again:
 
@@ -134,3 +134,18 @@ Tectonic’s “user experience” is substantially different from those engines
 
 We hope that you’ll agree that these changes make for a program that is much
 more pleasant to use than the traditional tools.
+
+## Cache
+The location of the cache depends on your operating system. You can use the
+[V2 Interface][v2cli-ref] to find the exact cache location on your machine
+or take a look [at the implementation][user-cache-impl].
+
+We recommend leaving the cache location at the default settings unless you
+have good reasons to change it, for example due to constrains within
+the environment tectonic is running in.
+
+If you need to change the location of the cache, you can do that by providing
+a custom cache location with the environment variable `TECTONIC_CACHE_DIR`.
+
+[v2cli-ref]: ../ref/v2cli.md
+[user-cache-impl]: https://docs.rs/tectonic_io_base/latest/tectonic_io_base/app_dirs/fn.ensure_user_cache_dir.html

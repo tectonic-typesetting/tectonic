@@ -19,6 +19,7 @@
 use fs2::FileExt;
 use std::{
     collections::HashMap,
+    env,
     fs::{self, File},
     io::{BufRead, BufReader, Error as IoError, ErrorKind as IoErrorKind, Read, Write},
     path::{Path, PathBuf},
@@ -43,13 +44,26 @@ pub struct Cache {
 impl Cache {
     /// Get a handle to a bundle cache, using default per-user settings.
     ///
+    /// The cache location defaults to the `AppDataType::UserCache`
+    /// provided by `app_dirs2` but can be overwritten using the
+    /// `TECTONIC_CACHE_DIR` environment variable.
+    ///
     /// This method may perform I/O to create the user cache directory, so it is
     /// fallible. (Due to its `app_dirs2` implementation, it would have to be
     /// fallible even if it didn't perform I/O.)
     pub fn get_user_default() -> Result<Self> {
-        Ok(Cache {
-            root: app_dirs::ensure_user_cache_dir("")?,
-        })
+        let env_cache_path = env::var_os("TECTONIC_CACHE_DIR");
+
+        let cache_path = match env_cache_path {
+            Some(env_cache_path) => {
+                let env_cache_path = env_cache_path.into();
+                fs::create_dir_all(&env_cache_path)?;
+                env_cache_path
+            }
+            None => app_dirs::ensure_user_cache_dir("")?,
+        };
+
+        Ok(Cache { root: cache_path })
     }
 
     /// Get a handle to a bundle cache, using a custom cache directory.
