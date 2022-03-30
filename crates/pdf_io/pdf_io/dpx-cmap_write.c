@@ -220,14 +220,14 @@ write_map (mapDef *mtab, size_t count,
 
 /* duplicated from pdfobj.c */
 static void
-write_string (char **outptr, char *endptr, const char *strptr)
+write_string (char **outptr, char *endptr, const char *string_data)
 {
   const char *s;
   char       *p;
   int         i, length;
 
-  s      = strptr;
-  length = strptr ? strlen(strptr) : 0;
+  s      = string_data;
+  length = string_data ? strlen(string_data) : 0;
   p      = *outptr;
 
   *p++ = '(';
@@ -255,14 +255,14 @@ write_string (char **outptr, char *endptr, const char *strptr)
 }
 
 static void
-write_name (char **outptr, char *endptr, const char *name)
+write_name (char **outptr, char *endptr, const char *name_data)
 {
   const char *s;
   char       *p;
   int         i, length;
 
-  s      = name;
-  length = name ? strlen(name) : 0;
+  s      = name_data;
+  length = name_data ? strlen(name_data) : 0;
   p      = *outptr;
 #ifndef is_delim
   /* Avoid '{' and '}' for PostScript compatibility? */

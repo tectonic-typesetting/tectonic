@@ -77,8 +77,9 @@ static int    pdf_version_major = 1;
 static int    pdf_version_minor = 5;
 static int    compression_level = 9;
 
+static double annot_grow_x = 0.0;
+static double annot_grow_y = 0.0;
 static char     ignore_colors = 0;
-static double   annot_grow    = 0.0;
 static int      bookmark_open = 0;
 static double   mag           = 1.0;
 static int      font_dpi      = 600;
@@ -111,80 +112,6 @@ static double x_offset = 72.0;
 static double y_offset = 72.0;
 static int translate_origin = 0;
 
-
-/* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
-static int
-read_length (double *vp, const char **pp, const char *endptr)
-{
-  char   *q;
-  const char *p = *pp;
-  double  v, u = 1.0;
-  const char *_ukeys[] = {
-#define K_UNIT__PT  0
-#define K_UNIT__IN  1
-#define K_UNIT__CM  2
-#define K_UNIT__MM  3
-#define K_UNIT__BP  4
-#define K_UNIT__PC  5
-#define K_UNIT__DD  6
-#define K_UNIT__CC  7
-#define K_UNIT__SP  8
-    "pt", "in", "cm", "mm", "bp", "pc", "dd", "cc", "sp",
-     NULL
-  };
-  int     k, error = 0;
-
-  q = parse_float_decimal(&p, endptr);
-  if (!q) {
-    *vp = 0.0; *pp = p;
-    return  -1;
-  }
-
-  v = atof(q);
-  free(q);
-
-  skip_white(&p, endptr);
-  q = parse_c_ident(&p, endptr);
-  if (q) {
-    char *qq = q;
-    if (strlen(q) >= strlen("true") &&
-        !memcmp(q, "true", strlen("true"))) {
-      q += strlen("true"); /* just skip "true" */
-    }
-    if (strlen(q) == 0) {
-      free(qq);
-      skip_white(&p, endptr);
-      qq = q = parse_c_ident(&p, endptr);
-    }
-    if (q) {
-      for (k = 0; _ukeys[k] && strcmp(_ukeys[k], q); k++);
-      switch (k) {
-      case K_UNIT__PT: u *= 72.0 / 72.27; break;
-      case K_UNIT__IN: u *= 72.0; break;
-      case K_UNIT__CM: u *= 72.0 / 2.54 ; break;
-      case K_UNIT__MM: u *= 72.0 / 25.4 ; break;
-      case K_UNIT__BP: u *= 1.0 ; break;
-      case K_UNIT__PC: u *= 12.0 * 72.0 / 72.27 ; break;
-      case K_UNIT__DD: u *= 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
-      case K_UNIT__CC: u *= 12.0 * 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
-      case K_UNIT__SP: u *= 72.0 / (72.27 * 65536) ; break;
-      default:
-        dpx_warning("Unknown unit of measure: %s", q);
-        error = -1;
-        break;
-      }
-      free(qq);
-    }
-    else {
-      dpx_warning("Missing unit of measure after \"true\"");
-      error = -1;
-    }
-  }
-
-  *vp = v * u; *pp = p;
-  return  error;
-}
-
 static void
 select_paper (const char *paperspec)
 {
@@ -201,9 +128,9 @@ select_paper (const char *paperspec)
     endptr = p + strlen(p);
     if (!comma)
       _tt_abort("Unrecognized paper format: %s", paperspec);
-    error = read_length(&paper_width,  &p, comma);
+    error = dpx_util_read_length(&paper_width, 1.0, &p, comma);
     p = comma + 1;
-    error = read_length(&paper_height, &p, endptr);
+    error = dpx_util_read_length(&paper_height, 1.0, &p, endptr);
   }
   if (error || paper_width <= 0.0 || paper_height <= 0.0)
     _tt_abort("Invalid paper size: %s (%.2fx%.2f)", paperspec, paper_width, paper_height);
@@ -321,7 +248,10 @@ do_dvi_pages (void)
         xo = x_offset; yo = y_offset;
         dvi_scan_specials(page_no,
                           &w, &h, &xo, &yo, &lm,
-                          NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                          /* No need for encryption options */
+                          NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                          /* No trailer IDs */
+                          NULL, NULL, NULL);
         if (lm != landscape_mode) { /* already swapped for the first page */
           SWAP(w, h);
           landscape_mode = lm;
@@ -438,9 +368,9 @@ dvipdfmx_main (
    * arguments, so we emulate the default TeXLive config file by copying those
    * code bits. */
 
-  pdf_set_version (5);
   select_paper(paperspec);
-  annot_grow = 0;
+  annot_grow_x = 0;
+  annot_grow_y = 0;
   bookmark_open = 0;
   key_bits = 40;
   permission = 0x003C;
@@ -459,7 +389,6 @@ dvipdfmx_main (
   /*kpse_init_prog("", font_dpi, NULL, NULL);
     kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
   pdf_font_set_dpi(font_dpi);
-  dpx_delete_old_cache(image_cache_life);
 
   {
     /* Dependency between DVI and PDF side is rather complicated... */
@@ -476,6 +405,15 @@ dvipdfmx_main (
                       &has_id, id1, id2);
   }
 
+  settings.ver_major = pdf_version_major;
+  settings.ver_minor = pdf_version_minor;
+
+  if (!has_id) {
+    const char *producer = "xdvipdfmx-0.1, Copyright 2002-2021 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata";
+    compute_id_string(id1, producer, dvi_filename, pdf_filename);
+    memcpy(id2, id1, 16);
+  }
+
   /* Encryption and Other Settings */
   {
     memset(&settings.encrypt, 0, sizeof(struct pdf_enc_setting));
@@ -487,6 +425,8 @@ dvipdfmx_main (
     settings.encrypt.uplain     = uplain;
     settings.encrypt.oplain     = oplain;
   }
+
+  settings.object.compression_level = compress ? compression_level : 0;
 
   if (opt_flags & OPT_PDFOBJ_NO_OBJSTM) {
     settings.object.enable_objstm = 0;
@@ -508,32 +448,17 @@ dvipdfmx_main (
   }
   settings.media_width        = paper_width;
   settings.media_height       = paper_height;
-  settings.annot_grow_amount  = annot_grow;
+  settings.annot_grow_amount.x  = annot_grow_x;
+  settings.annot_grow_amount.y  = annot_grow_y;
   settings.outline_open_depth = bookmark_open;
   settings.check_gotos        = !(opt_flags & OPT_PDFDOC_NO_DEST_REMOVE);
+  settings.enable_manual_thumb = enable_thumbnail;
 
   settings.device.dvi2pts     = dvi2pts;
   settings.device.precision   = pdfdecimaldigits;
   settings.device.ignore_colors = ignore_colors;
 
   set_distiller_template(filter_template);
-  /* This must come before pdf_open_document where initialization
-   * of pdf_enc takes place.
-   */
-  pdf_init_device(dvi2pts, pdfdecimaldigits, ignore_colors);
-  {
-    int version = pdf_version_major * 10 + pdf_version_minor;
-    pdf_set_version(version);
-  }
-  pdf_set_compression(compress ? compression_level : 0);
-  if (enable_thumbnail)
-    pdf_doc_enable_manual_thumbnails();
-
-  if (!has_id) {
-    const char *producer = "xdvipdfmx-0.1, Copyright 2002-2015 by Jin-Hwan Cho, Matthias Franz, and Shunsaku Hirata";
-    compute_id_string(id1, producer, dvi_filename, pdf_filename);
-    memcpy(id2, id1, 16);
-  }
 
   /* Initialize PDF document creation routine. */
   pdf_open_document(pdf_filename, creator, id1, id2, settings);

@@ -32,6 +32,8 @@
 #include "dpx-pdfcolor.h"
 #include "dpx-pdfobj.h"
 
+typedef struct pdf_dev pdf_dev;
+
 typedef int spt_t;
 
 typedef struct pdf_tmatrix
@@ -110,13 +112,13 @@ double dev_unit_dviunit  (void);
 void   pdf_dev_set_string (spt_t xpos, spt_t ypos,
                                   const void *instr_ptr, size_t instr_len,
                                   spt_t text_width,
-                                  int   font_id, int ctype);
+                                  int   font_id);
 void   pdf_dev_set_rule   (spt_t xpos, spt_t ypos,
                                   spt_t width, spt_t height);
 
 /* Place XObject */
 int    pdf_dev_put_image  (int xobj_id,
-                                  transform_info *p, double ref_x, double ref_y);
+                                  transform_info *ti, double ref_x, double ref_y, pdf_rect *rect);
 
 /* The design_size and ptsize required by PK font support...
  */
@@ -126,7 +128,7 @@ int    pdf_dev_locate_font (const char *font_name, spt_t ptsize);
  * Dvipdfmx doesn't manage gstate well..
  */
 /* Always returns 1.0, please rename this. */
-double pdf_dev_scale      (void);
+#define pdf_dev_scale() (1.0)
 
 /* Access text state parameters. */
 int    pdf_dev_get_font_wmode  (int font_id); /* ps: special support want this (pTeX). */
@@ -180,11 +182,8 @@ void   pdf_dev_eop (void);
  */
 void   graphics_mode (void);
 
-void   pdf_dev_get_coord(double *xpos, double *ypos);
-void   pdf_dev_push_coord(double xpos, double ypos);
-void   pdf_dev_pop_coord(void);
-
 void   pdf_dev_begin_actualtext (uint16_t *unicodes, int len);
 void   pdf_dev_end_actualtext (void);
 
+int    pdf_dev_font_minbytes    (int font_id);
 #endif /* _PDFDEV_H_ */

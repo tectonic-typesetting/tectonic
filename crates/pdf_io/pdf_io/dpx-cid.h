@@ -25,57 +25,27 @@
 
 #include <stdbool.h>
 
-/* CIDFont types */
-#define CIDFONT_TYPE0 1
-#define CIDFONT_TYPE2 2
-
-typedef struct {
-  char *registry;
-  char *ordering;
-  int   supplement;
-} CIDSysInfo;
+#include "dpx-pdffont.h"
 
 extern CIDSysInfo CSI_IDENTITY;
 extern CIDSysInfo CSI_UNICODE;
 
-typedef struct CIDFont CIDFont;
-
-void CIDFont_set_flags       (int flags);
+extern int opt_flags_cidfont;
+extern void CIDFont_set_flags (int flags);
 
 #define CIDFONT_FORCE_FIXEDPITCH (1 << 1)
 
-#include "dpx-pdfobj.h"
-#include "dpx-type0.h"
+extern char *CIDFont_get_usedchars   (pdf_font *font);
+extern char *CIDFont_get_usedchars_v (pdf_font *font);
 
-/* FIXME */
-/* Converted from Type 1 */
-#define CIDFONT_FLAG_TYPE1      (1 << 8)
-#define CIDFONT_FLAG_TYPE1C     (1 << 9)
-#define CIDFONT_FLAG_TRUETYPE   (1 << 10)
-
-char       *CIDFont_get_fontname   (CIDFont *font);
-
-char       *CIDFont_get_ident      (CIDFont *font); /* FIXME */
-int         CIDFont_get_opt_index  (CIDFont *font); /* FIXME */
-
-int         CIDFont_get_flag       (CIDFont *font, int mask);
-
-int         CIDFont_get_subtype    (CIDFont *font);
-int         CIDFont_get_embedding  (CIDFont *font);
-pdf_obj    *CIDFont_get_resource   (CIDFont *font);
-CIDSysInfo *CIDFont_get_CIDSysInfo (CIDFont *font);
-
-void     CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode);
-int      CIDFont_get_parent_id (CIDFont *font, int wmode);
-
-bool     CIDFont_is_BaseFont (CIDFont *font);
-bool     CIDFont_is_ACCFont  (CIDFont *font);
-bool     CIDFont_is_UCSFont  (CIDFont *font);
+extern int   CIDFont_is_ACCFont  (pdf_font *font);
+extern int   CIDFont_is_UCSFont  (pdf_font *font);
 
 #include "dpx-fontmap.h"
-
-int      CIDFont_cache_find  (const char *map_name, CIDSysInfo *cmap_csi, fontmap_opt *fmap_opt);
-CIDFont *CIDFont_cache_get   (int fnt_id);
-void     CIDFont_cache_close (void);
+extern int   pdf_font_cidfont_lookup_cache (pdf_font *fonts, int count, const char *map_name,
+                                            CIDSysInfo *cmap_csi, const fontmap_opt *fmap_opt);
+extern int   pdf_font_open_cidfont (pdf_font *font, const char *map_name,
+                                    CIDSysInfo *cmap_csi, const fontmap_opt *fmap_opt);
+extern void  pdf_font_load_cidfont (pdf_font *font);
 
 #endif /* _CID_H_ */

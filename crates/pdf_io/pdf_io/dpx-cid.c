@@ -35,7 +35,6 @@
 #include "tectonic_bridge_core.h"
 #include "dpx-cff.h"
 #include "dpx-cff_types.h"
-#include "dpx-cid_p.h"
 #include "dpx-cidtype0.h"
 #include "dpx-cidtype2.h"
 #include "dpx-dpxconf.h"
@@ -43,9 +42,6 @@
 #include "dpx-error.h"
 #include "dpx-mem.h"
 #include "dpx-pdfobj.h"
-
-#define CIDFONT_DEBUG     3
-#define CIDFONT_DEBUG_STR "CIDFont"
 
 #define PDF_CID_SUPPORT_MIN 2
 #define PDF_CID_SUPPORT_MAX 6
@@ -79,6 +75,7 @@ static struct {
   {NULL,    NULL,       { 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0}}
 };
+#define SUP_IDX_MAX 20
 #define UCS_CC    0
 #define ACC_START 1
 #define ACC_END   4
@@ -113,265 +110,134 @@ static struct {
 };
 
 static void release_opt (cid_opt *opt);
-static CIDSysInfo *get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt);
+static int get_cidsysinfo (CIDSysInfo *csi, const char *map_name, const fontmap_opt *fmap_opt);
 
-static int cidoptflags = 0;
-
-static CIDFont *
-CIDFont_new (void)
-{
-  CIDFont *font = NULL;
-
-  font = NEW(1, struct CIDFont);
-
-  font->name     = NULL;
-  font->fontname = NULL;
-  font->ident    = NULL;
-
-  /*
-   * CIDFont
-   */
-  font->subtype = -1;
-  font->flags   = FONT_FLAG_NONE;
-  font->csi     = NULL;
-  font->options = NULL;
-  (font->parent)[0] = -1; /* Horizontal */
-  (font->parent)[1] = -1; /* Vertical   */
-
-  /*
-   * PDF Font Resource
-   */
-  font->indirect = NULL;
-  font->fontdict = NULL;
-  font->descriptor = NULL;
-
-  return font;
-}
-
-/* It does write PDF objects. */
-static void
-CIDFont_flush (CIDFont *font)
-{
-  if (font) {
-    pdf_release_obj(font->indirect);
-    font->indirect = NULL;
-    pdf_release_obj(font->fontdict);
-    font->fontdict = NULL;
-    pdf_release_obj(font->descriptor);
-    font->descriptor = NULL;
-  }
-}
-
-static void
-CIDFont_release (CIDFont *font)
-{
-  if (font) {
-    if (font->indirect)
-      _tt_abort("%s: Object not flushed.", CIDFONT_DEBUG_STR);
-    if (font->fontdict)
-      _tt_abort("%s: Object not flushed.", CIDFONT_DEBUG_STR);
-    if (font->descriptor)
-      _tt_abort("%s: Object not flushed.", CIDFONT_DEBUG_STR);
-
-    free(font->fontname);
-    free(font->name);
-    free(font->ident);
-    if (font->csi) {
-      free(font->csi->registry);
-      free(font->csi->ordering);
-      free(font->csi);
-    }
-    if (font->options)
-      release_opt(font->options);
-  }
-}
-
-char *
-CIDFont_get_fontname (CIDFont *font)
-{
-  assert(font);
-  return font->fontname;
-}
-
-char *
-CIDFont_get_ident (CIDFont *font)
-{
-  assert(font);
-  return font->ident;
-}
+int opt_flags_cidfont = 0;
 
 int
-CIDFont_get_opt_index (CIDFont *font)
+CIDFont_is_ACCFont (pdf_font *font)
 {
-  int  opt_index;
+  int         i;
+  CIDSysInfo *csi;
 
   assert(font);
 
-  if (font->options)
-    opt_index = font->options->index;
-  else {
-    opt_index = 0;
-  }
-
-  return opt_index;
-}
-
-int
-CIDFont_get_subtype (CIDFont *font)
-{
-  assert(font);
-  return font->subtype;
-}
-
-int
-CIDFont_get_embedding (CIDFont *font)
-{
-  assert(font);
-  return font->options->embed;
-}
-
-CIDSysInfo *
-CIDFont_get_CIDSysInfo (CIDFont *font)
-{
-  assert(font);
-
-  return font->csi;
-}
-
-/*
- * Returns ID of parent Type0 font
- *  wmode: 0 for horizontal, 1 for vertical
- */
-int
-CIDFont_get_parent_id (CIDFont *font, int wmode)
-{
-  assert(font);
-
-  if (wmode < 0 || wmode > 1)
-    _tt_abort("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
-
-  return (font->parent)[wmode];
-}
-
-pdf_obj *
-CIDFont_get_resource (CIDFont *font)
-{
-  assert(font);
-
-  if (!font->indirect)
-    font->indirect = pdf_ref_obj(font->fontdict);
-
-  return pdf_link_obj(font->indirect);
-}
-
-/*
- * Set parent Type0 font.
- */
-void
-CIDFont_attach_parent (CIDFont *font, int parent_id, int wmode)
-{
-  assert(font);
-
-  if (wmode < 0 || wmode > 1)
-    _tt_abort("%s: Invalid wmode value.", CIDFONT_DEBUG_STR);
-
-  if (font->parent[wmode] >= 0)
-    dpx_warning("%s: CIDFont already have a parent Type1 font.", CIDFONT_DEBUG_STR);
-
-  font->parent[wmode] = parent_id;
-}
-
-bool
-CIDFont_is_ACCFont (CIDFont *font)
-{
-  int   i;
-
-  assert(font);
-
-  if (!font->csi)
-    _tt_abort("%s: CIDSystemInfo undefined.", CIDFONT_DEBUG_STR);
-
+  csi = &font->cid.csi;
   for (i = ACC_START; i <= ACC_END ; i++) {
-    if (streq_ptr(font->csi->registry, CIDFont_stdcc_def[i].registry) &&
-        streq_ptr(font->csi->ordering, CIDFont_stdcc_def[i].ordering))
-      return true;
+    if (!strcmp(csi->registry, CIDFont_stdcc_def[i].registry) &&
+        !strcmp(csi->ordering, CIDFont_stdcc_def[i].ordering))
+      return 1;
   }
 
-  return false;
+  return 0;
 }
 
-bool
-CIDFont_is_UCSFont (CIDFont *font)
-{
-  assert(font);
-
-  return streq_ptr(font->csi->ordering, "UCS")
-         || streq_ptr(font->csi->ordering, "UCS2");
-}
-
-/* FIXME */
 int
-CIDFont_get_flag (CIDFont *font, int mask)
+CIDFont_is_UCSFont (pdf_font *font)
 {
+  CIDSysInfo *csi;
+
   assert(font);
-  return ((font->flags & mask) ? 1 : 0);
+
+  csi = &font->cid.csi;
+
+  if (!strcmp(csi->ordering, "UCS") ||
+      !strcmp(csi->ordering, "UCS2"))
+    return 1;
+
+  return 0;
 }
 
-static void
-CIDFont_dofont (CIDFont *font)
+char *
+CIDFont_get_usedchars (pdf_font *font)
 {
-  if (!font || !font->indirect)
+  if (!font->usedchars) {
+    font->usedchars = NEW(8192, char);
+    memset(font->usedchars, 0, 8192*sizeof(char));
+  }
+
+  return font->usedchars;
+}
+
+char *
+CIDFont_get_usedchars_v (pdf_font *font)
+{
+  if (!font->cid.usedchars_v) {
+    font->cid.usedchars_v = NEW(8192, char);
+    memset(font->cid.usedchars_v, 0, 8192*sizeof(char));
+  }
+
+  return font->cid.usedchars_v;
+}
+
+
+static int
+source_font_type (pdf_font *font)
+{
+  int type = PDF_FONT_FONTTYPE_CIDTYPE0;
+
+  assert(font);
+
+  if (font->flags & CIDFONT_FLAG_TYPE1) {
+    type = PDF_FONT_FONTTYPE_TYPE1;
+  } else if (font->flags & CIDFONT_FLAG_TYPE1C) {
+    type = PDF_FONT_FONTTYPE_TYPE1C;
+  } else if (font->flags & CIDFONT_FLAG_TRUETYPE) {
+    type = PDF_FONT_FONTTYPE_TRUETYPE;
+  }
+
+  return type;
+}
+
+void
+pdf_font_load_cidfont (pdf_font *font)
+{
+  int error = 0;
+
+  if (!font || !font->reference)
     return;
 
   if (dpx_conf.verbose_level > 0)
-    dpx_message(":%s", font->ident);
+    dpx_message(":%s", font->filename);
   if (dpx_conf.verbose_level > 1) {
     if (font->fontname)
       dpx_message("[%s]", font->fontname);
   }
 
   switch (font->subtype) {
-  case CIDFONT_TYPE0:
+  case PDF_FONT_FONTTYPE_CIDTYPE0:
     if(dpx_conf.verbose_level > 0)
       dpx_message("[CIDFontType0]");
-    if (CIDFont_get_flag(font, CIDFONT_FLAG_TYPE1))
-      CIDFont_type0_t1dofont(font);
-    else if (CIDFont_get_flag(font, CIDFONT_FLAG_TYPE1C))
-      CIDFont_type0_t1cdofont(font);
-    else
-      CIDFont_type0_dofont(font);
+    switch (source_font_type(font)) {
+    case PDF_FONT_FONTTYPE_TYPE1:
+      error = CIDFont_type0_t1dofont(font);
+      break;
+    case PDF_FONT_FONTTYPE_TYPE1C:
+      error = CIDFont_type0_t1cdofont(font);
+      break;
+    default:
+      error = CIDFont_type0_dofont(font);
+      break;
+    }
     break;
-  case CIDFONT_TYPE2:
+  case PDF_FONT_FONTTYPE_CIDTYPE2:
     if(dpx_conf.verbose_level > 0)
       dpx_message("[CIDFontType2]");
-    CIDFont_type2_dofont(font);
-    break;
-  default:
-    _tt_abort("%s: Unknown CIDFontType %d.", CIDFONT_DEBUG_STR, font->subtype);
+    error = CIDFont_type2_dofont(font);
     break;
   }
-}
 
+  if (error)
+    _tt_abort("Error occurred while loading font: %s", font->filename);
 
-/*
- *
- */
-bool
-CIDFont_is_BaseFont (CIDFont *font)
-{
-  assert(font);
-
-  return font->flags & FONT_FLAG_BASEFONT;
+  return;
 }
 
 #include "dpx-cid_basefont.h"
 #include "dpx-pdfparse.h"
 
-static int CIDFont_base_open (CIDFont *font,
-                              const char *name, CIDSysInfo *cmap_csi, cid_opt *opt);
-
 static int
-CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_opt *opt)
+CIDFont_base_open (pdf_font *font, const char *name, cid_opt *opt)
 {
   pdf_obj *fontdict, *descriptor;
   char    *fontname = NULL;
@@ -421,7 +287,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
   }
 
   font->fontname = fontname;
-  font->flags   |= FONT_FLAG_BASEFONT;
+  font->flags   |= PDF_FONT_FLAG_BASEFONT;
   {
     char    *registry, *ordering;
     int      supplement;
@@ -434,22 +300,12 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
     registry   = pdf_string_value(pdf_lookup_dict(tmp, "Registry"));
     ordering   = pdf_string_value(pdf_lookup_dict(tmp, "Ordering"));
     supplement = pdf_number_value(pdf_lookup_dict(tmp, "Supplement"));
-    if (cmap_csi) { /* NULL for accept any */
-      if (strcmp(registry, cmap_csi->registry) ||
-          strcmp(ordering, cmap_csi->ordering))
-        _tt_abort("Inconsistent CMap used for CID-keyed font %s.",
-              cid_basefont[idx].fontname);
-      else if (supplement < cmap_csi->supplement) {
-        dpx_warning("CMap has higher supplement number than CIDFont: %s", fontname);
-        dpx_warning("Some chracters may not be displayed or printed.");
-      }
-    }
-    font->csi = NEW(1, CIDSysInfo);
-    font->csi->registry = NEW(strlen(registry)+1, char);
-    font->csi->ordering = NEW(strlen(ordering)+1, char);
-    strcpy(font->csi->registry, registry);
-    strcpy(font->csi->ordering, ordering);
-    font->csi->supplement = supplement;
+
+    font->cid.csi.registry = NEW(strlen(registry)+1, char);
+    font->cid.csi.ordering = NEW(strlen(ordering)+1, char);
+    strcpy(font->cid.csi.registry, registry);
+    strcpy(font->cid.csi.ordering, ordering);
+    font->cid.csi.supplement = supplement;
   }
 
   {
@@ -461,15 +317,15 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
 
     type = pdf_name_value(tmp);
     if (streq_ptr(type, "CIDFontType0"))
-      font->subtype = CIDFONT_TYPE0;
+      font->subtype = PDF_FONT_FONTTYPE_CIDTYPE0;
     else if (streq_ptr(type, "CIDFontType2"))
-      font->subtype = CIDFONT_TYPE2;
+      font->subtype = PDF_FONT_FONTTYPE_CIDTYPE2;
     else {
       _tt_abort("Unknown CIDFontType \"%s\"", type);
     }
   }
 
-  if (cidoptflags & CIDFONT_FORCE_FIXEDPITCH) {
+  if (opt_flags_cidfont & CIDFONT_FORCE_FIXEDPITCH) {
     if (pdf_lookup_dict(fontdict, "W")) {
        pdf_remove_dict(fontdict, "W");
     }
@@ -483,7 +339,7 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
   pdf_add_dict(descriptor, pdf_new_name("Type"),     pdf_new_name("FontDescriptor"));
   pdf_add_dict(descriptor, pdf_new_name("FontName"), pdf_new_name(fontname));
 
-  font->fontdict   = fontdict;
+  font->resource   = fontdict;
   font->descriptor = descriptor;
 
   opt->embed = 0;
@@ -493,179 +349,152 @@ CIDFont_base_open (CIDFont *font, const char *name, CIDSysInfo *cmap_csi, cid_op
 
 
 
-#define CACHE_ALLOC_SIZE  16u
-
-struct FontCache {
-  int       num;
-  int       max;
-  CIDFont **fonts;
-};
-
-static struct FontCache *__cache   = NULL;
-
-#define CHECK_ID(n) do {\
-                        if (! __cache)\
-                           _tt_abort("%s: CIDFont cache not initialized.", CIDFONT_DEBUG_STR);\
-                        if ((n) < 0 || (n) >= __cache->num)\
-                           _tt_abort("%s: Invalid ID %d", CIDFONT_DEBUG_STR, (n));\
-                    } while (0)
-
-static void
-CIDFont_cache_init (void)
-{
-  if (__cache)
-    _tt_abort("%s: Already initialized.", CIDFONT_DEBUG_STR);
-
-  __cache = NEW(1, struct FontCache);
-
-  __cache->max  = CACHE_ALLOC_SIZE;
-  __cache->fonts = NEW(__cache->max, struct CIDFont *);
-  __cache->num  = 0;
-}
-
-CIDFont *
-CIDFont_cache_get (int font_id)
-{
-  CHECK_ID(font_id);
-  return __cache->fonts[font_id];
-}
-
-/*
- * cmap_csi is NULL if CMap is Identity.
- */
 int
-CIDFont_cache_find (const char *map_name,
-                    CIDSysInfo *cmap_csi, fontmap_opt *fmap_opt)
+pdf_font_cidfont_lookup_cache (pdf_font *fonts, int count, const char *map_name,
+                               CIDSysInfo *cmap_csi, const fontmap_opt *fmap_opt)
 {
-  int      font_id = -1;
-  CIDFont *font    = NULL;
-  cid_opt *opt     = NULL;
+  int       font_id = -1;
+  pdf_font *font    = NULL;
+  cid_opt   opt;
+  int       has_csi;
 
-  if (!__cache)
-    CIDFont_cache_init();
+  assert(fonts);
 
-  opt  = NEW(1, cid_opt);
-  opt->style = fmap_opt->style;
-  opt->index = fmap_opt->index;
-  opt->embed = (fmap_opt->flags & FONTMAP_OPT_NOEMBED) ? 0 : 1;
-  opt->name  = NULL;
-  opt->csi   = get_cidsysinfo(map_name, fmap_opt);
-  opt->stemv = fmap_opt->stemv;
+  opt.style = fmap_opt->style;
+  opt.embed = (fmap_opt->flags & FONTMAP_OPT_NOEMBED) ? 0 : 1;
+  opt.csi.registry   = NULL;
+  opt.csi.ordering   = NULL;
+  opt.csi.supplement = 0;
+  has_csi   = get_cidsysinfo(&opt.csi, map_name, fmap_opt);
+  opt.stemv = fmap_opt->stemv;
 
-  if (!opt->csi && cmap_csi) {
+  if (!has_csi && cmap_csi) {
     /*
      * No CIDSystemInfo supplied explicitly. Copy from CMap's one if available.
      * It is not neccesary for CID-keyed fonts. But TrueType requires them.
      */
-    opt->csi = NEW(1, CIDSysInfo);
-    opt->csi->registry   = NEW(strlen(cmap_csi->registry)+1, char);
-    strcpy(opt->csi->registry, cmap_csi->registry);
-    opt->csi->ordering   = NEW(strlen(cmap_csi->ordering)+1, char);
-    strcpy(opt->csi->ordering, cmap_csi->ordering);
-    opt->csi->supplement = cmap_csi->supplement;
+    opt.csi.registry   = NEW(strlen(cmap_csi->registry)+1, char);
+    strcpy(opt.csi.registry, cmap_csi->registry);
+    opt.csi.ordering   = NEW(strlen(cmap_csi->ordering)+1, char);
+    strcpy(opt.csi.ordering, cmap_csi->ordering);
+    opt.csi.supplement = cmap_csi->supplement;
+    has_csi = 1;
   }
   /*
    * Here, we do not compare font->ident and map_name because of
    * implicit CIDSystemInfo supplied by CMap for TrueType.
    */
-  for (font_id = 0; font_id < __cache->num; font_id++) {
-    font = __cache->fonts[font_id];
-    if (streq_ptr(font->name, map_name) &&
-        font->options->style == opt->style &&
-        font->options->index == opt->index) {
-      if (font->options->embed == opt->embed) {
+  for (font_id = 0; font_id < count; font_id++) {
+    font = &fonts[font_id];
+    if (font->subtype != PDF_FONT_FONTTYPE_CIDTYPE0 &&
+        font->subtype != PDF_FONT_FONTTYPE_CIDTYPE2)
+      continue;
+    if (!strcmp(font->filename, map_name) &&
+        font->cid.options.style == opt.style &&
+        font->index == fmap_opt->index) {
+      if (font->cid.options.embed == opt.embed) {
         /*
          * Case 1: CSI not available (Identity CMap)
          *         Font is TrueType --> continue
          *         Font is CIDFont  --> break
          * Case 2: CSI matched      --> break
          */
-        if (!opt->csi) {
-          if (font->subtype == CIDFONT_TYPE2)
+        if (!has_csi) {
+          if (font->subtype == PDF_FONT_FONTTYPE_CIDTYPE2)
             continue;
           else
             break;
-        } else if (streq_ptr(font->csi->registry, opt->csi->registry) &&
-                   streq_ptr(font->csi->ordering, opt->csi->ordering)) {
-          if (font->subtype == CIDFONT_TYPE2)
-            font->csi->supplement =
-              MAX(opt->csi->supplement, font->csi->supplement);
+        } else if (!strcmp(font->cid.csi.registry, opt.csi.registry) &&
+                   !strcmp(font->cid.csi.ordering, opt.csi.ordering)) {
+          if (font->subtype == PDF_FONT_FONTTYPE_CIDTYPE2)
+            font->cid.csi.supplement =
+              MAX(opt.csi.supplement, font->cid.csi.supplement); /* FIXME: font modified */
           break;
         }
-      } else if (CIDFont_is_BaseFont(font)) {
-        opt->embed = 0;
+      } else if (font->flags & PDF_FONT_FLAG_BASEFONT) {
         break;
       }
     }
   }
+  release_opt(&opt);
 
-  if (font_id < __cache->num && cmap_csi) {
-    if (strcmp(font->csi->registry, cmap_csi->registry) ||
-        strcmp(font->csi->ordering, cmap_csi->ordering))
-      _tt_abort("%s: Incompatible CMap for CIDFont \"%s\"",
-            CIDFONT_DEBUG_STR, map_name);
-  }
-
-  if (font_id == __cache->num) {
-    font = CIDFont_new();
-    if (CIDFont_type0_open(font, map_name, cmap_csi, opt, 0) < 0 &&
-        CIDFont_type2_open(font, map_name, cmap_csi, opt)    < 0 &&
-        CIDFont_type0_open(font, map_name, cmap_csi, opt,
-                           CIDFONT_FLAG_TYPE1)               < 0 &&
-        CIDFont_type0_open(font, map_name, cmap_csi, opt,
-                           CIDFONT_FLAG_TYPE1C)              < 0 &&
-        CIDFont_base_open (font, map_name, cmap_csi, opt)    < 0) {
-      CIDFont_release(font);
-      release_opt(opt);
-      return -1;
-    } else {
-      if (__cache->num >= __cache->max) {
-        __cache->max  += CACHE_ALLOC_SIZE;
-        __cache->fonts = RENEW(__cache->fonts,
-                               __cache->max, struct CIDFont *);
-      }
-      font->name    = NEW(strlen(map_name)+1, char);
-      strcpy(font->name,  map_name);
-      font->ident   = NEW(strlen(map_name)+1, char);
-      strcpy(font->ident, map_name);
-      font->options = opt;
-      __cache->fonts[font_id] = font;
-      (__cache->num)++;
-    }
-  } else if (opt) {
-    release_opt(opt);
-  }
-
-  return font_id;
+  return (font_id < count) ? font_id : -1;
 }
 
-void
-CIDFont_cache_close (void)
+int
+pdf_font_open_cidfont (pdf_font *font, const char *map_name, CIDSysInfo *cmap_csi, const fontmap_opt *fmap_opt)
 {
-  int  font_id;
+  cid_opt opt;
+  int     has_csi;
 
-  if (__cache) {
-    for (font_id = 0;
-         font_id < __cache->num; font_id++) {
-      CIDFont *font;
+  opt.style = fmap_opt->style;
+  opt.embed = (fmap_opt->flags & FONTMAP_OPT_NOEMBED) ? 0 : 1;
+  opt.csi.registry   = NULL;
+  opt.csi.ordering   = NULL;
+  opt.csi.supplement = 0;
+  has_csi   = get_cidsysinfo(&opt.csi, map_name, fmap_opt);
+  opt.stemv = fmap_opt->stemv;
 
-      font = __cache->fonts[font_id];
-
-      if (dpx_conf.verbose_level > 0)
-        dpx_message("(CID");
-
-      CIDFont_dofont (font);
-      CIDFont_flush  (font);
-      CIDFont_release(font);
-
-      free(font);
-
-      if (dpx_conf.verbose_level > 0)
-        dpx_message(")");
-    }
-    free(__cache->fonts);
-    __cache = mfree(__cache);
+  if (!has_csi && cmap_csi) {
+    /*
+     * No CIDSystemInfo supplied explicitly. Copy from CMap's one if available.
+     * It is not neccesary for CID-keyed fonts. But TrueType requires them.
+     */
+    opt.csi.registry   = NEW(strlen(cmap_csi->registry)+1, char);
+    strcpy(opt.csi.registry, cmap_csi->registry);
+    opt.csi.ordering   = NEW(strlen(cmap_csi->ordering)+1, char);
+    strcpy(opt.csi.ordering, cmap_csi->ordering);
+    opt.csi.supplement = cmap_csi->supplement;
+    has_csi = 1;
   }
+
+  if (CIDFont_type0_open(font, map_name, fmap_opt->index, &opt) < 0 &&
+      CIDFont_type2_open(font, map_name, fmap_opt->index, &opt) < 0 &&
+      CIDFont_type0_open_from_t1 (font, map_name, fmap_opt->index, &opt) < 0 &&
+      CIDFont_type0_open_from_t1c(font, map_name, fmap_opt->index, &opt) < 0 &&
+      CIDFont_base_open (font, map_name, &opt) < 0) {
+    release_opt(&opt);
+    return -1;
+  }
+
+  font->filename    = NEW(strlen(map_name)+1, char);
+  strcpy(font->filename,  map_name);
+  font->ident       = NEW(strlen(map_name)+1, char);
+  strcpy(font->ident, map_name);
+  font->index       = fmap_opt->index;
+  font->cid.options = opt;
+
+  if (font->cid.csi.registry && font->cid.csi.ordering) {
+    if (cmap_csi) {
+      if (strcmp(font->cid.csi.registry, cmap_csi->registry) ||
+          strcmp(font->cid.csi.ordering, cmap_csi->ordering)) {
+        dpx_warning("Inconsistent ROS found:\n");
+        dpx_message("\tFont: %s-%s-%d\n", font->cid.csi.registry, font->cid.csi.ordering, font->cid.csi.supplement);
+        dpx_message("\tCMap: %s-%s-%d\n", cmap_csi->registry, cmap_csi->ordering, cmap_csi->supplement);
+        _tt_abort("Incompatible CMap specified for this font.");
+      }
+      if (font->cid.csi.supplement < cmap_csi->supplement) {
+        font->cid.csi.supplement = cmap_csi->supplement;
+      }
+    }
+  } else {
+    assert(font->subtype == PDF_FONT_FONTTYPE_CIDTYPE2);
+    if (cmap_csi) {
+      font->cid.csi.registry   = NEW(strlen(cmap_csi->registry)+1, char);
+      strcpy(font->cid.csi.registry, cmap_csi->registry);
+      font->cid.csi.ordering   = NEW(strlen(cmap_csi->ordering)+1, char);
+      strcpy(font->cid.csi.ordering, cmap_csi->ordering);
+      font->cid.csi.supplement = cmap_csi->supplement;
+    } else { /* This means font's internal glyph ordering. */
+      font->cid.csi.registry   = NEW(strlen("Adobe")+1, char);
+      strcpy(font->cid.csi.registry, "Adobe");
+      font->cid.csi.ordering   = NEW(strlen("Identity")+1, char);
+      strcpy(font->cid.csi.ordering, "Identity");
+      font->cid.csi.supplement = 0;
+    }
+  }
+
+  return 0;
 }
 
 /******************************* OPTIONS *******************************/
@@ -679,33 +508,31 @@ CIDFont_cache_close (void)
 static void
 release_opt (cid_opt *opt)
 {
-  if (opt->csi) {
-    free(opt->csi->registry);
-    free(opt->csi->ordering);
-    free(opt->csi);
-  }
-  free(opt);
+  if (opt->csi.registry)
+    free(opt->csi.registry);
+  if (opt->csi.ordering)
+    free(opt->csi.ordering);
 }
 
-static CIDSysInfo *
-get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
+static int
+get_cidsysinfo (CIDSysInfo *csi, const char *map_name, const fontmap_opt *fmap_opt)
 {
-  CIDSysInfo *csi = NULL;
+  int has_csi = 0;
   int sup_idx;
   int i, csi_idx = -1, m;
   size_t n;
 
   sup_idx = pdf_get_version() - 10;
+  sup_idx = (sup_idx > SUP_IDX_MAX) ? SUP_IDX_MAX : sup_idx;
 
   if (!fmap_opt || !fmap_opt->charcoll)
-    return NULL;
+    return 0;
 
   /* First try alias for standard one. */
   for (i = 0; CIDFont_stdcc_alias[i].name != NULL; i++) {
     n = strlen(CIDFont_stdcc_alias[i].name);
     if (strstartswith(fmap_opt->charcoll, CIDFont_stdcc_alias[i].name)) {
       csi_idx  = CIDFont_stdcc_alias[i].index;
-      csi = NEW(1, CIDSysInfo);
       csi->registry = NEW(strlen(CIDFont_stdcc_def[csi_idx].registry)+1, char);
       strcpy(csi->registry, CIDFont_stdcc_def[csi_idx].registry);
       csi->ordering = NEW(strlen(CIDFont_stdcc_def[csi_idx].ordering)+1, char);
@@ -715,31 +542,31 @@ get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
       } else { /* Use heighest supported value for current output PDF version. */
         csi->supplement = CIDFont_stdcc_def[csi_idx].supplement[sup_idx];
       }
+      has_csi = 1;
       break;
     }
   }
-  if (csi == NULL) {
+  if (!has_csi) {
     char *p, *q;
 
     p   = (char *) fmap_opt->charcoll;
-    csi = NEW(1, CIDSysInfo);
 
     /* Full REGISTRY-ORDERING-SUPPLEMENT */
     p = strchr(fmap_opt->charcoll, '-');
     if (!p || p[1] == '\0')
-      _tt_abort("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
-            CIDFONT_DEBUG_STR, fmap_opt->charcoll);
+      _tt_abort("String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
+            fmap_opt->charcoll);
     p++;
 
     q = strchr(p, '-');
     if (!q || q[1] == '\0')
-      _tt_abort("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
-            CIDFONT_DEBUG_STR, fmap_opt->charcoll);
+      _tt_abort("String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
+            fmap_opt->charcoll);
     q++;
 
     if (!isdigit((unsigned char)q[0]))
-      _tt_abort("%s: String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
-            CIDFONT_DEBUG_STR, fmap_opt->charcoll);
+      _tt_abort("String can't be converted to REGISTRY-ORDERING-SUPPLEMENT: %s",
+            fmap_opt->charcoll);
 
     n = strlen(fmap_opt->charcoll) - strlen(p) - 1;
     csi->registry = NEW(n+1, char);
@@ -752,6 +579,8 @@ get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
     csi->ordering[m] = '\0';
 
     csi->supplement = (int) strtoul(q, NULL, 10);
+
+    has_csi = 1;
 
     /* Check for standart character collections. */
     for (i = 0; CIDFont_stdcc_def[i].ordering != NULL; i++) {
@@ -767,23 +596,20 @@ get_cidsysinfo (const char *map_name, fontmap_opt *fmap_opt)
   if (csi && csi_idx >= 0) {
     if (csi->supplement > CIDFont_stdcc_def[csi_idx].supplement[sup_idx]
         && (fmap_opt->flags & FONTMAP_OPT_NOEMBED)) {
-      dpx_warning("%s: Heighest supplement number supported in PDF-%d.%d for %s-%s is %d.",
-           CIDFONT_DEBUG_STR, pdf_get_version_major(), pdf_get_version_minor(),
+      dpx_warning("Highest supplement number supported in PDF-%d.%d for %s-%s is %d.",
+           pdf_get_version_major(), pdf_get_version_minor(),
            csi->registry, csi->ordering,
            CIDFont_stdcc_def[csi_idx].supplement[sup_idx]);
-      dpx_warning("%s: Some character may not shown without embedded font (--> %s).",
-           CIDFONT_DEBUG_STR, map_name);
+      dpx_warning("Some character may not shown without embedded font (--> %s).",
+           map_name);
     }
   }
 
-  return csi;
+  return has_csi;
 }
 
 void
 CIDFont_set_flags (int flags)
 {
-  CIDFont_type0_set_flags(flags);
-  CIDFont_type2_set_flags(flags);
-  cidoptflags |= flags;
+  opt_flags_cidfont |= flags;
 }
-

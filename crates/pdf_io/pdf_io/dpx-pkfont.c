@@ -81,9 +81,10 @@ truedpi (const char *ident, double point_size, unsigned int bdpi)
   return  dpi;
 }
 
-static FILE *
-dpx_open_pk_font_at (const char *ident, unsigned int dpi)
+static rust_input_handle_t
+dpx_open_pk_font_at (const char *ident, unsigned int dpi, char **pkname)
 {
+  /* Tectonic TODO: try a basic filename even if we're not doing to generate on the fly */
   /*kpse_glyph_file_type kpse_file_info;*/
   /*char * fqpn = kpse_find_glyph(ident, dpi, kpse_pk_format, &kpse_file_info);*/
   dpx_warning("Tectonic unable to generate PK font \"%s\" (dpi %u) on-the-fly", ident, dpi);
@@ -92,31 +93,33 @@ dpx_open_pk_font_at (const char *ident, unsigned int dpi)
 
 
 int
-pdf_font_open_pkfont (pdf_font *font)
+pdf_font_open_pkfont (pdf_font *font, const char *ident, int index, int encoding_id, int embedding, double point_size)
 {
-  char     *ident;
-  double    point_size;
-  int       encoding_id;
   unsigned int dpi;
-  FILE     *fp;
-
-  ident       = pdf_font_get_ident(font);
-  point_size  = pdf_font_get_param(font, PDF_FONT_PARAM_POINT_SIZE);
-  encoding_id = pdf_font_get_encoding(font);
+  rust_input_handle_t handle;
+  char *pkname;
 
   if (!ident || point_size <= 0.0)
     return  -1;
 
+  if (!embedding) {
+    dpx_warning("Ignoring no-embed option for PK font: %s", ident);
+  }
+  if (index != 0) {
+    dpx_warning("Ignoring font index option for PK font: %s", ident);
+  }
+
   dpi = truedpi(ident, point_size, base_dpi);
-  fp  = dpx_open_pk_font_at(ident, dpi);
-  if (!fp)
+  handle = dpx_open_pk_font_at(ident, dpi, &pkname);
+  if (!handle)
     return  -1;
-  fclose(fp);
+
+  ttstub_input_close(handle);
 
   /* Type 3 fonts doesn't have FontName.
    * FontFamily is recommended for PDF 1.5.
    */
-  pdf_font_set_fontname(font, ident);
+  font->fontname = pkname;
 
   if (encoding_id >= 0) {
     pdf_encoding_used_by_type3(encoding_id);
@@ -328,15 +331,15 @@ pk_decode_bitmap (pdf_obj *stream, uint32_t wd, uint32_t ht,
 
 
 static void
-do_preamble (FILE *fp)
+do_preamble (rust_input_handle_t handle)
 {
   /* Check for id byte */
-  if (fgetc(fp) == 89) {
+  if (ttstub_input_getc(handle) == 89) {
     /* Skip comment */
-    skip_bytes(get_unsigned_byte(fp), fp);
+    tt_skip_bytes(tt_get_unsigned_byte(handle), handle);
     /* Skip other header info.  It's normally used for verifying this
        is the file wethink it is */
-    skip_bytes(16, fp);
+    tt_skip_bytes(16, handle);
   } else {
     _tt_abort("embed_pk_font: PK ID byte is incorrect.  Are you sure this is a PK file?");
   }
@@ -354,42 +357,42 @@ struct pk_header_
 };
 
 static int
-read_pk_char_header (struct pk_header_ *h, unsigned char opcode, FILE *fp)
+read_pk_char_header (struct pk_header_ *h, unsigned char opcode, rust_input_handle_t handle)
 {
   assert(h);
 
   if ((opcode & 4) == 0) { /* short */
-    h->pkt_len = (opcode & 3) << 8 | get_unsigned_byte(fp);
-    h->chrcode = get_unsigned_byte(fp);
-    h->wd = get_unsigned_triple(fp);     /* TFM width */
-    h->dx = get_unsigned_byte(fp) << 16; /* horizontal escapement */
+    h->pkt_len = (opcode & 3) << 8 | tt_get_unsigned_byte(handle);
+    h->chrcode = tt_get_unsigned_byte(handle);
+    h->wd = tt_get_unsigned_triple(handle);     /* TFM width */
+    h->dx = tt_get_unsigned_byte(handle) << 16; /* horizontal escapement */
     h->dy = 0;
-    h->bm_wd    = get_unsigned_byte(fp);
-    h->bm_ht    = get_unsigned_byte(fp);
-    h->bm_hoff  = get_signed_byte(fp);
-    h->bm_voff  = get_signed_byte(fp);
+    h->bm_wd    = tt_get_unsigned_byte(handle);
+    h->bm_ht    = tt_get_unsigned_byte(handle);
+    h->bm_hoff  = tt_get_signed_byte(handle);
+    h->bm_voff  = tt_get_signed_byte(handle);
     h->pkt_len -= 8;
   } else if ((opcode & 7) == 7) { /* long */
-    h->pkt_len = get_positive_quad(fp, "PK", "pkt_len");
-    h->chrcode = get_signed_quad(fp);
-    h->wd = get_signed_quad(fp);
-    h->dx = get_signed_quad(fp); /* 16.16 fixed point number in pixels */
-    h->dy = get_signed_quad(fp);
-    h->bm_wd    = get_positive_quad(fp, "PK", "bm_wd");
-    h->bm_ht    = get_positive_quad(fp, "PK", "bm_ht");
-    h->bm_hoff  = get_signed_quad(fp);
-    h->bm_voff  = get_signed_quad(fp);
+    h->pkt_len = tt_get_positive_quad(handle, "PK", "pkt_len");
+    h->chrcode = tt_get_signed_quad(handle);
+    h->wd = tt_get_signed_quad(handle);
+    h->dx = tt_get_signed_quad(handle); /* 16.16 fixed point number in pixels */
+    h->dy = tt_get_signed_quad(handle);
+    h->bm_wd    = tt_get_positive_quad(handle, "PK", "bm_wd");
+    h->bm_ht    = tt_get_positive_quad(handle, "PK", "bm_ht");
+    h->bm_hoff  = tt_get_signed_quad(handle);
+    h->bm_voff  = tt_get_signed_quad(handle);
     h->pkt_len -= 28;
   } else { /* extended short */
-    h->pkt_len = (opcode & 3) << 16 | get_unsigned_pair(fp);
-    h->chrcode = get_unsigned_byte(fp);
-    h->wd = get_unsigned_triple(fp);
-    h->dx = get_unsigned_pair(fp) << 16;
+    h->pkt_len = (opcode & 3) << 16 | tt_get_unsigned_pair(handle);
+    h->chrcode = tt_get_unsigned_byte(handle);
+    h->wd = tt_get_unsigned_triple(handle);
+    h->dx = tt_get_unsigned_pair(handle) << 16;
     h->dy = 0;
-    h->bm_wd    = get_unsigned_pair(fp);
-    h->bm_ht    = get_unsigned_pair(fp);
-    h->bm_hoff  = get_signed_pair(fp);
-    h->bm_voff  = get_signed_pair(fp);
+    h->bm_wd    = tt_get_unsigned_pair(handle);
+    h->bm_ht    = tt_get_unsigned_pair(handle);
+    h->bm_hoff  = tt_get_signed_pair(handle);
+    h->bm_voff  = tt_get_signed_pair(handle);
     h->pkt_len -= 13;
   }
 
@@ -479,11 +482,12 @@ create_pk_CharProc_stream (struct pk_header_ *pkh,
 int
 pdf_font_load_pkfont (pdf_font *font)
 {
+  char *pkname;
   pdf_obj  *fontdict;
   char     *usedchars;
   char     *ident;
   unsigned int dpi;
-  FILE     *fp;
+  rust_input_handle_t handle;
   double    point_size, pix2charu;
   int       opcode, code, firstchar, lastchar, prev;
   pdf_obj  *charprocs, *procset, *encoding, *tmp_array;
@@ -496,15 +500,15 @@ pdf_font_load_pkfont (pdf_font *font)
 #endif /* ENABLE_GLYPHENC */
   int       error = 0;
 
-  if (!pdf_font_is_in_use(font)) {
+  if (!font->reference) {
     return 0;
   }
 
-  ident       = pdf_font_get_ident(font);
-  point_size  = pdf_font_get_param(font, PDF_FONT_PARAM_POINT_SIZE);
-  usedchars   = pdf_font_get_usedchars(font);
+  ident       = font->filename;
+  point_size  = font->point_size;
+  usedchars   = font->usedchars;
 #if  ENABLE_GLYPHENC
-  encoding_id = pdf_font_get_encoding(font);
+  encoding_id = font->encoding_id;
   if (encoding_id < 0)
     enc_vec = NULL;
   else {
@@ -515,11 +519,12 @@ pdf_font_load_pkfont (pdf_font *font)
   assert(ident && usedchars && point_size > 0.0);
 
   dpi  = truedpi(ident, point_size, base_dpi);
-  fp   = dpx_open_pk_font_at(ident, dpi);
-  if (!fp) {
+  handle = dpx_open_pk_font_at(ident, dpi, &pkname);
+  if (!handle) {
     _tt_abort("Could not find/open PK font file: %s (at %udpi)", ident, dpi);
   }
 
+  font->filename = pkname;
   memset(charavail, 0, 256);
   charprocs  = pdf_new_dict();
   /* Include bitmap as 72dpi image:
@@ -529,11 +534,11 @@ pdf_font_load_pkfont (pdf_font *font)
   pix2charu  = 72. * 1000. / ((double) base_dpi) / point_size;
   bbox.llx = bbox.lly =  HUGE_VAL;
   bbox.urx = bbox.ury = -HUGE_VAL;
-  while ((opcode = fgetc(fp)) >= 0 && opcode != PK_POST) {
+  while ((opcode = ttstub_input_getc(handle)) >= 0 && opcode != PK_POST) {
     if (opcode < 240) {
       struct pk_header_  pkh;
 
-      error = read_pk_char_header(&pkh, opcode, fp);
+      error = read_pk_char_header(&pkh, opcode, handle);
       if (error)
         _tt_abort("Error in reading PK character header.");
       else if (charavail[pkh.chrcode & 0xff])
@@ -541,7 +546,7 @@ pdf_font_load_pkfont (pdf_font *font)
              ident, pkh.chrcode);
 
       if (!usedchars[pkh.chrcode & 0xff])
-        skip_bytes(pkh.pkt_len, fp);
+        tt_skip_bytes(pkh.pkt_len, handle);
       else {
         char          *charname;
         pdf_obj       *charproc;
@@ -560,7 +565,7 @@ pdf_font_load_pkfont (pdf_font *font)
         bbox.ury = MAX(bbox.ury,  pkh.bm_voff);
 
         pkt_ptr = NEW(pkh.pkt_len, unsigned char);
-        if ((bytesread = fread(pkt_ptr, 1, pkh.pkt_len, fp))!= pkh.pkt_len) {
+        if ((bytesread = ttstub_input_read(handle, (char *) pkt_ptr, pkh.pkt_len))!= pkh.pkt_len) {
           _tt_abort("Only %"PRIuZ" bytes PK packet read. (expected %d bytes)",
                 bytesread, pkh.pkt_len);
         }
@@ -593,19 +598,19 @@ pdf_font_load_pkfont (pdf_font *font)
       case PK_NO_OP: break;
       case PK_XXX1: case PK_XXX2: case PK_XXX3: case PK_XXX4:
       {
-        int32_t len = get_unsigned_num(fp, opcode-PK_XXX1);
+        int32_t len = tt_get_unsigned_num(handle, opcode-PK_XXX1);
         if (len < 0)
           dpx_warning("PK: Special with %d bytes???", len);
         else
-          skip_bytes(len, fp);
+          tt_skip_bytes(len, handle);
         break;
       }
-      case PK_YYY:  skip_bytes(4, fp);  break;
-      case PK_PRE:  do_preamble(fp); break;
+      case PK_YYY:  tt_skip_bytes(4, handle);  break;
+      case PK_PRE:  do_preamble(handle); break;
       }
     }
   }
-  fclose(fp);
+  ttstub_input_close(handle);
 
   /* Check if we really got all glyphs needed. */
   for (code = 0; code < 256; code++) {

@@ -744,3 +744,25 @@ print_scaled(scaled_t s)
         delta = delta * 10;
     } while (s > delta);
 }
+
+
+void
+print_ucs_code(UnicodeScalar n)
+{
+    unsigned char k = 0;
+
+    print_cstr("U+");
+
+    do {
+        dig[k] = n % 16;
+        n = n / 16;
+        k++;
+    } while (n != 0);
+
+    while (k < 4) {
+        dig[k] = 0;
+        k++;
+    }
+
+    print_the_digs(k);
+}

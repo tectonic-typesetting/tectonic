@@ -84,10 +84,10 @@ CMap_new (void)
     cmap->useCMap  = NULL;
     cmap->CSI      = NULL;
 
-    cmap->profile.minBytesIn  = 2;
-    cmap->profile.maxBytesIn  = 2;
-    cmap->profile.minBytesOut = 2;
-    cmap->profile.maxBytesOut = 2;
+    cmap->profile.minBytesIn  = 65535;
+    cmap->profile.maxBytesIn  = 0;
+    cmap->profile.minBytesOut = 65535;
+    cmap->profile.maxBytesOut = 0;
 
     cmap->flags = 0;
 

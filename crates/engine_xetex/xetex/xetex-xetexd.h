@@ -466,7 +466,7 @@ extern int32_t mem_end;
 extern int32_t rover;
 extern int32_t last_leftmost_char;
 extern int32_t last_rightmost_char;
-extern int32_t hlist_stack[513];
+extern int32_t hlist_stack[MAX_HLIST_STACK + 1];
 extern short hlist_stack_level;
 extern int32_t first_p;
 extern int32_t global_prev_p;
@@ -487,7 +487,7 @@ extern int32_t eqtb_top;
 extern int32_t hash_high;
 extern bool no_new_control_sequence;
 extern int32_t cs_count;
-extern b32x2 prim[501];
+extern b32x2 prim[PRIM_SIZE + 1];
 extern int32_t prim_used;
 extern memory_word *save_stack;
 extern int32_t save_ptr;
@@ -1118,6 +1118,7 @@ void print_hex(int32_t n);
 void print_roman_int(int32_t n);
 void print_current_string(void);
 void print_scaled(scaled_t s);
+void print_ucs_code(UnicodeScalar n);
 
 /* xetex-pagebuilder */
 

@@ -196,6 +196,7 @@ long findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine, uint32_t feature,
 hb_font_t *ttxl_get_hb_font(XeTeXLayoutEngine engine);
 float ttxl_font_units_to_points(XeTeXFont font, float units);
 float ttxl_font_points_to_units(XeTeXFont font, float points);
+float ttxl_font_get_point_size(XeTeXFont font);
 const char *ttxl_platfont_get_desc(PlatformFontRef fontRef);
 
 #ifdef XETEX_MAC

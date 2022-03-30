@@ -289,7 +289,7 @@ fn pdfoutput() {
 }
 
 #[test]
-fn pdfimages() {
+fn png_formats() {
     TestCase::new("png_formats").check_pdf(true).go()
 }
 

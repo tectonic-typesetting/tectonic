@@ -183,10 +183,18 @@ impl IoProvider for MemoryIo {
 
         let name = normalize_tex_path(name);
 
-        OpenResult::Ok(OutputHandle::new(
-            name.to_owned(),
-            MemoryIoItem::new(&self.files, &name, true),
-        ))
+        let oh = OutputHandle::new(name.to_owned(), MemoryIoItem::new(&self.files, &name, true));
+
+        // `hyperxmp.sty` does a thing where it tries to get today's date by
+        // calling \filemoddate on `\jobname.log`. That essentially relies on it
+        // being possible to \openin an \openout file that hasn't yet been
+        // closed. I think that it's reasonable to allow that, if we just
+        // provide null data and don't try to support intermixed reads and
+        // writes. We have to do this after creating the MemoryIoItem since that
+        // step removes any preexisting entry from the table of files.
+        self.create_entry(&name, Vec::new());
+
+        OpenResult::Ok(oh)
     }
 
     fn output_open_stdout(&mut self) -> OpenResult<OutputHandle> {

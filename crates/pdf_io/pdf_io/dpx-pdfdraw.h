@@ -82,10 +82,6 @@ int    pdf_dev_rlineto       (double x0 , double y0);
 int    pdf_dev_curveto       (double x0 , double y0,
                                      double x1 , double y1,
                                      double x2 , double y2);
-int    pdf_dev_vcurveto      (double x0 , double y0,
-                                     double x1 , double y1);
-int    pdf_dev_ycurveto      (double x0 , double y0,
-                                     double x1 , double y1);
 int    pdf_dev_rcurveto      (double x0 , double y0,
                                      double x1 , double y1,
                                      double x2 , double y2);
@@ -103,9 +99,13 @@ int    pdf_dev_newpath       (void);
 int    pdf_dev_clip          (void);
 int    pdf_dev_eoclip        (void);
 
+int    pdf_dev_rectstroke    (double x, double y,
+                              double w, double h,
+                              const pdf_tmatrix *M  /* optional */
+                             );
+
 int    pdf_dev_rectfill      (double x, double y, double w, double h);
 int    pdf_dev_rectclip      (double x, double y, double w, double h);
-int    pdf_dev_rectadd       (double x, double y, double w, double h);
 
 int    pdf_dev_flushpath     (char p_op, int fill_rule);
 
@@ -114,6 +114,7 @@ int    pdf_dev_concat        (const pdf_tmatrix *M);
 void   pdf_dev_dtransform    (pdf_coord *p, const pdf_tmatrix *M);
 void   pdf_dev_idtransform   (pdf_coord *p, const pdf_tmatrix *M);
 void   pdf_dev_transform     (pdf_coord *p, const pdf_tmatrix *M);
+void   pdf_dev_itransform    (pdf_coord *p, const pdf_tmatrix *M);
 
 int    pdf_dev_gsave         (void);
 int    pdf_dev_grestore      (void);
@@ -151,5 +152,9 @@ void pdf_dev_get_fixed_point (pdf_coord *p);
 void   pdf_dev_set_color     (const pdf_color *color, char mask, int force);
 #define pdf_dev_set_strokingcolor(c)     pdf_dev_set_color(c,    0, 0);
 #define pdf_dev_set_nonstrokingcolor(c)  pdf_dev_set_color(c, 0x20, 0);
+
+extern void pdf_dev_xgstate_push  (pdf_obj *object);
+extern void pdf_dev_xgstate_pop   (void);
+extern int  pdf_dev_reset_xgstate (int force);
 
 #endif /* _PDF_DRAW_H_ */

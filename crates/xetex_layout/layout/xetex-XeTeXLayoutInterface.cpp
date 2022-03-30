@@ -1122,6 +1122,12 @@ ttxl_font_points_to_units(XeTeXFont font, float points)
     return ((XeTeXFontInst *) font)->pointsToUnits(points);
 }
 
+float
+ttxl_font_get_point_size(XeTeXFont font)
+{
+    return ((XeTeXFontInst *) font)->getPointSize();
+}
+
 const char *
 ttxl_platfont_get_desc(PlatformFontRef fontRef)
 {

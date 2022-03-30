@@ -1737,6 +1737,7 @@ fetch(int32_t a)
         if (!((cur_i.s3 > 0))) {
             char_warning(cur_f, cur_c);
             mem[a].b32.s1 = EMPTY;
+            cur_i = null_character;
         }
     }
 }
@@ -2414,8 +2415,16 @@ make_scripts(int32_t q, scaled_t delta)
     int32_t script_c;
     uint16_t script_g;
     internal_font_number script_f;
+    uint16_t sup_g;
+    internal_font_number sup_f;
+    uint16_t sub_g;
+    internal_font_number sub_f;
     int32_t t;
     internal_font_number save_f;
+    int32_t script_head;
+    int32_t script_ptr;
+    small_number saved_math_style;
+    small_number this_math_style;
 
     p = mem[q + 1].b32.s1;
     script_c = TEX_NULL;
@@ -2423,6 +2432,7 @@ make_scripts(int32_t q, scaled_t delta)
     script_f = 0;
     sup_kern = 0;
     sub_kern = 0;
+
     if ((is_char_node(p))
         ||
         (((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
@@ -2430,7 +2440,6 @@ make_scripts(int32_t q, scaled_t delta)
         shift_up = 0;
         shift_down = 0;
     } else {
-
         z = hpack(p, 0, ADDITIONAL);
         if (cur_style < SCRIPT_STYLE)
             t = SCRIPT_SIZE;
@@ -2440,100 +2449,366 @@ make_scripts(int32_t q, scaled_t delta)
         shift_down = mem[z + 2].b32.s1 + sub_drop(t);
         free_node(z, BOX_NODE_SIZE);
     }
-    if (mem[q + 2].b32.s1 == EMPTY) {  /*784: */
+
+    if (mem[q + 2].b32.s1 == EMPTY) {  /*801: */
+        /* "Construct a subscript box when there is no superscript[.] The top of
+         * the subscript should not exceed the baseline plus four-ﬁfths of the
+         * x-height."
+        */
+        script_head = q + 3;
+
+        /* 805: fetch first character of a sub/superscript */
+        script_c = TEX_NULL;
+        script_g = 0;
+        script_f = 0;
+        this_math_style = 2 * (cur_style / 4) + 5;
+
+        /* "Loop through the sub mlist looking for the first character-like
+         * thing. Ignore kerns or glue so that, for example, changing P_j to
+         * P_{\,j} will have a predictable eﬀect. Intercept style nodes and
+         * execute them. If we encounter a choice node, follow the appropriate
+         * branch. Anything else halts the search and inhibits OpenType kerning.
+         * Don’t try to do anything clever if the nucleus of the script head
+         * is empty, e.g., Pj and the such." */
+
+        if (mem[script_head].b32.s1 == SUB_MLIST) { /* math_type(script_head) */
+            script_ptr = LLIST_info(script_head);
+            script_head = TEX_NULL;
+
+            while (script_ptr >= 0 && script_ptr <= mem_end) { /* is_valid_pointer() */
+                switch (NODE_type(script_ptr)) {
+                case KERN_NODE:
+                case GLUE_NODE:
+                case CHOICE_NODE:
+                    break;
+                case STYLE_NODE:
+                    this_math_style = NODE_subtype(script_ptr);
+                    break;
+                case ORD_NOAD:
+                case OP_NOAD:
+                case BIN_NOAD:
+                case REL_NOAD:
+                case OPEN_NOAD:
+                case CLOSE_NOAD:
+                case PUNCT_NOAD:
+                    script_head = script_ptr + 1; /* nucleus(script_ptr) */
+                    script_ptr = TEX_NULL;
+                    break;
+                default:
+                    script_ptr = TEX_NULL;
+                }
+
+                if (script_ptr >= 0 && script_ptr <= mem_end) {
+                    if (NODE_type(script_ptr) == CHOICE_NODE) {
+                        switch (this_math_style / 2) {
+                        case 0:
+                            script_ptr = mem[script_ptr + 1].b32.s0; /*display_mlist(.)*/
+                            break;
+                        case 1:
+                            script_ptr = mem[script_ptr + 1].b32.s1; /*text_mlist(.)*/
+                            break;
+                        case 2:
+                            script_ptr = mem[script_ptr + 2].b32.s0; /*script_mlist(.)*/
+                            break;
+                        case 3:
+                            script_ptr = mem[script_ptr + 2].b32.s1; /*script_script_mlist(.)*/
+                            break;
+                        }
+                    } else {
+                        script_ptr = LLIST_link(script_ptr);
+                    }
+                }
+            }
+        }
+
+        if (script_head >= 0 && script_head <= mem_end && mem[script_head].b32.s1 == MATH_CHAR) {
+            save_f = cur_f;
+            saved_math_style = cur_style;
+            cur_style = this_math_style;
+
+            if (cur_style < SCRIPT_STYLE)
+                cur_size = TEXT_SIZE;
+            else
+                cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
+
+            cur_mu = x_over_n(math_quad(cur_size), 18);
+            fetch(script_head);
+
+            if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+                script_c = new_native_character(cur_f, cur_c);
+                script_g = get_native_glyph(script_c, 0);
+                script_f = cur_f;
+            }
+
+            cur_f = save_f;
+            cur_style = saved_math_style;
+
+            if (cur_style < SCRIPT_STYLE)
+                cur_size = TEXT_SIZE;
+            else
+                cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
+
+            cur_mu = x_over_n(math_quad(cur_size), 18);
+        }
+
+        sub_g = script_g;
+        sub_f = script_f;
         save_f = cur_f;
+
         x = clean_box(q + 3, 2 * (cur_style / 4) + 5);
         cur_f = save_f;
         mem[x + 1].b32.s1 = mem[x + 1].b32.s1 + DIMENPAR(script_space);
+
         if (shift_down < sub1(cur_size))
             shift_down = sub1(cur_size);
+
         if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
             clr = mem[x + 3].b32.s1 - get_ot_math_constant(cur_f, SUBSCRIPTTOPMAX);
         else
             clr = mem[x + 3].b32.s1 - (abs(math_x_height(cur_size) * 4) / 5);
+
         if (shift_down < clr)
             shift_down = clr;
-        mem[x + 4].b32.s1 = shift_down;
-        if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {   /*787: */
-            if (mem[q + 3].b32.s1 == MATH_CHAR) {
-                save_f = cur_f;
-                fetch(q + 3);
-                if (((font_area[cur_f] == OTGR_FONT_FLAG)
-                     && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
-                    script_c = new_native_character(cur_f, cur_c);
-                    script_g = get_native_glyph(script_c, 0);
-                    script_f = cur_f;
-                } else {
 
-                    script_g = 0;
-                    script_f = 0;
-                }
-                cur_f = save_f;
+        mem[x + 4].b32.s1 = shift_down;
+
+        if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {   /*787: */
+            if (p != TEX_NULL && !is_char_node(p) && NODE_type(p) == WHATSIT_NODE && mem[p].b16.s0 == GLYPH_NODE) {
+                sub_kern = get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, sub_f, sub_g, SUB_CMD, shift_down);
+
+                if (sub_kern != 0)
+                    p = attach_hkern_to_new_hlist(q, sub_kern);
             }
-            if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-                  && (mem[p].b16.s0 == GLYPH_NODE))))
-                sub_kern =
-                    get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g, SUB_CMD,
-                                     shift_down);
-            if (sub_kern != 0)
-                p = attach_hkern_to_new_hlist(q, sub_kern);
         }
     } else {
+        /*********************/
+        script_head = q + 2;
 
-        {
-            save_f = cur_f;
-            x = clean_box(q + 2, 2 * (cur_style / 4) + 4 + (cur_style % 2));
-            cur_f = save_f;
-            mem[x + 1].b32.s1 = mem[x + 1].b32.s1 + DIMENPAR(script_space);
-            if (odd(cur_style))
-                clr = sup3(cur_size);
-            else if (cur_style < TEXT_STYLE)
-                clr = sup1(cur_size);
-            else
-                clr = sup2(cur_size);
-            if (shift_up < clr)
-                shift_up = clr;
-            if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
-                clr = mem[x + 2].b32.s1 + get_ot_math_constant(cur_f, SUPERSCRIPTBOTTOMMIN);
-            else
-                clr = mem[x + 2].b32.s1 + (abs(math_x_height(cur_size)) / 4);
-            if (shift_up < clr)
-                shift_up = clr;
-            if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {       /*788: */
-                if (mem[q + 2].b32.s1 == MATH_CHAR) {
-                    save_f = cur_f;
-                    fetch(q + 2);
-                    if (((font_area[cur_f] == OTGR_FONT_FLAG)
-                         && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
-                        script_c = new_native_character(cur_f, cur_c);
-                        script_g = get_native_glyph(script_c, 0);
-                        script_f = cur_f;
-                    } else {
+        /* Lots of code duplication here ... */
+        script_c = TEX_NULL;
+        script_g = 0;
+        script_f = 0;
+        this_math_style = 2 * (cur_style / 4) + 5;
 
-                        script_g = 0;
-                        script_f = 0;
-                    }
-                    cur_f = save_f;
+        if (mem[script_head].b32.s1 == SUB_MLIST) { /* math_type(script_head) */
+            script_ptr = LLIST_info(script_head);
+            script_head = TEX_NULL;
+
+            while (script_ptr >= 0 && script_ptr <= mem_end) { /* is_valid_pointer() */
+                switch (NODE_type(script_ptr)) {
+                case KERN_NODE:
+                case GLUE_NODE:
+                case CHOICE_NODE:
+                    break;
+                case STYLE_NODE:
+                    this_math_style = NODE_subtype(script_ptr);
+                    break;
+                case ORD_NOAD:
+                case OP_NOAD:
+                case BIN_NOAD:
+                case REL_NOAD:
+                case OPEN_NOAD:
+                case CLOSE_NOAD:
+                case PUNCT_NOAD:
+                    script_head = script_ptr + 1; /* nucleus(script_ptr) */
+                    script_ptr = TEX_NULL;
+                    break;
+                default:
+                    script_ptr = TEX_NULL;
                 }
-                if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-                      && (mem[p].b16.s0 == GLYPH_NODE))))
-                    sup_kern =
-                        get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g, SUP_CMD,
-                                         shift_up);
-                if ((sup_kern != 0) && (mem[q + 3].b32.s1 == EMPTY))
-                    p = attach_hkern_to_new_hlist(q, sup_kern);
+
+                if (script_ptr >= 0 && script_ptr <= mem_end) {
+                    if (NODE_type(script_ptr) == CHOICE_NODE) {
+                        switch (this_math_style / 2) {
+                        case 0:
+                            script_ptr = mem[script_ptr + 1].b32.s0; /*display_mlist(.)*/
+                            break;
+                        case 1:
+                            script_ptr = mem[script_ptr + 1].b32.s1; /*text_mlist(.)*/
+                            break;
+                        case 2:
+                            script_ptr = mem[script_ptr + 2].b32.s0; /*script_mlist(.)*/
+                            break;
+                        case 3:
+                            script_ptr = mem[script_ptr + 2].b32.s1; /*script_script_mlist(.)*/
+                            break;
+                        }
+                    } else {
+                        script_ptr = LLIST_link(script_ptr);
+                    }
+                }
             }
         }
+
+        if (script_head >= 0 && script_head <= mem_end && mem[script_head].b32.s1 == MATH_CHAR) {
+            save_f = cur_f;
+            saved_math_style = cur_style;
+            cur_style = this_math_style;
+
+            if (cur_style < SCRIPT_STYLE)
+                cur_size = TEXT_SIZE;
+            else
+                cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
+
+            cur_mu = x_over_n(math_quad(cur_size), 18);
+            fetch(script_head);
+
+            if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+                script_c = new_native_character(cur_f, cur_c);
+                script_g = get_native_glyph(script_c, 0);
+                script_f = cur_f;
+            }
+
+            cur_f = save_f;
+            cur_style = saved_math_style;
+
+            if (cur_style < SCRIPT_STYLE)
+                cur_size = TEXT_SIZE;
+            else
+                cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
+
+            cur_mu = x_over_n(math_quad(cur_size), 18);
+        }
+
+        sup_g = script_g;
+        sup_f = script_f;
+        save_f = cur_f;
+
+        x = clean_box(q + 2, 2 * (cur_style / 4) + 4 + (cur_style % 2));
+        cur_f = save_f;
+        mem[x + 1].b32.s1 = mem[x + 1].b32.s1 + DIMENPAR(script_space);
+
+        if (odd(cur_style))
+            clr = sup3(cur_size);
+        else if (cur_style < TEXT_STYLE)
+            clr = sup1(cur_size);
+        else
+            clr = sup2(cur_size);
+
+        if (shift_up < clr)
+            shift_up = clr;
+
+        if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f]))
+            clr = mem[x + 2].b32.s1 + get_ot_math_constant(cur_f, SUPERSCRIPTBOTTOMMIN);
+        else
+            clr = mem[x + 2].b32.s1 + (abs(math_x_height(cur_size)) / 4);
+
+        if (shift_up < clr)
+            shift_up = clr;
+
+        if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {       /*788: */
+            if (mem[q + 3].b32.s1 == EMPTY) {
+                if (p != TEX_NULL && !is_char_node(p) && NODE_type(p) == WHATSIT_NODE && mem[p].b16.s0 == GLYPH_NODE) {
+                    sup_kern = get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, sup_f, sup_g, SUP_CMD, shift_up);
+
+                    if (sup_kern != 0)
+                        p = attach_hkern_to_new_hlist(q, sup_kern);
+                }
+            }
+        }
+
         if (mem[q + 3].b32.s1 == EMPTY)
             mem[x + 4].b32.s1 = -(int32_t) shift_up;
         else {                  /*786: */
-
             save_f = cur_f;
+
+            /* Yet more duplication */
+            script_head = q + 3;
+            script_c = TEX_NULL;
+            script_g = 0;
+            script_f = 0;
+            this_math_style = 2 * (cur_style / 4) + 5;
+
+            if (mem[script_head].b32.s1 == SUB_MLIST) { /* math_type(script_head) */
+                script_ptr = LLIST_info(script_head);
+                script_head = TEX_NULL;
+
+                while (script_ptr >= 0 && script_ptr <= mem_end) { /* is_valid_pointer() */
+                    switch (NODE_type(script_ptr)) {
+                    case KERN_NODE:
+                    case GLUE_NODE:
+                    case CHOICE_NODE:
+                        break;
+                    case STYLE_NODE:
+                        this_math_style = NODE_subtype(script_ptr);
+                        break;
+                    case ORD_NOAD:
+                    case OP_NOAD:
+                    case BIN_NOAD:
+                    case REL_NOAD:
+                    case OPEN_NOAD:
+                    case CLOSE_NOAD:
+                    case PUNCT_NOAD:
+                        script_head = script_ptr + 1; /* nucleus(script_ptr) */
+                        script_ptr = TEX_NULL;
+                        break;
+                    default:
+                        script_ptr = TEX_NULL;
+                    }
+
+                    if (script_ptr >= 0 && script_ptr <= mem_end) {
+                        if (NODE_type(script_ptr) == CHOICE_NODE) {
+                            switch (this_math_style / 2) {
+                            case 0:
+                                script_ptr = mem[script_ptr + 1].b32.s0; /*display_mlist(.)*/
+                                break;
+                            case 1:
+                                script_ptr = mem[script_ptr + 1].b32.s1; /*text_mlist(.)*/
+                                break;
+                            case 2:
+                                script_ptr = mem[script_ptr + 2].b32.s0; /*script_mlist(.)*/
+                                break;
+                            case 3:
+                                script_ptr = mem[script_ptr + 2].b32.s1; /*script_script_mlist(.)*/
+                                break;
+                            }
+                        } else {
+                            script_ptr = LLIST_link(script_ptr);
+                        }
+                    }
+                }
+            }
+
+            if (script_head >= 0 && script_head <= mem_end && mem[script_head].b32.s1 == MATH_CHAR) {
+                save_f = cur_f;
+                saved_math_style = cur_style;
+                cur_style = this_math_style;
+
+                if (cur_style < SCRIPT_STYLE)
+                    cur_size = TEXT_SIZE;
+                else
+                    cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
+
+                cur_mu = x_over_n(math_quad(cur_size), 18);
+                fetch(script_head);
+
+                if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+                    script_c = new_native_character(cur_f, cur_c);
+                    script_g = get_native_glyph(script_c, 0);
+                    script_f = cur_f;
+                }
+
+                cur_f = save_f;
+                cur_style = saved_math_style;
+
+                if (cur_style < SCRIPT_STYLE)
+                    cur_size = TEXT_SIZE;
+                else
+                    cur_size = SCRIPT_SIZE * ((cur_style - 2) / 2);
+
+                cur_mu = x_over_n(math_quad(cur_size), 18);
+            }
+
+            sub_g = script_g;
+            sub_f = script_f;
+
             y = clean_box(q + 3, 2 * (cur_style / 4) + 5);
             cur_f = save_f;
             mem[y + 1].b32.s1 = mem[y + 1].b32.s1 + DIMENPAR(script_space);
+
             if (shift_down < sub2(cur_size))
                 shift_down = sub2(cur_size);
+
             if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
                 clr =
                     get_ot_math_constant(cur_f,
@@ -2541,6 +2816,7 @@ make_scripts(int32_t q, scaled_t delta)
                                                                            (mem[y + 3].b32.s1 - shift_down));
             else
                 clr = 4 * default_rule_thickness() - ((shift_up - mem[x + 2].b32.s1) - (mem[y + 3].b32.s1 - shift_down));
+
             if (clr > 0) {
                 shift_down = shift_down + clr;
                 if (((font_area[cur_f] == OTGR_FONT_FLAG)
@@ -2555,56 +2831,28 @@ make_scripts(int32_t q, scaled_t delta)
                     shift_down = shift_down - clr;
                 }
             }
-            if (((font_area[cur_f] == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
-                {
-                    if (mem[q + 3].b32.s1 == MATH_CHAR) {
-                        save_f = cur_f;
-                        fetch(q + 3);
-                        if (((font_area[cur_f] == OTGR_FONT_FLAG)
-                             && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
-                            script_c = new_native_character(cur_f, cur_c);
-                            script_g = get_native_glyph(script_c, 0);
-                            script_f = cur_f;
-                        } else {
 
-                            script_g = 0;
-                            script_f = 0;
-                        }
-                        cur_f = save_f;
-                    }
-                    if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-                          && (mem[p].b16.s0 == GLYPH_NODE))))
-                        sub_kern =
-                            get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g,
-                                             SUB_CMD, shift_down);
+            if (font_area[cur_f] == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+                if (p != TEX_NULL && !is_char_node(p) && NODE_type(p) == WHATSIT_NODE && mem[p].b16.s0 == GLYPH_NODE) {
+                    sub_kern = get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, sub_f, sub_g, SUB_CMD, shift_down);
+
                     if (sub_kern != 0)
                         p = attach_hkern_to_new_hlist(q, sub_kern);
                 }
-                {
-                    if (mem[q + 2].b32.s1 == MATH_CHAR) {
-                        save_f = cur_f;
-                        fetch(q + 2);
-                        if (((font_area[cur_f] == OTGR_FONT_FLAG)
-                             && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
-                            script_c = new_native_character(cur_f, cur_c);
-                            script_g = get_native_glyph(script_c, 0);
-                            script_f = cur_f;
-                        } else {
 
-                            script_g = 0;
-                            script_f = 0;
-                        }
-                        cur_f = save_f;
+                if (mem[q + 3].b32.s1 == EMPTY) {
+                    if (p != TEX_NULL && !is_char_node(p) && NODE_type(p) == WHATSIT_NODE && mem[p].b16.s0 == GLYPH_NODE) {
+                        sup_kern = get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, sup_f, sup_g, SUP_CMD, shift_up);
+
+                        if (sup_kern != 0)
+                            p = attach_hkern_to_new_hlist(q, sup_kern);
                     }
-                    if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-                          && (mem[p].b16.s0 == GLYPH_NODE))))
-                        sup_kern =
-                            get_ot_math_kern(mem[p + 4].b16.s2, mem[p + 4].b16.s1, script_f, script_g,
-                                             SUP_CMD, shift_up);
-                    if ((sup_kern != 0) && (mem[q + 3].b32.s1 == EMPTY))
-                        p = attach_hkern_to_new_hlist(q, sup_kern);
                 }
+            } else {
+                sup_kern = 0;
+                sub_kern = 0;
             }
+
             mem[x + 4].b32.s1 = sup_kern + delta - sub_kern;
             p = new_kern((shift_up - mem[x + 2].b32.s1) - (mem[y + 3].b32.s1 - shift_down));
             mem[x].b32.s1 = p;
@@ -2613,10 +2861,10 @@ make_scripts(int32_t q, scaled_t delta)
             mem[x + 4].b32.s1 = shift_down;
         }
     }
+
     if (mem[q + 1].b32.s1 == TEX_NULL)
         mem[q + 1].b32.s1 = x;
     else {
-
         p = mem[q + 1].b32.s1;
         while (mem[p].b32.s1 != TEX_NULL)
             p = LLIST_link(p);
@@ -2991,7 +3239,6 @@ mlist_to_hlist(void)
             s = ACCENT_NOAD_SIZE;
             break;
         case FRACTION_NOAD:
-            t = INNER_NOAD;
             s = FRACTION_NOAD_SIZE;
             break;
         case LEFT_NOAD:

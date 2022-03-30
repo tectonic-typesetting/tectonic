@@ -192,10 +192,10 @@ impl PersistentConfig {
 
 impl Default for PersistentConfig {
     fn default() -> Self {
+        let url = tectonic_bundles::get_fallback_bundle_url(tectonic_engine_xetex::FORMAT_SERIAL);
+
         PersistentConfig {
-            default_bundles: vec![BundleInfo {
-                url: String::from(tectonic_bundles::FALLBACK_BUNDLE_URL),
-            }],
+            default_bundles: vec![BundleInfo { url }],
         }
     }
 }

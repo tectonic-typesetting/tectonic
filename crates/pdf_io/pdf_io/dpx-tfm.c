@@ -915,6 +915,12 @@ tfm_get_design_size (int font_id)
     return (double) (fms[font_id].designsize)/FWBASE*(72.0/72.27);
 }
 
+/* Tectonic: no ASCII_PTEX mode */
+int
+tfm_is_jfm (int font_id)
+{
+  return 0;
+}
 
 bool
 tfm_exists (const char *tfm_name)

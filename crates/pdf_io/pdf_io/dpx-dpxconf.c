@@ -25,7 +25,7 @@
 #include <stdio.h>
 
 
-struct _dpx_conf dpx_conf = {0, dpx_mode_normal_mode, 0, {0}};
+struct _dpx_conf dpx_conf = {0, 0, dpx_mode_normal_mode, 0, {0}};
 
 #ifndef  HAVE_LIBPAPER
 const struct paper paperspecs[] = {

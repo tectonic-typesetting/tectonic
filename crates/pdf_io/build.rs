@@ -125,7 +125,6 @@ fn main() {
         "pdf_io/dpx-mpost.c",
         "pdf_io/dpx-mt19937ar.c",
         "pdf_io/dpx-numbers.c",
-        "pdf_io/dpx-otl_conf.c",
         "pdf_io/dpx-otl_opt.c",
         "pdf_io/dpx-pdfcolor.c",
         "pdf_io/dpx-pdfdev.c",
