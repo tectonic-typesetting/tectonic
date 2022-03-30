@@ -258,7 +258,7 @@ init_pdf_out_struct (pdf_out *p)
   memset(p->id2, 0, 16);
 
   p->version.major  = 1;
-  p->version.minor  = PDF_VERSION_DEFAULT;
+  p->version.minor  = PDF_VERSION_DEFAULT % 10; /* Tectonic: fix this setting */
 
   p->options.compression.level = 9;
   p->options.compression.use_predictor = 1;
