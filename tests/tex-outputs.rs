@@ -289,6 +289,13 @@ fn pdfoutput() {
 }
 
 #[test]
+fn pipe_input() {
+    TestCase::new("pipe_input")
+        .expect_msg("failed to open input file \"|pipeproblems\"")
+        .go()
+}
+
+#[test]
 fn png_formats() {
     TestCase::new("png_formats").check_pdf(true).go()
 }

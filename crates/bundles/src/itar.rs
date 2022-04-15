@@ -159,35 +159,40 @@ impl CacheBackend for IndexedTarBackend {
         let mut overall_failed = true;
         let mut any_failed = false;
 
-        for _ in 0..MAX_HTTP_ATTEMPTS {
-            let mut stream = match self.reader.read_range(info.offset, n) {
-                Ok(r) => r,
-                Err(e) => {
-                    tt_warning!(status, "failure requesting \"{}\" from network", name; e);
+        // Our HTTP implementation actually has problems with zero-sized ranged
+        // reads (Azure gives us a 200 response, which we don't properly
+        // handle), but when the file is 0-sized we're all set anyway!
+        if n > 0 {
+            for _ in 0..MAX_HTTP_ATTEMPTS {
+                let mut stream = match self.reader.read_range(info.offset, n) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        tt_warning!(status, "failure requesting \"{}\" from network", name; e);
+                        any_failed = true;
+                        continue;
+                    }
+                };
+
+                if let Err(e) = stream.read_to_end(&mut buf) {
+                    tt_warning!(status, "failure downloading \"{}\" from network", name; e.into());
                     any_failed = true;
                     continue;
                 }
-            };
 
-            if let Err(e) = stream.read_to_end(&mut buf) {
-                tt_warning!(status, "failure downloading \"{}\" from network", name; e.into());
-                any_failed = true;
-                continue;
+                overall_failed = false;
+                break;
             }
 
-            overall_failed = false;
-            break;
-        }
-
-        if overall_failed {
-            bail!(
-                "failed to retrieve \"{}\" from the network; \
-             this most probably is not Tectonic's fault \
-             -- please check your network connection.",
-                name
-            );
-        } else if any_failed {
-            tt_note!(status, "download succeeded after retry");
+            if overall_failed {
+                bail!(
+                    "failed to retrieve \"{}\" from the network; \
+                this most probably is not Tectonic's fault \
+                -- please check your network connection.",
+                    name
+                );
+            } else if any_failed {
+                tt_note!(status, "download succeeded after retry");
+            }
         }
 
         Ok(buf)
