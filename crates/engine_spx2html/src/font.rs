@@ -44,6 +44,10 @@ pub struct FontData {
     /// Information about how glyphs can be reverse-mapped to Unicode input
     gmap: HashMap<GlyphId, MapEntry>,
 
+    /// The glyph for the basic space character, or zero (typically .notdef) if
+    /// it can't be found.
+    space_glyph: GlyphId,
+
     units_per_em: UfWord,
 
     hmetrics: Vec<HorizontalMetrics>,
@@ -184,7 +188,9 @@ impl FontData {
 
         let units_per_em = head.units_per_em();
 
-        // Get the direct mappings.
+        // Get the direct mappings. While we're at it, figure out the glyph for
+        // the space character, so that we can know how wide spaces are, so that
+        // we can guess when to insert spaces into our HTML content.
 
         let cmap = a_ok_or!(
             font.cmap();
@@ -192,6 +198,7 @@ impl FontData {
         );
 
         let mut gmap = HashMap::new();
+        let mut space_glyph = 0;
 
         for usv in valid_usvs() {
             let c = char::from_u32(usv).unwrap();
@@ -202,6 +209,10 @@ impl FontData {
                     continue;
                 }
             };
+
+            if c == ' ' {
+                space_glyph = gidx;
+            }
 
             gmap.insert(gidx, MapEntry::Direct(c));
         }
@@ -284,6 +295,7 @@ impl FontData {
             basename,
             buffer,
             gmap,
+            space_glyph,
             units_per_em,
             hmetrics,
             ascender,
@@ -331,6 +343,17 @@ impl FontData {
             ascent: fword_to_tex(self.ascender),
             descent: fword_to_tex(self.descender),
         })
+    }
+
+    /// Get the width of the space character as a TeX size.
+    pub fn space_width(&self, tex_size: FixedPoint) -> Option<FixedPoint> {
+        if self.space_glyph == 0 {
+            None
+        } else {
+            self.hmetrics.get(self.space_glyph as usize).map(|hm| {
+                (hm.advance as f64 * tex_size as f64 / self.units_per_em as f64) as FixedPoint
+            })
+        }
     }
 
     /// Request that an alternative mapping be allocated for a glyph.

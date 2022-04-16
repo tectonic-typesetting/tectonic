@@ -145,7 +145,7 @@ impl<'a> XdvEvents for EngineState<'a> {
             State::Invalid => panic!("invalid spx2html state leaked"),
             State::Initializing(_) => unreachable!(),
             State::Emitting(s) => {
-                s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)
+                s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)?
             }
         }
 
@@ -455,6 +455,8 @@ impl InitializationState {
             current_canvas: None,
             content_finished: false,
             content_finished_warning_issued: false,
+            last_content_x: 0,
+            last_content_space_width: None,
         })
     }
 }
@@ -472,6 +474,8 @@ struct EmittingState {
     current_canvas: Option<CanvasState>,
     content_finished: bool,
     content_finished_warning_issued: bool,
+    last_content_x: i32,
+    last_content_space_width: Option<FixedPoint>,
 }
 
 #[derive(Debug)]
@@ -511,6 +515,74 @@ impl EmittingState {
         }
     }
 
+    fn maybe_get_font_space_width(&self, font_num: Option<i32>) -> Option<FixedPoint> {
+        font_num.and_then(|fnum| {
+            if let Some(fi) = self.fonts.get(&fnum) {
+                let fd = self.font_data.get(&fi.fd_key).unwrap();
+                fd.space_width(fi.size)
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Figure out if we need to push a space into the text content right now.
+    fn is_space_needed(&mut self, x0: i32, cur_font_num: Option<i32>) -> bool {
+        // We never want a leading space.
+        if self.current_content.is_empty() {
+            return false;
+        }
+
+        // TODO: RTL ASSUMPTION!!!!!
+        //
+        // If the "next" x is smaller than the last one, assume that we've
+        // started a new line. We ignore Y values since those are going to
+        // get hairy with subscripts, etc.
+
+        if x0 < self.last_content_x {
+            return true;
+        }
+
+        // Check the advance against the size of the space, which can be
+        // determined from either the most recent content or the new content,
+        // since in various circumstances either one or the other might not
+        // be defined. If both are defined, use whatever's smaller. There's
+        // probably a smoother way to do this logic?
+
+        let cur_space_width = self.maybe_get_font_space_width(cur_font_num);
+
+        let space_width = match (&self.last_content_space_width, &cur_space_width) {
+            (Some(w1), Some(w2)) => FixedPoint::min(*w1, *w2),
+            (Some(w), None) => *w,
+            (None, Some(w)) => *w,
+            (None, None) => 0,
+        };
+
+        // If the x difference is larger than 1/4 of the space_width, let's say that
+        // we need a space. I made up the 1/4.
+        return 4 * (x0 - self.last_content_x) > space_width;
+    }
+
+    fn update_content_pos(&mut self, x: i32, font_num: Option<i32>) {
+        self.last_content_x = x;
+
+        let cur_space_width = self.maybe_get_font_space_width(font_num);
+        if cur_space_width.is_some() {
+            self.last_content_space_width = cur_space_width;
+        }
+    }
+
+    /// Maybe push a space into the text content right now, if we think we need one.
+    fn push_space_if_needed(&mut self, x0: i32, cur_font_num: Option<i32>) {
+        if self.is_space_needed(x0, cur_font_num) {
+            self.current_content.push(' ');
+        }
+
+        // This parameter should be updated almost-instantaneously
+        // if a run of glyphs is being rendered, but this is a good start:
+        self.update_content_pos(x0, cur_font_num);
+    }
+
     fn handle_special(
         &mut self,
         x: i32,
@@ -522,6 +594,7 @@ impl EmittingState {
             if self.content_finished {
                 self.warn_finished_content(&format!("auto start tag <{}>", element), common);
             } else {
+                self.push_space_if_needed(x, None);
                 self.current_content.push('<');
                 self.current_content.push_str(element);
                 self.current_content.push('>');
@@ -675,10 +748,10 @@ impl EmittingState {
         xs: &[i32],
         ys: &[i32],
         common: &mut Common,
-    ) {
+    ) -> Result<()> {
         if self.content_finished {
             self.warn_finished_content(&format!("text `{}`", text), common);
-            return;
+            return Ok(());
         }
 
         if let Some(c) = self.current_canvas.as_mut() {
@@ -690,13 +763,30 @@ impl EmittingState {
                     font_num,
                 });
             }
-        } else {
-            if !self.current_content.is_empty() && !self.current_content.ends_with('>') {
-                self.current_content.push(' ');
-            }
-
+        } else if !glyphs.is_empty() {
+            self.push_space_if_needed(xs[0], Some(font_num));
             self.current_content.push_str(text);
+
+            // To figure out when we need spaces, we need to care about the last
+            // glyph's actual width (well, its advance).
+            //
+            // TODO: RTL correctness!!!!
+
+            let idx = glyphs.len() - 1;
+            let fi = a_ok_or!(
+                self.fonts.get(&font_num);
+                ["undeclared font {} in canvas", font_num]
+            );
+            let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
+            let gm = fd.lookup_metrics(glyphs[idx], fi.size);
+            let advance = match gm {
+                Some(gm) => gm.advance,
+                None => 0,
+            };
+            self.update_content_pos(xs[idx] + advance, Some(font_num));
         }
+
+        Ok(())
     }
 
     fn handle_glyph_run(
@@ -722,7 +812,17 @@ impl EmittingState {
                 });
             }
         } else {
-            tt_warning!(common.status, "TODO HANDLE glyph_run OUTSIDE OF CANVAS");
+            let fi = a_ok_or!(
+                self.fonts.get(&font_num);
+                ["undeclared font {} in canvas", font_num]
+            );
+
+            tt_warning!(
+                common.status,
+                "TODO HANDLE glyph_run OUTSIDE OF CANVAS: {} {:?}",
+                fi.rel_url,
+                glyphs
+            );
         }
 
         Ok(())
@@ -731,9 +831,9 @@ impl EmittingState {
     fn handle_end_canvas(&mut self, common: &mut Common) -> Result<()> {
         let mut canvas = self.current_canvas.take().unwrap();
 
-        if !self.current_content.is_empty() && !self.current_content.ends_with('>') {
-            self.current_content.push(' ');
-        }
+        // This is the *end* of a canvas, but we haven't pushed anything into
+        // the content since whatever started the canvas, so we need this:
+        self.push_space_if_needed(canvas.x0, None);
 
         let inline = match canvas.kind.as_ref() {
             "math" => true,
@@ -902,6 +1002,7 @@ impl EmittingState {
         .unwrap();
         self.current_content.push_str(&inner_content);
         write!(self.current_content, "</{}>", element).unwrap();
+        self.update_content_pos(x_max_tex + canvas.x0, None);
         Ok(())
     }
 
@@ -991,6 +1092,7 @@ impl EmittingState {
         }
 
         self.current_content = String::default();
+        self.update_content_pos(0, None);
         Ok(())
     }
 
