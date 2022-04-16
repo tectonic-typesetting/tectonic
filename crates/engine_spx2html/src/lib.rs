@@ -635,6 +635,26 @@ impl EmittingState {
                 );
             }
             Ok(())
+        } else if let Some(remainder) = contents.strip_prefix("tdux:mfs ") {
+            if self.content_finished {
+                self.warn_finished_content(
+                    &format!("manual flexible start tag {:?}", remainder),
+                    common,
+                );
+                Ok(())
+            } else {
+                self.handle_flexible_start_tag(x, y, remainder, common)
+            }
+        } else if let Some(element) = contents.strip_prefix("tdux:me ") {
+            if self.content_finished {
+                self.warn_finished_content(&format!("manual end tag </{}>", element), common);
+            } else {
+                self.current_content.push('<');
+                self.current_content.push('/');
+                self.current_content.push_str(element);
+                self.current_content.push('>');
+            }
+            Ok(())
         } else if contents == "tdux:emit" {
             self.finish_file(common)
         } else if let Some(texpath) = contents.strip_prefix("tdux:setTemplate ") {
@@ -652,6 +672,222 @@ impl EmittingState {
         } else {
             Ok(())
         }
+    }
+
+    /// Handle a "flexible" start tag.
+    ///
+    /// These start tags are built with a line-oriented structure that aims to
+    /// make it so that the TeX code doesn't have to worry too much about
+    /// escaping, etc. The general format is:
+    ///
+    /// ```
+    /// \special{tdux:mfs tagname
+    /// Cclass
+    /// Sname value
+    /// Uname value
+    /// Dname value
+    /// }
+    /// ```
+    ///
+    /// More ...
+    fn handle_flexible_start_tag(
+        &mut self,
+        x: i32,
+        _y: i32,
+        remainder: &str,
+        common: &mut Common,
+    ) -> Result<()> {
+        let mut lines = remainder.lines();
+
+        let tagname = match lines.next() {
+            Some(t) => t,
+            None => {
+                tt_warning!(
+                    common.status,
+                    "ignoring TDUX flexible start tag -- no tag name: {:?}",
+                    remainder
+                );
+                return Ok(());
+            }
+        };
+
+        if !tagname.chars().all(char::is_alphanumeric) {
+            tt_warning!(
+                common.status,
+                "ignoring TDUX flexible start tag -- invalid tag name: {:?}",
+                remainder
+            );
+            return Ok(());
+        }
+
+        let mut classes = Vec::new();
+        let mut styles = Vec::new();
+        let mut unquoted_attrs = Vec::new();
+        let mut double_quoted_attrs = Vec::new();
+
+        for line in lines {
+            if let Some(cls) = line.strip_prefix("C") {
+                // For later: apply any restrictions to allowed class names?
+                if !cls.is_empty() {
+                    classes.push(cls.to_owned());
+                } else {
+                    tt_warning!(
+                        common.status,
+                        "ignoring TDUX flexible start tag class -- invalid name: {:?}",
+                        cls
+                    );
+                }
+            } else if let Some(rest) = line.strip_prefix("S") {
+                // For later: apply any restrictions to names/values here?
+                let mut bits = rest.splitn(2, ' ');
+                let name = match bits.next() {
+                    Some(n) => n,
+                    None => {
+                        tt_warning!(
+                            common.status,
+                            "ignoring TDUX flexible start tag style -- no name: {:?}",
+                            rest
+                        );
+                        continue;
+                    }
+                };
+                let value = match bits.next() {
+                    Some(v) => v,
+                    None => {
+                        tt_warning!(
+                            common.status,
+                            "ignoring TDUX flexible start tag style -- no value: {:?}",
+                            rest
+                        );
+                        continue;
+                    }
+                };
+                styles.push((name.to_owned(), value.to_owned()));
+            } else if let Some(rest) = line.strip_prefix("U") {
+                // For later: apply any restrictions to names/values here?
+                let mut bits = rest.splitn(2, ' ');
+                let name = match bits.next() {
+                    Some("class") | Some("style") => {
+                        tt_warning!(
+                            common.status,
+                            "ignoring TDUX flexible start tag attr -- use C/S command: {:?}",
+                            rest
+                        );
+                        continue;
+                    }
+                    Some(n) => n,
+                    None => {
+                        tt_warning!(
+                            common.status,
+                            "ignoring TDUX flexible start tag attr -- no name: {:?}",
+                            rest
+                        );
+                        continue;
+                    }
+                };
+                unquoted_attrs.push((name.to_owned(), bits.next().map(|v| v.to_owned())));
+            } else if let Some(rest) = line.strip_prefix("D") {
+                // For later: apply any restrictions to names/values here?
+                let mut bits = rest.splitn(2, ' ');
+                let name = match bits.next() {
+                    Some("class") | Some("style") => {
+                        tt_warning!(
+                            common.status,
+                            "ignoring TDUX flexible start tag attr -- use C/S command: {:?}",
+                            rest
+                        );
+                        continue;
+                    }
+                    Some(n) => n,
+                    None => {
+                        tt_warning!(
+                            common.status,
+                            "ignoring TDUX flexible start tag attr -- no name: {:?}",
+                            rest
+                        );
+                        continue;
+                    }
+                };
+                double_quoted_attrs.push((name.to_owned(), bits.next().map(|v| v.to_owned())));
+            } else {
+                tt_warning!(
+                    common.status,
+                    "ignoring unrecognized TDUX flexible start tag command: {:?}",
+                    line
+                );
+            }
+        }
+
+        self.push_space_if_needed(x, None);
+        self.current_content.push('<');
+        html_escape::encode_safe_to_string(tagname, &mut self.current_content);
+
+        if !classes.is_empty() {
+            self.current_content.push_str(" class=\"");
+
+            let mut first = true;
+            for c in &classes {
+                if first {
+                    first = false;
+                } else {
+                    self.current_content.push(' ');
+                }
+
+                html_escape::encode_double_quoted_attribute_to_string(c, &mut self.current_content);
+            }
+
+            self.current_content.push('\"');
+        }
+
+        if !styles.is_empty() {
+            self.current_content.push_str(" style=\"");
+
+            let mut first = true;
+            for (name, value) in &styles {
+                if first {
+                    first = false;
+                } else {
+                    self.current_content.push(';');
+                }
+
+                html_escape::encode_double_quoted_attribute_to_string(
+                    name,
+                    &mut self.current_content,
+                );
+                self.current_content.push(':');
+                html_escape::encode_double_quoted_attribute_to_string(
+                    value,
+                    &mut self.current_content,
+                );
+            }
+
+            self.current_content.push('\"');
+        }
+
+        for (name, maybe_value) in &unquoted_attrs {
+            self.current_content.push(' ');
+            html_escape::encode_safe_to_string(name, &mut self.current_content);
+
+            if let Some(v) = maybe_value {
+                self.current_content.push('=');
+                html_escape::encode_unquoted_attribute_to_string(v, &mut self.current_content);
+            }
+        }
+
+        for (name, maybe_value) in &double_quoted_attrs {
+            self.current_content.push(' ');
+            html_escape::encode_safe_to_string(name, &mut self.current_content);
+            self.current_content.push_str("=\"");
+
+            if let Some(v) = maybe_value {
+                html_escape::encode_double_quoted_attribute_to_string(v, &mut self.current_content);
+            }
+
+            self.current_content.push('\"');
+        }
+
+        self.current_content.push('>');
+        Ok(())
     }
 
     fn handle_set_template_variable(&mut self, remainder: &str, common: &mut Common) -> Result<()> {
