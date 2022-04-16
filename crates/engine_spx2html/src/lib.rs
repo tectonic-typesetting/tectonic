@@ -1001,7 +1001,7 @@ impl EmittingState {
             }
         } else if !glyphs.is_empty() {
             self.push_space_if_needed(xs[0], Some(font_num));
-            self.current_content.push_str(text);
+            html_escape::encode_text_to_string(text, &mut self.current_content);
 
             // To figure out when we need spaces, we need to care about the last
             // glyph's actual width (well, its advance).
@@ -1128,6 +1128,7 @@ impl EmittingState {
         // https://iamvdo.me/en/blog/css-font-metrics-line-height-and-vertical-align
 
         let mut inner_content = String::default();
+        let mut ch_str_buf = [0u8; 4];
 
         for gi in canvas.glyphs.drain(..) {
             let fi = self.fonts.get(&gi.font_num).unwrap();
@@ -1187,16 +1188,21 @@ impl EmittingState {
                 let top_rem = (-y_min_tex + gi.dy) as f32 * self.rems_per_tex
                     - fd.baseline_factor() * rel_size;
 
+                // Stringify the character so that we can use html_escape in
+                // case it's a `<` or whatever.
+                let ch_as_str = ch.encode_utf8(&mut ch_str_buf);
+
                 write!(
                     inner_content,
-                    "<span class=\"ci\" style=\"top: {}rem; left: {}rem; font-size: {}rem; font-family: {}\">{}</span>",
+                    "<span class=\"ci\" style=\"top: {}rem; left: {}rem; font-size: {}rem; font-family: {}\">",
                     top_rem,
                     gi.dx as f32 * self.rems_per_tex,
                     rel_size,
                     font_fam,
-                    ch
                 )
                 .unwrap();
+                html_escape::encode_text_to_string(ch_as_str, &mut inner_content);
+                write!(inner_content, "</span>").unwrap();
             } else {
                 tt_warning!(
                     common.status,
