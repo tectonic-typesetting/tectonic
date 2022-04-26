@@ -57,45 +57,54 @@
 #include "dpx-pdfobj.h"
 /* Font info. from OpenType tables */
 #include "dpx-sfnt.h"
-#include "dpx-tfm.h"
 #include "dpx-tt_aux.h"
 
 int
-pdf_font_open_type1c (pdf_font *font)
+pdf_font_open_type1c (pdf_font *font, const char *ident, int index, int encoding_id, int embedding)
 {
     char     *fontname;
-    char     *ident;
     rust_input_handle_t handle = NULL;
     sfnt     *sfont;
     cff_font *cffont;
     pdf_obj  *descriptor, *tmp;
-    unsigned int offset = 0;
-    int       encoding_id, embedding;
+    ULONG offset = 0;
 
     assert(font);
-
-    ident       = pdf_font_get_ident   (font);
-    encoding_id = pdf_font_get_encoding(font);
+    assert(ident);
 
     handle = dpx_open_opentype_file(ident);
+    if (!handle)
+        handle = dpx_open_truetype_file(ident);
     if (!handle)
         return -1;
 
     sfont = sfnt_open(handle);
-    if (!sfont ||
-        sfont->type != SFNT_TYPE_POSTSCRIPT ||
-        sfnt_read_table_directory(sfont, 0) < 0) {
-        _tt_abort("Not a CFF/OpenType font (9)?");
+    if (!sfont) {
+        if (handle)
+            ttstub_input_close(handle);
+        return -1;
     }
 
-    offset = sfnt_find_table_pos(sfont, "CFF ");
-    if (offset < 1) {
-        _tt_abort("No \"CFF \" table found; not a CFF/OpenType font (10)?");
+    if (sfont->type == SFNT_TYPE_TTC) {
+        offset = ttc_read_offset(sfont, index);
+    }
+
+    if ((sfont->type != SFNT_TYPE_TTC && sfont->type != SFNT_TYPE_POSTSCRIPT) ||
+        sfnt_read_table_directory(sfont, offset) < 0 ||
+        (offset = sfnt_find_table_pos(sfont, "CFF ")) == 0) {
+        sfnt_close(sfont);
+        if (handle)
+            ttstub_input_close(handle);
+        return -1;
     }
 
     cffont = cff_open(sfont->handle, offset, 0);
     if (!cffont) {
-        _tt_abort("Could not read CFF font data");
+        dpx_warning("Could not read CFF font data: %s", ident);
+        sfnt_close(sfont);
+        if (handle)
+            ttstub_input_close(handle);
+        return -1;
     }
 
     if (cffont->flag & FONTTYPE_CIDFONT) {
@@ -107,12 +116,23 @@ pdf_font_open_type1c (pdf_font *font)
 
     fontname = cff_get_name(cffont);
     if (!fontname) {
-        _tt_abort("No valid FontName found in CFF/OpenType font.");
+        dpx_warning("No valid FontName found in CFF/OpenType font: %s", ident);
+        cff_close(cffont);
+        sfnt_close(sfont);
+        if (handle)
+            ttstub_input_close(handle);
+        return -1;
     }
-    pdf_font_set_fontname(font, fontname);
-    free(fontname);
+
+    font->fontname = fontname;
 
     cff_close(cffont);
+
+    if (!embedding) {
+        dpx_warning("Ignoring no-embed option for Type1C font: %s", ident);
+        embedding = 1;
+        font->flags &= ~PDF_FONT_FLAG_NOEMBED;
+    }
 
     /*
      * Font like AdobePiStd does not have meaningful built-in encoding.
@@ -124,9 +144,8 @@ pdf_font_open_type1c (pdf_font *font)
         dpx_warning("If you find text is not encoded properly in the generated PDF file,");
         dpx_warning("please specify appropriate \".enc\" file in your fontmap.");
     }
-    pdf_font_set_subtype (font, PDF_FONT_FONTTYPE_TYPE1C);
+    font->subtype = PDF_FONT_FONTTYPE_TYPE1C;
 
-    embedding  = pdf_font_get_flag(font, PDF_FONT_FLAG_NOEMBED) ? 0 : 1;
     descriptor = pdf_font_get_descriptor(font);
     /*
      * Create font descriptor from OpenType tables.
@@ -139,7 +158,11 @@ pdf_font_open_type1c (pdf_font *font)
     pdf_merge_dict (descriptor, tmp); /* copy */
     pdf_release_obj(tmp);
     if (!embedding) { /* tt_get_fontdesc may have changed this */
-        pdf_font_set_flags(font, PDF_FONT_FLAG_NOEMBED);
+        dpx_warning("Font embedding disallowed for \"%s\"", ident);
+        sfnt_close(sfont);
+        if (handle)
+            ttstub_input_close(handle);
+        return -1;
     }
 
     sfnt_close(sfont);
@@ -148,73 +171,60 @@ pdf_font_open_type1c (pdf_font *font)
 }
 
 static void
-add_SimpleMetrics (pdf_font *font, cff_font *cffont,
-                   double *widths, card16 num_glyphs)
+add_SimpleMetrics (pdf_font *font, cff_font *cffont, double *widths, card16 num_glyphs)
 {
     pdf_obj *fontdict;
-    int      code, firstchar, lastchar, tfm_id;
+    int      code, firstchar, lastchar;
     char    *usedchars;
-    pdf_obj *tmp_array;
-    double   scaling;
+    pdf_obj *array;
+    double   scaling = 1.0;
 
     fontdict  = pdf_font_get_resource(font);
-    usedchars = pdf_font_get_usedchars(font);
+    usedchars = font->usedchars;
 
     /* The widhts array in the font dictionary must be given relative
      * to the default scaling of 1000:1, not relative to the scaling
      * given by the font matrix.
      */
-    if (cff_dict_known(cffont->topdict, "FontMatrix"))
+    if (cff_dict_known(cffont->topdict, "FontMatrix")) {
         scaling = 1000*cff_dict_get(cffont->topdict, "FontMatrix", 0);
-    else
-        scaling = 1;
+    } else {
+        scaling = 1.0;
+    }
 
-    tmp_array = pdf_new_array();
+    array = pdf_new_array();
     if (num_glyphs <= 1) {
         /* This should be error. */
         firstchar = lastchar = 0;
-        pdf_add_array(tmp_array, pdf_new_number(0.0));
+        pdf_add_array(array, pdf_new_number(0.0));
     } else {
         firstchar = 255; lastchar = 0;
         for (code = 0; code < 256; code++) {
             if (usedchars[code]) {
                 if (code < firstchar) firstchar = code;
                 if (code > lastchar)  lastchar  = code;
+                widths[code] *= scaling;
             }
         }
         if (firstchar > lastchar) {
-            pdf_release_obj(tmp_array);
             _tt_abort("No glyphs used at all!");
         }
-        tfm_id = tfm_open(pdf_font_get_mapname(font), 0);
+
+        pdf_check_tfm_widths(font->ident, widths, firstchar, lastchar, usedchars);
+
         for (code = firstchar; code <= lastchar; code++) {
             if (usedchars[code]) {
-                double width;
-                if (tfm_id < 0) /* tfm is not found */
-                    width = scaling * widths[code];
-                else {
-                    double diff;
-                    width = 1000. * tfm_get_width(tfm_id, code);
-                    diff  = width - scaling * widths[code];
-                    if (fabs(diff) > 1.) {
-                        dpx_warning("Glyph width mismatch for TFM and font (%s)",
-                                    pdf_font_get_mapname(font));
-                        dpx_warning("TFM: %g vs. CFF font: %g", width, widths[code]);
-                    }
-                    pdf_add_array(tmp_array,
-                                  pdf_new_number(ROUND(width, 0.1)));
-                }
+                pdf_add_array(array, pdf_new_number(ROUND(widths[code], 0.1)));
             } else {
-                pdf_add_array(tmp_array, pdf_new_number(0.0));
+                pdf_add_array(array, pdf_new_number(0.0));
             }
         }
     }
 
-    if (pdf_array_length(tmp_array) > 0) {
-        pdf_add_dict(fontdict,
-                     pdf_new_name("Widths"),  pdf_ref_obj(tmp_array));
+    if (pdf_array_length(array) > 0) {
+        pdf_add_dict(fontdict, pdf_new_name("Widths"),  pdf_ref_obj(array));
     }
-    pdf_release_obj(tmp_array);
+    pdf_release_obj(array);
 
     pdf_add_dict(fontdict,
                  pdf_new_name("FirstChar"), pdf_new_number(firstchar));
@@ -252,26 +262,25 @@ pdf_font_load_type1c (pdf_font *font)
 
     assert(font);
 
-    if (!pdf_font_is_in_use(font)) {
+    if (!font->reference) {
         return 0;
     }
 
-    if (pdf_font_get_flag(font, PDF_FONT_FLAG_NOEMBED)) {
+    if (font->flags & PDF_FONT_FLAG_NOEMBED) {
         _tt_abort("Only embedded font supported for CFF/OpenType font.");
     }
 
-    usedchars = pdf_font_get_usedchars (font);
-    fontname  = pdf_font_get_fontname  (font);
-    ident     = pdf_font_get_ident     (font);
+    usedchars = font->usedchars;
+    fontname  = font->fontname;
+    ident     = font->filename;
     uniqueTag = pdf_font_get_uniqueTag (font);
-    if (!usedchars ||
-        !fontname  || !ident) {
-        _tt_abort("Unexpected error....");
-    }
+    assert(usedchars);
+    assert(fontname);
+    assert(ident);
 
     fontdict    = pdf_font_get_resource  (font);
     descriptor  = pdf_font_get_descriptor(font);
-    encoding_id = pdf_font_get_encoding  (font);
+    encoding_id = font->encoding_id;
 
     handle = dpx_open_opentype_file(ident);
     if (!handle) {
@@ -287,7 +296,7 @@ pdf_font_load_type1c (pdf_font *font)
     }
     if (sfont->type != SFNT_TYPE_POSTSCRIPT ||
         (offset = sfnt_find_table_pos(sfont, "CFF ")) == 0) {
-        _tt_abort("Not a CFF/OpenType font (11)?");
+        _tt_abort("Not a CFF/OpenType font (or variable font?) (11)?");
     }
 
     cffont = cff_open(handle, offset, 0);
@@ -335,15 +344,13 @@ pdf_font_load_type1c (pdf_font *font)
                 card16  gid;
 
                 gid = cff_encoding_lookup(cffont, code);
-                enc_vec[code] = cff_get_string(cffont,
-                                               cff_charsets_lookup_inverse(cffont, gid));
+                enc_vec[code] = cff_get_string(cffont, cff_charsets_lookup_inverse(cffont, gid));
             } else {
                 enc_vec[code] = NULL;
             }
         }
         if (!pdf_lookup_dict(fontdict, "ToUnicode")) {
-            tounicode = pdf_create_ToUnicode_CMap(fullname,
-                                                  enc_vec, usedchars);
+            tounicode = pdf_create_ToUnicode_CMap(fullname, enc_vec, usedchars);
             if (tounicode) {
                 pdf_add_dict(fontdict,
                              pdf_new_name("ToUnicode"),
@@ -400,8 +407,7 @@ pdf_font_load_type1c (pdf_font *font)
         double stemv;
 
         stemv = cff_dict_get(cffont->private[0], "StdVW", 0);
-        pdf_add_dict(descriptor,
-                     pdf_new_name("StemV"), pdf_new_number(stemv));
+        pdf_add_dict(descriptor, pdf_new_name("StemV"), pdf_new_number(stemv));
     }
 
     /*
@@ -718,10 +724,12 @@ pdf_font_load_type1c (pdf_font *font)
     /*
      * CharSet
      */
-    pdf_add_dict(descriptor,
-                 pdf_new_name("CharSet"),
-                 pdf_new_string(pdf_stream_dataptr(pdfcharset),
-                                pdf_stream_length(pdfcharset)));
+    if (pdf_check_version(2, 0) < 0) {
+        pdf_add_dict(descriptor,
+                    pdf_new_name("CharSet"),
+                    pdf_new_string(pdf_stream_dataptr(pdfcharset),
+                                    pdf_stream_length(pdfcharset)));
+    }
     pdf_release_obj(pdfcharset);
     /*
      * Write PDF FontFile data.

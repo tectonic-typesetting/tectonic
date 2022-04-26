@@ -128,6 +128,10 @@ static unsigned int lr_width_stack_depth = 0;
 #define DVI      1
 #define VF       2
 
+struct gm {
+    spt_t advance, ascent, descent;
+};
+
 static struct loaded_font
 {
     int    type;     /* Type is physical or virtual */
@@ -139,17 +143,18 @@ static struct loaded_font
     spt_t size;
     int   source;     /* Source is either DVI or VF */
     uint32_t rgba_color;
+    uint8_t rgba_used;
     int   xgs_id;   /* Transparency ExtGState */
-    struct tt_longMetrics *hvmt;
-    int   ascent;
-    int   descent;
-    unsigned int unitsPerEm;
-    cff_font *cffont;
-    unsigned int numGlyphs;
+    struct gm *gm;
+    int shift_gid;
+    uint16_t num_glyphs;
     int   layout_dir;
     float extend;
     float slant;
     float embolden;
+    int is_unicode;
+    int minbytes;
+    char padbytes[4];
 } *loaded_fonts = NULL;
 static unsigned int num_loaded_fonts = 0, max_loaded_fonts = 0;
 
@@ -164,7 +169,7 @@ need_more_fonts (unsigned int n)
 
 static struct font_def
 {
-    uint32_t tex_id;
+    int32_t tex_id;
     spt_t  point_size;
     spt_t  design_size;
     char  *font_name;
@@ -172,6 +177,7 @@ static struct font_def
     int    used;
     int    native; /* bool */
     uint32_t rgba_color;   /* only used for native fonts in XeTeX */
+    uint8_t rgba_used;
     uint32_t face_index;
     int    layout_dir; /* 1 = vertical, 0 = horizontal */
     int    extend;
@@ -188,6 +194,17 @@ static struct font_def
 
 static unsigned int num_def_fonts = 0, max_def_fonts = 0;
 static int compute_boxes = 0, link_annot    = 1;
+/* If "catch_phantom" is non-zero, dvipdfmx try to catch phantom texts.
+ * Dvipdfmx treats DVI horizontal movement instructions (x, w, right) differently
+ * when "catch_phantom" is non-zero. Amount of horizontal move will be added to
+ * the current annotation rectangle with "height" and "depth" estimated as,
+ *
+ *   catch_phantom=1: with current font size
+ *   catch_phantom=2: with specified height and depth
+ */
+static int    catch_phantom  = 0;
+static double phantom_height = 0.0;
+static double phantom_depth  = 0.0;
 
 #define DVI_PAGE_BUF_CHUNK              0x10000U        /* 64K should be plenty for most pages */
 
@@ -478,9 +495,106 @@ dvi_comment (void)
 }
 
 static void
+proc_dvilua_font_record (int32_t tex_id, const char *font_name, uint32_t point_size, uint32_t design_size)
+{
+    char     *file_name, *p, *q, *endptr;
+    uint32_t  index = 0;
+    uint32_t  embolden = 0;
+    int32_t   slant = 0, extend = 0x00010000;
+
+    assert(font_name[0] == '[');
+
+    /* redundant check but leave this here anyway */
+    if (num_def_fonts >= max_def_fonts) {
+        max_def_fonts += TEX_FONTS_ALLOC_SIZE;
+        def_fonts = RENEW (def_fonts, max_def_fonts, struct font_def);
+    }
+
+    file_name = NEW(strlen(font_name) + 1, char);
+    strcpy(file_name, font_name + 1);
+    endptr   = file_name + strlen(file_name);
+    q = strchr(file_name, ']');
+    if (q == NULL) {
+        _tt_abort("Syntax error in dvilua fnt_def: no ']' found in font name.");
+    }
+    *q = '\0';
+
+    p = q + 1;
+    if (p < endptr && *p == ':') {
+        for (p++; *p != '\0' && p < endptr; ) {
+            char *kvsep, *delim;
+
+            delim = strchr(p, ';');
+            kvsep = strchr(p, '=');
+            if (delim == NULL)
+                delim = endptr;
+            if (kvsep == NULL || kvsep >= delim) {
+                _tt_abort("Syntax error in dvilua fnt_def: not in key=value format: %s", font_name);
+            }
+            *kvsep = '\0';
+            if (!strcmp(p, "index")) {
+                uint32_t value = strtoul(kvsep + 1, &q, 10);
+                if (q != delim) {
+                    dpx_warning("Syntax error in dvilua fnt_def: invalid value specified for \"%s\": %s", p, font_name);
+                } else {
+                    index = value;
+                }
+            } else if (!strcmp(p, "embolden")) {
+                int32_t value = strtol(kvsep + 1, &q, 10);
+                if (q != delim) {
+                    dpx_warning("Syntax error in dvilua fnt_def: invalid value specified for \"%s\": %s", p, font_name);
+                } else {
+                    embolden = value;
+                }
+            } else if (!strcmp(p, "slant")) {
+                int32_t  value = strtol(kvsep + 1, &q, 10);
+                if (q != delim) {
+                    dpx_warning("Syntax error in dvilua fnt_def: invalid value specified for \"%s\": %s", p, font_name);
+                } else {
+                    slant = value;
+                }
+            } else if (!strcmp(p, "extend")) {
+                int32_t  value = strtol(kvsep + 1, &q, 10);
+                if (q != delim) {
+                    dpx_warning("Syntax error in dvilua fnt_def: invalid value specified for \"%s\": %s", p, font_name);
+                } else {
+                    extend = value;
+                }
+            } else {
+                dpx_warning("Ignoring unrecognized/unsupported key \"%s\" in dvilua fnt_def: %s", p, font_name);
+            }
+            p = delim + 1;
+        }
+    }
+
+    def_fonts[num_def_fonts].tex_id      = tex_id;
+    def_fonts[num_def_fonts].font_name   = file_name;
+    def_fonts[num_def_fonts].face_index  = index;
+    def_fonts[num_def_fonts].point_size  = point_size;
+    def_fonts[num_def_fonts].design_size = design_size;
+    def_fonts[num_def_fonts].used        = 0;
+    def_fonts[num_def_fonts].native      = 1;
+
+    def_fonts[num_def_fonts].layout_dir  = 0;
+    def_fonts[num_def_fonts].rgba_color  = 0xffffffff;
+    def_fonts[num_def_fonts].rgba_used   = 0;
+    def_fonts[num_def_fonts].extend      = extend;
+    def_fonts[num_def_fonts].slant       = slant;
+    def_fonts[num_def_fonts].embolden    = embolden;
+
+    num_def_fonts++;
+
+    return;
+}
+
+#define SIG_DVILUA_FNT_DEF ('L' << 24|'u' << 16|'a' << 8|'F')
+
+
+static void
 read_font_record (uint32_t tex_id)
 {
     int       dir_length, name_length;
+    uint32_t checksum;
     uint32_t  point_size, design_size;
     char     *directory, *font_name;
 
@@ -488,7 +602,7 @@ read_font_record (uint32_t tex_id)
         max_def_fonts += TEX_FONTS_ALLOC_SIZE;
         def_fonts = RENEW (def_fonts, max_def_fonts, struct font_def);
     }
-    tt_get_unsigned_quad(dvi_handle);
+    checksum = tt_get_unsigned_quad(dvi_handle);
     point_size  = tt_get_positive_quad(dvi_handle, "DVI", "point_size");
     design_size = tt_get_positive_quad(dvi_handle, "DVI", "design_size");
     dir_length  = tt_get_unsigned_byte(dvi_handle);
@@ -507,6 +621,13 @@ read_font_record (uint32_t tex_id)
     }
 
     font_name[name_length] = '\0';
+
+    if (checksum == SIG_DVILUA_FNT_DEF && name_length > 0 && font_name[0] == '[') {
+        proc_dvilua_font_record(tex_id, font_name, point_size, design_size);
+        free(font_name);
+        return;
+    }
+
     def_fonts[num_def_fonts].tex_id      = tex_id;
     def_fonts[num_def_fonts].font_name   = font_name;
     def_fonts[num_def_fonts].point_size  = point_size;
@@ -514,6 +635,7 @@ read_font_record (uint32_t tex_id)
     def_fonts[num_def_fonts].used        = 0;
     def_fonts[num_def_fonts].native      = 0;
     def_fonts[num_def_fonts].rgba_color  = 0xffffffff;
+    def_fonts[num_def_fonts].rgba_used = 0;
     def_fonts[num_def_fonts].face_index  = 0;
     def_fonts[num_def_fonts].layout_dir  = 0;
     def_fonts[num_def_fonts].extend      = 0x00010000; /* 1.0 */
@@ -559,6 +681,7 @@ read_native_font_record (uint32_t tex_id)
 
     def_fonts[num_def_fonts].layout_dir  = 0;
     def_fonts[num_def_fonts].rgba_color  = 0xffffffff;
+    def_fonts[num_def_fonts].rgba_used = 0;
     def_fonts[num_def_fonts].extend      = 0x00010000;
     def_fonts[num_def_fonts].slant       = 0;
     def_fonts[num_def_fonts].embolden    = 0;
@@ -566,8 +689,10 @@ read_native_font_record (uint32_t tex_id)
     if (flags & XDV_FLAG_VERTICAL)
         def_fonts[num_def_fonts].layout_dir = 1;
 
-    if (flags & XDV_FLAG_COLORED)
+    if (flags & XDV_FLAG_COLORED) {
         def_fonts[num_def_fonts].rgba_color  = tt_get_unsigned_quad(dvi_handle);
+        def_fonts[num_def_fonts].rgba_used = 1;
+    }
 
     if (flags & XDV_FLAG_EXTEND)
         def_fonts[num_def_fonts].extend = tt_get_signed_quad(dvi_handle);
@@ -729,10 +854,74 @@ dvi_is_tracking_boxes(void)
 }
 
 void
+dvi_set_linkmode (int mode)
+{
+    catch_phantom  = mode != 0 ? 1 : 0;
+}
+
+void
+dvi_set_phantom_height (double height, double depth)
+{
+    phantom_height = height;
+    phantom_depth  = depth;
+    catch_phantom  = 2;
+}
+
+/* All those things related to "compensation" is intruduced due to
+ * bcontent/econtent specials. They are originally implemented with
+ * modification to very important part of pdfdev functions such as
+ * pdf_dev_set_string(), and it made things very unclear.
+ *
+ * It is not good idea to modify the core part of PDF output routines
+ * just for implementing DVI "special" command. They do not make sense
+ * and just look odd when PDF output routines are separated from dvipdfmx.
+ */
+static struct spt_coord {
+    spt_t x, y;
+} compensation = { 0, 0 };
+
+void dvi_set_compensation (double x, double y)
+{
+    compensation.x = (spt_t) round(x / dvi2pts);
+    compensation.y = (spt_t) round(y / dvi2pts);
+}
+
+static void
+set_string (spt_t       xpos,
+            spt_t       ypos,
+            const void *instr_ptr,
+            int         instr_len,
+            spt_t       width,
+            int         font_id)
+{
+    xpos -= compensation.x;
+    ypos -= compensation.y;
+    pdf_dev_set_string(xpos, ypos, instr_ptr, instr_len, width, font_id);
+}
+
+static void
+set_rule (spt_t xpos, spt_t ypos, spt_t width, spt_t height)
+{
+    xpos -= compensation.x;
+    ypos -= compensation.y;
+    pdf_dev_set_rule(xpos, ypos, width, height);
+}
+
+static void
+calc_rect (pdf_rect *r, spt_t xpos, spt_t ypos, spt_t width, spt_t height, spt_t depth)
+{
+    xpos -= compensation.x;
+    ypos -= compensation.y;
+    pdf_dev_set_rect(r, xpos, ypos, width, height, depth);
+}
+
+void
 dvi_do_special (const void *buffer, int32_t size)
 {
     double x_user, y_user, mag;
     const char *p;
+    int is_drawable = 0;
+    pdf_rect rect = {0.0, 0.0, 0.0, 0.0};
 
     graphics_mode();
 
@@ -742,10 +931,15 @@ dvi_do_special (const void *buffer, int32_t size)
     y_user = -dvi_state.v * dvi2pts;
     mag    =  dvi_tell_mag();
 
-    if (spc_exec_special(p, size, x_user, y_user, mag) < 0) {
+    if (spc_exec_special(p, size, x_user, y_user, mag, &is_drawable, &rect) < 0) {
         if (dpx_conf.verbose_level > 0) {
             dump(p, p + size);
         }
+        return;
+    }
+
+    if (dvi_is_tracking_boxes() && is_drawable) {
+        pdf_doc_expand_box(&rect);
     }
 
     return;
@@ -895,8 +1089,27 @@ dvi_locate_font (const char *tfm_name, spt_t ptsize)
         }
         _tt_abort("Cannot proceed without .vf or \"physical\" font for PDF output...");
     }
-    loaded_fonts[cur_id].type    = PHYSICAL;
-    loaded_fonts[cur_id].font_id = font_id;
+
+    memset(loaded_fonts[cur_id].padbytes, 0, 4);
+    if (mrec) {
+        if (mrec->opt.mapc >= 0) {
+            loaded_fonts[cur_id].padbytes[2] = (mrec->opt.mapc >> 8) & 0xff;
+        }
+        if (mrec->enc_name && !strcmp(mrec->enc_name, "unicode")) {
+            loaded_fonts[cur_id].is_unicode = 1;
+            if (mrec->opt.mapc >= 0) {
+                loaded_fonts[cur_id].padbytes[0] = (mrec->opt.mapc >> 24) & 0xff;
+                loaded_fonts[cur_id].padbytes[1] = (mrec->opt.mapc >> 16) & 0xff;
+            }
+        }
+    }
+    loaded_fonts[cur_id].minbytes = pdf_dev_font_minbytes(font_id);
+    loaded_fonts[cur_id].type     = PHYSICAL;
+    loaded_fonts[cur_id].font_id  = font_id;
+    if (loaded_fonts[cur_id].minbytes > 4) {
+        dpx_warning("Input encoding requries more than 4 bytes per char... (unsupported)");
+        loaded_fonts[cur_id].minbytes = 4;
+    }
 
     if (dpx_conf.verbose_level > 0)
         dpx_message(">");
@@ -914,9 +1127,6 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     rust_input_handle_t handle;
     sfnt         *sfont;
     ULONG         offset = 0;
-    struct tt_head_table *head;
-    struct tt_maxp_table *maxp;
-    struct tt_hhea_table *hhea;
     int is_dfont = 0, is_type1 = 0;
 
     if (dpx_conf.verbose_level > 0)
@@ -948,11 +1158,18 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     loaded_fonts[cur_id].font_id = pdf_dev_locate_font(fontmap_key, ptsize);
     loaded_fonts[cur_id].size    = ptsize;
     loaded_fonts[cur_id].type    = NATIVE;
+    loaded_fonts[cur_id].minbytes = pdf_dev_font_minbytes(loaded_fonts[cur_id].font_id);
+    if (loaded_fonts[cur_id].minbytes > 4) {
+        dpx_warning("Input encoding requries more than 4 bytes per char... (unsupprted)");
+        loaded_fonts[cur_id].minbytes = 4;
+    }
     free(fontmap_key);
 
     if (is_type1) {
         cff_font *cffont;
         char     *enc_vec[256];
+        uint16_t num_glyphs;
+        int i;
 
         /*if (!is_pfb(fp))
          *  _tt_abort("Failed to read Type 1 font \"%s\".", filename);
@@ -964,21 +1181,50 @@ dvi_locate_native_font (const char *filename, uint32_t index,
         if (!cffont)
             _tt_abort("Failed to read Type 1 font \"%s\".", filename);
 
-        loaded_fonts[cur_id].cffont = cffont;
-
-        if (cff_dict_known(cffont->topdict, "FontBBox")) {
-            loaded_fonts[cur_id].ascent = cff_dict_get(cffont->topdict, "FontBBox", 3);
-            loaded_fonts[cur_id].descent = cff_dict_get(cffont->topdict, "FontBBox", 1);
-        } else {
-            loaded_fonts[cur_id].ascent = 690;
-            loaded_fonts[cur_id].descent = -190;
+        for (i = 0; i < 256; i++) {
+            if (enc_vec[i])
+                free(enc_vec[i]);
         }
 
-        loaded_fonts[cur_id].unitsPerEm = 1000;
-        loaded_fonts[cur_id].numGlyphs = cffont->num_glyphs;
+        loaded_fonts[cur_id].shift_gid  = cffont->is_notdef_notzero;
+        loaded_fonts[cur_id].num_glyphs = num_glyphs = cffont->num_glyphs;
+        loaded_fonts[cur_id].gm         = NEW(num_glyphs + 1, struct gm);
 
+        for (i = 0; i < num_glyphs; i++) {
+            double     advance, ascent, descent;
+            cff_index *cstrings = cffont->cstrings;
+            t1_ginfo   gm;
+            uint16_t   gid;
+
+            /* If .notdef is not the 1st glyph in CharStrings, glyph_id given by
+            * FreeType should be increased by 1
+            */
+            gid = (cffont->is_notdef_notzero) ? i + 1 : i;
+            if (gid == num_glyphs)
+                break;
+            t1char_get_metrics(cstrings->data + cstrings->offset[gid] - 1,
+                                cstrings->offset[gid + 1] - cstrings->offset[gid],
+                                cffont->subrs[0], &gm);
+
+            advance = layout_dir == 0 ? gm.wx : gm.wy;
+            ascent  = gm.bbox.ury;
+            descent = gm.bbox.lly;
+            loaded_fonts[cur_id].gm[gid].advance = (spt_t) (ptsize * ((advance / 1000.0) * mrec->opt.extend));
+            loaded_fonts[cur_id].gm[gid].ascent  = (spt_t) (ptsize * ((ascent  / 1000.0)));
+            loaded_fonts[cur_id].gm[gid].descent = (spt_t) (ptsize * ((descent / 1000.0)));
+        }
+
+        cff_close(cffont);
         ttstub_input_close (handle);
     } else {
+        struct tt_head_table  *head;
+        struct tt_maxp_table  *maxp;
+        struct tt_hhea_table  *hhea;
+        struct tt_longMetrics *gm;
+        spt_t                  ascent, descent;
+        uint16_t               num_glyphs;
+        int                    i;
+
         if (is_dfont)
             sfont = dfont_open(handle, index);
         else
@@ -987,23 +1233,34 @@ dvi_locate_native_font (const char *filename, uint32_t index,
             offset = ttc_read_offset(sfont, index);
         else if (sfont->type == SFNT_TYPE_DFONT)
             offset = sfont->offset;
+
         sfnt_read_table_directory(sfont, offset);
         head = tt_read_head_table(sfont);
         maxp = tt_read_maxp_table(sfont);
         hhea = tt_read_hhea_table(sfont);
-        loaded_fonts[cur_id].ascent = hhea->ascent;
-        loaded_fonts[cur_id].descent = hhea->descent;
-        loaded_fonts[cur_id].unitsPerEm = head->unitsPerEm;
-        loaded_fonts[cur_id].numGlyphs = maxp->numGlyphs;
+        ascent  = (spt_t) (ptsize * ((double) hhea->ascent  / (double) head->unitsPerEm));
+        descent = (spt_t) (ptsize * ((double) hhea->descent / (double) head->unitsPerEm));
+        loaded_fonts[cur_id].num_glyphs = num_glyphs = maxp->numGlyphs;
         if (layout_dir == 1 && sfnt_find_table_pos(sfont, "vmtx") > 0) {
             struct tt_vhea_table *vhea = tt_read_vhea_table(sfont);
             sfnt_locate_table(sfont, "vmtx");
-            loaded_fonts[cur_id].hvmt = tt_read_longMetrics(sfont, maxp->numGlyphs, vhea->numOfLongVerMetrics, vhea->numOfExSideBearings);
+            gm = tt_read_longMetrics(sfont, maxp->numGlyphs, vhea->numOfLongVerMetrics, vhea->numOfExSideBearings);
             free(vhea);
         } else {
             sfnt_locate_table(sfont, "hmtx");
-            loaded_fonts[cur_id].hvmt = tt_read_longMetrics(sfont, maxp->numGlyphs, hhea->numOfLongHorMetrics, hhea->numOfExSideBearings);
+            gm = tt_read_longMetrics(sfont, maxp->numGlyphs, hhea->numOfLongHorMetrics, hhea->numOfExSideBearings);
         }
+
+        if (!gm)
+            _tt_abort("Failed to read TrueType/OpenType glyph metrics table.");
+        loaded_fonts[cur_id].gm = NEW(num_glyphs, struct gm);
+        for (i = 0; i < num_glyphs; i++) {
+            loaded_fonts[cur_id].gm[i].advance = (spt_t) (ptsize * ((double) gm[i].advance / (double) head->unitsPerEm) * mrec->opt.extend);
+            loaded_fonts[cur_id].gm[i].ascent  = ascent;
+            loaded_fonts[cur_id].gm[i].descent = descent;
+        }
+
+        free(gm);
         free(hhea);
         free(maxp);
         free(head);
@@ -1040,9 +1297,10 @@ static void do_moveto (int32_t x, int32_t y)
     dvi_state.v = y;
 }
 
-/* FIXME: dvi_forward() might be a better name */
 void dvi_right (int32_t x)
 {
+    spt_t save_h, save_v;
+
     if (lr_mode >= SKIMMING) {
         lr_width += x;
         return;
@@ -1051,6 +1309,9 @@ void dvi_right (int32_t x)
     if (lr_mode == RTYPESETTING)
         x = -x;
 
+    save_h = dvi_state.h;
+    save_v = dvi_state.v;
+
     switch (dvi_state.d) {
     case 0:
         dvi_state.h += x; break;
@@ -1058,6 +1319,41 @@ void dvi_right (int32_t x)
         dvi_state.v += x; break;
     case 3:
         dvi_state.v -= x; break;
+    }
+
+    if (dvi_is_tracking_boxes() && catch_phantom > 0) {
+        pdf_rect rect;
+        spt_t    width, height, depth;
+
+        if (catch_phantom == 1) {
+            if (current_font >= 0 && current_font < num_loaded_fonts) {
+                height = loaded_fonts[current_font].size;
+            } else {
+                if (dpx_conf.verbose_level > 0) {
+                    dpx_warning("Don't know how to calculate the box height since current font is not set...");
+                }
+                height = 0.0;
+            }
+            depth  = 0.0;
+        } else {
+            height = phantom_height / dvi2pts;
+            depth  = phantom_depth  / dvi2pts;
+        }
+
+        switch (dvi_state.d) {
+        case 0:
+            width = dvi_state.h - save_h;
+            break;
+        case 1:
+        case 2:
+            width = dvi_state.v - save_v;
+            break;
+        default:
+            width = dvi_state.h - save_h;
+        }
+
+        calc_rect(&rect, save_h, -save_v, width, height, depth);
+        pdf_doc_expand_box(&rect);
     }
 }
 
@@ -1086,6 +1382,7 @@ dvi_set (int32_t ch)
     struct loaded_font *font;
     spt_t               width, height, depth;
     unsigned char       wbuf[4];
+    int n, cbytes;
 
     if (current_font < 0) {
         _tt_abort("No font selected!");
@@ -1099,8 +1396,17 @@ dvi_set (int32_t ch)
      */
     font  = &loaded_fonts[current_font];
 
-    width = tfm_get_fw_width(font->tfm_id, ch);
-    width = sqxfw(font->size, width);
+    if (font->type == NATIVE) {
+        if (ch >= 0 && ch < font->num_glyphs) {
+            width = font->gm[ch].advance;
+        } else {
+            dpx_warning("Invalid char for dvilua font (ignored): %04x", ch);
+            return;
+        }
+    } else {
+        width = tfm_get_fw_width(font->tfm_id, ch);
+        width = sqxfw(font->size, width);
+    }
 
     if (lr_mode >= SKIMMING) {
         lr_width += width;
@@ -1110,31 +1416,39 @@ dvi_set (int32_t ch)
     if (lr_mode == RTYPESETTING)
         dvi_right(width); /* Will actually move left */
 
+    memcpy(wbuf, font->padbytes, 4);
+
     switch (font->type) {
     case  PHYSICAL:
-        if (ch > 65535) { /* _FIXME_ */
-            wbuf[0] = (UTF32toUTF16HS(ch) >> 8) & 0xff;
-            wbuf[1] =  UTF32toUTF16HS(ch)       & 0xff;
-            wbuf[2] = (UTF32toUTF16LS(ch) >> 8) & 0xff;
-            wbuf[3] =  UTF32toUTF16LS(ch)       & 0xff;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 4,
-                               width, font->font_id, 2);
-        } else if (ch > 255) { /* _FIXME_ */
-            wbuf[0] = (ch >> 8) & 0xff;
-            wbuf[1] =  ch & 0xff;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 2,
-                               width, font->font_id, 2);
+        if (ch > 65535) {
+            /* FIXME: uptex specific undocumented */
+            if (!font->is_unicode && tfm_is_jfm(font->tfm_id)) {
+                wbuf[0] = (UTF32toUTF16HS(ch) >> 8) & 0xff;
+                wbuf[1] =  UTF32toUTF16HS(ch)       & 0xff;
+                wbuf[2] = (UTF32toUTF16LS(ch) >> 8) & 0xff;
+                wbuf[3] =  UTF32toUTF16LS(ch)       & 0xff;
+            } else {
+                wbuf[0] = (ch >> 24) & 0xff;
+                wbuf[1] = (ch >> 16) & 0xff;
+                wbuf[2] = (ch >>  8) & 0xff;
+                wbuf[3] =  ch        & 0xff;
+            }
+            n = 4;
+        } else if (ch > 255) {
+            wbuf[2] = (ch >> 8) & 0xff;
+            wbuf[2] =  ch & 0xff;
+            n = 2;
         } else if (font->subfont_id >= 0) {
-            unsigned short uch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
-            wbuf[0] = (uch >> 8) & 0xff;
-            wbuf[1] =  uch & 0xff;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 2,
-                               width, font->font_id, 2);
+            uint16_t uch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
+            wbuf[2] = (uch >> 8) & 0xff;
+            wbuf[3] =  uch & 0xff;
+            n = 2;
         } else {
-            wbuf[0] = (unsigned char) ch;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 1,
-                               width, font->font_id, 1);
+            wbuf[3] = (unsigned char) ch;
+            n = 1;
         }
+        cbytes = font->minbytes > n ? font->minbytes : n;
+        set_string(dvi_state.h, -dvi_state.v, wbuf + 4 - cbytes, cbytes, width, font->font_id);
         if (dvi_is_tracking_boxes()) {
             pdf_rect rect;
 
@@ -1143,8 +1457,20 @@ dvi_set (int32_t ch)
             height = sqxfw(font->size, height);
             depth  = sqxfw(font->size, depth);
 
-            pdf_dev_set_rect  (&rect, dvi_state.h, -dvi_state.v,
-                               width, height, depth);
+            calc_rect(&rect, dvi_state.h, -dvi_state.v, width, height, depth);
+            pdf_doc_expand_box(&rect);
+        }
+        break;
+    case  NATIVE:
+        wbuf[0] = (ch >> 8) & 0xff;
+        wbuf[1] =  ch       & 0xff;
+        set_string(dvi_state.h, -dvi_state.v, wbuf, 2, width, font->font_id);
+        if (dvi_is_tracking_boxes()) {
+            pdf_rect rect;
+
+            height = font->gm[ch].ascent;
+            depth  = font->gm[ch].descent;
+            calc_rect(&rect, dvi_state.h, -dvi_state.v, width, height, depth);
             pdf_doc_expand_box(&rect);
         }
         break;
@@ -1164,6 +1490,7 @@ dvi_put (int32_t ch)
     struct loaded_font *font;
     spt_t               width, height, depth;
     unsigned char       wbuf[4];
+    int n, cbytes;
 
     if (current_font < 0) {
         _tt_abort("No font selected!");
@@ -1171,6 +1498,7 @@ dvi_put (int32_t ch)
 
     font = &loaded_fonts[current_font];
 
+    memcpy(wbuf, font->padbytes, 4);
     switch (font->type) {
     case  PHYSICAL:
         width = tfm_get_fw_width(font->tfm_id, ch);
@@ -1179,31 +1507,35 @@ dvi_put (int32_t ch)
         /* Treat a single character as a one byte string and use the
          * string routine.
          */
-        if (ch > 65535) { /* _FIXME_ */
-            wbuf[0] = (UTF32toUTF16HS(ch) >> 8) & 0xff;
-            wbuf[1] =  UTF32toUTF16HS(ch)       & 0xff;
-            wbuf[2] = (UTF32toUTF16LS(ch) >> 8) & 0xff;
-            wbuf[3] =  UTF32toUTF16LS(ch)       & 0xff;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 4,
-                               width, font->font_id, 2);
+        if (ch > 65535) {
+            /* FIXME: uptex specific undocumented */
+            if (!font->is_unicode && tfm_is_jfm(font->tfm_id)) {
+                wbuf[0] = (UTF32toUTF16HS(ch) >> 8) & 0xff;
+                wbuf[1] =  UTF32toUTF16HS(ch)       & 0xff;
+                wbuf[2] = (UTF32toUTF16LS(ch) >> 8) & 0xff;
+                wbuf[3] =  UTF32toUTF16LS(ch)       & 0xff;
+            } else {
+                wbuf[0] = (ch >> 24) & 0xff;
+                wbuf[1] = (ch >> 16) & 0xff;
+                wbuf[2] = (ch >>  8) & 0xff;
+                wbuf[3] =  ch        & 0xff;
+            }
+            n = 4;
         } else if (ch > 255) { /* _FIXME_ */
-            wbuf[0] = (ch >> 8) & 0xff;
-            wbuf[1] =  ch & 0xff;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 2,
-                               width, font->font_id, 2);
+            wbuf[2] = (ch >> 8) & 0xff;
+            wbuf[3] =  ch & 0xff;
+            n = 2;
         } else if (font->subfont_id >= 0) {
-            unsigned int uch;
-
-            uch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
-            wbuf[0] = (uch >> 8) & 0xff;
-            wbuf[1] =  uch & 0xff;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 2,
-                               width, font->font_id, 2);
+            uint16_t uch = lookup_sfd_record(font->subfont_id, (unsigned char) ch);
+            wbuf[2] = (uch >> 8) & 0xff;
+            wbuf[3] =  uch & 0xff;
+            n = 2;
         } else {
-            wbuf[0] = (unsigned char) ch;
-            pdf_dev_set_string(dvi_state.h, -dvi_state.v, wbuf, 1,
-                               width, font->font_id, 1);
+            wbuf[3] = (unsigned char) ch;
+            n = 1;
         }
+        cbytes = font->minbytes > n ? font->minbytes : n;
+        set_string(dvi_state.h, -dvi_state.v, wbuf + 4 - cbytes, cbytes, width, font->font_id);
         if (dvi_is_tracking_boxes()) {
             pdf_rect rect;
 
@@ -1212,8 +1544,7 @@ dvi_put (int32_t ch)
             height = sqxfw(font->size, height);
             depth  = sqxfw(font->size, depth);
 
-            pdf_dev_set_rect  (&rect, dvi_state.h, -dvi_state.v,
-                               width, height, depth);
+            calc_rect(&rect, dvi_state.h, -dvi_state.v, width, height, depth);
             pdf_doc_expand_box(&rect);
         }
         break;
@@ -1234,13 +1565,13 @@ dvi_rule (int32_t width, int32_t height)
 
         switch (dvi_state.d) {
         case 0:
-            pdf_dev_set_rule(dvi_state.h, -dvi_state.v,  width, height);
+            set_rule(dvi_state.h, -dvi_state.v,  width, height);
             break;
         case 1:
-            pdf_dev_set_rule(dvi_state.h, -dvi_state.v - width, height, width);
+            set_rule(dvi_state.h, -dvi_state.v - width, height, width);
             break;
         case 3:
-            pdf_dev_set_rule(dvi_state.h - height, -dvi_state.v , height, width);
+            set_rule(dvi_state.h - height, -dvi_state.v , height, width);
             break;
         }
     }
@@ -1431,12 +1762,13 @@ do_fnt (uint32_t tex_id)
         }
         loaded_fonts[font_id].rgba_color = def_fonts[i].rgba_color;
         /* Opacity: 0xff is fully opaque. */
-        if ((loaded_fonts[font_id].rgba_color & 0xff) == 0xff) {
+        loaded_fonts[font_id].rgba_used = def_fonts[i].rgba_used;
+        if (loaded_fonts[font_id].rgba_used == 0) {
             loaded_fonts[font_id].xgs_id = -1;
         } else {
             pdf_obj *xgs_dict;
             int      a = loaded_fonts[font_id].rgba_color & 0xff;
-        
+
             /* Inefficient but don't care as transparency is not expected to be frequently used. */
             xgs_dict = pdf_new_dict();
             pdf_add_dict(xgs_dict, pdf_new_name("Type"), pdf_new_name("ExtGState"));
@@ -1610,9 +1942,10 @@ static void
 do_glyphs (int do_actual_text)
 {
     struct loaded_font *font;
-    spt_t  width, height, depth, *xloc, *yloc, glyph_width = 0;
+    spt_t  width, height, depth, *xloc, *yloc;
     unsigned char wbuf[2];
-    unsigned int i, glyph_id, slen = 0;
+    int32_t i;
+    uint16_t glyph_id, slen = 0;
 
     if (current_font < 0)
         _tt_abort("No font selected!");
@@ -1654,7 +1987,7 @@ do_glyphs (int do_actual_text)
         yloc[i] = get_buffered_signed_quad();
     }
 
-    if (font->rgba_color != 0xffffffff) {
+    if (font->rgba_used == 1) {
         pdf_color color;
         pdf_color_rgbcolor(&color,
                            (double)((unsigned char)(font->rgba_color >> 24) & 0xff) / 255,
@@ -1669,7 +2002,7 @@ do_glyphs (int do_actual_text)
             pdf_obj *ref;
             char     resname[16];
             char     content[22];
-        
+
             sprintf(resname, "Xtx_Gs_%08x", current_font);
             ref = pdf_get_resource_reference(font->xgs_id);
             pdf_doc_add_page_resource("ExtGState", resname, ref);
@@ -1681,53 +2014,33 @@ do_glyphs (int do_actual_text)
     }
 
     for (i = 0; i < slen; i++) {
+        spt_t advance = 0;
+
         glyph_id = get_buffered_unsigned_pair(); /* freetype glyph index */
-        if (glyph_id < font->numGlyphs) {
-            unsigned int advance;
-            double ascent = (double)font->ascent;
-            double descent = (double)font->descent;
+        if (glyph_id < font->num_glyphs) {
+            if (font->shift_gid)
+                glyph_id++;
 
-            if (font->cffont) {
-                cff_index *cstrings = font->cffont->cstrings;
-                t1_ginfo gm;
-
-                /* If .notdef is not the 1st glyph in CharStrings, glyph_id given by
-                   FreeType should be increased by 1 */
-                if (font->cffont->is_notdef_notzero)
-                    glyph_id += 1;
-
-                t1char_get_metrics(cstrings->data + cstrings->offset[glyph_id] - 1,
-                                   cstrings->offset[glyph_id + 1] - cstrings->offset[glyph_id],
-                                   font->cffont->subrs[0], &gm);
-
-                advance = font->layout_dir == 0 ? gm.wx : gm.wy;
-                ascent = gm.bbox.ury;
-                descent = gm.bbox.lly;
-            } else {
-                advance = font->hvmt[glyph_id].advance;
-            }
-
-            glyph_width    = (double)font->size * (double)advance / (double)font->unitsPerEm;
-            glyph_width    = glyph_width * font->extend;
+            advance = font->gm[glyph_id].advance;
 
             if (dvi_is_tracking_boxes()) {
                 pdf_rect rect;
-                height = (double)font->size * ascent / (double)font->unitsPerEm;
-                depth  = (double)font->size * -descent / (double)font->unitsPerEm;
-                pdf_dev_set_rect(&rect, dvi_state.h + xloc[i], -dvi_state.v - yloc[i], glyph_width, height, depth);
+                height = font->gm[glyph_id].ascent;
+                depth  = -font->gm[glyph_id].descent;
+                calc_rect(&rect, dvi_state.h + xloc[i], -dvi_state.v - yloc[i], advance, height, depth);
                 pdf_doc_expand_box(&rect);
             }
         }
 
         wbuf[0] = glyph_id >> 8;
         wbuf[1] = glyph_id & 0xff;
-        pdf_dev_set_string(dvi_state.h + xloc[i], -dvi_state.v - yloc[i], wbuf, 2,
-                           glyph_width, font->font_id, -1);
+        set_string(dvi_state.h + xloc[i], -dvi_state.v - yloc[i], wbuf, 2,
+                           advance, font->font_id);
     }
 
-    if (font->rgba_color != 0xffffffff) {
+    if (font->rgba_used == 1) {
         if (font->xgs_id >= 0) {
-            graphics_mode(); 
+            graphics_mode();
             pdf_dev_grestore();
         }
         pdf_color_pop();
@@ -2016,14 +2329,8 @@ dvi_close (void)
 
     for (i = 0; i < num_loaded_fonts; i++)
     {
-        free(loaded_fonts[i].hvmt);
-
-        loaded_fonts[i].hvmt = NULL;
-
-        if (loaded_fonts[i].cffont != NULL)
-            cff_close(loaded_fonts[i].cffont);
-
-        loaded_fonts[i].cffont = NULL;
+        free(loaded_fonts[i].gm);
+        loaded_fonts[i].gm = NULL;
     }
 
     loaded_fonts = mfree(loaded_fonts);
@@ -2080,83 +2387,7 @@ dvi_vf_finish (void)
 /* Scan various specials */
 #include "dpx-dpxutil.h"
 
-/* This need to allow 'true' prefix for unit and
- * length value must be divided by current magnification.
- */
-/* XXX: there are four quasi-redundant versions of this; grp for K_UNIT__PT */
-static int
-read_length (double *vp, double mag, const char **pp, const char *endptr)
-{
-    char   *q;
-    const char *p = *pp;
-    double  v, u = 1.0;
-    const char *_ukeys[] = {
-#define K_UNIT__PT  0
-#define K_UNIT__IN  1
-#define K_UNIT__CM  2
-#define K_UNIT__MM  3
-#define K_UNIT__BP  4
-#define K_UNIT__PC  5
-#define K_UNIT__DD  6
-#define K_UNIT__CC  7
-#define K_UNIT__SP  8
-        "pt", "in", "cm", "mm", "bp", "pc", "dd", "cc", "sp",
-        NULL
-    };
-    int     k, error = 0;
-
-    q = parse_float_decimal(&p, endptr);
-    if (!q) {
-        *vp = 0.0; *pp = p;
-        return  -1;
-    }
-
-    v = atof(q);
-    free(q);
-
-    skip_white(&p, endptr);
-    q = parse_c_ident(&p, endptr);
-    if (q) {
-        char *qq = q; /* remember this for free, because q may be advanced */
-        if (strlen(q) >= strlen("true") &&
-            !memcmp(q, "true", strlen("true"))) {
-            u /= mag != 0.0 ? mag : 1.0; /* inverse magnify */
-            q += strlen("true");
-        }
-        if (strlen(q) == 0) { /* "true" was a separate word from the units */
-            free(qq);
-            skip_white(&p, endptr);
-            qq = q = parse_c_ident(&p, endptr);
-        }
-        if (q) {
-            for (k = 0; _ukeys[k] && strcmp(_ukeys[k], q); k++);
-            switch (k) {
-            case K_UNIT__PT: u *= 72.0 / 72.27; break;
-            case K_UNIT__IN: u *= 72.0; break;
-            case K_UNIT__CM: u *= 72.0 / 2.54 ; break;
-            case K_UNIT__MM: u *= 72.0 / 25.4 ; break;
-            case K_UNIT__BP: u *= 1.0 ; break;
-            case K_UNIT__PC: u *= 12.0 * 72.0 / 72.27 ; break;
-            case K_UNIT__DD: u *= 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
-            case K_UNIT__CC: u *= 12.0 * 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
-            case K_UNIT__SP: u *= 72.0 / (72.27 * 65536) ; break;
-            default:
-                dpx_warning("Unknown unit of measure: %s", q);
-                error = -1;
-                break;
-            }
-            free(qq);
-        }
-        else {
-            dpx_warning("Missing unit of measure after \"true\"");
-            error = -1;
-        }
-    }
-
-    *vp = v * u; *pp = p;
-    return  error;
-}
-
+/* For MAX_PWD_LEN */
 #include "dpx-pdfencrypt.h"
 
 static int
@@ -2317,19 +2548,19 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 else {
                     skip_white(&p, endptr);
                     if (streq_ptr(kp, "width")) {
-                        error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
+                        error = dpx_util_read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *wd = tmp * dvi_tell_mag();
                     } else if (streq_ptr(kp, "height")) {
-                        error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
+                        error = dpx_util_read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *ht = tmp * dvi_tell_mag();
                     } else if (streq_ptr(kp, "xoffset")) {
-                        error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
+                        error = dpx_util_read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *xo = tmp * dvi_tell_mag();
                     } else if (streq_ptr(kp, "yoffset")) {
-                        error = read_length(&tmp, dvi_tell_mag(), &p, endptr);
+                        error = dpx_util_read_length(&tmp, dvi_tell_mag(), &p, endptr);
                         if (!error)
                             *yo = tmp * dvi_tell_mag();
                     } else if (streq_ptr(kp, "default")) {
@@ -2350,7 +2581,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 qchr = *p; p++;
                 skip_white(&p, endptr);
             }
-            error = read_length(&tmp, 1.0, &p, endptr);
+            error = dpx_util_read_length(&tmp, 1.0, &p, endptr);
             if (!error) {
                 double tmp1;
 
@@ -2358,7 +2589,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 if (p < endptr && *p == ',') {
                     p++; skip_white(&p, endptr);
                 }
-                error = read_length(&tmp1, 1.0, &p, endptr);
+                error = dpx_util_read_length(&tmp1, 1.0, &p, endptr);
                 if (!error) {
                     *wd = tmp;
                     *ht = tmp1;
@@ -2403,7 +2634,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
                 *has_id = 0;
             } else {
                 *has_id = 1;
-            } 
+            }
         }
         free(q);
     }
@@ -2558,6 +2789,6 @@ dvi_reset_global_state(void)
     max_def_fonts = 0;
     compute_boxes = 0;
     link_annot = 1;
-    num_loaded_fonts = 0; 
+    num_loaded_fonts = 0;
     max_loaded_fonts = 0;
 }

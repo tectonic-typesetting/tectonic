@@ -37,6 +37,8 @@
 extern double min4(double v1, double v2, double v3, double v4);
 extern double max4(double v1, double v2, double v3, double v4);
 
+extern int dpx_util_read_length(double *vp, double mag, const char **curptr, const char *endptr);
+
 #define INVALID_EPOCH_VALUE ((time_t)-1)
 extern time_t dpx_util_get_unique_time_if_given (void);
 extern int    dpx_util_format_asn_date (char *date_string, int need_timezone);
@@ -56,6 +58,27 @@ extern int    dpx_util_format_asn_date (char *date_string, int need_timezone);
 
 void skip_white_spaces (unsigned char **s, unsigned char *endptr);
 int  xtoi     (char c);
+
+typedef struct stack_elem
+{
+  void              *data;
+  struct stack_elem *prev;
+} stack_elem;
+
+typedef struct dpx_stack
+{
+  int         size;
+  stack_elem *top;
+  stack_elem *bottom;
+} dpx_stack;
+
+extern void       dpx_stack_init   (dpx_stack *st);
+extern void      *dpx_stack_pop    (dpx_stack *st);
+extern void       dpx_stack_push   (dpx_stack *st, void *data);
+extern int        dpx_stack_depth  (dpx_stack *st);
+extern void      *dpx_stack_top    (dpx_stack *st);
+extern void      *dpx_stack_at     (dpx_stack *st, int pos);
+extern void       dpx_stack_roll   (dpx_stack *st, int n, int j);
 
 #define HASH_TABLE_SIZE 503
 

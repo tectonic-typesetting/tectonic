@@ -2,9 +2,9 @@
 (etrip e-IniTeX: e-Trip format loaded.
 This is the e-Trip test [2014-01-22] for e-TeX v3.14159265-2.6.
 (You are using e-TeX version/revision 2.6)
-Missing character: There is no b in font nullfont!
+Missing character: There is no b ("62) in font nullfont!
 
-Missing character: There is no c in font nullfont!
+Missing character: There is no c ("63) in font nullfont!
 
 Bug in your e-TeX implementation!
 dumped e-TeX enhancement state registers aren't switch off
@@ -718,19 +718,19 @@ and I'll forget about whatever was undefined.
 {\readline}
 {\endlinechar}
 {the character \}
-Missing character: There is no \ in font etrip!
+Missing character: There is no \ ("5C) in font etrip!
 {the character e}
-Missing character: There is no e in font etrip!
+Missing character: There is no e ("65) in font etrip!
 {the character n}
-Missing character: There is no n in font etrip!
+Missing character: There is no n ("6E) in font etrip!
 {the character d}
-Missing character: There is no d in font etrip!
+Missing character: There is no d ("64) in font etrip!
 {the character g}
-Missing character: There is no g in font etrip!
+Missing character: There is no g ("67) in font etrip!
 {the character r}
-Missing character: There is no o in font etrip!
+Missing character: There is no o ("6F) in font etrip!
 {the character u}
-Missing character: There is no ^^M in font etrip!
+Missing character: There is no ^^M ("D) in font etrip!
 {\expandafter}
 {\fi}
 {\unless}
@@ -739,11 +739,11 @@ Missing character: There is no ^^M in font etrip!
 {\readline}
 {\endlinechar}
 {the character \}
-Missing character: There is no \ in font etrip!
+Missing character: There is no \ ("5C) in font etrip!
 {the character f}
-Missing character: There is no f in font etrip!
+Missing character: There is no f ("66) in font etrip!
 {the character i}
-Missing character: There is no i in font etrip!
+Missing character: There is no i ("69) in font etrip!
 {\expandafter}
 {\fi}
 {\unless}
@@ -752,11 +752,11 @@ Missing character: There is no i in font etrip!
 {\readline}
 {\endlinechar}
 {the character \}
-Missing character: There is no \ in font etrip!
+Missing character: There is no \ ("5C) in font etrip!
 {the character b}
-Missing character: There is no g in font etrip!
+Missing character: There is no g ("67) in font etrip!
 {the character r}
-Missing character: There is no o in font etrip!
+Missing character: There is no o ("6F) in font etrip!
 {the character u}
 {\expandafter}
 {\fi}
@@ -766,26 +766,26 @@ Missing character: There is no o in font etrip!
 {\readline}
 {\endlinechar}
 {the character \}
-Missing character: There is no \ in font etrip!
+Missing character: There is no \ ("5C) in font etrip!
 {the character i}
-Missing character: There is no i in font etrip!
+Missing character: There is no i ("69) in font etrip!
 {the character f}
-Missing character: There is no f in font etrip!
+Missing character: There is no f ("66) in font etrip!
 {the character f}
-Missing character: There is no f in font etrip!
+Missing character: There is no f ("66) in font etrip!
 {the character a}
-Missing character: There is no l in font etrip!
+Missing character: There is no l ("6C) in font etrip!
 {the character s}
-Missing character: There is no e in font etrip!
+Missing character: There is no e ("65) in font etrip!
 {blank space  }
 {the character \}
-Missing character: There is no \ in font etrip!
+Missing character: There is no \ ("5C) in font etrip!
 {the character e}
-Missing character: There is no e in font etrip!
+Missing character: There is no e ("65) in font etrip!
 {the character l}
-Missing character: There is no l in font etrip!
+Missing character: There is no l ("6C) in font etrip!
 {the character s}
-Missing character: There is no e in font etrip!
+Missing character: There is no e ("65) in font etrip!
 {\expandafter}
 {\fi}
 {\unless}
@@ -1256,7 +1256,7 @@ you left one out. Proceed, with fingers crossed.
 ### math mode entered at line 524
 \mathord
 .\fam1 r
-this will be denominator of:
+this will begin denominator of:
 \fraction, thickness = default
 \\left"161361
 \\mathord
@@ -1280,7 +1280,7 @@ this will be denominator of:
 ### math mode entered at line 517
 \mathord
 .\fam1 r
-this will be denominator of:
+this will begin denominator of:
 \fraction, thickness = default
 \\left"161361
 \\mathord
@@ -1327,7 +1327,7 @@ l.525             \over r\showlists
 ### math mode entered at line 517
 \mathord
 .\fam1 r
-this will be denominator of:
+this will begin denominator of:
 \fraction, thickness = default
 \\left"161361
 \\mathord
@@ -1375,7 +1375,7 @@ l.526             \right]\showlists
 ../.\fam1 r
 ..\right"162362
 .\right"162362
-this will be denominator of:
+this will begin denominator of:
 \fraction, thickness = default
 \\left"161361
 \\mathord

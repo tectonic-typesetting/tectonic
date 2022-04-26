@@ -42,6 +42,7 @@
 #include "dpx-pdfobj.h"
 #include "dpx-pdfparse.h"
 #include "dpx-pdfximage.h"
+#include "dpx-dpxutil.h"
 
 static pdf_obj*
 get_page_content (pdf_file *pf, pdf_obj* page)
@@ -204,84 +205,82 @@ pdf_include_page (pdf_ximage        *ximage,
   return -1;
 }
 
-typedef enum {
-  OP_SETCOLOR          = 1,
-  OP_CLOSEandCLIP      = 2,
-  OP_CLIP              = 3,
-  OP_CONCATMATRIX      = 4,
-  OP_SETCOLORSPACE     = 5,
-  OP_RECTANGLE         = 6,
-  OP_CURVETO           = 7,
-  OP_CLOSEPATH         = 8,
-  OP_LINETO            = 9,
-  OP_MOVETO            = 10,
-  OP_NOOP              = 11,
-  OP_GSAVE             = 12,
-  OP_GRESTORE          = 13,
-  OP_CURVETO1          = 14,
-  OP_CURVETO2          = 15,
-  OP_UNKNOWN           = 16
-} pdf_opcode;
+enum action {
+    action_unknown,
+    action_discard,
+    action_path,
+    action_rect,
+    action_trans,
+    action_clip,
+    action_save,
+    action_restore
+};
 
 static struct operator
 {
   const char *token;
-  int         opcode;
-} pdf_operators[] = {
-  {"SCN",       OP_SETCOLOR},
-  {"b*",        OP_CLOSEandCLIP},
-  {"B*",        OP_CLIP},
-  {"cm",        OP_CONCATMATRIX},
-  {"CS",        OP_SETCOLORSPACE},
-  {"f*",        0},
-  {"gs",        -1},
-  {"re",        OP_RECTANGLE},
-  {"rg",        -3},
-  {"RG",        -3},
-  {"sc",        OP_SETCOLOR},
-  {"SC",        OP_SETCOLOR},
-  {"W*",        OP_CLIP},
-  {"b",         OP_CLOSEandCLIP},
-  {"B",         OP_CLIP},
-  {"c",         OP_CURVETO},
-  {"d",         -2},
-  {"f",         0},
-  {"F",         0},
-  {"g",         -1},
-  {"G",         -1},
-  {"h",         OP_CLOSEPATH},
-  {"i",         -1},
-  {"j",         -1},
-  {"J",         -1},
-  {"k",         -4},
-  {"K",         -4},
-  {"l",         OP_LINETO},
-  {"m",         OP_MOVETO},
-  {"M",         -1},
-  {"n",         OP_NOOP},
-  {"q",         OP_GSAVE},
-  {"Q",         OP_GRESTORE},
-  {"s",         OP_CLOSEandCLIP},
-  {"S",         OP_CLIP},
-  {"v",         OP_CURVETO1},
-  {"w",         -1},
-  {"W",         OP_CLIP},
-  {"y",         OP_CURVETO2}
+  enum action action;
+  int         n_args;
+} operators[] = {
+  {"b*", action_clip, 0},
+  {"B*", action_clip, 0},
+  {"cm", action_trans, 6},
+  {"f*", action_clip, 0},
+  {"re", action_rect, 4},
+  {"W*", action_path, 0},
+  {"b",  action_clip, 0},
+  {"B",  action_clip, 0},
+  {"c",  action_path, 6},
+  {"f",  action_clip, 0},
+  {"F",  action_clip, 0},
+  {"h",  action_path, 0},
+  {"l",  action_path, 2},
+  {"m",  action_path, 2},
+  {"n",  action_path, 0},
+  {"q",  action_save, 0},
+  {"Q",  action_restore, 0},
+  {"s",  action_clip, 0},
+  {"S",  action_clip, 0},
+  {"v",  action_path, 4},
+  {"W",  action_path, 0},
+  {"y",  action_path, 4}
 };
 
+static int
+get_numbers_from_stack (dpx_stack *stack, double *v, int n)
+{
+  int error = 0;
+  int i;
+
+  for (i = 0; i < n; i++) {
+    pdf_obj *obj;
+    obj = dpx_stack_pop(stack);
+    if (!obj) {
+      error = -1;
+      break;
+    } else if (!PDF_OBJ_NUMBERTYPE(obj)) {
+      pdf_release_obj(obj);
+      error = -1;
+      break;
+    }
+    v[n-i-1] = pdf_number_value(obj);
+    pdf_release_obj(obj);
+  }
+  return error;
+}
 
 int
 pdf_copy_clip (rust_input_handle_t image_file, int pageNo, double x_user, double y_user)
 {
   pdf_obj *page_tree, *contents;
-  int depth = 0, top = -1;
-  const char *clip_path, *end_path;
-  char *save_path, *temp;
+  int depth = 0;
+  const char *p, *endptr;
   pdf_tmatrix M;
-  double stack[6];
   pdf_rect bbox;
   pdf_tmatrix mtrx;
   pdf_file *pf;
+  dpx_stack stack;
+  int error = 0;
 
   pf = pdf_open(NULL, image_file);
   if (!pf)
@@ -305,211 +304,200 @@ pdf_copy_clip (rust_input_handle_t image_file, int pageNo, double x_user, double
 
   pdf_doc_add_page_content(" ", 1);
 
-  save_path = xmalloc(pdf_stream_length(contents) + 1);
-  strncpy(save_path, (const char *) pdf_stream_dataptr(contents),  pdf_stream_length(contents));
-  clip_path = save_path;
-  end_path = clip_path + pdf_stream_length(contents);
-  depth = 0;
+  p      = pdf_stream_dataptr(contents);
+  endptr = p + pdf_stream_length(contents);
+  depth  = 0;
+  dpx_stack_init(&stack);
 
-  for (; clip_path < end_path; clip_path++) {
-    int color_dimen = 0; /* silence uninitialized warning */
-    char *token;
-    skip_white(&clip_path, end_path);
-    if (clip_path == end_path)
-      break;
+  skip_white(&p, endptr);
+  while (p < endptr && !error) {
+    enum action  action = action_discard;
+    char        *token  = NULL;
+    pdf_obj     *obj    = NULL;
+    int          n_args = 0;
+    char         buf[1024];
+    size_t       len = 0;
+
     if (depth > 1) {
-      if (*clip_path == 'q')
+      if (*p == 'q')
         depth++;
-      if (*clip_path == 'Q')
+      if (*p == 'Q')
         depth--;
-      parse_ident(&clip_path, end_path);
+      token = parse_ident(&p, endptr);
+      skip_white(&p, endptr);
+      free(token);
       continue;
-    } else if (*clip_path == '-'
-            || *clip_path == '+'
-            || *clip_path == '.'
-            || isdigit((unsigned char)*clip_path)) {
-      stack[++top] = strtod(clip_path, &temp);
-      clip_path = temp;
-    } else if (*clip_path == '[') {
-      /* Ignore, but put a dummy value on the stack (in case of d operator) */
-      parse_pdf_array(&clip_path, end_path, pf);
-      stack[++top] = 0;
-    } else if (*clip_path == '/') {
-      if  (strncmp("/DeviceGray", clip_path, 11) == 0
-        || strncmp("/Indexed",    clip_path, 8)  == 0
-        || strncmp("/CalGray",    clip_path, 8)  == 0) {
-        color_dimen = 1;
-        continue;
-      }
-      else if  (strncmp("/DeviceRGB", clip_path, 10) == 0
-        || strncmp("/CalRGB",         clip_path, 7)  == 0
-        || strncmp("/Lab",            clip_path, 4)  == 0) {
-        color_dimen = 3;
-        continue;
-      }
-      else if  (strncmp("/DeviceCMYK", clip_path, 11) == 0) {
-        color_dimen = 4;
-        continue;
-      }
-      else {
-        clip_path++;
-        parse_ident(&clip_path, end_path);
-        skip_white(&clip_path, end_path);
-        token = parse_ident(&clip_path, end_path);
-        if (streq_ptr(token, "gs")) {
-          continue;
-        }
-        return -1;
-      }
-    } else {
-      unsigned int j;
-      pdf_tmatrix T;
-      pdf_coord  p0, p1, p2, p3;
+    }
 
-      token = parse_ident(&clip_path, end_path);
-      for (j = 0; j < sizeof(pdf_operators) / sizeof(pdf_operators[0]); j++)
-        if (streq_ptr(token, pdf_operators[j].token))
-          break;
-      if (j == sizeof(pdf_operators) / sizeof(pdf_operators[0])) {
-        return -1;
+    switch (*p) {
+    case '-': case '+': case'.':
+    case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+      obj = parse_pdf_number(&p, endptr);
+      break;
+    case '[':
+      obj = parse_pdf_array(&p, endptr, NULL); /* No indirect reference allowed here */
+      break;
+    case '/':
+      obj = parse_pdf_name(&p, endptr);
+      break;
+    case '(':
+      obj = parse_pdf_string(&p, endptr);
+      break;
+    case '<':
+      if (p < endptr - 1 && p[1] == '<') {
+        obj = parse_pdf_dict(&p, endptr, NULL);
+      } else {
+        obj = parse_pdf_string(&p, endptr);
       }
-      switch (pdf_operators[j].opcode) {
-        case  0:
-        case -1:
-        case -2:
-        case -3:
-        case -4:
-          /* Just pop the stack and do nothing. */
-          top += pdf_operators[j].opcode;
-          if (top < -1)
-            return -1;
+      break;
+    }
+    if (obj) {
+      skip_white(&p, endptr);
+      dpx_stack_push(&stack, obj);
+      continue;
+    }
+
+    /* operator */
+    token = parse_ident(&p, endptr);
+    skip_white(&p, endptr);
+    if (!token) {
+      break;
+    } else {
+      int i;
+      for (i = 0; i < sizeof(operators) / sizeof(operators[0]); i++) {
+        if (!strcmp(token, operators[i].token)) {
+          action = operators[i].action;
+          n_args = operators[i].n_args;
           break;
-        case OP_SETCOLOR:
-          top -= color_dimen;
-          if (top < -1)
-            return -1;
-          break;
-        case OP_CLOSEandCLIP:
-          pdf_dev_closepath();
-        case OP_CLIP:
-          pdf_dev_flushpath('W', PDF_FILL_RULE_NONZERO);
-          break;
-        case OP_CONCATMATRIX:
-          if (top < 5)
-            return -1;
-          T.f = stack[top--];
-          T.e = stack[top--];
-          T.d = stack[top--];
-          T.c = stack[top--];
-          T.b = stack[top--];
-          T.a = stack[top--];
-          pdf_concatmatrix(&M, &T);
-          break;
-        case OP_SETCOLORSPACE:
-          /* Do nothing. */
-          break;
-        case OP_RECTANGLE:
-          if (top < 3)
-            return -1;
-          p1.y = stack[top--];
-          p1.x = stack[top--];
-          p0.y = stack[top--];
-          p0.x = stack[top--];
-          if (M.b == 0 && M.c == 0) {
-            pdf_tmatrix M0;
-            M0.a = M.a; M0.b = M.b; M0.c = M.c; M0.d = M.d;
-            M0.e = 0; M0.f = 0;
+        }
+      }
+    }
+    switch (action) {
+    case action_rect:
+      {
+        double v[4];
+
+        error = get_numbers_from_stack(&stack, v, n_args); /* n_args = 4 */
+        if (!error) {
+          /* Not sure if this switch is required */
+          if (M.b == 0.0 && M.c == 0.0) {
+            /* Use "re" operator */
+            pdf_coord p0;
+            double    w, h;
+
+            p0.x = v[0]; p0.y = v[1];
+            w = M.a * v[2]; h = M.d * v[3];
             pdf_dev_transform(&p0, &M);
-            pdf_dev_transform(&p1, &M0);
-            pdf_dev_rectadd(p0.x, p0.y, p1.x, p1.y);
+            buf[len++] = ' ';
+            len += pdf_sprint_coord(buf+len, &p0);
+            buf[len++] = ' ';
+            len += pdf_sprint_length(buf+len, w);
+            buf[len++] = ' ';
+            len += pdf_sprint_length(buf+len, h);
+            len += sprintf(buf+len, " re");
           } else {
-            p2.x = p0.x + p1.x; p2.y = p0.y + p1.y;
-            p3.x = p0.x; p3.y = p0.y + p1.y;
-            p1.x += p0.x; p1.y = p0.y;
+            /* Converted to lineto */
+            pdf_coord p0, p1, p2, p3;
+            double    w, h;
+
+            w = v[2]; h = v[3];
+            p0.x = v[0]; p0.y = v[1];
+            p1.x = p0.x + w; p1.y = p0.y;
+            p2.x = p1.x; p2.y = p1.y + h;
+            p3.x = p0.x; p3.y = p2.y;
             pdf_dev_transform(&p0, &M);
             pdf_dev_transform(&p1, &M);
             pdf_dev_transform(&p2, &M);
             pdf_dev_transform(&p3, &M);
-            pdf_dev_moveto(p0.x, p0.y);
-            pdf_dev_lineto(p1.x, p1.y);
-            pdf_dev_lineto(p2.x, p2.y);
-            pdf_dev_lineto(p3.x, p3.y);
-            pdf_dev_closepath();
+            buf[len++] = ' ';
+            len += pdf_sprint_coord(buf+len, &p0);
+            len += sprintf(buf+len, " m");
+            buf[len++] = ' ';
+            len += pdf_sprint_coord(buf+len, &p1);
+            len += sprintf(buf+len, " l");
+            buf[len++] = ' ';
+            len += pdf_sprint_coord(buf+len, &p2);
+            len += sprintf(buf+len, " l");
+            buf[len++] = ' ';
+            len += pdf_sprint_coord(buf+len, &p3);
+            len += sprintf(buf+len, " l h");
           }
-          break;
-        case OP_CURVETO:
-          if (top < 5)
-            return -1;
-          p0.y = stack[top--];
-          p0.x = stack[top--];
-          pdf_dev_transform(&p0, &M);
-          p1.y = stack[top--];
-          p1.x = stack[top--];
-          pdf_dev_transform(&p1, &M);
-          p2.y = stack[top--];
-          p2.x = stack[top--];
-          pdf_dev_transform(&p2, &M);
-          pdf_dev_curveto(p2.x, p2.y, p1.x, p1.y, p0.x, p0.y);
-          break;
-        case OP_CLOSEPATH:
-          pdf_dev_closepath();
-          break;
-        case OP_LINETO:
-          if (top < 1)
-            return -1;
-          p0.y = stack[top--];
-          p0.x = stack[top--];
-          pdf_dev_transform(&p0, &M);
-          pdf_dev_lineto(p0.x, p0.y);
-          break;
-        case OP_MOVETO:
-          if (top < 1)
-            return -1;
-          p0.y = stack[top--];
-          p0.x = stack[top--];
-          pdf_dev_transform(&p0, &M);
-          pdf_dev_moveto(p0.x, p0.y);
-          break;
-        case OP_NOOP:
-          pdf_doc_add_page_content(" n", 2);
-          break;
-        case OP_GSAVE:
-          depth++;
-          break;
-        case OP_GRESTORE:
-          depth--;
-          break;
-        case OP_CURVETO1:
-          if (top < 3)
-            return -1;
-          p0.y = stack[top--];
-          p0.x = stack[top--];
-          pdf_dev_transform(&p0, &M);
-          p1.y = stack[top--];
-          p1.x = stack[top--];
-          pdf_dev_transform(&p1, &M);
-          pdf_dev_vcurveto(p1.x, p1.y, p0.x, p0.y);
-          break;
-        case OP_CURVETO2:
-          if (top < 3)
-            return -1;
-          p0.y = stack[top--];
-          p0.x = stack[top--];
-          pdf_dev_transform(&p0, &M);
-          p1.y = stack[top--];
-          p1.x = stack[top--];
-          pdf_dev_transform(&p1, &M);
-          pdf_dev_ycurveto(p1.x, p1.y, p0.x, p0.y);
-          break;
-        default:
-          return -1;
+          pdf_doc_add_page_content(buf, len);
+        }
       }
+      break;
+    case action_path:
+      {
+        double    v[6];
+        pdf_coord pt;
+        int       i;
+
+        error = get_numbers_from_stack(&stack, v, n_args);
+        if (!error) {
+          for (i = 0; i < n_args/2; i++) {
+            pt.x = v[2*i];
+            pt.y = v[2*i+1];
+            pdf_dev_transform(&pt, &M);
+            buf[len++] = ' ';
+            len += pdf_sprint_coord(buf+len, &pt);
+          }
+          len += sprintf(buf+len, " %s", token);
+          pdf_doc_add_page_content(buf, len);
+        }
+      }
+      break;
+    case action_trans:
+      {
+        double      v[6];
+        pdf_tmatrix T;
+        error = get_numbers_from_stack(&stack, v, n_args);
+        if (!error) {
+          T.a = v[0]; T.b = v[1]; T.c = v[2]; T.d = v[3];
+          T.e = v[4]; T.f = v[5];
+          pdf_concatmatrix(&M, &T);
+        }
+      }
+      break;
+    case action_clip:
+      if (token[0] >= 'a' && token[0] <= 'z') {
+        /* close path */
+        len += sprintf(buf+len, " h");
+      }
+      if (strlen(token) >= 2 && token[1] == '*') {
+        len += sprintf(buf+len, " W* n");
+      } else {
+        len += sprintf(buf+len, " W n");
+      }
+      pdf_doc_add_page_content(buf, len);
+      break;
+    case action_save:
+      depth++;
+      break;
+    case action_restore:
+      depth--;
+      break;
+    case action_discard:
+      /* stack clearing behavior */
+      while ((obj = dpx_stack_pop(&stack)) != NULL) {
+        pdf_release_obj(obj);
+      }
+      break;
+    case action_unknown:
+      error = -1;
+      break;
+    }
+    free(token);
+  }
+  {
+    pdf_obj *obj;
+  
+    while ((obj = dpx_stack_pop(&stack)) != NULL) {
+      pdf_release_obj(obj);
     }
   }
-  free(save_path);
-
   pdf_release_obj(contents);
   pdf_close(pf);
 
-  return 0;
+  return error;
 }

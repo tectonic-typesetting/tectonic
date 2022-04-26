@@ -66,14 +66,10 @@ void     pdf_close_images          (void);
 char    *pdf_ximage_get_resname    (int xobj_id);
 pdf_obj *pdf_ximage_get_reference  (int xobj_id);
 
-/* Please use different interface than findresource...
- * This is not intended to be used for specifying page number and others.
- * Only pdf:image special in spc_pdfm.c want optinal dict!
- */
-int      pdf_ximage_findresource   (const char  *ident,
-                                           load_options options);
-int      pdf_ximage_defineresource (const char *ident, int subtype,
-                                           void *cdata, pdf_obj *resource);
+int      pdf_ximage_findresource   (const char *ident);
+int      pdf_ximage_load_image     (const char *ident, const char *filename, load_options options);
+int      pdf_ximage_defineresource (const char *ident, int subtype, void *cdata, pdf_obj *resource);
+int      pdf_ximage_reserve        (const char *ident);
 
 /* Called by pngimage, jpegimage, epdf, mpost, etc. */
 void pdf_ximage_init_image_info (ximage_info *info);
@@ -101,5 +97,7 @@ void
 pdf_ximage_set_attr (int xobj_id,
                      int width, int height, double xdensity, double ydensity,
                      double llx, double lly, double urx, double ury);
+
+extern void pdf_error_cleanup_cache(void);
 
 #endif /* _PDFXIMAGE_H_ */

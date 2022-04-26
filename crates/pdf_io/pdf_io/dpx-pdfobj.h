@@ -33,6 +33,7 @@
 
 #include "tectonic_bridge_core.h"
 
+typedef struct pdf_out pdf_out;
 
 /* Here is the complete list of PDF object types */
 
@@ -62,11 +63,15 @@ typedef struct pdf_file pdf_file;
 void     pdf_obj_reset_global_state (void);
 void     pdf_error_cleanup   (void);
 
-void     pdf_out_init      (const char *filename,
-                                   bool enable_encrypt, bool enable_objstm,
-                                   bool enable_predictor);
+rust_output_handle_t pdf_get_output_file(void);
+pdf_out *pdf_out_init      (const char *filename,
+                            const unsigned char *id1, const unsigned char *id2,
+                            int ver_major, int ver_minor,
+                            int compression_level,
+                            int enable_encrypt, int enable_objstm,
+                            int enable_predictor);
+void pdf_out_set_encrypt (int keybits, int32_t permission, const char *opasswd, const char *upasswd, int use_aes, int encrypt_metadata);
 void     pdf_out_flush     (void);
-void     pdf_set_version   (int version);
 int pdf_get_version (void);
 int pdf_get_version_major (void);
 int pdf_get_version_minor (void);
@@ -160,15 +165,13 @@ void        pdf_stream_set_predictor (pdf_obj *stream,
  */
 int         pdf_compare_reference (pdf_obj *ref1, pdf_obj *ref2);
 
+int pdf_compare_object(pdf_obj *obj1, pdf_obj *obj2);
+
 /* The following routines are not appropriate for pdfobj.
  */
 
-void      pdf_set_compression (int level);
-
 void      pdf_set_info     (pdf_obj *obj);
 void      pdf_set_root     (pdf_obj *obj);
-void      pdf_set_id       (pdf_obj *id);
-void      pdf_set_encrypt  (pdf_obj *encrypt);
 
 void      pdf_files_init    (void);
 void      pdf_files_close   (void);
@@ -184,7 +187,7 @@ pdf_obj *pdf_import_object (pdf_obj *object);
 
 size_t pdfobj_escape_str (char *buffer, size_t size, const unsigned char *s, size_t len);
 
-pdf_obj *pdf_new_indirect  (pdf_file *pf, unsigned label, unsigned short generation);
+pdf_obj *pdf_new_indirect  (pdf_file *pf, uint32_t label, uint16_t generation);
 
 int pdf_check_version (int major, int minor);
 

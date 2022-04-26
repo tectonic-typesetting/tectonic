@@ -63,6 +63,7 @@ unsigned char tt_get_unsigned_byte (rust_input_handle_t handle);
 signed char tt_get_signed_byte (rust_input_handle_t handle);
 unsigned short tt_get_unsigned_pair (rust_input_handle_t handle);
 signed short tt_get_signed_pair (rust_input_handle_t handle);
+unsigned int tt_get_unsigned_triple(rust_input_handle_t handle);
 uint32_t tt_get_unsigned_quad (rust_input_handle_t handle);
 int32_t tt_get_signed_quad (rust_input_handle_t handle);
 uint32_t tt_get_unsigned_num (rust_input_handle_t handle, unsigned char num);

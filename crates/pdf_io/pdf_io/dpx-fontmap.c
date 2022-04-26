@@ -392,11 +392,7 @@ fontmap_parse_mapdef_dpm (fontmap_rec *mrec,
                 dpx_warning("Missing TTC index number...");
                 return  -1;
             }
-            mrec->opt.index = atoi(q);
-            if (mrec->opt.index < 0) {
-                dpx_warning("Invalid TTC index number: %s", q);
-                return  -1;
-            }
+            mrec->opt.index = strtoul(q, NULL, 10);
             free(q);
             break;
 
@@ -1153,7 +1149,7 @@ strip_options (const char *map_name, fontmap_opt *opt)
     opt->flags     = 0;
 
     if (*p == ':' && isdigit((unsigned char)*(p+1))) {
-        opt->index = (int) strtoul(p+1, &next, 10);
+        opt->index = strtoul(p+1, &next, 10);
         if (*next == ':')
             p = next + 1;
         else {

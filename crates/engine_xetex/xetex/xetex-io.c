@@ -24,10 +24,21 @@ tt_xetex_open_input (int filefmt)
 {
     rust_input_handle_t handle;
 
-    if (filefmt == TTBC_FILE_FORMAT_TECTONIC_PRIMARY)
+    if (filefmt == TTBC_FILE_FORMAT_TECTONIC_PRIMARY) {
         handle = ttstub_input_open_primary ();
-    else
+    } else if (name_of_file[0] == '|') {
+        // Tectonic TODO: issue #859. In mainline XeTeX, a pipe symbol indicates
+        // piped input from an external command via `popen()`. Now that we have
+        // shell-escape support we could also support this, but we don't have a
+        // real implementation yet. For now, issue a warning.
+        print_nl_cstr("Warning: ");
+        diagnostic_begin_capture_warning_here();
+        print_cstr("piped inputs from external commands are not implemented in Tectonic");
+        capture_to_diagnostic(NULL);
+        return NULL;
+    } else {
         handle = ttstub_input_open (name_of_file, (ttbc_file_format) filefmt, 0);
+    }
 
     if (handle == NULL)
         return NULL;

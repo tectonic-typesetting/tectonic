@@ -218,6 +218,8 @@ load_mapping_file(const char* s, const char* e, char byteMapping)
             font_mapping_warning(buffer, strlen(buffer), 2); /* not loadable */
         else if (get_tracing_fonts_state() > 1)
             font_mapping_warning(buffer, strlen(buffer), 0); /* tracing */
+
+        free(mapping);
     } else {
         font_mapping_warning(buffer, strlen(buffer), 1); /* not found */
     }

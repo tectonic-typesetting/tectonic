@@ -196,6 +196,6 @@ fn plain_format() {
     test_format_generation(
         "plain.tex",
         "plain.fmt",
-        "e9d8110437d1a7773878e0728cbb99e279d70b2ea348f4715f415b83e73d62b7",
+        "83bdb2d9caae2406f22940cab5ec689e6c3dcaa64d110259b31f7eb4bc087a42",
     )
 }

@@ -388,8 +388,8 @@ do_cidchar (CMap *cmap, ifreader *input, int count)
 }
 
 
-#define MATCH_NAME(t,n) (PST_NAMETYPE((t))    && !memcmp(pst_data_ptr((t)),(n),strlen((n))))
-#define MATCH_OP(t,n)   (PST_UNKNOWNTYPE((t)) && !memcmp(pst_data_ptr((t)),(n),strlen((n))))
+#define MATCH_NAME(t,n) (PST_NAMETYPE((t))    && (pst_length_of((t)) == strlen((n))) && !memcmp(pst_data_ptr((t)),(n),strlen((n))))
+#define MATCH_OP(t,n)   (PST_UNKNOWNTYPE((t)) && (pst_length_of((t)) == strlen((n))) && !memcmp(pst_data_ptr((t)),(n),strlen((n))))
 
 static int
 do_cidsysteminfo (CMap *cmap, ifreader *input)

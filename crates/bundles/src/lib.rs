@@ -95,29 +95,47 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
     }
 }
 
-/// The URL of the default bundle.
+/// Get the URL of the default bundle.
 ///
-/// This is a hardcoded URL of a default bundle that will provide some
+/// This is a mostly-hardcoded URL of a default bundle that will provide some
 /// "sensible" set of TeX support files. The higher-level `tectonic` crate
 /// provides a configuration mechanism to allow the user to override this
 /// setting, so you should use that if you are in a position to do so.
 ///
-/// This URL will be embedded in the binaries that you create, which may be used
-/// for years into the future, so it needs to be durable and reliable. We used
-/// `archive.org` for a while, but it had low-level reliability problems and was
-/// blocked in China. We now use a custom webservice.
-pub const FALLBACK_BUNDLE_URL: &str = "https://relay.fullyjustified.net/default_bundle.tar";
+/// The URL depends on the format version supported by the engine, since that
+/// roughly corresponds to a TeXLive version, and the engine and TeXLive files
+/// are fairly closely coupled.
+///
+/// The URL template used in this function will be embedded in the binaries that
+/// you create, which may be used for years into the future, so it needs to be
+/// durable and reliable. We used `archive.org` for a while, but it had
+/// low-level reliability problems and was blocked in China. We now use a custom
+/// webservice.
+pub fn get_fallback_bundle_url(format_version: u32) -> String {
+    // Format version 32 (TeXLive 2021) was when we introduced versioning to the
+    // URL.
+    if format_version < 32 {
+        "https://relay.fullyjustified.net/default_bundle.tar".to_owned()
+    } else {
+        format!(
+            "https://relay.fullyjustified.net/default_bundle_v{}.tar",
+            format_version
+        )
+    }
+}
 
 /// Open the fallback bundle.
 ///
 /// This is essentially the default Tectonic bundle, but the higher-level
 /// `tectonic` crate provides a configuration mechanism to allow the user to
-/// override the [`FALLBACK_BUNDLE_URL`] setting, and that should be preferred
-/// if you’re in a position to use it.
+/// override the bundle URL setting, and that should be preferred if you’re in a
+/// position to use it.
 pub fn get_fallback_bundle(
+    format_version: u32,
     only_cached: bool,
     status: &mut dyn StatusBackend,
 ) -> Result<cache::CachingBundle<itar::IndexedTarBackend>> {
+    let url = get_fallback_bundle_url(format_version);
     let mut cache = cache::Cache::get_user_default()?;
-    cache.open(FALLBACK_BUNDLE_URL, only_cached, status)
+    cache.open(&url, only_cached, status)
 }

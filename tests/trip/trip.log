@@ -1512,7 +1512,7 @@ e.g., type `I\font<same font id>=<substitute font name>'.
 {\uppercase}
 {the character 0}
 {horizontal mode: the character 0}
-Missing character: There is no 0 in font trip!
+Missing character: There is no 0 ("30) in font trip!
 {begin-group character {}
 {\outputpenalty}
 ! Missing number, treated as zero.
@@ -1527,10 +1527,10 @@ look up `weird error' in the index to The TeXbook.)
 {end-group character }}
 {blank space  }
 {the character [}
-Missing character: There is no [ in font trip!
+Missing character: There is no [ ("5B) in font trip!
 {\uppercase}
 {the letter A}
-Missing character: There is no [ in font trip!
+Missing character: There is no [ ("5B) in font trip!
 {blank space  }
 )
 {\par}
@@ -1894,7 +1894,7 @@ deleted material, e.g., by typing `I$}'.
 ### display math mode entered at line 249
 \mathord
 .{}
-this will be denominator of:
+this will begin denominator of:
 \fraction, thickness = default
 \\mathord []
 \\mathord []
@@ -2151,7 +2151,7 @@ plain TeX doesn't allow \it or \sl in subscripts. Proceed,
 and I'll try to forget that I needed that character.
 
 {horizontal mode: \char"C8}
-Missing character: There is no È in font trip!
+Missing character: There is no È ("C8) in font trip!
 {math shift character $}
 {display math mode: blank space  }
 {\vadjust}
@@ -2417,7 +2417,7 @@ th 9999 \showboxdepth 9999 \showlists \pagegoal =10000pt}
 ./.\.\fam1 q
 ././\rule(9.0+*)x0.4
 \mathord
-this will be denominator of:
+this will begin denominator of:
 \fraction, thickness 9.0
 \{}
 ### math mode entered at line 280
@@ -2611,7 +2611,7 @@ my insertion and my current dilemma will both disappear.
 {math shift character $}
 {display math mode: \expandafter}
 {\csname}
-Missing character: There is no v in font trip!
+Missing character: There is no v ("76) in font trip!
 ! \textfont 0 is undefined (character 7).
 <to be read again> 
                    \relax 
@@ -2667,7 +2667,7 @@ stated character from an undefined font family. For example,
 plain TeX doesn't allow \it or \sl in subscripts. Proceed,
 and I'll try to forget that I needed that character.
 
-Missing character: There is no   in font trip!
+Missing character: There is no   ("20) in font trip!
 
 Overfull \hbox (48.4746pt too wide) detected at line 285
 [][][] [] [] []|
@@ -3282,7 +3282,7 @@ l.300 \hangindent1pt\par\showthe\hangindent
 {\the}
 {the character 0}
 {horizontal mode: the character 0}
-Missing character: There is no 0 in font trip!
+Missing character: There is no 0 ("30) in font trip!
 {the letter A}
 {blank space  }
 {\char}
@@ -3574,7 +3574,7 @@ l.320 \show\botmark
 \space -> 
 {internal vertical mode: \accent}
 {horizontal mode: \accent}
-Missing character: There is no È in font trip!
+Missing character: There is no È ("C8) in font trip!
 
 \space -> 
 {blank space  }
@@ -3800,7 +3800,7 @@ Loose \hbox (badness 86) in paragraph at lines 337--337
 {\valign}
 {internal vertical mode: the letter A}
 {horizontal mode: the letter A}
-Missing character: There is no } in font trip!
+Missing character: There is no } ("7D) in font trip!
 {end of alignment template}
 
 Loose \hbox (badness 86) in paragraph at lines 337--337
@@ -3839,7 +3839,7 @@ Overfull \vbox (21.99997pt too high) in alignment at lines 337--337
 TRIP AT 5.0PT\ip AIX
 {\lowercase}
 {the letter v}
-Missing character: There is no v in font trip!
+Missing character: There is no v ("76) in font trip!
 {the letter b}
 {blank space  }
 {end of alignment template}
@@ -3855,7 +3855,7 @@ Missing character: There is no v in font trip!
 TRIP AT 5.0PT\ip AIX
 {\lowercase}
 {the letter v}
-Missing character: There is no v in font trip!
+Missing character: There is no v ("76) in font trip!
 {the letter b}
 {blank space  }
 {end of alignment template}
@@ -4075,7 +4075,7 @@ careful; see exercise 27.2 in The TeXbook.
 
 {the character ?}
 {horizontal mode: the character ?}
-Missing character: There is no ? in font trip!
+Missing character: There is no ? ("3F) in font trip!
 {blank space  }
 {\dimen}
 {\showthe}
@@ -4178,14 +4178,15 @@ you'd better type `E' or `X' now and fix your file.
 <to be read again> 
                    8
 l.356 \outer\global\long\edef\lo#1#2U3#4#5#6#7#8#8
-                                                  #9#{\relax}
+                                                  #99#{\relax}
 I've inserted the digit you should have used after the #.
 Type `1' to delete what you did use.
 
 ! You already have nine parameters.
 l.356 ...r\global\long\edef\lo#1#2U3#4#5#6#7#8#8#9
-                                                  #{\relax}
-I'm going to ignore the # sign you just used.
+                                                  9#{\relax}
+I'm going to ignore the # sign you just used,
+as well as the token that followed it.
 
 {blank space  }
 {\ifcase}
@@ -4737,7 +4738,7 @@ l.393 ...ter=2}\showthe\hangafter\showthe\prevgraf
 
 {\char}
 {horizontal mode: \char}
-Missing character: There is no ^^83 in font trip!
+Missing character: There is no ^^83 ("83) in font trip!
 {\showthe}
 > 0.
 l.394 \char'203\showthe\prevgraf
@@ -5714,11 +5715,11 @@ Loose \hbox (badness 62) in paragraph at lines 436--436
 {internal vertical mode: |hyphenchar}
 {|-}
 {horizontal mode: |-}
-Missing character: There is no ? in font trip!
+Missing character: There is no ? ("3F) in font trip!
 {| }
 {the letter B}
 {end-group character }}
-Missing character: There is no ? in font trip!
+Missing character: There is no ? ("3F) in font trip!
 
 Loose \hbox (badness 62) in paragraph at lines 436--436
  [] |ip BBBāBBB 

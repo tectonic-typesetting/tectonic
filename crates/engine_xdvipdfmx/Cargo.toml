@@ -30,4 +30,4 @@ cc = "^1.0.66"
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2021-01-17:fohCh1sh"
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
-tectonic_pdf_io = "620fe47e87000cede22d5e5eafa0fda81f28b402"
+tectonic_pdf_io = "thiscommit:2022-03-29:6nizWic"

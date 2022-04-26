@@ -325,7 +325,7 @@ html_open_link (struct spc_env *spe, const char *name, struct spc_html_ *sd)
   }
   free(url);
 
-  spc_begin_annot(spe, sd->link_dict);
+  spc_begin_annot(spe, pdf_link_obj(sd->link_dict));
 
   sd->pending_type = ANCHOR_TYPE_HREF;
 
@@ -511,42 +511,15 @@ atopt (const char *a)
 #ifdef  ENABLE_HTML_SVG_OPACITY
 /* Replicated from spc_tpic */
 static pdf_obj *
-create_xgstate (double a /* alpha */, int f_ais /* alpha is shape */)
+create_xgstate (double a)
 {
   pdf_obj  *dict;
 
   dict = pdf_new_dict();
-  pdf_add_dict(dict,
-               pdf_new_name("Type"),
-               pdf_new_name("ExtGState"));
-  if (f_ais) {
-    pdf_add_dict(dict,
-                 pdf_new_name("AIS"),
-                 pdf_new_boolean(1));
-  }
-  pdf_add_dict(dict,
-               pdf_new_name("ca"),
-               pdf_new_number(a));
+  pdf_add_dict(dict, pdf_new_name("Type"), pdf_new_name("ExtGState"));
+  pdf_add_dict(dict, pdf_new_name("ca"), pdf_new_number(a));
 
   return  dict;
-}
-
-static int
-check_resourcestatus (const char *category, const char *resname)
-{
-  pdf_obj  *dict1, *dict2;
-
-  dict1 = pdf_doc_current_page_resources();
-  if (!dict1)
-    return  0;
-
-  dict2 = pdf_lookup_dict(dict1, category);
-  if (dict2 &&
-      pdf_obj_typeof(dict2) == PDF_DICT) {
-    if (pdf_lookup_dict(dict2, resname))
-      return  1;
-  }
-  return  0;
 }
 #endif /* ENABLE_HTML_SVG_OPACITY */
 
@@ -560,11 +533,6 @@ spc_html__img_empty (struct spc_env *spe, pdf_obj *attr)
 #ifdef  ENABLE_HTML_SVG_OPACITY
   double         alpha = 1.0; /* meaning fully opaque */
 #endif /* ENABLE_HTML_SVG_OPACITY */
-#ifdef  ENABLE_HTML_SVG_TRANSFORM
-  pdf_tmatrix    M, M1;
-
-  pdf_setmatrix(&M, 1.0, 0.0, 0.0, 1.0, spe->x_user, spe->y_user);
-#endif /* ENABLE_HTML_SVG_TRANSFORM */
 
   spc_warn(spe, "html \"img\" tag found (not completed, plese don't use!).");
 
@@ -608,7 +576,7 @@ spc_html__img_empty (struct spc_env *spe, pdf_obj *attr)
       error = cvt_a_to_tmatrix(&N, p, &p);
       if (!error) {
         N.f = -N.f;
-        pdf_concatmatrix(&M, &N);
+        pdf_concatmatrix(&ti.matrix, &N);
         for ( ; *p && isspace((unsigned char)*p); p++);
         if (*p == ',')
           for (++p; *p && isspace((unsigned char)*p); p++);
@@ -622,61 +590,24 @@ spc_html__img_empty (struct spc_env *spe, pdf_obj *attr)
     return  error;
   }
 
-  id = pdf_ximage_findresource(pdf_string_value(src), options);
+  id = pdf_ximage_load_image(NULL, pdf_string_value(src), options);
   if (id < 0) {
     spc_warn(spe, "Could not find/load image: %s", (char *) pdf_string_value(src));
     error = -1;
   } else {
-#if defined(ENABLE_HTML_SVG_TRANSFORM) || defined(ENABLE_HTML_SVG_OPACITY)
-    {
-      char     *res_name;
-      pdf_rect  r;
-
-      graphics_mode();
-
-      pdf_dev_gsave();
-
-#ifdef  ENABLE_HTML_SVG_OPACITY
-      {
-        pdf_obj *dict;
-        int      a = round(100.0 * alpha);
-        if (a != 0) {
-          res_name = NEW(strlen("_Tps_a100_") + 1, char);
-          sprintf(res_name, "_Tps_a%03d_", a); /* Not Tps prefix but... */
-          if (!check_resourcestatus("ExtGState", res_name)) {
-            dict = create_xgstate(round_at(0.01 * a, 0.01), 0);
-            pdf_doc_add_page_resource("ExtGState",
-                                      res_name, pdf_ref_obj(dict));
-            pdf_release_obj(dict);
-          }
-          pdf_doc_add_page_content(" /", 2);  /* op: */
-          pdf_doc_add_page_content(res_name, strlen(res_name));  /* op: */
-          pdf_doc_add_page_content(" gs", 3);  /* op: gs */
-          free(res_name);
-        }
-      }
-#endif /* ENABLE_HTML_SVG_OPACITY */
-
-      pdf_ximage_scale_image(id, &M1, &r, &ti);
-      pdf_concatmatrix(&M, &M1);
-      pdf_dev_concat(&M);
-
-      pdf_dev_rectclip(r.llx, r.lly, r.urx - r.llx, r.ury - r.lly);
-
-      res_name = pdf_ximage_get_resname(id);
-      pdf_doc_add_page_content(" /", 2);  /* op: */
-      pdf_doc_add_page_content(res_name, strlen(res_name));  /* op: */
-      pdf_doc_add_page_content(" Do", 3);  /* op: Do */
-
-      pdf_dev_grestore();
-
-      pdf_doc_add_page_resource("XObject",
-                                res_name,
-                                pdf_ximage_get_reference(id));
+#ifdef ENABLE_HTML_SVG_OPACITY
+    if (alpha != 0.0) {
+      pdf_obj *dict;
+      dict = create_xgstate(alpha);
+      pdf_dev_xgstate_push(dict);
     }
-#else
-    pdf_dev_put_image(id, &ti, spe->x_user, spe->y_user);
-#endif /* ENABLE_HTML_SVG_XXX */
+#endif /* ENABLE_HTML_SVG_OPACITY */
+    spc_put_image(spe, id, &ti, spe->x_user, spe->y_user);
+#ifdef ENABLE_HTML_SVG_OPACITY
+    if (alpha != 0.0) {
+      pdf_dev_xgstate_pop();
+    }
+#endif
   }
 
   return  error;
