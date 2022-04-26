@@ -1,3 +1,38 @@
+# tectonic_engine_xetex 0.3.0 (2022-04-26)
+
+Update the XeTeX engine for TeXLive 2021 (#882, @pkgw).
+
+- Present as XeTeX revision 0.999993
+- Update the XeTeX format specification to the new version 32
+- Import [\Ucharcat update from 2018][ucc] that I seem to have missed before
+- Fixes for [TeX bugs][tex82] 430-440
+  - 430: not relevant to Tectonic (interactive features)
+  - 431: not relevant to Tectonic (interactive features)
+  - 432: skipped (date/time in system variables; no discernable impact on Tectonic)
+  - 433: "After nine parameters, delete both # and the token that follows" — breaking change!
+  - 434: Don't accept an implicit left brace after # in macro head
+  - 435: Keep garbage out of the buffer if a |\read| end unexpectedly
+  - 436: Zero out nonexistent chars, to prevent rogue TFM files
+  - 437: Don't classify fraction noads as inner noads
+  - 438: Properly identify tabskip glue when tracing repeated templates
+  - 439: not relevant to Tectonic
+  - 440: Normalize newlinechar when printing the final stats
+- Significant rework/improvement of OpenType math kerning and super/sub-scripting
+- Honor `PRIM_SIZE` correctly now that we have to change it!
+- Implement `\tracingstacklevels`
+- Guard against expansion depth overflow
+- When reporting "lost characters", provide hex/UCS codes
+- TECkit updated to TL21: version 2.5.10, upgrading from 2.5.9
+  - This updates Unicode character names and normalization data to 13.0.0
+
+[ucc]: https://github.com/TeX-Live/xetex/commit/0b12b29abb4748a9a85cc3e195ad388eba0d674e
+[tex82]: https://ctan.math.utah.edu/ctan/tex-archive/systems/knuth/dist/errata/tex82.bug
+
+Also:
+
+- Allow `\openin` of `\openout` files to succeed (addresses #862, @pkgw).
+
+
 # tectonic_engine_xetex 0.2.0 (2022-02-28)
 
 - Use the new `tectonic_xetex_format` crate as part of the build process (#851,
