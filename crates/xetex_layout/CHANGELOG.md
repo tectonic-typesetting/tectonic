@@ -1,20 +1,8 @@
-# rc: minor bump
+# See elsewhere for changelog
 
-Update for TeXLive 2021 (#882, @pkgw).
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-- Add new C API needed for TeXLive 2021: `ttxl_font_get_point_size`.
-
-
-# tectonic_xetex_layout 0.1.1 (2021-10-11)
-
-- Require the latest version of `tectonic_bridge_graphite2`, which contains a
-  Windows build fix.
-- Fixes for Clippy 1.53.0
-
-
-# tectonic_xetex_layout 0.1.0 (2021-06-03)
-
-This new crate encapsulates the font selection and layout code used by the
-`tectonic_engine_xetex` crate. While it mostly consists of C/C++ code at the
-moment and does not expose a Rust API, there is a hope that it can be made more
-flexible and that its implementation can be migrated to be more Rust-based.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/xetex_layout/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
