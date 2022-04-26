@@ -22,7 +22,7 @@ steps:
 
 - bash: |
     set -xeuo pipefail
-    brew install pkg-config
+    brew install automake libtool pkg-config
   displayName: "Install vcpkg dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 

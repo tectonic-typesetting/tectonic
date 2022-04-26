@@ -6,6 +6,7 @@ use std::{env, process, str::FromStr};
 use structopt::StructOpt;
 use tectonic_status_base::plain::PlainStatusBackend;
 
+use structopt::clap;
 use tectonic::{
     config::PersistentConfig,
     errors::SyncError,
@@ -36,6 +37,10 @@ mod v2cli {
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
 struct CliOptions {
+    /// Use experimental V2 interface (see `tectonic -X --help`); must be the first argument
+    #[structopt(short = "X")]
+    use_v2: bool,
+
     /// How much chatter to print when running
     #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
     chatter_level: String,
@@ -126,6 +131,15 @@ fn main() {
     } else {
         Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
     };
+
+    if args.use_v2 {
+        let err = clap::Error::with_description(
+            "-X option must be the first argument if given",
+            clap::ErrorKind::ArgumentConflict,
+        );
+        status.report_error(&err.into());
+        process::exit(1)
+    }
 
     // Now that we've got colorized output, pass off to the inner function ...
     // all so that we can print out the word "error:" in red. This code

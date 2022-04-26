@@ -6,13 +6,13 @@ use hyper::rt::Future;
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, Server, StatusCode};
 use std::collections::HashMap;
-use std::fs;
 use std::io::{self, Write};
 use std::net::SocketAddr;
 use std::ops::Bound;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::{env, fs};
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::io::OpenResult;
@@ -456,6 +456,51 @@ fn test_bundle_update() {
                     }
                 }
             }
+        }
+    });
+}
+
+#[test]
+fn test_cache_location_redirect() {
+    const CACHE_DIR_KEY: &str = "TECTONIC_CACHE_DIR";
+    let tempdir = tempfile::tempdir().unwrap();
+
+    // In this test we intentionally set the environment variable and don't use the custom cache root parameter,
+    // to test the internal mechanism for a custom cache location based on an environment variable.
+    env::set_var(CACHE_DIR_KEY, tempdir.path().as_os_str());
+
+    let tar_index = {
+        let mut builder = TarIndexBuilder::new();
+        builder.push("plain.tex", b"simple").push(
+            tectonic::digest::DIGEST_NAME,
+            b"0000000000000000000000000000000000000000000000000000000000000000",
+        );
+
+        builder.finish()
+    };
+
+    run_test(Some(tar_index), |_, url| {
+        let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
+        let config = PersistentConfig::default();
+
+        let mut cache = config
+            .make_cached_url_provider(url, false, None, &mut status)
+            .unwrap();
+
+        match cache.input_open_name("plain.tex", &mut status) {
+            OpenResult::Ok(_) => {}
+            _ => panic!("Failed to open plain.tex"),
+        }
+
+        // the filename of the target location is the SHA256 hash of the file content "simple"
+        let expected_file_path = tempdir
+            .path()
+            .join("files")
+            .join("a7")
+            .join("a39b72f29718e653e73503210fbb597057b7a1c77d1fe321a1afcff041d4e1");
+
+        if !expected_file_path.exists() {
+            panic!("Couldn't find the cached file in the expected location.");
         }
     });
 }

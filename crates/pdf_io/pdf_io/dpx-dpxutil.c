@@ -67,6 +67,92 @@ max4 (double x1, double x2, double x3, double x4)
     return v;
 }
 
+/* Duplicate from pdfparse.c */
+static void
+skip_white (const char **pp, const char *endptr)
+{
+    while (*pp < endptr &&
+          (**pp == ' '  || **pp == '\t' || **pp == '\f' ||
+            **pp == '\r' || **pp == '\n' || **pp == '\0')) {
+        (*pp)++;
+    }
+}
+
+/* This need to allow 'true' prefix for unit and length value must be divided
+ * by current magnification.
+ */
+int
+dpx_util_read_length (double *vp, double mag, const char **pp, const char *endptr)
+{
+    char   *q;
+    const char *p = *pp;
+    double  v, u = 1.0;
+    const char *_ukeys[] = {
+#define K_UNIT__PT  0
+#define K_UNIT__IN  1
+#define K_UNIT__CM  2
+#define K_UNIT__MM  3
+#define K_UNIT__BP  4
+#define K_UNIT__PC  5
+#define K_UNIT__DD  6
+#define K_UNIT__CC  7
+#define K_UNIT__SP  8
+      "pt", "in", "cm", "mm", "bp", "pc", "dd", "cc", "sp",
+      NULL
+    };
+    int     k, error = 0;
+
+    q = parse_float_decimal(&p, endptr);
+    if (!q) {
+        *vp = 0.0; *pp = p;
+        return  -1;
+    }
+
+    v = atof(q);
+    free(q);
+
+    skip_white(&p, endptr);
+    q = parse_c_ident(&p, endptr);
+    if (q) {
+        char *qq = q; /* remember this for RELEASE, because q may be advanced */
+        if (strlen(q) >= strlen("true") &&
+            !memcmp(q, "true", strlen("true"))) {
+            u /= mag != 0.0 ? mag : 1.0; /* inverse magnify */
+            q += strlen("true");
+        }
+        if (strlen(q) == 0) { /* "true" was a separate word from the units */
+            free(qq);
+            skip_white(&p, endptr);
+            qq = q = parse_c_ident(&p, endptr);
+        }
+        if (q) {
+            for (k = 0; _ukeys[k] && strcmp(_ukeys[k], q); k++);
+            switch (k) {
+            case K_UNIT__PT: u *= 72.0 / 72.27; break;
+            case K_UNIT__IN: u *= 72.0; break;
+            case K_UNIT__CM: u *= 72.0 / 2.54 ; break;
+            case K_UNIT__MM: u *= 72.0 / 25.4 ; break;
+            case K_UNIT__BP: u *= 1.0 ; break;
+            case K_UNIT__PC: u *= 12.0 * 72.0 / 72.27 ; break;
+            case K_UNIT__DD: u *= 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
+            case K_UNIT__CC: u *= 12.0 * 1238.0 / 1157.0 * 72.0 / 72.27 ; break;
+            case K_UNIT__SP: u *= 72.0 / (72.27 * 65536) ; break;
+            default:
+                dpx_warning("Unknown unit of measure: %s", q);
+                error = -1;
+                break;
+            }
+            free(qq);
+        }
+        else {
+            dpx_warning("Missing unit of measure after \"true\"");
+            error = -1;
+        }
+    }
+
+    *vp = v * u; *pp = p;
+    return  error;
+}
 
 
 #if defined(_MSC_VER)
@@ -139,6 +225,125 @@ skip_white_spaces (unsigned char **s, unsigned char *endptr)
       break;
     else
       (*s)++;
+}
+
+void
+dpx_stack_init (dpx_stack *stack)
+{
+  stack->size   = 0;
+  stack->top    = NULL;
+  stack->bottom = NULL;
+}
+
+void
+dpx_stack_push (dpx_stack *stack, void *data)
+{
+  stack_elem  *elem;
+
+  assert(stack);
+
+  elem = NEW(1, stack_elem);
+  elem->prev = stack->top;
+  elem->data = data;
+
+  stack->top = elem;
+  if (stack->size == 0)
+    stack->bottom = elem;
+
+  stack->size++;
+
+  return;
+}
+
+void *
+dpx_stack_pop (dpx_stack *stack)
+{
+  stack_elem *elem;
+  void       *data;
+
+  assert(stack);
+
+  if (stack->size == 0)
+    return NULL;
+
+  data = stack->top->data;
+  elem = stack->top;
+  stack->top = elem->prev;
+  if (stack->size == 1)
+    stack->bottom = NULL;
+  free(elem);
+
+  stack->size--;
+
+  return data;
+}
+
+void *
+dpx_stack_top (dpx_stack *stack)
+{
+  void  *data;
+
+  assert(stack);
+
+  if (stack->size == 0)
+    return NULL;
+
+  data = stack->top->data;
+
+  return data;
+}
+
+void *
+dpx_stack_at (dpx_stack *stack, int pos)
+{
+  void       *data = NULL;
+  stack_elem *elem;
+
+  if (stack->size == 0)
+    return NULL;
+
+  elem = stack->top;
+  while (pos > 0) {
+    elem = elem->prev;
+    pos--;
+  }
+  if (elem)
+    data = elem->data;
+
+  return data;
+}
+
+void
+dpx_stack_roll (dpx_stack *stack, int n, int j)
+{
+  if (n > stack->size)
+    return;
+  if (n == 1)
+    return;
+  j = j % n;
+  if (j < 0)
+    j = n + j;
+  while (j-- > 0) {
+    int         m = n;
+    stack_elem *elem, *prev, *top;
+
+    elem = top = stack->top;
+    while (--m > 0) {
+      elem = elem->prev;
+    }
+    prev = elem->prev;
+    stack->top = top->prev;
+    elem->prev = top;
+    top->prev  = prev;
+  }
+}
+
+int
+dpx_stack_depth (dpx_stack *stack)
+{
+  assert(stack);
+
+  return stack->size;
 }
 
 void

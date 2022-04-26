@@ -32,11 +32,18 @@
 
 #define MAX_PWD_LEN 127
 
-int pdf_init_encryption(struct pdf_enc_setting, const unsigned char *trailer_id);
-void pdf_enc_set_label (unsigned label);
-void pdf_enc_set_generation (unsigned generation);
-void pdf_encrypt_data (const unsigned char *plain, size_t plain_len,
-                              unsigned char **cipher, size_t *cipher_len);
-pdf_obj *pdf_encrypt_obj (void);
+typedef struct pdf_sec pdf_sec;
+extern pdf_sec *pdf_enc_init (const unsigned char *id,
+                              int keybits, uint32_t permission,
+                              const char *opasswd, const char *upasswd,
+                              int use_aes, int encrypt_metadata);
+extern void     pdf_enc_close (pdf_sec **p_sec);
+
+extern void     pdf_enc_set_label      (pdf_sec *p_sec, unsigned label);
+extern void     pdf_enc_set_generation (pdf_sec *p_sec, unsigned generation);
+extern void     pdf_encrypt_data (pdf_sec *p_sec, const unsigned char *plain, size_t plain_len,
+                                  unsigned char **cipher, size_t *cipher_len);
+extern pdf_obj *pdf_enc_get_encrypt_dict (pdf_sec *p_sec);
+extern pdf_obj *pdf_enc_get_extension_dict (pdf_sec *p_sec);
 
 #endif /* _PDFENCRYPT_H_ */

@@ -1,3 +1,11 @@
+# tectonic_xetex_format 0.2.0 (2022-04-26)
+
+Update for TeXLive 2021 (#882, @pkgw):
+
+- There is one new integer parameter: `\tracingstacklevels`
+- Bump `PRIM_SIZE` to 510, since we have passed 500 primitives!
+
+
 # tectonic_xetex_format 0.1.0 (2022-02-28)
 
 The new `tectonic_xetex_format` crate defines metadata about the Tectonic/XeTeX

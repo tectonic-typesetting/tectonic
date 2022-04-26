@@ -331,6 +331,11 @@ const INT_PARS: &[IntPar] = &[
         since: 0,
     },
     IntPar {
+        name: "tracing_stack_levels",
+        primitive_kind: IntParPrimitiveKind::Standard,
+        since: 32,
+    },
+    IntPar {
         name: "tracing_assigns",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,

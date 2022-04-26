@@ -286,7 +286,7 @@ ot_min_connector_overlap(int f)
 }
 
 static int
-getMathKernAt(int f, int g, hb_ot_math_kern_t side, int height)
+getMathKernAt(int f, int g, int height, hb_ot_math_kern_t side)
 {
     hb_position_t rval = 0;
 
@@ -329,49 +329,138 @@ glyph_depth(int f, int g)
 #define sub_cmd 1
 
 int
-get_ot_math_kern(int f, int g, int sf, int sg, int cmd, int shift)
+get_ot_math_kern(int f,  int g,    // Base font and glyph number
+                 int sf, int sg,   // Sub/superscript font and glyph number
+                 int cmd,          // sup_cmd or sub_cmd
+                 int shift_scaled  // TeX scaled points
+                 )
 {
     int rval = 0;
 
-    if (font_area[f] == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
-        int kern = 0, skern = 0;
-        float corr_height_top = 0.0, corr_height_bot = 0.0;
+    // Cf. https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathkerninfo-table
+
+    if (font_area[f] == OTGR_FONT_FLAG && font_area[sf] == OTGR_FONT_FLAG) {
+        XeTeXFont font  = getFont((XeTeXLayoutEngine)font_layout_engine[f]);
+
+        XeTeXFont sfont = getFont((XeTeXLayoutEngine)font_layout_engine[sf]);
+
+        // Do calculations in glyph units.
+
+        // The next four lines could be streamlined by having
+        // glyph_height() and glyph_depth() return the metrics in glyph
+        // units, but that would require tweaking getGlyphHeightDepth(),
+        // which is used elsewhere.
+
+        int g_height = ttxl_font_points_to_units(font, glyph_height(f, g));
+        int g_depth  = ttxl_font_points_to_units(font, glyph_depth(f, g));
+
+        int sg_height = ttxl_font_points_to_units(sfont, glyph_height(sf, sg));
+        int sg_depth  = ttxl_font_points_to_units(sfont, glyph_depth(sf, sg));
+
+        // Convert the shift amount to base glyph units.
+        int shift = ttxl_font_points_to_units(font, Fix2D(shift_scaled));
+
+        // Multiply sub/superscript glyph units by scale_factor to make
+        // them commensurate with base glyph units.
+
+        float f_size  = ttxl_font_get_point_size(font);
+        float sf_size = ttxl_font_get_point_size(sfont);
+
+        assert(f_size != 0.0);
+
+        float scale_factor = sf_size / f_size;
 
         if (cmd == sup_cmd) { // superscript
-            corr_height_top =  ttxl_font_points_to_units(font, glyph_height(f, g));
-            corr_height_bot = -ttxl_font_points_to_units(font, glyph_depth(sf, sg) + Fix2D(shift));
+            // (1) Calculate the kern at the bottom of the superscript-glyph
+            // bounding box.
 
-            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_TOP_RIGHT, corr_height_top);
-            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_BOTTOM_LEFT, corr_height_top);
-            rval = kern + skern;
+            // In base glyph units, the bottom of the superscript is at a
+            // distance of (shift - scale_factor * sg_depth) above the
+            // baseline.
 
-            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_TOP_RIGHT, corr_height_bot);
-            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_BOTTOM_LEFT, corr_height_bot);
-            if ((kern + skern) < rval)
-                rval = kern + skern;
+            int kern = getMathKernAt(f, g, shift - scale_factor * sg_depth,
+                                    HB_OT_MATH_KERN_TOP_RIGHT);
 
+            // In superscript glyph units, the bottom of the superscript is
+            // a distance of sg_depth below the baseline.
+
+            int skern = getMathKernAt(sf, sg, -sg_depth,
+                                        HB_OT_MATH_KERN_BOTTOM_LEFT);
+
+            int top_kern = kern + scale_factor * skern;
+
+            // (2) Calculate the kern at the top of the base-glyph bounding
+            // box.
+
+            // In base glyph units, the top of the base glyph is a distance
+            // of g_height above the baseline.
+
+            kern = getMathKernAt(f, g, g_height, HB_OT_MATH_KERN_TOP_RIGHT);
+
+            // In superscript glyph units, the top of the base glyph is a
+            // distance of (g_height - shift)/scale_factor above the
+            // baseline.
+
+            skern = getMathKernAt(sf, sg, (g_height - shift) / scale_factor,
+                                    HB_OT_MATH_KERN_BOTTOM_LEFT);
+
+            int bot_kern = kern + scale_factor * skern;
+
+            // (3) The spec says "Take the minimum of these two sums," but
+            // surely we want the kern that results in the greater
+            // separation between the base and the superscript?  That
+            // corresponds to the maximum.  (In the case where both kerns
+            // are negative, this is the same as the kern with the minimum
+            // *absolute* value, which is presumably what the spec means.)
+
+            rval = (top_kern > bot_kern) ? top_kern : bot_kern;
         } else if (cmd == sub_cmd) { // subscript
-            corr_height_top =  ttxl_font_points_to_units(font, glyph_height(sf, sg) - Fix2D(shift));
-            corr_height_bot = -ttxl_font_points_to_units(font, glyph_depth(f, g));
+            // (1) Calculate the kern at the top of the subscript-glyph
+            // bounding box.
 
-            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_BOTTOM_RIGHT, corr_height_top);
-            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_TOP_LEFT, corr_height_top);
-            rval = kern + skern;
+            // In base glyph units,, the top of the subscript is at a height
+            // of scale_factor * sg_height - shift.
 
-            kern = getMathKernAt(f, g, HB_OT_MATH_KERN_BOTTOM_RIGHT, corr_height_bot);
-            skern = getMathKernAt(sf, sg, HB_OT_MATH_KERN_TOP_LEFT, corr_height_bot);
-            if ((kern + skern) < rval)
-                rval = kern + skern;
+            int kern = getMathKernAt(f, g, scale_factor * sg_height - shift,
+                                    HB_OT_MATH_KERN_BOTTOM_RIGHT);
 
+            // In subscript glyph units, the top of the subscript-glyph
+            // bounding box is sg_height above the baseline.
+
+            int skern = getMathKernAt(sf, sg, sg_height,
+                                        HB_OT_MATH_KERN_TOP_LEFT);
+
+            int top_kern = kern + scale_factor * skern;
+
+            // (2) Calculate the kern at the bottom of the base-glyph
+            // bounding box.
+
+            // In base glyph units, the bottom of the base-glyph is at
+            // g_depth below the baseline:
+
+            kern = getMathKernAt(f, g, -g_depth,
+                                HB_OT_MATH_KERN_BOTTOM_RIGHT);
+
+            // In subscript glyph units, the bottom of the base glyph is at
+            // a height of shift - g_depth above the baseline, translated
+            // into subscript glyph units.
+
+            skern = getMathKernAt(sf, sg, (shift - g_depth) / scale_factor,
+                                    HB_OT_MATH_KERN_TOP_LEFT);
+
+            int bot_kern = kern + scale_factor * skern;
+
+            // (3) See above.
+
+            rval = (top_kern > bot_kern) ? top_kern : bot_kern;
         } else {
             assert(0); // we should not reach here
         }
 
-        return D2Fix(ttxl_font_units_to_points(font, rval));
+        rval = D2Fix(ttxl_font_units_to_points(font, rval));
     }
 
-    return 0;
+    return rval;
 }
 
 int

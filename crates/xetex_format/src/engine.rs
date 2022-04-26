@@ -56,7 +56,10 @@ impl Engine {
 
         cshash::initialize_cshash_symbols(&mut symbols)?;
 
-        symbols.add(SymbolCategory::FixedArrays, "PRIM_SIZE", 500)?;
+        // Version 32 passed 500 primitives!
+        let prim_size = if version < 32 { 500 } else { 510 };
+
+        symbols.add(SymbolCategory::FixedArrays, "PRIM_SIZE", prim_size)?;
         symbols.add(SymbolCategory::FixedArrays, "MAX_FONT_MAX", 9000)?;
         symbols.add(SymbolCategory::FixedArrays, "MEM_TOP", 4_999_999)?;
         symbols.add(SymbolCategory::FixedArrays, "NUMBER_MATH_FAMILIES", 256)?;
@@ -142,6 +145,8 @@ mod tests {
         };
     }
 
+    // These tests help verify that if/when we upgrade the format version, we're
+    // still able to reproduce previous versions.
     #[test]
     fn check_version_31() {
         let eng = Engine::new_for_version(31).unwrap();
@@ -162,6 +167,111 @@ mod tests {
                 BOX_BASE = 2_253_544,
                 EQTB_SIZE = 10_053_972,
                 EQTB_TOP = 10_653_972,
+
+                // command codes
+                MAX_CHAR_CODE = 15,
+                MIN_INTERNAL = 68,
+                CHAR_GIVEN = 68,
+                MAX_NON_PREFIXED_COMMAND = 71,
+                LAST_ITEM = 71,
+                MAX_INTERNAL = 91,
+                REGISTER = 91,
+                MAX_COMMAND = 102,
+                SET_INTERACTION = 102,
+                DATA = 122,
+
+                HMODE = 104,
+                MMODE = 207,
+
+                UNSET_NODE = 13,
+                ORD_NOAD = 16,
+                RIGHT_NOAD = 31,
+
+                // Whatsit node subtypes
+                LANGUAGE_NODE = 4,
+                PDF_SAVE_POS_NODE = 21,
+                NATIVE_WORD_NODE = 40,
+                NATIVE_WORD_NODE_AT = 41,
+                GLYPH_NODE = 42,
+                PIC_NODE = 43,
+                PDF_NODE = 44,
+
+                VTOP_CODE = 4,
+                TT_VBOX_CODE = 5,
+                TT_HBOX_CODE = 108,
+
+                // CONVERT codes
+                ETEX_CONVERT_BASE = 5,
+                ETEX_REVISION_CODE = 5,
+                PDFTEX_FIRST_EXPAND_CODE = 7,
+                LEFT_MARGIN_KERN_CODE = 16,
+                PDF_CREATION_DATE_CODE = 22,
+                UNIFORM_DEVIATE_CODE = 29,
+                PDFTEX_CONVERT_CODES = 33,
+                XETEX_FIRST_EXPAND_CODE = 33,
+                XETEX_REVISION_CODE = 33,
+                XETEX_CONVERT_CODES = 40,
+                JOB_NAME_CODE = 40,
+
+                // EXTENSION codes
+                IMMEDIATE_CODE = 4,
+                RESET_TIMER_CODE = 31,
+                SET_RANDOM_SEED_CODE = 33,
+                PIC_FILE_CODE = 41,
+                PDF_FILE_CODE = 42,
+                GLYPH_CODE = 43,
+                XETEX_LINEBREAK_LOCALE_EXTENSION_CODE = 46,
+
+                // LAST_ITEM codes
+                LAST_NODE_TYPE_CODE = 3,
+                BADNESS_CODE = 5,
+                PDFTEX_FIRST_RINT_CODE = 6,
+                PDF_LAST_X_POS_CODE = 12,
+                ELAPSED_TIME_CODE = 16,
+                ETEX_INT = 19,
+                ETEX_VERSION_CODE = 19,
+                XETEX_INT = 27,
+                XETEX_VERSION_CODE = 27,
+                XETEX_PDF_PAGE_COUNT_CODE = 54,
+                XETEX_LAST_ITEM_CODES = 54,
+                XETEX_DIM = 55,
+                XETEX_GLYPH_BOUNDS_CODE = 55,
+                XETEX_LAST_DIM_CODES = 55,
+                ETEX_DIM = 56,
+                FONT_CHAR_WD_CODE = 56,
+                ETEX_GLUE = 65,
+                MU_TO_GLUE_CODE = 65,
+                ETEX_MU = 66,
+                GLUE_TO_MU_CODE = 66,
+                ETEX_EXPR = 67,
+                TT_ETEX_NUM_EXPR_CODE = 67,
+                TT_ETEX_MU_EXPR_CODE = 70,
+
+                SPAN_CODE = 1_114_113,
+            ]
+        );
+    }
+
+    #[test]
+    fn check_version_32() {
+        let eng = Engine::new_for_version(32).unwrap();
+
+        check!(
+            eng [
+                TECTONIC_FORMAT_VERSION = 32,
+                MEM_TOP = 4_999_999,
+
+                INT_PARS = 86,
+                DIMEN_PARS = 23,
+                GLUE_PARS = 19,
+                NUM_LOCALS = 13,
+                NUM_ETEX_PENALTIES = 4,
+
+                // eqtb
+                UNDEFINED_CONTROL_SEQUENCE = 2_252_749,
+                BOX_BASE = 2_253_554,
+                EQTB_SIZE = 10_053_983,
+                EQTB_TOP = 10_653_983,
 
                 // command codes
                 MAX_CHAR_CODE = 15,

@@ -66,7 +66,6 @@ signed short get_signed_pair (FILE *file)
   return pair;
 }
 
-
 unsigned int get_unsigned_triple(FILE *file)
 {
   int i;
@@ -216,6 +215,16 @@ tt_get_signed_pair (rust_input_handle_t handle)
   return pair;
 }
 
+unsigned int
+tt_get_unsigned_triple(rust_input_handle_t handle)
+{
+  int i;
+  unsigned int triple = 0;
+  for (i=0; i<3; i++) {
+    triple = (triple << 8) | tt_get_unsigned_byte(handle);
+  }
+  return triple;
+}
 
 uint32_t
 tt_get_unsigned_quad(rust_input_handle_t handle)

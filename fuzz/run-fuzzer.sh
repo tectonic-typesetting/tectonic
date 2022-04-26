@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+# NOTE: install `llvm-dev` or whichever package provides `llvm-symbolizer` if
+# you want your stack traces to have any useful information! Otherwise none of
+# the binary addresses are decoded when the fuzzer finds problems. You may also
+# need to add the `-D` flag to `cargo fuzz run` to get more meaningful
+# backtraces, at the expense of the fuzzer running much slower.
+
 set -e
 set -o pipefail
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"

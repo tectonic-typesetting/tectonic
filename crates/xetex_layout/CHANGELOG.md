@@ -1,3 +1,10 @@
+# tectonic_xetex_layout 0.2.0 (2022-04-26)
+
+Update for TeXLive 2021 (#882, @pkgw).
+
+- Add new C API needed for TeXLive 2021: `ttxl_font_get_point_size`.
+
+
 # tectonic_xetex_layout 0.1.1 (2021-10-11)
 
 - Require the latest version of `tectonic_bridge_graphite2`, which contains a

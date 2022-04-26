@@ -1,3 +1,22 @@
+# tectonic_bundles 0.3.0 (2022-04-26)
+
+This minor bump contains a breaking change!
+
+- The default bundle URL is now parametrized with the "format version", which
+  captures the internal capabilities of the XeTeX engine. Since the bundle and
+  the engine are fairly tightly coupled, this allows us to provide bundles that
+  track the capabilities of newer engine versions, while preserving the behavior
+  of older engine versions. Anyway, instead of exporting a `FALLBACK_BUNDLE_URL`
+  const, we now export a `get_fallback_bundle_url()` method that takes the
+  format version as an argument. This argument should be the value of
+  `tectonic_engine_xetex::FORMAT_SERIAL` if you have a module that actually
+  links to the XeTeX engine.
+- Make the cache location customizable with the environment variable
+  `TECTONIC_CACHE_DIR` (#880, #884, @wischi-chr).
+- Fix "fetching" of zero-size files to succeed without attempting any I/O (#888,
+  @pkgw).
+
+
 # tectonic_bundles 0.2.0 (2021-10-11)
 
 This release contains a major configuration change, updating the URL of the

@@ -52,7 +52,7 @@ typedef struct fontmap_opt {
   double design_size; /* unused */
 
   char  *charcoll;    /* Adobe-Japan1-4, etc. */
-  int    index;       /* TTC index */
+  uint32_t    index;       /* TTC index */
   int    style;       /* ,Bold, etc. */
   int    stemv;       /* StemV value especially for CJK fonts */
   int    use_glyph_encoding; /* XeTeX support */

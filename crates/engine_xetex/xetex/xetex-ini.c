@@ -3,6 +3,13 @@
    Licensed under the MIT License.
 */
 
+/* On Windows this can bring in a `#define INPUT` that clashes with
+ * xetex_format.h, so include it first and sanitize: */
+#include "teckit-c-Engine.h"
+#ifdef INPUT
+#undef INPUT
+#endif
+
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
@@ -94,7 +101,7 @@ int32_t mem_end;
 int32_t rover;
 int32_t last_leftmost_char;
 int32_t last_rightmost_char;
-int32_t hlist_stack[513];
+int32_t hlist_stack[MAX_HLIST_STACK + 1];
 short hlist_stack_level;
 int32_t first_p;
 int32_t global_prev_p;
@@ -115,7 +122,7 @@ int32_t eqtb_top;
 int32_t hash_high;
 bool no_new_control_sequence;
 int32_t cs_count;
-b32x2 prim[501];
+b32x2 prim[PRIM_SIZE + 1];
 int32_t prim_used;
 memory_word *save_stack;
 int32_t save_ptr;
@@ -2764,7 +2771,7 @@ load_fmt_file(void)
 
     font_ptr = x;
 
-    font_mapping = xmalloc_array(void *, font_max);
+    font_mapping = xcalloc_array(void *, font_max);
     font_layout_engine = xcalloc_array(void *, font_max);
     font_flags = xmalloc_array(char, font_max);
     font_letter_space = xmalloc_array(scaled_t, font_max);
@@ -2961,8 +2968,13 @@ final_cleanup(void)
     small_number c;
 
     c = cur_chr;
+
+    if (c != 1)
+        INTPAR(new_line_char) = -1;
+
     if (job_name == 0)
         open_log_file();
+
     while (input_ptr > 0)
         if (cur_input.state == TOKEN_LIST)
             end_token_list();
@@ -3502,6 +3514,17 @@ tt_cleanup(void) {
         if (font_layout_engine[font_k] != NULL) {
             release_font_engine(font_layout_engine[font_k], font_area[font_k]);
             font_layout_engine[font_k] = NULL;
+        }
+
+        if (font_mapping[font_k] != NULL) {
+            TECkit_DisposeConverter((TECkit_Converter) font_mapping[font_k]);
+            font_mapping[font_k] = NULL;
+        }
+    }
+
+    for (int i = 1; i <= in_open; i++) {
+        if (input_file[i] != NULL) {
+            u_close(input_file[i]);
         }
     }
 

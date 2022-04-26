@@ -70,7 +70,7 @@ serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
 tectonic_bridge_core = { path = "crates/bridge_core", version =">=0.3.0,<1"}
-tectonic_bundles = { path = "crates/bundles", version =">=0.2.0,<1", default-features = false }
+tectonic_bundles = { path = "crates/bundles", version =">=0.3.0,<1", default-features = false }
 tectonic_docmodel = { path = "crates/docmodel", version =">=0.1.2,<1", optional = true }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version =">=0.1.0,<1"}
 tectonic_engine_spx2html = { path = "crates/engine_spx2html", version =">=0.1.1,<1"}
@@ -120,7 +120,7 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "997cd412fa4dff71bec6c99dea95f0b9a3c2c240"
+rev = "6b6a35335c9064fac2ec6684c4f79808dce59b7d"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
@@ -134,7 +134,7 @@ tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bundles = "207e6e796b1827330ee03a4c395fe6db059bddd9"
+tectonic_bundles = "thiscommit:2022-03-29:SFnXSaL"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
 tectonic_docmodel = "thiscommit:2022-02-20:2SpEl4c"

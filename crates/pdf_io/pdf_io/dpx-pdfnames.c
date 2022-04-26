@@ -36,6 +36,7 @@
 
 struct obj_data
 {
+  pdf_obj *reference;
   pdf_obj *object;
   int closed;            /* 1 if object is closed */
 };
@@ -72,6 +73,11 @@ hval_free (void *hval)
 
   value = (struct obj_data *) hval;
 
+  if (value->reference) {
+    pdf_release_obj(value->reference);
+    value->reference = NULL;
+  }
+
   if (value->object) {
     pdf_release_obj(value->object);
     value->object     = NULL;
@@ -106,7 +112,6 @@ check_objects_defined (struct ht_table *ht_tab)
 
       key   = ht_iter_getkey(&iter, &keylen);
       value = ht_iter_getval(&iter);
-      assert(value->object);
       if (PDF_OBJ_UNDEFINED(value->object)) {
         pdf_names_add_object(ht_tab, key, keylen, pdf_new_null());
         dpx_warning("Object @%s used, but not defined. Replaced by null.",
@@ -145,11 +150,11 @@ pdf_names_add_object (struct ht_table *names,
   if (!value) {
     value = NEW(1, struct obj_data);
     value->object     = object;
+    value->reference = NULL;
     value->closed     = 0;
     ht_append_table(names, key, keylen, value);
   } else {
-    assert(value->object);
-    if (PDF_OBJ_UNDEFINED(value->object)) {
+    if (value->object && PDF_OBJ_UNDEFINED(value->object)) {
       pdf_transfer_label(object, value->object);
       pdf_release_obj(value->object);
       value->object = object;
@@ -163,6 +168,41 @@ pdf_names_add_object (struct ht_table *names,
   return 0;
 }
 
+pdf_obj *
+pdf_names_reserve (struct ht_table *names, const void *key, int keylen)
+{
+  pdf_obj         *obj_ref = NULL;
+  struct obj_data *value;
+
+  assert(names);
+
+  if (!key || keylen < 1) {
+    dpx_warning("Null string used for name tree key.");
+    return NULL;
+  }
+
+  value = ht_lookup_table(names, key, keylen);
+  if (!value) {
+    value = NEW(1, struct obj_data);
+    value->object     = pdf_new_undefined();
+    value->reference  = NULL;
+    value->closed     = 0;
+    ht_append_table(names, key, keylen, value);
+    obj_ref = pdf_ref_obj(value->object);
+  } else {
+    if (value->object && PDF_OBJ_UNDEFINED(value->object)) {
+      if (!value->reference)
+        value->reference = pdf_ref_obj(value->object);
+      obj_ref = pdf_link_obj(value->reference);
+    } else {
+      dpx_warning("Object @%s already defined.", printable_key(key, keylen));
+      obj_ref = NULL;
+    }
+  }
+
+  return obj_ref;
+}
+
 /*
  * The following routine returns copies, not the original object.
  */
@@ -171,25 +211,30 @@ pdf_names_lookup_reference (struct ht_table *names,
                             const void *key, int keylen)
 {
   struct obj_data *value;
-  pdf_obj *object;
+  pdf_obj *obj_ref;
 
   assert(names);
 
   value = ht_lookup_table(names, key, keylen);
 
   if (value) {
-    object = value->object;
-    assert(object);
+    if (!value->reference) {
+      if (value->object) {
+        value->reference = pdf_ref_obj(value->object);
+      } else {
+        dpx_warning("Can't create object ref for already released object: %s", printable_key(key, keylen));
+      }
+    }
+    obj_ref = pdf_link_obj(value->reference);
   } else {
     /* A null object as dummy would create problems because as value
      * of a dictionary entry, a null object is be equivalent to no entry
      * at all. This matters for optimization of PDF destinations.
      */
-    object = pdf_new_undefined();
-    pdf_names_add_object(names, key, keylen, object);
+    obj_ref = pdf_names_reserve(names, key, keylen);
   }
 
-  return pdf_ref_obj(object);
+  return obj_ref;
 }
 
 pdf_obj *
@@ -203,7 +248,9 @@ pdf_names_lookup_object (struct ht_table *names,
   value = ht_lookup_table(names, key, keylen);
   if (!value || PDF_OBJ_UNDEFINED(value->object))
     return NULL;
-  assert(value->object);
+
+  if (value->closed)
+    dpx_warning("Object \"%s\" already closed.", printable_key(key, keylen));
 
   return value->object;
 }
@@ -226,6 +273,11 @@ pdf_names_close_object (struct ht_table *names,
   if (value->closed) {
     dpx_warning("Object @%s already closed.", printable_key(key, keylen));
     return -1;
+  }
+
+  if (value->reference) {
+    pdf_release_obj(value->object);
+    value->object = NULL;
   }
 
   value->closed = 1;

@@ -2335,7 +2335,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_harfbuzz"
-version = "0.2.4"
+version = "0.2.5"
 dependencies = [
  "cc",
  "tectonic_bridge_graphite2",
@@ -2352,7 +2352,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bundles"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "flate2",
  "fs2",
@@ -2473,7 +2473,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_pdf_io"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "cc",
  "tectonic_bridge_core",
@@ -2499,7 +2499,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xetex_format"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "byteorder",
  "nom 7.1.0",
@@ -2509,7 +2509,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xetex_layout"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "cc",
  "tectonic_bridge_core",

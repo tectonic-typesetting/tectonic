@@ -41,7 +41,8 @@ pdf_obj *pdf_names_lookup_object    (struct ht_table *names,
                                             const void *key, int keylen);
 int      pdf_names_close_object     (struct ht_table *names,
                                             const void *key, int keylen);
-
+extern pdf_obj *pdf_names_reserve          (struct ht_table *names,
+                        const void *key, int keylen);
 /* Really create name tree... */
 pdf_obj *pdf_names_create_tree      (struct ht_table *names,
                                             int *count,

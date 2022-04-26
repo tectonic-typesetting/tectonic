@@ -1,3 +1,25 @@
+# tectonic_pdf_io 0.2.0 (2022-04-26)
+
+Update xdvipdfmx for TeXLive 2021 (#882, @pkgw). A brief summary of changes based
+on the TeXLive 2021 release notes:
+
+- Not applicable to Tectonic: GhostScript safety improvements
+- If an image ﬁle is not found, exit with bad status.
+- Extended special syntax for color support.
+- Specials for manipulating ExtGState.
+- Compatibility specials `pdfcolorstack` and `pdffontattr`.
+- Experimental support for dviluatex’s extended `fnt_def`.
+- Support new feature of virtual font to fallback Japanese font deﬁnition.
+
+There are other internal changes; see [the low-level ChangeLog][xdvcl]. See also
+the `tectonic_xdvipdfmx` crate, which actually contains only a few pieces of
+this update.
+
+[xdvcl]: https://github.com/TeX-Live/texlive-source/blob/404d2e476949c1e225e6b94ff92e3a113ab6b413/texk/dvipdfm-x/ChangeLog#L107-L557
+
+Additionally, some new memory leaks have been plugged (@pkgw).
+
+
 # tectonic_pdf_io 0.1.2 (2021-10-11)
 
 - Fix an incorrect warning issued when reading EXIF data (#822, @korrat)

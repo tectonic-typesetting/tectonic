@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_harfbuzz"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose the Harfbuzz C/C++ APIs to Rust/Cargo.

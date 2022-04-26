@@ -159,7 +159,7 @@ spc_handler_ps_file (struct spc_env *spe, struct spc_arg *args)
         return -1;
     }
 
-    form_id = pdf_ximage_findresource(filename, options);
+    form_id = pdf_ximage_load_image(NULL, filename, options);
     if (form_id < 0) {
         spc_warn(spe, "Failed to read image file: %s", filename);
         free(filename);
@@ -167,7 +167,7 @@ spc_handler_ps_file (struct spc_env *spe, struct spc_arg *args)
     }
 
     free(filename);
-    pdf_dev_put_image(form_id, &ti, spe->x_user, spe->y_user);
+    spc_put_image(spe, form_id, &ti, spe->x_user, spe->y_user);
     return 0;
 }
 
@@ -193,14 +193,14 @@ spc_handler_ps_plotfile (struct spc_env *spe, struct spc_arg *args)
         return -1;
     }
 
-    form_id = pdf_ximage_findresource(filename, options);
+    form_id = pdf_ximage_load_image(NULL, filename, options);
     if (form_id < 0) {
         spc_warn(spe, "Could not open PS file: %s", filename);
         error = -1;
     } else {
         transform_info_clear(&p);
         p.matrix.d = -1.0; /* xscale = 1.0, yscale = -1.0 */
-        pdf_dev_put_image(form_id, &p, 0, 0);
+        spc_put_image(spe, form_id, &p, 0, 0);
     }
 
     free(filename);
@@ -214,14 +214,15 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
     int     error = 0;
     int     st_depth, gs_depth;
     double  x_user, y_user;
+    pdf_coord cp;
 
-    assert(spe && args && args->curptr <= args->endptr);
+    spc_get_current_point(spe, &cp);
 
     if (args->curptr + strlen(":[begin]") <= args->endptr && strstartswith(args->curptr, ":[begin]")) {
         block_pending++;
         position_set = 1;
-        x_user = pending_x = spe->x_user;
-        y_user = pending_y = spe->y_user;
+        x_user = pending_x = cp.x;
+        y_user = pending_y = cp.y;
         args->curptr += strlen(":[begin]");
     } else if (args->curptr + strlen(":[end]") <= args->endptr && strstartswith(args->curptr, ":[end]")) {
         if (block_pending <= 0) {
@@ -235,13 +236,13 @@ spc_handler_ps_literal (struct spc_env *spe, struct spc_arg *args)
         y_user = pending_y;
         args->curptr += strlen(":[end]");
     } else if (args->curptr < args->endptr && args->curptr[0] == ':') {
-        x_user = position_set ? pending_x : spe->x_user;
-        y_user = position_set ? pending_y : spe->y_user;
+        x_user = position_set ? pending_x : cp.x;
+        y_user = position_set ? pending_y : cp.y;
         args->curptr++;
     } else {
         position_set = 1;
-        x_user = pending_x = spe->x_user;
-        y_user = pending_y = spe->y_user;
+        x_user = pending_x = cp.x;
+        y_user = pending_y = cp.y;
     }
 
     skip_white(&args->curptr, args->endptr);

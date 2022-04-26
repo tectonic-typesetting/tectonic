@@ -45,7 +45,7 @@ fixword tfm_string_width  (int font_id, const unsigned char *s, unsigned len);
 
 /* From TFM header */
 double tfm_get_design_size  (int font_id);
-
+int tfm_is_jfm (int font_id);
 bool tfm_exists  (const char *tfm_name);
 
 #endif /* _TFM_H_ */

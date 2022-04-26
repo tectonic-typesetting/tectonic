@@ -25,8 +25,8 @@ tectonic_bridge_flate = { path = "../bridge_flate", version =">=0.1.1,<1"}
 tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version =">=0.2.0,<1"}
 tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version =">=0.2.0,<1"}
 tectonic_errors = { path = "../errors", version =">=0.1.0,<1"}
-tectonic_pdf_io = { path = "../pdf_io", version =">=0.1.0,<1"}
-tectonic_xetex_layout = { path = "../xetex_layout", version =">=0.1.0,<1"}
+tectonic_pdf_io = { path = "../pdf_io", version =">=0.2.0,<1"}
+tectonic_xetex_layout = { path = "../xetex_layout", version =">=0.2.0,<1"}
 
 [build-dependencies]
 cc = "^1.0.66"
@@ -45,5 +45,5 @@ tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_cfg_support = "9d5feb40c7ac6958ee3c50604af9271eb2db2b20"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
-tectonic_pdf_io = "620fe47e87000cede22d5e5eafa0fda81f28b402"
-tectonic_xetex_layout = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_pdf_io = "thiscommit:2022-03-29:jBgdLrP"
+tectonic_xetex_layout = "thiscommit:2022-03-29:ovKl9nt"

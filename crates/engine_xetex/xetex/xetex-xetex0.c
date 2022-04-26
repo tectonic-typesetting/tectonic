@@ -1842,7 +1842,7 @@ void show_activities(void)
                     break;
                 case 2:
                     if (a.b32.s1 != TEX_NULL) {
-                        print_cstr("this will be denominator of:");
+                        print_cstr("this will begin denominator of:");
                         show_box(a.b32.s1);
                     }
                     break;
@@ -2028,6 +2028,9 @@ void print_param(int32_t n)
         break;
     case INT_PAR__tracing_char_sub_def:
         print_esc_cstr("tracingcharsubdef");
+        break;
+    case INT_PAR__tracing_stack_levels:
+        print_esc_cstr("tracingstacklevels");
         break;
     case INT_PAR__xetex_linebreak_penalty:
         print_esc_cstr("XeTeXlinebreakpenalty");
@@ -5037,18 +5040,21 @@ void begin_file_reading(void)
     cur_input.synctex_tag = 0;
 }
 
-void end_file_reading(void)
+void
+end_file_reading(void)
 {
     first = cur_input.start;
     line = line_stack[cur_input.index];
-    if ((cur_input.name == 18) || (cur_input.name == 19))
+
+    if (cur_input.name == 18 || cur_input.name == 19) {
         pseudo_close();
-    else if (cur_input.name > 17)
+    } else if (cur_input.name > 17) {
         u_close(input_file[cur_input.index]);
-    {
-        input_ptr--;
-        cur_input = input_stack[input_ptr];
+        input_file[cur_input.index] = NULL;
     }
+
+    input_ptr--;
+    cur_input = input_stack[input_ptr];
     in_open--;
 }
 
@@ -5686,15 +5692,33 @@ macro_call(void)
 
     if (INTPAR(tracing_macros) > 0) { /*419:*/
         begin_diagnostic();
-        print_ln();
-
         diagnostic_begin_capture_warning_here();
 
-        print_cs(warning_index);
-        token_show(ref_count);
+        if (INTPAR(tracing_stack_levels) > 0) {
+            if (input_ptr < INTPAR(tracing_stack_levels)) {
+                v = input_ptr;
+                print_ln();
+                print_char('~');
+
+                while (v > 0) {
+                    print_char('.');
+                    v--;
+                }
+
+                print_cs(warning_index);
+                token_show(ref_count);
+            } else {
+                print_char('~');
+                print_char('~');
+                print_cs(warning_index);
+            }
+        } else {
+            print_ln();
+            print_cs(warning_index);
+            token_show(ref_count);
+        }
 
         capture_to_diagnostic(NULL);
-
         end_diagnostic(false);
     }
 
@@ -5918,7 +5942,7 @@ macro_call(void)
 
         found:
             if (s != TEX_NULL) { /*418:*/
-                if (m == 1 && mem[p].b32.s0 < RIGHT_BRACE_LIMIT && p != TEMP_HEAD) {
+                if (m == 1 && mem[p].b32.s0 < RIGHT_BRACE_LIMIT) {
                     mem[rbrace_ptr].b32.s1 = TEX_NULL;
                     mem[p].b32.s1 = avail;
                     avail = p;
@@ -5933,14 +5957,16 @@ macro_call(void)
                 n++;
 
                 if (INTPAR(tracing_macros) > 0) {
-                    begin_diagnostic();
-                    diagnostic_begin_capture_warning_here();
-                    print_nl(match_chr);
-                    print_int(n);
-                    print_cstr("<-");
-                    show_token_list(pstack[n - 1], TEX_NULL, 1000);
-                    capture_to_diagnostic(NULL);
-                    end_diagnostic(false);
+                    if (INTPAR(tracing_stack_levels) == 0 || input_ptr < INTPAR(tracing_stack_levels)) {
+                        begin_diagnostic();
+                        diagnostic_begin_capture_warning_here();
+                        print_nl(match_chr);
+                        print_int(n);
+                        print_cstr("<-");
+                        show_token_list(pstack[n - 1], TEX_NULL, 1000);
+                        capture_to_diagnostic(NULL);
+                        end_diagnostic(false);
+                    }
                 }
             }
         } while (mem[r].b32.s0 != END_MATCH_TOKEN);
@@ -8712,6 +8738,10 @@ void scan_expr(void)
     b = false;
     p = TEX_NULL;
 
+    expand_depth_count++;
+    if (expand_depth_count >= expand_depth)
+        overflow("expansion depth", expand_depth);
+
 restart:
     r = EXPR_NONE;
     e = 0;
@@ -8897,6 +8927,9 @@ found: /*1572:*//*424:*/
         free_node(q, EXPR_NODE_SIZE);
         goto found;
     }
+
+    expand_depth_count--;
+
     if (b) {
         error_here_with_diagnostic("Arithmetic overflow");
         capture_to_diagnostic(NULL);
@@ -9324,6 +9357,8 @@ conv_toks(void)
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
         begin_token_list(mem[def_ref].b32.s1, INSERTED);
+        mem[def_ref].b32.s1 = avail;
+        avail = def_ref;
         def_ref = save_def_ref;
         if (u != 0)
             str_ptr--;
@@ -9564,10 +9599,10 @@ conv_toks(void)
         saved_chr = cur_val;
         scan_int();
 
-        if (cur_val < LEFT_BRACE || cur_val > OTHER_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
+        if (cur_val < LEFT_BRACE || cur_val > ACTIVE_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
             error_here_with_diagnostic("Invalid code (");
             print_int(cur_val);
-            print_cstr("), should be in the ranges 1..4, 6..8, 10..12");
+            print_cstr("), should be in the ranges 1..4, 6..8, 10..13");
             capture_to_diagnostic(NULL);
 
             help_ptr = 1;
@@ -9786,7 +9821,7 @@ conv_toks(void)
         break;
 
     case XETEX_REVISION_CODE:
-        print_cstr(".999992");
+        print_cstr(".999993");
         break;
 
     case XETEX_VARIATION_NAME_CODE:
@@ -9845,7 +9880,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
             if (cur_cmd == MAC_PARAM) { /*495: */
                 s = MATCH_TOKEN + cur_chr;
                 get_token();
-                if (cur_cmd == LEFT_BRACE) {
+                if (cur_tok < LEFT_BRACE_LIMIT) {
                     hash_brace = cur_tok;
                     {
                         q = get_avail();
@@ -9865,10 +9900,12 @@ int32_t scan_toks(bool macro_def, bool xpand)
                     error_here_with_diagnostic("You already have nine parameters");
                     capture_to_diagnostic(NULL);
                     {
-                        help_ptr = 1;
-                        help_line[0] = "I'm going to ignore the # sign you just used.";
+                        help_ptr = 2;
+                        help_line[1] = "I'm going to ignore the # sign you just used,";
+                        help_line[0] = "as well as the token that followed it.";
                     }
                     error();
+                    continue;
                 } else {
 
                     t++;
@@ -10052,6 +10089,7 @@ read_toks(int32_t n, int32_t r, int32_t j)
                     help_ptr = 1;
                     help_line[0] = "This \\read has unbalanced braces.";
                     align_state = 1000000L;
+                    cur_input.limit = 0;
                     error();
                 }
             }
@@ -10891,8 +10929,6 @@ start_input(const char *primary_input_name)
         begin_name();
         stop_at_space = false;
 
-
-
         const unsigned char *cp = (const unsigned char *) primary_input_name;
 
         if (pool_ptr + strlen(primary_input_name) * 2 >= pool_size)
@@ -10997,6 +11033,30 @@ start_input(const char *primary_input_name)
     print(full_source_filename_stack[in_open]);
     ttstub_output_flush(rust_stdout);
 
+    if (INTPAR(tracing_stack_levels) > 0) {
+        int32_t v;
+
+        begin_diagnostic();
+        diagnostic_begin_capture_warning_here();
+        print_ln();
+        print_char('~');
+        v = input_ptr - 1;
+        if (v < INTPAR(tracing_stack_levels)) {
+            while (v > 0) {
+                print_char('.');
+                v--;
+            }
+        } else {
+            print_char('~');
+        }
+        print_cstr("INPUT ");
+        print(cur_name);
+        print(cur_ext);
+        print_ln();
+        capture_to_diagnostic(NULL);
+        end_diagnostic(false);
+    }
+
     cur_input.state = NEW_LINE;
 
     synctex_start_input();
@@ -11035,20 +11095,48 @@ void char_warning(internal_font_number f, int32_t c)
         if (INTPAR(tracing_lost_chars) > 1)
             INTPAR(tracing_online) = 1;
 
-        begin_diagnostic();
-        diagnostic_begin_capture_warning_here();
-        print_nl_cstr("Missing character: There is no ");
+        if (INTPAR(tracing_lost_chars) > 2) {
+            if (file_line_error_style_p)
+                print_file_line();
+            else
+                print_nl_cstr("! ");
+            print_cstr("Missing character: There is no ");
+        } else {
+            begin_diagnostic();
+            diagnostic_begin_capture_warning_here();
+            print_nl_cstr("Missing character: There is no ");
+        }
+
         if (c < 65536L)
             print(c);
         else
             print_char(c);
+
+        print_cstr(" (");
+
+        if (font_area[f] == AAT_FONT_FLAG || font_area[f] == OTGR_FONT_FLAG) {
+            print_ucs_code(c);
+        } else {
+            print_hex(c);
+        }
+
+        print_char(')');
         print_cstr(" in font ");
         print(font_name[f]);
-        print_char('!');
-        capture_to_diagnostic(NULL);
-        end_diagnostic(false);
+
+        if (INTPAR(tracing_lost_chars) < 3) {
+            print_char('!');
+        }
 
         INTPAR(tracing_online) = old_setting;
+
+        if (INTPAR(tracing_lost_chars) > 2) {
+            help_ptr = 0;
+            error();
+        } else {
+            capture_to_diagnostic(NULL);
+            end_diagnostic(false);
+        }
     }
 
     {
@@ -13075,6 +13163,7 @@ bool fin_col(void)
             mem[p + 2].b32.s1 = mem[HOLD_HEAD].b32.s1 /*:823 */ ;
             cur_loop = LLIST_link(cur_loop);
             mem[p].b32.s1 = new_glue(mem[cur_loop + 1].b32.s0);
+            NODE_subtype(LLIST_link(p)) = GLUE_PAR__tab_skip + 1;
         } else {
             error_here_with_diagnostic("Extra alignment tab has been changed to ");
             print_esc_cstr("cr");
@@ -18349,9 +18438,12 @@ close_files_and_terminate(void)
 
     terminate_font_manager();
 
-    for (k = 0; k <= 15; k++)
+    for (k = 0; k <= 15; k++) {
         if (write_open[k])
-            ttstub_output_close (write_file[k]);
+            ttstub_output_close(write_file[k]);
+    }
+
+    INTPAR(new_line_char) = -1;
 
     finalize_dvi_file();
     synctex_terminate(log_opened);

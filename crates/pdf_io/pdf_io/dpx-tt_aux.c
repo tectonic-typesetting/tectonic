@@ -32,7 +32,7 @@
 #include "dpx-tt_post.h"
 #include "dpx-tt_table.h"
 
-ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)
+ULONG ttc_read_offset (sfnt *sfont, ULONG ttc_idx)
 {
   ULONG offset = 0, num_dirs = 0;
 
@@ -46,7 +46,7 @@ ULONG ttc_read_offset (sfnt *sfont, int ttc_idx)
 
   /* version = */ sfnt_get_ulong(sfont);
   num_dirs = sfnt_get_ulong(sfont);
-  if (ttc_idx < 0 || ttc_idx > num_dirs - 1)
+  if (ttc_idx > num_dirs - 1)
     _tt_abort("Invalid TTC index number");
 
   sfnt_seek_set (sfont, 12 + ttc_idx * 4);

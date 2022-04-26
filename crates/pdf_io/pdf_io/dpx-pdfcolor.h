@@ -29,28 +29,33 @@
 
 #include "dpx-pdfobj.h"
 
-#define PDF_COLORSPACE_TYPE_DEVICECMYK -4
-#define PDF_COLORSPACE_TYPE_DEVICERGB  -3
+#define PDF_COLORSPACE_TYPE_CMYK       -4
+#define PDF_COLORSPACE_TYPE_RGB        -3
 #define PDF_COLORSPACE_TYPE_SPOT       -2
-#define PDF_COLORSPACE_TYPE_DEVICEGRAY -1
+#define PDF_COLORSPACE_TYPE_GRAY       -1
 #define PDF_COLORSPACE_TYPE_INVALID     0
-#define PDF_COLORSPACE_TYPE_CALGRAY     1
-#define PDF_COLORSPACE_TYPE_CIELAB      2
-#define PDF_COLORSPACE_TYPE_CALRGB      3
-#define PDF_COLORSPACE_TYPE_ICCBASED    4
+#define PDF_COLORSPACE_TYPE_DEVICEGRAY  1
+#define PDF_COLORSPACE_TYPE_DEVICERGB   2
+#define PDF_COLORSPACE_TYPE_DEVICECMYK  3
+#define PDF_COLORSPACE_TYPE_CALGRAY     4
+#define PDF_COLORSPACE_TYPE_CALRGB      5
+#define PDF_COLORSPACE_TYPE_LAB         6
+#define PDF_COLORSPACE_TYPE_ICCBASED    7
+#define PDF_COLORSPACE_TYPE_SEPARATION  8
+#define PDF_COLORSPACE_TYPE_DEVICEN     9
+#define PDF_COLORSPACE_TYPE_INDEXED    10
+#define PDF_COLORSPACE_TYPE_PATTERN    11
 
-#define PDF_COLORSPACE_TYPE_CMYK  PDF_COLORSPACE_TYPE_DEVICECMYK
-#define PDF_COLORSPACE_TYPE_RGB   PDF_COLORSPACE_TYPE_DEVICERGB
-#define PDF_COLORSPACE_TYPE_GRAY  PDF_COLORSPACE_TYPE_DEVICEGRAY
-
-
-#define PDF_COLOR_COMPONENT_MAX 4
+#define PDF_COLOR_COMPONENT_MAX 32
 
 typedef struct
 {
+  int res_id;
+  int type;
   int    num_components;
-  char*  spot_color_name;
+  char  *spot_color_name;
   double values[PDF_COLOR_COMPONENT_MAX];
+  int pattern_id;
 } pdf_color;
 
 int        pdf_color_rgbcolor      (pdf_color *color,
@@ -70,10 +75,9 @@ void       pdf_color_brighten_color (pdf_color *dst, const pdf_color *src, doubl
 
 int        pdf_color_type          (const pdf_color *color);
 int        pdf_color_compare       (const pdf_color *color1, const pdf_color *color2);
-int        pdf_color_to_string     (const pdf_color *color, char *buffer, char mask);
+int        pdf_color_set_color     (const pdf_color *color, char *buffer, size_t buff_len, char mask);
 
 bool       pdf_color_is_white      (const pdf_color *color);
-bool       pdf_color_is_valid      (const pdf_color *color);
 
 /* Not check size */
 pdf_obj *iccp_get_rendering_intent (const void *profile, int proflen);

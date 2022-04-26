@@ -60,14 +60,19 @@ struct pdf_enc_setting {
 struct pdf_obj_setting {
     int         enable_objstm;
     int         enable_predictor;
+    int compression_level;
 };
 
 struct pdf_setting
 {
+    int ver_major, ver_minor;
     double media_width, media_height;
-    double annot_grow_amount;
+    struct {
+        double x, y;
+    } annot_grow_amount;
     int    outline_open_depth;
     int    check_gotos;
+    int enable_manual_thumb;
     int    enable_encrypt;
     struct pdf_enc_setting encrypt;
     struct pdf_dev_setting device;
@@ -167,5 +172,8 @@ void     pdf_doc_enable_manual_thumbnails (void);
 /* Similar to bop_content */
 #include "dpx-pdfcolor.h"
 void     pdf_doc_set_bgcolor   (const pdf_color *color);
+
+/* Sorry no appropriate place to put this... */
+extern struct ht_table *global_names;
 
 #endif /* _PDFDOC_H_ */
