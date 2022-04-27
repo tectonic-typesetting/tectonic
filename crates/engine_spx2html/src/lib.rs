@@ -655,6 +655,13 @@ impl EmittingState {
                 self.current_content.push('>');
             }
             Ok(())
+        } else if let Some(direct_text) = contents.strip_prefix("tdux:dt ") {
+            if self.content_finished {
+                self.warn_finished_content("direct text", common);
+            } else {
+                html_escape::encode_safe_to_string(direct_text, &mut self.current_content);
+            }
+            Ok(())
         } else if contents == "tdux:emit" {
             self.finish_file(common)
         } else if let Some(texpath) = contents.strip_prefix("tdux:setTemplate ") {
@@ -669,6 +676,13 @@ impl EmittingState {
             self.handle_provide_file(remainder, common)
         } else if contents == "tdux:contentFinished" {
             self.content_finished(common)
+        } else if let Some(remainder) = contents.strip_prefix("tdux:") {
+            tt_warning!(
+                common.status,
+                "ignoring unrecognized special: tdux:{}",
+                remainder
+            );
+            Ok(())
         } else {
             Ok(())
         }
