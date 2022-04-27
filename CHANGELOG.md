@@ -1,3 +1,64 @@
+# tectonic 0.9.0 (2022-04-27)
+
+This release updates Tectonic to correspond with TeXLive 2021.3, jumping
+forward from the previous sync point of TeXLive 2020.0.
+
+- The primary user-visible changes will stem from the many package updates
+  incorporated into the new TeXLive 2021.3 bundle. We don't actually have a
+  listing of all of the updates, but they are numerous. To switch a preexisting
+  Tectonic document to use the new bundle, update the `doc.bundle` field in
+  `Tectonic.toml` to `https://data1.fullyjustified.net/tlextras-2021.3r1.tar`.
+  Newly-created documents will use this bundle (or subsequent updates) by
+  default.
+- The XeTeX engine has mostly low-level updates, but there was a significant
+  rework of OpenType math kerning and sub/super-scripting. There is a new
+  `\tracingstacklevels` integer parameter. See [the changelog for the
+  `tectonic_engine_xetex` Rust crate][excl] for more details.
+- The xdvipdfmx engine has numerous updates including improvements for Japanese
+  font fallbacks. See [the changelog for the `tectonic_engine_xdvipdfmx` Rust
+  crate][edcl] for more details.
+
+[excl]: https://github.com/tectonic-typesetting/tectonic/releases/tag/tectonic_engine_xetex%400.3.0
+[edcl]: https://github.com/tectonic-typesetting/tectonic/releases/tag/tectonic_engine_xdvipdfmx%400.2.0
+
+Separately, the “GitHub Discussions” feature for the Tectonic repository has
+been activated:
+
+### <https://github.com/tectonic-typesetting/tectonic/discussions>
+
+@pkgw has found himself unable to pay proper attention to the
+`tectonic.newton.cx` Discourse service, which has been fairly moribund. The
+intention is to sunset it.
+
+We have one known issue worth highlighting:
+
+- The generic prebuilt Tectonic binaries for Linux are built for the version 1.1
+  series of OpenSSL. The latest Ubuntu release, 22.04 (Jammy Jellyfish), now
+  targets OpenSSL 3, with no compatibility fallback, which means that the
+  prebuilt binaries won’t run. To run Tectonic on these systems, compile it
+  yourself, use the “semistatic” MUSL Linux builds, or install a package built
+  specifically for this OS. To be clear, there are no actual issues with OpenSSL
+  3 compatibility — we just need to provide an alternative set of builds. See
+  #892 for updates.
+
+Other improvements include:
+
+- Some TeX packages attempt to read input from external processed using a “pipe”
+  syntax. This capability is not currently implemented in Tectonic. Such uses
+  now trigger a warning (#859, #888, @pkgw).
+- The location of the Tectonic cache is now customizable by setting the
+  `TECTONIC_CACHE_DIR` environment variable (#884, @wischi-chr). People are
+  encouraged to use the default whenever possible, but flexibility here can be
+  useful in some circumstances.
+- Document the V2 `-X` flag better in the documentation and CLI output (#877,
+  @clbarnes).
+- Some memory leaks during failed builds have been plugged as part of an ongoing
+  (albeit slow) effort to get it so that Tectonic can be used with modern input
+  fuzzing tools (@pkgw).
+- Allow basic `\openin` of un-closed `\openout` files to succeed (#882, @pkgw).
+  This should get `hyperxmp` working (#862).
+
+
 # tectonic 0.8.2 (2022-03-02)
 
 No code changes here. This release uses the newly-released version 0.1.4 of the
