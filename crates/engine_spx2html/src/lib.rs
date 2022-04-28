@@ -452,6 +452,11 @@ impl InitializationState {
             next_template_path: self.next_template_path,
             next_output_path: self.next_output_path,
             current_content: String::default(),
+            elem_stack: vec![ElementState {
+                elem: None,
+                do_auto_tags: true,
+                do_auto_spaces: true,
+            }],
             current_canvas: None,
             content_finished: false,
             content_finished_warning_issued: false,
@@ -471,11 +476,19 @@ struct EmittingState {
     next_template_path: String,
     next_output_path: String,
     current_content: String,
+    elem_stack: Vec<ElementState>,
     current_canvas: Option<CanvasState>,
     content_finished: bool,
     content_finished_warning_issued: bool,
     last_content_x: i32,
     last_content_space_width: Option<FixedPoint>,
+}
+
+#[derive(Debug)]
+struct ElementState {
+    elem: Option<String>,
+    do_auto_tags: bool,
+    do_auto_spaces: bool,
 }
 
 #[derive(Debug)]
@@ -515,6 +528,50 @@ impl EmittingState {
         }
     }
 
+    #[inline(always)]
+    fn cur_elstate(&self) -> &ElementState {
+        self.elem_stack.last().unwrap()
+    }
+
+    fn push_elem<D: std::fmt::Display>(&mut self, name: D) {
+        let new_item = ElementState {
+            elem: Some(name.to_string()),
+            ..*self.cur_elstate()
+        };
+
+        self.elem_stack.push(new_item);
+    }
+
+    /// TODO: may need to hone semantics when element nesting isn't as expected.
+    fn pop_elem(&mut self, name: &str, common: &mut Common) {
+        let mut n_closed = 0;
+
+        while self.elem_stack.len() > 1 {
+            let cur = self.elem_stack.pop().unwrap();
+
+            if let Some(e) = cur.elem.as_ref() {
+                self.current_content.push('<');
+                self.current_content.push('/');
+                self.current_content.push_str(e);
+                self.current_content.push('>');
+                n_closed += 1;
+
+                if e == name {
+                    break;
+                }
+            }
+        }
+
+        if n_closed != 1 {
+            tt_warning!(
+                common.status,
+                "imbalanced tags; had to close {} to find `{}`",
+                n_closed,
+                name
+            );
+        }
+    }
+
     fn maybe_get_font_space_width(&self, font_num: Option<i32>) -> Option<FixedPoint> {
         font_num.and_then(|fnum| {
             if let Some(fi) = self.fonts.get(&fnum) {
@@ -530,6 +587,11 @@ impl EmittingState {
     fn is_space_needed(&mut self, x0: i32, cur_font_num: Option<i32>) -> bool {
         // We never want a leading space.
         if self.current_content.is_empty() {
+            return false;
+        }
+
+        // Auto-spaces can be disabled.
+        if !self.cur_elstate().do_auto_spaces {
             return false;
         }
 
@@ -593,21 +655,19 @@ impl EmittingState {
         if let Some(element) = contents.strip_prefix("tdux:as ") {
             if self.content_finished {
                 self.warn_finished_content(&format!("auto start tag <{}>", element), common);
-            } else {
+            } else if self.cur_elstate().do_auto_tags {
                 self.push_space_if_needed(x, None);
                 self.current_content.push('<');
                 self.current_content.push_str(element);
                 self.current_content.push('>');
+                self.push_elem(element);
             }
             Ok(())
         } else if let Some(element) = contents.strip_prefix("tdux:ae ") {
             if self.content_finished {
                 self.warn_finished_content(&format!("auto end tag </{}>", element), common);
-            } else {
-                self.current_content.push('<');
-                self.current_content.push('/');
-                self.current_content.push_str(element);
-                self.current_content.push('>');
+            } else if self.cur_elstate().do_auto_tags {
+                self.pop_elem(element, common);
             }
             Ok(())
         } else if let Some(kind) = contents.strip_prefix("tdux:cs ") {
@@ -649,10 +709,7 @@ impl EmittingState {
             if self.content_finished {
                 self.warn_finished_content(&format!("manual end tag </{}>", element), common);
             } else {
-                self.current_content.push('<');
-                self.current_content.push('/');
-                self.current_content.push_str(element);
-                self.current_content.push('>');
+                self.pop_elem(element, common);
             }
             Ok(())
         } else if let Some(direct_text) = contents.strip_prefix("tdux:dt ") {
@@ -696,10 +753,12 @@ impl EmittingState {
     ///
     /// ```
     /// \special{tdux:mfs tagname
-    /// Cclass
-    /// Sname value
-    /// Uname value
-    /// Dname value
+    /// Cclass % add a CSS class
+    /// Sname value % Add a CSS setting in the style attr
+    /// Uname value % Add an unquoted attribute
+    /// Dname value % Add a double-quoted attribute
+    /// NAS % Turn off automatic space insertion while processing this tag
+    /// NAT % Turn off automatic tag insertion while processing this tag
     /// }
     /// ```
     ///
@@ -734,6 +793,10 @@ impl EmittingState {
             return Ok(());
         }
 
+        let mut elstate = ElementState {
+            elem: Some(tagname.to_owned()),
+            ..*self.cur_elstate()
+        };
         let mut classes = Vec::new();
         let mut styles = Vec::new();
         let mut unquoted_attrs = Vec::new();
@@ -823,6 +886,10 @@ impl EmittingState {
                     }
                 };
                 double_quoted_attrs.push((name.to_owned(), bits.next().map(|v| v.to_owned())));
+            } else if line == "NAS" {
+                elstate.do_auto_spaces = false;
+            } else if line == "NAT" {
+                elstate.do_auto_tags = false;
             } else {
                 tt_warning!(
                     common.status,
@@ -901,6 +968,7 @@ impl EmittingState {
         }
 
         self.current_content.push('>');
+        self.elem_stack.push(elstate);
         Ok(())
     }
 
