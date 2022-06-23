@@ -675,11 +675,11 @@ pdf_out_flush (void)
 
         if (dpx_conf.verbose_level > 0) {
             if (p->options.compression.level > 0) {
-                dpx_message("Compression saved %ld bytes\n", p->output.compression_saved);
+                dpx_message("Compression saved %"PRIuZ" bytes\n", p->output.compression_saved);
             }
         }
 
-        dpx_message("%ld bytes written", p->output.file_position);
+        dpx_message("%"PRIuZ" bytes written", p->output.file_position);
 
         ttstub_output_close(p->output.handle);
         p->output.handle = NULL;
