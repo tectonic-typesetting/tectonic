@@ -153,7 +153,7 @@ macro_rules! inner_declare_primitive_value {
 ///
 /// Usage:
 ///
-/// ```
+/// ```text
 /// {
 ///     var $VARNAME1 $SYMNAME1 $SINCE1 [$VALUESOURCE1],
 ///     var $VARNAME2 $SYMNAME2 $SINCE2 [$VALUESOURCE2],
@@ -163,7 +163,7 @@ macro_rules! inner_declare_primitive_value {
 ///
 /// basically becomes
 ///
-/// ```
+/// ```text
 /// pub enum Enumeration {
 ///     $VARNAME1,
 ///     $VARNAME2,
@@ -207,14 +207,14 @@ macro_rules! inner_declare_enum {
 ///
 /// Usage:
 ///
-/// ```
+/// ```text
 /// (var $VARNAME $SYMNAME $SINCE [$VALUESOURCE])
 /// ```
 ///
 /// becomes a `DynamicEnumItemDescription` initializer with `absval`
 /// of `Some(Enumeration::$VARNAME)`, while
 ///
-/// ```
+/// ```text
 /// (not ....)
 /// ```
 ///
@@ -259,7 +259,7 @@ macro_rules! inner_declare_desc {
 ///
 /// Usage:
 ///
-/// ```
+/// ```text
 /// declare! {
 ///     EnumName enum_name {
 ///         var First  FIRST_CODE     10 [Next],
@@ -271,7 +271,7 @@ macro_rules! inner_declare_desc {
 ///
 /// evaluates to something along the lines of
 ///
-/// ```
+/// ```text
 /// pub mod enum_name {
 ///     pub enum Enumeration {
 ///         First,

@@ -254,7 +254,12 @@ ttstub_input_get_size(rust_input_handle_t handle)
 time_t
 ttstub_input_get_mtime(rust_input_handle_t handle)
 {
-    return ttbc_input_get_mtime(tectonic_global_bridge_core, handle);
+    /* Due to the Musl 1.2 "time64" transition, we can't safely bridge time_t
+     * between Rust and C code. And formally, ISO C provides nearly no
+     * guarantees about what the type time_t actually is. So let's just cast and
+     * hope for the best. */
+    int64_t ti = ttbc_input_get_mtime(tectonic_global_bridge_core, handle);
+    return (time_t) ti;
 }
 
 
