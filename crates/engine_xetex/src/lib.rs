@@ -228,7 +228,7 @@ impl TexEngine {
                     self.build_date
                         .duration_since(SystemTime::UNIX_EPOCH)
                         .expect("invalid build date")
-                        .as_secs() as libc::time_t,
+                        .as_secs(),
                 )
             };
 
@@ -245,6 +245,8 @@ impl TexEngine {
 
 #[doc(hidden)]
 pub mod c_api {
+    // If you change the interfaces here, rerun cbindgen as described in the README!
+
     use tectonic_bridge_core::CoreBridgeState;
 
     #[allow(improper_ctypes)] // for CoreBridgeState
@@ -258,7 +260,7 @@ pub mod c_api {
             api: &mut CoreBridgeState,
             dump_name: *const libc::c_char,
             input_file_name: *const libc::c_char,
-            build_date: libc::time_t,
+            build_date: u64,
         ) -> libc::c_int;
     }
 }

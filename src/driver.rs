@@ -338,7 +338,10 @@ impl BridgeState {
                     ));
                 }
 
-                let mut ih = self.input_open_name(name, status).must_exist()?;
+                let mut ih = ctry!(
+                    self.input_open_name(name, status).must_exist();
+                    "can't open path `{}`", name
+                );
 
                 // If the input path is absolute, we don't need to create a
                 // version in the tempdir, and in fact the current

@@ -14,6 +14,8 @@
 //!
 //! [cbindgen]: https://github.com/eqrion/cbindgen
 //!
+//! If you change the interfaces here, rerun cbindgen as described in the README!
+//!
 //! In order to provide access to a C/C++ engine in Rust, you should create some
 //! kind of interface that expects to be given a reference to a
 //! [`CoreBridgeLauncher`] struct. You should use that struct's
@@ -589,7 +591,7 @@ impl<'a> CoreBridgeState<'a> {
         }
     }
 
-    fn input_get_mtime(&mut self, handle: *mut InputHandle) -> libc::time_t {
+    fn input_get_mtime(&mut self, handle: *mut InputHandle) -> i64 {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
 
         let maybe_time = match rhandle.get_unix_mtime() {
@@ -601,7 +603,7 @@ impl<'a> CoreBridgeState<'a> {
         };
 
         if let Some(t) = maybe_time {
-            t as libc::time_t
+            t
         } else {
             1 // Intentionally make this distinguishable from the error value 0
         }
@@ -1020,10 +1022,7 @@ pub extern "C" fn ttbc_input_get_size(
 
 /// Get the modification time of a Tectonic input file.
 #[no_mangle]
-pub extern "C" fn ttbc_input_get_mtime(
-    es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
-) -> libc::time_t {
+pub extern "C" fn ttbc_input_get_mtime(es: &mut CoreBridgeState, handle: *mut InputHandle) -> i64 {
     es.input_get_mtime(handle)
 }
 

@@ -499,6 +499,9 @@ tt_engine_xdvipdfmx_main(
     return 99;
   }
 
+  /* See ttstub_input_get_mtime() in tectonic_bridge_core about bridging time_t
+   * over FFI. */
+
   rv = dvipdfmx_main(
     pdfname,
     dviname,
@@ -509,7 +512,7 @@ tt_engine_xdvipdfmx_main(
     (bool) config->deterministic_tags,
     false, /* quiet */
     0, /* verbose */
-    config->build_date,
+    (time_t) config->build_date,
     config->paperspec
   );
 
