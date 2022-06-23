@@ -228,7 +228,7 @@ impl TexEngine {
                     self.build_date
                         .duration_since(SystemTime::UNIX_EPOCH)
                         .expect("invalid build date")
-                        .as_secs() as libc::time_t,
+                        .as_secs(),
                 )
             };
 
@@ -258,7 +258,7 @@ pub mod c_api {
             api: &mut CoreBridgeState,
             dump_name: *const libc::c_char,
             input_file_name: *const libc::c_char,
-            build_date: libc::time_t,
+            build_date: u64,
         ) -> libc::c_int;
     }
 }
