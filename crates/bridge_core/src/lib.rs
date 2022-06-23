@@ -14,6 +14,8 @@
 //!
 //! [cbindgen]: https://github.com/eqrion/cbindgen
 //!
+//! If you change the interfaces here, rerun cbindgen as described in the README!
+//!
 //! In order to provide access to a C/C++ engine in Rust, you should create some
 //! kind of interface that expects to be given a reference to a
 //! [`CoreBridgeLauncher`] struct. You should use that struct's

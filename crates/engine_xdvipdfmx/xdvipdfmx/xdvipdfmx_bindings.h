@@ -10,7 +10,7 @@ typedef struct {
   const char *paperspec;
   unsigned char enable_compression;
   unsigned char deterministic_tags;
-  time_t build_date;
+  uint64_t build_date;
 } XdvipdfmxConfig;
 
 #ifdef __cplusplus

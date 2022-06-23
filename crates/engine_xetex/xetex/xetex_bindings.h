@@ -27,7 +27,7 @@ extern int tt_xetex_set_int_variable(const char *var_name, int value);
 extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *dump_name,
                                 const char *input_file_name,
-                                time_t build_date);
+                                uint64_t build_date);
 
 #ifdef __cplusplus
 } // extern "C"

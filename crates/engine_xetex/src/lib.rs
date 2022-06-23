@@ -245,6 +245,8 @@ impl TexEngine {
 
 #[doc(hidden)]
 pub mod c_api {
+    // If you change the interfaces here, rerun cbindgen as described in the README!
+
     use tectonic_bridge_core::CoreBridgeState;
 
     #[allow(improper_ctypes)] // for CoreBridgeState
