@@ -26,6 +26,9 @@ const HELPMSG: &str = r#"Available unstable options:
     -Z search-path=<path>       Also look in <path> for files, like TEXINPUTS. Can be specified
                                     multiple times.
     -Z shell-escape             Enable \write18
+    -Z shell-escape-cwd         Working directory to use for \write18. Use $(pwd) for same behaviour as
+                                    most other engines (e.g. for relative paths in \inputminted).
+                                    Implies -Z shell-escape
 "#;
 
 // Each entry of this should correspond to a field of UnstableOptions.
