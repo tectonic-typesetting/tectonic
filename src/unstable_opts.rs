@@ -129,7 +129,10 @@ impl UnstableOptions {
                 PaperSize(size) => opts.paper_size = Some(size),
                 ShellEscapeEnabled => opts.shell_escape = true,
                 SearchPath(p) => opts.extra_search_paths.push(p),
-                ShellEscapeCwd(p) => opts.shell_escape_cwd = Some(p),
+                ShellEscapeCwd(p) => {
+                    opts.shell_escape_cwd = Some(p);
+                    opts.shell_escape = true;
+                }
             }
         }
 

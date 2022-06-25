@@ -229,7 +229,6 @@ pub struct OutputProfile {
     ///
     /// Directory is not managed and any files created in it will not be deleted.
     ///
-    /// Only meaningful when shell_escape = true.
     pub shell_escape_cwd: Option<String>,
 }
 
