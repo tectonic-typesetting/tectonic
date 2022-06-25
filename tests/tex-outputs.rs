@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
+use std::fs::File;
 use std::path::Path;
 use std::time;
 
@@ -262,21 +263,6 @@ fn shell_escape() {
         ..Default::default()
     };
     TestCase::new("shell_escape")
-        .with_unstables(unstables)
-        .check_pdf(true)
-        .go()
-}
-
-#[test]
-fn shell_escape_cwd() {
-    let tmpdir = TempDir::new().unwrap();
-    let tmppath = Some(tmpdir.into_path().into_os_string().into_string().unwrap());
-    let unstables = tectonic::unstable_opts::UnstableOptions {
-        shell_escape: true,
-        shell_escape_cwd: tmppath,
-        ..Default::default()
-    };
-    TestCase::new("shell_escape_cwd")
         .with_unstables(unstables)
         .check_pdf(true)
         .go()
