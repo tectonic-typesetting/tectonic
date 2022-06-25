@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
-use std::fs::File;
 use std::path::Path;
 use std::time;
 
@@ -15,7 +14,6 @@ use tectonic::{TexEngine, XdvipdfmxEngine};
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 use tectonic_errors::{anyhow::anyhow, Result};
 use tectonic_status_base::NoopStatusBackend;
-use tempfile::TempDir;
 
 #[path = "util/mod.rs"]
 mod util;
