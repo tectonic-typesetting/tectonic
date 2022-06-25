@@ -1159,7 +1159,9 @@ impl ProcessingSessionBuilder {
         } else {
             match self.shell_escape_mode {
                 ShellEscapeMode::Defaulted => {
-                    if self.unstables.shell_escape {
+                    if let Some(ref cwd) = self.unstables.shell_escape_cwd {
+                        ShellEscapeMode::ExternallyManagedDir(cwd.into())
+                    } else if self.unstables.shell_escape {
                         ShellEscapeMode::TempDir
                     } else {
                         ShellEscapeMode::Disabled

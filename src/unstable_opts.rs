@@ -37,6 +37,7 @@ pub enum UnstableArg {
     PaperSize(String),
     SearchPath(PathBuf),
     ShellEscapeEnabled,
+    ShellEscapeCwd(String),
 }
 
 impl FromStr for UnstableArg {
@@ -90,6 +91,10 @@ impl FromStr for UnstableArg {
 
             "shell-escape" => require_no_value(value, UnstableArg::ShellEscapeEnabled),
 
+            "shell-escape-cwd" => {
+                require_value("path").map(|s| UnstableArg::ShellEscapeCwd(s.to_string()))
+            }
+
             _ => Err(format!("Unknown unstable option '{}'", arg).into()),
         }
     }
@@ -102,6 +107,7 @@ pub struct UnstableOptions {
     pub shell_escape: bool,
     pub min_crossrefs: Option<i32>,
     pub extra_search_paths: Vec<PathBuf>,
+    pub shell_escape_cwd: Option<String>,
 }
 
 impl UnstableOptions {
@@ -123,6 +129,7 @@ impl UnstableOptions {
                 PaperSize(size) => opts.paper_size = Some(size),
                 ShellEscapeEnabled => opts.shell_escape = true,
                 SearchPath(p) => opts.extra_search_paths.push(p),
+                ShellEscapeCwd(p) => opts.shell_escape_cwd = Some(p),
             }
         }
 
