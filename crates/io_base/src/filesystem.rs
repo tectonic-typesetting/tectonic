@@ -168,41 +168,16 @@ impl IoProvider for FilesystemIo {
             Err(e) => return OpenResult::Err(e),
         };
 
-        // The intention is to pretend that each of the entities pointed to by hidden_path doesn't
-        // exist. There's a couple issues you need to be careful of:
-        //
-        // 1. Paths may be relative or absolute, and both need to be handled correctly
-        // 2. Due to symlinks/etc., "./a/b/.." and "./a" may not point to the same place (e.g. if
-        //    a/b is symlinked to another folder)
-        // 3. `path` may traverse into hidden_path, the follow a symlink out, causing the overall
-        //    path to (canonically) be outside hidden_path
-        // 4. `path` may traverse a symlink to something inside hidden_path without actually
-        //    touching hidden_path
-        // 5. A hidden path might be a symlink.
-        //
-        // We're essentially hiding the real path pointed to by hidden_path, including resolving
-        // symlinks (i.e. 5). The way we're handling it, we'll correctly handle 1 and 2, and reject
-        // both 3 and 4 (though 3 and 4 can be changes somewhat easily).
-        //
-        // I'll admit that this may be more complex than necessary, but I'm not sure how much
-        // correctness we want.
-
-        // TODO do conversion at initialisation? Doing that would fail to block files that get
-        // created halfway through.
-        let canon_hidden_paths: Vec<PathBuf> = self
-            .hidden_input_paths
-            .iter()
-            .filter_map(|p| p.canonicalize().ok())
-            .collect();
-        for path_prefix in path.ancestors() {
-            if let Ok(path_prefix) = path_prefix.canonicalize() {
-                if canon_hidden_paths
-                    .iter()
-                    .any(|hp| hp.starts_with(&path_prefix))
-                {
-                    return OpenResult::NotAvailable;
-                }
-            }
+        // We allow users to "hide" certain paths to make it so that users can,
+        // e.g., run a "first pass" on an input even if an `.aux` file is stored
+        // on the filesystem for subsequent processing. Note that this test is
+        // purely textual, in the "TeX space" of paths, and won't handle things
+        // like directory trees. We could be cleverer here (e.g. glob support),
+        // but probably don't want to try to handle stuff like symlink
+        // resolution since that will force us to touch the filesystem for every
+        // I/O probe.
+        if self.hidden_input_paths.contains(&path) {
+            return OpenResult::NotAvailable;
         }
 
         let f = match File::open(&path) {
@@ -231,7 +206,7 @@ impl IoProvider for FilesystemIo {
         if name_path.is_absolute() && !self.reported_paths.contains(name_path) {
             tt_warning!(
                 status,
-                "accessing absolute path '{}'; build may not be reproducible on other systems",
+                "accessing absolute path `{}`; build may not be reproducible in other environments",
                 name_path.display()
             );
             self.reported_paths.insert(name_path.to_owned());
