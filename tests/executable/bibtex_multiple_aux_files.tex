@@ -1,0 +1,53 @@
+% Test if we're on the second pass by seeing if the BBL already exists
+\newif\ifsecond
+\newread\r
+\openin\r=bibtex_multiple_aux_files.bbl
+\ifeof\r
+\message{first pass}
+\secondfalse
+\else
+\message{second pass}
+\secondtrue
+\closein\r
+\fi
+
+% Now create first .aux
+\newwrite\w
+\immediate\openout\w=bibtex_multiple_aux_files.aux\relax
+\immediate\write\w{\string\bibdata{refs}}
+\immediate\write\w{\string\citation{refA}}
+\immediate\write\w{\string\bibstyle{catchkey}}
+\immediate\closeout\w
+
+% Second .aux
+\immediate\openout\w=secondary.aux\relax
+\immediate\write\w{\string\bibdata{refs}}
+\immediate\write\w{\string\citation{refB}}
+\immediate\write\w{\string\bibstyle{catchkey}}
+\immediate\closeout\w
+
+hello
+
+% catchkey.bst emits a command `\saw$KEY` for each key it sees. So
+% we can check that we got keys from both files like so:
+
+\newif\ifrefA
+\refAfalse
+
+\newif\ifrefB
+\refBfalse
+
+\ifsecond
+  \let\sawrefA=\refAtrue
+  \let\sawrefB=\refBtrue
+  \input{bibtex_multiple_aux_files.bbl}
+  \input{secondary.bbl}
+  \ifrefA\else
+    \didnotseerefA
+  \fi
+  \ifrefB\else
+    \didnotseerefB
+  \fi
+\fi
+
+\bye
