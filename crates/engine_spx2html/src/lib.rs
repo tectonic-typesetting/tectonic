@@ -4,6 +4,9 @@
 #![deny(missing_docs)]
 
 //! Convert Tectonic’s SPX format to HTML.
+//!
+//! SPX is essentially the same thing as XDV, but we identify it differently to
+//! mark that the semantics of the content wil be set up for HTML output.
 
 use percent_encoding::{utf8_percent_encode, CONTROLS};
 use std::{
@@ -132,18 +135,32 @@ impl<'a> XdvEvents for EngineState<'a> {
 
     fn handle_text_and_glyphs(
         &mut self,
-        font_num: i32,
+        font_num: FontNum,
         text: &str,
         _width: i32,
         glyphs: &[u16],
         x: &[i32],
         y: &[i32],
     ) -> Result<()> {
-        self.state.ensure_initialized()?;
+        // Here we have a quasi-hack because the initialization stage needs to
+        // handle text-and-glyphs, *if* it's in a font-family definition.
+        // Otherwise it's time to exit the initialization mode.
+
+        let do_init = match &mut self.state {
+            State::Invalid => false,
+            State::Initializing(s) => s.cur_font_family_definition.is_none(),
+            State::Emitting(_) => false,
+        };
+
+        if do_init {
+            self.state.ensure_initialized()?;
+        }
 
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
-            State::Initializing(_) => unreachable!(),
+            State::Initializing(s) => {
+                s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)?
+            }
             State::Emitting(s) => {
                 s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)?
             }
@@ -155,7 +172,7 @@ impl<'a> XdvEvents for EngineState<'a> {
     fn handle_define_native_font(
         &mut self,
         name: &str,
-        font_num: i32,
+        font_num: FontNum,
         size: i32,
         face_index: u32,
         color_rgba: Option<u32>,
@@ -182,7 +199,7 @@ impl<'a> XdvEvents for EngineState<'a> {
 
     fn handle_glyph_run(
         &mut self,
-        font_num: i32,
+        font_num: FontNum,
         glyphs: &[u16],
         x: &[i32],
         y: &[i32],
@@ -216,10 +233,17 @@ struct InitializationState {
     templates: HashMap<String, String>,
     next_template_path: String,
     next_output_path: String,
-    fonts: HashMap<i32, FontInfo>,
-    main_body_font_size: FixedPoint,
+
+    // TODO: terrible nomenclature. FontInfo is what we track here; FontData is
+    // the glyph measurements and stuff that we compute in the `font` module.
+    fonts: HashMap<FontNum, FontInfo>,
     font_data_keys: HashMap<(String, u32), usize>,
     font_data: HashMap<usize, FontData>,
+    main_body_font_num: Option<i32>,
+    /// Keyed by the "regular" font-num
+    font_families: HashMap<FontNum, FontFamily>,
+    cur_font_family_definition: Option<FontFamilyBuilder>,
+
     variables: HashMap<String, String>,
 }
 
@@ -229,10 +253,14 @@ impl Default for InitializationState {
             templates: Default::default(),
             next_template_path: Default::default(),
             next_output_path: "index.html".to_owned(),
+
             fonts: Default::default(),
-            main_body_font_size: 0,
             font_data_keys: Default::default(),
             font_data: Default::default(),
+            main_body_font_num: None,
+            font_families: Default::default(),
+            cur_font_family_definition: None,
+
             variables: Default::default(),
         }
     }
@@ -243,7 +271,7 @@ impl InitializationState {
     fn handle_define_native_font(
         &mut self,
         name: &str,
-        font_num: i32,
+        font_num: FontNum,
         size: FixedPoint,
         face_index: u32,
         color_rgba: Option<u32>,
@@ -321,14 +349,7 @@ impl InitializationState {
             self.font_data.insert(fd_key, map);
         }
 
-        // TODO: actually handle font roles. Here we intentionally overwrite
-        // main_body_font_size with every new font because when we're scanning
-        // the postamble, the last font is the main body font. In my one
-        // example.
-        self.main_body_font_size = size;
-
         let info = FontInfo {
-            role: FontRole::MainBody,
             rel_url: utf8_percent_encode(basename, CONTROLS).to_string(),
             fd_key,
             size,
@@ -352,6 +373,10 @@ impl InitializationState {
             self.handle_set_output_path(texpath, common)
         } else if let Some(remainder) = contents.strip_prefix("tdux:setTemplateVariable ") {
             self.handle_set_template_variable(remainder, common)
+        } else if contents == "tdux:startDefineFontFamily" {
+            self.handle_start_define_font_family()
+        } else if contents == "tdux:endDefineFontFamily" {
+            self.handle_end_define_font_family(common)
         } else if let Some(_remainder) = contents.strip_prefix("tdux:provideFile ") {
             tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
             Ok(())
@@ -405,7 +430,91 @@ impl InitializationState {
         Ok(())
     }
 
+    // "Font family" definitions, allowing us to synthesize bold/italic tags
+    // based on tracking font changes, and also to know what the main body font
+    // is.
+
+    fn handle_start_define_font_family(&mut self) -> Result<()> {
+        self.cur_font_family_definition = Some(FontFamilyBuilder::default());
+        Ok(())
+    }
+
+    fn handle_end_define_font_family(&mut self, common: &mut Common) -> Result<()> {
+        if let Some(b) = self.cur_font_family_definition.take() {
+            let regular = a_ok_or!(b.regular; ["no regular face defined"]);
+            let bold = a_ok_or!(b.bold; ["no bold face defined"]);
+            let italic = a_ok_or!(b.italic; ["no italic face defined"]);
+            let bold_italic = a_ok_or!(b.bold_italic; ["no bold-italic face defined"]);
+
+            self.font_families.insert(
+                regular,
+                FontFamily {
+                    regular,
+                    bold,
+                    italic,
+                    bold_italic,
+                },
+            );
+        } else {
+            tt_warning!(
+                common.status,
+                "end of font-family definition block that didn't start"
+            );
+        }
+
+        Ok(())
+    }
+
+    /// In the initialization state, this should only get called if we're in a
+    /// font-family definition (in which case we're using the contents to learn
+    /// the definition of a font family). Otherwise, the higher-level callback
+    /// will declare initialization done and move to the emitting state.
+    fn handle_text_and_glyphs(
+        &mut self,
+        font_num: FontNum,
+        text: &str,
+        _glyphs: &[u16],
+        _xs: &[i32],
+        _ys: &[i32],
+        _common: &mut Common,
+    ) -> Result<()> {
+        let b = self.cur_font_family_definition.as_mut().unwrap();
+
+        if text.starts_with("bold-italic") {
+            b.bold_italic = Some(font_num);
+        } else if text.starts_with("bold") {
+            b.bold = Some(font_num);
+        } else if text.starts_with("italic") {
+            b.italic = Some(font_num);
+        } else {
+            b.regular = Some(font_num);
+
+            // Say that the "regular" font of the first font family definition
+            // is the main body font.
+            if self.main_body_font_num.is_none() {
+                self.main_body_font_num = Some(font_num);
+            }
+        }
+
+        Ok(())
+    }
+
     fn initialization_finished(self) -> Result<EmittingState> {
+        let mut context = tera::Context::default();
+
+        // Set up font stuff.
+
+        let rems_per_tex = if let Some(fnum) = self.main_body_font_num {
+            let info = self.fonts.get(&fnum).unwrap();
+
+            // Make sure this stays synced with the CSS emitted below.
+            context.insert("tduxMainBodyFontFamily", &format!("tdux{}", info.fd_key));
+
+            1.0 / (info.size as f32)
+        } else {
+            1. / 65536.
+        };
+
         // Tera requires that we give it a filesystem path to look for
         // templates, even if we're going to be adding all of our templates
         // later. So I guess we have to create an empty tempdir.
@@ -433,9 +542,8 @@ impl InitializationState {
             ["couldn't compile Tera templates"]
         );
 
-        // Set up the context.
-
-        let mut context = tera::Context::default();
+        // Other context initialization, with the possibility of overriding
+        // stuff that's been set up earlier.
 
         for (varname, varvalue) in self.variables {
             context.insert(varname, &varvalue);
@@ -447,7 +555,8 @@ impl InitializationState {
             tera,
             context,
             fonts: self.fonts,
-            rems_per_tex: 1.0 / (self.main_body_font_size as f32),
+            font_families: self.font_families,
+            rems_per_tex,
             font_data: self.font_data,
             next_template_path: self.next_template_path,
             next_output_path: self.next_output_path,
@@ -456,6 +565,7 @@ impl InitializationState {
                 elem: None,
                 do_auto_tags: true,
                 do_auto_spaces: true,
+                font_family_id: self.main_body_font_num.unwrap_or_default(),
             }],
             current_canvas: None,
             content_finished: false,
@@ -470,7 +580,11 @@ impl InitializationState {
 struct EmittingState {
     tera: tera::Tera,
     context: tera::Context,
-    fonts: HashMap<i32, FontInfo>,
+    fonts: HashMap<FontNum, FontInfo>,
+
+    /// Keyed by the "regular" font
+    font_families: HashMap<FontNum, FontFamily>,
+
     rems_per_tex: f32,
     font_data: HashMap<usize, FontData>,
     next_template_path: String,
@@ -486,9 +600,25 @@ struct EmittingState {
 
 #[derive(Debug)]
 struct ElementState {
+    /// The tag name of the element. This is None for the bottom
+    /// item in the stack.
     elem: Option<String>,
+
+    /// Whether HTML tags that are automatically generated by the TeX
+    /// engine, such as <p> and </p> at the start and end of paragraphs,
+    /// should be emitted (true) or ignored (false).
     do_auto_tags: bool,
+
+    /// Whether this library should automatically insert spaces into text
+    /// content. This is done by looking at the horizontal positions of
+    /// different runs of text and applying a threshold for the amount of space
+    /// between the end of the previous one and the start of the next one.
     do_auto_spaces: bool,
+
+    /// The font-num of the regular font associated with the current font
+    /// family. This code is currently only exercised with a single "font
+    /// family" defined in a document, but there could be multiple.
+    font_family_id: FontNum,
 }
 
 #[derive(Debug)]
@@ -516,7 +646,7 @@ impl CanvasState {
 struct GlyphInfo {
     dx: i32,
     dy: i32,
-    font_num: i32,
+    font_num: FontNum,
     glyph: u16,
 }
 
@@ -572,7 +702,7 @@ impl EmittingState {
         }
     }
 
-    fn maybe_get_font_space_width(&self, font_num: Option<i32>) -> Option<FixedPoint> {
+    fn maybe_get_font_space_width(&self, font_num: Option<FontNum>) -> Option<FixedPoint> {
         font_num.and_then(|fnum| {
             if let Some(fi) = self.fonts.get(&fnum) {
                 let fd = self.font_data.get(&fi.fd_key).unwrap();
@@ -584,7 +714,7 @@ impl EmittingState {
     }
 
     /// Figure out if we need to push a space into the text content right now.
-    fn is_space_needed(&mut self, x0: i32, cur_font_num: Option<i32>) -> bool {
+    fn is_space_needed(&mut self, x0: i32, cur_font_num: Option<FontNum>) -> bool {
         // We never want a leading space.
         if self.current_content.is_empty() {
             return false;
@@ -625,7 +755,7 @@ impl EmittingState {
         return 4 * (x0 - self.last_content_x) > space_width;
     }
 
-    fn update_content_pos(&mut self, x: i32, font_num: Option<i32>) {
+    fn update_content_pos(&mut self, x: i32, font_num: Option<FontNum>) {
         self.last_content_x = x;
 
         let cur_space_width = self.maybe_get_font_space_width(font_num);
@@ -635,7 +765,7 @@ impl EmittingState {
     }
 
     /// Maybe push a space into the text content right now, if we think we need one.
-    fn push_space_if_needed(&mut self, x0: i32, cur_font_num: Option<i32>) {
+    fn push_space_if_needed(&mut self, x0: i32, cur_font_num: Option<FontNum>) {
         if self.is_space_needed(x0, cur_font_num) {
             self.current_content.push(' ');
         }
@@ -1060,7 +1190,7 @@ impl EmittingState {
 
     fn handle_text_and_glyphs(
         &mut self,
-        font_num: i32,
+        font_num: FontNum,
         text: &str,
         glyphs: &[u16],
         xs: &[i32],
@@ -1109,7 +1239,7 @@ impl EmittingState {
 
     fn handle_glyph_run(
         &mut self,
-        font_num: i32,
+        font_num: FontNum,
         glyphs: &[u16],
         xs: &[i32],
         ys: &[i32],
@@ -1428,7 +1558,9 @@ impl EmittingState {
 
         // The reason we're doing all this: we can now emit our customized font
         // files that provide access to glyphs that we can't get the browser to
-        // display directly.
+        // display directly. One of the emitted keys should match
+        // tduxMainBodyFontFamily defined at the end of the initialization
+        // stage.
 
         let mut faces = String::default();
 
@@ -1438,13 +1570,6 @@ impl EmittingState {
 
         self.context.insert("tduxFontFaces", &faces);
 
-        for info in self.fonts.values() {
-            if info.role == FontRole::MainBody {
-                self.context
-                    .insert("tduxMainBodyFontFamily", &format!("tdux{}", info.fd_key));
-            }
-        }
-
         // OK.
         self.content_finished = true;
         Ok(())
@@ -1452,11 +1577,11 @@ impl EmittingState {
 }
 
 type FixedPoint = i32;
+type FontNum = i32;
 
 #[allow(dead_code)]
 #[derive(Debug)]
 struct FontInfo {
-    role: FontRole,
     rel_url: String,
     fd_key: usize,
     size: FixedPoint,
@@ -1467,7 +1592,25 @@ struct FontInfo {
     embolden: Option<u32>,
 }
 
+#[derive(Debug)]
+struct FontFamily {
+    regular: FontNum,
+    bold: FontNum,
+    italic: FontNum,
+    bold_italic: FontNum,
+}
+
+#[derive(Debug, Default)]
+struct FontFamilyBuilder {
+    regular: Option<FontNum>,
+    bold: Option<FontNum>,
+    italic: Option<FontNum>,
+    bold_italic: Option<FontNum>,
+}
+
 #[derive(Debug, Eq, PartialEq)]
-enum FontRole {
-    MainBody,
+enum FontRelation {
+    Bold,
+    Italic,
+    BoldItalic,
 }
