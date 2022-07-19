@@ -191,37 +191,30 @@ impl TexEngine {
             // Note that we have to do all of this setup while holding the
             // lock, because we're modifying static state variables.
 
-            let v = if self.shell_escape_enabled { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
-            }
-
-            let v = if self.halt_on_error { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
-            }
-
-            let v = if self.initex_mode { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);
-            }
-
-            let v = if self.synctex_enabled { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v);
-            }
-
-            let v = if self.semantic_pagination_enabled {
-                1
-            } else {
-                0
-            };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v);
-            }
-
             let r = unsafe {
-                c_api::tt_engine_xetex_main(
+                use c_api::*;
+                tt_xetex_set_int_variable(
+                    b"shell_escape_enabled\0".as_ptr() as _,
+                    self.shell_escape_enabled.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"halt_on_error_p\0".as_ptr() as _,
+                    self.halt_on_error.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"in_initex_mode\0".as_ptr() as _,
+                    self.initex_mode.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"synctex_enabled\0".as_ptr() as _,
+                    self.synctex_enabled.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"semantic_pagination_enabled\0".as_ptr() as _,
+                    self.semantic_pagination_enabled.into(),
+                );
+
+                tt_engine_xetex_main(
                     state,
                     cformat.as_ptr(),
                     cinput.as_ptr(),

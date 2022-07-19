@@ -1780,7 +1780,7 @@ impl ProcessingSession {
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
 
             TexEngine::default()
-                .halt_on_error_mode(true)
+                .halt_on_error_mode(!self.unstables.continue_on_errors)
                 .initex_mode(self.output_format == OutputFormat::Format)
                 .synctex(self.synctex_enabled)
                 .semantic_pagination(self.output_format == OutputFormat::Html)
