@@ -25,6 +25,7 @@ use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 use crate::font::{FontData, MapEntry};
 
 mod font;
+mod html;
 
 /// An engine that converts SPX to HTML.
 #[derive(Default)]
