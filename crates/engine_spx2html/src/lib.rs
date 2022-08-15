@@ -634,10 +634,7 @@ struct ElementState {
 impl ElementState {
     /// Should this element automatically be closed if a new tag starts or ends?
     fn is_auto_close(&self) -> bool {
-        match self.origin {
-            ElementOrigin::FontAuto => true,
-            _ => false,
-        }
+        matches!(self.origin, ElementOrigin::FontAuto)
     }
 }
 
@@ -824,7 +821,7 @@ impl EmittingState {
 
         // If the x difference is larger than 1/4 of the space_width, let's say that
         // we need a space. I made up the 1/4.
-        return 4 * (x0 - self.last_content_x) > space_width;
+        4 * (x0 - self.last_content_x) > space_width
     }
 
     fn update_content_pos(&mut self, x: i32, font_num: Option<FontNum>) {
@@ -1006,7 +1003,7 @@ impl EmittingState {
         let mut double_quoted_attrs = Vec::new();
 
         for line in lines {
-            if let Some(cls) = line.strip_prefix("C") {
+            if let Some(cls) = line.strip_prefix('C') {
                 // For later: apply any restrictions to allowed class names?
                 if !cls.is_empty() {
                     classes.push(cls.to_owned());
@@ -1017,7 +1014,7 @@ impl EmittingState {
                         cls
                     );
                 }
-            } else if let Some(rest) = line.strip_prefix("S") {
+            } else if let Some(rest) = line.strip_prefix('S') {
                 // For later: apply any restrictions to names/values here?
                 let mut bits = rest.splitn(2, ' ');
                 let name = match bits.next() {
@@ -1043,7 +1040,7 @@ impl EmittingState {
                     }
                 };
                 styles.push((name.to_owned(), value.to_owned()));
-            } else if let Some(rest) = line.strip_prefix("U") {
+            } else if let Some(rest) = line.strip_prefix('U') {
                 // For later: apply any restrictions to names/values here?
                 let mut bits = rest.splitn(2, ' ');
                 let name = match bits.next() {
@@ -1066,7 +1063,7 @@ impl EmittingState {
                     }
                 };
                 unquoted_attrs.push((name.to_owned(), bits.next().map(|v| v.to_owned())));
-            } else if let Some(rest) = line.strip_prefix("D") {
+            } else if let Some(rest) = line.strip_prefix('D') {
                 // For later: apply any restrictions to names/values here?
                 let mut bits = rest.splitn(2, ' ');
                 let name = match bits.next() {
