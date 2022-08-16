@@ -52,10 +52,6 @@ macro_rules! emit_element_data {
                 }
             }
 
-            pub fn is_other(&self) -> bool {
-                matches!(self, Element::Other(_))
-            }
-
             pub fn is_autoclosed_by(&self, other: &Element) -> bool {
                 match self {
                     $(

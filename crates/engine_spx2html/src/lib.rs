@@ -27,6 +27,8 @@ use crate::font::{FontData, MapEntry};
 mod font;
 mod html;
 
+use html::Element;
+
 /// An engine that converts SPX to HTML.
 #[derive(Default)]
 pub struct Spx2HtmlEngine {}
@@ -693,6 +695,41 @@ impl EmittingState {
         }
     }
 
+    fn create_elem(&self, name: &str, is_start: bool, common: &mut Common) -> Element {
+        // Parsing can never fail since we offer an `Other` element type
+        let el: html::Element = name.parse().unwrap();
+
+        if el.is_deprecated() {
+            tt_warning!(
+                common.status,
+                "HTML element `{}` is deprecated; templates should be updated to avoid it",
+                name
+            );
+        }
+
+        if is_start && el.is_empty() {
+            tt_warning!(
+                common.status,
+                "HTML element `{}` is an empty element; insert it with `tdux:mfe`, not as a start-tag",
+                name
+            );
+        }
+
+        if let Some(cur) = self.cur_elstate().elem.as_ref() {
+            if cur.is_autoclosed_by(&el) {
+                tt_warning!(
+                    common.status,
+                    "currently open HTML element `{}` will be implicitly closed by new \
+                    element `{}`; explicit closing tags are strongly encouraged",
+                    cur.name(),
+                    name
+                );
+            }
+        }
+
+        el
+    }
+
     #[inline(always)]
     fn cur_elstate(&self) -> &ElementState {
         self.elem_stack.last().unwrap()
@@ -728,11 +765,13 @@ impl EmittingState {
         }
     }
 
-    fn push_elem(&mut self, name: &str, origin: ElementOrigin) {
+    fn push_elem(&mut self, name: &str, origin: ElementOrigin, common: &mut Common) {
         self.close_automatics();
 
+        let el = self.create_elem(name, true, common);
+
         let new_item = ElementState {
-            elem: Some(name.parse().unwrap()),
+            elem: Some(el),
             origin,
             ..*self.cur_elstate()
         };
@@ -856,11 +895,12 @@ impl EmittingState {
             if self.content_finished {
                 self.warn_finished_content(&format!("auto start tag <{}>", element), common);
             } else if self.cur_elstate().do_auto_tags {
+                let el = self.create_elem(element, true, common);
                 self.push_space_if_needed(x, None);
                 self.current_content.push('<');
-                self.current_content.push_str(element);
+                self.current_content.push_str(el.name());
                 self.current_content.push('>');
-                self.push_elem(element, ElementOrigin::EngineAuto);
+                self.push_elem(element, ElementOrigin::EngineAuto, common);
             }
             Ok(())
         } else if let Some(element) = contents.strip_prefix("tdux:ae ") {
@@ -993,8 +1033,9 @@ impl EmittingState {
             return Ok(());
         }
 
+        let el = self.create_elem(tagname, true, common);
         let mut elstate = ElementState {
-            elem: Some(tagname.parse().unwrap()),
+            elem: Some(el),
             origin: ElementOrigin::Manual,
             ..*self.cur_elstate()
         };
@@ -1605,10 +1646,12 @@ impl EmittingState {
             ("div", "canvas-block", "".to_owned())
         };
 
+        let element = self.create_elem(element, true, common);
+
         write!(
             self.current_content,
             "<{} class=\"canvas {}\" style=\"width: {}rem; height: {}rem; padding-left: {}rem{}\">",
-            element,
+            element.name(),
             layout_class,
             (x_max_tex - x_min_tex) as f32 * self.rems_per_tex,
             (y_max_tex - y_min_tex) as f32 * self.rems_per_tex,
@@ -1617,7 +1660,7 @@ impl EmittingState {
         )
         .unwrap();
         self.current_content.push_str(&inner_content);
-        write!(self.current_content, "</{}>", element).unwrap();
+        write!(self.current_content, "</{}>", element.name()).unwrap();
         self.update_content_pos(x_max_tex + canvas.x0, None);
         Ok(())
     }
