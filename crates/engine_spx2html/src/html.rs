@@ -13,7 +13,7 @@ macro_rules! emit_element_data {
         empty($empty:literal)
         autoclosed($($acvname:ident),*)
     ],)+) => {
-        #[derive(Clone, Debug, Eq, PartialEq)]
+        #[derive(Clone, Debug, Eq, Hash, PartialEq)]
         pub enum Element {
             $($vname,)+
             Other(String),

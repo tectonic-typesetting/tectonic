@@ -151,7 +151,10 @@ impl<'a> XdvEvents for EngineState<'a> {
 
         let do_init = match &mut self.state {
             State::Invalid => false,
-            State::Initializing(s) => s.cur_font_family_definition.is_none(),
+            State::Initializing(s) => {
+                s.cur_font_family_definition.is_none()
+                    && s.cur_font_family_tag_associations.is_none()
+            }
             State::Emitting(_) => false,
         };
 
@@ -245,7 +248,10 @@ struct InitializationState {
     main_body_font_num: Option<i32>,
     /// Keyed by the "regular" font-num
     font_families: HashMap<FontNum, FontFamily>,
+    tag_associations: HashMap<Element, FontNum>,
+
     cur_font_family_definition: Option<FontFamilyBuilder>,
+    cur_font_family_tag_associations: Option<FontFamilyTagAssociator>,
 
     variables: HashMap<String, String>,
 }
@@ -262,7 +268,10 @@ impl Default for InitializationState {
             font_data: Default::default(),
             main_body_font_num: None,
             font_families: Default::default(),
+            tag_associations: Default::default(),
+
             cur_font_family_definition: None,
+            cur_font_family_tag_associations: None,
 
             variables: Default::default(),
         }
@@ -380,6 +389,10 @@ impl InitializationState {
             self.handle_start_define_font_family()
         } else if contents == "tdux:endDefineFontFamily" {
             self.handle_end_define_font_family(common)
+        } else if contents == "tdux:startFontFamilyTagAssociations" {
+            self.handle_start_font_family_tag_associations()
+        } else if contents == "tdux:endFontFamilyTagAssociations" {
+            self.handle_end_font_family_tag_associations(common)
         } else if let Some(_remainder) = contents.strip_prefix("tdux:provideFile ") {
             tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
             Ok(())
@@ -468,6 +481,30 @@ impl InitializationState {
         Ok(())
     }
 
+    // "Font family tag associations", telling us which font family is the
+    // default depending on which tag we're in. For instance, typical templates
+    // will default to the monospace font inside `<code>` tags.
+
+    fn handle_start_font_family_tag_associations(&mut self) -> Result<()> {
+        self.cur_font_family_tag_associations = Some(FontFamilyTagAssociator::default());
+        Ok(())
+    }
+
+    fn handle_end_font_family_tag_associations(&mut self, common: &mut Common) -> Result<()> {
+        if let Some(mut a) = self.cur_font_family_tag_associations.take() {
+            for (k, v) in a.assoc.drain() {
+                self.tag_associations.insert(k, v);
+            }
+        } else {
+            tt_warning!(
+                common.status,
+                "end of font-family tag-association block that didn't start"
+            );
+        }
+
+        Ok(())
+    }
+
     /// In the initialization state, this should only get called if we're in a
     /// font-family definition (in which case we're using the contents to learn
     /// the definition of a font family). Otherwise, the higher-level callback
@@ -479,24 +516,37 @@ impl InitializationState {
         _glyphs: &[u16],
         _xs: &[i32],
         _ys: &[i32],
-        _common: &mut Common,
+        common: &mut Common,
     ) -> Result<()> {
-        let b = self.cur_font_family_definition.as_mut().unwrap();
+        if let Some(b) = self.cur_font_family_definition.as_mut() {
+            if text.starts_with("bold-italic") {
+                b.bold_italic = Some(font_num);
+            } else if text.starts_with("bold") {
+                b.bold = Some(font_num);
+            } else if text.starts_with("italic") {
+                b.italic = Some(font_num);
+            } else {
+                b.regular = Some(font_num);
 
-        if text.starts_with("bold-italic") {
-            b.bold_italic = Some(font_num);
-        } else if text.starts_with("bold") {
-            b.bold = Some(font_num);
-        } else if text.starts_with("italic") {
-            b.italic = Some(font_num);
-        } else {
-            b.regular = Some(font_num);
-
-            // Say that the "regular" font of the first font family definition
-            // is the main body font.
-            if self.main_body_font_num.is_none() {
-                self.main_body_font_num = Some(font_num);
+                // Say that the "regular" font of the first font family definition
+                // is the main body font.
+                if self.main_body_font_num.is_none() {
+                    self.main_body_font_num = Some(font_num);
+                }
             }
+        } else if let Some(a) = self.cur_font_family_tag_associations.as_mut() {
+            for tagname in text.split_whitespace() {
+                let el: Element = tagname.parse().unwrap();
+                a.assoc.insert(el, font_num);
+            }
+        } else {
+            // This shouldn't happen; the top-level processor should exit init
+            // phase if it's invoked and none of the above cases hold.
+            tt_warning!(
+                common.status,
+                "internal bug; losing text `{}` in initialization phase",
+                text
+            );
         }
 
         Ok(())
@@ -559,6 +609,7 @@ impl InitializationState {
             context,
             fonts: self.fonts,
             font_families: self.font_families,
+            tag_associations: self.tag_associations,
             rems_per_tex,
             font_data: self.font_data,
             next_template_path: self.next_template_path,
@@ -589,6 +640,7 @@ struct EmittingState {
 
     /// Keyed by the "regular" font
     font_families: HashMap<FontNum, FontFamily>,
+    tag_associations: HashMap<Element, FontNum>,
 
     rems_per_tex: f32,
     font_data: HashMap<usize, FontData>,
@@ -770,10 +822,21 @@ impl EmittingState {
 
         let el = self.create_elem(name, true, common);
 
-        let new_item = ElementState {
-            elem: Some(el),
-            origin,
-            ..*self.cur_elstate()
+        let new_item = {
+            let cur = self.cur_elstate();
+
+            let font_family_id = self
+                .tag_associations
+                .get(&el)
+                .copied()
+                .unwrap_or(cur.font_family_id);
+
+            ElementState {
+                elem: Some(el),
+                origin,
+                font_family_id,
+                ..*cur
+            }
         };
 
         self.elem_stack.push(new_item);
@@ -1034,11 +1097,24 @@ impl EmittingState {
         }
 
         let el = self.create_elem(tagname, true, common);
-        let mut elstate = ElementState {
-            elem: Some(el),
-            origin: ElementOrigin::Manual,
-            ..*self.cur_elstate()
+
+        let mut elstate = {
+            let cur = self.cur_elstate();
+
+            let font_family_id = self
+                .tag_associations
+                .get(&el)
+                .copied()
+                .unwrap_or(cur.font_family_id);
+
+            ElementState {
+                elem: Some(el),
+                origin: ElementOrigin::Manual,
+                font_family_id,
+                ..*cur
+            }
         };
+
         let mut classes = Vec::new();
         let mut styles = Vec::new();
         let mut unquoted_attrs = Vec::new();
@@ -1970,4 +2046,9 @@ enum FamilyRelativeFontId {
     /// This font is some other font with no known relation to the current
     /// family.
     Other(FontNum),
+}
+
+#[derive(Debug, Default)]
+struct FontFamilyTagAssociator {
+    assoc: HashMap<Element, FontNum>,
 }
