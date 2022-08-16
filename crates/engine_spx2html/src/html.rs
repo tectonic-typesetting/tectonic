@@ -1,11 +1,11 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-//! Helpers for working with HTML5 tags.
+//! Helpers for working with HTML5 elements.
 
 use std::str::FromStr;
 
-macro_rules! emit_tag_data {
+macro_rules! emit_element_data {
     ($([
         $vname:ident
         $tagname:literal
@@ -13,59 +13,67 @@ macro_rules! emit_tag_data {
         empty($empty:literal)
         autoclosed($($acvname:ident),*)
     ],)+) => {
-        pub enum Tag {
+        #[derive(Clone, Debug, Eq, PartialEq)]
+        pub enum Element {
             $($vname,)+
             Other(String),
         }
 
-        impl FromStr for Tag {
+        impl FromStr for Element {
             type Err = ();
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 Ok(match s {
-                    $($tagname => Tag::$vname,)+
-                    other => Tag::Other(other.to_owned())
+                    $($tagname => Element::$vname,)+
+                    other => Element::Other(other.to_owned())
                 })
             }
         }
 
-        impl Tag {
+        impl Element {
+            pub fn name(&self) -> &str {
+                match self {
+                    $(Element::$vname => $tagname,)+
+                    Element::Other(ref name) => name,
+                }
+            }
+
             pub fn is_deprecated(&self) -> bool {
                 match self {
-                    $(Tag::$vname => $deprecated,)+
-                    Tag::Other(_) => false,
+                    $(Element::$vname => $deprecated,)+
+                    Element::Other(_) => false,
                 }
             }
 
             pub fn is_empty(&self) -> bool {
                 match self {
-                    $(Tag::$vname => $empty,)+
-                    Tag::Other(_) => false,
+                    $(Element::$vname => $empty,)+
+                    Element::Other(_) => false,
                 }
             }
 
             pub fn is_other(&self) -> bool {
-                matches!(self, Tag::Other(_))
+                matches!(self, Element::Other(_))
             }
 
-            pub fn is_autoclosed_by(&self, other: &Tag) -> bool {
+            pub fn is_autoclosed_by(&self, other: &Element) -> bool {
                 match self {
                     $(
-                        Tag::$vname => {
+                        Element::$vname => {
                             match other {
-                                $(Tag::$acvname => true,)*
+                                $(Element::$acvname => true,)*
                                 _ => false
                             }
                         },
                     )+
-                    Tag::Other(_) => false,
+                    Element::Other(_) => false,
                 }
             }
         }
     }
 }
 
-emit_tag_data! {
+emit_element_data! {
     [A "a" deprecated(false) empty(false) autoclosed()],
     [Abbr "abbr" deprecated(false) empty(false) autoclosed()],
     [Acronym "acroynm" deprecated(true) empty(false) autoclosed()],

@@ -603,10 +603,10 @@ struct EmittingState {
 
 #[derive(Debug)]
 struct ElementState {
-    /// The tag name of the associated HTML element. This is None for the bottom
-    /// item in the stack, or for changes in state that are not associated with
-    /// actual HTML tags.
-    elem: Option<String>,
+    /// The associated HTML element. This is None for the bottom item in the
+    /// stack, or for changes in state that are not associated with actual HTML
+    /// tags.
+    elem: Option<html::Element>,
 
     /// The origin of this element/state-change.
     origin: ElementOrigin,
@@ -707,7 +707,7 @@ impl EmittingState {
             if let Some(e) = cur.elem.as_ref() {
                 self.current_content.push('<');
                 self.current_content.push('/');
-                self.current_content.push_str(e);
+                self.current_content.push_str(e.name());
                 self.current_content.push('>');
             }
         }
@@ -728,11 +728,11 @@ impl EmittingState {
         }
     }
 
-    fn push_elem<D: std::fmt::Display>(&mut self, name: D, origin: ElementOrigin) {
+    fn push_elem(&mut self, name: &str, origin: ElementOrigin) {
         self.close_automatics();
 
         let new_item = ElementState {
-            elem: Some(name.to_string()),
+            elem: Some(name.parse().unwrap()),
             origin,
             ..*self.cur_elstate()
         };
@@ -752,11 +752,11 @@ impl EmittingState {
             if let Some(e) = cur.elem.as_ref() {
                 self.current_content.push('<');
                 self.current_content.push('/');
-                self.current_content.push_str(e);
+                self.current_content.push_str(e.name());
                 self.current_content.push('>');
                 n_closed += 1;
 
-                if e == name {
+                if e.name() == name {
                     break;
                 }
             }
@@ -994,7 +994,7 @@ impl EmittingState {
         }
 
         let mut elstate = ElementState {
-            elem: Some(tagname.to_owned()),
+            elem: Some(tagname.parse().unwrap()),
             origin: ElementOrigin::Manual,
             ..*self.cur_elstate()
         };
@@ -1398,7 +1398,7 @@ impl EmittingState {
             self.push_space_if_needed(x0, Some(fnum));
             self.current_content.push_str("<b>");
             self.elem_stack.push(ElementState {
-                elem: Some("b".to_owned()),
+                elem: Some(html::Element::B),
                 origin: ElementOrigin::FontAuto,
                 active_font: af,
                 ..*self.cur_elstate()
@@ -1409,7 +1409,7 @@ impl EmittingState {
             self.push_space_if_needed(x0, Some(fnum));
             self.current_content.push_str("<i>");
             self.elem_stack.push(ElementState {
-                elem: Some("i".to_owned()),
+                elem: Some(html::Element::I),
                 origin: ElementOrigin::FontAuto,
                 active_font: af,
                 ..*self.cur_elstate()
@@ -1430,7 +1430,7 @@ impl EmittingState {
             .unwrap();
 
             self.elem_stack.push(ElementState {
-                elem: Some("span".to_owned()),
+                elem: Some(html::Element::Span),
                 origin: ElementOrigin::FontAuto,
                 active_font: desired_af,
                 ..*self.cur_elstate()
