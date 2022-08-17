@@ -15,7 +15,7 @@ use pinot::{
     types::{FWord, Tag, UfWord},
     FontDataRef, TableProvider,
 };
-use std::{collections::HashMap, fmt::Write, num::Wrapping, path::Path};
+use std::{collections::HashMap, num::Wrapping, path::Path};
 use tectonic_errors::prelude::*;
 
 use crate::FixedPoint;
@@ -389,9 +389,11 @@ impl FontData {
         *map
     }
 
-    /// Emit customized fonts to the filesystem and compute
-    /// associated CSS for them. Consumes the object.
-    pub fn emit<W: Write>(self, out_base: &Path, base_facename: &str, mut css: W) -> Result<()> {
+    /// Emit customized fonts to the filesystem and return information so that
+    /// appropriate CSS can be generated. Consumes the object.
+    ///
+    /// Return value is a vec of (alternate-map-index, CSS-src-field).
+    pub fn emit(self, out_base: &Path) -> Result<Vec<(Option<usize>, String)>> {
         // Write the main font file.
 
         let mut out_path = out_base.to_owned();
@@ -401,21 +403,10 @@ impl FontData {
             ["cannot write output file `{}`", out_path.display()]
         );
 
-        // CSS for the main font.
-        //
-        // We don't atry!() the write because I know that it's to a String,
-        // which can panic but not Err.
+        // CSS info for the main font.
 
         let rel_url = utf8_percent_encode(&self.basename, CONTROLS).to_string();
-
-        writeln!(
-            css,
-            r#"@font-face {{
-  font-family: "{}";
-  src: url("{}") format("opentype");
-}}"#,
-            base_facename, rel_url
-        )?;
+        let mut rv = vec![(None, format!(r#"url("{}") format("opentype")"#, rel_url))];
 
         // Alternates until we're done
 
@@ -475,20 +466,15 @@ impl FontData {
             // step 5: update CSS
 
             let rel_url = utf8_percent_encode(&varname, CONTROLS).to_string();
-
-            writeln!(
-                css,
-                r#"@font-face {{
-  font-family: "{}vg{}";
-  src: url("{}") format("opentype");
-}}"#,
-                base_facename, cur_map_index, rel_url
-            )?;
+            rv.push((
+                Some(cur_map_index),
+                format!(r#"url("{}") format("opentype")"#, rel_url),
+            ));
         }
 
         // All done!
 
-        Ok(())
+        Ok(rv)
     }
 }
 

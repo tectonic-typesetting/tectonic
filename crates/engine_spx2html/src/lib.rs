@@ -363,6 +363,8 @@ impl InitializationState {
 
         let info = FontInfo {
             rel_url: utf8_percent_encode(basename, CONTROLS).to_string(),
+            family_name: format!("tdux{}", font_num),
+            family_relation: FamilyRelativeFontId::Regular,
             fd_key,
             size,
             face_index,
@@ -457,6 +459,7 @@ impl InitializationState {
 
     fn handle_end_define_font_family(&mut self, common: &mut Common) -> Result<()> {
         if let Some(b) = self.cur_font_family_definition.take() {
+            let family_name = b.family_name;
             let regular = a_ok_or!(b.regular; ["no regular face defined"]);
             let bold = a_ok_or!(b.bold; ["no bold face defined"]);
             let italic = a_ok_or!(b.italic; ["no italic face defined"]);
@@ -471,6 +474,29 @@ impl InitializationState {
                     bold_italic,
                 },
             );
+
+            // Now update the info records for the relevant fonts to capture the
+            // established relationship.
+
+            if let Some(info) = self.fonts.get_mut(&regular) {
+                info.family_name = family_name.clone();
+                info.family_relation = FamilyRelativeFontId::Regular;
+            }
+
+            if let Some(info) = self.fonts.get_mut(&bold) {
+                info.family_name = family_name.clone();
+                info.family_relation = FamilyRelativeFontId::Bold;
+            }
+
+            if let Some(info) = self.fonts.get_mut(&italic) {
+                info.family_name = family_name.clone();
+                info.family_relation = FamilyRelativeFontId::Italic;
+            }
+
+            if let Some(info) = self.fonts.get_mut(&bold_italic) {
+                info.family_name = family_name.clone();
+                info.family_relation = FamilyRelativeFontId::BoldItalic;
+            }
         } else {
             tt_warning!(
                 common.status,
@@ -527,6 +553,11 @@ impl InitializationState {
                 b.italic = Some(font_num);
             } else {
                 b.regular = Some(font_num);
+                b.family_name = if let Some(fname) = text.strip_prefix("family-name:") {
+                    fname.to_owned()
+                } else {
+                    format!("tdux{}", font_num)
+                };
 
                 // Say that the "regular" font of the first font family definition
                 // is the main body font.
@@ -559,10 +590,6 @@ impl InitializationState {
 
         let rems_per_tex = if let Some(fnum) = self.main_body_font_num {
             let info = self.fonts.get(&fnum).unwrap();
-
-            // Make sure this stays synced with the CSS emitted below.
-            context.insert("tduxMainBodyFontFamily", &format!("tdux{}", info.fd_key));
-
             1.0 / (info.size as f32)
         } else {
             1. / 65536.
@@ -1541,8 +1568,9 @@ impl EmittingState {
 
             write!(
                 self.current_content,
-                "<span style=\"font-size: {}rem; font-family: tdux{}\">",
-                rel_size, fi.fd_key,
+                "<span style=\"font-size: {}rem; {}\">",
+                rel_size,
+                fi.selection_style_text(None)
             )
             .unwrap();
 
@@ -1645,13 +1673,15 @@ impl EmittingState {
                     MapEntry::MathGrowingVariant(c, _, _) => (c, true),
                 };
 
-                let font_fam = if need_alt {
+                let alt_index = if need_alt {
                     let map = fd.request_alternative(gi.glyph, ch);
                     ch = map.usv;
-                    format!("tdux{}vg{}", fi.fd_key, map.alternate_map_index)
+                    Some(map.alternate_map_index)
                 } else {
-                    format!("tdux{}", fi.fd_key)
+                    None
                 };
+
+                let font_sel = fi.selection_style_text(alt_index);
 
                 // dy gives the target position of this glyph's baseline
                 // relative to the canvas's baseline. For our `position:
@@ -1685,11 +1715,11 @@ impl EmittingState {
 
                 write!(
                     inner_content,
-                    "<span class=\"ci\" style=\"top: {}rem; left: {}rem; font-size: {}rem; font-family: {}\">",
+                    "<span class=\"ci\" style=\"top: {}rem; left: {}rem; font-size: {}rem; {}\">",
                     top_rem,
                     gi.dx as f32 * self.rems_per_tex,
                     rel_size,
-                    font_fam,
+                    font_sel,
                 )
                 .unwrap();
                 html_escape::encode_text_to_string(ch_as_str, &mut inner_content);
@@ -1839,14 +1869,33 @@ impl EmittingState {
 
         // The reason we're doing all this: we can now emit our customized font
         // files that provide access to glyphs that we can't get the browser to
-        // display directly. One of the emitted keys should match
-        // tduxMainBodyFontFamily defined at the end of the initialization
-        // stage.
+        // display directly. First, emit the font files via the font data.
+
+        let mut emitted_info = HashMap::new();
+
+        for (fd_key, data) in self.font_data.drain() {
+            let emi = data.emit(common.out_base)?;
+            emitted_info.insert(fd_key, emi);
+        }
+
+        // Now we can generate the CSS.
 
         let mut faces = String::default();
 
-        for (fd_key, data) in self.font_data.drain() {
-            data.emit(common.out_base, &format!("tdux{}", fd_key), &mut faces)?;
+        for fi in self.fonts.values() {
+            let emi = emitted_info.get(&fi.fd_key).unwrap();
+
+            for (alt_index, css_src) in emi {
+                let _ignored = writeln!(
+                    faces,
+                    r#"@font-face {{
+    {}
+    src: {};
+}}"#,
+                    fi.font_face_text(*alt_index),
+                    css_src,
+                );
+            }
         }
 
         self.context.insert("tduxFontFaces", &faces);
@@ -1863,8 +1912,22 @@ type FontNum = i32;
 #[allow(dead_code)]
 #[derive(Debug)]
 struct FontInfo {
+    /// Relative URL to the font data file
     rel_url: String,
+
+    /// CSS name of the font family with which this font is associated;
+    /// autogenerated if not specified during initialization.
+    family_name: String,
+
+    /// This font's "relationship" to its family. Defaults to Regular to
+    /// if it's not associated with a full-fledged family.
+    family_relation: FamilyRelativeFontId,
+
+    /// Integer key used to relate this TeX font to its FontData. Multiple
+    /// fonts may use the same FontData, if they refer to the same backing
+    /// file.
     fd_key: usize,
+
     size: FixedPoint,
     face_index: u32,
     color_rgba: Option<u32>,
@@ -1873,7 +1936,44 @@ struct FontInfo {
     embolden: Option<u32>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+impl FontInfo {
+    fn selection_style_text(&self, alternate_map_index: Option<usize>) -> String {
+        let alt_text = alternate_map_index
+            .map(|i| format!("vg{}", i))
+            .unwrap_or_default();
+
+        let extra = match self.family_relation {
+            FamilyRelativeFontId::Regular => "",
+            FamilyRelativeFontId::Bold => "; font-weight: bold",
+            FamilyRelativeFontId::Italic => "; font-style: italic",
+            FamilyRelativeFontId::BoldItalic => "; font-weight: bold; font-style: italic",
+            FamilyRelativeFontId::Other(_) => unreachable!(),
+        };
+
+        format!("font-family: {}{}{}", self.family_name, alt_text, extra)
+    }
+
+    fn font_face_text(&self, alternate_map_index: Option<usize>) -> String {
+        let alt_text = alternate_map_index
+            .map(|i| format!("vg{}", i))
+            .unwrap_or_default();
+
+        let extra = match self.family_relation {
+            FamilyRelativeFontId::Regular => "",
+            FamilyRelativeFontId::Bold => "\n    font-weight: bold;",
+            FamilyRelativeFontId::Italic => "\n    font-style: italic;",
+            FamilyRelativeFontId::BoldItalic => "\n    font-weight: bold;\n    font-style: italic;",
+            FamilyRelativeFontId::Other(_) => unreachable!(),
+        };
+
+        format!(
+            r#"font-family: "{}{}";{}"#,
+            self.family_name, alt_text, extra
+        )
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct FontFamily {
     regular: FontNum,
     bold: FontNum,
@@ -2023,6 +2123,7 @@ struct PathToNewFont {
 
 #[derive(Debug, Default)]
 struct FontFamilyBuilder {
+    family_name: String,
     regular: Option<FontNum>,
     bold: Option<FontNum>,
     italic: Option<FontNum>,
@@ -2031,7 +2132,7 @@ struct FontFamilyBuilder {
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum FamilyRelativeFontId {
-    /// This font is the regular font of the current family
+    /// This font is the regular font of the current family.
     Regular,
 
     /// This font is the bold font of the current family.
