@@ -844,10 +844,8 @@ impl EmittingState {
         }
     }
 
-    fn push_elem(&mut self, name: &str, origin: ElementOrigin, common: &mut Common) {
+    fn push_elem(&mut self, el: Element, origin: ElementOrigin) {
         self.close_automatics();
-
-        let el = self.create_elem(name, true, common);
 
         let new_item = {
             let cur = self.cur_elstate();
@@ -981,23 +979,30 @@ impl EmittingState {
         contents: &str,
         common: &mut Common,
     ) -> Result<()> {
-        if let Some(element) = contents.strip_prefix("tdux:as ") {
+        if contents == "tdux:asp" {
             if self.content_finished {
-                self.warn_finished_content(&format!("auto start tag <{}>", element), common);
+                self.warn_finished_content("auto start paragraph", common);
             } else if self.cur_elstate().do_auto_tags {
-                let el = self.create_elem(element, true, common);
+                // Why are we using <div>s instead of <p>? As the HTML spec
+                // emphasizes, <p> tags are structural, not semantic. You cannot
+                // put tags like <ul> or <div> inside <p> -- they automatically
+                // close the paragraph. This does not align with TeX's idea of a
+                // paragraph, and there's no upside to trying to use <p>'s -- as
+                // the spec notes, the <p> tag does not activate any important
+                // semantics itself. The HTML spec explicitly recommends that
+                // you can use <div> elements to group logical paragraphs. So
+                // that's what we do.
+                let el = self.create_elem("div", true, common);
                 self.push_space_if_needed(x, None);
-                self.current_content.push('<');
-                self.current_content.push_str(el.name());
-                self.current_content.push('>');
-                self.push_elem(element, ElementOrigin::EngineAuto, common);
+                self.current_content.push_str("<div class=\"tdux-p\">");
+                self.push_elem(el, ElementOrigin::EngineAuto);
             }
             Ok(())
-        } else if let Some(element) = contents.strip_prefix("tdux:ae ") {
+        } else if contents == "tdux:aep" {
             if self.content_finished {
-                self.warn_finished_content(&format!("auto end tag </{}>", element), common);
+                self.warn_finished_content("auto end paragraph", common);
             } else if self.cur_elstate().do_auto_tags {
-                self.pop_elem(element, common);
+                self.pop_elem("div", common);
             }
             Ok(())
         } else if let Some(kind) = contents.strip_prefix("tdux:cs ") {
