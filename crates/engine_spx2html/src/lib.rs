@@ -109,6 +109,21 @@ impl<'a> EngineState<'a> {
 
         Ok(())
     }
+
+    /// Return true if we're in the initializing phase, but not in the midst of
+    /// a multi-step construct like startDefineFontFamily. In such situations,
+    /// if we see an event that is associated with the beginning of the actual
+    /// content, we should end the initialization phase.
+    fn in_endable_init(&self) -> bool {
+        match &self.state {
+            State::Invalid => false,
+            State::Initializing(s) => {
+                s.cur_font_family_definition.is_none()
+                    && s.cur_font_family_tag_associations.is_none()
+            }
+            State::Emitting(_) => false,
+        }
+    }
 }
 
 impl<'a> XdvEvents for EngineState<'a> {
@@ -125,14 +140,46 @@ impl<'a> XdvEvents for EngineState<'a> {
     fn handle_special(&mut self, x: i32, y: i32, contents: &[u8]) -> Result<()> {
         let contents = atry!(std::str::from_utf8(contents); ["could not parse \\special as UTF-8"]);
 
-        if contents == "tdux:emit" || contents.starts_with("tdux:provideFile") {
-            self.state.ensure_initialized()?;
+        // str.split_once() would be nice but it was introduced in 1.52 which is
+        // a bit recent for us.
+
+        let mut pieces = contents.splitn(2, ' ');
+
+        let (tdux_command, remainder) = if let Some(p) = pieces.next() {
+            if let Some(cmd) = p.strip_prefix("tdux:") {
+                (Some(cmd), pieces.next().unwrap_or_default())
+            } else {
+                (None, contents)
+            }
+        } else {
+            (None, contents)
+        };
+
+        // Might we need to end the initialization phase?
+
+        if self.in_endable_init() {
+            let end_init = if let Some(cmd) = tdux_command {
+                match cmd {
+                    "emit" | "provideFile" | "asp" | "aep" | "cs" | "ce" | "mfs" | "me" | "dt" => {
+                        true
+                    }
+                    _ => false,
+                }
+            } else {
+                false
+            };
+
+            if end_init {
+                self.state.ensure_initialized()?;
+            }
         }
+
+        // Ready to dispatch.
 
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
-            State::Initializing(s) => s.handle_special(contents, &mut self.common),
-            State::Emitting(s) => s.handle_special(x, y, contents, &mut self.common),
+            State::Initializing(s) => s.handle_special(tdux_command, remainder, &mut self.common),
+            State::Emitting(s) => s.handle_special(x, y, tdux_command, remainder, &mut self.common),
         }
     }
 
@@ -145,20 +192,7 @@ impl<'a> XdvEvents for EngineState<'a> {
         x: &[i32],
         y: &[i32],
     ) -> Result<()> {
-        // Here we have a quasi-hack because the initialization stage needs to
-        // handle text-and-glyphs, *if* it's in a font-family definition.
-        // Otherwise it's time to exit the initialization mode.
-
-        let do_init = match &mut self.state {
-            State::Invalid => false,
-            State::Initializing(s) => {
-                s.cur_font_family_definition.is_none()
-                    && s.cur_font_family_tag_associations.is_none()
-            }
-            State::Emitting(_) => false,
-        };
-
-        if do_init {
+        if self.in_endable_init() {
             self.state.ensure_initialized()?;
         }
 
@@ -378,26 +412,37 @@ impl InitializationState {
         Ok(())
     }
 
-    fn handle_special(&mut self, contents: &str, common: &mut Common) -> Result<()> {
-        if let Some(texpath) = contents.strip_prefix("tdux:addTemplate ") {
-            self.handle_add_template(texpath, common)
-        } else if let Some(texpath) = contents.strip_prefix("tdux:setTemplate ") {
-            self.handle_set_template(texpath, common)
-        } else if let Some(texpath) = contents.strip_prefix("tdux:setOutputPath ") {
-            self.handle_set_output_path(texpath, common)
-        } else if let Some(remainder) = contents.strip_prefix("tdux:setTemplateVariable ") {
-            self.handle_set_template_variable(remainder, common)
-        } else if contents == "tdux:startDefineFontFamily" {
-            self.handle_start_define_font_family()
-        } else if contents == "tdux:endDefineFontFamily" {
-            self.handle_end_define_font_family(common)
-        } else if contents == "tdux:startFontFamilyTagAssociations" {
-            self.handle_start_font_family_tag_associations()
-        } else if contents == "tdux:endFontFamilyTagAssociations" {
-            self.handle_end_font_family_tag_associations(common)
-        } else if let Some(_remainder) = contents.strip_prefix("tdux:provideFile ") {
-            tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
-            Ok(())
+    fn handle_special(
+        &mut self,
+        tdux_command: Option<&str>,
+        remainder: &str,
+        common: &mut Common,
+    ) -> Result<()> {
+        if let Some(cmd) = tdux_command {
+            match cmd {
+                "addTemplate" => self.handle_add_template(remainder, common),
+                "setTemplate" => self.handle_set_template(remainder, common),
+                "setOutputPath" => self.handle_set_output_path(remainder, common),
+                "setTemplateVariable" => self.handle_set_template_variable(remainder, common),
+
+                "startDefineFontFamily" => self.handle_start_define_font_family(),
+                "endDefineFontFamily" => self.handle_end_define_font_family(common),
+
+                "startFontFamilyTagAssociations" => {
+                    self.handle_start_font_family_tag_associations()
+                }
+
+                "endFontFamilyTagAssociations" => {
+                    self.handle_end_font_family_tag_associations(common)
+                }
+
+                "provideFile" => {
+                    tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
+                    Ok(())
+                }
+
+                _ => Ok(()),
+            }
         } else {
             Ok(())
         }
@@ -976,105 +1021,132 @@ impl EmittingState {
         &mut self,
         x: i32,
         y: i32,
-        contents: &str,
+        tdux_command: Option<&str>,
+        remainder: &str,
         common: &mut Common,
     ) -> Result<()> {
-        if contents == "tdux:asp" {
-            if self.content_finished {
-                self.warn_finished_content("auto start paragraph", common);
-            } else if self.cur_elstate().do_auto_tags {
-                // Why are we using <div>s instead of <p>? As the HTML spec
-                // emphasizes, <p> tags are structural, not semantic. You cannot
-                // put tags like <ul> or <div> inside <p> -- they automatically
-                // close the paragraph. This does not align with TeX's idea of a
-                // paragraph, and there's no upside to trying to use <p>'s -- as
-                // the spec notes, the <p> tag does not activate any important
-                // semantics itself. The HTML spec explicitly recommends that
-                // you can use <div> elements to group logical paragraphs. So
-                // that's what we do.
-                let el = self.create_elem("div", true, common);
-                self.push_space_if_needed(x, None);
-                self.current_content.push_str("<div class=\"tdux-p\">");
-                self.push_elem(el, ElementOrigin::EngineAuto);
-            }
-            Ok(())
-        } else if contents == "tdux:aep" {
-            if self.content_finished {
-                self.warn_finished_content("auto end paragraph", common);
-            } else if self.cur_elstate().do_auto_tags {
-                self.pop_elem("div", common);
-            }
-            Ok(())
-        } else if let Some(kind) = contents.strip_prefix("tdux:cs ") {
-            if self.content_finished {
-                self.warn_finished_content("canvas start", common);
-            } else if let Some(canvas) = self.current_canvas.as_mut() {
-                canvas.depth += 1;
-            } else {
-                self.current_canvas = Some(CanvasState::new(kind, x, y));
-            }
-            Ok(())
-        } else if let Some(_kind) = contents.strip_prefix("tdux:ce ") {
-            if self.content_finished {
-                self.warn_finished_content("canvas end", common);
-            } else if let Some(canvas) = self.current_canvas.as_mut() {
-                canvas.depth -= 1;
-                if canvas.depth == 0 {
-                    self.handle_end_canvas(common)?;
+        if let Some(cmd) = tdux_command {
+            match cmd {
+                "asp" => {
+                    if self.content_finished {
+                        self.warn_finished_content("auto start paragraph", common);
+                    } else if self.cur_elstate().do_auto_tags {
+                        // Why are we using <div>s instead of <p>? As the HTML spec
+                        // emphasizes, <p> tags are structural, not semantic. You cannot
+                        // put tags like <ul> or <div> inside <p> -- they automatically
+                        // close the paragraph. This does not align with TeX's idea of a
+                        // paragraph, and there's no upside to trying to use <p>'s -- as
+                        // the spec notes, the <p> tag does not activate any important
+                        // semantics itself. The HTML spec explicitly recommends that
+                        // you can use <div> elements to group logical paragraphs. So
+                        // that's what we do.
+                        let el = self.create_elem("div", true, common);
+                        self.push_space_if_needed(x, None);
+                        self.current_content.push_str("<div class=\"tdux-p\">");
+                        self.push_elem(el, ElementOrigin::EngineAuto);
+                    }
+                    Ok(())
                 }
-            } else {
-                tt_warning!(
-                    common.status,
-                    "ignoring unpaired tdux:c[anvas]e[nd] special `{}`",
-                    contents
-                );
+
+                "aep" => {
+                    if self.content_finished {
+                        self.warn_finished_content("auto end paragraph", common);
+                    } else if self.cur_elstate().do_auto_tags {
+                        self.pop_elem("div", common);
+                    }
+                    Ok(())
+                }
+
+                "cs" => {
+                    if self.content_finished {
+                        self.warn_finished_content("canvas start", common);
+                    } else if let Some(canvas) = self.current_canvas.as_mut() {
+                        canvas.depth += 1;
+                    } else {
+                        self.current_canvas = Some(CanvasState::new(remainder, x, y));
+                    }
+                    Ok(())
+                }
+
+                "ce" => {
+                    if self.content_finished {
+                        self.warn_finished_content("canvas end", common);
+                    } else if let Some(canvas) = self.current_canvas.as_mut() {
+                        canvas.depth -= 1;
+                        if canvas.depth == 0 {
+                            self.handle_end_canvas(common)?;
+                        }
+                    } else {
+                        tt_warning!(
+                            common.status,
+                            "ignoring unpaired tdux:c[anvas]e[nd] special for `{}`",
+                            remainder
+                        );
+                    }
+                    Ok(())
+                }
+
+                "mfs" => {
+                    if self.content_finished {
+                        self.warn_finished_content(
+                            &format!("manual flexible start tag {:?}", remainder),
+                            common,
+                        );
+                        Ok(())
+                    } else {
+                        self.handle_flexible_start_tag(x, y, remainder, common)
+                    }
+                }
+
+                "me" => {
+                    if self.content_finished {
+                        self.warn_finished_content(
+                            &format!("manual end tag </{}>", remainder),
+                            common,
+                        );
+                    } else {
+                        self.pop_elem(remainder, common);
+                    }
+                    Ok(())
+                }
+
+                "dt" => {
+                    if self.content_finished {
+                        self.warn_finished_content("direct text", common);
+                    } else {
+                        html_escape::encode_safe_to_string(remainder, &mut self.current_content);
+                    }
+                    Ok(())
+                }
+
+                "emit" => self.finish_file(common),
+
+                "setTemplate" => {
+                    self.next_template_path = remainder.to_owned();
+                    Ok(())
+                }
+
+                "setOutputPath" => {
+                    self.next_output_path = remainder.to_owned();
+                    Ok(())
+                }
+
+                "setTemplateVariable" => self.handle_set_template_variable(remainder, common),
+
+                "provideFile" => self.handle_provide_file(remainder, common),
+
+                "contentFinished" => self.content_finished(common),
+
+                other => {
+                    tt_warning!(
+                        common.status,
+                        "ignoring unrecognized special: tdux:{} {}",
+                        other,
+                        remainder
+                    );
+                    Ok(())
+                }
             }
-            Ok(())
-        } else if let Some(remainder) = contents.strip_prefix("tdux:mfs ") {
-            if self.content_finished {
-                self.warn_finished_content(
-                    &format!("manual flexible start tag {:?}", remainder),
-                    common,
-                );
-                Ok(())
-            } else {
-                self.handle_flexible_start_tag(x, y, remainder, common)
-            }
-        } else if let Some(element) = contents.strip_prefix("tdux:me ") {
-            if self.content_finished {
-                self.warn_finished_content(&format!("manual end tag </{}>", element), common);
-            } else {
-                self.pop_elem(element, common);
-            }
-            Ok(())
-        } else if let Some(direct_text) = contents.strip_prefix("tdux:dt ") {
-            if self.content_finished {
-                self.warn_finished_content("direct text", common);
-            } else {
-                html_escape::encode_safe_to_string(direct_text, &mut self.current_content);
-            }
-            Ok(())
-        } else if contents == "tdux:emit" {
-            self.finish_file(common)
-        } else if let Some(texpath) = contents.strip_prefix("tdux:setTemplate ") {
-            self.next_template_path = texpath.to_owned();
-            Ok(())
-        } else if let Some(texpath) = contents.strip_prefix("tdux:setOutputPath ") {
-            self.next_output_path = texpath.to_owned();
-            Ok(())
-        } else if let Some(remainder) = contents.strip_prefix("tdux:setTemplateVariable ") {
-            self.handle_set_template_variable(remainder, common)
-        } else if let Some(remainder) = contents.strip_prefix("tdux:provideFile ") {
-            self.handle_provide_file(remainder, common)
-        } else if contents == "tdux:contentFinished" {
-            self.content_finished(common)
-        } else if let Some(remainder) = contents.strip_prefix("tdux:") {
-            tt_warning!(
-                common.status,
-                "ignoring unrecognized special: tdux:{}",
-                remainder
-            );
-            Ok(())
         } else {
             Ok(())
         }
