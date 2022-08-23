@@ -956,7 +956,7 @@ impl EmittingState {
     }
 
     /// Figure out if we need to push a space into the text content right now.
-    fn is_space_needed(&mut self, x0: i32, cur_font_num: Option<FontNum>) -> bool {
+    fn is_space_needed(&self, x0: i32, cur_font_num: Option<FontNum>) -> bool {
         // We never want a leading space.
         if self.current_content.is_empty() {
             return false;
@@ -1554,6 +1554,13 @@ impl EmittingState {
                 });
             }
         } else {
+            // Ideally, the vast majority of the time we are using
+            // handle_text_and_glyphs and not this function, outside of
+            // canvases. But sometimes we get spare glyphs outside of the canvas
+            // context. We can use our glyph-mapping infrastructure to try to
+            // translate them to Unicode, hoping for the best that the naive
+            // inversion suffices.
+
             self.set_up_for_font(xs[0], font_num, common);
 
             let fi = a_ok_or!(
@@ -1561,12 +1568,86 @@ impl EmittingState {
                 ["undeclared font {} in glyph run", font_num]
             );
 
-            tt_warning!(
-                common.status,
-                "TODO HANDLE glyph_run OUTSIDE OF CANVAS: {} {:?}",
-                fi.rel_url,
-                glyphs
-            );
+            // Super lame! Ideally we could just hold a long-lived mutable
+            // borrow of `fd`, but that gets treated as a long-lived mutable
+            // borrow of `self` which basically makes all other pieces of state
+            // inaccessible. So we need to keep on looking up into
+            // `self.font_data`, and even then we need to avoid functions that
+            // operation on `&mut self` because `fi` is a long-lived *immutable*
+            // borrow of `self`. I don't think we can avoid this without doing
+            // some significant rearranging of the data structures to allow the
+            // different pieces to be borrowed separately.
+
+            let mut ch_str_buf = [0u8; 4];
+
+            for (idx, glyph) in glyphs.iter().copied().enumerate() {
+                let mc = {
+                    let fd = self.font_data.get(&fi.fd_key).unwrap();
+                    fd.lookup_mapping(glyph)
+                };
+
+                if let Some(mc) = mc {
+                    let (mut ch, need_alt) = match mc {
+                        MapEntry::Direct(c) => (c, false),
+                        MapEntry::SubSuperScript(c, _) => (c, true),
+                        MapEntry::MathGrowingVariant(c, _, _) => (c, true),
+                    };
+
+                    let alt_index = if need_alt {
+                        let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
+                        let map = fd.request_alternative(glyph, ch);
+                        ch = map.usv;
+                        Some(map.alternate_map_index)
+                    } else {
+                        None
+                    };
+
+                    // For later: we could select the "default" font at an outer
+                    // level and only emit tags as needed in here.
+                    let font_sel = fi.selection_style_text(alt_index);
+
+                    // Stringify the character so that we can use html_escape in
+                    // case it's a `<` or whatever.
+                    let ch_as_str = ch.encode_utf8(&mut ch_str_buf);
+
+                    // XXX this is (part of) push_space_if_needed
+                    if self.is_space_needed(xs[idx], Some(font_num)) {
+                        self.current_content.push(' ');
+                    }
+
+                    write!(self.current_content, "<span style=\"{}\">", font_sel).unwrap();
+                    html_escape::encode_text_to_string(ch_as_str, &mut self.current_content);
+                    write!(self.current_content, "</span>").unwrap();
+                } else {
+                    tt_warning!(
+                        common.status,
+                        "unable to reverse-map glyph {} in font `{}` (face {})",
+                        glyph,
+                        fi.rel_url,
+                        fi.face_index
+                    );
+                }
+
+                // Jump through the hoops needed by automatic space insertion:
+
+                let gm = {
+                    let fd = self.font_data.get(&fi.fd_key).unwrap();
+                    fd.lookup_metrics(glyphs[idx], fi.size)
+                };
+
+                let advance = match gm {
+                    Some(gm) => gm.advance,
+                    None => 0,
+                };
+
+                // XXX this is fn update_content_pos():
+                self.last_content_x = xs[idx] + advance;
+
+                let cur_space_width = self.maybe_get_font_space_width(Some(font_num));
+                if cur_space_width.is_some() {
+                    self.last_content_space_width = cur_space_width;
+                }
+            }
         }
 
         Ok(())
