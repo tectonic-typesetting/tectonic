@@ -62,7 +62,7 @@ parameters:
       TOOLCHAIN: nightly
 
   - name: macos_intdeps
-    vmImage: macos-10.15
+    vmImage: macos-11
     params:
       canaryBuild: true
       installAllDeps: false
@@ -71,7 +71,7 @@ parameters:
       TOOLCHAIN: stable
 
   - name: macos_extdeps
-    vmImage: macos-10.15
+    vmImage: macos-11
     params:
       canaryBuild: true
       installAllDeps: true
@@ -133,7 +133,7 @@ parameters:
   type: object
   default:
   - name: macos
-    vmImage: macos-10.15
+    vmImage: macos-11
     params: {}
     vars:
       TARGET: x86_64-apple-darwin
