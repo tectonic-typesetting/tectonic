@@ -8,7 +8,7 @@ use std::{env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
-    config::PersistentConfig,
+    config::{is_config_test_mode_activated, PersistentConfig},
     ctry,
     docmodel::{DocumentExt, DocumentSetupOptions, WorkspaceCreatorExt},
     driver::PassSetting,
@@ -257,14 +257,19 @@ impl BuildCommand {
 
             if self.open {
                 let out_file = doc.output_main_file(output_name);
-                tt_note!(status, "opening `{}`", out_file.display());
-                if let Err(e) = open::that(&out_file) {
-                    tt_error!(
-                        status,
-                        "failed to open `{}` with system handler",
-                        out_file.display();
-                        e.into()
-                    )
+
+                if is_config_test_mode_activated() {
+                    tt_note!(status, "not opening `{}` -- test mode", out_file.display());
+                } else {
+                    tt_note!(status, "opening `{}`", out_file.display());
+                    if let Err(e) = open::that(&out_file) {
+                        tt_error!(
+                            status,
+                            "failed to open `{}` with system handler",
+                            out_file.display();
+                            e.into()
+                        )
+                    }
                 }
             }
         }
