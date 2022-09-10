@@ -1,4 +1,4 @@
-# Copyright 2019 the Tectonic Project
+# Copyright 2019-2022 the Tectonic Project
 # Licensed under the MIT License.
 
 steps:
@@ -13,17 +13,6 @@ steps:
 - bash: |
     echo "##vso[task.setvariable variable=CROSS_ARGS;]--target=$TARGET --release"
   displayName: Set build variables
-
-# Make the release commit. Do an extremely minimal build to get Cargo.lock
-# updated.
-
-- bash: cargo build -p tectonic_cfg_support
-
-- bash: |
-    git add .
-    cranko release-workflow commit
-    git show HEAD
-  displayName: Make release commit
 
 # Main build/test
 

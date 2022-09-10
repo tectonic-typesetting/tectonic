@@ -1,4 +1,4 @@
-# Copyright 2016-2020 the Tectonic Project
+# Copyright 2016-2022 the Tectonic Project
 # Licensed under the MIT License.
 #
 # The code coverage job -- a variant of a basic Linux pkgconfig build
@@ -42,13 +42,6 @@ steps:
     find target/debug/deps/tectonic-???????????????? -links 2 -print -delete
     cp -vp target/debug/deps/*-???????????????? target/debug/
   displayName: cargo test --no-run
-
-- bash: |
-    set -xeuo pipefail
-    git add .
-    cranko release-workflow commit
-    git show HEAD
-  displayName: Make release commit
 
 - bash: |
     set -xeuo pipefail
