@@ -45,7 +45,7 @@ enum Commands {
     Strings(GenericCommand),
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct GenericCommand {
     /// The format filename.
     #[structopt()]
@@ -85,7 +85,7 @@ impl GenericCommand {
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct CseqsCommand {
     /// Whether to dump extended information such as macro contents
     #[structopt(long = "extended", short = "e")]

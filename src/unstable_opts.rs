@@ -1,5 +1,5 @@
 // src/bin/tectonic.rs -- Command-line driver for the Tectonic engine.
-// Copyright 2020 the Tectonic Project
+// Copyright 2020-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Unstable options for the Tectonic engine.
@@ -123,10 +123,7 @@ impl UnstableOptions {
         for u in uargs {
             use UnstableArg::*;
             match u {
-                Help => {
-                    print!("{}", HELPMSG);
-                    std::process::exit(0);
-                }
+                Help => print_unstable_help_and_exit(),
                 ContinueOnErrors => opts.continue_on_errors = true,
                 MinCrossrefs(num) => opts.min_crossrefs = Some(num),
                 PaperSize(size) => opts.paper_size = Some(size),
@@ -141,4 +138,9 @@ impl UnstableOptions {
 
         opts
     }
+}
+
+pub fn print_unstable_help_and_exit() {
+    print!("{}", HELPMSG);
+    std::process::exit(0);
 }

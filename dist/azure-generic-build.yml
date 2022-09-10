@@ -58,12 +58,6 @@ steps:
 
 - ${{ if eq(parameters.canaryBuild, false) }}:
   - bash: |
-      git add .
-      cranko release-workflow commit
-      git show HEAD
-    displayName: Make release commit
-
-  - bash: |
       artifact_dir="$(Build.ArtifactStagingDirectory)/binary-$TARGET"
       mkdir -p "$artifact_dir"
       cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --release
@@ -99,15 +93,3 @@ steps:
       inputs:
         targetPath: '$(Build.ArtifactStagingDirectory)/appimage'
         artifactName: appimage
-
-    - bash: |
-        artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
-        mkdir -p "$artifact_dir"
-        git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
-      displayName: Bundle release commit
-
-    - task: PublishPipelineArtifact@1
-      displayName: Publish git bundle artifact
-      inputs:
-        targetPath: '$(Build.ArtifactStagingDirectory)/git-release'
-        artifactName: git-release
