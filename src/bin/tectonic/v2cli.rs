@@ -196,7 +196,7 @@ impl Commands {
 }
 
 /// `build`: Build a document
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct BuildCommand {
     /// Document is untrusted -- disable all known-insecure features
     #[structopt(long)]
@@ -279,13 +279,13 @@ impl BuildCommand {
 }
 
 /// `bundle`: Commands relating to Tectonic bundles
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct BundleCommand {
     #[structopt(subcommand)]
     command: BundleCommands,
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 enum BundleCommands {
     #[structopt(name = "cat")]
     /// Dump the contents of a file in the bundle
@@ -345,7 +345,7 @@ fn get_a_bundle(
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 struct BundleCatCommand {
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
@@ -370,7 +370,7 @@ impl BundleCatCommand {
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 struct BundleSearchCommand {
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
@@ -407,7 +407,7 @@ impl BundleSearchCommand {
 }
 
 /// `dump`: Run a partial build and dump an intermediate file
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct DumpCommand {
     /// Document is untrusted -- disable all known-insecure features
     #[structopt(long)]
@@ -505,7 +505,7 @@ impl DumpCommand {
 }
 
 /// `watch`: Watch input files and execute commands on change
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct WatchCommand {
     /// Tectonic commands to execute on build [default: build]
     #[structopt(long = "exec", short = "x")]
@@ -581,7 +581,7 @@ impl WatchCommand {
 }
 
 /// `new`: Create a new document
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct NewCommand {
     /// The name of the document directory to create.
     #[structopt(default_value = ".")]
@@ -608,13 +608,13 @@ impl NewCommand {
 }
 
 /// `show`: Show various useful pieces of information.
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct ShowCommand {
     #[structopt(subcommand)]
     command: ShowCommands,
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 enum ShowCommands {
     #[structopt(name = "user-cache-dir")]
     /// Print the location of the default per-user cache directory
@@ -635,7 +635,7 @@ impl ShowCommand {
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 struct ShowUserCacheDirCommand {}
 
 impl ShowUserCacheDirCommand {
