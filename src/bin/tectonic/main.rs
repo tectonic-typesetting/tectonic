@@ -1,5 +1,5 @@
 // src/bin/tectonic.rs -- Command-line driver for the Tectonic engine.
-// Copyright 2016-2020 the Tectonic Project
+// Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 use std::{env, process, str::FromStr};
@@ -10,8 +10,11 @@ use structopt::clap;
 use tectonic::{
     config::PersistentConfig,
     errors::SyncError,
-    status::termcolor::TermcolorStatusBackend,
-    status::{ChatterLevel, StatusBackend},
+    status::{
+        termcolor::TermcolorStatusBackend,
+        {ChatterLevel, StatusBackend},
+    },
+    unstable_opts,
 };
 
 mod compile;
@@ -54,17 +57,24 @@ struct CliOptions {
 }
 
 fn main() {
+    let os_args: Vec<_> = env::args_os().collect();
+
+    // A hack so that you can just run `tectonic -Zhelp` without getting a usage
+    // error. Note that `tectonic -Z help` won't work.
+
+    if os_args.iter().any(|s| s == "-Zhelp") {
+        unstable_opts::print_unstable_help_and_exit();
+    }
+
     // Migration to the "cargo-style" command-line interface. If the first
     // argument is `-X`, or argv[0] contains `nextonic`, we activate the
     // alternative operation mode. Once this experimental mode is working OK,
     // we'll start printing a message telling people to prefer the `-X` option
-    // and optionally accept a leading `-Y` option for the "classic"
-    // ("rustc"-style, current) interface. After that's been in place for a
-    // while, well swap the defaults and make `-Y` required if you want to use
-    // the classic interface. Finally, we'll remove it altogether.
+    // and use `-X compile` for the "classic" ("rustc"-style, current)
+    // interface. After that's been in place for a while, we'll make V2 mode the
+    // default.
 
     let mut v2cli_enabled = false;
-    let os_args: Vec<_> = env::args_os().collect();
     let mut v2cli_arg_idx = 1;
 
     if !os_args.is_empty() && os_args[0].to_str().map(|s| s.contains("nextonic")) == Some(true) {
