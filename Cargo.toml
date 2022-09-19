@@ -120,7 +120,7 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "6b6a35335c9064fac2ec6684c4f79808dce59b7d"
+rev = "01b29f6d8212bc845da64773b18665d682f5ab66"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
