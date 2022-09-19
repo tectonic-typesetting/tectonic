@@ -1,4 +1,4 @@
-// Copyright 2021 the Tectonic Project
+// Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]

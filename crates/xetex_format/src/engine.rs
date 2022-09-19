@@ -79,7 +79,7 @@ impl Engine {
         let etex_penalties_pars =
             etexpenalties::get_etex_penalties_pars_for_version(version, &mut symbols)?;
 
-        eqtb::initialize_eqtb_symbols(&mut symbols)?;
+        eqtb::initialize_eqtb_symbols(version, &mut symbols)?;
         commands::initialize_command_code_symbols(version, &mut symbols);
         enums::initialize_enum_symbols(version, &mut symbols)?;
 
