@@ -1,5 +1,5 @@
 /* xetex-ini.c: WEB initialization code translated to C
-   Copyright 2016-2018 The Tectonic Project
+   Copyright 2016-2022 The Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -1452,43 +1452,12 @@ prefixed_command(void)
 
     case SHORTHAND_DEF:
         if (cur_chr == CHAR_SUB_DEF_CODE) {
-            scan_char_num();
-            p = CHAR_SUB_CODE_BASE + cur_val;
-            scan_optional_equals();
-            scan_char_num();
-            n = cur_val;
-            scan_char_num();
-            if (INTPAR(tracing_char_sub_def) > 0) {
-                begin_diagnostic();
-                print_nl_cstr("New character substitution: ");
-                print(p - CHAR_SUB_CODE_BASE);
-                print_cstr(" = ");
-                print(n);
-                print_char(' ');
-                print(cur_val);
-                end_diagnostic(false);
-            }
-
-            n = n * 256 + cur_val;
-
-            if (a >= 4)
-                geq_define(p, DATA, n);
-            else
-                eq_define(p, DATA, n);
-
-            if ((p - CHAR_SUB_CODE_BASE) < INTPAR(char_sub_def_min)) {
-                if (a >= 4)
-                    geq_word_define(INT_BASE + INT_PAR__char_sub_def_min, p - CHAR_SUB_CODE_BASE);
-                else
-                    eq_word_define(INT_BASE + INT_PAR__char_sub_def_min, p - CHAR_SUB_CODE_BASE);
-            }
-
-            if ((p - CHAR_SUB_CODE_BASE) > INTPAR(char_sub_def_max)) {
-                if (a >= 4)
-                    geq_word_define(INT_BASE + INT_PAR__char_sub_def_max, p - CHAR_SUB_CODE_BASE);
-                else
-                    eq_word_define(INT_BASE + INT_PAR__char_sub_def_max, p - CHAR_SUB_CODE_BASE);
-            }
+            /* Tectonic customization! */
+            error_here_with_diagnostic("vestigial MLTeX shorthand encountered??");
+            capture_to_diagnostic(NULL);
+            help_ptr = 1;
+            help_line[0] = "This should never happen in Tectonic, where MLTeX has been excised.";
+            error();
         } else {
             n = cur_chr;
             get_r_token();
@@ -3370,8 +3339,6 @@ initialize_more_initex_variables(void)
     for (k = INT_BASE; k <= DEL_CODE_BASE - 1; k++)
         eqtb[k].b32.s1 = 0;
 
-    INTPAR(char_sub_def_min) = 256;
-    INTPAR(char_sub_def_max) = -1;
     INTPAR(mag) = 1000;
     INTPAR(tolerance) = 10000;
     INTPAR(hang_after) = 1;
