@@ -710,7 +710,7 @@ tfm_open (const char *tfm_name, int must_exist)
 
     suffix = strrchr(tfm_name, '.');
 
-    if (!suffix || (strcmp(suffix, ".tfm") != 0 && strcmp(suffix, ".ofm") != 0)) {
+    if (!suffix || (strcasecmp(suffix, ".tfm") != 0 && strcasecmp(suffix, ".ofm") != 0)) {
         ofm_name = NEW(strlen(tfm_name) + strlen(".ofm") + 1, char);
         strcpy(ofm_name, tfm_name);
         strcat(ofm_name, ".ofm");

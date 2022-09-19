@@ -1286,7 +1286,6 @@ print_fontmap (const char *font_name, fontmap_rec *mrec)
 int
 pdf_dev_locate_font (const char *font_name, spt_t ptsize)
 {
-  char *pp;
   pdf_dev *p = current_device();
   int              i;
   fontmap_rec     *mrec;
@@ -1317,18 +1316,6 @@ pdf_dev_locate_font (const char *font_name, spt_t ptsize)
 
   /* New font */
   mrec = pdf_lookup_fontmap_record(font_name);
-
-/*
-  The extension ".pfb" is not needed for type1 fonts.
-  And the extension ".pfb" prohibits to call mktexpk with right
-  arguments when pdftex.map is used and when type1 is not found.
-  Thus we discard the extension ".pfb".
-*/
-  if (mrec && mrec->font_name) {
-    pp = strrchr(mrec->font_name, '.');
-    if (pp && strcasecmp(pp, ".pfb") == 0)
-      *pp = '\0';
-  }
 
   if (dpx_conf.verbose_level > 1)
     print_fontmap(font_name, mrec);
