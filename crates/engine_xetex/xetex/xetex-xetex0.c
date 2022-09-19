@@ -3819,7 +3819,7 @@ int32_t prim_lookup(str_number s)
                 do {
                     h = h + h + str_pool[k];
                     while (h >= PRIM_PRIME)
-                        h = h - 431;
+                        h = h - PRIM_PRIME;
                 }
                 while (k++ < for_end);
         }
@@ -9821,7 +9821,7 @@ conv_toks(void)
         break;
 
     case XETEX_REVISION_CODE:
-        print_cstr(".999993");
+        print_cstr(".999994");
         break;
 
     case XETEX_VARIATION_NAME_CODE:
