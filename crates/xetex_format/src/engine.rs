@@ -1,4 +1,4 @@
-// Copyright 2021 the Tectonic Project
+// Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -56,10 +56,18 @@ impl Engine {
 
         cshash::initialize_cshash_symbols(&mut symbols)?;
 
-        // Version 32 passed 500 primitives!
-        let prim_size = if version < 32 { 500 } else { 510 };
+        // Version 32 passed 500 primitives! In version 33, we sync with TeXLive
+        // 2022 and bump prim_size to 2100.
+        let (prim_size, prim_prime) = if version > 32 {
+            (2100, 1777)
+        } else if version == 32 {
+            (510, 431)
+        } else {
+            (500, 431)
+        };
 
         symbols.add(SymbolCategory::FixedArrays, "PRIM_SIZE", prim_size)?;
+        symbols.add(SymbolCategory::FixedArrays, "PRIM_PRIME", prim_prime)?;
         symbols.add(SymbolCategory::FixedArrays, "MAX_FONT_MAX", 9000)?;
         symbols.add(SymbolCategory::FixedArrays, "MEM_TOP", 4_999_999)?;
         symbols.add(SymbolCategory::FixedArrays, "NUMBER_MATH_FAMILIES", 256)?;
