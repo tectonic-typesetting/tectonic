@@ -5,7 +5,7 @@
 
 //! The overall interface provided by the engine.
 
-use std::io::Write;
+use std::{cmp::Ordering, io::Write};
 use tectonic_errors::prelude::*;
 
 use crate::{
@@ -58,12 +58,10 @@ impl Engine {
 
         // Version 32 passed 500 primitives! In version 33, we sync with TeXLive
         // 2022 and bump prim_size to 2100.
-        let (prim_size, prim_prime) = if version > 32 {
-            (2100, 1777)
-        } else if version == 32 {
-            (510, 431)
-        } else {
-            (500, 431)
+        let (prim_size, prim_prime) = match version.cmp(&32) {
+            Ordering::Greater => (2100, 1777),
+            Ordering::Equal => (510, 431),
+            Ordering::Less => (500, 431),
         };
 
         symbols.add(SymbolCategory::FixedArrays, "PRIM_SIZE", prim_size)?;

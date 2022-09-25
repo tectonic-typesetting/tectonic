@@ -1866,10 +1866,7 @@ impl ProcessingSession {
         }
 
         for f in aux_files {
-            let r = self.bibtex_pass_for_one_aux_file(status, &f);
-            if let Err(e) = r {
-                return Err(e);
-            }
+            let _r = self.bibtex_pass_for_one_aux_file(status, &f)?;
         }
 
         Ok(0)
