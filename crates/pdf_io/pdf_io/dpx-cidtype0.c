@@ -1351,7 +1351,11 @@ CIDFont_type0_t1cdofont (pdf_font *font)
     cff_add_string(cffont, "Identity", 1);
 
     cff_dict_update(cffont->topdict, cffont);
-    cff_dict_update(cffont->private[0], cffont);
+
+    if (cffont->private && cffont->private[0]) {
+        cff_dict_update(cffont->private[0], cffont);
+    }
+
     cff_update_string(cffont);
 
     /* CFF code need to be rewrote... */

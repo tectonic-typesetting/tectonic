@@ -1,4 +1,4 @@
-// Copyright 2021 the Tectonic Project
+// Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -37,6 +37,9 @@ pub struct IntPar {
 
     /// The first format version in which the parameter was introduced.
     since: FormatVersion,
+
+    /// The last format version in which the parameter was available.
+    until: FormatVersion,
 }
 
 const INT_PARS: &[IntPar] = &[
@@ -44,431 +47,517 @@ const INT_PARS: &[IntPar] = &[
         name: "pretolerance",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tolerance",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "line_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "hyphen_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "ex_hyphen_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "club_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "widow_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "display_widow_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "broken_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "bin_op_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "rel_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "pre_display_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "post_display_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "inter_line_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "double_hyphen_demerits",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "final_hyphen_demerits",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "adj_demerits",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "mag",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "delimiter_factor",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "looseness",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "time",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "day",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "month",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "year",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "show_box_breadth",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "show_box_depth",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "hbadness",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "vbadness",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "pausing",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_online",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_macros",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_stats",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_paragraphs",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_pages",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_output",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_lost_chars",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_commands",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_restores",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "uc_hyph",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "output_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "max_dead_cycles",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "hang_after",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "floating_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "global_defs",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "cur_fam",
         primitive_kind: IntParPrimitiveKind::CustomName("fam"),
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "escape_char",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "default_hyphen_char",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "default_skew_char",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "end_line_char",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "new_line_char",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "language",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "left_hyphen_min",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "right_hyphen_min",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "holding_inserts",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "error_context_lines",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "char_sub_def_min",
         primitive_kind: IntParPrimitiveKind::None,
         since: 0,
+        until: 32,
     },
     IntPar {
         name: "char_sub_def_max",
         primitive_kind: IntParPrimitiveKind::None,
         since: 0,
+        until: 32,
     },
     IntPar {
         name: "tracing_char_sub_def",
         primitive_kind: IntParPrimitiveKind::None,
         since: 0,
+        until: 32,
     },
     IntPar {
         name: "tracing_stack_levels",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 32,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_assigns",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_groups",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_ifs",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_scan_tokens",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "tracing_nesting",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "pre_display_direction",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "last_line_fit",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "saving_vdiscards",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "saving_hyph_codes",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "suppress_fontnotfound_error",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "xetex_linebreak_locale",
         primitive_kind: IntParPrimitiveKind::None,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_linebreak_penalty",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_protrude_chars",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "texxet",
         primitive_kind: IntParPrimitiveKind::CustomName("TeXXeTstate"),
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "xetex_dash_break",
         primitive_kind: IntParPrimitiveKind::CustomName("XeTeXdashbreakstate"),
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_upwards",
         primitive_kind: IntParPrimitiveKind::CustomName("XeTeXupwardsmode"),
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_use_glyph_metrics",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_inter_char_tokens",
         primitive_kind: IntParPrimitiveKind::CustomName("XeTeXinterchartokenstate"),
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_input_normalization",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_default_input_mode",
         primitive_kind: IntParPrimitiveKind::None,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_default_input_encoding",
         primitive_kind: IntParPrimitiveKind::None,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_tracing_fonts",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_interword_space_shaping",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_generate_actual_text",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "XeTeX_hyphenatable_length",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "synctex",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
     IntPar {
         name: "pdfoutput",
         primitive_kind: IntParPrimitiveKind::Standard,
         since: 0,
+        until: FormatVersion::MAX,
     },
 ];
 
@@ -482,7 +571,7 @@ pub fn get_intpars_for_version(
     let mut n = 0;
 
     for p in INT_PARS {
-        if version >= p.since {
+        if version >= p.since && version <= p.until {
             r.push(*p);
             symbols.add(
                 SymbolCategory::IntPars,

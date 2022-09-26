@@ -82,7 +82,7 @@ truedpi (const char *ident, double point_size, unsigned int bdpi)
 }
 
 static rust_input_handle_t
-dpx_open_pk_font_at (const char *ident, unsigned int dpi, char **pkname)
+dpx_open_pk_font_at (const char *ident, unsigned int dpi)
 {
   /* Tectonic TODO: try a basic filename even if we're not doing to generate on the fly */
   /*kpse_glyph_file_type kpse_file_info;*/
@@ -97,7 +97,6 @@ pdf_font_open_pkfont (pdf_font *font, const char *ident, int index, int encoding
 {
   unsigned int dpi;
   rust_input_handle_t handle;
-  char *pkname;
 
   if (!ident || point_size <= 0.0)
     return  -1;
@@ -110,7 +109,7 @@ pdf_font_open_pkfont (pdf_font *font, const char *ident, int index, int encoding
   }
 
   dpi = truedpi(ident, point_size, base_dpi);
-  handle = dpx_open_pk_font_at(ident, dpi, &pkname);
+  handle = dpx_open_pk_font_at(ident, dpi);
   if (!handle)
     return  -1;
 
@@ -119,7 +118,8 @@ pdf_font_open_pkfont (pdf_font *font, const char *ident, int index, int encoding
   /* Type 3 fonts doesn't have FontName.
    * FontFamily is recommended for PDF 1.5.
    */
-  font->fontname = pkname;
+  font->fontname = NEW(strlen(ident) + 1, char);
+  strcpy(font->fontname, ident);
 
   if (encoding_id >= 0) {
     pdf_encoding_used_by_type3(encoding_id);
@@ -482,7 +482,6 @@ create_pk_CharProc_stream (struct pk_header_ *pkh,
 int
 pdf_font_load_pkfont (pdf_font *font)
 {
-  char *pkname;
   pdf_obj  *fontdict;
   char     *usedchars;
   char     *ident;
@@ -519,12 +518,11 @@ pdf_font_load_pkfont (pdf_font *font)
   assert(ident && usedchars && point_size > 0.0);
 
   dpi  = truedpi(ident, point_size, base_dpi);
-  handle = dpx_open_pk_font_at(ident, dpi, &pkname);
+  handle = dpx_open_pk_font_at(ident, dpi);
   if (!handle) {
     _tt_abort("Could not find/open PK font file: %s (at %udpi)", ident, dpi);
   }
 
-  font->filename = pkname;
   memset(charavail, 0, 256);
   charprocs  = pdf_new_dict();
   /* Include bitmap as 72dpi image:
