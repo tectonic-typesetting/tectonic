@@ -36,20 +36,19 @@ curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net |sh
 This will download the `tectonic` program and place it into the directory where
 you ran the command.
 
-On Windows, you can do the same in a PowerShell window:
+On Windows, you can do the same in a PowerShell window, which will unpack
+`tectonic.exe` for you:
 
 ```ps1
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 iex ((New-Object System.Net.WebClient).DownloadString('https://drop-ps1.fullyjustified.net'))
 ```
 
-This will unpack `tectonic.exe` for you.
-
-In both cases, you should probably move the unpacked file into a directory in
-your executable search path so that you can run Tectonic from any working
-directory. For the time being, the download script doesn’t do this because it
-can be tricky to automatically determine what the best installation destination
-would be.
+No matter your operating system, you should probably move the unpacked file into
+a directory in your executable search path so that you can run Tectonic from any
+working directory. For the time being, the download script doesn’t do this
+because it can be tricky to automatically determine what the best installation
+destination would be.
 
 
 ## Direct download

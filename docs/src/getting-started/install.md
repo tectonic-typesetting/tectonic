@@ -12,35 +12,50 @@ makes Tectonic super easy to install.
 
 [TeXLive]: https://www.tug.org/texlive/acquire-netinstall.html
 
-The quickest way to get started is to [download the latest release][gh-latest]
-from GitHub, or to [install a packaged version][inst-packaged] if one is
-available. If you’d like to see detailed instructions, go to the [How To Install
-Tectonic][inst-ref] guide. But the short version of the GitHub approach is that
-you should:
+The quickest way to get started is to using your terminal. On a
+computer running a Unix-like operating system, including macOS, just run the
+following command in your terminal:
 
-1. Click through to the most recent non-preview release
-2. Download the `.tar.gz` or `.zip` file that corresponds to your computer’s
-   operating system and CPU type
-3. Unpack that archive to obtain the `tectonic` executable file. (Or,
-   `tectonic.exe` on Windows.)
-4. Put that file in the appropriate location so that you can easily run it from
-   your computer’s command prompt.
+```sh
+curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net |sh
+```
 
-[gh-latest]: https://tectonic-typesetting.github.io/latest.html
+This will download the `tectonic` program and place it into the directory where
+you ran the command.
+
+On Windows, copy-paste this into a PowerShell window, which will unpack
+`tectonic.exe` for you:
+
+```ps1
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://drop-ps1.fullyjustified.net'))
+```
+
+No matter your operating system, you should move the unpacked file into a
+directory in your executable search path so that you can run Tectonic from any
+working directory. For the time being, the download script doesn’t do this
+because it can be tricky to automatically determine what the best installation
+destination would be.
+
+Alternatively, you can to [install a packaged version of
+Tectonic][inst-packaged] if one is available. For detailed instructions and
+additional installation options, go to the [How To Install Tectonic][inst-ref]
+guide.
+
 [inst-packaged]: ../installation/index.md#pre-built-binary-packages
 [inst-ref]: ../installation/index.md
 
-That’s all there is to it! You’ll know that you’re set up when you can go to
-your computer’s command prompt and run:
+You’ll know that you’re set up when you can go to your computer’s command prompt
+and run:
 
 ```sh
 $ tectonic --help
 ```
 
 and the result is that you get a printout of information about different options
-and arguments that you can pass to the Tectonic program. (Here and elsewhere
-we’ll use a convention of a leading `$` to indicate a command that you should
-run at your computer’s command prompt. You don’t type the dollar sign itself.)
+and arguments that you can pass to the Tectonic program. (From now on we’ll use
+a convention of a leading `$` to indicate a command that you should run at your
+computer’s command prompt. You don’t type the dollar sign itself.)
 
 To be explicit, *Tectonic does not invoke an external `latex` program, and
 Tectonic is not a “wrapper” for (La)TeX.* Tectonic *is* the LaTeX program. This
