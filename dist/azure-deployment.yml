@@ -108,7 +108,7 @@ jobs:
         isRelease: ${{ parameters.isRelease }}
     - bash: |
         set -xeou pipefail
-        cranko cargo foreach-released -- publish --no-verify
+        cranko cargo foreach-released --pause=30 -- publish --no-verify
       displayName: Publish updated Cargo crates
       env:
         CARGO_REGISTRY_TOKEN: $(CARGO_REGISTRY_TOKEN)
