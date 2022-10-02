@@ -5,22 +5,51 @@ stack is that all of Tectonic’s functionality is delivered in a single
 executable file — not the usual tree of thousands of interlocking data files and
 binary tools.
 
-***Know what you want? [Download the latest pre-built Tectonic binaries
-here][gh-latest].***
-
 You have several options for obtaining the Tectonic executable. The best choice
 depends on your computing environment and your needs.
 
+- **For the fastest and easiest installation, [copy-paste a command into your
+  terminal](#copy-paste-a-terminal-command)** that will automatically download
+  the right Tectonic program for your computer
 - [Direct download](#direct-download) a Tectonic release
 - [Pre-built binary packages](#pre-built-binary-packages) for your favorite
   operating system or package manager
 - [Compile it yourself](#compile-tectonic-yourself)
 
-The [direct download](#direct-download) method should cover most use cases, but
-if you want better integration with your operating system or computing
-environment, [packaged versions](#pre-built-binary-packages) might make more
-sense. There should be no need to compile Tectonic yourself unless you want to,
-or you’re hoping to run it on an unusual platform.
+The [copy-paste method](#copy-paste-a-terminal-command) should cover most use
+cases, but if you want better integration with your operating system or
+computing environment, [packaged versions](#pre-built-binary-packages) might
+make more sense. There should be no need to compile Tectonic yourself unless you
+want to, or you’re hoping to run it on an unusual platform.
+
+
+## Copy-paste a terminal command
+
+This is generally the easiest way to get Tectonic onto your computer. On a
+computer running a Unix-like operating system, including macOS, just run the
+following command in your terminal:
+
+```sh
+curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net |sh
+```
+
+This will download the `tectonic` program and place it into the directory where
+you ran the command.
+
+On Windows, you can do the same in a PowerShell window:
+
+```ps1
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://drop-ps1.fullyjustified.net'))
+```
+
+This will unpack `tectonic.exe` for you.
+
+In both cases, you should probably move the unpacked file into a directory in
+your executable search path so that you can run Tectonic from any working
+directory. For the time being, the download script doesn’t do this because it
+can be tricky to automatically determine what the best installation destination
+would be.
 
 
 ## Direct download
