@@ -1279,8 +1279,13 @@ AES_cbc_encrypt_tectonic (const unsigned char *key,    size_t  key_len,
   if (len > 0 || padding) {
     for (i = 0; i < len; i++)
       block[i] = inptr[i] ^ ctx->iv[i];
+
+    /* Tectonic: in release mode GCC gives a "warning: writing 16 bytes into a
+     * region of size 15" here. It seems to be spurious based on the `len`
+     * variable; if I change it to 0, the warning goes away.. */
     for (i = len; i < AES_BLOCKSIZE; i++)
       block[i] = padbytes ^ ctx->iv[i];
+
     rijndaelEncrypt(ctx->rk, ctx->nrounds, block, outptr);
     memcpy(ctx->iv, outptr, AES_BLOCKSIZE);
     inptr  += AES_BLOCKSIZE;

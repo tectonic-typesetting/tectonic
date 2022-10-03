@@ -6,6 +6,8 @@
 //! This crate provides a few extern "C" functions that expose the functionality
 //! of the flate2 crate in a C API that can be consumed by other C/C++ code in
 //! the Tectonic codebase.
+//!
+//! If you change the interfaces here, rerun cbindgen as described in the README!
 
 use flate2::{Compress, Compression, Decompress, FlushCompress, FlushDecompress, Status};
 use std::{

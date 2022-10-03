@@ -403,9 +403,17 @@ pdf_ximage_load_image (const char *ident, const char *filename, load_options opt
 
     if (id < 0) {
         if (dpx_conf.compat_mode == dpx_mode_compat_mode) {
-            dpx_warning("pdf: image inclusion failed for \"%s\".", filename);
+            if (format == IMAGE_TYPE_PDF || format == IMAGE_TYPE_EPS) {
+                dpx_warning("pdf: image inclusion failed for \"%s\" (page=%d).", filename, options.page_no);
+            } else {
+                dpx_warning("pdf: image inclusion failed for \"%s\".", filename);
+            }
         } else {
-            _tt_abort("pdf: image inclusion failed for \"%s\".", filename);
+            if (format == IMAGE_TYPE_PDF || format == IMAGE_TYPE_EPS) {
+                _tt_abort("pdf: image inclusion failed for \"%s\" (page=%d).", filename, options.page_no);
+            } else {
+                _tt_abort("pdf: image inclusion failed for \"%s\".", filename);
+            }
         }
     }
 

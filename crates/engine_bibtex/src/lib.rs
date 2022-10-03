@@ -16,6 +16,8 @@
 //!
 //! [Tectonic]: https://tectonic-typesetting.github.io/
 //! [`tectonic`]: https://docs.rs/tectonic/
+//!
+//! If you change the interfaces here, rerun cbindgen as described in the README!
 
 use std::ffi::CString;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};

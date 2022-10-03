@@ -1,5 +1,5 @@
 /* tectonic/xetex-constants.h: symbolic constants from the WEB code
-   Copyright 2017-2021 the Tectonic Project
+   Copyright 2017-2022 the Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -80,7 +80,6 @@
 #define UC_CODE(n) (eqtb[UC_CODE_BASE + (n)].b32.s1)
 #define SF_CODE(n) (eqtb[SF_CODE_BASE + (n)].b32.s1)
 #define MATH_CODE(n) (eqtb[MATH_CODE_BASE + (n)].b32.s1)
-#define CHAR_SUB_CODE(n) (eqtb[CHAR_SUB_CODE_BASE + (n)].b32.s1)
 #define INTPAR(n) (eqtb[INT_BASE + INT_PAR__##n].b32.s1)
 #define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].b32.s1)
 #define DEL_CODE(n) (eqtb[DEL_CODE_BASE + (n)].b32.s1)
@@ -330,7 +329,6 @@
 #define TOO_BIG_LANG 256
 #define BOX_VAL_LIMIT 320
 #define TOK_VAL_LIMIT 384
-#define PRIM_PRIME 431
 #define MAX_HLIST_STACK 512
 #define HYPH_PRIME 607
 #define HYPHENATABLE_LENGTH_LIMIT 4095

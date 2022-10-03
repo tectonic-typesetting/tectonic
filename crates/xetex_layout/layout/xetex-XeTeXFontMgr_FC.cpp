@@ -122,7 +122,8 @@ XeTeXFontMgr_FC::readNames(FcPattern* pat)
                 case kPreferredSubfamilyName:
                     {
                         bool preferredName = false;
-                        if (nameRec.platform_id == TT_PLATFORM_MACINTOSH
+                        /* Tectonic: macRomanConv may not be available; see comment below */
+                        if (macRomanConv != NULL && nameRec.platform_id == TT_PLATFORM_MACINTOSH
                                 && nameRec.encoding_id == TT_MAC_ID_ROMAN && nameRec.language_id == 0) {
                             utf8name = convertToUtf8(macRomanConv, nameRec.string, nameRec.string_len);
                             preferredName = true;
@@ -319,10 +320,21 @@ XeTeXFontMgr_FC::initialize()
         _tt_abort("FreeType initialization failed");
 
     UErrorCode err = U_ZERO_ERROR;
+
+    /* Tectonic: Alpine >=3.16 splits the ICU data in a way that seems to make
+     * the "macintosh" converter unavailable in our MUSL static builds. I don't
+     * see a workaround: installing `icu-data-full` doesn't help, I think
+     * because the static libraries don't access the data file that it provides.
+     */
     macRomanConv = ucnv_open("macintosh", &err);
+    if (!U_SUCCESS(err)) {
+        err = U_ZERO_ERROR;
+        macRomanConv = NULL;
+    }
+
     utf16beConv = ucnv_open("UTF16BE", &err);
     utf8Conv = ucnv_open("UTF8", &err);
-    if (err)
+    if (!U_SUCCESS(err))
         _tt_abort("cannot read font names");
 
     FcPattern* pat = FcNameParse((const FcChar8*)":outline=true");

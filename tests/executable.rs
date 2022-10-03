@@ -1,4 +1,4 @@
-// Copyright 2016-2021 the Tectonic Project
+// Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 use lazy_static::lazy_static;
@@ -446,6 +446,18 @@ fn biber_issue_844() {
 
     let stat = std::fs::metadata(&bibpath).unwrap();
     assert_eq!(stat.len(), contents.len() as u64);
+}
+
+/// Fakily testing the bibtex implementation even though we don't have LaTeX.
+/// This implementation is strongly cribbed from the biber tests, which came
+/// first.
+#[test]
+fn bibtex_multiple_aux_files() {
+    let fmt_arg = get_plain_format_arg();
+    let tempdir =
+        setup_and_copy_files(&["bibtex_multiple_aux_files.tex", "refs.bib", "catchkey.bst"]);
+    let output = run_tectonic(tempdir.path(), &[&fmt_arg, "bibtex_multiple_aux_files.tex"]);
+    success_or_panic(&output);
 }
 
 #[test]

@@ -1,5 +1,5 @@
 // src/lib.rs -- main module file for the Tectonic library.
-// Copyright 2016-2018 the Tectonic Project
+// Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![recursion_limit = "1024"] // "error_chain can recurse deeply"

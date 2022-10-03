@@ -262,7 +262,7 @@ size_t ttbc_input_get_size(ttbc_state_t *es, ttbc_input_handle_t *handle);
 /**
  * Get the modification time of a Tectonic input file.
  */
-time_t ttbc_input_get_mtime(ttbc_state_t *es, ttbc_input_handle_t *handle);
+int64_t ttbc_input_get_mtime(ttbc_state_t *es, ttbc_input_handle_t *handle);
 
 /**
  * Seek in a Tectonic input stream.

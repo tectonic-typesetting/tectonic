@@ -1,4 +1,4 @@
-// Copyright 2017-2018 the Tectonic Project
+// Copyright 2017-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 /// Test that we can operate in "initex" mode to generate format files as
@@ -196,6 +196,6 @@ fn plain_format() {
     test_format_generation(
         "plain.tex",
         "plain.fmt",
-        "83bdb2d9caae2406f22940cab5ec689e6c3dcaa64d110259b31f7eb4bc087a42",
+        "2b52cf6d73940ac2eadf88a437d6dc760ba7ad49fa01336d93fb2ed0b9b305db",
     )
 }

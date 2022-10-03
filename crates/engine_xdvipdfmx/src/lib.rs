@@ -124,7 +124,7 @@ impl XdvipdfmxEngine {
                 .build_date
                 .duration_since(SystemTime::UNIX_EPOCH)
                 .expect("invalid build date")
-                .as_secs() as libc::time_t,
+                .as_secs(),
         };
 
         let cdvi = CString::new(dvi)?;
@@ -147,6 +147,8 @@ impl XdvipdfmxEngine {
 
 #[doc(hidden)]
 pub mod c_api {
+    // If you change the interfaces here, rerun cbindgen as described in the README!
+
     use tectonic_bridge_core::CoreBridgeState;
 
     #[derive(Debug)]
@@ -155,7 +157,7 @@ pub mod c_api {
         pub paperspec: *const libc::c_char,
         pub enable_compression: libc::c_uchar,
         pub deterministic_tags: libc::c_uchar,
-        pub build_date: libc::time_t,
+        pub build_date: u64,
     }
 
     #[allow(improper_ctypes)] // for CoreBridgeState

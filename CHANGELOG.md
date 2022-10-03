@@ -1,5 +1,62 @@
 # rc: minor bump
 
+This release updates Tectonic to support TeXLive 2022.0! There are not many code
+changes in the engines, so the primary user-visible changes will stem from the
+many package updates incorporated into the new TeXLive 2022.0 bundle. To switch
+a preexisting Tectonic document to use the new bundle, update the `doc.bundle`
+field in `Tectonic.toml` to
+`https://data1.fullyjustified.net/tlextras-2022.0r0.tar`. Newly-created
+documents will use this bundle (or subsequent updates) by default.
+
+This release also adds a new “drop-in” installation method. This adds a way to
+quickly install Tectonic in the popular `curl`/`sh` style. On a Unix-like
+operating system, run:
+
+```sh
+curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net |sh
+```
+
+... to drop a system-appropriate `tectonic` binary in the current working directory.
+On Windows, run the following in a PowerShell terminal:
+
+```ps1
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://drop-ps1.fullyjustified.net'))
+```
+
+Other changes:
+
+- Make it so that running `tectonic -Zhelp` works (#929, @pkgw). Before it would
+  error out because the argument parser wanted an input filename.
+- Fix `-Z continue-on-errors` (#917, @vlasakm). This was broken in an earlier
+  refactoring.
+- Add a `-Z shell-escape-cwd=<dir>` unstable option (#909, @0x00002a). This can
+  work around issues in Tectonic's handing of shell-escape processing, which is
+  very conservative about defaulting to launching programs in a limited
+  environment. In particular, if you set the directory to the document source
+  directory, commands like `\inputminted` can work.
+- It is possible for one `.tex` file to generate multiple `.aux` files. Even if
+  more than one of those files should have triggered its own `bibtex` run,
+  Tectonic only ran `bibtex` once. This is now fixed (#906, #907, @Starrah).
+- Give some more context in the error message if an external (shell-escape) tool
+  tries to open a file that's missing (#899, @matz-e).
+
+The known issue relating to OpenSSL 3 is believed to still be relevant:
+
+- The generic prebuilt Tectonic binaries for Linux are built for the version 1.1
+  series of OpenSSL. The latest Ubuntu release, 22.04 (Jammy Jellyfish), now
+  targets OpenSSL 3, with no compatibility fallback, which means that the
+  prebuilt binaries won’t run. To run Tectonic on these systems, compile it
+  yourself, use the “semistatic” MUSL Linux builds, or install a package built
+  specifically for this OS. To be clear, there are no actual issues with OpenSSL
+  3 compatibility — we just need to provide an alternative set of builds. See
+  #892 for updates.
+
+Thank you to everyone who contributed to this release!
+
+
+# tectonic 0.9.0 (2022-04-27)
+
 This release updates Tectonic to correspond with TeXLive 2021.3, jumping
 forward from the previous sync point of TeXLive 2020.0.
 

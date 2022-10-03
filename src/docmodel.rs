@@ -164,7 +164,11 @@ impl DocumentExt for Document {
 
         if profile.shell_escape {
             // For now, this is the only option we allow.
-            sess_builder.shell_escape_with_temp_dir();
+            if let Some(cwd) = &profile.shell_escape_cwd {
+                sess_builder.shell_escape_with_work_dir(cwd);
+            } else {
+                sess_builder.shell_escape_with_temp_dir();
+            }
         }
 
         if setup_options.only_cached {

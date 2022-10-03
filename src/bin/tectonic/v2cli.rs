@@ -8,7 +8,7 @@ use std::{env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
-    config::PersistentConfig,
+    config::{is_config_test_mode_activated, PersistentConfig},
     ctry,
     docmodel::{DocumentExt, DocumentSetupOptions, WorkspaceCreatorExt},
     driver::PassSetting,
@@ -196,7 +196,7 @@ impl Commands {
 }
 
 /// `build`: Build a document
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct BuildCommand {
     /// Document is untrusted -- disable all known-insecure features
     #[structopt(long)]
@@ -257,14 +257,19 @@ impl BuildCommand {
 
             if self.open {
                 let out_file = doc.output_main_file(output_name);
-                tt_note!(status, "opening `{}`", out_file.display());
-                if let Err(e) = open::that(&out_file) {
-                    tt_error!(
-                        status,
-                        "failed to open `{}` with system handler",
-                        out_file.display();
-                        e.into()
-                    )
+
+                if is_config_test_mode_activated() {
+                    tt_note!(status, "not opening `{}` -- test mode", out_file.display());
+                } else {
+                    tt_note!(status, "opening `{}`", out_file.display());
+                    if let Err(e) = open::that(&out_file) {
+                        tt_error!(
+                            status,
+                            "failed to open `{}` with system handler",
+                            out_file.display();
+                            e.into()
+                        )
+                    }
                 }
             }
         }
@@ -274,13 +279,13 @@ impl BuildCommand {
 }
 
 /// `bundle`: Commands relating to Tectonic bundles
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct BundleCommand {
     #[structopt(subcommand)]
     command: BundleCommands,
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 enum BundleCommands {
     #[structopt(name = "cat")]
     /// Dump the contents of a file in the bundle
@@ -340,7 +345,7 @@ fn get_a_bundle(
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 struct BundleCatCommand {
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
@@ -365,7 +370,7 @@ impl BundleCatCommand {
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 struct BundleSearchCommand {
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
@@ -402,7 +407,7 @@ impl BundleSearchCommand {
 }
 
 /// `dump`: Run a partial build and dump an intermediate file
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct DumpCommand {
     /// Document is untrusted -- disable all known-insecure features
     #[structopt(long)]
@@ -500,7 +505,7 @@ impl DumpCommand {
 }
 
 /// `watch`: Watch input files and execute commands on change
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct WatchCommand {
     /// Tectonic commands to execute on build [default: build]
     #[structopt(long = "exec", short = "x")]
@@ -576,7 +581,7 @@ impl WatchCommand {
 }
 
 /// `new`: Create a new document
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct NewCommand {
     /// The name of the document directory to create.
     #[structopt(default_value = ".")]
@@ -603,13 +608,13 @@ impl NewCommand {
 }
 
 /// `show`: Show various useful pieces of information.
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct ShowCommand {
     #[structopt(subcommand)]
     command: ShowCommands,
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 enum ShowCommands {
     #[structopt(name = "user-cache-dir")]
     /// Print the location of the default per-user cache directory
@@ -630,7 +635,7 @@ impl ShowCommand {
     }
 }
 
-#[derive(Debug, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, StructOpt)]
 struct ShowUserCacheDirCommand {}
 
 impl ShowUserCacheDirCommand {

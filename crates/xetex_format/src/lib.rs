@@ -1,4 +1,4 @@
-// Copyright 2021 the Tectonic Project
+// Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Introspection into the internal data structures of the Tectonic/XeTeX TeX
@@ -44,7 +44,7 @@
 pub type FormatVersion = usize;
 
 /// The latest format version number supported by this version of the crate.
-pub const LATEST_VERSION: FormatVersion = 32;
+pub const LATEST_VERSION: FormatVersion = 33;
 
 mod parseutils;
 
