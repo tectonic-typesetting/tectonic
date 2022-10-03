@@ -1,3 +1,9 @@
+# tectonic_bridge_core 0.3.1 (2022-10-03)
+
+- Remove C's `time_t` from internal FFI APIs to avoid portability issues. This
+  should avoid issues with Linux Musl builds.
+
+
 # tectonic_bridge_core 0.3.0 (2021-10-11)
 
 - Add `SecuritySettings::allow_extra_search_paths()` (#814, @ralismark).

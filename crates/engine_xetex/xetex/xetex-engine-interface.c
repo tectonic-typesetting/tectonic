@@ -15,7 +15,7 @@ int tt_engine_xetex_main(
     ttbc_state_t *api,
     const char *dump_name,
     const char *input_file_name,
-    time_t build_date
+    uint64_t build_date
 );
 
 /* These functions aren't used within the C/C++ library, but are called
@@ -53,7 +53,7 @@ tt_engine_xetex_main(
     ttbc_state_t *api,
     const char *dump_name,
     const char *input_file_name,
-    time_t build_date
+    uint64_t build_date
 ) {
     int rv;
 
@@ -62,7 +62,9 @@ tt_engine_xetex_main(
         return HISTORY_FATAL_ERROR;
     }
 
-    rv = tt_run_engine(dump_name, input_file_name, build_date);
+    /* See ttstub_input_get_mtime() in tectonic_bridge_core about bridging time_t
+    * over FFI. */
+    rv = tt_run_engine(dump_name, input_file_name, (time_t) build_date);
     ttbc_global_engine_exit();
     return rv;
 }

@@ -1,3 +1,19 @@
+# tectonic_engine_xetex 0.4.0 (2022-10-03)
+
+- Synchronize with TeXLive 2022.0 (#936, @pkgw)! Not many changes:
+  - Update the internal TECKit to 2.5.11, corresponding to
+    Unicode 14.0.0.
+  - Update the engine format version to 33, which removes unused
+    MLTeX `char_sub` parameters and expands the primitives table
+    because we've passed 500 of them.
+  - Update the XeTeX revision code to `.999994`.
+  - Remove some vestigial MLTeX code related to the above.
+  - Fix cleanup of TECKit in a few places
+  - Other upstream changes are not relevant to Tectonic.
+- Remove C's `time_t` from internal FFI APIs to avoid portability issues. This
+  should avoid issues with Linux Musl builds.
+
+
 # tectonic_engine_xetex 0.3.0 (2022-04-26)
 
 Update the XeTeX engine for TeXLive 2021 (#882, @pkgw).

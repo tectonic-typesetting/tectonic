@@ -1,0 +1,324 @@
+# Copyright 2016-2022 the Tectonic Project
+# Licensed under the MIT License.
+#
+# Main build-and-test CI stage
+
+# We cannot use Pipelines' matrixing framework because only it works with
+# *runtime variables*, while we want to use templates with *parameters* which
+# are evaluated at *compile time* only. By coding our matrixing data as
+# top-level parameters, we can use them in compile-time template evaluation
+# (`${{ }}` expressions) to achieve a matrixing effect. Only a few *variables*
+# can be used at compile time: see "Available in templates?" in the table at:
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables?view=azure-devops&tabs=yaml
+# This is why some platform-specific steps use `condition:` terms rather than
+# compile-time `${{ if }}:` statements.
+
+parameters:
+- name: pkgconfigBuilds
+  type: object
+  default:
+  - name: linux_stable_semistatic
+    vmImage: ubuntu-20.04
+    params:
+      primaryBuild: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+      TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: true
+
+  - name: linux_stable_extdeps
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_stable_intdeps
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: false
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_beta
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: beta
+
+  - name: linux_nightly
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: nightly
+
+  - name: macos_intdeps
+    vmImage: macos-11
+    params:
+      canaryBuild: true
+      installAllDeps: false
+    vars:
+      TARGET: x86_64-apple-darwin
+      TOOLCHAIN: stable
+
+  - name: macos_extdeps
+    vmImage: macos-11
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
+    vars:
+      TARGET: x86_64-apple-darwin
+      TOOLCHAIN: stable
+
+  - name: windows_intdeps
+    vmImage: windows-2019
+    params:
+      installAllDeps: false
+    vars:
+      TARGET: x86_64-pc-windows-gnu
+      TOOLCHAIN: stable-x86_64-pc-windows-gnu
+
+  - name: windows_extdeps
+    vmImage: windows-2019
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: "external-harfbuzz"
+    vars:
+      TARGET: x86_64-pc-windows-gnu
+      TOOLCHAIN: stable-x86_64-pc-windows-gnu
+
+  - name: linux_ftmtx_none
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: false
+      defaultFeatures: false
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_ftmtx_all
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      explicitFeatures: _all_
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: linux_ftmtx_curl
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+      installAllDeps: true
+      defaultFeatures: false
+      explicitFeatures: "geturl-curl serialization"
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+- name: vcpkgBuilds
+  type: object
+  default:
+  - name: macos
+    vmImage: macos-11
+    params: {}
+    vars:
+      TARGET: x86_64-apple-darwin
+      TOOLCHAIN: stable
+
+  - name: windows
+    vmImage: windows-2019
+    params:
+      windowsVcpkgWorkaround: true
+    vars:
+      TARGET: x86_64-pc-windows-msvc
+      TOOLCHAIN: stable-x86_64-pc-windows-msvc
+
+- name: crossBuilds
+  type: object
+  default:
+  - name: arm_unknown_linux_musleabihf
+    vars:
+      TARGET: arm-unknown-linux-musleabihf
+
+  - name: i686_unknown_linux_gnu
+    vars:
+      TARGET: i686-unknown-linux-gnu
+
+  - name: mips_unknown_linux_gnu
+    vars:
+      TARGET: mips-unknown-linux-gnu
+
+  - name: x86_64_unknown_linux_musl
+    vars:
+      TARGET: x86_64-unknown-linux-musl
+
+jobs:
+
+# pkg-config builds
+- ${{ each build in parameters.pkgconfigBuilds }}:
+  - job: ${{ format('build_{0}_pkgconfig', build.name) }}
+    pool:
+      vmImage: ${{ build.vmImage }}
+    steps:
+    - template: azure-build-and-test-pkgconfig.yml
+      parameters:
+        ${{ insert }}: ${{ build.params }}
+    variables:
+      ${{ insert }}: ${{ build.vars }}
+
+# vcpkg builds
+# TODO: I think Linux/vcpkg is broken: https://github.com/mcgoo/vcpkg-rs/issues/21
+- ${{ each build in parameters.vcpkgBuilds }}:
+  - job: ${{ format('build_{0}_vcpkg', build.name) }}
+    ${{ if eq(build.name, 'windows') }}:  # work around timeouts with slow builds
+      dependsOn: windows_vcpkg_prebuild
+    pool:
+      vmImage: ${{ build.vmImage }}
+    steps:
+    - template: azure-build-and-test-vcpkg.yml
+      parameters:
+        ${{ insert }}: ${{ build.params }}
+    variables:
+      ${{ insert }}: ${{ build.vars }}
+
+# cross builds
+- ${{ each build in parameters.crossBuilds }}:
+  - job: ${{ format('cross_{0}', build.name) }}
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+    - template: azure-build-and-test-cross.yml
+    variables:
+      TOOLCHAIN: stable
+      ${{ insert }}: ${{ build.vars }}
+
+# coverage analysis check
+- job: coverage
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+    - template: azure-coverage.yml
+  variables:
+    TOOLCHAIN: stable
+
+# rustfmt check
+- job: rustfmt
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+    - bash: rustup component add rustfmt
+      displayName: "Install rustfmt"
+    - bash: cargo fmt --all -- --check
+      displayName: "Check rustfmt (cargo)"
+  variables:
+    TOOLCHAIN: stable
+
+# clippy check
+- job: clippy
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+    - template: azure-generic-build-setup.yml
+    - bash: |
+        rustup component add clippy
+        cargo clippy --version
+      displayName: "Install clippy"
+    # Ew, redundant with stock builds:
+    - bash: |
+        set -xeuo pipefail
+        sudo apt-get update
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+          libgraphite2-dev \
+          libharfbuzz-dev \
+          libfontconfig1-dev \
+          libicu-dev \
+          libssl-dev \
+          openssl \
+          zlib1g-dev
+      displayName: "Install pkg-config dependencies (Ubuntu)"
+    - bash: cargo clippy --all --all-targets --all-features -- --deny warnings
+      displayName: "Check clippy (cargo)"
+  variables:
+    TOOLCHAIN: stable
+
+# book build
+- job: book
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+  - template: azure-generic-build-setup.yml
+  - bash: |
+      fn="mdbook-v$(MDBOOK_VERSION)-x86_64-unknown-linux-gnu.tar.gz"
+      url="https://github.com/rust-lang/mdBook/releases/download/v$(MDBOOK_VERSION)/$fn"
+      wget -q --progress=dot "$url"
+      tar xzf "$fn"
+      rm -f "$fn"
+    displayName: Install mdbook $(MDBOOK_VERSION)
+  - bash: cargo build -p tectonic_cfg_support
+    displayName: Mini cargo build
+  - bash: |
+      git add .
+      cranko release-workflow commit
+      git show HEAD
+    displayName: cranko release-workflow commit
+  - bash: |
+      artifact_dir="$(Build.ArtifactStagingDirectory)/book"
+      mkdir -p "$artifact_dir"
+      cd docs && ../mdbook build -d "$artifact_dir"
+    displayName: mdbook build
+  - task: PublishPipelineArtifact@1
+    displayName: Publish book artifacts
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/book'
+      artifactName: book
+  - bash: cd docs && ../mdbook test
+    displayName: mdbook test
+
+# Hack to build Windows vcpkg deps in their own job, because it takes so long
+# that the Windows jobs routinely hit the 60-minute timeout.
+- job: windows_vcpkg_prebuild
+  pool:
+    vmImage: windows-2019
+  steps:
+  - bash: |
+      echo "##vso[task.setvariable variable=VCPKG_ROOT;]$(pwd)/target/vcpkg"
+    displayName: Set up build variables
+
+  - bash: cargo install cargo-vcpkg
+    displayName: Install cargo-vcpkg
+
+  - bash: |
+      set -xeuo pipefail
+      cargo vcpkg -v build
+
+      # There is something weird about buildtrees/icu/ that prevents
+      # us from easily rm -rf'ing it. Too bad because that directory
+      # is easily the largest part of the vcpkg tree.
+      rm -rf target/vcpkg/downloads
+      cd target/vcpkg/buildtrees
+      for d in * ; do
+        if [ $d != icu ] ; then
+          rm -rf $d
+        fi
+      done
+    displayName: Build vcpkg deps
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish vcpkg deps as artifact
+    inputs:
+      targetPath: 'target/vcpkg'
+      artifactName: vcpkg-deps-windows

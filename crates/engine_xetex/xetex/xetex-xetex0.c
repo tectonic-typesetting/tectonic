@@ -1,5 +1,5 @@
 /* xetex-xetex0.c: bulk of the WEB code translated to C
-   Copyright 2016-2018 The Tectonic Project
+   Copyright 2016-2022 The Tectonic Project
    Licensed under the MIT License.
 */
 
@@ -2020,15 +2020,7 @@ void print_param(int32_t n)
     case INT_PAR__error_context_lines:
         print_esc_cstr("errorcontextlines");
         break;
-    case INT_PAR__char_sub_def_min:
-        print_esc_cstr("charsubdefmin");
-        break;
-    case INT_PAR__char_sub_def_max:
-        print_esc_cstr("charsubdefmax");
-        break;
-    case INT_PAR__tracing_char_sub_def:
-        print_esc_cstr("tracingcharsubdef");
-        break;
+    /* Tectonic: MLTeX char_sub* params permanently removed */
     case INT_PAR__tracing_stack_levels:
         print_esc_cstr("tracingstacklevels");
         break;
@@ -3819,7 +3811,7 @@ int32_t prim_lookup(str_number s)
                 do {
                     h = h + h + str_pool[k];
                     while (h >= PRIM_PRIME)
-                        h = h - 431;
+                        h = h - PRIM_PRIME;
                 }
                 while (k++ < for_end);
         }
@@ -9821,7 +9813,7 @@ conv_toks(void)
         break;
 
     case XETEX_REVISION_CODE:
-        print_cstr(".999993");
+        print_cstr(".999994");
         break;
 
     case XETEX_VARIATION_NAME_CODE:

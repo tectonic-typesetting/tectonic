@@ -158,7 +158,7 @@ impl TarIndexService {
                         .unwrap()
                         .typed_insert(headers::ContentRange::bytes(l..=h, None).unwrap());
                     Box::new(future::ok(
-                        resp.body((&tar_index.tar[l as usize..=h as usize]).to_vec().into())
+                        resp.body((tar_index.tar[l as usize..=h as usize]).to_vec().into())
                             .unwrap(),
                     ))
                 } else {

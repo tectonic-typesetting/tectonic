@@ -1,3 +1,11 @@
+# tectonic_xetex_format 0.3.0 (2022-10-03)
+
+- Define version 33 of the format in support of TeXLive 2022.0 (#936, @pkgw)
+  - Remove CHAR_SUB_CODE_BASE from here on out. It is only needed for MLTeX,
+    which is disabled in XeTeX. This section of the equivalents table had one
+    entry for every USV, which is a lot of space.
+  - Synchronize PRIM_SIZE with TeXLive 2022, and provide PRIM_PRIME
+
 # tectonic_xetex_format 0.2.0 (2022-04-26)
 
 Update for TeXLive 2021 (#882, @pkgw):

@@ -1,3 +1,11 @@
+# tectonic_engine_xdvipdfmx 0.3.0 (2022-10-03)
+
+- Synchronize with TeXLive 2022.0 (#936, @pkgw). There are no changes in this
+  crate related to the update, but some in `tectonic_pdf_io`.
+- Remove C's `time_t` from internal FFI APIs to avoid portability issues. This
+  should avoid issues with Linux Musl builds.
+
+
 # tectonic_engine_xdvipdfmx 0.2.0 (2022-04-26)
 
 Update xdvipdfmx for TeXLive 2021 (#882, @pkgw). A brief summary of changes

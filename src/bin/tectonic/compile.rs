@@ -92,7 +92,6 @@ pub struct CompileOptions {
     untrusted: bool,
 
     /// Unstable options. Pass -Zhelp to show a list
-    // TODO we can't pass -Zhelp without also passing <input>
     #[structopt(name = "option", short = "Z", number_of_values = 1)]
     unstable: Vec<UnstableArg>,
 }

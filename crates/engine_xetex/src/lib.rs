@@ -1,4 +1,4 @@
-// Copyright 2021 the Tectonic Project
+// Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -35,7 +35,7 @@ use tectonic_errors::prelude::*;
 //
 // DEVELOPER NOTE: if you change this, rerun cbindgen! This value is exported
 // into the C/C++ code as a #define.
-pub const FORMAT_SERIAL: u32 = 32;
+pub const FORMAT_SERIAL: u32 = 33;
 
 /// A possible outcome from a (Xe)TeX engine invocation.
 ///
@@ -191,44 +191,37 @@ impl TexEngine {
             // Note that we have to do all of this setup while holding the
             // lock, because we're modifying static state variables.
 
-            let v = if self.shell_escape_enabled { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"shell_escape_enabled\0".as_ptr() as _, v);
-            }
-
-            let v = if self.halt_on_error { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"halt_on_error_p\0".as_ptr() as _, v);
-            }
-
-            let v = if self.initex_mode { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"in_initex_mode\0".as_ptr() as _, v);
-            }
-
-            let v = if self.synctex_enabled { 1 } else { 0 };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"synctex_enabled\0".as_ptr() as _, v);
-            }
-
-            let v = if self.semantic_pagination_enabled {
-                1
-            } else {
-                0
-            };
-            unsafe {
-                c_api::tt_xetex_set_int_variable(b"semantic_pagination_enabled\0".as_ptr() as _, v);
-            }
-
             let r = unsafe {
-                c_api::tt_engine_xetex_main(
+                use c_api::*;
+                tt_xetex_set_int_variable(
+                    b"shell_escape_enabled\0".as_ptr() as _,
+                    self.shell_escape_enabled.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"halt_on_error_p\0".as_ptr() as _,
+                    self.halt_on_error.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"in_initex_mode\0".as_ptr() as _,
+                    self.initex_mode.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"synctex_enabled\0".as_ptr() as _,
+                    self.synctex_enabled.into(),
+                );
+                tt_xetex_set_int_variable(
+                    b"semantic_pagination_enabled\0".as_ptr() as _,
+                    self.semantic_pagination_enabled.into(),
+                );
+
+                tt_engine_xetex_main(
                     state,
                     cformat.as_ptr(),
                     cinput.as_ptr(),
                     self.build_date
                         .duration_since(SystemTime::UNIX_EPOCH)
                         .expect("invalid build date")
-                        .as_secs() as libc::time_t,
+                        .as_secs(),
                 )
             };
 
@@ -245,6 +238,8 @@ impl TexEngine {
 
 #[doc(hidden)]
 pub mod c_api {
+    // If you change the interfaces here, rerun cbindgen as described in the README!
+
     use tectonic_bridge_core::CoreBridgeState;
 
     #[allow(improper_ctypes)] // for CoreBridgeState
@@ -258,7 +253,7 @@ pub mod c_api {
             api: &mut CoreBridgeState,
             dump_name: *const libc::c_char,
             input_file_name: *const libc::c_char,
-            build_date: libc::time_t,
+            build_date: u64,
         ) -> libc::c_int;
     }
 }

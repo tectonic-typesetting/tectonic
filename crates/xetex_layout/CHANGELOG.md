@@ -1,3 +1,11 @@
+# tectonic_xetex_layout 0.2.1 (2022-10-03)
+
+- Work around ICU limitations in Alpine 3.16. The latest version of Alpine Linux
+  seems to provide a static ICU that no longer has the "macintosh" converter
+  built in. So don't error out if it fails to load; just hope that everything
+  will be OK.
+
+
 # tectonic_xetex_layout 0.2.0 (2022-04-26)
 
 Update for TeXLive 2021 (#882, @pkgw).

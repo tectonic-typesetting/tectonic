@@ -221,6 +221,15 @@ pub struct OutputProfile {
     /// shell-escape opens enormous security holes. It should only ever be
     /// activated with fully trusted input.
     pub shell_escape: bool,
+
+    /// Directory to use as the cwd for shell escaped execution.
+    ///
+    /// Setting this to $(pwd) gives the same relative path shell-escape behaviour
+    /// (e.g. for \inputminted), as other engines, such as xelatex
+    ///
+    /// Directory is not managed and any files created in it will not be deleted.
+    ///
+    pub shell_escape_cwd: Option<String>,
 }
 
 /// The output target type of a document build.
@@ -295,6 +304,7 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
             index_file: DEFAULT_INDEX_FILE.to_owned(),
             postamble_file: DEFAULT_POSTAMBLE_FILE.to_owned(),
             shell_escape: false,
+            shell_escape_cwd: None,
         },
     );
     outputs
@@ -335,6 +345,7 @@ mod syntax {
         #[serde(rename = "postamble")]
         pub postamble_file: Option<String>,
         pub shell_escape: Option<bool>,
+        pub shell_escape_cwd: Option<String>,
     }
 
     impl OutputProfile {
@@ -364,6 +375,7 @@ mod syntax {
             };
 
             let shell_escape = if !rt.shell_escape { None } else { Some(true) };
+            let shell_escape_cwd = rt.shell_escape_cwd.clone();
 
             OutputProfile {
                 name: rt.name.clone(),
@@ -373,6 +385,7 @@ mod syntax {
                 index_file,
                 postamble_file,
                 shell_escape,
+                shell_escape_cwd,
             }
         }
 
@@ -399,6 +412,7 @@ mod syntax {
                     .clone()
                     .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
                 shell_escape: self.shell_escape.unwrap_or_default(),
+                shell_escape_cwd: self.shell_escape_cwd.clone(),
             }
         }
     }

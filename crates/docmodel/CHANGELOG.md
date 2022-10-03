@@ -1,3 +1,11 @@
+# tectonic_docmodel 0.2.0 (2022-10-03)
+
+- Define a new TOML item, `shell_escape_cwd`, that can be used to specify the
+  directory in which shell-escape state should be managed. The main expected use
+  case is to set it to the TeX source directory, to make it possible to work
+  around limitations in Tectonic’s encapsulated shell-escape support.
+
+
 # tectonic_docmodel 0.1.2 (2022-02-28)
 
 - Define HTML options for build output (#865, @pkgw)

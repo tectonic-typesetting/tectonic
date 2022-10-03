@@ -1,4 +1,4 @@
-// Copyright 2021 the Tectonic Project
+// Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 //! The "equivalencies table".
@@ -43,7 +43,7 @@
 //! 22. Character space-factor codes (`sf_code_base`, `NUMBER_USVS`)
 //! 23. Character math codes (`math_code_base`, `NUMBER_USVS`)
 //! 24. Character substitution codes (`char_sub_code_base`, `NUMBER_USVS`).
-//!     This is an MLTeX vestige and perhaps could be removed.
+//!     This is an MLTeX vestige and is removed in format versions >= 33.
 //! 25. Integer parameters (`int_base`, ~85)
 //! 26. Integer registers (`count_base`, `NUMBER_REGS`)
 //! 27. Delimeter codes (`del_code_base`, `NUMBER_USVS`)
@@ -79,6 +79,7 @@ use crate::{
     engine::Engine,
     parseutils,
     symbols::{SymbolCategory, SymbolTable},
+    FormatVersion,
 };
 
 #[derive(Debug)]
@@ -195,7 +196,7 @@ fn write_eqtb_value(arr: &mut [u8], index: i32, value: i32) {
     base::memword_write_b32_s1(arr, index, value);
 }
 
-pub fn initialize_eqtb_symbols(symbols: &mut SymbolTable) -> Result<()> {
+pub fn initialize_eqtb_symbols(version: FormatVersion, symbols: &mut SymbolTable) -> Result<()> {
     let n_frozen_primitives = 12;
     let n_glue_pars = symbols.lookup("GLUE_PARS");
     let n_locals = symbols.lookup("NUM_LOCALS");
@@ -285,14 +286,22 @@ pub fn initialize_eqtb_symbols(symbols: &mut SymbolTable) -> Result<()> {
     let math_code_base = sf_code_base + base::NUMBER_USVS as isize;
     symbols.add(SymbolCategory::Eqtb, "MATH_CODE_BASE", math_code_base)?;
 
+    // As of version 33, we no longer include the char_sub_code chunk, which is
+    // unused because Tectonic has removed all MLTeX support.
     let char_sub_code_base = math_code_base + base::NUMBER_USVS as isize;
-    symbols.add(
-        SymbolCategory::Eqtb,
-        "CHAR_SUB_CODE_BASE",
-        char_sub_code_base,
-    )?;
 
-    let int_base = char_sub_code_base + base::NUMBER_USVS as isize;
+    let int_base = if version > 32 {
+        char_sub_code_base
+    } else {
+        symbols.add(
+            SymbolCategory::Eqtb,
+            "CHAR_SUB_CODE_BASE",
+            char_sub_code_base,
+        )?;
+
+        char_sub_code_base + base::NUMBER_USVS as isize
+    };
+
     symbols.add(SymbolCategory::Eqtb, "INT_BASE", int_base)?;
 
     let count_base = int_base + n_int_pars;

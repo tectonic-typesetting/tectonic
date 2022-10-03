@@ -1,4 +1,4 @@
-// Copyright 2021 the Tectonic Project
+// Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 //! "Simple" enumerations have variants and values that do not depend on the
@@ -177,6 +177,8 @@ declare! {
     }
 }
 
+// As of version 33, CHAR_SUB_DEF_CODE is no longer
+// used, but to make life easy we still define it here.
 declare! {
     ShorthandDefCodes {
         Char CHAR_DEF_CODE 0,

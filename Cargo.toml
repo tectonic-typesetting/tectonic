@@ -4,7 +4,7 @@
 
 [package]
 name = "tectonic"
-version = "0.9.0"
+version = "0.10.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
@@ -71,11 +71,11 @@ sha2 = "^0.9"
 structopt = "0.3"
 tectonic_bridge_core = { path = "crates/bridge_core", version =">=0.3.0,<1"}
 tectonic_bundles = { path = "crates/bundles", version =">=0.3.0,<1", default-features = false }
-tectonic_docmodel = { path = "crates/docmodel", version =">=0.1.2,<1", optional = true }
+tectonic_docmodel = { path = "crates/docmodel", version =">=0.2.0,<1", optional = true }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version =">=0.1.0,<1"}
 tectonic_engine_spx2html = { path = "crates/engine_spx2html", version =">=0.1.1,<1"}
-tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version =">=0.1.0,<1"}
-tectonic_engine_xetex = { path = "crates/engine_xetex", version =">=0.2.0,<1"}
+tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version =">=0.3.0,<1"}
+tectonic_engine_xetex = { path = "crates/engine_xetex", version =">=0.4.0,<1"}
 tectonic_errors = { path = "crates/errors", version =">=0.1.0,<1"}
 tectonic_geturl = { path = "crates/geturl", version =">=0.3.0,<1", default-features = false }
 tectonic_io_base = { path = "crates/io_base", version =">=0.3.0,<1"}
@@ -120,7 +120,7 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "6b6a35335c9064fac2ec6684c4f79808dce59b7d"
+rev = "01b29f6d8212bc845da64773b18665d682f5ab66"
 
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
@@ -137,11 +137,11 @@ tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bundles = "thiscommit:2022-03-29:SFnXSaL"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
-tectonic_docmodel = "thiscommit:2022-02-20:2SpEl4c"
+tectonic_docmodel = "a88a0418a9c3c559d023d9b1da9b03fce3a469e5"
 tectonic_engine_bibtex = "thiscommit:2021-01-17:KuhaeG1e"
 tectonic_engine_spx2html = "thiscommit:2022-03-02:IQWAncv"
-tectonic_engine_xdvipdfmx = "7dcbc52e58f9774b3d592919a9105377faeac509"
-tectonic_engine_xetex = "thiscommit:2022-02-20:J4dXT3x"
+tectonic_engine_xdvipdfmx = "8a003834b1f6d967d33cc07de4cc025af14560da"
+tectonic_engine_xetex = "c135e6a4a5a2e8c2dc4edcbcfd93f7d466ff8f88"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_geturl = "68c5fc525c5fead75913bd90380043761bde9f61"
 tectonic_io_base = "thiscommit:2021-06-13:XFjtSsZ"

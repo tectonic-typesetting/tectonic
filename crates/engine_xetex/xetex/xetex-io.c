@@ -210,6 +210,7 @@ apply_normalization(uint32_t* buf, int len, int norm)
 
     status = TECkit_ConvertBuffer(*normPtr, (Byte*)buf, len * sizeof(UInt32), &inUsed,
                 (Byte*)&buffer[first], sizeof(*buffer) * (buf_size - first), &outUsed, 1);
+    TECkit_ResetConverter(*normPtr);
     if (status != kStatus_NoError)
         buffer_overflow();
     last = first + outUsed / sizeof(*buffer);

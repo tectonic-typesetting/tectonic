@@ -1,3 +1,9 @@
+# tectonic_engine_bibtex 0.1.4 (2022-10-03)
+
+No code changes, but some internal documentation improvements about managing FFI
+APIs.
+
+
 # tectonic_engine_bibtex 0.1.3 (2021-06-17)
 
 - Switch from running [cbindgen] at build time to having the developer run it

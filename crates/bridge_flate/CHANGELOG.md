@@ -1,3 +1,9 @@
+# tectonic_bridge_flate 0.1.6 (2022-10-03)
+
+No code changes, but some internal documentation improvements about managing FFI
+APIs.
+
+
 # tectonic_bridge_flate 0.1.5 (2021-06-17)
 
 - Switch from running [cbindgen] at build time to having the developer run it

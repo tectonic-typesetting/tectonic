@@ -386,10 +386,6 @@ dvipdfmx_main (
     select_pages(pagespec);
   }
 
-  /*kpse_init_prog("", font_dpi, NULL, NULL);
-    kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
-  pdf_font_set_dpi(font_dpi);
-
   {
     /* Dependency between DVI and PDF side is rather complicated... */
     dvi2pts = dvi_init(dvi_filename, mag);
@@ -404,6 +400,10 @@ dvipdfmx_main (
                       &do_encryption, &key_bits, &permission, oplain, uplain,
                       &has_id, id1, id2);
   }
+
+  /*kpse_init_prog("", font_dpi, NULL, NULL);
+    kpse_set_program_enabled(kpse_pk_format, true, kpse_src_texmf_cnf);*/
+  pdf_font_set_dpi(font_dpi);
 
   settings.ver_major = pdf_version_major;
   settings.ver_minor = pdf_version_minor;
@@ -499,6 +499,9 @@ tt_engine_xdvipdfmx_main(
     return 99;
   }
 
+  /* See ttstub_input_get_mtime() in tectonic_bridge_core about bridging time_t
+   * over FFI. */
+
   rv = dvipdfmx_main(
     pdfname,
     dviname,
@@ -509,7 +512,7 @@ tt_engine_xdvipdfmx_main(
     (bool) config->deterministic_tags,
     false, /* quiet */
     0, /* verbose */
-    config->build_date,
+    (time_t) config->build_date,
     config->paperspec
   );
 
