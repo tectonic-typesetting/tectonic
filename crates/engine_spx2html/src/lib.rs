@@ -158,16 +158,10 @@ impl<'a> XdvEvents for EngineState<'a> {
         // Might we need to end the initialization phase?
 
         if self.in_endable_init() {
-            let end_init = if let Some(cmd) = tdux_command {
-                match cmd {
-                    "emit" | "provideFile" | "asp" | "aep" | "cs" | "ce" | "mfs" | "me" | "dt" => {
-                        true
-                    }
-                    _ => false,
-                }
-            } else {
-                false
-            };
+            let end_init = matches!(
+                tdux_command.unwrap_or("none"),
+                "emit" | "provideFile" | "asp" | "aep" | "cs" | "ce" | "mfs" | "me" | "dt"
+            );
 
             if end_init {
                 self.state.ensure_initialized()?;
@@ -539,7 +533,7 @@ impl InitializationState {
             }
 
             if let Some(info) = self.fonts.get_mut(&bold_italic) {
-                info.family_name = family_name.clone();
+                info.family_name = family_name;
                 info.family_relation = FamilyRelativeFontId::BoldItalic;
             }
         } else {
