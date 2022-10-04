@@ -950,6 +950,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "html-escape"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8e7479fa1ef38eb49fb6a42c426be515df2d063f06cb8efd3e50af073dbc26c"
+dependencies = [
+ "utf8-width",
+]
+
+[[package]]
 name = "http"
 version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2308,7 +2317,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.10.0"
+version = "0.11.0"
 dependencies = [
  "atty",
  "byte-unit",
@@ -2388,7 +2397,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_harfbuzz"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "cc",
  "tectonic_bridge_graphite2",
@@ -2452,9 +2461,10 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_spx2html"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "byteorder",
+ "html-escape",
  "percent-encoding",
  "pinot",
  "tectonic_bridge_core",
@@ -2479,7 +2489,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xetex"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "cc",
  "libc",
@@ -2544,7 +2554,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xdv"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "byteorder",
  "clap",

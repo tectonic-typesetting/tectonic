@@ -1,3 +1,8 @@
+# tectonic_xdv 0.2.1 (2022-10-04)
+
+- Remove a quasi-debug println (#941, @pkgw).
+
+
 # tectonic_xdv 0.2.0 (2022-02-28)
 
 - Significant API reworks and extensions to support the forthcoming prototype

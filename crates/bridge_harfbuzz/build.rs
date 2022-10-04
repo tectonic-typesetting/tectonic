@@ -105,6 +105,9 @@ mod inner {
 
         if target.contains("apple") {
             cfg.define("HAVE_CORETEXT", "1");
+
+            // AssertMacros.h defines a verify() that conflicts with hb-shape.cc.
+            cfg.define("__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES", "0");
         }
 
         if target.contains("windows-gnu") {

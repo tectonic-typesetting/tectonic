@@ -1,3 +1,11 @@
+# tectonic_engine_spx2html 0.2.0 (2022-10-04)
+
+- Many updates for [tt-weave] (#941, @pkgw). This crate is still highly unstable
+  so we're not going to document them.
+
+[tt-weave]: https://github.com/pkgw/tt-weave/
+
+
 # tectonic_engine_spx2html 0.1.1 (2022-03-02)
 
 - Use the new pinot 0.1.4, which adds the new APIs needed by Tectonic (#870,
