@@ -1152,7 +1152,7 @@ impl EmittingState {
     /// make it so that the TeX code doesn't have to worry too much about
     /// escaping, etc. The general format is:
     ///
-    /// ```
+    /// ```notest
     /// \special{tdux:mfs tagname
     /// Cclass % add a CSS class
     /// Sname value % Add a CSS setting in the style attr
