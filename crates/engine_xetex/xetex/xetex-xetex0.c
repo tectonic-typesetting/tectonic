@@ -14791,7 +14791,7 @@ new_graf(bool indented)
 
     /* Tectonic customization: insert <p> flagged as automatic */
     if (semantic_pagination_enabled)
-        tt_insert_special("tdux:as p");
+        tt_insert_special("tdux:asp");
 
     if (LOCAL(every_par) != TEX_NULL)
         begin_token_list(LOCAL(every_par), EVERY_PAR_TEXT);
@@ -14857,7 +14857,7 @@ end_graf(void)
     if (cur_list.mode == HMODE) {
         /* Tectonic customization: insert </p> flagged as automatic */
         if (semantic_pagination_enabled)
-            tt_insert_special("tdux:ae p");
+            tt_insert_special("tdux:aep");
 
         if (cur_list.head == cur_list.tail)
             pop_nest();

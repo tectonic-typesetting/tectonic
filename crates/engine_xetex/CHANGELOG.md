@@ -1,4 +1,15 @@
-# rc: minor bump
+# rc: micro bump
+
+- When emitting in HTML mode, express paragraphs with `<div class="tdux-p">`
+  instead of `<p>` (#941, @pkgw). This might seem wrong, but matches TeX's
+  semantics better to the HTML specification, which is quite explicit that the
+  `<p>` element does not have any special semantic meaning, and in fact
+  recommends grouping semantic paragraphs with `<div>`s. You can't nest an
+  `<ol>` inside a `<p>`, for instance, which does not align with TeX's view of
+  things.
+
+
+# tectonic_engine_xetex 0.4.0 (2022-10-03)
 
 - Synchronize with TeXLive 2022.0 (#936, @pkgw)! Not many changes:
   - Update the internal TECKit to 2.5.11, corresponding to

@@ -950,6 +950,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "html-escape"
+version = "0.2.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8e7479fa1ef38eb49fb6a42c426be515df2d063f06cb8efd3e50af073dbc26c"
+dependencies = [
+ "utf8-width",
+]
+
+[[package]]
 name = "http"
 version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2455,6 +2464,7 @@ name = "tectonic_engine_spx2html"
 version = "0.0.0-dev.0"
 dependencies = [
  "byteorder",
+ "html-escape",
  "percent-encoding",
  "pinot",
  "tectonic_bridge_core",

@@ -1,5 +1,18 @@
 # rc: minor bump
 
+- Many updates to the experimental, unstable `spx2html` engine for creating HTML
+  output (#941, @pkgw). They will not be documented here because there are a lot
+  and the aforementioned experimental-ness and instability. This work is in
+  service of the [tt-weave] demo, which is almost ready for a preliminary
+  release.
+- Add a tweak to the Harfbuzz build script that should hopefully fix builds on
+  macOS against old SDKs, as seen in conda-forge (#944, @pkgw).
+
+[tt-weave]: https://github.com/pkgw/tt-weave/
+
+
+# tectonic 0.10.0 (2022-10-03)
+
 This release updates Tectonic to support TeXLive 2022.0! There are not many code
 changes in the engines, so the primary user-visible changes will stem from the
 many package updates incorporated into the new TeXLive 2022.0 bundle. To switch

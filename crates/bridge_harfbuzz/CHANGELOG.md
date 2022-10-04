@@ -1,5 +1,12 @@
 # rc: micro bump
 
+- On macOS, build with the preprocessor directive
+  `__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES=0`, which should
+  hopefully fix compile failures with old SDKs (#944, @pkgw).
+
+
+# tectonic_bridge_harfbuzz 0.2.6 (2022-10-03)
+
 - Update the vendored harfbuzz to 5.2.0.
 
 

@@ -19,6 +19,7 @@ edition = "2018"
 
 [dependencies]
 byteorder = "^1.4"
+html-escape = "^0.2"
 percent-encoding = "^2.1"
 pinot = "^0.1.4"
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }

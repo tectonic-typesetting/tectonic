@@ -633,24 +633,26 @@ impl<T: XdvEvents> XdvParser<T> {
             return Err(XdvError::IllegalOpcode(opcode, cursor.global_offset()).into_internal());
         }
 
-        let font_num = cursor.get_compact_i32_smpos(opcode - Opcode::DefineFont1 as u8)?;
+        let _font_num = cursor.get_compact_i32_smpos(opcode - Opcode::DefineFont1 as u8)?;
         let _checksum = cursor.get_u32()?;
         let _scale_factor = cursor.get_u32()?;
         let _design_size = cursor.get_u32()?;
         let area_len = cursor.get_u8()?;
         let name_len = cursor.get_u8()?;
-        // XXX TEMP
+
+        // TODO: figure out what to do with these. In Tectonic's context,
+        // non-"native" font definitions are a bad sign, since they correspond
+        // to fonts that we wouldn't be able to express in HTML. But note that
+        // this crate should support generic XDV decoding, not necessarily
+        // targeting HTML, as best it can.
+
         use std::str::from_utf8;
-        let area_str = from_utf8(cursor.get_slice(area_len as usize)?)
+        let _area_str = from_utf8(cursor.get_slice(area_len as usize)?)
             .unwrap()
             .to_owned();
-        let name_str = from_utf8(cursor.get_slice(name_len as usize)?)
+        let _name_str = from_utf8(cursor.get_slice(name_len as usize)?)
             .unwrap()
             .to_owned();
-        println!(
-            "QQ define_font: num={} area={} name={}",
-            font_num, area_str, name_str
-        );
         Ok(())
     }
 
