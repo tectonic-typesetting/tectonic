@@ -15,7 +15,7 @@ use pinot::{
     types::{FWord, Tag, UfWord},
     FontDataRef, TableProvider,
 };
-use std::{collections::HashMap, fmt::Write, num::Wrapping, path::Path};
+use std::{collections::HashMap, num::Wrapping, path::Path};
 use tectonic_errors::prelude::*;
 
 use crate::FixedPoint;
@@ -43,6 +43,10 @@ pub struct FontData {
 
     /// Information about how glyphs can be reverse-mapped to Unicode input
     gmap: HashMap<GlyphId, MapEntry>,
+
+    /// The glyph for the basic space character, or zero (typically .notdef) if
+    /// it can't be found.
+    space_glyph: GlyphId,
 
     units_per_em: UfWord,
 
@@ -184,7 +188,9 @@ impl FontData {
 
         let units_per_em = head.units_per_em();
 
-        // Get the direct mappings.
+        // Get the direct mappings. While we're at it, figure out the glyph for
+        // the space character, so that we can know how wide spaces are, so that
+        // we can guess when to insert spaces into our HTML content.
 
         let cmap = a_ok_or!(
             font.cmap();
@@ -192,6 +198,7 @@ impl FontData {
         );
 
         let mut gmap = HashMap::new();
+        let mut space_glyph = 0;
 
         for usv in valid_usvs() {
             let c = char::from_u32(usv).unwrap();
@@ -202,6 +209,10 @@ impl FontData {
                     continue;
                 }
             };
+
+            if c == ' ' {
+                space_glyph = gidx;
+            }
 
             gmap.insert(gidx, MapEntry::Direct(c));
         }
@@ -284,6 +295,7 @@ impl FontData {
             basename,
             buffer,
             gmap,
+            space_glyph,
             units_per_em,
             hmetrics,
             ascender,
@@ -333,6 +345,17 @@ impl FontData {
         })
     }
 
+    /// Get the width of the space character as a TeX size.
+    pub fn space_width(&self, tex_size: FixedPoint) -> Option<FixedPoint> {
+        if self.space_glyph == 0 {
+            None
+        } else {
+            self.hmetrics.get(self.space_glyph as usize).map(|hm| {
+                (hm.advance as f64 * tex_size as f64 / self.units_per_em as f64) as FixedPoint
+            })
+        }
+    }
+
     /// Request that an alternative mapping be allocated for a glyph.
     ///
     /// The caller must suggest a Unicode character to use for the alternative,
@@ -366,9 +389,11 @@ impl FontData {
         *map
     }
 
-    /// Emit customized fonts to the filesystem and compute
-    /// associated CSS for them. Consumes the object.
-    pub fn emit<W: Write>(self, out_base: &Path, base_facename: &str, mut css: W) -> Result<()> {
+    /// Emit customized fonts to the filesystem and return information so that
+    /// appropriate CSS can be generated. Consumes the object.
+    ///
+    /// Return value is a vec of (alternate-map-index, CSS-src-field).
+    pub fn emit(self, out_base: &Path) -> Result<Vec<(Option<usize>, String)>> {
         // Write the main font file.
 
         let mut out_path = out_base.to_owned();
@@ -378,21 +403,10 @@ impl FontData {
             ["cannot write output file `{}`", out_path.display()]
         );
 
-        // CSS for the main font.
-        //
-        // We don't atry!() the write because I know that it's to a String,
-        // which can panic but not Err.
+        // CSS info for the main font.
 
         let rel_url = utf8_percent_encode(&self.basename, CONTROLS).to_string();
-
-        writeln!(
-            css,
-            r#"@font-face {{
-  font-family: "{}";
-  src: url("{}") format("opentype");
-}}"#,
-            base_facename, rel_url
-        )?;
+        let mut rv = vec![(None, format!(r#"url("{}") format("opentype")"#, rel_url))];
 
         // Alternates until we're done
 
@@ -452,20 +466,15 @@ impl FontData {
             // step 5: update CSS
 
             let rel_url = utf8_percent_encode(&varname, CONTROLS).to_string();
-
-            writeln!(
-                css,
-                r#"@font-face {{
-  font-family: "{}vg{}";
-  src: url("{}") format("opentype");
-}}"#,
-                base_facename, cur_map_index, rel_url
-            )?;
+            rv.push((
+                Some(cur_map_index),
+                format!(r#"url("{}") format("opentype")"#, rel_url),
+            ));
         }
 
         // All done!
 
-        Ok(())
+        Ok(rv)
     }
 }
 
