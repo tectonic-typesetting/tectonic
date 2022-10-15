@@ -75,8 +75,11 @@ void  dvi_scan_specials (int page_no,
                                 double *width, double *height,
                                 double *x_offset, double *y_offset, int *landscape,
                                 int *majorversion, int *minorversion,
+                                int *compression_level,
+                                double *annot_grow_x, double *annot_grow_y,
                                 int *do_enc, int *keybits, int32_t *perm,
-                                char *opasswd, char *upasswd, int *has_id, unsigned char *id1, unsigned char *id2);
+                                char *opasswd, char *upasswd, int *has_id, unsigned char *id1, unsigned char *id2,
+                                int *opt_flags);
 unsigned int dvi_locate_font (const char *name, spt_t ptsize);
 
 /* link or nolink:
