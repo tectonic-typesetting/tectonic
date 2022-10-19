@@ -17,7 +17,8 @@ before following along.
 ## Setup
 
 All the code displayed in this section should go into your `init.el` file (or
-`config.el` if you are using [Doomemacs](https://github.com/doomemacs/)).
+equivalent, such as `config.el` if you are using
+[Doomemacs](https://github.com/doomemacs/)).
 
 First, load the AucTeX package.
 
@@ -102,7 +103,7 @@ input file. So it will error out when that is not the case, since Tectonic
 places the output in a build directory.
 
 This behavior can be controlled by using the `TeX-output-dir` variable on a per
-porject basis.
+project basis.
 
 This configuration assumes you are using `project.el`, although porting this
 code to `projectile.el` should be trivial.
