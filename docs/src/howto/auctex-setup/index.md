@@ -11,8 +11,8 @@ To follow this section you will need Tectonic and GNU Emacs installed on your
 system. Additionally, you will require the AucTeX emacs package to be installed
 before following along.
 
-> Note: This section makes use of the V2 tectonic CLI, invoked using the
-> `nextonic` command.
+> Note: This section makes use of the [V2 tectonic CLI](../../ref/v2cli.md),
+> invoked using the `tectonic -X` flag or `nextonic` command alias.
 
 ## Setup
 
@@ -32,7 +32,7 @@ have to modify the `TeX-engine-alist` varible.
 * The second element is a string with the name of the TeX distribution.
 * The third element is the shell command for compiling plain TeX documents.
 * The fourth element is the shell command for compiling LaTeX documents. Here we
-  are assuming the user is using a Tectonic project (generated using `nextonic
+  are assuming the user is using a Tectonic project (generated using `tectonic -X
   new <proj-name>`).
 * The last element is the shell command for compiling ConTeXt documents, left
   unconfigured for now.
@@ -40,8 +40,8 @@ have to modify the `TeX-engine-alist` varible.
 ```lisp
 (setq TeX-engine-alist '((default
                           "Tectonic"
-                          "nextonic compile -f plain %T"
-                          "nextonic watch"
+                          "tectonic -X compile -f plain %T"
+                          "tectonic -X watch"
                           nil)))
 ```
 
@@ -88,7 +88,7 @@ And that is all! You should now be able to
 ### Compile LaTeX outside a Tectonic project
 
 To do this, you can simply invoke `M-x TeX-command-master`, and the select the
-`Other` option, passing in the compile command `nextonic compile -f latex <name
+`Other` option, passing in the compile command `tectonic -X compile -f latex <name
 of file>`.
 
 > **Caution**: Compiling a document with multiple LaTeX files in this manner
