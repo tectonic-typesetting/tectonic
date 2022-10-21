@@ -1619,7 +1619,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
 {
   pdf_obj *fstream;
   ssize_t nb_read;
-  char    *ident, *instring, *fullname;
+  char    *ident, *instring;
   pdf_obj *tmp;
   rust_input_handle_t handle = NULL;
 
@@ -1655,19 +1655,11 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
       free(ident);
       return  -1;
     }
-    fullname = NULL; /*kpse_find_pict(instring);*/
-    if (!fullname) {
-      spc_warn(spe, "File \"%s\" not found.", instring);
-      pdf_release_obj(tmp);
-      free(ident);
-      return  -1;
-    }
-    handle = ttstub_input_open(fullname, TTBC_FILE_FORMAT_PICT, 0);
+    handle = ttstub_input_open(instring, TTBC_FILE_FORMAT_PICT, 0);
     if (handle == NULL) {
       spc_warn(spe, "Could not open file: %s", instring);
       pdf_release_obj(tmp);
       free(ident);
-      free(fullname);
       return -1;
     }
     fstream = pdf_new_stream(STREAM_COMPRESS);
@@ -1675,7 +1667,6 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
             ttstub_input_read(handle, work_buffer, WORK_BUFFER_SIZE)) > 0)
       pdf_add_stream(fstream, work_buffer, nb_read);
     ttstub_input_close(handle);
-    free(fullname);
     break;
   case STRING_STREAM:
     fstream = pdf_new_stream(STREAM_COMPRESS);

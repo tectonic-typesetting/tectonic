@@ -2490,12 +2490,79 @@ scan_special_trailerid (unsigned char *id1, unsigned char *id2,
   return error;
 }
 
+static void
+scan_special_config (const char **start, const char *end, int *opt_flags,
+                     int *compression_level,
+                     double *annot_grow_x, double *annot_grow_y)
+{
+  /* This section of code mirrors read_config_special() in `dvipdfm-x/dvipdfmx.c`. */
+
+  skip_white(start, end);
+  if (*start >= end)
+    return;
+
+  char *option = parse_ident(start, end);
+  if (!option)
+    return;
+
+  char *arg = NULL;
+  skip_white(start, end);
+  if (*start < end) {
+    if (**start == '"')
+      arg = parse_c_string(start, end);
+    else
+      arg = parse_ident(start, end);
+  }
+
+  /* This section of code implements a subset of do_args_second_pass() in the same file. */
+
+  if (streq_ptr(option, "C") && arg && opt_flags) {
+    char *num_end;
+    int flags = (unsigned) strtol(arg, &num_end, 0);
+    if (num_end == arg)
+      dpx_warning("Invalid dvipdfmx compatibility flag: '%s'", arg);
+    else if (flags < 0)
+      *opt_flags  = -flags;
+    else
+      *opt_flags |=  flags;
+  } else if (streq_ptr(option, "z") && arg && compression_level) {
+    *compression_level = atoi(arg);
+  } else if (streq_ptr(option, "g") && arg && annot_grow_x && annot_grow_y) {
+    const char *comma = strchr(arg, ',');
+    const char *arg_ptr = arg; /* dpx_until_read_length changes the pointer */
+    const char *arg_end = arg + strlen(arg);
+    int error;
+    if (comma) {
+      error = dpx_util_read_length(annot_grow_x, 1.0, &arg_ptr, comma);
+      arg_ptr = comma + 1;
+      if (!error)
+        error = dpx_util_read_length(annot_grow_y, 1.0, &arg_ptr, arg_end);
+    } else {
+      error = dpx_util_read_length(annot_grow_x, 1.0, &arg_ptr, arg_end);
+      if (!error)
+        *annot_grow_y = *annot_grow_x;
+    }
+    if (error) {
+      dpx_warning("Error reading argument for \"-g\" option: %s", arg);
+    }
+  } else {
+    dpx_warning("Tectonic doesn't support '%s' config special"
+                " or the argument is missing", option);
+  }
+
+  free(arg);
+  free(option);
+}
+
 static int
 scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
               int *majorversion, int *minorversion,
+              int *compression_level,
+              double *annot_grow_x, double *annot_grow_y,
               int *enable_encryption, int *key_bits, int32_t *permission,
               char *opassword, char *upassword,
               int *has_id, unsigned char *id1, unsigned char *id2,
+              int *opt_flags,
               const char *buf, uint32_t size)
 {
     char  *q;
@@ -2626,7 +2693,7 @@ scan_special (double *wd, double *ht, double *xo, double *yo, int *lm,
             *enable_encryption = 1;
             error = scan_special_encrypt(key_bits, permission, opassword, upassword, &p, endptr);
         } else if (ns_dvipdfmx && streq_ptr(q, "config")) {
-            dpx_warning("Tectonic does not support `config' special. Ignored.");
+            scan_special_config(&p, endptr, opt_flags, compression_level, annot_grow_x, annot_grow_y);
         } else if (has_id && id1 && id2 && ns_pdf && !strcmp(q, "trailerid")) {
             error = scan_special_trailerid(id1, id2, &p, endptr);
             if (error) {
@@ -2648,9 +2715,12 @@ dvi_scan_specials (int page_no,
                    double *page_width, double *page_height,
                    double *x_offset, double *y_offset, int *landscape,
                    int *majorversion, int *minorversion,
+                   int *compression_level,
+                   double *annot_grow_x, double *annot_grow_y,
                    int *do_enc, int *key_bits, int32_t *permission,
                    char *owner_pw, char *user_pw,
-                   int *has_id, unsigned char *id1, unsigned char *id2)
+                   int *has_id, unsigned char *id1, unsigned char *id2,
+                   int *opt_flags)
 {
     uint32_t       offset;
     unsigned char  opcode;
@@ -2694,8 +2764,11 @@ dvi_scan_specials (int page_no,
                 _tt_abort("Reading DVI file failed!");
             if (scan_special(page_width, page_height, x_offset, y_offset, landscape,
                              majorversion, minorversion,
+                             compression_level,
+                             annot_grow_x, annot_grow_y,
                              do_enc, key_bits, permission, owner_pw, user_pw,
                              has_id, id1, id2,
+                             opt_flags,
                              buf, size))
                 dpx_warning("Reading special command failed: \"%.*s\"", size, buf);
 #undef buf
