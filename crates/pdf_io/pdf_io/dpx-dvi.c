@@ -2495,6 +2495,8 @@ scan_special_config (const char **start, const char *end, int *opt_flags,
                      int *compression_level,
                      double *annot_grow_x, double *annot_grow_y)
 {
+  /* This section of code mirrors read_config_special() in `dvipdfm-x/dvipdfmx.c`. */
+
   skip_white(start, end);
   if (*start >= end)
     return;
@@ -2511,6 +2513,8 @@ scan_special_config (const char **start, const char *end, int *opt_flags,
     else
       arg = parse_ident(start, end);
   }
+
+  /* This section of code implements a subset of do_args_second_pass() in the same file. */
 
   if (streq_ptr(option, "C") && arg && opt_flags) {
     char *num_end;
