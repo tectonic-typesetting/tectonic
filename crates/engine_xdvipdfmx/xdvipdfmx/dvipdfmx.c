@@ -339,6 +339,11 @@ dvipdfmx_main (
   int has_id = 0;
   unsigned char id1[16], id2[16];
   struct pdf_setting settings;
+  int pdf_version_major = 1;
+  int pdf_version_minor = 5;
+  int compression_level = 9;
+  double annot_grow_x = 0;
+  double annot_grow_y = 0;
 
   assert(pdf_filename);
   assert(dvi_filename);
@@ -373,11 +378,6 @@ dvipdfmx_main (
 
   select_paper(paperspec);
 
-  int pdf_version_major = 1;
-  int pdf_version_minor = 5;
-  int compression_level = 9;
-  double annot_grow_x = 0;
-  double annot_grow_y = 0;
   bookmark_open = 0;
   key_bits = 40;
   permission = 0x003C;
