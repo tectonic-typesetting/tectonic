@@ -16,9 +16,15 @@ parameters:
 - name: windowsVcpkgWorkaround
   type: boolean
   default: false
+- name: testIt
+  type: boolean
+  default: true
 
 steps:
 - template: azure-generic-build-setup.yml
+
+- bash: rustup target add $TARGET
+  displayName: Add target $(TARGET)
 
 - bash: |
     set -xeuo pipefail
@@ -57,7 +63,7 @@ steps:
 
   - bash: |
       set -xeuo pipefail
-      cargo vcpkg -v build
+      cargo vcpkg -v build --target $TARGET
       ls target/vcpkg
       echo target/vcpkg/installed/*
       ls target/vcpkg/installed/*/lib
@@ -76,3 +82,4 @@ steps:
   parameters:
     canaryBuild: ${{ parameters.canaryBuild }}
     explicitFeatures: "external-harfbuzz"
+    testIt: ${{ parameters.testIt }}

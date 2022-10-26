@@ -22,6 +22,9 @@ parameters:
 - name: explicitFeatures
   type: string
   default: ''
+- name: testIt
+  type: boolean
+  default: true
 
 steps:
 # We use two variables for feature flagging just because I'm worried about
@@ -48,11 +51,12 @@ steps:
     DEFAULT_FEATURES_FLAG: ${{ parameters.defaultFeatures }}
     EXPLICIT_FEATURES: ${{ parameters.explicitFeatures }}
 
-- bash: cargo build --all --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v
-  displayName: "cargo build"
+- bash: cargo build --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v
+  displayName: cargo build for $(TARGET)
 
-- bash: cargo test --all --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT"
-  displayName: "cargo test"
+- ${{ if parameters.testIt }}:
+  - bash: cargo test --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT"
+    displayName: cargo test
 
 # For non-canary builds, export artifacts.
 
@@ -60,7 +64,7 @@ steps:
   - bash: |
       artifact_dir="$(Build.ArtifactStagingDirectory)/binary-$TARGET"
       mkdir -p "$artifact_dir"
-      cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --release
+      cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --target $TARGET --release
     displayName: Package binaries
 
   - task: PublishPipelineArtifact@1
