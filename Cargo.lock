@@ -2317,7 +2317,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.11.0"
+version = "0.12.0"
 dependencies = [
  "atty",
  "byte-unit",
@@ -2461,7 +2461,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_spx2html"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "byteorder",
  "html-escape",
@@ -2478,7 +2478,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xdvipdfmx"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "cc",
  "libc",
@@ -2536,7 +2536,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_pdf_io"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "cc",
  "tectonic_bridge_core",

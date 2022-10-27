@@ -66,6 +66,7 @@ typedef struct page_range
   int last;
 } PageRange;
 
+/* Compatibility options */
 #define OPT_TPIC_TRANSPARENT_FILL (1 << 1)
 #define OPT_CIDFONT_FIXEDPITCH    (1 << 2)
 #define OPT_FONTMAP_FIRST_MATCH   (1 << 3)
@@ -73,12 +74,6 @@ typedef struct page_range
 #define OPT_PDFOBJ_NO_PREDICTOR   (1 << 5)
 #define OPT_PDFOBJ_NO_OBJSTM      (1 << 6)
 
-static int    pdf_version_major = 1;
-static int    pdf_version_minor = 5;
-static int    compression_level = 9;
-
-static double annot_grow_x = 0.0;
-static double annot_grow_y = 0.0;
 static char     ignore_colors = 0;
 static int      bookmark_open = 0;
 static double   mag           = 1.0;
@@ -248,10 +243,18 @@ do_dvi_pages (void)
         xo = x_offset; yo = y_offset;
         dvi_scan_specials(page_no,
                           &w, &h, &xo, &yo, &lm,
+                          /* No PDF version */
+                          NULL, NULL,
+                          /* No compression */
+                          NULL,
+                          /* No annotation grow */
+                          NULL, NULL,
                           /* No need for encryption options */
-                          NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+                          NULL, NULL, NULL, NULL, NULL,
                           /* No trailer IDs */
-                          NULL, NULL, NULL);
+                          NULL, NULL, NULL,
+                          /* No opt_flags */
+                          NULL);
         if (lm != landscape_mode) { /* already swapped for the first page */
           SWAP(w, h);
           landscape_mode = lm;
@@ -336,6 +339,11 @@ dvipdfmx_main (
   int has_id = 0;
   unsigned char id1[16], id2[16];
   struct pdf_setting settings;
+  int pdf_version_major = 1;
+  int pdf_version_minor = 5;
+  int compression_level = 9;
+  double annot_grow_x = 0;
+  double annot_grow_y = 0;
 
   assert(pdf_filename);
   assert(dvi_filename);
@@ -369,8 +377,7 @@ dvipdfmx_main (
    * code bits. */
 
   select_paper(paperspec);
-  annot_grow_x = 0;
-  annot_grow_y = 0;
+
   bookmark_open = 0;
   key_bits = 40;
   permission = 0x003C;
@@ -397,8 +404,10 @@ dvipdfmx_main (
                       &paper_width, &paper_height,
                       &x_offset, &y_offset, &landscape_mode,
                       &pdf_version_major, &pdf_version_minor,
+                      &compression_level,
+                      &annot_grow_x, &annot_grow_y,
                       &do_encryption, &key_bits, &permission, oplain, uplain,
-                      &has_id, id1, id2);
+                      &has_id, id1, id2, &opt_flags);
   }
 
   /*kpse_init_prog("", font_dpi, NULL, NULL);

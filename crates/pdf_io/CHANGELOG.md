@@ -1,3 +1,13 @@
+# tectonic_pdf_io 0.4.0 (2022-10-27)
+
+- Make it possible to semi-properly handle the `dvipdfmx:config` special (#904,
+  #953, @vlasakm). This should fix some aspects of PDF generation, including
+  named anchors created by `hyperref`.
+- Fix loading of image stream references (#935, #953, @vlasakm). This should
+  help with the `attachfile` package although we are not sure if it is a
+  complete fix.
+
+
 # tectonic_pdf_io 0.3.0 (2022-10-03)
 
 - Update for TeXLive 2022.0 (#936, @pkgw)! Mostly very minor changes, with the

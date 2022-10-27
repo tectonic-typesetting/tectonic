@@ -1,3 +1,10 @@
+# tectonic_engine_xdvipdfmx 0.4.0 (2022-10-27)
+
+- Use new support in the `pdf_io` backend to handle the `dvipdfmx:config`
+  special (#904, #953, @vlasakm). This should fix some aspects of PDF generation,
+  including named anchors created by `hyperref`.
+
+
 # tectonic_engine_xdvipdfmx 0.3.0 (2022-10-03)
 
 - Synchronize with TeXLive 2022.0 (#936, @pkgw). There are no changes in this

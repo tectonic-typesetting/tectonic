@@ -33,3 +33,4 @@
 - [Building Tectonic](howto/build-tectonic/index.md)
   - [Install Dependencies Externally](howto/build-tectonic/external-dep-install.md)
   - [Install Dependencies With cargo-vcpkg](howto/build-tectonic/cargo-vcpkg-dep-install.md)
+- [Use Tectonic with AucTeX](howto/auctex-setup/index.md)

@@ -1,3 +1,40 @@
+# tectonic 0.12.0 (2022-10-27)
+
+This release has only a few code updates:
+
+- Partial support for the `dvipdfmx:config` special has been added (#953,
+  @vlasakm). This should fix some aspects of PDF generation, including named
+  anchors created by `hyperref`. Other fixes might help with the `attachfile`
+  package, although that is awaiting further confirmation.
+- A dumb crash was fixed when attempting to create HTML output with an input
+  that has not been set up for the Tectonic HTML compilation framework (#955,
+  @pkgw). Note, however, that generic documents will still fail to build in HTML
+  mode. The program just won't crash now. As of this release, the *only* example
+  of working HTML output from Tectonic is the [tt-weave] system (see below).
+
+More noteworthy are several non-code improvements!
+
+- A preliminary official build for the Apple Metal platform
+  (`aarch64-apple-darwin`) is now available (#959, @pkgw). Due to lack of
+  support in the continuous integration system we can't test the build
+  thoroughly, but it appears to work.
+- @KaranAhlawat contributed a [how-to guide for using Tectonic in Emacs AucTeX][auctex].
+- @mnrvwl has done a fantastic job reviewing our GitHub issues, gathering more
+  information when needed, and closing out ones that have been solved.
+- @pkgw has published *[XeTeX: A Pseudoprogram][xap]*, a digital book that
+  derives from Knuth's *[TeX: The Program][ttp]*. This book is generated from
+  the reference XeTeX code underlaying Tectonic’s typesetting using a new
+  processor called [tt-weave]. See [the book’s preface][xap] for more
+  information.
+
+Thank you to all of our contributors!
+
+[auctex]: https://tectonic-typesetting.github.io/book/latest/howto/auctex-setup/
+[tt-weave]: https://github.com/tectonic-typesetting/tt-weave/
+[xap]: https://stacks.fullyjustified.net/xap/2022.0/
+[ttp]: https://www.worldcat.org/title/876762639
+
+
 # tectonic 0.11.0 (2022-10-04)
 
 - Many updates to the experimental, unstable `spx2html` engine for creating HTML
