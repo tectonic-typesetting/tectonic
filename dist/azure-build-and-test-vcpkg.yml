@@ -32,6 +32,14 @@ steps:
   displayName: "Install vcpkg dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
+- bash: |
+    set -xeuo pipefail
+    sudo apt-get update
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      autoconf-archive
+  displayName: "Install vcpkg dependencies (Ubuntu)"
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
 # Note: setvariable + `set -x` adds spurious single quotes at ends of variable values
 - bash: |
     echo "##vso[task.setvariable variable=VCPKG_ROOT;]$(pwd)/target/vcpkg"

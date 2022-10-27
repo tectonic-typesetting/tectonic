@@ -132,6 +132,14 @@ parameters:
 - name: vcpkgBuilds
   type: object
   default:
+  - name: x86_64_unknown_linux_gnu
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
   - name: x86_64_apple_darwin
     vmImage: macos-11
     params: {}
@@ -189,7 +197,6 @@ jobs:
       ${{ insert }}: ${{ build.vars }}
 
 # vcpkg builds
-# TODO: I think Linux/vcpkg is broken: https://github.com/mcgoo/vcpkg-rs/issues/21
 - ${{ each build in parameters.vcpkgBuilds }}:
   - job: ${{ format('build_{0}_vcpkg', build.name) }}
     ${{ if eq(build.name, 'x86_64_pc_windows_msvc') }}:  # work around timeouts with slow builds
