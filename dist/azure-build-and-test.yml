@@ -132,14 +132,30 @@ parameters:
 - name: vcpkgBuilds
   type: object
   default:
-  - name: macos
+  - name: x86_64_unknown_linux_gnu
+    vmImage: ubuntu-20.04
+    params:
+      canaryBuild: true
+    vars:
+      TARGET: x86_64-unknown-linux-gnu
+      TOOLCHAIN: stable
+
+  - name: x86_64_apple_darwin
     vmImage: macos-11
     params: {}
     vars:
       TARGET: x86_64-apple-darwin
       TOOLCHAIN: stable
 
-  - name: windows
+  - name: aarch64_apple_darwin
+    vmImage: macos-11
+    params:
+      testIt: false
+    vars:
+      TARGET: aarch64-apple-darwin
+      TOOLCHAIN: stable
+
+  - name: x86_64_pc_windows_msvc
     vmImage: windows-2019
     params:
       windowsVcpkgWorkaround: true
@@ -181,10 +197,9 @@ jobs:
       ${{ insert }}: ${{ build.vars }}
 
 # vcpkg builds
-# TODO: I think Linux/vcpkg is broken: https://github.com/mcgoo/vcpkg-rs/issues/21
 - ${{ each build in parameters.vcpkgBuilds }}:
   - job: ${{ format('build_{0}_vcpkg', build.name) }}
-    ${{ if eq(build.name, 'windows') }}:  # work around timeouts with slow builds
+    ${{ if eq(build.name, 'x86_64_pc_windows_msvc') }}:  # work around timeouts with slow builds
       dependsOn: windows_vcpkg_prebuild
     pool:
       vmImage: ${{ build.vmImage }}

@@ -1657,16 +1657,27 @@ impl EmittingState {
             )
         };
 
-        let cur_fam = self.font_families.get(&cur_ffid).unwrap();
+        let (path, desired_af) = if let Some(cur_fam) = self.font_families.get(&cur_ffid) {
+            // Already set up for the right font? If so, great!
+            if cur_fam.relative_id_to_font_num(cur_af) == fnum {
+                return;
+            }
 
-        // Already set up for the right font? If so, great!
-        if cur_fam.relative_id_to_font_num(cur_af) == fnum {
-            return;
-        }
+            // No. Figure out what we need to do.
+            let desired_af = cur_fam.font_num_to_relative_id(fnum);
+            (cur_fam.path_to_new_font(cur_af, desired_af), desired_af)
+        } else {
+            // We don't seem to be in a defined "family". So we have to
+            // select it explicitly.
+            let path = PathToNewFont {
+                close_all: true,
+                select_explicitly: true,
+                ..Default::default()
+            };
 
-        // No. Figure out what we need to do.
-        let desired_af = cur_fam.font_num_to_relative_id(fnum);
-        let path = cur_fam.path_to_new_font(cur_af, desired_af);
+            let desired_af = FamilyRelativeFontId::Other(fnum);
+            (path, desired_af)
+        };
 
         if path.close_one_and_retry {
             if cur_is_autofont {
@@ -1969,7 +1980,13 @@ impl EmittingState {
         }
 
         // Read in the template. Let's not cache it, in case someone wants to do
-        // something fancy with rewriting it.
+        // something fancy with rewriting it. If that setting is empty, probably
+        // the user is compiling the document in HTML mode without all of the
+        // TeX infrastructure that Tectonic needs to make it work.
+
+        if self.next_template_path.is_empty() {
+            bail!("need to emit HTML content but no template has been specified; is your document HTML-compatible?");
+        }
 
         let mut ih = atry!(
             common.hooks.io().input_open_name(&self.next_template_path, common.status).must_exist();

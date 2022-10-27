@@ -16,15 +16,29 @@ parameters:
 - name: windowsVcpkgWorkaround
   type: boolean
   default: false
+- name: testIt
+  type: boolean
+  default: true
 
 steps:
 - template: azure-generic-build-setup.yml
+
+- bash: rustup target add $TARGET
+  displayName: Add target $(TARGET)
 
 - bash: |
     set -xeuo pipefail
     brew install autoconf-archive automake libtool pkg-config
   displayName: "Install vcpkg dependencies (macOS)"
   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
+- bash: |
+    set -xeuo pipefail
+    sudo apt-get update
+    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      autoconf-archive
+  displayName: "Install vcpkg dependencies (Ubuntu)"
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
 # Note: setvariable + `set -x` adds spurious single quotes at ends of variable values
 - bash: |
@@ -57,7 +71,7 @@ steps:
 
   - bash: |
       set -xeuo pipefail
-      cargo vcpkg -v build
+      cargo vcpkg -v build --target $TARGET
       ls target/vcpkg
       echo target/vcpkg/installed/*
       ls target/vcpkg/installed/*/lib
@@ -76,3 +90,4 @@ steps:
   parameters:
     canaryBuild: ${{ parameters.canaryBuild }}
     explicitFeatures: "external-harfbuzz"
+    testIt: ${{ parameters.testIt }}
