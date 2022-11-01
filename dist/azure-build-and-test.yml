@@ -313,7 +313,10 @@ jobs:
       echo "##vso[task.setvariable variable=VCPKG_ROOT;]$(pwd)/target/vcpkg"
     displayName: Set up build variables
 
-  - bash: cargo install cargo-vcpkg
+  - bash: |
+      echo CUSTOM VCPKG
+      ###cargo install cargo-vcpkg
+      cargo install --git https://github.com/mcgoo/cargo-vcpkg --branch master cargo-vcpkg
     displayName: Install cargo-vcpkg
 
   - bash: |
