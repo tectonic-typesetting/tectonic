@@ -390,6 +390,8 @@ mod syntax {
         }
 
         pub fn to_runtime(&self) -> super::OutputProfile {
+            let shell_escape_default = self.shell_escape_cwd.is_some();
+
             super::OutputProfile {
                 name: self.name.clone(),
                 target_type: self.target_type.to_runtime(),
@@ -411,7 +413,7 @@ mod syntax {
                     .postamble_file
                     .clone()
                     .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
-                shell_escape: self.shell_escape.unwrap_or_default(),
+                shell_escape: self.shell_escape.unwrap_or(shell_escape_default),
                 shell_escape_cwd: self.shell_escape_cwd.clone(),
             }
         }
@@ -467,5 +469,47 @@ mod syntax {
                 }
             })
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::io::Cursor;
+
+    use super::*;
+
+    #[test]
+    fn shell_escape_default_false() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        "#;
+
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(!doc.outputs.get("o").unwrap().shell_escape);
+    }
+
+    #[test]
+    fn shell_escape_cwd_implies_shell_escape() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        shell_escape_cwd = "."
+        "#;
+
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(doc.outputs.get("o").unwrap().shell_escape);
     }
 }
