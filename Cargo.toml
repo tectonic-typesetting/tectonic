@@ -121,12 +121,16 @@ tokio = "0.1.22"
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
 rev = "1be5a98d090b1d2beeb63a48ba800fbf006e8aca"
+overlay-triplets-path = "dist/vcpkg-triplets"
 
+# If other targets start using custom triplets like x86_64-pc-windows-msvc,
+# add them to crates/dep_support/src/lib.rs:new_from_vcpkg() to give users
+# guidance if they might need to set $VCPKGRS_TRIPLET.
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
 aarch64-apple-darwin = { triplet = "arm64-osx", install = ["freetype","harfbuzz[icu,graphite2]"] }
 x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
-x86_64-pc-windows-msvc = { triplet = "x64-windows-static", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
+x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "526ff57d5dd9f80dff35a3a5dd856edc9f0f61aa"
