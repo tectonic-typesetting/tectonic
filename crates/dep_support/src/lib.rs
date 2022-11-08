@@ -91,6 +91,7 @@ struct VcPkgState {
 /// State for discovering and managing a dependency, which may vary
 /// depending on the framework that we're using to discover them.
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 enum DepState {
     /// pkg-config
     PkgConfig(PkgConfigState),
@@ -124,10 +125,26 @@ impl DepState {
         let mut include_paths = vec![];
 
         for dep in spec.get_vcpkg_spec() {
-            let library = vcpkg::Config::new()
-                .cargo_metadata(false)
-                .find_package(dep)
-                .unwrap_or_else(|e| panic!("failed to load package {} from vcpkg: {}", dep, e));
+            let library = match vcpkg::Config::new().cargo_metadata(false).find_package(dep) {
+                Ok(lib) => lib,
+                Err(e) => {
+                    if let vcpkg::Error::LibNotFound(_) = e {
+                        // We should potentially be referencing the CARGO_CFG_TARGET_*
+                        // variables to handle cross-compilation (cf. the
+                        // tectonic_cfg_support crate), but vcpkg-rs doesn't use them
+                        // either.
+                        let target = env::var("TARGET").unwrap_or_default();
+
+                        if target == "x86_64-pc-windows-msvc" {
+                            println!("cargo:warning=you may need to export VCPKGRS_TRIPLET=x64-windows-static-release ...");
+                            println!("cargo:warning=... which is a custom triplet used by Tectonic's cargo-vcpkg integration");
+                        }
+                    }
+
+                    panic!("failed to load package {} from vcpkg: {}", dep, e)
+                }
+            };
+
             include_paths.extend(library.include_paths.iter().cloned());
         }
 
