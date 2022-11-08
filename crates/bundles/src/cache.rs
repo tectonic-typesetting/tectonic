@@ -762,5 +762,5 @@ fn ensure_cache_dir(root: &Path, path: &str) -> Result<PathBuf> {
 
 /// Convenience to generate a text filename
 fn make_txt_path(base: &Path, name: &str) -> PathBuf {
-    base.join(&name).with_extension("txt")
+    base.join(name).with_extension("txt")
 }

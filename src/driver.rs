@@ -359,7 +359,7 @@ impl BridgeState {
 
                 if tool_parent != tempdir.path() {
                     ctry!(
-                        std::fs::create_dir_all(&tool_parent);
+                        std::fs::create_dir_all(tool_parent);
                         "failed to create sub directory `{}`", tool_parent.display()
                     );
                 }
@@ -740,7 +740,7 @@ impl DriverHooks for BridgeState {
 
             match Command::new(SHELL[0])
                 .args(&SHELL[1..])
-                .arg(&command)
+                .arg(command)
                 .current_dir(work.root())
                 .status()
             {

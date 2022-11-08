@@ -183,7 +183,7 @@ impl IoProvider for MemoryIo {
 
         let name = normalize_tex_path(name);
 
-        let oh = OutputHandle::new(name.to_owned(), MemoryIoItem::new(&self.files, &name, true));
+        let oh = OutputHandle::new(name.clone(), MemoryIoItem::new(&self.files, &name, true));
 
         // `hyperxmp.sty` does a thing where it tries to get today's date by
         // calling \filemoddate on `\jobname.log`. That essentially relies on it
@@ -221,7 +221,7 @@ impl IoProvider for MemoryIo {
 
         if self.files.borrow().contains_key(&*name) {
             OpenResult::Ok(InputHandle::new(
-                name.to_owned(),
+                name.clone(),
                 MemoryIoItem::new(&self.files, &name, false),
                 InputOrigin::Other,
             ))
