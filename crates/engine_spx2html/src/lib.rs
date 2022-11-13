@@ -22,9 +22,9 @@ use tectonic_io_base::OpenResult;
 use tectonic_status_base::{tt_warning, StatusBackend};
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
-use crate::font::{FontData, MapEntry};
+use crate::fontfile::{FontFileData, MapEntry};
 
-mod font;
+mod fontfile;
 mod html;
 
 use html::Element;
@@ -268,11 +268,11 @@ struct InitializationState {
     next_template_path: String,
     next_output_path: String,
 
-    // TODO: terrible nomenclature. FontInfo is what we track here; FontData is
+    // TODO: terrible nomenclature. FontInfo is what we track here; FontFileData is
     // the glyph measurements and stuff that we compute in the `font` module.
     fonts: HashMap<FontNum, FontInfo>,
     font_data_keys: HashMap<(String, u32), usize>,
-    font_data: HashMap<usize, FontData>,
+    font_data: HashMap<usize, FontFileData>,
     main_body_font_num: Option<i32>,
     /// Keyed by the "regular" font-num
     font_families: HashMap<FontNum, FontFamily>,
@@ -383,7 +383,7 @@ impl InitializationState {
 
         if fd_key == next_id {
             let map = atry!(
-                FontData::from_opentype(basename.to_owned(), contents, face_index);
+                FontFileData::from_opentype(basename.to_owned(), contents, face_index);
                 ["unable to load glyph data from font `{}`", texpath]
             );
             self.font_data.insert(fd_key, map);
@@ -709,7 +709,7 @@ struct EmittingState {
     tag_associations: HashMap<Element, FontNum>,
 
     rems_per_tex: f32,
-    font_data: HashMap<usize, FontData>,
+    font_data: HashMap<usize, FontFileData>,
     next_template_path: String,
     next_output_path: String,
     current_content: String,
@@ -2092,8 +2092,8 @@ struct FontInfo {
     /// if it's not associated with a full-fledged family.
     family_relation: FamilyRelativeFontId,
 
-    /// Integer key used to relate this TeX font to its FontData. Multiple
-    /// fonts may use the same FontData, if they refer to the same backing
+    /// Integer key used to relate this TeX font to its FontFileData. Multiple
+    /// fonts may use the same FontFileData, if they refer to the same backing
     /// file.
     fd_key: usize,
 

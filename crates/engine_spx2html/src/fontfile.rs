@@ -1,11 +1,14 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-//! Reverse-map glyph IDs to the Unicode inputs that should create them.
+//! Data pertaining to a specific (OpenType) font file.
 //!
-//! Whenever possible we try to get "ActualText" info out of the engine so that
-//! we don't have to do this, but for math and potentially other situations this
-//! is sometimes necessary.
+//! The most interesting functionality here is our "variant glyph"
+//! infrastructure used to be able to show specific glyphs out of the font when
+//! we don't know a Unicode character that will reliably produce it. Whenever
+//! possible we try to get "ActualText" info out of the engine so that we don't
+//! have to do this, but for math and potentially other situations this is
+//! sometimes necessary.
 
 use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
 use percent_encoding::{utf8_percent_encode, CONTROLS};
@@ -33,7 +36,7 @@ const SSTY: Tag = Tag(0x73_73_74_79);
 
 /// A type for retrieving data about the glyphs used in a particular font.
 #[derive(Debug)]
-pub struct FontData {
+pub struct FontFileData {
     basename: String,
 
     /// The complete font data.
@@ -166,7 +169,7 @@ struct HorizontalMetrics {
     lsb: FWord,
 }
 
-impl FontData {
+impl FontFileData {
     /// Load glyph data from OpenType font data.
     ///
     /// We take ownership of the font data that we're given.
@@ -291,7 +294,7 @@ impl FontData {
 
         // All done!
 
-        Ok(FontData {
+        Ok(FontFileData {
             basename,
             buffer,
             gmap,
