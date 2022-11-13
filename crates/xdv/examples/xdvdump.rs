@@ -164,7 +164,7 @@ fn main() {
 
     let path = matches.value_of_os("PATH").unwrap();
 
-    let file = match File::open(&path) {
+    let file = match File::open(path) {
         Ok(f) => f,
         Err(e) => {
             eprintln!(

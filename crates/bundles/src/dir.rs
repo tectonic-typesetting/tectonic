@@ -60,7 +60,7 @@ impl Bundle for DirBundle {
         let mut files = Vec::new();
 
         // We intentionally do not explore the directory recursively.
-        for entry in fs::read_dir(&self.0.root())? {
+        for entry in fs::read_dir(self.0.root())? {
             let entry = entry?;
 
             // This catches both regular files and symlinks:`
