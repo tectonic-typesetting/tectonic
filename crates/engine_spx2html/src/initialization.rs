@@ -13,11 +13,7 @@ use tectonic_errors::prelude::*;
 use tectonic_io_base::OpenResult;
 use tectonic_status_base::tt_warning;
 
-use crate::{
-    fontfamily::{FamilyRelativeFontId, FontEnsemble},
-    html::Element,
-    Common, ElementOrigin, ElementState, EmittingState, FixedPoint, FontNum,
-};
+use crate::{fontfamily::FontEnsemble, html::Element, Common, EmittingState, FixedPoint, FontNum};
 
 #[derive(Debug)]
 pub(crate) struct InitializationState {
@@ -336,14 +332,6 @@ impl InitializationState {
     pub(crate) fn initialization_finished(self) -> Result<EmittingState> {
         let mut context = tera::Context::default();
 
-        // Set up font stuff.
-
-        let rems_per_tex = 1.0
-            / self
-                .main_body_font_num
-                .map(|fnum| self.fonts.get_font_size(fnum))
-                .unwrap_or(65536) as f32;
-
         // Tera requires that we give it a filesystem path to look for
         // templates, even if we're going to be adding all of our templates
         // later. So I guess we have to create an empty tempdir.
@@ -378,29 +366,17 @@ impl InitializationState {
             context.insert(varname, &varvalue);
         }
 
-        // All done!
+        // Ready to hand off.
 
-        Ok(EmittingState {
+        EmittingState::new_from_init(
+            self.fonts,
+            self.main_body_font_num,
             tera,
             context,
-            fonts: self.fonts,
-            tag_associations: self.tag_associations,
-            rems_per_tex,
-            next_template_path: self.next_template_path,
-            next_output_path: self.next_output_path,
-            content: Default::default(),
-            elem_stack: vec![ElementState {
-                elem: None,
-                origin: ElementOrigin::Root,
-                do_auto_tags: true,
-                do_auto_spaces: true,
-                font_family_id: self.main_body_font_num.unwrap_or_default(),
-                active_font: FamilyRelativeFontId::Regular,
-            }],
-            current_canvas: None,
-            content_finished: false,
-            content_finished_warning_issued: false,
-        })
+            self.next_template_path,
+            self.next_output_path,
+            self.tag_associations,
+        )
     }
 }
 
