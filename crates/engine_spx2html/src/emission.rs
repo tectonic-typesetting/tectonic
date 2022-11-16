@@ -7,7 +7,6 @@ use std::{
     collections::HashMap,
     fmt::{Arguments, Error as FmtError, Write as FmtWrite},
     fs::File,
-    io::{Read, Write},
     path::Path,
     result::Result as StdResult,
 };
@@ -17,20 +16,17 @@ use tectonic_status_base::tt_warning;
 use crate::{
     fontfamily::{FamilyRelativeFontId, FontEnsemble, FontFamilyAnalysis, PathToNewFont},
     html::Element,
+    templating::Templating,
     Common, FixedPoint, FontNum,
 };
 
 #[derive(Debug)]
 pub(crate) struct EmittingState {
-    tera: tera::Tera,
-    context: tera::Context,
     fonts: FontEnsemble,
     content: ContentState,
+    templating: Templating,
     tag_associations: HashMap<Element, FontNum>,
-
     rems_per_tex: f32,
-    next_template_path: String,
-    next_output_path: String,
     elem_stack: Vec<ElementState>,
     current_canvas: Option<CanvasState>,
     content_finished: bool,
@@ -252,10 +248,7 @@ impl EmittingState {
     pub(crate) fn new_from_init(
         fonts: FontEnsemble,
         main_body_font_num: Option<FontNum>,
-        tera: tera::Tera,
-        context: tera::Context,
-        next_template_path: String,
-        next_output_path: String,
+        templating: Templating,
         tag_associations: HashMap<Element, FontNum>,
     ) -> Result<Self> {
         let rems_per_tex = 1.0
@@ -264,13 +257,10 @@ impl EmittingState {
                 .unwrap_or(65536) as f32;
 
         Ok(EmittingState {
-            tera,
-            context,
+            templating,
             fonts,
             tag_associations,
             rems_per_tex,
-            next_template_path,
-            next_output_path,
             content: Default::default(),
             elem_stack: vec![ElementState {
                 elem: None,
@@ -527,16 +517,18 @@ impl EmittingState {
                 "emit" => self.finish_file(common),
 
                 "setTemplate" => {
-                    self.next_template_path = remainder.to_owned();
+                    self.templating.handle_set_template(remainder);
                     Ok(())
                 }
 
                 "setOutputPath" => {
-                    self.next_output_path = remainder.to_owned();
+                    self.templating.handle_set_output_path(remainder);
                     Ok(())
                 }
 
-                "setTemplateVariable" => self.handle_set_template_variable(remainder, common),
+                "setTemplateVariable" => self
+                    .templating
+                    .handle_set_template_variable(remainder, common),
 
                 "provideFile" => self.handle_provide_file(remainder, common),
 
@@ -794,20 +786,6 @@ impl EmittingState {
 
         self.content.push_char('>');
         self.elem_stack.push(elstate);
-        Ok(())
-    }
-
-    fn handle_set_template_variable(&mut self, remainder: &str, common: &mut Common) -> Result<()> {
-        if let Some((varname, varval)) = remainder.split_once(' ') {
-            self.context.insert(varname, varval);
-        } else {
-            tt_warning!(
-                common.status,
-                "ignoring malformatted tdux:setTemplateVariable special `{}`",
-                remainder
-            );
-        }
-
         Ok(())
     }
 
@@ -1243,97 +1221,9 @@ impl EmittingState {
     }
 
     fn finish_file(&mut self, common: &mut Common) -> Result<()> {
-        // Prep the output path
-
-        let mut out_path = common.out_base.to_owned();
-        let mut n_levels = 0;
-
-        for piece in self.next_output_path.split('/') {
-            if piece.is_empty() {
-                continue;
-            }
-
-            if piece == ".." {
-                bail!(
-                    "illegal HTML output path `{}`: it contains a `..` component",
-                    &self.next_output_path
-                );
-            }
-
-            let as_path = Path::new(piece);
-
-            if as_path.is_absolute() || as_path.has_root() {
-                bail!(
-                    "illegal HTML output path `{}`: it contains an absolute/rooted component",
-                    &self.next_output_path
-                );
-            }
-
-            out_path.push(piece);
-            n_levels += 1;
-        }
-
-        // Unfortunately tera doesn't seem to give us a way to put the content
-        // string in without having to clone it.
-        self.context.insert("tduxContent", &self.content.take());
-
-        if n_levels < 2 {
-            self.context.insert("tduxRelTop", "");
-        } else {
-            let mut rel_top = String::default();
-
-            for _ in 0..(n_levels - 1) {
-                rel_top.push_str("../");
-            }
-
-            self.context.insert("tduxRelTop", &rel_top);
-        }
-
-        // Read in the template. Let's not cache it, in case someone wants to do
-        // something fancy with rewriting it. If that setting is empty, probably
-        // the user is compiling the document in HTML mode without all of the
-        // TeX infrastructure that Tectonic needs to make it work.
-
-        if self.next_template_path.is_empty() {
-            bail!("need to emit HTML content but no template has been specified; is your document HTML-compatible?");
-        }
-
-        let mut ih = atry!(
-            common.hooks.io().input_open_name(&self.next_template_path, common.status).must_exist();
-            ["unable to open input HTML template `{}`", &self.next_template_path]
-        );
-
-        let mut template = String::new();
-        atry!(
-            ih.read_to_string(&mut template);
-            ["unable to read input HTML template `{}`", &self.next_template_path]
-        );
-
-        let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name, digest_opt, common.status);
-
-        // Ready to render!
-
-        let rendered = atry!(
-            self.tera.render_str(&template, &self.context);
-            ["failed to render HTML template `{}` while creating `{}`", &self.next_template_path, &self.next_output_path]
-        );
-
-        // Save it.
-
-        {
-            let mut out_file = atry!(
-                File::create(&out_path);
-                ["cannot open output file `{}`", out_path.display()]
-            );
-
-            atry!(
-                out_file.write_all(rendered.as_bytes());
-                ["cannot write output file `{}`", out_path.display()]
-            );
-        }
+        self.templating
+            .set_variable("tduxContent", self.content.take());
+        self.templating.emit(common)?;
 
         let cur_space_width = self.fonts.maybe_get_font_space_width(None);
         self.content.update_content_pos(0, cur_space_width);
@@ -1347,7 +1237,7 @@ impl EmittingState {
         }
 
         let faces = self.fonts.emit(common.out_base)?;
-        self.context.insert("tduxFontFaces", &faces);
+        self.templating.set_variable("tduxFontFaces", &faces);
 
         // OK.
         self.content_finished = true;

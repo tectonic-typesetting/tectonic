@@ -19,6 +19,7 @@ mod fontfamily;
 mod fontfile;
 mod html;
 mod initialization;
+mod templating;
 
 use emission::EmittingState;
 use initialization::InitializationState;

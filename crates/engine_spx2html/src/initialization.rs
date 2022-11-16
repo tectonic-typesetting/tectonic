@@ -13,7 +13,10 @@ use tectonic_errors::prelude::*;
 use tectonic_io_base::OpenResult;
 use tectonic_status_base::tt_warning;
 
-use crate::{fontfamily::FontEnsemble, html::Element, Common, EmittingState, FixedPoint, FontNum};
+use crate::{
+    fontfamily::FontEnsemble, html::Element, templating::Templating, Common, EmittingState,
+    FixedPoint, FontNum,
+};
 
 #[derive(Debug)]
 pub(crate) struct InitializationState {
@@ -366,15 +369,19 @@ impl InitializationState {
             context.insert(varname, &varvalue);
         }
 
+        let templating = Templating::new(
+            tera,
+            context,
+            self.next_template_path,
+            self.next_output_path,
+        );
+
         // Ready to hand off.
 
         EmittingState::new_from_init(
             self.fonts,
             self.main_body_font_num,
-            tera,
-            context,
-            self.next_template_path,
-            self.next_output_path,
+            templating,
             self.tag_associations,
         )
     }
