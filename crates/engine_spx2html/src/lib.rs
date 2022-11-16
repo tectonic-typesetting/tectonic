@@ -8,13 +8,13 @@
 //! SPX is essentially the same thing as XDV, but we identify it differently to
 //! mark that the semantics of the content wil be set up for HTML output.
 
-use percent_encoding::{utf8_percent_encode, CONTROLS};
 use std::{
     collections::HashMap,
-    fmt::Write as FmtWrite,
+    fmt::{Arguments, Error as FmtError, Write as FmtWrite},
     fs::File,
     io::{Read, Write},
     path::{Path, PathBuf},
+    result::Result as StdResult,
 };
 use tectonic_bridge_core::DriverHooks;
 use tectonic_errors::prelude::*;
@@ -22,8 +22,9 @@ use tectonic_io_base::OpenResult;
 use tectonic_status_base::{tt_warning, StatusBackend};
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
-use crate::fontfile::{FontFileData, MapEntry};
+use crate::fontfamily::{FamilyRelativeFontId, FontEnsemble, FontFamilyAnalysis, PathToNewFont};
 
+mod fontfamily;
 mod fontfile;
 mod html;
 
@@ -102,7 +103,7 @@ enum State {
 impl<'a> EngineState<'a> {
     pub fn finished(mut self) -> Result<()> {
         if let State::Emitting(mut s) = self.state {
-            if !s.current_content.is_empty() {
+            if !s.content.is_empty() {
                 s.finish_file(&mut self.common)?;
             }
         }
@@ -268,14 +269,8 @@ struct InitializationState {
     next_template_path: String,
     next_output_path: String,
 
-    // TODO: terrible nomenclature. FontInfo is what we track here; FontFileData is
-    // the glyph measurements and stuff that we compute in the `font` module.
-    fonts: HashMap<FontNum, FontInfo>,
-    font_data_keys: HashMap<(String, u32), usize>,
-    font_data: HashMap<usize, FontFileData>,
+    fonts: FontEnsemble,
     main_body_font_num: Option<i32>,
-    /// Keyed by the "regular" font-num
-    font_families: HashMap<FontNum, FontFamily>,
     tag_associations: HashMap<Element, FontNum>,
 
     cur_font_family_definition: Option<FontFamilyBuilder>,
@@ -292,10 +287,7 @@ impl Default for InitializationState {
             next_output_path: "index.html".to_owned(),
 
             fonts: Default::default(),
-            font_data_keys: Default::default(),
-            font_data: Default::default(),
             main_body_font_num: None,
-            font_families: Default::default(),
             tag_associations: Default::default(),
 
             cur_font_family_definition: None,
@@ -320,7 +312,7 @@ impl InitializationState {
         embolden: Option<u32>,
         common: &mut Common,
     ) -> Result<()> {
-        if self.fonts.contains_key(&font_num) {
+        if self.fonts.contains(font_num) {
             // Should we override the definition or something?
             return Ok(());
         }
@@ -377,33 +369,18 @@ impl InitializationState {
             );
         }
 
-        let fd_key = (name, face_index);
-        let next_id = self.font_data_keys.len();
-        let fd_key = *self.font_data_keys.entry(fd_key).or_insert(next_id);
-
-        if fd_key == next_id {
-            let map = atry!(
-                FontFileData::from_opentype(basename.to_owned(), contents, face_index);
-                ["unable to load glyph data from font `{}`", texpath]
-            );
-            self.font_data.insert(fd_key, map);
-        }
-
-        let info = FontInfo {
-            rel_url: utf8_percent_encode(basename, CONTROLS).to_string(),
-            family_name: format!("tdux{font_num}"),
-            family_relation: FamilyRelativeFontId::Regular,
-            fd_key,
+        self.fonts.register(
+            name,
+            font_num,
             size,
             face_index,
             color_rgba,
             extend,
             slant,
             embolden,
-        };
-
-        self.fonts.insert(font_num, info);
-        Ok(())
+            basename.to_owned(),
+            contents,
+        )
     }
 
     fn handle_special(
@@ -504,38 +481,8 @@ impl InitializationState {
             let italic = a_ok_or!(b.italic; ["no italic face defined"]);
             let bold_italic = a_ok_or!(b.bold_italic; ["no bold-italic face defined"]);
 
-            self.font_families.insert(
-                regular,
-                FontFamily {
-                    regular,
-                    bold,
-                    italic,
-                    bold_italic,
-                },
-            );
-
-            // Now update the info records for the relevant fonts to capture the
-            // established relationship.
-
-            if let Some(info) = self.fonts.get_mut(&regular) {
-                info.family_name = family_name.clone();
-                info.family_relation = FamilyRelativeFontId::Regular;
-            }
-
-            if let Some(info) = self.fonts.get_mut(&bold) {
-                info.family_name = family_name.clone();
-                info.family_relation = FamilyRelativeFontId::Bold;
-            }
-
-            if let Some(info) = self.fonts.get_mut(&italic) {
-                info.family_name = family_name.clone();
-                info.family_relation = FamilyRelativeFontId::Italic;
-            }
-
-            if let Some(info) = self.fonts.get_mut(&bold_italic) {
-                info.family_name = family_name;
-                info.family_relation = FamilyRelativeFontId::BoldItalic;
-            }
+            self.fonts
+                .register_family(family_name, regular, bold, italic, bold_italic);
         } else {
             tt_warning!(
                 common.status,
@@ -628,8 +575,7 @@ impl InitializationState {
         // Set up font stuff.
 
         let rems_per_tex = if let Some(fnum) = self.main_body_font_num {
-            let info = self.fonts.get(&fnum).unwrap();
-            1.0 / (info.size as f32)
+            1.0 / (self.fonts.get_font_size(fnum) as f32)
         } else {
             1. / 65536.
         };
@@ -674,13 +620,11 @@ impl InitializationState {
             tera,
             context,
             fonts: self.fonts,
-            font_families: self.font_families,
             tag_associations: self.tag_associations,
             rems_per_tex,
-            font_data: self.font_data,
             next_template_path: self.next_template_path,
             next_output_path: self.next_output_path,
-            current_content: String::default(),
+            content: Default::default(),
             elem_stack: vec![ElementState {
                 elem: None,
                 origin: ElementOrigin::Root,
@@ -692,8 +636,6 @@ impl InitializationState {
             current_canvas: None,
             content_finished: false,
             content_finished_warning_issued: false,
-            last_content_x: 0,
-            last_content_space_width: None,
         })
     }
 }
@@ -702,23 +644,144 @@ impl InitializationState {
 struct EmittingState {
     tera: tera::Tera,
     context: tera::Context,
-    fonts: HashMap<FontNum, FontInfo>,
-
-    /// Keyed by the "regular" font
-    font_families: HashMap<FontNum, FontFamily>,
+    fonts: FontEnsemble,
+    content: ContentState,
     tag_associations: HashMap<Element, FontNum>,
 
     rems_per_tex: f32,
-    font_data: HashMap<usize, FontFileData>,
     next_template_path: String,
     next_output_path: String,
-    current_content: String,
     elem_stack: Vec<ElementState>,
     current_canvas: Option<CanvasState>,
     content_finished: bool,
     content_finished_warning_issued: bool,
+}
+
+#[derive(Debug, Default)]
+struct ContentState {
+    current_content: String,
     last_content_x: i32,
     last_content_space_width: Option<FixedPoint>,
+}
+
+impl ContentState {
+    fn is_empty(&self) -> bool {
+        self.current_content.is_empty()
+    }
+
+    fn push_str(&mut self, text: &str) {
+        self.current_content.push_str(text);
+    }
+
+    fn push_char(&mut self, ch: char) {
+        self.current_content.push(ch);
+    }
+
+    fn push_close_tag(&mut self, tag: &str) {
+        self.current_content.push('<');
+        self.current_content.push('/');
+        self.current_content.push_str(tag);
+        self.current_content.push('>');
+    }
+
+    fn push_with_html_escaping<S: AsRef<str>>(&mut self, raw_text: S) {
+        html_escape::encode_safe_to_string(raw_text, &mut self.current_content);
+    }
+
+    fn push_with_html_double_quoted_attribute_escaping<S: AsRef<str>>(&mut self, raw_text: S) {
+        html_escape::encode_double_quoted_attribute_to_string(raw_text, &mut self.current_content);
+    }
+
+    fn push_with_html_unquoted_attribute_escaping<S: AsRef<str>>(&mut self, raw_text: S) {
+        html_escape::encode_unquoted_attribute_to_string(raw_text, &mut self.current_content);
+    }
+
+    fn take(&mut self) -> String {
+        std::mem::take(&mut self.current_content)
+    }
+
+    /// Figure out if we need to push a space into the text content right now.
+    fn is_space_needed(
+        &self,
+        x0: i32,
+        cur_space_width: Option<FixedPoint>,
+        do_auto_spaces: bool,
+    ) -> bool {
+        // We never want a leading space.
+        if self.current_content.is_empty() {
+            return false;
+        }
+
+        // Auto-spaces can be disabled.
+        if !do_auto_spaces {
+            return false;
+        }
+
+        // TODO: RTL ASSUMPTION!!!!!
+        //
+        // If the "next" x is smaller than the last one, assume that we've
+        // started a new line. We ignore Y values since those are going to
+        // get hairy with subscripts, etc.
+
+        if x0 < self.last_content_x {
+            return true;
+        }
+
+        // Check the advance against the size of the space, which can be
+        // determined from either the most recent content or the new content,
+        // since in various circumstances either one or the other might not
+        // be defined. If both are defined, use whatever's smaller. There's
+        // probably a smoother way to do this logic?
+
+        let space_width = match (&self.last_content_space_width, &cur_space_width) {
+            (Some(w1), Some(w2)) => FixedPoint::min(*w1, *w2),
+            (Some(w), None) => *w,
+            (None, Some(w)) => *w,
+            (None, None) => 0,
+        };
+
+        // If the x difference is larger than 1/4 of the space_width, let's say that
+        // we need a space. I made up the 1/4.
+        4 * (x0 - self.last_content_x) > space_width
+    }
+
+    fn update_content_pos(&mut self, x: i32, cur_space_width: Option<FixedPoint>) {
+        self.last_content_x = x;
+
+        if cur_space_width.is_some() {
+            self.last_content_space_width = cur_space_width;
+        }
+    }
+
+    /// Maybe push a space into the text content right now, if we think we need one.
+    fn push_space_if_needed(
+        &mut self,
+        x0: i32,
+        cur_space_width: Option<FixedPoint>,
+        do_auto_spaces: bool,
+    ) {
+        if self.is_space_needed(x0, cur_space_width, do_auto_spaces) {
+            self.current_content.push(' ');
+        }
+
+        // This parameter should be updated almost-instantaneously
+        // if a run of glyphs is being rendered, but this is a good start:
+        self.update_content_pos(x0, cur_space_width);
+    }
+}
+
+impl FmtWrite for ContentState {
+    fn write_str(&mut self, s: &str) -> StdResult<(), FmtError> {
+        self.current_content.write_str(s)
+    }
+
+    fn write_char(&mut self, c: char) -> StdResult<(), FmtError> {
+        self.current_content.write_char(c)
+    }
+
+    fn write_fmt(&mut self, args: Arguments<'_>) -> StdResult<(), FmtError> {
+        self.current_content.write_fmt(args)
+    }
 }
 
 #[derive(Debug)]
@@ -813,6 +876,16 @@ impl EmittingState {
         }
     }
 
+    /// Convenience helper that applies the right defaults here.
+    ///
+    /// We can't always use this function because sometimes we need mutable
+    /// access to the `fonts` and `content` items separately.
+    fn push_space_if_needed(&mut self, x0: i32, fnum: Option<FontNum>) {
+        let cur_space_width = self.fonts.maybe_get_font_space_width(fnum);
+        self.content
+            .push_space_if_needed(x0, cur_space_width, self.cur_elstate().do_auto_spaces);
+    }
+
     fn create_elem(&self, name: &str, is_start: bool, common: &mut Common) -> Element {
         // Parsing can never fail since we offer an `Other` element type
         let el: html::Element = name.parse().unwrap();
@@ -860,10 +933,7 @@ impl EmittingState {
             let cur = self.elem_stack.pop().unwrap();
 
             if let Some(e) = cur.elem.as_ref() {
-                self.current_content.push('<');
-                self.current_content.push('/');
-                self.current_content.push_str(e.name());
-                self.current_content.push('>');
+                self.content.push_close_tag(e.name());
             }
         }
     }
@@ -916,10 +986,7 @@ impl EmittingState {
             let cur = self.elem_stack.pop().unwrap();
 
             if let Some(e) = cur.elem.as_ref() {
-                self.current_content.push('<');
-                self.current_content.push('/');
-                self.current_content.push_str(e.name());
-                self.current_content.push('>');
+                self.content.push_close_tag(e.name());
                 n_closed += 1;
 
                 if e.name() == name {
@@ -936,79 +1003,6 @@ impl EmittingState {
                 name
             );
         }
-    }
-
-    fn maybe_get_font_space_width(&self, font_num: Option<FontNum>) -> Option<FixedPoint> {
-        font_num.and_then(|fnum| {
-            if let Some(fi) = self.fonts.get(&fnum) {
-                let fd = self.font_data.get(&fi.fd_key).unwrap();
-                fd.space_width(fi.size)
-            } else {
-                None
-            }
-        })
-    }
-
-    /// Figure out if we need to push a space into the text content right now.
-    fn is_space_needed(&self, x0: i32, cur_font_num: Option<FontNum>) -> bool {
-        // We never want a leading space.
-        if self.current_content.is_empty() {
-            return false;
-        }
-
-        // Auto-spaces can be disabled.
-        if !self.cur_elstate().do_auto_spaces {
-            return false;
-        }
-
-        // TODO: RTL ASSUMPTION!!!!!
-        //
-        // If the "next" x is smaller than the last one, assume that we've
-        // started a new line. We ignore Y values since those are going to
-        // get hairy with subscripts, etc.
-
-        if x0 < self.last_content_x {
-            return true;
-        }
-
-        // Check the advance against the size of the space, which can be
-        // determined from either the most recent content or the new content,
-        // since in various circumstances either one or the other might not
-        // be defined. If both are defined, use whatever's smaller. There's
-        // probably a smoother way to do this logic?
-
-        let cur_space_width = self.maybe_get_font_space_width(cur_font_num);
-
-        let space_width = match (&self.last_content_space_width, &cur_space_width) {
-            (Some(w1), Some(w2)) => FixedPoint::min(*w1, *w2),
-            (Some(w), None) => *w,
-            (None, Some(w)) => *w,
-            (None, None) => 0,
-        };
-
-        // If the x difference is larger than 1/4 of the space_width, let's say that
-        // we need a space. I made up the 1/4.
-        4 * (x0 - self.last_content_x) > space_width
-    }
-
-    fn update_content_pos(&mut self, x: i32, font_num: Option<FontNum>) {
-        self.last_content_x = x;
-
-        let cur_space_width = self.maybe_get_font_space_width(font_num);
-        if cur_space_width.is_some() {
-            self.last_content_space_width = cur_space_width;
-        }
-    }
-
-    /// Maybe push a space into the text content right now, if we think we need one.
-    fn push_space_if_needed(&mut self, x0: i32, cur_font_num: Option<FontNum>) {
-        if self.is_space_needed(x0, cur_font_num) {
-            self.current_content.push(' ');
-        }
-
-        // This parameter should be updated almost-instantaneously
-        // if a run of glyphs is being rendered, but this is a good start:
-        self.update_content_pos(x0, cur_font_num);
     }
 
     fn handle_special(
@@ -1036,7 +1030,7 @@ impl EmittingState {
                         // that's what we do.
                         let el = self.create_elem("div", true, common);
                         self.push_space_if_needed(x, None);
-                        self.current_content.push_str("<div class=\"tdux-p\">");
+                        self.content.push_str("<div class=\"tdux-p\">");
                         self.push_elem(el, ElementOrigin::EngineAuto);
                     }
                     Ok(())
@@ -1108,7 +1102,7 @@ impl EmittingState {
                     if self.content_finished {
                         self.warn_finished_content("direct text", common);
                     } else {
-                        html_escape::encode_safe_to_string(remainder, &mut self.current_content);
+                        self.content.push_with_html_escaping(remainder);
                     }
                     Ok(())
                 }
@@ -1316,74 +1310,72 @@ impl EmittingState {
         }
 
         self.push_space_if_needed(x, None);
-        self.current_content.push('<');
-        html_escape::encode_safe_to_string(tagname, &mut self.current_content);
+        self.content.push_char('<');
+        self.content.push_with_html_escaping(tagname);
 
         if !classes.is_empty() {
-            self.current_content.push_str(" class=\"");
+            self.content.push_str(" class=\"");
 
             let mut first = true;
             for c in &classes {
                 if first {
                     first = false;
                 } else {
-                    self.current_content.push(' ');
+                    self.content.push_char(' ');
                 }
 
-                html_escape::encode_double_quoted_attribute_to_string(c, &mut self.current_content);
+                self.content
+                    .push_with_html_double_quoted_attribute_escaping(c);
             }
 
-            self.current_content.push('\"');
+            self.content.push_char('\"');
         }
 
         if !styles.is_empty() {
-            self.current_content.push_str(" style=\"");
+            self.content.push_str(" style=\"");
 
             let mut first = true;
             for (name, value) in &styles {
                 if first {
                     first = false;
                 } else {
-                    self.current_content.push(';');
+                    self.content.push_char(';');
                 }
 
-                html_escape::encode_double_quoted_attribute_to_string(
-                    name,
-                    &mut self.current_content,
-                );
-                self.current_content.push(':');
-                html_escape::encode_double_quoted_attribute_to_string(
-                    value,
-                    &mut self.current_content,
-                );
+                self.content
+                    .push_with_html_double_quoted_attribute_escaping(name);
+                self.content.push_char(':');
+                self.content
+                    .push_with_html_double_quoted_attribute_escaping(value);
             }
 
-            self.current_content.push('\"');
+            self.content.push_char('\"');
         }
 
         for (name, maybe_value) in &unquoted_attrs {
-            self.current_content.push(' ');
-            html_escape::encode_safe_to_string(name, &mut self.current_content);
+            self.content.push_char(' ');
+            self.content.push_with_html_escaping(name);
 
             if let Some(v) = maybe_value {
-                self.current_content.push('=');
-                html_escape::encode_unquoted_attribute_to_string(v, &mut self.current_content);
+                self.content.push_char('=');
+                self.content.push_with_html_unquoted_attribute_escaping(v);
             }
         }
 
         for (name, maybe_value) in &double_quoted_attrs {
-            self.current_content.push(' ');
-            html_escape::encode_safe_to_string(name, &mut self.current_content);
-            self.current_content.push_str("=\"");
+            self.content.push_char(' ');
+            self.content.push_with_html_escaping(name);
+            self.content.push_str("=\"");
 
             if let Some(v) = maybe_value {
-                html_escape::encode_double_quoted_attribute_to_string(v, &mut self.current_content);
+                self.content
+                    .push_with_html_double_quoted_attribute_escaping(v);
             }
 
-            self.current_content.push('\"');
+            self.content.push_char('\"');
         }
 
-        self.current_content.push('>');
+        self.content.push_char('>');
         self.elem_stack.push(elstate);
         Ok(())
     }
@@ -1499,9 +1491,8 @@ impl EmittingState {
             }
         } else if !glyphs.is_empty() {
             self.set_up_for_font(xs[0], font_num, common);
-
             self.push_space_if_needed(xs[0], Some(font_num));
-            html_escape::encode_text_to_string(text, &mut self.current_content);
+            self.content.push_with_html_escaping(text);
 
             // To figure out when we need spaces, we need to care about the last
             // glyph's actual width (well, its advance).
@@ -1509,17 +1500,18 @@ impl EmittingState {
             // TODO: RTL correctness!!!!
 
             let idx = glyphs.len() - 1;
-            let fi = a_ok_or!(
-                self.fonts.get(&font_num);
+            let gm = atry!(
+                self.fonts.get_glyph_metrics(font_num, glyphs[idx]);
                 ["undeclared font {} in canvas", font_num]
             );
-            let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
-            let gm = fd.lookup_metrics(glyphs[idx], fi.size);
             let advance = match gm {
                 Some(gm) => gm.advance,
                 None => 0,
             };
-            self.update_content_pos(xs[idx] + advance, Some(font_num));
+
+            let cur_space_width = self.fonts.maybe_get_font_space_width(Some(font_num));
+            self.content
+                .update_content_pos(xs[idx] + advance, cur_space_width);
         }
 
         Ok(())
@@ -1548,6 +1540,10 @@ impl EmittingState {
                 });
             }
         } else {
+            let cur_space_width = self.fonts.maybe_get_font_space_width(Some(font_num));
+            let do_auto_spaces = self.cur_elstate().do_auto_spaces;
+            let mut ch_str_buf = [0u8; 4];
+
             // Ideally, the vast majority of the time we are using
             // handle_text_and_glyphs and not this function, outside of
             // canvases. But sometimes we get spare glyphs outside of the canvas
@@ -1557,90 +1553,32 @@ impl EmittingState {
 
             self.set_up_for_font(xs[0], font_num, common);
 
-            let fi = a_ok_or!(
-                self.fonts.get(&font_num);
+            let fonts = &mut self.fonts;
+
+            let iter = atry!(
+                fonts.process_glyphs_as_text(font_num, glyphs, common.status);
                 ["undeclared font {} in glyph run", font_num]
             );
 
-            // Super lame! Ideally we could just hold a long-lived mutable
-            // borrow of `fd`, but that gets treated as a long-lived mutable
-            // borrow of `self` which basically makes all other pieces of state
-            // inaccessible. So we need to keep on looking up into
-            // `self.font_data`, and even then we need to avoid functions that
-            // operation on `&mut self` because `fi` is a long-lived *immutable*
-            // borrow of `self`. I don't think we can avoid this without doing
-            // some significant rearranging of the data structures to allow the
-            // different pieces to be borrowed separately.
-
-            let mut ch_str_buf = [0u8; 4];
-
-            for (idx, glyph) in glyphs.iter().copied().enumerate() {
-                let mc = {
-                    let fd = self.font_data.get(&fi.fd_key).unwrap();
-                    fd.lookup_mapping(glyph)
-                };
-
-                if let Some(mc) = mc {
-                    let (mut ch, need_alt) = match mc {
-                        MapEntry::Direct(c) => (c, false),
-                        MapEntry::SubSuperScript(c, _) => (c, true),
-                        MapEntry::MathGrowingVariant(c, _, _) => (c, true),
-                    };
-
-                    let alt_index = if need_alt {
-                        let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
-                        let map = fd.request_alternative(glyph, ch);
-                        ch = map.usv;
-                        Some(map.alternate_map_index)
-                    } else {
-                        None
-                    };
-
-                    // For later: we could select the "default" font at an outer
-                    // level and only emit tags as needed in here.
-                    let font_sel = fi.selection_style_text(alt_index);
-
-                    // Stringify the character so that we can use html_escape in
-                    // case it's a `<` or whatever.
+            for (idx, text_info, advance) in iter {
+                if let Some((ch, font_sel)) = text_info {
                     let ch_as_str = ch.encode_utf8(&mut ch_str_buf);
 
                     // XXX this is (part of) push_space_if_needed
-                    if self.is_space_needed(xs[idx], Some(font_num)) {
-                        self.current_content.push(' ');
+                    if self
+                        .content
+                        .is_space_needed(xs[idx], cur_space_width, do_auto_spaces)
+                    {
+                        self.content.push_char(' ');
                     }
 
-                    write!(self.current_content, "<span style=\"{font_sel}\">").unwrap();
-                    html_escape::encode_text_to_string(ch_as_str, &mut self.current_content);
-                    write!(self.current_content, "</span>").unwrap();
-                } else {
-                    tt_warning!(
-                        common.status,
-                        "unable to reverse-map glyph {} in font `{}` (face {})",
-                        glyph,
-                        fi.rel_url,
-                        fi.face_index
-                    );
+                    write!(self.content, "<span style=\"{}\">", font_sel).unwrap();
+                    self.content.push_with_html_escaping(ch_as_str);
+                    write!(self.content, "</span>").unwrap();
                 }
 
-                // Jump through the hoops needed by automatic space insertion:
-
-                let gm = {
-                    let fd = self.font_data.get(&fi.fd_key).unwrap();
-                    fd.lookup_metrics(glyphs[idx], fi.size)
-                };
-
-                let advance = match gm {
-                    Some(gm) => gm.advance,
-                    None => 0,
-                };
-
-                // XXX this is fn update_content_pos():
-                self.last_content_x = xs[idx] + advance;
-
-                let cur_space_width = self.maybe_get_font_space_width(Some(font_num));
-                if cur_space_width.is_some() {
-                    self.last_content_space_width = cur_space_width;
-                }
+                self.content
+                    .update_content_pos(xs[idx] + advance, cur_space_width);
             }
         }
 
@@ -1657,26 +1595,21 @@ impl EmittingState {
             )
         };
 
-        let (path, desired_af) = if let Some(cur_fam) = self.font_families.get(&cur_ffid) {
-            // Already set up for the right font? If so, great!
-            if cur_fam.relative_id_to_font_num(cur_af) == fnum {
-                return;
+        let (path, desired_af) = match self.fonts.analyze_font_for_family(fnum, cur_ffid, cur_af) {
+            FontFamilyAnalysis::AlreadyActive => return,
+            FontFamilyAnalysis::Reachable(p, d) => (p, d),
+            FontFamilyAnalysis::NoMatch => {
+                // We don't seem to be in a defined "family". So we have to
+                // select it explicitly.
+                let path = PathToNewFont {
+                    close_all: true,
+                    select_explicitly: true,
+                    ..Default::default()
+                };
+
+                let desired_af = FamilyRelativeFontId::Other(fnum);
+                (path, desired_af)
             }
-
-            // No. Figure out what we need to do.
-            let desired_af = cur_fam.font_num_to_relative_id(fnum);
-            (cur_fam.path_to_new_font(cur_af, desired_af), desired_af)
-        } else {
-            // We don't seem to be in a defined "family". So we have to
-            // select it explicitly.
-            let path = PathToNewFont {
-                close_all: true,
-                select_explicitly: true,
-                ..Default::default()
-            };
-
-            let desired_af = FamilyRelativeFontId::Other(fnum);
-            (path, desired_af)
         };
 
         if path.close_one_and_retry {
@@ -1703,7 +1636,7 @@ impl EmittingState {
 
         if let Some(af) = path.open_b {
             self.push_space_if_needed(x0, Some(fnum));
-            self.current_content.push_str("<b>");
+            self.content.push_str("<b>");
             self.elem_stack.push(ElementState {
                 elem: Some(html::Element::B),
                 origin: ElementOrigin::FontAuto,
@@ -1714,7 +1647,7 @@ impl EmittingState {
 
         if let Some(af) = path.open_i {
             self.push_space_if_needed(x0, Some(fnum));
-            self.current_content.push_str("<i>");
+            self.content.push_str("<i>");
             self.elem_stack.push(ElementState {
                 elem: Some(html::Element::I),
                 origin: ElementOrigin::FontAuto,
@@ -1725,18 +1658,9 @@ impl EmittingState {
 
         if path.select_explicitly {
             self.push_space_if_needed(x0, Some(fnum));
-
-            let fi = self.fonts.get(&fnum).unwrap();
-            let rel_size = fi.size as f32 * self.rems_per_tex;
-
-            write!(
-                self.current_content,
-                "<span style=\"font-size: {}rem; {}\">",
-                rel_size,
-                fi.selection_style_text(None)
-            )
-            .unwrap();
-
+            self.fonts
+                .write_styling_span_html(fnum, self.rems_per_tex, &mut self.content)
+                .unwrap();
             self.elem_stack.push(ElementState {
                 elem: Some(html::Element::Span),
                 origin: ElementOrigin::FontAuto,
@@ -1773,13 +1697,10 @@ impl EmittingState {
         let mut y_max_tex = 0;
 
         for gi in &canvas.glyphs[..] {
-            let fi = a_ok_or!(
-                self.fonts.get(&gi.font_num);
+            let gm = atry!(
+                self.fonts.get_glyph_metrics(gi.font_num, gi.glyph);
                 ["undeclared font {} in canvas", gi.font_num]
             );
-
-            let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
-            let gm = fd.lookup_metrics(gi.glyph, fi.size);
 
             if let Some(gm) = gm {
                 // to check: RTL correctness
@@ -1813,39 +1734,15 @@ impl EmittingState {
         let mut ch_str_buf = [0u8; 4];
 
         for gi in canvas.glyphs.drain(..) {
-            let fi = self.fonts.get(&gi.font_num).unwrap();
+            let (size, baseline_factor, text_info) =
+                self.fonts
+                    .process_glyph_for_canvas(gi.font_num, gi.glyph, common.status);
 
             // The size of the font being used for this glyph, in rems; that is,
             // relative to the main body font.
-            let rel_size = fi.size as f32 * self.rems_per_tex;
-            let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
-            let mc = fd.lookup_mapping(gi.glyph);
+            let rel_size = size as f32 * self.rems_per_tex;
 
-            if let Some(mc) = mc {
-                // Sometimes we need to render a glyph in one of our input fonts
-                // that isn't directly associated with a specific Unicode
-                // character. For instance, in math, we may need to draw a big
-                // integral sign, but the Unicode integral character maps to a
-                // small one. The way we handle this is by *creating new fonts*
-                // with custom character map tables that *do* map Unicode
-                // characters directly to the specific glyphs we want.
-
-                let (mut ch, need_alt) = match mc {
-                    MapEntry::Direct(c) => (c, false),
-                    MapEntry::SubSuperScript(c, _) => (c, true),
-                    MapEntry::MathGrowingVariant(c, _, _) => (c, true),
-                };
-
-                let alt_index = if need_alt {
-                    let map = fd.request_alternative(gi.glyph, ch);
-                    ch = map.usv;
-                    Some(map.alternate_map_index)
-                } else {
-                    None
-                };
-
-                let font_sel = fi.selection_style_text(alt_index);
-
+            if let Some((ch, font_sel)) = text_info {
                 // dy gives the target position of this glyph's baseline
                 // relative to the canvas's baseline. For our `position:
                 // absolute` layout, we have to convert that into the distance
@@ -1869,8 +1766,8 @@ impl EmittingState {
                 // container, in which case the box height is the `font-size`
                 // setting.
 
-                let top_rem = (-y_min_tex + gi.dy) as f32 * self.rems_per_tex
-                    - fd.baseline_factor() * rel_size;
+                let top_rem =
+                    (-y_min_tex + gi.dy) as f32 * self.rems_per_tex - baseline_factor * rel_size;
 
                 // Stringify the character so that we can use html_escape in
                 // case it's a `<` or whatever.
@@ -1887,14 +1784,6 @@ impl EmittingState {
                 .unwrap();
                 html_escape::encode_text_to_string(ch_as_str, &mut inner_content);
                 write!(inner_content, "</span>").unwrap();
-            } else {
-                tt_warning!(
-                    common.status,
-                    "unable to reverse-map glyph {} in font `{}` (face {})",
-                    gi.glyph,
-                    fi.rel_url,
-                    fi.face_index
-                );
             }
         }
 
@@ -1918,7 +1807,7 @@ impl EmittingState {
         let element = self.create_elem(element, true, common);
 
         write!(
-            self.current_content,
+            self.content,
             "<{} class=\"canvas {}\" style=\"width: {}rem; height: {}rem; padding-left: {}rem{}\">",
             element.name(),
             layout_class,
@@ -1928,9 +1817,11 @@ impl EmittingState {
             valign,
         )
         .unwrap();
-        self.current_content.push_str(&inner_content);
-        write!(self.current_content, "</{}>", element.name()).unwrap();
-        self.update_content_pos(x_max_tex + canvas.x0, None);
+        self.content.push_str(&inner_content);
+        write!(self.content, "</{}>", element.name()).unwrap();
+        let cur_space_width = self.fonts.maybe_get_font_space_width(None);
+        self.content
+            .update_content_pos(x_max_tex + canvas.x0, cur_space_width);
         Ok(())
     }
 
@@ -1965,7 +1856,9 @@ impl EmittingState {
             n_levels += 1;
         }
 
-        self.context.insert("tduxContent", &self.current_content);
+        // Unfortunately tera doesn't seem to give us a way to put the content
+        // string in without having to clone it.
+        self.context.insert("tduxContent", &self.content.take());
 
         if n_levels < 2 {
             self.context.insert("tduxRelTop", "");
@@ -2025,48 +1918,18 @@ impl EmittingState {
             );
         }
 
-        self.current_content = String::default();
-        self.update_content_pos(0, None);
+        let cur_space_width = self.fonts.maybe_get_font_space_width(None);
+        self.content.update_content_pos(0, cur_space_width);
         Ok(())
     }
 
     fn content_finished(&mut self, common: &mut Common) -> Result<()> {
-        if !self.current_content.is_empty() {
+        if !self.content.is_empty() {
             tt_warning!(common.status, "un-emitted content at end of HTML output");
-            self.current_content = String::default();
+            self.content.take(); // clear out the content
         }
 
-        // The reason we're doing all this: we can now emit our customized font
-        // files that provide access to glyphs that we can't get the browser to
-        // display directly. First, emit the font files via the font data.
-
-        let mut emitted_info = HashMap::new();
-
-        for (fd_key, data) in self.font_data.drain() {
-            let emi = data.emit(common.out_base)?;
-            emitted_info.insert(fd_key, emi);
-        }
-
-        // Now we can generate the CSS.
-
-        let mut faces = String::default();
-
-        for fi in self.fonts.values() {
-            let emi = emitted_info.get(&fi.fd_key).unwrap();
-
-            for (alt_index, css_src) in emi {
-                let _ignored = writeln!(
-                    faces,
-                    r#"@font-face {{
-    {}
-    src: {};
-}}"#,
-                    fi.font_face_text(*alt_index),
-                    css_src,
-                );
-            }
-        }
-
+        let faces = self.fonts.emit(common.out_base)?;
         self.context.insert("tduxFontFaces", &faces);
 
         // OK.
@@ -2078,218 +1941,6 @@ impl EmittingState {
 type FixedPoint = i32;
 type FontNum = i32;
 
-#[allow(dead_code)]
-#[derive(Debug)]
-struct FontInfo {
-    /// Relative URL to the font data file
-    rel_url: String,
-
-    /// CSS name of the font family with which this font is associated;
-    /// autogenerated if not specified during initialization.
-    family_name: String,
-
-    /// This font's "relationship" to its family. Defaults to Regular to
-    /// if it's not associated with a full-fledged family.
-    family_relation: FamilyRelativeFontId,
-
-    /// Integer key used to relate this TeX font to its FontFileData. Multiple
-    /// fonts may use the same FontFileData, if they refer to the same backing
-    /// file.
-    fd_key: usize,
-
-    size: FixedPoint,
-    face_index: u32,
-    color_rgba: Option<u32>,
-    extend: Option<u32>,
-    slant: Option<u32>,
-    embolden: Option<u32>,
-}
-
-impl FontInfo {
-    fn selection_style_text(&self, alternate_map_index: Option<usize>) -> String {
-        let alt_text = alternate_map_index
-            .map(|i| format!("vg{i}"))
-            .unwrap_or_default();
-
-        let extra = match self.family_relation {
-            FamilyRelativeFontId::Regular => "",
-            FamilyRelativeFontId::Bold => "; font-weight: bold",
-            FamilyRelativeFontId::Italic => "; font-style: italic",
-            FamilyRelativeFontId::BoldItalic => "; font-weight: bold; font-style: italic",
-            FamilyRelativeFontId::Other(_) => unreachable!(),
-        };
-
-        format!("font-family: {}{}{}", self.family_name, alt_text, extra)
-    }
-
-    fn font_face_text(&self, alternate_map_index: Option<usize>) -> String {
-        let alt_text = alternate_map_index
-            .map(|i| format!("vg{i}"))
-            .unwrap_or_default();
-
-        let extra = match self.family_relation {
-            FamilyRelativeFontId::Regular => "",
-            FamilyRelativeFontId::Bold => "\n    font-weight: bold;",
-            FamilyRelativeFontId::Italic => "\n    font-style: italic;",
-            FamilyRelativeFontId::BoldItalic => "\n    font-weight: bold;\n    font-style: italic;",
-            FamilyRelativeFontId::Other(_) => unreachable!(),
-        };
-
-        format!(
-            r#"font-family: "{}{}";{}"#,
-            self.family_name, alt_text, extra
-        )
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-struct FontFamily {
-    regular: FontNum,
-    bold: FontNum,
-    italic: FontNum,
-    bold_italic: FontNum,
-}
-
-impl FontFamily {
-    fn font_num_to_relative_id(&self, fnum: FontNum) -> FamilyRelativeFontId {
-        if fnum == self.regular {
-            FamilyRelativeFontId::Regular
-        } else if fnum == self.bold {
-            FamilyRelativeFontId::Bold
-        } else if fnum == self.italic {
-            FamilyRelativeFontId::Italic
-        } else if fnum == self.bold_italic {
-            FamilyRelativeFontId::BoldItalic
-        } else {
-            FamilyRelativeFontId::Other(fnum)
-        }
-    }
-
-    fn relative_id_to_font_num(&self, relid: FamilyRelativeFontId) -> FontNum {
-        match relid {
-            FamilyRelativeFontId::Regular => self.regular,
-            FamilyRelativeFontId::Bold => self.bold,
-            FamilyRelativeFontId::Italic => self.italic,
-            FamilyRelativeFontId::BoldItalic => self.bold_italic,
-            FamilyRelativeFontId::Other(fnum) => fnum,
-        }
-    }
-
-    /// Figure out how to get "to" a desired font based on the current one. This
-    /// function should only be called if it has been established that the
-    /// desired font is in fact different than the current font. However, there
-    /// are some noop cases below so that we can make the compiler happy about
-    /// covering all of our enum variants.
-    fn path_to_new_font(
-        &self,
-        cur: FamilyRelativeFontId,
-        desired: FamilyRelativeFontId,
-    ) -> PathToNewFont {
-        match desired {
-            FamilyRelativeFontId::Other(_) => PathToNewFont {
-                close_all: true,
-                select_explicitly: true,
-                ..Default::default()
-            },
-
-            FamilyRelativeFontId::Regular => PathToNewFont {
-                close_all: true,
-                ..Default::default()
-            },
-
-            FamilyRelativeFontId::Bold => match cur {
-                FamilyRelativeFontId::Regular => PathToNewFont {
-                    open_b: Some(desired),
-                    ..Default::default()
-                },
-
-                FamilyRelativeFontId::Bold => Default::default(),
-
-                FamilyRelativeFontId::Italic | FamilyRelativeFontId::Other(_) => PathToNewFont {
-                    close_all: true,
-                    open_b: Some(desired),
-                    ..Default::default()
-                },
-
-                FamilyRelativeFontId::BoldItalic => PathToNewFont {
-                    close_one_and_retry: true,
-                    ..Default::default()
-                },
-            },
-
-            FamilyRelativeFontId::Italic => match cur {
-                FamilyRelativeFontId::Regular => PathToNewFont {
-                    open_i: Some(desired),
-                    ..Default::default()
-                },
-
-                FamilyRelativeFontId::Italic => Default::default(),
-
-                FamilyRelativeFontId::Bold | FamilyRelativeFontId::Other(_) => PathToNewFont {
-                    close_all: true,
-                    open_i: Some(desired),
-                    ..Default::default()
-                },
-
-                FamilyRelativeFontId::BoldItalic => PathToNewFont {
-                    close_one_and_retry: true,
-                    ..Default::default()
-                },
-            },
-
-            FamilyRelativeFontId::BoldItalic => match cur {
-                FamilyRelativeFontId::Regular => PathToNewFont {
-                    open_i: Some(desired),
-                    open_b: Some(FamilyRelativeFontId::Bold), // <= the whole reason these aren't bools
-                    ..Default::default()
-                },
-
-                FamilyRelativeFontId::Italic => PathToNewFont {
-                    open_b: Some(desired),
-                    ..Default::default()
-                },
-
-                FamilyRelativeFontId::Bold => PathToNewFont {
-                    open_i: Some(desired),
-                    ..Default::default()
-                },
-
-                FamilyRelativeFontId::BoldItalic => Default::default(),
-
-                FamilyRelativeFontId::Other(_) => PathToNewFont {
-                    close_one_and_retry: true,
-                    ..Default::default()
-                },
-            },
-        }
-    }
-}
-
-/// How to "get to" a desired font based on the current font family and recently
-/// active tags.
-#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-struct PathToNewFont {
-    /// Close all open automatically-generated font-selection tags.
-    pub close_all: bool,
-
-    /// Close one automatically-generated font-selection tag, and try again.
-    pub close_one_and_retry: bool,
-
-    /// Issue a `<span>` element to explicitly choose the font; this is
-    /// our get-out-of-jail-free card.
-    pub select_explicitly: bool,
-
-    /// If Some, open a `<b>` tag. The value is the "family-relative" font that
-    /// will be active after doing so. If both this and `open_i` are Some, this
-    /// should be evaluated first.
-    pub open_b: Option<FamilyRelativeFontId>,
-
-    /// If Some, open an `<i>` tag. The value is the "family-relative" font that
-    /// will be active after doing so. If both this and `open_b` are Some, the
-    /// `<b>` tag should be evaluated first.
-    pub open_i: Option<FamilyRelativeFontId>,
-}
-
 #[derive(Debug, Default)]
 struct FontFamilyBuilder {
     family_name: String,
@@ -2297,25 +1948,6 @@ struct FontFamilyBuilder {
     bold: Option<FontNum>,
     italic: Option<FontNum>,
     bold_italic: Option<FontNum>,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-enum FamilyRelativeFontId {
-    /// This font is the regular font of the current family.
-    Regular,
-
-    /// This font is the bold font of the current family.
-    Bold,
-
-    /// This font is the italic font of the current family.
-    Italic,
-
-    /// This font is the bold-italic font of the current family.
-    BoldItalic,
-
-    /// This font is some other font with no known relation to the current
-    /// family.
-    Other(FontNum),
 }
 
 #[derive(Debug, Default)]
