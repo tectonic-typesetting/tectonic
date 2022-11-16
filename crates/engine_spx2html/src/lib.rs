@@ -574,11 +574,11 @@ impl InitializationState {
 
         // Set up font stuff.
 
-        let rems_per_tex = if let Some(fnum) = self.main_body_font_num {
-            1.0 / (self.fonts.get_font_size(fnum) as f32)
-        } else {
-            1. / 65536.
-        };
+        let rems_per_tex = 1.0
+            / self
+                .main_body_font_num
+                .map(|fnum| self.fonts.get_font_size(fnum))
+                .unwrap_or(65536) as f32;
 
         // Tera requires that we give it a filesystem path to look for
         // templates, even if we're going to be adding all of our templates
@@ -1734,7 +1734,7 @@ impl EmittingState {
         let mut ch_str_buf = [0u8; 4];
 
         for gi in canvas.glyphs.drain(..) {
-            let (size, baseline_factor, text_info) =
+            let (text_info, size, baseline_factor) =
                 self.fonts
                     .process_glyph_for_canvas(gi.font_num, gi.glyph, common.status);
 

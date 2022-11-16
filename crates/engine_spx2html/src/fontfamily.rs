@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 //! Manage families of related fonts.
+//!
+//! Here a "font family" is interpreted in the HTML sense, meaning a set of
+//! related fonts. In typography you might call this a typeface.
 
 use percent_encoding::{utf8_percent_encode, CONTROLS};
 use std::{collections::HashMap, fmt::Write, path::Path};
@@ -13,21 +16,36 @@ use crate::{
     FixedPoint, FontNum,
 };
 
+/// Information about an ensemble of font families.
+///
+/// A given document may declare multiple families of related fonts.
 #[derive(Debug)]
 pub struct FontEnsemble {
-    fonts: HashMap<FontNum, FontInfo>,
-    font_data_keys: HashMap<(String, u32), usize>,
-    font_data: HashMap<usize, FontFileData>,
-    /// Keyed by the "regular" font-num
+    /// Information about fonts declared in the SPX file. There may be
+    /// a number of "native" fonts with different size/color/etc info
+    /// that all reference the same underlying font file.
+    tex_fonts: HashMap<FontNum, TexFontInfo>,
+
+    /// Information about the individual font files referenced by the TeX fonts.
+    /// These are keyed by "font file data keys" that are just intended to save
+    /// a bit of memory by making it so that not every TeX font has to store the
+    /// filename it's associated with
+    font_file_data: HashMap<usize, FontFileData>,
+
+    /// Mapping filenames and face indices to font file data keys.
+    ffd_keys: HashMap<(String, u32), usize>,
+
+    /// Information about font families. This is keyed by the font-num of the
+    /// "regular" font.
     font_families: HashMap<FontNum, FontFamily>,
 }
 
 impl Default for FontEnsemble {
     fn default() -> Self {
         FontEnsemble {
-            fonts: Default::default(),
-            font_data_keys: Default::default(),
-            font_data: Default::default(),
+            tex_fonts: Default::default(),
+            ffd_keys: Default::default(),
+            font_file_data: Default::default(),
             font_families: Default::default(),
         }
     }
@@ -37,9 +55,13 @@ impl FontEnsemble {
     /// Test whether this ensemble contains a font identified by the given SPX
     /// font number.
     pub fn contains(&self, f: FontNum) -> bool {
-        self.fonts.contains_key(&f)
+        self.tex_fonts.contains_key(&f)
     }
 
+    /// Register a new "native" font with this data structure. Font-family
+    /// relations aren't recorded here.
+    ///
+    /// Options like the *color_rgba* and *slant* are currently ignored.
     pub fn register(
         &mut self,
         name: String,
@@ -53,15 +75,15 @@ impl FontEnsemble {
         basename: String,
         contents: Vec<u8>,
     ) -> Result<()> {
-        let fd_key = (name, face_index);
-        let next_id = self.font_data_keys.len();
-        let fd_key = *self.font_data_keys.entry(fd_key).or_insert(next_id);
+        let ffd_key = (name, face_index);
+        let next_id = self.ffd_keys.len();
+        let ffd_key = *self.ffd_keys.entry(ffd_key).or_insert(next_id);
 
-        let info = FontInfo {
+        let info = TexFontInfo {
             rel_url: utf8_percent_encode(&basename, CONTROLS).to_string(),
             family_name: format!("tdux{}", font_num),
             family_relation: FamilyRelativeFontId::Regular,
-            fd_key,
+            ffd_key,
             size,
             face_index,
             color_rgba,
@@ -70,18 +92,22 @@ impl FontEnsemble {
             embolden,
         };
 
-        if fd_key == next_id {
+        if ffd_key == next_id {
             let map = atry!(
                 FontFileData::from_opentype(basename.clone(), contents, face_index);
                 ["unable to load glyph data for font `{}`", basename]
             );
-            self.font_data.insert(fd_key, map);
+            self.font_file_data.insert(ffd_key, map);
         }
 
-        self.fonts.insert(font_num, info);
+        self.tex_fonts.insert(font_num, info);
         Ok(())
     }
 
+    /// Register a font-family relation.
+    ///
+    /// For the time being, the full quartet of bold/italic variations must be
+    /// defined in order to declare a family
     pub fn register_family(
         &mut self,
         family_name: String,
@@ -103,35 +129,40 @@ impl FontEnsemble {
         // Now update the info records for the relevant fonts to capture the
         // established relationship.
 
-        if let Some(info) = self.fonts.get_mut(&regular) {
+        if let Some(info) = self.tex_fonts.get_mut(&regular) {
             info.family_name = family_name.clone();
             info.family_relation = FamilyRelativeFontId::Regular;
         }
 
-        if let Some(info) = self.fonts.get_mut(&bold) {
+        if let Some(info) = self.tex_fonts.get_mut(&bold) {
             info.family_name = family_name.clone();
             info.family_relation = FamilyRelativeFontId::Bold;
         }
 
-        if let Some(info) = self.fonts.get_mut(&italic) {
+        if let Some(info) = self.tex_fonts.get_mut(&italic) {
             info.family_name = family_name.clone();
             info.family_relation = FamilyRelativeFontId::Italic;
         }
 
-        if let Some(info) = self.fonts.get_mut(&bold_italic) {
+        if let Some(info) = self.tex_fonts.get_mut(&bold_italic) {
             info.family_name = family_name;
             info.family_relation = FamilyRelativeFontId::BoldItalic;
         }
     }
 
+    /// Get the size at which the specified SPX font is defined.
     pub fn get_font_size(&self, fnum: FontNum) -> FixedPoint {
-        self.fonts.get(&fnum).unwrap().size
+        self.tex_fonts.get(&fnum).unwrap().size
     }
 
+    /// Get the width of the space character in a SPX font.
+    ///
+    /// This width is not always known, depending on the font file structure.
+    /// For convenience, this function's input font number is also optional.
     pub fn maybe_get_font_space_width(&self, font_num: Option<FontNum>) -> Option<FixedPoint> {
         font_num.and_then(|fnum| {
-            if let Some(fi) = self.fonts.get(&fnum) {
-                let fd = self.font_data.get(&fi.fd_key).unwrap();
+            if let Some(fi) = self.tex_fonts.get(&fnum) {
+                let fd = self.font_file_data.get(&fi.ffd_key).unwrap();
                 fd.space_width(fi.size)
             } else {
                 None
@@ -139,79 +170,71 @@ impl FontEnsemble {
         })
     }
 
+    /// Get the metrics for a glyph in a font.
+    ///
+    /// The return value is only `Err` if the font number is undeclared. If the
+    /// glyph's metrics are not defined in the font, `Ok(None)` is returned.
     pub fn get_glyph_metrics(
         &mut self,
         fnum: FontNum,
         glyph: GlyphId,
     ) -> Result<Option<GlyphMetrics>> {
         let fi = a_ok_or!(
-            self.fonts.get(&fnum);
+            self.tex_fonts.get(&fnum);
             ["undeclared font number {}", fnum]
         );
-        let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
+        let fd = self.font_file_data.get_mut(&fi.ffd_key).unwrap();
         Ok(fd.lookup_metrics(glyph, fi.size))
     }
 
+    /// Get information needed to render a glyph in a canvas context.
+    ///
+    /// The return value is a tuple `(text_info, size, baseline_factor)`. In
+    /// turn, `text_info` is an optional tuple of `(ch, style)`, where `ch` is
+    /// the Unicode character to yield the desired glyph and `style` is a bit of
+    /// CSS to go into an HTML `style` attribute in order to select the font
+    /// that will map `ch` to the correct glyph.
+    ///
+    /// If we're unable to figure out a way to render the desired glyph, a
+    /// warning is logged to the status backend.
     pub fn process_glyph_for_canvas(
         &mut self,
         fnum: FontNum,
         glyph: GlyphId,
         status: &mut dyn StatusBackend,
-    ) -> (FixedPoint, f32, Option<(char, String)>) {
-        let fi = self.fonts.get(&fnum).unwrap();
-        let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
-
-        let text_info = fd.lookup_mapping(glyph).map(|mc| {
-            // Sometimes we need to render a glyph in one of our input fonts
-            // that isn't directly associated with a specific Unicode
-            // character. For instance, in math, we may need to draw a big
-            // integral sign, but the Unicode integral character maps to a
-            // small one. The way we handle this is by *creating new fonts*
-            // with custom character map tables that *do* map Unicode
-            // characters directly to the specific glyphs we want.
-
-            let (mut ch, need_alt) = match mc {
-                MapEntry::Direct(c) => (c, false),
-                MapEntry::SubSuperScript(c, _) => (c, true),
-                MapEntry::MathGrowingVariant(c, _, _) => (c, true),
-            };
-
-            let alt_index = if need_alt {
-                let map = fd.request_alternative(glyph, ch);
-                ch = map.usv;
-                Some(map.alternate_map_index)
-            } else {
-                None
-            };
-
-            (ch, fi.selection_style_text(alt_index))
-        });
-
-        if text_info.is_none() {
-            tt_warning!(
-                status,
-                "unable to reverse-map glyph {} in font `{}` (face {})",
-                glyph,
-                fi.rel_url,
-                fi.face_index
-            );
-        }
-
-        (fi.size, fd.baseline_factor(), text_info)
+    ) -> (Option<(char, String)>, FixedPoint, f32) {
+        let fi = self.tex_fonts.get(&fnum).unwrap();
+        let fd = self.font_file_data.get_mut(&fi.ffd_key).unwrap();
+        let text_info = get_text_info(fi, fd, glyph, status);
+        (text_info, fi.size, fd.baseline_factor())
     }
 
+    /// Create an iterator for rendering glyphs as Unicode text.
+    ///
+    /// The iterator yields tuples of `(index, text_info, advance)`, where
+    /// `index` is the index of the glyph in the passed-in array, `text_info` is
+    /// an optional tuple of information about how to get the glyph to appear in
+    /// HTML, and `advance` is the horizontal advance length associated with the
+    /// glyph in question, according to the font's metrics. If not None,
+    /// `text_info` is a tuple of `(ch, style)`, where `ch` is the Unicode
+    /// character to yield the desired glyph and `style` is a bit of CSS to go
+    /// into an HTML `style` attribute in order to select the font that will map
+    /// `ch` to the correct glyph.
+    ///
+    /// If we're unable to figure out a way to render the desired glyph, a
+    /// warning is logged to the status backend.
     pub fn process_glyphs_as_text<'a>(
         &'a mut self,
         font_num: FontNum,
         glyphs: &'a [GlyphId],
         status: &'a mut dyn StatusBackend,
-    ) -> Result<GlyphTextProcessingIterator<'a>> {
+    ) -> Result<impl Iterator<Item = (usize, Option<(char, String)>, FixedPoint)> + 'a> {
         let fi = a_ok_or!(
-            self.fonts.get(&font_num);
+            self.tex_fonts.get(&font_num);
             ["undeclared font {} in glyph run", font_num]
         );
 
-        let fd = self.font_data.get_mut(&fi.fd_key).unwrap();
+        let fd = self.font_file_data.get_mut(&fi.ffd_key).unwrap();
 
         Ok(GlyphTextProcessingIterator {
             fi,
@@ -222,6 +245,12 @@ impl FontEnsemble {
         })
     }
 
+    /// Determine how an SPX font relates to a font family.
+    ///
+    /// The *fnum* argument is some font number. The *cur_ffid* argument is the
+    /// identifier of a font family, which is defined as the fontnum of its
+    /// "regular" font. The *cur_af* argument defines the currently active font
+    /// within that family, as identified with a [`FamilyRelativeFontId`].
     pub fn analyze_font_for_family(
         &self,
         fnum: FontNum,
@@ -245,13 +274,17 @@ impl FontEnsemble {
         }
     }
 
+    /// Write HTML code for an open `<span>` element that activates a font.
+    ///
+    /// The font size is specified in CSS "rem" units, which need to be
+    /// calculated with the *rems_per_tex* parameter.
     pub fn write_styling_span_html<W: Write>(
         &self,
         fnum: FontNum,
         rems_per_tex: f32,
         mut dest: W,
     ) -> Result<()> {
-        let fi = self.fonts.get(&fnum).unwrap();
+        let fi = self.tex_fonts.get(&fnum).unwrap();
         let rel_size = fi.size as f32 * rems_per_tex;
 
         write!(
@@ -263,7 +296,10 @@ impl FontEnsemble {
         .map_err(|e| e.into())
     }
 
-    /// Emit the font files and return CSS setting up the files.kx
+    /// Emit the font files and return CSS code setting up the files.
+    ///
+    /// This function clears this object's internal data structures, making it
+    /// effectively unusable for subsequent operations.
     pub fn emit(&mut self, out_base: &Path) -> Result<String> {
         // The reason we're doing all this: we can now emit our customized font
         // files that provide access to glyphs that we can't get the browser to
@@ -271,17 +307,17 @@ impl FontEnsemble {
 
         let mut emitted_info = HashMap::new();
 
-        for (fd_key, data) in self.font_data.drain() {
+        for (ffd_key, data) in self.font_file_data.drain() {
             let emi = data.emit(out_base)?;
-            emitted_info.insert(fd_key, emi);
+            emitted_info.insert(ffd_key, emi);
         }
 
         // Now we can generate the CSS.
 
         let mut faces = String::default();
 
-        for fi in self.fonts.values() {
-            let emi = emitted_info.get(&fi.fd_key).unwrap();
+        for fi in self.tex_fonts.values() {
+            let emi = emitted_info.get(&fi.ffd_key).unwrap();
 
             for (alt_index, css_src) in emi {
                 let _ignored = writeln!(
@@ -300,8 +336,9 @@ impl FontEnsemble {
     }
 }
 
-pub struct GlyphTextProcessingIterator<'a> {
-    fi: &'a FontInfo,
+/// A helper type for the [`FontEnsemble::process_glyphs_as_text`] method.
+struct GlyphTextProcessingIterator<'a> {
+    fi: &'a TexFontInfo,
     fd: &'a mut FontFileData,
     glyphs: &'a [GlyphId],
     status: &'a mut dyn StatusBackend,
@@ -318,7 +355,7 @@ impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
 
         let glyph = self.glyphs[self.next];
 
-        // Get info needed by automatic space insertion:
+        // Get the advance info:
 
         let gm = self.fd.lookup_metrics(glyph, self.fi.size);
 
@@ -327,43 +364,11 @@ impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
             None => 0,
         };
 
-        // Now see if we can actually render it to Unicode
+        // Get the textualization info:
 
-        let text_info = match self.fd.lookup_mapping(glyph) {
-            Some(mc) => {
-                let (mut ch, need_alt) = match mc {
-                    MapEntry::Direct(c) => (c, false),
-                    MapEntry::SubSuperScript(c, _) => (c, true),
-                    MapEntry::MathGrowingVariant(c, _, _) => (c, true),
-                };
+        let text_info = get_text_info(self.fi, self.fd, glyph, self.status);
 
-                let alt_index = if need_alt {
-                    let map = self.fd.request_alternative(glyph, ch);
-                    ch = map.usv;
-                    Some(map.alternate_map_index)
-                } else {
-                    None
-                };
-
-                // For later: we could select the "default" font at an outer
-                // level and only emit tags as needed in here.
-                let font_sel = self.fi.selection_style_text(alt_index);
-
-                Some((ch, font_sel))
-            }
-
-            None => None,
-        };
-
-        if text_info.is_none() {
-            tt_warning!(
-                self.status,
-                "unable to reverse-map glyph {} in font `{}` (face {})",
-                glyph,
-                self.fi.rel_url,
-                self.fi.face_index
-            );
-        }
+        // And that's it!
 
         let idx = self.next;
         self.next += 1;
@@ -371,6 +376,49 @@ impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
     }
 }
 
+/// Get information about how to render a desired glyph from a font.
+fn get_text_info(
+    fi: &TexFontInfo,
+    fd: &mut FontFileData,
+    glyph: GlyphId,
+    status: &mut dyn StatusBackend,
+) -> Option<(char, String)> {
+    let text_info = fd.lookup_mapping(glyph).map(|mc| {
+        let (mut ch, need_alt) = match mc {
+            MapEntry::Direct(c) => (c, false),
+            MapEntry::SubSuperScript(c, _) => (c, true),
+            MapEntry::MathGrowingVariant(c, _, _) => (c, true),
+        };
+
+        let alt_index = if need_alt {
+            let map = fd.request_alternative(glyph, ch);
+            ch = map.usv;
+            Some(map.alternate_map_index)
+        } else {
+            None
+        };
+
+        // For later: might help to allow some context about the active font so
+        // that we can maybe use a simpler selection string here.
+        let font_sel = fi.selection_style_text(alt_index);
+
+        (ch, font_sel)
+    });
+
+    if text_info.is_none() {
+        tt_warning!(
+            status,
+            "unable to reverse-map glyph {} in font `{}` (face {})",
+            glyph,
+            fi.rel_url,
+            fi.face_index
+        );
+    }
+
+    text_info
+}
+
+/// The return type for [`FontEnsemble::analyze_font_for_family`].
 #[derive(Debug)]
 pub enum FontFamilyAnalysis {
     AlreadyActive,
@@ -378,9 +426,10 @@ pub enum FontFamilyAnalysis {
     Reachable(PathToNewFont, FamilyRelativeFontId),
 }
 
+/// Information about a "native font" declared in the SPX file.
 #[allow(dead_code)]
 #[derive(Debug)]
-struct FontInfo {
+struct TexFontInfo {
     /// Relative URL to the font data file
     rel_url: String,
 
@@ -395,17 +444,31 @@ struct FontInfo {
     /// Integer key used to relate this TeX font to its FontFileData. Multiple
     /// fonts may use the same FontFileData, if they refer to the same backing
     /// file.
-    fd_key: usize,
+    ffd_key: usize,
 
+    /// The size at which this font is rendered, in TeX units.
     size: FixedPoint,
+
+    /// Which face in the font file is being used.
     face_index: u32,
+
+    /// Unused TeX/SPX setting.
     color_rgba: Option<u32>,
+
+    /// Unused TeX/SPX setting.
     extend: Option<u32>,
+
+    /// Unused TeX/SPX setting.
     slant: Option<u32>,
+
+    /// Unused TeX/SPX setting.
     embolden: Option<u32>,
 }
 
-impl FontInfo {
+impl TexFontInfo {
+    /// Generate a snippet of CSS for an HTML `style` attribute that will select
+    /// the appropriate font, given that we might need to select one of the
+    /// "variants" generated to make unusual glyphs available.
     fn selection_style_text(&self, alternate_map_index: Option<usize>) -> String {
         let alt_text = alternate_map_index
             .map(|i| format!("vg{}", i))
@@ -422,6 +485,10 @@ impl FontInfo {
         format!("font-family: {}{}{}", self.family_name, alt_text, extra)
     }
 
+    /// This can probably be merged with `selection_style_text`. The key
+    /// difference is double quotes around the font-family specifier, which we
+    /// want to have in the CSS but shouldn't have (maybe???) in the HTML
+    /// `style` attribute.
     fn font_face_text(&self, alternate_map_index: Option<usize>) -> String {
         let alt_text = alternate_map_index
             .map(|i| format!("vg{}", i))
@@ -442,6 +509,7 @@ impl FontInfo {
     }
 }
 
+/// TeX/SPX font numbers for a family of fonts.
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct FontFamily {
     regular: FontNum,
@@ -590,6 +658,7 @@ pub struct PathToNewFont {
     pub open_i: Option<FamilyRelativeFontId>,
 }
 
+/// A font's role relative to some font family.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum FamilyRelativeFontId {
     /// This font is the regular font of the current family.
