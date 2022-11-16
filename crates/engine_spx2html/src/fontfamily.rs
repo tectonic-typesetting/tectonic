@@ -19,7 +19,7 @@ use crate::{
 /// Information about an ensemble of font families.
 ///
 /// A given document may declare multiple families of related fonts.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct FontEnsemble {
     /// Information about fonts declared in the SPX file. There may be
     /// a number of "native" fonts with different size/color/etc info
@@ -40,17 +40,6 @@ pub struct FontEnsemble {
     font_families: HashMap<FontNum, FontFamily>,
 }
 
-impl Default for FontEnsemble {
-    fn default() -> Self {
-        FontEnsemble {
-            tex_fonts: Default::default(),
-            ffd_keys: Default::default(),
-            font_file_data: Default::default(),
-            font_families: Default::default(),
-        }
-    }
-}
-
 impl FontEnsemble {
     /// Test whether this ensemble contains a font identified by the given SPX
     /// font number.
@@ -62,6 +51,7 @@ impl FontEnsemble {
     /// relations aren't recorded here.
     ///
     /// Options like the *color_rgba* and *slant* are currently ignored.
+    #[allow(clippy::too_many_arguments)]
     pub fn register(
         &mut self,
         name: String,
