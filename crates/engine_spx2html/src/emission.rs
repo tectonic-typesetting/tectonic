@@ -16,6 +16,7 @@ use tectonic_status_base::tt_warning;
 use crate::{
     fontfamily::{FamilyRelativeFontId, FontEnsemble, FontFamilyAnalysis, PathToNewFont},
     html::Element,
+    specials::Special,
     templating::Templating,
     Common, FixedPoint, FontNum,
 };
@@ -416,136 +417,123 @@ impl EmittingState {
         &mut self,
         x: i32,
         y: i32,
-        tdux_command: Option<&str>,
-        remainder: &str,
+        special: Special<'_>,
         common: &mut Common,
     ) -> Result<()> {
-        if let Some(cmd) = tdux_command {
-            match cmd {
-                "asp" => {
-                    if self.content_finished {
-                        self.warn_finished_content("auto start paragraph", common);
-                    } else if self.cur_elstate().do_auto_tags {
-                        // Why are we using <div>s instead of <p>? As the HTML spec
-                        // emphasizes, <p> tags are structural, not semantic. You cannot
-                        // put tags like <ul> or <div> inside <p> -- they automatically
-                        // close the paragraph. This does not align with TeX's idea of a
-                        // paragraph, and there's no upside to trying to use <p>'s -- as
-                        // the spec notes, the <p> tag does not activate any important
-                        // semantics itself. The HTML spec explicitly recommends that
-                        // you can use <div> elements to group logical paragraphs. So
-                        // that's what we do.
-                        let el = self.create_elem("div", true, common);
-                        self.push_space_if_needed(x, None);
-                        self.content.push_str("<div class=\"tdux-p\">");
-                        self.push_elem(el, ElementOrigin::EngineAuto);
+        match special {
+            Special::AutoStartParagraph => {
+                if self.content_finished {
+                    self.warn_finished_content("auto start paragraph", common);
+                } else if self.cur_elstate().do_auto_tags {
+                    // Why are we using <div>s instead of <p>? As the HTML spec
+                    // emphasizes, <p> tags are structural, not semantic. You cannot
+                    // put tags like <ul> or <div> inside <p> -- they automatically
+                    // close the paragraph. This does not align with TeX's idea of a
+                    // paragraph, and there's no upside to trying to use <p>'s -- as
+                    // the spec notes, the <p> tag does not activate any important
+                    // semantics itself. The HTML spec explicitly recommends that
+                    // you can use <div> elements to group logical paragraphs. So
+                    // that's what we do.
+                    let el = self.create_elem("div", true, common);
+                    self.push_space_if_needed(x, None);
+                    self.content.push_str("<div class=\"tdux-p\">");
+                    self.push_elem(el, ElementOrigin::EngineAuto);
+                }
+                Ok(())
+            }
+
+            Special::AutoEndParagraph => {
+                if self.content_finished {
+                    self.warn_finished_content("auto end paragraph", common);
+                } else if self.cur_elstate().do_auto_tags {
+                    self.pop_elem("div", common);
+                }
+                Ok(())
+            }
+
+            Special::CanvasStart(kind) => {
+                if self.content_finished {
+                    self.warn_finished_content("canvas start", common);
+                } else if let Some(canvas) = self.current_canvas.as_mut() {
+                    canvas.depth += 1;
+                } else {
+                    self.current_canvas = Some(CanvasState::new(kind, x, y));
+                }
+                Ok(())
+            }
+
+            Special::CanvasEnd(kind) => {
+                if self.content_finished {
+                    self.warn_finished_content("canvas end", common);
+                } else if let Some(canvas) = self.current_canvas.as_mut() {
+                    canvas.depth -= 1;
+                    if canvas.depth == 0 {
+                        self.handle_end_canvas(common)?;
                     }
-                    Ok(())
-                }
-
-                "aep" => {
-                    if self.content_finished {
-                        self.warn_finished_content("auto end paragraph", common);
-                    } else if self.cur_elstate().do_auto_tags {
-                        self.pop_elem("div", common);
-                    }
-                    Ok(())
-                }
-
-                "cs" => {
-                    if self.content_finished {
-                        self.warn_finished_content("canvas start", common);
-                    } else if let Some(canvas) = self.current_canvas.as_mut() {
-                        canvas.depth += 1;
-                    } else {
-                        self.current_canvas = Some(CanvasState::new(remainder, x, y));
-                    }
-                    Ok(())
-                }
-
-                "ce" => {
-                    if self.content_finished {
-                        self.warn_finished_content("canvas end", common);
-                    } else if let Some(canvas) = self.current_canvas.as_mut() {
-                        canvas.depth -= 1;
-                        if canvas.depth == 0 {
-                            self.handle_end_canvas(common)?;
-                        }
-                    } else {
-                        tt_warning!(
-                            common.status,
-                            "ignoring unpaired tdux:c[anvas]e[nd] special for `{}`",
-                            remainder
-                        );
-                    }
-                    Ok(())
-                }
-
-                "mfs" => {
-                    if self.content_finished {
-                        self.warn_finished_content(
-                            &format!("manual flexible start tag {:?}", remainder),
-                            common,
-                        );
-                        Ok(())
-                    } else {
-                        self.handle_flexible_start_tag(x, y, remainder, common)
-                    }
-                }
-
-                "me" => {
-                    if self.content_finished {
-                        self.warn_finished_content(
-                            &format!("manual end tag </{}>", remainder),
-                            common,
-                        );
-                    } else {
-                        self.pop_elem(remainder, common);
-                    }
-                    Ok(())
-                }
-
-                "dt" => {
-                    if self.content_finished {
-                        self.warn_finished_content("direct text", common);
-                    } else {
-                        self.content.push_with_html_escaping(remainder);
-                    }
-                    Ok(())
-                }
-
-                "emit" => self.finish_file(common),
-
-                "setTemplate" => {
-                    self.templating.handle_set_template(remainder);
-                    Ok(())
-                }
-
-                "setOutputPath" => {
-                    self.templating.handle_set_output_path(remainder);
-                    Ok(())
-                }
-
-                "setTemplateVariable" => self
-                    .templating
-                    .handle_set_template_variable(remainder, common),
-
-                "provideFile" => self.handle_provide_file(remainder, common),
-
-                "contentFinished" => self.content_finished(common),
-
-                other => {
+                } else {
                     tt_warning!(
                         common.status,
-                        "ignoring unrecognized special: tdux:{} {}",
-                        other,
-                        remainder
+                        "ignoring unpaired tdux:c[anvas]e[nd] special for `{}`",
+                        kind
+                    );
+                }
+                Ok(())
+            }
+
+            Special::ManualFlexibleStart(spec) => {
+                if self.content_finished {
+                    self.warn_finished_content(
+                        &format!("manual flexible start tag {:?}", spec),
+                        common,
                     );
                     Ok(())
+                } else {
+                    self.handle_flexible_start_tag(x, y, spec, common)
                 }
             }
-        } else {
-            Ok(())
+
+            Special::ManualEnd(tag) => {
+                if self.content_finished {
+                    self.warn_finished_content(&format!("manual end tag </{}>", tag), common);
+                } else {
+                    self.pop_elem(tag, common);
+                }
+                Ok(())
+            }
+
+            Special::DirectText(text) => {
+                if self.content_finished {
+                    self.warn_finished_content("direct text", common);
+                } else {
+                    self.content.push_with_html_escaping(text);
+                }
+                Ok(())
+            }
+
+            Special::Emit => self.finish_file(common),
+
+            Special::SetTemplate(path) => {
+                self.templating.handle_set_template(path);
+                Ok(())
+            }
+
+            Special::SetOutputPath(path) => {
+                self.templating.handle_set_output_path(path);
+                Ok(())
+            }
+
+            Special::SetTemplateVariable(spec) => {
+                self.templating.handle_set_template_variable(spec, common)
+            }
+
+            Special::ProvideFile(spec) => self.handle_provide_file(spec, common),
+
+            Special::ContentFinished => self.content_finished(common),
+
+            other => {
+                tt_warning!(common.status, "ignoring unrecognized special: {}", other);
+                Ok(())
+            }
         }
     }
 

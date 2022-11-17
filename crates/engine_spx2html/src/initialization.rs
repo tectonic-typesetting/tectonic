@@ -14,8 +14,8 @@ use tectonic_io_base::OpenResult;
 use tectonic_status_base::tt_warning;
 
 use crate::{
-    fontfamily::FontEnsemble, html::Element, templating::Templating, Common, EmittingState,
-    FixedPoint, FontNum,
+    fontfamily::FontEnsemble, html::Element, specials::Special, templating::Templating, Common,
+    EmittingState, FixedPoint, FontNum,
 };
 
 #[derive(Debug)]
@@ -148,37 +148,30 @@ impl InitializationState {
 
     pub(crate) fn handle_special(
         &mut self,
-        tdux_command: Option<&str>,
-        remainder: &str,
+        special: Special<'_>,
         common: &mut Common,
     ) -> Result<()> {
-        if let Some(cmd) = tdux_command {
-            match cmd {
-                "addTemplate" => self.handle_add_template(remainder, common),
-                "setTemplate" => self.handle_set_template(remainder, common),
-                "setOutputPath" => self.handle_set_output_path(remainder, common),
-                "setTemplateVariable" => self.handle_set_template_variable(remainder, common),
-
-                "startDefineFontFamily" => self.handle_start_define_font_family(),
-                "endDefineFontFamily" => self.handle_end_define_font_family(common),
-
-                "startFontFamilyTagAssociations" => {
-                    self.handle_start_font_family_tag_associations()
-                }
-
-                "endFontFamilyTagAssociations" => {
-                    self.handle_end_font_family_tag_associations(common)
-                }
-
-                "provideFile" => {
-                    tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
-                    Ok(())
-                }
-
-                _ => Ok(()),
+        match special {
+            Special::AddTemplate(t) => self.handle_add_template(t, common),
+            Special::SetTemplate(t) => self.handle_set_template(t, common),
+            Special::SetOutputPath(t) => self.handle_set_output_path(t, common),
+            Special::SetTemplateVariable(t) => self.handle_set_template_variable(t, common),
+            Special::StartDefineFontFamily => self.handle_start_define_font_family(),
+            Special::EndDefineFontFamily => self.handle_end_define_font_family(common),
+            Special::StartFontFamilyTagAssociations => {
+                self.handle_start_font_family_tag_associations()
             }
-        } else {
-            Ok(())
+
+            Special::EndFontFamilyTagAssociations => {
+                self.handle_end_font_family_tag_associations(common)
+            }
+
+            Special::ProvideFile(_) => {
+                tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
+                Ok(())
+            }
+
+            _ => Ok(()),
         }
     }
 

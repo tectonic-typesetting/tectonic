@@ -19,10 +19,12 @@ mod fontfamily;
 mod fontfile;
 mod html;
 mod initialization;
+mod specials;
 mod templating;
 
 use emission::EmittingState;
 use initialization::InitializationState;
+use specials::Special;
 
 /// An engine that converts SPX to HTML.
 #[derive(Default)]
@@ -130,40 +132,23 @@ impl<'a> XdvEvents for EngineState<'a> {
     fn handle_special(&mut self, x: i32, y: i32, contents: &[u8]) -> Result<()> {
         let contents = atry!(std::str::from_utf8(contents); ["could not parse \\special as UTF-8"]);
 
-        // str.split_once() would be nice but it was introduced in 1.52 which is
-        // a bit recent for us.
-
-        let mut pieces = contents.splitn(2, ' ');
-
-        let (tdux_command, remainder) = if let Some(p) = pieces.next() {
-            if let Some(cmd) = p.strip_prefix("tdux:") {
-                (Some(cmd), pieces.next().unwrap_or_default())
-            } else {
-                (None, contents)
-            }
-        } else {
-            (None, contents)
+        let special = match Special::parse(contents, self.common.status) {
+            Some(s) => s,
+            None => return Ok(()),
         };
 
         // Might we need to end the initialization phase?
 
-        if self.in_endable_init() {
-            let end_init = matches!(
-                tdux_command.unwrap_or("none"),
-                "emit" | "provideFile" | "asp" | "aep" | "cs" | "ce" | "mfs" | "me" | "dt"
-            );
-
-            if end_init {
-                self.state.ensure_initialized()?;
-            }
+        if self.in_endable_init() && special.ends_initialization() {
+            self.state.ensure_initialized()?;
         }
 
         // Ready to dispatch.
 
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
-            State::Initializing(s) => s.handle_special(tdux_command, remainder, &mut self.common),
-            State::Emitting(s) => s.handle_special(x, y, tdux_command, remainder, &mut self.common),
+            State::Initializing(s) => s.handle_special(special, &mut self.common),
+            State::Emitting(s) => s.handle_special(x, y, special, &mut self.common),
         }
     }
 
