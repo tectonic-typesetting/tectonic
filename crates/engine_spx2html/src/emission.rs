@@ -14,6 +14,7 @@ use tectonic_errors::prelude::*;
 use tectonic_status_base::tt_warning;
 
 use crate::{
+    finalization::FinalizingState,
     fontfamily::{FamilyRelativeFontId, FontEnsemble, FontFamilyAnalysis, PathToNewFont},
     html::Element,
     specials::Special,
@@ -30,8 +31,6 @@ pub(crate) struct EmittingState {
     rems_per_tex: f32,
     elem_stack: Vec<ElementState>,
     current_canvas: Option<CanvasState>,
-    content_finished: bool,
-    content_finished_warning_issued: bool,
 }
 
 #[derive(Debug, Default)]
@@ -272,16 +271,7 @@ impl EmittingState {
                 active_font: FamilyRelativeFontId::Regular,
             }],
             current_canvas: None,
-            content_finished: false,
-            content_finished_warning_issued: false,
         })
-    }
-
-    fn warn_finished_content(&mut self, detail: &str, common: &mut Common) {
-        if !self.content_finished_warning_issued {
-            tt_warning!(common.status, "dropping post-finish content ({})", detail);
-            self.content_finished_warning_issued = true;
-        }
     }
 
     /// Convenience helper that applies the right defaults here.
@@ -422,9 +412,7 @@ impl EmittingState {
     ) -> Result<()> {
         match special {
             Special::AutoStartParagraph => {
-                if self.content_finished {
-                    self.warn_finished_content("auto start paragraph", common);
-                } else if self.cur_elstate().do_auto_tags {
+                if self.cur_elstate().do_auto_tags {
                     // Why are we using <div>s instead of <p>? As the HTML spec
                     // emphasizes, <p> tags are structural, not semantic. You cannot
                     // put tags like <ul> or <div> inside <p> -- they automatically
@@ -443,18 +431,14 @@ impl EmittingState {
             }
 
             Special::AutoEndParagraph => {
-                if self.content_finished {
-                    self.warn_finished_content("auto end paragraph", common);
-                } else if self.cur_elstate().do_auto_tags {
+                if self.cur_elstate().do_auto_tags {
                     self.pop_elem("div", common);
                 }
                 Ok(())
             }
 
             Special::CanvasStart(kind) => {
-                if self.content_finished {
-                    self.warn_finished_content("canvas start", common);
-                } else if let Some(canvas) = self.current_canvas.as_mut() {
+                if let Some(canvas) = self.current_canvas.as_mut() {
                     canvas.depth += 1;
                 } else {
                     self.current_canvas = Some(CanvasState::new(kind, x, y));
@@ -463,9 +447,7 @@ impl EmittingState {
             }
 
             Special::CanvasEnd(kind) => {
-                if self.content_finished {
-                    self.warn_finished_content("canvas end", common);
-                } else if let Some(canvas) = self.current_canvas.as_mut() {
+                if let Some(canvas) = self.current_canvas.as_mut() {
                     canvas.depth -= 1;
                     if canvas.depth == 0 {
                         self.handle_end_canvas(common)?;
@@ -481,32 +463,16 @@ impl EmittingState {
             }
 
             Special::ManualFlexibleStart(spec) => {
-                if self.content_finished {
-                    self.warn_finished_content(
-                        &format!("manual flexible start tag {:?}", spec),
-                        common,
-                    );
-                    Ok(())
-                } else {
-                    self.handle_flexible_start_tag(x, y, spec, common)
-                }
+                self.handle_flexible_start_tag(x, y, spec, common)
             }
 
             Special::ManualEnd(tag) => {
-                if self.content_finished {
-                    self.warn_finished_content(&format!("manual end tag </{}>", tag), common);
-                } else {
-                    self.pop_elem(tag, common);
-                }
+                self.pop_elem(tag, common);
                 Ok(())
             }
 
             Special::DirectText(text) => {
-                if self.content_finished {
-                    self.warn_finished_content("direct text", common);
-                } else {
-                    self.content.push_with_html_escaping(text);
-                }
+                self.content.push_with_html_escaping(text);
                 Ok(())
             }
 
@@ -527,8 +493,6 @@ impl EmittingState {
             }
 
             Special::ProvideFile(spec) => self.handle_provide_file(spec, common),
-
-            Special::ContentFinished => self.content_finished(common),
 
             other => {
                 tt_warning!(common.status, "ignoring unrecognized special: {}", other);
@@ -858,11 +822,6 @@ impl EmittingState {
         ys: &[i32],
         common: &mut Common,
     ) -> Result<()> {
-        if self.content_finished {
-            self.warn_finished_content(&format!("text `{}`", text), common);
-            return Ok(());
-        }
-
         if let Some(c) = self.current_canvas.as_mut() {
             for i in 0..glyphs.len() {
                 c.glyphs.push(GlyphInfo {
@@ -908,11 +867,6 @@ impl EmittingState {
         ys: &[i32],
         common: &mut Common,
     ) -> Result<()> {
-        if self.content_finished {
-            self.warn_finished_content("glyph run", common);
-            return Ok(());
-        }
-
         if let Some(c) = self.current_canvas.as_mut() {
             for i in 0..glyphs.len() {
                 c.glyphs.push(GlyphInfo {
@@ -1218,25 +1172,15 @@ impl EmittingState {
         Ok(())
     }
 
-    fn content_finished(&mut self, common: &mut Common) -> Result<()> {
+    pub(crate) fn emission_finished(mut self, common: &mut Common) -> Result<FinalizingState> {
         if !self.content.is_empty() {
-            tt_warning!(common.status, "un-emitted content at end of HTML output");
-            self.content.take(); // clear out the content
-        }
-
-        let faces = self.fonts.emit(common.out_base)?;
-        self.templating.set_variable("tduxFontFaces", &faces);
-
-        // OK.
-        self.content_finished = true;
-        Ok(())
-    }
-
-    pub(crate) fn finished(&mut self, common: &mut Common) -> Result<()> {
-        if !self.content.is_empty() {
+            tt_warning!(
+                common.status,
+                "content finished without an explicit `emit` in HTML output"
+            );
             self.finish_file(common)?;
         }
 
-        Ok(())
+        FinalizingState::new(self.fonts, self.templating, common.out_base)
     }
 }

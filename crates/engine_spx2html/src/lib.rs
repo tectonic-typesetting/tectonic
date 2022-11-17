@@ -15,6 +15,7 @@ use tectonic_status_base::StatusBackend;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
 mod emission;
+mod finalization;
 mod fontfamily;
 mod fontfile;
 mod html;
@@ -23,6 +24,7 @@ mod specials;
 mod templating;
 
 use emission::EmittingState;
+use finalization::FinalizingState;
 use initialization::InitializationState;
 use specials::Special;
 
@@ -94,11 +96,14 @@ enum State {
     Invalid,
     Initializing(InitializationState),
     Emitting(EmittingState),
+    Finalizing(FinalizingState),
 }
 
 impl<'a> EngineState<'a> {
     pub fn finished(mut self) -> Result<()> {
-        if let State::Emitting(mut s) = self.state {
+        self.state.ensure_finalizing(&mut self.common)?;
+
+        if let State::Finalizing(mut s) = self.state {
             s.finished(&mut self.common)?;
         }
 
@@ -111,9 +116,8 @@ impl<'a> EngineState<'a> {
     /// content, we should end the initialization phase.
     fn in_endable_init(&self) -> bool {
         match &self.state {
-            State::Invalid => false,
             State::Initializing(s) => s.in_endable_init(),
-            State::Emitting(_) => false,
+            _ => false,
         }
     }
 }
@@ -143,12 +147,19 @@ impl<'a> XdvEvents for EngineState<'a> {
             self.state.ensure_initialized()?;
         }
 
+        // Might we be entering the finalization phase?
+
+        if let Special::ContentFinished = special {
+            return self.state.ensure_finalizing(&mut self.common);
+        }
+
         // Ready to dispatch.
 
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
             State::Initializing(s) => s.handle_special(special, &mut self.common),
             State::Emitting(s) => s.handle_special(x, y, special, &mut self.common),
+            State::Finalizing(s) => s.handle_special(special, &mut self.common),
         }
     }
 
@@ -173,6 +184,7 @@ impl<'a> XdvEvents for EngineState<'a> {
             State::Emitting(s) => {
                 s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)?
             }
+            State::Finalizing(s) => s.handle_text_and_glyphs(text, &mut self.common)?,
         }
 
         Ok(())
@@ -219,6 +231,7 @@ impl<'a> XdvEvents for EngineState<'a> {
             State::Invalid => panic!("invalid spx2html state leaked"),
             State::Initializing(_) => unreachable!(),
             State::Emitting(s) => s.handle_glyph_run(font_num, glyphs, x, y, &mut self.common),
+            State::Finalizing(s) => s.handle_glyph_run(&mut self.common),
         }
     }
 }
@@ -230,6 +243,19 @@ impl State {
 
         if let State::Initializing(s) = work {
             work = State::Emitting(s.initialization_finished()?);
+        }
+
+        std::mem::swap(self, &mut work);
+        Ok(())
+    }
+
+    fn ensure_finalizing(&mut self, common: &mut Common) -> Result<()> {
+        self.ensure_initialized()?;
+
+        let mut work = std::mem::replace(self, State::Invalid);
+
+        if let State::Emitting(s) = work {
+            work = State::Finalizing(s.emission_finished(common)?);
         }
 
         std::mem::swap(self, &mut work);
