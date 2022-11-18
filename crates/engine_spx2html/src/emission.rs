@@ -6,14 +6,13 @@
 use std::{
     collections::HashMap,
     fmt::{Arguments, Error as FmtError, Write as FmtWrite},
-    fs::File,
-    path::Path,
     result::Result as StdResult,
 };
 use tectonic_errors::prelude::*;
 use tectonic_status_base::tt_warning;
 
 use crate::{
+    assets::Assets,
     finalization::FinalizingState,
     fontfamily::{FamilyRelativeFontId, FontEnsemble, FontFamilyAnalysis, PathToNewFont},
     html::Element,
@@ -27,6 +26,7 @@ pub(crate) struct EmittingState {
     fonts: FontEnsemble,
     content: ContentState,
     templating: Templating,
+    assets: Assets,
     tag_associations: HashMap<Element, FontNum>,
     rems_per_tex: f32,
     elem_stack: Vec<ElementState>,
@@ -262,6 +262,7 @@ impl EmittingState {
             tag_associations,
             rems_per_tex,
             content: Default::default(),
+            assets: Default::default(),
             elem_stack: vec![ElementState {
                 elem: None,
                 origin: ElementOrigin::Root,
@@ -492,7 +493,10 @@ impl EmittingState {
                 self.templating.handle_set_template_variable(spec, common)
             }
 
-            Special::ProvideFile(spec) => self.handle_provide_file(spec, common),
+            Special::ProvideFile(_) | Special::ProvideSpecial(_) => {
+                self.assets.try_handle_special(special, common);
+                Ok(())
+            }
 
             other => {
                 tt_warning!(common.status, "ignoring unrecognized special: {}", other);
@@ -738,78 +742,6 @@ impl EmittingState {
 
         self.content.push_char('>');
         self.elem_stack.push(elstate);
-        Ok(())
-    }
-
-    fn handle_provide_file(&mut self, remainder: &str, common: &mut Common) -> Result<()> {
-        let (src_tex_path, dest_path) = match remainder.split_once(' ') {
-            Some(t) => t,
-            None => {
-                tt_warning!(
-                    common.status,
-                    "ignoring malformatted tdux:provideFile special `{}`",
-                    remainder
-                );
-                return Ok(());
-            }
-        };
-
-        // Set up input?
-
-        let mut ih = atry!(
-            common.hooks.io().input_open_name(src_tex_path, common.status).must_exist();
-            ["unable to open provideFile source `{}`", &src_tex_path]
-        );
-
-        // Set up output? TODO: create parent directories!
-
-        let mut out_path = common.out_base.to_owned();
-
-        for piece in dest_path.split('/') {
-            if piece.is_empty() {
-                continue;
-            }
-
-            if piece == ".." {
-                bail!(
-                    "illegal provideFile dest path `{}`: it contains a `..` component",
-                    &dest_path
-                );
-            }
-
-            let as_path = Path::new(piece);
-
-            if as_path.is_absolute() || as_path.has_root() {
-                bail!(
-                    "illegal provideFile path `{}`: it contains an absolute/rooted component",
-                    &dest_path,
-                );
-            }
-
-            out_path.push(piece);
-        }
-
-        // Copy!
-
-        {
-            let mut out_file = atry!(
-                File::create(&out_path);
-                ["cannot open output file `{}`", out_path.display()]
-            );
-
-            atry!(
-                std::io::copy(&mut ih, &mut out_file);
-                ["cannot copy to output file `{}`", out_path.display()]
-            );
-        }
-
-        // All done.
-
-        let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name, digest_opt, common.status);
-
         Ok(())
     }
 
@@ -1181,6 +1113,6 @@ impl EmittingState {
             self.finish_file(common)?;
         }
 
-        FinalizingState::new(self.fonts, self.templating, common.out_base)
+        FinalizingState::new(self.fonts, self.templating, self.assets)
     }
 }

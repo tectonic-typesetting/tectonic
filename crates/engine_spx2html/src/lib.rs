@@ -14,6 +14,7 @@ use tectonic_errors::prelude::*;
 use tectonic_status_base::StatusBackend;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
+mod assets;
 mod emission;
 mod finalization;
 mod fontfamily;
@@ -103,11 +104,13 @@ impl<'a> EngineState<'a> {
     pub fn finished(mut self) -> Result<()> {
         self.state.ensure_finalizing(&mut self.common)?;
 
-        if let State::Finalizing(mut s) = self.state {
-            s.finished(&mut self.common)?;
-        }
+        let (fonts, assets) = if let State::Finalizing(s) = self.state {
+            s.finished()
+        } else {
+            panic!("invalid spx2html finalization state leaked");
+        };
 
-        Ok(())
+        assets.emit(fonts, &mut self.common)
     }
 
     /// Return true if we're in the initializing phase, but not in the midst of

@@ -3,32 +3,27 @@
 
 //! The finalization phase of SPX to HTML processing.
 
-use std::{fs::File, path::Path};
 use tectonic_errors::prelude::*;
 use tectonic_status_base::tt_warning;
 
-use crate::{fontfamily::FontEnsemble, specials::Special, templating::Templating, Common};
+use crate::{
+    assets::Assets, fontfamily::FontEnsemble, specials::Special, templating::Templating, Common,
+};
 
 #[derive(Debug)]
 pub(crate) struct FinalizingState {
-    //fonts: FontEnsemble,
+    fonts: FontEnsemble,
     templating: Templating,
+    assets: Assets,
     warning_issued: bool,
 }
 
 impl FinalizingState {
-    pub(crate) fn new(
-        mut fonts: FontEnsemble,
-        mut templating: Templating,
-        out_base: &Path,
-    ) -> Result<Self> {
-        // *For now*, set up to emit font CSS here.
-        let faces = fonts.emit(out_base)?;
-        templating.set_variable("tduxFontFaces", &faces);
-
+    pub(crate) fn new(fonts: FontEnsemble, templating: Templating, assets: Assets) -> Result<Self> {
         Ok(FinalizingState {
             templating,
-            //fonts,
+            fonts,
+            assets,
             warning_issued: false,
         })
     }
@@ -62,85 +57,16 @@ impl FinalizingState {
                 self.templating.handle_set_template_variable(spec, common)
             }
 
-            Special::ProvideFile(spec) => self.handle_provide_file(spec, common),
+            Special::ProvideFile(_) | Special::ProvideSpecial(_) => {
+                self.assets.try_handle_special(special, common);
+                Ok(())
+            }
 
             other => {
                 self.warn_finished_content(&format!("special {}", other), common);
                 Ok(())
             }
         }
-    }
-
-    fn handle_provide_file(&mut self, remainder: &str, common: &mut Common) -> Result<()> {
-        let (src_tex_path, dest_path) = match remainder.split_once(' ') {
-            Some(t) => t,
-            None => {
-                tt_warning!(
-                    common.status,
-                    "ignoring malformatted tdux:provideFile special `{}`",
-                    remainder
-                );
-                return Ok(());
-            }
-        };
-
-        // Set up input?
-
-        let mut ih = atry!(
-            common.hooks.io().input_open_name(src_tex_path, common.status).must_exist();
-            ["unable to open provideFile source `{}`", &src_tex_path]
-        );
-
-        // Set up output? TODO: create parent directories!
-
-        let mut out_path = common.out_base.to_owned();
-
-        for piece in dest_path.split('/') {
-            if piece.is_empty() {
-                continue;
-            }
-
-            if piece == ".." {
-                bail!(
-                    "illegal provideFile dest path `{}`: it contains a `..` component",
-                    &dest_path
-                );
-            }
-
-            let as_path = Path::new(piece);
-
-            if as_path.is_absolute() || as_path.has_root() {
-                bail!(
-                    "illegal provideFile path `{}`: it contains an absolute/rooted component",
-                    &dest_path,
-                );
-            }
-
-            out_path.push(piece);
-        }
-
-        // Copy!
-
-        {
-            let mut out_file = atry!(
-                File::create(&out_path);
-                ["cannot open output file `{}`", out_path.display()]
-            );
-
-            atry!(
-                std::io::copy(&mut ih, &mut out_file);
-                ["cannot copy to output file `{}`", out_path.display()]
-            );
-        }
-
-        // All done.
-
-        let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name, digest_opt, common.status);
-
-        Ok(())
     }
 
     pub(crate) fn handle_text_and_glyphs(&mut self, text: &str, common: &mut Common) -> Result<()> {
@@ -159,8 +85,7 @@ impl FinalizingState {
         Ok(())
     }
 
-    pub(crate) fn finished(&mut self, _common: &mut Common) -> Result<()> {
-        // For now, nothing to do here.
-        Ok(())
+    pub(crate) fn finished(self) -> (FontEnsemble, Assets) {
+        (self.fonts, self.assets)
     }
 }

@@ -21,6 +21,7 @@ pub(crate) enum Special<'a> {
     ManualEnd(&'a str),
     ManualFlexibleStart(&'a str),
     ProvideFile(&'a str),
+    ProvideSpecial(&'a str),
     SetOutputPath(&'a str),
     SetTemplate(&'a str),
     SetTemplateVariable(&'a str),
@@ -59,6 +60,7 @@ impl<'a> Special<'a> {
             "setOutputPath" => Special::SetOutputPath(remainder),
             "setTemplateVariable" => Special::SetTemplateVariable(remainder),
             "provideFile" => Special::ProvideFile(remainder),
+            "provideSpecial" => Special::ProvideSpecial(remainder),
             "contentFinished" => Special::ContentFinished,
             "startDefineFontFamily" => Special::StartDefineFontFamily,
             "endDefineFontFamily" => Special::EndDefineFontFamily,
@@ -80,6 +82,7 @@ impl<'a> Special<'a> {
         match self {
             Special::Emit
             | Special::ProvideFile(_)
+            | Special::ProvideSpecial(_)
             | Special::AutoStartParagraph
             | Special::AutoEndParagraph
             | Special::CanvasStart(_)
@@ -108,6 +111,7 @@ impl<'a> Display for Special<'a> {
             Special::ManualEnd(t) => ("me", Some(t)),
             Special::ManualFlexibleStart(t) => ("mfs", Some(t)),
             Special::ProvideFile(t) => ("provideFile", Some(t)),
+            Special::ProvideSpecial(t) => ("provideSpecial", Some(t)),
             Special::SetOutputPath(t) => ("setOutputPath", Some(t)),
             Special::SetTemplate(t) => ("setTemplate", Some(t)),
             Special::SetTemplateVariable(t) => ("setTemplateVariable", Some(t)),
