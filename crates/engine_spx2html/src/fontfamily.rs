@@ -12,6 +12,7 @@ use tectonic_errors::prelude::*;
 use tectonic_status_base::{tt_warning, StatusBackend};
 
 use crate::{
+    assets::syntax,
     fontfile::{FontFileData, GlyphId, GlyphMetrics, MapEntry},
     FixedPoint, FontNum,
 };
@@ -323,6 +324,49 @@ impl FontEnsemble {
         }
 
         Ok(faces)
+    }
+
+    pub(crate) fn into_serialize(mut self) -> (syntax::Assets, syntax::FontEnsembleAssetData) {
+        let mut assets: syntax::Assets = Default::default();
+        let mut css_data: syntax::FontEnsembleAssetData = Default::default();
+        let mut fnum_to_filename = HashMap::new();
+        let mut ffd_to_filename = HashMap::new();
+
+        for (ffd_key, data) in self.font_file_data.drain() {
+            let ffad = data.into_serialize();
+            let filename = ffad.source.clone();
+            assets.insert(filename.clone(), syntax::AssetOrigin::FontFile(ffad));
+            ffd_to_filename.insert(ffd_key, filename);
+        }
+
+        for (fnum, fi) in &self.tex_fonts {
+            fnum_to_filename.insert(fnum, ffd_to_filename.get(&fi.ffd_key).cloned().unwrap());
+        }
+
+        for (reg_fnum, ffi) in &self.font_families {
+            let fam_name = self.tex_fonts.get(&reg_fnum).unwrap().family_name.clone();
+            let mut faces = HashMap::new();
+
+            faces.insert(
+                syntax::FaceType::Regular,
+                fnum_to_filename.get(&ffi.regular).cloned().unwrap(),
+            );
+            faces.insert(
+                syntax::FaceType::Bold,
+                fnum_to_filename.get(&ffi.bold).cloned().unwrap(),
+            );
+            faces.insert(
+                syntax::FaceType::Italic,
+                fnum_to_filename.get(&ffi.italic).cloned().unwrap(),
+            );
+            faces.insert(
+                syntax::FaceType::BoldItalic,
+                fnum_to_filename.get(&ffi.bold_italic).cloned().unwrap(),
+            );
+            css_data.insert(fam_name, syntax::FontFamilyAssetData { faces });
+        }
+
+        (assets, css_data)
     }
 }
 

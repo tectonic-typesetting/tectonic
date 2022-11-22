@@ -479,6 +479,22 @@ impl FontFileData {
 
         Ok(rv)
     }
+
+    /// Emit customized fonts to the filesystem and return information so that
+    /// appropriate CSS can be generated. Consumes the object.
+    ///
+    /// Return value is a vec of (alternate-map-index, CSS-src-field).
+    pub fn into_serialize(mut self) -> crate::assets::syntax::FontFileAssetData {
+        let mut ffad: crate::assets::syntax::FontFileAssetData = Default::default();
+
+        ffad.source = self.basename;
+
+        for (glyph, altmap) in self.alternate_map_allocations.drain() {
+            ffad.vglyphs.insert(glyph, altmap.into());
+        }
+
+        ffad
+    }
 }
 
 fn load_ssty_mappings(

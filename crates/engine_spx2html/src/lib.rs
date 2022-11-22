@@ -8,6 +8,7 @@
 //! SPX is essentially the same thing as XDV, but we identify it differently to
 //! mark that the semantics of the content wil be set up for HTML output.
 
+use serde::Serialize;
 use std::path::Path;
 use tectonic_bridge_core::DriverHooks;
 use tectonic_errors::prelude::*;
@@ -24,10 +25,10 @@ mod initialization;
 mod specials;
 mod templating;
 
-use emission::EmittingState;
-use finalization::FinalizingState;
-use initialization::InitializationState;
-use specials::Special;
+use self::{
+    assets::Assets, emission::EmittingState, finalization::FinalizingState,
+    fontfamily::FontEnsemble, initialization::InitializationState, specials::Special,
+};
 
 /// An engine that converts SPX to HTML.
 #[derive(Default)]
@@ -53,7 +54,8 @@ impl Spx2HtmlEngine {
         {
             let state = EngineState::new(hooks, status, out_base);
             let state = XdvParser::process_with_seeks(&mut input, state)?;
-            state.finished()?;
+            let (fonts, assets, mut common) = state.finished()?;
+            assets.emit(fonts, &mut common)?;
         }
 
         let (name, digest_opt) = input.into_name_digest();
@@ -101,16 +103,15 @@ enum State {
 }
 
 impl<'a> EngineState<'a> {
-    pub fn finished(mut self) -> Result<()> {
+    pub fn finished(mut self) -> Result<(FontEnsemble, Assets, Common<'a>)> {
         self.state.ensure_finalizing(&mut self.common)?;
 
-        let (fonts, assets) = if let State::Finalizing(s) = self.state {
-            s.finished()
+        if let State::Finalizing(s) = self.state {
+            let (fonts, assets) = s.finished();
+            Ok((fonts, assets, self.common))
         } else {
             panic!("invalid spx2html finalization state leaked");
-        };
-
-        assets.emit(fonts, &mut self.common)
+        }
     }
 
     /// Return true if we're in the initializing phase, but not in the midst of
