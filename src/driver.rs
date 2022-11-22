@@ -841,6 +841,7 @@ pub struct ProcessingSessionBuilder {
     build_date: Option<SystemTime>,
     unstables: UnstableOptions,
     shell_escape_mode: ShellEscapeMode,
+    html_assets_spec_path: Option<String>,
 }
 
 impl ProcessingSessionBuilder {
@@ -1044,6 +1045,24 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// When using HTML mode, emit an asset specification file instead of actual
+    /// asset files.
+    ///
+    /// "Assets" are files like fonts and images that accompany the HTML output
+    /// generated during processing. By default, these are emitted during
+    /// processing. If this method is called, the assets will *not* be created.
+    /// Instead, an "asset specification" file will be emitted to the given
+    /// output path. This specification file contains the information needed to
+    /// generate the assets upon a later invocation. Asset specification files
+    /// can be merged, allowing the results of multiple separate TeX
+    /// compilations to be synthesized into one HTML output tree.
+    ///
+    /// If the build does not use HTML mode, this setting has no effect.
+    pub fn html_assets_spec_path<S: ToString>(&mut self, path: S) -> &mut Self {
+        self.html_assets_spec_path = Some(path.to_string());
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         // First, work on the "bridge state", which gathers the subset of our
@@ -1198,6 +1217,7 @@ impl ProcessingSessionBuilder {
             build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
             unstables: self.unstables,
             shell_escape_mode,
+            html_assets_spec_path: self.html_assets_spec_path,
         })
     }
 }
@@ -1264,6 +1284,8 @@ pub struct ProcessingSession {
     /// How to handle shell-escape. The `Defaulted` option will never
     /// be used here.
     shell_escape_mode: ShellEscapeMode,
+
+    html_assets_spec_path: Option<String>,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1900,6 +1922,11 @@ impl ProcessingSession {
 
         {
             let mut engine = Spx2HtmlEngine::default();
+
+            if let Some(p) = self.html_assets_spec_path.as_ref() {
+                engine.assets_spec_path(p);
+            }
+
             status.note_highlighted("Running ", "spx2html", " ...");
             engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path, op)?;
         }

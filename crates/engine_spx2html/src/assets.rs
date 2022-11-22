@@ -222,6 +222,7 @@ pub(crate) mod syntax {
     pub type Assets = HashMap<String, AssetOrigin>;
 
     #[derive(Debug, Deserialize, Serialize)]
+    #[serde(tag = "kind")]
     pub enum AssetOrigin {
         /// Copy a file from the source stack directly to the output directory.
         Copy(String),

@@ -8,7 +8,6 @@
 //! SPX is essentially the same thing as XDV, but we identify it differently to
 //! mark that the semantics of the content wil be set up for HTML output.
 
-use serde::Serialize;
 use std::path::Path;
 use tectonic_bridge_core::DriverHooks;
 use tectonic_errors::prelude::*;
@@ -32,9 +31,27 @@ use self::{
 
 /// An engine that converts SPX to HTML.
 #[derive(Default)]
-pub struct Spx2HtmlEngine {}
+pub struct Spx2HtmlEngine {
+    assets_spec_path: Option<String>,
+}
 
 impl Spx2HtmlEngine {
+    /// Emit an asset specification file and not actual assets.
+    ///
+    /// "Assets" are files like fonts and images that accompany the HTML output
+    /// generated during processing. SPX files contain commands that implicitly
+    /// and explicitly create assets. By default, these are emitted during
+    /// processing. If this method is called, the assets will *not* be created.
+    /// Instead, an "asset specification" file will be emitted to the given
+    /// output path. This specification file contains the information needed to
+    /// generate the assets upon a later invocation. Asset specification files
+    /// can be merged, allowing the results of multiple separate TeX
+    /// compilations to be synthesized into one HTML output tree.
+    pub fn assets_spec_path<S: ToString>(&mut self, path: S) -> &mut Self {
+        self.assets_spec_path = Some(path.to_string());
+        self
+    }
+
     /// Process SPX into HTML.
     ///
     /// Because this driver will, in the generic case, produce a tree of HTML
@@ -55,7 +72,16 @@ impl Spx2HtmlEngine {
             let state = EngineState::new(hooks, status, out_base);
             let state = XdvParser::process_with_seeks(&mut input, state)?;
             let (fonts, assets, mut common) = state.finished()?;
-            assets.emit(fonts, &mut common)?;
+
+            if let Some(asp) = self.assets_spec_path.as_ref() {
+                let ser = assets.into_serialize(fonts);
+                let mut output = hooks.io().output_open_name(asp).must_exist()?;
+                serde_json::to_writer_pretty(&mut output, &ser)?;
+                let (name, digest) = output.into_name_digest();
+                hooks.event_output_closed(name, digest, status);
+            } else {
+                assets.emit(fonts, &mut common)?;
+            }
         }
 
         let (name, digest_opt) = input.into_name_digest();

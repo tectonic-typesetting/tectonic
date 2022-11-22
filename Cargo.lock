@@ -2447,6 +2447,7 @@ dependencies = [
  "percent-encoding",
  "pinot",
  "serde",
+ "serde_json",
  "tectonic_bridge_core",
  "tectonic_errors",
  "tectonic_io_base",
