@@ -47,6 +47,9 @@ impl Spx2HtmlEngine {
     /// generate the assets upon a later invocation. Asset specification files
     /// can be merged, allowing the results of multiple separate TeX
     /// compilations to be synthesized into one HTML output tree.
+    ///
+    /// Currently, the asset specification is written in JSON format, although
+    /// it is not guaranteed that this will always be the case.
     pub fn assets_spec_path<S: ToString>(&mut self, path: S) -> &mut Self {
         self.assets_spec_path = Some(path.to_string());
         self
@@ -89,6 +92,8 @@ impl Spx2HtmlEngine {
         Ok(())
     }
 }
+
+pub use assets::AssetSpecification;
 
 struct EngineState<'a> {
     common: Common<'a>,
