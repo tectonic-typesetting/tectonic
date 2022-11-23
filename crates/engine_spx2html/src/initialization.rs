@@ -3,12 +3,7 @@
 
 //! The initialization stage of SPX processing.
 
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{Read, Write},
-    path::PathBuf,
-};
+use std::{collections::HashMap, io::Read, path::PathBuf};
 use tectonic_errors::prelude::*;
 use tectonic_io_base::OpenResult;
 use tectonic_status_base::tt_warning;
@@ -116,21 +111,7 @@ impl InitializationState {
             .hooks
             .event_input_closed(name.clone(), digest_opt, common.status);
 
-        let mut out_path = common.out_base.to_owned();
         let basename = texpath.rsplit('/').next().unwrap();
-        out_path.push(basename);
-
-        {
-            let mut out_file = atry!(
-                File::create(&out_path);
-                ["cannot open output file `{}`", out_path.display()]
-            );
-
-            atry!(
-                out_file.write_all(&contents);
-                ["cannot write output file `{}`", out_path.display()]
-            );
-        }
 
         self.fonts.register(
             name,
