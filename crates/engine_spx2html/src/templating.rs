@@ -143,9 +143,9 @@ impl Templating {
             ["failed to render HTML template `{}` while creating `{}`", &self.next_template_path, &self.next_output_path]
         );
 
-        // Save it.
+        // Save it. Unless we shouldn't, actually.
 
-        {
+        if !common.do_not_emit {
             let mut out_file = atry!(
                 File::create(&out_path);
                 ["cannot open output file `{}`", out_path.display()]

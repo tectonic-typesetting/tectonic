@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Tectonic Project
+// Copyright 2018-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -844,6 +844,7 @@ pub struct ProcessingSessionBuilder {
     shell_escape_mode: ShellEscapeMode,
     html_assets_spec_path: Option<String>,
     html_precomputed_assets: Option<AssetSpecification>,
+    html_do_not_emit_files: bool,
 }
 
 impl ProcessingSessionBuilder {
@@ -1087,6 +1088,15 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Set whether templated outputs should be created during HTML processing.
+    ///
+    /// This mode can be useful if you want to analyze what *would* be created
+    /// during HTML processing without actually creating the files.
+    pub fn html_emit_files(&mut self, do_emit: bool) -> &mut Self {
+        self.html_do_not_emit_files = !do_emit;
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         // First, work on the "bridge state", which gathers the subset of our
@@ -1243,6 +1253,7 @@ impl ProcessingSessionBuilder {
             shell_escape_mode,
             html_assets_spec_path: self.html_assets_spec_path,
             html_precomputed_assets: self.html_precomputed_assets,
+            html_emit_files: !self.html_do_not_emit_files,
         })
     }
 }
@@ -1312,6 +1323,7 @@ pub struct ProcessingSession {
 
     html_assets_spec_path: Option<String>,
     html_precomputed_assets: Option<AssetSpecification>,
+    html_emit_files: bool,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1948,6 +1960,7 @@ impl ProcessingSession {
 
         {
             let mut engine = Spx2HtmlEngine::default();
+            engine.emit_files(self.html_emit_files);
 
             if let Some(p) = self.html_assets_spec_path.as_ref() {
                 engine.assets_spec_path(p);

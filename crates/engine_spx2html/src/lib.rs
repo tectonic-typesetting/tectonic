@@ -32,6 +32,7 @@ use self::{
 /// An engine that converts SPX to HTML.
 #[derive(Default)]
 pub struct Spx2HtmlEngine {
+    do_not_emit: bool,
     precomputed_assets: Option<AssetSpecification>,
     assets_spec_path: Option<String>,
 }
@@ -75,6 +76,17 @@ impl Spx2HtmlEngine {
         self
     }
 
+    /// Specify whether output files should actually be created.
+    ///
+    /// By default, templated outputs are written to the filesystem. If this
+    /// function is given a false argument, they are not. This mode can be useful
+    /// if the main purpose of the processing run is to gather information about
+    /// the assets that will be generated.
+    pub fn emit_files(&mut self, do_emit: bool) -> &mut Self {
+        self.do_not_emit = !do_emit;
+        self
+    }
+
     /// Process SPX into HTML.
     ///
     /// Because this driver will, in the generic case, produce a tree of HTML
@@ -92,7 +104,13 @@ impl Spx2HtmlEngine {
         let mut input = hooks.io().input_open_name(spx, status).must_exist()?;
 
         {
-            let state = EngineState::new(hooks, status, out_base, self.precomputed_assets.as_ref());
+            let state = EngineState::new(
+                hooks,
+                status,
+                out_base,
+                self.precomputed_assets.as_ref(),
+                self.do_not_emit,
+            );
             let state = XdvParser::process_with_seeks(&mut input, state)?;
             let (fonts, assets, mut common) = state.finished()?;
 
@@ -125,6 +143,7 @@ struct Common<'a> {
     status: &'a mut dyn StatusBackend,
     out_base: &'a Path,
     precomputed_assets: Option<&'a AssetSpecification>,
+    do_not_emit: bool,
 }
 
 impl<'a> EngineState<'a> {
@@ -133,6 +152,7 @@ impl<'a> EngineState<'a> {
         status: &'a mut dyn StatusBackend,
         out_base: &'a Path,
         precomputed_assets: Option<&'a AssetSpecification>,
+        do_not_emit: bool,
     ) -> Self {
         Self {
             common: Common {
@@ -140,6 +160,7 @@ impl<'a> EngineState<'a> {
                 status,
                 out_base,
                 precomputed_assets,
+                do_not_emit,
             },
             state: State::Initializing(InitializationState::default()),
         }
