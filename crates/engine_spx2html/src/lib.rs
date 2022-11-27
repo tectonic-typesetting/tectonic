@@ -17,16 +17,16 @@ use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 mod assets;
 mod emission;
 mod finalization;
-mod fontfamily;
 mod fontfile;
+mod fonts;
 mod html;
 mod initialization;
 mod specials;
 mod templating;
 
 use self::{
-    assets::Assets, emission::EmittingState, finalization::FinalizingState,
-    fontfamily::FontEnsemble, initialization::InitializationState, specials::Special,
+    assets::Assets, emission::EmittingState, finalization::FinalizingState, fonts::FontEnsemble,
+    initialization::InitializationState, specials::Special,
 };
 
 /// An engine that converts SPX to HTML.

@@ -13,7 +13,7 @@ use std::{
 use tectonic_errors::{anyhow::Context, prelude::*};
 use tectonic_status_base::tt_warning;
 
-use crate::{fontfamily::FontEnsemble, specials::Special, Common};
+use crate::{fonts::FontEnsemble, specials::Special, Common};
 
 /// Runtime state about which non-font assets have been created.
 #[derive(Debug, Default)]

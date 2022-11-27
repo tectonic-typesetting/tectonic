@@ -9,7 +9,7 @@ use tectonic_io_base::OpenResult;
 use tectonic_status_base::tt_warning;
 
 use crate::{
-    fontfamily::FontEnsemble, html::Element, specials::Special, templating::Templating, Common,
+    fonts::FontEnsemble, html::Element, specials::Special, templating::Templating, Common,
     EmittingState, FixedPoint, FontNum,
 };
 

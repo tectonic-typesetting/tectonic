@@ -14,7 +14,7 @@ use tectonic_status_base::tt_warning;
 use crate::{
     assets::Assets,
     finalization::FinalizingState,
-    fontfamily::{FamilyRelativeFontId, FontEnsemble, FontFamilyAnalysis, PathToNewFont},
+    fonts::{FamilyRelativeFontId, FontEnsemble, FontFamilyAnalysis, PathToNewFont},
     html::Element,
     specials::Special,
     templating::Templating,
