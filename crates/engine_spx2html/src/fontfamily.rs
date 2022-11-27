@@ -542,9 +542,19 @@ fn get_text_info(
         };
 
         let alt_index = if need_alt {
-            let map = fd.request_variant(glyph, ch);
-            ch = map.usv;
-            Some(map.variant_map_index)
+            if let Some(map) = fd.request_variant(glyph, ch) {
+                ch = map.usv;
+                Some(map.variant_map_index)
+            } else {
+                tt_warning!(
+                    status,
+                    "prohibited from defining new variant glyph {} in font `{}` (face {})",
+                    glyph,
+                    fi.rel_url,
+                    fi.face_index
+                );
+                None
+            }
         } else {
             None
         };

@@ -73,6 +73,10 @@ pub struct FontFileData {
     /// Map from glyph ID to variant character map setting.
     variant_map_allocations: HashMap<GlyphId, GlyphVariantMapping>,
 
+    /// When we've been initialized to match a precomputed set of assets,
+    /// we're not allowed to allocate any new variant glyph mappings.
+    no_new_variants: bool,
+
     /// The index of the CMAP table record in the font data structure. We need
     /// this for the variant cmap munging.
     fontdata_cmap_trec_idx: usize,
@@ -306,6 +310,7 @@ impl FontFileData {
             baseline_factor,
             variant_map_counts: HashMap::new(),
             variant_map_allocations: HashMap::new(),
+            no_new_variants: false,
             fontdata_head_offset,
             fontdata_cmap_trec_idx,
         })
@@ -361,22 +366,35 @@ impl FontFileData {
 
     /// Request that a variant mapping be allocated for a glyph.
     ///
-    /// The caller must suggest a Unicode character to use for the variant,
-    /// but if a different variant has already been allocated, that
-    /// suggestion may be ignored.
-    pub fn request_variant(&mut self, glyph: GlyphId, suggested: char) -> GlyphVariantMapping {
+    /// The caller must suggest a Unicode character to use for the variant, but
+    /// if a different variant has already been allocated, that suggestion may
+    /// be ignored.
+    ///
+    /// This function may return None if a new variant would need to be
+    /// allocated, but that has been prohibited.
+    pub fn request_variant(
+        &mut self,
+        glyph: GlyphId,
+        suggested: char,
+    ) -> Option<GlyphVariantMapping> {
+        let map_entry = self.variant_map_allocations.entry(glyph);
+
+        if self.no_new_variants {
+            if let std::collections::hash_map::Entry::Vacant(_) = map_entry {
+                return None;
+            }
+        }
+
         let new_index = self
             .variant_map_counts
             .get(&suggested)
             .copied()
             .unwrap_or(0);
-        let map = self
-            .variant_map_allocations
-            .entry(glyph)
-            .or_insert(GlyphVariantMapping {
-                usv: suggested,
-                variant_map_index: new_index,
-            });
+
+        let map = map_entry.or_insert(GlyphVariantMapping {
+            usv: suggested,
+            variant_map_index: new_index,
+        });
 
         if map.usv == suggested && map.variant_map_index == new_index {
             // If this is the case, we just created the mapping,
@@ -385,7 +403,7 @@ impl FontFileData {
             self.variant_map_counts.insert(suggested, new_index + 1);
         }
 
-        *map
+        Some(*map)
     }
 
     /// Emit customized fonts to the filesystem and return information so that
@@ -509,6 +527,8 @@ impl FontFileData {
             let c = self.variant_map_counts.entry(mapping.usv).or_default();
             *c = std::cmp::max(mapping.index + 1, *c);
         }
+
+        self.no_new_variants = true;
     }
 }
 
