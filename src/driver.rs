@@ -30,6 +30,7 @@ use std::{
 };
 use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SecuritySettings, SystemRequestError};
 use tectonic_bundles::Bundle;
+use tectonic_engine_spx2html::AssetSpecification;
 use tectonic_io_base::{
     digest::DigestData,
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
@@ -842,6 +843,7 @@ pub struct ProcessingSessionBuilder {
     unstables: UnstableOptions,
     shell_escape_mode: ShellEscapeMode,
     html_assets_spec_path: Option<String>,
+    html_precomputed_assets: Option<AssetSpecification>,
 }
 
 impl ProcessingSessionBuilder {
@@ -1063,6 +1065,28 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// In HTML mode, use a precomputed asset specification.
+    ///
+    /// "Assets" are files like fonts and images that accompany the HTML output
+    /// generated during processing. By default, the engine gathers these during
+    /// processing and emits them at the end. After this method is used,
+    /// however, it will generate HTML outputs assuming the information given in
+    /// the asset specification given here. If the input calls for new assets or
+    /// different options inconsistent with the specification, processing will
+    /// abort with an error.
+    ///
+    /// The purpose of this mode is to allow for a unified set of assets to be
+    /// created from multiple independent runs of the SPX-to-HTML stage. First,
+    /// the different inputs should be processed independently, and their
+    /// individual assets should saved. These should then be merged. Then the
+    /// inputs should be reprocessed, all using the merged asset specification.
+    /// In one — but only one — of these sessions, the assets should actually be
+    /// emitted.
+    pub fn html_precomputed_assets(&mut self, assets: AssetSpecification) -> &mut Self {
+        self.html_precomputed_assets = Some(assets);
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         // First, work on the "bridge state", which gathers the subset of our
@@ -1218,6 +1242,7 @@ impl ProcessingSessionBuilder {
             unstables: self.unstables,
             shell_escape_mode,
             html_assets_spec_path: self.html_assets_spec_path,
+            html_precomputed_assets: self.html_precomputed_assets,
         })
     }
 }
@@ -1286,6 +1311,7 @@ pub struct ProcessingSession {
     shell_escape_mode: ShellEscapeMode,
 
     html_assets_spec_path: Option<String>,
+    html_precomputed_assets: Option<AssetSpecification>,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1925,6 +1951,10 @@ impl ProcessingSession {
 
             if let Some(p) = self.html_assets_spec_path.as_ref() {
                 engine.assets_spec_path(p);
+            }
+
+            if let Some(a) = self.html_precomputed_assets.as_ref() {
+                engine.precomputed_assets(a.clone());
             }
 
             status.note_highlighted("Running ", "spx2html", " ...");
