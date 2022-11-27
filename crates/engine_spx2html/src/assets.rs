@@ -379,8 +379,6 @@ pub(crate) mod syntax {
     use std::collections::HashMap;
     use tectonic_errors::prelude::*;
 
-    use crate::fontfile::GlyphId;
-
     pub type Assets = HashMap<String, AssetOrigin>;
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -432,15 +430,19 @@ pub(crate) mod syntax {
         /// The path to find the font file in the source stack.
         pub source: String,
 
-        /// Variant glyphs that require us to emit variant versions of the
-        /// font file.
-        pub vglyphs: HashMap<GlyphId, GlyphVariantMapping>,
+        /// Variant glyphs that require us to emit variant versions of the font
+        /// file.
+        ///
+        /// Due to limitations of (serde's) JSON serialization, the keys of this
+        /// dictionary have to be strings, even though we would like them to be
+        /// GlyphIds.
+        pub vglyphs: HashMap<String, GlyphVariantMapping>,
     }
 
     /// Merge one table of variant glyph USV mappings into another.
     pub(crate) fn merge_vglyphs(
-        cur: &mut HashMap<GlyphId, GlyphVariantMapping>,
-        new: &HashMap<GlyphId, GlyphVariantMapping>,
+        cur: &mut HashMap<String, GlyphVariantMapping>,
+        new: &HashMap<String, GlyphVariantMapping>,
     ) {
         // First, get the maximum seen index for each USV.
 
@@ -456,7 +458,7 @@ pub(crate) mod syntax {
         for (gid, mapping) in new {
             // If the glyph is already in the "cur" mapping, great. If not, add
             // a new mapping, using the "new" map's suggested USV.
-            cur.entry(*gid).or_insert_with(|| {
+            cur.entry(gid.clone()).or_insert_with(|| {
                 let next_idx = next_index.entry(mapping.usv).or_default();
                 let index = *next_idx;
                 *next_idx = index + 1;

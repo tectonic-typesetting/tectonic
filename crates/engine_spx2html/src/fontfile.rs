@@ -504,7 +504,7 @@ impl FontFileData {
         ffad.source = self.basename;
 
         for (glyph, altmap) in self.variant_map_allocations.drain() {
-            ffad.vglyphs.insert(glyph, altmap.into());
+            ffad.vglyphs.insert(glyph.to_string(), altmap.into());
         }
 
         ffad
@@ -522,7 +522,9 @@ impl FontFileData {
         self.variant_map_allocations.clear();
 
         for (gid, mapping) in &ffad.vglyphs {
-            self.variant_map_allocations.insert(*gid, (*mapping).into());
+            let gid: GlyphId = gid.parse().unwrap();
+
+            self.variant_map_allocations.insert(gid, (*mapping).into());
 
             let c = self.variant_map_counts.entry(mapping.usv).or_default();
             *c = std::cmp::max(mapping.index + 1, *c);
