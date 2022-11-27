@@ -6,7 +6,6 @@
 use std::{
     fs::File,
     io::{Read, Write},
-    path::Path,
 };
 use tectonic_errors::prelude::*;
 use tectonic_status_base::tt_warning;
@@ -69,35 +68,8 @@ impl Templating {
     }
 
     pub(crate) fn emit(&mut self, common: &mut Common) -> Result<()> {
-        // Prep the output path
-
-        let mut out_path = common.out_base.to_owned();
-        let mut n_levels = 0;
-
-        for piece in self.next_output_path.split('/') {
-            if piece.is_empty() {
-                continue;
-            }
-
-            if piece == ".." {
-                bail!(
-                    "illegal HTML output path `{}`: it contains a `..` component",
-                    &self.next_output_path
-                );
-            }
-
-            let as_path = Path::new(piece);
-
-            if as_path.is_absolute() || as_path.has_root() {
-                bail!(
-                    "illegal HTML output path `{}`: it contains an absolute/rooted component",
-                    &self.next_output_path
-                );
-            }
-
-            out_path.push(piece);
-            n_levels += 1;
-        }
+        let (out_path, n_levels) =
+            crate::assets::create_output_path(&self.next_output_path, common, !common.do_not_emit)?;
 
         if n_levels < 2 {
             self.context.insert("tduxRelTop", "");

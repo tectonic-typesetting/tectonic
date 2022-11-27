@@ -8,9 +8,9 @@ use std::{
     collections::HashMap,
     fs::File,
     io::{Read, Write},
-    path::Path,
+    path::{Path, PathBuf},
 };
-use tectonic_errors::prelude::*;
+use tectonic_errors::{anyhow::Context, prelude::*};
 use tectonic_status_base::tt_warning;
 
 use crate::{fontfamily::FontEnsemble, specials::Special, Common};
@@ -117,56 +117,19 @@ impl Assets {
 }
 
 fn emit_copied_file(src_tex_path: &str, dest_path: &str, common: &mut Common) -> Result<()> {
-    // Set up input?
-
     let mut ih = atry!(
         common.hooks.io().input_open_name(src_tex_path, common.status).must_exist();
         ["unable to open provideFile source `{}`", &src_tex_path]
     );
 
-    // Set up output? TODO: create parent directories!
-
-    let mut out_path = common.out_base.to_owned();
-
-    for piece in dest_path.split('/') {
-        if piece.is_empty() {
-            continue;
-        }
-
-        if piece == ".." {
-            bail!(
-                "illegal provideFile dest path `{}`: it contains a `..` component",
-                &dest_path
-            );
-        }
-
-        let as_path = Path::new(piece);
-
-        if as_path.is_absolute() || as_path.has_root() {
-            bail!(
-                "illegal provideFile path `{}`: it contains an absolute/rooted component",
-                &dest_path,
-            );
-        }
-
-        out_path.push(piece);
-    }
-
-    // Copy!
-
     {
-        let mut out_file = atry!(
-            File::create(&out_path);
-            ["cannot open output file `{}`", out_path.display()]
-        );
+        let (mut out_file, out_path) = create_asset_file(dest_path, common)?;
 
         atry!(
             std::io::copy(&mut ih, &mut out_file);
             ["cannot copy to output file `{}`", out_path.display()]
         );
     }
-
-    // All done.
 
     let (name, digest_opt) = ih.into_name_digest();
     common
@@ -176,9 +139,54 @@ fn emit_copied_file(src_tex_path: &str, dest_path: &str, common: &mut Common) ->
 }
 
 fn emit_font_css(dest_path: &str, faces: &str, common: &mut Common) -> Result<()> {
+    let (mut out_file, out_path) = create_asset_file(dest_path, common)?;
+
+    atry!(
+        write!(&mut out_file, "{}", faces);
+        ["cannot write output file `{}`", out_path.display()]
+    );
+
+    Ok(())
+}
+
+fn create_asset_file(dest_path: &str, common: &mut Common) -> Result<(File, PathBuf)> {
+    let (out_path, _) = create_output_path(dest_path, common, true)?;
+
+    let out_file = atry!(
+        File::create(&out_path);
+        ["cannot open output file `{}`", out_path.display()]
+    );
+
+    Ok((out_file, out_path))
+}
+
+/// Process a TeX output path into one for the actual filesystem.
+///
+/// We have a separate argument `do_create`, rather than just looking at
+/// `common.do_not_emit`, since this function is used for assets as well as
+/// templated HTML outputs.
+pub(crate) fn create_output_path(
+    dest_path: &str,
+    common: &mut Common,
+    do_create: bool,
+) -> Result<(PathBuf, usize)> {
     let mut out_path = common.out_base.to_owned();
+    let mut n_levels = 0;
 
     for piece in dest_path.split('/') {
+        if do_create {
+            match std::fs::create_dir(&out_path) {
+                Ok(_) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
+                Err(e) => {
+                    return Err(e).context(format!(
+                        "cannot create output parent directory `{}`",
+                        out_path.display()
+                    ));
+                }
+            }
+        }
+
         if piece.is_empty() {
             continue;
         }
@@ -200,21 +208,10 @@ fn emit_font_css(dest_path: &str, faces: &str, common: &mut Common) -> Result<()
         }
 
         out_path.push(piece);
+        n_levels += 1;
     }
 
-    // Write
-
-    let mut out_file = atry!(
-        File::create(&out_path);
-        ["cannot open output file `{}`", out_path.display()]
-    );
-
-    atry!(
-        write!(&mut out_file, "{}", faces);
-        ["cannot write output file `{}`", out_path.display()]
-    );
-
-    Ok(())
+    Ok((out_path, n_levels))
 }
 
 /// Information about assets that have been defined in an SPX-to-HTML run.
