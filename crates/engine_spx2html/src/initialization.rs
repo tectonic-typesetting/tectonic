@@ -113,7 +113,7 @@ impl InitializationState {
 
         let basename = texpath.rsplit('/').next().unwrap();
 
-        self.fonts.register(
+        self.fonts.register_tex_font(
             name,
             font_num,
             size,
@@ -219,7 +219,7 @@ impl InitializationState {
             let bold_italic = a_ok_or!(b.bold_italic; ["no bold-italic face defined"]);
 
             self.fonts
-                .register_family(family_name, regular, bold, italic, bold_italic);
+                .register_family(family_name, regular, bold, italic, bold_italic)?;
         } else {
             tt_warning!(
                 common.status,

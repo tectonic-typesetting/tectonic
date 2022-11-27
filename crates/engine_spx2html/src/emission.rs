@@ -867,7 +867,7 @@ impl EmittingState {
         let (path, desired_af) = match self.fonts.analyze_font_for_family(fnum, cur_ffid, cur_af) {
             FontFamilyAnalysis::AlreadyActive => return,
             FontFamilyAnalysis::Reachable(p, d) => (p, d),
-            FontFamilyAnalysis::NoMatch => {
+            FontFamilyAnalysis::NoMatch(fid) => {
                 // We don't seem to be in a defined "family". So we have to
                 // select it explicitly.
                 let path = PathToNewFont {
@@ -876,8 +876,13 @@ impl EmittingState {
                     ..Default::default()
                 };
 
-                let desired_af = FamilyRelativeFontId::Other(fnum);
+                let desired_af = FamilyRelativeFontId::Other(fid);
                 (path, desired_af)
+            }
+
+            FontFamilyAnalysis::Unrecognized => {
+                tt_warning!(common.status, "undeclared font number {}", fnum);
+                return;
             }
         };
 

@@ -510,10 +510,6 @@ impl FontFileData {
         ffad
     }
 
-    pub(crate) fn basename(&self) -> &str {
-        &self.basename
-    }
-
     /// Update this "runtime" information to match the precomputed asset
     /// information. At the moment the only thing we need to change is the table
     /// of variant glyphs.
