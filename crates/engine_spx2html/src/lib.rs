@@ -252,7 +252,7 @@ impl<'a> XdvEvents for EngineState<'a> {
 
     fn handle_text_and_glyphs(
         &mut self,
-        font_num: FontNum,
+        font_num: TexFontNum,
         text: &str,
         _width: i32,
         glyphs: &[u16],
@@ -280,7 +280,7 @@ impl<'a> XdvEvents for EngineState<'a> {
     fn handle_define_native_font(
         &mut self,
         name: &str,
-        font_num: FontNum,
+        font_num: TexFontNum,
         size: i32,
         face_index: u32,
         color_rgba: Option<u32>,
@@ -307,7 +307,7 @@ impl<'a> XdvEvents for EngineState<'a> {
 
     fn handle_glyph_run(
         &mut self,
-        font_num: FontNum,
+        font_num: TexFontNum,
         glyphs: &[u16],
         x: &[i32],
         y: &[i32],
@@ -351,4 +351,4 @@ impl State {
 }
 
 type FixedPoint = i32;
-type FontNum = i32;
+type TexFontNum = i32;

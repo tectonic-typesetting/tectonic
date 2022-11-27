@@ -18,7 +18,7 @@ use crate::{
     html::Element,
     specials::Special,
     templating::Templating,
-    Common, FixedPoint, FontNum,
+    Common, FixedPoint, TexFontNum,
 };
 
 #[derive(Debug)]
@@ -27,7 +27,7 @@ pub(crate) struct EmittingState {
     content: ContentState,
     templating: Templating,
     assets: Assets,
-    tag_associations: HashMap<Element, FontNum>,
+    tag_associations: HashMap<Element, TexFontNum>,
     rems_per_tex: f32,
     elem_stack: Vec<ElementState>,
     current_canvas: Option<CanvasState>,
@@ -184,7 +184,7 @@ pub(crate) struct ElementState {
     /// The font-num of the regular font associated with the current font
     /// family. This code is currently only exercised with a single "font
     /// family" defined in a document, but there could be multiple.
-    font_family_id: FontNum,
+    font_family_id: TexFontNum,
 
     /// The currently active font, as we understand it, relative to the
     /// currently active font family.
@@ -240,16 +240,16 @@ impl CanvasState {
 struct GlyphInfo {
     dx: i32,
     dy: i32,
-    font_num: FontNum,
+    font_num: TexFontNum,
     glyph: u16,
 }
 
 impl EmittingState {
     pub(crate) fn new_from_init(
         fonts: FontEnsemble,
-        main_body_font_num: Option<FontNum>,
+        main_body_font_num: Option<TexFontNum>,
         templating: Templating,
-        tag_associations: HashMap<Element, FontNum>,
+        tag_associations: HashMap<Element, TexFontNum>,
     ) -> Result<Self> {
         let rems_per_tex = 1.0
             / main_body_font_num
@@ -279,7 +279,7 @@ impl EmittingState {
     ///
     /// We can't always use this function because sometimes we need mutable
     /// access to the `fonts` and `content` items separately.
-    fn push_space_if_needed(&mut self, x0: i32, fnum: Option<FontNum>) {
+    fn push_space_if_needed(&mut self, x0: i32, fnum: Option<TexFontNum>) {
         let cur_space_width = self.fonts.maybe_get_font_space_width(fnum);
         self.content
             .push_space_if_needed(x0, cur_space_width, self.cur_elstate().do_auto_spaces);
@@ -747,7 +747,7 @@ impl EmittingState {
 
     pub(crate) fn handle_text_and_glyphs(
         &mut self,
-        font_num: FontNum,
+        font_num: TexFontNum,
         text: &str,
         glyphs: &[u16],
         xs: &[i32],
@@ -793,7 +793,7 @@ impl EmittingState {
 
     pub(crate) fn handle_glyph_run(
         &mut self,
-        font_num: FontNum,
+        font_num: TexFontNum,
         glyphs: &[u16],
         xs: &[i32],
         ys: &[i32],
@@ -854,7 +854,7 @@ impl EmittingState {
         Ok(())
     }
 
-    fn set_up_for_font(&mut self, x0: i32, fnum: FontNum, common: &mut Common) {
+    fn set_up_for_font(&mut self, x0: i32, fnum: TexFontNum, common: &mut Common) {
         let (cur_ffid, cur_af, cur_is_autofont) = {
             let cur = self.cur_elstate();
             (

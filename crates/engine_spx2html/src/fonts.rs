@@ -14,7 +14,7 @@ use tectonic_status_base::{tt_warning, StatusBackend};
 use crate::{
     assets::syntax,
     fontfile::{FontFileData, GlyphId, GlyphMetrics, MapEntry},
-    FixedPoint, FontNum,
+    FixedPoint, TexFontNum,
 };
 
 /// Information about an ensemble of font families.
@@ -25,7 +25,7 @@ pub struct FontEnsemble {
     /// Information about fonts declared in the SPX file. There may be
     /// a number of "native" fonts with different size/color/etc info
     /// that all reference the same underlying font file.
-    tex_fonts: HashMap<FontNum, TexFontInfo>,
+    tex_fonts: HashMap<TexFontNum, TexFontInfo>,
 
     /// Information about the individual font files referenced by the TeX fonts.
     /// These are keyed by "font file data keys" that are just intended to save
@@ -38,13 +38,13 @@ pub struct FontEnsemble {
 
     /// Information about font families. This is keyed by the font-num of the
     /// "regular" font.
-    font_families: HashMap<FontNum, FontFamily>,
+    font_families: HashMap<TexFontNum, FontFamily>,
 }
 
 impl FontEnsemble {
     /// Test whether this ensemble contains a font identified by the given SPX
     /// font number.
-    pub fn contains(&self, f: FontNum) -> bool {
+    pub fn contains(&self, f: TexFontNum) -> bool {
         self.tex_fonts.contains_key(&f)
     }
 
@@ -56,7 +56,7 @@ impl FontEnsemble {
     pub fn register(
         &mut self,
         name: String,
-        font_num: FontNum,
+        font_num: TexFontNum,
         size: FixedPoint,
         face_index: u32,
         color_rgba: Option<u32>,
@@ -102,10 +102,10 @@ impl FontEnsemble {
     pub fn register_family(
         &mut self,
         family_name: String,
-        regular: FontNum,
-        bold: FontNum,
-        italic: FontNum,
-        bold_italic: FontNum,
+        regular: TexFontNum,
+        bold: TexFontNum,
+        italic: TexFontNum,
+        bold_italic: TexFontNum,
     ) {
         self.font_families.insert(
             regular,
@@ -142,7 +142,7 @@ impl FontEnsemble {
     }
 
     /// Get the size at which the specified SPX font is defined.
-    pub fn get_font_size(&self, fnum: FontNum) -> FixedPoint {
+    pub fn get_font_size(&self, fnum: TexFontNum) -> FixedPoint {
         self.tex_fonts.get(&fnum).unwrap().size
     }
 
@@ -150,7 +150,7 @@ impl FontEnsemble {
     ///
     /// This width is not always known, depending on the font file structure.
     /// For convenience, this function's input font number is also optional.
-    pub fn maybe_get_font_space_width(&self, font_num: Option<FontNum>) -> Option<FixedPoint> {
+    pub fn maybe_get_font_space_width(&self, font_num: Option<TexFontNum>) -> Option<FixedPoint> {
         font_num.and_then(|fnum| {
             if let Some(fi) = self.tex_fonts.get(&fnum) {
                 let fd = self.font_file_data.get(&fi.ffd_key).unwrap();
@@ -167,7 +167,7 @@ impl FontEnsemble {
     /// glyph's metrics are not defined in the font, `Ok(None)` is returned.
     pub fn get_glyph_metrics(
         &mut self,
-        fnum: FontNum,
+        fnum: TexFontNum,
         glyph: GlyphId,
     ) -> Result<Option<GlyphMetrics>> {
         let fi = a_ok_or!(
@@ -190,7 +190,7 @@ impl FontEnsemble {
     /// warning is logged to the status backend.
     pub fn process_glyph_for_canvas(
         &mut self,
-        fnum: FontNum,
+        fnum: TexFontNum,
         glyph: GlyphId,
         status: &mut dyn StatusBackend,
     ) -> (Option<(char, String)>, FixedPoint, f32) {
@@ -216,7 +216,7 @@ impl FontEnsemble {
     /// warning is logged to the status backend.
     pub fn process_glyphs_as_text<'a>(
         &'a mut self,
-        font_num: FontNum,
+        font_num: TexFontNum,
         glyphs: &'a [GlyphId],
         status: &'a mut dyn StatusBackend,
     ) -> Result<impl Iterator<Item = (usize, Option<(char, String)>, FixedPoint)> + 'a> {
@@ -239,13 +239,13 @@ impl FontEnsemble {
     /// Determine how an SPX font relates to a font family.
     ///
     /// The *fnum* argument is some font number. The *cur_ffid* argument is the
-    /// identifier of a font family, which is defined as the fontnum of its
+    /// identifier of a font family, which is defined as the TexFontNum of its
     /// "regular" font. The *cur_af* argument defines the currently active font
     /// within that family, as identified with a [`FamilyRelativeFontId`].
     pub fn analyze_font_for_family(
         &self,
-        fnum: FontNum,
-        cur_ffid: FontNum,
+        fnum: TexFontNum,
+        cur_ffid: TexFontNum,
         cur_af: FamilyRelativeFontId,
     ) -> FontFamilyAnalysis {
         if let Some(cur_fam) = self.font_families.get(&cur_ffid) {
@@ -271,7 +271,7 @@ impl FontEnsemble {
     /// calculated with the *rems_per_tex* parameter.
     pub fn write_styling_span_html<W: Write>(
         &self,
-        fnum: FontNum,
+        fnum: TexFontNum,
         rems_per_tex: f32,
         mut dest: W,
     ) -> Result<()> {
@@ -438,7 +438,7 @@ impl FontEnsemble {
         // fnum_to_filename to deal with the different faces to check.
 
         let check_face = |fam_name: &str,
-                          fnum: FontNum,
+                          fnum: TexFontNum,
                           ft: syntax::FaceType,
                           pff: &syntax::FontFamilyAssetData|
          -> Result<()> {
@@ -673,14 +673,14 @@ impl TexFontInfo {
 /// TeX/SPX font numbers for a family of fonts.
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct FontFamily {
-    regular: FontNum,
-    bold: FontNum,
-    italic: FontNum,
-    bold_italic: FontNum,
+    regular: TexFontNum,
+    bold: TexFontNum,
+    italic: TexFontNum,
+    bold_italic: TexFontNum,
 }
 
 impl FontFamily {
-    fn font_num_to_relative_id(&self, fnum: FontNum) -> FamilyRelativeFontId {
+    fn font_num_to_relative_id(&self, fnum: TexFontNum) -> FamilyRelativeFontId {
         if fnum == self.regular {
             FamilyRelativeFontId::Regular
         } else if fnum == self.bold {
@@ -694,7 +694,7 @@ impl FontFamily {
         }
     }
 
-    fn relative_id_to_font_num(&self, relid: FamilyRelativeFontId) -> FontNum {
+    fn relative_id_to_font_num(&self, relid: FamilyRelativeFontId) -> TexFontNum {
         match relid {
             FamilyRelativeFontId::Regular => self.regular,
             FamilyRelativeFontId::Bold => self.bold,
@@ -836,5 +836,5 @@ pub enum FamilyRelativeFontId {
 
     /// This font is some other font with no known relation to the current
     /// family.
-    Other(FontNum),
+    Other(TexFontNum),
 }

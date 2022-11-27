@@ -10,7 +10,7 @@ use tectonic_status_base::tt_warning;
 
 use crate::{
     fonts::FontEnsemble, html::Element, specials::Special, templating::Templating, Common,
-    EmittingState, FixedPoint, FontNum,
+    EmittingState, FixedPoint, TexFontNum,
 };
 
 #[derive(Debug)]
@@ -21,7 +21,7 @@ pub(crate) struct InitializationState {
 
     fonts: FontEnsemble,
     main_body_font_num: Option<i32>,
-    tag_associations: HashMap<Element, FontNum>,
+    tag_associations: HashMap<Element, TexFontNum>,
 
     cur_font_family_definition: Option<FontFamilyBuilder>,
     cur_font_family_tag_associations: Option<FontFamilyTagAssociator>,
@@ -61,7 +61,7 @@ impl InitializationState {
     pub(crate) fn handle_define_native_font(
         &mut self,
         name: &str,
-        font_num: FontNum,
+        font_num: TexFontNum,
         size: FixedPoint,
         face_index: u32,
         color_rgba: Option<u32>,
@@ -260,7 +260,7 @@ impl InitializationState {
     /// will declare initialization done and move to the emitting state.
     pub(crate) fn handle_text_and_glyphs(
         &mut self,
-        font_num: FontNum,
+        font_num: TexFontNum,
         text: &str,
         _glyphs: &[u16],
         _xs: &[i32],
@@ -373,13 +373,13 @@ impl InitializationState {
 #[derive(Debug, Default)]
 struct FontFamilyBuilder {
     family_name: String,
-    regular: Option<FontNum>,
-    bold: Option<FontNum>,
-    italic: Option<FontNum>,
-    bold_italic: Option<FontNum>,
+    regular: Option<TexFontNum>,
+    bold: Option<TexFontNum>,
+    italic: Option<TexFontNum>,
+    bold_italic: Option<TexFontNum>,
 }
 
 #[derive(Debug, Default)]
 struct FontFamilyTagAssociator {
-    assoc: HashMap<Element, FontNum>,
+    assoc: HashMap<Element, TexFontNum>,
 }
