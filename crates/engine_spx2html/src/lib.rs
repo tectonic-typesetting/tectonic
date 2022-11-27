@@ -162,6 +162,13 @@ impl<'a> EngineState<'a> {
 
         if let State::Finalizing(s) = self.state {
             let (fonts, assets) = s.finished();
+
+            // If we have precomputed assets, make sure that this run didn't
+            // define anything surprising.
+            if let Some(precomputed) = self.common.precomputed_assets {
+                precomputed.check_runtime_assets(&assets)?;
+            }
+
             Ok((fonts, assets, self.common))
         } else {
             panic!("invalid spx2html finalization state leaked");

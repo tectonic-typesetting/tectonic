@@ -316,6 +316,48 @@ impl AssetSpecification {
     pub(crate) fn check_runtime_fonts(&self, fonts: &mut FontEnsemble) -> Result<()> {
         fonts.match_to_precomputed(&self.0)
     }
+
+    /// Check that the assets defined at runtime are a subset of those defined
+    /// in this specification.
+    ///
+    /// This function is used in the "precomputed assets" mode, to make sure
+    /// that the SPX file doesn't try to define anything that we didn't expect.
+    /// Fonts have already been looked at, so we just need to check output
+    /// filenames.
+    pub(crate) fn check_runtime_assets(&self, assets: &Assets) -> Result<()> {
+        for (path, run_origin) in &assets.paths {
+            if let Some(pre_origin) = self.0.get(path) {
+                match (run_origin, pre_origin) {
+                    (AssetOrigin::Copy(run_path), syntax::AssetOrigin::Copy(pre_path)) => {
+                        ensure!(
+                            run_path == pre_path,
+                            "asset `{}` should \
+                            copy out path `{}`, but in this session the source is `{}`",
+                            path,
+                            pre_path,
+                            run_path
+                        );
+                    }
+
+                    (AssetOrigin::FontCss, syntax::AssetOrigin::FontCss(_)) => {}
+
+                    _ => {
+                        bail!(
+                            "this session and the precomputed assets disagree on `{}`",
+                            path
+                        );
+                    }
+                }
+            } else {
+                bail!(
+                    "this session defines an asset at `{}` that is not in the precomputed bundle",
+                    path
+                );
+            }
+        }
+
+        Ok(())
+    }
 }
 
 /// The concrete syntax for saving asset-output state, wired up via serde.
