@@ -318,13 +318,15 @@ impl AssetSpecification {
     }
 
     /// Check that the assets defined at runtime are a subset of those defined
-    /// in this specification.
+    /// in this specification, and update them to cover the specification.
     ///
     /// This function is used in the "precomputed assets" mode, to make sure
     /// that the SPX file doesn't try to define anything that we didn't expect.
     /// Fonts have already been looked at, so we just need to check output
-    /// filenames.
-    pub(crate) fn check_runtime_assets(&self, assets: &Assets) -> Result<()> {
+    /// filenames. We also need to update the collection of runtime assets so
+    /// that if we are asked to emit assets, we'll emit *everything*, not just
+    /// the ones this particular session knows about.
+    pub(crate) fn check_runtime_assets(&self, assets: &mut Assets) -> Result<()> {
         for (path, run_origin) in &assets.paths {
             if let Some(pre_origin) = self.0.get(path) {
                 match (run_origin, pre_origin) {
@@ -354,6 +356,18 @@ impl AssetSpecification {
                     path
                 );
             }
+        }
+
+        // Now update the runtime assets to include all precomputed ones.
+
+        for (path, pre_origin) in &self.0 {
+            let mapped = match pre_origin {
+                syntax::AssetOrigin::Copy(pre_path) => AssetOrigin::Copy(pre_path.to_owned()),
+                syntax::AssetOrigin::FontCss(_) => AssetOrigin::FontCss,
+                syntax::AssetOrigin::FontFile(_) => continue,
+            };
+
+            assets.paths.entry(path.to_owned()).or_insert(mapped);
         }
 
         Ok(())

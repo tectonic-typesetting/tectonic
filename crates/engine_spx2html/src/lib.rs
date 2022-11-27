@@ -182,12 +182,13 @@ impl<'a> EngineState<'a> {
         self.state.ensure_finalizing(&mut self.common)?;
 
         if let State::Finalizing(s) = self.state {
-            let (fonts, assets) = s.finished();
+            let (fonts, mut assets) = s.finished();
 
             // If we have precomputed assets, make sure that this run didn't
-            // define anything surprising.
+            // define anything surprising, and sync up the runtime manifest with
+            // the precomputed one so that we emit everything if needed.
             if let Some(precomputed) = self.common.precomputed_assets {
-                precomputed.check_runtime_assets(&assets)?;
+                precomputed.check_runtime_assets(&mut assets)?;
             }
 
             Ok((fonts, assets, self.common))
