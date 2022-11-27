@@ -1108,9 +1108,12 @@ impl EmittingState {
         if !self.content.is_empty() {
             tt_warning!(
                 common.status,
-                "content finished without an explicit `emit` in HTML output"
+                "non-empty content left at the end without an explicit `emit` in HTML output"
             );
-            self.finish_file(common)?;
+
+            if self.templating.ready_to_output() {
+                self.finish_file(common)?;
+            }
         }
 
         FinalizingState::new(self.fonts, self.templating, self.assets)

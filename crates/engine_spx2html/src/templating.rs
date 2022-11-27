@@ -67,7 +67,19 @@ impl Templating {
         self.context.insert(name, value.as_ref());
     }
 
+    pub(crate) fn ready_to_output(&self) -> bool {
+        !self.next_template_path.is_empty() && !self.next_output_path.is_empty()
+    }
+
     pub(crate) fn emit(&mut self, common: &mut Common) -> Result<()> {
+        if self.next_template_path.is_empty() {
+            bail!("need to emit HTML content but no template has been specified; is your document HTML-compatible?");
+        }
+
+        if self.next_output_path.is_empty() {
+            bail!("need to emit HTML content but no output path has been specified; is your document HTML-compatible?");
+        }
+
         let (out_path, n_levels) =
             crate::assets::create_output_path(&self.next_output_path, common, !common.do_not_emit)?;
 
@@ -87,10 +99,6 @@ impl Templating {
         // something fancy with rewriting it. If that setting is empty, probably
         // the user is compiling the document in HTML mode without all of the
         // TeX infrastructure that Tectonic needs to make it work.
-
-        if self.next_template_path.is_empty() {
-            bail!("need to emit HTML content but no template has been specified; is your document HTML-compatible?");
-        }
 
         let mut ih = atry!(
             common.hooks.io().input_open_name(&self.next_template_path, common.status).must_exist();
@@ -128,6 +136,11 @@ impl Templating {
                 ["cannot write output file `{}`", out_path.display()]
             );
         }
+
+        // Clear the output path, because we don't want people to be accidentally
+        // overwriting the same file by failing to update it.
+
+        self.next_output_path.clear();
 
         Ok(())
     }
