@@ -542,9 +542,9 @@ fn get_text_info(
         };
 
         let alt_index = if need_alt {
-            let map = fd.request_alternative(glyph, ch);
+            let map = fd.request_variant(glyph, ch);
             ch = map.usv;
-            Some(map.alternate_map_index)
+            Some(map.variant_map_index)
         } else {
             None
         };
@@ -620,8 +620,8 @@ impl TexFontInfo {
     /// Generate a snippet of CSS for an HTML `style` attribute that will select
     /// the appropriate font, given that we might need to select one of the
     /// "variants" generated to make unusual glyphs available.
-    fn selection_style_text(&self, alternate_map_index: Option<usize>) -> String {
-        let alt_text = alternate_map_index
+    fn selection_style_text(&self, variant_map_index: Option<usize>) -> String {
+        let alt_text = variant_map_index
             .map(|i| format!("vg{}", i))
             .unwrap_or_default();
 
@@ -640,8 +640,8 @@ impl TexFontInfo {
     /// difference is double quotes around the font-family specifier, which we
     /// want to have in the CSS but shouldn't have (maybe???) in the HTML
     /// `style` attribute.
-    fn font_face_text(&self, alternate_map_index: Option<usize>) -> String {
-        let alt_text = alternate_map_index
+    fn font_face_text(&self, variant_map_index: Option<usize>) -> String {
+        let alt_text = variant_map_index
             .map(|i| format!("vg{}", i))
             .unwrap_or_default();
 

@@ -421,7 +421,7 @@ pub(crate) mod syntax {
         /// The path to find the font file in the source stack.
         pub source: String,
 
-        /// Variant glyphs that require us to emit alternate versions of the
+        /// Variant glyphs that require us to emit variant versions of the
         /// font file.
         pub vglyphs: HashMap<GlyphId, GlyphVariantMapping>,
     }
@@ -466,11 +466,11 @@ pub(crate) mod syntax {
         pub index: usize,
     }
 
-    impl From<crate::fontfile::GlyphAlternateMapping> for GlyphVariantMapping {
-        fn from(m: crate::fontfile::GlyphAlternateMapping) -> Self {
+    impl From<crate::fontfile::GlyphVariantMapping> for GlyphVariantMapping {
+        fn from(m: crate::fontfile::GlyphVariantMapping) -> Self {
             GlyphVariantMapping {
                 usv: m.usv,
-                index: m.alternate_map_index,
+                index: m.variant_map_index,
             }
         }
     }
