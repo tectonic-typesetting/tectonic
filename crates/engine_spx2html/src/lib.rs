@@ -32,6 +32,7 @@ use self::{
 /// An engine that converts SPX to HTML.
 #[derive(Default)]
 pub struct Spx2HtmlEngine {
+    precomputed_assets: Option<AssetSpecification>,
     assets_spec_path: Option<String>,
 }
 
@@ -55,6 +56,25 @@ impl Spx2HtmlEngine {
         self
     }
 
+    /// Specify that this session should use a precomputed asset specification.
+    ///
+    /// If this function is used, subsequent runs will generate HTML outputs
+    /// assuming the information given in the asset specification. If the input
+    /// calls for new assets or different options inconsistent with the
+    /// specification, processing will abort with an error.
+    ///
+    /// The purpose of this mode is to allow for a unified set of assets to be
+    /// created from multiple independent runs of the SPX-to-HTML stage. First,
+    /// the different inputs should be processed independently, and their
+    /// individual assets should saved. These should then be merged. Then the
+    /// inputs should be reprocessed, all using the merged asset specification.
+    /// In one — but only one — of these sessions, the assets should actually be
+    /// emitted.
+    pub fn precomputed_assets(&mut self, assets: AssetSpecification) -> &mut Self {
+        self.precomputed_assets = Some(assets);
+        self
+    }
+
     /// Process SPX into HTML.
     ///
     /// Because this driver will, in the generic case, produce a tree of HTML
@@ -72,7 +92,7 @@ impl Spx2HtmlEngine {
         let mut input = hooks.io().input_open_name(spx, status).must_exist()?;
 
         {
-            let state = EngineState::new(hooks, status, out_base);
+            let state = EngineState::new(hooks, status, out_base, self.precomputed_assets.as_ref());
             let state = XdvParser::process_with_seeks(&mut input, state)?;
             let (fonts, assets, mut common) = state.finished()?;
 
@@ -104,6 +124,7 @@ struct Common<'a> {
     hooks: &'a mut dyn DriverHooks,
     status: &'a mut dyn StatusBackend,
     out_base: &'a Path,
+    precomputed_assets: Option<&'a AssetSpecification>,
 }
 
 impl<'a> EngineState<'a> {
@@ -111,12 +132,14 @@ impl<'a> EngineState<'a> {
         hooks: &'a mut dyn DriverHooks,
         status: &'a mut dyn StatusBackend,
         out_base: &'a Path,
+        precomputed_assets: Option<&'a AssetSpecification>,
     ) -> Self {
         Self {
             common: Common {
                 hooks,
                 status,
                 out_base,
+                precomputed_assets,
             },
             state: State::Initializing(InitializationState::default()),
         }
@@ -179,7 +202,7 @@ impl<'a> XdvEvents for EngineState<'a> {
         // Might we need to end the initialization phase?
 
         if self.in_endable_init() && special.ends_initialization() {
-            self.state.ensure_initialized()?;
+            self.state.ensure_initialized(&mut self.common)?;
         }
 
         // Might we be entering the finalization phase?
@@ -208,7 +231,7 @@ impl<'a> XdvEvents for EngineState<'a> {
         y: &[i32],
     ) -> Result<()> {
         if self.in_endable_init() {
-            self.state.ensure_initialized()?;
+            self.state.ensure_initialized(&mut self.common)?;
         }
 
         match &mut self.state {
@@ -260,7 +283,7 @@ impl<'a> XdvEvents for EngineState<'a> {
         x: &[i32],
         y: &[i32],
     ) -> Result<(), Self::Error> {
-        self.state.ensure_initialized()?;
+        self.state.ensure_initialized(&mut self.common)?;
 
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
@@ -272,12 +295,12 @@ impl<'a> XdvEvents for EngineState<'a> {
 }
 
 impl State {
-    fn ensure_initialized(&mut self) -> Result<()> {
+    fn ensure_initialized(&mut self, common: &mut Common) -> Result<()> {
         // Is this the least-bad way to do this??
         let mut work = std::mem::replace(self, State::Invalid);
 
         if let State::Initializing(s) = work {
-            work = State::Emitting(s.initialization_finished()?);
+            work = State::Emitting(s.initialization_finished(common)?);
         }
 
         std::mem::swap(self, &mut work);
@@ -285,7 +308,7 @@ impl State {
     }
 
     fn ensure_finalizing(&mut self, common: &mut Common) -> Result<()> {
-        self.ensure_initialized()?;
+        self.ensure_initialized(common)?;
 
         let mut work = std::mem::replace(self, State::Invalid);
 

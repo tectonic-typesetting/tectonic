@@ -495,6 +495,26 @@ impl FontFileData {
 
         ffad
     }
+
+    pub(crate) fn basename(&self) -> &str {
+        &self.basename
+    }
+
+    /// Update this "runtime" information to match the precomputed asset
+    /// information. At the moment the only thing we need to change is the table
+    /// of alternate/variant glyphs.
+    pub(crate) fn match_to_precomputed(&mut self, ffad: &crate::assets::syntax::FontFileAssetData) {
+        self.alternate_map_counts.clear();
+        self.alternate_map_allocations.clear();
+
+        for (gid, mapping) in &ffad.vglyphs {
+            self.alternate_map_allocations
+                .insert(*gid, (*mapping).into());
+
+            let c = self.alternate_map_counts.entry(mapping.usv).or_default();
+            *c = std::cmp::max(mapping.index + 1, *c);
+        }
+    }
 }
 
 fn load_ssty_mappings(
@@ -613,5 +633,14 @@ fn append_simple_cmap(buf: &mut Vec<u8>, map: &[(char, GlyphId)]) {
         buf.write_u32::<BigEndian>(*usv as u32).unwrap(); // start char
         buf.write_u32::<BigEndian>(*usv as u32).unwrap(); // end char
         buf.write_u32::<BigEndian>(*gid as u32).unwrap(); // glyph id
+    }
+}
+
+impl From<crate::assets::syntax::GlyphVariantMapping> for GlyphAlternateMapping {
+    fn from(m: crate::assets::syntax::GlyphVariantMapping) -> Self {
+        GlyphAlternateMapping {
+            usv: m.usv,
+            alternate_map_index: m.index,
+        }
     }
 }

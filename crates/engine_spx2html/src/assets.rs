@@ -218,7 +218,7 @@ fn emit_font_css(dest_path: &str, faces: &str, common: &mut Common) -> Result<()
 }
 
 /// Information about assets that have been defined in an SPX-to-HTML run.
-#[derive(Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct AssetSpecification(syntax::Assets);
 
 impl AssetSpecification {
@@ -305,6 +305,16 @@ impl AssetSpecification {
     /// so long as the executing program remains unchanged.
     pub fn save<W: Write>(&self, writer: W) -> Result<()> {
         serde_json::to_writer_pretty(writer, &self.0).map_err(|e| e.into())
+    }
+
+    /// Check that a set of fonts defined at runtime are a subset of those
+    /// defined in this specification.
+    ///
+    /// This function is used in the "precomputed assets" mode, to make sure
+    /// that the SPX file doesn't set up any font configuration that we didn't
+    /// expect.
+    pub(crate) fn check_runtime_fonts(&self, fonts: &mut FontEnsemble) -> Result<()> {
+        fonts.match_to_precomputed(&self.0)
     }
 }
 

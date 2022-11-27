@@ -306,7 +306,16 @@ impl InitializationState {
         Ok(())
     }
 
-    pub(crate) fn initialization_finished(self) -> Result<EmittingState> {
+    pub(crate) fn initialization_finished(mut self, common: &mut Common) -> Result<EmittingState> {
+        // If we have precomputed assets, now is the time to confirm that the
+        // fonts defined in this run are a subset of those in the precomputed
+        // session, and copy over variant-glyph definitions to be used during
+        // the bulk processing.
+
+        if let Some(precomputed) = common.precomputed_assets.as_ref() {
+            precomputed.check_runtime_fonts(&mut self.fonts)?;
+        }
+
         let mut context = tera::Context::default();
 
         // Tera requires that we give it a filesystem path to look for

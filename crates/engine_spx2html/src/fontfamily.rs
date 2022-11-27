@@ -368,6 +368,123 @@ impl FontEnsemble {
 
         (assets, css_data)
     }
+
+    /// Check that the fonts defined here are a subset of those defined in a
+    /// serialized set of assets, and set up the runtime variant glyphs to align
+    /// with the precomputed ones.
+    pub(crate) fn match_to_precomputed(&mut self, precomputed: &syntax::Assets) -> Result<()> {
+        let mut fnum_to_filename = HashMap::new();
+        let mut ffd_to_filename = HashMap::new();
+
+        // For the font file data, we need to check that they're present and the
+        // basenames match. We'll replace the runtime variant-glyph mappings
+        // with the precomputed ones.
+
+        for (ffd_key, data) in &mut self.font_file_data {
+            match precomputed.get(data.basename()) {
+                Some(syntax::AssetOrigin::FontFile(ff)) => {
+                    ensure!(
+                        ff.source == data.basename(),
+                        "precomputed font asset `{}` \
+                        should have an origin of `{}`, but in this session it is `{}`",
+                        data.basename(),
+                        data.basename(),
+                        ff.source
+                    );
+
+                    data.match_to_precomputed(ff);
+                }
+
+                Some(other) => bail!(
+                    "precomputed asset `{}` should be a font file, but it is {}",
+                    data.basename(),
+                    other
+                ),
+
+                None => bail!(
+                    "precomputed assets for this session should contain a font file named `{}`",
+                    data.basename()
+                ),
+            }
+
+            ffd_to_filename.insert(ffd_key, data.basename());
+        }
+
+        // We currently don't have any consistency checking to do with the TeX
+        // fonts, since if their font-file-datas are OK, that's all we need. But
+        // for the family checking, we do need to map fnum to output basename.
+
+        for (fnum, fi) in &self.tex_fonts {
+            fnum_to_filename.insert(fnum, *ffd_to_filename.get(&fi.ffd_key).unwrap());
+        }
+
+        // This is a bit awkward, but our system currently lets there be
+        // multiple font-CSS outputs that could in principle declare different
+        // font families. To check consistency, we want to scan all of those. We
+        // ignore the possibility that different CSS files might define
+        // different families with the same name.
+
+        let mut precomputed_families = HashMap::new();
+
+        for origin in precomputed.values() {
+            if let syntax::AssetOrigin::FontCss(fe) = origin {
+                for (fam_name, ff) in fe {
+                    precomputed_families.insert(fam_name.to_owned(), ff);
+                }
+            }
+        }
+
+        // Now we can check the runtime families. A helper closure uses
+        // fnum_to_filename to deal with the different faces to check.
+
+        let check_face = |fam_name: &str,
+                          fnum: FontNum,
+                          ft: syntax::FaceType,
+                          pff: &syntax::FontFamilyAssetData|
+         -> Result<()> {
+            let runtime_file = fnum_to_filename.get(&fnum).unwrap();
+
+            if let Some(pre_file) = pff.faces.get(&ft) {
+                ensure!(
+                    pre_file == runtime_file,
+                    "font family {} face {:?} should \
+                    point to file `{}`, but in this session it is `{}`",
+                    fam_name,
+                    ft,
+                    pre_file,
+                    runtime_file
+                );
+            } else {
+                bail!(
+                    "this session defines unexpected face {:?} for font family {}",
+                    ft,
+                    fam_name
+                );
+            }
+
+            Ok(())
+        };
+
+        for (reg_fnum, ffi) in &self.font_families {
+            let fam_name = &self.tex_fonts.get(&reg_fnum).unwrap().family_name;
+
+            if let Some(pff) = precomputed_families.get(fam_name) {
+                check_face(fam_name, ffi.regular, syntax::FaceType::Regular, pff)?;
+                check_face(fam_name, ffi.bold, syntax::FaceType::Bold, pff)?;
+                check_face(fam_name, ffi.italic, syntax::FaceType::Italic, pff)?;
+                check_face(fam_name, ffi.bold_italic, syntax::FaceType::BoldItalic, pff)?;
+            } else {
+                bail!(
+                    "precomputed assets for this session should define a font family named {}",
+                    fam_name
+                );
+            }
+        }
+
+        // All OK!
+
+        Ok(())
+    }
 }
 
 /// A helper type for the [`FontEnsemble::process_glyphs_as_text`] method.
