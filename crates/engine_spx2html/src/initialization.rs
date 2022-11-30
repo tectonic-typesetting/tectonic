@@ -302,7 +302,7 @@ impl InitializationState {
         // the bulk processing.
 
         if let Some(precomputed) = common.precomputed_assets.as_ref() {
-            precomputed.check_runtime_fonts(&mut self.fonts)?;
+            precomputed.check_runtime_fonts(&mut self.fonts, common)?;
         }
 
         let mut context = tera::Context::default();

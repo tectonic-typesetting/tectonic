@@ -500,19 +500,14 @@ impl FontFileData {
     /// appropriate CSS can be generated. Consumes the object.
     ///
     /// Return value is a vec of (variant-map-index, CSS-src-field).
-    pub fn into_serialize(
-        mut self,
-        source: impl ToString,
-    ) -> crate::assets::syntax::FontFileAssetData {
-        let mut ffad: crate::assets::syntax::FontFileAssetData = Default::default();
-
-        ffad.source = source.to_string();
+    pub fn into_vglyphs(mut self) -> HashMap<String, crate::assets::syntax::GlyphVariantMapping> {
+        let mut vglyphs = HashMap::default();
 
         for (glyph, altmap) in self.variant_map_allocations.drain() {
-            ffad.vglyphs.insert(glyph.to_string(), altmap.into());
+            vglyphs.insert(glyph.to_string(), altmap.into());
         }
 
-        ffad
+        vglyphs
     }
 
     /// Update this "runtime" information to match the precomputed asset

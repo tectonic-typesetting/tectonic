@@ -6,7 +6,6 @@
 //! Here a "font family" is interpreted in the HTML sense, meaning a set of
 //! related fonts. In typography you might call this a typeface.
 
-use percent_encoding::{utf8_percent_encode, CONTROLS};
 use std::{collections::HashMap, fmt::Write, io::Read, path::Path};
 use tectonic_errors::prelude::*;
 use tectonic_io_base::InputHandle;
@@ -87,13 +86,11 @@ impl FontEnsemble {
         ih: InputHandle,
         common: &mut Common,
     ) -> Result<()> {
-        let (fid, out_rel_path) = self.ensure_font_file(&texpath, face_index, ih, common)?;
+        let fid = self.ensure_font_file(&texpath, face_index, ih, common)?;
 
         let info = TexFontInfo {
-            rel_url: utf8_percent_encode(&out_rel_path, CONTROLS).to_string(),
             fid,
             size,
-            face_index,
             color_rgba,
             extend,
             slant,
@@ -112,7 +109,7 @@ impl FontEnsemble {
         face_index: u32,
         mut ih: InputHandle,
         common: &mut Common,
-    ) -> Result<(FontId, &str)> {
+    ) -> Result<FontId> {
         // Figure out if we've already loaded the appropriate font file.
 
         let si_key = (texpath.to_string(), face_index);
@@ -139,16 +136,19 @@ impl FontEnsemble {
             );
 
             // Figure out the output path that we'll use for this font. For now,
-            // that's just the basename.
+            // that's just the basename. TODO: make sure that we don't have
+            // basename clashes! This will happen trivially if we ever actually
+            // use font collections that contain more than one face.
 
             let out_rel_path = texpath.rsplit('/').next().unwrap();
 
             // That's all we need.
 
-            self.font_files.push(Font::new(out_rel_path, ffd));
+            self.font_files
+                .push(Font::new(texpath, face_index, out_rel_path, ffd));
         }
 
-        Ok((fid, &self.font_files[fid].out_rel_path))
+        Ok(fid)
     }
 
     /// Load a font that is *not* defined in the input SPX tile.
@@ -161,7 +161,7 @@ impl FontEnsemble {
         texpath: impl Into<String>,
         face_index: u32,
         common: &mut Common,
-    ) -> Result<()> {
+    ) -> Result<FontId> {
         let texpath = texpath.into();
 
         // All we have to do is open up the file and pass off to the shared
@@ -174,8 +174,7 @@ impl FontEnsemble {
             ["failed to find a font file `{}`", texpath]
         );
 
-        self.ensure_font_file(&texpath, face_index, ih, common)?;
-        Ok(())
+        self.ensure_font_file(&texpath, face_index, ih, common)
     }
 
     /// Register a font-family relation.
@@ -278,7 +277,7 @@ impl FontEnsemble {
         self.tex_fonts
             .get(&fnum)
             .map(|tfi| {
-                let text_info = get_text_info(tfi, &mut font_files[tfi.fid], glyph, status);
+                let text_info = get_text_info(&mut font_files[tfi.fid], glyph, status);
                 let size = tfi.size;
                 let baseline_factor = font_files[tfi.fid].details.baseline_factor();
 
@@ -401,7 +400,14 @@ impl FontEnsemble {
         let mut fid_to_filename = Vec::new();
 
         for font in self.font_files.drain(..) {
-            let ffad = font.details.into_serialize(&font.out_rel_path);
+            let vglyphs = font.details.into_vglyphs();
+
+            let ffad = syntax::FontFileAssetData {
+                source: font.src_tex_path,
+                face_index: font.face_index,
+                vglyphs,
+            };
+
             let filename = ffad.source.clone();
             assets.insert(filename.clone(), syntax::AssetOrigin::FontFile(ffad));
             fid_to_filename.push(filename);
@@ -429,10 +435,13 @@ impl FontEnsemble {
         (assets, css_data)
     }
 
-    /// Check that the fonts defined here are a subset of those defined in a
-    /// serialized set of assets, and set up the runtime variant glyphs to align
-    /// with the precomputed ones.
-    pub(crate) fn match_to_precomputed(&mut self, precomputed: &syntax::Assets) -> Result<()> {
+    /// Check that the fonts defined at runtime match the serialized assets, and
+    /// set up the runtime variant glyphs to align with the precomputed ones.
+    pub(crate) fn match_to_precomputed(
+        &mut self,
+        precomputed: &syntax::Assets,
+        common: &mut Common,
+    ) -> Result<()> {
         let mut fid_to_filename = Vec::new();
 
         // For the existing font file data, we need to check that they're
@@ -467,6 +476,22 @@ impl FontEnsemble {
             }
 
             fid_to_filename.push(font.out_rel_path.clone());
+        }
+
+        // Now create new records for any fonts in the precomputed assets that
+        // we're missing. By definition, we shouldn't need them during our main
+        // processing, but we still might be responsible for creating the final
+        // output files at the end.
+
+        for origin in precomputed.values() {
+            if let syntax::AssetOrigin::FontFile(ff) = origin {
+                let fid = atry!(
+                    self.load_external_font(&ff.source, ff.face_index, common);
+                    ["failed to load face #{} of font `{}` from precomputed assets", ff.face_index, ff.source]
+                );
+
+                self.font_files[fid].details.match_to_precomputed(ff);
+            }
         }
 
         // This is a bit awkward, but our system currently lets there be
@@ -568,7 +593,7 @@ impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
 
         // Get the textualization info:
 
-        let text_info = get_text_info(self.fi, self.font, glyph, self.status);
+        let text_info = get_text_info(self.font, glyph, self.status);
 
         // And that's it!
 
@@ -580,7 +605,6 @@ impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
 
 /// Get information about how to render a desired glyph from a font.
 fn get_text_info(
-    fi: &TexFontInfo,
     font: &mut Font,
     glyph: GlyphId,
     status: &mut dyn StatusBackend,
@@ -601,8 +625,8 @@ fn get_text_info(
                     status,
                     "prohibited from defining new variant glyph {} in font `{}` (face {})",
                     glyph,
-                    fi.rel_url,
-                    fi.face_index
+                    font.out_rel_path,
+                    font.face_index
                 );
                 None
             }
@@ -622,8 +646,8 @@ fn get_text_info(
             status,
             "unable to reverse-map glyph {} in font `{}` (face {})",
             glyph,
-            fi.rel_url,
-            fi.face_index
+            font.out_rel_path,
+            font.face_index
         );
     }
 
@@ -650,21 +674,16 @@ pub enum FontFamilyAnalysis {
     Unrecognized,
 }
 
-/// Information about a "native font" declared in the SPX file.
+/// Information about a "native font" declared in the SPX file that's specific
+/// to the TeX font, not the "font file" data structure.
 #[allow(dead_code)]
 #[derive(Debug)]
 struct TexFontInfo {
-    /// Relative URL to the font data file
-    rel_url: String,
-
     /// The font file pointed to by this TeX font.
     fid: FontId,
 
     /// The size at which this font is rendered, in TeX units.
     size: FixedPoint,
-
-    /// Which face in the font file is being used.
-    face_index: u32,
 
     /// Unused TeX/SPX setting.
     color_rgba: Option<u32>,
@@ -681,6 +700,14 @@ struct TexFontInfo {
 
 #[derive(Debug)]
 struct Font {
+    /// The TeX path of the file from which this font was loaded. In conjunction
+    /// with face_index, this uniquely identifies a Font.
+    src_tex_path: String,
+
+    /// The index number of the particular face in the font file that was loaded.
+    face_index: u32,
+
+    /// The path that this font file will be output to.
     out_rel_path: String,
 
     details: FontFileData,
@@ -697,11 +724,19 @@ struct Font {
 }
 
 impl Font {
-    pub fn new<S: ToString>(out_rel_path: S, details: FontFileData) -> Self {
-        let out_rel_path = out_rel_path.to_string();
+    pub fn new(
+        src_tex_path: impl Into<String>,
+        face_index: u32,
+        out_rel_path: impl Into<String>,
+        details: FontFileData,
+    ) -> Self {
+        let src_tex_path = src_tex_path.into();
+        let out_rel_path = out_rel_path.into();
         let family_name = out_rel_path.replace(|c: char| !c.is_alphanumeric(), "_");
 
         Font {
+            src_tex_path,
+            face_index,
             out_rel_path,
             details,
             family_name,

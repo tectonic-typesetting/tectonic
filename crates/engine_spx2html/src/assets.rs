@@ -264,6 +264,15 @@ impl AssetSpecification {
                             );
                         }
 
+                        if new_ff.face_index != cur_ff.face_index {
+                            bail!(
+                                "disagreeing face indices `{}` and `{}` for output font asset `{}`",
+                                cur_ff.face_index,
+                                new_ff.face_index,
+                                path
+                            );
+                        }
+
                         // We have two font assets with the same source. We need
                         // to merge the vglyph information, but otherwise we're
                         // good!
@@ -310,8 +319,12 @@ impl AssetSpecification {
     /// This function is used in the "precomputed assets" mode, to make sure
     /// that the SPX file doesn't set up any font configuration that we didn't
     /// expect.
-    pub(crate) fn check_runtime_fonts(&self, fonts: &mut FontEnsemble) -> Result<()> {
-        fonts.match_to_precomputed(&self.0)
+    pub(crate) fn check_runtime_fonts(
+        &self,
+        fonts: &mut FontEnsemble,
+        common: &mut Common,
+    ) -> Result<()> {
+        fonts.match_to_precomputed(&self.0, common)
     }
 
     /// Check that the assets defined at runtime are a subset of those defined
@@ -420,7 +433,9 @@ pub(crate) mod syntax {
                     Ok(())
                 }
 
-                AssetOrigin::FontFile(ff) => write!(f, "font from `{}`", ff.source),
+                AssetOrigin::FontFile(ff) => {
+                    write!(f, "font face #{} from `{}`", ff.face_index, ff.source)
+                }
             }
         }
     }
@@ -429,6 +444,9 @@ pub(crate) mod syntax {
     pub struct FontFileAssetData {
         /// The path to find the font file in the source stack.
         pub source: String,
+
+        /// The face index of this font in the source file.
+        pub face_index: u32,
 
         /// Variant glyphs that require us to emit variant versions of the font
         /// file.
@@ -505,7 +523,7 @@ pub(crate) mod syntax {
                         // check that we agree on what font it is.
                         if cur_facepath != new_facepath {
                             bail!(
-                                "disagreeing origin paths for font family {}/{:?}: `{}` and `{}`",
+                                "disagreeing asset paths for font family {}/{:?}: `{}` and `{}`",
                                 name,
                                 facetype,
                                 cur_facepath,
