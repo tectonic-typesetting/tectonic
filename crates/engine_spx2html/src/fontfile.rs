@@ -37,8 +37,6 @@ const SSTY: Tag = Tag(0x73_73_74_79);
 /// A type for retrieving data about the glyphs used in a particular font.
 #[derive(Debug)]
 pub struct FontFileData {
-    basename: String,
-
     /// The complete font data.
     ///
     /// Currently, this must be an OpenType font.
@@ -177,7 +175,7 @@ impl FontFileData {
     /// Load glyph data from OpenType font data.
     ///
     /// We take ownership of the font data that we're given.
-    pub fn from_opentype(basename: String, buffer: Vec<u8>, face_index: u32) -> Result<Self> {
+    pub fn from_opentype(buffer: Vec<u8>, face_index: u32) -> Result<Self> {
         let font_data = a_ok_or!(
             FontDataRef::new(&buffer);
             ["unable to parse buffer as OpenType font"]
@@ -299,7 +297,6 @@ impl FontFileData {
         // All done!
 
         Ok(FontFileData {
-            basename,
             buffer,
             gmap,
             space_glyph,
@@ -409,12 +406,17 @@ impl FontFileData {
     /// Emit customized fonts to the filesystem and return information so that
     /// appropriate CSS can be generated. Consumes the object.
     ///
+    /// `rel_path` is the path, relative to the output root, where the font
+    /// file(s) shouldb emitted. Currently, this may not contain any directory
+    /// components, due to the way that the "variant" font file paths are
+    /// constructed. This wouldn't be too hard to change.
+    ///
     /// Return value is a vec of (variant-map-index, CSS-src-field).
-    pub fn emit(self, out_base: &Path) -> Result<Vec<(Option<usize>, String)>> {
+    pub fn emit(self, out_base: &Path, rel_path: &str) -> Result<Vec<(Option<usize>, String)>> {
         // Write the main font file.
 
         let mut out_path = out_base.to_owned();
-        out_path.push(&self.basename);
+        out_path.push(rel_path);
         atry!(
             std::fs::write(&out_path, &self.buffer);
             ["cannot write output file `{}`", out_path.display()]
@@ -422,8 +424,8 @@ impl FontFileData {
 
         // CSS info for the main font.
 
-        let rel_url = utf8_percent_encode(&self.basename, CONTROLS).to_string();
-        let mut rv = vec![(None, format!(r#"url("{rel_url}") format("opentype")"#))];
+        let rel_url = utf8_percent_encode(rel_path, CONTROLS).to_string();
+        let mut rv = vec![(None, format!(r#"url("{}") format("opentype")"#, rel_url))];
 
         // Variants until we're done
 
@@ -473,7 +475,7 @@ impl FontFileData {
             // step 4: write new file
 
             out_path.pop();
-            let varname = format!("vg{}{}", cur_map_index, self.basename);
+            let varname = format!("vg{}{}", cur_map_index, rel_path);
             out_path.push(&varname);
             atry!(
                 std::fs::write(&out_path, &buffer);
@@ -498,10 +500,13 @@ impl FontFileData {
     /// appropriate CSS can be generated. Consumes the object.
     ///
     /// Return value is a vec of (variant-map-index, CSS-src-field).
-    pub fn into_serialize(mut self) -> crate::assets::syntax::FontFileAssetData {
+    pub fn into_serialize(
+        mut self,
+        source: impl ToString,
+    ) -> crate::assets::syntax::FontFileAssetData {
         let mut ffad: crate::assets::syntax::FontFileAssetData = Default::default();
 
-        ffad.source = self.basename;
+        ffad.source = source.to_string();
 
         for (glyph, altmap) in self.variant_map_allocations.drain() {
             ffad.vglyphs.insert(glyph.to_string(), altmap.into());

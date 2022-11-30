@@ -57,6 +57,13 @@ impl InitializationState {
         self.cur_font_family_definition.is_none() && self.cur_font_family_tag_associations.is_none()
     }
 
+    /// Handle a "native" font definition.
+    ///
+    /// The font *name* comes directly from the SPX file and currently
+    /// corresponds to the TeX path of a font file that can be opened as an
+    /// input, potentially without its extension. In the future, it is possible
+    /// that the font name might be something symbolic like "Times New Roman"
+    /// that might not work well as a file path.
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn handle_define_native_font(
         &mut self,
@@ -75,8 +82,9 @@ impl InitializationState {
             return Ok(());
         }
 
-        // TODO: often there are multiple font_nums with the same "name". We
-        // only need to copy the file once.
+        // Figure out the TeX path of the font source. At the moment, this is
+        // just the name or something similar, but in principle we might do a
+        // lookup based on something like symbolic name.
 
         let io = common.hooks.io();
         let mut texpath = String::default();
@@ -97,33 +105,14 @@ impl InitializationState {
             };
         }
 
-        let mut ih = a_ok_or!(ih;
+        let ih = a_ok_or!(ih;
             ["failed to find a font file associated with the name `{}`", name]
         );
 
-        let mut contents = Vec::new();
-        atry!(
-            ih.read_to_end(&mut contents);
-            ["unable to read input font file `{}`", &texpath]
-        );
-        let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name.clone(), digest_opt, common.status);
-
-        let basename = texpath.rsplit('/').next().unwrap();
+        // Now that we have that, we can pass off to the font manager.
 
         self.fonts.register_tex_font(
-            name,
-            font_num,
-            size,
-            face_index,
-            color_rgba,
-            extend,
-            slant,
-            embolden,
-            basename.to_owned(),
-            contents,
+            font_num, size, face_index, color_rgba, extend, slant, embolden, texpath, ih, common,
         )
     }
 

@@ -7,14 +7,15 @@
 //! related fonts. In typography you might call this a typeface.
 
 use percent_encoding::{utf8_percent_encode, CONTROLS};
-use std::{collections::HashMap, fmt::Write, path::Path};
+use std::{collections::HashMap, fmt::Write, io::Read, path::Path};
 use tectonic_errors::prelude::*;
+use tectonic_io_base::InputHandle;
 use tectonic_status_base::{tt_warning, StatusBackend};
 
 use crate::{
     assets::syntax,
     fontfile::{FontFileData, GlyphId, GlyphMetrics, MapEntry},
-    FixedPoint, TexFontNum,
+    Common, FixedPoint, TexFontNum,
 };
 
 /// An identifier for a "font file" (which may be one face in a collection).
@@ -30,18 +31,20 @@ pub struct FontEnsemble {
     /// that all reference the same underlying font file.
     tex_fonts: HashMap<TexFontNum, TexFontInfo>,
 
-    /// Information about the individual font files used in this build. One of
-    /// these may correspond to a single face in a file containing a collection
-    /// of fonts. There may be font files that do not have corresponding TeX
-    /// fonts, if we are loading a merged asset specification.
+    /// Information about the individual font files used in this build. Although
+    /// we call these "font files", there may be multiple Fonts for one file on
+    /// disk, if that file is a collection containing multiple faces. There may
+    /// also be font files that do not have corresponding TeX fonts, if we are
+    /// loading a merged asset specification.
     font_files: Vec<Font>,
-
-    /// Mapping filenames and face indices to font files.
-    ff_keys: HashMap<(String, u32), FontId>,
 
     /// Information about font families. This is keyed by the font-id of the
     /// "regular" font.
     font_families: HashMap<FontId, FontFamily>,
+
+    /// Mapping font source TeX-paths and face indices to font IDs. This tuple
+    /// of info uniquely identifies a "font file", in our terminology.
+    src_index_map: HashMap<(String, u32), FontId>,
 }
 
 impl FontEnsemble {
@@ -62,11 +65,17 @@ impl FontEnsemble {
     /// Register a new "native" font with this data structure. Font-family
     /// relations aren't recorded here.
     ///
-    /// Options like the *color_rgba* and *slant* are currently ignored.
+    /// At this point, the calling function has checked whether this particular
+    /// font-num has already been registered. But there can be multiple
+    /// font-nums that point at the same source path and face index, which means
+    /// they will have the same backing "font file" in our terminology. In
+    /// particular, different sizes of the same font get different font-nums.
+    ///
+    /// The styling options like *color_rgba* and *slant* are currently stored
+    /// but unused.
     #[allow(clippy::too_many_arguments)]
-    pub fn register_tex_font(
+    pub(crate) fn register_tex_font(
         &mut self,
-        name: String,
         font_num: TexFontNum,
         size: FixedPoint,
         face_index: u32,
@@ -74,15 +83,14 @@ impl FontEnsemble {
         extend: Option<u32>,
         slant: Option<u32>,
         embolden: Option<u32>,
-        basename: String,
-        contents: Vec<u8>,
+        texpath: String,
+        ih: InputHandle,
+        common: &mut Common,
     ) -> Result<()> {
-        let ff_key = (name, face_index);
-        let next_id = self.font_files.len();
-        let fid = *self.ff_keys.entry(ff_key).or_insert(next_id);
+        let (fid, out_rel_path) = self.ensure_font_file(&texpath, face_index, ih, common)?;
 
         let info = TexFontInfo {
-            rel_url: utf8_percent_encode(&basename, CONTROLS).to_string(),
+            rel_url: utf8_percent_encode(&out_rel_path, CONTROLS).to_string(),
             fid,
             size,
             face_index,
@@ -92,16 +100,81 @@ impl FontEnsemble {
             embolden,
         };
 
+        self.tex_fonts.insert(font_num, info);
+        Ok(())
+    }
+
+    /// Make sure that a font file is loaded. Font files are uniquely identified
+    /// by their source TeX paths and face indices.
+    fn ensure_font_file(
+        &mut self,
+        texpath: &str,
+        face_index: u32,
+        mut ih: InputHandle,
+        common: &mut Common,
+    ) -> Result<(FontId, &str)> {
+        // Figure out if we've already loaded the appropriate font file.
+
+        let si_key = (texpath.to_string(), face_index);
+        let next_id = self.font_files.len();
+        let fid = *self.src_index_map.entry(si_key).or_insert(next_id);
+
         if fid == next_id {
-            // We need to load this font file.
-            let ffd = atry!(
-                FontFileData::from_opentype(basename.clone(), contents, face_index);
-                ["unable to load glyph data for font `{}`", basename]
+            // No, we haven't. Load it up.
+
+            let mut contents = Vec::new();
+            atry!(
+                ih.read_to_end(&mut contents);
+                ["unable to read input font file `{}`", texpath]
             );
-            self.font_files.push(Font::new(basename, ffd));
+
+            let (name, digest_opt) = ih.into_name_digest();
+            common
+                .hooks
+                .event_input_closed(name.clone(), digest_opt, common.status);
+
+            let ffd = atry!(
+                FontFileData::from_opentype(contents, face_index);
+                ["unable to load glyph data for font `{}`", texpath]
+            );
+
+            // Figure out the output path that we'll use for this font. For now,
+            // that's just the basename.
+
+            let out_rel_path = texpath.rsplit('/').next().unwrap();
+
+            // That's all we need.
+
+            self.font_files.push(Font::new(out_rel_path, ffd));
         }
 
-        self.tex_fonts.insert(font_num, info);
+        Ok((fid, &self.font_files[fid].out_rel_path))
+    }
+
+    /// Load a font that is *not* defined in the input SPX tile.
+    ///
+    /// This should only be called for fonts that are definitely not loaded by
+    /// TeX, because we don't do any checks to prevent creating duplicate fonts
+    /// outputs.
+    fn load_external_font(
+        &mut self,
+        texpath: impl Into<String>,
+        face_index: u32,
+        common: &mut Common,
+    ) -> Result<()> {
+        let texpath = texpath.into();
+
+        // All we have to do is open up the file and pass off to the shared
+        // implementation.
+
+        let io = common.hooks.io();
+
+        let ih = atry!(
+            io.input_open_name(&texpath, common.status).must_exist();
+            ["failed to find a font file `{}`", texpath]
+        );
+
+        self.ensure_font_file(&texpath, face_index, ih, common)?;
         Ok(())
     }
 
@@ -328,7 +401,7 @@ impl FontEnsemble {
         let mut fid_to_filename = Vec::new();
 
         for font in self.font_files.drain(..) {
-            let ffad = font.details.into_serialize();
+            let ffad = font.details.into_serialize(&font.out_rel_path);
             let filename = ffad.source.clone();
             assets.insert(filename.clone(), syntax::AssetOrigin::FontFile(ffad));
             fid_to_filename.push(filename);
@@ -362,19 +435,19 @@ impl FontEnsemble {
     pub(crate) fn match_to_precomputed(&mut self, precomputed: &syntax::Assets) -> Result<()> {
         let mut fid_to_filename = Vec::new();
 
-        // For the font file data, we need to check that they're present and the
-        // basenames match. We'll replace the runtime variant-glyph mappings
-        // with the precomputed ones.
+        // For the existing font file data, we need to check that they're
+        // present and the basenames match. We'll replace the runtime
+        // variant-glyph mappings with the precomputed ones.
 
         for font in &mut self.font_files {
-            match precomputed.get(&font.basename) {
+            match precomputed.get(&font.out_rel_path) {
                 Some(syntax::AssetOrigin::FontFile(ff)) => {
                     ensure!(
-                        ff.source == font.basename,
+                        ff.source == font.out_rel_path,
                         "precomputed font asset `{}` \
                         should have an origin of `{}`, but in this session it is `{}`",
-                        font.basename,
-                        font.basename,
+                        font.out_rel_path,
+                        font.out_rel_path,
                         ff.source
                     );
 
@@ -383,17 +456,17 @@ impl FontEnsemble {
 
                 Some(other) => bail!(
                     "precomputed asset `{}` should be a font file, but it is {}",
-                    font.basename,
+                    font.out_rel_path,
                     other
                 ),
 
                 None => bail!(
                     "precomputed assets for this session should contain a font file named `{}`",
-                    font.basename
+                    font.out_rel_path
                 ),
             }
 
-            fid_to_filename.push(font.basename.clone());
+            fid_to_filename.push(font.out_rel_path.clone());
         }
 
         // This is a bit awkward, but our system currently lets there be
@@ -608,7 +681,8 @@ struct TexFontInfo {
 
 #[derive(Debug)]
 struct Font {
-    basename: String,
+    out_rel_path: String,
+
     details: FontFileData,
 
     /// The name of the family that this font is associated with. This may be a
@@ -623,12 +697,12 @@ struct Font {
 }
 
 impl Font {
-    pub fn new<S: ToString>(basename: S, details: FontFileData) -> Self {
-        let basename = basename.to_string();
-        let family_name = basename.replace(|c: char| !c.is_alphanumeric(), "_");
+    pub fn new<S: ToString>(out_rel_path: S, details: FontFileData) -> Self {
+        let out_rel_path = out_rel_path.to_string();
+        let family_name = out_rel_path.replace(|c: char| !c.is_alphanumeric(), "_");
 
         Font {
-            basename,
+            out_rel_path,
             details,
             family_name,
             family_relation: FamilyRelativeFontId::Regular,
@@ -636,7 +710,7 @@ impl Font {
     }
 
     fn emit<W: Write>(self, out_base: &Path, mut dest: W) -> Result<()> {
-        for (var_index, css_src) in self.details.emit(out_base)? {
+        for (var_index, css_src) in self.details.emit(out_base, &self.out_rel_path)? {
             // This is almost identical to `selection_style_text`. A major
             // factor is that we're consuming `self`, with `self.details`
             // already consumed by the `emit()` call, so we can't borrow &self.
