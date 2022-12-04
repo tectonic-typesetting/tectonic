@@ -845,6 +845,7 @@ pub struct ProcessingSessionBuilder {
     html_assets_spec_path: Option<String>,
     html_precomputed_assets: Option<AssetSpecification>,
     html_do_not_emit_files: bool,
+    html_do_not_emit_assets: bool,
 }
 
 impl ProcessingSessionBuilder {
@@ -1097,6 +1098,18 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Set whether supporting asset files should be created during HTML
+    /// processing.
+    ///
+    /// This mode can be useful if you want to analyze what *would* be created
+    /// during HTML processing without actually creating the files. If you call
+    /// [`html_assets_spec_path`], this setting will ignored, and no assets will
+    /// be emitted to disk.
+    pub fn html_emit_assets(&mut self, do_emit: bool) -> &mut Self {
+        self.html_do_not_emit_assets = !do_emit;
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         // First, work on the "bridge state", which gathers the subset of our
@@ -1254,6 +1267,7 @@ impl ProcessingSessionBuilder {
             html_assets_spec_path: self.html_assets_spec_path,
             html_precomputed_assets: self.html_precomputed_assets,
             html_emit_files: !self.html_do_not_emit_files,
+            html_emit_assets: !self.html_do_not_emit_assets,
         })
     }
 }
@@ -1324,6 +1338,7 @@ pub struct ProcessingSession {
     html_assets_spec_path: Option<String>,
     html_precomputed_assets: Option<AssetSpecification>,
     html_emit_files: bool,
+    html_emit_assets: bool,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1953,17 +1968,19 @@ impl ProcessingSession {
     }
 
     fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
-        let op = match self.output_path {
-            Some(ref p) => p,
-            None => return Err(errmsg!("HTML output must be saved directly to disk")),
-        };
-
         {
             let mut engine = Spx2HtmlEngine::default();
-            engine.emit_files(self.html_emit_files);
+
+            match (self.html_emit_files, self.output_path.as_ref()) {
+                (true, Some(p)) => engine.output_base(p),
+                (false, _) => engine.do_not_emit_files(),
+                (true, None) => return Err(errmsg!("HTML output must be saved directly to disk")),
+            };
 
             if let Some(p) = self.html_assets_spec_path.as_ref() {
                 engine.assets_spec_path(p);
+            } else if !self.html_emit_assets {
+                engine.do_not_emit_assets();
             }
 
             if let Some(a) = self.html_precomputed_assets.as_ref() {
@@ -1971,7 +1988,7 @@ impl ProcessingSession {
             }
 
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path, op)?;
+            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path)?;
         }
 
         self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);

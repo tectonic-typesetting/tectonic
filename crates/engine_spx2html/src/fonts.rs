@@ -384,7 +384,7 @@ impl FontEnsemble {
     ///
     /// This function clears this object's internal data structures, making it
     /// effectively unusable for subsequent operations.
-    pub fn emit(&mut self, out_base: &Path) -> Result<String> {
+    pub fn emit(&mut self, out_base: Option<&Path>) -> Result<String> {
         let mut faces = String::default();
 
         for font in self.font_files.drain(..) {
@@ -744,7 +744,7 @@ impl Font {
         }
     }
 
-    fn emit<W: Write>(self, out_base: &Path, mut dest: W) -> Result<()> {
+    fn emit<W: Write>(self, out_base: Option<&Path>, mut dest: W) -> Result<()> {
         for (var_index, css_src) in self.details.emit(out_base, &self.out_rel_path)? {
             // This is almost identical to `selection_style_text`. A major
             // factor is that we're consuming `self`, with `self.details`

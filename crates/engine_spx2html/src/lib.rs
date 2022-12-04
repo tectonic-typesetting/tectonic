@@ -8,7 +8,7 @@
 //! SPX is essentially the same thing as XDV, but we identify it differently to
 //! mark that the semantics of the content wil be set up for HTML output.
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use tectonic_bridge_core::DriverHooks;
 use tectonic_errors::prelude::*;
 use tectonic_status_base::StatusBackend;
@@ -30,11 +30,25 @@ use self::{
 };
 
 /// An engine that converts SPX to HTML.
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct Spx2HtmlEngine {
-    do_not_emit: bool,
+    output: OutputState,
     precomputed_assets: Option<AssetSpecification>,
     assets_spec_path: Option<String>,
+    do_not_emit_assets: bool,
+}
+
+#[derive(Debug)]
+enum OutputState {
+    Undefined,
+    NoOutput,
+    Path(PathBuf),
+}
+
+impl Default for OutputState {
+    fn default() -> Self {
+        OutputState::Undefined
+    }
 }
 
 impl Spx2HtmlEngine {
@@ -43,15 +57,17 @@ impl Spx2HtmlEngine {
     /// "Assets" are files like fonts and images that accompany the HTML output
     /// generated during processing. SPX files contain commands that implicitly
     /// and explicitly create assets. By default, these are emitted during
-    /// processing. If this method is called, the assets will *not* be created.
-    /// Instead, an "asset specification" file will be emitted to the given
-    /// output path. This specification file contains the information needed to
-    /// generate the assets upon a later invocation. Asset specification files
-    /// can be merged, allowing the results of multiple separate TeX
-    /// compilations to be synthesized into one HTML output tree.
+    /// processing. If this method is called, the assets will *not* be created,
+    /// as if you called [`do_not_emit_assets`]. Instead, an "asset
+    /// specification" file will be emitted to the given output path. This
+    /// specification file contains the information needed to generate the
+    /// assets upon a later invocation. Asset specification files can be merged,
+    /// allowing the results of multiple separate TeX compilations to be
+    /// synthesized into one HTML output tree.
     ///
     /// Currently, the asset specification is written in JSON format, although
-    /// it is not guaranteed that this will always be the case.
+    /// it is not guaranteed that this will always be the case. It will always
+    /// be a UTF8-encoded, line-oriented textual format, though.
     pub fn assets_spec_path<S: ToString>(&mut self, path: S) -> &mut Self {
         self.assets_spec_path = Some(path.to_string());
         self
@@ -76,41 +92,65 @@ impl Spx2HtmlEngine {
         self
     }
 
-    /// Specify whether output files should actually be created.
+    /// Specify that templated output files should not actually be created.
     ///
-    /// By default, templated outputs are written to the filesystem. If this
-    /// function is given a false argument, they are not. This mode can be useful
-    /// if the main purpose of the processing run is to gather information about
-    /// the assets that will be generated.
-    pub fn emit_files(&mut self, do_emit: bool) -> &mut Self {
-        self.do_not_emit = !do_emit;
+    /// You probably want this engine to actually write its outputs to the
+    /// filesystem. If you call this function, it will not. This mode can be
+    /// useful if the main purpose of the processing run is to gather
+    /// information about the assets that will be generated.
+    pub fn do_not_emit_files(&mut self) -> &mut Self {
+        self.output = OutputState::NoOutput;
+        self
+    }
+
+    /// Specify that supporting "asset" files should not actually be created.
+    ///
+    /// You probably want this engine to actually write these assets to the
+    /// filesystem. If you call this function, it will not. This mode can be
+    /// useful if the main purpose of the processing run is to gather
+    /// information about the assets that will be generated.
+    ///
+    /// Calling [`assets_spec_path`] has the same effect as this function, but
+    /// also causes an asset specification file to be written to in Tectonic's
+    /// virtual I/O backend.
+    pub fn do_not_emit_assets(&mut self) -> &mut Self {
+        self.do_not_emit_assets = true;
+        self
+    }
+
+    /// Specify the root path for output files.
+    ///
+    /// Because this driver will, in the generic case, produce a tree of HTML
+    /// output files that are not going to be used as a basis for any subsequent
+    /// engine stages, it outputs directly to disk rather than using the I/O
+    /// layer. I don't like hardcoding use of the filesystem, but I don't want
+    /// to build up some extra abstraction layer right now.
+    pub fn output_base(&mut self, out_base: impl Into<PathBuf>) -> &mut Self {
+        self.output = OutputState::Path(out_base.into());
         self
     }
 
     /// Process SPX into HTML.
     ///
-    /// Because this driver will, in the generic case, produce a tree of HTML
-    /// output files that are not going to be used as a basis for any subsequent
-    /// engine stages, it outputs directly to disk (via `out_base`) rather than
-    /// using the I/O layer. I don't like hardcoding use of the filesystem, but
-    /// I don't want to build up some extra abstraction layer right now.
+    /// Before calling this function, you must explicitly specify the output
+    /// mode by calling either [`do_not_emit_files`] or [`output_base`]. If you
+    /// do not, this function will panic.
     pub fn process_to_filesystem(
         &mut self,
         hooks: &mut dyn DriverHooks,
         status: &mut dyn StatusBackend,
         spx: &str,
-        out_base: &Path,
     ) -> Result<()> {
         let mut input = hooks.io().input_open_name(spx, status).must_exist()?;
 
+        let out_base = match self.output {
+            OutputState::NoOutput => None,
+            OutputState::Path(ref p) => Some(p.as_ref()),
+            OutputState::Undefined => panic!("spx2html output mode not specified"),
+        };
+
         {
-            let state = EngineState::new(
-                hooks,
-                status,
-                out_base,
-                self.precomputed_assets.as_ref(),
-                self.do_not_emit,
-            );
+            let state = EngineState::new(hooks, status, out_base, self.precomputed_assets.as_ref());
             let state = XdvParser::process_with_seeks(&mut input, state)?;
             let (fonts, assets, mut common) = state.finished()?;
 
@@ -120,7 +160,7 @@ impl Spx2HtmlEngine {
                 serde_json::to_writer_pretty(&mut output, &ser)?;
                 let (name, digest) = output.into_name_digest();
                 hooks.event_output_closed(name, digest, status);
-            } else {
+            } else if !self.do_not_emit_assets {
                 assets.emit(fonts, &mut common)?;
             }
         }
@@ -141,18 +181,16 @@ struct EngineState<'a> {
 struct Common<'a> {
     hooks: &'a mut dyn DriverHooks,
     status: &'a mut dyn StatusBackend,
-    out_base: &'a Path,
+    out_base: Option<&'a Path>,
     precomputed_assets: Option<&'a AssetSpecification>,
-    do_not_emit: bool,
 }
 
 impl<'a> EngineState<'a> {
     pub fn new(
         hooks: &'a mut dyn DriverHooks,
         status: &'a mut dyn StatusBackend,
-        out_base: &'a Path,
+        out_base: Option<&'a Path>,
         precomputed_assets: Option<&'a AssetSpecification>,
-        do_not_emit: bool,
     ) -> Self {
         Self {
             common: Common {
@@ -160,7 +198,6 @@ impl<'a> EngineState<'a> {
                 status,
                 out_base,
                 precomputed_assets,
-                do_not_emit,
             },
             state: State::Initializing(InitializationState::default()),
         }

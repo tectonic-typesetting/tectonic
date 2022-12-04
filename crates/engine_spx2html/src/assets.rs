@@ -88,6 +88,7 @@ impl Assets {
             .insert(dest_path.to_string(), AssetOrigin::FontCss);
     }
 
+    /// This functional must only be called if `common.out_path` is not None.
     pub(crate) fn emit(mut self, mut fonts: FontEnsemble, common: &mut Common) -> Result<()> {
         let faces = fonts.emit(common.out_base)?;
 
@@ -116,6 +117,7 @@ impl Assets {
     }
 }
 
+/// This functional must only be called if `common.out_path` is not None.
 fn emit_copied_file(src_tex_path: &str, dest_path: &str, common: &mut Common) -> Result<()> {
     let mut ih = atry!(
         common.hooks.io().input_open_name(src_tex_path, common.status).must_exist();
@@ -138,6 +140,7 @@ fn emit_copied_file(src_tex_path: &str, dest_path: &str, common: &mut Common) ->
     Ok(())
 }
 
+/// This functional must only be called if `common.out_path` is not None.
 fn emit_font_css(dest_path: &str, faces: &str, common: &mut Common) -> Result<()> {
     let (mut out_file, out_path) = create_asset_file(dest_path, common)?;
 
@@ -149,8 +152,9 @@ fn emit_font_css(dest_path: &str, faces: &str, common: &mut Common) -> Result<()
     Ok(())
 }
 
+/// This functional must only be called if `common.out_path` is not None.
 fn create_asset_file(dest_path: &str, common: &mut Common) -> Result<(File, PathBuf)> {
-    let (out_path, _) = create_output_path(dest_path, common, true)?;
+    let out_path = create_output_path(dest_path, common)?.0.unwrap();
 
     let out_file = atry!(
         File::create(&out_path);
@@ -168,13 +172,12 @@ fn create_asset_file(dest_path: &str, common: &mut Common) -> Result<(File, Path
 pub(crate) fn create_output_path(
     dest_path: &str,
     common: &mut Common,
-    do_create: bool,
-) -> Result<(PathBuf, usize)> {
-    let mut out_path = common.out_base.to_owned();
+) -> Result<(Option<PathBuf>, usize)> {
+    let mut out_path = common.out_base.map(|p| p.to_owned());
     let mut n_levels = 0;
 
     for piece in dest_path.split('/') {
-        if do_create {
+        if let Some(out_path) = out_path.as_mut() {
             match std::fs::create_dir(&out_path) {
                 Ok(_) => {}
                 Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
@@ -207,7 +210,10 @@ pub(crate) fn create_output_path(
             );
         }
 
-        out_path.push(piece);
+        if let Some(out_path) = out_path.as_mut() {
+            out_path.push(piece);
+        }
+
         n_levels += 1;
     }
 

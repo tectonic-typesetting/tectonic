@@ -411,16 +411,26 @@ impl FontFileData {
     /// components, due to the way that the "variant" font file paths are
     /// constructed. This wouldn't be too hard to change.
     ///
+    /// `out_base` is the output directory, or None if we shouldn't be writing
+    /// anything to disk.
+    ///
     /// Return value is a vec of (variant-map-index, CSS-src-field).
-    pub fn emit(self, out_base: &Path, rel_path: &str) -> Result<Vec<(Option<usize>, String)>> {
-        // Write the main font file.
+    pub fn emit(
+        self,
+        out_base: Option<&Path>,
+        rel_path: &str,
+    ) -> Result<Vec<(Option<usize>, String)>> {
+        // Write the main font file ... maybe.
 
-        let mut out_path = out_base.to_owned();
-        out_path.push(rel_path);
-        atry!(
-            std::fs::write(&out_path, &self.buffer);
-            ["cannot write output file `{}`", out_path.display()]
-        );
+        let mut out_path = out_base.map(|p| p.to_owned());
+
+        if let Some(out_path) = out_path.as_mut() {
+            out_path.push(rel_path);
+            atry!(
+                std::fs::write(&out_path, &self.buffer);
+                ["cannot write output file `{}`", out_path.display()]
+            );
+        }
 
         // CSS info for the main font.
 
@@ -445,42 +455,46 @@ impl FontFileData {
                 break;
             }
 
-            // We have some variants to emit!
-            //
-            // Step 1: create new CMAP, appending to buffer.
-            //
-            // Might be nice to sort mappings as we construct it, rather than
-            // after the fact?
+            // We have some variants to emit! If we're not actually writing
+            // files, we might not have much work to actually do though.
 
-            buffer.truncate(orig_len);
-            mappings.sort_unstable();
-            append_simple_cmap(&mut buffer, &mappings[..]);
-            let cmap_size = buffer.len() - orig_len;
-
-            // step 2: modify CMAP table record
-
-            let cs = opentype_checksum(&buffer[orig_len..]);
-            let ofs = 12 + self.fontdata_cmap_trec_idx * 16;
-            BigEndian::write_u32(&mut buffer[ofs + 4..ofs + 8], cs); // checksum
-            BigEndian::write_u32(&mut buffer[ofs + 8..ofs + 12], orig_len as u32); // offset
-            BigEndian::write_u32(&mut buffer[ofs + 12..ofs + 16], cmap_size as u32); // length
-
-            // step 3: update HEAD "checksum adjustment" field
-
-            let cs = opentype_checksum(&buffer[..]);
-            let chkadj = Wrapping(0xB1B0AFBA) - Wrapping(cs);
-            let ofs = self.fontdata_head_offset as usize + 8;
-            BigEndian::write_u32(&mut buffer[ofs..ofs + 4], chkadj.0);
-
-            // step 4: write new file
-
-            out_path.pop();
             let varname = format!("vg{}{}", cur_map_index, rel_path);
-            out_path.push(&varname);
-            atry!(
-                std::fs::write(&out_path, &buffer);
-                ["cannot write output file `{}`", out_path.display()]
-            );
+
+            if let Some(out_path) = out_path.as_mut() {
+                // Step 1: create new CMAP, appending to buffer.
+                //
+                // Might be nice to sort mappings as we construct it, rather than
+                // after the fact?
+
+                buffer.truncate(orig_len);
+                mappings.sort_unstable();
+                append_simple_cmap(&mut buffer, &mappings[..]);
+                let cmap_size = buffer.len() - orig_len;
+
+                // step 2: modify CMAP table record
+
+                let cs = opentype_checksum(&buffer[orig_len..]);
+                let ofs = 12 + self.fontdata_cmap_trec_idx * 16;
+                BigEndian::write_u32(&mut buffer[ofs + 4..ofs + 8], cs); // checksum
+                BigEndian::write_u32(&mut buffer[ofs + 8..ofs + 12], orig_len as u32); // offset
+                BigEndian::write_u32(&mut buffer[ofs + 12..ofs + 16], cmap_size as u32); // length
+
+                // step 3: update HEAD "checksum adjustment" field
+
+                let cs = opentype_checksum(&buffer[..]);
+                let chkadj = Wrapping(0xB1B0AFBA) - Wrapping(cs);
+                let ofs = self.fontdata_head_offset as usize + 8;
+                BigEndian::write_u32(&mut buffer[ofs..ofs + 4], chkadj.0);
+
+                // step 4: write new file
+
+                out_path.pop();
+                out_path.push(&varname);
+                atry!(
+                    std::fs::write(&out_path, &buffer);
+                    ["cannot write output file `{}`", out_path.display()]
+                );
+            }
 
             // step 5: update CSS
 

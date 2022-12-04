@@ -81,7 +81,7 @@ impl Templating {
         }
 
         let (out_path, n_levels) =
-            crate::assets::create_output_path(&self.next_output_path, common, !common.do_not_emit)?;
+            crate::assets::create_output_path(&self.next_output_path, common)?;
 
         if n_levels < 2 {
             self.context.insert("tduxRelTop", "");
@@ -125,7 +125,7 @@ impl Templating {
 
         // Save it. Unless we shouldn't, actually.
 
-        if !common.do_not_emit {
+        if let Some(out_path) = out_path {
             let mut out_file = atry!(
                 File::create(&out_path);
                 ["cannot open output file `{}`", out_path.display()]
