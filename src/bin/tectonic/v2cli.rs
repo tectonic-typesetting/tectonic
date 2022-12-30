@@ -157,9 +157,10 @@ enum Commands {
     Dump(DumpCommand),
 
     #[structopt(name = "new")]
-    /// Create a new document
+    /// Create a new document project
     New(NewCommand),
 
+    /// Initializes a new document in the current directory
     #[structopt(name = "init")]
     Init(InitCommand),
 
