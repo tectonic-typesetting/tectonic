@@ -954,7 +954,7 @@ impl<T: XdvEvents> XdvParser<T> {
         }
 
         let char_num = cursor.get_compact_i32_smpos(opcode - Opcode::SetChar1 as u8)?;
-        self.cur_char_run.push(char_num as i32);
+        self.cur_char_run.push(char_num);
         Ok(())
     }
 

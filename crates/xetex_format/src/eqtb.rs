@@ -108,7 +108,7 @@ impl EquivalenciesTable {
             engine.symbols.lookup("UNDEFINED_CONTROL_SEQUENCE") as EqtbPointer;
         let undefined_cs_cmd = engine.symbols.lookup("UNDEFINED_CS") as CommandCode;
 
-        let mut eqtb = vec![0; (eqtb_top as usize + 1) * SIZEOF_MEMORY_WORD];
+        let mut eqtb = vec![0; (eqtb_top + 1) * SIZEOF_MEMORY_WORD];
 
         write_eqtb_type(&mut eqtb[..], undefined_control_sequence, undefined_cs_cmd);
         write_eqtb_value(&mut eqtb[..], undefined_control_sequence, TEX_NULL);

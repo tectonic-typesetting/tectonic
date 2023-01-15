@@ -157,7 +157,8 @@ impl PersistentConfig {
         use std::io;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
-            return Ok(Box::new(crate::test_util::TestBundle::default()));
+            let bundle = crate::test_util::TestBundle::default();
+            return Ok(Box::new(bundle));
         }
 
         if self.default_bundles.len() != 1 {

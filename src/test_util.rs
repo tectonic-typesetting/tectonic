@@ -110,7 +110,7 @@ pub struct TestBundle(DirBundle);
 
 impl Default for TestBundle {
     fn default() -> Self {
-        TestBundle(DirBundle::new(&test_path(&["assets"])))
+        TestBundle(DirBundle::new(test_path(&["assets"])))
     }
 }
 

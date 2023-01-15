@@ -280,7 +280,7 @@ impl BridgeState {
     /// mode”, in which the “primary input” is fixed, based on the requested
     /// format file name, and filesystem I/O is bypassed.
     fn enter_format_mode(&mut self, format_file_name: &str) {
-        self.format_primary = Some(BufferedPrimaryIo::from_text(&format!(
+        self.format_primary = Some(BufferedPrimaryIo::from_text(format!(
             "\\input {}",
             format_file_name
         )));
