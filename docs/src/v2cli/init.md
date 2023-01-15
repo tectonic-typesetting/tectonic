@@ -1,6 +1,6 @@
 # tectonic -X new
 
-Create a new Tectonic workspace.
+Initializes a new Tectonic workspace in the current directory.
 
 **_This is a [V2 CLI][v2cli-ref] command. For information on the original (“V1”
 CLI), see [its reference page][v1cli-ref]._**
@@ -11,11 +11,8 @@ CLI), see [its reference page][v1cli-ref]._**
 #### Usage Synopsis
 
 ```sh
-tectonic -X new [DIRECTORY]
+tectonic -X init
 ```
-
-If `{DIRECTORY}` is unspecified, the workspace is created in the current
-directory.
 
 #### Remarks
 
