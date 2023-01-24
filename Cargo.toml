@@ -120,7 +120,7 @@ tokio = "0.1.22"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "1be5a98d090b1d2beeb63a48ba800fbf006e8aca"
+rev = "47a020d619021539a2533e56ef850696065b23a5"
 overlay-triplets-path = "dist/vcpkg-triplets"
 
 # If other targets start using custom triplets like x86_64-pc-windows-msvc,
