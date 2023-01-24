@@ -1,4 +1,4 @@
-# tectonic -X new
+# tectonic -X init
 
 Initializes a new Tectonic workspace in the current directory.
 
@@ -33,3 +33,7 @@ will process these files in the expected order:
 The intention of this framework is to allow you to isolate the main content of
 your document from the usual LaTeX boilerplate. There are no restrictions on
 what kind of content may be placed in each file, though.
+
+#### See Also
+
+- [`tectonic -X new`](./new.md)
