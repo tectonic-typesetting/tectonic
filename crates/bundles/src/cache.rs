@@ -525,7 +525,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
             // The resolved URL has changed, but the digest is the same. So
             // let's just update the URL and keep going.
             let resolved_path = make_txt_path(&self.resolved_base, &pull_data.digest.to_string());
-            file_create_write(&resolved_path, |f| {
+            file_create_write(resolved_path, |f| {
                 f.write_all(pull_data.resolved_url.as_bytes())
             })?;
 
@@ -647,7 +647,7 @@ impl<CB: CacheBackend> IoProvider for CachingBundle<CB> {
             OpenResult::Err(e) => return OpenResult::Err(e),
         };
 
-        let f = match File::open(&path) {
+        let f = match File::open(path) {
             Ok(f) => f,
             Err(e) => return OpenResult::Err(e.into()),
         };

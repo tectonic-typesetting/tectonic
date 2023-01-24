@@ -738,6 +738,7 @@ fn v2_dump_suffix() {
 
     {
         let mut file = File::create(&temppath).unwrap();
+        #[allow(clippy::write_literal)]
         writeln!(
             file,
             "{}", // <= works around {} fussiness in Rust format strings

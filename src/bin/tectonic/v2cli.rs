@@ -157,8 +157,12 @@ enum Commands {
     Dump(DumpCommand),
 
     #[structopt(name = "new")]
-    /// Create a new document
+    /// Create a new document project
     New(NewCommand),
+
+    /// Initializes a new document in the current directory
+    #[structopt(name = "init")]
+    Init(InitCommand),
 
     #[structopt(name = "show")]
     /// Display various useful pieces of information
@@ -177,6 +181,7 @@ impl Commands {
             Commands::Compile(_) => {} // avoid namespacing/etc issues
             Commands::Dump(o) => o.customize(cc),
             Commands::New(o) => o.customize(cc),
+            Commands::Init(o) => o.customize(cc),
             Commands::Show(o) => o.customize(cc),
             Commands::Watch(o) => o.customize(cc),
         }
@@ -189,6 +194,7 @@ impl Commands {
             Commands::Compile(o) => o.execute(config, status),
             Commands::Dump(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
+            Commands::Init(o) => o.execute(config, status),
             Commands::Show(o) => o.execute(config, status),
             Commands::Watch(o) => o.execute(config, status),
         }
@@ -580,7 +586,7 @@ impl WatchCommand {
     }
 }
 
-/// `new`: Create a new document
+/// `new`: Create a new document project
 #[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct NewCommand {
     /// The name of the document directory to create.
@@ -599,6 +605,30 @@ impl NewCommand {
         );
 
         let wc = WorkspaceCreator::new(self.path);
+        ctry!(
+            wc.create_defaulted(&config, status);
+            "failed to create the new Tectonic workspace"
+        );
+        Ok(0)
+    }
+}
+
+/// `init`: Initialize a document project in the current directory.
+#[derive(Debug, Eq, PartialEq, StructOpt)]
+pub struct InitCommand {}
+
+impl InitCommand {
+    fn customize(&self, _cc: &mut CommandCustomizations) {}
+
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let path = env::current_dir()?;
+        tt_note!(
+            status,
+            "creating new document in this directory ({})",
+            path.display()
+        );
+
+        let wc = WorkspaceCreator::new(path);
         ctry!(
             wc.create_defaulted(&config, status);
             "failed to create the new Tectonic workspace"
