@@ -17,7 +17,7 @@ fn inner() -> Result<()> {
 
 fn main() {
     if let Err(e) = inner() {
-        eprintln!("error: {}", e);
+        eprintln!("error: {e}");
         process::exit(1);
     }
 }

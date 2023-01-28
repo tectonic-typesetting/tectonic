@@ -333,7 +333,7 @@ impl InitializationState {
         let mut ih = None;
 
         for ext in &["", ".otf"] {
-            texpath = format!("{}{}", name, ext);
+            texpath = format!("{name}{ext}");
 
             match io.input_open_name(&texpath, common.status) {
                 OpenResult::Ok(h) => {
@@ -391,7 +391,7 @@ impl InitializationState {
 
         let info = FontInfo {
             rel_url: utf8_percent_encode(basename, CONTROLS).to_string(),
-            family_name: format!("tdux{}", font_num),
+            family_name: format!("tdux{font_num}"),
             family_relation: FamilyRelativeFontId::Regular,
             fd_key,
             size,
@@ -595,7 +595,7 @@ impl InitializationState {
                 b.family_name = if let Some(fname) = text.strip_prefix("family-name:") {
                     fname.to_owned()
                 } else {
-                    format!("tdux{}", font_num)
+                    format!("tdux{font_num}")
                 };
 
                 // Say that the "regular" font of the first font family definition
@@ -1083,7 +1083,7 @@ impl EmittingState {
                 "mfs" => {
                     if self.content_finished {
                         self.warn_finished_content(
-                            &format!("manual flexible start tag {:?}", remainder),
+                            &format!("manual flexible start tag {remainder:?}"),
                             common,
                         );
                         Ok(())
@@ -1095,7 +1095,7 @@ impl EmittingState {
                 "me" => {
                     if self.content_finished {
                         self.warn_finished_content(
-                            &format!("manual end tag </{}>", remainder),
+                            &format!("manual end tag </{remainder}>"),
                             common,
                         );
                     } else {
@@ -1484,7 +1484,7 @@ impl EmittingState {
         common: &mut Common,
     ) -> Result<()> {
         if self.content_finished {
-            self.warn_finished_content(&format!("text `{}`", text), common);
+            self.warn_finished_content(&format!("text `{text}`"), common);
             return Ok(());
         }
 
@@ -1609,7 +1609,7 @@ impl EmittingState {
                         self.current_content.push(' ');
                     }
 
-                    write!(self.current_content, "<span style=\"{}\">", font_sel).unwrap();
+                    write!(self.current_content, "<span style=\"{font_sel}\">").unwrap();
                     html_escape::encode_text_to_string(ch_as_str, &mut self.current_content);
                     write!(self.current_content, "</span>").unwrap();
                 } else {
@@ -2108,7 +2108,7 @@ struct FontInfo {
 impl FontInfo {
     fn selection_style_text(&self, alternate_map_index: Option<usize>) -> String {
         let alt_text = alternate_map_index
-            .map(|i| format!("vg{}", i))
+            .map(|i| format!("vg{i}"))
             .unwrap_or_default();
 
         let extra = match self.family_relation {
@@ -2124,7 +2124,7 @@ impl FontInfo {
 
     fn font_face_text(&self, alternate_map_index: Option<usize>) -> String {
         let alt_text = alternate_map_index
-            .map(|i| format!("vg{}", i))
+            .map(|i| format!("vg{i}"))
             .unwrap_or_default();
 
         let extra = match self.family_relation {

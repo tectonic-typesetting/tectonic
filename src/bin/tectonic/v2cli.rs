@@ -404,7 +404,7 @@ impl BundleSearchCommand {
 
         for filename in &files {
             if filter(filename) {
-                println!("{}", filename);
+                println!("{filename}");
             }
         }
 
@@ -528,7 +528,7 @@ impl WatchCommand {
             .expect("Executable path wasn't valid UTF-8");
         let mut cmds = Vec::new();
         for x in self.execute.iter() {
-            let mut cmd = format!("{} -X ", exe_name);
+            let mut cmd = format!("{exe_name} -X ");
             let x = x.trim();
             if !x.is_empty() {
                 cmd.push_str(x);
@@ -537,7 +537,7 @@ impl WatchCommand {
         }
 
         if cmds.is_empty() {
-            cmds.push(format!("{} -X build", exe_name))
+            cmds.push(format!("{exe_name} -X build"))
         }
 
         let command = cmds.join(" && ");

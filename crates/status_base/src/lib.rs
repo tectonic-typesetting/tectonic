@@ -121,7 +121,7 @@ pub trait StatusBackend {
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
         self.report(
             MessageKind::Note,
-            format_args!("{}{}{}", before, highlighted, after),
+            format_args!("{before}{highlighted}{after}"),
             None,
         )
     }

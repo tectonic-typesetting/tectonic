@@ -32,7 +32,7 @@ lazy_static! {
         target.make_ascii_uppercase();
 
         // run-time environment variable check:
-        if let Ok(runtext) = env::var(format!("CARGO_TARGET_{}_RUNNER", target)) {
+        if let Ok(runtext) = env::var(format!("CARGO_TARGET_{target}_RUNNER")) {
             runtext.split_whitespace().map(|x| x.to_owned()).collect()
         } else {
             vec![]
@@ -71,8 +71,8 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
             tectonic
         )
     }
-    println!("using tectonic binary at {:?}", tectonic);
-    println!("using cwd {:?}", cwd);
+    println!("using tectonic binary at {tectonic:?}");
+    println!("using cwd {cwd:?}");
 
     // We may need to wrap the Tectonic invocation. If we're cross-compiling, we
     // might need to use something like QEMU to actually be able to run the
@@ -114,7 +114,7 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
 fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     let mut command = prep_tectonic(cwd, args);
     command.env("BROWSER", "echo");
-    println!("running {:?}", command);
+    println!("running {command:?}");
     command.output().expect("tectonic failed to start")
 }
 
@@ -124,9 +124,9 @@ fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    println!("running {:?}", command);
+    println!("running {command:?}");
     let mut child = command.spawn().expect("tectonic failed to start");
-    write!(child.stdin.as_mut().unwrap(), "{}", stdin)
+    write!(child.stdin.as_mut().unwrap(), "{stdin}")
         .expect("failed to send data to tectonic subprocess");
     child
         .wait_with_output()
@@ -298,10 +298,10 @@ fn run_with_biber(args: &str, stdin: &str) -> Output {
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    println!("running {:?}", command);
+    println!("running {command:?}");
     let mut child = command.spawn().expect("tectonic failed to start");
 
-    write!(child.stdin.as_mut().unwrap(), "{}", stdin)
+    write!(child.stdin.as_mut().unwrap(), "{stdin}")
         .expect("failed to send data to tectonic subprocess");
 
     child
@@ -375,16 +375,16 @@ fn biber_no_such_tool() {
     command.env("TECTONIC_TEST_FAKE_BIBER", "ohnothereisnobiberprogram");
 
     const REST: &str = r#"\bye"#;
-    let tex = format!("{}{}", BIBER_TRIGGER_TEX, REST);
+    let tex = format!("{BIBER_TRIGGER_TEX}{REST}");
 
     command
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    println!("running {:?}", command);
+    println!("running {command:?}");
     let mut child = command.spawn().expect("tectonic failed to start");
 
-    write!(child.stdin.as_mut().unwrap(), "{}", tex)
+    write!(child.stdin.as_mut().unwrap(), "{tex}")
         .expect("failed to send data to tectonic subprocess");
 
     let output = child
@@ -411,7 +411,7 @@ a
 \fi
 \fi
 \bye"#;
-    let tex = format!("{}{}", BIBER_TRIGGER_TEX, REST);
+    let tex = format!("{BIBER_TRIGGER_TEX}{REST}");
     let output = run_with_biber("success", &tex);
     success_or_panic(&output);
 }
@@ -847,9 +847,9 @@ fn shell_escape_env_override() {
         .stderr(Stdio::piped())
         .env("TECTONIC_UNTRUSTED_MODE", "0");
 
-    println!("running {:?}", command);
+    println!("running {command:?}");
     let mut child = command.spawn().expect("tectonic failed to start");
-    write!(child.stdin.as_mut().unwrap(), "{}", SHELL_ESCAPE_TEST_DOC)
+    write!(child.stdin.as_mut().unwrap(), "{SHELL_ESCAPE_TEST_DOC}")
         .expect("failed to send data to tectonic subprocess");
 
     let output = child

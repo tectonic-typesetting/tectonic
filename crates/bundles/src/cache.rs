@@ -461,7 +461,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
         // line-based manifest format. Be paranoid and refuse to record such
         // filenames.
         if !name.contains(|c| c == '\n' || c == '\r') {
-            writeln!(man, "{} {} {}", name, length, digest_text)?;
+            writeln!(man, "{name} {length} {digest_text}")?;
         }
 
         self.contents.insert(

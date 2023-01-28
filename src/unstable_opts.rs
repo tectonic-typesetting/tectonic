@@ -68,8 +68,7 @@ impl FromStr for UnstableArg {
         let require_no_value = |unwanted_value: Option<&str>, builtin_value: UnstableArg| {
             if let Some(value) = unwanted_value {
                 Err(format!(
-                    "'-Z {}={}', was supplied but '-Z {}' does not take a value.",
-                    arg, value, arg
+                    "'-Z {arg}={value}', was supplied but '-Z {arg}' does not take a value."
                 )
                 .into())
             } else {
@@ -84,7 +83,7 @@ impl FromStr for UnstableArg {
 
             "min-crossrefs" => require_value("num")
                 .and_then(|s| {
-                    FromStr::from_str(s).map_err(|e| format!("-Z min-crossrefs: {}", e).into())
+                    FromStr::from_str(s).map_err(|e| format!("-Z min-crossrefs: {e}").into())
                 })
                 .map(UnstableArg::MinCrossrefs),
 
@@ -98,7 +97,7 @@ impl FromStr for UnstableArg {
                 require_value("path").map(|s| UnstableArg::ShellEscapeCwd(s.to_string()))
             }
 
-            _ => Err(format!("Unknown unstable option '{}'", arg).into()),
+            _ => Err(format!("Unknown unstable option '{arg}'").into()),
         }
     }
 }
@@ -141,6 +140,6 @@ impl UnstableOptions {
 }
 
 pub fn print_unstable_help_and_exit() {
-    print!("{}", HELPMSG);
+    print!("{HELPMSG}");
     std::process::exit(0);
 }

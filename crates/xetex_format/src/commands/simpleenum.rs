@@ -276,9 +276,9 @@ impl Command for ShorthandDef {
             TOKS => "toksdef",
             XETEX_MATH_CHAR_NUM => "XeTeXmathcharnumdef",
             XETEX_MATH_CHAR => "XeTeXmathchardef",
-            _ => return format!("[{:?}?? {}]", self, arg),
+            _ => return format!("[{self:?}?? {arg}]"),
         };
-        format!("[{}]", s)
+        format!("[{s}]")
     }
 
     fn primitives(&self) -> Vec<CommandPrimitive> {

@@ -281,8 +281,7 @@ impl BridgeState {
     /// format file name, and filesystem I/O is bypassed.
     fn enter_format_mode(&mut self, format_file_name: &str) {
         self.format_primary = Some(BufferedPrimaryIo::from_text(format!(
-            "\\input {}",
-            format_file_name
+            "\\input {format_file_name}"
         )));
     }
 
@@ -1284,7 +1283,7 @@ impl ProcessingSession {
         for (name, info) in &self.bs.events {
             if info.access_pattern == AccessPattern::ReadThenWritten {
                 let file_changed = match (&info.read_digest, &info.write_digest) {
-                    (&Some(ref d1), &Some(ref d2)) => d1 != d2,
+                    (Some(d1), Some(d2)) => d1 != d2,
                     (&None, &Some(_)) => true,
                     (_, _) => {
                         // Other cases shouldn't happen.
@@ -1455,7 +1454,7 @@ impl ProcessingSession {
         if n_skipped_intermediates > 0 {
             status.note_highlighted(
                 "Skipped writing ",
-                &format!("{}", n_skipped_intermediates),
+                &format!("{n_skipped_intermediates}"),
                 " intermediate files (use --keep-intermediates to keep them)",
             );
         }
@@ -1560,7 +1559,7 @@ impl ProcessingSession {
             if file.data.is_empty() {
                 status.note_highlighted(
                     "Not writing ",
-                    &format!("`{}`", sname),
+                    &format!("`{sname}`"),
                     ": it would be empty.",
                 );
                 continue;
@@ -1634,7 +1633,7 @@ impl ProcessingSession {
                 match rerun_result {
                     Some(RerunReason::Biber) => "biber was run".to_owned(),
                     Some(RerunReason::Bibtex) => "bibtex was run".to_owned(),
-                    Some(RerunReason::FileChange(ref s)) => format!("\"{}\" changed", s),
+                    Some(RerunReason::FileChange(ref s)) => format!("\"{s}\" changed"),
                     None => break,
                 }
             };
@@ -1714,7 +1713,7 @@ impl ProcessingSession {
 
         let result = {
             self.bs
-                .enter_format_mode(&format!("tectonic-format-{}.tex", stem));
+                .enter_format_mode(&format!("tectonic-format-{stem}.tex"));
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
             let r = TexEngine::default()
@@ -1773,7 +1772,7 @@ impl ProcessingSession {
     ) -> Result<Option<&'static str>> {
         let result = {
             if let Some(s) = rerun_explanation {
-                status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
+                status.note_highlighted("Rerunning ", "TeX", &format!(" because {s} ..."));
             } else {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
@@ -1825,7 +1824,7 @@ impl ProcessingSession {
         aux_file: &String,
     ) -> Result<i32> {
         let result = {
-            status.note_highlighted("Running ", "BibTeX", &format!(" on {} ...", aux_file));
+            status.note_highlighted("Running ", "BibTeX", &format!(" on {aux_file} ..."));
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
             let mut engine = BibtexEngine::new();

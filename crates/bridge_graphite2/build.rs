@@ -55,5 +55,5 @@ fn main() {
         ""
     };
 
-    println!("cargo:define_static={}", define_static_flag);
+    println!("cargo:define_static={define_static_flag}");
 }

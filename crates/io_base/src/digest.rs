@@ -31,7 +31,7 @@ pub struct BadLengthError {
 pub fn bytes_to_hex(bytes: &[u8]) -> String {
     bytes
         .iter()
-        .map(|b| format!("{:02x}", b))
+        .map(|b| format!("{b:02x}"))
         .collect::<Vec<_>>()
         .concat()
 }

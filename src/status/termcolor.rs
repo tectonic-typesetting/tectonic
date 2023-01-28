@@ -114,10 +114,10 @@ impl TermcolorStatusBackend {
         };
 
         self.styled(kind, |s| {
-            write!(s, "{}", text).expect("failed to write to standard stream");
+            write!(s, "{text}").expect("failed to write to standard stream");
         });
         self.with_stream(kind, |s| {
-            writeln!(s, " {}", args).expect("failed to write to standard stream");
+            writeln!(s, " {args}").expect("failed to write to standard stream");
         });
     }
 
@@ -128,16 +128,16 @@ impl TermcolorStatusBackend {
     pub fn note_styled(&mut self, args: Arguments) {
         if self.chatter > ChatterLevel::Minimal {
             if self.always_stderr {
-                writeln!(self.stderr, "{}", args).expect("write to stderr failed");
+                writeln!(self.stderr, "{args}").expect("write to stderr failed");
             } else {
-                writeln!(self.stdout, "{}", args).expect("write to stdout failed");
+                writeln!(self.stdout, "{args}").expect("write to stdout failed");
             }
         }
     }
 
     pub fn error_styled(&mut self, args: Arguments) {
         self.styled(MessageKind::Error, |s| {
-            writeln!(s, "{}", args).expect("write to stderr failed");
+            writeln!(s, "{args}").expect("write to stderr failed");
         });
     }
 
@@ -145,7 +145,7 @@ impl TermcolorStatusBackend {
         let mut prefix = "error:";
 
         for item in err.chain() {
-            self.generic_message(MessageKind::Error, Some(prefix), format_args!("{}", item));
+            self.generic_message(MessageKind::Error, Some(prefix), format_args!("{item}"));
             prefix = "caused by:";
         }
     }
@@ -168,7 +168,7 @@ impl StatusBackend for TermcolorStatusBackend {
 
         if let Some(e) = err {
             for item in e.chain() {
-                self.generic_message(kind, Some("caused by:"), format_args!("{}", item));
+                self.generic_message(kind, Some("caused by:"), format_args!("{item}"));
             }
         }
     }
@@ -179,10 +179,10 @@ impl StatusBackend for TermcolorStatusBackend {
 
         for item in err.chain() {
             if first {
-                self.generic_message(kind, None, format_args!("{}", item));
+                self.generic_message(kind, None, format_args!("{item}"));
                 first = false;
             } else {
-                self.generic_message(kind, Some("caused by:"), format_args!("{}", item));
+                self.generic_message(kind, Some("caused by:"), format_args!("{item}"));
             }
         }
     }
@@ -195,13 +195,13 @@ impl StatusBackend for TermcolorStatusBackend {
                 &mut self.stdout
             };
 
-            write!(stream, "{}", before).expect("write failed");
+            write!(stream, "{before}").expect("write failed");
             stream
                 .set_color(&self.highlight_spec)
                 .expect("write failed");
-            write!(stream, "{}", highlighted).expect("write failed");
+            write!(stream, "{highlighted}").expect("write failed");
             stream.reset().expect("write failed");
-            writeln!(stream, "{}", after).expect("write failed");
+            writeln!(stream, "{after}").expect("write failed");
         }
     }
 

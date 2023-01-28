@@ -47,22 +47,18 @@ impl Display for XdvError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), FmtError> {
         match *self {
             XdvError::Malformed(offset) => {
-                write!(f, "unexpected XDV data at byte offset {}", offset)
+                write!(f, "unexpected XDV data at byte offset {offset}")
             }
             XdvError::IllegalOpcode(opcode, offset) => {
-                write!(f, "illegal XDV opcode {} at byte offset {}", opcode, offset)
+                write!(f, "illegal XDV opcode {opcode} at byte offset {offset}")
             }
             XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
-            XdvError::FromUTF8(offset) => write!(
-                f,
-                "illegal UTF8 sequence starting at byte offset {}",
-                offset
-            ),
-            XdvError::FromUTF16(offset) => write!(
-                f,
-                "illegal UTF16 sequence starting at byte offset {}",
-                offset
-            ),
+            XdvError::FromUTF8(offset) => {
+                write!(f, "illegal UTF8 sequence starting at byte offset {offset}")
+            }
+            XdvError::FromUTF16(offset) => {
+                write!(f, "illegal UTF16 sequence starting at byte offset {offset}")
+            }
         }
     }
 }
@@ -86,7 +82,7 @@ impl error::Error for XdvError {
 /// In case you want to use String as your error type.
 impl From<XdvError> for String {
     fn from(e: XdvError) -> Self {
-        format!("{}", e)
+        format!("{e}")
     }
 }
 
@@ -361,7 +357,7 @@ impl<T: XdvEvents> XdvParser<T> {
 
         // Now we can do the main content.
 
-        stream.seek(SeekFrom::Start(0))?;
+        stream.rewind()?;
         parser.mode = ParserMode::UntilPostamble;
         parser.state = ParserState::Preamble;
         parser.process_part(&mut stream)?;

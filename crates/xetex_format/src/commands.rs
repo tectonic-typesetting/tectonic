@@ -368,7 +368,7 @@ impl Commands {
         if let Some(cmd) = self.codes.get(&code) {
             cmd.describe(arg)
         } else {
-            format!("[??? {} {}]", code, arg)
+            format!("[??? {code} {arg}]")
         }
     }
 
@@ -381,7 +381,7 @@ impl Commands {
         if let Some(cmd) = self.codes.get(&code) {
             (cmd.describe(arg), cmd.extended_info(arg, format))
         } else {
-            (format!("[??? {} {}]", code, arg), None)
+            (format!("[??? {code} {arg}]"), None)
         }
     }
 
@@ -412,7 +412,7 @@ typedef struct xetex_format_primitive_def_t {{
         for cmd in self.codes.values() {
             for prim in cmd.primitives() {
                 let arg = match prim.arg {
-                    ArgKind::Unnamed(v) => format!("{}", v),
+                    ArgKind::Unnamed(v) => format!("{v}"),
                     ArgKind::Symbol(s) => s.to_string(),
                 };
 
