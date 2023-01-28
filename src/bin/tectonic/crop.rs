@@ -26,7 +26,7 @@ pub(crate) fn crop(input: &str, hires: bool) -> Result<i32> {
         .arg("-dBATCH")
         .arg("-dNOPAUSE")
         .arg("-sDEVICE=bbox")
-        .arg(&input)
+        .arg(input)
         .output()?;
 
 
@@ -52,9 +52,9 @@ pub(crate) fn crop(input: &str, hires: bool) -> Result<i32> {
 
     // todo: process more carefully.
     if let Some((base, ext)) = input.rsplit_once('.') {
-        let output_pdf = latex_to_pdf(&rendered).expect("Compile Failed!");
+        let output_pdf = latex_to_pdf(rendered).expect("Compile Failed!");
         let output_path = format!("{}-crop.{}", base, ext);
-        let mut output = File::create(&output_path)?;
+        let mut output = File::create(output_path)?;
         output.write_all(&output_pdf)?;
         output.flush()?;
     };
