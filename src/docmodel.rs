@@ -131,8 +131,7 @@ impl DocumentExt for Document {
     ) -> Result<ProcessingSessionBuilder> {
         let profile = self.outputs.get(output_profile).ok_or_else(|| {
             ErrorKind::Msg(format!(
-                "unrecognized output profile name \"{}\"",
-                output_profile
+                "unrecognized output profile name \"{output_profile}\""
             ))
         })?;
 

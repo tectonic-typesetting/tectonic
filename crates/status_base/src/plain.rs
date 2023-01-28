@@ -54,14 +54,14 @@ impl StatusBackend for PlainStatusBackend {
         };
 
         if kind == MessageKind::Note && !self.always_stderr {
-            println!("{} {}", prefix, args);
+            println!("{prefix} {args}");
         } else {
-            eprintln!("{} {}", prefix, args);
+            eprintln!("{prefix} {args}");
         }
 
         if let Some(e) = err {
             for item in e.chain() {
-                eprintln!("caused by: {}", item);
+                eprintln!("caused by: {item}");
             }
         }
     }
@@ -70,7 +70,7 @@ impl StatusBackend for PlainStatusBackend {
         let mut prefix = "error";
 
         for item in err.chain() {
-            eprintln!("{}: {}", prefix, item);
+            eprintln!("{prefix}: {item}");
             prefix = "caused by";
         }
     }
@@ -78,7 +78,7 @@ impl StatusBackend for PlainStatusBackend {
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
         self.report(
             MessageKind::Note,
-            format_args!("{}{}{}", before, highlighted, after),
+            format_args!("{before}{highlighted}{after}"),
             None,
         );
     }

@@ -73,7 +73,7 @@ impl Format {
     pub fn dump_string_table<W: Write>(&self, stream: &mut W) -> Result<()> {
         for sp in self.strings.all_sps() {
             let value = self.strings.lookup(sp);
-            writeln!(stream, "{} = \"{}\"", sp, value)?;
+            writeln!(stream, "{sp} = \"{value}\"")?;
         }
 
         Ok(())
@@ -165,10 +165,10 @@ impl Format {
                 (self.engine.commands.describe(entry.ty, entry.value), None)
             };
 
-            writeln!(stream, "{} => {}", cs_desc, cmd_desc)?;
+            writeln!(stream, "{cs_desc} => {cmd_desc}")?;
 
             if let Some(e) = extended {
-                writeln!(stream, "--------\n{}\n--------", e)?;
+                writeln!(stream, "--------\n{e}\n--------")?;
             }
         }
 
@@ -240,7 +240,7 @@ impl Format {
                     }
 
                     (true, 5 /* OUT_PARAM */) => {
-                        writeln!(result, "#{}", chr).unwrap();
+                        writeln!(result, "#{chr}").unwrap();
                     }
 
                     _ => {
@@ -273,7 +273,7 @@ impl Format {
         if let Some(text) = self.cshash.stringify(ptr, &self.strings) {
             fmt_csname(text)
         } else {
-            format!("[undecodable cseq pointer {}]", ptr)
+            format!("[undecodable cseq pointer {ptr}]")
         }
     }
 
@@ -481,18 +481,18 @@ pub fn fmt_usv(c: i32) -> String {
 
     if let Some(chr) = maybe_chr {
         if chr == ' ' {
-            format!("' ' (0x{:06x})", c)
+            format!("' ' (0x{c:06x})")
         } else if chr == '\'' {
-            format!("\\' (0x{:06x})", c)
+            format!("\\' (0x{c:06x})")
         } else if chr == '\"' {
-            format!("\\\" (0x{:06x})", c)
+            format!("\\\" (0x{c:06x})")
         } else if chr.is_control() || chr.is_whitespace() {
             format!("{} (0x{:06x})", chr.escape_default(), c)
         } else {
-            format!("{} (0x{:06x})", chr, c)
+            format!("{chr} (0x{c:06x})")
         }
     } else {
-        format!("*invalid* (0x{:06x})", c)
+        format!("*invalid* (0x{c:06x})")
     }
 }
 
@@ -503,7 +503,7 @@ pub fn fmt_csname<S: AsRef<str>>(name: S) -> String {
     match (name.len(), has_ws) {
         (0, _) => "[null CS]".to_owned(),
         (1, _) => format!("'\\{}'", fmt_usv(name.chars().next().unwrap() as i32)),
-        (_, false) => format!("\\{}", name),
-        (_, true) => format!("\"\\{}\"", name),
+        (_, false) => format!("\\{name}"),
+        (_, true) => format!("\"\\{name}\""),
     }
 }

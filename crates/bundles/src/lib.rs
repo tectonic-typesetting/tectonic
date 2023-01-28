@@ -118,8 +118,7 @@ pub fn get_fallback_bundle_url(format_version: u32) -> String {
         "https://relay.fullyjustified.net/default_bundle.tar".to_owned()
     } else {
         format!(
-            "https://relay.fullyjustified.net/default_bundle_v{}.tar",
-            format_version
+            "https://relay.fullyjustified.net/default_bundle_v{format_version}.tar"
         )
     }
 }

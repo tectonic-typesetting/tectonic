@@ -406,7 +406,7 @@ impl FontData {
         // CSS info for the main font.
 
         let rel_url = utf8_percent_encode(&self.basename, CONTROLS).to_string();
-        let mut rv = vec![(None, format!(r#"url("{}") format("opentype")"#, rel_url))];
+        let mut rv = vec![(None, format!(r#"url("{rel_url}") format("opentype")"#))];
 
         // Alternates until we're done
 
@@ -468,7 +468,7 @@ impl FontData {
             let rel_url = utf8_percent_encode(&varname, CONTROLS).to_string();
             rv.push((
                 Some(cur_map_index),
-                format!(r#"url("{}") format("opentype")"#, rel_url),
+                format!(r#"url("{rel_url}") format("opentype")"#),
             ));
         }
 

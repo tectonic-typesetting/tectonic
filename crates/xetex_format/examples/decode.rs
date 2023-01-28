@@ -117,7 +117,7 @@ fn main() {
     let options = Options::from_args();
 
     if let Err(e) = options.execute() {
-        eprintln!("error: {}", e);
+        eprintln!("error: {e}");
         process::exit(1);
     }
 }

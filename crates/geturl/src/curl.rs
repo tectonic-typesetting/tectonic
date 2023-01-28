@@ -23,7 +23,7 @@ fn get_url_generic(
 
     if let Some((start, length)) = range {
         let end = start + length as u64 - 1;
-        handle.range(&format!("{}-{}", start, end))?;
+        handle.range(&format!("{start}-{end}"))?;
     }
 
     let mut buf = Vec::new();

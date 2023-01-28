@@ -131,7 +131,7 @@ impl RangeReader for ReqwestRangeReader {
 
     fn read_range(&mut self, offset: u64, length: usize) -> Result<Response> {
         let end_inclusive = offset + length as u64 - 1;
-        let header_val = format!("bytes={}-{}", offset, end_inclusive).parse()?;
+        let header_val = format!("bytes={offset}-{end_inclusive}").parse()?;
 
         let mut headers = HeaderMap::new();
         headers.insert(RANGE, header_val);

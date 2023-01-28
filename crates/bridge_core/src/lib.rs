@@ -349,7 +349,7 @@ impl<'a> CoreBridgeState<'a> {
         // `lipsum.ltd.tex` under the name `lipsum.ltd`.
 
         for e in format.extensions() {
-            let ext = format!("{}.{}", name, e);
+            let ext = format!("{name}.{e}");
 
             if let FileFormat::Format = format {
                 match io.input_open_format(&ext, self.status) {

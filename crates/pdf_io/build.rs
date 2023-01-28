@@ -81,7 +81,7 @@ fn main() {
 
     fn compile(cfg: &mut cc::Build, s: &str) {
         cfg.file(s);
-        println!("cargo:rerun-if-changed={}", s);
+        println!("cargo:rerun-if-changed={s}");
     }
 
     ccfg.include("pdf_io")

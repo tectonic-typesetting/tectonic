@@ -223,7 +223,7 @@ impl<'a, T: Spec> Dependency<'a, T> {
                                 // graphite2 is not available on Debian. So
                                 // let's jump through the hoops of testing
                                 // whether the static archive seems findable.
-                                let libname = format!("lib{}.a", libbase);
+                                let libname = format!("lib{libbase}.a");
                                 state
                                     .libs
                                     .link_paths
@@ -233,11 +233,11 @@ impl<'a, T: Spec> Dependency<'a, T> {
                         };
 
                         let mode = if do_static { "static=" } else { "" };
-                        println!("cargo:rustc-link-lib={}{}", mode, libbase);
+                        println!("cargo:rustc-link-lib={mode}{libbase}");
                     }
 
                     for fw in &state.libs.frameworks {
-                        println!("cargo:rustc-link-lib=framework={}", fw);
+                        println!("cargo:rustc-link-lib=framework={fw}");
                     }
                 } else {
                     // Just let pkg-config do its thing.

@@ -45,7 +45,7 @@ impl TarIndexBuilder {
     fn push(&mut self, name: &str, content: &[u8]) -> &mut Self {
         let offset = self.tar.len();
         let len = content.len();
-        let _ = writeln!(&mut self.index, "{} {} {}", name, offset, len);
+        let _ = writeln!(&mut self.index, "{name} {offset} {len}");
         self.map
             .insert((offset as u64, len as u64), name.to_owned());
         self.tar.extend_from_slice(content);
@@ -246,8 +246,7 @@ fn check_req_count(requests: &[TectonicRequest], request: TectonicRequest, expec
     let number = requests.iter().filter(|r| **r == request).count();
     assert_eq!(
         number, expected_number,
-        "Expected {} requests of {:?}, got {}",
-        expected_number, request, number
+        "Expected {expected_number} requests of {request:?}, got {number}"
     );
 }
 #[test]
