@@ -53,14 +53,12 @@ impl Display for XdvError {
                 write!(f, "illegal XDV opcode {opcode} at byte offset {offset}")
             }
             XdvError::UnexpectedEndOfStream => write!(f, "stream ended unexpectedly soon"),
-            XdvError::FromUTF8(offset) => write!(
-                f,
-                "illegal UTF8 sequence starting at byte offset {offset}"
-            ),
-            XdvError::FromUTF16(offset) => write!(
-                f,
-                "illegal UTF16 sequence starting at byte offset {offset}"
-            ),
+            XdvError::FromUTF8(offset) => {
+                write!(f, "illegal UTF8 sequence starting at byte offset {offset}")
+            }
+            XdvError::FromUTF16(offset) => {
+                write!(f, "illegal UTF16 sequence starting at byte offset {offset}")
+            }
         }
     }
 }

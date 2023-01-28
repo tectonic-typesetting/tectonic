@@ -120,9 +120,7 @@ impl tectonic_xdv::XdvEvents for Stats {
 
     fn handle_char_run(&mut self, font_num: i32, chars: &[i32]) -> Result<(), Self::Error> {
         let all_ascii_printable = chars.iter().all(|c| *c > 0x20 && *c < 0x7F);
-        println!(
-            "chars font={font_num}: {chars:?} all_ascii_printable={all_ascii_printable:?}"
-        );
+        println!("chars font={font_num}: {chars:?} all_ascii_printable={all_ascii_printable:?}");
         Ok(())
     }
 
