@@ -358,6 +358,17 @@ impl<'a> XdvEvents for EngineState<'a> {
             State::Finalizing(s) => s.handle_glyph_run(&mut self.common),
         }
     }
+
+    fn handle_rule(&mut self, x: i32, y: i32, height: i32, width: i32) -> Result<(), Self::Error> {
+        self.state.ensure_initialized(&mut self.common)?;
+
+        match &mut self.state {
+            State::Invalid => panic!("invalid spx2html state leaked"),
+            State::Initializing(_) => unreachable!(),
+            State::Emitting(s) => s.handle_rule(x, y, height, width, &mut self.common),
+            State::Finalizing(s) => s.handle_rule(&mut self.common),
+        }
+    }
 }
 
 impl State {

@@ -79,6 +79,11 @@ impl FinalizingState {
         Ok(())
     }
 
+    pub(crate) fn handle_rule(&mut self, common: &mut Common) -> Result<()> {
+        self.warn_finished_content("rule", common);
+        Ok(())
+    }
+
     fn finish_file(&mut self, common: &mut Common) -> Result<()> {
         self.templating.set_variable("tduxContent", "");
         self.templating.emit(common)?;

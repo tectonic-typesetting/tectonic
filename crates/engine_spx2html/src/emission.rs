@@ -222,6 +222,7 @@ struct CanvasState {
     x0: i32,
     y0: i32,
     glyphs: Vec<GlyphInfo>,
+    rules: Vec<RuleInfo>,
 }
 
 impl CanvasState {
@@ -232,6 +233,7 @@ impl CanvasState {
             x0,
             y0,
             glyphs: Vec::new(),
+            rules: Vec::new(),
         }
     }
 }
@@ -242,6 +244,14 @@ struct GlyphInfo {
     dy: i32,
     font_num: TexFontNum,
     glyph: u16,
+}
+
+#[derive(Debug)]
+struct RuleInfo {
+    dx: i32,
+    dy: i32,
+    width: i32,
+    height: i32,
 }
 
 impl EmittingState {
@@ -944,6 +954,41 @@ impl EmittingState {
         }
     }
 
+    pub(crate) fn handle_rule(
+        &mut self,
+        x: i32,
+        y: i32,
+        height: i32,
+        width: i32,
+        common: &mut Common,
+    ) -> Result<()> {
+        // Rules with non-positive dimensions are not drawn. Perhaps there are
+        // tricky cases where they should affect the computation of the canvas
+        // bounding box, but my first guess is that it is fine to just ignore
+        // them completely.
+        if width < 1 || height < 1 {
+            return Ok(());
+        }
+
+        if let Some(c) = self.current_canvas.as_mut() {
+            c.rules.push(RuleInfo {
+                dx: x - c.x0,
+                dy: y - c.y0,
+                width,
+                height,
+            });
+        } else {
+            // Not sure what to do here. Does this even happen in
+            // non-pathological cases?
+            tt_warning!(
+                common.status,
+                "ignoring rule outside of Tectonic HTML canvas"
+            );
+        }
+
+        Ok(())
+    }
+
     fn handle_end_canvas(&mut self, common: &mut Common) -> Result<()> {
         let mut canvas = self.current_canvas.take().unwrap();
 
@@ -957,12 +1002,12 @@ impl EmittingState {
             _ => false,
         };
 
-        // First pass: get overall bounds of all the glyphs from their metrics.
-        // We need to gather this information first because as we emit glyphs we
-        // have to specify their positions relative to the edges of the
-        // containing canvas box, and the size of that box is defined by the
-        // extents of all of the glyphs it contains. The bounds are measured in
-        // TeX units.
+        // First pass: get overall bounds of all the glyphs (from their metrics)
+        // and rules. We need to gather this information first because as we
+        // emit glyphs we have to specify their positions relative to the edges
+        // of the containing canvas box, and the size of that box is defined by
+        // the extents of all of the glyphs it contains. The bounds are measured
+        // in TeX units.
 
         let mut first = true;
         let mut x_min_tex = 0;
@@ -995,6 +1040,29 @@ impl EmittingState {
                     y_min_tex = std::cmp::min(y_min_tex, ymin);
                     y_max_tex = std::cmp::max(y_max_tex, ymax);
                 }
+            }
+        }
+
+        for ri in &canvas.rules[..] {
+            // The canvas is constructed so that we know `width` and `height`
+            // are positive.
+
+            let xmin = ri.dx;
+            let xmax = ri.dx + ri.width;
+            let ymin = ri.dy;
+            let ymax = ri.dy + ri.height;
+
+            if first {
+                x_min_tex = xmin;
+                x_max_tex = xmax;
+                y_min_tex = ymin;
+                y_max_tex = ymax;
+                first = false;
+            } else {
+                x_min_tex = std::cmp::min(x_min_tex, xmin);
+                x_max_tex = std::cmp::max(x_max_tex, xmax);
+                y_min_tex = std::cmp::min(y_min_tex, ymin);
+                y_max_tex = std::cmp::max(y_max_tex, ymax);
             }
         }
 
@@ -1060,6 +1128,30 @@ impl EmittingState {
                 write!(inner_content, "</span>").unwrap();
             }
         }
+
+        // Now do the rules. (At the moment, I can't think of any reason to
+        // favor a particular ordering of glyphs and rules within a given
+        // canvas?)
+
+        for ri in canvas.rules.drain(..) {
+            let rel_width = ri.width as f32 * self.rems_per_tex;
+            let rel_height = ri.height as f32 * self.rems_per_tex;
+
+            let left_rem = ri.dx as f32 * self.rems_per_tex;
+            let top_rem = (-y_min_tex + ri.dy) as f32 * self.rems_per_tex - rel_height;
+
+            write!(
+                inner_content,
+                "<span class=\"cr\" style=\"top: {}rem; left: {}rem; width: {}rem; height: {}rem;\"></span>",
+                top_rem,
+                left_rem,
+                rel_width,
+                rel_height,
+            )
+            .unwrap();
+        }
+
+        // Wrap it up.
 
         let (element, layout_class, valign) = if inline {
             // A numerical vertical-align setting positions the bottom edge of
