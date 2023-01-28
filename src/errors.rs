@@ -69,6 +69,7 @@ error_chain! {
         ConfigWrite(WriteError);
         NewStyle(NewError);
         QuickXml(quick_xml::Error);
+        SailFish(sailfish::runtime::RenderError);
         Time(std::time::SystemTimeError);
         Utf8(str::Utf8Error);
         Xdv(tectonic_xdv::XdvError);

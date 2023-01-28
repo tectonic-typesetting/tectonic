@@ -171,6 +171,10 @@ enum Commands {
     #[structopt(name = "watch")]
     /// Watch input files and execute commands on change
     Watch(WatchCommand),
+
+    #[structopt(name = "crop")]
+    /// Margins are calculated and removed for each page in the file
+    Crop(CropCommand),
 }
 
 impl Commands {
@@ -184,6 +188,7 @@ impl Commands {
             Commands::Init(o) => o.customize(cc),
             Commands::Show(o) => o.customize(cc),
             Commands::Watch(o) => o.customize(cc),
+            Commands::Crop(o) => o.customize(cc),
         }
     }
 
@@ -197,6 +202,7 @@ impl Commands {
             Commands::Init(o) => o.execute(config, status),
             Commands::Show(o) => o.execute(config, status),
             Commands::Watch(o) => o.execute(config, status),
+            Commands::Crop(o) => o.execute(config, status),
         }
     }
 }
@@ -678,5 +684,25 @@ impl ShowUserCacheDirCommand {
         let cache = Cache::get_user_default()?;
         println!("{}", cache.root().display());
         Ok(0)
+    }
+}
+
+
+#[derive(Debug, Eq, PartialEq, StructOpt)]
+struct CropCommand {
+    /// The name of the pdf document to crop.
+    #[structopt(name = "input")]
+    input: String,
+
+    /// Using `%%HiResBoundingBox` instead of `%%BoundingBox'
+    #[structopt(name = "hires", long)]
+    hires: bool,
+}
+
+impl CropCommand {
+    fn customize(&self, _cc: &mut CommandCustomizations) {}
+
+    fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
+        crate::crop::crop(&self.input, self.hires)
     }
 }

@@ -61,11 +61,13 @@ cfg-if = "1.0"
 error-chain = "^0.12"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 fs2 = "^0.4"
+hex = "0.4"
 lazy_static = "^1.4"
 libc = "^0.2"
 md-5 = "^0.9"
 open = "1.4.0"
 quick-xml = "^0.22"
+sailfish = "0.6"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"

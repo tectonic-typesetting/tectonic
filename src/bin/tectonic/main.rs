@@ -19,6 +19,7 @@ use tectonic::{
 
 mod compile;
 mod watch;
+mod crop;
 
 #[cfg(feature = "serialization")]
 mod v2cli;
