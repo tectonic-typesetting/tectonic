@@ -63,14 +63,14 @@ impl FinalizingState {
             }
 
             other => {
-                self.warn_finished_content(&format!("special {}", other), common);
+                self.warn_finished_content(&format!("special {other}"), common);
                 Ok(())
             }
         }
     }
 
     pub(crate) fn handle_text_and_glyphs(&mut self, text: &str, common: &mut Common) -> Result<()> {
-        self.warn_finished_content(&format!("text `{}`", text), common);
+        self.warn_finished_content(&format!("text `{text}`"), common);
         Ok(())
     }
 

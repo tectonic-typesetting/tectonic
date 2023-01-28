@@ -128,7 +128,7 @@ impl FontEnsemble {
             let (name, digest_opt) = ih.into_name_digest();
             common
                 .hooks
-                .event_input_closed(name.clone(), digest_opt, common.status);
+                .event_input_closed(name, digest_opt, common.status);
 
             let ffd = atry!(
                 FontFileData::from_opentype(contents, face_index);
@@ -752,7 +752,7 @@ impl Font {
             // Also, here we have double quotes around the font-family
             // specifier, which we want to have in the CSS but shouldn't have
             // (maybe???) in the HTML `style` attribute.
-            let var_text = var_index.map(|i| format!("vg{}", i)).unwrap_or_default();
+            let var_text = var_index.map(|i| format!("vg{i}")).unwrap_or_default();
 
             let extra = match self.family_relation {
                 FamilyRelativeFontId::Regular => "",
@@ -782,7 +782,7 @@ impl Font {
     /// "variants" generated to make unusual glyphs available.
     fn selection_style_text(&self, variant_map_index: Option<usize>) -> String {
         let var_text = variant_map_index
-            .map(|i| format!("vg{}", i))
+            .map(|i| format!("vg{i}"))
             .unwrap_or_default();
 
         let extra = match self.family_relation {

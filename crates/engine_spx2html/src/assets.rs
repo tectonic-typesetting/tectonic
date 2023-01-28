@@ -145,7 +145,7 @@ fn emit_font_css(dest_path: &str, faces: &str, common: &mut Common) -> Result<()
     let (mut out_file, out_path) = create_asset_file(dest_path, common)?;
 
     atry!(
-        write!(&mut out_file, "{}", faces);
+        write!(&mut out_file, "{faces}");
         ["cannot write output file `{}`", out_path.display()]
     );
 
@@ -418,7 +418,7 @@ pub(crate) mod syntax {
     impl std::fmt::Display for AssetOrigin {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
             match self {
-                AssetOrigin::Copy(src) => write!(f, "copy out `{}`", src),
+                AssetOrigin::Copy(src) => write!(f, "copy out `{src}`"),
 
                 AssetOrigin::FontCss(fe) => {
                     let mut first = true;
@@ -433,7 +433,7 @@ pub(crate) mod syntax {
                             write!(f, ", ")?;
                         }
 
-                        write!(f, "\"{}\"", facename)?;
+                        write!(f, "\"{facename}\"")?;
                     }
 
                     Ok(())
@@ -524,7 +524,7 @@ pub(crate) mod syntax {
         for (name, new_ff) in new {
             if let Some(cur_ff) = cur.get_mut(name) {
                 for (facetype, new_facepath) in &new_ff.faces {
-                    if let Some(cur_facepath) = cur_ff.faces.get(&facetype) {
+                    if let Some(cur_facepath) = cur_ff.faces.get(facetype) {
                         // This facetype is already defined in this family --
                         // check that we agree on what font it is.
                         if cur_facepath != new_facepath {

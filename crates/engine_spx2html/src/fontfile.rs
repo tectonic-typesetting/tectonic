@@ -435,7 +435,7 @@ impl FontFileData {
         // CSS info for the main font.
 
         let rel_url = utf8_percent_encode(rel_path, CONTROLS).to_string();
-        let mut rv = vec![(None, format!(r#"url("{}") format("opentype")"#, rel_url))];
+        let mut rv = vec![(None, format!(r#"url("{rel_url}") format("opentype")"#))];
 
         // Variants until we're done
 
@@ -458,7 +458,7 @@ impl FontFileData {
             // We have some variants to emit! If we're not actually writing
             // files, we might not have much work to actually do though.
 
-            let varname = format!("vg{}{}", cur_map_index, rel_path);
+            let varname = format!("vg{cur_map_index}{rel_path}");
 
             if let Some(out_path) = out_path.as_mut() {
                 // Step 1: create new CMAP, appending to buffer.

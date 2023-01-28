@@ -841,7 +841,7 @@ impl EmittingState {
                         self.content.push_char(' ');
                     }
 
-                    write!(self.content, "<span style=\"{}\">", font_sel).unwrap();
+                    write!(self.content, "<span style=\"{font_sel}\">").unwrap();
                     self.content.push_with_html_escaping(ch_as_str);
                     write!(self.content, "</span>").unwrap();
                 }

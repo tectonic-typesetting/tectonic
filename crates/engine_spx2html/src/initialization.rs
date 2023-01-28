@@ -91,7 +91,7 @@ impl InitializationState {
         let mut ih = None;
 
         for ext in &["", ".otf"] {
-            texpath = format!("{}{}", name, ext);
+            texpath = format!("{name}{ext}");
 
             match io.input_open_name(&texpath, common.status) {
                 OpenResult::Ok(h) => {
@@ -268,7 +268,7 @@ impl InitializationState {
                 b.family_name = if let Some(fname) = text.strip_prefix("family-name:") {
                     fname.to_owned()
                 } else {
-                    format!("tdux{}", font_num)
+                    format!("tdux{font_num}")
                 };
 
                 // Say that the "regular" font of the first font family definition

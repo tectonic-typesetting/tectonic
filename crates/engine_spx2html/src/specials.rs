@@ -79,19 +79,19 @@ impl<'a> Special<'a> {
     }
 
     pub fn ends_initialization(&self) -> bool {
-        match self {
+        matches!(
+            self,
             Special::Emit
-            | Special::ProvideFile(_)
-            | Special::ProvideSpecial(_)
-            | Special::AutoStartParagraph
-            | Special::AutoEndParagraph
-            | Special::CanvasStart(_)
-            | Special::CanvasEnd(_)
-            | Special::ManualFlexibleStart(_)
-            | Special::ManualEnd(_)
-            | Special::DirectText(_) => true,
-            _ => false,
-        }
+                | Special::ProvideFile(_)
+                | Special::ProvideSpecial(_)
+                | Special::AutoStartParagraph
+                | Special::AutoEndParagraph
+                | Special::CanvasStart(_)
+                | Special::CanvasEnd(_)
+                | Special::ManualFlexibleStart(_)
+                | Special::ManualEnd(_)
+                | Special::DirectText(_)
+        )
     }
 }
 
@@ -120,9 +120,9 @@ impl<'a> Display for Special<'a> {
         };
 
         if let Some(t) = rest {
-            write!(f, "tdux:{} {}", cmd, t)
+            write!(f, "tdux:{cmd} {t}")
         } else {
-            write!(f, "tdux:{}", cmd)
+            write!(f, "tdux:{cmd}")
         }
     }
 }
