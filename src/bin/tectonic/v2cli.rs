@@ -687,7 +687,6 @@ impl ShowUserCacheDirCommand {
     }
 }
 
-
 #[derive(Debug, Eq, PartialEq, StructOpt)]
 struct CropCommand {
     /// The name of the pdf document to crop.

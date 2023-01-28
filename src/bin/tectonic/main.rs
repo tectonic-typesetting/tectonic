@@ -18,8 +18,8 @@ use tectonic::{
 };
 
 mod compile;
-mod watch;
 mod crop;
+mod watch;
 
 #[cfg(feature = "serialization")]
 mod v2cli;

@@ -1,7 +1,7 @@
+use sailfish::TemplateOnce;
 use std::fs::File;
 use std::io::Write;
 use std::process::Command;
-use sailfish::TemplateOnce;
 use tectonic::{latex_to_pdf, Result};
 
 #[derive(Debug, TemplateOnce)]
@@ -13,7 +13,6 @@ struct CropTemplate<'a> {
     pages: Vec<&'a str>,
 }
 
-
 // todo: auto find ghostscript
 fn find_ghostscript() -> Result<String> {
     Ok(String::from("gs"))
@@ -22,22 +21,31 @@ fn find_ghostscript() -> Result<String> {
 pub(crate) fn crop(input: &str, hires: bool) -> Result<i32> {
     let gs_path = find_ghostscript()?;
 
-    let gs_output = Command::new(gs_path).arg("-q")
+    let gs_output = Command::new(gs_path)
+        .arg("-q")
         .arg("-dBATCH")
         .arg("-dNOPAUSE")
         .arg("-sDEVICE=bbox")
         .arg(input)
         .output()?;
 
-
     let gs_stderr = String::from_utf8_lossy(&gs_output.stderr);
     let pages: Vec<_> = {
-        let prefix = if hires { "%%HiResBoundingBox:" } else { "%%BoundingBox:" };
-        gs_stderr.lines().filter_map(
-            |line| if line.starts_with(prefix) {
-                Some(line.trim_start_matches(prefix).trim())
-            } else { None }
-        ).collect()
+        let prefix = if hires {
+            "%%HiResBoundingBox:"
+        } else {
+            "%%BoundingBox:"
+        };
+        gs_stderr
+            .lines()
+            .filter_map(|line| {
+                if line.starts_with(prefix) {
+                    Some(line.trim_start_matches(prefix).trim())
+                } else {
+                    None
+                }
+            })
+            .collect()
     };
 
     // todo: get pdf version from pdf
