@@ -18,6 +18,7 @@ use tectonic::{
 };
 
 mod compile;
+mod crop;
 mod watch;
 
 #[cfg(feature = "serialization")]

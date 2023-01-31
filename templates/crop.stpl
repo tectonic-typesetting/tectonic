@@ -1,0 +1,107 @@
+\catcode37 14 % percent
+\catcode33 12 % exclam
+\catcode34 12 % quote
+\catcode35  6 % hash
+\catcode39 12 % apostrophe
+\catcode40 12 % left parenthesis
+\catcode41 12 % right parenthesis
+\catcode45 12 % minus
+\catcode46 12 % period
+\catcode60 12 % less
+\catcode61 12 % equals
+\catcode62 12 % greater
+\catcode64 12 % at
+\catcode91 12 % left square
+\catcode93 12 % right square
+\catcode96 12 % back tick
+\catcode123 1 % left curly brace
+\catcode125 2 % right curly brace
+\catcode126 12 % tilde
+\catcode`\#=6 %
+\escapechar=92 %
+\def\IfUndefined#1#2#3{%
+  \begingroup\expandafter\expandafter\expandafter\endgroup
+  \expandafter\ifx\csname#1\endcsname\relax
+    #2%
+  \else
+    #3%
+  \fi
+}
+\def\pdffilehex{<%= input %>}
+\IfUndefined{pdfunescapehex}{%
+  \begingroup
+    \gdef\pdffile{}%
+    \def\do#1#2{%
+      \ifx\relax#2\relax
+        \ifx\relax#1\relax
+        \else
+          \errmessage{Invalid hex string, should not happen!}%
+        \fi
+      \else
+        \lccode`0="#1#2\relax
+        \lowercase{%
+          \xdef\pdffile{\pdffile0}%
+        }%
+        \expandafter\do
+      \fi
+    }%
+    \expandafter\do\pdffilehex\relax\relax
+  \endgroup
+}{%
+  \edef\pdffile{\pdfunescapehex{\pdffilehex}}%
+}
+\immediate\write-1{Input file: \pdffile}
+\expandafter\ifx\csname XeTeXpdffile\endcsname\relax
+  \errmessage{XeTeX not found or too old!}%
+\fi
+\def\setpdfversion#1#2{%
+  \special{pdf:majorversion #1}%
+  \special{pdf:minorversion #2}}
+
+\def\page #1 [#2 #3 #4 #5]{%
+  \count0=#1\relax
+  \setbox0=\hbox{%
+    \XeTeXpdffile "\pdffile" page #1 media\relax
+  }%
+  \pdfpagewidth=#4bp\relax
+  \advance\pdfpagewidth by -#2bp\relax
+  \pdfpageheight=#5bp\relax
+  \advance\pdfpageheight by -#3bp\relax
+  \shipout\hbox{%
+    \kern-1in%
+    \kern-#2bp%
+    \vbox{%
+      \kern-1in%
+      \kern#3bp%
+      \ht0=\pdfpageheight
+      \box0 %
+    }%
+  }%
+}
+\def\pageclip #1 [#2 #3 #4 #5][#6 #7 #8 #9]{%
+  \page {#1} [#2 #3 #4 #5]%
+}
+\def\pageinclude#1{%
+  \setbox0=\hbox{%
+    \XeTeXpdffile "\pdffile" page #1 media\relax
+  }%
+  \pdfpagewidth=\wd0\relax
+  \pdfpageheight=\ht0\relax
+  \advance\pdfpageheight by \dp0\relax
+  \shipout\hbox{%
+    \kern-1in%
+    \vbox{%
+      \kern-1in%
+      \ht0=\pdfpageheight
+      \box0 %
+    }%
+  }%
+}
+\setpdfversion{<%= pdfmajorversion %>}{<%= pdfminorversion %>}
+
+<% for (i, margin) in pages.iter().enumerate() { %>
+\page <%= i + 1 %> [<%= margin %>]
+<% } %>
+
+\csname @@end\endcsname
+\end
