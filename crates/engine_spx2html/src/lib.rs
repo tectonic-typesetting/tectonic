@@ -58,7 +58,7 @@ impl Spx2HtmlEngine {
     /// generated during processing. SPX files contain commands that implicitly
     /// and explicitly create assets. By default, these are emitted during
     /// processing. If this method is called, the assets will *not* be created,
-    /// as if you called [`do_not_emit_assets`]. Instead, an "asset
+    /// as if you called [`Self::do_not_emit_assets`]. Instead, an "asset
     /// specification" file will be emitted to the given output path. This
     /// specification file contains the information needed to generate the
     /// assets upon a later invocation. Asset specification files can be merged,
@@ -110,9 +110,9 @@ impl Spx2HtmlEngine {
     /// useful if the main purpose of the processing run is to gather
     /// information about the assets that will be generated.
     ///
-    /// Calling [`assets_spec_path`] has the same effect as this function, but
-    /// also causes an asset specification file to be written to in Tectonic's
-    /// virtual I/O backend.
+    /// Calling [`Self::assets_spec_path`] has the same effect as this function,
+    /// but also causes an asset specification file to be written to in
+    /// Tectonic's virtual I/O backend.
     pub fn do_not_emit_assets(&mut self) -> &mut Self {
         self.do_not_emit_assets = true;
         self
@@ -133,8 +133,8 @@ impl Spx2HtmlEngine {
     /// Process SPX into HTML.
     ///
     /// Before calling this function, you must explicitly specify the output
-    /// mode by calling either [`do_not_emit_files`] or [`output_base`]. If you
-    /// do not, this function will panic.
+    /// mode by calling either [`Self::do_not_emit_files`] or
+    /// [`Self::output_base`]. If you do not, this function will panic.
     pub fn process_to_filesystem(
         &mut self,
         hooks: &mut dyn DriverHooks,

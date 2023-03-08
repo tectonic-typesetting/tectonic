@@ -1103,8 +1103,8 @@ impl ProcessingSessionBuilder {
     ///
     /// This mode can be useful if you want to analyze what *would* be created
     /// during HTML processing without actually creating the files. If you call
-    /// [`html_assets_spec_path`], this setting will ignored, and no assets will
-    /// be emitted to disk.
+    /// [`Self::html_assets_spec_path`], this setting will ignored, and no
+    /// assets will be emitted to disk.
     pub fn html_emit_assets(&mut self, do_emit: bool) -> &mut Self {
         self.html_do_not_emit_assets = !do_emit;
         self
