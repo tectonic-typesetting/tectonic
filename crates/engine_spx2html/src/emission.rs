@@ -1142,11 +1142,7 @@ impl EmittingState {
 
             write!(
                 inner_content,
-                "<span class=\"cr\" style=\"top: {}rem; left: {}rem; width: {}rem; height: {}rem;\"></span>",
-                top_rem,
-                left_rem,
-                rel_width,
-                rel_height,
+                "<span class=\"cr\" style=\"top: {top_rem}rem; left: {left_rem}rem; width: {rel_width}rem; height: {rel_height}rem;\"></span>",
             )
             .unwrap();
         }
