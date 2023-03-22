@@ -5,7 +5,8 @@
 
 use serde::Serialize;
 use std::{
-    collections::HashMap,
+    borrow::Cow,
+    collections::{hash_map::Iter, HashMap},
     fs::File,
     io::{Read, Write},
     path::{Path, PathBuf},
@@ -319,6 +320,16 @@ impl AssetSpecification {
         serde_json::to_writer_pretty(writer, &self.0).map_err(|e| e.into())
     }
 
+    /// Produce the TeX paths of the output files associated with this
+    /// specification.
+    pub fn output_paths<'a>(&'a self) -> impl Iterator<Item = Cow<'a, str>> {
+        AssetOutputsIterator {
+            iter: self.0.iter(),
+            cur_vg_path: None,
+            next_vg_index: 0,
+        }
+    }
+
     /// Check that a set of fonts defined at runtime are a subset of those
     /// defined in this specification.
     ///
@@ -387,6 +398,50 @@ impl AssetSpecification {
         }
 
         Ok(())
+    }
+}
+
+struct AssetOutputsIterator<'a> {
+    iter: Iter<'a, String, syntax::AssetOrigin>,
+    cur_vg_path: Option<String>,
+    next_vg_index: usize,
+}
+
+impl<'a> Iterator for AssetOutputsIterator<'a> {
+    type Item = Cow<'a, str>;
+
+    fn next(&mut self) -> Option<Cow<'a, str>> {
+        if let Some(p) = self.cur_vg_path.as_ref() {
+            let rv = Cow::Owned(format!("vg{}{}", self.next_vg_index, p));
+
+            if self.next_vg_index == 0 {
+                self.cur_vg_path = None;
+            } else {
+                self.next_vg_index -= 1;
+            }
+
+            return Some(rv);
+        }
+
+        self.iter.next().map(|(path, origin)| {
+            if let syntax::AssetOrigin::FontFile(ref ffi) = origin {
+                if !ffi.vglyphs.is_empty() {
+                    // If we have moved on to a font file with variant glyphs,
+                    // we first (now) yield the unmodified filename, then set up
+                    // to iterate through the `vg` versions.
+                    let mut highest_vg_index = 0;
+
+                    for mapping in ffi.vglyphs.values() {
+                        highest_vg_index = std::cmp::max(highest_vg_index, mapping.index);
+                    }
+
+                    self.cur_vg_path = Some(path.to_owned());
+                    self.next_vg_index = highest_vg_index;
+                }
+            }
+
+            Cow::Borrowed(path.as_ref())
+        })
     }
 }
 
