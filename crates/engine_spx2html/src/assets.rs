@@ -111,7 +111,7 @@ impl Assets {
                 AssetOrigin::Copy(src_path) => syntax::AssetOrigin::Copy(src_path),
                 AssetOrigin::FontCss => syntax::AssetOrigin::FontCss(css_data.clone()),
             };
-            assets.insert(dest_path, info);
+            assets.0.insert(dest_path, info);
         }
 
         assets
@@ -247,8 +247,8 @@ impl AssetSpecification {
 
         use syntax::AssetOrigin as AO;
 
-        for (path, new_origin) in &new {
-            if let Some(cur_origin) = self.0.get_mut(path) {
+        for (path, new_origin) in &new.0 {
+            if let Some(cur_origin) = self.0 .0.get_mut(path) {
                 match (new_origin, cur_origin) {
                     (AO::Copy(new_src), AO::Copy(cur_src)) => {
                         if cur_src != new_src {
@@ -288,7 +288,7 @@ impl AssetSpecification {
 
                     (AO::FontCss(new_fe), AO::FontCss(cur_fe)) => {
                         // We have two font ensembles. Try merging.
-                        syntax::merge_font_ensembles(cur_fe, new_fe)?;
+                        syntax::merge_font_ensembles(&mut cur_fe.0, &new_fe.0)?;
                     }
 
                     (new2, cur2) => {
@@ -302,7 +302,7 @@ impl AssetSpecification {
                 }
             } else {
                 // This path is undefined in the current object. Just add it!
-                self.0.insert(path.clone(), new_origin.clone());
+                self.0 .0.insert(path.clone(), new_origin.clone());
             }
         }
 
@@ -324,7 +324,7 @@ impl AssetSpecification {
     /// specification.
     pub fn output_paths<'a>(&'a self) -> impl Iterator<Item = Cow<'a, str>> {
         AssetOutputsIterator {
-            iter: self.0.iter(),
+            iter: self.0 .0.iter(),
             cur_vg_path: None,
             next_vg_index: 0,
         }
@@ -355,7 +355,7 @@ impl AssetSpecification {
     /// the ones this particular session knows about.
     pub(crate) fn check_runtime_assets(&self, assets: &mut Assets) -> Result<()> {
         for (path, run_origin) in &assets.paths {
-            if let Some(pre_origin) = self.0.get(path) {
+            if let Some(pre_origin) = self.0 .0.get(path) {
                 match (run_origin, pre_origin) {
                     (AssetOrigin::Copy(run_path), syntax::AssetOrigin::Copy(pre_path)) => {
                         ensure!(
@@ -387,7 +387,7 @@ impl AssetSpecification {
 
         // Now update the runtime assets to include all precomputed ones.
 
-        for (path, pre_origin) in &self.0 {
+        for (path, pre_origin) in &self.0 .0 {
             let mapped = match pre_origin {
                 syntax::AssetOrigin::Copy(pre_path) => AssetOrigin::Copy(pre_path.to_owned()),
                 syntax::AssetOrigin::FontCss(_) => AssetOrigin::FontCss,
@@ -449,11 +449,26 @@ impl<'a> Iterator for AssetOutputsIterator<'a> {
 ///
 /// The top-level type is Assets.
 pub(crate) mod syntax {
-    use serde::{Deserialize, Serialize};
-    use std::collections::HashMap;
+    use serde::{Deserialize, Serialize, Serializer};
+    use std::collections::{BTreeMap, HashMap};
     use tectonic_errors::prelude::*;
 
-    pub type Assets = HashMap<String, AssetOrigin>;
+    /// Annoyingly we need to wrap this hashmap in a struct because we need to
+    /// customize the serializer to sort the keys for reproducible outputs.
+    /// Likewise for all other hashmaps in this module.
+    #[derive(Clone, Debug, Default, Serialize, Deserialize)]
+    pub struct Assets(#[serde(serialize_with = "ordered_map")] pub HashMap<String, AssetOrigin>);
+
+    fn ordered_map<K: Ord + Serialize, V: Serialize, S>(
+        value: &HashMap<K, V>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let ordered: BTreeMap<_, _> = value.iter().collect();
+        ordered.serialize(serializer)
+    }
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
     #[serde(tag = "kind")]
@@ -480,7 +495,7 @@ pub(crate) mod syntax {
 
                     write!(f, "CSS for font faces")?;
 
-                    for facename in fe.keys() {
+                    for facename in fe.0.keys() {
                         if first {
                             write!(f, " ")?;
                             first = false;
@@ -515,6 +530,7 @@ pub(crate) mod syntax {
         /// Due to limitations of (serde's) JSON serialization, the keys of this
         /// dictionary have to be strings, even though we would like them to be
         /// GlyphIds.
+        #[serde(serialize_with = "ordered_map")]
         pub vglyphs: HashMap<String, GlyphVariantMapping>,
     }
 
@@ -568,7 +584,10 @@ pub(crate) mod syntax {
     }
 
     /// Map from symbolic family name to info about the fonts defining it.
-    pub type FontEnsembleAssetData = HashMap<String, FontFamilyAssetData>;
+    #[derive(Clone, Debug, Default, Deserialize, Serialize)]
+    pub struct FontEnsembleAssetData(
+        #[serde(serialize_with = "ordered_map")] pub HashMap<String, FontFamilyAssetData>,
+    );
 
     /// Merge one font ensemble (table of font-family definitions) into another.
     /// This can fail if the tables are not self-consistent.
@@ -608,10 +627,11 @@ pub(crate) mod syntax {
     #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
     pub struct FontFamilyAssetData {
         /// Map from face type to the output path of the font file providing it.
+        #[serde(serialize_with = "ordered_map")]
         pub faces: HashMap<FaceType, String>,
     }
 
-    #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+    #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
     pub enum FaceType {
         /// The regular (upright) font of a font family.
         Regular,

@@ -409,7 +409,9 @@ impl FontEnsemble {
             };
 
             let filename = ffad.source.clone();
-            assets.insert(filename.clone(), syntax::AssetOrigin::FontFile(ffad));
+            assets
+                .0
+                .insert(filename.clone(), syntax::AssetOrigin::FontFile(ffad));
             fid_to_filename.push(filename);
         }
 
@@ -429,7 +431,9 @@ impl FontEnsemble {
                 syntax::FaceType::BoldItalic,
                 fid_to_filename[ffi.bold_italic].clone(),
             );
-            css_data.insert(ffi.name.clone(), syntax::FontFamilyAssetData { faces });
+            css_data
+                .0
+                .insert(ffi.name.clone(), syntax::FontFamilyAssetData { faces });
         }
 
         (assets, css_data)
@@ -449,7 +453,7 @@ impl FontEnsemble {
         // variant-glyph mappings with the precomputed ones.
 
         for font in &mut self.font_files {
-            match precomputed.get(&font.out_rel_path) {
+            match precomputed.0.get(&font.out_rel_path) {
                 Some(syntax::AssetOrigin::FontFile(ff)) => {
                     ensure!(
                         ff.source == font.out_rel_path,
@@ -483,7 +487,7 @@ impl FontEnsemble {
         // processing, but we still might be responsible for creating the final
         // output files at the end.
 
-        for origin in precomputed.values() {
+        for origin in precomputed.0.values() {
             if let syntax::AssetOrigin::FontFile(ff) = origin {
                 let fid = atry!(
                     self.load_external_font(&ff.source, ff.face_index, common);
@@ -502,9 +506,9 @@ impl FontEnsemble {
 
         let mut precomputed_families = HashMap::new();
 
-        for origin in precomputed.values() {
+        for origin in precomputed.0.values() {
             if let syntax::AssetOrigin::FontCss(fe) = origin {
-                for (fam_name, ff) in fe {
+                for (fam_name, ff) in &fe.0 {
                     precomputed_families.insert(fam_name.to_owned(), ff);
                 }
             }
