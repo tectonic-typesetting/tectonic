@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Tectonic Project
+// Copyright 2018-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -30,6 +30,7 @@ use std::{
 };
 use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SecuritySettings, SystemRequestError};
 use tectonic_bundles::Bundle;
+use tectonic_engine_spx2html::AssetSpecification;
 use tectonic_io_base::{
     digest::DigestData,
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
@@ -115,7 +116,7 @@ impl FileSummary {
 }
 
 /// The different types of output files that tectonic knows how to produce.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum OutputFormat {
     /// A '.aux' file.
     Aux,
@@ -124,6 +125,7 @@ pub enum OutputFormat {
     /// An extended DVI file.
     Xdv,
     /// A '.pdf' file.
+    #[default]
     Pdf,
     /// A '.fmt' file, for initializing the TeX engine.
     Format,
@@ -144,28 +146,17 @@ impl FromStr for OutputFormat {
     }
 }
 
-impl Default for OutputFormat {
-    fn default() -> OutputFormat {
-        OutputFormat::Pdf
-    }
-}
-
 /// The different types of "passes" that [`ProcessingSession`] knows how to run. See
 /// [`ProcessingSession::run`] for more details.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum PassSetting {
     /// The default pass, which repeatedly runs TeX and BibTeX until it doesn't need to any more.
+    #[default]
     Default,
     /// Just run the TeX engine once.
     Tex,
     /// Like the default pass, but runs BibTeX once first, before doing anything else.
     BibtexFirst,
-}
-
-impl Default for PassSetting {
-    fn default() -> PassSetting {
-        PassSetting::Default
-    }
 }
 
 impl FromStr for PassSetting {
@@ -182,9 +173,10 @@ impl FromStr for PassSetting {
 }
 
 /// Different places from which the "primary input" might originate.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum PrimaryInputMode {
     /// This process's standard input.
+    #[default]
     Stdin,
 
     /// A path on the filesystem.
@@ -194,18 +186,13 @@ enum PrimaryInputMode {
     Buffer(Vec<u8>),
 }
 
-impl Default for PrimaryInputMode {
-    fn default() -> PrimaryInputMode {
-        PrimaryInputMode::Stdin
-    }
-}
-
 /// Different places where the output files might land.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum OutputDestination {
     /// The "sensible" default. Files will land in the same directory as the
     /// input file, or the current working directory if the input is something
     /// without a path (such as standard input).
+    #[default]
     Default,
 
     /// Files should land in this particular directory.
@@ -214,12 +201,6 @@ enum OutputDestination {
     /// Files will not be written to disk. The code running the engine should
     /// examine the memory layer of the I/O stack to obtain the output files.
     Nowhere,
-}
-
-impl Default for OutputDestination {
-    fn default() -> OutputDestination {
-        OutputDestination::Default
-    }
 }
 
 /// The subset of the driver state that is captured when running a C/C++ engine.
@@ -777,11 +758,12 @@ impl DriverHooks for BridgeState {
 }
 
 /// Possible modes for handling shell-escape functionality
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum ShellEscapeMode {
     /// "Default" mode: shell-escape is disabled, unless it's been turned on in
     /// the unstable options, in which case it will be allowed through a
     /// temporary directory.
+    #[default]
     Defaulted,
 
     /// Shell-escape is disabled, overriding any unstable-option setting.
@@ -795,12 +777,6 @@ enum ShellEscapeMode {
     /// Shell-escape is enabled, using some other work directory that is managed
     /// externally. The processing session won't delete this directory.
     ExternallyManagedDir(PathBuf),
-}
-
-impl Default for ShellEscapeMode {
-    fn default() -> Self {
-        ShellEscapeMode::Defaulted
-    }
 }
 
 /// A custom extra pass that invokes an external tool.
@@ -841,6 +817,10 @@ pub struct ProcessingSessionBuilder {
     build_date: Option<SystemTime>,
     unstables: UnstableOptions,
     shell_escape_mode: ShellEscapeMode,
+    html_assets_spec_path: Option<String>,
+    html_precomputed_assets: Option<AssetSpecification>,
+    html_do_not_emit_files: bool,
+    html_do_not_emit_assets: bool,
 }
 
 impl ProcessingSessionBuilder {
@@ -1044,6 +1024,67 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// When using HTML mode, emit an asset specification file instead of actual
+    /// asset files.
+    ///
+    /// "Assets" are files like fonts and images that accompany the HTML output
+    /// generated during processing. By default, these are emitted during
+    /// processing. If this method is called, the assets will *not* be created.
+    /// Instead, an "asset specification" file will be emitted to the given
+    /// output path. This specification file contains the information needed to
+    /// generate the assets upon a later invocation. Asset specification files
+    /// can be merged, allowing the results of multiple separate TeX
+    /// compilations to be synthesized into one HTML output tree.
+    ///
+    /// If the build does not use HTML mode, this setting has no effect.
+    pub fn html_assets_spec_path<S: ToString>(&mut self, path: S) -> &mut Self {
+        self.html_assets_spec_path = Some(path.to_string());
+        self
+    }
+
+    /// In HTML mode, use a precomputed asset specification.
+    ///
+    /// "Assets" are files like fonts and images that accompany the HTML output
+    /// generated during processing. By default, the engine gathers these during
+    /// processing and emits them at the end. After this method is used,
+    /// however, it will generate HTML outputs assuming the information given in
+    /// the asset specification given here. If the input calls for new assets or
+    /// different options inconsistent with the specification, processing will
+    /// abort with an error.
+    ///
+    /// The purpose of this mode is to allow for a unified set of assets to be
+    /// created from multiple independent runs of the SPX-to-HTML stage. First,
+    /// the different inputs should be processed independently, and their
+    /// individual assets should saved. These should then be merged. Then the
+    /// inputs should be reprocessed, all using the merged asset specification.
+    /// In one — but only one — of these sessions, the assets should actually be
+    /// emitted.
+    pub fn html_precomputed_assets(&mut self, assets: AssetSpecification) -> &mut Self {
+        self.html_precomputed_assets = Some(assets);
+        self
+    }
+
+    /// Set whether templated outputs should be created during HTML processing.
+    ///
+    /// This mode can be useful if you want to analyze what *would* be created
+    /// during HTML processing without actually creating the files.
+    pub fn html_emit_files(&mut self, do_emit: bool) -> &mut Self {
+        self.html_do_not_emit_files = !do_emit;
+        self
+    }
+
+    /// Set whether supporting asset files should be created during HTML
+    /// processing.
+    ///
+    /// This mode can be useful if you want to analyze what *would* be created
+    /// during HTML processing without actually creating the files. If you call
+    /// [`Self::html_assets_spec_path`], this setting will ignored, and no
+    /// assets will be emitted to disk.
+    pub fn html_emit_assets(&mut self, do_emit: bool) -> &mut Self {
+        self.html_do_not_emit_assets = !do_emit;
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         // First, work on the "bridge state", which gathers the subset of our
@@ -1198,6 +1239,10 @@ impl ProcessingSessionBuilder {
             build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
             unstables: self.unstables,
             shell_escape_mode,
+            html_assets_spec_path: self.html_assets_spec_path,
+            html_precomputed_assets: self.html_precomputed_assets,
+            html_emit_files: !self.html_do_not_emit_files,
+            html_emit_assets: !self.html_do_not_emit_assets,
         })
     }
 }
@@ -1264,6 +1309,11 @@ pub struct ProcessingSession {
     /// How to handle shell-escape. The `Defaulted` option will never
     /// be used here.
     shell_escape_mode: ShellEscapeMode,
+
+    html_assets_spec_path: Option<String>,
+    html_precomputed_assets: Option<AssetSpecification>,
+    html_emit_files: bool,
+    html_emit_assets: bool,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1893,15 +1943,27 @@ impl ProcessingSession {
     }
 
     fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
-        let op = match self.output_path {
-            Some(ref p) => p,
-            None => return Err(errmsg!("HTML output must be saved directly to disk")),
-        };
-
         {
             let mut engine = Spx2HtmlEngine::default();
+
+            match (self.html_emit_files, self.output_path.as_ref()) {
+                (true, Some(p)) => engine.output_base(p),
+                (false, _) => engine.do_not_emit_files(),
+                (true, None) => return Err(errmsg!("HTML output must be saved directly to disk")),
+            };
+
+            if let Some(p) = self.html_assets_spec_path.as_ref() {
+                engine.assets_spec_path(p);
+            } else if !self.html_emit_assets {
+                engine.do_not_emit_assets();
+            }
+
+            if let Some(a) = self.html_precomputed_assets.as_ref() {
+                engine.precomputed_assets(a.clone());
+            }
+
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path, op)?;
+            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path)?;
         }
 
         self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);

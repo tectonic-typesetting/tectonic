@@ -1,11 +1,14 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-//! Reverse-map glyph IDs to the Unicode inputs that should create them.
+//! Data pertaining to a specific (OpenType) font file.
 //!
-//! Whenever possible we try to get "ActualText" info out of the engine so that
-//! we don't have to do this, but for math and potentially other situations this
-//! is sometimes necessary.
+//! The most interesting functionality here is our "variant glyph"
+//! infrastructure used to be able to show specific glyphs out of the font when
+//! we don't know a Unicode character that will reliably produce it. Whenever
+//! possible we try to get "ActualText" info out of the engine so that we don't
+//! have to do this, but for math and potentially other situations this is
+//! sometimes necessary.
 
 use byteorder::{BigEndian, ByteOrder, WriteBytesExt};
 use percent_encoding::{utf8_percent_encode, CONTROLS};
@@ -33,9 +36,7 @@ const SSTY: Tag = Tag(0x73_73_74_79);
 
 /// A type for retrieving data about the glyphs used in a particular font.
 #[derive(Debug)]
-pub struct FontData {
-    basename: String,
-
+pub struct FontFileData {
     /// The complete font data.
     ///
     /// Currently, this must be an OpenType font.
@@ -61,21 +62,25 @@ pub struct FontData {
     /// typically negative.
     baseline_factor: f32,
 
-    /// Map from Unicode charactors to how many alternate character map records
+    /// Map from Unicode charactors to how many variant character map records
     /// have been allocated for them. We need this to know how "deep" into the
-    /// list of alternates we need to push if a new glyph<->char pair has to be
+    /// list of variants we need to push if a new glyph<->char pair has to be
     /// handled.
-    alternate_map_counts: HashMap<char, usize>,
+    variant_map_counts: HashMap<char, usize>,
 
-    /// Map from glyph ID to alternate character map setting.
-    alternate_map_allocations: HashMap<GlyphId, GlyphAlternateMapping>,
+    /// Map from glyph ID to variant character map setting.
+    variant_map_allocations: HashMap<GlyphId, GlyphVariantMapping>,
+
+    /// When we've been initialized to match a precomputed set of assets,
+    /// we're not allowed to allocate any new variant glyph mappings.
+    no_new_variants: bool,
 
     /// The index of the CMAP table record in the font data structure. We need
-    /// this for the alternate cmap munging.
+    /// this for the variant cmap munging.
     fontdata_cmap_trec_idx: usize,
 
     /// The offset of the HEAD table within the font data. We need
-    /// this for the alternate cmap munging.
+    /// this for the variant cmap munging.
     fontdata_head_offset: u32,
 }
 
@@ -90,7 +95,7 @@ pub enum MapEntry {
     ///
     /// In an OpenType/TrueType font, this glyph representation is obtained with
     /// the first glyph substitution obtained using the `ssty` feature. If the
-    /// associated bool is false, the glyph was the first alternate form, used
+    /// associated bool is false, the glyph was the first variant form, used
     /// for sub/super-scripts on regular equation terms. If it is true, it is a
     /// "double" sub/super-script, e.g. the "z" in `x^{y^z}`.
     SubSuperScript(char, bool),
@@ -113,7 +118,7 @@ impl MapEntry {
     }
 }
 
-/// Information about an "alternate mapping" to be used for a glyph.
+/// Information about an "variant mapping" to be used for a glyph.
 ///
 /// When parsing XDV output, we may encounter glyphs that do not directly map to
 /// an originating Unicode character (e.g., it maps with a MapEntry like
@@ -123,7 +128,7 @@ impl MapEntry {
 /// they were just standard characters in a different font, and it turns out
 /// that manipulating the font file to do this isn't so hard.
 ///
-/// We need to maintain a sequence of these alternate maps because we may wish
+/// We need to maintain a sequence of these variant maps because we may wish
 /// to map several different glyphs to the same Unicode character in this
 /// fashion.
 ///
@@ -134,12 +139,12 @@ impl MapEntry {
 /// We might also one day wish to extend this system to emit a subsetted version
 /// of the original font.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub struct GlyphAlternateMapping {
+pub struct GlyphVariantMapping {
     /// The USV that the glyph should be mapped to
     pub usv: char,
 
-    /// Which alternative-mapped font to use. These indices start at zero.
-    pub alternate_map_index: usize,
+    /// Which variant-mapped font to use. These indices start at zero.
+    pub variant_map_index: usize,
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -166,11 +171,11 @@ struct HorizontalMetrics {
     lsb: FWord,
 }
 
-impl FontData {
+impl FontFileData {
     /// Load glyph data from OpenType font data.
     ///
     /// We take ownership of the font data that we're given.
-    pub fn from_opentype(basename: String, buffer: Vec<u8>, face_index: u32) -> Result<Self> {
+    pub fn from_opentype(buffer: Vec<u8>, face_index: u32) -> Result<Self> {
         let font_data = a_ok_or!(
             FontDataRef::new(&buffer);
             ["unable to parse buffer as OpenType font"]
@@ -291,8 +296,7 @@ impl FontData {
 
         // All done!
 
-        Ok(FontData {
-            basename,
+        Ok(FontFileData {
             buffer,
             gmap,
             space_glyph,
@@ -301,8 +305,9 @@ impl FontData {
             ascender,
             descender,
             baseline_factor,
-            alternate_map_counts: HashMap::new(),
-            alternate_map_allocations: HashMap::new(),
+            variant_map_counts: HashMap::new(),
+            variant_map_allocations: HashMap::new(),
+            no_new_variants: false,
             fontdata_head_offset,
             fontdata_cmap_trec_idx,
         })
@@ -356,59 +361,83 @@ impl FontData {
         }
     }
 
-    /// Request that an alternative mapping be allocated for a glyph.
+    /// Request that a variant mapping be allocated for a glyph.
     ///
-    /// The caller must suggest a Unicode character to use for the alternative,
-    /// but if a different alternative has already been allocated, that
-    /// suggestion may be ignored.
-    pub fn request_alternative(
+    /// The caller must suggest a Unicode character to use for the variant, but
+    /// if a different variant has already been allocated, that suggestion may
+    /// be ignored.
+    ///
+    /// This function may return None if a new variant would need to be
+    /// allocated, but that has been prohibited.
+    pub fn request_variant(
         &mut self,
         glyph: GlyphId,
         suggested: char,
-    ) -> GlyphAlternateMapping {
+    ) -> Option<GlyphVariantMapping> {
+        let map_entry = self.variant_map_allocations.entry(glyph);
+
+        if self.no_new_variants {
+            if let std::collections::hash_map::Entry::Vacant(_) = map_entry {
+                return None;
+            }
+        }
+
         let new_index = self
-            .alternate_map_counts
+            .variant_map_counts
             .get(&suggested)
             .copied()
             .unwrap_or(0);
-        let map = self
-            .alternate_map_allocations
-            .entry(glyph)
-            .or_insert(GlyphAlternateMapping {
-                usv: suggested,
-                alternate_map_index: new_index,
-            });
 
-        if map.usv == suggested && map.alternate_map_index == new_index {
+        let map = map_entry.or_insert(GlyphVariantMapping {
+            usv: suggested,
+            variant_map_index: new_index,
+        });
+
+        if map.usv == suggested && map.variant_map_index == new_index {
             // If this is the case, we just created the mapping,
             // and need to bump the associated character's index for
             // the next glyph that wants to map to it.
-            self.alternate_map_counts.insert(suggested, new_index + 1);
+            self.variant_map_counts.insert(suggested, new_index + 1);
         }
 
-        *map
+        Some(*map)
     }
 
     /// Emit customized fonts to the filesystem and return information so that
     /// appropriate CSS can be generated. Consumes the object.
     ///
-    /// Return value is a vec of (alternate-map-index, CSS-src-field).
-    pub fn emit(self, out_base: &Path) -> Result<Vec<(Option<usize>, String)>> {
-        // Write the main font file.
+    /// `rel_path` is the path, relative to the output root, where the font
+    /// file(s) shouldb emitted. Currently, this may not contain any directory
+    /// components, due to the way that the "variant" font file paths are
+    /// constructed. This wouldn't be too hard to change.
+    ///
+    /// `out_base` is the output directory, or None if we shouldn't be writing
+    /// anything to disk.
+    ///
+    /// Return value is a vec of (variant-map-index, CSS-src-field).
+    pub fn emit(
+        self,
+        out_base: Option<&Path>,
+        rel_path: &str,
+    ) -> Result<Vec<(Option<usize>, String)>> {
+        // Write the main font file ... maybe.
 
-        let mut out_path = out_base.to_owned();
-        out_path.push(&self.basename);
-        atry!(
-            std::fs::write(&out_path, &self.buffer);
-            ["cannot write output file `{}`", out_path.display()]
-        );
+        let mut out_path = out_base.map(|p| p.to_owned());
+
+        if let Some(out_path) = out_path.as_mut() {
+            out_path.push(rel_path);
+            atry!(
+                std::fs::write(&out_path, &self.buffer);
+                ["cannot write output file `{}`", out_path.display()]
+            );
+        }
 
         // CSS info for the main font.
 
-        let rel_url = utf8_percent_encode(&self.basename, CONTROLS).to_string();
+        let rel_url = utf8_percent_encode(rel_path, CONTROLS).to_string();
         let mut rv = vec![(None, format!(r#"url("{rel_url}") format("opentype")"#))];
 
-        // Alternates until we're done
+        // Variants until we're done
 
         let mut buffer = self.buffer;
         let orig_len = buffer.len();
@@ -416,8 +445,8 @@ impl FontData {
         for cur_map_index in 0.. {
             let mut mappings = Vec::new();
 
-            for (glyph, altmap) in &self.alternate_map_allocations {
-                if altmap.alternate_map_index == cur_map_index {
+            for (glyph, altmap) in &self.variant_map_allocations {
+                if altmap.variant_map_index == cur_map_index {
                     mappings.push((altmap.usv, *glyph));
                 }
             }
@@ -426,42 +455,46 @@ impl FontData {
                 break;
             }
 
-            // We have some alternates to emit!
-            //
-            // Step 1: create new CMAP, appending to buffer.
-            //
-            // Might be nice to sort mappings as we construct it, rather than
-            // after the fact?
+            // We have some variants to emit! If we're not actually writing
+            // files, we might not have much work to actually do though.
 
-            buffer.truncate(orig_len);
-            mappings.sort_unstable();
-            append_simple_cmap(&mut buffer, &mappings[..]);
-            let cmap_size = buffer.len() - orig_len;
+            let varname = format!("vg{cur_map_index}{rel_path}");
 
-            // step 2: modify CMAP table record
+            if let Some(out_path) = out_path.as_mut() {
+                // Step 1: create new CMAP, appending to buffer.
+                //
+                // Might be nice to sort mappings as we construct it, rather than
+                // after the fact?
 
-            let cs = opentype_checksum(&buffer[orig_len..]);
-            let ofs = 12 + self.fontdata_cmap_trec_idx * 16;
-            BigEndian::write_u32(&mut buffer[ofs + 4..ofs + 8], cs); // checksum
-            BigEndian::write_u32(&mut buffer[ofs + 8..ofs + 12], orig_len as u32); // offset
-            BigEndian::write_u32(&mut buffer[ofs + 12..ofs + 16], cmap_size as u32); // length
+                buffer.truncate(orig_len);
+                mappings.sort_unstable();
+                append_simple_cmap(&mut buffer, &mappings[..]);
+                let cmap_size = buffer.len() - orig_len;
 
-            // step 3: update HEAD "checksum adjustment" field
+                // step 2: modify CMAP table record
 
-            let cs = opentype_checksum(&buffer[..]);
-            let chkadj = Wrapping(0xB1B0AFBA) - Wrapping(cs);
-            let ofs = self.fontdata_head_offset as usize + 8;
-            BigEndian::write_u32(&mut buffer[ofs..ofs + 4], chkadj.0);
+                let cs = opentype_checksum(&buffer[orig_len..]);
+                let ofs = 12 + self.fontdata_cmap_trec_idx * 16;
+                BigEndian::write_u32(&mut buffer[ofs + 4..ofs + 8], cs); // checksum
+                BigEndian::write_u32(&mut buffer[ofs + 8..ofs + 12], orig_len as u32); // offset
+                BigEndian::write_u32(&mut buffer[ofs + 12..ofs + 16], cmap_size as u32); // length
 
-            // step 4: write new file
+                // step 3: update HEAD "checksum adjustment" field
 
-            out_path.pop();
-            let varname = format!("vg{}{}", cur_map_index, self.basename);
-            out_path.push(&varname);
-            atry!(
-                std::fs::write(&out_path, &buffer);
-                ["cannot write output file `{}`", out_path.display()]
-            );
+                let cs = opentype_checksum(&buffer[..]);
+                let chkadj = Wrapping(0xB1B0AFBA) - Wrapping(cs);
+                let ofs = self.fontdata_head_offset as usize + 8;
+                BigEndian::write_u32(&mut buffer[ofs..ofs + 4], chkadj.0);
+
+                // step 4: write new file
+
+                out_path.pop();
+                out_path.push(&varname);
+                atry!(
+                    std::fs::write(&out_path, &buffer);
+                    ["cannot write output file `{}`", out_path.display()]
+                );
+            }
 
             // step 5: update CSS
 
@@ -475,6 +508,39 @@ impl FontData {
         // All done!
 
         Ok(rv)
+    }
+
+    /// Emit customized fonts to the filesystem and return information so that
+    /// appropriate CSS can be generated. Consumes the object.
+    ///
+    /// Return value is a vec of (variant-map-index, CSS-src-field).
+    pub fn into_vglyphs(mut self) -> HashMap<String, crate::assets::syntax::GlyphVariantMapping> {
+        let mut vglyphs = HashMap::default();
+
+        for (glyph, altmap) in self.variant_map_allocations.drain() {
+            vglyphs.insert(glyph.to_string(), altmap.into());
+        }
+
+        vglyphs
+    }
+
+    /// Update this "runtime" information to match the precomputed asset
+    /// information. At the moment the only thing we need to change is the table
+    /// of variant glyphs.
+    pub(crate) fn match_to_precomputed(&mut self, ffad: &crate::assets::syntax::FontFileAssetData) {
+        self.variant_map_counts.clear();
+        self.variant_map_allocations.clear();
+
+        for (gid, mapping) in &ffad.vglyphs {
+            let gid: GlyphId = gid.parse().unwrap();
+
+            self.variant_map_allocations.insert(gid, (*mapping).into());
+
+            let c = self.variant_map_counts.entry(mapping.usv).or_default();
+            *c = std::cmp::max(mapping.index + 1, *c);
+        }
+
+        self.no_new_variants = true;
     }
 }
 
@@ -587,12 +653,21 @@ fn append_simple_cmap(buf: &mut Vec<u8>, map: &[(char, GlyphId)]) {
     buf.write_u32::<BigEndian>(map.len() as u32).unwrap(); // subtable number of groups
 
     // We could actually try to be smart here, but based on the expected usage
-    // of our glyph alternative scheme, I think it is unlikely that we'd realize
+    // of our glyph variant scheme, I think it is unlikely that we'd realize
     // any significant efficiencies.
 
     for (usv, gid) in map {
         buf.write_u32::<BigEndian>(*usv as u32).unwrap(); // start char
         buf.write_u32::<BigEndian>(*usv as u32).unwrap(); // end char
         buf.write_u32::<BigEndian>(*gid as u32).unwrap(); // glyph id
+    }
+}
+
+impl From<crate::assets::syntax::GlyphVariantMapping> for GlyphVariantMapping {
+    fn from(m: crate::assets::syntax::GlyphVariantMapping) -> Self {
+        GlyphVariantMapping {
+            usv: m.usv,
+            variant_map_index: m.index,
+        }
     }
 }
