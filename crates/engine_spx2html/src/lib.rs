@@ -38,17 +38,12 @@ pub struct Spx2HtmlEngine {
     do_not_emit_assets: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 enum OutputState {
+    #[default]
     Undefined,
     NoOutput,
     Path(PathBuf),
-}
-
-impl Default for OutputState {
-    fn default() -> Self {
-        OutputState::Undefined
-    }
 }
 
 impl Spx2HtmlEngine {

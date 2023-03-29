@@ -322,7 +322,7 @@ impl AssetSpecification {
 
     /// Produce the TeX paths of the output files associated with this
     /// specification.
-    pub fn output_paths<'a>(&'a self) -> impl Iterator<Item = Cow<'a, str>> {
+    pub fn output_paths(&self) -> impl Iterator<Item = Cow<'_, str>> {
         AssetOutputsIterator {
             iter: self.0 .0.iter(),
             cur_vg_path: None,

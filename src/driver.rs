@@ -116,7 +116,7 @@ impl FileSummary {
 }
 
 /// The different types of output files that tectonic knows how to produce.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum OutputFormat {
     /// A '.aux' file.
     Aux,
@@ -125,6 +125,7 @@ pub enum OutputFormat {
     /// An extended DVI file.
     Xdv,
     /// A '.pdf' file.
+    #[default]
     Pdf,
     /// A '.fmt' file, for initializing the TeX engine.
     Format,
@@ -145,28 +146,17 @@ impl FromStr for OutputFormat {
     }
 }
 
-impl Default for OutputFormat {
-    fn default() -> OutputFormat {
-        OutputFormat::Pdf
-    }
-}
-
 /// The different types of "passes" that [`ProcessingSession`] knows how to run. See
 /// [`ProcessingSession::run`] for more details.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum PassSetting {
     /// The default pass, which repeatedly runs TeX and BibTeX until it doesn't need to any more.
+    #[default]
     Default,
     /// Just run the TeX engine once.
     Tex,
     /// Like the default pass, but runs BibTeX once first, before doing anything else.
     BibtexFirst,
-}
-
-impl Default for PassSetting {
-    fn default() -> PassSetting {
-        PassSetting::Default
-    }
 }
 
 impl FromStr for PassSetting {
@@ -183,9 +173,10 @@ impl FromStr for PassSetting {
 }
 
 /// Different places from which the "primary input" might originate.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum PrimaryInputMode {
     /// This process's standard input.
+    #[default]
     Stdin,
 
     /// A path on the filesystem.
@@ -195,18 +186,13 @@ enum PrimaryInputMode {
     Buffer(Vec<u8>),
 }
 
-impl Default for PrimaryInputMode {
-    fn default() -> PrimaryInputMode {
-        PrimaryInputMode::Stdin
-    }
-}
-
 /// Different places where the output files might land.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum OutputDestination {
     /// The "sensible" default. Files will land in the same directory as the
     /// input file, or the current working directory if the input is something
     /// without a path (such as standard input).
+    #[default]
     Default,
 
     /// Files should land in this particular directory.
@@ -215,12 +201,6 @@ enum OutputDestination {
     /// Files will not be written to disk. The code running the engine should
     /// examine the memory layer of the I/O stack to obtain the output files.
     Nowhere,
-}
-
-impl Default for OutputDestination {
-    fn default() -> OutputDestination {
-        OutputDestination::Default
-    }
 }
 
 /// The subset of the driver state that is captured when running a C/C++ engine.
@@ -778,11 +758,12 @@ impl DriverHooks for BridgeState {
 }
 
 /// Possible modes for handling shell-escape functionality
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum ShellEscapeMode {
     /// "Default" mode: shell-escape is disabled, unless it's been turned on in
     /// the unstable options, in which case it will be allowed through a
     /// temporary directory.
+    #[default]
     Defaulted,
 
     /// Shell-escape is disabled, overriding any unstable-option setting.
@@ -796,12 +777,6 @@ enum ShellEscapeMode {
     /// Shell-escape is enabled, using some other work directory that is managed
     /// externally. The processing session won't delete this directory.
     ExternallyManagedDir(PathBuf),
-}
-
-impl Default for ShellEscapeMode {
-    fn default() -> Self {
-        ShellEscapeMode::Defaulted
-    }
 }
 
 /// A custom extra pass that invokes an external tool.

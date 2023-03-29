@@ -714,11 +714,12 @@ pub struct SecuritySettings {
 
 /// Different high-level security stances that can be adopted when creating
 /// [`SecuritySettings`].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub enum SecurityStance {
     /// Ensure that all known-insecure features are disabled.
     ///
     /// Use this stance if you are processing untrusted input.
+    #[default]
     DisableInsecures,
 
     /// Request to allow the use of known-insecure features.
@@ -728,13 +729,6 @@ pub enum SecurityStance {
     /// features might be overridden if the environment variable
     /// `TECTONIC_UNTRUSTED_MODE` is set.
     MaybeAllowInsecures,
-}
-
-impl Default for SecurityStance {
-    fn default() -> Self {
-        // Obvi, the default is secure!!!
-        SecurityStance::DisableInsecures
-    }
 }
 
 impl SecuritySettings {

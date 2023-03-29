@@ -14,19 +14,14 @@ use std::{
 };
 
 /// Supported depedency-finding backends.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum Backend {
     /// pkg-config
+    #[default]
     PkgConfig,
 
     /// vcpkg
     Vcpkg,
-}
-
-impl Default for Backend {
-    fn default() -> Self {
-        Backend::PkgConfig
-    }
 }
 
 /// Dep-finding configuration.
