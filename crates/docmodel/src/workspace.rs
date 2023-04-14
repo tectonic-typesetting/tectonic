@@ -139,34 +139,17 @@ impl WorkspaceCreator {
         doc.create_toml()?;
 
         // Stub out the TeX.
-
         {
-            tex_dir.push("_preamble.tex");
+            tex_dir.push("index.tex");
             let mut f = fs::File::create(&tex_dir)?;
             f.write_all(
                 br#"\documentclass{article}
 \title{My Title}
 \begin{document}
-"#,
-            )?;
-            tex_dir.pop();
-        }
 
-        {
-            tex_dir.push("index.tex");
-            let mut f = fs::File::create(&tex_dir)?;
-            f.write_all(
-                br#"Hello, world.
-"#,
-            )?;
-            tex_dir.pop();
-        }
+Hello, world.
 
-        {
-            tex_dir.push("_postamble.tex");
-            let mut f = fs::File::create(&tex_dir)?;
-            f.write_all(
-                br#"\end{document}
+\end{document}
 "#,
             )?;
             tex_dir.pop();

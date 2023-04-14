@@ -161,6 +161,7 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
     tempdir
 }
 
+#[track_caller]
 fn success_or_panic(output: &Output) {
     if output.status.success() {
         println!("status: {}", output.status);
@@ -232,20 +233,10 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
     {
         let mut path = temppath.clone();
         path.push("src");
+        path.push("index.tex");
 
-        {
-            path.push("_preamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
-            path.pop();
-        }
-
-        {
-            path.push("_postamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file, "\\end").unwrap();
-            path.pop();
-        }
+        let mut file = File::create(&path).unwrap();
+        writeln!(file, "Hello, World!\n\\end").unwrap();
     }
 
     (tempdir, temppath)
@@ -654,9 +645,7 @@ fn v2_build_multiple_outputs() {
             name = 'alt'
             type = 'pdf'
             tex_format = 'plain'
-            preamble = '_preamble_alt.tex'
             index = 'index_alt.tex'
-            postamble = '_postamble_alt.tex'
             "
         )
         .unwrap();
@@ -669,35 +658,16 @@ fn v2_build_multiple_outputs() {
         path.push("src");
 
         {
-            path.push("_preamble.tex");
+            path.push("index.tex");
             let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
-            path.pop();
-        }
-        {
-            path.push("_preamble_alt.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
+            writeln!(file, "Hello, World!\n\\end").unwrap();
             path.pop();
         }
 
         {
             path.push("index_alt.tex");
             let mut file = File::create(&path).unwrap();
-            writeln!(file, "Hello, alt!").unwrap();
-            path.pop();
-        }
-
-        {
-            path.push("_postamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file, "\\end").unwrap();
-            path.pop();
-        }
-        {
-            path.push("_postamble_alt.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file, "\\end").unwrap();
+            writeln!(file, "Hello, alt!\n\\end").unwrap();
             path.pop();
         }
     }
@@ -719,7 +689,7 @@ fn v2_dump_basic() {
     let mut saw_it = false;
 
     for line in t.lines() {
-        if line.contains("(default (_preamble.tex) (index.tex) (_postamble.tex [1] ) )") {
+        if line.contains("(default (index.tex [1] ) )") {
             saw_it = true;
             break;
         }
@@ -749,6 +719,7 @@ fn v2_dump_suffix() {
 \immediate\openout\w=second.demo\relax
 \immediate\write\w{content-deux}
 \immediate\closeout\w
+\end
 "#
         )
         .unwrap();
@@ -774,7 +745,8 @@ fn v2_dump_suffix() {
         }
     }
 
-    assert!(saw_first && saw_second);
+    assert!(saw_first);
+    assert!(saw_second);
 }
 
 const SHELL_ESCAPE_TEST_DOC: &str = r#"\immediate\write18{mkdir shellwork}

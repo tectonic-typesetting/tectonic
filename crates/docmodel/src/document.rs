@@ -21,23 +21,11 @@ use tectonic_errors::prelude::*;
 
 use crate::workspace::WorkspaceCreator;
 
-/// The default filesystem name for the "preamble" file of a document.
-///
-/// This default can be overridden on an output-by-output basis in
-/// `Tectonic.toml`.
-pub const DEFAULT_PREAMBLE_FILE: &str = "_preamble.tex";
-
 /// The default filesystem name for the main "index" file of a document.
 ///
 /// This default can be overridden on an output-by-output basis in
 /// `Tectonic.toml`.
 pub const DEFAULT_INDEX_FILE: &str = "index.tex";
-
-/// The default filesystem name for the "postamble" file of a document.
-///
-/// This default can be overridden on an output-by-output basis in
-/// `Tectonic.toml`.
-pub const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
 
 /// A Tectonic document.
 #[derive(Debug)]
@@ -206,14 +194,8 @@ pub struct OutputProfile {
     /// The name of the TeX format used by this profile.
     pub tex_format: String,
 
-    /// The name of the preamble file within the `src` directory.
-    pub preamble_file: String,
-
     /// The name of the index (main) file within the `src` directory.
     pub index_file: String,
-
-    /// The name of the postamble file within the `src` directory.
-    pub postamble_file: String,
 
     /// Whether TeX's shell-escape feature should be activated in this profile.
     ///
@@ -300,9 +282,7 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
             name: "default".to_owned(),
             target_type: BuildTargetType::Pdf,
             tex_format: "latex".to_owned(),
-            preamble_file: DEFAULT_PREAMBLE_FILE.to_owned(),
             index_file: DEFAULT_INDEX_FILE.to_owned(),
-            postamble_file: DEFAULT_POSTAMBLE_FILE.to_owned(),
             shell_escape: false,
             shell_escape_cwd: None,
         },
@@ -312,7 +292,7 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
 
 /// The concrete syntax for saving document state, wired up via serde.
 mod syntax {
-    use super::{DEFAULT_INDEX_FILE, DEFAULT_POSTAMBLE_FILE, DEFAULT_PREAMBLE_FILE};
+    use super::DEFAULT_INDEX_FILE;
     use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
     #[derive(Debug, Deserialize, Serialize)]
@@ -338,12 +318,8 @@ mod syntax {
         #[serde(rename = "type")]
         pub target_type: BuildTargetType,
         pub tex_format: Option<String>,
-        #[serde(rename = "preamble")]
-        pub preamble_file: Option<String>,
         #[serde(rename = "index")]
         pub index_file: Option<String>,
-        #[serde(rename = "postamble")]
-        pub postamble_file: Option<String>,
         pub shell_escape: Option<bool>,
         pub shell_escape_cwd: Option<String>,
     }
@@ -356,22 +332,10 @@ mod syntax {
                 Some(rt.tex_format.clone())
             };
 
-            let preamble_file = if rt.preamble_file == DEFAULT_PREAMBLE_FILE {
-                None
-            } else {
-                Some(rt.preamble_file.clone())
-            };
-
             let index_file = if rt.index_file == DEFAULT_INDEX_FILE {
                 None
             } else {
                 Some(rt.index_file.clone())
-            };
-
-            let postamble_file = if rt.postamble_file == DEFAULT_POSTAMBLE_FILE {
-                None
-            } else {
-                Some(rt.postamble_file.clone())
             };
 
             let shell_escape = if !rt.shell_escape { None } else { Some(true) };
@@ -381,9 +345,7 @@ mod syntax {
                 name: rt.name.clone(),
                 target_type: BuildTargetType::from_runtime(&rt.target_type),
                 tex_format,
-                preamble_file,
                 index_file,
-                postamble_file,
                 shell_escape,
                 shell_escape_cwd,
             }
@@ -401,18 +363,10 @@ mod syntax {
                     .map(|s| s.as_ref())
                     .unwrap_or("latex")
                     .to_owned(),
-                preamble_file: self
-                    .preamble_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_PREAMBLE_FILE.to_owned()),
                 index_file: self
                     .index_file
                     .clone()
                     .unwrap_or_else(|| DEFAULT_INDEX_FILE.to_owned()),
-                postamble_file: self
-                    .postamble_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
                 shell_escape: self.shell_escape.unwrap_or(shell_escape_default),
                 shell_escape_cwd: self.shell_escape_cwd.clone(),
             }
