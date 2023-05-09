@@ -102,41 +102,37 @@ impl BibtexEngine {
 
 #[doc(hidden)]
 pub mod c_api {
+    use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
     use std::slice;
     use tectonic_bridge_core::CoreBridgeState;
 
-    macro_rules! bib_xretalloc_noset {
-        ($array_var:ident, $type:ty, $new_size:expr) => {
-            $array_var = xrealloc().cast::<$type>(($new_size + 1) * core::mem::size_of::<$type>);
-        }
+    mod buffer;
+
+    unsafe fn buf_to_slice<'a>(
+        buf: BufType,
+        start: BufPointer,
+        len: BufPointer,
+    ) -> &'a [ASCIICode] {
+        slice::from_raw_parts(buf.offset(start as isize), len as usize)
     }
 
-    macro_rules! bib_xretalloc {
-        ($array_var:ident, $type:ty, $size_var:ident, $new_size:expr) => {
-            bib_xretalloc_noset!($array_var, $type, $new_size);
-            $size_var = $new_size;
-        }
+    unsafe fn buf_to_slice_mut<'a>(
+        buf: BufType,
+        start: BufPointer,
+        len: BufPointer,
+    ) -> &'a mut [ASCIICode] {
+        slice::from_raw_parts_mut(buf.offset(start as isize), len as usize)
     }
 
-    unsafe fn buf_to_slice<'a>(buf: BufType, start: BufPointer, len: BufPointer) -> &'a [ASCIICode] {
-        slice::from_raw_parts(
-            buf.offset(start as isize),
-            len as usize,
-        )
-    }
-
-    unsafe fn buf_to_slice_mut<'a>(buf: BufType, start: BufPointer, len: BufPointer) -> &'a mut [ASCIICode] {
-        slice::from_raw_parts_mut(
-            buf.offset(start as isize),
-            len as usize,
-        )
-    }
-
-    unsafe fn str_to_slice<'a>(str_pool: *mut ASCIICode, str_start: *mut PoolPointer, str: StrNumber) -> &'a [ASCIICode] {
+    unsafe fn str_to_slice<'a>(
+        str_pool: *mut ASCIICode,
+        str_start: *mut PoolPointer,
+        str: StrNumber,
+    ) -> &'a [ASCIICode] {
         let str = str as isize;
         slice::from_raw_parts(
             str_pool.offset(*str_start.offset(str) as isize),
-            (*str_start.offset(str + 1) - *str_start.offset(str)) as usize
+            (*str_start.offset(str + 1) - *str_start.offset(str)) as usize,
         )
     }
 
@@ -199,7 +195,7 @@ pub mod c_api {
         s: StrNumber,
         buf: BufType,
         bf_ptr: BufPointer,
-        len: BufPointer
+        len: BufPointer,
     ) -> bool {
         let buf = buf_to_slice(buf, bf_ptr, len);
         let str = str_to_slice(str_pool, str_start, s);
@@ -236,12 +232,61 @@ pub mod c_api {
     /// of this call, that is at least as long as `right_end`, and initialized for the range
     /// `ptr[left_end..right_end]`
     #[no_mangle]
-    pub unsafe extern "C" fn quick_sort(cite_info: *mut StrNumber, left_end: CiteNumber, right_end: CiteNumber) {
+    pub unsafe extern "C" fn quick_sort(
+        cite_info: *mut StrNumber,
+        left_end: CiteNumber,
+        right_end: CiteNumber,
+    ) {
         let slice = slice::from_raw_parts_mut(
             cite_info.add(left_end as usize),
             (right_end - left_end) as usize,
         );
         slice.sort();
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn int_to_ascii(
+        mut the_int: i32,
+        int_buf: BufTy,
+        int_begin: BufPointer,
+        int_end: *mut BufPointer,
+    ) {
+        let buf = bib_buf(int_buf);
+        let mut int_ptr = int_begin;
+        let mut int_xptr = int_begin;
+
+        if the_int < 0 {
+            {
+                if int_ptr == bib_buf_size() {
+                    buffer_overflow();
+                }
+                *buf.offset(int_ptr as isize) = 45 /*minus_sign */ ;
+                int_ptr += 1;
+            }
+            the_int = -the_int;
+        }
+
+        loop {
+            if int_ptr == bib_buf_size() {
+                buffer_overflow();
+            }
+            *buf.offset(int_ptr as isize) = b'0' + (the_int % 10) as u8;
+            int_ptr += 1;
+            the_int /= 10;
+            if the_int == 0 {
+                break;
+            }
+        }
+
+        *int_end = int_ptr;
+        int_ptr -= 1;
+        while int_xptr < int_ptr {
+            let int_tmp_val = *buf.offset(int_xptr as isize);
+            *buf.offset(int_xptr as isize) = *buf.offset(int_ptr as isize);
+            *buf.offset(int_ptr as isize) = int_tmp_val;
+            int_ptr -= 1;
+            int_xptr += 1;
+        }
     }
 
     #[allow(improper_ctypes)] // for CoreBridgeState
@@ -252,7 +297,9 @@ pub mod c_api {
             aux_name: *const libc::c_char,
         ) -> History;
 
-        // pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
+        pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
+
+        pub fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;
     }
 }
 

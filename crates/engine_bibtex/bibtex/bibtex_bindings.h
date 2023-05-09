@@ -7,6 +7,12 @@
 #include <stdlib.h>
 
 typedef enum {
+  BUF_TY_BASE,
+  BUF_TY_SV,
+  BUF_TY_EX,
+} BufTy;
+
+typedef enum {
   HISTORY_SPOTLESS = 0,
   HISTORY_WARNING_ISSUED = 1,
   HISTORY_ERROR_ISSUED = 2,
@@ -58,11 +64,31 @@ void upper_case(BufType buf, BufPointer bf_ptr, BufPointer len);
  */
 void quick_sort(StrNumber *cite_info, CiteNumber left_end, CiteNumber right_end);
 
+void int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin, BufPointer *int_end);
+
 extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
                                      const char *aux_name);
 
 extern void *xrealloc(void *ptr, size_t size);
+
+extern void *xcalloc(size_t elems, size_t elem_size);
+
+int32_t bib_buf_size(void);
+
+BufType bib_buf(BufTy ty);
+
+ASCIICode bib_buf_at(BufTy ty, BufPointer num);
+
+ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
+
+BufPointer bib_buf_offset(BufTy ty, uintptr_t num);
+
+void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
+
+void buffer_overflow(void);
+
+void bib_init_buffers(void);
 
 #ifdef __cplusplus
 } // extern "C"
