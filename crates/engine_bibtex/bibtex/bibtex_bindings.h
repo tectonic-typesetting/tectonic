@@ -14,6 +14,18 @@ typedef enum {
   HISTORY_ABORTED = 4,
 } History;
 
+typedef uint8_t ASCIICode;
+
+typedef int32_t PoolPointer;
+
+typedef int32_t StrNumber;
+
+typedef ASCIICode *BufType;
+
+typedef int32_t BufPointer;
+
+typedef int32_t CiteNumber;
+
 typedef struct {
   int min_crossrefs;
 } BibtexConfig;
@@ -21,6 +33,28 @@ typedef struct {
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+bool bib_str_eq_buf(ASCIICode *str_pool,
+                    PoolPointer *str_start,
+                    StrNumber s,
+                    BufType buf,
+                    BufPointer bf_ptr,
+                    BufPointer len);
+
+bool bib_str_eq_str(ASCIICode *str_pool, PoolPointer *str_start, StrNumber s1, StrNumber s2);
+
+void lower_case(BufType buf, BufPointer bf_ptr, BufPointer len);
+
+void upper_case(BufType buf, BufPointer bf_ptr, BufPointer len);
+
+/**
+ * # Safety
+ *
+ * Passed pointer must point to a valid array that we have exclusive access to for the duration
+ * of this call, that is at least as long as `right_end`, and initialized for the range
+ * `ptr[left_end..right_end]`
+ */
+void quick_sort(StrNumber *cite_info, CiteNumber left_end, CiteNumber right_end);
 
 extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,

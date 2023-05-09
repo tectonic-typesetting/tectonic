@@ -220,6 +220,8 @@ static buf_pointer sv_ptr1;
 static buf_pointer sv_ptr2;
 static int32_t tmp_ptr, tmp_end_ptr;
 static ASCII_code *str_pool;
+// Stores string starting locations in the string pool
+// length of string `s` is str_start[s + 1] - str_start[s]
 static pool_pointer *str_start;
 static pool_pointer pool_ptr;
 static str_number str_ptr;
@@ -738,37 +740,11 @@ aux_err_white_space_in_argument_print(void)
     puts_log("White space in argument");
 }
 
-static bool
-str_ends_with(str_number s, str_number ext)
-{
-    int32_t str_idx, ext_idx;
-    ASCII_code str_char, ext_char;
-
-    if ((str_start[ext + 1] - str_start[ext]) > (str_start[s + 1] - str_start[s]))
-        return false;
-
-    str_idx = (str_start[s + 1] - str_start[s]) - 1;
-    ext_idx = (str_start[ext + 1] - str_start[ext]) - 1;
-
-    while (ext_idx >= 0) {
-        str_char = str_pool[str_start[s] + str_idx];
-        ext_char = str_pool[str_start[ext] + ext_idx];
-
-        if (str_char != ext_char)
-            return false;
-
-        str_idx--;
-        ext_idx--;
-    }
-
-    return true;
-}
-
 static void
 print_bib_name(void)
 {
     print_a_pool_str(bib_list[bib_ptr]);
-    if (!str_ends_with(bib_list[bib_ptr], s_bib_extension))
+    if (!str_ends_with(str_pool, str_start, bib_list[bib_ptr], s_bib_extension))
         print_a_pool_str(s_bib_extension);
     putc_log('\n');
 }
@@ -778,7 +754,7 @@ static void
 log_pr_bib_name(void)
 {
     out_pool_str(log_file, bib_list[bib_ptr]);
-    if (!str_ends_with(bib_list[bib_ptr], s_bib_extension))
+    if (!str_ends_with(str_pool, str_start, bib_list[bib_ptr], s_bib_extension))
         out_pool_str(log_file, s_bib_extension);
     ttstub_output_putc (log_file, '\n');
 }
@@ -1275,75 +1251,6 @@ static str_number make_string(void)
     return str_ptr - 1;
 }
 
-static bool str_eq_buf(str_number s, buf_type buf, buf_pointer bf_ptr, buf_pointer len)
-{
-    buf_pointer i;
-    pool_pointer j;
-    if ((str_start[s + 1] - str_start[s]) != len) {
-        return false;
-    }
-    i = bf_ptr;
-    j = str_start[s];
-    while ((j < str_start[s + 1])) {
-
-        if (str_pool[j] != buf[i]) {
-            return false;
-        }
-        i = i + 1;
-        j = j + 1;
-    }
-
-    return true;
-}
-
-static bool str_eq_str(str_number s1, str_number s2)
-{
-    if ((str_start[s1 + 1] - str_start[s1]) != (str_start[s2 + 1] - str_start[s2])) {
-        return false;
-    }
-    p_ptr1 = str_start[s1];
-    p_ptr2 = str_start[s2];
-    while ((p_ptr1 < str_start[s1 + 1])) {
-
-        if (str_pool[p_ptr1] != str_pool[p_ptr2]) {
-            return false;
-        }
-        p_ptr1 = p_ptr1 + 1;
-        p_ptr2 = p_ptr2 + 1;
-    }
-    return true;
-}
-
-static void lower_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
-{
-    buf_pointer i;
-    if (len > 0) {
-        register int32_t for_end;
-        i = bf_ptr;
-        for_end = bf_ptr + len - 1;
-        if (i <= for_end)
-            do
-                if ((buf[i] >= 'A' ) && (buf[i] <= 'Z' ))
-                    buf[i] = buf[i] + 32;
-            while (i++ < for_end) ;
-    }
-}
-
-static void upper_case(buf_type buf, buf_pointer bf_ptr, buf_pointer len)
-{
-    buf_pointer i;
-    if (len > 0) {
-        register int32_t for_end;
-        i = bf_ptr;
-        for_end = bf_ptr + len - 1;
-        if (i <= for_end)
-            do
-                if ((buf[i] >= 'a' ) && (buf[i] <= 'z' ))
-                    buf[i] = buf[i] - 32;
-            while (i++ < for_end) ;
-    }
-}
-
 static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, bool insert_it)
 {
     int32_t h;
@@ -1369,7 +1276,7 @@ static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk i
         {
             if (hash_text[p] > 0) {
 
-                if (str_eq_buf(hash_text[p], buf, j, l)) {
+                if (bib_str_eq_buf(str_pool, str_start, hash_text[p], buf, j, l)) {
 
                     if (hash_ilk[p] == ilk) {
                         hash_found = true;
@@ -1462,7 +1369,7 @@ static void int_to_ASCII(int32_t the_int, buf_type int_buf, buf_pointer int_begi
             int_ptr = int_ptr + 1;
         }
         the_int = the_int / 10;
-    } while (!((the_int == 0)));
+    } while (the_int != 0);
     *int_end = int_ptr;
     int_ptr = int_ptr - 1;
     while ((int_xptr < int_ptr)) {
@@ -1503,14 +1410,6 @@ static bool find_cite_locs_for_this_cite_key(str_number cite_str)
     return hash_found;
 }
 
-static void swap(cite_number swap1, cite_number swap2)
-{
-    cite_number innocent_bystander;
-    innocent_bystander = cite_info[swap2];
-    cite_info[swap2] = cite_info[swap1];
-    cite_info[swap1] = innocent_bystander;
-}
-
 static bool less_than(cite_number arg1, cite_number arg2)
 {
     int32_t char_ptr;
@@ -1547,80 +1446,6 @@ static bool less_than(cite_number arg1, cite_number arg2)
             return false;
         }
         char_ptr = char_ptr + 1;
-    }
-}
-
-static void quick_sort(cite_number left_end, cite_number right_end)
-{
-    cite_number left, right;
-    cite_number insert_ptr;
-    cite_number middle;
-    cite_number partition;
-    ;
-
-    if (right_end - left_end < 10 /*short_list */ ) { /*305: */
-        {
-            register int32_t for_end;
-            insert_ptr = left_end + 1;
-            for_end = right_end;
-            if (insert_ptr <= for_end)
-                do {
-                    {
-                        register int32_t for_end;
-                        right = insert_ptr;
-                        for_end = left_end + 1;
-                        if (right >= for_end)
-                            do {
-                                if (less_than(cite_info[right - 1], cite_info[right]))
-                                    goto lab24;
-                                swap(right - 1, right);
-                            }
-                            while (right-- > for_end);
-                    }
- lab24:                        /*next_insert */ ;
-                }
-                while (insert_ptr++ < for_end);
-        }
-    } else {
-
-        {
-            left = left_end + 4;
-            middle = (left_end + right_end) / 2;
-            right = right_end - 4;
-            if (less_than(cite_info[left], cite_info[middle])) {
-
-                if (less_than(cite_info[middle], cite_info[right]))
-                    swap(left_end, middle);
-                else if (less_than(cite_info[left], cite_info[right]))
-                    swap(left_end, right);
-                else
-                    swap(left_end, left);
-            } else if (less_than(cite_info[right], cite_info[middle]))
-                swap(left_end, middle);
-            else if (less_than(cite_info[right], cite_info[left]))
-                swap(left_end, right);
-            else
-                swap(left_end, left);
-        }
-        {
-            partition = cite_info[left_end];
-            left = left_end + 1;
-            right = right_end;
-            do {
-                while ((less_than(cite_info[left], partition)))
-                    left = left + 1;
-                while ((less_than(partition, cite_info[right])))
-                    right = right - 1;
-                if (left < right) {
-                    swap(left, right);
-                    left = left + 1;
-                    right = right - 1;
-                }
-            } while (!((left == right + 1)));
-            swap(left_end, right);
-            quick_sort(left_end, right - 1);
-            quick_sort(left, right_end);
-        }
     }
 }
 
@@ -3386,7 +3211,7 @@ static void x_equals(void)
             push_lit_stk(1, 0 /*stk_int */ );
         else
             push_lit_stk(0, 0 /*stk_int */ );
-    } else if (str_eq_str(pop_lit2, pop_lit1))
+    } else if (bib_str_eq_str(str_pool, str_start, pop_lit2, pop_lit1))
         push_lit_stk(1, 0 /*stk_int */ );
     else
         push_lit_stk(0, 0 /*stk_int */ );
@@ -5401,9 +5226,14 @@ static void aux_input_command(void)
         aux_extension_ok = true;
         if ((buf_ptr2 - buf_ptr1) < (str_start[s_aux_extension + 1] - str_start[s_aux_extension]))
             aux_extension_ok = false;
-        else if ((!str_eq_buf
-                  (s_aux_extension, buffer, buf_ptr2 - (str_start[s_aux_extension + 1] - str_start[s_aux_extension]),
-                   (str_start[s_aux_extension + 1] - str_start[s_aux_extension]))))
+        else if (!bib_str_eq_buf(
+                str_pool,
+                str_start,
+                s_aux_extension,
+                buffer,
+                buf_ptr2 - (str_start[s_aux_extension + 1] - str_start[s_aux_extension]),
+                (str_start[s_aux_extension + 1] - str_start[s_aux_extension])
+                ))
             aux_extension_ok = false;
         if (!aux_extension_ok) {
             print_a_token();
@@ -6902,7 +6732,7 @@ bst_sort_command(void)
     }
 
     if (num_cites > 1)
-        quick_sort(0, num_cites - 1);
+        quick_sort(cite_info, 0, num_cites - 1);
 }
 
 
