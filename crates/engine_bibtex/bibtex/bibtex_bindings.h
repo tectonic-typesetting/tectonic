@@ -34,6 +34,8 @@ typedef struct {
 extern "C" {
 #endif // __cplusplus
 
+bool str_ends_with(ASCIICode *str_pool, PoolPointer *str_start, StrNumber s, StrNumber ext);
+
 bool bib_str_eq_buf(ASCIICode *str_pool,
                     PoolPointer *str_start,
                     StrNumber s,
@@ -59,6 +61,8 @@ void quick_sort(StrNumber *cite_info, CiteNumber left_end, CiteNumber right_end)
 extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
                                      const char *aux_name);
+
+extern void *xrealloc(void *ptr, size_t size);
 
 #ifdef __cplusplus
 } // extern "C"

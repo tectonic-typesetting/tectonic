@@ -252,7 +252,7 @@ pub mod c_api {
             aux_name: *const libc::c_char,
         ) -> History;
 
-        pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
+        // pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
     }
 }
 
