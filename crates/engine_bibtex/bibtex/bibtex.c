@@ -212,8 +212,6 @@ static ASCII_code *name_of_file;
 static int32_t name_length;
 static int32_t name_ptr;
 static buf_pointer last;
-static buf_pointer sv_ptr2;
-static int32_t tmp_ptr, tmp_end_ptr;
 static ASCII_code *str_pool;
 // Stores string starting locations in the string pool
 // length of string `s` is str_start[s + 1] - str_start[s]
@@ -1337,6 +1335,9 @@ static void add_database_cite(cite_number * new_cite)
 
 static bool find_cite_locs_for_this_cite_key(str_number cite_str)
 {
+    buf_pointer tmp_ptr;
+    buf_pointer tmp_end_ptr;
+
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
     tmp_ptr = str_start[cite_str];
     tmp_end_ptr = str_start[cite_str + 1];
@@ -2159,6 +2160,8 @@ static bool scan_balanced_braces(void)
 
 static bool scan_a_field_token_and_eat_white(void)
 {
+    buf_pointer tmp_ptr, tmp_end_ptr;
+
     switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
     case 123:
         {
@@ -2299,6 +2302,8 @@ static bool scan_a_field_token_and_eat_white(void)
 
 static bool scan_and_store_the_field_value_and_eat_white(void)
 {
+    buf_pointer tmp_ptr;
+
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
     if (!scan_a_field_token_and_eat_white())
         return false;
@@ -3062,8 +3067,10 @@ static void add_buf_pool(str_number p_str)
 
 static void add_out_pool(str_number p_str)
 {
+    buf_pointer tmp_ptr;
     buf_pointer break_ptr;
     buf_pointer end_ptr;
+
     bool break_pt_found;
     bool unbreakable_tail;
     p_ptr1 = str_start[p_str];
@@ -3508,6 +3515,8 @@ static void x_add_period(void)
 
 static void x_change_case(void)
 {
+    buf_pointer tmp_ptr;
+
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -5048,6 +5057,8 @@ static void aux_bib_style_command(void)
 
 static void aux_citation_command(void)
 {
+    buf_pointer tmp_ptr;
+
     citation_seen = true;
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
@@ -5959,6 +5970,8 @@ static void bst_macro_command(void)
 
 static void get_bib_command_or_entry_and_process(void)
 {
+    buf_pointer tmp_ptr, tmp_end_ptr;
+
     at_bib_command = false;
     while (!scan1(64 /*at_sign */ )) {
 
@@ -6340,6 +6353,8 @@ static void get_bib_command_or_entry_and_process(void)
 
 static void bst_read_command(void)
 {
+    buf_pointer tmp_ptr;
+
     if (read_seen) {
         puts_log("Illegal, another read command");
         bst_err_print_and_look_for_blank_line();

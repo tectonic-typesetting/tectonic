@@ -144,7 +144,7 @@ pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) 
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn buffer_overflow() {
+pub extern "C" fn buffer_overflow() {
     GLOBAL_BUFFERS.with(|buffers| {
         buffers.borrow_mut()
             .grow_all()
@@ -152,7 +152,7 @@ pub unsafe extern "C" fn buffer_overflow() {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_init_buffers() {
+pub extern "C" fn bib_init_buffers() {
     GLOBAL_BUFFERS.with(|buffers| {
         buffers.borrow_mut()
             .init()
