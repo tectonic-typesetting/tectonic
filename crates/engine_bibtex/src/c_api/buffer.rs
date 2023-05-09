@@ -1,24 +1,12 @@
 use crate::c_api::{xcalloc, xrealloc, ASCIICode, BufPointer, BufType};
-use std::cell::UnsafeCell;
+use std::cell::RefCell;
 use std::{mem, ptr};
 
-struct UnsafeSendSync<T>(UnsafeCell<T>);
-
-unsafe impl<T> Sync for UnsafeSendSync<T> {}
-unsafe impl<T> Send for UnsafeSendSync<T> {}
-
-impl<T> UnsafeSendSync<T> {
-    const fn new(val: T) -> UnsafeSendSync<T> {
-        UnsafeSendSync(UnsafeCell::new(val))
-    }
-
-    fn get(&self) -> *mut T {
-        self.0.get()
-    }
-}
-
 const BUF_SIZE: usize = 20000;
-static GLOBAL_BUFFERS: UnsafeSendSync<GlobalBuffer> = UnsafeSendSync::new(GlobalBuffer::new());
+
+thread_local! {
+    static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = const { RefCell::new(GlobalBuffer::new()) };
+}
 
 struct Buffer<T, const N: usize> {
     ptr: *mut T,
@@ -103,18 +91,19 @@ pub enum BufTy {
 
 #[no_mangle]
 pub extern "C" fn bib_buf_size() -> i32 {
-    let buffers = unsafe { &*GLOBAL_BUFFERS.get() };
-    buffers.buf_len as i32
+    GLOBAL_BUFFERS.with(|buffers| buffers.borrow().buf_len as i32)
 }
 
 #[no_mangle]
 pub extern "C" fn bib_buf(ty: BufTy) -> BufType {
-    let buffers = unsafe { &*GLOBAL_BUFFERS.get() };
-    match ty {
-        BufTy::Base => buffers.buffer.ptr,
-        BufTy::Sv => buffers.sv_buffer.ptr,
-        BufTy::Ex => buffers.ex_buf.ptr,
-    }
+    GLOBAL_BUFFERS.with(|buffers| {
+        let buffers = buffers.borrow();
+        match ty {
+            BufTy::Base => buffers.buffer.ptr,
+            BufTy::Sv => buffers.sv_buffer.ptr,
+            BufTy::Ex => buffers.ex_buf.ptr,
+        }
+    })
 }
 
 #[no_mangle]
@@ -132,32 +121,40 @@ pub unsafe extern "C" fn bib_buf_at_offset(ty: BufTy, num: usize) -> ASCIICode {
 
 #[no_mangle]
 pub extern "C" fn bib_buf_offset(ty: BufTy, num: usize) -> BufPointer {
-    let buffers = unsafe { &*GLOBAL_BUFFERS.get() };
-    match ty {
-        BufTy::Base => buffers.buffer.offset[num - 1],
-        BufTy::Sv => buffers.sv_buffer.offset[num - 1],
-        BufTy::Ex => buffers.ex_buf.offset[num - 1],
-    }
+    GLOBAL_BUFFERS.with(|buffers| {
+        let buffers = buffers.borrow();
+        match ty {
+            BufTy::Base => buffers.buffer.offset[num - 1],
+            BufTy::Sv => buffers.sv_buffer.offset[num - 1],
+            BufTy::Ex => buffers.ex_buf.offset[num - 1],
+        }
+    })
 }
 
 #[no_mangle]
 pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) {
-    let buffers = unsafe { &mut *GLOBAL_BUFFERS.get() };
-    match ty {
-        BufTy::Base => buffers.buffer.offset[num - 1] = offset,
-        BufTy::Sv => buffers.sv_buffer.offset[num - 1] = offset,
-        BufTy::Ex => buffers.ex_buf.offset[num - 1] = offset,
-    }
+    GLOBAL_BUFFERS.with(|buffers| {
+        let mut buffers = buffers.borrow_mut();
+        match ty {
+            BufTy::Base => buffers.buffer.offset[num - 1] = offset,
+            BufTy::Sv => buffers.sv_buffer.offset[num - 1] = offset,
+            BufTy::Ex => buffers.ex_buf.offset[num - 1] = offset,
+        }
+    })
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn buffer_overflow() {
-    let buffers = &mut *GLOBAL_BUFFERS.get();
-    buffers.grow_all();
+    GLOBAL_BUFFERS.with(|buffers| {
+        buffers.borrow_mut()
+            .grow_all()
+    })
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bib_init_buffers() {
-    let buffers = &mut *GLOBAL_BUFFERS.get();
-    buffers.init();
+    GLOBAL_BUFFERS.with(|buffers| {
+        buffers.borrow_mut()
+            .init()
+    })
 }
