@@ -1,9 +1,9 @@
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::{
-    ttstub_input_close, ttstub_input_getc, ttstub_input_open, xcalloc, ASCIICode, BufPointer,
+    ttstub_input_close, ttstub_input_open, xcalloc, ASCIICode, BufPointer,
 };
 use libc::{free, EOF};
-use std::{mem, ptr};
+use std::{io, mem, ptr};
 use tectonic_io_base::InputHandle;
 use crate::c_api::char_info::{LEX_CLASS, LexClass};
 
@@ -12,7 +12,6 @@ use crate::c_api::char_info::{LEX_CLASS, LexClass};
 
 #[repr(C)]
 pub struct PeekableInput {
-    // rust_input_handle_t
     handle: *mut InputHandle,
     peek_char: libc::c_int,
     saw_eof: bool,
@@ -26,8 +25,20 @@ impl PeekableInput {
             return rv;
         }
 
-        // SAFETY: Internal handle guaranteed valid
-        let rv = unsafe { ttstub_input_getc(self.handle) };
+        // SAFETY: Internal handle guaranteed valid, unique access to this input is unique access
+        //         to the handle
+        let handle = unsafe { &mut *self.handle };
+        let rv = match handle.getc() {
+            Ok(c) => libc::c_int::from(c),
+            Err(e) => {
+                if let Some(e) = e.downcast_ref::<io::Error>() {
+                    if e.kind() == io::ErrorKind::UnexpectedEof {
+                        return EOF;
+                    }
+                }
+                -1
+            }
+        };
         if rv == EOF {
             self.saw_eof = true;
         }

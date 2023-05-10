@@ -22,6 +22,7 @@
 use std::ffi::CString;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
+use crate::c_api::history::History;
 
 /// A possible outcome from a BibTeX engine invocation.
 ///
@@ -90,11 +91,11 @@ impl BibtexEngine {
             let hist = unsafe { c_api::tt_engine_bibtex_main(state, &self.config, caux.as_ptr()) };
 
             match hist {
-                c_api::History::Spotless => Ok(BibtexOutcome::Spotless),
-                c_api::History::WarningIssued => Ok(BibtexOutcome::Warnings),
-                c_api::History::ErrorIssued => Ok(BibtexOutcome::Errors),
-                c_api::History::FatalError => Err(anyhow!("unspecified fatal bibtex error")),
-                c_api::History::Aborted => Err(EngineAbortedError::new_abort_indicator().into()),
+                History::Spotless => Ok(BibtexOutcome::Spotless),
+                History::WarningIssued => Ok(BibtexOutcome::Warnings),
+                History::ErrorIssued => Ok(BibtexOutcome::Errors),
+                History::FatalError => Err(anyhow!("unspecified fatal bibtex error")),
+                History::Aborted => Err(EngineAbortedError::new_abort_indicator().into()),
             }
         })
     }
@@ -104,14 +105,15 @@ impl BibtexEngine {
 pub mod c_api {
     use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
     use std::slice;
-    use std::cell::Cell;
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
+    use crate::c_api::history::History;
 
     mod char_info;
     mod buffer;
     mod peekable;
     mod log;
+    pub mod history;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -139,31 +141,6 @@ pub mod c_api {
             str_pool.offset(*str_start.offset(str) as isize),
             (*str_start.offset(str + 1) - *str_start.offset(str)) as usize,
         )
-    }
-
-    /// cbindgen:rename-all=ScreamingSnakeCase
-    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-    #[repr(C)]
-    pub enum History {
-        Spotless = 0,
-        WarningIssued = 1,
-        ErrorIssued = 2,
-        FatalError = 3,
-        Aborted = 4,
-    }
-
-    thread_local! {
-        static HISTORY: Cell<History> = Cell::new(History::Spotless);
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn get_history() -> History {
-        HISTORY.with(|h| h.get())
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn set_history(hist: History) {
-        HISTORY.with(|h| h.set(hist))
     }
 
     #[repr(C)]
@@ -316,8 +293,6 @@ pub mod c_api {
             is_gz: libc::c_int,
         ) -> *mut InputHandle;
         pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
-        pub fn ttstub_input_getc(input: *mut InputHandle) -> libc::c_int;
-        pub fn ttstub_output_putc(output: *mut OutputHandle) -> libc::c_int;
         pub fn ttstub_output_open_stdout() -> *mut OutputHandle;
         pub fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> *mut OutputHandle;
 

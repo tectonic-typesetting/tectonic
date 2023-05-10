@@ -67,10 +67,6 @@ extern const IdClass ID_CLASS[256];
 
 extern const int32_t CHAR_WIDTH[256];
 
-History get_history(void);
-
-void set_history(History hist);
-
 bool str_ends_with(ASCIICode *str_pool, PoolPointer *str_start, StrNumber s, StrNumber ext);
 
 bool bib_str_eq_buf(ASCIICode *str_pool,
@@ -130,6 +126,22 @@ ttbc_output_handle_t *init_log_file(const char *file);
 ttbc_output_handle_t *standard_output(void);
 
 ttbc_output_handle_t *log_file(void);
+
+void putc_log(int c);
+
+void puts_log(const char *str);
+
+void ttstub_puts(ttbc_output_handle_t *handle, const char *s);
+
+History get_history(void);
+
+void set_history(History hist);
+
+void mark_warning(void);
+
+void mark_error(void);
+
+void mark_fatal(void);
 
 #ifdef __cplusplus
 } // extern "C"

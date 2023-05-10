@@ -300,28 +300,6 @@ const BibtexConfig* bibtex_config;
 
 /*:473*//*12: *//*3: */
 
-static void
-putc_log(const int c)
-{
-    ttstub_output_putc(log_file(), c);
-    ttstub_output_putc(standard_output(), c);
-}
-
-static void
-puts_log(const char *s)
-{
-    size_t len = strlen(s);
-    ttstub_output_write(log_file(), s, len);
-    ttstub_output_write(standard_output(), s, len);
-}
-
-static void
-ttstub_puts (rust_output_handle_t handle, const char *s)
-{
-    ttstub_output_write (handle, s, strlen(s));
-}
-
-
 #define FMT_BUF_SIZE 1024
 static char fmt_buf[FMT_BUF_SIZE] = "";
 
@@ -335,50 +313,6 @@ printf_log(const char *fmt, ...)
     va_end (ap);
 
     puts_log(fmt_buf);
-}
-
-
-static void
-mark_warning(void)
-{
-    History history = get_history();
-    if (history == HISTORY_WARNING_ISSUED)
-        err_count++;
-    else if (history == HISTORY_SPOTLESS) {
-        set_history(HISTORY_WARNING_ISSUED);
-        err_count = 1;
-    }
-}
-
-static void
-mark_error(void)
-{
-    if (get_history() < HISTORY_ERROR_ISSUED) {
-        set_history(HISTORY_ERROR_ISSUED);
-        err_count = 1;
-    } else
-        err_count++;
-}
-
-static void
-mark_fatal(void)
-{
-    set_history(HISTORY_FATAL_ERROR);
-}
-
-static void
-print_overflow(void)
-{
-    puts_log("Sorry---you've exceeded BibTeX's ");
-    mark_fatal();
-}
-
-static void
-print_confusion(void)
-{
-    puts_log("---this can't happen\n");
-    puts_log("*Please notify the BibTeX maintainer*\n");
-    mark_fatal();
 }
 
 static void
