@@ -53,6 +53,13 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 
 /*22: */
 
+typedef enum {
+  SCAN_RES_ID_NULL = 0,
+  SCAN_RES_SPECIFIED_CHAR_ADJACENT = 1,
+  SCAN_RES_OTHER_CHAR_ADJACENT = 2,
+  SCAN_RES_WHITESPACE_ADJACENT = 3,
+} scan_result;
+
 typedef unsigned char ASCII_code;
 typedef int32_t buf_pointer;
 typedef ASCII_code *buf_type;
@@ -123,7 +130,6 @@ static str_number s_bst_area;
 static str_number s_bib_area;
 static hash_loc pre_def_loc;
 static int32_t command_num;
-static unsigned char /*white_adjacent */ scan_result;
 static int32_t token_value;
 static int32_t aux_name_length;
 static PeekableInput *aux_file[aux_stack_size + 1];
@@ -329,7 +335,6 @@ out_pool_str(rust_output_handle_t handle, str_number s)
     for (i = str_start[s]; i < str_start[s + 1]; i++)
         ttstub_output_putc (handle, str_pool[i]);
 }
-
 
 static void
 print_a_pool_str(str_number s)
@@ -655,11 +660,11 @@ static void id_scanning_confusion(void)
     longjmp(error_jmpbuf, 1);
 }
 
-static void bst_id_print(void)
+static void bst_id_print(scan_result scan_result)
 {
-    if (scan_result == 0 /*id_null */ ) {
+    if (scan_result == SCAN_RES_ID_NULL) {
         printf_log("\"%c\" begins identifier, command: ", bib_buf_at_offset(BUF_TY_BASE, 2));
-    } else if (scan_result == 2 /*other_char_adjacent */ ) {
+    } else if (scan_result == SCAN_RES_OTHER_CHAR_ADJACENT) {
         printf_log("\"%c\" immediately follows identifier, command: ", bib_buf_at_offset(BUF_TY_BASE, 2));
     } else
         id_scanning_confusion();
@@ -760,11 +765,11 @@ static void macro_warn_print(void)
     puts_log("\" is ");
 }
 
-static void bib_id_print(void)
+static void bib_id_print(scan_result scan_result)
 {
-    if (scan_result == 0 /*id_null */ ) {
+    if (scan_result == SCAN_RES_ID_NULL ) {
         puts_log("You're missing ");
-    } else if (scan_result == 2 /*other_char_adjacent */ ) {
+    } else if (scan_result == SCAN_RES_OTHER_CHAR_ADJACENT ) {
         printf_log("\"%c\" immediately follows ", bib_buf_at_offset(BUF_TY_BASE, 2));
     } else
         id_scanning_confusion();
@@ -1376,20 +1381,20 @@ static bool scan_alpha(void)
     return (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) != 0;
 }
 
-static void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
+static scan_result scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
     if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_NUMERIC )
         while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (ID_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == ID_CLASS_LEGAL_ID_CHAR ))
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     if ((bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) == 0)
-        scan_result = 0 /*id_null */ ;
+        return SCAN_RES_ID_NULL;
     else if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == last))
-        scan_result = 3 /*white_adjacent */ ;
+        return SCAN_RES_WHITESPACE_ADJACENT;
     else if ((bib_buf_at_offset(BUF_TY_BASE, 2) == char1) || (bib_buf_at_offset(BUF_TY_BASE, 2) == char2) || (bib_buf_at_offset(BUF_TY_BASE, 2) == char3))
-        scan_result = 1 /*specified_char_adjacent */ ;
+        return SCAN_RES_SPECIFIED_CHAR_ADJACENT;
     else
-        scan_result = 2 /*other_char_adjacent */ ;
+        return SCAN_RES_OTHER_CHAR_ADJACENT;
 }
 
 static bool scan_nonneg_integer(void)
@@ -1997,11 +2002,11 @@ static bool scan_a_field_token_and_eat_white(void)
         break;
     default:
         {
-            scan_identifier(44 /*comma */ , right_outer_delim, 35 /*concat_char */ );
+            scan_result scan_result = scan_identifier(44 /*comma */ , right_outer_delim, 35 /*concat_char */ );
             {
-                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+                if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
-                    bib_id_print();
+                    bib_id_print(scan_result);
                     puts_log("a field part");
                     bib_err_print();
                     return false;
@@ -5116,10 +5121,10 @@ static void bst_entry_command(void)
         while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
             {
-                scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+                scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+                if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
-                    bst_id_print();
+                    bst_id_print(scan_result);
                     puts_log("entry");
                     bst_err_print_and_look_for_blank_line();
                     return;
@@ -5184,10 +5189,10 @@ static void bst_entry_command(void)
         while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
             {
-                scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+                scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+                if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
-                    bst_id_print();
+                    bst_id_print(scan_result);
                     puts_log("entry");
                     bst_err_print_and_look_for_blank_line();
                     return;
@@ -5248,10 +5253,10 @@ static void bst_entry_command(void)
         while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
             {
-                scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-                if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+                scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+                if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
-                    bst_id_print();
+                    bst_id_print(scan_result);
                     puts_log("entry");
                     bst_err_print_and_look_for_blank_line();
                     return;
@@ -5337,10 +5342,10 @@ static void bst_execute_command(void)
         }
     }
     {
-        scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-        if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
         else {
-            bst_id_print();
+            bst_id_print(scan_result);
             puts_log("execute");
             bst_err_print_and_look_for_blank_line();
             return;
@@ -5406,10 +5411,10 @@ static void bst_function_command(void)
             }
         }
         {
-            scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+            scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+            if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
-                bst_id_print();
+                bst_id_print(scan_result);
                 puts_log("function");
                 bst_err_print_and_look_for_blank_line();
                 return;
@@ -5498,10 +5503,10 @@ static void bst_integers_command(void)
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
         {
-            scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+            scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+            if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
-                bst_id_print();
+                bst_id_print(scan_result);
                 puts_log("integers");
                 bst_err_print_and_look_for_blank_line();
                 return;
@@ -5566,10 +5571,10 @@ static void bst_iterate_command(void)
         }
     }
     {
-        scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-        if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
         else {
-            bst_id_print();
+            bst_id_print(scan_result);
             puts_log("iterate");
             bst_err_print_and_look_for_blank_line();
             return;
@@ -5648,10 +5653,10 @@ static void bst_macro_command(void)
             }
         }
         {
-            scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+            scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+            if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
-                bst_id_print();
+                bst_id_print(scan_result);
                 puts_log("macro");
                 bst_err_print_and_look_for_blank_line();
                 return;
@@ -5777,11 +5782,11 @@ static void get_bib_command_or_entry_and_process(void)
                 return;
             }
         }
-        scan_identifier(123 /*left_brace */ , 40 /*left_paren */ , 40 /*left_paren */ );
+        scan_result scan_result = scan_identifier(123 /*left_brace */ , 40 /*left_paren */ , 40 /*left_paren */ );
         {
-            if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+            if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
-                bib_id_print();
+                bib_id_print(scan_result);
                 puts_log("an entry type");
                 bib_err_print();
                 return;
@@ -5867,13 +5872,13 @@ static void get_bib_command_or_entry_and_process(void)
                                 eat_bib_print();
                                 return;
                             }
-                        }
-                        scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
+                        };
+                        scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
                         {
-                            if (((scan_result == 3 /*white_adjacent */ )
-                                 || (scan_result == 1 /*specified_char_adjacent */ ))) ;
+                            if (((scan_result == SCAN_RES_WHITESPACE_ADJACENT)
+                                 || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT))) ;
                             else {
-                                bib_id_print();
+                                bib_id_print(scan_result);
                                 puts_log("a string name");
                                 bib_err_print();
                                 return;
@@ -6087,11 +6092,11 @@ static void get_bib_command_or_entry_and_process(void)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) == right_outer_delim)
                 goto loop_exit;
             {
-                scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
+                scan_result scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
                 {
-                    if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+                    if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                     else {
-                        bib_id_print();
+                        bib_id_print(scan_result);
                         puts_log("a field name");
                         bib_err_print();
                         return;
@@ -6412,10 +6417,10 @@ static void bst_reverse_command(void)
         }
     }
     {
-        scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-        if ((scan_result == 3 /*white_adjacent */ ) || (scan_result == 1 /*specified_char_adjacent */ )) ;
+        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
         else {
-            bst_id_print();
+            bst_id_print(scan_result);
             puts_log("reverse");
             bst_err_print_and_look_for_blank_line();
             return;
@@ -6503,9 +6508,9 @@ bst_strings_command(void)
     }
 
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
-        if (scan_result != 3 /*white_adjacent */  && scan_result != 1 /*specified_char_adjacent */ ) {
-            bst_id_print();
+        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        if (scan_result != SCAN_RES_WHITESPACE_ADJACENT && scan_result != SCAN_RES_SPECIFIED_CHAR_ADJACENT) {
+            bst_id_print(scan_result);
             puts_log("strings");
             bst_err_print_and_look_for_blank_line();
             return;
