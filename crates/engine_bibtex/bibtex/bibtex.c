@@ -54,8 +54,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 /*22: */
 
 typedef unsigned char ASCII_code;
-typedef unsigned char /*last_lex */ lex_type;
-typedef unsigned char id_type;
 typedef int32_t buf_pointer;
 typedef ASCII_code *buf_type;
 typedef int32_t pool_pointer;
@@ -80,7 +78,6 @@ typedef int32_t lit_stk_loc;
 typedef unsigned char /*last_lit_type */ stk_type;
 typedef int32_t blt_in_range;
 
-static rust_output_handle_t standard_output;
 static int32_t pool_size;
 static int32_t max_bib_files;
 static int32_t max_cites;
@@ -97,11 +94,7 @@ static int32_t hash_max;
 static int32_t end_of_def;
 static int32_t undefined;
 static int32_t bad;
-static unsigned char /*fatal_message */ history;
 static int32_t err_count;
-static lex_type lex_class[256];
-static id_type id_class[256];
-static int32_t char_width[256];
 static int32_t string_width;
 static ASCII_code *name_of_file;
 static int32_t name_length;
@@ -138,7 +131,6 @@ static str_number aux_list[aux_stack_size + 1];
 static aux_number aux_ptr;
 static int32_t aux_ln_stack[aux_stack_size + 1];
 static str_number top_lev_str;
-static rust_output_handle_t log_file;
 static rust_output_handle_t bbl_file;
 static str_number *bib_list;
 static bib_number bib_ptr;
@@ -311,16 +303,16 @@ const BibtexConfig* bibtex_config;
 static void
 putc_log(const int c)
 {
-    ttstub_output_putc(log_file, c);
-    ttstub_output_putc(standard_output, c);
+    ttstub_output_putc(log_file(), c);
+    ttstub_output_putc(standard_output(), c);
 }
 
 static void
 puts_log(const char *s)
 {
     size_t len = strlen(s);
-    ttstub_output_write(log_file, s, len);
-    ttstub_output_write(standard_output, s, len);
+    ttstub_output_write(log_file(), s, len);
+    ttstub_output_write(standard_output(), s, len);
 }
 
 static void
@@ -349,10 +341,11 @@ printf_log(const char *fmt, ...)
 static void
 mark_warning(void)
 {
+    History history = get_history();
     if (history == HISTORY_WARNING_ISSUED)
         err_count++;
     else if (history == HISTORY_SPOTLESS) {
-        history = HISTORY_WARNING_ISSUED;
+        set_history(HISTORY_WARNING_ISSUED);
         err_count = 1;
     }
 }
@@ -360,8 +353,8 @@ mark_warning(void)
 static void
 mark_error(void)
 {
-    if (history < HISTORY_ERROR_ISSUED) {
-        history = HISTORY_ERROR_ISSUED;
+    if (get_history() < HISTORY_ERROR_ISSUED) {
+        set_history(HISTORY_ERROR_ISSUED);
         err_count = 1;
     } else
         err_count++;
@@ -370,7 +363,7 @@ mark_error(void)
 static void
 mark_fatal(void)
 {
-    history = HISTORY_FATAL_ERROR;
+    set_history(HISTORY_FATAL_ERROR);
 }
 
 static void
@@ -407,8 +400,8 @@ out_pool_str(rust_output_handle_t handle, str_number s)
 static void
 print_a_pool_str(str_number s)
 {
-    out_pool_str(standard_output, s);
-    out_pool_str(log_file, s);
+    out_pool_str(standard_output(), s);
+    out_pool_str(log_file(), s);
 }
 
 
@@ -432,8 +425,8 @@ out_token(rust_output_handle_t handle)
 static void
 print_a_token(void)
 {
-    out_token(standard_output);
-    out_token(log_file);
+    out_token(standard_output());
+    out_token(log_file());
 }
 
 
@@ -446,7 +439,7 @@ print_bad_input_line(void)
     bf_ptr = 0;
 
     while (bf_ptr < bib_buf_offset(BUF_TY_BASE, 2)) {
-        if (lex_class[bib_buf_at(BUF_TY_BASE, bf_ptr)] == 1 /*white_space */ )
+        if (LEX_CLASS[bib_buf_at(BUF_TY_BASE, bf_ptr)] == LEX_CLASS_WHITESPACE)
             putc_log(' ');
         else
             putc_log(bib_buf_at(BUF_TY_BASE, bf_ptr));
@@ -463,7 +456,7 @@ print_bad_input_line(void)
     bf_ptr = bib_buf_offset(BUF_TY_BASE, 2);
 
     while (bf_ptr < last) {
-        if (lex_class[bib_buf_at(BUF_TY_BASE, bf_ptr)] == 1 /*white_space */ )
+        if (LEX_CLASS[bib_buf_at(BUF_TY_BASE, bf_ptr)] == LEX_CLASS_WHITESPACE )
             putc_log(' ');
         else
             putc_log(bib_buf_at(BUF_TY_BASE, bf_ptr));
@@ -473,7 +466,7 @@ print_bad_input_line(void)
     putc_log('\n');
     bf_ptr = 0;
 
-    while (bf_ptr < bib_buf_offset(BUF_TY_BASE, 2) && lex_class[bib_buf_at(BUF_TY_BASE, bf_ptr)] == 1 /*white_space */ )
+    while (bf_ptr < bib_buf_offset(BUF_TY_BASE, 2) && LEX_CLASS[bib_buf_at(BUF_TY_BASE, bf_ptr)] == LEX_CLASS_WHITESPACE )
         bf_ptr++;
 
     if (bf_ptr == bib_buf_offset(BUF_TY_BASE, 2))
@@ -493,14 +486,14 @@ print_skipping_whatever_remains(void)
 static void
 sam_wrong_file_name_print(void)
 {
-    ttstub_puts (standard_output, "I couldn't open file name `");
+    ttstub_puts (standard_output(), "I couldn't open file name `");
 
     name_ptr = 0;
     while (name_ptr <= name_length)
-        ttstub_output_putc (standard_output, name_of_file[name_ptr++]);
+        ttstub_output_putc (standard_output(), name_of_file[name_ptr++]);
 
-    ttstub_output_putc (standard_output, '\'');
-    ttstub_output_putc (standard_output, '\n');
+    ttstub_output_putc (standard_output(), '\'');
+    ttstub_output_putc (standard_output(), '\n');
 }
 
 
@@ -515,8 +508,8 @@ print_aux_name(void)
 static void
 log_pr_aux_name(void)
 {
-    out_pool_str(log_file, aux_list[aux_ptr]);
-    ttstub_output_putc (log_file, '\n');
+    out_pool_str(log_file(), aux_list[aux_ptr]);
+    ttstub_output_putc (log_file(), '\n');
 }
 
 
@@ -587,10 +580,10 @@ print_bib_name(void)
 static void
 log_pr_bib_name(void)
 {
-    out_pool_str(log_file, bib_list[bib_ptr]);
+    out_pool_str(log_file(), bib_list[bib_ptr]);
     if (!str_ends_with(str_pool, str_start, bib_list[bib_ptr], s_bib_extension))
-        out_pool_str(log_file, s_bib_extension);
-    ttstub_output_putc (log_file, '\n');
+        out_pool_str(log_file(), s_bib_extension);
+    ttstub_output_putc (log_file(), '\n');
 }
 
 
@@ -605,9 +598,9 @@ static void print_bst_name(void)
 static void
 log_pr_bst_name(void)
 {
-    out_pool_str(log_file, bst_str);
-    out_pool_str(log_file, s_bst_extension);
-    ttstub_output_putc (log_file, '\n');
+    out_pool_str(log_file(), bst_str);
+    out_pool_str(log_file(), s_bst_extension);
+    ttstub_output_putc (log_file(), '\n');
 }
 
 
@@ -658,7 +651,7 @@ static void bst_err_print_and_look_for_blank_line(void)
     bst_ln_num_print();
     print_bad_input_line();
     while ((last != 0))
-        if (!input_ln(lex_class, &last, bst_file))
+        if (!input_ln(&last, bst_file))
             longjmp(recover_jmpbuf, 1);
         else
             bst_line_num = bst_line_num + 1;
@@ -996,7 +989,7 @@ static void output_bbl_line(void)
 {
     if (out_buf_length != 0) {
         while ((out_buf_length > 0))
-            if (lex_class[out_buf[out_buf_length - 1]] == 1 /*white_space */ )
+            if (LEX_CLASS[out_buf[out_buf_length - 1]] == LEX_CLASS_WHITESPACE )
                 out_buf_length = out_buf_length - 1;
             else
                 break;
@@ -1411,7 +1404,7 @@ static bool scan1(ASCII_code char1)
 static bool scan1_white(ASCII_code char1)
 {
     bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] != 1 /*white_space */ ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char1))
+    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char1))
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     return bib_buf_offset(BUF_TY_BASE, 2) < last;
 }
@@ -1428,7 +1421,7 @@ static bool scan2_white(ASCII_code char1, ASCII_code char2)
 {
     bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
     while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char1) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char2)
-            && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] != 1 /*white_space */ ))
+            && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE ))
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     return bib_buf_offset(BUF_TY_BASE, 2) < last;
 }
@@ -1444,7 +1437,7 @@ static bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 static bool scan_alpha(void)
 {
     bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 2 /*alpha */ ))
+    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_ALPHA ))
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     return (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) != 0;
 }
@@ -1452,12 +1445,12 @@ static bool scan_alpha(void)
 static void scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
 {
     bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    if (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] != 3 /*numeric */ )
-        while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (id_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*legal_id_char */ ))
+    if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_NUMERIC )
+        while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (ID_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == ID_CLASS_LEGAL_ID_CHAR ))
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     if ((bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) == 0)
         scan_result = 0 /*id_null */ ;
-    else if ((lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) || (bib_buf_offset(BUF_TY_BASE, 2) == last))
+    else if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == last))
         scan_result = 3 /*white_adjacent */ ;
     else if ((bib_buf_at_offset(BUF_TY_BASE, 2) == char1) || (bib_buf_at_offset(BUF_TY_BASE, 2) == char2) || (bib_buf_at_offset(BUF_TY_BASE, 2) == char3))
         scan_result = 1 /*specified_char_adjacent */ ;
@@ -1469,7 +1462,7 @@ static bool scan_nonneg_integer(void)
 {
     bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
     token_value = 0;
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 3 /*numeric */ )) {
+    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_NUMERIC )) {
 
         token_value = token_value * 10 + (bib_buf_at_offset(BUF_TY_BASE, 2) - 48);
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -1487,7 +1480,7 @@ static bool scan_integer(void)
     } else
         sign_length = 0;
     token_value = 0;
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 3 /*numeric */ )) {
+    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_NUMERIC )) {
 
         token_value = token_value * 10 + (bib_buf_at_offset(BUF_TY_BASE, 2) - 48);
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -1500,7 +1493,7 @@ static bool scan_integer(void)
 
 static bool scan_white_space(void)
 {
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ))
+    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ))
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     return bib_buf_offset(BUF_TY_BASE, 2) < last;
 }
@@ -1515,7 +1508,7 @@ static bool eat_bst_white_space(void)
                 return true;
             }
         }
-        if (!input_ln(lex_class, &last, bst_file)) {
+        if (!input_ln(&last, bst_file)) {
             return false;
         }
         bst_line_num = bst_line_num + 1;
@@ -1591,7 +1584,7 @@ static void scan_fn_def(hash_loc fn_hash_loc)
                     fn_type[literal_loc] = 2 /*int_literal */ ;
                     ilk_info[literal_loc] = token_value;
                 }
-                if ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] != 1 /*white_space */ )
+                if ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE )
                      && (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != 37 /*comment */ )) {
                     skip_illegal_stuff_after_token_print();
                     goto lab25;
@@ -1618,7 +1611,7 @@ static void scan_fn_def(hash_loc fn_hash_loc)
                 literal_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ , true);
                 fn_type[literal_loc] = 3 /*str_literal */ ;
                 bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                if ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] != 1 /*white_space */ )
+                if ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE )
                      && (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != 37 /*comment */ )) {
                     skip_illegal_stuff_after_token_print();
                     goto lab25;
@@ -1772,7 +1765,7 @@ static bool eat_bib_white_space(void)
 {
     while ((!scan_white_space())) {
 
-        if (!input_ln(lex_class, &last, bib_file[bib_ptr])) {
+        if (!input_ln(&last, bib_file[bib_ptr])) {
             return false;
         }
         bib_line_num = bib_line_num + 1;
@@ -1785,7 +1778,7 @@ static bool compress_bib_white(void)
 {
     {
         if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size()) {
-            ttstub_fprintf(log_file, "Field filled up at ' ', reallocating.\n");
+            ttstub_fprintf(log_file(), "Field filled up at ' ', reallocating.\n");
             buffer_overflow();
         }
 
@@ -1794,7 +1787,7 @@ static bool compress_bib_white(void)
     }
     while ((!scan_white_space())) {
 
-        if (!input_ln(lex_class, &last, bib_file[bib_ptr])) {
+        if (!input_ln(&last, bib_file[bib_ptr])) {
             eat_bib_print();
             return false;
         }
@@ -1808,7 +1801,7 @@ static bool scan_balanced_braces(void)
 {
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     {
-        if ((lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) || (bib_buf_offset(BUF_TY_BASE, 2) == last)) {
+        if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == last)) {
 
             if (!compress_bib_white()) {
                 return false;
@@ -1832,7 +1825,7 @@ static bool scan_balanced_braces(void)
                     bib_brace_level = bib_brace_level + 1;
                     {
                         if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                            ttstub_fprintf(log_file, "Field filled up at '{', reallocating.\n");
+                            ttstub_fprintf(log_file(), "Field filled up at '{', reallocating.\n");
                             buffer_overflow();
                         }
 
@@ -1841,7 +1834,7 @@ static bool scan_balanced_braces(void)
                     }
                     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                     {
-                        if ((lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) || (bib_buf_offset(BUF_TY_BASE, 2) == last)) {
+                        if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == last)) {
 
                             if (!compress_bib_white())
                                 return false;
@@ -1855,7 +1848,7 @@ static bool scan_balanced_braces(void)
                                     bib_brace_level = bib_brace_level - 1;
                                     {
                                         if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                            ttstub_fprintf(log_file, "Field filled up at '}', reallocating.\n");
+                                            ttstub_fprintf(log_file(), "Field filled up at '}', reallocating.\n");
                                             buffer_overflow();
                                         }
 
@@ -1864,7 +1857,7 @@ static bool scan_balanced_braces(void)
                                     }
                                     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                                     {
-                                        if (((lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ )
+                                        if (((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE )
                                              || (bib_buf_offset(BUF_TY_BASE, 2) == last))) {
 
                                             if (!compress_bib_white())
@@ -1880,7 +1873,7 @@ static bool scan_balanced_braces(void)
                                     bib_brace_level = bib_brace_level + 1;
                                     {
                                         if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                            ttstub_fprintf(log_file, "Field filled up at '{', reallocating.\n");
+                                            ttstub_fprintf(log_file(), "Field filled up at '{', reallocating.\n");
                                             buffer_overflow();
                                         }
 
@@ -1889,7 +1882,7 @@ static bool scan_balanced_braces(void)
                                     }
                                     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                                     {
-                                        if (((lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ )
+                                        if (((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE )
                                              || (bib_buf_offset(BUF_TY_BASE, 2) == last))) {
 
                                             if (!compress_bib_white())
@@ -1902,7 +1895,7 @@ static bool scan_balanced_braces(void)
                                 {
                                     {
                                         if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                            ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) bib_buf_at_offset(BUF_TY_BASE, 2));
+                                            ttstub_fprintf(log_file(), "Field filled up at %ld, reallocating.\n", (long) bib_buf_at_offset(BUF_TY_BASE, 2));
                                             buffer_overflow();
                                         }
 
@@ -1911,7 +1904,7 @@ static bool scan_balanced_braces(void)
                                     }
                                     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                                     {
-                                        if (((lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ )
+                                        if (((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE )
                                              || (bib_buf_offset(BUF_TY_BASE, 2) == last))) {
 
                                             if (!compress_bib_white())
@@ -1936,7 +1929,7 @@ static bool scan_balanced_braces(void)
                 {
                     {
                         if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                            ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) bib_buf_at_offset(BUF_TY_BASE, 2));
+                            ttstub_fprintf(log_file(), "Field filled up at %ld, reallocating.\n", (long) bib_buf_at_offset(BUF_TY_BASE, 2));
                             buffer_overflow();
                         }
 
@@ -1945,7 +1938,7 @@ static bool scan_balanced_braces(void)
                     }
                     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                     {
-                        if ((lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) || (bib_buf_offset(BUF_TY_BASE, 2) == last)) {
+                        if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == last)) {
 
                             if (!compress_bib_white())
                                 return false;
@@ -2056,7 +2049,7 @@ static bool scan_a_field_token_and_eat_white(void)
 
                     {
                         if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                            ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) bib_buf_at(BUF_TY_BASE, tmp_ptr));
+                            ttstub_fprintf(log_file(), "Field filled up at %ld, reallocating.\n", (long) bib_buf_at(BUF_TY_BASE, tmp_ptr));
                             buffer_overflow();
                         }
 
@@ -2107,10 +2100,10 @@ static bool scan_a_field_token_and_eat_white(void)
                     tmp_end_ptr = str_start[ilk_info[macro_name_loc] + 1];
                     if (bib_buf_offset(BUF_TY_EX, 1) == 0) {
 
-                        if ((tmp_ptr < tmp_end_ptr) && (lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ )) {
+                        if ((tmp_ptr < tmp_end_ptr) && (LEX_CLASS[str_pool[tmp_ptr]] == LEX_CLASS_WHITESPACE )) {
                             {
                                 if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                    ttstub_fprintf(log_file, "Field filled up at ' ', reallocating.\n");
+                                    ttstub_fprintf(log_file(), "Field filled up at ' ', reallocating.\n");
                                     buffer_overflow();
                                 }
 
@@ -2118,15 +2111,15 @@ static bool scan_a_field_token_and_eat_white(void)
                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                             }
                             tmp_ptr = tmp_ptr + 1;
-                            while ((tmp_ptr < tmp_end_ptr) && (lex_class[str_pool[tmp_ptr]] == 1 /*white_space */ ))
+                            while ((tmp_ptr < tmp_end_ptr) && (LEX_CLASS[str_pool[tmp_ptr]] == LEX_CLASS_WHITESPACE ))
                                 tmp_ptr = tmp_ptr + 1;
                         }
                     }
                     while ((tmp_ptr < tmp_end_ptr)) {
 
-                        if (lex_class[str_pool[tmp_ptr]] != 1 /*white_space */ ) {
+                        if (LEX_CLASS[str_pool[tmp_ptr]] != LEX_CLASS_WHITESPACE ) {
                             if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                ttstub_fprintf(log_file, "Field filled up at %ld, reallocating.\n", (long) str_pool[tmp_ptr]);
+                                ttstub_fprintf(log_file(), "Field filled up at %ld, reallocating.\n", (long) str_pool[tmp_ptr]);
                                 buffer_overflow();
                             }
 
@@ -2134,7 +2127,7 @@ static bool scan_a_field_token_and_eat_white(void)
                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                         } else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] != 32 /*space */ ) {
                             if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                ttstub_fprintf(log_file, "Field filled up at ' ', reallocating.\n");
+                                ttstub_fprintf(log_file(), "Field filled up at ' ', reallocating.\n");
                                 buffer_overflow();
                             }
 
@@ -2287,7 +2280,7 @@ static void name_scan_for_and(str_number pop_lit_var)
 
                             if ((bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) + 1] == 'd' ) || (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) + 1] == 'D' )) {
 
-                                if (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) + 2]] == 1 /*white_space */ ) {
+                                if (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) + 2]] == LEX_CLASS_WHITESPACE ) {
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 2);
                                     and_found = true;
                                 }
@@ -2321,7 +2314,7 @@ static void name_scan_for_and(str_number pop_lit_var)
             }
             break;
         default:
-            if (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == 1 /*white_space */ ) {
+            if (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_WHITESPACE ) {
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                 preceding_white = true;
             } else {
@@ -2348,7 +2341,7 @@ static bool von_token_found(void)
             if ((name_bf_ptr + 2 < name_bf_xptr) && (bib_buf_at(BUF_TY_SV, name_bf_ptr) == 92 /*backslash */ )) { /*399: */
                 name_bf_ptr = name_bf_ptr + 1;
                 name_bf_yptr = name_bf_ptr;
-                while ((name_bf_ptr < name_bf_xptr) && (lex_class[bib_buf_at(BUF_TY_SV, name_bf_ptr)] == 2 /*alpha */ ))
+                while ((name_bf_ptr < name_bf_xptr) && (LEX_CLASS[bib_buf_at(BUF_TY_SV, name_bf_ptr)] == LEX_CLASS_ALPHA ))
                     name_bf_ptr = name_bf_ptr + 1;
                 control_seq_loc =
                     str_lookup(bib_buf(BUF_TY_SV), name_bf_yptr, name_bf_ptr - name_bf_yptr, 14 /*control_seq_ilk */ , false);
@@ -2484,7 +2477,7 @@ static void figure_out_the_formatted_name(void)
                     end_of_group = false;
                     to_be_written = true;
                     while ((!end_of_group) && (sp_ptr < sp_end))
-                        if (lex_class[str_pool[sp_ptr]] == 2 /*alpha */ ) {
+                        if (LEX_CLASS[str_pool[sp_ptr]] == LEX_CLASS_ALPHA ) {
                             sp_ptr = sp_ptr + 1;
                             {
                                 if (alpha_found) {
@@ -2568,7 +2561,7 @@ static void figure_out_the_formatted_name(void)
                         sp_ptr = sp_xptr1;
                         sp_brace_level = 1;
                         while (sp_brace_level > 0)
-                            if ((lex_class[str_pool[sp_ptr]] == 2 /*alpha */ ) && (sp_brace_level == 1)) {
+                            if ((LEX_CLASS[str_pool[sp_ptr]] == LEX_CLASS_ALPHA ) && (sp_brace_level == 1)) {
                                 sp_ptr = sp_ptr + 1;
                                 {
                                     if (double_letter)
@@ -2604,7 +2597,7 @@ static void figure_out_the_formatted_name(void)
                                             name_bf_xptr = name_tok[cur_token + 1];
                                             while (name_bf_ptr < name_bf_xptr) {
 
-                                                if (lex_class[bib_buf_at(BUF_TY_SV, name_bf_ptr)] == 2 /*alpha */ ) {
+                                                if (LEX_CLASS[bib_buf_at(BUF_TY_SV, name_bf_ptr)] == LEX_CLASS_ALPHA ) {
                                                     {
                                                         if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
                                                             buffer_overflow();
@@ -2665,7 +2658,7 @@ static void figure_out_the_formatted_name(void)
                                                         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                                     }
                                                 }
-                                                if (lex_class[name_sep_char[cur_token]] == 4 /*sep_char */ ) {
+                                                if (LEX_CLASS[name_sep_char[cur_token]] == LEX_CLASS_SEP ) {
                                                     if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
                                                         buffer_overflow();
                                                     {
@@ -2948,12 +2941,12 @@ static void add_out_pool(str_number p_str)
         end_ptr = out_buf_length;
         out_buf_ptr = max_print_line;
         break_pt_found = false;
-        while ((lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ ) && (out_buf_ptr >= min_print_line))
+        while ((LEX_CLASS[out_buf[out_buf_ptr]] != LEX_CLASS_WHITESPACE ) && (out_buf_ptr >= min_print_line))
             out_buf_ptr = out_buf_ptr - 1;
         if (out_buf_ptr == min_print_line - 1) {      /*325: */
             out_buf_ptr = max_print_line + 1;
             while (out_buf_ptr < end_ptr)
-                if (lex_class[out_buf[out_buf_ptr]] != 1 /*white_space */ )
+                if (LEX_CLASS[out_buf[out_buf_ptr]] != LEX_CLASS_WHITESPACE )
                     out_buf_ptr = out_buf_ptr + 1;
                 else
                     goto lab16;
@@ -2963,7 +2956,7 @@ static void add_out_pool(str_number p_str)
 
                 break_pt_found = true;
                 while (out_buf_ptr + 1 < end_ptr)
-                    if (lex_class[out_buf[out_buf_ptr + 1]] == 1 /*white_space */ )
+                    if (LEX_CLASS[out_buf[out_buf_ptr + 1]] == LEX_CLASS_WHITESPACE )
                         out_buf_ptr = out_buf_ptr + 1;
                     else
                         goto lab17;
@@ -3428,7 +3421,7 @@ static void x_change_case(void)
 
                         if (bib_buf_offset(BUF_TY_EX, 1) == 0)
                             goto lab21;
-                        else if ((prev_colon) && (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1]] == 1 /*white_space */ ))
+                        else if ((prev_colon) && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1]] == LEX_CLASS_WHITESPACE ))
                             goto lab21;
                     }
                     {
@@ -3437,7 +3430,7 @@ static void x_change_case(void)
 
                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                             ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
-                            while ((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length) && (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == 2 /*alpha */ ))
+                            while ((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length) && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_ALPHA ))
                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                             control_seq_loc =
                                 str_lookup(bib_buf(BUF_TY_EX), ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 14 /*control_seq_ilk */ ,
@@ -3480,7 +3473,7 @@ static void x_change_case(void)
                                             }
                                             ex_buf_xptr = ex_buf_xptr - 1;
                                             while (((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length)
-                                                    && (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == 1 /*white_space */ )))
+                                                    && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_WHITESPACE )))
                                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                             tmp_ptr = bib_buf_offset(BUF_TY_EX, 1);
                                             while (tmp_ptr < ex_buf_length) {
@@ -3544,12 +3537,12 @@ static void x_change_case(void)
                     case 0:
                         {
                             if (bib_buf_offset(BUF_TY_EX, 1) == 0) ;
-                            else if ((prev_colon) && (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1]] == 1 /*white_space */ )) ;
+                            else if ((prev_colon) && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1]] == LEX_CLASS_WHITESPACE )) ;
                             else
                                 lower_case(bib_buf(BUF_TY_EX), bib_buf_offset(BUF_TY_EX, 1), 1);
                             if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 58 /*colon */ )
                                 prev_colon = true;
-                            else if (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] != 1 /*white_space */ )
+                            else if (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] != LEX_CLASS_WHITESPACE )
                                 prev_colon = false;
                         }
                         break;
@@ -3647,7 +3640,7 @@ static void x_empty(void)
             sp_end = str_start[pop_lit1 + 1];
             while (sp_ptr < sp_end) {
 
-                if (lex_class[str_pool[sp_ptr]] != 1 /*white_space */ ) {
+                if (LEX_CLASS[str_pool[sp_ptr]] != LEX_CLASS_WHITESPACE ) {
                     push_lit_stk(0, 0 /*stk_int */ );
                     return;
                 }
@@ -3716,9 +3709,9 @@ static void x_format_name(void)
         {
             {
                 while (bib_buf_offset(BUF_TY_EX, 1) > ex_buf_xptr)
-                    switch ((lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1]])) {
-                    case 1:
-                    case 4:
+                    switch ((LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1]])) {
+                    case LEX_CLASS_WHITESPACE:
+                    case LEX_CLASS_SEP:
                         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
                         break;
                     default:
@@ -3799,8 +3792,8 @@ static void x_format_name(void)
                     }
                     break;
                 default:
-                    switch ((lex_class[bib_buf(BUF_TY_EX)[ex_buf_xptr]])) {
-                    case 1:
+                    switch ((LEX_CLASS[bib_buf(BUF_TY_EX)[ex_buf_xptr]])) {
+                    case LEX_CLASS_WHITESPACE:
                         {
                             if (!token_starting)
                                 name_sep_char[num_tokens] = 32 /*space */ ;
@@ -3808,7 +3801,7 @@ static void x_format_name(void)
                             token_starting = true;
                         }
                         break;
-                    case 4:
+                    case LEX_CLASS_SEP:
                         {
                             if (!token_starting)
                                 name_sep_char[num_tokens] = bib_buf(BUF_TY_EX)[ex_buf_xptr];
@@ -3852,7 +3845,7 @@ static void x_format_name(void)
                     }
                     while (von_start > 0) {
 
-                        if (((lex_class[name_sep_char[von_start]] != 4 /*sep_char */ )
+                        if (((LEX_CLASS[name_sep_char[von_start]] != LEX_CLASS_SEP )
                              || (name_sep_char[von_start] == 126 /*tie */ )))
                             goto lab17;
                         von_start = von_start - 1;
@@ -3992,16 +3985,16 @@ static void x_purify(void)
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             while (bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length) {
 
-                switch ((lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]])) {
-                case 1:
-                case 4:
+                switch ((LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]])) {
+                case LEX_CLASS_WHITESPACE:
+                case LEX_CLASS_SEP:
                     {
                         bib_buf(BUF_TY_EX)[ex_buf_xptr] = 32 /*space */ ;
                         ex_buf_xptr = ex_buf_xptr + 1;
                     }
                     break;
-                case 2:
-                case 3:
+                case LEX_CLASS_ALPHA:
+                case LEX_CLASS_NUMERIC:
                     {
                         bib_buf(BUF_TY_EX)[ex_buf_xptr] = bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)];
                         ex_buf_xptr = ex_buf_xptr + 1;
@@ -4019,7 +4012,7 @@ static void x_purify(void)
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                     ex_buf_yptr = bib_buf_offset(BUF_TY_EX, 1);
                                     while (((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length)
-                                            && (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == 2 /*alpha */ )))
+                                            && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_ALPHA )))
                                         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                     control_seq_loc =
                                         str_lookup(bib_buf(BUF_TY_EX), ex_buf_yptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_yptr,
@@ -4046,9 +4039,9 @@ static void x_purify(void)
                                     while (((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length) && (brace_level > 0)
                                             && (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] != 92 /*backslash */ ))) {
 
-                                        switch ((lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]])) {
-                                        case 2:
-                                        case 3:
+                                        switch ((LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]])) {
+                                        case LEX_CLASS_ALPHA:
+                                        case LEX_CLASS_NUMERIC:
                                             {
                                                 bib_buf(BUF_TY_EX)[ex_buf_xptr] = bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)];
                                                 ex_buf_xptr = ex_buf_xptr + 1;
@@ -4378,7 +4371,7 @@ static void x_width(void)
                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                 ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
                                 while (((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length)
-                                        && (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == 2 /*alpha */ )))
+                                        && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_ALPHA )))
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                 if ((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length) && (bib_buf_offset(BUF_TY_EX, 1) == ex_buf_xptr))
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
@@ -4405,13 +4398,13 @@ static void x_width(void)
                                             string_width = string_width + 1014;
                                             break;
                                         default:
-                                            string_width = string_width + char_width[bib_buf(BUF_TY_EX)[ex_buf_xptr]];
+                                            string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX)[ex_buf_xptr]];
                                             break;
                                         }
                                     }
                                 }
                                 while (((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length)
-                                        && (lex_class[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == 1 /*white_space */ )))
+                                        && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_WHITESPACE )))
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                 while (((bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length) && (brace_level > 0)
                                         && (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] != 92 /*backslash */ ))) {
@@ -4421,20 +4414,20 @@ static void x_width(void)
                                     else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 123 /*left_brace */ )
                                         brace_level = brace_level + 1;
                                     else
-                                        string_width = string_width + char_width[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]];
+                                        string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]];
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                 }
                             }
                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
                         } else
-                            string_width = string_width + char_width[123 /*left_brace */ ];
+                            string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
                     } else
-                        string_width = string_width + char_width[123 /*left_brace */ ];
+                        string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
                 } else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 125 /*right_brace */ ) {
                     decr_brace_level(pop_lit1);
-                    string_width = string_width + char_width[125 /*right_brace */ ];
+                    string_width = string_width + CHAR_WIDTH[125 /*right_brace */ ];
                 } else
-                    string_width = string_width + char_width[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]];
+                    string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]];
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
             check_brace_level(pop_lit1);
@@ -4756,7 +4749,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
     }
 
     add_extension(s_log_extension);
-    if ((log_file = ttstub_output_open((char *) name_of_file, 0)) == NULL) {
+    if (init_log_file((char *) name_of_file) == NULL) {
         sam_wrong_file_name_print();
         return 1;
     }
@@ -4810,7 +4803,7 @@ static void aux_bib_data_command(void)
                 return;
             }
         }
-        if (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) {
+        if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
             aux_err_white_space_in_argument_print();
             {
                 aux_err_print();
@@ -4873,7 +4866,7 @@ static void aux_bib_style_command(void)
             return;
         }
     }
-    if (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) {
+    if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
         aux_err_white_space_in_argument_print();
         {
             aux_err_print();
@@ -4906,7 +4899,7 @@ static void aux_bib_style_command(void)
             puts_log("The style file: ");
             print_bst_name();
         } else {
-            ttstub_puts (log_file, "The style file: ");
+            ttstub_puts (log_file(), "The style file: ");
             log_pr_bst_name();
         }
     }
@@ -4927,7 +4920,7 @@ static void aux_citation_command(void)
                 return;
             }
         }
-        if (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) {
+        if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
             aux_err_white_space_in_argument_print();
             {
                 aux_err_print();
@@ -5009,7 +5002,7 @@ static void aux_input_command(void)
             return;
         }
     }
-    if (lex_class[bib_buf_at_offset(BUF_TY_BASE, 2)] == 1 /*white_space */ ) {
+    if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
         aux_err_white_space_in_argument_print();
         {
             aux_err_print();
@@ -5832,7 +5825,7 @@ static void get_bib_command_or_entry_and_process(void)
     at_bib_command = false;
     while (!scan1(64 /*at_sign */ )) {
 
-        if (!input_ln(lex_class, &last, bib_file[bib_ptr]))
+        if (!input_ln(&last, bib_file[bib_ptr]))
             return;
         bib_line_num = bib_line_num + 1;
         bib_set_buf_offset(BUF_TY_BASE, 2, 0);
@@ -6277,7 +6270,7 @@ static void bst_read_command(void)
             } else {
                 char buf[512];
                 snprintf(buf, sizeof(buf) - 1, "Database file #%ld: ", (long) bib_ptr + 1);
-                ttstub_output_write (log_file, buf, strlen(buf));
+                ttstub_output_write (log_file(), buf, strlen(buf));
                 log_pr_bib_name();
             }
             bib_line_num = 0;
@@ -6771,151 +6764,6 @@ initialize(const char *aux_file_name)
     if (bad)
         return 1;
 
-    history = HISTORY_SPOTLESS;
-
-    for (i = 0; i <= 127; i++)
-        lex_class[i] = 5 /*other_lex */ ;
-
-    for (i = 128; i <= 255; i++)
-        lex_class[i] = 2 /*alpha */ ;
-
-    for (i = 0; i <= 31; i++)
-        lex_class[i] = 0 /*illegal */ ;
-
-    lex_class[127 /*invalid_code */ ] = 0 /*illegal */ ;
-    lex_class[9 /*tab */ ] = 1 /*white_space */ ;
-    lex_class[13] = 1 /*white_space */ ;
-    lex_class[32 /*space */ ] = 1 /*white_space */ ;
-    lex_class[126 /*tie */ ] = 4 /*sep_char */ ;
-    lex_class[45 /*hyphen */ ] = 4 /*sep_char */ ;
-
-    for (i = 48; i <= 57; i++)
-        lex_class[i] = 3 /*numeric */ ;
-
-    for (i = 65; i <= 90; i++)
-        lex_class[i] = 2 /*alpha */ ;
-
-    for (i = 97; i <= 122; i++)
-        lex_class[i] = 2 /*alpha */ ;
-
-    for (i = 0; i <= 255; i++)
-        id_class[i] = 1 /*legal_id_char */ ;
-
-    for (i = 0; i <= 31; i++)
-        id_class[i] = 0 /*illegal_id_char */ ;
-
-    id_class[32 /*space */ ] = 0 /*illegal_id_char */ ;
-    id_class[9 /*tab */ ] = 0 /*illegal_id_char */ ;
-    id_class[34 /*double_quote */ ] = 0 /*illegal_id_char */ ;
-    id_class[35 /*number_sign */ ] = 0 /*illegal_id_char */ ;
-    id_class[37 /*comment */ ] = 0 /*illegal_id_char */ ;
-    id_class[39 /*single_quote */ ] = 0 /*illegal_id_char */ ;
-    id_class[40 /*left_paren */ ] = 0 /*illegal_id_char */ ;
-    id_class[41 /*right_paren */ ] = 0 /*illegal_id_char */ ;
-    id_class[44 /*comma */ ] = 0 /*illegal_id_char */ ;
-    id_class[61 /*equals_sign */ ] = 0 /*illegal_id_char */ ;
-    id_class[123 /*left_brace */ ] = 0 /*illegal_id_char */ ;
-    id_class[125 /*right_brace */ ] = 0 /*illegal_id_char */ ;
-
-    for (i = 0; i <= 127; i++)
-                char_width[i] = 0;
-
-    char_width[32] = 278;
-    char_width[33] = 278;
-    char_width[34] = 500;
-    char_width[35] = 833;
-    char_width[36] = 500;
-    char_width[37] = 833;
-    char_width[38] = 778;
-    char_width[39] = 278;
-    char_width[40] = 389;
-    char_width[41] = 389;
-    char_width[42] = 500;
-    char_width[43] = 778;
-    char_width[44] = 278;
-    char_width[45] = 333;
-    char_width[46] = 278;
-    char_width[47] = 500;
-    char_width[48] = 500;
-    char_width[49] = 500;
-    char_width[50] = 500;
-    char_width[51] = 500;
-    char_width[52] = 500;
-    char_width[53] = 500;
-    char_width[54] = 500;
-    char_width[55] = 500;
-    char_width[56] = 500;
-    char_width[57] = 500;
-    char_width[58] = 278;
-    char_width[59] = 278;
-    char_width[60] = 278;
-    char_width[61] = 778;
-    char_width[62] = 472;
-    char_width[63] = 472;
-    char_width[64] = 778;
-    char_width[65] = 750;
-    char_width[66] = 708;
-    char_width[67] = 722;
-    char_width[68] = 764;
-    char_width[69] = 681;
-    char_width[70] = 653;
-    char_width[71] = 785;
-    char_width[72] = 750;
-    char_width[73] = 361;
-    char_width[74] = 514;
-    char_width[75] = 778;
-    char_width[76] = 625;
-    char_width[77] = 917;
-    char_width[78] = 750;
-    char_width[79] = 778;
-    char_width[80] = 681;
-    char_width[81] = 778;
-    char_width[82] = 736;
-    char_width[83] = 556;
-    char_width[84] = 722;
-    char_width[85] = 750;
-    char_width[86] = 750;
-    char_width[87] = 1028;
-    char_width[88] = 750;
-    char_width[89] = 750;
-    char_width[90] = 611;
-    char_width[91] = 278;
-    char_width[92] = 500;
-    char_width[93] = 278;
-    char_width[94] = 500;
-    char_width[95] = 278;
-    char_width[96] = 278;
-    char_width[97] = 500;
-    char_width[98] = 556;
-    char_width[99] = 444;
-    char_width[100] = 556;
-    char_width[101] = 444;
-    char_width[102] = 306;
-    char_width[103] = 500;
-    char_width[104] = 556;
-    char_width[105] = 278;
-    char_width[106] = 306;
-    char_width[107] = 528;
-    char_width[108] = 278;
-    char_width[109] = 833;
-    char_width[110] = 556;
-    char_width[111] = 500;
-    char_width[112] = 556;
-    char_width[113] = 528;
-    char_width[114] = 392;
-    char_width[115] = 394;
-    char_width[116] = 389;
-    char_width[117] = 556;
-    char_width[118] = 528;
-    char_width[119] = 722;
-    char_width[120] = 528;
-    char_width[121] = 528;
-    char_width[122] = 444;
-    char_width[123] = 500;
-    char_width[124] = 1000;
-    char_width[125] = 500;
-    char_width[126] = 500;
-
     for (k = hash_base; k <= hash_max; k++) {
         hash_next[k] = 0 /*empty */ ;
         hash_text[k] = 0;
@@ -6970,7 +6818,7 @@ bibtex_main(const char *aux_file_name)
     wiz_fn_space = WIZ_FN_SPACE;
     lit_stk_size = LIT_STK_SIZE;
 
-    if ((standard_output = ttstub_output_open_stdout()) == NULL)
+    if (standard_output() == NULL)
         return HISTORY_FATAL_ERROR;
 
     setup_params();
@@ -7017,27 +6865,27 @@ bibtex_main(const char *aux_file_name)
     if (verbose)
         puts_log("This is BibTeX, Version 0.99d\n");
     else
-        ttstub_puts (log_file, "This is BibTeX, Version 0.99d\n");
+        ttstub_puts (log_file(), "This is BibTeX, Version 0.99d\n");
 
     {
         char buf[512];
         snprintf (buf, sizeof(buf) - 1, "Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n",
                   (long) max_strings, (long) hash_size, (long) hash_prime);
-        ttstub_output_write (log_file, buf, strlen(buf));
+        ttstub_output_write (log_file(), buf, strlen(buf));
     }
 
     if (verbose) {
         puts_log("The top-level auxiliary file: ");
         print_aux_name();
     } else {
-        ttstub_puts (log_file, "The top-level auxiliary file: ");
+        ttstub_puts (log_file(), "The top-level auxiliary file: ");
         log_pr_aux_name();
     }
 
     while (true) {
         aux_ln_stack[aux_ptr]++;
 
-        if (!input_ln(lex_class, &last, aux_file[aux_ptr])) {
+        if (!input_ln(&last, aux_file[aux_ptr])) {
             if (pop_the_aux_stack())
                 break;
         } else {
@@ -7076,7 +6924,7 @@ close_up_shop:
         print_bib_name();
     }
 
-    switch (history) {
+    switch (get_history()) {
     case HISTORY_SPOTLESS:
         break;
     case HISTORY_WARNING_ISSUED:
@@ -7100,8 +6948,8 @@ close_up_shop:
         break;
     }
 
-    ttstub_output_close (log_file);
-    return history;
+    ttstub_output_close(log_file());
+    return get_history();
 }
 
 

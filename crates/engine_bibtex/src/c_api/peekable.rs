@@ -1,11 +1,11 @@
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::{
     ttstub_input_close, ttstub_input_getc, ttstub_input_open, xcalloc, ASCIICode, BufPointer,
-    LexType,
 };
 use libc::{free, EOF};
 use std::{mem, ptr};
 use tectonic_io_base::InputHandle;
+use crate::c_api::char_info::{LEX_CLASS, LexClass};
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
  * here's a tiny wrapper that lets us fake it. */
@@ -105,7 +105,6 @@ pub unsafe extern "C" fn tectonic_eof(peekable: *mut PeekableInput) -> bool {
 
 #[no_mangle]
 pub unsafe extern "C" fn input_ln(
-    lex_class: &[LexType; 256],
     last: *mut BufPointer,
     peekable: *mut PeekableInput,
 ) -> bool {
@@ -133,9 +132,7 @@ pub unsafe extern "C" fn input_ln(
     // Trim whitespace
     with_buffers(|b| {
         while *last > 0 {
-            if lex_class[b.at(BufTy::Base, (*last - 1) as usize) as usize] == 1
-            /* white_space */
-            {
+            if LEX_CLASS[b.at(BufTy::Base, (*last - 1) as usize) as usize] == LexClass::Whitespace {
                 *last -= 1;
             } else {
                 break;

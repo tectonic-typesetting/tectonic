@@ -21,6 +21,20 @@ typedef enum {
   HISTORY_ABORTED = 4,
 } History;
 
+typedef enum {
+  ID_CLASS_ILLEGAL_ID_CHAR = 0,
+  ID_CLASS_LEGAL_ID_CHAR = 1,
+} IdClass;
+
+typedef enum {
+  LEX_CLASS_ILLEGAL = 0,
+  LEX_CLASS_WHITESPACE = 1,
+  LEX_CLASS_ALPHA = 2,
+  LEX_CLASS_NUMERIC = 3,
+  LEX_CLASS_SEP = 4,
+  LEX_CLASS_OTHER = 5,
+} LexClass;
+
 typedef uint8_t ASCIICode;
 
 typedef int32_t PoolPointer;
@@ -43,11 +57,19 @@ typedef struct {
   bool saw_eof;
 } PeekableInput;
 
-typedef uint8_t LexType;
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+extern const LexClass LEX_CLASS[256];
+
+extern const IdClass ID_CLASS[256];
+
+extern const int32_t CHAR_WIDTH[256];
+
+History get_history(void);
+
+void set_history(History hist);
 
 bool str_ends_with(ASCIICode *str_pool, PoolPointer *str_start, StrNumber s, StrNumber ext);
 
@@ -101,7 +123,13 @@ int peekable_close(PeekableInput *peekable);
 
 bool tectonic_eof(PeekableInput *peekable);
 
-bool input_ln(const LexType (*lex_class)[256], BufPointer *last, PeekableInput *peekable);
+bool input_ln(BufPointer *last, PeekableInput *peekable);
+
+ttbc_output_handle_t *init_log_file(const char *file);
+
+ttbc_output_handle_t *standard_output(void);
+
+ttbc_output_handle_t *log_file(void);
 
 #ifdef __cplusplus
 } // extern "C"

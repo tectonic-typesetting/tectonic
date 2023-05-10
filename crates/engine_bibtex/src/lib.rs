@@ -104,12 +104,14 @@ impl BibtexEngine {
 pub mod c_api {
     use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
     use std::slice;
+    use std::cell::Cell;
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
-    use tectonic_io_base::InputHandle;
+    use tectonic_io_base::{InputHandle, OutputHandle};
 
+    mod char_info;
     mod buffer;
-    mod log;
     mod peekable;
+    mod log;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -150,6 +152,20 @@ pub mod c_api {
         Aborted = 4,
     }
 
+    thread_local! {
+        static HISTORY: Cell<History> = Cell::new(History::Spotless);
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn get_history() -> History {
+        HISTORY.with(|h| h.get())
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn set_history(hist: History) {
+        HISTORY.with(|h| h.set(hist))
+    }
+
     #[repr(C)]
     #[derive(Clone, Debug)]
     pub struct BibtexConfig {
@@ -168,17 +184,6 @@ pub mod c_api {
     type BufType = *mut ASCIICode;
     type BufPointer = i32;
     type PoolPointer = i32;
-    type LexType = u8;
-
-    // #[no_mangle]
-    // pub unsafe extern "C" fn buffer_overflow() {
-    //     bib_xretalloc_noset!(buffer, ASCIICode, buf_size + BUF_SIZE);
-    //     bib_xretalloc_noset!(sv_buffer, ASCIICode, buf_size + BUF_SIZE);
-    //     bib_xretalloc_noset!(ex_buf, ASCIICode, buf_size + BUF_SIZE);
-    //     bib_xretalloc_noset!(out_buf, ASCIICode, buf_size + BUF_SIZE);
-    //     bib_xretalloc_noset!(name_tok, BufPointer, buf_size + BUF_SIZE);
-    //     bib_xretalloc!(name_sep_char, ASCIICode, buf_size, buf_size + BUF_SIZE);
-    // }
 
     #[no_mangle]
     pub unsafe extern "C" fn str_ends_with(
@@ -312,6 +317,9 @@ pub mod c_api {
         ) -> *mut InputHandle;
         pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
         pub fn ttstub_input_getc(input: *mut InputHandle) -> libc::c_int;
+        pub fn ttstub_output_putc(output: *mut OutputHandle) -> libc::c_int;
+        pub fn ttstub_output_open_stdout() -> *mut OutputHandle;
+        pub fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> *mut OutputHandle;
 
         pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
 
