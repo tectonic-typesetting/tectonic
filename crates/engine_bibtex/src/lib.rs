@@ -103,10 +103,12 @@ impl BibtexEngine {
 #[doc(hidden)]
 pub mod c_api {
     use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
+    use tectonic_io_base::InputHandle;
     use std::slice;
-    use tectonic_bridge_core::CoreBridgeState;
+    use tectonic_bridge_core::{CoreBridgeState, FileFormat};
 
     mod buffer;
+    mod peekable;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -296,6 +298,14 @@ pub mod c_api {
             cfg: &BibtexConfig,
             aux_name: *const libc::c_char,
         ) -> History;
+    }
+
+    /// cbindgen:ignore
+    #[allow(improper_ctypes)]
+    extern "C" {
+        pub fn ttstub_input_open(path: *const libc::c_char, format: FileFormat, is_gz: libc::c_int) -> *mut InputHandle;
+        pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
+        pub fn ttstub_input_getc(input: *mut InputHandle) -> libc::c_int;
 
         pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
 

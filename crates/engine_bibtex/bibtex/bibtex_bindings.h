@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "tectonic_bridge_core.h"
 
 typedef enum {
   BUF_TY_BASE,
@@ -35,6 +36,12 @@ typedef int32_t CiteNumber;
 typedef struct {
   int min_crossrefs;
 } BibtexConfig;
+
+typedef struct {
+  ttbc_input_handle_t *handle;
+  int peek_char;
+  bool saw_eof;
+} PeekableInput;
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,10 +77,6 @@ extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
                                      const char *aux_name);
 
-extern void *xrealloc(void *ptr, size_t size);
-
-extern void *xcalloc(size_t elems, size_t elem_size);
-
 int32_t bib_buf_size(void);
 
 BufType bib_buf(BufTy ty);
@@ -89,6 +92,18 @@ void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
 void buffer_overflow(void);
 
 void bib_init_buffers(void);
+
+PeekableInput *peekable_open(const char *path, ttbc_file_format format);
+
+int peekable_close(PeekableInput *peekable);
+
+int peekable_getc(PeekableInput *peekable);
+
+void peekable_ungetc(PeekableInput *peekable, int c);
+
+bool tectonic_eof(PeekableInput *peekable);
+
+bool eoln(PeekableInput *peekable);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -28,111 +28,6 @@
 
 #define xmalloc_array(type,size) (xmalloc((size+1)*sizeof(type)))
 
-
-/* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
- * here's a tiny wrapper that lets us fake it. */
-
-typedef struct {
-    rust_input_handle_t handle;
-    int peek_char;
-    bool saw_eof;
-} peekable_input_t;
-
-
-static peekable_input_t *
-peekable_open (const char *path, ttbc_file_format format)
-{
-    rust_input_handle_t handle;
-    peekable_input_t *peekable;
-
-    if ((handle = ttstub_input_open (path, format, 0)) == NULL)
-        return NULL;
-
-    peekable = XTALLOC(1, peekable_input_t);
-    peekable->handle = handle;
-    peekable->peek_char = EOF;
-    peekable->saw_eof = false;
-    return peekable;
-}
-
-static int
-peekable_close (peekable_input_t *peekable)
-{
-    int rv;
-
-    if (peekable == NULL)
-        return 0;
-
-    rv = ttstub_input_close (peekable->handle);
-    free (peekable);
-    return rv;
-}
-
-static int
-peekable_getc (peekable_input_t *peekable)
-{
-    int rv;
-
-    if (peekable->peek_char != EOF) {
-        rv = peekable->peek_char;
-        peekable->peek_char = EOF;
-        return rv;
-    }
-
-    rv = ttstub_input_getc (peekable->handle);
-    if (rv == EOF)
-        peekable->saw_eof = true;
-    return rv;
-}
-
-static void
-peekable_ungetc (peekable_input_t *peekable, int c)
-{
-    /* TODO: assert c != EOF */
-    peekable->peek_char = c;
-}
-
-
-/* eofeoln.c, adapted for Rusty I/O */
-
-static bool
-eof (peekable_input_t *peekable)
-{
-    /* Check for EOF following Pascal semantics. */
-    int c;
-
-    if (peekable == NULL)
-        return true;
-
-    if (peekable->saw_eof)
-        return true;
-
-    if ((c = peekable_getc (peekable)) == EOF)
-        return true;
-
-    peekable_ungetc (peekable, c);
-    return false;
-}
-
-static bool
-eoln (peekable_input_t *peekable)
-{
-    int c;
-
-    if (peekable->saw_eof)
-        return true;
-
-    c = peekable_getc (peekable);
-
-    if (c != EOF)
-        peekable_ungetc (peekable, c);
-
-    return c == '\n' || c == '\r' || c == EOF;
-}
-
-
-/* end eofeoln.c */
-
 #include <setjmp.h>
 
 static jmp_buf error_jmpbuf, recover_jmpbuf;
@@ -238,7 +133,7 @@ static int32_t command_num;
 static unsigned char /*white_adjacent */ scan_result;
 static int32_t token_value;
 static int32_t aux_name_length;
-static peekable_input_t *aux_file[aux_stack_size + 1];
+static PeekableInput *aux_file[aux_stack_size + 1];
 static str_number aux_list[aux_stack_size + 1];
 static aux_number aux_ptr;
 static int32_t aux_ln_stack[aux_stack_size + 1];
@@ -249,10 +144,10 @@ static str_number *bib_list;
 static bib_number bib_ptr;
 static bib_number num_bib_files;
 static bool bib_seen;
-static peekable_input_t **bib_file;
+static PeekableInput **bib_file;
 static bool bst_seen;
 static str_number bst_str;
-static peekable_input_t *bst_file;
+static PeekableInput *bst_file;
 static str_number *cite_list;
 static cite_number cite_ptr;
 static cite_number entry_cite_ptr;
@@ -494,7 +389,7 @@ print_confusion(void)
 }
 
 static bool
-input_ln(peekable_input_t *peekable)
+input_ln(PeekableInput *peekable)
 {
     last = 0; /* note: global! */
 
@@ -4971,7 +4866,7 @@ static void aux_bib_data_command(void)
             if (bib_ptr == max_bib_files) {
                 BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number,
                                     max_bib_files, max_bib_files + MAX_BIB_FILES);
-                BIB_XRETALLOC_NOSET("bib_file", bib_file, peekable_input_t *,
+                BIB_XRETALLOC_NOSET("bib_file", bib_file, PeekableInput *,
                                     max_bib_files, max_bib_files + MAX_BIB_FILES);
                 BIB_XRETALLOC("s_preamble", s_preamble, str_number,
                               max_bib_files, max_bib_files + MAX_BIB_FILES);
@@ -6020,7 +5915,7 @@ static void get_bib_command_or_entry_and_process(void)
                     if (preamble_ptr == max_bib_files) {
                         BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number, max_bib_files,
                                             max_bib_files + MAX_BIB_FILES);
-                        BIB_XRETALLOC_NOSET("bib_file", bib_file, peekable_input_t *, max_bib_files,
+                        BIB_XRETALLOC_NOSET("bib_file", bib_file, PeekableInput *, max_bib_files,
                                             max_bib_files + MAX_BIB_FILES);
                         BIB_XRETALLOC("s_preamble", s_preamble, str_number, max_bib_files,
                                       max_bib_files + MAX_BIB_FILES);
@@ -7121,7 +7016,7 @@ bibtex_main(const char *aux_file_name)
     entry_ints = NULL;
     entry_strs = NULL;
 
-    bib_file = XTALLOC(max_bib_files + 1, peekable_input_t *);
+    bib_file = XTALLOC(max_bib_files + 1, PeekableInput *);
     bib_list = XTALLOC(max_bib_files + 1, str_number);
     wiz_functions = XTALLOC(wiz_fn_space + 1, hash_ptr2);
     field_info = XTALLOC(max_fields + 1, str_number);
