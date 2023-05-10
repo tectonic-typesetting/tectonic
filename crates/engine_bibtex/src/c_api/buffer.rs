@@ -83,6 +83,14 @@ impl GlobalBuffer {
         unsafe { *ptr.add(offset) }
     }
 
+    pub fn offset(&self, ty: BufTy, offset: usize) -> BufPointer {
+        match ty {
+            BufTy::Base => self.buffer.offset[offset - 1],
+            BufTy::Sv => self.sv_buffer.offset[offset - 1],
+            BufTy::Ex => self.ex_buf.offset[offset - 1],
+        }
+    }
+
     fn init(&mut self) {
         self.buf_len = BUF_SIZE + 1;
         self.buffer.alloc(self.buf_len);

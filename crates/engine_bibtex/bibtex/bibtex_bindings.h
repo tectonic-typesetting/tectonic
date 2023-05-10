@@ -133,6 +133,18 @@ void puts_log(const char *str);
 
 void ttstub_puts(ttbc_output_handle_t *handle, const char *s);
 
+void print_overflow(void);
+
+void print_confusion(void);
+
+void out_token(ttbc_output_handle_t *handle);
+
+void print_a_token(void);
+
+void print_bad_input_line(BufPointer last);
+
+void print_skipping_whatever_remains(void);
+
 History get_history(void);
 
 void set_history(History hist);
