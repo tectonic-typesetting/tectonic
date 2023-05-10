@@ -1,7 +1,11 @@
-use crate::c_api::{ttstub_input_close, ttstub_input_getc, ttstub_input_open, xcalloc};
-use tectonic_io_base::InputHandle;
-use libc::{EOF, free};
+use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
+use crate::c_api::{
+    ttstub_input_close, ttstub_input_getc, ttstub_input_open, xcalloc, ASCIICode, BufPointer,
+    LexType,
+};
+use libc::{free, EOF};
 use std::{mem, ptr};
+use tectonic_io_base::InputHandle;
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
  * here's a tiny wrapper that lets us fake it. */
@@ -12,6 +16,51 @@ pub struct PeekableInput {
     handle: *mut InputHandle,
     peek_char: libc::c_int,
     saw_eof: bool,
+}
+
+impl PeekableInput {
+    fn getc(&mut self) -> libc::c_int {
+        if self.peek_char != EOF {
+            let rv = self.peek_char;
+            self.peek_char = EOF;
+            return rv;
+        }
+
+        // SAFETY: Internal handle guaranteed valid
+        let rv = unsafe { ttstub_input_getc(self.handle) };
+        if rv == EOF {
+            self.saw_eof = true;
+        }
+        return rv;
+    }
+
+    fn ungetc(&mut self, c: libc::c_int) {
+        assert_ne!(c, EOF);
+        self.peek_char = c;
+    }
+
+    fn eof(&mut self) -> bool {
+        if self.saw_eof {
+            return true;
+        }
+        let c = self.getc();
+        if c == EOF {
+            return true;
+        }
+        self.ungetc(c);
+        false
+    }
+
+    fn eoln(&mut self) -> bool {
+        if self.saw_eof {
+            return true;
+        }
+        let c = self.getc();
+        if c != EOF {
+            self.ungetc(c);
+        }
+        c == b'\n' as libc::c_int || c == '\r' as libc::c_int || c == EOF
+    }
 }
 
 #[no_mangle]
@@ -34,9 +83,7 @@ pub unsafe extern "C" fn peekable_open(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn peekable_close(
-    peekable: *mut PeekableInput,
-) -> libc::c_int {
+pub unsafe extern "C" fn peekable_close(peekable: *mut PeekableInput) -> libc::c_int {
     if peekable.is_null() {
         return 0;
     }
@@ -47,59 +94,54 @@ pub unsafe extern "C" fn peekable_close(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn peekable_getc(
-    peekable: *mut PeekableInput,
-) -> libc::c_int {
-    let peekable = &mut *peekable;
-    if peekable.peek_char != EOF {
-        let rv = peekable.peek_char;
-        peekable.peek_char = EOF;
-        return rv;
-    }
-
-    let rv = ttstub_input_getc(peekable.handle);
-    if rv == EOF {
-        peekable.saw_eof = true;
-    }
-    return rv;
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn peekable_ungetc(
-    peekable: *mut PeekableInput,
-    c: libc::c_int,
-) {
-    assert_ne!(c, EOF);
-    (*peekable).peek_char = c;
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn tectonic_eof(peekable: *mut PeekableInput) -> bool {
     // Check for EOF following Pascal semantics.
     let peekable = match peekable.as_mut() {
         Some(p) => p,
         None => return true,
     };
-    if peekable.saw_eof {
-        return true;
-    }
-    let c = peekable_getc(peekable);
-    if c == EOF {
-        return true;
-    }
-    peekable_ungetc(peekable, c);
-
-    false
+    peekable.eof()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn eoln(peekable: *mut PeekableInput) -> bool {
-    if (*peekable).saw_eof {
-        return true;
+pub unsafe extern "C" fn input_ln(
+    lex_class: &[LexType; 256],
+    last: *mut BufPointer,
+    peekable: *mut PeekableInput,
+) -> bool {
+    *last = 0;
+    let peekable = &mut *peekable;
+    if peekable.eof() {
+        return false;
     }
-    let c = peekable_getc(peekable);
-    if c != EOF {
-        peekable_ungetc(peekable, c)
-    }
-    c == b'\n' as libc::c_int || c == '\r' as libc::c_int || c == EOF
+
+    // Read up to end-of-line
+    with_buffers_mut(|b| {
+        while !peekable.eoln() {
+            if *last >= b.len() as BufPointer {
+                b.grow_all();
+            }
+
+            let ptr = b.buffer(BufTy::Base).offset(*last as isize);
+            *ptr = peekable.getc() as ASCIICode;
+            *last += 1;
+        }
+    });
+
+    peekable.getc();
+
+    // Trim whitespace
+    with_buffers(|b| {
+        while *last > 0 {
+            if lex_class[b.at(BufTy::Base, (*last - 1) as usize) as usize] == 1
+            /* white_space */
+            {
+                *last -= 1;
+            } else {
+                break;
+            }
+        }
+    });
+
+    true
 }

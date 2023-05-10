@@ -43,6 +43,8 @@ typedef struct {
   bool saw_eof;
 } PeekableInput;
 
+typedef uint8_t LexType;
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -97,13 +99,9 @@ PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
 
-int peekable_getc(PeekableInput *peekable);
-
-void peekable_ungetc(PeekableInput *peekable, int c);
-
 bool tectonic_eof(PeekableInput *peekable);
 
-bool eoln(PeekableInput *peekable);
+bool input_ln(const LexType (*lex_class)[256], BufPointer *last, PeekableInput *peekable);
 
 #ifdef __cplusplus
 } // extern "C"

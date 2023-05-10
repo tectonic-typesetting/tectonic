@@ -388,44 +388,6 @@ print_confusion(void)
     mark_fatal();
 }
 
-static bool
-input_ln(PeekableInput *peekable)
-{
-    last = 0; /* note: global! */
-
-    if (eof(peekable))
-        return false;
-
-    while (!eoln(peekable)) {
-        if (last >= bib_buf_size())
-            buffer_overflow();
-
-        bib_buf(BUF_TY_BASE)[last] = peekable_getc(peekable);
-        last++;
-    }
-    
-    // For side effects - consume the eoln we saw
-    int eoln = peekable_getc(peekable);
-
-    if (eoln == '\r') {
-        // Handle \r\n newlines on Windows by trying to consume a \n after a \r, unget if it's not that exact pair
-        int next = peekable_getc(peekable);
-        if (next != '\n') {
-            peekable_ungetc(peekable, next);
-        } 
-    }
-
-    while (last > 0) {
-        if (lex_class[bib_buf_at(BUF_TY_BASE, last - 1)] == 1 /*white_space */ )
-            last--;
-        else
-            break;
-    }
-
-    return true;
-}
-
-
 static void
 out_pool_str(rust_output_handle_t handle, str_number s)
 {
@@ -696,7 +658,7 @@ static void bst_err_print_and_look_for_blank_line(void)
     bst_ln_num_print();
     print_bad_input_line();
     while ((last != 0))
-        if (!input_ln(bst_file))
+        if (!input_ln(lex_class, &last, bst_file))
             longjmp(recover_jmpbuf, 1);
         else
             bst_line_num = bst_line_num + 1;
@@ -1553,7 +1515,7 @@ static bool eat_bst_white_space(void)
                 return true;
             }
         }
-        if (!input_ln(bst_file)) {
+        if (!input_ln(lex_class, &last, bst_file)) {
             return false;
         }
         bst_line_num = bst_line_num + 1;
@@ -1810,7 +1772,7 @@ static bool eat_bib_white_space(void)
 {
     while ((!scan_white_space())) {
 
-        if (!input_ln(bib_file[bib_ptr])) {
+        if (!input_ln(lex_class, &last, bib_file[bib_ptr])) {
             return false;
         }
         bib_line_num = bib_line_num + 1;
@@ -1832,7 +1794,7 @@ static bool compress_bib_white(void)
     }
     while ((!scan_white_space())) {
 
-        if (!input_ln(bib_file[bib_ptr])) {
+        if (!input_ln(lex_class, &last, bib_file[bib_ptr])) {
             eat_bib_print();
             return false;
         }
@@ -5870,7 +5832,7 @@ static void get_bib_command_or_entry_and_process(void)
     at_bib_command = false;
     while (!scan1(64 /*at_sign */ )) {
 
-        if (!input_ln(bib_file[bib_ptr]))
+        if (!input_ln(lex_class, &last, bib_file[bib_ptr]))
             return;
         bib_line_num = bib_line_num + 1;
         bib_set_buf_offset(BUF_TY_BASE, 2, 0);
@@ -7075,7 +7037,7 @@ bibtex_main(const char *aux_file_name)
     while (true) {
         aux_ln_stack[aux_ptr]++;
 
-        if (!input_ln(aux_file[aux_ptr])) {
+        if (!input_ln(lex_class, &last, aux_file[aux_ptr])) {
             if (pop_the_aux_stack())
                 break;
         } else {

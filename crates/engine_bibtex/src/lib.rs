@@ -103,11 +103,12 @@ impl BibtexEngine {
 #[doc(hidden)]
 pub mod c_api {
     use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
-    use tectonic_io_base::InputHandle;
     use std::slice;
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
+    use tectonic_io_base::InputHandle;
 
     mod buffer;
+    mod log;
     mod peekable;
 
     unsafe fn buf_to_slice<'a>(
@@ -167,6 +168,7 @@ pub mod c_api {
     type BufType = *mut ASCIICode;
     type BufPointer = i32;
     type PoolPointer = i32;
+    type LexType = u8;
 
     // #[no_mangle]
     // pub unsafe extern "C" fn buffer_overflow() {
@@ -303,7 +305,11 @@ pub mod c_api {
     /// cbindgen:ignore
     #[allow(improper_ctypes)]
     extern "C" {
-        pub fn ttstub_input_open(path: *const libc::c_char, format: FileFormat, is_gz: libc::c_int) -> *mut InputHandle;
+        pub fn ttstub_input_open(
+            path: *const libc::c_char,
+            format: FileFormat,
+            is_gz: libc::c_int,
+        ) -> *mut InputHandle;
         pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
         pub fn ttstub_input_getc(input: *mut InputHandle) -> libc::c_int;
 

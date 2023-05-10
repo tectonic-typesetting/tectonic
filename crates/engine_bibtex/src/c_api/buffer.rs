@@ -8,6 +8,14 @@ thread_local! {
     static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = const { RefCell::new(GlobalBuffer::new()) };
 }
 
+pub fn with_buffers<T>(f: impl FnOnce(&GlobalBuffer) -> T) -> T {
+    GLOBAL_BUFFERS.with(|buffers| f(&buffers.borrow()))
+}
+
+pub fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
+    GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
+}
+
 struct Buffer<T, const N: usize> {
     ptr: *mut T,
     /// Stateful offsets into the buffer
@@ -34,7 +42,7 @@ impl<T, const N: usize> Buffer<T, N> {
     }
 }
 
-struct GlobalBuffer {
+pub struct GlobalBuffer {
     /// Allocated length of all buffers
     buf_len: usize,
     buffer: Buffer<ASCIICode, 2>,
@@ -58,6 +66,23 @@ impl GlobalBuffer {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.buf_len
+    }
+
+    pub fn buffer(&self, ty: BufTy) -> *mut ASCIICode {
+        match ty {
+            BufTy::Base => self.buffer.ptr,
+            BufTy::Sv => self.sv_buffer.ptr,
+            BufTy::Ex => self.ex_buf.ptr,
+        }
+    }
+
+    pub unsafe fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
+        let ptr = self.buffer(ty);
+        unsafe { *ptr.add(offset) }
+    }
+
     fn init(&mut self) {
         self.buf_len = BUF_SIZE + 1;
         self.buffer.alloc(self.buf_len);
@@ -68,7 +93,7 @@ impl GlobalBuffer {
         self.name_sep_char.alloc(self.buf_len);
     }
 
-    fn grow_all(&mut self) {
+    pub fn grow_all(&mut self) {
         let new_len = self.buf_len + BUF_SIZE;
         self.buffer.grow(new_len);
         self.sv_buffer.grow(new_len);
@@ -96,20 +121,12 @@ pub extern "C" fn bib_buf_size() -> i32 {
 
 #[no_mangle]
 pub extern "C" fn bib_buf(ty: BufTy) -> BufType {
-    GLOBAL_BUFFERS.with(|buffers| {
-        let buffers = buffers.borrow();
-        match ty {
-            BufTy::Base => buffers.buffer.ptr,
-            BufTy::Sv => buffers.sv_buffer.ptr,
-            BufTy::Ex => buffers.ex_buf.ptr,
-        }
-    })
+    with_buffers(|b| b.buffer(ty))
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bib_buf_at(ty: BufTy, num: BufPointer) -> ASCIICode {
-    let ptr = bib_buf(ty);
-    unsafe { *ptr.add(num as usize) }
+    with_buffers(|b| b.at(ty, num as usize))
 }
 
 #[no_mangle]
