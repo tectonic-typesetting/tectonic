@@ -76,31 +76,31 @@ pub unsafe extern "C" fn pool_overflow() {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn str_pool(idx: PoolPointer) -> ASCIICode {
+pub unsafe extern "C" fn bib_str_pool(idx: PoolPointer) -> ASCIICode {
     with_pool(|pool| pool.strings[idx])
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn set_str_pool(idx: PoolPointer, code: ASCIICode) {
+pub unsafe extern "C" fn bib_set_str_pool(idx: PoolPointer, code: ASCIICode) {
     with_pool_mut(|pool| pool.strings[idx] = code)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn str_ptr() -> PoolPointer {
+pub unsafe extern "C" fn bib_str_ptr() -> PoolPointer {
     with_pool(|pool| pool.ptr)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn set_str_ptr(ptr: PoolPointer) {
+pub unsafe extern "C" fn bib_set_str_ptr(ptr: PoolPointer) {
     with_pool_mut(|pool| pool.ptr = ptr);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn str_start(s: StrNumber) -> PoolPointer {
+pub unsafe extern "C" fn bib_str_start(s: StrNumber) -> PoolPointer {
     with_pool(|pool| pool.offsets[s as usize])
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn set_str_start(s: StrNumber, ptr: PoolPointer) {
+pub unsafe extern "C" fn bib_set_str_start(s: StrNumber, ptr: PoolPointer) {
     with_pool_mut(|pool| pool.offsets[s as usize] = ptr)
 }

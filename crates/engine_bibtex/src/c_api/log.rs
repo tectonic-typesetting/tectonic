@@ -82,7 +82,7 @@ pub unsafe extern "C" fn standard_output() -> *mut OutputHandle {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn log_file() -> *mut OutputHandle {
+pub unsafe extern "C" fn bib_log_file() -> *mut OutputHandle {
     LOG_FILE.with(|file| file.get())
 }
 
@@ -131,7 +131,7 @@ pub unsafe extern "C" fn out_token(handle: *mut OutputHandle) {
 #[no_mangle]
 pub unsafe extern "C" fn print_a_token() {
     out_token(standard_output());
-    out_token(log_file());
+    out_token(bib_log_file());
 }
 
 #[no_mangle]
