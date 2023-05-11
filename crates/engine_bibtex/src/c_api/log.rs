@@ -1,4 +1,4 @@
-use crate::c_api::{buf_to_slice, BufPointer, History, ttstub_output_open, ttstub_output_open_stdout};
+use crate::c_api::{BufPointer, History, StrNumber, ttstub_output_open, ttstub_output_open_stdout};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
@@ -7,8 +7,9 @@ use tectonic_io_base::OutputHandle;
 use crate::c_api::buffer::{BufTy, with_buffers};
 use crate::c_api::char_info::{LEX_CLASS, LexClass};
 use crate::c_api::history::{mark_error, mark_fatal, set_history};
+use crate::c_api::pool::with_pool;
 
-trait AsBytes {
+pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
 }
 
@@ -43,7 +44,7 @@ fn with_log<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
     LOG_FILE.with(|out| f(unsafe { out.get().as_mut() }.unwrap()))
 }
 
-fn write_logs<B: ?Sized + AsBytes>(str: &B) {
+pub fn write_logs<B: ?Sized + AsBytes>(str: &B) {
     with_log(|log| log.write_all(str.as_bytes()))
         .unwrap();
     with_stdout(|out| out.write_all(str.as_bytes()))
@@ -127,11 +128,10 @@ pub extern "C" fn print_confusion() {
 #[no_mangle]
 pub unsafe extern "C" fn out_token(handle: *mut OutputHandle) {
     with_buffers(|b| {
-        let ptr = b.buffer(BufTy::Base);
-        let start = b.offset(BufTy::Base, 1);
-        let len = b.offset(BufTy::Base, 2) - b.offset(BufTy::Base, 1);
-        let bytes = buf_to_slice(ptr, start, len);
-        (*handle).write_all(bytes)
+        let bytes = b.buffer(BufTy::Base);
+        let start = b.offset(BufTy::Base, 1) as usize;
+        let end = b.offset(BufTy::Base, 2) as usize;
+        (*handle).write_all(&bytes[start..end])
             .unwrap();
     })
 }
@@ -147,13 +147,9 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
     write_logs(" : ");
 
     with_buffers(|b| {
-        let offset2 = b.offset(BufTy::Base, 2);
+        let offset2 = b.offset(BufTy::Base, 2) as usize;
 
-        let slice = buf_to_slice(
-            b.buffer(BufTy::Base),
-            0,
-            offset2
-        );
+        let slice = &b.buffer(BufTy::Base)[0..offset2];
 
         for code in slice {
             if LEX_CLASS[*code as usize] == LexClass::Whitespace {
@@ -187,4 +183,23 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
 #[no_mangle]
 pub unsafe extern "C" fn print_skipping_whatever_remains() {
     write_logs("I'm skipping whatever remains of this ");
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn out_pool_str(
+    handle: *mut OutputHandle,
+    s: StrNumber
+) -> bool {
+    with_pool(|pool| {
+        let str = pool.try_get_str(s as usize);
+        if let Some(str) = str {
+            (*handle).write_all(str)
+                .unwrap();
+            true
+        } else {
+            write_logs(&format!("Illegal string number: {}", s));
+            print_confusion();
+            false
+        }
+    })
 }

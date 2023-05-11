@@ -104,11 +104,13 @@ impl BibtexEngine {
 #[doc(hidden)]
 pub mod c_api {
     use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
-    use std::slice;
+    use std::{ptr, slice};
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
     use crate::c_api::history::History;
+    use crate::c_api::pool::with_pool;
 
+    mod pool;
     mod char_info;
     mod buffer;
     mod peekable;
@@ -131,16 +133,10 @@ pub mod c_api {
         slice::from_raw_parts_mut(buf.offset(start as isize), len as usize)
     }
 
-    unsafe fn str_to_slice<'a>(
-        str_pool: *mut ASCIICode,
-        str_start: *mut PoolPointer,
-        str: StrNumber,
-    ) -> &'a [ASCIICode] {
-        let str = str as isize;
-        slice::from_raw_parts(
-            str_pool.offset(*str_start.offset(str) as isize),
-            (*str_start.offset(str + 1) - *str_start.offset(str)) as usize,
-        )
+    unsafe fn xcalloc_zeroed<T>(len: usize, elem: usize) -> &'static mut [T] {
+        let ptr = xcalloc(len, elem);
+        ptr::write_bytes(ptr, 0, len * elem);
+        slice::from_raw_parts_mut(ptr.cast(), len)
     }
 
     #[repr(C)]
@@ -160,44 +156,19 @@ pub mod c_api {
     type ASCIICode = u8;
     type BufType = *mut ASCIICode;
     type BufPointer = i32;
-    type PoolPointer = i32;
-
-    #[no_mangle]
-    pub unsafe extern "C" fn str_ends_with(
-        str_pool: *mut ASCIICode,
-        str_start: *mut PoolPointer,
-        s: StrNumber,
-        ext: StrNumber,
-    ) -> bool {
-        let str = str_to_slice(str_pool, str_start, s);
-        let ext = str_to_slice(str_pool, str_start, ext);
-        str.ends_with(ext)
-    }
+    type PoolPointer = usize;
 
     #[no_mangle]
     pub unsafe extern "C" fn bib_str_eq_buf(
-        str_pool: *mut ASCIICode,
-        str_start: *mut PoolPointer,
         s: StrNumber,
         buf: BufType,
         bf_ptr: BufPointer,
         len: BufPointer,
     ) -> bool {
         let buf = buf_to_slice(buf, bf_ptr, len);
-        let str = str_to_slice(str_pool, str_start, s);
-        buf == str
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn bib_str_eq_str(
-        str_pool: *mut ASCIICode,
-        str_start: *mut PoolPointer,
-        s1: StrNumber,
-        s2: StrNumber,
-    ) -> bool {
-        let str1 = str_to_slice(str_pool, str_start, s1);
-        let str2 = str_to_slice(str_pool, str_start, s2);
-        str1 == str2
+        with_pool(|pool| {
+            buf == pool.get_str(s as usize)
+        })
     }
 
     #[no_mangle]

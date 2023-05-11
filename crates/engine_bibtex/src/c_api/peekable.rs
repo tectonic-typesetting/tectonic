@@ -132,7 +132,7 @@ pub unsafe extern "C" fn input_ln(
                 b.grow_all();
             }
 
-            let ptr = b.buffer(BufTy::Base).offset(*last as isize);
+            let ptr = &mut b.buffer_mut(BufTy::Base)[*last as usize];
             *ptr = peekable.getc() as ASCIICode;
             *last += 1;
         }

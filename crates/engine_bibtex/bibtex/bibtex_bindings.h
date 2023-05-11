@@ -35,11 +35,9 @@ typedef enum {
   LEX_CLASS_OTHER = 5,
 } LexClass;
 
-typedef uint8_t ASCIICode;
-
-typedef int32_t PoolPointer;
-
 typedef int32_t StrNumber;
+
+typedef uint8_t ASCIICode;
 
 typedef ASCIICode *BufType;
 
@@ -50,6 +48,8 @@ typedef int32_t CiteNumber;
 typedef struct {
   int min_crossrefs;
 } BibtexConfig;
+
+typedef uintptr_t PoolPointer;
 
 typedef struct {
   ttbc_input_handle_t *handle;
@@ -67,16 +67,7 @@ extern const IdClass ID_CLASS[256];
 
 extern const int32_t CHAR_WIDTH[256];
 
-bool str_ends_with(ASCIICode *str_pool, PoolPointer *str_start, StrNumber s, StrNumber ext);
-
-bool bib_str_eq_buf(ASCIICode *str_pool,
-                    PoolPointer *str_start,
-                    StrNumber s,
-                    BufType buf,
-                    BufPointer bf_ptr,
-                    BufPointer len);
-
-bool bib_str_eq_str(ASCIICode *str_pool, PoolPointer *str_start, StrNumber s1, StrNumber s2);
+bool bib_str_eq_buf(StrNumber s, BufType buf, BufPointer bf_ptr, BufPointer len);
 
 void lower_case(BufType buf, BufPointer bf_ptr, BufPointer len);
 
@@ -97,6 +88,24 @@ extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
                                      const char *aux_name);
 
+bool str_ends_with(StrNumber s, StrNumber ext);
+
+bool bib_str_eq_str(StrNumber s1, StrNumber s2);
+
+void pool_overflow(void);
+
+ASCIICode str_pool(PoolPointer idx);
+
+void set_str_pool(PoolPointer idx, ASCIICode code);
+
+PoolPointer str_ptr(void);
+
+void set_str_ptr(PoolPointer ptr);
+
+PoolPointer str_start(StrNumber s);
+
+void set_str_start(StrNumber s, PoolPointer ptr);
+
 int32_t bib_buf_size(void);
 
 BufType bib_buf(BufTy ty);
@@ -110,8 +119,6 @@ BufPointer bib_buf_offset(BufTy ty, uintptr_t num);
 void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
 
 void buffer_overflow(void);
-
-void bib_init_buffers(void);
 
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
@@ -144,6 +151,8 @@ void print_a_token(void);
 void print_bad_input_line(BufPointer last);
 
 void print_skipping_whatever_remains(void);
+
+bool out_pool_str(ttbc_output_handle_t *handle, StrNumber s);
 
 History get_history(void);
 

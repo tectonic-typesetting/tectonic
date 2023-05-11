@@ -1,11 +1,11 @@
-use crate::c_api::{xcalloc, xrealloc, ASCIICode, BufPointer, BufType};
+use crate::c_api::{ASCIICode, BufPointer, BufType, xcalloc_zeroed};
 use std::cell::RefCell;
-use std::{mem, ptr};
+use std::mem;
 
 const BUF_SIZE: usize = 20000;
 
 thread_local! {
-    static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = const { RefCell::new(GlobalBuffer::new()) };
+    static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = RefCell::new(GlobalBuffer::new()) ;
 }
 
 pub fn with_buffers<T>(f: impl FnOnce(&GlobalBuffer) -> T) -> T {
@@ -16,29 +16,25 @@ pub fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
     GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
 }
 
-struct Buffer<T, const N: usize> {
-    ptr: *mut T,
+struct Buffer<T: 'static, const N: usize> {
+    ptr: &'static mut [T],
     /// Stateful offsets into the buffer
     offset: [BufPointer; N],
-    /// Initialized length of this buffer
-    init: usize,
 }
 
-impl<T, const N: usize> Buffer<T, N> {
-    const fn new() -> Buffer<T, N> {
+impl<T: Copy + 'static, const N: usize> Buffer<T, N> {
+    fn new(len: usize) -> Buffer<T, N> {
         Buffer {
-            ptr: ptr::null_mut(),
+            ptr: unsafe { xcalloc_zeroed(len, mem::size_of::<T>()) },
             offset: [0; N],
-            init: 0,
         }
     }
 
-    fn alloc(&mut self, len: usize) {
-        self.ptr = unsafe { xcalloc(len, mem::size_of::<T>()) }.cast();
-    }
-
     fn grow(&mut self, new_len: usize) {
-        self.ptr = unsafe { xrealloc(self.ptr.cast(), new_len) }.cast();
+        // TODO: xrealloc_zeroed
+        let new_ptr = unsafe { xcalloc_zeroed(new_len, mem::size_of::<T>()) };
+        new_ptr.copy_from_slice(self.ptr);
+        self.ptr = new_ptr;
     }
 }
 
@@ -54,15 +50,16 @@ pub struct GlobalBuffer {
 }
 
 impl GlobalBuffer {
-    const fn new() -> GlobalBuffer {
+    fn new() -> GlobalBuffer {
+        let buf_len = BUF_SIZE + 1;
         GlobalBuffer {
-            buf_len: 0,
-            buffer: Buffer::new(),
-            sv_buffer: Buffer::new(),
-            ex_buf: Buffer::new(),
-            out_buf: Buffer::new(),
-            name_tok: Buffer::new(),
-            name_sep_char: Buffer::new(),
+            buf_len,
+            buffer: Buffer::new(buf_len),
+            sv_buffer: Buffer::new(buf_len),
+            ex_buf: Buffer::new(buf_len),
+            out_buf: Buffer::new(buf_len),
+            name_tok: Buffer::new(buf_len),
+            name_sep_char: Buffer::new(buf_len),
         }
     }
 
@@ -70,7 +67,15 @@ impl GlobalBuffer {
         self.buf_len
     }
 
-    pub fn buffer(&self, ty: BufTy) -> *mut ASCIICode {
+    pub fn buffer(&self, ty: BufTy) -> &[ASCIICode] {
+        match ty {
+            BufTy::Base => self.buffer.ptr,
+            BufTy::Sv => self.sv_buffer.ptr,
+            BufTy::Ex => self.ex_buf.ptr,
+        }
+    }
+
+    pub fn buffer_mut(&mut self, ty: BufTy) -> &mut [ASCIICode] {
         match ty {
             BufTy::Base => self.buffer.ptr,
             BufTy::Sv => self.sv_buffer.ptr,
@@ -79,8 +84,7 @@ impl GlobalBuffer {
     }
 
     pub unsafe fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
-        let ptr = self.buffer(ty);
-        unsafe { *ptr.add(offset) }
+        self.buffer(ty)[offset]
     }
 
     pub fn offset(&self, ty: BufTy, offset: usize) -> BufPointer {
@@ -89,16 +93,6 @@ impl GlobalBuffer {
             BufTy::Sv => self.sv_buffer.offset[offset - 1],
             BufTy::Ex => self.ex_buf.offset[offset - 1],
         }
-    }
-
-    fn init(&mut self) {
-        self.buf_len = BUF_SIZE + 1;
-        self.buffer.alloc(self.buf_len);
-        self.sv_buffer.alloc(self.buf_len);
-        self.ex_buf.alloc(self.buf_len);
-        self.out_buf.alloc(self.buf_len);
-        self.name_tok.alloc(self.buf_len);
-        self.name_sep_char.alloc(self.buf_len);
     }
 
     pub fn grow_all(&mut self) {
@@ -129,7 +123,7 @@ pub extern "C" fn bib_buf_size() -> i32 {
 
 #[no_mangle]
 pub extern "C" fn bib_buf(ty: BufTy) -> BufType {
-    with_buffers(|b| b.buffer(ty))
+    with_buffers_mut(|b| (b.buffer_mut(ty) as *mut [u8]).cast())
 }
 
 #[no_mangle]
@@ -171,9 +165,4 @@ pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) 
 #[no_mangle]
 pub extern "C" fn buffer_overflow() {
     GLOBAL_BUFFERS.with(|buffers| buffers.borrow_mut().grow_all())
-}
-
-#[no_mangle]
-pub extern "C" fn bib_init_buffers() {
-    GLOBAL_BUFFERS.with(|buffers| buffers.borrow_mut().init())
 }
