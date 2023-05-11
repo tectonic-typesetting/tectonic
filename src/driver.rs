@@ -16,7 +16,7 @@
 //! which contains tectonic's main CLI program.
 
 use byte_unit::Byte;
-use quick_xml::{events::Event, Reader};
+use quick_xml::{events::Event, NsReader};
 use std::{
     collections::{HashMap, HashSet},
     fs::File,
@@ -2053,13 +2053,13 @@ impl ProcessingSession {
         }
 
         let curs = Cursor::new(&run_xml_entry.data[..]);
-        let mut reader = Reader::from_reader(curs);
+        let mut reader = NsReader::from_reader(curs);
         let mut buf = Vec::new();
         let mut state = State::Searching;
 
         loop {
             let event = ctry!(
-                reader.read_event(&mut buf);
+                reader.read_event_into(&mut buf);
                 "error parsing run.xml file"
             );
 
@@ -2069,7 +2069,7 @@ impl ProcessingSession {
 
             match (state, event) {
                 (State::Searching, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "binary" {
                         state = State::InBinaryName;
@@ -2077,7 +2077,7 @@ impl ProcessingSession {
                 }
 
                 (State::InBinaryName, Event::Text(ref e)) => {
-                    let text = e.unescape_and_decode(&reader)?;
+                    let text = e.unescape()?;
 
                     state = if &text == "biber" {
                         State::InBiberCmdline
@@ -2091,18 +2091,18 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberCmdline, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     // Note that the "infile" might be `foo` without the `.bcf`
                     // extension, so we can't use it for file-finding.
-                    state = match name {
+                    state = match &*name {
                         "infile" | "outfile" | "option" => State::InBiberArgument,
                         _ => State::InBiberRemainder,
                     }
                 }
 
                 (State::InBiberCmdline, Event::End(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "cmdline" {
                         state = State::InBiberRemainder;
@@ -2110,21 +2110,21 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberArgument, Event::Text(ref e)) => {
-                    argv.push(e.unescape_and_decode(&reader)?);
+                    argv.push(e.unescape()?.to_string());
                     state = State::InBiberCmdline;
                 }
 
                 (State::InBiberRemainder, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
-                    state = match name {
+                    state = match &*name {
                         "input" | "requires" => State::InBiberRequirementSection,
                         _ => State::InBiberRemainder,
                     }
                 }
 
                 (State::InBiberRemainder, Event::End(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "external" {
                         break;
@@ -2132,16 +2132,16 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberRequirementSection, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
-                    state = match name {
+                    state = match &*name {
                         "file" => State::InBiberFileRequirement,
                         _ => State::InBiberRemainder,
                     }
                 }
 
                 (State::InBiberRequirementSection, Event::End(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "input" || name == "requires" {
                         state = State::InBiberRemainder;
@@ -2149,7 +2149,7 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberFileRequirement, Event::Text(ref e)) => {
-                    extra_requires.insert(e.unescape_and_decode(&reader)?);
+                    extra_requires.insert(e.unescape()?.to_string());
                     state = State::InBiberRequirementSection;
                 }
 

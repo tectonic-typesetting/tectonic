@@ -65,7 +65,7 @@ lazy_static = "^1.4"
 libc = "^0.2"
 md-5 = "^0.9"
 open = "1.4.0"
-quick-xml = "^0.22"
+quick-xml = "^0.28"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.9"
 structopt = "0.3"
