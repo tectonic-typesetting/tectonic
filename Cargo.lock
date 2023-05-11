@@ -604,7 +604,7 @@ version = "0.10.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8168378f4e5023e7218c89c891c0fd8ecdb5e5e4f18cb78f38cf245dd021e76f"
 dependencies = [
- "block-buffer 0.10.3",
+ "block-buffer",
  "crypto-common",
 ]
 
@@ -1432,7 +1432,7 @@ version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6365506850d44bff6e2fbcb5176cf63650e48bd45ef2fe2665ae1570e0f4b9ca"
 dependencies = [
- "digest 0.10.6",
+ "digest",
 ]
 
 [[package]]
@@ -1853,7 +1853,7 @@ checksum = "5e3b284b1f13a20dc5ebc90aff59a51b8d7137c221131b52a7260c08cbc1cc80"
 dependencies = [
  "once_cell",
  "pest",
- "sha2 0.10.6",
+ "sha2",
 ]
 
 [[package]]
@@ -2274,7 +2274,7 @@ checksum = "82e6b795fe2e3b1e845bafcb27aa35405c4d47cdfc92af5fc8d3002f76cebdc0"
 dependencies = [
  "cfg-if 1.0.0",
  "cpufeatures",
- "digest 0.10.6",
+ "digest",
 ]
 
 [[package]]
@@ -2392,11 +2392,11 @@ dependencies = [
  "hyper 0.12.36",
  "lazy_static",
  "libc",
- "md-5 0.10.5",
+ "md-5",
  "open",
  "quick-xml",
  "serde",
- "sha2 0.10.6",
+ "sha2",
  "structopt",
  "tectonic_bridge_core",
  "tectonic_bundles",
@@ -2428,7 +2428,7 @@ dependencies = [
  "flate2",
  "lazy_static",
  "libc",
- "md-5 0.9.1",
+ "md-5",
  "tectonic_errors",
  "tectonic_io_base",
  "tectonic_status_base",
@@ -2591,7 +2591,7 @@ dependencies = [
  "app_dirs2",
  "flate2",
  "libc",
- "sha2 0.9.9",
+ "sha2",
  "tectonic_errors",
  "tectonic_status_base",
  "thiserror",
@@ -3521,12 +3521,12 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "0.5.13"
+version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93ab48844d61251bb3835145c521d88aa4031d7139e8485990f60ca911fa0815"
+checksum = "7e92305c174683d78035cbf1b70e18db6329cc0f1b9cae0a52ca90bf5bfe7125"
 dependencies = [
  "byteorder",
  "crc32fast",
+ "crossbeam-utils",
  "flate2",
- "thiserror",
 ]
