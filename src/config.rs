@@ -80,9 +80,9 @@ impl PersistentConfig {
 
         let config = match File::open(&cfg_path) {
             Ok(mut f) => {
-                let mut buf = Vec::<u8>::new();
-                f.read_to_end(&mut buf)?;
-                toml::from_slice(&buf)?
+                let mut buf = String::new();
+                f.read_to_string(&mut buf)?;
+                toml::from_str(&buf)?
             }
             Err(e) => {
                 if e.kind() == IoErrorKind::NotFound {
