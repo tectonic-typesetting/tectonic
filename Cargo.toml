@@ -67,7 +67,7 @@ md-5 = "^0.10"
 open = "1.4.0"
 quick-xml = "^0.28"
 serde = { version = "^1.0", features = ["derive"], optional = true }
-sha2 = "^0.9"
+sha2 = "^0.10"
 structopt = "0.3"
 tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
 tectonic_bundles = { path = "crates/bundles", version = "0.0.0-dev.0", default-features = false }
