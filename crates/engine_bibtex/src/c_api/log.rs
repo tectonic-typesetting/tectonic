@@ -1,13 +1,13 @@
-use crate::c_api::{BufPointer, History, StrNumber, ttstub_output_open, ttstub_output_open_stdout};
+use crate::c_api::buffer::{with_buffers, BufTy};
+use crate::c_api::char_info::{LexClass, LEX_CLASS};
+use crate::c_api::history::{mark_error, mark_fatal, set_history};
+use crate::c_api::pool::with_pool;
+use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, BufPointer, History, StrNumber};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
 use std::{ptr, slice};
 use tectonic_io_base::OutputHandle;
-use crate::c_api::buffer::{BufTy, with_buffers};
-use crate::c_api::char_info::{LEX_CLASS, LexClass};
-use crate::c_api::history::{mark_error, mark_fatal, set_history};
-use crate::c_api::pool::with_pool;
 
 pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
@@ -45,10 +45,8 @@ fn with_log<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
 }
 
 pub fn write_logs<B: ?Sized + AsBytes>(str: &B) {
-    with_log(|log| log.write_all(str.as_bytes()))
-        .unwrap();
-    with_stdout(|out| out.write_all(str.as_bytes()))
-        .unwrap();
+    with_log(|log| log.write_all(str.as_bytes())).unwrap();
+    with_stdout(|out| out.write_all(str.as_bytes())).unwrap();
 }
 
 #[no_mangle]
@@ -91,26 +89,21 @@ pub unsafe extern "C" fn log_file() -> *mut OutputHandle {
 #[no_mangle]
 pub extern "C" fn putc_log(c: libc::c_int) {
     let c = c as u8;
-    with_log(|log| log.write_all(&[c]))
-        .unwrap();
-    with_stdout(|out| out.write_all(&[c]))
-        .unwrap();
+    with_log(|log| log.write_all(&[c])).unwrap();
+    with_stdout(|out| out.write_all(&[c])).unwrap();
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn puts_log(str: *const libc::c_char) {
     let str = CStr::from_ptr(str);
-    with_log(|log| log.write_all(str.to_bytes()))
-        .unwrap();
-    with_stdout(|out| out.write_all(str.to_bytes()))
-        .unwrap();
+    with_log(|log| log.write_all(str.to_bytes())).unwrap();
+    with_stdout(|out| out.write_all(str.to_bytes())).unwrap();
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ttstub_puts (handle: *mut OutputHandle, s: *const libc::c_char) {
+pub unsafe extern "C" fn ttstub_puts(handle: *mut OutputHandle, s: *const libc::c_char) {
     let str = CStr::from_ptr(s);
-    (*handle).write(str.to_bytes())
-        .unwrap();
+    (*handle).write(str.to_bytes()).unwrap();
 }
 
 #[no_mangle]
@@ -131,8 +124,7 @@ pub unsafe extern "C" fn out_token(handle: *mut OutputHandle) {
         let bytes = b.buffer(BufTy::Base);
         let start = b.offset(BufTy::Base, 1) as usize;
         let end = b.offset(BufTy::Base, 2) as usize;
-        (*handle).write_all(&bytes[start..end])
-            .unwrap();
+        (*handle).write_all(&bytes[start..end]).unwrap();
     })
 }
 
@@ -172,7 +164,11 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
 
         write_logs("\n");
 
-        if slice.iter().find(|c| LEX_CLASS[**c as usize] != LexClass::Whitespace).is_none() {
+        if slice
+            .iter()
+            .find(|c| LEX_CLASS[**c as usize] != LexClass::Whitespace)
+            .is_none()
+        {
             write_logs("(Error may have been on previous line)\n");
         }
     });
@@ -186,15 +182,11 @@ pub unsafe extern "C" fn print_skipping_whatever_remains() {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn out_pool_str(
-    handle: *mut OutputHandle,
-    s: StrNumber
-) -> bool {
+pub unsafe extern "C" fn out_pool_str(handle: *mut OutputHandle, s: StrNumber) -> bool {
     with_pool(|pool| {
         let str = pool.try_get_str(s as usize);
         if let Some(str) = str {
-            (*handle).write_all(str)
-                .unwrap();
+            (*handle).write_all(str).unwrap();
             true
         } else {
             write_logs(&format!("Illegal string number: {}", s));

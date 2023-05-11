@@ -1,4 +1,3 @@
-
 macro_rules! const_for {
     ($start:literal..$end:literal => $arr:ident[..] = $expr:expr) => {
         let mut i = $start;

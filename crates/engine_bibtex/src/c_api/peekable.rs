@@ -1,11 +1,9 @@
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
-use crate::c_api::{
-    ttstub_input_close, ttstub_input_open, xcalloc, ASCIICode, BufPointer,
-};
+use crate::c_api::char_info::{LexClass, LEX_CLASS};
+use crate::c_api::{ttstub_input_close, ttstub_input_open, xcalloc, ASCIICode, BufPointer};
 use libc::{free, EOF};
 use std::{io, mem, ptr};
 use tectonic_io_base::InputHandle;
-use crate::c_api::char_info::{LEX_CLASS, LexClass};
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
  * here's a tiny wrapper that lets us fake it. */
@@ -115,10 +113,7 @@ pub unsafe extern "C" fn tectonic_eof(peekable: *mut PeekableInput) -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn input_ln(
-    last: *mut BufPointer,
-    peekable: *mut PeekableInput,
-) -> bool {
+pub unsafe extern "C" fn input_ln(last: *mut BufPointer, peekable: *mut PeekableInput) -> bool {
     *last = 0;
     let peekable = &mut *peekable;
     if peekable.eof() {

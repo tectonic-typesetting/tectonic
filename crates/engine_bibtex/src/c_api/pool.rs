@@ -1,4 +1,4 @@
-use crate::c_api::{ASCIICode, PoolPointer, StrNumber, xcalloc_zeroed};
+use crate::c_api::{xcalloc_zeroed, ASCIICode, PoolPointer, StrNumber};
 use std::cell::RefCell;
 use std::mem;
 
@@ -37,7 +37,8 @@ impl StringPool {
 
     pub fn grow(&mut self) {
         // TODO: xrealloc_zeroed
-        let new_strings = unsafe { xcalloc_zeroed(self.strings.len() + POOL_SIZE, mem::size_of::<ASCIICode>()) };
+        let new_strings =
+            unsafe { xcalloc_zeroed(self.strings.len() + POOL_SIZE, mem::size_of::<ASCIICode>()) };
         new_strings.copy_from_slice(&self.strings);
         self.strings = new_strings;
     }
@@ -56,10 +57,7 @@ pub fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn str_ends_with(
-    s: StrNumber,
-    ext: StrNumber,
-) -> bool {
+pub unsafe extern "C" fn str_ends_with(s: StrNumber, ext: StrNumber) -> bool {
     with_pool(|pool| {
         let str = pool.get_str(s as usize);
         let ext = pool.get_str(ext as usize);
@@ -68,13 +66,8 @@ pub unsafe extern "C" fn str_ends_with(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_str_eq_str(
-    s1: StrNumber,
-    s2: StrNumber,
-) -> bool {
-    with_pool(|pool| {
-        pool.get_str(s1 as usize) == pool.get_str(s2 as usize)
-    })
+pub unsafe extern "C" fn bib_str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
+    with_pool(|pool| pool.get_str(s1 as usize) == pool.get_str(s2 as usize))
 }
 
 #[no_mangle]
@@ -111,6 +104,3 @@ pub unsafe extern "C" fn str_start(s: StrNumber) -> PoolPointer {
 pub unsafe extern "C" fn set_str_start(s: StrNumber, ptr: PoolPointer) {
     with_pool_mut(|pool| pool.offsets[s as usize] = ptr)
 }
-
-
-

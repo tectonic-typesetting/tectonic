@@ -19,10 +19,10 @@
 //!
 //! If you change the interfaces here, rerun cbindgen as described in the README!
 
+use crate::c_api::history::History;
 use std::ffi::CString;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
-use crate::c_api::history::History;
 
 /// A possible outcome from a BibTeX engine invocation.
 ///
@@ -104,18 +104,18 @@ impl BibtexEngine {
 #[doc(hidden)]
 pub mod c_api {
     use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
+    use crate::c_api::history::History;
+    use crate::c_api::pool::with_pool;
     use std::{ptr, slice};
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
-    use crate::c_api::history::History;
-    use crate::c_api::pool::with_pool;
 
-    mod pool;
-    mod char_info;
     mod buffer;
-    mod peekable;
-    mod log;
+    mod char_info;
     pub mod history;
+    mod log;
+    mod peekable;
+    mod pool;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -166,9 +166,7 @@ pub mod c_api {
         len: BufPointer,
     ) -> bool {
         let buf = buf_to_slice(buf, bf_ptr, len);
-        with_pool(|pool| {
-            buf == pool.get_str(s as usize)
-        })
+        with_pool(|pool| buf == pool.get_str(s as usize))
     }
 
     #[no_mangle]
@@ -265,7 +263,10 @@ pub mod c_api {
         ) -> *mut InputHandle;
         pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
         pub fn ttstub_output_open_stdout() -> *mut OutputHandle;
-        pub fn ttstub_output_open(path: *const libc::c_char, is_gz: libc::c_int) -> *mut OutputHandle;
+        pub fn ttstub_output_open(
+            path: *const libc::c_char,
+            is_gz: libc::c_int,
+        ) -> *mut OutputHandle;
 
         pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
 

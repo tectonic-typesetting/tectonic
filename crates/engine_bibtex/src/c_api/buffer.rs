@@ -1,4 +1,4 @@
-use crate::c_api::{ASCIICode, BufPointer, BufType, xcalloc_zeroed};
+use crate::c_api::{xcalloc_zeroed, ASCIICode, BufPointer, BufType};
 use std::cell::RefCell;
 use std::mem;
 
