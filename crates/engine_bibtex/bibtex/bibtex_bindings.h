@@ -49,13 +49,13 @@ typedef struct {
   int min_crossrefs;
 } BibtexConfig;
 
-typedef uintptr_t PoolPointer;
-
 typedef struct {
   ttbc_input_handle_t *handle;
   int peek_char;
   bool saw_eof;
 } PeekableInput;
+
+typedef uintptr_t PoolPointer;
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,24 +88,6 @@ extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
                                      const char *aux_name);
 
-bool str_ends_with(StrNumber s, StrNumber ext);
-
-bool bib_str_eq_str(StrNumber s1, StrNumber s2);
-
-void pool_overflow(void);
-
-ASCIICode str_pool(PoolPointer idx);
-
-void set_str_pool(PoolPointer idx, ASCIICode code);
-
-PoolPointer str_ptr(void);
-
-void set_str_ptr(PoolPointer ptr);
-
-PoolPointer str_start(StrNumber s);
-
-void set_str_start(StrNumber s, PoolPointer ptr);
-
 int32_t bib_buf_size(void);
 
 BufType bib_buf(BufTy ty);
@@ -120,19 +102,21 @@ void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
 
 void buffer_overflow(void);
 
-PeekableInput *peekable_open(const char *path, ttbc_file_format format);
+History get_history(void);
 
-int peekable_close(PeekableInput *peekable);
+void set_history(History hist);
 
-bool tectonic_eof(PeekableInput *peekable);
+void mark_warning(void);
 
-bool input_ln(BufPointer *last, PeekableInput *peekable);
+void mark_error(void);
+
+void mark_fatal(void);
 
 ttbc_output_handle_t *init_log_file(const char *file);
 
 ttbc_output_handle_t *standard_output(void);
 
-ttbc_output_handle_t *log_file(void);
+ttbc_output_handle_t *bib_log_file(void);
 
 void putc_log(int c);
 
@@ -154,15 +138,31 @@ void print_skipping_whatever_remains(void);
 
 bool out_pool_str(ttbc_output_handle_t *handle, StrNumber s);
 
-History get_history(void);
+PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
-void set_history(History hist);
+int peekable_close(PeekableInput *peekable);
 
-void mark_warning(void);
+bool tectonic_eof(PeekableInput *peekable);
 
-void mark_error(void);
+bool input_ln(BufPointer *last, PeekableInput *peekable);
 
-void mark_fatal(void);
+bool str_ends_with(StrNumber s, StrNumber ext);
+
+bool bib_str_eq_str(StrNumber s1, StrNumber s2);
+
+void pool_overflow(void);
+
+ASCIICode bib_str_pool(PoolPointer idx);
+
+void bib_set_str_pool(PoolPointer idx, ASCIICode code);
+
+PoolPointer bib_str_ptr(void);
+
+void bib_set_str_ptr(PoolPointer ptr);
+
+PoolPointer bib_str_start(StrNumber s);
+
+void bib_set_str_start(StrNumber s, PoolPointer ptr);
 
 #ifdef __cplusplus
 } // extern "C"

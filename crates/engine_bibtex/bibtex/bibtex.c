@@ -263,7 +263,6 @@ static str_number s_default;
 static str_number *s_preamble;
 static int32_t pop_lit1, pop_lit2, pop_lit3;
 static stk_type pop_typ1, pop_typ2, pop_typ3;
-static pool_pointer sp_ptr;
 static pool_pointer sp_xptr1, sp_xptr2;
 static pool_pointer sp_end;
 static pool_pointer sp_length, sp2_length;
@@ -2256,7 +2255,7 @@ static void von_name_ends_and_last_name_starts_stuff(void)
     }
 }
 
-static void skip_stuff_at_sp_brace_level_greater_than_one(void)
+static pool_pointer skip_stuff_at_sp_brace_level_greater_than_one(pool_pointer sp_ptr)
 {
     while ((sp_brace_level > 1) && (sp_ptr < sp_end)) {
 
@@ -2266,6 +2265,7 @@ static void skip_stuff_at_sp_brace_level_greater_than_one(void)
             sp_brace_level = sp_brace_level + 1;
         sp_ptr = sp_ptr + 1;
     }
+    return sp_ptr;
 }
 
 static void brace_lvl_one_letters_complaint(void)
@@ -2308,6 +2308,7 @@ static bool enough_text_chars(buf_pointer enough_chars)
 
 static void figure_out_the_formatted_name(void)
 {
+    pool_pointer sp_ptr;
     {
         bib_set_buf_offset(BUF_TY_EX, 1, 0);
         sp_brace_level = 0;
@@ -2399,8 +2400,7 @@ static void figure_out_the_formatted_name(void)
                             end_of_group = true;
                         } else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
                             sp_brace_level = sp_brace_level + 1;
-                            sp_ptr = sp_ptr + 1;
-                            skip_stuff_at_sp_brace_level_greater_than_one();
+                            sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr + 1);
                         } else
                             sp_ptr = sp_ptr + 1;
                     if ((end_of_group) && (to_be_written)) {  /*412: */
@@ -2420,7 +2420,7 @@ static void figure_out_the_formatted_name(void)
                                         sp_brace_level = sp_brace_level + 1;
                                         sp_ptr = sp_ptr + 1;
                                         sp_xptr1 = sp_ptr;
-                                        skip_stuff_at_sp_brace_level_greater_than_one();
+                                        sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr);
                                         sp_xptr2 = sp_ptr - 1;
                                     }
                                     while (cur_token < last_token) {
@@ -2925,6 +2925,7 @@ static void x_minus(void)
 
 static void x_concatenate(void)
 {
+    pool_pointer sp_ptr;
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     if (pop_typ1 != 1 /*stk_str */ ) {
@@ -3050,6 +3051,7 @@ static void x_concatenate(void)
 
 static void x_gets(void)
 {
+    pool_pointer sp_ptr;
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     if (pop_typ1 != 2 /*stk_fn */ )
@@ -3145,6 +3147,7 @@ static void x_gets(void)
 
 static void x_add_period(void)
 {
+    pool_pointer sp_ptr;
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
@@ -3462,7 +3465,7 @@ static void x_duplicate(void)
                 while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) > pool_size)
                     pool_overflow();
             }
-            sp_ptr = bib_str_start(pop_lit1);
+            pool_pointer sp_ptr = bib_str_start(pop_lit1);
             sp_end = bib_str_start(pop_lit1 + 1);
             while (sp_ptr < sp_end) {
 
@@ -3483,7 +3486,7 @@ static void x_empty(void)
     switch ((pop_typ1)) {
     case 1:
         {
-            sp_ptr = bib_str_start(pop_lit1);
+            pool_pointer sp_ptr = bib_str_start(pop_lit1);
             sp_end = bib_str_start(pop_lit1 + 1);
             while (sp_ptr < sp_end) {
 
@@ -3937,6 +3940,8 @@ static void x_quote(void)
 
 static void x_substring(void)
 {
+    pool_pointer sp_ptr;
+
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     pop_lit_stk(&pop_lit3, &pop_typ3);
@@ -4014,6 +4019,8 @@ static void x_substring(void)
 
 static void x_swap(void)
 {
+    pool_pointer sp_ptr;
+
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     if ((pop_typ1 != 1 /*stk_str */ ) || (pop_lit1 < cmd_bib_str_ptr)) {
@@ -4051,6 +4058,8 @@ static void x_swap(void)
 
 static void x_text_length(void)
 {
+    pool_pointer sp_ptr;
+
     pop_lit_stk(&pop_lit1, &pop_typ1);
     if (pop_typ1 != 1 /*stk_str */ ) {
         print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
@@ -4095,6 +4104,8 @@ static void x_text_length(void)
 
 static void x_text_prefix(void)
 {
+    pool_pointer sp_ptr;
+
     pop_lit_stk(&pop_lit1, &pop_typ1);
     pop_lit_stk(&pop_lit2, &pop_typ2);
     if (pop_typ1 != 0 /*stk_int */ ) {
