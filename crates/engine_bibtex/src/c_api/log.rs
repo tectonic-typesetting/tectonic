@@ -171,7 +171,7 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
 
         if !slice
             .iter()
-            .any(|c| LEX_CLASS[**c as usize] != LexClass::Whitespace)
+            .any(|c| LEX_CLASS[*c as usize] != LexClass::Whitespace)
         {
             write_logs("(Error may have been on previous line)\n");
         }
