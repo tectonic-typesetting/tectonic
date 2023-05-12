@@ -36,6 +36,11 @@ thread_local! {
     static LOG_FILE: Cell<*mut OutputHandle> = Cell::new(ptr::null_mut());
 }
 
+pub(crate) fn reset() {
+    STANDARD_OUTPUT.with(|cell| cell.set(ptr::null_mut()));
+    LOG_FILE.with(|cell| cell.set(ptr::null_mut()));
+}
+
 fn with_stdout<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
     STANDARD_OUTPUT.with(|out| f(unsafe { out.get().as_mut() }.unwrap()))
 }

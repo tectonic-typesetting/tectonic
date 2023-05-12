@@ -5,7 +5,11 @@ use std::mem;
 const BUF_SIZE: usize = 20000;
 
 thread_local! {
-    static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = RefCell::new(GlobalBuffer::new()) ;
+    static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = RefCell::new(GlobalBuffer::new());
+}
+
+pub(crate) fn reset() {
+    GLOBAL_BUFFERS.with(|cell| *cell.borrow_mut() = GlobalBuffer::new());
 }
 
 pub fn with_buffers<T>(f: impl FnOnce(&GlobalBuffer) -> T) -> T {
@@ -35,6 +39,12 @@ impl<T: Copy + 'static, const N: usize> Buffer<T, N> {
         let new_ptr = unsafe { xcalloc_zeroed(new_len, mem::size_of::<T>()) };
         new_ptr.copy_from_slice(self.ptr);
         self.ptr = new_ptr;
+    }
+}
+
+impl<T: 'static, const N: usize> Drop for Buffer<T, N> {
+    fn drop(&mut self) {
+        unsafe { libc::free((self.ptr as *mut [T]).cast()) };
     }
 }
 

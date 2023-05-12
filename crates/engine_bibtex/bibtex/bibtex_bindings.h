@@ -67,6 +67,8 @@ extern const IdClass ID_CLASS[256];
 
 extern const int32_t CHAR_WIDTH[256];
 
+void reset_all(void);
+
 bool bib_str_eq_buf(StrNumber s, BufType buf, BufPointer bf_ptr, BufPointer len);
 
 void lower_case(BufType buf, BufPointer bf_ptr, BufPointer len);
@@ -163,6 +165,8 @@ void bib_set_str_ptr(PoolPointer ptr);
 PoolPointer bib_str_start(StrNumber s);
 
 void bib_set_str_start(StrNumber s, PoolPointer ptr);
+
+int32_t bib_pool_size(void);
 
 #ifdef __cplusplus
 } // extern "C"

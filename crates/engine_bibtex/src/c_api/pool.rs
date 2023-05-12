@@ -44,8 +44,19 @@ impl StringPool {
     }
 }
 
+impl Drop for StringPool {
+    fn drop(&mut self) {
+        unsafe { libc::free((self.strings as *mut [_]).cast()) };
+        unsafe { libc::free((self.offsets as *mut [_]).cast()) };
+    }
+}
+
 thread_local! {
     static STRING_POOL: RefCell<StringPool> = RefCell::new(StringPool::new());
+}
+
+pub(crate) fn reset() {
+    STRING_POOL.with(|pool| *pool.borrow_mut() = StringPool::new());
 }
 
 pub fn with_pool<T>(f: impl FnOnce(&StringPool) -> T) -> T {
@@ -103,4 +114,9 @@ pub unsafe extern "C" fn bib_str_start(s: StrNumber) -> PoolPointer {
 #[no_mangle]
 pub unsafe extern "C" fn bib_set_str_start(s: StrNumber, ptr: PoolPointer) {
     with_pool_mut(|pool| pool.offsets[s as usize] = ptr)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bib_pool_size() -> i32 {
+    with_pool(|pool| pool.strings.len() as i32)
 }

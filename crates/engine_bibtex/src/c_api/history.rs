@@ -16,6 +16,11 @@ thread_local! {
     static ERR_COUNT: Cell<u32> = Cell::new(0);
 }
 
+pub(crate) fn reset() {
+    HISTORY.with(|cell| cell.set(History::Spotless));
+    ERR_COUNT.with(|cell| cell.set(0));
+}
+
 fn set_err(f: impl FnOnce(u32) -> u32) {
     ERR_COUNT.with(|e| e.set(f(e.get())))
 }

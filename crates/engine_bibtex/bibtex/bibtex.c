@@ -85,7 +85,6 @@ typedef int32_t lit_stk_loc;
 typedef unsigned char /*last_lit_type */ stk_type;
 typedef int32_t blt_in_range;
 
-static int32_t pool_size;
 static int32_t max_bib_files;
 static int32_t max_cites;
 static int32_t wiz_fn_space;
@@ -982,7 +981,7 @@ static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk i
                 else {
 
                     {
-                        while ((pool_ptr + l > pool_size))
+                        while ((pool_ptr + l > bib_pool_size()))
                             pool_overflow();
                     }
                     k = j;
@@ -2729,7 +2728,7 @@ static void check_command_execution(void)
 static void add_pool_buf_and_push(void)
 {
     {
-        while (pool_ptr + ex_buf_length > pool_size)
+        while (pool_ptr + ex_buf_length > bib_pool_size())
             pool_overflow();
     }
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
@@ -2951,7 +2950,7 @@ static void x_concatenate(void)
 
                 pool_ptr = bib_str_start(pop_lit2 + 1);
                 {
-                    while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) > pool_size)
+                    while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) > bib_pool_size())
                         pool_overflow();
                 }
                 sp_ptr = bib_str_start(pop_lit1);
@@ -2984,7 +2983,7 @@ static void x_concatenate(void)
                     sp_length = (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1));
                     sp2_length = (bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2));
                     {
-                        while (pool_ptr + sp_length + sp2_length > pool_size)
+                        while (pool_ptr + sp_length + sp2_length > bib_pool_size())
                             pool_overflow();
                     }
                     sp_ptr = bib_str_start(pop_lit1 + 1);
@@ -3019,7 +3018,7 @@ static void x_concatenate(void)
 
                     {
                         while ((pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) +
-                                (bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2)) > pool_size))
+                                (bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2)) > bib_pool_size()))
                             pool_overflow();
                     }
                     sp_ptr = bib_str_start(pop_lit2);
@@ -3181,7 +3180,7 @@ static void x_add_period(void)
             {
                 if (pop_lit1 < cmd_bib_str_ptr) {
                     {
-                        while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) + 1 > pool_size)
+                        while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) + 1 > bib_pool_size())
                             pool_overflow();
                     }
                     sp_ptr = bib_str_start(pop_lit1);
@@ -3198,7 +3197,7 @@ static void x_add_period(void)
 
                     pool_ptr = bib_str_start(pop_lit1 + 1);
                     {
-                        while (pool_ptr + 1 > pool_size)
+                        while (pool_ptr + 1 > bib_pool_size())
                             pool_overflow();
                     }
                 }
@@ -3462,7 +3461,7 @@ static void x_duplicate(void)
         else {
 
             {
-                while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) > pool_size)
+                while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) > bib_pool_size())
                     pool_overflow();
             }
             pool_pointer sp_ptr = bib_str_start(pop_lit1);
@@ -3743,7 +3742,7 @@ static void x_int_to_chr(void)
     } else {
 
         {
-            while (pool_ptr + 1 > pool_size)
+            while (pool_ptr + 1 > bib_pool_size())
                 pool_overflow();
         }
         {
@@ -3928,7 +3927,7 @@ static void x_purify(void)
 static void x_quote(void)
 {
     {
-        while (pool_ptr + 1 > pool_size)
+        while (pool_ptr + 1 > bib_pool_size())
             pool_overflow();
     }
     {
@@ -4001,7 +4000,7 @@ static void x_substring(void)
                 sp_ptr = sp_end - pop_lit1;
             }
             {
-                while (pool_ptr + sp_end - sp_ptr > pool_size)
+                while (pool_ptr + sp_end - sp_ptr > bib_pool_size())
                     pool_overflow();
             }
             while (sp_ptr < sp_end) {
@@ -4154,7 +4153,7 @@ static void x_text_prefix(void)
             sp_end = sp_xptr1;
         }
         {
-            while (pool_ptr + sp_brace_level + sp_end - sp_ptr > pool_size)
+            while (pool_ptr + sp_brace_level + sp_end - sp_ptr > bib_pool_size())
                 pool_overflow();
         }
         if (pop_lit2 >= cmd_bib_str_ptr)
@@ -4566,7 +4565,7 @@ static void execute_fn(hash_loc ex_fn_loc)
             else {
 
                 {
-                    while (pool_ptr + glb_str_end[str_glb_ptr] > pool_size)
+                    while (pool_ptr + glb_str_end[str_glb_ptr] > bib_pool_size())
                         pool_overflow();
                 }
                 glob_chr_ptr = 0;
@@ -6597,6 +6596,7 @@ initialize(const char *aux_file_name)
     hash_loc k;
 
     bad = 0;
+    reset_all();
 
     if (min_print_line < 3)
         bad = 1;
@@ -6666,7 +6666,6 @@ initialize(const char *aux_file_name)
 History
 bibtex_main(const char *aux_file_name)
 {
-    pool_size = POOL_SIZE;
     max_bib_files = MAX_BIB_FILES;
     max_glob_strs = MAX_GLOB_STRS;
     max_fields = MAX_FIELDS;

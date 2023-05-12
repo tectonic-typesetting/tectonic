@@ -88,6 +88,7 @@ impl BibtexEngine {
         let caux = CString::new(aux)?;
 
         launcher.with_global_lock(|state| {
+            println!("My PID: {}", std::process::id());
             let hist = unsafe { c_api::tt_engine_bibtex_main(state, &self.config, caux.as_ptr()) };
 
             match hist {
@@ -157,6 +158,14 @@ pub mod c_api {
     type BufType = *mut ASCIICode;
     type BufPointer = i32;
     type PoolPointer = usize;
+
+    #[no_mangle]
+    pub unsafe extern "C" fn reset_all() {
+        log::reset();
+        pool::reset();
+        history::reset();
+        buffer::reset();
+    }
 
     #[no_mangle]
     pub unsafe extern "C" fn bib_str_eq_buf(
