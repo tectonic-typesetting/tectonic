@@ -598,7 +598,13 @@ impl WatchCommand {
             .on_action(|action: Action| async move {
                 for event in &*action.events {
                     let is_kill = event.signals().any(|signal| {
-                        matches!(signal, Signal::Interrupt | Signal::Quit | Signal::Terminate | Signal::ForceStop)
+                        matches!(
+                            signal,
+                            Signal::Interrupt
+                                | Signal::Quit
+                                | Signal::Terminate
+                                | Signal::ForceStop
+                        )
                     });
                     if is_kill {
                         action.outcome(Outcome::Exit);

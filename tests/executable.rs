@@ -121,8 +121,7 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
 
 fn run_tectonic_timeout(cwd: &Path, args: &[&str], timeout: Duration) -> Output {
     let mut command = prep_tectonic(cwd, args);
-    command.stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+    command.stdout(Stdio::piped()).stderr(Stdio::piped());
     command.env("BROWSER", "echo");
     println!("running {command:?} with timeout {timeout:?}");
     let mut child = command.spawn().expect("tectonic failed to start");
