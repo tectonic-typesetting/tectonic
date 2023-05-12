@@ -929,6 +929,7 @@ fn bad_v2_position_build() {
 
 /// Ensures that watch command succeeds, and when a file is changed while running rebuilds at least
 /// that many times
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_watch_succeeds() {
     let (_tempdir, temppath) = setup_v2();
