@@ -4,16 +4,11 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr};
-use std::convert::Infallible;
-use std::sync::Arc;
+use std::{
+    convert::Infallible, env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr,
+    sync::Arc,
+};
 use structopt::{clap::AppSettings, StructOpt};
-use tokio::runtime;
-use watchexec::action::PreSpawn;
-use watchexec::command::{Command, Shell};
-use watchexec::config::InitConfig;
-use watchexec::Watchexec;
-use watchexec_filterer_globset::GlobsetFilterer;
 use tectonic::{
     self,
     config::{is_config_test_mode_activated, PersistentConfig},
@@ -28,6 +23,15 @@ use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_status_base::plain::PlainStatusBackend;
+use tokio::runtime;
+use watchexec::{
+    action::{Action, Outcome, PreSpawn},
+    command::{Command, Shell},
+    config::InitConfig,
+    Watchexec,
+};
+use watchexec_filterer_globset::GlobsetFilterer;
+use watchexec_signals::Signal;
 
 /// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
@@ -527,7 +531,7 @@ pub struct WatchCommand {
 impl WatchCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
-    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    async fn execute_inner(self, status: &mut dyn StatusBackend) -> Result<i32> {
         let exe_name = crate::watch::get_trimmed_exe_name()
             .into_os_string()
             .into_string()
@@ -538,18 +542,24 @@ impl WatchCommand {
             if !x.is_empty() {
                 let cmd = Command::Exec {
                     prog: exe_name.clone(),
-                    args: vec!["-X".to_string(), x.to_string()]
+                    args: vec!["-X".to_string(), x.to_string()],
                 };
                 cmds.push(cmd)
             }
         }
 
         if cmds.is_empty() {
-            cmds.push(Command::Exec { prog: exe_name, args: vec!["-X".to_string(), "build".to_string()]});
+            cmds.push(Command::Exec {
+                prog: exe_name,
+                args: vec!["-X".to_string(), "build".to_string()],
+            });
         }
 
         #[cfg(windows)]
-        let (shell, command) = (Shell::Cmd, "echo [Finished running. Exit status: %ERRORLEVEL%]");
+        let (shell, command) = (
+            Shell::Cmd,
+            "echo [Finished running. Exit status: %ERRORLEVEL%]",
+        );
         #[cfg(unix)]
         let (shell, command) = (
             Shell::Unix("bash".to_string()),
@@ -559,7 +569,7 @@ impl WatchCommand {
         cmds.push(Command::Shell {
             shell,
             args: vec![],
-            command: command.to_string()
+            command: command.to_string(),
         });
 
         let mut runtime_config = watchexec::config::RuntimeConfig::default();
@@ -567,26 +577,47 @@ impl WatchCommand {
 
         let current_dir = env::current_dir()?;
 
-        let rt = runtime::Builder::new_current_thread().build()?;
-        let filter = rt.block_on(GlobsetFilterer::new(
+        let filter = GlobsetFilterer::new(
             &current_dir,
             [],
-            [("build".to_string(), None)],
+            // Ignore build directory, and things like vim swap files
+            [("build/**".to_string(), None), ("*.swp".to_string(), None)],
             [],
             [],
-        )).unwrap();
+        )
+        .await
+        .unwrap();
 
-        runtime_config.pathset([&current_dir])
+        runtime_config
+            .pathset([&current_dir])
             .filterer(Arc::new(filter))
             .on_pre_spawn(|pre_spawn: PreSpawn| async move {
                 println!("[Running `{}`]", pre_spawn.command);
                 Ok::<_, Infallible>(())
+            })
+            .on_action(|action: Action| async move {
+                for event in &*action.events {
+                    let is_kill = event.signals().any(|signal| {
+                        matches!(signal, Signal::Interrupt | Signal::Quit | Signal::Terminate | Signal::ForceStop)
+                    });
+                    if is_kill {
+                        action.outcome(Outcome::Exit);
+                        return Ok::<_, Infallible>(());
+                    }
+
+                    let paths = event.paths().collect::<Vec<_>>();
+                    if !paths.is_empty() {
+                        action.outcome(Outcome::IfRunning(
+                            Box::new(Outcome::DoNothing),
+                            Box::new(Outcome::Start),
+                        ));
+                        return Ok(());
+                    }
+                }
+                Ok(())
             });
 
-        let exec_handler = Watchexec::new(
-            InitConfig::default(),
-            runtime_config,
-        );
+        let exec_handler = Watchexec::new(InitConfig::default(), runtime_config);
 
         match exec_handler {
             Err(e) => {
@@ -598,16 +629,18 @@ impl WatchCommand {
                 Ok(1)
             }
             Ok(exec_handler) => {
-                exec_handler.main();
+                exec_handler.main().await.unwrap().unwrap();
                 Ok(0)
-                // if let Err(e) = watchexec::watch(&handler) {
-                //     tt_error!(status, "failed to execute watch"; e.into());
-                //     Ok(1)
-                // } else {
-                //     Ok(0)
-                // }
             }
         }
+    }
+
+    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let rt = runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        rt.block_on(self.execute_inner(status))
     }
 }
 

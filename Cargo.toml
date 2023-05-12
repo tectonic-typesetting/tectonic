@@ -89,6 +89,7 @@ toml = { version = "^0.7", optional = true }
 url = "^2.0"
 watchexec = "^2.3.0"
 watchexec-filterer-globset = "1.2"
+watchexec-signals = "1.0"
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
 
 [features]

@@ -2,13 +2,14 @@
 // Licensed under the MIT License.
 
 use lazy_static::lazy_static;
+use std::time::Duration;
 use std::{
     env,
     fs::{self, File, OpenOptions},
     io::{Read, Write},
     path::{Path, PathBuf},
     process::{Command, Output, Stdio},
-    str,
+    str, thread,
 };
 use tempfile::TempDir;
 
@@ -116,6 +117,21 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     command.env("BROWSER", "echo");
     println!("running {command:?}");
     command.output().expect("tectonic failed to start")
+}
+
+fn run_tectonic_timeout(cwd: &Path, args: &[&str], timeout: Duration) -> Output {
+    let mut command = prep_tectonic(cwd, args);
+    command.stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    command.env("BROWSER", "echo");
+    println!("running {command:?} with timeout {timeout:?}");
+    let mut child = command.spawn().expect("tectonic failed to start");
+    thread::sleep(timeout);
+    // Ignore if the child already died
+    let _ = child.kill();
+    child
+        .wait_with_output()
+        .expect("tectonic failed to execute")
 }
 
 fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
@@ -910,4 +926,36 @@ fn bad_v2_position_build() {
     let (_tempdir, temppath) = setup_v2();
     let output = run_tectonic(&temppath, &["build", "-X"]);
     error_or_panic(&output);
+}
+
+/// Ensures that watch command succeeds, and when a file is changed while running rebuilds at least
+/// that many times
+#[test]
+fn v2_watch_succeeds() {
+    let (_tempdir, temppath) = setup_v2();
+
+    let mut path = temppath.clone();
+    let thread = thread::spawn(move || {
+        path.push("src");
+        path.push("index.tex");
+        thread::sleep(Duration::from_secs(5));
+        {
+            let mut file = File::create(&path).unwrap();
+            writeln!(file).unwrap();
+        }
+        thread::sleep(Duration::from_secs(5));
+        {
+            let mut file = File::create(&path).unwrap();
+            writeln!(file).unwrap();
+        }
+        thread::sleep(Duration::from_secs(5));
+    });
+    let output = run_tectonic_timeout(&temppath, &["-X", "watch"], Duration::from_secs(15));
+    // TODO: Timeout kills child in a way that terminates it gracefully, such as ctrl-c, not SIGKILL
+    // success_or_panic(&output);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    assert!(stdout.matches("Running TeX").count() >= 2);
+
+    thread.join().unwrap();
 }

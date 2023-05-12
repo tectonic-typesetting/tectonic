@@ -1,25 +1,25 @@
 use flate2::{write::GzEncoder, GzBuilder};
 use headers::HeaderMapExt;
 use hyper::header::{self, HeaderValue};
-use hyper::service::{make_service_fn, service_fn};
 use hyper::server::Server;
+use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
 use std::collections::HashMap;
+use std::convert::Infallible;
+use std::future::Future;
 use std::io::{self, Write};
 use std::net::SocketAddr;
 use std::ops::Bound;
 use std::path::Path;
+use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::{env, fs, thread};
-use std::convert::Infallible;
-use std::future::Future;
-use std::pin::Pin;
-use tokio::runtime;
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::io::OpenResult;
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::ChatterLevel;
+use tokio::runtime;
 
 mod util;
 
@@ -129,8 +129,7 @@ impl TarIndexService {
         ) {
             (&Method::HEAD, "/tectonic-default", None) => {
                 self.log_request(TectonicRequest::Head(req.uri().path().to_owned()));
-                let mut resp = Response::builder()
-                    .status(StatusCode::FOUND);
+                let mut resp = Response::builder().status(StatusCode::FOUND);
                 resp.headers_mut().unwrap().insert(
                     header::LOCATION,
                     HeaderValue::from_str(&format!(
@@ -153,8 +152,7 @@ impl TarIndexService {
                         .get(&(l, h - l + 1))
                         .expect("unknown file data requested");
                     self.log_request(TectonicRequest::File(name.to_owned()));
-                    let mut resp = Response::builder()
-                        .status(StatusCode::PARTIAL_CONTENT);
+                    let mut resp = Response::builder().status(StatusCode::PARTIAL_CONTENT);
                     resp.headers_mut()
                         .unwrap()
                         .typed_insert(headers::ContentRange::bytes(l..=h, None).unwrap());
@@ -235,24 +233,23 @@ where
             let url = tar_service.url();
             url_available_tx.send(url).unwrap();
 
-            let graceful = server.with_graceful_shutdown(async move { server_shutdown_rx.await.unwrap(); });
+            let graceful = server.with_graceful_shutdown(async move {
+                server_shutdown_rx.await.unwrap();
+            });
 
             graceful.await
         })
     });
 
     // Server running, run the provided test
-    let url = url_available_rx.recv()
-        .unwrap();
+    let url = url_available_rx.recv().unwrap();
     run(Arc::clone(&tar_service), &url);
 
     println!("Shutting down");
 
     // Shut down server
     let _ = server_shutdown_tx.send(());
-    server_thread.join()
-        .unwrap()
-        .unwrap();
+    server_thread.join().unwrap().unwrap();
 
     // Check tectonic's requests.
     let requests = tar_service.requests.lock().unwrap();
