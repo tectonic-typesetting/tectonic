@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 use lazy_static::lazy_static;
-use std::time::Duration;
 use std::{
     env,
+    time::{Duration, Instant},
     fs::{self, File, OpenOptions},
     io::{Read, Write},
     path::{Path, PathBuf},
@@ -119,13 +119,15 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     command.output().expect("tectonic failed to start")
 }
 
-fn run_tectonic_timeout(cwd: &Path, args: &[&str], timeout: Duration) -> Output {
+fn run_tectonic_until(cwd: &Path, args: &[&str], kill: impl Fn() -> bool) -> Output {
     let mut command = prep_tectonic(cwd, args);
     command.stdout(Stdio::piped()).stderr(Stdio::piped());
     command.env("BROWSER", "echo");
-    println!("running {command:?} with timeout {timeout:?}");
+    println!("running {command:?} until test passes");
     let mut child = command.spawn().expect("tectonic failed to start");
-    thread::sleep(timeout);
+    while !kill() {
+        thread::sleep(Duration::from_secs(1));
+    }
     // Ignore if the child already died
     let _ = child.kill();
     child
@@ -934,28 +936,48 @@ fn bad_v2_position_build() {
 fn v2_watch_succeeds() {
     let (_tempdir, temppath) = setup_v2();
 
-    let mut path = temppath.clone();
+    // Timeout the test after 5 minutes - we should definitely run twice in that range
+    let max_time = Duration::from_secs(60 * 5);
+    let path = temppath.clone();
+
+    // Make sure `default.pdf` already exists - just makes the test easier to implement
+    let output = run_tectonic(&temppath, &["-X", "build"]);
+    success_or_panic(&output);
+
     let thread = thread::spawn(move || {
-        path.push("src");
-        path.push("index.tex");
-        thread::sleep(Duration::from_secs(5));
-        {
-            let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
+        let input = path.join("src/index.tex");
+        let output = path.join("build/default/default.pdf");
+        let start = Instant::now();
+        let mut start_mod = None;
+        let mut modified = 0;
+        while Instant::now() - start < max_time {
+            if modified >= 3 {
+                break;
+            }
+
+            let new_mod = output.metadata().and_then(|meta| meta.modified())
+                .unwrap();
+            if start_mod.map_or(true, |start_mod| new_mod > start_mod) {
+                start_mod = Some(new_mod);
+                // Make sure our write happens sufficiently after to get a different system time
+                thread::sleep(Duration::from_millis(100));
+                {
+                    let mut file = File::create(&input).unwrap();
+                    writeln!(file, "New Text").unwrap();
+                }
+                modified += 1;
+            }
+
+            thread::sleep(Duration::from_secs(1));
         }
-        thread::sleep(Duration::from_secs(5));
-        {
-            let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
-        }
-        thread::sleep(Duration::from_secs(5));
     });
-    let output = run_tectonic_timeout(&temppath, &["-X", "watch"], Duration::from_secs(15));
-    // TODO: Timeout kills child in a way that terminates it gracefully, such as ctrl-c, not SIGKILL
+
+    let output = run_tectonic_until(&temppath, &["-X", "watch"], || thread.is_finished());
+    // TODO: Make timeout kill child in a way that terminates it gracefully, such as ctrl-c, not SIGKILL
     // success_or_panic(&output);
     let stdout = String::from_utf8_lossy(&output.stdout);
 
-    assert!(stdout.matches("Running TeX").count() >= 2);
-
     thread.join().unwrap();
+
+    assert!(stdout.matches("Running TeX").count() >= 2);
 }
