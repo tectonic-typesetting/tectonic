@@ -108,7 +108,7 @@ pub unsafe extern "C" fn puts_log(str: *const libc::c_char) {
 #[no_mangle]
 pub unsafe extern "C" fn ttstub_puts(handle: *mut OutputHandle, s: *const libc::c_char) {
     let str = CStr::from_ptr(s);
-    (*handle).write(str.to_bytes()).unwrap();
+    (*handle).write_all(str.to_bytes()).unwrap();
 }
 
 #[no_mangle]
@@ -169,10 +169,9 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
 
         write_logs("\n");
 
-        if slice
+        if !slice
             .iter()
-            .find(|c| LEX_CLASS[**c as usize] != LexClass::Whitespace)
-            .is_none()
+            .any(|c| LEX_CLASS[**c as usize] != LexClass::Whitespace)
         {
             write_logs("(Error may have been on previous line)\n");
         }

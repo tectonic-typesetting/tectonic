@@ -32,14 +32,14 @@ impl StringPool {
 
     pub fn get_str(&self, s: usize) -> &[u8] {
         self.try_get_str(s)
-            .expect(&format!("Invalid string number {}", s))
+            .unwrap_or_else(|| panic!("Invalid string number {}", s))
     }
 
     pub fn grow(&mut self) {
         // TODO: xrealloc_zeroed
         let new_strings =
             unsafe { xcalloc_zeroed(self.strings.len() + POOL_SIZE, mem::size_of::<ASCIICode>()) };
-        new_strings.copy_from_slice(&self.strings);
+        new_strings.copy_from_slice(self.strings);
         self.strings = new_strings;
     }
 }

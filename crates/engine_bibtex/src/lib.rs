@@ -263,24 +263,29 @@ pub mod c_api {
     }
 
     /// cbindgen:ignore
-    #[allow(improper_ctypes)]
-    extern "C" {
-        pub fn ttstub_input_open(
-            path: *const libc::c_char,
-            format: FileFormat,
-            is_gz: libc::c_int,
-        ) -> *mut InputHandle;
-        pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
-        pub fn ttstub_output_open_stdout() -> *mut OutputHandle;
-        pub fn ttstub_output_open(
-            path: *const libc::c_char,
-            is_gz: libc::c_int,
-        ) -> *mut OutputHandle;
+    mod external {
+        use super::*;
 
-        pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
+        #[allow(improper_ctypes)]
+        extern "C" {
+            pub fn ttstub_input_open(
+                path: *const libc::c_char,
+                format: FileFormat,
+                is_gz: libc::c_int,
+            ) -> *mut InputHandle;
+            pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
+            pub fn ttstub_output_open_stdout() -> *mut OutputHandle;
+            pub fn ttstub_output_open(
+                path: *const libc::c_char,
+                is_gz: libc::c_int,
+            ) -> *mut OutputHandle;
 
-        pub fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;
+            pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
+
+            pub fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;
+        }
     }
+    pub use external::*;
 }
 
 /// Does our resulting executable link correctly?

@@ -40,7 +40,7 @@ impl PeekableInput {
         if rv == EOF {
             self.saw_eof = true;
         }
-        return rv;
+        rv
     }
 
     fn ungetc(&mut self, c: libc::c_int) {
@@ -99,7 +99,7 @@ pub unsafe extern "C" fn peekable_close(peekable: *mut PeekableInput) -> libc::c
 
     let rv = ttstub_input_close((*peekable).handle);
     free(peekable.cast());
-    return rv;
+    rv
 }
 
 #[no_mangle]
