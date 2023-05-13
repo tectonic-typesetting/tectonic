@@ -119,7 +119,7 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     command.output().expect("tectonic failed to start")
 }
 
-fn run_tectonic_until(cwd: &Path, args: &[&str], kill: impl Fn() -> bool) -> Output {
+fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool) -> Output {
     let mut command = prep_tectonic(cwd, args);
     command.stdout(Stdio::piped()).stderr(Stdio::piped());
     command.env("BROWSER", "echo");
@@ -944,7 +944,10 @@ fn v2_watch_succeeds() {
     let output = run_tectonic(&temppath, &["-X", "build"]);
     success_or_panic(&output);
 
+    let (start_send, start_recv) = std::sync::mpsc::channel();
+
     let thread = thread::spawn(move || {
+        start_recv.recv().unwrap();
         let input = path.join("src/index.tex");
         let output = path.join("build/default/default.pdf");
         let start = Instant::now();
@@ -972,10 +975,19 @@ fn v2_watch_succeeds() {
         }
     });
 
-    let output = run_tectonic_until(&temppath, &["-X", "watch"], || thread.is_finished());
+    let mut start_send = Some(start_send);
+    let output = run_tectonic_until(&temppath, &["-X", "watch"], || {
+        if let Some(send) = start_send.take() {
+            send.send(()).unwrap();
+        }
+        thread.is_finished()
+    });
     // TODO: Make timeout kill child in a way that terminates it gracefully, such as ctrl-c, not SIGKILL
     // success_or_panic(&output);
     let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    println!("stdout:\n{}", stdout);
+    println!("stderr:\n{}", stderr);
 
     thread.join().unwrap();
 
