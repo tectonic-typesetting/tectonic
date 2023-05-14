@@ -28,7 +28,9 @@ use std::{
     str::FromStr,
     time::SystemTime,
 };
-use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SecuritySettings, SystemRequestError};
+use tectonic_bridge_core::{
+    CoreBridgeLauncher, DriverHooks, FsEmulationSettings, SecuritySettings, SystemRequestError,
+};
 use tectonic_bundles::Bundle;
 use tectonic_engine_spx2html::AssetSpecification;
 use tectonic_io_base::{
@@ -1829,6 +1831,18 @@ impl ProcessingSession {
 
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
+            launcher.with_fs_emulation_settings(FsEmulationSettings {
+                // We enable absolute paths if synctex was requested or other
+                // external tools are involved.
+                expose_absolute_paths: self.synctex_enabled || self.security.allow_shell_escape(),
+                // Note: We always return "dummy" modification times. Should
+                // there be a configuration knob to return the real mtime?
+                mtime_override: self
+                    .build_date
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .map(|x| x.as_secs() as i64)
+                    .ok(),
+            });
 
             TexEngine::default()
                 .halt_on_error_mode(!self.unstables.continue_on_errors)
