@@ -35,6 +35,13 @@ typedef enum {
   LEX_CLASS_OTHER = 5,
 } LexClass;
 
+typedef enum {
+  SCAN_RES_ID_NULL = 0,
+  SCAN_RES_SPECIFIED_CHAR_ADJACENT = 1,
+  SCAN_RES_OTHER_CHAR_ADJACENT = 2,
+  SCAN_RES_WHITESPACE_ADJACENT = 3,
+} ScanRes;
+
 typedef int32_t StrNumber;
 
 typedef uint8_t ASCIICode;
@@ -167,6 +174,26 @@ PoolPointer bib_str_start(StrNumber s);
 void bib_set_str_start(StrNumber s, PoolPointer ptr);
 
 int32_t bib_pool_size(void);
+
+bool scan1(ASCIICode char1, BufPointer last);
+
+bool scan1_white(ASCIICode char1, BufPointer last);
+
+bool scan2(ASCIICode char1, ASCIICode char2, BufPointer last);
+
+bool scan2_white(ASCIICode char1, ASCIICode char2, BufPointer last);
+
+bool scan3(ASCIICode char1, ASCIICode char2, ASCIICode char3, BufPointer last);
+
+bool scan_alpha(BufPointer last);
+
+bool scan_white_space(BufPointer last);
+
+ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3, BufPointer last);
+
+bool scan_nonneg_integer(BufPointer last);
+
+bool scan_integer(int32_t *token_value, BufPointer last);
 
 #ifdef __cplusplus
 } // extern "C"

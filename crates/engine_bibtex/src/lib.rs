@@ -116,6 +116,7 @@ pub mod c_api {
     mod log;
     mod peekable;
     mod pool;
+    mod scan;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -204,6 +205,7 @@ pub mod c_api {
             cite_info.add(left_end as usize),
             (right_end - left_end) as usize,
         );
+        // TODO: This may be wrong - see `less_than` on bibtex.c
         slice.sort();
     }
 

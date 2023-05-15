@@ -1,5 +1,5 @@
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
-use crate::c_api::char_info::{LexClass, LEX_CLASS};
+use crate::c_api::char_info::LexClass;
 use crate::c_api::{ttstub_input_close, ttstub_input_open, xcalloc, ASCIICode, BufPointer};
 use libc::{free, EOF};
 use std::{io, mem, ptr};
@@ -138,7 +138,7 @@ pub unsafe extern "C" fn input_ln(last: *mut BufPointer, peekable: *mut Peekable
     // Trim whitespace
     with_buffers(|b| {
         while *last > 0 {
-            if LEX_CLASS[b.at(BufTy::Base, (*last - 1) as usize) as usize] == LexClass::Whitespace {
+            if LexClass::of(b.at(BufTy::Base, (*last - 1) as usize)) == LexClass::Whitespace {
                 *last -= 1;
             } else {
                 break;

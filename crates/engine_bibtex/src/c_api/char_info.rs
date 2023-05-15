@@ -1,3 +1,4 @@
+use crate::c_api::ASCIICode;
 macro_rules! const_for {
     ($start:literal..$end:literal => $arr:ident[..] = $expr:expr) => {
         let mut i = $start;
@@ -27,12 +28,24 @@ pub enum LexClass {
     Other = 5,
 }
 
+impl LexClass {
+    pub fn of(char: ASCIICode) -> LexClass {
+        LEX_CLASS[char as usize]
+    }
+}
+
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[repr(C)]
 pub enum IdClass {
     IllegalIdChar = 0,
     LegalIdChar = 1,
+}
+
+impl IdClass {
+    pub fn of(char: ASCIICode) -> IdClass {
+        ID_CLASS[char as usize]
+    }
 }
 
 #[no_mangle]

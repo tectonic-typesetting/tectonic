@@ -53,13 +53,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 
 /*22: */
 
-typedef enum {
-  SCAN_RES_ID_NULL = 0,
-  SCAN_RES_SPECIFIED_CHAR_ADJACENT = 1,
-  SCAN_RES_OTHER_CHAR_ADJACENT = 2,
-  SCAN_RES_WHITESPACE_ADJACENT = 3,
-} scan_result;
-
 typedef unsigned char ASCII_code;
 typedef int32_t buf_pointer;
 typedef ASCII_code *buf_type;
@@ -121,7 +114,6 @@ static str_number s_bib_extension;
 static str_number s_bst_area;
 static str_number s_bib_area;
 static int32_t command_num;
-static int32_t token_value;
 static int32_t aux_name_length;
 static PeekableInput *aux_file[aux_stack_size + 1];
 static str_number aux_list[aux_stack_size + 1];
@@ -540,7 +532,7 @@ static void id_scanning_confusion(void)
     longjmp(error_jmpbuf, 1);
 }
 
-static void bst_id_print(scan_result scan_result)
+static void bst_id_print(ScanRes scan_result)
 {
     if (scan_result == SCAN_RES_ID_NULL) {
         printf_log("\"%c\" begins identifier, command: ", bib_buf_at_offset(BUF_TY_BASE, 2));
@@ -645,7 +637,7 @@ static void macro_warn_print(void)
     puts_log("\" is ");
 }
 
-static void bib_id_print(scan_result scan_result)
+static void bib_id_print(ScanRes scan_result)
 {
     if (scan_result == SCAN_RES_ID_NULL ) {
         puts_log("You're missing ");
@@ -1070,8 +1062,7 @@ static void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_r
 
 }
 
-static void pre_def_certain_strings(void)
-{
+static void pre_def_certain_strings(void) {
     hash_loc pre_def_loc;
     pre_def_loc = pre_define(".aux        ", 4, 7 /*file_ext_ilk */ );
     s_aux_extension = hash_text[pre_def_loc];
@@ -1211,117 +1202,11 @@ static void pre_def_certain_strings(void)
     ilk_info[pre_def_loc] = glob_str_size;
 }
 
-static bool scan1(ASCII_code char1, buf_pointer last)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char1))
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-
-    return bib_buf_offset(BUF_TY_BASE, 2) < last;
-}
-
-static bool scan1_white(ASCII_code char1, buf_pointer last)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char1))
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    return bib_buf_offset(BUF_TY_BASE, 2) < last;
-}
-
-static bool scan2(ASCII_code char1, ASCII_code char2, buf_pointer last)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) &&   (bib_buf_at_offset(BUF_TY_BASE, 2) != char1) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char2))
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    return bib_buf_offset(BUF_TY_BASE, 2) < last;
-}
-
-static bool scan2_white(ASCII_code char1, ASCII_code char2, buf_pointer last)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char1) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char2)
-            && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE ))
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    return bib_buf_offset(BUF_TY_BASE, 2) < last;
-}
-
-static bool scan3(ASCII_code char1, ASCII_code char2, ASCII_code char3)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char1) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char2) && (bib_buf_at_offset(BUF_TY_BASE, 2) != char3))
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    return bib_buf_offset(BUF_TY_BASE, 2) < last;
-}
-
-static bool scan_alpha(void)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_ALPHA ))
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    return (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) != 0;
-}
-
-static scan_result scan_identifier(ASCII_code char1, ASCII_code char2, ASCII_code char3)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_NUMERIC )
-        while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (ID_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == ID_CLASS_LEGAL_ID_CHAR ))
-            bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if ((bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) == 0)
-        return SCAN_RES_ID_NULL;
-    else if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == last))
-        return SCAN_RES_WHITESPACE_ADJACENT;
-    else if ((bib_buf_at_offset(BUF_TY_BASE, 2) == char1) || (bib_buf_at_offset(BUF_TY_BASE, 2) == char2) || (bib_buf_at_offset(BUF_TY_BASE, 2) == char3))
-        return SCAN_RES_SPECIFIED_CHAR_ADJACENT;
-    else
-        return SCAN_RES_OTHER_CHAR_ADJACENT;
-}
-
-static bool scan_nonneg_integer(void)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    token_value = 0;
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_NUMERIC )) {
-
-        token_value = token_value * 10 + (bib_buf_at_offset(BUF_TY_BASE, 2) - 48);
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    }
-    return (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) != 0;
-}
-
-static bool scan_integer(void)
-{
-    unsigned char sign_length;
-    bib_set_buf_offset(BUF_TY_BASE, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) == 45 /*minus_sign */ ) {
-        sign_length = 1;
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    } else
-        sign_length = 0;
-    token_value = 0;
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_NUMERIC )) {
-
-        token_value = token_value * 10 + (bib_buf_at_offset(BUF_TY_BASE, 2) - 48);
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    }
-    if (sign_length == 1)
-        token_value = -(int32_t) token_value;
-
-    return (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) != sign_length;
-}
-
-static bool scan_white_space(void)
-{
-    while ((bib_buf_offset(BUF_TY_BASE, 2) < last) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ))
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    return bib_buf_offset(BUF_TY_BASE, 2) < last;
-}
-
 static bool eat_bst_white_space(void)
 {
     while (true) {
 
-        if (scan_white_space()) {
+        if (scan_white_space(last)) {
 
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 37 /*comment */ ) {
                 return true;
@@ -1391,8 +1276,9 @@ static void scan_fn_def(hash_loc fn_hash_loc)
         switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
         case 35:
             {
+                int32_t token_value = 0;
                 bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                if (!scan_integer()) {
+                if (!scan_integer(&token_value, last)) {
                     puts_log("Illegal integer in integer literal");
                     skip_token_print();
                     goto lab25;
@@ -1582,7 +1468,7 @@ static void scan_fn_def(hash_loc fn_hash_loc)
 
 static bool eat_bib_white_space(void)
 {
-    while ((!scan_white_space())) {
+    while ((!scan_white_space(last))) {
 
         if (!input_ln(&last, bib_file[bib_ptr])) {
             return false;
@@ -1604,7 +1490,7 @@ static bool compress_bib_white(void)
         bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 32 /*space */ ;
         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
     }
-    while ((!scan_white_space())) {
+    while ((!scan_white_space(last))) {
 
         if (!input_ln(&last, bib_file[bib_ptr])) {
             eat_bib_print(last);
@@ -1815,7 +1701,7 @@ static bool scan_balanced_braces(void)
             } else {
 
                 bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                if (!scan3(right_str_delim, 123 /*left_brace */ , 125 /*right_brace */ )) {
+                if (!scan3(right_str_delim, 123 /*left_brace */ , 125 /*right_brace */, last)) {
                     if (!eat_bib_white_space()) {
                         eat_bib_print(last);
                         return false;
@@ -1857,7 +1743,7 @@ static bool scan_a_field_token_and_eat_white(void)
     case 56:
     case 57:
         {
-            if (!scan_nonneg_integer()) {
+            if (!scan_nonneg_integer(last)) {
                 puts_log("A digit disappeared");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
@@ -1882,7 +1768,7 @@ static bool scan_a_field_token_and_eat_white(void)
         break;
     default:
         {
-            scan_result scan_result = scan_identifier(44 /*comma */ , right_outer_delim, 35 /*concat_char */ );
+            ScanRes scan_result = scan_identifier(44 /*comma */ , right_outer_delim, 35 /*concat_char */, last);
             {
                 if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
@@ -4998,7 +4884,7 @@ static void bst_entry_command(void)
         while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
             {
-                scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+                ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
                 if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
                     bst_id_print(scan_result);
@@ -5066,7 +4952,7 @@ static void bst_entry_command(void)
         while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
             {
-                scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+                ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
                 if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
                     bst_id_print(scan_result);
@@ -5130,7 +5016,7 @@ static void bst_entry_command(void)
         while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
             {
-                scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+                ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
                 if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                 else {
                     bst_id_print(scan_result);
@@ -5219,7 +5105,7 @@ static void bst_execute_command(void)
         }
     }
     {
-        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
         if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
         else {
             bst_id_print(scan_result);
@@ -5288,7 +5174,7 @@ static void bst_function_command(void)
             }
         }
         {
-            scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+            ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
             if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
                 bst_id_print(scan_result);
@@ -5380,7 +5266,7 @@ static void bst_integers_command(void)
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
         {
-            scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+            ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
             if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
                 bst_id_print(scan_result);
@@ -5448,7 +5334,7 @@ static void bst_iterate_command(void)
         }
     }
     {
-        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
         if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
         else {
             bst_id_print(scan_result);
@@ -5530,7 +5416,7 @@ static void bst_macro_command(void)
             }
         }
         {
-            scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+            ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
             if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
                 bst_id_print(scan_result);
@@ -5659,7 +5545,7 @@ static void get_bib_command_or_entry_and_process(void)
                 return;
             }
         }
-        scan_result scan_result = scan_identifier(123 /*left_brace */ , 40 /*left_paren */ , 40 /*left_paren */ );
+        ScanRes scan_result = scan_identifier(123 /*left_brace */ , 40 /*left_paren */ , 40 /*left_paren */, last);
         {
             if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
             else {
@@ -5750,7 +5636,7 @@ static void get_bib_command_or_entry_and_process(void)
                                 return;
                             }
                         };
-                        scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
+                        scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */, last);
                         {
                             if (((scan_result == SCAN_RES_WHITESPACE_ADJACENT)
                                  || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT))) ;
@@ -5969,7 +5855,7 @@ static void get_bib_command_or_entry_and_process(void)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) == right_outer_delim)
                 goto loop_exit;
             {
-                scan_result scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */ );
+                ScanRes scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */, last);
                 {
                     if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
                     else {
@@ -6294,7 +6180,7 @@ static void bst_reverse_command(void)
         }
     }
     {
-        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
         if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
         else {
             bst_id_print(scan_result);
@@ -6385,7 +6271,7 @@ bst_strings_command(void)
     }
 
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        scan_result scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */ );
+        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */, last);
         if (scan_result != SCAN_RES_WHITESPACE_ADJACENT && scan_result != SCAN_RES_SPECIFIED_CHAR_ADJACENT) {
             bst_id_print(scan_result);
             puts_log("strings");
@@ -6435,7 +6321,7 @@ bst_strings_command(void)
 static void
 get_bst_command_and_process(void)
 {
-    if (!scan_alpha()) {
+    if (!scan_alpha(last)) {
         printf_log("\"%c\" can't start a style-file command", bib_buf_at_offset(BUF_TY_BASE, 2));
         bst_err_print_and_look_for_blank_line(&last);
         return;

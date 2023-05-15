@@ -93,8 +93,20 @@ impl GlobalBuffer {
         }
     }
 
-    pub unsafe fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
+    pub fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
         self.buffer(ty)[offset]
+    }
+
+    pub fn at_offset(&self, ty: BufTy, offset: usize) -> ASCIICode {
+        self.buffer(ty)[self.offset(ty, offset) as usize]
+    }
+
+    pub fn set_offset(&mut self, ty: BufTy, offset: usize, val: BufPointer) {
+        match ty {
+            BufTy::Base => self.buffer.offset[offset - 1] = val,
+            BufTy::Sv => self.sv_buffer.offset[offset - 1] = val,
+            BufTy::Ex => self.ex_buf.offset[offset - 1] = val,
+        }
     }
 
     pub fn offset(&self, ty: BufTy, offset: usize) -> BufPointer {
@@ -143,33 +155,17 @@ pub unsafe extern "C" fn bib_buf_at(ty: BufTy, num: BufPointer) -> ASCIICode {
 
 #[no_mangle]
 pub unsafe extern "C" fn bib_buf_at_offset(ty: BufTy, num: usize) -> ASCIICode {
-    let ptr = bib_buf(ty);
-    let offset = bib_buf_offset(ty, num);
-    unsafe { *ptr.add(offset as usize) }
+    with_buffers(|b| b.at_offset(ty, num))
 }
 
 #[no_mangle]
 pub extern "C" fn bib_buf_offset(ty: BufTy, num: usize) -> BufPointer {
-    GLOBAL_BUFFERS.with(|buffers| {
-        let buffers = buffers.borrow();
-        match ty {
-            BufTy::Base => buffers.buffer.offset[num - 1],
-            BufTy::Sv => buffers.sv_buffer.offset[num - 1],
-            BufTy::Ex => buffers.ex_buf.offset[num - 1],
-        }
-    })
+    GLOBAL_BUFFERS.with(|buffers| buffers.borrow().offset(ty, num))
 }
 
 #[no_mangle]
 pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) {
-    GLOBAL_BUFFERS.with(|buffers| {
-        let mut buffers = buffers.borrow_mut();
-        match ty {
-            BufTy::Base => buffers.buffer.offset[num - 1] = offset,
-            BufTy::Sv => buffers.sv_buffer.offset[num - 1] = offset,
-            BufTy::Ex => buffers.ex_buf.offset[num - 1] = offset,
-        }
-    })
+    GLOBAL_BUFFERS.with(|buffers| buffers.borrow_mut().set_offset(ty, num, offset))
 }
 
 #[no_mangle]
