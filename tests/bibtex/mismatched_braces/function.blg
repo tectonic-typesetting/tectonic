@@ -1,0 +1,8 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: function.aux
+The style file: function.bst
+Illegal end of style file in command: function---line 2 of file function.bst
+ : function { missing_end_brace
+ :                             
+(There was 1 error message)

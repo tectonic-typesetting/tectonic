@@ -166,6 +166,8 @@ impl ExpectedInfo {
     }
 
     pub fn test_data(&self, observed: &[u8]) {
+        println!("Expected:\n{:?}", self.contents);
+        println!("Observed:\n{observed:?}");
         if self.contents == observed {
             return;
         }
