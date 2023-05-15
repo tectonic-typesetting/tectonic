@@ -22,10 +22,7 @@ struct TestCase {
 }
 
 impl TestCase {
-    fn new(
-        stem: &str,
-        subdir: Option<&str>,
-    ) -> Self {
+    fn new(stem: &str, subdir: Option<&str>) -> Self {
         TestCase {
             stem: stem.to_owned(),
             subdir: subdir.map(String::from),
@@ -94,9 +91,7 @@ fn single_entry() {
 
 #[test]
 fn test_empty_files() {
-    TestCase::new("empty", Some("empty"))
-        .test_bbl(false)
-        .go()
+    TestCase::new("empty", Some("empty")).test_bbl(false).go()
 }
 
 #[test]
