@@ -117,6 +117,7 @@ pub mod c_api {
     mod peekable;
     mod pool;
     mod scan;
+    mod exec;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,

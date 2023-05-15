@@ -68,7 +68,7 @@ pub fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn str_ends_with(s: StrNumber, ext: StrNumber) -> bool {
+pub extern "C" fn str_ends_with(s: StrNumber, ext: StrNumber) -> bool {
     with_pool(|pool| {
         let str = pool.get_str(s as usize);
         let ext = pool.get_str(ext as usize);
@@ -77,46 +77,51 @@ pub unsafe extern "C" fn str_ends_with(s: StrNumber, ext: StrNumber) -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
+pub extern "C" fn bib_str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
     with_pool(|pool| pool.get_str(s1 as usize) == pool.get_str(s2 as usize))
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn pool_overflow() {
+pub extern "C" fn pool_overflow() {
     with_pool_mut(|pool| pool.grow());
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_str_pool(idx: PoolPointer) -> ASCIICode {
+pub extern "C" fn bib_str_pool(idx: PoolPointer) -> ASCIICode {
     with_pool(|pool| pool.strings[idx])
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_set_str_pool(idx: PoolPointer, code: ASCIICode) {
+pub extern "C" fn bib_set_str_pool(idx: PoolPointer, code: ASCIICode) {
     with_pool_mut(|pool| pool.strings[idx] = code)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_str_ptr() -> PoolPointer {
+pub extern "C" fn bib_str_ptr() -> PoolPointer {
     with_pool(|pool| pool.ptr)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_set_str_ptr(ptr: PoolPointer) {
+pub extern "C" fn bib_set_str_ptr(ptr: PoolPointer) {
     with_pool_mut(|pool| pool.ptr = ptr);
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_str_start(s: StrNumber) -> PoolPointer {
+pub extern "C" fn bib_str_start(s: StrNumber) -> PoolPointer {
     with_pool(|pool| pool.offsets[s as usize])
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_set_str_start(s: StrNumber, ptr: PoolPointer) {
+pub extern "C" fn bib_set_str_start(s: StrNumber, ptr: PoolPointer) {
     with_pool_mut(|pool| pool.offsets[s as usize] = ptr)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_pool_size() -> i32 {
-    with_pool(|pool| pool.strings.len() as i32)
+pub extern "C" fn bib_pool_size() -> usize {
+    with_pool(|pool| pool.strings.len())
+}
+
+#[no_mangle]
+pub extern "C" fn bib_max_strings() -> usize {
+    MAX_STRINGS
 }

@@ -147,6 +147,8 @@ void print_skipping_whatever_remains(void);
 
 bool out_pool_str(ttbc_output_handle_t *handle, StrNumber s);
 
+bool print_a_pool_str(StrNumber s);
+
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
@@ -173,7 +175,9 @@ PoolPointer bib_str_start(StrNumber s);
 
 void bib_set_str_start(StrNumber s, PoolPointer ptr);
 
-int32_t bib_pool_size(void);
+uintptr_t bib_pool_size(void);
+
+uintptr_t bib_max_strings(void);
 
 bool scan1(ASCIICode char1, BufPointer last);
 

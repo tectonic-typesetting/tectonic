@@ -41,7 +41,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define aux_stack_size 20
 #define MAX_BIB_FILES 20
 #define POOL_SIZE 65000L
-#define MAX_STRINGS 35307
 #define MAX_CITES 750
 #define WIZ_FN_SPACE 3000
 #define SINGLE_FN_SPACE 100
@@ -85,8 +84,6 @@ static int32_t ent_str_size;
 static int32_t glob_str_size;
 static int32_t max_glob_strs;
 static int32_t max_fields;
-static int32_t lit_stk_size;
-static int32_t max_strings;
 static int32_t hash_size;
 static int32_t hash_prime;
 static int32_t hash_max;
@@ -97,7 +94,6 @@ static int32_t err_count;
 static int32_t string_width;
 static ASCII_code *name_of_file;
 static int32_t name_length;
-static int32_t name_ptr;
 static buf_pointer last;
 static pool_pointer pool_ptr;
 static hash_pointer *hash_next;
@@ -114,7 +110,6 @@ static str_number s_bib_extension;
 static str_number s_bst_area;
 static str_number s_bib_area;
 static int32_t command_num;
-static int32_t aux_name_length;
 static PeekableInput *aux_file[aux_stack_size + 1];
 static str_number aux_list[aux_stack_size + 1];
 static aux_number aux_ptr;
@@ -193,9 +188,6 @@ static bool cite_hash_found;
 static bib_number preamble_ptr;
 static bib_number num_preamble_strings;
 static int32_t bib_brace_level;
-static int32_t *lit_stack;
-static stk_type *lit_stk_type;
-static lit_stk_loc lit_stk_ptr;
 static str_number cmd_bib_str_ptr;
 static int32_t ent_chr_ptr;
 static int32_t glob_chr_ptr;
@@ -249,8 +241,6 @@ static hash_loc b_default;
 static str_number s_null;
 static str_number s_default;
 static str_number *s_preamble;
-static int32_t pop_lit1, pop_lit2, pop_lit3;
-static stk_type pop_typ1, pop_typ2, pop_typ3;
 static buf_pointer ex_buf_xptr, ex_buf_yptr;
 static hash_loc control_seq_loc;
 static int32_t num_names;
@@ -262,6 +252,16 @@ static unsigned char /*bad_conversion */ conversion_type;
 static int verbose;
 
 const BibtexConfig* bibtex_config;
+
+typedef struct {
+    int32_t pop_lit1, pop_lit2, pop_lit3;
+    stk_type pop_typ1, pop_typ2, pop_typ3;
+    
+    int32_t* lit_stack;
+    stk_type* lit_stk_type;
+    int32_t lit_stk_ptr;
+    int32_t lit_stk_size;
+} exec_ctx;
 
 /*:473*//*12: *//*3: */
 
@@ -281,20 +281,11 @@ printf_log(const char *fmt, ...)
 }
 
 static void
-print_a_pool_str(str_number s)
-{
-    if (!out_pool_str(standard_output(), s))
-        longjmp(error_jmpbuf, 1);
-    if (!out_pool_str(bib_log_file(), s))
-        longjmp(error_jmpbuf, 1);
-}
-
-static void
 sam_wrong_file_name_print(void)
 {
     ttstub_puts (standard_output(), "I couldn't open file name `");
 
-    name_ptr = 0;
+    int32_t name_ptr = 0;
     while (name_ptr <= name_length)
         ttstub_output_putc (standard_output(), name_of_file[name_ptr++]);
 
@@ -304,15 +295,16 @@ sam_wrong_file_name_print(void)
 
 
 static void
-print_aux_name(void)
+print_aux_name(aux_number aux_ptr)
 {
-    print_a_pool_str(aux_list[aux_ptr]);
+    if (!print_a_pool_str(aux_list[aux_ptr]))
+        longjmp(error_jmpbuf, 1);
     putc_log('\n');
 }
 
 
 static void
-log_pr_aux_name(void)
+log_pr_aux_name(aux_number aux_ptr)
 {
     if (!out_pool_str(bib_log_file(), aux_list[aux_ptr]))
         longjmp(error_jmpbuf, 1);
@@ -321,10 +313,10 @@ log_pr_aux_name(void)
 
 
 static void
-aux_err_print(buf_pointer last)
+aux_err_print(buf_pointer last, aux_number aux_ptr)
 {
     printf_log("---line %ld of file ", (long) aux_ln_stack[aux_ptr]);
-    print_aux_name();
+    print_aux_name(aux_ptr);
     print_bad_input_line(last);
     print_skipping_whatever_remains();
     puts_log("command\n");
@@ -377,9 +369,11 @@ aux_err_white_space_in_argument_print(void)
 static void
 print_bib_name(void)
 {
-    print_a_pool_str(bib_list[bib_ptr]);
+    if (!print_a_pool_str(bib_list[bib_ptr]))
+        longjmp(error_jmpbuf, 1);
     if (!str_ends_with(bib_list[bib_ptr], s_bib_extension))
-        print_a_pool_str(s_bib_extension);
+        if (!print_a_pool_str(s_bib_extension))
+            longjmp(error_jmpbuf, 1);
     putc_log('\n');
 }
 
@@ -398,8 +392,10 @@ log_pr_bib_name(void)
 
 static void print_bst_name(void)
 {
-    print_a_pool_str(bst_str);
-    print_a_pool_str(s_bst_extension);
+    if (!print_a_pool_str(bst_str))
+        longjmp(error_jmpbuf, 1);
+    if (!print_a_pool_str(s_bst_extension))
+        longjmp(error_jmpbuf, 1);
     putc_log('\n');
 }
 
@@ -443,10 +439,10 @@ static void aux_end1_err_print(void)
     puts_log("I found no ");
 }
 
-static void aux_end2_err_print(void)
+static void aux_end2_err_print(aux_number aux_ptr)
 {
     puts_log("---while reading file ");
-    print_aux_name();
+    print_aux_name(aux_ptr);
     mark_error();
 }
 
@@ -554,7 +550,8 @@ static void bst_right_brace_print(void)
 
 static void already_seen_function_print(hash_loc seen_fn_loc)
 {
-    print_a_pool_str(hash_text[seen_fn_loc]);
+    if (!print_a_pool_str(hash_text[seen_fn_loc]))
+        longjmp(error_jmpbuf, 1);
     puts_log(" is already a type \"");
     print_fn_class(seen_fn_loc);
     puts_log("\" function name\n");
@@ -664,11 +661,13 @@ static void cite_key_disappeared_confusion(void)
 static void bad_cross_reference_print(str_number s)
 {
     puts_log("--entry \"");
-    print_a_pool_str(cite_list[cite_ptr]);
+    if (!print_a_pool_str(cite_list[cite_ptr]))
+        longjmp(error_jmpbuf, 1);
     putc_log('"');
     putc_log('\n');
     puts_log("refers to entry \"");
-    print_a_pool_str(s);
+    if (!print_a_pool_str(s))
+        longjmp(error_jmpbuf, 1);
 }
 
 static void nonexistent_cross_reference_error(void)
@@ -682,7 +681,8 @@ static void nonexistent_cross_reference_error(void)
 static void print_missing_entry(str_number s)
 {
     puts_log("Warning--I didn't find a database entry for \"");
-    print_a_pool_str(s);
+    if (!print_a_pool_str(s))
+        longjmp(error_jmpbuf, 1);
     putc_log('"');
     putc_log('\n');
     mark_warning();
@@ -692,7 +692,8 @@ static void bst_ex_warn_print(void)
 {
     if (mess_with_entries) {
         puts_log(" for entry ");
-        print_a_pool_str(cite_list[cite_ptr]);
+        if (!print_a_pool_str(cite_list[cite_ptr]))
+            longjmp(error_jmpbuf, 1);
     }
 
     putc_log('\n');
@@ -705,7 +706,8 @@ static void bst_mild_ex_warn_print(void)
 {
     if (mess_with_entries) {
         puts_log(" for entry ");
-        print_a_pool_str(cite_list[cite_ptr]);
+        if (!print_a_pool_str(cite_list[cite_ptr]))
+            longjmp(error_jmpbuf, 1);
     }
 
     putc_log('\n');
@@ -741,17 +743,20 @@ static void print_stk_lit(int32_t stk_lt, stk_type stk_tp)
         break;
     case 1:
         putc_log('"');
-        print_a_pool_str(stk_lt);
+        if (!print_a_pool_str(stk_lt))
+            longjmp(error_jmpbuf, 1);
         puts_log("\" is a string literal");
         break;
     case 2:
         putc_log('`');
-        print_a_pool_str(hash_text[stk_lt]);
+        if (!print_a_pool_str(hash_text[stk_lt]))
+            longjmp(error_jmpbuf, 1);
         puts_log("' is a function literal");
         break;
     case 3:
         putc_log('`');
-        print_a_pool_str(stk_lt);
+        if (!print_a_pool_str(stk_lt))
+            longjmp(error_jmpbuf, 1);
         puts_log("' is a missing field");
         break;
     case 4:
@@ -771,19 +776,22 @@ static void print_lit(int32_t stk_lt, stk_type stk_tp)
         break;
     case 1:
         {
-            print_a_pool_str(stk_lt);
+            if (!print_a_pool_str(stk_lt))
+                longjmp(error_jmpbuf, 1);
             putc_log('\n');
         }
         break;
     case 2:
         {
-            print_a_pool_str(hash_text[stk_lt]);
+            if (!print_a_pool_str(hash_text[stk_lt]))
+                longjmp(error_jmpbuf, 1);
             putc_log('\n');
         }
         break;
     case 3:
         {
-            print_a_pool_str(stk_lt);
+            if (!print_a_pool_str(stk_lt))
+                longjmp(error_jmpbuf, 1);
             putc_log('\n');
         }
         break;
@@ -835,7 +843,8 @@ static void bst_2print_string_size_exceeded(void)
 static void braces_unbalanced_complaint(str_number pop_lit_var)
 {
     puts_log("Warning--\"");
-    print_a_pool_str(pop_lit_var);
+    if (!print_a_pool_str(pop_lit_var))
+        longjmp(error_jmpbuf, 1);
     puts_log("\" isn't a brace-balanced string");
     bst_mild_ex_warn_print();
 }
@@ -852,7 +861,7 @@ static void start_name(str_number file_name)
     pool_pointer p_ptr;
     free(name_of_file);
     name_of_file = xmalloc_array(ASCII_code, (bib_str_start(file_name + 1) - bib_str_start(file_name)) + 1);
-    name_ptr = 0;
+    int32_t name_ptr = 0;
     p_ptr = bib_str_start(file_name);
     while ((p_ptr < bib_str_start(file_name + 1))) {
         name_of_file[name_ptr] = bib_str_pool(p_ptr);
@@ -866,7 +875,7 @@ static void start_name(str_number file_name)
 static void add_extension(str_number ext)
 {
     pool_pointer p_ptr;
-    name_ptr = name_length;
+    int32_t name_ptr = name_length;
     p_ptr = bib_str_start(ext);
     while ((p_ptr < bib_str_start(ext + 1))) {
         name_of_file[name_ptr] = bib_str_pool(p_ptr);
@@ -879,9 +888,9 @@ static void add_extension(str_number ext)
 
 static str_number make_string(void)
 {
-    if (bib_str_ptr() == max_strings) {
+    if (bib_str_ptr() == bib_max_strings()) {
         print_overflow();
-        printf_log("number of strings %ld\n", (long) max_strings);
+        printf_log("number of strings %ld\n", (long) bib_max_strings());
         longjmp(error_jmpbuf, 1);
     }
     bib_set_str_ptr(bib_str_ptr() + 1);
@@ -1916,9 +1925,11 @@ static bool scan_and_store_the_field_value_and_eat_white(void)
             }
             if (field_info[field_ptr] != 0 /*missing */ ) {
                 puts_log("Warning--I'm ignoring ");
-                print_a_pool_str(cite_list[entry_cite_ptr]);
+                if (!print_a_pool_str(cite_list[entry_cite_ptr]))
+                    longjmp(error_jmpbuf, 1);
                 puts_log("'s extra \"");
-                print_a_pool_str(hash_text[field_name_loc]);
+                if (!print_a_pool_str(hash_text[field_name_loc]))
+                    longjmp(error_jmpbuf, 1);
                 puts_log("\" field\n");
                 bib_warn_print();
             } else {
@@ -2127,10 +2138,11 @@ static pool_pointer skip_stuff_at_sp_brace_level_greater_than_one(pool_pointer s
     return sp_ptr;
 }
 
-static void brace_lvl_one_letters_complaint(void)
+static void brace_lvl_one_letters_complaint(exec_ctx* ctx)
 {
     puts_log("The format string \"");
-    print_a_pool_str(pop_lit1);
+    if (!print_a_pool_str(ctx->pop_lit1))
+        longjmp(error_jmpbuf, 1);
     puts_log("\" has an illegal brace-level-1 letter");
     bst_ex_warn_print();
 }
@@ -2165,14 +2177,22 @@ static bool enough_text_chars(buf_pointer enough_chars)
     return num_text_chars >= enough_chars;
 }
 
-static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer first_end, buf_pointer last_end, buf_pointer von_start, buf_pointer von_end,
-                                          buf_pointer* name_bf_ptr, buf_pointer* name_bf_xptr, buf_pointer jr_end)
-{
+static void figure_out_the_formatted_name(
+        exec_ctx* ctx,
+        buf_pointer first_start,
+        buf_pointer first_end,
+        buf_pointer last_end,
+        buf_pointer von_start,
+        buf_pointer von_end,
+        buf_pointer* name_bf_ptr,
+        buf_pointer* name_bf_xptr,
+        buf_pointer jr_end
+) {
     pool_pointer sp_xptr1 = 0;
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
     int32_t sp_brace_level = 0;
-    pool_pointer sp_ptr = bib_str_start(pop_lit1);
-    pool_pointer sp_end = bib_str_start(pop_lit1 + 1);
+    pool_pointer sp_ptr = bib_str_start(ctx->pop_lit1);
+    pool_pointer sp_end = bib_str_start(ctx->pop_lit1 + 1);
     while (sp_ptr < sp_end)
         if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
             sp_brace_level = sp_brace_level + 1;
@@ -2186,7 +2206,7 @@ static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer f
                 if (LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) {
                     sp_ptr = sp_ptr + 1;
                     if (alpha_found) {
-                        brace_lvl_one_letters_complaint();
+                        brace_lvl_one_letters_complaint(ctx);
                         to_be_written = false;
                     } else {
 
@@ -2241,7 +2261,7 @@ static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer f
                             break;
                         default:
                             {
-                                brace_lvl_one_letters_complaint();
+                                brace_lvl_one_letters_complaint(ctx);
                                 to_be_written = false;
                             }
                             break;
@@ -2455,7 +2475,7 @@ static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer f
                 }
             }
         } else if (bib_str_pool(sp_ptr) == 125 /*right_brace */ ) {
-            braces_unbalanced_complaint(pop_lit1);
+            braces_unbalanced_complaint(ctx->pop_lit1);
             sp_ptr = sp_ptr + 1;
         } else {
             if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
@@ -2465,35 +2485,34 @@ static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer f
             sp_ptr = sp_ptr + 1;
         }
     if (sp_brace_level > 0)
-        braces_unbalanced_complaint(pop_lit1);
+        braces_unbalanced_complaint(ctx->pop_lit1);
     ex_buf_length = bib_buf_offset(BUF_TY_EX, 1);
 }
 
-static void push_lit_stk(int32_t push_lt, stk_type push_type)
+static void push_lit_stk(exec_ctx* ctx, int32_t push_lt, stk_type push_type)
 {
 
-    lit_stack[lit_stk_ptr] = push_lt;
-    lit_stk_type[lit_stk_ptr] = push_type;
+    ctx->lit_stack[ctx->lit_stk_ptr] = push_lt;
+    ctx->lit_stk_type[ctx->lit_stk_ptr] = push_type;
     ;
 
-    if (lit_stk_ptr == lit_stk_size) {
-        BIB_XRETALLOC_NOSET("lit_stack", lit_stack, int32_t, lit_stk_size, lit_stk_size + LIT_STK_SIZE);
-        BIB_XRETALLOC("lit_stk_type", lit_stk_type, stk_type, lit_stk_size, lit_stk_size + LIT_STK_SIZE);
+    if (ctx->lit_stk_ptr == ctx->lit_stk_size) {
+        BIB_XRETALLOC_NOSET("lit_stack", ctx->lit_stack, int32_t, ctx->lit_stk_size, ctx->lit_stk_size + LIT_STK_SIZE);
+        BIB_XRETALLOC("lit_stk_type", ctx->lit_stk_type, stk_type, ctx->lit_stk_size, ctx->lit_stk_size + LIT_STK_SIZE);
     }
-    lit_stk_ptr = lit_stk_ptr + 1;
+    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
 }
 
-static void pop_lit_stk(int32_t * pop_lit, stk_type * pop_type)
+static void pop_lit_stk(exec_ctx* ctx, int32_t * pop_lit, stk_type * pop_type)
 {
-    if (lit_stk_ptr == 0) {
+    if (ctx->lit_stk_ptr == 0) {
         puts_log("You can't pop an empty literal stack");
         bst_ex_warn_print();
         *pop_type = 4 /*stk_empty */ ;
     } else {
-
-        lit_stk_ptr = lit_stk_ptr - 1;
-        *pop_lit = lit_stack[lit_stk_ptr];
-        *pop_type = lit_stk_type[lit_stk_ptr];
+        ctx->lit_stk_ptr = ctx->lit_stk_ptr - 1;
+        *pop_lit = ctx->lit_stack[ctx->lit_stk_ptr];
+        *pop_type = ctx->lit_stk_type[ctx->lit_stk_ptr];
         if (*pop_type == 1 /*stk_str */ ) {
 
             if (*pop_lit >= cmd_bib_str_ptr) {
@@ -2537,34 +2556,34 @@ static void print_wrong_stk_lit(int32_t stk_lt, stk_type stk_tp1, stk_type stk_t
     }
 }
 
-static void pop_top_and_print(void)
+static void pop_top_and_print(exec_ctx* ctx)
 {
     int32_t stk_lt;
     stk_type stk_tp;
-    pop_lit_stk(&stk_lt, &stk_tp);
+    pop_lit_stk(ctx, &stk_lt, &stk_tp);
     if (stk_tp == 4 /*stk_empty */ ) {
         puts_log("Empty literal\n");
     } else
         print_lit(stk_lt, stk_tp);
 }
 
-static void pop_whole_stack(void)
+static void pop_whole_stack(exec_ctx* ctx)
 {
-    while (lit_stk_ptr > 0)
-        pop_top_and_print();
+    while (ctx->lit_stk_ptr > 0)
+        pop_top_and_print(ctx);
 }
 
-static void init_command_execution(void)
+static void init_command_execution(exec_ctx* ctx)
 {
-    lit_stk_ptr = 0;
+    ctx->lit_stk_ptr = 0;
     cmd_bib_str_ptr = bib_str_ptr();
 }
 
-static void check_command_execution(void)
+static void check_command_execution(exec_ctx* ctx)
 {
-    if (lit_stk_ptr != 0) {
-        printf_log("ptr=%ld, stack=\n", (long) lit_stk_ptr);
-        pop_whole_stack();
+    if (ctx->lit_stk_ptr != 0) {
+        printf_log("ptr=%ld, stack=\n", (long) ctx->lit_stk_ptr);
+        pop_whole_stack(ctx);
         puts_log("---the literal stack isn't empty");
         bst_ex_warn_print();
     }
@@ -2575,7 +2594,7 @@ static void check_command_execution(void)
     }
 }
 
-static void add_pool_buf_and_push(void)
+static void add_pool_buf_and_push(exec_ctx* ctx)
 {
     {
         while (pool_ptr + ex_buf_length > bib_pool_size())
@@ -2590,7 +2609,7 @@ static void add_pool_buf_and_push(void)
         }
         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
     }
-    push_lit_stk(make_string(), 1 /*stk_str */ );
+    push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
 }
 
 static void add_buf_pool(str_number p_str)
@@ -2679,132 +2698,132 @@ static void add_out_pool(str_number p_str)
     }
 }
 
-static void x_equals(void)
+static void x_equals(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != pop_typ2) {
-        if ((pop_typ1 != 4 /*stk_empty */ ) && (pop_typ2 != 4 /*stk_empty */ )) {
-            print_stk_lit(pop_lit1, pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != ctx->pop_typ2) {
+        if ((ctx->pop_typ1 != 4 /*stk_empty */ ) && (ctx->pop_typ2 != 4 /*stk_empty */ )) {
+            print_stk_lit(ctx->pop_lit1, ctx->pop_typ1);
             puts_log(", ");
-            print_stk_lit(pop_lit2, pop_typ2);
+            print_stk_lit(ctx->pop_lit2, ctx->pop_typ2);
             putc_log('\n');
             puts_log("---they aren't the same literal types");
             bst_ex_warn_print();
         }
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((pop_typ1 != 0 /*stk_int */ ) && (pop_typ1 != 1 /*stk_str */ )) {
-        if (pop_typ1 != 4 /*stk_empty */ ) {
-            print_stk_lit(pop_lit1, pop_typ1);
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if ((ctx->pop_typ1 != 0 /*stk_int */ ) && (ctx->pop_typ1 != 1 /*stk_str */ )) {
+        if (ctx->pop_typ1 != 4 /*stk_empty */ ) {
+            print_stk_lit(ctx->pop_lit1, ctx->pop_typ1);
             puts_log(", not an integer or a string,");
             bst_ex_warn_print();
         }
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_typ1 == 0 /*stk_int */ ) {
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_typ1 == 0 /*stk_int */ ) {
 
-        if (pop_lit2 == pop_lit1)
-            push_lit_stk(1, 0 /*stk_int */ );
+        if (ctx->pop_lit2 == ctx->pop_lit1)
+            push_lit_stk(ctx, 1, 0 /*stk_int */ );
         else
-            push_lit_stk(0, 0 /*stk_int */ );
-    } else if (bib_str_eq_str(pop_lit2, pop_lit1))
-        push_lit_stk(1, 0 /*stk_int */ );
+            push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (bib_str_eq_str(ctx->pop_lit2, ctx->pop_lit1))
+        push_lit_stk(ctx, 1, 0 /*stk_int */ );
     else
-        push_lit_stk(0, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
 }
 
-static void x_greater_than(void)
+static void x_greater_than(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_typ2 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_lit2 > pop_lit1)
-        push_lit_stk(1, 0 /*stk_int */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_typ2 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_lit2 > ctx->pop_lit1)
+        push_lit_stk(ctx, 1, 0 /*stk_int */ );
     else
-        push_lit_stk(0, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
 }
 
-static void x_less_than(void)
+static void x_less_than(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_typ2 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_lit2 < pop_lit1)
-        push_lit_stk(1, 0 /*stk_int */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_typ2 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_lit2 < ctx->pop_lit1)
+        push_lit_stk(ctx, 1, 0 /*stk_int */ );
     else
-        push_lit_stk(0, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
 }
 
-static void x_plus(void)
+static void x_plus(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_typ2 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_typ2 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
     } else
-        push_lit_stk(pop_lit2 + pop_lit1, 0 /*stk_int */ );
+        push_lit_stk(ctx, ctx->pop_lit2 + ctx->pop_lit1, 0 /*stk_int */ );
 }
 
-static void x_minus(void)
+static void x_minus(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_typ2 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
-        push_lit_stk(0, 0 /*stk_int */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_typ2 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
     } else
-        push_lit_stk(pop_lit2 - pop_lit1, 0 /*stk_int */ );
+        push_lit_stk(ctx, ctx->pop_lit2 - ctx->pop_lit1, 0 /*stk_int */ );
 }
 
-static void x_concatenate(void)
+static void x_concatenate(exec_ctx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_typ2 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_typ2 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {                    /*352: */
 
-        if (pop_lit2 >= cmd_bib_str_ptr) {
+        if (ctx->pop_lit2 >= cmd_bib_str_ptr) {
 
-            if (pop_lit1 >= cmd_bib_str_ptr) {
-                bib_set_str_start(pop_lit1, bib_str_start(pop_lit1 + 1));
+            if (ctx->pop_lit1 >= cmd_bib_str_ptr) {
+                bib_set_str_start(ctx->pop_lit1, bib_str_start(ctx->pop_lit1 + 1));
                 {
                     bib_set_str_ptr(bib_str_ptr() + 1);
                     pool_ptr = bib_str_start(bib_str_ptr());
                 }
-                lit_stk_ptr = lit_stk_ptr + 1;
-            } else if ((bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2)) == 0)
-                push_lit_stk(pop_lit1, 1 /*stk_str */ );
+                ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
+            } else if ((bib_str_start(ctx->pop_lit2 + 1) - bib_str_start(ctx->pop_lit2)) == 0)
+                push_lit_stk(ctx, ctx->pop_lit1, 1 /*stk_str */ );
             else {
 
-                pool_ptr = bib_str_start(pop_lit2 + 1);
+                pool_ptr = bib_str_start(ctx->pop_lit2 + 1);
                 {
-                    while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) > bib_pool_size())
+                    while (pool_ptr + (bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) > bib_pool_size())
                         pool_overflow();
                 }
-                sp_ptr = bib_str_start(pop_lit1);
-                sp_end = bib_str_start(pop_lit1 + 1);
+                sp_ptr = bib_str_start(ctx->pop_lit1);
+                sp_end = bib_str_start(ctx->pop_lit1 + 1);
                 while (sp_ptr < sp_end) {
 
                     {
@@ -2813,31 +2832,31 @@ static void x_concatenate(void)
                     }
                     sp_ptr = sp_ptr + 1;
                 }
-                push_lit_stk(make_string(), 1 /*stk_str */ );
+                push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
             }
         } else {                /*353: */
 
-            if (pop_lit1 >= cmd_bib_str_ptr) {
+            if (ctx->pop_lit1 >= cmd_bib_str_ptr) {
 
-                if ((bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2)) == 0) {
+                if ((bib_str_start(ctx->pop_lit2 + 1) - bib_str_start(ctx->pop_lit2)) == 0) {
                     {
                         bib_set_str_ptr(bib_str_ptr() + 1);
                         pool_ptr = bib_str_start(bib_str_ptr());
                     }
-                    lit_stack[lit_stk_ptr] = pop_lit1;
-                    lit_stk_ptr = lit_stk_ptr + 1;
-                } else if ((bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) == 0)
-                    lit_stk_ptr = lit_stk_ptr + 1;
+                    ctx->lit_stack[ctx->lit_stk_ptr] = ctx->pop_lit1;
+                    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
+                } else if ((bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) == 0)
+                    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
                 else {
 
-                    pool_pointer sp_length = (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1));
-                    pool_pointer sp2_length = (bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2));
+                    pool_pointer sp_length = (bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1));
+                    pool_pointer sp2_length = (bib_str_start(ctx->pop_lit2 + 1) - bib_str_start(ctx->pop_lit2));
                     {
                         while (pool_ptr + sp_length + sp2_length > bib_pool_size())
                             pool_overflow();
                     }
-                    sp_ptr = bib_str_start(pop_lit1 + 1);
-                    sp_end = bib_str_start(pop_lit1);
+                    sp_ptr = bib_str_start(ctx->pop_lit1 + 1);
+                    sp_end = bib_str_start(ctx->pop_lit1);
                     pool_pointer sp_xptr1 = sp_ptr + sp2_length;
                     while (sp_ptr > sp_end) {
 
@@ -2845,8 +2864,8 @@ static void x_concatenate(void)
                         sp_xptr1 = sp_xptr1 - 1;
                         bib_set_str_pool(sp_xptr1, bib_str_pool(sp_ptr));
                     }
-                    sp_ptr = bib_str_start(pop_lit2);
-                    sp_end = bib_str_start(pop_lit2 + 1);
+                    sp_ptr = bib_str_start(ctx->pop_lit2);
+                    sp_end = bib_str_start(ctx->pop_lit2 + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -2856,23 +2875,23 @@ static void x_concatenate(void)
                         sp_ptr = sp_ptr + 1;
                     }
                     pool_ptr = pool_ptr + sp_length;
-                    push_lit_stk(make_string(), 1 /*stk_str */ );
+                    push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
                 }
             } else {            /*354: */
 
-                if ((bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) == 0)
-                    lit_stk_ptr = lit_stk_ptr + 1;
-                else if ((bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2)) == 0)
-                    push_lit_stk(pop_lit1, 1 /*stk_str */ );
+                if ((bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) == 0)
+                    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
+                else if ((bib_str_start(ctx->pop_lit2 + 1) - bib_str_start(ctx->pop_lit2)) == 0)
+                    push_lit_stk(ctx, ctx->pop_lit1, 1 /*stk_str */ );
                 else {
 
                     {
-                        while ((pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) +
-                                (bib_str_start(pop_lit2 + 1) - bib_str_start(pop_lit2)) > bib_pool_size()))
+                        while ((pool_ptr + (bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) +
+                                (bib_str_start(ctx->pop_lit2 + 1) - bib_str_start(ctx->pop_lit2)) > bib_pool_size()))
                             pool_overflow();
                     }
-                    sp_ptr = bib_str_start(pop_lit2);
-                    sp_end = bib_str_start(pop_lit2 + 1);
+                    sp_ptr = bib_str_start(ctx->pop_lit2);
+                    sp_end = bib_str_start(ctx->pop_lit2 + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -2881,8 +2900,8 @@ static void x_concatenate(void)
                         }
                         sp_ptr = sp_ptr + 1;
                     }
-                    sp_ptr = bib_str_start(pop_lit1);
-                    sp_end = bib_str_start(pop_lit1 + 1);
+                    sp_ptr = bib_str_start(ctx->pop_lit1);
+                    sp_end = bib_str_start(ctx->pop_lit1 + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -2891,42 +2910,42 @@ static void x_concatenate(void)
                         }
                         sp_ptr = sp_ptr + 1;
                     }
-                    push_lit_stk(make_string(), 1 /*stk_str */ );
+                    push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
                 }
             }
         }
     }
 }
 
-static void x_gets(void)
+static void x_gets(exec_ctx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 2 /*stk_fn */ )
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 2 /*stk_fn */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 2 /*stk_fn */ )
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 2 /*stk_fn */ );
     else if (((!mess_with_entries)
-              && ((fn_type[pop_lit1] == 6 /*str_entry_var */ ) || (fn_type[pop_lit1] == 5 /*int_entry_var */ ))))
+              && ((fn_type[ctx->pop_lit1] == 6 /*str_entry_var */ ) || (fn_type[ctx->pop_lit1] == 5 /*int_entry_var */ ))))
         bst_cant_mess_with_entries_print();
     else
-        switch ((fn_type[pop_lit1])) {
+        switch ((fn_type[ctx->pop_lit1])) {
         case 5:
             /*
-               356: */ if (pop_typ2 != 0 /*stk_int */ )
-                print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
+               356: */ if (ctx->pop_typ2 != 0 /*stk_int */ )
+                print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
             else
-                entry_ints[cite_ptr * num_ent_ints + ilk_info[pop_lit1]] = /*:356 */ pop_lit2;
+                entry_ints[cite_ptr * num_ent_ints + ilk_info[ctx->pop_lit1]] = /*:356 */ ctx->pop_lit2;
             break;
         case 6:
             {
-                if (pop_typ2 != 1 /*stk_str */ )
-                    print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
+                if (ctx->pop_typ2 != 1 /*stk_str */ )
+                    print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 1 /*stk_str */ );
                 else {
 
-                    str_ent_ptr = cite_ptr * num_ent_strs + ilk_info[pop_lit1];
+                    str_ent_ptr = cite_ptr * num_ent_strs + ilk_info[ctx->pop_lit1];
                     ent_chr_ptr = 0;
-                    sp_ptr = bib_str_start(pop_lit2);
-                    pool_pointer sp_xptr1 = bib_str_start(pop_lit2 + 1);
+                    sp_ptr = bib_str_start(ctx->pop_lit2);
+                    pool_pointer sp_xptr1 = bib_str_start(ctx->pop_lit2 + 1);
                     if (sp_xptr1 - sp_ptr > ent_str_size) {
                         {
                             bst_1print_string_size_exceeded();
@@ -2946,26 +2965,26 @@ static void x_gets(void)
             }
             break;
         case 7:
-            if (pop_typ2 != 0 /*stk_int */ )
-                print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
+            if (ctx->pop_typ2 != 0 /*stk_int */ )
+                print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
             else
-                ilk_info[pop_lit1] = /*:359 */ pop_lit2;
+                ilk_info[ctx->pop_lit1] = /*:359 */ ctx->pop_lit2;
             break;
         case 8:
             {
-                if (pop_typ2 != 1 /*stk_str */ )
-                    print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
+                if (ctx->pop_typ2 != 1 /*stk_str */ )
+                    print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 1 /*stk_str */ );
                 else {
 
-                    str_glb_ptr = ilk_info[pop_lit1];
-                    if (pop_lit2 < cmd_bib_str_ptr)
-                        glb_bib_str_ptr[str_glb_ptr] = pop_lit2;
+                    str_glb_ptr = ilk_info[ctx->pop_lit1];
+                    if (ctx->pop_lit2 < cmd_bib_str_ptr)
+                        glb_bib_str_ptr[str_glb_ptr] = ctx->pop_lit2;
                     else {
 
                         glb_bib_str_ptr[str_glb_ptr] = 0;
                         glob_chr_ptr = 0;
-                        sp_ptr = bib_str_start(pop_lit2);
-                        sp_end = bib_str_start(pop_lit2 + 1);
+                        sp_ptr = bib_str_start(ctx->pop_lit2);
+                        sp_end = bib_str_start(ctx->pop_lit2 + 1);
                         if (sp_end - sp_ptr > glob_str_size) {
                             {
                                 bst_1print_string_size_exceeded();
@@ -2987,26 +3006,26 @@ static void x_gets(void)
             break;
         default:
             puts_log("You can't assign to type ");
-            print_fn_class(pop_lit1);
+            print_fn_class(ctx->pop_lit1);
             puts_log(", a nonvariable function class");
             bst_ex_warn_print();
             break;
         }
 }
 
-static void x_add_period(void)
+static void x_add_period(exec_ctx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) == 0)
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if ((bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) == 0)
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     else {                      /*362: */
 
-        sp_ptr = bib_str_start(pop_lit1 + 1);
-        sp_end = bib_str_start(pop_lit1);
+        sp_ptr = bib_str_start(ctx->pop_lit1 + 1);
+        sp_end = bib_str_start(ctx->pop_lit1);
         while (sp_ptr > sp_end) {
 
             sp_ptr = sp_ptr - 1;
@@ -3019,22 +3038,22 @@ static void x_add_period(void)
         case 63:
         case 33:
             {
-                if (lit_stack[lit_stk_ptr] >= cmd_bib_str_ptr) {
+                if (ctx->lit_stack[ctx->lit_stk_ptr] >= cmd_bib_str_ptr) {
                     bib_set_str_ptr(bib_str_ptr() + 1);
                     pool_ptr = bib_str_start(bib_str_ptr());
                 }
-                lit_stk_ptr = lit_stk_ptr + 1;
+                ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
             }
             break;
         default:
             {
-                if (pop_lit1 < cmd_bib_str_ptr) {
+                if (ctx->pop_lit1 < cmd_bib_str_ptr) {
                     {
-                        while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) + 1 > bib_pool_size())
+                        while (pool_ptr + (bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) + 1 > bib_pool_size())
                             pool_overflow();
                     }
-                    sp_ptr = bib_str_start(pop_lit1);
-                    sp_end = bib_str_start(pop_lit1 + 1);
+                    sp_ptr = bib_str_start(ctx->pop_lit1);
+                    sp_end = bib_str_start(ctx->pop_lit1 + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -3045,7 +3064,7 @@ static void x_add_period(void)
                     }
                 } else {
 
-                    pool_ptr = bib_str_start(pop_lit1 + 1);
+                    pool_ptr = bib_str_start(ctx->pop_lit1 + 1);
                     {
                         while (pool_ptr + 1 > bib_pool_size())
                             pool_overflow();
@@ -3055,30 +3074,30 @@ static void x_add_period(void)
                     bib_set_str_pool(pool_ptr, 46 /*period */ );
                     pool_ptr = pool_ptr + 1;
                 }
-                push_lit_stk(make_string(), 1 /*stk_str */ );
+                push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
             }
             break;
         }
     }
 }
 
-static void x_change_case(void)
+static void x_change_case(exec_ctx* ctx)
 {
     buf_pointer tmp_ptr;
     bool prev_colon = false;
 
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_typ2 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_typ2 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {
 
         {
-            switch ((bib_str_pool(bib_str_start(pop_lit1)))) {
+            switch ((bib_str_pool(bib_str_start(ctx->pop_lit1)))) {
             case 116:
             case 84:
                 conversion_type = 0 /*title_lowers */ ;
@@ -3095,15 +3114,16 @@ static void x_change_case(void)
                 conversion_type = 3 /*bad_conversion */ ;
                 break;
             }
-            if (((bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) != 1) || (conversion_type == 3 /*bad_conversion */ )) {
+            if (((bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) != 1) || (conversion_type == 3 /*bad_conversion */ )) {
                 conversion_type = 3 /*bad_conversion */ ;
-                print_a_pool_str(pop_lit1);
+                if (!print_a_pool_str(ctx->pop_lit1))
+                    longjmp(error_jmpbuf, 1);
                 puts_log(" is an illegal case-conversion string");
                 bst_ex_warn_print();
             }
         }
         ex_buf_length = 0;
-        add_buf_pool(pop_lit2);
+        add_buf_pool(ctx->pop_lit2);
         {
             brace_level = 0;
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
@@ -3230,7 +3250,7 @@ static void x_change_case(void)
                     }
  lab21:                        /*ok_pascal_i_give_up */ prev_colon = false;
                 } else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 125 /*right_brace */ ) {
-                    decr_brace_level(pop_lit2);
+                    decr_brace_level(ctx->pop_lit2);
                     prev_colon = false;
                 } else if (brace_level == 0) {        /*377: */
                     switch ((conversion_type)) {
@@ -3262,61 +3282,62 @@ static void x_change_case(void)
                 }
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            check_brace_level(pop_lit2);
+            check_brace_level(ctx->pop_lit2);
         }
-        add_pool_buf_and_push();
+        add_pool_buf_and_push(ctx);
     }
 }
 
-static void x_chr_to_int(void)
+static void x_chr_to_int(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if ((bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) != 1) {
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if ((bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) != 1) {
         putc_log('"');
-        print_a_pool_str(pop_lit1);
+        if (!print_a_pool_str(ctx->pop_lit1))
+            longjmp(error_jmpbuf, 1);
         puts_log("\" isn't a single character");
         bst_ex_warn_print();
-        push_lit_stk(0, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
     } else
-        push_lit_stk(bib_str_pool(bib_str_start(pop_lit1)), 0 /*stk_int */ );
+        push_lit_stk(ctx, bib_str_pool(bib_str_start(ctx->pop_lit1)), 0 /*stk_int */ );
 }
 
-static void x_cite(void)
+static void x_cite(exec_ctx* ctx)
 {
     if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
     else
-        push_lit_stk(cite_list[cite_ptr], 1 /*stk_str */ );
+        push_lit_stk(ctx, cite_list[cite_ptr], 1 /*stk_str */ );
 }
 
-static void x_duplicate(void)
+static void x_duplicate(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        push_lit_stk(pop_lit1, pop_typ1);
-        push_lit_stk(pop_lit1, pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        push_lit_stk(ctx, ctx->pop_lit1, ctx->pop_typ1);
+        push_lit_stk(ctx, ctx->pop_lit1, ctx->pop_typ1);
     } else {
 
         {
-            if (lit_stack[lit_stk_ptr] >= cmd_bib_str_ptr) {
+            if (ctx->lit_stack[ctx->lit_stk_ptr] >= cmd_bib_str_ptr) {
                 bib_set_str_ptr(bib_str_ptr() + 1);
                 pool_ptr = bib_str_start(bib_str_ptr());
             }
-            lit_stk_ptr = lit_stk_ptr + 1;
+            ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
         }
-        if (pop_lit1 < cmd_bib_str_ptr)
-            push_lit_stk(pop_lit1, pop_typ1);
+        if (ctx->pop_lit1 < cmd_bib_str_ptr)
+            push_lit_stk(ctx, ctx->pop_lit1, ctx->pop_typ1);
         else {
 
             {
-                while (pool_ptr + (bib_str_start(pop_lit1 + 1) - bib_str_start(pop_lit1)) > bib_pool_size())
+                while (pool_ptr + (bib_str_start(ctx->pop_lit1 + 1) - bib_str_start(ctx->pop_lit1)) > bib_pool_size())
                     pool_overflow();
             }
-            pool_pointer sp_ptr = bib_str_start(pop_lit1);
-            pool_pointer sp_end = bib_str_start(pop_lit1 + 1);
+            pool_pointer sp_ptr = bib_str_start(ctx->pop_lit1);
+            pool_pointer sp_end = bib_str_start(ctx->pop_lit1 + 1);
             while (sp_ptr < sp_end) {
 
                 {
@@ -3325,81 +3346,82 @@ static void x_duplicate(void)
                 }
                 sp_ptr = sp_ptr + 1;
             }
-            push_lit_stk(make_string(), 1 /*stk_str */ );
+            push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
         }
     }
 }
 
-static void x_empty(void)
+static void x_empty(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    switch ((pop_typ1)) {
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    switch ((ctx->pop_typ1)) {
     case 1:
         {
-            pool_pointer sp_ptr = bib_str_start(pop_lit1);
-            pool_pointer sp_end = bib_str_start(pop_lit1 + 1);
+            pool_pointer sp_ptr = bib_str_start(ctx->pop_lit1);
+            pool_pointer sp_end = bib_str_start(ctx->pop_lit1 + 1);
             while (sp_ptr < sp_end) {
 
                 if (LEX_CLASS[bib_str_pool(sp_ptr)] != LEX_CLASS_WHITESPACE ) {
-                    push_lit_stk(0, 0 /*stk_int */ );
+                    push_lit_stk(ctx, 0, 0 /*stk_int */ );
                     return;
                 }
                 sp_ptr = sp_ptr + 1;
             }
-            push_lit_stk(1, 0 /*stk_int */ );
+            push_lit_stk(ctx, 1, 0 /*stk_int */ );
         }
         break;
     case 3:
-        push_lit_stk(1, 0 /*stk_int */ );
+        push_lit_stk(ctx, 1, 0 /*stk_int */ );
         break;
     case 4:
-        push_lit_stk(0, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
         break;
     default:
-        print_stk_lit(pop_lit1, pop_typ1);
+        print_stk_lit(ctx->pop_lit1, ctx->pop_typ1);
         puts_log(", not a string or missing field,");
         bst_ex_warn_print();
-        push_lit_stk(0, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
         break;
     }
 }
 
-static void x_format_name(void)
+static void x_format_name(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    pop_lit_stk(&pop_lit3, &pop_typ3);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_typ2 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_typ3 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit3, pop_typ3, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    pop_lit_stk(ctx, &ctx->pop_lit3, &ctx->pop_typ3);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_typ2 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_typ3 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit3, ctx->pop_typ3, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {
 
         ex_buf_length = 0;
-        add_buf_pool(pop_lit3);
+        add_buf_pool(ctx->pop_lit3);
         {
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             num_names = 0;
-            while ((num_names < pop_lit2) && (bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length)) {
+            while ((num_names < ctx->pop_lit2) && (bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length)) {
 
                 num_names = num_names + 1;
                 ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
-                name_scan_for_and(pop_lit3);
+                name_scan_for_and(ctx->pop_lit3);
             }
             if (bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length)
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 4);
-            if (num_names < pop_lit2) {
-                if (pop_lit2 == 1) {
+            if (num_names < ctx->pop_lit2) {
+                if (ctx->pop_lit2 == 1) {
                     puts_log("There is no name in \"");
                 } else {
-                    printf_log("There aren't %ld names in \"", (long) pop_lit2);
+                    printf_log("There aren't %ld names in \"", (long) ctx->pop_lit2);
                 }
-                print_a_pool_str(pop_lit3);
+                if (!print_a_pool_str(ctx->pop_lit3))
+                    longjmp(error_jmpbuf, 1);
                 {
                     putc_log('"');
                     bst_ex_warn_print();
@@ -3417,8 +3439,9 @@ static void x_format_name(void)
                         break;
                     default:
                         if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] == 44 /*comma */ ) {
-                            printf_log("Name %ld in \"", (long) pop_lit2);
-                            print_a_pool_str(pop_lit3);
+                            printf_log("Name %ld in \"", (long) ctx->pop_lit2);
+                            if (!print_a_pool_str(ctx->pop_lit3))
+                                longjmp(error_jmpbuf, 1);
                             puts_log("\" has a comma at the end");
                             bst_ex_warn_print();
                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
@@ -3434,8 +3457,9 @@ static void x_format_name(void)
                 case 44:
                     {
                         if (num_commas == 2) {
-                            printf_log("Too many commas in name %ld of \"", (long) pop_lit2);
-                            print_a_pool_str(pop_lit3);
+                            printf_log("Too many commas in name %ld of \"", (long) ctx->pop_lit2);
+                            if (!print_a_pool_str(ctx->pop_lit3))
+                                longjmp(error_jmpbuf, 1);
                             putc_log('"');
                             bst_ex_warn_print();
                         } else {
@@ -3481,8 +3505,9 @@ static void x_format_name(void)
                             num_tokens = num_tokens + 1;
                         }
 
-                        printf_log("Name %ld of \"", (long) pop_lit2);
-                        print_a_pool_str(pop_lit3);
+                        printf_log("Name %ld of \"", (long) ctx->pop_lit2);
+                        if (!print_a_pool_str(ctx->pop_lit3))
+                            longjmp(error_jmpbuf, 1);
                         puts_log("\" isn't brace balanced");
                         bst_ex_warn_print();
                         ex_buf_xptr = ex_buf_xptr + 1;
@@ -3573,22 +3598,22 @@ static void x_format_name(void)
             }
         }
         ex_buf_length = 0;
-        add_buf_pool(pop_lit1);
-        figure_out_the_formatted_name(first_start, first_end, last_end, von_start, von_end, &name_bf_ptr, &name_bf_xptr, jr_end);
-        add_pool_buf_and_push();
+        add_buf_pool(ctx->pop_lit1);
+        figure_out_the_formatted_name(ctx, first_start, first_end, last_end, von_start, von_end, &name_bf_ptr, &name_bf_xptr, jr_end);
+        add_pool_buf_and_push(ctx);
     }
 }
 
-static void x_int_to_chr(void)
+static void x_int_to_chr(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if ((pop_lit1 < 0) || (pop_lit1 > 127)) {
-        printf_log("%ld isn't valid ASCII", (long) pop_lit1);
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if ((ctx->pop_lit1 < 0) || (ctx->pop_lit1 > 127)) {
+        printf_log("%ld isn't valid ASCII", (long) ctx->pop_lit1);
         bst_ex_warn_print();
-        push_lit_stk(s_null, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {
 
         {
@@ -3596,67 +3621,67 @@ static void x_int_to_chr(void)
                 pool_overflow();
         }
         {
-            bib_set_str_pool(pool_ptr, pop_lit1);
+            bib_set_str_pool(pool_ptr, ctx->pop_lit1);
             pool_ptr = pool_ptr + 1;
         }
-        push_lit_stk(make_string(), 1 /*stk_str */ );
+        push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
     }
 }
 
-static void x_int_to_str(void)
+static void x_int_to_str(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {
-        int_to_ascii(pop_lit1, BUF_TY_EX, 0, &ex_buf_length);
-        add_pool_buf_and_push();
+        int_to_ascii(ctx->pop_lit1, BUF_TY_EX, 0, &ex_buf_length);
+        add_pool_buf_and_push(ctx);
     }
 }
 
-static void x_missing(void)
+static void x_missing(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
     if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
-    else if ((pop_typ1 != 1 /*stk_str */ ) && (pop_typ1 != 3 /*stk_field_missing */ )) {
-        if (pop_typ1 != 4 /*stk_empty */ ) {
-            print_stk_lit(pop_lit1, pop_typ1);
+    else if ((ctx->pop_typ1 != 1 /*stk_str */ ) && (ctx->pop_typ1 != 3 /*stk_field_missing */ )) {
+        if (ctx->pop_typ1 != 4 /*stk_empty */ ) {
+            print_stk_lit(ctx->pop_lit1, ctx->pop_typ1);
             puts_log(", not a string or missing field,");
             bst_ex_warn_print();
         }
-        push_lit_stk(0, 0 /*stk_int */ );
-    } else if (pop_typ1 == 3 /*stk_field_missing */ )
-        push_lit_stk(1, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
+    } else if (ctx->pop_typ1 == 3 /*stk_field_missing */ )
+        push_lit_stk(ctx, 1, 0 /*stk_int */ );
     else
-        push_lit_stk(0, 0 /*stk_int */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
 }
 
-static void x_num_names(void)
+static void x_num_names(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(0, 0 /*stk_int */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
     } else {
 
         ex_buf_length = 0;
-        add_buf_pool(pop_lit1);
+        add_buf_pool(ctx->pop_lit1);
         {
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             num_names = 0;
             while (bib_buf_offset(BUF_TY_EX, 1) < ex_buf_length) {
 
-                name_scan_for_and(pop_lit1);
+                name_scan_for_and(ctx->pop_lit1);
                 num_names = num_names + 1;
             }
         }
-        push_lit_stk(num_names, 0 /*stk_int */ );
+        push_lit_stk(ctx, num_names, 0 /*stk_int */ );
     }
 }
 
-static void x_preamble(void)
+static void x_preamble(exec_ctx* ctx)
 {
     ex_buf_length = 0;
     preamble_ptr = 0;
@@ -3665,19 +3690,19 @@ static void x_preamble(void)
         add_buf_pool(s_preamble[preamble_ptr]);
         preamble_ptr = preamble_ptr + 1;
     }
-    add_pool_buf_and_push();
+    add_pool_buf_and_push(ctx);
 }
 
-static void x_purify(void)
+static void x_purify(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {
 
         ex_buf_length = 0;
-        add_buf_pool(pop_lit1);
+        add_buf_pool(ctx->pop_lit1);
         {
             brace_level = 0;
             ex_buf_xptr = 0;
@@ -3770,11 +3795,11 @@ static void x_purify(void)
             }
             ex_buf_length = ex_buf_xptr;
         }
-        add_pool_buf_and_push();
+        add_pool_buf_and_push(ctx);
     }
 }
 
-static void x_quote(void)
+static void x_quote(exec_ctx* ctx)
 {
     {
         while (pool_ptr + 1 > bib_pool_size())
@@ -3784,70 +3809,70 @@ static void x_quote(void)
         bib_set_str_pool(pool_ptr, 34 /*double_quote */ );
         pool_ptr = pool_ptr + 1;
     }
-    push_lit_stk(make_string(), 1 /*stk_str */ );
+    push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
 }
 
-static void x_substring(void)
+static void x_substring(exec_ctx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
 
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    pop_lit_stk(&pop_lit3, &pop_typ3);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_typ2 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 0 /*stk_int */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_typ3 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit3, pop_typ3, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    pop_lit_stk(ctx, &ctx->pop_lit3, &ctx->pop_typ3);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_typ2 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 0 /*stk_int */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_typ3 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit3, ctx->pop_typ3, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {
 
-        pool_pointer sp_length = (bib_str_start(pop_lit3 + 1) - bib_str_start(pop_lit3));
-        if (pop_lit1 >= sp_length) {
+        pool_pointer sp_length = (bib_str_start(ctx->pop_lit3 + 1) - bib_str_start(ctx->pop_lit3));
+        if (ctx->pop_lit1 >= sp_length) {
 
-            if ((pop_lit2 == 1) || (pop_lit2 == -1)) {
+            if ((ctx->pop_lit2 == 1) || (ctx->pop_lit2 == -1)) {
                 {
-                    if (lit_stack[lit_stk_ptr] >= cmd_bib_str_ptr) {
+                    if (ctx->lit_stack[ctx->lit_stk_ptr] >= cmd_bib_str_ptr) {
                         bib_set_str_ptr(bib_str_ptr() + 1);
                         pool_ptr = bib_str_start(bib_str_ptr());
                     }
-                    lit_stk_ptr = lit_stk_ptr + 1;
+                    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
                 }
                 return;
             }
         }
-        if ((pop_lit1 <= 0) || (pop_lit2 == 0) || (pop_lit2 > sp_length) || (pop_lit2 < -(int32_t) sp_length)) {
-            push_lit_stk(s_null, 1 /*stk_str */ );
+        if ((ctx->pop_lit1 <= 0) || (ctx->pop_lit2 == 0) || (ctx->pop_lit2 > sp_length) || (ctx->pop_lit2 < -(int32_t) sp_length)) {
+            push_lit_stk(ctx, s_null, 1 /*stk_str */ );
             return;
         } else {                /*439: */
 
-            if (pop_lit2 > 0) {
-                if (pop_lit1 > sp_length - (pop_lit2 - 1))
-                    pop_lit1 = sp_length - (pop_lit2 - 1);
-                sp_ptr = bib_str_start(pop_lit3) + (pop_lit2 - 1);
-                sp_end = sp_ptr + pop_lit1;
-                if (pop_lit2 == 1) {
+            if (ctx->pop_lit2 > 0) {
+                if (ctx->pop_lit1 > sp_length - (ctx->pop_lit2 - 1))
+                    ctx->pop_lit1 = sp_length - (ctx->pop_lit2 - 1);
+                sp_ptr = bib_str_start(ctx->pop_lit3) + (ctx->pop_lit2 - 1);
+                sp_end = sp_ptr + ctx->pop_lit1;
+                if (ctx->pop_lit2 == 1) {
 
-                    if (pop_lit3 >= cmd_bib_str_ptr) {
-                        bib_set_str_start(pop_lit3 + 1, sp_end);
+                    if (ctx->pop_lit3 >= cmd_bib_str_ptr) {
+                        bib_set_str_start(ctx->pop_lit3 + 1, sp_end);
                         {
                             bib_set_str_ptr(bib_str_ptr() + 1);
                             pool_ptr = bib_str_start(bib_str_ptr());
                         }
-                        lit_stk_ptr = lit_stk_ptr + 1;
+                        ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
                         return;
                     }
                 }
             } else {
 
-                pop_lit2 = -(int32_t) pop_lit2;
-                if (pop_lit1 > sp_length - (pop_lit2 - 1))
-                    pop_lit1 = sp_length - (pop_lit2 - 1);
-                sp_end = bib_str_start(pop_lit3 + 1) - (pop_lit2 - 1);
-                sp_ptr = sp_end - pop_lit1;
+                ctx->pop_lit2 = -(int32_t) ctx->pop_lit2;
+                if (ctx->pop_lit1 > sp_length - (ctx->pop_lit2 - 1))
+                    ctx->pop_lit1 = sp_length - (ctx->pop_lit2 - 1);
+                sp_end = bib_str_start(ctx->pop_lit3 + 1) - (ctx->pop_lit2 - 1);
+                sp_ptr = sp_end - ctx->pop_lit1;
             }
             {
                 while (pool_ptr + sp_end - sp_ptr > bib_pool_size())
@@ -3861,35 +3886,35 @@ static void x_substring(void)
                 }
                 sp_ptr = sp_ptr + 1;
             }
-            push_lit_stk(make_string(), 1 /*stk_str */ );
+            push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
         }
     }
 }
 
-static void x_swap(void)
+static void x_swap(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if ((pop_typ1 != 1 /*stk_str */ ) || (pop_lit1 < cmd_bib_str_ptr)) {
-        push_lit_stk(pop_lit1, pop_typ1);
-        if ((pop_typ2 == 1 /*stk_str */ ) && (pop_lit2 >= cmd_bib_str_ptr)) {
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if ((ctx->pop_typ1 != 1 /*stk_str */ ) || (ctx->pop_lit1 < cmd_bib_str_ptr)) {
+        push_lit_stk(ctx, ctx->pop_lit1, ctx->pop_typ1);
+        if ((ctx->pop_typ2 == 1 /*stk_str */ ) && (ctx->pop_lit2 >= cmd_bib_str_ptr)) {
             bib_set_str_ptr(bib_str_ptr() + 1);
             pool_ptr = bib_str_start(bib_str_ptr());
         }
-        push_lit_stk(pop_lit2, pop_typ2);
-    } else if ((pop_typ2 != 1 /*stk_str */ ) || (pop_lit2 < cmd_bib_str_ptr)) {
+        push_lit_stk(ctx, ctx->pop_lit2, ctx->pop_typ2);
+    } else if ((ctx->pop_typ2 != 1 /*stk_str */ ) || (ctx->pop_lit2 < cmd_bib_str_ptr)) {
         {
             bib_set_str_ptr(bib_str_ptr() + 1);
             pool_ptr = bib_str_start(bib_str_ptr());
         }
-        push_lit_stk(pop_lit1, 1 /*stk_str */ );
-        push_lit_stk(pop_lit2, pop_typ2);
+        push_lit_stk(ctx, ctx->pop_lit1, 1 /*stk_str */ );
+        push_lit_stk(ctx, ctx->pop_lit2, ctx->pop_typ2);
     } else {                    /*441: */
 
         ex_buf_length = 0;
-        add_buf_pool(pop_lit2);
-        pool_pointer sp_ptr = bib_str_start(pop_lit1);
-        pool_pointer sp_end = bib_str_start(pop_lit1 + 1);
+        add_buf_pool(ctx->pop_lit2);
+        pool_pointer sp_ptr = bib_str_start(ctx->pop_lit1);
+        pool_pointer sp_end = bib_str_start(ctx->pop_lit1 + 1);
         while (sp_ptr < sp_end) {
 
             {
@@ -3898,25 +3923,25 @@ static void x_swap(void)
             }
             sp_ptr = sp_ptr + 1;
         }
-        push_lit_stk(make_string(), 1 /*stk_str */ );
-        add_pool_buf_and_push();
+        push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
+        add_pool_buf_and_push(ctx);
     }
 }
 
-static void x_text_length(void)
+static void x_text_length(exec_ctx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
 
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     } else {
 
         num_text_chars = 0;
         {
-            sp_ptr = bib_str_start(pop_lit1);
-            sp_end = bib_str_start(pop_lit1 + 1);
+            sp_ptr = bib_str_start(ctx->pop_lit1);
+            sp_end = bib_str_start(ctx->pop_lit1 + 1);
             int32_t sp_brace_level = 0;
             while (sp_ptr < sp_end) {
 
@@ -3945,33 +3970,33 @@ static void x_text_length(void)
                     num_text_chars = num_text_chars + 1;
             }
         }
-        push_lit_stk(num_text_chars, 0 /*stk_int */ );
+        push_lit_stk(ctx, num_text_chars, 0 /*stk_int */ );
     }
 }
 
-static void x_text_prefix(void)
+static void x_text_prefix(exec_ctx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
 
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    pop_lit_stk(&pop_lit2, &pop_typ2);
-    if (pop_typ1 != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_typ2 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit2, pop_typ2, 1 /*stk_str */ );
-        push_lit_stk(s_null, 1 /*stk_str */ );
-    } else if (pop_lit1 <= 0) {
-        push_lit_stk(s_null, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+    if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_typ2 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
+    } else if (ctx->pop_lit1 <= 0) {
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
         return;
     } else {                    /*445: */
         int32_t sp_brace_level = 0;
-        sp_ptr = bib_str_start(pop_lit2);
-        sp_end = bib_str_start(pop_lit2 + 1);
+        sp_ptr = bib_str_start(ctx->pop_lit2);
+        sp_end = bib_str_start(ctx->pop_lit2 + 1);
         {
             num_text_chars = 0;
             pool_pointer sp_xptr1 = sp_ptr;
-            while ((sp_xptr1 < sp_end) && (num_text_chars < pop_lit1)) {
+            while ((sp_xptr1 < sp_end) && (num_text_chars < ctx->pop_lit1)) {
 
                 sp_xptr1 = sp_xptr1 + 1;
                 if (bib_str_pool(sp_xptr1 - 1) == 123 /*left_brace */ ) {
@@ -4003,7 +4028,7 @@ static void x_text_prefix(void)
             while (pool_ptr + sp_brace_level + sp_end - sp_ptr > bib_pool_size())
                 pool_overflow();
         }
-        if (pop_lit2 >= cmd_bib_str_ptr)
+        if (ctx->pop_lit2 >= cmd_bib_str_ptr)
             pool_ptr = sp_end;
         else
             while (sp_ptr < sp_end) {
@@ -4022,42 +4047,42 @@ static void x_text_prefix(void)
             }
             sp_brace_level = sp_brace_level - 1;
         }
-        push_lit_stk(make_string(), 1 /*stk_str */ );
+        push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
     }
 }
 
-static void x_type(void)
+static void x_type(exec_ctx* ctx)
 {
     if (!mess_with_entries)
         bst_cant_mess_with_entries_print();
     else if ((type_list[cite_ptr] == undefined) || (type_list[cite_ptr] == 0 /*empty */ ))
-        push_lit_stk(s_null, 1 /*stk_str */ );
+        push_lit_stk(ctx, s_null, 1 /*stk_str */ );
     else
-        push_lit_stk(hash_text[type_list[cite_ptr]], 1 /*stk_str */ );
+        push_lit_stk(ctx, hash_text[type_list[cite_ptr]], 1 /*stk_str */ );
 }
 
-static void x_warning(void)
+static void x_warning(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ )
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ )
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
     else {
         puts_log("Warning--");
-        print_lit(pop_lit1, pop_typ1);
+        print_lit(ctx->pop_lit1, ctx->pop_typ1);
         mark_warning();
     }
 }
 
-static void x_width(void)
+static void x_width(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
-        push_lit_stk(0, 0 /*stk_int */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ ) {
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
+        push_lit_stk(ctx, 0, 0 /*stk_int */ );
     } else {
 
         ex_buf_length = 0;
-        add_buf_pool(pop_lit1);
+        add_buf_pool(ctx->pop_lit1);
         string_width = 0;
         {
             brace_level = 0;
@@ -4128,28 +4153,28 @@ static void x_width(void)
                     } else
                         string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
                 } else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 125 /*right_brace */ ) {
-                    decr_brace_level(pop_lit1);
+                    decr_brace_level(ctx->pop_lit1);
                     string_width = string_width + CHAR_WIDTH[125 /*right_brace */ ];
                 } else
                     string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]];
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            check_brace_level(pop_lit1);
+            check_brace_level(ctx->pop_lit1);
         }
-        push_lit_stk(string_width, 0 /*stk_int */ );
+        push_lit_stk(ctx, string_width, 0 /*stk_int */ );
     }
 }
 
-static void x_write(void)
+static void x_write(exec_ctx* ctx)
 {
-    pop_lit_stk(&pop_lit1, &pop_typ1);
-    if (pop_typ1 != 1 /*stk_str */ )
-        print_wrong_stk_lit(pop_lit1, pop_typ1, 1 /*stk_str */ );
+    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+    if (ctx->pop_typ1 != 1 /*stk_str */ )
+        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 1 /*stk_str */ );
     else
-        add_out_pool(pop_lit1);
+        add_out_pool(ctx->pop_lit1);
 }
 
-static void execute_fn(hash_loc ex_fn_loc)
+static void execute_fn(exec_ctx* ctx, hash_loc ex_fn_loc)
 {
     int32_t r_pop_lt1, r_pop_lt2;
     stk_type r_pop_tp1, r_pop_tp2;
@@ -4163,83 +4188,83 @@ static void execute_fn(hash_loc ex_fn_loc)
 
             switch ((ilk_info[ex_fn_loc])) {
             case 0:
-                x_equals();
+                x_equals(ctx);
                 break;
             case 1:
-                x_greater_than();
+                x_greater_than(ctx);
                 break;
             case 2:
-                x_less_than();
+                x_less_than(ctx);
                 break;
             case 3:
-                x_plus();
+                x_plus(ctx);
                 break;
             case 4:
-                x_minus();
+                x_minus(ctx);
                 break;
             case 5:
-                x_concatenate();
+                x_concatenate(ctx);
                 break;
             case 6:
-                x_gets();
+                x_gets(ctx);
                 break;
             case 7:
-                x_add_period();
+                x_add_period(ctx);
                 break;
             case 8:
                 {
                     if (!mess_with_entries)
                         bst_cant_mess_with_entries_print();
                     else if (type_list[cite_ptr] == undefined)
-                        execute_fn(b_default);
+                        execute_fn(ctx, b_default);
                     else if (type_list[cite_ptr] == 0 /*empty */ ) ;
                     else
-                        execute_fn(type_list[cite_ptr]);
+                        execute_fn(ctx, type_list[cite_ptr]);
                 }
                 break;
             case 9:
-                x_change_case();
+                x_change_case(ctx);
                 break;
             case 10:
-                x_chr_to_int();
+                x_chr_to_int(ctx);
                 break;
             case 11:
-                x_cite();
+                x_cite(ctx);
                 break;
             case 12:
-                x_duplicate();
+                x_duplicate(ctx);
                 break;
             case 13:
-                x_empty();
+                x_empty(ctx);
                 break;
             case 14:
-                x_format_name();
+                x_format_name(ctx);
                 break;
             case 15:
                 {
-                    pop_lit_stk(&pop_lit1, &pop_typ1);
-                    pop_lit_stk(&pop_lit2, &pop_typ2);
-                    pop_lit_stk(&pop_lit3, &pop_typ3);
-                    if (pop_typ1 != 2 /*stk_fn */ )
-                        print_wrong_stk_lit(pop_lit1, pop_typ1, 2 /*stk_fn */ );
-                    else if (pop_typ2 != 2 /*stk_fn */ )
-                        print_wrong_stk_lit(pop_lit2, pop_typ2, 2 /*stk_fn */ );
-                    else if (pop_typ3 != 0 /*stk_int */ )
-                        print_wrong_stk_lit(pop_lit3, pop_typ3, 0 /*stk_int */ );
-                    else if (pop_lit3 > 0)
-                        execute_fn(pop_lit2);
+                    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+                    pop_lit_stk(ctx, &ctx->pop_lit2, &ctx->pop_typ2);
+                    pop_lit_stk(ctx, &ctx->pop_lit3, &ctx->pop_typ3);
+                    if (ctx->pop_typ1 != 2 /*stk_fn */ )
+                        print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 2 /*stk_fn */ );
+                    else if (ctx->pop_typ2 != 2 /*stk_fn */ )
+                        print_wrong_stk_lit(ctx->pop_lit2, ctx->pop_typ2, 2 /*stk_fn */ );
+                    else if (ctx->pop_typ3 != 0 /*stk_int */ )
+                        print_wrong_stk_lit(ctx->pop_lit3, ctx->pop_typ3, 0 /*stk_int */ );
+                    else if (ctx->pop_lit3 > 0)
+                        execute_fn(ctx, ctx->pop_lit2);
                     else
-                        execute_fn(pop_lit1);
+                        execute_fn(ctx, ctx->pop_lit1);
                 }
                 break;
             case 16:
-                x_int_to_chr();
+                x_int_to_chr(ctx);
                 break;
             case 17:
-                x_int_to_str();
+                x_int_to_str(ctx);
                 break;
             case 18:
-                x_missing();
+                x_missing(ctx);
                 break;
             case 19:
                 {
@@ -4247,21 +4272,21 @@ static void execute_fn(hash_loc ex_fn_loc)
                 }
                 break;
             case 20:
-                x_num_names();
+                x_num_names(ctx);
                 break;
             case 21:
                 {
-                    pop_lit_stk(&pop_lit1, &pop_typ1);
+                    pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
                 }
                 break;
             case 22:
-                x_preamble();
+                x_preamble(ctx);
                 break;
             case 23:
-                x_purify();
+                x_purify(ctx);
                 break;
             case 24:
-                x_quote();
+                x_quote(ctx);
                 break;
             case 25:
                 {
@@ -4270,36 +4295,36 @@ static void execute_fn(hash_loc ex_fn_loc)
                 break;
             case 26:
                 {
-                    pop_whole_stack();
+                    pop_whole_stack(ctx);
                 }
                 break;
             case 27:
-                x_substring();
+                x_substring(ctx);
                 break;
             case 28:
-                x_swap();
+                x_swap(ctx);
                 break;
             case 29:
-                x_text_length();
+                x_text_length(ctx);
                 break;
             case 30:
-                x_text_prefix();
+                x_text_prefix(ctx);
                 break;
             case 31:
                 {
-                    pop_top_and_print();
+                    pop_top_and_print(ctx);
                 }
                 break;
             case 32:
-                x_type();
+                x_type(ctx);
                 break;
             case 33:
-                x_warning();
+                x_warning(ctx);
                 break;
             case 34:
                 {
-                    pop_lit_stk(&r_pop_lt1, &r_pop_tp1);
-                    pop_lit_stk(&r_pop_lt2, &r_pop_tp2);
+                    pop_lit_stk(ctx, &r_pop_lt1, &r_pop_tp1);
+                    pop_lit_stk(ctx, &r_pop_lt2, &r_pop_tp2);
                     if (r_pop_tp1 != 2 /*stk_fn */ )
                         print_wrong_stk_lit(r_pop_lt1, r_pop_tp1, 2 /*stk_fn */ );
                     else if (r_pop_tp2 != 2 /*stk_fn */ )
@@ -4307,13 +4332,13 @@ static void execute_fn(hash_loc ex_fn_loc)
                     else
                         while (true) {
 
-                            execute_fn(r_pop_lt2);
-                            pop_lit_stk(&pop_lit1, &pop_typ1);
-                            if (pop_typ1 != 0 /*stk_int */ ) {
-                                print_wrong_stk_lit(pop_lit1, pop_typ1, 0 /*stk_int */ );
+                            execute_fn(ctx, r_pop_lt2);
+                            pop_lit_stk(ctx, &ctx->pop_lit1, &ctx->pop_typ1);
+                            if (ctx->pop_typ1 != 0 /*stk_int */ ) {
+                                print_wrong_stk_lit(ctx->pop_lit1, ctx->pop_typ1, 0 /*stk_int */ );
                                 goto lab51;
-                            } else if (pop_lit1 > 0)
-                                execute_fn(r_pop_lt1);
+                            } else if (ctx->pop_lit1 > 0)
+                                execute_fn(ctx, r_pop_lt1);
                             else
                                 goto lab51;
                         }
@@ -4321,10 +4346,10 @@ static void execute_fn(hash_loc ex_fn_loc)
                 }
                 break;
             case 35:
-                x_width();
+                x_width(ctx);
                 break;
             case 36:
-                x_write();
+                x_write(ctx);
                 break;
             default:
                 puts_log("Unknown built-in function");
@@ -4340,21 +4365,21 @@ static void execute_fn(hash_loc ex_fn_loc)
             while (wiz_functions[wiz_ptr] != end_of_def) {
 
                 if (wiz_functions[wiz_ptr] != quote_next_fn)
-                    execute_fn(wiz_functions[wiz_ptr]);
+                    execute_fn(ctx, wiz_functions[wiz_ptr]);
                 else {
 
                     wiz_ptr = wiz_ptr + 1;
-                    push_lit_stk(wiz_functions[wiz_ptr], 2 /*stk_fn */ );
+                    push_lit_stk(ctx, wiz_functions[wiz_ptr], 2 /*stk_fn */ );
                 }
                 wiz_ptr = wiz_ptr + 1;
             }
         }
         break;
     case 2:
-        push_lit_stk(ilk_info[ex_fn_loc], 0 /*stk_int */ );
+        push_lit_stk(ctx, ilk_info[ex_fn_loc], 0 /*stk_int */ );
         break;
     case 3:
-        push_lit_stk(hash_text[ex_fn_loc], 1 /*stk_str */ );
+        push_lit_stk(ctx, hash_text[ex_fn_loc], 1 /*stk_str */ );
         break;
     case 4:
         {
@@ -4369,9 +4394,9 @@ static void execute_fn(hash_loc ex_fn_loc)
                     longjmp(error_jmpbuf, 1);
                 }
                 if (field_info[field_ptr] == 0 /*missing */ )
-                    push_lit_stk(hash_text[ex_fn_loc], 3 /*stk_field_missing */ );
+                    push_lit_stk(ctx, hash_text[ex_fn_loc], 3 /*stk_field_missing */ );
                 else
-                    push_lit_stk(field_info[field_ptr], 1 /*stk_str */ );
+                    push_lit_stk(ctx, field_info[field_ptr], 1 /*stk_str */ );
             }
         }
         break;
@@ -4380,7 +4405,7 @@ static void execute_fn(hash_loc ex_fn_loc)
             if (!mess_with_entries)
                 bst_cant_mess_with_entries_print();
             else
-                push_lit_stk(entry_ints[cite_ptr * num_ent_ints + ilk_info[ex_fn_loc]], 0 /*stk_int */ );
+                push_lit_stk(ctx, entry_ints[cite_ptr * num_ent_ints + ilk_info[ex_fn_loc]], 0 /*stk_int */ );
         }
         break;
     case 6:
@@ -4397,18 +4422,18 @@ static void execute_fn(hash_loc ex_fn_loc)
                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                 }
                 ex_buf_length = bib_buf_offset(BUF_TY_EX, 1);
-                add_pool_buf_and_push();
+                add_pool_buf_and_push(ctx);
             }
         }
         break;
     case 7:
-        push_lit_stk(ilk_info[ex_fn_loc], 0 /*stk_int */ );
+        push_lit_stk(ctx, ilk_info[ex_fn_loc], 0 /*stk_int */ );
         break;
     case 8:
         {
             str_glb_ptr = ilk_info[ex_fn_loc];
             if (glb_bib_str_ptr[str_glb_ptr] > 0)
-                push_lit_stk(glb_bib_str_ptr[str_glb_ptr], 1 /*stk_str */ );
+                push_lit_stk(ctx, glb_bib_str_ptr[str_glb_ptr], 1 /*stk_str */ );
             else {
 
                 {
@@ -4424,7 +4449,7 @@ static void execute_fn(hash_loc ex_fn_loc)
                     }
                     glob_chr_ptr = glob_chr_ptr + 1;
                 }
-                push_lit_stk(make_string(), 1 /*stk_str */ );
+                push_lit_stk(ctx, make_string(), 1 /*stk_str */ );
             }
         }
         break;
@@ -4440,7 +4465,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
 {
     name_of_file = xmalloc_array(ASCII_code, strlen(aux_file_name) + 1);
     strcpy((char *) name_of_file, aux_file_name);
-    aux_name_length = strlen((char *) name_of_file);
+    int32_t aux_name_length = strlen((char *) name_of_file);
     aux_name_length -= 4; /* strip off the (assumed) ".aux" for subsequent futzing */
     name_length = aux_name_length;
 
@@ -4467,7 +4492,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
 
     name_length = aux_name_length;
     add_extension(s_aux_extension);
-    name_ptr = 0;
+    int32_t name_ptr = 0;
     while (name_ptr < name_length) {
         bib_buf(BUF_TY_BASE)[name_ptr + 1] = name_of_file[name_ptr]; // preserve pascal-style string semantics
         name_ptr = name_ptr + 1;
@@ -4492,7 +4517,7 @@ static void aux_bib_data_command(void)
     if (bib_seen) {
         aux_err_illegal_another_print(0 /*n_aux_bibdata */ );
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
@@ -4503,21 +4528,21 @@ static void aux_bib_data_command(void)
         if (!scan2_white(125 /*right_brace */ , 44 /*comma */, last)) {
             aux_err_no_right_brace_print();
             {
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
         }
         if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
             aux_err_white_space_in_argument_print();
             {
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
         }
         if ((last > bib_buf_offset(BUF_TY_BASE, 2) + 1) && (bib_buf_at_offset(BUF_TY_BASE, 2) == 125 /*right_brace */ )) {
             aux_err_stuff_after_right_brace_print();
             {
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
         }
@@ -4536,14 +4561,14 @@ static void aux_bib_data_command(void)
             if (hash_found) {
                 puts_log("This database file appears more than once: ");
                 print_bib_name();
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
             start_name(bib_list[bib_ptr]);
             if ((bib_file[bib_ptr] = peekable_open ((char *) name_of_file, TTBC_FILE_FORMAT_BIB)) == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
 
@@ -4557,7 +4582,7 @@ static void aux_bib_style_command(void)
     if (bst_seen) {
         aux_err_illegal_another_print(1 /*n_aux_bibstyle */ );
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
@@ -4566,21 +4591,21 @@ static void aux_bib_style_command(void)
     if (!scan1_white(125 /*right_brace */, last)) {
         aux_err_no_right_brace_print();
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
     if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
         aux_err_white_space_in_argument_print();
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
     if (last > bib_buf_offset(BUF_TY_BASE, 2) + 1) {
         aux_err_stuff_after_right_brace_print();
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
@@ -4596,7 +4621,7 @@ static void aux_bib_style_command(void)
             puts_log("I couldn't open style file ");
             print_bst_name();
             bst_str = 0;
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
         if (verbose) {
@@ -4620,21 +4645,21 @@ static void aux_citation_command(void)
         if (!scan2_white(125 /*right_brace */ , 44 /*comma */, last)) {
             aux_err_no_right_brace_print();
             {
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
         }
         if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
             aux_err_white_space_in_argument_print();
             {
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
         }
         if ((last > bib_buf_offset(BUF_TY_BASE, 2) + 1) && (bib_buf_at_offset(BUF_TY_BASE, 2) == 125 /*right_brace */ )) {
             aux_err_stuff_after_right_brace_print();
             {
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
         }
@@ -4645,7 +4670,7 @@ static void aux_citation_command(void)
                     if (bib_buf_at_offset(BUF_TY_BASE, 1) == 42 /*star */ ) {
                         if (all_entries) {
                             puts_log("Multiple inclusions of entire database\n");
-                            aux_err_print(last);
+                            aux_err_print(last, aux_ptr);
                             return;
                         } else {
 
@@ -4672,9 +4697,10 @@ static void aux_citation_command(void)
                     puts_log("Case mismatch error between cite keys ");
                     print_a_token();
                     puts_log(" and ");
-                    print_a_pool_str(cite_list[ilk_info[ilk_info[lc_cite_loc]]]);
+                    if (!print_a_pool_str(cite_list[ilk_info[ilk_info[lc_cite_loc]]]))
+                        longjmp(error_jmpbuf, 1);
                     putc_log('\n');
-                    aux_err_print(last);
+                    aux_err_print(last, aux_ptr);
                     return;
                 }
             } else {            /*137: */
@@ -4702,21 +4728,21 @@ static void aux_input_command(void)
     if (!scan1_white(125 /*right_brace */, last)) {
         aux_err_no_right_brace_print();
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
     if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
         aux_err_white_space_in_argument_print();
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
     if (last > bib_buf_offset(BUF_TY_BASE, 2) + 1) {
         aux_err_stuff_after_right_brace_print();
         {
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
     }
@@ -4743,31 +4769,31 @@ static void aux_input_command(void)
             print_a_token();
             puts_log(" has a wrong extension");
             aux_ptr = aux_ptr - 1;
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
         aux_list[aux_ptr] = hash_text[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 3 /*aux_file_ilk */ , true)];
         if (hash_found) {
             puts_log("Already encountered file ");
-            print_aux_name();
+            print_aux_name(aux_ptr);
             aux_ptr = aux_ptr - 1;
-            aux_err_print(last);
+            aux_err_print(last, aux_ptr);
             return;
         }
         {
             start_name(aux_list[aux_ptr]);
-            name_ptr = name_length;
+            int32_t name_ptr = name_length;
             name_of_file[name_ptr] = 0;
             if ((aux_file[aux_ptr] = peekable_open ((char *) name_of_file, TTBC_FILE_FORMAT_TEX)) == NULL) {
                 puts_log("I couldn't open auxiliary file ");
-                print_aux_name();
+                print_aux_name(aux_ptr);
                 aux_ptr = aux_ptr - 1;
-                aux_err_print(last);
+                aux_err_print(last, aux_ptr);
                 return;
             }
 
             printf_log("A level-%ld auxiliary file: ", (long) aux_ptr);
-            log_pr_aux_name();
+            log_pr_aux_name(aux_ptr);
             aux_ln_stack[aux_ptr] = 0;
         }
     }
@@ -4821,29 +4847,29 @@ static void last_check_for_aux_errors(void)
     if (!citation_seen) {
         aux_end1_err_print();
         puts_log("\\citation commands");
-        aux_end2_err_print();
+        aux_end2_err_print(aux_ptr);
     } else if ((num_cites == 0) && (!all_entries)) {
         aux_end1_err_print();
         puts_log("cite keys");
-        aux_end2_err_print();
+        aux_end2_err_print(aux_ptr);
     }
     if (!bib_seen) {
         aux_end1_err_print();
         puts_log("\\bibdata command");
-        aux_end2_err_print();
+        aux_end2_err_print(aux_ptr);
     } else if (num_bib_files == 0) {
         aux_end1_err_print();
         puts_log("database files");
-        aux_end2_err_print();
+        aux_end2_err_print(aux_ptr);
     }
     if (!bst_seen) {
         aux_end1_err_print();
         puts_log("\\bibstyle command");
-        aux_end2_err_print();
+        aux_end2_err_print(aux_ptr);
     } else if (bst_str == 0) {
         aux_end1_err_print();
         puts_log("style file");
-        aux_end2_err_print();
+        aux_end2_err_print(aux_ptr);
     }
 }
 
@@ -5072,7 +5098,7 @@ static bool bad_argument_token(void)
     return false;
 }
 
-static void bst_execute_command(void)
+static void bst_execute_command(exec_ctx* ctx)
 {
     if (!read_seen) {
         puts_log("Illegal, execute command before read command");
@@ -5138,10 +5164,10 @@ static void bst_execute_command(void)
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
     {
-        init_command_execution();
+        init_command_execution(ctx);
         mess_with_entries = false;
-        execute_fn(fn_loc);
-        check_command_execution();
+        execute_fn(ctx, fn_loc);
+        check_command_execution(ctx);
     }
 }
 
@@ -5301,7 +5327,7 @@ static void bst_integers_command(void)
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
 }
 
-static void bst_iterate_command(void)
+static void bst_iterate_command(exec_ctx* ctx)
 {
     if (!read_seen) {
         puts_log("Illegal, iterate command before read command");
@@ -5367,7 +5393,7 @@ static void bst_iterate_command(void)
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
     {
-        init_command_execution();
+        init_command_execution(ctx);
         mess_with_entries = true;
         sort_cite_ptr = 0;
         while (sort_cite_ptr < num_cites) {
@@ -5375,8 +5401,8 @@ static void bst_iterate_command(void)
             cite_ptr = cite_info[sort_cite_ptr];
             ;
 
-            execute_fn(fn_loc);
-            check_command_execution();
+            execute_fn(ctx, fn_loc);
+            check_command_execution(ctx);
             sort_cite_ptr = sort_cite_ptr + 1;
         }
     }
@@ -6147,7 +6173,7 @@ static void bst_read_command(void)
     }
 }
 
-static void bst_reverse_command(void)
+static void bst_reverse_command(exec_ctx* ctx)
 {
     if (!read_seen) {
         puts_log("Illegal, reverse command before read command");
@@ -6213,7 +6239,7 @@ static void bst_reverse_command(void)
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
     {
-        init_command_execution();
+        init_command_execution(ctx);
         mess_with_entries = true;
         if (num_cites > 0) {
             sort_cite_ptr = num_cites;
@@ -6222,8 +6248,8 @@ static void bst_reverse_command(void)
                 cite_ptr = cite_info[sort_cite_ptr];
                 ;
 
-                execute_fn(fn_loc);
-                check_command_execution();
+                execute_fn(ctx, fn_loc);
+                check_command_execution(ctx);
             } while (!((sort_cite_ptr == 0)));
         }
     }
@@ -6319,7 +6345,7 @@ bst_strings_command(void)
 
 
 static void
-get_bst_command_and_process(void)
+get_bst_command_and_process(exec_ctx* ctx)
 {
     if (!scan_alpha(last)) {
         printf_log("\"%c\" can't start a style-file command", bib_buf_at_offset(BUF_TY_BASE, 2));
@@ -6341,7 +6367,7 @@ get_bst_command_and_process(void)
         bst_entry_command();
         break;
     case 1:
-        bst_execute_command();
+        bst_execute_command(ctx);
         break;
     case 2:
         bst_function_command();
@@ -6350,7 +6376,7 @@ get_bst_command_and_process(void)
         bst_integers_command();
         break;
     case 4:
-        bst_iterate_command();
+        bst_iterate_command(ctx);
         break;
     case 5:
         bst_macro_command();
@@ -6359,7 +6385,7 @@ get_bst_command_and_process(void)
         bst_read_command();
         break;
     case 7:
-        bst_reverse_command();
+        bst_reverse_command(ctx);
         break;
     case 8:
         bst_sort_command();
@@ -6381,9 +6407,8 @@ setup_params(void)
 {
     ent_str_size = ENT_STR_SIZE;
     glob_str_size = GLOB_STR_SIZE;
-    max_strings = MAX_STRINGS;
 
-    hash_size = max_strings;
+    hash_size = bib_max_strings();
     if (hash_size < 5000 /*HASH_SIZE */ )
         hash_size = 5000 /*HASH_SIZE */ ;
     hash_max = hash_size + hash_base - 1;
@@ -6439,7 +6464,6 @@ compute_hash_prime(void)
 static int
 initialize(const char *aux_file_name)
 {
-    int32_t i;
     hash_loc k;
 
     bad = 0;
@@ -6457,9 +6481,9 @@ initialize(const char *aux_file_name)
         bad = 10 * bad + 5;
     if (hash_base != 1)
         bad = 10 * bad + 6;
-    if (max_strings > hash_size)
+    if (bib_max_strings() > hash_size)
         bad = 10 * bad + 7;
-    if (max_cites > max_strings)
+    if (max_cites > bib_max_strings())
         bad = 10 * bad + 8;
     if (10 /*short_list */  < 2 * 4 /*end_offset */  + 2)
         bad = 100 * bad + 22;
@@ -6518,7 +6542,6 @@ bibtex_main(const char *aux_file_name)
     max_fields = MAX_FIELDS;
     max_cites = MAX_CITES;
     wiz_fn_space = WIZ_FN_SPACE;
-    lit_stk_size = LIT_STK_SIZE;
 
     if (standard_output() == NULL)
         return HISTORY_FATAL_ERROR;
@@ -6548,8 +6571,6 @@ bibtex_main(const char *aux_file_name)
     hash_ilk = XTALLOC(hash_max + 1, str_ilk);
     ilk_info = XTALLOC(hash_max + 1, int32_t);
     fn_type = XTALLOC(hash_max + 1, fn_class);
-    lit_stack = XTALLOC(lit_stk_size + 1, int32_t);
-    lit_stk_type = XTALLOC(lit_stk_size + 1, stk_type);
 
     compute_hash_prime();
 
@@ -6569,16 +6590,16 @@ bibtex_main(const char *aux_file_name)
     {
         char buf[512];
         snprintf (buf, sizeof(buf) - 1, "Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n",
-                  (long) max_strings, (long) hash_size, (long) hash_prime);
+                  (long) bib_max_strings(), (long) hash_size, (long) hash_prime);
         ttstub_output_write (bib_log_file(), buf, strlen(buf));
     }
 
     if (verbose) {
         puts_log("The top-level auxiliary file: ");
-        print_aux_name();
+        print_aux_name(aux_ptr);
     } else {
         ttstub_puts (bib_log_file(), "The top-level auxiliary file: ");
-        log_pr_aux_name();
+        log_pr_aux_name(aux_ptr);
     }
 
     while (true) {
@@ -6602,10 +6623,15 @@ bibtex_main(const char *aux_file_name)
     bib_set_buf_offset(BUF_TY_BASE, 2, last);
 
     if (setjmp(recover_jmpbuf) == 0) {
+        exec_ctx ctx = { 0, 0, 0, 0, 0, 0 };
+        ctx.lit_stk_size = LIT_STK_SIZE;
+        ctx.lit_stack = XTALLOC(ctx.lit_stk_size + 1, int32_t);
+        ctx.lit_stk_type = XTALLOC(ctx.lit_stk_size + 1, stk_type);
+        
         while(true) {
             if (!eat_bst_white_space())
                 break;
-            get_bst_command_and_process();
+            get_bst_command_and_process(&ctx);
         }
     }
 

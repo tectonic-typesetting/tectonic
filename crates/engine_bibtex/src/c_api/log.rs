@@ -215,3 +215,18 @@ pub unsafe extern "C" fn out_pool_str(handle: *mut OutputHandle, s: StrNumber) -
         }
     })
 }
+
+#[no_mangle]
+pub extern "C" fn print_a_pool_str(s: StrNumber) -> bool {
+    with_pool(|pool| {
+        let str = pool.try_get_str(s as usize);
+        if let Some(str) = str {
+            write_logs(str);
+            true
+        } else {
+            write_logs(&format!("Illegal string number: {}", s));
+            print_confusion();
+            false
+        }
+    })
+}
