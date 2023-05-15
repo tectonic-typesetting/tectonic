@@ -4,12 +4,12 @@
 use lazy_static::lazy_static;
 use std::{
     env,
-    time::{Duration, Instant},
     fs::{self, File, OpenOptions},
     io::{Read, Write},
     path::{Path, PathBuf},
     process::{Command, Output, Stdio},
     str, thread,
+    time::{Duration, Instant},
 };
 use tempfile::TempDir;
 
@@ -944,10 +944,11 @@ fn v2_watch_succeeds() {
     let output = run_tectonic(&temppath, &["-X", "build"]);
     success_or_panic(&output);
 
-    let (start_send, start_recv) = std::sync::mpsc::channel();
-
     let thread = thread::spawn(move || {
-        start_recv.recv().unwrap();
+        // Give the process time to start up. Tried a channel, doesn't really work, so we just do
+        // a best-effort 'sleep for long enough it should have started'.
+        thread::sleep(Duration::from_secs(5));
+
         let input = path.join("src/index.tex");
         let output = path.join("build/default/default.pdf");
         let start = Instant::now();
@@ -958,12 +959,12 @@ fn v2_watch_succeeds() {
                 break;
             }
 
-            let new_mod = output.metadata().and_then(|meta| meta.modified())
-                .unwrap();
+            let new_mod = output.metadata().and_then(|meta| meta.modified()).unwrap();
             if start_mod.map_or(true, |start_mod| new_mod > start_mod) {
                 start_mod = Some(new_mod);
-                // Make sure our write happens sufficiently after to get a different system time
-                thread::sleep(Duration::from_millis(100));
+                // Make sure our write happens sufficiently after to get a notify
+                // Like above, this is best-effort.
+                thread::sleep(Duration::from_secs(5));
                 {
                     let mut file = File::create(&input).unwrap();
                     writeln!(file, "New Text").unwrap();
@@ -971,17 +972,11 @@ fn v2_watch_succeeds() {
                 modified += 1;
             }
 
-            thread::sleep(Duration::from_secs(1));
+            thread::sleep(Duration::from_secs(5));
         }
     });
 
-    let mut start_send = Some(start_send);
-    let output = run_tectonic_until(&temppath, &["-X", "watch"], || {
-        if let Some(send) = start_send.take() {
-            send.send(()).unwrap();
-        }
-        thread.is_finished()
-    });
+    let output = run_tectonic_until(&temppath, &["-X", "watch"], || thread.is_finished());
     // TODO: Make timeout kill child in a way that terminates it gracefully, such as ctrl-c, not SIGKILL
     // success_or_panic(&output);
     let stdout = String::from_utf8_lossy(&output.stdout);
