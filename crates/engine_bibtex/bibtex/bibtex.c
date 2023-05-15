@@ -2228,14 +2228,14 @@ static void von_name_ends_and_last_name_starts_stuff(buf_pointer last_end, buf_p
     }
 }
 
-static pool_pointer skip_stuff_at_sp_brace_level_greater_than_one(pool_pointer sp_ptr, pool_pointer sp_end, pool_pointer sp_brace_level)
+static pool_pointer skip_stuff_at_sp_brace_level_greater_than_one(pool_pointer sp_ptr, pool_pointer sp_end, pool_pointer* sp_brace_level)
 {
-    while ((sp_brace_level > 1) && (sp_ptr < sp_end)) {
+    while ((*sp_brace_level > 1) && (sp_ptr < sp_end)) {
 
         if (bib_str_pool(sp_ptr) == 125 /*right_brace */ )
-            sp_brace_level = sp_brace_level - 1;
+            *sp_brace_level = *sp_brace_level - 1;
         else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ )
-            sp_brace_level = sp_brace_level + 1;
+            *sp_brace_level = *sp_brace_level + 1;
         sp_ptr = sp_ptr + 1;
     }
     return sp_ptr;
@@ -2374,7 +2374,7 @@ static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer f
                             end_of_group = true;
                         } else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
                             sp_brace_level = sp_brace_level + 1;
-                            sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr + 1, sp_end, sp_brace_level);
+                            sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr + 1, sp_end, &sp_brace_level);
                         } else
                             sp_ptr = sp_ptr + 1;
                     if ((end_of_group) && (to_be_written)) {  /*412: */
@@ -2394,7 +2394,7 @@ static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer f
                                         sp_brace_level = sp_brace_level + 1;
                                         sp_ptr = sp_ptr + 1;
                                         sp_xptr1 = sp_ptr;
-                                        sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr, sp_end, sp_brace_level);
+                                        sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr, sp_end, &sp_brace_level);
                                         sp_xptr2 = sp_ptr - 1;
                                     }
                                     while (cur_token < last_token) {

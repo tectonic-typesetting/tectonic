@@ -41,8 +41,28 @@ pub(crate) fn reset() {
     LOG_FILE.with(|cell| cell.set(ptr::null_mut()));
 }
 
+fn init_stdout(out: &Cell<*mut OutputHandle>) {
+    let ptr = out.get();
+    if ptr.is_null() {
+        let stdout = unsafe { ttstub_output_open_stdout() };
+        if stdout.is_null() {
+            set_history(History::FatalError);
+        }
+        out.set(stdout);
+    }
+}
+
 fn with_stdout<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
-    STANDARD_OUTPUT.with(|out| f(unsafe { out.get().as_mut() }.unwrap()))
+    STANDARD_OUTPUT.with(|out| {
+        let ptr = out.get();
+        let ptr = if ptr.is_null() {
+            init_stdout(out);
+            out.get()
+        } else {
+            ptr
+        };
+        f(unsafe { ptr.as_mut() }.unwrap())
+    })
 }
 
 fn with_log<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
@@ -74,12 +94,8 @@ pub unsafe extern "C" fn standard_output() -> *mut OutputHandle {
         let ptr = output.get();
 
         if ptr.is_null() {
-            let stdout = ttstub_output_open_stdout();
-            if stdout.is_null() {
-                set_history(History::FatalError);
-            }
-            output.set(stdout);
-            stdout
+            init_stdout(output);
+            output.get()
         } else {
             ptr
         }
