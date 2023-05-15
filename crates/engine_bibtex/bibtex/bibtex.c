@@ -2228,7 +2228,7 @@ static void von_name_ends_and_last_name_starts_stuff(buf_pointer last_end, buf_p
     }
 }
 
-static pool_pointer skip_stuff_at_sp_brace_level_greater_than_one(pool_pointer sp_ptr, pool_pointer sp_end, pool_pointer* sp_brace_level)
+static pool_pointer skip_stuff_at_sp_brace_level_greater_than_one(pool_pointer sp_ptr, pool_pointer sp_end, int32_t* sp_brace_level)
 {
     while ((*sp_brace_level > 1) && (sp_ptr < sp_end)) {
 
@@ -2282,143 +2282,170 @@ static bool enough_text_chars(buf_pointer enough_chars)
 static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer first_end, buf_pointer last_end, buf_pointer von_start, buf_pointer von_end,
                                           buf_pointer* name_bf_ptr, buf_pointer* name_bf_xptr, buf_pointer jr_end)
 {
-    pool_pointer sp_ptr, sp_end, sp_xptr1;
-    {
-        bib_set_buf_offset(BUF_TY_EX, 1, 0);
-        int32_t sp_brace_level = 0;
-        sp_ptr = bib_str_start(pop_lit1);
-        sp_end = bib_str_start(pop_lit1 + 1);
-        while (sp_ptr < sp_end)
-            if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
-                sp_brace_level = sp_brace_level + 1;
-                sp_ptr = sp_ptr + 1;
-                {
-                    sp_xptr1 = sp_ptr;
-                    bool alpha_found = false;
-                    bool double_letter = false;
-                    bool end_of_group = false;
-                    bool to_be_written = true;
-                    while ((!end_of_group) && (sp_ptr < sp_end))
-                        if (LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) {
-                            sp_ptr = sp_ptr + 1;
+    pool_pointer sp_xptr1 = 0;
+    bib_set_buf_offset(BUF_TY_EX, 1, 0);
+    int32_t sp_brace_level = 0;
+    pool_pointer sp_ptr = bib_str_start(pop_lit1);
+    pool_pointer sp_end = bib_str_start(pop_lit1 + 1);
+    while (sp_ptr < sp_end)
+        if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
+            sp_brace_level = sp_brace_level + 1;
+            sp_ptr = sp_ptr + 1;
+            sp_xptr1 = sp_ptr;
+            bool alpha_found = false;
+            bool double_letter = false;
+            bool end_of_group = false;
+            bool to_be_written = true;
+            while ((!end_of_group) && (sp_ptr < sp_end))
+                if (LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) {
+                    sp_ptr = sp_ptr + 1;
+                    if (alpha_found) {
+                        brace_lvl_one_letters_complaint();
+                        to_be_written = false;
+                    } else {
+
+                        switch ((bib_str_pool(sp_ptr - 1))) {
+                        case 102:
+                        case 70:
                             {
-                                if (alpha_found) {
-                                    brace_lvl_one_letters_complaint();
+                                cur_token = first_start;
+                                last_token = first_end;
+                                if (cur_token == last_token)
                                     to_be_written = false;
-                                } else {
-
-                                    switch ((bib_str_pool(sp_ptr - 1))) {
-                                    case 102:
-                                    case 70:
-                                        {
-                                            cur_token = first_start;
-                                            last_token = first_end;
-                                            if (cur_token == last_token)
-                                                to_be_written = false;
-                                            if (((bib_str_pool(sp_ptr) == 'f' )
-                                                 || (bib_str_pool(sp_ptr) == 'F' )))
-                                                double_letter = true;
-                                        }
-                                        break;
-                                    case 118:
-                                    case 86:
-                                        {
-                                            cur_token = von_start;
-                                            last_token = von_end;
-                                            if (cur_token == last_token)
-                                                to_be_written = false;
-                                            if (((bib_str_pool(sp_ptr) == 'v' )
-                                                 || (bib_str_pool(sp_ptr) == 'V' )))
-                                                double_letter = true;
-                                        }
-                                        break;
-                                    case 108:
-                                    case 76:
-                                        {
-                                            cur_token = von_end;
-                                            last_token = last_end;
-                                            if (cur_token == last_token)
-                                                to_be_written = false;
-                                            if (((bib_str_pool(sp_ptr) == 'l' )
-                                                 || (bib_str_pool(sp_ptr) == 'L' )))
-                                                double_letter = true;
-                                        }
-                                        break;
-                                    case 106:
-                                    case 74:
-                                        {
-                                            cur_token = last_end;
-                                            last_token = jr_end;
-                                            if (cur_token == last_token)
-                                                to_be_written = false;
-                                            if (((bib_str_pool(sp_ptr) == 'j' )
-                                                 || (bib_str_pool(sp_ptr) == 'J' )))
-                                                double_letter = true;
-                                        }
-                                        break;
-                                    default:
-                                        {
-                                            brace_lvl_one_letters_complaint();
-                                            to_be_written = false;
-                                        }
-                                        break;
-                                    }
-                                    if (double_letter)
-                                        sp_ptr = sp_ptr + 1;
-                                }
-                                alpha_found = true;
+                                if (((bib_str_pool(sp_ptr) == 'f' )
+                                     || (bib_str_pool(sp_ptr) == 'F' )))
+                                    double_letter = true;
                             }
-                        } else if (bib_str_pool(sp_ptr) == 125 /*right_brace */ ) {
-                            sp_brace_level = sp_brace_level - 1;
+                            break;
+                        case 118:
+                        case 86:
+                            {
+                                cur_token = von_start;
+                                last_token = von_end;
+                                if (cur_token == last_token)
+                                    to_be_written = false;
+                                if (((bib_str_pool(sp_ptr) == 'v' )
+                                     || (bib_str_pool(sp_ptr) == 'V' )))
+                                    double_letter = true;
+                            }
+                            break;
+                        case 108:
+                        case 76:
+                            {
+                                cur_token = von_end;
+                                last_token = last_end;
+                                if (cur_token == last_token)
+                                    to_be_written = false;
+                                if (((bib_str_pool(sp_ptr) == 'l' )
+                                     || (bib_str_pool(sp_ptr) == 'L' )))
+                                    double_letter = true;
+                            }
+                            break;
+                        case 106:
+                        case 74:
+                            {
+                                cur_token = last_end;
+                                last_token = jr_end;
+                                if (cur_token == last_token)
+                                    to_be_written = false;
+                                if (((bib_str_pool(sp_ptr) == 'j' )
+                                     || (bib_str_pool(sp_ptr) == 'J' )))
+                                    double_letter = true;
+                            }
+                            break;
+                        default:
+                            {
+                                brace_lvl_one_letters_complaint();
+                                to_be_written = false;
+                            }
+                            break;
+                        }
+                        if (double_letter)
                             sp_ptr = sp_ptr + 1;
-                            end_of_group = true;
-                        } else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
-                            sp_brace_level = sp_brace_level + 1;
-                            sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr + 1, sp_end, &sp_brace_level);
-                        } else
-                            sp_ptr = sp_ptr + 1;
-                    if ((end_of_group) && (to_be_written)) {  /*412: */
-                        ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
-                        sp_ptr = sp_xptr1;
-                        sp_brace_level = 1;
-                        while (sp_brace_level > 0)
-                            if ((LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) && (sp_brace_level == 1)) {
+                    }
+                    alpha_found = true;
+                } else if (bib_str_pool(sp_ptr) == 125 /*right_brace */ ) {
+                    sp_brace_level = sp_brace_level - 1;
+                    sp_ptr = sp_ptr + 1;
+                    end_of_group = true;
+                } else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
+                    sp_brace_level = sp_brace_level + 1;
+                    sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr + 1, sp_end, &sp_brace_level);
+                } else
+                    sp_ptr = sp_ptr + 1;
+            if ((end_of_group) && (to_be_written)) {  /*412: */
+                ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
+                sp_ptr = sp_xptr1;
+                sp_brace_level = 1;
+                while (sp_brace_level > 0)
+                    if ((LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) && (sp_brace_level == 1)) {
+                        sp_ptr = sp_ptr + 1;
+                        {
+                            if (double_letter)
                                 sp_ptr = sp_ptr + 1;
-                                {
-                                    if (double_letter)
-                                        sp_ptr = sp_ptr + 1;
-                                    bool use_default = true;
-                                    pool_pointer sp_xptr2 = sp_ptr;
-                                    if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
-                                        use_default = false;
-                                        sp_brace_level = sp_brace_level + 1;
-                                        sp_ptr = sp_ptr + 1;
-                                        sp_xptr1 = sp_ptr;
-                                        sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr, sp_end, &sp_brace_level);
-                                        sp_xptr2 = sp_ptr - 1;
+                            bool use_default = true;
+                            pool_pointer sp_xptr2 = sp_ptr;
+                            if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
+                                use_default = false;
+                                sp_brace_level = sp_brace_level + 1;
+                                sp_ptr = sp_ptr + 1;
+                                sp_xptr1 = sp_ptr;
+                                sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(sp_ptr, sp_end, &sp_brace_level);
+                                sp_xptr2 = sp_ptr - 1;
+                            }
+                            while (cur_token < last_token) {
+
+                                if (double_letter) {  /*415: */
+                                    *name_bf_ptr = name_tok[cur_token];
+                                    *name_bf_xptr = name_tok[cur_token + 1];
+                                    if (ex_buf_length + (*name_bf_xptr - *name_bf_ptr) > bib_buf_size())
+                                        buffer_overflow();
+                                    while (*name_bf_ptr < *name_bf_xptr) {
+
+                                        {
+                                            bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_buf_at(BUF_TY_SV, *name_bf_ptr);
+                                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                        }
+                                        *name_bf_ptr = *name_bf_ptr + 1;
                                     }
-                                    while (cur_token < last_token) {
+                                } else {        /*416: */
 
-                                        if (double_letter) {  /*415: */
-                                            *name_bf_ptr = name_tok[cur_token];
-                                            *name_bf_xptr = name_tok[cur_token + 1];
-                                            if (ex_buf_length + (*name_bf_xptr - *name_bf_ptr) > bib_buf_size())
-                                                buffer_overflow();
-                                            while (*name_bf_ptr < *name_bf_xptr) {
+                                    *name_bf_ptr = name_tok[cur_token];
+                                    *name_bf_xptr = name_tok[cur_token + 1];
+                                    while (*name_bf_ptr < *name_bf_xptr) {
 
+                                        if (LEX_CLASS[bib_buf_at(BUF_TY_SV, *name_bf_ptr)] == LEX_CLASS_ALPHA ) {
+                                            {
+                                                if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                                    buffer_overflow();
                                                 {
                                                     bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_buf_at(BUF_TY_SV, *name_bf_ptr);
                                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                                 }
-                                                *name_bf_ptr = *name_bf_ptr + 1;
                                             }
-                                        } else {        /*416: */
+                                            goto loop_exit;
+                                        } else if ((*name_bf_ptr + 1 < *name_bf_xptr)
+                                                && (bib_buf_at(BUF_TY_SV, *name_bf_ptr) == 123 /*left_brace */ )) {
 
-                                            *name_bf_ptr = name_tok[cur_token];
-                                            *name_bf_xptr = name_tok[cur_token + 1];
-                                            while (*name_bf_ptr < *name_bf_xptr) {
+                                            if (bib_buf_at(BUF_TY_SV, *name_bf_ptr + 1) == 92 /*backslash */ ) {   /*417: */
+                                                if (bib_buf_offset(BUF_TY_EX, 1) + 2 > bib_buf_size())
+                                                    buffer_overflow();
+                                                {
+                                                    bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 123 /*left_brace */ ;
+                                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                                }
+                                                {
+                                                    bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 92 /*backslash */ ;
+                                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                                }
+                                                *name_bf_ptr = *name_bf_ptr + 2;
+                                                int32_t nm_brace_level = 1;
+                                                while ((*name_bf_ptr < *name_bf_xptr) && (nm_brace_level > 0)) {
 
-                                                if (LEX_CLASS[bib_buf_at(BUF_TY_SV, *name_bf_ptr)] == LEX_CLASS_ALPHA ) {
+                                                    if (bib_buf_at(BUF_TY_SV, *name_bf_ptr) == 125 /*right_brace */ )
+                                                        nm_brace_level = nm_brace_level - 1;
+                                                    else if (bib_buf_at(BUF_TY_SV, *name_bf_ptr) == 123 /*left_brace */ )
+                                                        nm_brace_level = nm_brace_level + 1;
                                                     {
                                                         if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
                                                             buffer_overflow();
@@ -2427,171 +2454,133 @@ static void figure_out_the_formatted_name(buf_pointer first_start, buf_pointer f
                                                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                                         }
                                                     }
-                                                    goto loop_exit;
-                                                } else if ((*name_bf_ptr + 1 < *name_bf_xptr)
-                                                        && (bib_buf_at(BUF_TY_SV, *name_bf_ptr) == 123 /*left_brace */ )) {
-
-                                                    if (bib_buf_at(BUF_TY_SV, *name_bf_ptr + 1) == 92 /*backslash */ ) {   /*417: */
-                                                        if (bib_buf_offset(BUF_TY_EX, 1) + 2 > bib_buf_size())
-                                                            buffer_overflow();
-                                                        {
-                                                            bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 123 /*left_brace */ ;
-                                                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                        }
-                                                        {
-                                                            bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 92 /*backslash */ ;
-                                                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                        }
-                                                        *name_bf_ptr = *name_bf_ptr + 2;
-                                                        int32_t nm_brace_level = 1;
-                                                        while ((*name_bf_ptr < *name_bf_xptr) && (nm_brace_level > 0)) {
-
-                                                            if (bib_buf_at(BUF_TY_SV, *name_bf_ptr) == 125 /*right_brace */ )
-                                                                nm_brace_level = nm_brace_level - 1;
-                                                            else if (bib_buf_at(BUF_TY_SV, *name_bf_ptr) == 123 /*left_brace */ )
-                                                                nm_brace_level = nm_brace_level + 1;
-                                                            {
-                                                                if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                                                    buffer_overflow();
-                                                                {
-                                                                    bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_buf_at(BUF_TY_SV, *name_bf_ptr);
-                                                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                                }
-                                                            }
-                                                            *name_bf_ptr = *name_bf_ptr + 1;
-                                                        }
-                                                        goto loop_exit;
-                                                    }
+                                                    *name_bf_ptr = *name_bf_ptr + 1;
                                                 }
-                                                *name_bf_ptr = *name_bf_ptr + 1;
-                                            }
-                                        loop_exit:
-                                            ;
-                                        }
-                                        cur_token = cur_token + 1;
-                                        if (cur_token < last_token) { /*418: */
-                                            if (use_default) {
-                                                if (!double_letter) {
-                                                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                                        buffer_overflow();
-                                                    {
-                                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 46 /*period */ ;
-                                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                    }
-                                                }
-                                                if (LEX_CLASS[name_sep_char[cur_token]] == LEX_CLASS_SEP ) {
-                                                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                                        buffer_overflow();
-                                                    {
-                                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = name_sep_char[cur_token];
-                                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                    }
-                                                } else
-                                                    if (((cur_token == last_token - 1)
-                                                         || (!enough_text_chars(3 /*long_token */ )))) {
-                                                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                                        buffer_overflow();
-                                                    {
-                                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 126 /*tie */ ;
-                                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                    }
-                                                } else {
-
-                                                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                                        buffer_overflow();
-                                                    {
-                                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 32 /*space */ ;
-                                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                    }
-                                                }
-                                            } else {
-
-                                                if (ex_buf_length + (sp_xptr2 - sp_xptr1) > bib_buf_size())
-                                                    buffer_overflow();
-                                                sp_ptr = sp_xptr1;
-                                                while (sp_ptr < sp_xptr2) {
-
-                                                    {
-                                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(sp_ptr);
-                                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                                    }
-                                                    sp_ptr = sp_ptr + 1;
-                                                }
+                                                goto loop_exit;
                                             }
                                         }
+                                        *name_bf_ptr = *name_bf_ptr + 1;
                                     }
-                                    if (!use_default)
-                                        sp_ptr = sp_xptr2 + 1;
+                                loop_exit:
+                                    ;
                                 }
-                            } else if (bib_str_pool(sp_ptr) == 125 /*right_brace */ ) {
-                                sp_brace_level = sp_brace_level - 1;
-                                sp_ptr = sp_ptr + 1;
-                                if (sp_brace_level > 0) {
-                                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                        buffer_overflow();
-                                    {
-                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 125 /*right_brace */ ;
-                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                    }
-                                }
-                            } else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
-                                sp_brace_level = sp_brace_level + 1;
-                                sp_ptr = sp_ptr + 1;
-                                {
-                                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                        buffer_overflow();
-                                    {
-                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 123 /*left_brace */ ;
-                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                    }
-                                }
-                            } else {
+                                cur_token = cur_token + 1;
+                                if (cur_token < last_token) { /*418: */
+                                    if (use_default) {
+                                        if (!double_letter) {
+                                            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                                buffer_overflow();
+                                            {
+                                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 46 /*period */ ;
+                                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                            }
+                                        }
+                                        if (LEX_CLASS[name_sep_char[cur_token]] == LEX_CLASS_SEP ) {
+                                            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                                buffer_overflow();
+                                            {
+                                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = name_sep_char[cur_token];
+                                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                            }
+                                        } else
+                                            if (((cur_token == last_token - 1)
+                                                 || (!enough_text_chars(3 /*long_token */ )))) {
+                                            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                                buffer_overflow();
+                                            {
+                                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 126 /*tie */ ;
+                                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                            }
+                                        } else {
 
-                                {
-                                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                                        buffer_overflow();
-                                    {
-                                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(sp_ptr);
-                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                                buffer_overflow();
+                                            {
+                                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 32 /*space */ ;
+                                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                            }
+                                        }
+                                    } else {
+
+                                        if (ex_buf_length + (sp_xptr2 - sp_xptr1) > bib_buf_size())
+                                            buffer_overflow();
+                                        sp_ptr = sp_xptr1;
+                                        while (sp_ptr < sp_xptr2) {
+
+                                            {
+                                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(sp_ptr);
+                                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                                            }
+                                            sp_ptr = sp_ptr + 1;
+                                        }
                                     }
                                 }
-                                sp_ptr = sp_ptr + 1;
                             }
-                        if (bib_buf_offset(BUF_TY_EX, 1) > 0) {
-
-                            if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] == 126 /*tie */ ) {    /*420: */
-                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
-                                if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] == 126 /*tie */ ) ;
-                                else if (!enough_text_chars(3 /*long_name */ ))
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                else {
-
-                                    bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 32 /*space */ ;
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                }
+                            if (!use_default)
+                                sp_ptr = sp_xptr2 + 1;
+                        }
+                    } else if (bib_str_pool(sp_ptr) == 125 /*right_brace */ ) {
+                        sp_brace_level = sp_brace_level - 1;
+                        sp_ptr = sp_ptr + 1;
+                        if (sp_brace_level > 0) {
+                            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                buffer_overflow();
+                            {
+                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 125 /*right_brace */ ;
+                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                             }
+                        }
+                    } else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ ) {
+                        sp_brace_level = sp_brace_level + 1;
+                        sp_ptr = sp_ptr + 1;
+                        {
+                            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                buffer_overflow();
+                            {
+                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 123 /*left_brace */ ;
+                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                            }
+                        }
+                    } else {
+
+                        {
+                            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                                buffer_overflow();
+                            {
+                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(sp_ptr);
+                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                            }
+                        }
+                        sp_ptr = sp_ptr + 1;
+                    }
+                if (bib_buf_offset(BUF_TY_EX, 1) > 0) {
+
+                    if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] == 126 /*tie */ ) {    /*420: */
+                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
+                        if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] == 126 /*tie */ ) ;
+                        else if (!enough_text_chars(3 /*long_name */ ))
+                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+                        else {
+
+                            bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = 32 /*space */ ;
+                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                         }
                     }
                 }
-            } else if (bib_str_pool(sp_ptr) == 125 /*right_brace */ ) {
-                braces_unbalanced_complaint(pop_lit1);
-                sp_ptr = sp_ptr + 1;
-            } else {
-
-                {
-                    if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
-                        buffer_overflow();
-                    {
-                        bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(sp_ptr);
-                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                    }
-                }
-                sp_ptr = sp_ptr + 1;
             }
-        if (sp_brace_level > 0)
+        } else if (bib_str_pool(sp_ptr) == 125 /*right_brace */ ) {
             braces_unbalanced_complaint(pop_lit1);
-        ex_buf_length = bib_buf_offset(BUF_TY_EX, 1);
-    }
+            sp_ptr = sp_ptr + 1;
+        } else {
+            if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
+                buffer_overflow();
+            bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(sp_ptr);
+            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+            sp_ptr = sp_ptr + 1;
+        }
+    if (sp_brace_level > 0)
+        braces_unbalanced_complaint(pop_lit1);
+    ex_buf_length = bib_buf_offset(BUF_TY_EX, 1);
 }
 
 static void push_lit_stk(int32_t push_lt, stk_type push_type)
@@ -3531,7 +3520,7 @@ static void x_format_name(void)
                 }
             }
         }
-        buf_pointer num_tokens = 0, comma1, comma2, num_commas = 0, name_bf_ptr = 0;
+        buf_pointer num_tokens = 0, comma1 = 0, comma2 = 0, num_commas = 0, name_bf_ptr = 0;
         {
             {
                 while (bib_buf_offset(BUF_TY_EX, 1) > ex_buf_xptr)
@@ -3649,7 +3638,7 @@ static void x_format_name(void)
                 }
             name_tok[num_tokens] = name_bf_ptr;
         }
-        buf_pointer first_start, first_end, last_end, von_start, von_end, jr_end, name_bf_xptr;
+        buf_pointer first_start = 0, first_end = 0, last_end = 0, von_start = 0, von_end = 0, jr_end = 0, name_bf_xptr = 0;
         {
             if (num_commas == 0) {
                 first_start = 0;
