@@ -92,6 +92,7 @@ typedef struct {
   int32_t lit_stk_size;
   int32_t lit_stk_ptr;
   bool mess_with_entries;
+  StrNumber bib_str_ptr;
 } ExecCtx;
 
 typedef uintptr_t PoolPointer;
@@ -172,6 +173,10 @@ bool bst_ln_num_print(const BstCtx *bst_ctx);
 
 bool print_bst_name(const BstCtx *bst_ctx);
 
+void push_lit_stk(ExecCtx *ctx, ExecVal val);
+
+bool pop_lit_stk(ExecCtx *ctx, ExecVal *out);
+
 History get_history(void);
 
 void set_history(History hist);
@@ -230,9 +235,9 @@ ASCIICode bib_str_pool(PoolPointer idx);
 
 void bib_set_str_pool(PoolPointer idx, ASCIICode code);
 
-PoolPointer bib_str_ptr(void);
+StrNumber bib_str_ptr(void);
 
-void bib_set_str_ptr(PoolPointer ptr);
+void bib_set_str_ptr(StrNumber ptr);
 
 PoolPointer bib_str_start(StrNumber s);
 
@@ -241,6 +246,10 @@ void bib_set_str_start(StrNumber s, PoolPointer ptr);
 uintptr_t bib_pool_size(void);
 
 uintptr_t bib_max_strings(void);
+
+PoolPointer bib_pool_ptr(void);
+
+void bib_set_pool_ptr(PoolPointer ptr);
 
 bool scan1(ASCIICode char1, BufPointer last);
 

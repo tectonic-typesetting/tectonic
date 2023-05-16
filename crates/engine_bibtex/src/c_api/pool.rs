@@ -10,7 +10,8 @@ pub struct StringPool {
     // Stores string starting locations in the string pool
     // length of string `s` is offsets[s + 1] - offsets[s]
     offsets: &'static mut [usize],
-    ptr: usize,
+    pool_ptr: PoolPointer,
+    str_ptr: StrNumber,
 }
 
 impl StringPool {
@@ -18,12 +19,13 @@ impl StringPool {
         StringPool {
             strings: unsafe { xcalloc_zeroed(POOL_SIZE, mem::size_of::<ASCIICode>()) },
             offsets: unsafe { xcalloc_zeroed(MAX_STRINGS, mem::size_of::<usize>()) },
-            ptr: 0,
+            pool_ptr: 0,
+            str_ptr: 0,
         }
     }
 
     pub fn try_get_str(&self, s: usize) -> Option<&[u8]> {
-        if s >= self.ptr + 3 || s >= MAX_STRINGS {
+        if s >= self.str_ptr as usize + 3 || s >= MAX_STRINGS {
             None
         } else {
             Some(&self.strings[self.offsets[s]..self.offsets[s + 1]])
@@ -98,13 +100,13 @@ pub extern "C" fn bib_set_str_pool(idx: PoolPointer, code: ASCIICode) {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_str_ptr() -> PoolPointer {
-    with_pool(|pool| pool.ptr)
+pub extern "C" fn bib_str_ptr() -> StrNumber {
+    with_pool(|pool| pool.str_ptr)
 }
 
 #[no_mangle]
-pub extern "C" fn bib_set_str_ptr(ptr: PoolPointer) {
-    with_pool_mut(|pool| pool.ptr = ptr);
+pub extern "C" fn bib_set_str_ptr(ptr: StrNumber) {
+    with_pool_mut(|pool| pool.str_ptr = ptr);
 }
 
 #[no_mangle]
@@ -125,4 +127,14 @@ pub extern "C" fn bib_pool_size() -> usize {
 #[no_mangle]
 pub extern "C" fn bib_max_strings() -> usize {
     MAX_STRINGS
+}
+
+#[no_mangle]
+pub extern "C" fn bib_pool_ptr() -> PoolPointer {
+    with_pool(|pool| pool.pool_ptr)
+}
+
+#[no_mangle]
+pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
+    with_pool_mut(|pool| pool.pool_ptr = ptr)
 }

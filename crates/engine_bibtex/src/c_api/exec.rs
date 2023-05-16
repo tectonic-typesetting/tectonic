@@ -1,8 +1,12 @@
+use std::{mem, slice};
 use crate::c_api::cite::with_cites;
 use crate::c_api::history::mark_error;
 use crate::c_api::log::{print_a_pool_str, print_confusion, write_logs};
 use crate::c_api::peekable::PeekableInput;
-use crate::c_api::StrNumber;
+use crate::c_api::{StrNumber, xcalloc_zeroed};
+use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start};
+
+const LIT_STK_SIZE: usize = 100;
 
 #[repr(C)]
 pub struct BstCtx {
@@ -23,6 +27,7 @@ pub enum StkType {
     Illegal = 4,
 }
 
+#[derive(Copy, Clone, PartialEq)]
 #[repr(C)]
 pub struct ExecVal {
     typ: StkType,
@@ -40,6 +45,16 @@ pub struct ExecCtx {
     lit_stk_ptr: i32,
 
     mess_with_entries: bool,
+    bib_str_ptr: StrNumber,
+}
+
+impl ExecCtx {
+    fn grow_stack(&mut self) {
+        let new_stack = unsafe { xcalloc_zeroed::<ExecVal>(self.lit_stk_size as usize + LIT_STK_SIZE, mem::size_of::<ExecVal>()) };
+        new_stack.copy_from_slice(unsafe { slice::from_raw_parts(self.lit_stack.cast(), self.lit_stk_size as usize) });
+        unsafe { libc::free((self.lit_stack as *mut ExecVal).cast()) };
+        self.lit_stack = (new_stack as *mut [_]).cast();
+    }
 }
 
 #[no_mangle]
@@ -183,6 +198,48 @@ pub extern "C" fn print_bst_name(bst_ctx: *const BstCtx) -> bool {
         return false;
     }
     write_logs(".bst\n");
+    true
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
+    let ctx = &mut *ctx;
+    *ctx.lit_stack.offset(ctx.lit_stk_ptr as isize) = val;
+
+    if ctx.lit_stk_ptr >= ctx.lit_stk_size {
+        ctx.grow_stack();
+    }
+
+    ctx.lit_stk_ptr += 1;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> bool {
+    let ctx = &mut *ctx;
+
+    if ctx.lit_stk_ptr == 0 {
+        write_logs("You can't pop an empty literal stack");
+        if !bst_ex_warn_print(ctx) {
+            return false;
+        }
+        *out = ExecVal { lit: 0, typ: StkType::Illegal };
+    } else {
+        ctx.lit_stk_ptr -= 1;
+        let pop = ctx.lit_stack.offset(ctx.lit_stk_ptr as isize).read();
+        if pop.typ == StkType::String {
+            if pop.lit >= ctx.bib_str_ptr {
+                if pop.lit != (bib_str_ptr() - 1) as i32 {
+                    write_logs("Nontop top of string stack");
+                    print_confusion();
+                    return false;
+                }
+                bib_set_str_ptr(bib_str_ptr() - 1);
+                bib_set_pool_ptr(bib_str_start(bib_str_ptr() as StrNumber))
+            }
+        }
+        *out = pop;
+    }
+
     true
 }
 
