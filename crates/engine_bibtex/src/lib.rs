@@ -112,13 +112,13 @@ pub mod c_api {
 
     mod buffer;
     mod char_info;
+    mod cite;
+    pub mod exec;
     pub mod history;
     mod log;
     mod peekable;
     mod pool;
     mod scan;
-    pub mod exec;
-    mod cite;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,

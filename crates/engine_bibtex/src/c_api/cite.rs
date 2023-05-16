@@ -1,6 +1,6 @@
-use std::mem;
-use crate::c_api::{CiteNumber, HashPointer2, StrNumber, xcalloc_zeroed};
+use crate::c_api::{xcalloc_zeroed, CiteNumber, HashPointer2, StrNumber};
 use std::cell::RefCell;
+use std::mem;
 
 const MAX_CITES: usize = 750;
 
@@ -24,20 +24,32 @@ impl CiteInfo {
     }
 
     fn grow(&mut self) {
-        let new_cites =
-            unsafe { xcalloc_zeroed(self.cite_list.len() + MAX_CITES, mem::size_of::<StrNumber>()) };
+        let new_cites = unsafe {
+            xcalloc_zeroed(
+                self.cite_list.len() + MAX_CITES,
+                mem::size_of::<StrNumber>(),
+            )
+        };
         new_cites.copy_from_slice(self.cite_list);
         unsafe { libc::free((self.cite_list as *mut [_]).cast()) };
         self.cite_list = new_cites;
 
-        let new_cites =
-            unsafe { xcalloc_zeroed(self.cite_info.len() + MAX_CITES, mem::size_of::<StrNumber>()) };
+        let new_cites = unsafe {
+            xcalloc_zeroed(
+                self.cite_info.len() + MAX_CITES,
+                mem::size_of::<StrNumber>(),
+            )
+        };
         new_cites.copy_from_slice(self.cite_info);
         unsafe { libc::free((self.cite_info as *mut [_]).cast()) };
         self.cite_info = new_cites;
 
-        let new_cites =
-            unsafe { xcalloc_zeroed(self.type_list.len() + MAX_CITES, mem::size_of::<HashPointer2>()) };
+        let new_cites = unsafe {
+            xcalloc_zeroed(
+                self.type_list.len() + MAX_CITES,
+                mem::size_of::<HashPointer2>(),
+            )
+        };
         new_cites.copy_from_slice(self.type_list);
         unsafe { libc::free((self.type_list as *mut [_]).cast()) };
         self.type_list = new_cites;
@@ -107,10 +119,7 @@ pub fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn quick_sort(
-    left_end: CiteNumber,
-    right_end: CiteNumber,
-) {
+pub extern "C" fn quick_sort(left_end: CiteNumber, right_end: CiteNumber) {
     with_cites_mut(|cites| cites.cite_info[left_end as usize..right_end as usize].sort())
 }
 

@@ -116,7 +116,12 @@ pub extern "C" fn print_stk_lit(hash_text: *const StrNumber, val: ExecVal) -> bo
 }
 
 #[no_mangle]
-pub extern "C" fn print_wrong_stk_lit(hash_text: *const StrNumber, ctx: *mut ExecCtx, val: ExecVal, typ2: StkType) -> bool {
+pub extern "C" fn print_wrong_stk_lit(
+    hash_text: *const StrNumber,
+    ctx: *mut ExecCtx,
+    val: ExecVal,
+    typ2: StkType,
+) -> bool {
     if val.typ != StkType::Illegal {
         if !print_stk_lit(hash_text, val) {
             return false;
@@ -140,7 +145,7 @@ pub extern "C" fn print_wrong_stk_lit(hash_text: *const StrNumber, ctx: *mut Exe
             }
         };
         if !res {
-            return false
+            return false;
         }
         bst_ex_warn_print(ctx)
     } else {
@@ -152,9 +157,7 @@ pub extern "C" fn print_wrong_stk_lit(hash_text: *const StrNumber, ctx: *mut Exe
 pub extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
     if unsafe { (*ctx).mess_with_entries } {
         write_logs(" for entry ");
-        let res = with_cites(|ci| {
-            print_a_pool_str(ci.get_cite(ci.ptr() as usize))
-        });
+        let res = with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr() as usize)));
         if !res {
             return false;
         }
@@ -168,7 +171,9 @@ pub extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
 
 #[no_mangle]
 pub extern "C" fn bst_ln_num_print(bst_ctx: *const BstCtx) -> bool {
-    write_logs(&format!("--line {} of file ", unsafe { (*bst_ctx).bst_line_num }));
+    write_logs(&format!("--line {} of file ", unsafe {
+        (*bst_ctx).bst_line_num
+    }));
     print_bst_name(bst_ctx)
 }
 
