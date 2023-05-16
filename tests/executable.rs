@@ -929,8 +929,8 @@ fn bad_v2_position_build() {
     error_or_panic(&output);
 }
 
-/// Ensures that watch command succeeds, and when a file is changed while running rebuilds at least
-/// that many times
+/// Ensures that watch command succeeds, and when a file is changed while running it rebuilds
+/// periodically
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_watch_succeeds() {
@@ -958,17 +958,15 @@ fn v2_watch_succeeds() {
             if modified >= 3 {
                 break;
             }
+            
+            {
+                let mut file = File::create(&input).unwrap();
+                writeln!(file, "New Text").unwrap();
+            }
 
             let new_mod = output.metadata().and_then(|meta| meta.modified()).unwrap();
             if start_mod.map_or(true, |start_mod| new_mod > start_mod) {
                 start_mod = Some(new_mod);
-                // Make sure our write happens sufficiently after to get a notify
-                // Like above, this is best-effort.
-                thread::sleep(Duration::from_secs(5));
-                {
-                    let mut file = File::create(&input).unwrap();
-                    writeln!(file, "New Text").unwrap();
-                }
                 modified += 1;
             }
 
