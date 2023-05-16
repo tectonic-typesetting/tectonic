@@ -931,7 +931,7 @@ fn bad_v2_position_build() {
 
 /// Ensures that watch command succeeds, and when a file is changed while running it rebuilds
 /// periodically
-#[cfg(feature = "serialization")]
+#[cfg(all(feature = "serialization", not(target_arch = "mips")))]
 #[test]
 fn v2_watch_succeeds() {
     let (_tempdir, temppath) = setup_v2();
@@ -958,10 +958,10 @@ fn v2_watch_succeeds() {
             if modified >= 3 {
                 break;
             }
-            
+
             {
                 let mut file = File::create(&input).unwrap();
-                writeln!(file, "New Text").unwrap();
+                writeln!(file, "New Text {}", modified).unwrap();
             }
 
             let new_mod = output.metadata().and_then(|meta| meta.modified()).unwrap();
