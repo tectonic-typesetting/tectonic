@@ -411,7 +411,7 @@ impl BridgeState {
         // Mark the input files as having been read, and we're done.
 
         for name in &read_files {
-            let mut summ = self.events.get_mut(name).unwrap();
+            let summ = self.events.get_mut(name).unwrap();
             summ.access_pattern = match summ.access_pattern {
                 AccessPattern::Written => AccessPattern::WrittenThenRead,
                 c => c, // identity mapping makes sense for remaining options
