@@ -42,6 +42,14 @@ typedef enum {
   SCAN_RES_WHITESPACE_ADJACENT = 3,
 } ScanRes;
 
+typedef enum {
+  STK_TYPE_INTEGER = 0,
+  STK_TYPE_STRING = 1,
+  STK_TYPE_FUNCTION = 2,
+  STK_TYPE_MISSING = 3,
+  STK_TYPE_ILLEGAL = 4,
+} StkType;
+
 typedef int32_t StrNumber;
 
 typedef uint8_t ASCIICode;
@@ -49,8 +57,6 @@ typedef uint8_t ASCIICode;
 typedef ASCIICode *BufType;
 
 typedef int32_t BufPointer;
-
-typedef int32_t CiteNumber;
 
 typedef struct {
   int min_crossrefs;
@@ -63,6 +69,32 @@ typedef struct {
 } PeekableInput;
 
 typedef uintptr_t PoolPointer;
+
+typedef struct {
+  StkType typ;
+  int32_t lit;
+} ExecVal;
+
+typedef struct {
+  PeekableInput *bst_file;
+  StrNumber bst_str;
+  int32_t bst_line_num;
+} BstCtx;
+
+typedef struct {
+  BstCtx *bst_ctx;
+  ExecVal pop1;
+  ExecVal pop2;
+  ExecVal pop3;
+  ExecVal *lit_stack;
+  int32_t lit_stk_size;
+  int32_t lit_stk_ptr;
+  bool mess_with_entries;
+} ExecCtx;
+
+typedef int32_t CiteNumber;
+
+typedef int32_t HashPointer2;
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,15 +113,6 @@ bool bib_str_eq_buf(StrNumber s, BufType buf, BufPointer bf_ptr, BufPointer len)
 void lower_case(BufType buf, BufPointer bf_ptr, BufPointer len);
 
 void upper_case(BufType buf, BufPointer bf_ptr, BufPointer len);
-
-/**
- * # Safety
- *
- * Passed pointer must point to a valid array that we have exclusive access to for the duration
- * of this call, that is at least as long as `right_end`, and initialized for the range
- * `ptr[left_end..right_end]`
- */
-void quick_sort(StrNumber *cite_info, CiteNumber left_end, CiteNumber right_end);
 
 void int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin, BufPointer *int_end);
 
@@ -198,6 +221,44 @@ ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3, BufPo
 bool scan_nonneg_integer(BufPointer last);
 
 bool scan_integer(int32_t *token_value, BufPointer last);
+
+bool print_lit(const StrNumber *hash_text, ExecVal val);
+
+bool print_stk_lit(const StrNumber *hash_text, ExecVal val);
+
+bool print_wrong_stk_lit(const StrNumber *hash_text, ExecCtx *ctx, ExecVal val, StkType typ2);
+
+bool bst_ex_warn_print(const ExecCtx *ctx);
+
+bool bst_ln_num_print(const BstCtx *bst_ctx);
+
+bool print_bst_name(const BstCtx *bst_ctx);
+
+void quick_sort(CiteNumber left_end, CiteNumber right_end);
+
+StrNumber cite_list(CiteNumber num);
+
+void set_cite_list(CiteNumber num, StrNumber str);
+
+CiteNumber cite_ptr(void);
+
+void set_cite_ptr(CiteNumber num);
+
+void check_cite_overflow(CiteNumber last_cite);
+
+uintptr_t max_cites(void);
+
+StrNumber cite_info(CiteNumber num);
+
+void set_cite_info(CiteNumber num, StrNumber info);
+
+HashPointer2 type_list(CiteNumber num);
+
+void set_type_list(CiteNumber num, HashPointer2 ty);
+
+bool entry_exists(CiteNumber num);
+
+void set_entry_exists(CiteNumber num, bool exists);
 
 #ifdef __cplusplus
 } // extern "C"

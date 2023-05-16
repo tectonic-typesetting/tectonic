@@ -38,6 +38,7 @@ impl<T: Copy + 'static, const N: usize> Buffer<T, N> {
         // TODO: xrealloc_zeroed
         let new_ptr = unsafe { xcalloc_zeroed(new_len, mem::size_of::<T>()) };
         new_ptr.copy_from_slice(self.ptr);
+        unsafe { libc::free((self.ptr as *mut [_]).cast()) };
         self.ptr = new_ptr;
     }
 }

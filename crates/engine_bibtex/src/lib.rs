@@ -117,7 +117,8 @@ pub mod c_api {
     mod peekable;
     mod pool;
     mod scan;
-    mod exec;
+    pub mod exec;
+    mod cite;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -159,6 +160,7 @@ pub mod c_api {
     type BufType = *mut ASCIICode;
     type BufPointer = i32;
     type PoolPointer = usize;
+    type HashPointer2 = i32;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -166,6 +168,7 @@ pub mod c_api {
         pool::reset();
         history::reset();
         buffer::reset();
+        cite::reset();
     }
 
     #[no_mangle]
@@ -189,25 +192,6 @@ pub mod c_api {
     pub unsafe extern "C" fn upper_case(buf: BufType, bf_ptr: BufPointer, len: BufPointer) {
         let buf = buf_to_slice_mut(buf, bf_ptr, len);
         buf.make_ascii_uppercase();
-    }
-
-    /// # Safety
-    ///
-    /// Passed pointer must point to a valid array that we have exclusive access to for the duration
-    /// of this call, that is at least as long as `right_end`, and initialized for the range
-    /// `ptr[left_end..right_end]`
-    #[no_mangle]
-    pub unsafe extern "C" fn quick_sort(
-        cite_info: *mut StrNumber,
-        left_end: CiteNumber,
-        right_end: CiteNumber,
-    ) {
-        let slice = slice::from_raw_parts_mut(
-            cite_info.add(left_end as usize),
-            (right_end - left_end) as usize,
-        );
-        // TODO: This may be wrong - see `less_than` on bibtex.c
-        slice.sort();
     }
 
     #[no_mangle]

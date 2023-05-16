@@ -40,6 +40,7 @@ impl StringPool {
         let new_strings =
             unsafe { xcalloc_zeroed(self.strings.len() + POOL_SIZE, mem::size_of::<ASCIICode>()) };
         new_strings.copy_from_slice(self.strings);
+        unsafe { libc::free((self.strings as *mut [_]).cast()) };
         self.strings = new_strings;
     }
 }
