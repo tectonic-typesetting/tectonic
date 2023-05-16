@@ -1,0 +1,9 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: expr.aux
+The style file: expr.bst
+"}" can't start a style-file command---line 5 of file expr.bst
+ : 
+ : }
+(Error may have been on previous line)
+(There was 1 error message)
