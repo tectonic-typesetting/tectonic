@@ -533,11 +533,12 @@ input_ln(peekable_input_t *peekable)
     // For side effects - consume the eoln we saw
     int eoln = peekable_getc(peekable);
 
-    // Handle \r\n newlines on Windows by trying to consume a \n after a \r, unget if it's not that exact pair
-    int next = peekable_getc(peekable);
-    printf("Next Char: %d\n", next);
-    if (!(eoln == '\r' && next == '\n')) {
-        peekable_ungetc(peekable, next);
+    if (eoln == '\r') {
+        // Handle \r\n newlines on Windows by trying to consume a \n after a \r, unget if it's not that exact pair
+        int next = peekable_getc(peekable);
+        if (next != '\n') {
+            peekable_ungetc(peekable, next);
+        } 
     }
 
     while (last > 0) {
