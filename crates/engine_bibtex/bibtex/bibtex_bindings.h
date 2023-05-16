@@ -62,18 +62,20 @@ typedef struct {
   int min_crossrefs;
 } BibtexConfig;
 
-typedef struct {
-  ttbc_input_handle_t *handle;
-  int peek_char;
-  bool saw_eof;
-} PeekableInput;
+typedef int32_t CiteNumber;
 
-typedef uintptr_t PoolPointer;
+typedef int32_t HashPointer2;
 
 typedef struct {
   StkType typ;
   int32_t lit;
 } ExecVal;
+
+typedef struct {
+  ttbc_input_handle_t *handle;
+  int peek_char;
+  bool saw_eof;
+} PeekableInput;
 
 typedef struct {
   PeekableInput *bst_file;
@@ -92,9 +94,7 @@ typedef struct {
   bool mess_with_entries;
 } ExecCtx;
 
-typedef int32_t CiteNumber;
-
-typedef int32_t HashPointer2;
+typedef uintptr_t PoolPointer;
 
 #ifdef __cplusplus
 extern "C" {
@@ -134,6 +134,44 @@ void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
 
 void buffer_overflow(void);
 
+void quick_sort(CiteNumber left_end, CiteNumber right_end);
+
+StrNumber cite_list(CiteNumber num);
+
+void set_cite_list(CiteNumber num, StrNumber str);
+
+CiteNumber cite_ptr(void);
+
+void set_cite_ptr(CiteNumber num);
+
+void check_cite_overflow(CiteNumber last_cite);
+
+uintptr_t max_cites(void);
+
+StrNumber cite_info(CiteNumber num);
+
+void set_cite_info(CiteNumber num, StrNumber info);
+
+HashPointer2 type_list(CiteNumber num);
+
+void set_type_list(CiteNumber num, HashPointer2 ty);
+
+bool entry_exists(CiteNumber num);
+
+void set_entry_exists(CiteNumber num, bool exists);
+
+bool print_lit(const StrNumber *hash_text, ExecVal val);
+
+bool print_stk_lit(const StrNumber *hash_text, ExecVal val);
+
+bool print_wrong_stk_lit(const StrNumber *hash_text, ExecCtx *ctx, ExecVal val, StkType typ2);
+
+bool bst_ex_warn_print(const ExecCtx *ctx);
+
+bool bst_ln_num_print(const BstCtx *bst_ctx);
+
+bool print_bst_name(const BstCtx *bst_ctx);
+
 History get_history(void);
 
 void set_history(History hist);
@@ -143,6 +181,8 @@ void mark_warning(void);
 void mark_error(void);
 
 void mark_fatal(void);
+
+uint32_t err_count(void);
 
 ttbc_output_handle_t *init_log_file(const char *file);
 
@@ -221,44 +261,6 @@ ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3, BufPo
 bool scan_nonneg_integer(BufPointer last);
 
 bool scan_integer(int32_t *token_value, BufPointer last);
-
-bool print_lit(const StrNumber *hash_text, ExecVal val);
-
-bool print_stk_lit(const StrNumber *hash_text, ExecVal val);
-
-bool print_wrong_stk_lit(const StrNumber *hash_text, ExecCtx *ctx, ExecVal val, StkType typ2);
-
-bool bst_ex_warn_print(const ExecCtx *ctx);
-
-bool bst_ln_num_print(const BstCtx *bst_ctx);
-
-bool print_bst_name(const BstCtx *bst_ctx);
-
-void quick_sort(CiteNumber left_end, CiteNumber right_end);
-
-StrNumber cite_list(CiteNumber num);
-
-void set_cite_list(CiteNumber num, StrNumber str);
-
-CiteNumber cite_ptr(void);
-
-void set_cite_ptr(CiteNumber num);
-
-void check_cite_overflow(CiteNumber last_cite);
-
-uintptr_t max_cites(void);
-
-StrNumber cite_info(CiteNumber num);
-
-void set_cite_info(CiteNumber num, StrNumber info);
-
-HashPointer2 type_list(CiteNumber num);
-
-void set_type_list(CiteNumber num, HashPointer2 ty);
-
-bool entry_exists(CiteNumber num);
-
-void set_entry_exists(CiteNumber num, bool exists);
 
 #ifdef __cplusplus
 } // extern "C"

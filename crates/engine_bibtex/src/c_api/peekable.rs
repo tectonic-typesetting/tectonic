@@ -133,7 +133,14 @@ pub unsafe extern "C" fn input_ln(last: *mut BufPointer, peekable: *mut Peekable
         }
     });
 
-    peekable.getc();
+    // For side effects - consume the eoln we saw
+    let eoln = peekable.getc();
+    if eoln == '\r' as libc::c_int {
+        let next = peekable.getc();
+        if next != '\n' as libc::c_int {
+            peekable.ungetc(next);
+        }
+    }
 
     // Trim whitespace
     with_buffers(|b| {

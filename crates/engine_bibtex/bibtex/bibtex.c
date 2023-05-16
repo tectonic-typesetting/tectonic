@@ -90,7 +90,6 @@ static int32_t hash_max;
 static int32_t end_of_def;
 static int32_t undefined;
 static int32_t bad;
-static int32_t err_count;
 static int32_t string_width;
 static ASCII_code *name_of_file;
 static int32_t name_length;
@@ -6446,16 +6445,16 @@ close_up_shop:
     case HISTORY_SPOTLESS:
         break;
     case HISTORY_WARNING_ISSUED:
-        if (err_count == 1)
+        if (err_count() == 1)
             puts_log("(There was 1 warning)\n");
         else
-            printf_log("(There were %ld warnings)\n", (long) err_count);
+            printf_log("(There were %ld warnings)\n", (long) err_count());
         break;
     case HISTORY_ERROR_ISSUED:
-        if (err_count == 1)
+        if (err_count() == 1)
             puts_log("(There was 1 error message)\n");
         else
-            printf_log("(There were %ld error messages)\n", (long) err_count);
+            printf_log("(There were %ld error messages)\n", (long) err_count());
         break;
     case HISTORY_FATAL_ERROR:
         puts_log("(That was a fatal error)\n");

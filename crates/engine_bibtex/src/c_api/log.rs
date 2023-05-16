@@ -1,5 +1,5 @@
 use crate::c_api::buffer::{with_buffers, BufTy};
-use crate::c_api::char_info::{LexClass, LEX_CLASS};
+use crate::c_api::char_info::LexClass;
 use crate::c_api::history::{mark_error, mark_fatal, set_history};
 use crate::c_api::pool::with_pool;
 use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, BufPointer, History, StrNumber};
@@ -165,7 +165,7 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
         let slice = &b.buffer(BufTy::Base)[0..offset2];
 
         for code in slice {
-            if LEX_CLASS[*code as usize] == LexClass::Whitespace {
+            if LexClass::of(*code) == LexClass::Whitespace {
                 write_logs(" ");
             } else {
                 write_logs(slice::from_ref(code))
@@ -175,11 +175,14 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
         let str = (0..offset2).map(|_| ' ').collect::<String>();
         write_logs(&str);
 
-        for code in &slice[last as usize..] {
-            if LEX_CLASS[*code as usize] == LexClass::Whitespace {
-                write_logs(" ");
-            } else {
-                write_logs(slice::from_ref(code));
+        if offset2 < last as usize {
+            let slice = &b.buffer(BufTy::Base)[offset2..last as usize];
+            for code in slice {
+                if LexClass::of(*code) == LexClass::Whitespace {
+                    write_logs(" ");
+                } else {
+                    write_logs(slice::from_ref(code));
+                }
             }
         }
 
@@ -187,7 +190,7 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
 
         if !slice
             .iter()
-            .any(|c| LEX_CLASS[*c as usize] != LexClass::Whitespace)
+            .any(|c| LexClass::of(*c) != LexClass::Whitespace)
         {
             write_logs("(Error may have been on previous line)\n");
         }

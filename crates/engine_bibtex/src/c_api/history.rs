@@ -21,6 +21,10 @@ pub(crate) fn reset() {
     ERR_COUNT.with(|cell| cell.set(0));
 }
 
+fn get_err() -> u32 {
+    ERR_COUNT.with(|e| e.get())
+}
+
 fn set_err(f: impl FnOnce(u32) -> u32) {
     ERR_COUNT.with(|e| e.set(f(e.get())))
 }
@@ -59,4 +63,9 @@ pub extern "C" fn mark_error() {
 #[no_mangle]
 pub extern "C" fn mark_fatal() {
     set_history(History::FatalError);
+}
+
+#[no_mangle]
+pub extern "C" fn err_count() -> u32 {
+    get_err()
 }

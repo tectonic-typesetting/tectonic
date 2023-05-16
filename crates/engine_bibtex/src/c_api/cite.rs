@@ -102,6 +102,15 @@ impl CiteInfo {
     }
 }
 
+impl Drop for CiteInfo {
+    fn drop(&mut self) {
+        unsafe { libc::free((self.cite_list as *mut [_]).cast()) };
+        unsafe { libc::free((self.cite_info as *mut [_]).cast()) };
+        unsafe { libc::free((self.type_list as *mut [_]).cast()) };
+        unsafe { libc::free((self.entry_exists as *mut [_]).cast()) };
+    }
+}
+
 thread_local! {
     pub static CITE_INFO: RefCell<CiteInfo> = RefCell::new(CiteInfo::new());
 }
