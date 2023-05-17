@@ -215,8 +215,6 @@ void print_a_token(void);
 
 void print_bad_input_line(void);
 
-void print_skipping_whatever_remains(void);
-
 bool print_a_pool_str(StrNumber s);
 
 void sam_wrong_file_name_print(NameAndLen file);
@@ -253,17 +251,45 @@ void eat_bst_print(void);
 
 void unknwn_function_class_confusion(void);
 
-void id_scanning_confusion(void);
-
 bool bst_id_print(ScanRes scan_result);
 
 void bst_left_brace_print(void);
 
 void bst_right_brace_print(void);
 
-bool bib_ln_num_print(void);
-
 bool bib_err_print(bool at_bib_command);
+
+bool bib_warn_print(void);
+
+bool eat_bib_print(bool at_bib_command);
+
+bool bib_one_of_two_print(ASCIICode char1, ASCIICode char2, bool at_bib_command);
+
+bool bib_equals_sign_print(bool at_bib_command);
+
+bool bib_unbalanced_braces_print(bool at_bib_command);
+
+void macro_warn_print(void);
+
+bool bib_id_print(ScanRes scan_res);
+
+void bib_cmd_confusion(void);
+
+void cite_key_disappeared_confusion(void);
+
+bool bad_cross_reference_print(StrNumber s);
+
+bool print_missing_entry(StrNumber s);
+
+bool bst_cant_mess_with_entries_print(const ExecCtx *ctx);
+
+void bst_1print_string_size_exceeded(void);
+
+bool bst_2print_string_size_exceeded(const ExecCtx *ctx);
+
+bool braces_unbalanced_complaint(const ExecCtx *ctx, StrNumber pop_lit_var);
+
+void case_conversion_confusion(void);
 
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 

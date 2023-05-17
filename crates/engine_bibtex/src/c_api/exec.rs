@@ -38,7 +38,7 @@ pub struct ExecVal {
 
 #[repr(C)]
 pub struct ExecCtx {
-    bst_ctx: *mut BstCtx,
+    pub bst_ctx: *mut BstCtx,
     pop1: ExecVal,
     pop2: ExecVal,
     pop3: ExecVal,
@@ -46,7 +46,7 @@ pub struct ExecCtx {
     lit_stk_size: i32,
     lit_stk_ptr: i32,
 
-    mess_with_entries: bool,
+    pub mess_with_entries: bool,
     bib_str_ptr: StrNumber,
 }
 

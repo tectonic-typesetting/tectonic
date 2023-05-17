@@ -2,7 +2,7 @@ use crate::c_api::buffer::{with_buffers, BufTy};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::history::{mark_error, mark_fatal, mark_warning, set_history};
 use crate::c_api::pool::with_pool;
-use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber, NameAndLen};
+use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber, NameAndLen, ASCIICode};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
@@ -10,7 +10,8 @@ use std::{ptr, slice};
 use tectonic_io_base::OutputHandle;
 use crate::c_api::auxi::{cur_aux, cur_aux_ln};
 use crate::c_api::bibs::{bib_line_num, cur_bib};
-use crate::c_api::exec::{bst_ln_num_print, BstCtx};
+use crate::c_api::cite::with_cites;
+use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, BstCtx, ExecCtx};
 use crate::c_api::scan::ScanRes;
 
 pub trait AsBytes {
@@ -153,7 +154,7 @@ pub fn out_token(handle: &mut OutputHandle) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn print_a_token() {
+pub extern "C" fn print_a_token() {
     with_stdout(|stdout| out_token(stdout));
     with_log(|log| out_token(log));
 }
@@ -404,8 +405,7 @@ pub extern "C" fn unknwn_function_class_confusion() {
     print_confusion();
 }
 
-#[no_mangle]
-pub extern "C" fn id_scanning_confusion() {
+pub fn id_scanning_confusion() {
     write_logs("Identifier scanning error");
     print_confusion();
 }
@@ -441,8 +441,7 @@ pub extern "C" fn bst_right_brace_print() {
     write_logs("\"}\" is missing in command: ");
 }
 
-#[no_mangle]
-pub extern "C" fn bib_ln_num_print() -> bool {
+pub fn bib_ln_num_print() -> bool {
     write_logs(&format!("--line {} of file ", bib_line_num()));
     print_bib_name()
 }
@@ -461,4 +460,156 @@ pub extern "C" fn bib_err_print(at_bib_command: bool) -> bool {
         write_logs("entry\n");
     }
     true
+}
+
+#[no_mangle]
+pub extern "C" fn bib_warn_print() -> bool {
+    if !bib_ln_num_print() {
+        return false;
+    }
+    mark_warning();
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn eat_bib_print(at_bib_command: bool) -> bool {
+    write_logs("Illegal end of database file");
+    bib_err_print(at_bib_command)
+}
+
+#[no_mangle]
+pub extern "C" fn bib_one_of_two_print(char1: ASCIICode, char2: ASCIICode, at_bib_command: bool) -> bool {
+    write_logs(&format!("I was expected a `{}` or a `{}`", char1 as char, char2 as char));
+    bib_err_print(at_bib_command)
+}
+
+#[no_mangle]
+pub extern "C" fn bib_equals_sign_print(at_bib_command: bool) -> bool {
+    write_logs("I was expecting an \"=\"");
+    bib_err_print(at_bib_command)
+}
+
+#[no_mangle]
+pub extern "C" fn bib_unbalanced_braces_print(at_bib_command: bool) -> bool {
+    write_logs("Unbalanced braces");
+    bib_err_print(at_bib_command)
+}
+
+#[no_mangle]
+pub extern "C" fn macro_warn_print() {
+    write_logs("Warning--string name \"");
+    print_a_token();
+    write_logs("\" is ");
+}
+
+#[no_mangle]
+pub extern "C" fn bib_id_print(scan_res: ScanRes) -> bool {
+    match scan_res {
+        ScanRes::IdNull => {
+            write_logs("You're missing ");
+            true
+        }
+        ScanRes::OtherCharAdjacent => {
+            let char = with_buffers(|buffers| {
+                buffers.at_offset(BufTy::Base, 2)
+            });
+            write_logs(&format!("\"{}\" immediately follows ", char));
+            true
+        }
+        _ => {
+            id_scanning_confusion();
+            false
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn bib_cmd_confusion() {
+    write_logs("Unknown database-file command");
+    print_confusion();
+}
+
+#[no_mangle]
+pub extern "C" fn cite_key_disappeared_confusion() {
+    write_logs("A cite key disappeared");
+    print_confusion();
+}
+
+#[no_mangle]
+pub extern "C" fn bad_cross_reference_print(s: StrNumber) -> bool {
+    write_logs("--entry \"");
+    let res = with_cites(|cites| {
+        print_a_pool_str(cites.get_cite(cites.ptr() as usize))
+    });
+    if !res {
+        return false;
+    }
+    write_logs("\"\nrefers to entry \"");
+    if !print_a_pool_str(s) {
+        return false;
+    }
+    write_logs("\"");
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn print_missing_entry(s: StrNumber) -> bool {
+    write_logs("Warning--I didn't find a database entry for \"");
+    if !print_a_pool_str(s) {
+        return false;
+    }
+    write_logs("\"\n");
+    mark_warning();
+    true
+}
+
+pub fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
+    if ctx.mess_with_entries {
+        write_logs(" for entry ");
+        let res = with_cites(|cites| {
+            print_a_pool_str(cites.get_cite(cites.ptr() as usize))
+        });
+        if !res {
+            return false;
+        }
+    }
+    write_logs("\nwhile executing");
+    bst_warn_print(ctx.bst_ctx)
+}
+
+#[no_mangle]
+pub extern "C" fn bst_cant_mess_with_entries_print(ctx: *const ExecCtx) -> bool {
+    write_logs("You can't mess with entries here");
+    bst_ex_warn_print(ctx)
+}
+
+#[no_mangle]
+pub extern "C" fn bst_1print_string_size_exceeded() {
+    write_logs("Warning--you've exceeded ");
+}
+
+#[no_mangle]
+pub extern "C" fn bst_2print_string_size_exceeded(ctx: *const ExecCtx) -> bool {
+    write_logs("-string-size,");
+    if !bst_mild_ex_warn_print(unsafe { &*ctx }) {
+        return false;
+    }
+    write_logs("*Please notify the bibstyle designer*\n");
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn braces_unbalanced_complaint(ctx: *const ExecCtx, pop_lit_var: StrNumber) -> bool {
+    write_logs("Warning--\"");
+    if !print_a_pool_str(pop_lit_var) {
+        return false;
+    }
+    write_logs("\" isn't a brace-balanced string");
+    bst_mild_ex_warn_print(unsafe { &*ctx })
+}
+
+#[no_mangle]
+pub extern "C" fn case_conversion_confusion() {
+    write_logs("Unknown type of case conversion");
+    print_confusion();
 }
