@@ -149,7 +149,7 @@ pub fn out_token(handle: &mut OutputHandle) {
         let bytes = b.buffer(BufTy::Base);
         let start = b.offset(BufTy::Base, 1) as usize;
         let end = b.offset(BufTy::Base, 2) as usize;
-        (*handle).write_all(&bytes[start..end]).unwrap();
+        handle.write_all(&bytes[start..end]).unwrap();
     })
 }
 
@@ -479,7 +479,7 @@ pub extern "C" fn eat_bib_print(at_bib_command: bool) -> bool {
 
 #[no_mangle]
 pub extern "C" fn bib_one_of_two_print(char1: ASCIICode, char2: ASCIICode, at_bib_command: bool) -> bool {
-    write_logs(&format!("I was expected a `{}` or a `{}`", char1 as char, char2 as char));
+    write_logs(&format!("I was expecting a `{}` or a `{}`", char1 as char, char2 as char));
     bib_err_print(at_bib_command)
 }
 

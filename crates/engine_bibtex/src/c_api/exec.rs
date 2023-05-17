@@ -10,11 +10,11 @@ const LIT_STK_SIZE: usize = 100;
 
 #[repr(C)]
 pub struct BstCtx {
-    bst_file: *mut PeekableInput,
+    pub bst_file: *mut PeekableInput,
     pub bst_str: StrNumber,
-    bst_line_num: i32,
-    num_bib_files: i32,
-    num_preamble_strings: i32,
+    pub bst_line_num: i32,
+    pub num_bib_files: i32,
+    pub num_preamble_strings: i32,
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase
@@ -39,15 +39,15 @@ pub struct ExecVal {
 #[repr(C)]
 pub struct ExecCtx {
     pub bst_ctx: *mut BstCtx,
-    pop1: ExecVal,
-    pop2: ExecVal,
-    pop3: ExecVal,
-    lit_stack: *mut ExecVal,
-    lit_stk_size: i32,
-    lit_stk_ptr: i32,
+    pub pop1: ExecVal,
+    pub pop2: ExecVal,
+    pub pop3: ExecVal,
+    pub lit_stack: *mut ExecVal,
+    pub lit_stk_size: i32,
+    pub lit_stk_ptr: i32,
 
     pub mess_with_entries: bool,
-    bib_str_ptr: StrNumber,
+    pub bib_str_ptr: StrNumber,
 }
 
 impl ExecCtx {
