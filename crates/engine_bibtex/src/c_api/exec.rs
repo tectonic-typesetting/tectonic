@@ -11,7 +11,7 @@ const LIT_STK_SIZE: usize = 100;
 #[repr(C)]
 pub struct BstCtx {
     bst_file: *mut PeekableInput,
-    bst_str: StrNumber,
+    pub bst_str: StrNumber,
     bst_line_num: i32,
     num_bib_files: i32,
     num_preamble_strings: i32,

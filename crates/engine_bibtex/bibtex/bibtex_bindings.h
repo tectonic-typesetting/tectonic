@@ -217,8 +217,6 @@ void print_bad_input_line(void);
 
 void print_skipping_whatever_remains(void);
 
-bool out_pool_str(ttbc_output_handle_t *handle, StrNumber s);
-
 bool print_a_pool_str(StrNumber s);
 
 void sam_wrong_file_name_print(NameAndLen file);
@@ -241,6 +239,32 @@ void aux_end1_err_print(void);
 
 bool aux_end2_err_print(void);
 
+bool print_bib_name(void);
+
+bool log_pr_bib_name(void);
+
+bool log_pr_bst_name(const BstCtx *ctx);
+
+void hash_cite_confusion(void);
+
+bool bst_warn_print(const BstCtx *ctx);
+
+void eat_bst_print(void);
+
+void unknwn_function_class_confusion(void);
+
+void id_scanning_confusion(void);
+
+bool bst_id_print(ScanRes scan_result);
+
+void bst_left_brace_print(void);
+
+void bst_right_brace_print(void);
+
+bool bib_ln_num_print(void);
+
+bool bib_err_print(bool at_bib_command);
+
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
@@ -248,8 +272,6 @@ int peekable_close(PeekableInput *peekable);
 bool tectonic_eof(PeekableInput *peekable);
 
 bool input_ln(PeekableInput *peekable);
-
-bool str_ends_with(StrNumber s, StrNumber ext);
 
 bool bib_str_eq_str(StrNumber s1, StrNumber s2);
 
@@ -332,6 +354,10 @@ StrNumber cur_preamble(void);
 BibNumber preamble_ptr(void);
 
 void set_preamble_ptr(BibNumber num);
+
+int32_t bib_line_num(void);
+
+void set_bib_line_num(int32_t num);
 
 #ifdef __cplusplus
 } // extern "C"

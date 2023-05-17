@@ -71,15 +71,6 @@ pub fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn str_ends_with(s: StrNumber, ext: StrNumber) -> bool {
-    with_pool(|pool| {
-        let str = pool.get_str(s as usize);
-        let ext = pool.get_str(ext as usize);
-        str.ends_with(ext)
-    })
-}
-
-#[no_mangle]
 pub extern "C" fn bib_str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
     with_pool(|pool| pool.get_str(s1 as usize) == pool.get_str(s2 as usize))
 }

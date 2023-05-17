@@ -1,6 +1,6 @@
 use crate::c_api::buffer::{with_buffers, BufTy};
 use crate::c_api::char_info::LexClass;
-use crate::c_api::history::{mark_error, mark_fatal, set_history};
+use crate::c_api::history::{mark_error, mark_fatal, mark_warning, set_history};
 use crate::c_api::pool::with_pool;
 use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber, NameAndLen};
 use std::cell::Cell;
@@ -9,6 +9,9 @@ use std::io::Write;
 use std::{ptr, slice};
 use tectonic_io_base::OutputHandle;
 use crate::c_api::auxi::{cur_aux, cur_aux_ln};
+use crate::c_api::bibs::{bib_line_num, cur_bib};
+use crate::c_api::exec::{bst_ln_num_print, BstCtx};
+use crate::c_api::scan::ScanRes;
 
 pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
@@ -156,7 +159,7 @@ pub unsafe extern "C" fn print_a_token() {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn print_bad_input_line() {
+pub extern "C" fn print_bad_input_line() {
     write_logs(" : ");
 
     with_buffers(|b| {
@@ -200,17 +203,15 @@ pub unsafe extern "C" fn print_bad_input_line() {
     mark_error();
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn print_skipping_whatever_remains() {
+pub fn print_skipping_whatever_remains() {
     write_logs("I'm skipping whatever remains of this ");
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn out_pool_str(handle: *mut OutputHandle, s: StrNumber) -> bool {
+pub fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
     with_pool(|pool| {
         let str = pool.try_get_str(s as usize);
         if let Some(str) = str {
-            (*handle).write_all(str).unwrap();
+            handle.write_all(str).unwrap();
             true
         } else {
             write_logs(&format!("Illegal string number: {}", s));
@@ -255,16 +256,18 @@ pub extern "C" fn print_aux_name() -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn log_pr_aux_name() -> bool {
-    if !out_pool_str(bib_log_file(), cur_aux()) {
-        return false;
-    }
-    write_logs("\n");
-    true
+pub extern "C" fn log_pr_aux_name() -> bool {
+    with_log(|log| {
+        if !out_pool_str(log, cur_aux()) {
+            return false;
+        }
+        write!(log, "\n").unwrap();
+        true
+    })
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn aux_err_print() -> bool {
+pub extern "C" fn aux_err_print() -> bool {
     write_logs(&format!("---line {} of file ", cur_aux_ln()));
     if !print_aux_name() {
         return false;
@@ -318,5 +321,144 @@ pub extern "C" fn aux_end2_err_print() -> bool {
         return false;
     }
     mark_error();
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn print_bib_name() -> bool {
+    if !print_a_pool_str(cur_bib()) {
+        return false;
+    }
+    let res = with_pool(|pool| {
+        pool.try_get_str(cur_bib() as usize).map(|str| str.ends_with(b".bib"))
+    });
+    match res {
+        Some(true) => (),
+        Some(false) => {
+            write_logs(".bib");
+        }
+        None => return false,
+    }
+    write_logs("\n");
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn log_pr_bib_name() -> bool {
+    with_log(|log| {
+        if !out_pool_str(log, cur_bib()) {
+            return false;
+        }
+        let res = with_pool(|pool| {
+            pool.try_get_str(cur_bib() as usize).map(|str| str.ends_with(b".bib"))
+        });
+        match res {
+            Some(true) => (),
+            Some(false) => {
+                write!(log, ".bib").unwrap();
+            }
+            None => return false,
+        }
+        write!(log, "\n").unwrap();
+        true
+    })
+
+
+
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn log_pr_bst_name(ctx: *const BstCtx) -> bool {
+    with_log(|log| {
+        if !out_pool_str(log, (*ctx).bst_str) {
+            return false;
+        }
+        write!(log, ".bst\n").unwrap();
+        true
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn hash_cite_confusion() {
+    write_logs("Cite hash error");
+    print_confusion();
+}
+
+#[no_mangle]
+pub extern "C" fn bst_warn_print(ctx: *const BstCtx) -> bool {
+    if !bst_ln_num_print(ctx) {
+        return false;
+    }
+    mark_warning();
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn eat_bst_print() {
+    write_logs("Illegal end of style file in command: ");
+}
+
+#[no_mangle]
+pub extern "C" fn unknwn_function_class_confusion() {
+    write_logs("Unknown function class");
+    print_confusion();
+}
+
+#[no_mangle]
+pub extern "C" fn id_scanning_confusion() {
+    write_logs("Identifier scanning error");
+    print_confusion();
+}
+
+#[no_mangle]
+pub extern "C" fn bst_id_print(scan_result: ScanRes) -> bool {
+    with_buffers(|buffers| {
+        let char = buffers.at_offset(BufTy::Base, 2) as char;
+        match scan_result {
+            ScanRes::IdNull => {
+                write_logs(&format!("\"{}\" begins identifier, command: ", char));
+                true
+            }
+            ScanRes::OtherCharAdjacent => {
+                write_logs(&format!("\"{}\" immediately follows identifier, command: ", char));
+                true
+            }
+            _ => {
+                id_scanning_confusion();
+                false
+            }
+        }
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn bst_left_brace_print() {
+    write_logs("\"{\" is missing in command: ");
+}
+
+#[no_mangle]
+pub extern "C" fn bst_right_brace_print() {
+    write_logs("\"}\" is missing in command: ");
+}
+
+#[no_mangle]
+pub extern "C" fn bib_ln_num_print() -> bool {
+    write_logs(&format!("--line {} of file ", bib_line_num()));
+    print_bib_name()
+}
+
+#[no_mangle]
+pub extern "C" fn bib_err_print(at_bib_command: bool) -> bool {
+    write_logs("-");
+    if !bib_ln_num_print() {
+        return false;
+    }
+    print_bad_input_line();
+    print_skipping_whatever_remains();
+    if at_bib_command {
+        write_logs("command\n");
+    } else {
+        write_logs("entry\n");
+    }
     true
 }

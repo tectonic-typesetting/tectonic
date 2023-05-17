@@ -9,6 +9,7 @@ pub struct BibData {
     bib_file: &'static mut [*mut PeekableInput],
     bib_list: &'static mut [StrNumber],
     bib_ptr: BibNumber,
+    bib_line_num: i32,
     preamble: &'static mut [StrNumber],
     preamble_ptr: BibNumber,
 }
@@ -19,6 +20,7 @@ impl BibData {
             bib_file: unsafe { xcalloc_zeroed(MAX_BIB_FILES + 1, mem::size_of::<*mut PeekableInput>()) },
             bib_list: unsafe { xcalloc_zeroed(MAX_BIB_FILES + 1, mem::size_of::<StrNumber>()) },
             bib_ptr: 0,
+            bib_line_num: 0,
             preamble: unsafe { xcalloc_zeroed(MAX_BIB_FILES + 1, mem::size_of::<StrNumber>()) },
             preamble_ptr: 0,
         }
@@ -144,4 +146,14 @@ pub extern "C" fn preamble_ptr() -> BibNumber {
 #[no_mangle]
 pub extern "C" fn set_preamble_ptr(num: BibNumber) {
     with_bibs_mut(|bibs| bibs.preamble_ptr = num)
+}
+
+#[no_mangle]
+pub extern "C" fn bib_line_num() -> i32 {
+    with_bibs(|bibs| bibs.bib_line_num)
+}
+
+#[no_mangle]
+pub extern "C" fn set_bib_line_num(num: i32) {
+    with_bibs_mut(|bibs| bibs.bib_line_num = num)
 }
