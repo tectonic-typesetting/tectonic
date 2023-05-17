@@ -7,7 +7,7 @@
 
 #include <stdio.h> /* EOF, snprintf */
 
-#define TRY(exec) if (!(exec)) longjmp(error_jmpbuf, 1)
+#define TRY(exec) do { if (!(exec)) { longjmp(error_jmpbuf, 1); } } while (false)
 
 /* hack: the name eof conflicts with other function declarations under mingw. */
 #define eof tectonic_eof
