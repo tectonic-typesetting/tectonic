@@ -2,12 +2,13 @@ use crate::c_api::buffer::{with_buffers, BufTy};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::history::{mark_error, mark_fatal, set_history};
 use crate::c_api::pool::with_pool;
-use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber};
+use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber, NameAndLen};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
 use std::{ptr, slice};
 use tectonic_io_base::OutputHandle;
+use crate::c_api::auxi::cur_aux;
 
 pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
@@ -232,4 +233,23 @@ pub extern "C" fn print_a_pool_str(s: StrNumber) -> bool {
             false
         }
     })
+}
+
+#[no_mangle]
+pub extern "C" fn sam_wrong_file_name_print(file: NameAndLen) {
+    with_stdout(|stdout| {
+        let slice = unsafe { slice::from_raw_parts(file.name, file.len as usize) };
+        write!(stdout, "I couldn't open file name `").unwrap();
+        stdout.write_all(slice).unwrap();
+        write!(stdout, "`\n").unwrap();
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn print_aux_name() -> bool {
+    if !print_a_pool_str(cur_aux()) {
+        return false;
+    }
+    write_logs("\n");
+    true
 }

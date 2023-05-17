@@ -119,6 +119,7 @@ pub mod c_api {
     mod peekable;
     mod pool;
     mod scan;
+    mod auxi;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -154,6 +155,13 @@ pub mod c_api {
         }
     }
 
+    /// cbindgen:field-names=[name_of_file, name_length]
+    #[repr(C)]
+    pub struct NameAndLen {
+        name: *mut ASCIICode,
+        len: i32,
+    }
+
     type StrNumber = i32;
     type CiteNumber = i32;
     type ASCIICode = u8;
@@ -161,6 +169,7 @@ pub mod c_api {
     type BufPointer = i32;
     type PoolPointer = usize;
     type HashPointer2 = i32;
+    type AuxNumber = i32;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -169,6 +178,7 @@ pub mod c_api {
         history::reset();
         buffer::reset();
         cite::reset();
+        auxi::reset();
     }
 
     #[no_mangle]

@@ -92,7 +92,14 @@ typedef struct {
   StrNumber bib_str_ptr;
 } ExecCtx;
 
+typedef struct {
+  ASCIICode *name_of_file;
+  int32_t name_length;
+} NameAndLen;
+
 typedef uintptr_t PoolPointer;
+
+typedef int32_t AuxNumber;
 
 #ifdef __cplusplus
 extern "C" {
@@ -210,6 +217,10 @@ bool out_pool_str(ttbc_output_handle_t *handle, StrNumber s);
 
 bool print_a_pool_str(StrNumber s);
 
+void sam_wrong_file_name_print(NameAndLen file);
+
+bool print_aux_name(void);
+
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
@@ -263,6 +274,22 @@ ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 bool scan_nonneg_integer(void);
 
 bool scan_integer(int32_t *token_value);
+
+StrNumber cur_aux(void);
+
+void set_cur_aux(StrNumber num);
+
+PeekableInput *cur_aux_file(void);
+
+void set_cur_aux_file(PeekableInput *file);
+
+int32_t cur_aux_ln(void);
+
+void set_cur_aux_ln(int32_t ln);
+
+AuxNumber aux_ptr(void);
+
+void set_aux_ptr(AuxNumber num);
 
 #ifdef __cplusplus
 } // extern "C"
