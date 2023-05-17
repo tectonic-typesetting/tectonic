@@ -238,68 +238,6 @@ printf_log(const char *fmt, ...)
 }
 
 static void
-log_pr_aux_name(void)
-{
-    TRY(out_pool_str(bib_log_file(), cur_aux()));
-    ttstub_output_putc (bib_log_file(), '\n');
-}
-
-
-static void
-aux_err_print(void)
-{
-    printf_log("---line %ld of file ", (long) cur_aux_ln());
-    print_aux_name();
-    print_bad_input_line();
-    print_skipping_whatever_remains();
-    puts_log("command\n");
-}
-
-
-static void
-aux_err_illegal_another_print(int32_t cmd_num)
-{
-    puts_log("Illegal, another \\bib");
-
-    switch (cmd_num) {
-    case 0:
-        puts_log("data");
-        break;
-    case 1:
-        puts_log("style");
-        break;
-    default:
-        puts_log("Illegal auxiliary-file command");
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-        break;
-    }
-
-    puts_log(" command");
-}
-
-
-static void
-aux_err_no_right_brace_print(void)
-{
-    puts_log("No \"}\"");
-}
-
-
-static void
-aux_err_stuff_after_right_brace_print(void)
-{
-    puts_log("Stuff after \"}\"");
-}
-
-
-static void
-aux_err_white_space_in_argument_print(void)
-{
-    puts_log("White space in argument");
-}
-
-static void
 print_bib_name(void)
 {
     TRY(print_a_pool_str(bib_list[bib_ptr]));
@@ -332,18 +270,6 @@ static void hash_cite_confusion(void)
     puts_log("Cite hash error");
     print_confusion();
     longjmp(error_jmpbuf, 1);
-}
-
-static void aux_end1_err_print(void)
-{
-    puts_log("I found no ");
-}
-
-static void aux_end2_err_print(void)
-{
-    puts_log("---while reading file ");
-    print_aux_name();
-    mark_error();
 }
 
 static void bst_err_print_and_look_for_blank_line(BstCtx* ctx)
@@ -4228,9 +4154,9 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
 static void aux_bib_data_command()
 {
     if (bib_seen) {
-        aux_err_illegal_another_print(0 /*n_aux_bibdata */ );
+        TRY(aux_err_illegal_another_print(0 /*n_aux_bibdata */ ));
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
@@ -4241,21 +4167,21 @@ static void aux_bib_data_command()
         if (!scan2_white(125 /*right_brace */ , 44 /*comma */)) {
             aux_err_no_right_brace_print();
             {
-                aux_err_print();
+                TRY(aux_err_print());
                 return;
             }
         }
         if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
             aux_err_white_space_in_argument_print();
             {
-                aux_err_print();
+                TRY(aux_err_print());
                 return;
             }
         }
         if ((bib_buf_len(BUF_TY_BASE) > bib_buf_offset(BUF_TY_BASE, 2) + 1) && (bib_buf_at_offset(BUF_TY_BASE, 2) == 125 /*right_brace */ )) {
             aux_err_stuff_after_right_brace_print();
             {
-                aux_err_print();
+                TRY(aux_err_print());
                 return;
             }
         }
@@ -4274,14 +4200,14 @@ static void aux_bib_data_command()
             if (hash_found) {
                 puts_log("This database file appears more than once: ");
                 print_bib_name();
-                aux_err_print();
+                TRY(aux_err_print());
                 return;
             }
             NameAndLen nal = start_name(bib_list[bib_ptr]);
             if ((bib_file[bib_ptr] = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_BIB)) == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
-                aux_err_print();
+                TRY(aux_err_print());
                 free(nal.name_of_file);
                 return;
             }
@@ -4295,9 +4221,9 @@ static void aux_bib_data_command()
 static void aux_bib_style_command(BstCtx* ctx)
 {
     if (bst_seen) {
-        aux_err_illegal_another_print(1 /*n_aux_bibstyle */ );
+        TRY(aux_err_illegal_another_print(1 /*n_aux_bibstyle */ ));
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
@@ -4306,21 +4232,21 @@ static void aux_bib_style_command(BstCtx* ctx)
     if (!scan1_white(125 /*right_brace */)) {
         aux_err_no_right_brace_print();
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
     if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
         aux_err_white_space_in_argument_print();
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
     if (bib_buf_len(BUF_TY_BASE) > bib_buf_offset(BUF_TY_BASE, 2) + 1) {
         aux_err_stuff_after_right_brace_print();
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
@@ -4336,7 +4262,7 @@ static void aux_bib_style_command(BstCtx* ctx)
             puts_log("I couldn't open style file ");
             print_bst_name(ctx);
             ctx->bst_str = 0;
-            aux_err_print();
+            TRY(aux_err_print());
             free(nal.name_of_file);
             return;
         }
@@ -4362,21 +4288,21 @@ static void aux_citation_command(void)
         if (!scan2_white(125 /*right_brace */ , 44 /*comma */)) {
             aux_err_no_right_brace_print();
             {
-                aux_err_print();
+                TRY(aux_err_print());
                 return;
             }
         }
         if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
             aux_err_white_space_in_argument_print();
             {
-                aux_err_print();
+                TRY(aux_err_print());
                 return;
             }
         }
         if ((bib_buf_len(BUF_TY_BASE) > bib_buf_offset(BUF_TY_BASE, 2) + 1) && (bib_buf_at_offset(BUF_TY_BASE, 2) == 125 /*right_brace */ )) {
             aux_err_stuff_after_right_brace_print();
             {
-                aux_err_print();
+                TRY(aux_err_print());
                 return;
             }
         }
@@ -4387,7 +4313,7 @@ static void aux_citation_command(void)
                     if (bib_buf_at_offset(BUF_TY_BASE, 1) == 42 /*star */ ) {
                         if (all_entries) {
                             puts_log("Multiple inclusions of entire database\n");
-                            aux_err_print();
+                            TRY(aux_err_print());
                             return;
                         } else {
 
@@ -4416,7 +4342,7 @@ static void aux_citation_command(void)
                     puts_log(" and ");
                     TRY(print_a_pool_str(cite_list(ilk_info[ilk_info[lc_cite_loc]])));
                     putc_log('\n');
-                    aux_err_print();
+                    TRY(aux_err_print());
                     return;
                 }
             } else {            /*137: */
@@ -4444,21 +4370,21 @@ static void aux_input_command(void)
     if (!scan1_white(125 /*right_brace */)) {
         aux_err_no_right_brace_print();
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
     if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
         aux_err_white_space_in_argument_print();
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
     if (bib_buf_len(BUF_TY_BASE) > bib_buf_offset(BUF_TY_BASE, 2) + 1) {
         aux_err_stuff_after_right_brace_print();
         {
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
     }
@@ -4485,15 +4411,15 @@ static void aux_input_command(void)
             print_a_token();
             puts_log(" has a wrong extension");
             set_aux_ptr(aux_ptr() - 1);
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
         set_cur_aux(hash_text[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 3 /*aux_file_ilk */ , true)]);
         if (hash_found) {
             puts_log("Already encountered file ");
-            print_aux_name();
+            TRY(print_aux_name());
             set_aux_ptr(aux_ptr() - 1);
-            aux_err_print();
+            TRY(aux_err_print());
             return;
         }
         {
@@ -4503,9 +4429,9 @@ static void aux_input_command(void)
             PeekableInput* aux_file = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_TEX);
             if (aux_file == NULL) {
                 puts_log("I couldn't open auxiliary file ");
-                print_aux_name();
+                TRY(print_aux_name());
                 set_aux_ptr(aux_ptr() - 1);
-                aux_err_print();
+                TRY(aux_err_print());
                 free(nal.name_of_file);
                 return;
             }
@@ -4513,7 +4439,7 @@ static void aux_input_command(void)
             free(nal.name_of_file);
 
             printf_log("A level-%ld auxiliary file: ", (long) aux_ptr());
-            log_pr_aux_name();
+            TRY(log_pr_aux_name());
             set_cur_aux_ln(0);
         }
     }
@@ -4567,29 +4493,29 @@ static void last_check_for_aux_errors(BstCtx* ctx)
     if (!citation_seen) {
         aux_end1_err_print();
         puts_log("\\citation commands");
-        aux_end2_err_print();
+        TRY(aux_end2_err_print());
     } else if ((num_cites == 0) && (!all_entries)) {
         aux_end1_err_print();
         puts_log("cite keys");
-        aux_end2_err_print();
+        TRY(aux_end2_err_print());
     }
     if (!bib_seen) {
         aux_end1_err_print();
         puts_log("\\bibdata command");
-        aux_end2_err_print();
+        TRY(aux_end2_err_print());
     } else if (num_bib_files == 0) {
         aux_end1_err_print();
         puts_log("database files");
-        aux_end2_err_print();
+        TRY(aux_end2_err_print());
     }
     if (!bst_seen) {
         aux_end1_err_print();
         puts_log("\\bibstyle command");
-        aux_end2_err_print();
+        TRY(aux_end2_err_print());
     } else if (ctx->bst_str == 0) {
         aux_end1_err_print();
         puts_log("style file");
-        aux_end2_err_print();
+        TRY(aux_end2_err_print());
     }
 }
 
@@ -6302,10 +6228,10 @@ bibtex_main(const char *aux_file_name)
 
     if (verbose) {
         puts_log("The top-level auxiliary file: ");
-        print_aux_name();
+        TRY(print_aux_name());
     } else {
         ttstub_puts (bib_log_file(), "The top-level auxiliary file: ");
-        log_pr_aux_name();
+        TRY(log_pr_aux_name());
     }
 
     BstCtx bst_ctx = { 0 };

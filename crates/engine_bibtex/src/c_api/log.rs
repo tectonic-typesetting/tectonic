@@ -8,7 +8,7 @@ use std::ffi::CStr;
 use std::io::Write;
 use std::{ptr, slice};
 use tectonic_io_base::OutputHandle;
-use crate::c_api::auxi::cur_aux;
+use crate::c_api::auxi::{cur_aux, cur_aux_ln};
 
 pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
@@ -251,5 +251,72 @@ pub extern "C" fn print_aux_name() -> bool {
         return false;
     }
     write_logs("\n");
+    true
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn log_pr_aux_name() -> bool {
+    if !out_pool_str(bib_log_file(), cur_aux()) {
+        return false;
+    }
+    write_logs("\n");
+    true
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn aux_err_print() -> bool {
+    write_logs(&format!("---line {} of file ", cur_aux_ln()));
+    if !print_aux_name() {
+        return false;
+    }
+    print_bad_input_line();
+    print_skipping_whatever_remains();
+    write_logs("command\n");
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn aux_err_illegal_another_print(cmd_num: i32) -> bool {
+    write_logs("Illegal, another \\bib");
+    match cmd_num {
+        0 => write_logs("data"),
+        1 => write_logs("style"),
+        _ => {
+            write_logs("Illegal auxiliary-file command");
+            print_confusion();
+            return false;
+        }
+    }
+    write_logs(" command");
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn aux_err_no_right_brace_print() {
+    write_logs("No \"}\"");
+}
+
+#[no_mangle]
+pub extern "C" fn aux_err_stuff_after_right_brace_print() {
+    write_logs("Stuff after \"}\"");
+}
+
+#[no_mangle]
+pub extern "C" fn aux_err_white_space_in_argument_print() {
+    write_logs("White space in argument");
+}
+
+#[no_mangle]
+pub extern "C" fn aux_end1_err_print() {
+    write_logs("I found no ");
+}
+
+#[no_mangle]
+pub extern "C" fn aux_end2_err_print() -> bool {
+    write_logs("---while reading file ");
+    if !print_aux_name() {
+        return false;
+    }
+    mark_error();
     true
 }

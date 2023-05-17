@@ -221,6 +221,22 @@ void sam_wrong_file_name_print(NameAndLen file);
 
 bool print_aux_name(void);
 
+bool log_pr_aux_name(void);
+
+bool aux_err_print(void);
+
+bool aux_err_illegal_another_print(int32_t cmd_num);
+
+void aux_err_no_right_brace_print(void);
+
+void aux_err_stuff_after_right_brace_print(void);
+
+void aux_err_white_space_in_argument_print(void);
+
+void aux_end1_err_print(void);
+
+bool aux_end2_err_print(void);
+
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
