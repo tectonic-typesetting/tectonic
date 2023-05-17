@@ -1,15 +1,15 @@
-use crate::c_api::{xcalloc_zeroed, ASCIICode, PoolPointer, StrNumber};
+use crate::c_api::{ASCIICode, PoolPointer, StrNumber};
 use std::cell::RefCell;
-use std::mem;
+use crate::c_api::xbuf::XBuf;
 
 const POOL_SIZE: usize = 65000;
-const MAX_STRINGS: usize = 35307;
+pub(crate) const MAX_STRINGS: usize = 35307;
 
 pub struct StringPool {
-    strings: &'static mut [u8],
+    strings: XBuf<u8>,
     // Stores string starting locations in the string pool
     // length of string `s` is offsets[s + 1] - offsets[s]
-    offsets: &'static mut [usize],
+    offsets: XBuf<usize>,
     pool_ptr: PoolPointer,
     str_ptr: StrNumber,
 }
@@ -17,8 +17,8 @@ pub struct StringPool {
 impl StringPool {
     fn new() -> StringPool {
         StringPool {
-            strings: unsafe { xcalloc_zeroed(POOL_SIZE, mem::size_of::<ASCIICode>()) },
-            offsets: unsafe { xcalloc_zeroed(MAX_STRINGS, mem::size_of::<usize>()) },
+            strings: XBuf::new(POOL_SIZE),
+            offsets: XBuf::new(MAX_STRINGS),
             pool_ptr: 0,
             str_ptr: 0,
         }
@@ -38,19 +38,7 @@ impl StringPool {
     }
 
     pub fn grow(&mut self) {
-        // TODO: xrealloc_zeroed
-        let new_strings =
-            unsafe { xcalloc_zeroed(self.strings.len() + POOL_SIZE, mem::size_of::<ASCIICode>()) };
-        new_strings.copy_from_slice(self.strings);
-        unsafe { libc::free((self.strings as *mut [_]).cast()) };
-        self.strings = new_strings;
-    }
-}
-
-impl Drop for StringPool {
-    fn drop(&mut self) {
-        unsafe { libc::free((self.strings as *mut [_]).cast()) };
-        unsafe { libc::free((self.offsets as *mut [_]).cast()) };
+        self.strings.grow(POOL_SIZE);
     }
 }
 

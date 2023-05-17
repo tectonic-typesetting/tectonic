@@ -1,10 +1,11 @@
-use std::{mem, slice};
+use std::slice;
 use crate::c_api::cite::with_cites;
 use crate::c_api::history::mark_error;
 use crate::c_api::log::{print_a_pool_str, print_confusion, write_logs};
 use crate::c_api::peekable::PeekableInput;
-use crate::c_api::{StrNumber, xcalloc_zeroed};
+use crate::c_api::{StrNumber};
 use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start};
+use crate::c_api::xbuf::xrealloc_zeroed;
 
 const LIT_STK_SIZE: usize = 100;
 
@@ -42,6 +43,7 @@ pub struct ExecCtx {
     pub pop1: ExecVal,
     pub pop2: ExecVal,
     pub pop3: ExecVal,
+    // TODO: Make an XBuf after this is more encapsulated
     pub lit_stack: *mut ExecVal,
     pub lit_stk_size: i32,
     pub lit_stk_ptr: i32,
@@ -52,9 +54,8 @@ pub struct ExecCtx {
 
 impl ExecCtx {
     fn grow_stack(&mut self) {
-        let new_stack = unsafe { xcalloc_zeroed::<ExecVal>(self.lit_stk_size as usize + LIT_STK_SIZE, mem::size_of::<ExecVal>()) };
-        new_stack.copy_from_slice(unsafe { slice::from_raw_parts(self.lit_stack.cast(), self.lit_stk_size as usize) });
-        unsafe { libc::free((self.lit_stack as *mut ExecVal).cast()) };
+        let slice = unsafe { slice::from_raw_parts_mut(self.lit_stack.cast(), self.lit_stk_size as usize) };
+        let new_stack = unsafe { xrealloc_zeroed::<ExecVal>(slice, self.lit_stk_size as usize + LIT_STK_SIZE) };
         self.lit_stack = (new_stack as *mut [_]).cast();
     }
 }

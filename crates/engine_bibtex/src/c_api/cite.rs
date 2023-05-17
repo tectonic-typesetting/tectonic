@@ -1,64 +1,33 @@
-use crate::c_api::{xcalloc_zeroed, CiteNumber, HashPointer2, StrNumber};
+use crate::c_api::{CiteNumber, HashPointer2, StrNumber};
 use std::cell::RefCell;
-use std::mem;
+use crate::c_api::xbuf::XBuf;
 
 const MAX_CITES: usize = 750;
 
 pub struct CiteInfo {
-    cite_list: &'static mut [StrNumber],
-    cite_info: &'static mut [StrNumber],
-    type_list: &'static mut [HashPointer2],
-    entry_exists: &'static mut [bool],
+    cite_list: XBuf<StrNumber>,
+    cite_info: XBuf<StrNumber>,
+    type_list: XBuf<HashPointer2>,
+    entry_exists: XBuf<bool>,
     cite_ptr: CiteNumber,
 }
 
 impl CiteInfo {
     fn new() -> CiteInfo {
         CiteInfo {
-            cite_list: unsafe { xcalloc_zeroed(MAX_CITES, mem::size_of::<StrNumber>()) },
-            cite_info: unsafe { xcalloc_zeroed(MAX_CITES, mem::size_of::<StrNumber>()) },
-            type_list: unsafe { xcalloc_zeroed(MAX_CITES, mem::size_of::<HashPointer2>()) },
-            entry_exists: unsafe { xcalloc_zeroed(MAX_CITES, mem::size_of::<bool>()) },
+            cite_list: XBuf::new(MAX_CITES),
+            cite_info: XBuf::new(MAX_CITES),
+            type_list: XBuf::new(MAX_CITES),
+            entry_exists: XBuf::new(MAX_CITES),
             cite_ptr: 0,
         }
     }
 
     fn grow(&mut self) {
-        let new_cites = unsafe {
-            xcalloc_zeroed(
-                self.cite_list.len() + MAX_CITES,
-                mem::size_of::<StrNumber>(),
-            )
-        };
-        new_cites.copy_from_slice(self.cite_list);
-        unsafe { libc::free((self.cite_list as *mut [_]).cast()) };
-        self.cite_list = new_cites;
-
-        let new_cites = unsafe {
-            xcalloc_zeroed(
-                self.cite_info.len() + MAX_CITES,
-                mem::size_of::<StrNumber>(),
-            )
-        };
-        new_cites.copy_from_slice(self.cite_info);
-        unsafe { libc::free((self.cite_info as *mut [_]).cast()) };
-        self.cite_info = new_cites;
-
-        let new_cites = unsafe {
-            xcalloc_zeroed(
-                self.type_list.len() + MAX_CITES,
-                mem::size_of::<HashPointer2>(),
-            )
-        };
-        new_cites.copy_from_slice(self.type_list);
-        unsafe { libc::free((self.type_list as *mut [_]).cast()) };
-        self.type_list = new_cites;
-
-        let new_cites =
-            unsafe { xcalloc_zeroed(self.entry_exists.len() + MAX_CITES, mem::size_of::<bool>()) };
-        new_cites.copy_from_slice(self.entry_exists);
-        unsafe { libc::free((self.entry_exists as *mut [_]).cast()) };
-        self.entry_exists = new_cites;
+        self.cite_list.grow(MAX_CITES);
+        self.cite_info.grow(MAX_CITES);
+        self.type_list.grow(MAX_CITES);
+        self.entry_exists.grow(MAX_CITES);
     }
 
     pub fn get_cite(&self, offset: usize) -> StrNumber {
@@ -99,15 +68,6 @@ impl CiteInfo {
 
     pub fn set_ptr(&mut self, ptr: CiteNumber) {
         self.cite_ptr = ptr;
-    }
-}
-
-impl Drop for CiteInfo {
-    fn drop(&mut self) {
-        unsafe { libc::free((self.cite_list as *mut [_]).cast()) };
-        unsafe { libc::free((self.cite_info as *mut [_]).cast()) };
-        unsafe { libc::free((self.type_list as *mut [_]).cast()) };
-        unsafe { libc::free((self.entry_exists as *mut [_]).cast()) };
     }
 }
 

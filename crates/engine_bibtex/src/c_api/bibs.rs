@@ -1,27 +1,27 @@
 use std::cell::RefCell;
-use std::mem;
-use crate::c_api::{BibNumber, StrNumber, xcalloc_zeroed};
+use crate::c_api::{BibNumber, StrNumber};
 use crate::c_api::peekable::PeekableInput;
+use crate::c_api::xbuf::XBuf;
 
 const MAX_BIB_FILES: usize = 20;
 
 pub struct BibData {
-    bib_file: &'static mut [*mut PeekableInput],
-    bib_list: &'static mut [StrNumber],
+    bib_file: XBuf<*mut PeekableInput>,
+    bib_list: XBuf<StrNumber>,
     bib_ptr: BibNumber,
     bib_line_num: i32,
-    preamble: &'static mut [StrNumber],
+    preamble: XBuf<StrNumber>,
     preamble_ptr: BibNumber,
 }
 
 impl BibData {
     fn new() -> BibData {
         BibData {
-            bib_file: unsafe { xcalloc_zeroed(MAX_BIB_FILES + 1, mem::size_of::<*mut PeekableInput>()) },
-            bib_list: unsafe { xcalloc_zeroed(MAX_BIB_FILES + 1, mem::size_of::<StrNumber>()) },
+            bib_file: XBuf::new(MAX_BIB_FILES),
+            bib_list: XBuf::new(MAX_BIB_FILES),
             bib_ptr: 0,
             bib_line_num: 0,
-            preamble: unsafe { xcalloc_zeroed(MAX_BIB_FILES + 1, mem::size_of::<StrNumber>()) },
+            preamble: XBuf::new(MAX_BIB_FILES),
             preamble_ptr: 0,
         }
     }
@@ -43,30 +43,9 @@ impl BibData {
     }
 
     fn grow(&mut self) {
-        let new_files = unsafe {
-            xcalloc_zeroed(
-                self.bib_file.len() + MAX_BIB_FILES,
-                mem::size_of::<*mut PeekableInput>(),
-            )
-        };
-        new_files.copy_from_slice(self.bib_file);
-        unsafe { libc::free((self.bib_file as *mut [_]).cast()) };
-        self.bib_file = new_files;
-
-        let new_bibs = unsafe {
-            xcalloc_zeroed(
-                self.bib_list.len() + MAX_BIB_FILES,
-                mem::size_of::<StrNumber>(),
-            )
-        };
-        new_bibs.copy_from_slice(self.bib_list);
-        unsafe { libc::free((self.bib_list as *mut [_]).cast()) };
-        self.bib_list = new_bibs;
-
-        /*
-        BIB_XRETALLOC("s_preamble", s_preamble, str_number,
-                      max_bib_files, max_bib_files + MAX_BIB_FILES);
-         */
+        self.bib_list.grow(MAX_BIB_FILES);
+        self.bib_file.grow(MAX_BIB_FILES);
+        self.preamble.grow(MAX_BIB_FILES);
     }
 }
 

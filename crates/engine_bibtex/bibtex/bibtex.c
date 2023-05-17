@@ -57,12 +57,9 @@ typedef ASCII_code *buf_type;
 typedef size_t pool_pointer;
 typedef int32_t str_number;
 typedef int32_t hash_loc;
-typedef int32_t hash_pointer;
 typedef unsigned char /*last_ilk */ str_ilk;
 typedef unsigned char /*longest_pds */ pds_len;
 typedef const char *pds_type;
-typedef int32_t aux_number;
-typedef int32_t bib_number;
 typedef int32_t cite_number;
 typedef unsigned char /*last_fn_class */ fn_class;
 typedef int32_t wiz_fn_loc;
@@ -70,7 +67,6 @@ typedef int32_t int_ent_loc;
 typedef int32_t str_ent_loc;
 typedef int32_t field_loc;
 typedef int32_t hash_ptr2;
-typedef unsigned char /*last_lit_type */ stk_type;
 typedef int32_t blt_in_range;
 
 static int32_t wiz_fn_space;
@@ -78,18 +74,8 @@ static int32_t ent_str_size;
 static int32_t glob_str_size;
 static int32_t max_glob_strs;
 static int32_t max_fields;
-static int32_t hash_size;
-static int32_t hash_prime;
-static int32_t hash_max;
-static int32_t end_of_def;
-static int32_t undefined;
 static int32_t bad;
 static int32_t string_width;
-static hash_pointer *hash_next;
-static str_number *hash_text;
-static str_ilk *hash_ilk;
-static int32_t *ilk_info;
-static int32_t hash_used;
 static bool hash_found;
 static str_number s_aux_extension;
 static str_number s_log_extension;
@@ -113,7 +99,6 @@ static hash_loc wiz_loc;
 static hash_loc literal_loc;
 static hash_loc macro_name_loc;
 static hash_loc macro_def_loc;
-static fn_class *fn_type;
 static wiz_fn_loc wiz_def_ptr;
 static hash_ptr2 *wiz_functions;
 static int_ent_loc int_ent_ptr;
@@ -199,7 +184,6 @@ static str_number s_null;
 static str_number s_default;
 static hash_loc control_seq_loc;
 static int32_t num_names;
-static ASCII_code *name_sep_char;
 static buf_pointer cur_token, last_token;
 static buf_pointer num_text_chars;
 static unsigned char /*bad_conversion */ conversion_type;
@@ -239,7 +223,7 @@ static void bst_err_print_and_look_for_blank_line(BstCtx* ctx)
 
 static void print_fn_class(hash_loc fn_loc)
 {
-    switch ((fn_type[fn_loc])) {
+    switch ((fn_type(fn_loc))) {
     case 0:
         puts_log("built-in");
         break;
@@ -278,7 +262,7 @@ static void print_fn_class(hash_loc fn_loc)
 
 static void already_seen_function_print(BstCtx* ctx, hash_loc seen_fn_loc)
 {
-    TRY(print_a_pool_str(hash_text[seen_fn_loc]));
+    TRY(print_a_pool_str(hash_text(seen_fn_loc)));
     puts_log(" is already a type \"");
     print_fn_class(seen_fn_loc);
     puts_log("\" function name\n");
@@ -391,8 +375,8 @@ static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk i
         while ((k < j + l)) {
 
             h = h + h + buf[k];
-            while ((h >= hash_prime))
-                h = h - hash_prime;
+            while ((h >= hash_prime()))
+                h = h - hash_prime();
             k = k + 1;
         }
     }
@@ -402,38 +386,38 @@ static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk i
     while (true) {
 
         {
-            if (hash_text[p] > 0) {
+            if (hash_text(p) > 0) {
 
-                if (bib_str_eq_buf(hash_text[p], buf, j, l)) {
+                if (bib_str_eq_buf(hash_text(p), buf, j, l)) {
 
-                    if (hash_ilk[p] == ilk) {
+                    if (hash_ilk(p) == ilk) {
                         hash_found = true;
                         return p; /* str_found */
                     } else {
 
-                        str_num = hash_text[p];
+                        str_num = hash_text(p);
                     }
                 }
             }
         }
-        if (hash_next[p] == 0 /*empty */ ) {
+        if (hash_next(p) == 0 /*empty */ ) {
             if (!insert_it)
                 return p; /* str_not_found */
             {
-                if (hash_text[p] > 0) {
+                if (hash_text(p) > 0) {
                     do {
-                        if (hash_used == hash_base) {
+                        if (hash_used() == hash_base) {
                             print_overflow();
                             printf_log("hash size %ld\n", (long) hash_size);
                             longjmp(error_jmpbuf, 1);
                         }
-                        hash_used = hash_used - 1;
-                    } while (!((hash_text[hash_used] == 0)));
-                    hash_next[p] = hash_used;
-                    p = hash_used;
+                        set_hash_used(hash_used() - 1);
+                    } while (hash_text(hash_used()) != 0);
+                    set_hash_next(p, hash_used());
+                    p = hash_used();
                 }
                 if (str_num > 0)
-                    hash_text[p] = str_num;
+                    set_hash_text(p, str_num);
                 else {
 
                     {
@@ -449,13 +433,13 @@ static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk i
                         }
                         k = k + 1;
                     }
-                    hash_text[p] = make_string();
+                    set_hash_text(p, make_string());
                 }
-                hash_ilk[p] = ilk;
+                set_hash_ilk(p, ilk);
             }
             return p; /* str_found */
         }
-        p = hash_next[p];
+        p = hash_next(p);
     }
 }
 
@@ -478,9 +462,9 @@ static cite_number add_database_cite(cite_number new_cite)
 {
     check_cite_overflow(new_cite);
     check_field_overflow(num_fields * (new_cite + 1));
-    set_cite_list(new_cite, hash_text[cite_loc]);
-    ilk_info[cite_loc] = new_cite;
-    ilk_info[lc_cite_loc] = cite_loc;
+    set_cite_list(new_cite, hash_text(cite_loc));
+    set_ilk_info(cite_loc, new_cite);
+    set_ilk_info(lc_cite_loc, cite_loc);
     return new_cite + 1;
 }
 
@@ -546,8 +530,8 @@ static bool less_than(cite_number arg1, cite_number arg2)
 static void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range blt_in_num)
 {
     *fn_hash_loc = pre_define(pds, len, 11 /*bst_fn_ilk */ );
-    fn_type[*fn_hash_loc] = 0 /*built_in */ ;
-    ilk_info[*fn_hash_loc] = blt_in_num;
+    set_fn_type(*fn_hash_loc, 0 /*built_in */);
+    set_ilk_info(*fn_hash_loc, blt_in_num);
     ;
 
 }
@@ -555,45 +539,45 @@ static void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_r
 static void pre_def_certain_strings(void) {
     hash_loc pre_def_loc;
     pre_def_loc = pre_define(".aux        ", 4, 7 /*file_ext_ilk */ );
-    s_aux_extension = hash_text[pre_def_loc];
+    s_aux_extension = hash_text(pre_def_loc);
     pre_def_loc = pre_define(".bbl        ", 4, 7 /*file_ext_ilk */ );
-    s_bbl_extension = hash_text[pre_def_loc];
+    s_bbl_extension = hash_text(pre_def_loc);
     pre_def_loc = pre_define(".blg        ", 4, 7 /*file_ext_ilk */ );
-    s_log_extension = hash_text[pre_def_loc];
+    s_log_extension = hash_text(pre_def_loc);
     pre_def_loc = pre_define("\\citation   ", 9, 2 /*aux_command_ilk */ );
-    ilk_info[pre_def_loc] = 2 /*n_aux_citation */ ;
+    set_ilk_info(pre_def_loc, 2 /*n_aux_citation */ );
     pre_def_loc = pre_define("\\bibdata    ", 8, 2 /*aux_command_ilk */ );
-    ilk_info[pre_def_loc] = 0 /*n_aux_bibdata */ ;
+    set_ilk_info(pre_def_loc, 0 /*n_aux_bibdata */ );
     pre_def_loc = pre_define("\\bibstyle   ", 9, 2 /*aux_command_ilk */ );
-    ilk_info[pre_def_loc] = 1 /*n_aux_bibstyle */ ;
+    set_ilk_info(pre_def_loc, 1 /*n_aux_bibstyle */ );
     pre_def_loc = pre_define("\\@input     ", 7, 2 /*aux_command_ilk */ );
-    ilk_info[pre_def_loc] = 3 /*n_aux_input */ ;
+    set_ilk_info(pre_def_loc, 3 /*n_aux_input */ );
     pre_def_loc = pre_define("entry       ", 5, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 0 /*n_bst_entry */ ;
+    set_ilk_info(pre_def_loc, 0 /*n_bst_entry */ );
     pre_def_loc = pre_define("execute     ", 7, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 1 /*n_bst_execute */ ;
+    set_ilk_info(pre_def_loc, 1 /*n_bst_execute */ );
     pre_def_loc = pre_define("function    ", 8, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 2 /*n_bst_function */ ;
+    set_ilk_info(pre_def_loc, 2 /*n_bst_function */ );
     pre_def_loc = pre_define("integers    ", 8, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 3 /*n_bst_integers */ ;
+    set_ilk_info(pre_def_loc, 3 /*n_bst_integers */ );
     pre_def_loc = pre_define("iterate     ", 7, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 4 /*n_bst_iterate */ ;
+    set_ilk_info(pre_def_loc, 4 /*n_bst_iterate */ );
     pre_def_loc = pre_define("macro       ", 5, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 5 /*n_bst_macro */ ;
+    set_ilk_info(pre_def_loc, 5 /*n_bst_macro */ );
     pre_def_loc = pre_define("read        ", 4, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 6 /*n_bst_read */ ;
+    set_ilk_info(pre_def_loc, 6 /*n_bst_read */ );
     pre_def_loc = pre_define("reverse     ", 7, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 7 /*n_bst_reverse */ ;
+    set_ilk_info(pre_def_loc, 7 /*n_bst_reverse */ );
     pre_def_loc = pre_define("sort        ", 4, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 8 /*n_bst_sort */ ;
+    set_ilk_info(pre_def_loc, 8 /*n_bst_sort */ );
     pre_def_loc = pre_define("strings     ", 7, 4 /*bst_command_ilk */ );
-    ilk_info[pre_def_loc] = 9 /*n_bst_strings */ ;
+    set_ilk_info(pre_def_loc, 9 /*n_bst_strings */ );
     pre_def_loc = pre_define("comment     ", 7, 12 /*bib_command_ilk */ );
-    ilk_info[pre_def_loc] = 0 /*n_bib_comment */ ;
+    set_ilk_info(pre_def_loc, 0 /*n_bib_comment */ );
     pre_def_loc = pre_define("preamble    ", 8, 12 /*bib_command_ilk */ );
-    ilk_info[pre_def_loc] = 1 /*n_bib_preamble */ ;
+    set_ilk_info(pre_def_loc, 1 /*n_bib_preamble */ );
     pre_def_loc = pre_define("string      ", 6, 12 /*bib_command_ilk */ );
-    ilk_info[pre_def_loc] = 2 /*n_bib_string */ ;
+    set_ilk_info(pre_def_loc, 2 /*n_bib_string */ );
     build_in("=           ", 1, &b_equals, 0 /*n_equals */ );
     build_in(">           ", 1, &b_greater_than, 1 /*n_greater_than */ );
     build_in("<           ", 1, &b_less_than, 2 /*n_less_than */ );
@@ -632,55 +616,55 @@ static void pre_def_certain_strings(void) {
     build_in("width$      ", 6, &b_width, 35 /*n_width */ );
     build_in("write$      ", 6, &b_write, 36 /*n_write */ );
     pre_def_loc = pre_define("            ", 0, 0 /*text_ilk */ );
-    s_null = hash_text[pre_def_loc];
-    fn_type[pre_def_loc] = 3 /*str_literal */ ;
+    s_null = hash_text(pre_def_loc);
+    set_fn_type(pre_def_loc, 3 /*str_literal */);
     pre_def_loc = pre_define("default.type", 12, 0 /*text_ilk */ );
-    s_default = hash_text[pre_def_loc];
-    fn_type[pre_def_loc] = 3 /*str_literal */ ;
+    s_default = hash_text(pre_def_loc);
+    set_fn_type(pre_def_loc, 3 /*str_literal */);
     b_default = b_skip;
     pre_def_loc = pre_define("i           ", 1, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 0 /*n_i */ ;
+    set_ilk_info(pre_def_loc, 0 /*n_i */ );
     pre_def_loc = pre_define("j           ", 1, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 1 /*n_j */ ;
+    set_ilk_info(pre_def_loc, 1 /*n_j */ );
     pre_def_loc = pre_define("oe          ", 2, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 2 /*n_oe */ ;
+    set_ilk_info(pre_def_loc, 2 /*n_oe */ );
     pre_def_loc = pre_define("OE          ", 2, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 3 /*n_oe_upper */ ;
+    set_ilk_info(pre_def_loc, 3 /*n_oe_upper */ );
     pre_def_loc = pre_define("ae          ", 2, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 4 /*n_ae */ ;
+    set_ilk_info(pre_def_loc, 4 /*n_ae */ );
     pre_def_loc = pre_define("AE          ", 2, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 5 /*n_ae_upper */ ;
+    set_ilk_info(pre_def_loc, 5 /*n_ae_upper */ );
     pre_def_loc = pre_define("aa          ", 2, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 6 /*n_aa */ ;
+    set_ilk_info(pre_def_loc, 6 /*n_aa */ );
     pre_def_loc = pre_define("AA          ", 2, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 7 /*n_aa_upper */ ;
+    set_ilk_info(pre_def_loc, 7 /*n_aa_upper */ );
     pre_def_loc = pre_define("o           ", 1, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 8 /*n_o */ ;
+    set_ilk_info(pre_def_loc, 8 /*n_o */ );
     pre_def_loc = pre_define("O           ", 1, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 9 /*n_o_upper */ ;
+    set_ilk_info(pre_def_loc, 9 /*n_o_upper */ );
     pre_def_loc = pre_define("l           ", 1, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 10 /*n_l */ ;
+    set_ilk_info(pre_def_loc, 10 /*n_l */ );
     pre_def_loc = pre_define("L           ", 1, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 11 /*n_l_upper */ ;
+    set_ilk_info(pre_def_loc, 11 /*n_l_upper */ );
     pre_def_loc = pre_define("ss          ", 2, 14 /*control_seq_ilk */ );
-    ilk_info[pre_def_loc] = 12 /*n_ss */ ;
+    set_ilk_info(pre_def_loc, 12 /*n_ss */ );
     pre_def_loc = pre_define("crossref    ", 8, 11 /*bst_fn_ilk */ );
-    fn_type[pre_def_loc] = 4 /*field */ ;
-    ilk_info[pre_def_loc] = num_fields;
+    set_fn_type(pre_def_loc, 4 /*field */);
+    set_ilk_info(pre_def_loc, num_fields);
     crossref_num = num_fields;
     num_fields = num_fields + 1;
     num_pre_defined_fields = num_fields;
     pre_def_loc = pre_define("sort.key$   ", 9, 11 /*bst_fn_ilk */ );
-    fn_type[pre_def_loc] = 6 /*str_entry_var */ ;
-    ilk_info[pre_def_loc] = num_ent_strs;
+    set_fn_type(pre_def_loc, 6 /*str_entry_var */);
+    set_ilk_info(pre_def_loc, num_ent_strs);
     sort_key_num = num_ent_strs;
     num_ent_strs = num_ent_strs + 1;
     pre_def_loc = pre_define("entry.max$  ", 10, 11 /*bst_fn_ilk */ );
-    fn_type[pre_def_loc] = 7 /*int_global_var */ ;
-    ilk_info[pre_def_loc] = ent_str_size;
+    set_fn_type(pre_def_loc, 7 /*int_global_var */);
+    set_ilk_info(pre_def_loc, ent_str_size);
     pre_def_loc = pre_define("global.max$ ", 11, 11 /*bst_fn_ilk */ );
-    fn_type[pre_def_loc] = 7 /*int_global_var */ ;
-    ilk_info[pre_def_loc] = glob_str_size;
+    set_fn_type(pre_def_loc, 7 /*int_global_var */);
+    set_ilk_info(pre_def_loc, glob_str_size);
 }
 
 static bool eat_bst_white_space(BstCtx* ctx)
@@ -767,8 +751,8 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
 
                 literal_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 1 /*integer_ilk */ , true);
                 if (!hash_found) {
-                    fn_type[literal_loc] = 2 /*int_literal */ ;
-                    ilk_info[literal_loc] = token_value;
+                    set_fn_type(literal_loc, 2 /*int_literal */);
+                    set_ilk_info(literal_loc, token_value);
                 }
                 if ((bib_buf_offset(BUF_TY_BASE, 2) < bib_buf_len(BUF_TY_BASE)) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE )
                     && (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != 37 /*comment */ )) {
@@ -795,7 +779,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                 };
 
                 literal_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ , true);
-                fn_type[literal_loc] = 3 /*str_literal */ ;
+                set_fn_type(literal_loc, 3 /*str_literal */);
                 bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                 if ((bib_buf_offset(BUF_TY_BASE, 2) < bib_buf_len(BUF_TY_BASE)) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE )
                     && (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != 37 /*comment */ )) {
@@ -863,7 +847,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                 };
 
                 impl_fn_num = impl_fn_num + 1;
-                fn_type[impl_fn_loc] = 1 /*wiz_defined */ ;
+                set_fn_type(impl_fn_loc, 1 /*wiz_defined */);
                 {
                     singl_function[single_ptr] = quote_next_fn;
                     if (single_ptr == single_fn_space) {
@@ -923,7 +907,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
     }
     {
         {
-            singl_function[single_ptr] = end_of_def;
+            singl_function[single_ptr] = end_of_def();
             if (single_ptr == single_fn_space) {
                 BIB_XRETALLOC("singl_function", singl_function, hash_ptr2, single_fn_space,
                               single_fn_space + SINGLE_FN_SPACE);
@@ -934,7 +918,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
 
             BIB_XRETALLOC("wiz_functions", wiz_functions, hash_ptr2, wiz_fn_space, wiz_fn_space + WIZ_FN_SPACE);
         }
-        ilk_info[fn_hash_loc] = wiz_def_ptr;
+        set_ilk_info(fn_hash_loc, wiz_def_ptr);
         copy_ptr = 0;
         while ((copy_ptr < single_ptr)) {
 
@@ -1282,8 +1266,8 @@ static bool scan_a_field_token_and_eat_white(bool at_bib_command)
                     TRY(bib_warn_print());
                 }
                 if (store_token) {    /*261: */
-                    tmp_ptr = bib_str_start(ilk_info[macro_name_loc]);
-                    tmp_end_ptr = bib_str_start(ilk_info[macro_name_loc] + 1);
+                    tmp_ptr = bib_str_start(ilk_info(macro_name_loc));
+                    tmp_end_ptr = bib_str_start(ilk_info(macro_name_loc) + 1);
                     if (bib_buf_offset(BUF_TY_EX, 1) == 0) {
 
                         if ((tmp_ptr < tmp_end_ptr) && (LEX_CLASS[bib_str_pool(tmp_ptr)] == LEX_CLASS_WHITESPACE )) {
@@ -1370,16 +1354,16 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
         else
             ex_buf_xptr = 0;
         field_val_loc = str_lookup(bib_buf(BUF_TY_EX), ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 0 /*text_ilk */ , true);
-        fn_type[field_val_loc] = 3 /*str_literal */ ;
+        set_fn_type(field_val_loc, 3 /*str_literal */);
         ;
 
         if (at_bib_command) { /*263: */
             switch ((command_num)) {
             case 1:
-                add_preamble(hash_text[field_val_loc]);
+                add_preamble(hash_text(field_val_loc));
                 break;
             case 2:
-                ilk_info[cur_macro_loc] = hash_text[field_val_loc];
+                set_ilk_info(cur_macro_loc, hash_text(field_val_loc));
                 break;
             default:
                 bib_cmd_confusion();
@@ -1388,7 +1372,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
             }
         } else {                /*264: */
 
-            field_ptr = entry_cite_ptr * num_fields + ilk_info[field_name_loc];
+            field_ptr = entry_cite_ptr * num_fields + ilk_info(field_name_loc);
             if (field_ptr >= max_fields) {
                 puts_log("field_info index is out of range");
                 print_confusion();
@@ -1398,13 +1382,13 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
                 puts_log("Warning--I'm ignoring ");
                 TRY(print_a_pool_str(cite_list(entry_cite_ptr)));
                 puts_log("'s extra \"");
-                TRY(print_a_pool_str(hash_text[field_name_loc]));
+                TRY(print_a_pool_str(hash_text(field_name_loc)));
                 puts_log("\" field\n");
                 TRY(bib_warn_print());
             } else {
 
-                field_info[field_ptr] = hash_text[field_val_loc];
-                if ((ilk_info[field_name_loc] == crossref_num) && (!all_entries)) {   /*265: */
+                field_info[field_ptr] = hash_text(field_val_loc);
+                if ((ilk_info(field_name_loc) == crossref_num) && (!all_entries)) {   /*265: */
                     tmp_ptr = ex_buf_xptr;
                     while (tmp_ptr < bib_buf_offset(BUF_TY_EX, 1)) {
                         bib_buf(BUF_TY_OUT)[tmp_ptr] = bib_buf(BUF_TY_EX)[tmp_ptr];
@@ -1414,9 +1398,9 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
                     lc_cite_loc =
                         str_lookup(bib_buf(BUF_TY_OUT), ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 10 /*lc_cite_ilk */ , true);
                     if (hash_found) {
-                        cite_loc = ilk_info[lc_cite_loc];
-                        if (ilk_info[cite_loc] >= old_num_cites)
-                            set_cite_info(ilk_info[cite_loc], cite_info(ilk_info[cite_loc]) + 1);
+                        cite_loc = ilk_info(lc_cite_loc);
+                        if (ilk_info(cite_loc) >= old_num_cites)
+                            set_cite_info(ilk_info(cite_loc), cite_info(ilk_info(cite_loc)) + 1);
                     } else {
 
                         cite_loc = str_lookup(bib_buf(BUF_TY_EX), ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 9 /*cite_ilk */ , true);
@@ -1425,7 +1409,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
                             longjmp(error_jmpbuf, 1);
                         }
                         set_cite_ptr(add_database_cite(cite_ptr()));
-                        set_cite_info(ilk_info[cite_loc], 1);
+                        set_cite_info(ilk_info(cite_loc), 1);
                     }
                 }
             }
@@ -1532,7 +1516,7 @@ static bool von_token_found(buf_pointer* name_bf_ptr, buf_pointer name_bf_xptr)
                 control_seq_loc =
                     str_lookup(bib_buf(BUF_TY_SV), name_bf_yptr, *name_bf_ptr - name_bf_yptr, 14 /*control_seq_ilk */ , false);
                 if (hash_found) {     /*400: */
-                    switch ((ilk_info[control_seq_loc])) {
+                    switch ((ilk_info(control_seq_loc))) {
                     case 3:
                     case 5:
                     case 7:
@@ -1587,8 +1571,8 @@ static void von_name_ends_and_last_name_starts_stuff(buf_pointer last_end, buf_p
     *von_end = last_end - 1;
     while (*von_end > von_start) {
 
-        *name_bf_ptr = bib_buf_at(BUF_TY_NAME_TOK, *von_end - 1);
-        *name_bf_xptr = bib_buf_at(BUF_TY_NAME_TOK, *von_end);
+        *name_bf_ptr = name_tok(*von_end - 1);
+        *name_bf_xptr = name_tok(*von_end);
         if (von_token_found(name_bf_ptr, *name_bf_xptr))
             return;
         *von_end = *von_end - 1;
@@ -1771,8 +1755,8 @@ static void figure_out_the_formatted_name(
                             while (cur_token < last_token) {
 
                                 if (double_letter) {  /*415: */
-                                    *name_bf_ptr = bib_buf_at(BUF_TY_NAME_TOK, cur_token);
-                                    *name_bf_xptr = bib_buf_at(BUF_TY_NAME_TOK, cur_token + 1);
+                                    *name_bf_ptr = name_tok(cur_token);
+                                    *name_bf_xptr = name_tok(cur_token + 1);
                                     if (bib_buf_len(BUF_TY_EX) + (*name_bf_xptr - *name_bf_ptr) > bib_buf_size())
                                         buffer_overflow();
                                     while (*name_bf_ptr < *name_bf_xptr) {
@@ -1785,8 +1769,8 @@ static void figure_out_the_formatted_name(
                                     }
                                 } else {        /*416: */
 
-                                    *name_bf_ptr = bib_buf_at(BUF_TY_NAME_TOK, cur_token);
-                                    *name_bf_xptr = bib_buf_at(BUF_TY_NAME_TOK, cur_token + 1);
+                                    *name_bf_ptr = name_tok(cur_token);
+                                    *name_bf_xptr = name_tok(cur_token + 1);
                                     while (*name_bf_ptr < *name_bf_xptr) {
 
                                         if (LEX_CLASS[bib_buf_at(BUF_TY_SV, *name_bf_ptr)] == LEX_CLASS_ALPHA ) {
@@ -1850,11 +1834,11 @@ static void figure_out_the_formatted_name(
                                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                             }
                                         }
-                                        if (LEX_CLASS[name_sep_char[cur_token]] == LEX_CLASS_SEP ) {
+                                        if (LEX_CLASS[bib_buf_at(BUF_TY_NAME_SEP, cur_token)] == LEX_CLASS_SEP ) {
                                             if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
                                                 buffer_overflow();
                                             {
-                                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = name_sep_char[cur_token];
+                                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_buf_at(BUF_TY_NAME_SEP, cur_token);
                                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                             }
                                         } else
@@ -2326,16 +2310,16 @@ static void x_gets(ExecCtx* ctx)
     if (ctx->pop1.typ != 2 /*stk_fn */ )
         print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 2 /*stk_fn */ );
     else if (((!ctx->mess_with_entries)
-              && ((fn_type[ctx->pop1.lit] == 6 /*str_entry_var */ ) || (fn_type[ctx->pop1.lit] == 5 /*int_entry_var */ ))))
+              && ((fn_type(ctx->pop1.lit) == 6 /*str_entry_var */ ) || (fn_type(ctx->pop1.lit) == 5 /*int_entry_var */ ))))
         TRY(bst_cant_mess_with_entries_print(ctx));
     else
-        switch ((fn_type[ctx->pop1.lit])) {
+        switch ((fn_type(ctx->pop1.lit))) {
         case 5:
             /*
                356: */ if (ctx->pop2.typ != 0 /*stk_int */ )
                 print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
             else
-                entry_ints[cite_ptr() * num_ent_ints + ilk_info[ctx->pop1.lit]] = /*:356 */ ctx->pop2.lit;
+                entry_ints[cite_ptr() * num_ent_ints + ilk_info(ctx->pop1.lit)] = /*:356 */ ctx->pop2.lit;
             break;
         case 6:
             {
@@ -2343,7 +2327,7 @@ static void x_gets(ExecCtx* ctx)
                     print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 1 /*stk_str */ );
                 else {
 
-                    str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info[ctx->pop1.lit];
+                    str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info(ctx->pop1.lit);
                     ent_chr_ptr = 0;
                     sp_ptr = bib_str_start(ctx->pop2.lit);
                     pool_pointer sp_xptr1 = bib_str_start(ctx->pop2.lit + 1);
@@ -2369,7 +2353,7 @@ static void x_gets(ExecCtx* ctx)
             if (ctx->pop2.typ != 0 /*stk_int */ )
                 print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
             else
-                ilk_info[ctx->pop1.lit] = /*:359 */ ctx->pop2.lit;
+                set_ilk_info(ctx->pop1.lit, /*:359 */ ctx->pop2.lit);
             break;
         case 8:
             {
@@ -2377,7 +2361,7 @@ static void x_gets(ExecCtx* ctx)
                     print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 1 /*stk_str */ );
                 else {
 
-                    str_glb_ptr = ilk_info[ctx->pop1.lit];
+                    str_glb_ptr = ilk_info(ctx->pop1.lit);
                     if (ctx->pop2.lit < ctx->bib_str_ptr)
                         glb_bib_str_ptr[str_glb_ptr] = ctx->pop2.lit;
                     else {
@@ -2559,7 +2543,7 @@ static void x_change_case(ExecCtx* ctx)
                                 switch ((conversion_type)) {
                                 case 0:
                                 case 1:
-                                    switch ((ilk_info[control_seq_loc])) {
+                                    switch ((ilk_info(control_seq_loc))) {
                                     case 11:
                                     case 9:
                                     case 3:
@@ -2573,7 +2557,7 @@ static void x_change_case(ExecCtx* ctx)
                                     }
                                     break;
                                 case 2:
-                                    switch ((ilk_info[control_seq_loc])) {
+                                    switch ((ilk_info(control_seq_loc))) {
                                     case 10:
                                     case 8:
                                     case 2:
@@ -2868,7 +2852,7 @@ static void x_format_name(ExecCtx* ctx)
                                 comma1 = num_tokens;
                             else
                                 comma2 = num_tokens;
-                            name_sep_char[num_tokens] = 44 /*comma */ ;
+                            bib_buf(BUF_TY_NAME_SEP)[num_tokens] = 44 /*comma */ ;
                         }
                         ex_buf_xptr = ex_buf_xptr + 1;
                         token_starting = true;
@@ -2878,7 +2862,7 @@ static void x_format_name(ExecCtx* ctx)
                     {
                         brace_level = brace_level + 1;
                         if (token_starting) {
-                            bib_buf(BUF_TY_NAME_TOK)[num_tokens] = name_bf_ptr;
+                            set_name_tok(num_tokens, name_bf_ptr);
                             num_tokens = num_tokens + 1;
                         }
                         bib_buf(BUF_TY_SV)[name_bf_ptr] = bib_buf(BUF_TY_EX)[ex_buf_xptr];
@@ -2900,7 +2884,7 @@ static void x_format_name(ExecCtx* ctx)
                 case 125:
                     {
                         if (token_starting) {
-                            bib_buf(BUF_TY_NAME_TOK)[num_tokens] = name_bf_ptr;
+                            set_name_tok(num_tokens, name_bf_ptr);
                             num_tokens = num_tokens + 1;
                         }
 
@@ -2917,7 +2901,7 @@ static void x_format_name(ExecCtx* ctx)
                     case LEX_CLASS_WHITESPACE:
                         {
                             if (!token_starting)
-                                name_sep_char[num_tokens] = 32 /*space */ ;
+                                bib_buf(BUF_TY_NAME_SEP)[num_tokens] = 32 /*space */ ;
                             ex_buf_xptr = ex_buf_xptr + 1;
                             token_starting = true;
                         }
@@ -2925,7 +2909,7 @@ static void x_format_name(ExecCtx* ctx)
                     case LEX_CLASS_SEP:
                         {
                             if (!token_starting)
-                                name_sep_char[num_tokens] = bib_buf(BUF_TY_EX)[ex_buf_xptr];
+                                bib_buf(BUF_TY_NAME_SEP)[num_tokens] = bib_buf(BUF_TY_EX)[ex_buf_xptr];
                             ex_buf_xptr = ex_buf_xptr + 1;
                             token_starting = true;
                         }
@@ -2933,7 +2917,7 @@ static void x_format_name(ExecCtx* ctx)
                     default:
                         {
                             if (token_starting) {
-                                bib_buf(BUF_TY_NAME_TOK)[num_tokens] = name_bf_ptr;
+                                set_name_tok(num_tokens, name_bf_ptr);
                                 num_tokens = num_tokens + 1;
                             }
                             bib_buf(BUF_TY_SV)[name_bf_ptr] = bib_buf(BUF_TY_EX)[ex_buf_xptr];
@@ -2945,7 +2929,7 @@ static void x_format_name(ExecCtx* ctx)
                     }
                     break;
                 }
-            bib_buf(BUF_TY_NAME_TOK)[num_tokens] = name_bf_ptr;
+            set_name_tok(num_tokens, name_bf_ptr);
         }
         buf_pointer first_start = 0, first_end = 0, last_end = 0, von_start = 0, von_end = 0, jr_end = 0, name_bf_xptr = 0;
         {
@@ -2957,8 +2941,8 @@ static void x_format_name(ExecCtx* ctx)
                     von_start = 0;
                     while (von_start < last_end - 1) {
 
-                        name_bf_ptr = bib_buf_at(BUF_TY_NAME_TOK, von_start);
-                        name_bf_xptr = bib_buf_at(BUF_TY_NAME_TOK, von_start + 1);
+                        name_bf_ptr = name_tok(von_start);
+                        name_bf_xptr = name_tok(von_start + 1);
                         if (von_token_found(&name_bf_ptr, name_bf_xptr)) {
                             von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr);
                             goto lab52;
@@ -2967,8 +2951,8 @@ static void x_format_name(ExecCtx* ctx)
                     }
                     while (von_start > 0) {
 
-                        if (((LEX_CLASS[name_sep_char[von_start]] != LEX_CLASS_SEP )
-                             || (name_sep_char[von_start] == 126 /*tie */ )))
+                        if (((LEX_CLASS[bib_buf_at(BUF_TY_NAME_SEP, von_start)] != LEX_CLASS_SEP )
+                             || (bib_buf_at(BUF_TY_NAME_SEP, von_start) == 126 /*tie */ )))
                             goto lab17;
                         von_start = von_start - 1;
                     }
@@ -3141,7 +3125,7 @@ static void x_purify(ExecCtx* ctx)
                                     if (hash_found) { /*434: */
                                         bib_buf(BUF_TY_EX)[ex_buf_xptr] = bib_buf(BUF_TY_EX)[ex_buf_yptr];
                                         ex_buf_xptr = ex_buf_xptr + 1;
-                                        switch ((ilk_info[control_seq_loc])) {
+                                        switch ((ilk_info(control_seq_loc))) {
                                         case 2:
                                         case 3:
                                         case 4:
@@ -3452,10 +3436,10 @@ static void x_type(ExecCtx* ctx)
 {
     if (!ctx->mess_with_entries)
         TRY(bst_cant_mess_with_entries_print(ctx));
-    else if ((type_list(cite_ptr()) == undefined) || (type_list(cite_ptr()) == 0 /*empty */ ))
+    else if ((type_list(cite_ptr()) == undefined()) || (type_list(cite_ptr()) == 0 /*empty */ ))
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     else
-        push_lit_stk(ctx, (ExecVal) { .lit = hash_text[type_list(cite_ptr())], .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = hash_text(type_list(cite_ptr())), .typ = STK_TYPE_STRING });
 }
 
 static void x_warning(ExecCtx* ctx)
@@ -3507,7 +3491,7 @@ static void x_width(ExecCtx* ctx)
                                         str_lookup(bib_buf(BUF_TY_EX), ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr,
                                                    14 /*control_seq_ilk */ , false);
                                     if (hash_found) { /*454: */
-                                        switch ((ilk_info[control_seq_loc])) {
+                                        switch ((ilk_info(control_seq_loc))) {
                                         case 12:
                                             string_width = string_width + 500;
                                             break;
@@ -3577,12 +3561,12 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
     wiz_fn_loc wiz_ptr;
     ;
 
-    switch ((fn_type[ex_fn_loc])) {
+    switch ((fn_type(ex_fn_loc))) {
     case 0:
         {
             ;
 
-            switch ((ilk_info[ex_fn_loc])) {
+            switch ((ilk_info(ex_fn_loc))) {
             case 0:
                 x_equals(ctx);
                 break;
@@ -3611,7 +3595,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 {
                     if (!ctx->mess_with_entries)
                         TRY(bst_cant_mess_with_entries_print(ctx));
-                    else if (type_list(cite_ptr()) == undefined)
+                    else if (type_list(cite_ptr()) == undefined())
                         execute_fn(ctx, b_default);
                     else if (type_list(cite_ptr()) == 0 /*empty */ ) ;
                     else
@@ -3757,8 +3741,8 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
         break;
     case 1:
         {
-            wiz_ptr = ilk_info[ex_fn_loc];
-            while (wiz_functions[wiz_ptr] != end_of_def) {
+            wiz_ptr = ilk_info(ex_fn_loc);
+            while (wiz_functions[wiz_ptr] != end_of_def()) {
 
                 if (wiz_functions[wiz_ptr] != quote_next_fn)
                     execute_fn(ctx, wiz_functions[wiz_ptr]);
@@ -3772,10 +3756,10 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
         }
         break;
     case 2:
-        push_lit_stk(ctx, (ExecVal) { .lit = ilk_info[ex_fn_loc], .typ = STK_TYPE_INTEGER });
+        push_lit_stk(ctx, (ExecVal) { .lit = ilk_info(ex_fn_loc), .typ = STK_TYPE_INTEGER });
         break;
     case 3:
-        push_lit_stk(ctx, (ExecVal) { .lit = hash_text[ex_fn_loc], .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = hash_text(ex_fn_loc), .typ = STK_TYPE_STRING });
         break;
     case 4:
         {
@@ -3783,14 +3767,14 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 TRY(bst_cant_mess_with_entries_print(ctx));
             else {
 
-                field_ptr = cite_ptr() * num_fields + ilk_info[ex_fn_loc];
+                field_ptr = cite_ptr() * num_fields + ilk_info(ex_fn_loc);
                 if (field_ptr >= max_fields) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
                 if (field_info[field_ptr] == 0 /*missing */ )
-                    push_lit_stk(ctx, (ExecVal) { .lit = hash_text[ex_fn_loc], .typ = STK_TYPE_MISSING  });
+                    push_lit_stk(ctx, (ExecVal) { .lit = hash_text(ex_fn_loc), .typ = STK_TYPE_MISSING  });
                 else
                     push_lit_stk(ctx, (ExecVal) { .lit = field_info[field_ptr], .typ = STK_TYPE_STRING });
             }
@@ -3801,7 +3785,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             if (!ctx->mess_with_entries)
                 TRY(bst_cant_mess_with_entries_print(ctx));
             else
-                push_lit_stk(ctx, (ExecVal) { .lit = entry_ints[cite_ptr() * num_ent_ints + ilk_info[ex_fn_loc]], .typ = STK_TYPE_INTEGER });
+                push_lit_stk(ctx, (ExecVal) { .lit = entry_ints[cite_ptr() * num_ent_ints + ilk_info(ex_fn_loc)], .typ = STK_TYPE_INTEGER });
         }
         break;
     case 6:
@@ -3810,7 +3794,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 TRY(bst_cant_mess_with_entries_print(ctx));
             else {
 
-                str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info[ex_fn_loc];
+                str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info(ex_fn_loc);
                 bib_set_buf_offset(BUF_TY_EX, 1, 0);
                 while (entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (bib_buf_offset(BUF_TY_EX, 1))] != 127 /*end_of_string */ ) {
 
@@ -3823,11 +3807,11 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
         }
         break;
     case 7:
-        push_lit_stk(ctx, (ExecVal) { .lit = ilk_info[ex_fn_loc], .typ = STK_TYPE_INTEGER });
+        push_lit_stk(ctx, (ExecVal) { .lit = ilk_info(ex_fn_loc), .typ = STK_TYPE_INTEGER });
         break;
     case 8:
         {
-            str_glb_ptr = ilk_info[ex_fn_loc];
+            str_glb_ptr = ilk_info(ex_fn_loc);
             if (glb_bib_str_ptr[str_glb_ptr] > 0)
                 push_lit_stk(ctx, (ExecVal) { .lit = glb_bib_str_ptr[str_glb_ptr], .typ = STK_TYPE_STRING });
             else {
@@ -3898,7 +3882,7 @@ get_the_top_level_aux_file_name(const char *aux_file_name)
         name_ptr = name_ptr + 1;
     }
 
-    set_cur_aux(hash_text[str_lookup(bib_buf(BUF_TY_BASE), 1, nal.name_length, 3 /*aux_file_ilk*/, true)]);
+    set_cur_aux(hash_text(str_lookup(bib_buf(BUF_TY_BASE), 1, nal.name_length, 3 /*aux_file_ilk*/, true)));
 
     if (hash_found) {
         puts_log("Already encountered auxiliary file");
@@ -3950,7 +3934,7 @@ static void aux_bib_data_command()
         {
             check_bib_files(bib_ptr());
 
-            set_cur_bib(hash_text[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 6 /*bib_file_ilk */ , true)]);
+            set_cur_bib(hash_text(str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 6 /*bib_file_ilk */ , true)));
             if (hash_found) {
                 puts_log("This database file appears more than once: ");
                 TRY(print_bib_name());
@@ -4007,7 +3991,7 @@ static void aux_bib_style_command(BstCtx* ctx)
         }
     }
     {
-        ctx->bst_str = hash_text[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 5 /*bst_file_ilk */ , true)];
+        ctx->bst_str = hash_text(str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 5 /*bst_file_ilk */ , true));
         if (hash_found) {
             puts_log("Already encountered style file");
             print_confusion();
@@ -4096,7 +4080,7 @@ static void aux_citation_command(void)
                     puts_log("Case mismatch error between cite keys ");
                     print_a_token();
                     puts_log(" and ");
-                    TRY(print_a_pool_str(cite_list(ilk_info[ilk_info[lc_cite_loc]])));
+                    TRY(print_a_pool_str(cite_list(ilk_info(ilk_info(lc_cite_loc)))));
                     putc_log('\n');
                     TRY(aux_err_print());
                     return;
@@ -4111,9 +4095,9 @@ static void aux_citation_command(void)
                     longjmp(error_jmpbuf, 1);
                 }
                 check_cite_overflow(cite_ptr());
-                set_cite_list(cite_ptr(), hash_text[cite_loc]);
-                ilk_info[cite_loc] = cite_ptr();
-                ilk_info[lc_cite_loc] = cite_loc;
+                set_cite_list(cite_ptr(), hash_text(cite_loc));
+                set_ilk_info(cite_loc, cite_ptr());
+                set_ilk_info(lc_cite_loc, cite_loc);
                 set_cite_ptr(cite_ptr() + 1);
             }
         }
@@ -4172,7 +4156,7 @@ static void aux_input_command(void)
             TRY(aux_err_print());
             return;
         }
-        set_cur_aux(hash_text[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 3 /*aux_file_ilk */ , true)]);
+        set_cur_aux(hash_text(str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 3 /*aux_file_ilk */ , true)));
         if (hash_found) {
             puts_log("Already encountered file ");
             TRY(print_aux_name());
@@ -4221,7 +4205,7 @@ static void get_aux_command_and_process(BstCtx* ctx)
     bib_set_buf_offset(BUF_TY_BASE, 2, 0);
     if (!scan1(123 /*left_brace */))
         return;
-    command_num = ilk_info[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 2 /*aux_command_ilk */ , false)];
+    command_num = ilk_info(str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 2 /*aux_command_ilk */ , false));
     if (hash_found)
         switch ((command_num)) {
         case 0:
@@ -4334,8 +4318,8 @@ static void bst_entry_command(BstCtx* ctx)
                         return;
                     }
                 }
-                fn_type[fn_loc] = 4 /*field */ ;
-                ilk_info[fn_loc] = num_fields;
+                set_fn_type(fn_loc, 4 /*field */);
+                set_ilk_info(fn_loc, num_fields);
                 num_fields = num_fields + 1;
             }
             {
@@ -4402,8 +4386,8 @@ static void bst_entry_command(BstCtx* ctx)
                         return;
                     }
                 }
-                fn_type[fn_loc] = 5 /*int_entry_var */ ;
-                ilk_info[fn_loc] = num_ent_ints;
+                set_fn_type(fn_loc, 5 /*int_entry_var */);
+                set_ilk_info(fn_loc, num_ent_ints);
                 num_ent_ints = num_ent_ints + 1;
             }
             {
@@ -4466,8 +4450,8 @@ static void bst_entry_command(BstCtx* ctx)
                         return;
                     }
                 }
-                fn_type[fn_loc] = 6 /*str_entry_var */ ;
-                ilk_info[fn_loc] = num_ent_strs;
+                set_fn_type(fn_loc, 6 /*str_entry_var */);
+                set_ilk_info(fn_loc, num_ent_strs);
                 num_ent_strs = num_ent_strs + 1;
             }
             {
@@ -4492,7 +4476,7 @@ static bool bad_argument_token(BstCtx* ctx)
         puts_log(" is an unknown function");
         bst_err_print_and_look_for_blank_line(ctx);
         return true;
-    } else if ((fn_type[fn_loc] != 0 /*built_in */ ) && (fn_type[fn_loc] != 1 /*wiz_defined */ )) {
+    } else if ((fn_type(fn_loc) != 0 /*built_in */ ) && (fn_type(fn_loc) != 1 /*wiz_defined */ )) {
         print_a_token();
         puts_log(" has bad function type ");
         print_fn_class(fn_loc);
@@ -4624,8 +4608,8 @@ static void bst_function_command(BstCtx* ctx)
                     return;
                 }
             }
-            fn_type[wiz_loc] = 1 /*wiz_defined */ ;
-            if (hash_text[wiz_loc] == s_default)
+            set_fn_type(wiz_loc, 1 /*wiz_defined */);
+            if (hash_text(wiz_loc) == s_default)
                 b_default = wiz_loc;
         }
         {
@@ -4716,8 +4700,8 @@ static void bst_integers_command(BstCtx* ctx)
                     return;
                 }
             }
-            fn_type[fn_loc] = 7 /*int_global_var */ ;
-            ilk_info[fn_loc] = 0;
+            set_fn_type(fn_loc, 7 /*int_global_var */);
+            set_ilk_info(fn_loc, 0);
         }
         {
             if (!eat_bst_white_space(ctx)) {
@@ -4865,7 +4849,7 @@ static void bst_macro_command(BstCtx* ctx)
                 bst_err_print_and_look_for_blank_line(ctx);
                 return;
             }
-            ilk_info[macro_name_loc] = hash_text[macro_name_loc];
+            set_ilk_info(macro_name_loc, hash_text(macro_name_loc));
         }
         {
             if (!eat_bst_white_space(ctx)) {
@@ -4925,8 +4909,8 @@ static void bst_macro_command(BstCtx* ctx)
             }
 
             macro_def_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ , true);
-            fn_type[macro_def_loc] = 3 /*str_literal */ ;
-            ilk_info[macro_name_loc] = hash_text[macro_def_loc];
+            set_fn_type(macro_def_loc, 3 /*str_literal */);
+            set_ilk_info(macro_name_loc, hash_text(macro_def_loc));
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
         }
         {
@@ -4988,7 +4972,7 @@ static void get_bib_command_or_entry_and_process(void)
         ;
 
         lower_case(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-        command_num = ilk_info[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 12 /*bib_command_ilk */ , false)];
+        command_num = ilk_info(str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 12 /*bib_command_ilk */ , false));
         if (hash_found) {     /*240: */
             at_bib_command = true;
             switch ((command_num)) {
@@ -5073,7 +5057,7 @@ static void get_bib_command_or_entry_and_process(void)
                             lower_case(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                             cur_macro_loc =
                                 str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 13 /*macro_ilk */ , true);
-                            ilk_info[cur_macro_loc] = hash_text[cur_macro_loc];
+                            set_ilk_info(cur_macro_loc, hash_text(cur_macro_loc));
                         }
                     }
                     {
@@ -5115,7 +5099,7 @@ static void get_bib_command_or_entry_and_process(void)
         } else {
 
             entry_type_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false);
-            if ((!hash_found) || (fn_type[entry_type_loc] != 1 /*wiz_defined */ ))
+            if ((!hash_found) || (fn_type(entry_type_loc) != 1 /*wiz_defined */ ))
                 type_exists = false;
             else
                 type_exists = true;
@@ -5165,7 +5149,7 @@ static void get_bib_command_or_entry_and_process(void)
             else
                 lc_cite_loc = str_lookup(bib_buf(BUF_TY_EX), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 10 /*lc_cite_ilk */ , false);
             if (hash_found) {
-                entry_cite_ptr = ilk_info[ilk_info[lc_cite_loc]];
+                entry_cite_ptr = ilk_info(ilk_info(lc_cite_loc));
                 {
                     if ((!all_entries) || (entry_cite_ptr < all_marker) || (entry_cite_ptr >= old_num_cites)) {
                         if (type_list(entry_cite_ptr) == 0 /*empty */ ) {
@@ -5174,9 +5158,9 @@ static void get_bib_command_or_entry_and_process(void)
                                     cite_loc =
                                         str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , true);
                                     if (!hash_found) {
-                                        ilk_info[lc_cite_loc] = cite_loc;
-                                        ilk_info[cite_loc] = entry_cite_ptr;
-                                        set_cite_list(entry_cite_ptr, hash_text[cite_loc]);
+                                        set_ilk_info(lc_cite_loc, cite_loc);
+                                        set_ilk_info(cite_loc, entry_cite_ptr);
+                                        set_cite_list(entry_cite_ptr, hash_text(cite_loc));
                                         hash_found = true;
                                     }
                                 }
@@ -5229,7 +5213,7 @@ static void get_bib_command_or_entry_and_process(void)
                     else {
 
                         set_entry_exists(entry_cite_ptr, true);
-                        cite_loc = ilk_info[lc_cite_loc];
+                        cite_loc = ilk_info(lc_cite_loc);
                     }
                 } else {
 
@@ -5248,7 +5232,7 @@ static void get_bib_command_or_entry_and_process(void)
                 if (type_exists)
                     set_type_list(entry_cite_ptr, entry_type_loc);
                 else {
-                    set_type_list(entry_cite_ptr, undefined);
+                    set_type_list(entry_cite_ptr, undefined());
                     puts_log("Warning--entry type for \"");
                     print_a_token();
                     puts_log("\" isn't style-file defined\n");
@@ -5298,7 +5282,7 @@ static void get_bib_command_or_entry_and_process(void)
                     field_name_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false);
                     if (hash_found) {
 
-                        if (fn_type[field_name_loc] == 4 /*field */ )
+                        if (fn_type(field_name_loc) == 4 /*field */ )
                             store_field = true;
                     }
                 }
@@ -5425,9 +5409,9 @@ static void bst_read_command(BstCtx* ctx)
                     if (field_info[field_ptr] != 0 /*missing */ ) {
 
                         if (find_cite_locs_for_this_cite_key(field_info[field_ptr])) {
-                            cite_loc = ilk_info[lc_cite_loc];
-                            field_info[field_ptr] = hash_text[cite_loc];
-                            cite_parent_ptr = ilk_info[cite_loc];
+                            cite_loc = ilk_info(lc_cite_loc);
+                            field_info[field_ptr] = hash_text(cite_loc);
+                            cite_parent_ptr = ilk_info(cite_loc);
                             field_ptr = cite_ptr() * num_fields + num_pre_defined_fields;
                             field_end_ptr = field_ptr - num_pre_defined_fields + num_fields;
                             field_parent_ptr = cite_parent_ptr * num_fields + num_pre_defined_fields;
@@ -5464,11 +5448,11 @@ static void bst_read_command(BstCtx* ctx)
                             field_info[field_ptr] = 0 /*missing */ ;
                         } else {
 
-                            if (cite_loc != ilk_info[lc_cite_loc]) {
+                            if (cite_loc != ilk_info(lc_cite_loc)) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            cite_parent_ptr = ilk_info[cite_loc];
+                            cite_parent_ptr = ilk_info(cite_loc);
                             if (type_list(cite_parent_ptr) == 0 /*empty */ ) {
                                 nonexistent_cross_reference_error();
                                 field_info[field_ptr] = 0 /*missing */ ;
@@ -5509,11 +5493,11 @@ static void bst_read_command(BstCtx* ctx)
                                 cite_key_disappeared_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            if ((!cite_hash_found) || (cite_loc != ilk_info[lc_cite_loc])) {
+                            if ((!cite_hash_found) || (cite_loc != ilk_info(lc_cite_loc))) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            ilk_info[cite_loc] = cite_xptr;
+                            set_ilk_info(cite_loc, cite_xptr);
                             field_ptr = cite_xptr * num_fields;
                             field_end_ptr = field_ptr + num_fields;
                             tmp_ptr = cite_ptr() * num_fields;
@@ -5715,8 +5699,8 @@ bst_strings_command(BstCtx* ctx)
             return;
         }
 
-        fn_type[fn_loc] = 8 /*str_global_var */ ;
-        ilk_info[fn_loc] = num_glb_strs;
+        set_fn_type(fn_loc, 8 /*str_global_var */);
+        set_ilk_info(fn_loc, num_glb_strs);
 
         if (num_glb_strs == max_glob_strs) {
             BIB_XRETALLOC_NOSET("glb_bib_str_ptr", glb_bib_str_ptr, str_number, max_glob_strs,
@@ -5757,7 +5741,7 @@ get_bst_command_and_process(ExecCtx* ctx)
     }
 
     lower_case(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-    command_num = ilk_info[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 4 /*bst_command_ilk */ , false)];
+    command_num = ilk_info(str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 4 /*bst_command_ilk */ , false));
     if (!hash_found) {
         print_a_token();
         puts_log(" is an illegal style-file command");
@@ -5810,13 +5794,6 @@ setup_params(void)
 {
     ent_str_size = ENT_STR_SIZE;
     glob_str_size = GLOB_STR_SIZE;
-
-    hash_size = bib_max_strings();
-    if (hash_size < 5000 /*HASH_SIZE */ )
-        hash_size = 5000 /*HASH_SIZE */ ;
-    hash_max = hash_size + hash_base - 1;
-    end_of_def = hash_max + 1;
-    undefined = hash_max + 1;
 }
 
 
@@ -5826,40 +5803,40 @@ compute_hash_prime(void)
     int32_t hash_want, k, j, o, n, square;
     bool j_prime;
 
-    hash_want = (hash_size / 20) * 17;
+    hash_want = (hash_size() / 20) * 17;
     j = 1;
     k = 1;
-    hash_prime = 2;
-    hash_next[k] = hash_prime;
+    set_hash_prime(2);
+    set_hash_next(k, hash_prime());
     o = 2;
     square = 9;
 
-    while (hash_prime < hash_want) {
+    while (hash_prime() < hash_want) {
         do {
             j += 2;
 
             if (j == square) {
-                hash_text[o] = j;
+                set_hash_text(o, j);
                 j += 2;
                 o += 1;
-                square = hash_next[o] * hash_next[o];
+                square = hash_next(o) * hash_next(o);
             }
 
             n = 2;
             j_prime = true;
 
             while (n < o && j_prime) {
-                while (hash_text[n] < j)
-                    hash_text[n] += 2 * hash_next[n];
-                if (hash_text[n] == j)
+                while (hash_text(n) < j)
+                    set_hash_text(n, hash_text(n) + 2 * hash_next(n));
+                if (hash_text(n) == j)
                     j_prime = false;
                 n = n + 1;
             }
         } while (!j_prime);
 
         k++;
-        hash_prime = j;
-        hash_next[k] = hash_prime;
+        set_hash_prime(j);
+        set_hash_next(k, hash_prime());
     }
 }
 
@@ -5870,7 +5847,6 @@ initialize(const char *aux_file_name)
     hash_loc k;
 
     bad = 0;
-    reset_all();
 
     if (min_print_line < 3)
         bad = 1;
@@ -5878,29 +5854,24 @@ initialize(const char *aux_file_name)
         bad = 10 * bad + 2;
     if (max_print_line >= bib_buf_size())
         bad = 10 * bad + 3;
-    if (hash_prime < 128)
+    if (hash_prime() < 128)
         bad = 10 * bad + 4;
-    if (hash_prime > hash_size)
+    if (hash_prime() > hash_size())
         bad = 10 * bad + 5;
-    if (hash_base != 1)
-        bad = 10 * bad + 6;
-    if (bib_max_strings() > hash_size)
+    if (bib_max_strings() > hash_size())
         bad = 10 * bad + 7;
     if (max_cites() > bib_max_strings())
         bad = 10 * bad + 8;
     if (10 /*short_list */  < 2 * 4 /*end_offset */  + 2)
         bad = 100 * bad + 22;
 
-    if (bad)
+    if (bad) {
+        printf("BAD %d\n", bad);
         return 1;
-
-    for (k = hash_base; k <= hash_max; k++) {
-        hash_next[k] = 0 /*empty */ ;
-        hash_text[k] = 0;
     }
 
-    cite_xptr = 0;
-    hash_used = hash_max + 1;
+    reset_after_compute();
+
     bib_set_pool_ptr(0);
     bib_set_str_ptr(1);
     bib_set_str_start(bib_str_ptr(), 0);
@@ -5944,21 +5915,16 @@ bibtex_main(const char *aux_file_name)
         return HISTORY_FATAL_ERROR;
 
     setup_params();
+    reset_all();
 
     entry_ints = NULL;
     entry_strs = NULL;
 
     wiz_functions = XTALLOC(wiz_fn_space + 1, hash_ptr2);
     field_info = XTALLOC(max_fields + 1, str_number);
-    name_sep_char = XTALLOC(bib_buf_size() + 1, ASCII_code);
     glb_bib_str_ptr = XTALLOC(max_glob_strs, str_number);
     global_strs = XTALLOC(max_glob_strs * (glob_str_size + 1), ASCII_code);
     glb_str_end = XTALLOC(max_glob_strs, int32_t);
-    hash_next = XTALLOC(hash_max + 1, hash_pointer);
-    hash_text = XTALLOC(hash_max + 1, str_number);
-    hash_ilk = XTALLOC(hash_max + 1, str_ilk);
-    ilk_info = XTALLOC(hash_max + 1, int32_t);
-    fn_type = XTALLOC(hash_max + 1, fn_class);
 
     compute_hash_prime();
 
@@ -5978,7 +5944,7 @@ bibtex_main(const char *aux_file_name)
     {
         char buf[512];
         snprintf (buf, sizeof(buf) - 1, "Capacity: max_strings=%ld, hash_size=%ld, hash_prime=%ld\n",
-                  (long) bib_max_strings(), (long) hash_size, (long) hash_prime);
+                  (long) bib_max_strings(), (long) hash_size(), (long) hash_prime());
         ttstub_output_write (bib_log_file(), buf, strlen(buf));
     }
 

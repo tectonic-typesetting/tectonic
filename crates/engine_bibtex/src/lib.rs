@@ -106,7 +106,7 @@ pub mod c_api {
     use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
     use crate::c_api::history::History;
     use crate::c_api::pool::with_pool;
-    use std::{ptr, slice};
+    use std::slice;
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
 
@@ -121,6 +121,8 @@ pub mod c_api {
     mod scan;
     mod auxi;
     mod bibs;
+    mod hash;
+    pub mod xbuf;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -136,12 +138,6 @@ pub mod c_api {
         len: BufPointer,
     ) -> &'a mut [ASCIICode] {
         slice::from_raw_parts_mut(buf.offset(start as isize), len as usize)
-    }
-
-    unsafe fn xcalloc_zeroed<T>(len: usize, elem: usize) -> &'static mut [T] {
-        let ptr = xcalloc(len, elem);
-        ptr::write_bytes(ptr, 0, len * elem);
-        slice::from_raw_parts_mut(ptr.cast(), len)
     }
 
     #[repr(C)]
@@ -169,9 +165,12 @@ pub mod c_api {
     type BufType = *mut ASCIICode;
     type BufPointer = i32;
     type PoolPointer = usize;
+    type HashPointer = i32;
+    type StrIlk = u8;
     type HashPointer2 = i32;
     type AuxNumber = i32;
     type BibNumber = i32;
+    type FnClass = u8;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -182,6 +181,7 @@ pub mod c_api {
         cite::reset();
         auxi::reset();
         bibs::reset();
+        hash::reset();
     }
 
     #[no_mangle]

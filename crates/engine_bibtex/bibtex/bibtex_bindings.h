@@ -12,7 +12,7 @@ typedef enum {
   BUF_TY_SV,
   BUF_TY_EX,
   BUF_TY_OUT,
-  BUF_TY_NAME_TOK,
+  BUF_TY_NAME_SEP,
 } BufTy;
 
 typedef enum {
@@ -105,6 +105,12 @@ typedef int32_t AuxNumber;
 
 typedef int32_t BibNumber;
 
+typedef uint8_t FnClass;
+
+typedef int32_t HashPointer;
+
+typedef uint8_t StrIlk;
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -144,6 +150,10 @@ BufPointer bib_buf_len(BufTy ty);
 void bib_set_buf_len(BufTy ty, BufPointer len);
 
 void buffer_overflow(void);
+
+BufPointer name_tok(BufPointer pos);
+
+void set_name_tok(BufPointer pos, BufPointer val);
 
 void quick_sort(CiteNumber left_end, CiteNumber right_end);
 
@@ -384,6 +394,42 @@ void set_preamble_ptr(BibNumber num);
 int32_t bib_line_num(void);
 
 void set_bib_line_num(int32_t num);
+
+void reset_after_compute(void);
+
+int32_t end_of_def(void);
+
+int32_t undefined(void);
+
+int32_t hash_used(void);
+
+void set_hash_used(int32_t num);
+
+FnClass fn_type(HashPointer pos);
+
+void set_fn_type(HashPointer pos, FnClass ty);
+
+StrNumber hash_text(HashPointer pos);
+
+void set_hash_text(HashPointer pos, StrNumber num);
+
+StrIlk hash_ilk(HashPointer pos);
+
+void set_hash_ilk(HashPointer pos, StrIlk val);
+
+int32_t ilk_info(HashPointer pos);
+
+void set_ilk_info(HashPointer pos, int32_t val);
+
+HashPointer hash_next(HashPointer pos);
+
+void set_hash_next(HashPointer pos, HashPointer val);
+
+int32_t hash_size(void);
+
+int32_t hash_prime(void);
+
+void set_hash_prime(int32_t val);
 
 #ifdef __cplusplus
 } // extern "C"
