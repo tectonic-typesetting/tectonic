@@ -78,6 +78,8 @@ typedef struct {
   PeekableInput *bst_file;
   StrNumber bst_str;
   int32_t bst_line_num;
+  int32_t num_bib_files;
+  int32_t num_preamble_strings;
 } BstCtx;
 
 typedef struct {
@@ -100,6 +102,8 @@ typedef struct {
 typedef uintptr_t PoolPointer;
 
 typedef int32_t AuxNumber;
+
+typedef int32_t BibNumber;
 
 #ifdef __cplusplus
 extern "C" {
@@ -306,6 +310,28 @@ void set_cur_aux_ln(int32_t ln);
 AuxNumber aux_ptr(void);
 
 void set_aux_ptr(AuxNumber num);
+
+StrNumber cur_bib(void);
+
+void set_cur_bib(StrNumber num);
+
+PeekableInput *cur_bib_file(void);
+
+void set_cur_bib_file(PeekableInput *input);
+
+BibNumber bib_ptr(void);
+
+void set_bib_ptr(BibNumber num);
+
+void check_bib_files(BibNumber ptr);
+
+void add_preamble(StrNumber num);
+
+StrNumber cur_preamble(void);
+
+BibNumber preamble_ptr(void);
+
+void set_preamble_ptr(BibNumber num);
 
 #ifdef __cplusplus
 } // extern "C"

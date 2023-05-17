@@ -120,6 +120,7 @@ pub mod c_api {
     mod pool;
     mod scan;
     mod auxi;
+    mod bibs;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -170,6 +171,7 @@ pub mod c_api {
     type PoolPointer = usize;
     type HashPointer2 = i32;
     type AuxNumber = i32;
+    type BibNumber = i32;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -179,6 +181,7 @@ pub mod c_api {
         buffer::reset();
         cite::reset();
         auxi::reset();
+        bibs::reset();
     }
 
     #[no_mangle]

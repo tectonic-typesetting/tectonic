@@ -41,7 +41,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define min_print_line 3
 #define max_print_line 79
 #define aux_stack_size 20
-#define MAX_BIB_FILES 20
 #define WIZ_FN_SPACE 3000
 #define SINGLE_FN_SPACE 100
 #define ENT_STR_SIZE 250
@@ -74,7 +73,6 @@ typedef int32_t hash_ptr2;
 typedef unsigned char /*last_lit_type */ stk_type;
 typedef int32_t blt_in_range;
 
-static int32_t max_bib_files;
 static int32_t wiz_fn_space;
 static int32_t ent_str_size;
 static int32_t glob_str_size;
@@ -100,11 +98,7 @@ static str_number s_bst_extension;
 static str_number s_bib_extension;
 static int32_t command_num;
 static rust_output_handle_t bbl_file;
-static str_number *bib_list;
-static bib_number bib_ptr;
-static bib_number num_bib_files;
 static bool bib_seen;
-static PeekableInput **bib_file;
 static bool bst_seen;
 static cite_number entry_cite_ptr;
 static cite_number num_cites;
@@ -160,8 +154,6 @@ static ASCII_code right_str_delim;
 static bool at_bib_command;
 static hash_loc cur_macro_loc;
 static bool cite_hash_found;
-static bib_number preamble_ptr;
-static bib_number num_preamble_strings;
 static int32_t bib_brace_level;
 static int32_t ent_chr_ptr;
 static int32_t glob_chr_ptr;
@@ -209,7 +201,6 @@ static hash_loc b_default;
 
 static str_number s_null;
 static str_number s_default;
-static str_number *s_preamble;
 static hash_loc control_seq_loc;
 static int32_t num_names;
 static ASCII_code *name_sep_char;
@@ -240,8 +231,8 @@ printf_log(const char *fmt, ...)
 static void
 print_bib_name(void)
 {
-    TRY(print_a_pool_str(bib_list[bib_ptr]));
-    if (!str_ends_with(bib_list[bib_ptr], s_bib_extension))
+    TRY(print_a_pool_str(cur_bib()));
+    if (!str_ends_with(cur_bib(), s_bib_extension))
         TRY(print_a_pool_str(s_bib_extension));
     putc_log('\n');
 }
@@ -250,8 +241,8 @@ print_bib_name(void)
 static void
 log_pr_bib_name(void)
 {
-    TRY(out_pool_str(bib_log_file(), bib_list[bib_ptr]));
-    if (!str_ends_with(bib_list[bib_ptr], s_bib_extension))
+    TRY(out_pool_str(bib_log_file(), cur_bib()));
+    if (!str_ends_with(cur_bib(), s_bib_extension))
         TRY(out_pool_str(bib_log_file(), s_bib_extension));
     ttstub_output_putc (bib_log_file(), '\n');
 }
@@ -878,7 +869,6 @@ static void pre_def_certain_strings(void) {
     s_default = hash_text[pre_def_loc];
     fn_type[pre_def_loc] = 3 /*str_literal */ ;
     b_default = b_skip;
-    preamble_ptr = 0;
     pre_def_loc = pre_define("i           ", 1, 14 /*control_seq_ilk */ );
     ilk_info[pre_def_loc] = 0 /*n_i */ ;
     pre_def_loc = pre_define("j           ", 1, 14 /*control_seq_ilk */ );
@@ -1192,7 +1182,7 @@ static bool eat_bib_white_space(void)
 {
     while ((!scan_white_space())) {
 
-        if (!input_ln(bib_file[bib_ptr])) {
+        if (!input_ln(cur_bib_file())) {
             return false;
         }
         bib_line_num = bib_line_num + 1;
@@ -1214,7 +1204,7 @@ static bool compress_bib_white(void)
     }
     while ((!scan_white_space())) {
 
-        if (!input_ln(bib_file[bib_ptr])) {
+        if (!input_ln(cur_bib_file())) {
             eat_bib_print();
             return false;
         }
@@ -1617,10 +1607,7 @@ static bool scan_and_store_the_field_value_and_eat_white(void)
         if (at_bib_command) { /*263: */
             switch ((command_num)) {
             case 1:
-                {
-                    s_preamble[preamble_ptr] = hash_text[field_val_loc];
-                    preamble_ptr = preamble_ptr + 1;
-                }
+                add_preamble(hash_text[field_val_loc]);
                 break;
             case 2:
                 ilk_info[cur_macro_loc] = hash_text[field_val_loc];
@@ -3320,11 +3307,10 @@ static void x_num_names(ExecCtx* ctx)
 static void x_preamble(ExecCtx* ctx)
 {
     bib_set_buf_len(BUF_TY_EX, 0);
-    preamble_ptr = 0;
-    while (preamble_ptr < num_preamble_strings) {
-
-        add_buf_pool(s_preamble[preamble_ptr]);
-        preamble_ptr = preamble_ptr + 1;
+    set_preamble_ptr(0);
+    while (preamble_ptr() < ctx->bst_ctx->num_preamble_strings) {
+        add_buf_pool(cur_preamble());
+        set_preamble_ptr(preamble_ptr() + 1);
     }
     add_pool_buf_and_push(ctx);
 }
@@ -4186,34 +4172,28 @@ static void aux_bib_data_command()
             }
         }
         {
-            if (bib_ptr == max_bib_files) {
-                BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number,
-                                    max_bib_files, max_bib_files + MAX_BIB_FILES);
-                BIB_XRETALLOC_NOSET("bib_file", bib_file, PeekableInput *,
-                                    max_bib_files, max_bib_files + MAX_BIB_FILES);
-                BIB_XRETALLOC("s_preamble", s_preamble, str_number,
-                              max_bib_files, max_bib_files + MAX_BIB_FILES);
-            }
+            check_bib_files(bib_ptr());
 
-            bib_list[bib_ptr] =
-                hash_text[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 6 /*bib_file_ilk */ , true)];
+            set_cur_bib(hash_text[str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 6 /*bib_file_ilk */ , true)]);
             if (hash_found) {
                 puts_log("This database file appears more than once: ");
                 print_bib_name();
                 TRY(aux_err_print());
                 return;
             }
-            NameAndLen nal = start_name(bib_list[bib_ptr]);
-            if ((bib_file[bib_ptr] = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_BIB)) == NULL) {
+            NameAndLen nal = start_name(cur_bib());
+            PeekableInput* bib_in = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_BIB);
+            if (bib_in == NULL) {
                 puts_log("I couldn't open database file ");
                 print_bib_name();
                 TRY(aux_err_print());
                 free(nal.name_of_file);
                 return;
             }
+            set_cur_bib_file(bib_in);
             free(nal.name_of_file);
 
-            bib_ptr = bib_ptr + 1;
+            set_bib_ptr(bib_ptr() + 1);
         }
     }
 }
@@ -4489,7 +4469,7 @@ static void get_aux_command_and_process(BstCtx* ctx)
 static void last_check_for_aux_errors(BstCtx* ctx)
 {
     num_cites = cite_ptr();
-    num_bib_files = bib_ptr;
+    ctx->num_bib_files = bib_ptr();
     if (!citation_seen) {
         aux_end1_err_print();
         puts_log("\\citation commands");
@@ -4503,7 +4483,7 @@ static void last_check_for_aux_errors(BstCtx* ctx)
         aux_end1_err_print();
         puts_log("\\bibdata command");
         TRY(aux_end2_err_print());
-    } else if (num_bib_files == 0) {
+    } else if (ctx->num_bib_files == 0) {
         aux_end1_err_print();
         puts_log("database files");
         TRY(aux_end2_err_print());
@@ -5198,7 +5178,7 @@ static void get_bib_command_or_entry_and_process(void)
     at_bib_command = false;
     while (!scan1(64 /*at_sign */)) {
 
-        if (!input_ln(bib_file[bib_ptr]))
+        if (!input_ln(cur_bib_file()))
             return;
         bib_line_num = bib_line_num + 1;
         bib_set_buf_offset(BUF_TY_BASE, 2, 0);
@@ -5240,19 +5220,10 @@ static void get_bib_command_or_entry_and_process(void)
                 break;
             case 1:
                 {
-                    if (preamble_ptr == max_bib_files) {
-                        BIB_XRETALLOC_NOSET("bib_list", bib_list, str_number, max_bib_files,
-                                            max_bib_files + MAX_BIB_FILES);
-                        BIB_XRETALLOC_NOSET("bib_file", bib_file, PeekableInput *, max_bib_files,
-                                            max_bib_files + MAX_BIB_FILES);
-                        BIB_XRETALLOC("s_preamble", s_preamble, str_number, max_bib_files,
-                                      max_bib_files + MAX_BIB_FILES);
-                    }
-                    {
-                        if (!eat_bib_white_space()) {
-                            eat_bib_print();
-                            return;
-                        }
+                    check_bib_files(preamble_ptr());
+                    if (!eat_bib_white_space()) {
+                        eat_bib_print();
+                        return;
                     }
                     if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ )
                         right_outer_delim = 125 /*right_brace */ ;
@@ -5633,32 +5604,31 @@ static void bst_read_command(BstCtx* ctx)
             }
         }
         read_performed = true;
-        bib_ptr = 0;
-        while (bib_ptr < num_bib_files) {
-
+        set_bib_ptr(0);
+        while (bib_ptr() < ctx->num_bib_files) {
             if (verbose) {
-                printf_log("Database file #%ld: ", (long) bib_ptr + 1);
+                printf_log("Database file #%ld: ", (long) bib_ptr() + 1);
                 print_bib_name();
             } else {
                 char buf[512];
-                snprintf(buf, sizeof(buf) - 1, "Database file #%ld: ", (long) bib_ptr + 1);
+                snprintf(buf, sizeof(buf) - 1, "Database file #%ld: ", (long) bib_ptr() + 1);
                 ttstub_output_write (bib_log_file(), buf, strlen(buf));
                 log_pr_bib_name();
             }
             bib_line_num = 0;
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_len(BUF_TY_BASE));
-            while (!eof(bib_file[bib_ptr]))
+            while (!eof(cur_bib_file()))
                 get_bib_command_or_entry_and_process();
-            peekable_close(bib_file[bib_ptr]);
-            bib_file[bib_ptr] = NULL;
-            bib_ptr = bib_ptr + 1;
+            peekable_close(cur_bib_file());
+            set_cur_bib_file(NULL);
+            set_bib_ptr(bib_ptr() + 1);
         }
         reading_completed = true;
         ;
 
         {
             num_cites = cite_ptr();
-            num_preamble_strings = preamble_ptr;
+            ctx->num_preamble_strings = preamble_ptr();
             {
                 if ((num_cites - 1) * num_fields + crossref_num >= max_fields) {
                     puts_log("field_info index is out of range");
@@ -6143,7 +6113,6 @@ initialize(const char *aux_file_name)
     bib_set_pool_ptr(0);
     bib_set_str_ptr(1);
     bib_set_str_start(bib_str_ptr(), 0);
-    bib_ptr = 0;
     bib_seen = false;
     bst_seen = false;
     citation_seen = false;
@@ -6176,7 +6145,6 @@ initialize(const char *aux_file_name)
 History
 bibtex_main(const char *aux_file_name)
 {
-    max_bib_files = MAX_BIB_FILES;
     max_glob_strs = MAX_GLOB_STRS;
     max_fields = MAX_FIELDS;
     wiz_fn_space = WIZ_FN_SPACE;
@@ -6189,11 +6157,8 @@ bibtex_main(const char *aux_file_name)
     entry_ints = NULL;
     entry_strs = NULL;
 
-    bib_file = XTALLOC(max_bib_files + 1, PeekableInput *);
-    bib_list = XTALLOC(max_bib_files + 1, str_number);
     wiz_functions = XTALLOC(wiz_fn_space + 1, hash_ptr2);
     field_info = XTALLOC(max_fields + 1, str_number);
-    s_preamble = XTALLOC(max_bib_files + 1, str_number);
     name_sep_char = XTALLOC(bib_buf_size() + 1, ASCII_code);
     glb_bib_str_ptr = XTALLOC(max_glob_strs, str_number);
     global_strs = XTALLOC(max_glob_strs * (glob_str_size + 1), ASCII_code);
