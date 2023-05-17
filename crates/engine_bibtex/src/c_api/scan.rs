@@ -1,4 +1,4 @@
-use crate::c_api::buffer::{with_buffers_mut, BufTy};
+use crate::c_api::buffer::{with_buffers_mut, BufTy, with_buffers};
 use crate::c_api::char_info::{IdClass, LexClass};
 use crate::c_api::{ASCIICode, BufPointer};
 
@@ -76,24 +76,28 @@ impl<'a> Scan<'a> {
 }
 
 #[no_mangle]
-pub extern "C" fn scan1(char1: ASCIICode, last: BufPointer) -> bool {
+pub extern "C" fn scan1(char1: ASCIICode) -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[char1]).scan_till(last)
 }
 
 #[no_mangle]
-pub extern "C" fn scan1_white(char1: ASCIICode, last: BufPointer) -> bool {
+pub extern "C" fn scan1_white(char1: ASCIICode) -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[char1])
         .class(LexClass::Whitespace)
         .scan_till(last)
 }
 
 #[no_mangle]
-pub extern "C" fn scan2(char1: ASCIICode, char2: ASCIICode, last: BufPointer) -> bool {
+pub extern "C" fn scan2(char1: ASCIICode, char2: ASCIICode) -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[char1, char2]).scan_till(last)
 }
 
 #[no_mangle]
-pub extern "C" fn scan2_white(char1: ASCIICode, char2: ASCIICode, last: BufPointer) -> bool {
+pub extern "C" fn scan2_white(char1: ASCIICode, char2: ASCIICode) -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[char1, char2])
         .class(LexClass::Whitespace)
         .scan_till(last)
@@ -104,20 +108,22 @@ pub extern "C" fn scan3(
     char1: ASCIICode,
     char2: ASCIICode,
     char3: ASCIICode,
-    last: BufPointer,
 ) -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[char1, char2, char3]).scan_till(last)
 }
 
 #[no_mangle]
-pub extern "C" fn scan_alpha(last: BufPointer) -> bool {
+pub extern "C" fn scan_alpha() -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[])
         .not_class(LexClass::Alpha)
         .scan_till_nonempty(last)
 }
 
 #[no_mangle]
-pub extern "C" fn scan_white_space(last: BufPointer) -> bool {
+pub extern "C" fn scan_white_space() -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[])
         .not_class(LexClass::Whitespace)
         .scan_till(last)
@@ -128,9 +134,9 @@ pub extern "C" fn scan_identifier(
     char1: ASCIICode,
     char2: ASCIICode,
     char3: ASCIICode,
-    last: BufPointer,
 ) -> ScanRes {
     with_buffers_mut(|buffers| {
+        let last = buffers.init(BufTy::Base);
         let start = buffers.offset(BufTy::Base, 2);
         buffers.set_offset(BufTy::Base, 1, start);
 
@@ -159,15 +165,17 @@ pub extern "C" fn scan_identifier(
 }
 
 #[no_mangle]
-pub extern "C" fn scan_nonneg_integer(last: BufPointer) -> bool {
+pub extern "C" fn scan_nonneg_integer() -> bool {
+    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[])
         .not_class(LexClass::Numeric)
         .scan_till_nonempty(last)
 }
 
 #[no_mangle]
-pub extern "C" fn scan_integer(token_value: &mut i32, last: BufPointer) -> bool {
+pub extern "C" fn scan_integer(token_value: &mut i32) -> bool {
     with_buffers_mut(|buffers| {
+        let last = buffers.init(BufTy::Base);
         let start = buffers.offset(BufTy::Base, 2);
         buffers.set_offset(BufTy::Base, 1, start);
 

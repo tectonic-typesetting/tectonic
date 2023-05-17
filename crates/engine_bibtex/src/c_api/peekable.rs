@@ -113,8 +113,9 @@ pub unsafe extern "C" fn tectonic_eof(peekable: *mut PeekableInput) -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn input_ln(last: *mut BufPointer, peekable: *mut PeekableInput) -> bool {
-    *last = 0;
+pub unsafe extern "C" fn input_ln(peekable: *mut PeekableInput) -> bool {
+    with_buffers_mut(|buffers| buffers.set_init(BufTy::Base, 0));
+    let mut last = 0;
     let peekable = &mut *peekable;
     if peekable.eof() {
         return false;
@@ -123,13 +124,13 @@ pub unsafe extern "C" fn input_ln(last: *mut BufPointer, peekable: *mut Peekable
     // Read up to end-of-line
     with_buffers_mut(|b| {
         while !peekable.eoln() {
-            if *last >= b.len() as BufPointer {
+            if last >= b.len() as BufPointer {
                 b.grow_all();
             }
 
-            let ptr = &mut b.buffer_mut(BufTy::Base)[*last as usize];
+            let ptr = &mut b.buffer_mut(BufTy::Base)[last as usize];
             *ptr = peekable.getc() as ASCIICode;
-            *last += 1;
+            last += 1;
         }
     });
 
@@ -144,14 +145,16 @@ pub unsafe extern "C" fn input_ln(last: *mut BufPointer, peekable: *mut Peekable
 
     // Trim whitespace
     with_buffers(|b| {
-        while *last > 0 {
-            if LexClass::of(b.at(BufTy::Base, (*last - 1) as usize)) == LexClass::Whitespace {
-                *last -= 1;
+        while last > 0 {
+            if LexClass::of(b.at(BufTy::Base, (last - 1) as usize)) == LexClass::Whitespace {
+                last -= 1;
             } else {
                 break;
             }
         }
     });
+
+    with_buffers_mut(|buffers| buffers.set_init(BufTy::Base, last));
 
     true
 }

@@ -2,7 +2,7 @@ use crate::c_api::buffer::{with_buffers, BufTy};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::history::{mark_error, mark_fatal, set_history};
 use crate::c_api::pool::with_pool;
-use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, BufPointer, History, StrNumber};
+use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
@@ -139,8 +139,7 @@ pub extern "C" fn print_confusion() {
     mark_fatal();
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn out_token(handle: *mut OutputHandle) {
+pub fn out_token(handle: &mut OutputHandle) {
     with_buffers(|b| {
         let bytes = b.buffer(BufTy::Base);
         let start = b.offset(BufTy::Base, 1) as usize;
@@ -151,12 +150,12 @@ pub unsafe extern "C" fn out_token(handle: *mut OutputHandle) {
 
 #[no_mangle]
 pub unsafe extern "C" fn print_a_token() {
-    out_token(standard_output());
-    out_token(bib_log_file());
+    with_stdout(|stdout| out_token(stdout));
+    with_log(|log| out_token(log));
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
+pub unsafe extern "C" fn print_bad_input_line() {
     write_logs(" : ");
 
     with_buffers(|b| {
@@ -175,8 +174,9 @@ pub unsafe extern "C" fn print_bad_input_line(last: BufPointer) {
         let str = (0..offset2).map(|_| ' ').collect::<String>();
         write_logs(&str);
 
-        if offset2 < last as usize {
-            let slice = &b.buffer(BufTy::Base)[offset2..last as usize];
+        let last = b.init(BufTy::Base) as usize;
+        if offset2 < last {
+            let slice = &b.buffer(BufTy::Base)[offset2..last];
             for code in slice {
                 if LexClass::of(*code) == LexClass::Whitespace {
                     write_logs(" ");

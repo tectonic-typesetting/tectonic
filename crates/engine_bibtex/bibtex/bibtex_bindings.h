@@ -11,6 +11,8 @@ typedef enum {
   BUF_TY_BASE,
   BUF_TY_SV,
   BUF_TY_EX,
+  BUF_TY_OUT,
+  BUF_TY_NAME_TOK,
 } BufTy;
 
 typedef enum {
@@ -20,11 +22,6 @@ typedef enum {
   HISTORY_FATAL_ERROR = 3,
   HISTORY_ABORTED = 4,
 } History;
-
-typedef enum {
-  ID_CLASS_ILLEGAL_ID_CHAR = 0,
-  ID_CLASS_LEGAL_ID_CHAR = 1,
-} IdClass;
 
 typedef enum {
   LEX_CLASS_ILLEGAL = 0,
@@ -103,8 +100,6 @@ extern "C" {
 
 extern const LexClass LEX_CLASS[256];
 
-extern const IdClass ID_CLASS[256];
-
 extern const int32_t CHAR_WIDTH[256];
 
 void reset_all(void);
@@ -115,7 +110,7 @@ void lower_case(BufType buf, BufPointer bf_ptr, BufPointer len);
 
 void upper_case(BufType buf, BufPointer bf_ptr, BufPointer len);
 
-void int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin, BufPointer *int_end);
+BufPointer int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin);
 
 extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
@@ -132,6 +127,10 @@ ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
 BufPointer bib_buf_offset(BufTy ty, uintptr_t num);
 
 void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
+
+BufPointer bib_buf_len(BufTy ty);
+
+void bib_set_buf_len(BufTy ty, BufPointer len);
 
 void buffer_overflow(void);
 
@@ -179,13 +178,9 @@ bool pop_lit_stk(ExecCtx *ctx, ExecVal *out);
 
 History get_history(void);
 
-void set_history(History hist);
-
 void mark_warning(void);
 
 void mark_error(void);
-
-void mark_fatal(void);
 
 uint32_t err_count(void);
 
@@ -205,11 +200,9 @@ void print_overflow(void);
 
 void print_confusion(void);
 
-void out_token(ttbc_output_handle_t *handle);
-
 void print_a_token(void);
 
-void print_bad_input_line(BufPointer last);
+void print_bad_input_line(void);
 
 void print_skipping_whatever_remains(void);
 
@@ -223,7 +216,7 @@ int peekable_close(PeekableInput *peekable);
 
 bool tectonic_eof(PeekableInput *peekable);
 
-bool input_ln(BufPointer *last, PeekableInput *peekable);
+bool input_ln(PeekableInput *peekable);
 
 bool str_ends_with(StrNumber s, StrNumber ext);
 
@@ -251,25 +244,25 @@ PoolPointer bib_pool_ptr(void);
 
 void bib_set_pool_ptr(PoolPointer ptr);
 
-bool scan1(ASCIICode char1, BufPointer last);
+bool scan1(ASCIICode char1);
 
-bool scan1_white(ASCIICode char1, BufPointer last);
+bool scan1_white(ASCIICode char1);
 
-bool scan2(ASCIICode char1, ASCIICode char2, BufPointer last);
+bool scan2(ASCIICode char1, ASCIICode char2);
 
-bool scan2_white(ASCIICode char1, ASCIICode char2, BufPointer last);
+bool scan2_white(ASCIICode char1, ASCIICode char2);
 
-bool scan3(ASCIICode char1, ASCIICode char2, ASCIICode char3, BufPointer last);
+bool scan3(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
-bool scan_alpha(BufPointer last);
+bool scan_alpha(void);
 
-bool scan_white_space(BufPointer last);
+bool scan_white_space(void);
 
-ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3, BufPointer last);
+ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
-bool scan_nonneg_integer(BufPointer last);
+bool scan_nonneg_integer(void);
 
-bool scan_integer(int32_t *token_value, BufPointer last);
+bool scan_integer(int32_t *token_value);
 
 #ifdef __cplusplus
 } // extern "C"

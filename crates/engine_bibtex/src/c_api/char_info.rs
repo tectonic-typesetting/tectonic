@@ -43,7 +43,7 @@ pub enum IdClass {
 }
 
 impl IdClass {
-    pub fn of(char: ASCIICode) -> IdClass {
+    pub const fn of(char: ASCIICode) -> IdClass {
         ID_CLASS[char as usize]
     }
 }
@@ -74,8 +74,7 @@ pub static LEX_CLASS: [LexClass; 256] = {
     lex_class
 };
 
-#[no_mangle]
-pub static ID_CLASS: [IdClass; 256] = {
+pub const ID_CLASS: [IdClass; 256] = {
     let mut id_class = [IdClass::LegalIdChar; 256];
 
     const_for!(0..32 => id_class[..] = IdClass::IllegalIdChar);

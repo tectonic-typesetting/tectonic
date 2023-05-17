@@ -34,8 +34,7 @@ pub extern "C" fn get_history() -> History {
     HISTORY.with(|h| h.get())
 }
 
-#[no_mangle]
-pub extern "C" fn set_history(hist: History) {
+pub fn set_history(hist: History) {
     HISTORY.with(|h| h.set(hist))
 }
 
@@ -60,8 +59,7 @@ pub extern "C" fn mark_error() {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn mark_fatal() {
+pub fn mark_fatal() {
     set_history(History::FatalError);
 }
 

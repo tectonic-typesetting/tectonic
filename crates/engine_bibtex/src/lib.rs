@@ -199,8 +199,7 @@ pub mod c_api {
         mut the_int: i32,
         int_buf: BufTy,
         int_begin: BufPointer,
-        int_end: *mut BufPointer,
-    ) {
+    ) -> BufPointer {
         let buf = bib_buf(int_buf);
         let mut int_ptr = int_begin;
         let mut int_xptr = int_begin;
@@ -228,7 +227,8 @@ pub mod c_api {
             }
         }
 
-        *int_end = int_ptr;
+        let out = int_ptr;
+
         int_ptr -= 1;
         while int_xptr < int_ptr {
             let int_tmp_val = *buf.offset(int_xptr as isize);
@@ -237,6 +237,8 @@ pub mod c_api {
             int_ptr -= 1;
             int_xptr += 1;
         }
+
+        out
     }
 
     #[allow(improper_ctypes)] // for CoreBridgeState
