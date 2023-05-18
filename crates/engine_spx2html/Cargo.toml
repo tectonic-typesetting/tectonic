@@ -22,6 +22,7 @@ byteorder = "^1.4"
 html-escape = "^0.2"
 percent-encoding = "^2.1"
 pinot = "^0.1.4"
+serde = { version = "^1.0", features = ["derive"] }
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
@@ -29,6 +30,7 @@ tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "../xdv", version = "0.0.0-dev.0" }
 tempfile = "^3.1"
 tera = "^1.13"
+serde_json = "^1.0"
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"

@@ -123,7 +123,7 @@ fn main() {
 
     fn compile(cfg: &mut cc::Build, s: &str) {
         cfg.file(s);
-        println!("cargo:rerun-if-changed={}", s);
+        println!("cargo:rerun-if-changed={s}");
     }
 
     cppcfg
@@ -214,22 +214,22 @@ fn main() {
     // that allows us to have a network of crates containing both C/C++ and Rust
     // code that all interlink.
 
-    print!("cargo:include-path={}", out_dir);
+    print!("cargo:include-path={out_dir}");
 
     for item in harfbuzz_include_path.split(';') {
-        print!(";{}", item);
+        print!(";{item}");
     }
 
     for item in freetype2_include_path.split(';') {
-        print!(";{}", item);
+        print!(";{item}");
     }
 
     for item in graphite2_include_path.split(';') {
-        print!(";{}", item);
+        print!(";{item}");
     }
 
     for item in icu_include_path.split(';') {
-        print!(";{}", item);
+        print!(";{item}");
     }
 
     println!();

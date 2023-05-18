@@ -32,13 +32,17 @@ export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
 [bash]: https://www.gnu.org/software/bash/
 
 If you’re building on Windows, you’ll likely want to make sure that your
-[`RUSTFLAGS`] variable includes a `+crt-static` [target feature] to get the
-[vcpkg] build scripts to use the `x64-windows-static` [vcpkg triplet], which is
-the default one used by our [cargo-vcpkg] setup, as opposed to
-`x64-windows-static-md`, which is activated otherwise. And if you’ve done the
-full vcpkg install, you might as well build with [an external Harfbuzz][external-harfbuzz].
-Therefore a full Windows build invocation — launched from bash — might look like
-this:
+[`RUSTFLAGS`] variable includes a `+crt-static` [target feature] and set the
+`VCPKGRS_TRIPLET` variable to `x64-windows-static-release`. This is a custom
+[vcpkg triplet] provided by Tectonic's build system (in the directory
+`dist/vcpkg-triplets`) that is automatically activated by its [cargo-vcpkg]
+integration. If you don't use [cargo-vcpkg], the default triplet is
+`x64-windows-static` if the `+crt-static` feature is activated, or
+`x64-windows-static-md` if it is not.
+
+If you’ve done the full vcpkg install, you might as well build with [an external
+Harfbuzz][external-harfbuzz]. Therefore a full Windows build invocation —
+launched from bash — might look like this:
 
 [`RUSTFLAGS`]: https://doc.rust-lang.org/cargo/reference/environment-variables.html
 [target feature]: https://rust-lang.github.io/packed_simd/perf-guide/target-feature/rustflags.html
@@ -49,6 +53,7 @@ this:
 cargo vcpkg build
 export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
 export RUSTFLAGS='-Ctarget-feature=+crt-static'  # Windows only
+export VCPKGRS_TRIPLET='x64-windows-static-release'  # Windows only
 export TECTONIC_DEP_BACKEND=vcpkg
 cargo build --features external-harfbuzz
 ```

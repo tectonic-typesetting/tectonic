@@ -80,9 +80,9 @@ impl PersistentConfig {
 
         let config = match File::open(&cfg_path) {
             Ok(mut f) => {
-                let mut buf = Vec::<u8>::new();
-                f.read_to_end(&mut buf)?;
-                toml::from_slice(&buf)?
+                let mut buf = String::new();
+                f.read_to_string(&mut buf)?;
+                toml::from_str(&buf)?
             }
             Err(e) => {
                 if e.kind() == IoErrorKind::NotFound {
@@ -157,7 +157,8 @@ impl PersistentConfig {
         use std::io;
 
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
-            return Ok(Box::new(crate::test_util::TestBundle::default()));
+            let bundle = crate::test_util::TestBundle::default();
+            return Ok(Box::new(bundle));
         }
 
         if self.default_bundles.len() != 1 {

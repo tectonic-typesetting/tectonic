@@ -4,7 +4,10 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use std::{env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr};
+use std::{
+    convert::Infallible, env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr,
+    sync::Arc,
+};
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
@@ -19,9 +22,16 @@ use tectonic::{
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
-use tectonic_errors::Error as NewError;
 use tectonic_status_base::plain::PlainStatusBackend;
-use watchexec::run::OnBusyUpdate;
+use tokio::runtime;
+use watchexec::{
+    action::{Action, Outcome, PreSpawn},
+    command::{Command, Shell},
+    config::InitConfig,
+    Watchexec,
+};
+use watchexec_filterer_globset::GlobsetFilterer;
+use watchexec_signals::Signal;
 
 /// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
@@ -157,8 +167,12 @@ enum Commands {
     Dump(DumpCommand),
 
     #[structopt(name = "new")]
-    /// Create a new document
+    /// Create a new document project
     New(NewCommand),
+
+    /// Initializes a new document in the current directory
+    #[structopt(name = "init")]
+    Init(InitCommand),
 
     #[structopt(name = "show")]
     /// Display various useful pieces of information
@@ -177,6 +191,7 @@ impl Commands {
             Commands::Compile(_) => {} // avoid namespacing/etc issues
             Commands::Dump(o) => o.customize(cc),
             Commands::New(o) => o.customize(cc),
+            Commands::Init(o) => o.customize(cc),
             Commands::Show(o) => o.customize(cc),
             Commands::Watch(o) => o.customize(cc),
         }
@@ -189,6 +204,7 @@ impl Commands {
             Commands::Compile(o) => o.execute(config, status),
             Commands::Dump(o) => o.execute(config, status),
             Commands::New(o) => o.execute(config, status),
+            Commands::Init(o) => o.execute(config, status),
             Commands::Show(o) => o.execute(config, status),
             Commands::Watch(o) => o.execute(config, status),
         }
@@ -398,7 +414,7 @@ impl BundleSearchCommand {
 
         for filename in &files {
             if filter(filename) {
-                println!("{}", filename);
+                println!("{filename}");
             }
         }
 
@@ -515,46 +531,100 @@ pub struct WatchCommand {
 impl WatchCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
-    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    async fn execute_inner(self, status: &mut dyn StatusBackend) -> Result<i32> {
         let exe_name = crate::watch::get_trimmed_exe_name()
             .into_os_string()
             .into_string()
             .expect("Executable path wasn't valid UTF-8");
         let mut cmds = Vec::new();
         for x in self.execute.iter() {
-            let mut cmd = format!("{} -X ", exe_name);
             let x = x.trim();
             if !x.is_empty() {
-                cmd.push_str(x);
+                let cmd = Command::Exec {
+                    prog: exe_name.clone(),
+                    args: vec!["-X".to_string(), x.to_string()],
+                };
                 cmds.push(cmd)
             }
         }
 
         if cmds.is_empty() {
-            cmds.push(format!("{} -X build", exe_name))
+            cmds.push(Command::Exec {
+                prog: exe_name,
+                args: vec!["-X".to_string(), "build".to_string()],
+            });
         }
 
-        let command = cmds.join(" && ");
-
-        let mut args = watchexec::config::ConfigBuilder::default();
-        let mut final_command = command.clone();
-        #[cfg(unix)]
-        final_command.push_str("; echo [Finished running. Exit status: $?]");
         #[cfg(windows)]
-        {
-            final_command.push_str(" & echo [Finished running. Exit status: %ERRORLEVEL%]");
-            args.shell(watchexec::Shell::Cmd);
-        }
-        #[cfg(not(any(unix, windows)))]
-        final_command.push_str(" ; echo [Finished running]");
+        let (shell, command) = (
+            Shell::Cmd,
+            "echo [Finished running. Exit status: %ERRORLEVEL%]",
+        );
+        #[cfg(unix)]
+        let (shell, command) = (
+            Shell::Unix("bash".to_string()),
+            "echo [Finished running. Exit status: $?]",
+        );
 
-        args.cmd(vec![final_command])
-            .paths(vec![env::current_dir()?])
-            .ignores(vec!["build".to_owned()])
-            .on_busy_update(OnBusyUpdate::Queue);
-        let args = args.build().map_err(NewError::from)?;
+        cmds.push(Command::Shell {
+            shell,
+            args: vec![],
+            command: command.to_string(),
+        });
 
-        let exec_handler = watchexec::run::ExecHandler::new(args);
+        let mut runtime_config = watchexec::config::RuntimeConfig::default();
+        runtime_config.commands(cmds);
+
+        let current_dir = env::current_dir()?;
+
+        let filter = GlobsetFilterer::new(
+            &current_dir,
+            [],
+            // Ignore build directory, and things like vim swap files
+            [("build/**".to_string(), None), ("*.swp".to_string(), None)],
+            [],
+            [],
+        )
+        .await
+        .unwrap();
+
+        runtime_config
+            .pathset([&current_dir])
+            .filterer(Arc::new(filter))
+            .on_pre_spawn(|pre_spawn: PreSpawn| async move {
+                println!("[Running `{}`]", pre_spawn.command);
+                Ok::<_, Infallible>(())
+            })
+            .on_action(|action: Action| async move {
+                for event in &*action.events {
+                    let is_kill = event.signals().any(|signal| {
+                        matches!(
+                            signal,
+                            Signal::Interrupt
+                                | Signal::Quit
+                                | Signal::Terminate
+                                | Signal::ForceStop
+                        )
+                    });
+                    if is_kill {
+                        action.outcome(Outcome::Exit);
+                        return Ok::<_, Infallible>(());
+                    }
+
+                    let paths = event.paths().collect::<Vec<_>>();
+                    if !paths.is_empty() {
+                        action.outcome(Outcome::IfRunning(
+                            Box::new(Outcome::DoNothing),
+                            Box::new(Outcome::Start),
+                        ));
+                        return Ok(());
+                    }
+                }
+                Ok(())
+            });
+
+        let exec_handler = Watchexec::new(InitConfig::default(), runtime_config);
+
         match exec_handler {
             Err(e) => {
                 tt_error!(
@@ -565,22 +635,22 @@ impl WatchCommand {
                 Ok(1)
             }
             Ok(exec_handler) => {
-                let handler = crate::watch::Watcher {
-                    command,
-                    inner: exec_handler,
-                };
-                if let Err(e) = watchexec::watch(&handler) {
-                    tt_error!(status, "failed to execute watch"; e.into());
-                    Ok(1)
-                } else {
-                    Ok(0)
-                }
+                exec_handler.main().await.unwrap().unwrap();
+                Ok(0)
             }
         }
     }
+
+    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let rt = runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        rt.block_on(self.execute_inner(status))
+    }
 }
 
-/// `new`: Create a new document
+/// `new`: Create a new document project
 #[derive(Debug, Eq, PartialEq, StructOpt)]
 pub struct NewCommand {
     /// The name of the document directory to create.
@@ -599,6 +669,30 @@ impl NewCommand {
         );
 
         let wc = WorkspaceCreator::new(self.path);
+        ctry!(
+            wc.create_defaulted(&config, status);
+            "failed to create the new Tectonic workspace"
+        );
+        Ok(0)
+    }
+}
+
+/// `init`: Initialize a document project in the current directory.
+#[derive(Debug, Eq, PartialEq, StructOpt)]
+pub struct InitCommand {}
+
+impl InitCommand {
+    fn customize(&self, _cc: &mut CommandCustomizations) {}
+
+    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        let path = env::current_dir()?;
+        tt_note!(
+            status,
+            "creating new document in this directory ({})",
+            path.display()
+        );
+
+        let wc = WorkspaceCreator::new(path);
         ctry!(
             wc.create_defaulted(&config, status);
             "failed to create the new Tectonic workspace"

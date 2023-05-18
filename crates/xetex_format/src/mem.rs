@@ -46,7 +46,7 @@ impl Memory {
 
         // Compressed memory loading;
 
-        let mut mem = vec![0; (mem_top as usize + 1) * SIZEOF_MEMORY_WORD];
+        let mut mem = vec![0; (mem_top + 1) * SIZEOF_MEMORY_WORD];
         let mut input = input;
         let mut p = 0;
         let mut q = rover;
@@ -72,7 +72,7 @@ impl Memory {
         }
 
         // Loading the rest of low memory. TODO: straight into `mem`?
-        let nb = (lo_mem_max + 1 - p as i32) as usize * SIZEOF_MEMORY_WORD;
+        let nb = (lo_mem_max + 1 - p) as usize * SIZEOF_MEMORY_WORD;
         let (input, block) = count(be_u8, nb)(input)?;
         let idx = p as usize * SIZEOF_MEMORY_WORD;
         mem[idx..idx + nb].copy_from_slice(&block[..]);

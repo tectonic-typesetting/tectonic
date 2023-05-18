@@ -19,7 +19,7 @@ edition = "2018"
 app_dirs2 = "^2.3"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 libc = "^0.2" # for EISDIR :-(
-sha2 = "^0.9" # for digest computations
+sha2 = "^0.10" # for digest computations
 thiserror = "1.0"
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }

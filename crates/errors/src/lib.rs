@@ -52,12 +52,12 @@ pub struct AnnotatedMessage {
 impl AnnotatedMessage {
     /// Set the primary message associated with this annotated report.
     pub fn set_message<T: fmt::Display>(&mut self, m: T) {
-        self.message = format!("{}", m);
+        self.message = format!("{m}");
     }
 
     /// Add an additional note to be associated with this annotated report.
     pub fn add_note<T: fmt::Display>(&mut self, n: T) {
-        self.notes.push(format!("{}", n));
+        self.notes.push(format!("{n}"));
     }
 
     /// Obtain the set of notes associated with this report.

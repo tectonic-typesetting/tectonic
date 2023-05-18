@@ -14,19 +14,14 @@ use std::{
 };
 
 /// Supported depedency-finding backends.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum Backend {
     /// pkg-config
+    #[default]
     PkgConfig,
 
     /// vcpkg
     Vcpkg,
-}
-
-impl Default for Backend {
-    fn default() -> Self {
-        Backend::PkgConfig
-    }
 }
 
 /// Dep-finding configuration.
@@ -91,6 +86,7 @@ struct VcPkgState {
 /// State for discovering and managing a dependency, which may vary
 /// depending on the framework that we're using to discover them.
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 enum DepState {
     /// pkg-config
     PkgConfig(PkgConfigState),
@@ -124,10 +120,26 @@ impl DepState {
         let mut include_paths = vec![];
 
         for dep in spec.get_vcpkg_spec() {
-            let library = vcpkg::Config::new()
-                .cargo_metadata(false)
-                .find_package(dep)
-                .unwrap_or_else(|e| panic!("failed to load package {} from vcpkg: {}", dep, e));
+            let library = match vcpkg::Config::new().cargo_metadata(false).find_package(dep) {
+                Ok(lib) => lib,
+                Err(e) => {
+                    if let vcpkg::Error::LibNotFound(_) = e {
+                        // We should potentially be referencing the CARGO_CFG_TARGET_*
+                        // variables to handle cross-compilation (cf. the
+                        // tectonic_cfg_support crate), but vcpkg-rs doesn't use them
+                        // either.
+                        let target = env::var("TARGET").unwrap_or_default();
+
+                        if target == "x86_64-pc-windows-msvc" {
+                            println!("cargo:warning=you may need to export VCPKGRS_TRIPLET=x64-windows-static-release ...");
+                            println!("cargo:warning=... which is a custom triplet used by Tectonic's cargo-vcpkg integration");
+                        }
+                    }
+
+                    panic!("failed to load package {} from vcpkg: {}", dep, e)
+                }
+            };
+
             include_paths.extend(library.include_paths.iter().cloned());
         }
 
@@ -206,7 +218,7 @@ impl<'a, T: Spec> Dependency<'a, T> {
                                 // graphite2 is not available on Debian. So
                                 // let's jump through the hoops of testing
                                 // whether the static archive seems findable.
-                                let libname = format!("lib{}.a", libbase);
+                                let libname = format!("lib{libbase}.a");
                                 state
                                     .libs
                                     .link_paths
@@ -216,11 +228,11 @@ impl<'a, T: Spec> Dependency<'a, T> {
                         };
 
                         let mode = if do_static { "static=" } else { "" };
-                        println!("cargo:rustc-link-lib={}{}", mode, libbase);
+                        println!("cargo:rustc-link-lib={mode}{libbase}");
                     }
 
                     for fw in &state.libs.frameworks {
-                        println!("cargo:rustc-link-lib=framework={}", fw);
+                        println!("cargo:rustc-link-lib=framework={fw}");
                     }
                 } else {
                     // Just let pkg-config do its thing.

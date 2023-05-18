@@ -74,7 +74,7 @@ impl IoProvider for FormatCache {
             Err(e) => return OpenResult::Err(e),
         };
 
-        let f = match super::try_open_file(&path) {
+        let f = match super::try_open_file(path) {
             OpenResult::Ok(f) => f,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
@@ -99,7 +99,7 @@ impl IoProvider for FormatCache {
             .rand_bytes(6)
             .tempfile_in(&self.formats_base)?;
         temp_dest.write_all(data)?;
-        temp_dest.persist(&final_path)?;
+        temp_dest.persist(final_path)?;
         Ok(())
     }
 }

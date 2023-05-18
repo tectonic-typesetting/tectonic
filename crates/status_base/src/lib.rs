@@ -32,12 +32,13 @@ pub enum MessageKind {
 /// A setting regarding which messages to display.
 #[repr(usize)]
 #[non_exhaustive]
-#[derive(Clone, Copy, Eq, Debug)]
+#[derive(Clone, Copy, Debug, Default, Eq)]
 pub enum ChatterLevel {
     /// Suppress all informational output.
     Minimal = 0,
 
     /// Normal output levels.
+    #[default]
     Normal,
 }
 
@@ -49,12 +50,6 @@ impl ChatterLevel {
             ChatterLevel::Normal => false,
             ChatterLevel::Minimal => kind == MessageKind::Note,
         }
-    }
-}
-
-impl Default for ChatterLevel {
-    fn default() -> Self {
-        ChatterLevel::Normal
     }
 }
 
@@ -121,7 +116,7 @@ pub trait StatusBackend {
     fn note_highlighted(&mut self, before: &str, highlighted: &str, after: &str) {
         self.report(
             MessageKind::Note,
-            format_args!("{}{}{}", before, highlighted, after),
+            format_args!("{before}{highlighted}{after}"),
             None,
         )
     }

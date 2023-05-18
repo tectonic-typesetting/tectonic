@@ -30,13 +30,13 @@ impl Display for Error {
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Self {
-        Error(format!("{}", e)) // note: weirdly, can't use `Self` on this line
+        Error(format!("{e}")) // note: weirdly, can't use `Self` on this line
     }
 }
 
 impl From<XdvError> for Error {
     fn from(e: XdvError) -> Self {
-        Error(format!("{}", e))
+        Error(format!("{e}"))
     }
 }
 
@@ -52,14 +52,14 @@ impl tectonic_xdv::XdvEvents for Stats {
     type Error = Error;
 
     fn handle_header(&mut self, filetype: FileType, comment: &[u8]) -> Result<(), Self::Error> {
-        println!("file type: {}", filetype);
+        println!("file type: {filetype}");
 
         match str::from_utf8(comment) {
             Ok(s) => {
-                println!("comment: {}", s);
+                println!("comment: {s}");
             }
             Err(e) => {
-                println!("cannot parse comment: {}", e);
+                println!("cannot parse comment: {e}");
             }
         };
 
@@ -78,8 +78,7 @@ impl tectonic_xdv::XdvEvents for Stats {
         embolden: Option<u32>,
     ) -> Result<(), Self::Error> {
         println!(
-            "define native font: `{}` num={} size={} faceIndex={} color={:?} extend={:?} slant={:?} embolden={:?}",
-            name, font_num, size, face_index, color_rgba, extend, slant, embolden
+            "define native font: `{name}` num={font_num} size={size} faceIndex={face_index} color={color_rgba:?} extend={extend:?} slant={slant:?} embolden={embolden:?}"
         );
         Ok(())
     }
@@ -109,10 +108,10 @@ impl tectonic_xdv::XdvEvents for Stats {
     fn handle_special(&mut self, x: i32, y: i32, contents: &[u8]) -> Result<(), Self::Error> {
         match str::from_utf8(contents) {
             Ok(s) => {
-                println!("special: {} (@ {},{})", s, x, y);
+                println!("special: {s} (@ {x},{y})");
             }
             Err(e) => {
-                println!("cannot UTF8-parse special: {}", e);
+                println!("cannot UTF8-parse special: {e}");
             }
         };
 
@@ -121,10 +120,7 @@ impl tectonic_xdv::XdvEvents for Stats {
 
     fn handle_char_run(&mut self, font_num: i32, chars: &[i32]) -> Result<(), Self::Error> {
         let all_ascii_printable = chars.iter().all(|c| *c > 0x20 && *c < 0x7F);
-        println!(
-            "chars font={}: {:?} all_ascii_printable={:?}",
-            font_num, chars, all_ascii_printable
-        );
+        println!("chars font={font_num}: {chars:?} all_ascii_printable={all_ascii_printable:?}");
         Ok(())
     }
 
@@ -135,12 +131,12 @@ impl tectonic_xdv::XdvEvents for Stats {
         x: &[i32],
         y: &[i32],
     ) -> Result<(), Self::Error> {
-        println!("glyphs font={}: {:?} (@ {:?}, {:?}", font_num, glyphs, x, y);
+        println!("glyphs font={font_num}: {glyphs:?} (@ {x:?}, {y:?}");
         Ok(())
     }
 
     fn handle_rule(&mut self, x: i32, y: i32, height: i32, width: i32) -> Result<(), Self::Error> {
-        println!("rule W={} H={} @ {:?}, {:?}", width, height, x, y);
+        println!("rule W={width} H={height} @ {x:?}, {y:?}");
         Ok(())
     }
 }
@@ -164,7 +160,7 @@ fn main() {
 
     let path = matches.value_of_os("PATH").unwrap();
 
-    let file = match File::open(&path) {
+    let file = match File::open(path) {
         Ok(f) => f,
         Err(e) => {
             eprintln!(
@@ -203,6 +199,6 @@ fn main() {
             }
         };
 
-        println!("{} bytes parsed.", n_bytes);
+        println!("{n_bytes} bytes parsed.");
     }
 }

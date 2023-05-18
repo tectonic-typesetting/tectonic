@@ -72,7 +72,7 @@ pub unsafe extern "C" fn tectonic_flate_compress(
         (c.total_out(), FlateResult::Success)
     };
 
-    *output_len = size as u64;
+    *output_len = size;
     result
 }
 
@@ -101,7 +101,7 @@ pub unsafe extern "C" fn tectonic_flate_decompress(
         Err(_) => (0, FlateResult::OtherError),
     };
 
-    *output_len = size as u64;
+    *output_len = size;
     result
 }
 

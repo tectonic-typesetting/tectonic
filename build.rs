@@ -9,5 +9,5 @@ fn main() {
     // they want to spawn off executables.
 
     let target = env::var("TARGET").unwrap();
-    println!("cargo:rustc-env=TARGET={}", target);
+    println!("cargo:rustc-env=TARGET={target}");
 }
