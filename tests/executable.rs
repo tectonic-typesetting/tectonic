@@ -120,14 +120,26 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
 }
 
 fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool) -> Output {
+    // This harness doesn't work when running with kcov because there's no good
+    // way to stop the Tectonic child process that is "inside" of the kcov
+    // runner. If we kill kcov itself, the child process keeps running and we
+    // hang because our pipes never get fully closed. Right now I don't see a
+    // way to actually terminate the Tectonic subprocess short of guessing its
+    // PID, which is hackier than I want to implement. We could address this by
+    // providing some other mechanism to tell the "watch" subprocess to stop,
+    // such as closing its stdin.
+    assert_eq!(KCOV_WORDS.len(), 0, "\"until\" tests do not work with kcov");
+
     let mut command = prep_tectonic(cwd, args);
     command.stdout(Stdio::piped()).stderr(Stdio::piped());
     command.env("BROWSER", "echo");
+
     println!("running {command:?} until test passes");
     let mut child = command.spawn().expect("tectonic failed to start");
     while !kill() {
         thread::sleep(Duration::from_secs(1));
     }
+
     // Ignore if the child already died
     let _ = child.kill();
     child
@@ -934,6 +946,10 @@ fn bad_v2_position_build() {
 #[cfg(all(feature = "serialization", not(target_arch = "mips")))]
 #[test]
 fn v2_watch_succeeds() {
+    if KCOV_WORDS.len() > 0 {
+        return; // See run_tectonic_until() for an explanation of why this test must be skipped
+    }
+
     let (_tempdir, temppath) = setup_v2();
 
     // Timeout the test after 5 minutes - we should definitely run twice in that range
