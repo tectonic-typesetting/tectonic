@@ -8,7 +8,8 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
     process::{Command, Output, Stdio},
-    str,
+    str, thread,
+    time::{Duration, Instant},
 };
 use tempfile::TempDir;
 
@@ -116,6 +117,34 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
     command.env("BROWSER", "echo");
     println!("running {command:?}");
     command.output().expect("tectonic failed to start")
+}
+
+fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool) -> Output {
+    // This harness doesn't work when running with kcov because there's no good
+    // way to stop the Tectonic child process that is "inside" of the kcov
+    // runner. If we kill kcov itself, the child process keeps running and we
+    // hang because our pipes never get fully closed. Right now I don't see a
+    // way to actually terminate the Tectonic subprocess short of guessing its
+    // PID, which is hackier than I want to implement. We could address this by
+    // providing some other mechanism to tell the "watch" subprocess to stop,
+    // such as closing its stdin.
+    assert_eq!(KCOV_WORDS.len(), 0, "\"until\" tests do not work with kcov");
+
+    let mut command = prep_tectonic(cwd, args);
+    command.stdout(Stdio::piped()).stderr(Stdio::piped());
+    command.env("BROWSER", "echo");
+
+    println!("running {command:?} until test passes");
+    let mut child = command.spawn().expect("tectonic failed to start");
+    while !kill() {
+        thread::sleep(Duration::from_secs(1));
+    }
+
+    // Ignore if the child already died
+    let _ = child.kill();
+    child
+        .wait_with_output()
+        .expect("tectonic failed to execute")
 }
 
 fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
@@ -910,4 +939,66 @@ fn bad_v2_position_build() {
     let (_tempdir, temppath) = setup_v2();
     let output = run_tectonic(&temppath, &["build", "-X"]);
     error_or_panic(&output);
+}
+
+/// Ensures that watch command succeeds, and when a file is changed while running it rebuilds
+/// periodically
+#[cfg(all(feature = "serialization", not(target_arch = "mips")))]
+#[test]
+fn v2_watch_succeeds() {
+    if KCOV_WORDS.len() > 0 {
+        return; // See run_tectonic_until() for an explanation of why this test must be skipped
+    }
+
+    let (_tempdir, temppath) = setup_v2();
+
+    // Timeout the test after 5 minutes - we should definitely run twice in that range
+    let max_time = Duration::from_secs(60 * 5);
+    let path = temppath.clone();
+
+    // Make sure `default.pdf` already exists - just makes the test easier to implement
+    let output = run_tectonic(&temppath, &["-X", "build"]);
+    success_or_panic(&output);
+
+    let thread = thread::spawn(move || {
+        // Give the process time to start up. Tried a channel, doesn't really work, so we just do
+        // a best-effort 'sleep for long enough it should have started'.
+        thread::sleep(Duration::from_secs(5));
+
+        let input = path.join("src/index.tex");
+        let output = path.join("build/default/default.pdf");
+        let start = Instant::now();
+        let mut start_mod = None;
+        let mut modified = 0;
+        while Instant::now() - start < max_time {
+            if modified >= 3 {
+                break;
+            }
+
+            {
+                let mut file = File::create(&input).unwrap();
+                writeln!(file, "New Text {}", modified).unwrap();
+            }
+
+            let new_mod = output.metadata().and_then(|meta| meta.modified()).unwrap();
+            if start_mod.map_or(true, |start_mod| new_mod > start_mod) {
+                start_mod = Some(new_mod);
+                modified += 1;
+            }
+
+            thread::sleep(Duration::from_secs(5));
+        }
+    });
+
+    let output = run_tectonic_until(&temppath, &["-X", "watch"], || thread.is_finished());
+    // TODO: Make timeout kill child in a way that terminates it gracefully, such as ctrl-c, not SIGKILL
+    // success_or_panic(&output);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    println!("stdout:\n{}", stdout);
+    println!("stderr:\n{}", stderr);
+
+    thread.join().unwrap();
+
+    assert!(stdout.matches("Running TeX").count() >= 2);
 }
