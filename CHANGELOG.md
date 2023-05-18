@@ -1,3 +1,63 @@
+# tectonic 0.13.0 (2023-05-18)
+
+This release of Tectonic adds some quality-of-life features and improves the
+project's technical infrastructure in several important ways.
+
+- Add a new V2 command [`tectonic -X init`] that is to [`tectonic -X new`] in the
+  same way that `cargo init` and `cargo new` are related ([#983], [@caiogeraldes]).
+  It initializes a new document in the current directory, rather than creating a
+  new directory.
+- Setting the [`shell-escape-cwd`] unstable option now implies activation of the
+  shell-escape feature (reported by [@mskblackbelt] in [#933], fixed by [@pkgw] in
+  [#966]).
+
+[`tectonic -X init`]: https://tectonic-typesetting.github.io/book/latest/v2cli/init.html
+[`tectonic -X new`]: https://tectonic-typesetting.github.io/book/latest/v2cli/new.html
+[`shell-escape-cwd`]: https://tectonic-typesetting.github.io/book/latest/v2cli/compile.html#unstable-options
+[#983]: https://github.com/tectonic-typesetting/tectonic/pull/983
+[#966]: https://github.com/tectonic-typesetting/tectonic/pull/966
+[#933]: https://github.com/tectonic-typesetting/tectonic/issues/933
+[@caiogeraldes]: https://github.com/caiogeraldes
+[@pkgw]: https://github.com/pkgw
+[@mskblackbelt]: https://github.com/mskblackbelt
+
+On the infrastructure side:
+
+- Update many developer dependencies to newer versions ([#1033], [#1038],
+  [@CraftSpider]). Namely, `md-5` and `sha2` are now at 0.10, `open` is at 4.0,
+  `quick-xml` is at 0.28, `toml` is at 0.7, `watchexec` is at 2.3, and `zip` is
+  at 0.6. In the test suite, `hyper` is brought up to 0.14. Many thanks to
+  [@CraftSpider] for taking on this arduous task!
+- Builds on Windows using [`cargo-vcpkg`] to manage [vcpkg]-based dependencies
+  now default to a custom target triplet named `x64-windows-static-release` that
+  only builds release executables, significantly speeding up builds ([#961],
+  [@pkgw]). You may need to set an environment variable `VCPKGRS_TRIPLET` to
+  this value to satisfy the `cargo-vcpkg` build system.
+- Internally, there were massive updates to the `spx2html` engine to improve
+  Tectonic's still-experimental support for HTML output ([#1016], [@pkgw]). This
+  support is still not exposed usefully in the main Tectonic program, however.
+  The current work is in support of the prototype [Tectonopedia] project. Note
+  that these changes break the current version of the [tt-weave] program, which
+  will need updates to fix up its behavior.
+- There were also many internal code tweaks to satisy the latest versions of
+  [`cargo clippy`].
+
+[`cargo-vcpkg`]: https://crates.io/crates/cargo-vcpkg
+[vcpkg]: https://vcpkg.io/
+[Tectonopedia]: https://github.com/tectonic-typesetting/tectonopedia
+[`cargo clippy`]: https://github.com/rust-lang/rust-clippy
+[tt-weave]: https://github.com/tectonic-typesetting/tt-weave
+[#961]: https://github.com/tectonic-typesetting/tectonic/pull/961
+[#1016]: https://github.com/tectonic-typesetting/tectonic/pull/1016
+[#1033]: https://github.com/tectonic-typesetting/tectonic/pull/1033
+[#1038]: https://github.com/tectonic-typesetting/tectonic/pull/1038
+[@CraftSpider]: https://github.com/CraftSpider
+
+Thank you to our new contributors [@caiogeraldes] and [@CraftSpider]! You will
+also note that this release marks Tectonic’s 1000th pull-request-or-issue on
+GitHub. Here’s looking to the next thousand!
+
+
 # tectonic 0.12.0 (2022-10-27)
 
 This release has only a few code updates:
