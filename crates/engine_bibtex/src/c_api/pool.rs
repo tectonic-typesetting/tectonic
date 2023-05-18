@@ -1,5 +1,6 @@
-use crate::c_api::{ASCIICode, PoolPointer, StrNumber};
+use crate::c_api::{ASCIICode, CResultStr, PoolPointer, StrNumber};
 use std::cell::RefCell;
+use crate::c_api::log::{print_overflow, write_logs};
 use crate::c_api::xbuf::XBuf;
 
 const POOL_SIZE: usize = 65000;
@@ -116,4 +117,18 @@ pub extern "C" fn bib_pool_ptr() -> PoolPointer {
 #[no_mangle]
 pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
     with_pool_mut(|pool| pool.pool_ptr = ptr)
+}
+
+#[no_mangle]
+pub extern "C" fn bib_make_string() -> CResultStr {
+    with_pool_mut(|pool| {
+        if pool.str_ptr as usize == MAX_STRINGS {
+            print_overflow();
+            write_logs(&format!("number of strings {}\n", MAX_STRINGS));
+            return CResultStr::Error;
+        }
+        pool.str_ptr += 1;
+        pool.offsets[pool.str_ptr as usize] = pool.pool_ptr;
+        CResultStr::Ok(pool.str_ptr - 1)
+    })
 }

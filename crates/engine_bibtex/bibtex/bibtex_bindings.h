@@ -16,6 +16,27 @@ typedef enum {
 } BufTy;
 
 typedef enum {
+  CResult_Error,
+  CResult_Recover,
+  CResult_Ok,
+} CResult;
+
+/**
+ *
+ */
+typedef enum {
+  FN_CLASS_BUILTIN = 0,
+  FN_CLASS_WIZARD = 1,
+  FN_CLASS_INT_LIT = 2,
+  FN_CLASS_STR_LIT = 3,
+  FN_CLASS_FIELD = 4,
+  FN_CLASS_INT_ENTRY_VAR = 5,
+  FN_CLASS_STR_ENTRY_VAR = 6,
+  FN_CLASS_INT_GLBL_VAR = 7,
+  FN_CLASS_STR_GLBL_VAR = 8,
+} FnClass;
+
+typedef enum {
   HISTORY_SPOTLESS = 0,
   HISTORY_WARNING_ISSUED = 1,
   HISTORY_ERROR_ISSUED = 2,
@@ -56,6 +77,11 @@ typedef ASCIICode *BufType;
 typedef int32_t BufPointer;
 
 typedef struct {
+  ASCIICode *name_of_file;
+  int32_t name_length;
+} NameAndLen;
+
+typedef struct {
   int min_crossrefs;
 } BibtexConfig;
 
@@ -94,22 +120,36 @@ typedef struct {
   StrNumber bib_str_ptr;
 } ExecCtx;
 
-typedef struct {
-  ASCIICode *name_of_file;
-  int32_t name_length;
-} NameAndLen;
+typedef int32_t HashPointer;
 
 typedef uintptr_t PoolPointer;
+
+typedef enum {
+  CResultStr_Error,
+  CResultStr_Recover,
+  CResultStr_Ok,
+} CResultStr_Tag;
+
+typedef struct {
+  CResultStr_Tag tag;
+  union {
+    struct {
+      StrNumber ok;
+    };
+  };
+} CResultStr;
 
 typedef int32_t AuxNumber;
 
 typedef int32_t BibNumber;
 
-typedef uint8_t FnClass;
-
-typedef int32_t HashPointer;
-
 typedef uint8_t StrIlk;
+
+typedef int32_t WizFnLoc;
+
+typedef int32_t FnDefLoc;
+
+typedef int32_t FieldLoc;
 
 #ifdef __cplusplus
 extern "C" {
@@ -128,6 +168,10 @@ void lower_case(BufType buf, BufPointer bf_ptr, BufPointer len);
 void upper_case(BufType buf, BufPointer bf_ptr, BufPointer len);
 
 BufPointer int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin);
+
+NameAndLen start_name(StrNumber file_name);
+
+void add_extension(NameAndLen *nal, StrNumber ext);
 
 extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
@@ -181,11 +225,11 @@ bool entry_exists(CiteNumber num);
 
 void set_entry_exists(CiteNumber num, bool exists);
 
-bool print_lit(const StrNumber *hash_text, ExecVal val);
+bool print_lit(ExecVal val);
 
-bool print_stk_lit(const StrNumber *hash_text, ExecVal val);
+bool print_stk_lit(ExecVal val);
 
-bool print_wrong_stk_lit(const StrNumber *hash_text, ExecCtx *ctx, ExecVal val, StkType typ2);
+bool print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
 
 bool bst_ex_warn_print(const ExecCtx *ctx);
 
@@ -301,6 +345,12 @@ bool braces_unbalanced_complaint(const ExecCtx *ctx, StrNumber pop_lit_var);
 
 void case_conversion_confusion(void);
 
+void print_fn_class(HashPointer fn_loc);
+
+CResult bst_err_print_and_look_for_blank_line(BstCtx *ctx);
+
+CResult already_seen_function_print(BstCtx *ctx, HashPointer seen_fn_loc);
+
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
@@ -332,6 +382,8 @@ uintptr_t bib_max_strings(void);
 PoolPointer bib_pool_ptr(void);
 
 void bib_set_pool_ptr(PoolPointer ptr);
+
+CResultStr bib_make_string(void);
 
 bool scan1(ASCIICode char1);
 
@@ -430,6 +482,22 @@ int32_t hash_size(void);
 int32_t hash_prime(void);
 
 void set_hash_prime(int32_t val);
+
+HashPointer2 wiz_functions(WizFnLoc pos);
+
+void set_wiz_functions(WizFnLoc pos, HashPointer2 val);
+
+WizFnLoc wiz_def_ptr(void);
+
+void set_wiz_def_ptr(WizFnLoc val);
+
+void check_grow_wiz(FnDefLoc ptr);
+
+StrNumber field_info(FieldLoc pos);
+
+void set_field_info(FieldLoc pos, StrNumber val);
+
+void check_field_overflow(int32_t total_fields);
 
 #ifdef __cplusplus
 } // extern "C"

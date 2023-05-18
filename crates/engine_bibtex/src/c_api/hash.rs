@@ -1,12 +1,27 @@
 use std::cell::RefCell;
-use crate::c_api::{FnClass, HashPointer, pool, StrIlk, StrNumber};
+use crate::c_api::{HashPointer, pool, StrIlk, StrNumber};
 use crate::c_api::xbuf::XBuf;
 
 const HASH_BASE: usize = 1;
 const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 { pool::MAX_STRINGS } else { 5000 };
 const HASH_MAX: usize = HASH_SIZE + HASH_BASE - 1;
 
-#[derive(Debug)]
+/// cbindgen:rename-all=ScreamingSnakeCase
+///
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub enum FnClass {
+    Builtin = 0,
+    Wizard = 1,
+    IntLit = 2,
+    StrLit = 3,
+    Field = 4,
+    IntEntryVar = 5,
+    StrEntryVar = 6,
+    IntGlblVar = 7,
+    StrGlblVar = 8,
+}
+
 pub struct HashData {
     hash_next: XBuf<HashPointer>,
     hash_text: XBuf<StrNumber>,
@@ -29,6 +44,14 @@ impl HashData {
             hash_prime: 0,
         }
     }
+
+    pub fn text(&self, pos: usize) -> StrNumber {
+        self.hash_text[pos]
+    }
+
+    pub fn ty(&self, pos: usize) -> FnClass {
+        self.fn_type[pos]
+    }
 }
 
 thread_local! {
@@ -39,11 +62,11 @@ pub fn reset() {
     HASHES.with(|hash| *hash.borrow_mut() = HashData::new());
 }
 
-fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
+pub fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
     HASHES.with(|h| f(&h.borrow()))
 }
 
-fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
+pub fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
     HASHES.with(|h| f(&mut h.borrow_mut()))
 }
 

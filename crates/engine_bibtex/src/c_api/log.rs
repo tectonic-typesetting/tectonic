@@ -1,8 +1,8 @@
-use crate::c_api::buffer::{with_buffers, BufTy};
+use crate::c_api::buffer::{with_buffers, BufTy, with_buffers_mut};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::history::{mark_error, mark_fatal, mark_warning, set_history};
 use crate::c_api::pool::with_pool;
-use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber, NameAndLen, ASCIICode};
+use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber, NameAndLen, ASCIICode, HashPointer, CResult};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
@@ -12,6 +12,8 @@ use crate::c_api::auxi::{cur_aux, cur_aux_ln};
 use crate::c_api::bibs::{bib_line_num, cur_bib};
 use crate::c_api::cite::with_cites;
 use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, BstCtx, ExecCtx};
+use crate::c_api::hash::{FnClass, with_hash};
+use crate::c_api::peekable::input_ln;
 use crate::c_api::scan::ScanRes;
 
 pub trait AsBytes {
@@ -612,4 +614,52 @@ pub extern "C" fn braces_unbalanced_complaint(ctx: *const ExecCtx, pop_lit_var: 
 pub extern "C" fn case_conversion_confusion() {
     write_logs("Unknown type of case conversion");
     print_confusion();
+}
+
+#[no_mangle]
+pub extern "C" fn print_fn_class(fn_loc: HashPointer) {
+    let ty = with_hash(|hash| hash.ty(fn_loc as usize));
+    match ty {
+        FnClass::Builtin => write_logs("built-in"),
+        FnClass::Wizard => write_logs("wizard-defined"),
+        FnClass::IntLit => write_logs("integer-literal"),
+        FnClass::StrLit => write_logs("string-literal"),
+        FnClass::Field => write_logs("field"),
+        FnClass::IntEntryVar => write_logs("integer-entry-variable"),
+        FnClass::StrEntryVar => write_logs("string-entry-variable"),
+        FnClass::IntGlblVar => write_logs("integer-global-variable"),
+        FnClass::StrGlblVar => write_logs("string-global-variable"),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut BstCtx) -> CResult {
+    let ctx = &mut *ctx;
+
+    write_logs("-");
+    if !bst_ln_num_print(ctx) {
+        return CResult::Error;
+    }
+    print_bad_input_line();
+    while with_buffers(|buffers| buffers.init(BufTy::Base)) != 0 {
+        if !input_ln(ctx.bst_file) {
+            return CResult::Recover;
+        } else {
+            ctx.bst_line_num += 1;
+        }
+    }
+    with_buffers_mut(|buffers| buffers.set_offset(BufTy::Base, 2, buffers.init(BufTy::Base)));
+
+    CResult::Ok
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn already_seen_function_print(ctx: *mut BstCtx, seen_fn_loc: HashPointer) -> CResult {
+    if with_hash(|hash| !print_a_pool_str(hash.text(seen_fn_loc as usize))) {
+        return CResult::Error
+    }
+    write_logs(" is already a type \"");
+    print_fn_class(seen_fn_loc);
+    write_logs("\" function name\n");
+    bst_err_print_and_look_for_blank_line(ctx)
 }

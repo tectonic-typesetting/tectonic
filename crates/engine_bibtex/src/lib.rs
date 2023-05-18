@@ -123,6 +123,8 @@ pub mod c_api {
     mod bibs;
     mod hash;
     pub mod xbuf;
+    mod other;
+    mod global;
 
     unsafe fn buf_to_slice<'a>(
         buf: BufType,
@@ -159,6 +161,27 @@ pub mod c_api {
         len: i32,
     }
 
+    impl NameAndLen {
+        fn as_mut_slice(&mut self) -> &mut [ASCIICode] {
+            // SAFETY: Requirement of the type
+            unsafe { slice::from_raw_parts_mut(self.name.cast(), self.len as usize + 1) }
+        }
+    }
+
+    #[repr(C)]
+    pub enum CResult {
+        Error,
+        Recover,
+        Ok,
+    }
+
+    #[repr(C)]
+    pub enum CResultStr {
+        Error,
+        Recover,
+        Ok(StrNumber),
+    }
+
     type StrNumber = i32;
     type CiteNumber = i32;
     type ASCIICode = u8;
@@ -170,7 +193,9 @@ pub mod c_api {
     type HashPointer2 = i32;
     type AuxNumber = i32;
     type BibNumber = i32;
-    type FnClass = u8;
+    type WizFnLoc = i32;
+    type FieldLoc = i32;
+    type FnDefLoc = i32;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -182,6 +207,7 @@ pub mod c_api {
         auxi::reset();
         bibs::reset();
         hash::reset();
+        other::reset();
     }
 
     #[no_mangle]
@@ -254,6 +280,33 @@ pub mod c_api {
         out
     }
 
+    #[no_mangle]
+    pub extern "C" fn start_name(file_name: StrNumber) -> NameAndLen {
+        with_pool(|pool| {
+            let file_name = pool.get_str(file_name as usize);
+            let new_name = unsafe { xcalloc_zeroed::<ASCIICode>(file_name.len() + 1) };
+            new_name[..file_name.len()].copy_from_slice(file_name);
+            new_name[file_name.len()] = 0;
+            NameAndLen {
+                name: (new_name as *mut [_]).cast(),
+                len: file_name.len() as i32,
+            }
+        })
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn add_extension(nal: *mut NameAndLen, ext: StrNumber) {
+        let nal = &mut *nal;
+        with_pool(|pool| {
+            let ext = pool.get_str(ext as usize);
+            let old_len = nal.len as usize;
+            nal.len += ext.len() as i32;
+            let slice = nal.as_mut_slice();
+            slice[old_len..old_len + ext.len()].copy_from_slice(ext);
+            slice[old_len + ext.len()] = 0;
+        })
+    }
+
     #[allow(improper_ctypes)] // for CoreBridgeState
     extern "C" {
         pub fn tt_engine_bibtex_main(
@@ -287,6 +340,7 @@ pub mod c_api {
         }
     }
     pub use external::*;
+    use crate::c_api::xbuf::xcalloc_zeroed;
 }
 
 /// Does our resulting executable link correctly?

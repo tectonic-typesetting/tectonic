@@ -4,6 +4,7 @@ use crate::c_api::history::mark_error;
 use crate::c_api::log::{print_a_pool_str, print_confusion, write_logs};
 use crate::c_api::peekable::PeekableInput;
 use crate::c_api::{StrNumber};
+use crate::c_api::hash::with_hash;
 use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start};
 use crate::c_api::xbuf::xrealloc_zeroed;
 
@@ -61,7 +62,7 @@ impl ExecCtx {
 }
 
 #[no_mangle]
-pub extern "C" fn print_lit(hash_text: *const StrNumber, val: ExecVal) -> bool {
+pub extern "C" fn print_lit(val: ExecVal) -> bool {
     match val.typ {
         StkType::Integer => {
             write_logs(&format!("{}\n", val.lit));
@@ -75,7 +76,7 @@ pub extern "C" fn print_lit(hash_text: *const StrNumber, val: ExecVal) -> bool {
             true
         }
         StkType::Function => {
-            if !print_a_pool_str(unsafe { *hash_text.add(val.lit as usize) }) {
+            if !print_a_pool_str(with_hash(|hash| hash.text(val.lit as usize))) {
                 return false;
             }
             write_logs("\n");
@@ -96,7 +97,7 @@ pub extern "C" fn print_lit(hash_text: *const StrNumber, val: ExecVal) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn print_stk_lit(hash_text: *const StrNumber, val: ExecVal) -> bool {
+pub extern "C" fn print_stk_lit(val: ExecVal) -> bool {
     match val.typ {
         StkType::Integer => {
             write_logs(&format!("{} is an integer literal", val.lit));
@@ -112,7 +113,7 @@ pub extern "C" fn print_stk_lit(hash_text: *const StrNumber, val: ExecVal) -> bo
         }
         StkType::Function => {
             write_logs("`");
-            if !print_a_pool_str(unsafe { *hash_text.add(val.lit as usize) }) {
+            if !print_a_pool_str(with_hash(|hash| hash.text(val.lit as usize))) {
                 return false;
             }
             write_logs("` is a function literal");
@@ -135,13 +136,12 @@ pub extern "C" fn print_stk_lit(hash_text: *const StrNumber, val: ExecVal) -> bo
 
 #[no_mangle]
 pub extern "C" fn print_wrong_stk_lit(
-    hash_text: *const StrNumber,
     ctx: *mut ExecCtx,
     val: ExecVal,
     typ2: StkType,
 ) -> bool {
     if val.typ != StkType::Illegal {
-        if !print_stk_lit(hash_text, val) {
+        if !print_stk_lit(val) {
             return false;
         }
         let res = match typ2 {

@@ -41,7 +41,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define min_print_line 3
 #define max_print_line 79
 #define aux_stack_size 20
-#define WIZ_FN_SPACE 3000
 #define SINGLE_FN_SPACE 100
 #define ENT_STR_SIZE 250
 #define GLOB_STR_SIZE 20000
@@ -61,7 +60,6 @@ typedef unsigned char /*last_ilk */ str_ilk;
 typedef unsigned char /*longest_pds */ pds_len;
 typedef const char *pds_type;
 typedef int32_t cite_number;
-typedef unsigned char /*last_fn_class */ fn_class;
 typedef int32_t wiz_fn_loc;
 typedef int32_t int_ent_loc;
 typedef int32_t str_ent_loc;
@@ -69,7 +67,6 @@ typedef int32_t field_loc;
 typedef int32_t hash_ptr2;
 typedef int32_t blt_in_range;
 
-static int32_t wiz_fn_space;
 static int32_t ent_str_size;
 static int32_t glob_str_size;
 static int32_t max_glob_strs;
@@ -99,8 +96,6 @@ static hash_loc wiz_loc;
 static hash_loc literal_loc;
 static hash_loc macro_name_loc;
 static hash_loc macro_def_loc;
-static wiz_fn_loc wiz_def_ptr;
-static hash_ptr2 *wiz_functions;
 static int_ent_loc int_ent_ptr;
 static int32_t *entry_ints;
 static int_ent_loc num_ent_ints;
@@ -112,10 +107,7 @@ static str_number *glb_bib_str_ptr;
 static ASCII_code *global_strs;
 static int32_t *glb_str_end;
 static int32_t num_glb_strs;
-static field_loc field_ptr;
-static field_loc field_parent_ptr, field_end_ptr;
-static cite_number cite_parent_ptr, cite_xptr;
-static str_number *field_info;
+static cite_number cite_xptr;
 static field_loc num_fields;
 static field_loc num_pre_defined_fields;
 static field_loc crossref_num;
@@ -191,6 +183,32 @@ static int verbose;
 
 const BibtexConfig* bibtex_config;
 
+static void unwrap_res(CResult res) {
+    switch (res) {
+    case CResult_Error:
+        longjmp(error_jmpbuf, 1);
+        break;
+    case CResult_Recover:
+        longjmp(recover_jmpbuf, 1);
+        break;
+    case CResult_Ok:
+        break;
+    }
+}
+
+static StrNumber unwrap_res_str(CResultStr res) {
+    switch (res.tag) {
+    case CResultStr_Error:
+        longjmp(error_jmpbuf, 1);
+        break;
+    case CResultStr_Recover:
+        longjmp(recover_jmpbuf, 1);
+        break;
+    case CResultStr_Ok:
+        return res.ok;
+    }
+}
+
 /*:473*//*12: *//*3: */
 
 #define FMT_BUF_SIZE 1024
@@ -208,91 +226,12 @@ printf_log(const char *fmt, ...)
     puts_log(fmt_buf);
 }
 
-static void bst_err_print_and_look_for_blank_line(BstCtx* ctx)
-{
-    putc_log('-');
-    TRY(bst_ln_num_print(ctx));
-    print_bad_input_line();
-    while ((bib_buf_len(BUF_TY_BASE) != 0))
-        if (!input_ln(ctx->bst_file))
-            longjmp(recover_jmpbuf, 1);
-        else
-            ctx->bst_line_num = ctx->bst_line_num + 1;
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_len(BUF_TY_BASE));
-}
-
-static void print_fn_class(hash_loc fn_loc)
-{
-    switch ((fn_type(fn_loc))) {
-    case 0:
-        puts_log("built-in");
-        break;
-    case 1:
-        puts_log("wizard-defined");
-        break;
-    case 2:
-        puts_log("integer-literal");
-        break;
-    case 3:
-        puts_log("string-literal");
-        break;
-    case 4:
-        puts_log("field");
-        break;
-    case 5:
-        puts_log("integer-entry-variable");
-        break;
-    case 6:
-        puts_log("string-entry-variable");
-        break;
-    case 7:
-        puts_log("integer-global-variable");
-        break;
-    case 8:
-        puts_log("string-global-variable");
-        break;
-    default:
-        unknwn_function_class_confusion();
-        longjmp(error_jmpbuf, 1);
-        break;
-    }
-}
-
 /*:159*//*160: */
 
-static void already_seen_function_print(BstCtx* ctx, hash_loc seen_fn_loc)
-{
-    TRY(print_a_pool_str(hash_text(seen_fn_loc)));
-    puts_log(" is already a type \"");
-    print_fn_class(seen_fn_loc);
-    puts_log("\" function name\n");
-    bst_err_print_and_look_for_blank_line(ctx);
-}
-
-static void check_field_overflow(int32_t total_fields)
-{
-    field_loc f_ptr;
-    field_loc start_fields;
-    if (total_fields > max_fields) {
-        start_fields = max_fields;
-        BIB_XRETALLOC("field_info", field_info, str_number, max_fields, total_fields + MAX_FIELDS);
-        {
-            register int32_t for_end;
-            f_ptr = start_fields;
-            for_end = max_fields - 1;
-            if (f_ptr <= for_end)
-                do {
-                    field_info[f_ptr] = 0 /*missing */ ;
-                }
-                while (f_ptr++ < for_end);
-        }
-    }
-}
-
-static void nonexistent_cross_reference_error(void)
+static void nonexistent_cross_reference_error(field_loc field_ptr)
 {
     puts_log("A bad cross reference-");
-    TRY(bad_cross_reference_print(field_info[field_ptr]));
+    TRY(bad_cross_reference_print(field_info(field_ptr)));
     puts_log("\", which doesn't exist\n");
     mark_error();
 }
@@ -319,48 +258,6 @@ static void output_bbl_line(void)
     ttstub_output_putc(bbl_file, '\n');
     bbl_line_num++;
     bib_set_buf_len(BUF_TY_OUT, 0);
-}
-
-static NameAndLen start_name(str_number file_name)
-{
-    pool_pointer p_ptr;
-    ASCIICode* name_of_file = xmalloc_array(ASCII_code, (bib_str_start(file_name + 1) - bib_str_start(file_name)) + 1);
-    int32_t name_ptr = 0;
-    p_ptr = bib_str_start(file_name);
-    while ((p_ptr < bib_str_start(file_name + 1))) {
-        name_of_file[name_ptr] = bib_str_pool(p_ptr);
-        name_ptr++;
-        p_ptr++;
-    }
-    int32_t name_length = (bib_str_start(file_name + 1) - bib_str_start(file_name));
-    name_of_file[name_length] = 0;
-    return (NameAndLen) { .name_of_file = name_of_file, .name_length = name_length };
-}
-
-static void add_extension(NameAndLen* nal, str_number ext)
-{
-    pool_pointer p_ptr;
-    int32_t name_ptr = nal->name_length;
-    p_ptr = bib_str_start(ext);
-    while ((p_ptr < bib_str_start(ext + 1))) {
-        nal->name_of_file[name_ptr] = bib_str_pool(p_ptr);
-        name_ptr++;
-        p_ptr++;
-    }
-    nal->name_length += bib_str_start(ext + 1) - bib_str_start(ext);
-    nal->name_of_file[nal->name_length] = 0;
-}
-
-static str_number make_string(void)
-{
-    if (bib_str_ptr() == bib_max_strings()) {
-        print_overflow();
-        printf_log("number of strings %ld\n", (long) bib_max_strings());
-        longjmp(error_jmpbuf, 1);
-    }
-    bib_set_str_ptr(bib_str_ptr() + 1);
-    bib_set_str_start(bib_str_ptr(), bib_pool_ptr());
-    return bib_str_ptr() - 1;
 }
 
 static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk ilk, bool insert_it)
@@ -433,7 +330,7 @@ static hash_loc str_lookup(buf_type buf, buf_pointer j, buf_pointer l, str_ilk i
                         }
                         k = k + 1;
                     }
-                    set_hash_text(p, make_string());
+                    set_hash_text(p, unwrap_res_str(bib_make_string()));
                 }
                 set_hash_ilk(p, ilk);
             }
@@ -530,7 +427,7 @@ static bool less_than(cite_number arg1, cite_number arg2)
 static void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range blt_in_num)
 {
     *fn_hash_loc = pre_define(pds, len, 11 /*bst_fn_ilk */ );
-    set_fn_type(*fn_hash_loc, 0 /*built_in */);
+    set_fn_type(*fn_hash_loc, FN_CLASS_BUILTIN);
     set_ilk_info(*fn_hash_loc, blt_in_num);
     ;
 
@@ -617,10 +514,10 @@ static void pre_def_certain_strings(void) {
     build_in("write$      ", 6, &b_write, 36 /*n_write */ );
     pre_def_loc = pre_define("            ", 0, 0 /*text_ilk */ );
     s_null = hash_text(pre_def_loc);
-    set_fn_type(pre_def_loc, 3 /*str_literal */);
+    set_fn_type(pre_def_loc, FN_CLASS_STR_LIT);
     pre_def_loc = pre_define("default.type", 12, 0 /*text_ilk */ );
     s_default = hash_text(pre_def_loc);
-    set_fn_type(pre_def_loc, 3 /*str_literal */);
+    set_fn_type(pre_def_loc, FN_CLASS_STR_LIT);
     b_default = b_skip;
     pre_def_loc = pre_define("i           ", 1, 14 /*control_seq_ilk */ );
     set_ilk_info(pre_def_loc, 0 /*n_i */ );
@@ -649,21 +546,21 @@ static void pre_def_certain_strings(void) {
     pre_def_loc = pre_define("ss          ", 2, 14 /*control_seq_ilk */ );
     set_ilk_info(pre_def_loc, 12 /*n_ss */ );
     pre_def_loc = pre_define("crossref    ", 8, 11 /*bst_fn_ilk */ );
-    set_fn_type(pre_def_loc, 4 /*field */);
+    set_fn_type(pre_def_loc, FN_CLASS_FIELD);
     set_ilk_info(pre_def_loc, num_fields);
     crossref_num = num_fields;
     num_fields = num_fields + 1;
     num_pre_defined_fields = num_fields;
     pre_def_loc = pre_define("sort.key$   ", 9, 11 /*bst_fn_ilk */ );
-    set_fn_type(pre_def_loc, 6 /*str_entry_var */);
+    set_fn_type(pre_def_loc, FN_CLASS_STR_ENTRY_VAR);
     set_ilk_info(pre_def_loc, num_ent_strs);
     sort_key_num = num_ent_strs;
     num_ent_strs = num_ent_strs + 1;
     pre_def_loc = pre_define("entry.max$  ", 10, 11 /*bst_fn_ilk */ );
-    set_fn_type(pre_def_loc, 7 /*int_global_var */);
+    set_fn_type(pre_def_loc, FN_CLASS_INT_GLBL_VAR);
     set_ilk_info(pre_def_loc, ent_str_size);
     pre_def_loc = pre_define("global.max$ ", 11, 11 /*bst_fn_ilk */ );
-    set_fn_type(pre_def_loc, 7 /*int_global_var */);
+    set_fn_type(pre_def_loc, FN_CLASS_INT_GLBL_VAR);
     set_ilk_info(pre_def_loc, glob_str_size);
 }
 
@@ -731,7 +628,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("function");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             goto exit;
         }
     }
@@ -751,7 +648,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
 
                 literal_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 1 /*integer_ilk */ , true);
                 if (!hash_found) {
-                    set_fn_type(literal_loc, 2 /*int_literal */);
+                    set_fn_type(literal_loc, FN_CLASS_INT_LIT);
                     set_ilk_info(literal_loc, token_value);
                 }
                 if ((bib_buf_offset(BUF_TY_BASE, 2) < bib_buf_len(BUF_TY_BASE)) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE )
@@ -779,7 +676,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                 };
 
                 literal_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ , true);
-                set_fn_type(literal_loc, 3 /*str_literal */);
+                set_fn_type(literal_loc, FN_CLASS_STR_LIT);
                 bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                 if ((bib_buf_offset(BUF_TY_BASE, 2) < bib_buf_len(BUF_TY_BASE)) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE )
                     && (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) && (bib_buf_at_offset(BUF_TY_BASE, 2) != 37 /*comment */ )) {
@@ -847,7 +744,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                 };
 
                 impl_fn_num = impl_fn_num + 1;
-                set_fn_type(impl_fn_loc, 1 /*wiz_defined */);
+                set_fn_type(impl_fn_loc, FN_CLASS_WIZARD);
                 {
                     singl_function[single_ptr] = quote_next_fn;
                     if (single_ptr == single_fn_space) {
@@ -900,7 +797,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("function");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 goto exit;
             }
         }
@@ -914,17 +811,13 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
             }
             single_ptr = single_ptr + 1;
         }
-        while ((single_ptr + wiz_def_ptr > wiz_fn_space)) {
-
-            BIB_XRETALLOC("wiz_functions", wiz_functions, hash_ptr2, wiz_fn_space, wiz_fn_space + WIZ_FN_SPACE);
-        }
-        set_ilk_info(fn_hash_loc, wiz_def_ptr);
+        check_grow_wiz(single_ptr);
+        set_ilk_info(fn_hash_loc, wiz_def_ptr());
         copy_ptr = 0;
         while ((copy_ptr < single_ptr)) {
-
-            wiz_functions[wiz_def_ptr] = singl_function[copy_ptr];
+            set_wiz_functions(wiz_def_ptr(), singl_function[copy_ptr]);
             copy_ptr = copy_ptr + 1;
-            wiz_def_ptr = wiz_def_ptr + 1;
+            set_wiz_def_ptr(wiz_def_ptr() + 1);
         }
     }
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -1354,7 +1247,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
         else
             ex_buf_xptr = 0;
         field_val_loc = str_lookup(bib_buf(BUF_TY_EX), ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 0 /*text_ilk */ , true);
-        set_fn_type(field_val_loc, 3 /*str_literal */);
+        set_fn_type(field_val_loc, FN_CLASS_STR_LIT);
         ;
 
         if (at_bib_command) { /*263: */
@@ -1371,14 +1264,13 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
                 break;
             }
         } else {                /*264: */
-
-            field_ptr = entry_cite_ptr * num_fields + ilk_info(field_name_loc);
+            field_loc field_ptr = entry_cite_ptr * num_fields + ilk_info(field_name_loc);
             if (field_ptr >= max_fields) {
                 puts_log("field_info index is out of range");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
             }
-            if (field_info[field_ptr] != 0 /*missing */ ) {
+            if (field_info(field_ptr) != 0 /*missing */ ) {
                 puts_log("Warning--I'm ignoring ");
                 TRY(print_a_pool_str(cite_list(entry_cite_ptr)));
                 puts_log("'s extra \"");
@@ -1386,8 +1278,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
                 puts_log("\" field\n");
                 TRY(bib_warn_print());
             } else {
-
-                field_info[field_ptr] = hash_text(field_val_loc);
+                set_field_info(field_ptr, hash_text(field_val_loc));
                 if ((ilk_info(field_name_loc) == crossref_num) && (!all_entries)) {   /*265: */
                     tmp_ptr = ex_buf_xptr;
                     while (tmp_ptr < bib_buf_offset(BUF_TY_EX, 1)) {
@@ -1949,7 +1840,7 @@ static void pop_top_and_print(ExecCtx* ctx)
     if (val.typ == STK_TYPE_ILLEGAL) {
         puts_log("Empty literal\n");
     } else {
-        TRY(print_lit(hash_text, val));
+        TRY(print_lit(val));
     }
 }
 
@@ -1995,7 +1886,7 @@ static void add_pool_buf_and_push(ExecCtx* ctx)
         }
         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
     }
-    push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING} );
+    push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING} );
 }
 
 static void add_buf_pool(str_number p_str)
@@ -2088,18 +1979,18 @@ static void x_equals(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
     if (ctx->pop1.typ != ctx->pop2.typ) {
-        if ((ctx->pop1.typ != 4 /*stk_empty */ ) && (ctx->pop2.typ != 4 /*stk_empty */ )) {
-            TRY(print_stk_lit(hash_text, ctx->pop1));
+        if ((ctx->pop1.typ != STK_TYPE_ILLEGAL) && (ctx->pop2.typ != STK_TYPE_ILLEGAL)) {
+            TRY(print_stk_lit(ctx->pop1));
             puts_log(", ");
-            TRY(print_stk_lit(hash_text, ctx->pop2));
+            TRY(print_stk_lit(ctx->pop2));
             putc_log('\n');
             puts_log("---they aren't the same literal types");
             TRY(bst_ex_warn_print(ctx));
         }
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER});
-    } else if ((ctx->pop1.typ != 0 /*stk_int */ ) && (ctx->pop1.typ != 1 /*stk_str */ )) {
-        if (ctx->pop1.typ != 4 /*stk_empty */ ) {
-            TRY(print_stk_lit(hash_text, ctx->pop1));
+    } else if ((ctx->pop1.typ != STK_TYPE_INTEGER) && (ctx->pop1.typ != STK_TYPE_STRING)) {
+        if (ctx->pop1.typ != STK_TYPE_ILLEGAL) {
+            TRY(print_stk_lit(ctx->pop1));
             puts_log(", not an integer or a string,");
             TRY(bst_ex_warn_print(ctx));
         }
@@ -2120,11 +2011,11 @@ static void x_greater_than(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
-    } else if (ctx->pop2.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
     } else if (ctx->pop2.lit > ctx->pop1.lit)
         push_lit_stk(ctx, (ExecVal) { .lit = 1, .typ = STK_TYPE_INTEGER });
@@ -2136,11 +2027,11 @@ static void x_less_than(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
-    } else if (ctx->pop2.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
     } else if (ctx->pop2.lit < ctx->pop1.lit)
         push_lit_stk(ctx, (ExecVal) { .lit = 1, .typ = STK_TYPE_INTEGER });
@@ -2152,11 +2043,11 @@ static void x_plus(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
-    } else if (ctx->pop2.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
     } else
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop2.lit + ctx->pop1.lit, .typ = STK_TYPE_INTEGER });
@@ -2166,11 +2057,11 @@ static void x_minus(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
-    } else if (ctx->pop2.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
     } else
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop2.lit - ctx->pop1.lit, .typ = STK_TYPE_INTEGER });
@@ -2181,11 +2072,11 @@ static void x_concatenate(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
-    } else if (ctx->pop2.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 1 /*stk_str */ );
+    } else if (ctx->pop2.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {                    /*352: */
 
@@ -2217,7 +2108,7 @@ static void x_concatenate(ExecCtx* ctx)
                     }
                     sp_ptr = sp_ptr + 1;
                 }
-                push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+                push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
             }
         } else {                /*353: */
 
@@ -2260,7 +2151,7 @@ static void x_concatenate(ExecCtx* ctx)
                         sp_ptr = sp_ptr + 1;
                     }
                     bib_set_pool_ptr(bib_pool_ptr() + sp_length);
-                    push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+                    push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
                 }
             } else {            /*354: */
 
@@ -2295,7 +2186,7 @@ static void x_concatenate(ExecCtx* ctx)
                         }
                         sp_ptr = sp_ptr + 1;
                     }
-                    push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+                    push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
                 }
             }
         }
@@ -2307,24 +2198,24 @@ static void x_gets(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 2 /*stk_fn */ )
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 2 /*stk_fn */ );
+    if (ctx->pop1.typ != STK_TYPE_FUNCTION)
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION);
     else if (((!ctx->mess_with_entries)
-              && ((fn_type(ctx->pop1.lit) == 6 /*str_entry_var */ ) || (fn_type(ctx->pop1.lit) == 5 /*int_entry_var */ ))))
+              && ((fn_type(ctx->pop1.lit) == FN_CLASS_STR_ENTRY_VAR ) || (fn_type(ctx->pop1.lit) == FN_CLASS_INT_ENTRY_VAR ))))
         TRY(bst_cant_mess_with_entries_print(ctx));
     else
         switch ((fn_type(ctx->pop1.lit))) {
-        case 5:
+        case FN_CLASS_INT_ENTRY_VAR:
             /*
-               356: */ if (ctx->pop2.typ != 0 /*stk_int */ )
-                print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+               356: */ if (ctx->pop2.typ != STK_TYPE_INTEGER)
+                print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
             else
                 entry_ints[cite_ptr() * num_ent_ints + ilk_info(ctx->pop1.lit)] = /*:356 */ ctx->pop2.lit;
             break;
-        case 6:
+        case FN_CLASS_STR_ENTRY_VAR:
             {
-                if (ctx->pop2.typ != 1 /*stk_str */ )
-                    print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 1 /*stk_str */ );
+                if (ctx->pop2.typ != STK_TYPE_STRING)
+                    print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
                 else {
 
                     str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info(ctx->pop1.lit);
@@ -2349,16 +2240,16 @@ static void x_gets(ExecCtx* ctx)
                 }
             }
             break;
-        case 7:
-            if (ctx->pop2.typ != 0 /*stk_int */ )
-                print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+        case FN_CLASS_INT_GLBL_VAR:
+            if (ctx->pop2.typ != STK_TYPE_INTEGER)
+                print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
             else
                 set_ilk_info(ctx->pop1.lit, /*:359 */ ctx->pop2.lit);
             break;
-        case 8:
+        case FN_CLASS_STR_GLBL_VAR:
             {
-                if (ctx->pop2.typ != 1 /*stk_str */ )
-                    print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 1 /*stk_str */ );
+                if (ctx->pop2.typ != STK_TYPE_STRING)
+                    print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
                 else {
 
                     str_glb_ptr = ilk_info(ctx->pop1.lit);
@@ -2402,8 +2293,8 @@ static void x_add_period(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else if ((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) == 0)
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
@@ -2459,7 +2350,7 @@ static void x_add_period(ExecCtx* ctx)
                     bib_set_str_pool(bib_pool_ptr(), 46 /*period */ );
                     bib_set_pool_ptr(bib_pool_ptr() + 1);
                 }
-                push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+                push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
             }
             break;
         }
@@ -2473,11 +2364,11 @@ static void x_change_case(ExecCtx* ctx)
 
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
-    } else if (ctx->pop2.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 1 /*stk_str */ );
+    } else if (ctx->pop2.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {
 
@@ -2678,8 +2569,8 @@ static void x_change_case(ExecCtx* ctx)
 static void x_chr_to_int(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
     } else if ((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) != 1) {
         putc_log('"');
@@ -2702,7 +2593,7 @@ static void x_cite(ExecCtx* ctx)
 static void x_duplicate(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop1.lit, .typ = ctx->pop1.typ });
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop1.lit, .typ = ctx->pop1.typ });
     } else {
@@ -2732,7 +2623,7 @@ static void x_duplicate(ExecCtx* ctx)
                 }
                 sp_ptr = sp_ptr + 1;
             }
-            push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+            push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
         }
     }
 }
@@ -2763,7 +2654,7 @@ static void x_empty(ExecCtx* ctx)
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
         break;
     default:
-        TRY(print_stk_lit(hash_text, ctx->pop1));
+        TRY(print_stk_lit(ctx->pop1));
         puts_log(", not a string or missing field,");
         TRY(bst_ex_warn_print(ctx));
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -2776,14 +2667,14 @@ static void x_format_name(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
     pop_lit_stk(ctx, &ctx->pop3);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
-    } else if (ctx->pop2.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
-    } else if (ctx->pop3.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop3, 1 /*stk_str */ );
+    } else if (ctx->pop3.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {
         buf_pointer ex_buf_xptr = 0;
@@ -2989,8 +2880,8 @@ static void x_format_name(ExecCtx* ctx)
 static void x_int_to_chr(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else if ((ctx->pop1.lit < 0) || (ctx->pop1.lit > 127)) {
         printf_log("%ld isn't valid ASCII", (long) ctx->pop1.lit);
@@ -3006,15 +2897,15 @@ static void x_int_to_chr(ExecCtx* ctx)
             bib_set_str_pool(bib_pool_ptr(), ctx->pop1.lit);
             bib_set_pool_ptr(bib_pool_ptr() + 1);
         }
-        push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
     }
 }
 
 static void x_int_to_str(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {
         bib_set_buf_len(BUF_TY_EX, int_to_ascii(ctx->pop1.lit, BUF_TY_EX, 0));
@@ -3027,9 +2918,9 @@ static void x_missing(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     if (!ctx->mess_with_entries)
         TRY(bst_cant_mess_with_entries_print(ctx));
-    else if ((ctx->pop1.typ != 1 /*stk_str */ ) && (ctx->pop1.typ != 3 /*stk_field_missing */ )) {
-        if (ctx->pop1.typ != 4 /*stk_empty */ ) {
-            TRY(print_stk_lit(hash_text, ctx->pop1));
+    else if ((ctx->pop1.typ != STK_TYPE_STRING) && (ctx->pop1.typ != STK_TYPE_MISSING)) {
+        if (ctx->pop1.typ != STK_TYPE_ILLEGAL) {
+            TRY(print_stk_lit(ctx->pop1));
             puts_log(", not a string or missing field,");
             TRY(bst_ex_warn_print(ctx));
         }
@@ -3043,8 +2934,8 @@ static void x_missing(ExecCtx* ctx)
 static void x_num_names(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
     } else {
 
@@ -3077,8 +2968,8 @@ static void x_preamble(ExecCtx* ctx)
 static void x_purify(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {
 
@@ -3190,7 +3081,7 @@ static void x_quote(ExecCtx* ctx)
         bib_set_str_pool(bib_pool_ptr(), 34 /*double_quote */ );
         bib_set_pool_ptr(bib_pool_ptr() + 1);
     }
-    push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+    push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
 }
 
 static void x_substring(ExecCtx* ctx)
@@ -3200,14 +3091,14 @@ static void x_substring(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
     pop_lit_stk(ctx, &ctx->pop3);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
-    } else if (ctx->pop2.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 0 /*stk_int */ );
+    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
-    } else if (ctx->pop3.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop3, 1 /*stk_str */ );
+    } else if (ctx->pop3.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {
 
@@ -3267,7 +3158,7 @@ static void x_substring(ExecCtx* ctx)
                 }
                 sp_ptr = sp_ptr + 1;
             }
-            push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+            push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
         }
     }
 }
@@ -3304,7 +3195,7 @@ static void x_swap(ExecCtx* ctx)
             }
             sp_ptr = sp_ptr + 1;
         }
-        push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
         add_pool_buf_and_push(ctx);
     }
 }
@@ -3314,8 +3205,8 @@ static void x_text_length(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
 
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {
 
@@ -3361,11 +3252,11 @@ static void x_text_prefix(ExecCtx* ctx)
 
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if (ctx->pop1.typ != 0 /*stk_int */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
-    } else if (ctx->pop2.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 1 /*stk_str */ );
+    } else if (ctx->pop2.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop1.lit <= 0) {
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
@@ -3428,7 +3319,7 @@ static void x_text_prefix(ExecCtx* ctx)
             }
             sp_brace_level = sp_brace_level - 1;
         }
-        push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
     }
 }
 
@@ -3445,11 +3336,11 @@ static void x_type(ExecCtx* ctx)
 static void x_warning(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ )
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING)
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
     else {
         puts_log("Warning--");
-        TRY(print_lit(hash_text, ctx->pop1));
+        TRY(print_lit(ctx->pop1));
         mark_warning();
     }
 }
@@ -3457,8 +3348,8 @@ static void x_warning(ExecCtx* ctx)
 static void x_width(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ ) {
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING) {
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
     } else {
 
@@ -3549,8 +3440,8 @@ static void x_width(ExecCtx* ctx)
 static void x_write(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
-    if (ctx->pop1.typ != 1 /*stk_str */ )
-        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 1 /*stk_str */ );
+    if (ctx->pop1.typ != STK_TYPE_STRING)
+        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
     else
         add_out_pool(ctx->pop1.lit);
 }
@@ -3562,7 +3453,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
     ;
 
     switch ((fn_type(ex_fn_loc))) {
-    case 0:
+    case FN_CLASS_BUILTIN:
         {
             ;
 
@@ -3625,12 +3516,12 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                     pop_lit_stk(ctx, &ctx->pop1);
                     pop_lit_stk(ctx, &ctx->pop2);
                     pop_lit_stk(ctx, &ctx->pop3);
-                    if (ctx->pop1.typ != 2 /*stk_fn */ )
-                        print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 2 /*stk_fn */ );
-                    else if (ctx->pop2.typ != 2 /*stk_fn */ )
-                        print_wrong_stk_lit(hash_text, ctx, ctx->pop2, 2 /*stk_fn */ );
-                    else if (ctx->pop3.typ != 0 /*stk_int */ )
-                        print_wrong_stk_lit(hash_text, ctx, ctx->pop3, 0 /*stk_int */ );
+                    if (ctx->pop1.typ != STK_TYPE_FUNCTION)
+                        print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION);
+                    else if (ctx->pop2.typ != STK_TYPE_FUNCTION)
+                        print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_FUNCTION);
+                    else if (ctx->pop3.typ != STK_TYPE_INTEGER)
+                        print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_INTEGER);
                     else if (ctx->pop3.lit > 0)
                         execute_fn(ctx, ctx->pop2.lit);
                     else
@@ -3705,17 +3596,17 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 {
                     pop_lit_stk(ctx, &r_pop1);
                     pop_lit_stk(ctx, &r_pop2);
-                    if (r_pop1.typ != 2 /*stk_fn */ )
-                        print_wrong_stk_lit(hash_text, ctx, r_pop1, 2 /*stk_fn */ );
-                    else if (r_pop2.typ != 2 /*stk_fn */ )
-                        print_wrong_stk_lit(hash_text, ctx, r_pop2, 2 /*stk_fn */ );
+                    if (r_pop1.typ != STK_TYPE_FUNCTION)
+                        print_wrong_stk_lit(ctx, r_pop1, STK_TYPE_FUNCTION);
+                    else if (r_pop2.typ != STK_TYPE_FUNCTION)
+                        print_wrong_stk_lit(ctx, r_pop2, STK_TYPE_FUNCTION);
                     else
                         while (true) {
 
                             execute_fn(ctx, r_pop2.lit);
                             pop_lit_stk(ctx, &ctx->pop1);
-                            if (ctx->pop1.typ != 0 /*stk_int */ ) {
-                                print_wrong_stk_lit(hash_text, ctx, ctx->pop1, 0 /*stk_int */ );
+                            if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+                                print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
                                 goto lab51;
                             } else if (ctx->pop1.lit > 0)
                                 execute_fn(ctx, r_pop1.lit);
@@ -3739,48 +3630,47 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             }
         }
         break;
-    case 1:
+    case FN_CLASS_WIZARD:
         {
             wiz_ptr = ilk_info(ex_fn_loc);
-            while (wiz_functions[wiz_ptr] != end_of_def()) {
+            while (wiz_functions(wiz_ptr) != end_of_def()) {
 
-                if (wiz_functions[wiz_ptr] != quote_next_fn)
-                    execute_fn(ctx, wiz_functions[wiz_ptr]);
+                if (wiz_functions(wiz_ptr) != quote_next_fn)
+                    execute_fn(ctx, wiz_functions(wiz_ptr));
                 else {
 
                     wiz_ptr = wiz_ptr + 1;
-                    push_lit_stk(ctx, (ExecVal) { .lit = wiz_functions[wiz_ptr], .typ = STK_TYPE_FUNCTION  });
+                    push_lit_stk(ctx, (ExecVal) { .lit = wiz_functions(wiz_ptr), .typ = STK_TYPE_FUNCTION  });
                 }
                 wiz_ptr = wiz_ptr + 1;
             }
         }
         break;
-    case 2:
+    case FN_CLASS_INT_LIT:
         push_lit_stk(ctx, (ExecVal) { .lit = ilk_info(ex_fn_loc), .typ = STK_TYPE_INTEGER });
         break;
-    case 3:
+    case FN_CLASS_STR_LIT:
         push_lit_stk(ctx, (ExecVal) { .lit = hash_text(ex_fn_loc), .typ = STK_TYPE_STRING });
         break;
-    case 4:
+    case FN_CLASS_FIELD:
         {
             if (!ctx->mess_with_entries)
                 TRY(bst_cant_mess_with_entries_print(ctx));
             else {
-
-                field_ptr = cite_ptr() * num_fields + ilk_info(ex_fn_loc);
+                field_loc field_ptr = cite_ptr() * num_fields + ilk_info(ex_fn_loc);
                 if (field_ptr >= max_fields) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
-                if (field_info[field_ptr] == 0 /*missing */ )
+                if (field_info(field_ptr) == 0 /*missing */ )
                     push_lit_stk(ctx, (ExecVal) { .lit = hash_text(ex_fn_loc), .typ = STK_TYPE_MISSING  });
                 else
-                    push_lit_stk(ctx, (ExecVal) { .lit = field_info[field_ptr], .typ = STK_TYPE_STRING });
+                    push_lit_stk(ctx, (ExecVal) { .lit = field_info(field_ptr), .typ = STK_TYPE_STRING });
             }
         }
         break;
-    case 5:
+    case FN_CLASS_INT_ENTRY_VAR:
         {
             if (!ctx->mess_with_entries)
                 TRY(bst_cant_mess_with_entries_print(ctx));
@@ -3788,7 +3678,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 push_lit_stk(ctx, (ExecVal) { .lit = entry_ints[cite_ptr() * num_ent_ints + ilk_info(ex_fn_loc)], .typ = STK_TYPE_INTEGER });
         }
         break;
-    case 6:
+    case FN_CLASS_STR_ENTRY_VAR:
         {
             if (!ctx->mess_with_entries)
                 TRY(bst_cant_mess_with_entries_print(ctx));
@@ -3806,10 +3696,10 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             }
         }
         break;
-    case 7:
+    case FN_CLASS_INT_GLBL_VAR:
         push_lit_stk(ctx, (ExecVal) { .lit = ilk_info(ex_fn_loc), .typ = STK_TYPE_INTEGER });
         break;
-    case 8:
+    case FN_CLASS_STR_GLBL_VAR:
         {
             str_glb_ptr = ilk_info(ex_fn_loc);
             if (glb_bib_str_ptr[str_glb_ptr] > 0)
@@ -3829,7 +3719,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                     }
                     glob_chr_ptr = glob_chr_ptr + 1;
                 }
-                push_lit_stk(ctx, (ExecVal) { .lit = make_string(), .typ = STK_TYPE_STRING });
+                push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
             }
         }
         break;
@@ -4265,7 +4155,7 @@ static void bst_entry_command(BstCtx* ctx)
 {
     if (entry_seen) {
         puts_log("Illegal, another entry command");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
     entry_seen = true;
@@ -4273,7 +4163,7 @@ static void bst_entry_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("entry");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4282,7 +4172,7 @@ static void bst_entry_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("entry");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4291,7 +4181,7 @@ static void bst_entry_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("entry");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4303,7 +4193,7 @@ static void bst_entry_command(BstCtx* ctx)
                 else {
                     TRY(bst_id_print(scan_result));
                     puts_log("entry");
-                    bst_err_print_and_look_for_blank_line(ctx);
+                    unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                     return;
                 }
             }
@@ -4314,11 +4204,11 @@ static void bst_entry_command(BstCtx* ctx)
                 fn_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true);
                 {
                     if (hash_found) {
-                        already_seen_function_print(ctx, fn_loc);
+                        unwrap_res(already_seen_function_print(ctx, fn_loc));
                         return;
                     }
                 }
-                set_fn_type(fn_loc, 4 /*field */);
+                set_fn_type(fn_loc, FN_CLASS_FIELD);
                 set_ilk_info(fn_loc, num_fields);
                 num_fields = num_fields + 1;
             }
@@ -4326,7 +4216,7 @@ static void bst_entry_command(BstCtx* ctx)
                 if (!eat_bst_white_space(ctx)) {
                     eat_bst_print();
                     puts_log("entry");
-                    bst_err_print_and_look_for_blank_line(ctx);
+                    unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                     return;
                 }
             }
@@ -4337,7 +4227,7 @@ static void bst_entry_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("entry");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4350,7 +4240,7 @@ static void bst_entry_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("entry");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4359,7 +4249,7 @@ static void bst_entry_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("entry");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4371,7 +4261,7 @@ static void bst_entry_command(BstCtx* ctx)
                 else {
                     TRY(bst_id_print(scan_result));
                     puts_log("entry");
-                    bst_err_print_and_look_for_blank_line(ctx);
+                    unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                     return;
                 }
             }
@@ -4382,11 +4272,11 @@ static void bst_entry_command(BstCtx* ctx)
                 fn_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true);
                 {
                     if (hash_found) {
-                        already_seen_function_print(ctx, fn_loc);
+                        unwrap_res(already_seen_function_print(ctx, fn_loc));
                         return;
                     }
                 }
-                set_fn_type(fn_loc, 5 /*int_entry_var */);
+                set_fn_type(fn_loc, FN_CLASS_INT_ENTRY_VAR);
                 set_ilk_info(fn_loc, num_ent_ints);
                 num_ent_ints = num_ent_ints + 1;
             }
@@ -4394,7 +4284,7 @@ static void bst_entry_command(BstCtx* ctx)
                 if (!eat_bst_white_space(ctx)) {
                     eat_bst_print();
                     puts_log("entry");
-                    bst_err_print_and_look_for_blank_line(ctx);
+                    unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                     return;
                 }
             }
@@ -4405,7 +4295,7 @@ static void bst_entry_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("entry");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4414,7 +4304,7 @@ static void bst_entry_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("entry");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4423,7 +4313,7 @@ static void bst_entry_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("entry");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4435,7 +4325,7 @@ static void bst_entry_command(BstCtx* ctx)
                 else {
                     TRY(bst_id_print(scan_result));
                     puts_log("entry");
-                    bst_err_print_and_look_for_blank_line(ctx);
+                    unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                     return;
                 }
             }
@@ -4446,11 +4336,11 @@ static void bst_entry_command(BstCtx* ctx)
                 fn_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true);
                 {
                     if (hash_found) {
-                        already_seen_function_print(ctx, fn_loc);
+                        unwrap_res(already_seen_function_print(ctx, fn_loc));
                         return;
                     }
                 }
-                set_fn_type(fn_loc, 6 /*str_entry_var */);
+                set_fn_type(fn_loc, FN_CLASS_STR_ENTRY_VAR);
                 set_ilk_info(fn_loc, num_ent_strs);
                 num_ent_strs = num_ent_strs + 1;
             }
@@ -4458,7 +4348,7 @@ static void bst_entry_command(BstCtx* ctx)
                 if (!eat_bst_white_space(ctx)) {
                     eat_bst_print();
                     puts_log("entry");
-                    bst_err_print_and_look_for_blank_line(ctx);
+                    unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                     return;
                 }
             }
@@ -4474,13 +4364,13 @@ static bool bad_argument_token(BstCtx* ctx)
     if (!hash_found) {
         print_a_token();
         puts_log(" is an unknown function");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return true;
-    } else if ((fn_type(fn_loc) != 0 /*built_in */ ) && (fn_type(fn_loc) != 1 /*wiz_defined */ )) {
+    } else if ((fn_type(fn_loc) != FN_CLASS_BUILTIN) && (fn_type(fn_loc) != FN_CLASS_WIZARD)) {
         print_a_token();
         puts_log(" has bad function type ");
         print_fn_class(fn_loc);
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return true;
     }
     return false;
@@ -4565,7 +4455,7 @@ static void bst_function_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("function");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4574,7 +4464,7 @@ static void bst_function_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("function");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4583,7 +4473,7 @@ static void bst_function_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("function");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4593,7 +4483,7 @@ static void bst_function_command(BstCtx* ctx)
             else {
                 TRY(bst_id_print(scan_result));
                 puts_log("function");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4604,11 +4494,11 @@ static void bst_function_command(BstCtx* ctx)
             wiz_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true);
             {
                 if (hash_found) {
-                    already_seen_function_print(ctx, wiz_loc);
+                    unwrap_res(already_seen_function_print(ctx, wiz_loc));
                     return;
                 }
             }
-            set_fn_type(wiz_loc, 1 /*wiz_defined */);
+            set_fn_type(wiz_loc, FN_CLASS_WIZARD);
             if (hash_text(wiz_loc) == s_default)
                 b_default = wiz_loc;
         }
@@ -4616,7 +4506,7 @@ static void bst_function_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("function");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4624,7 +4514,7 @@ static void bst_function_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
                 bst_right_brace_print();
                 puts_log("function");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4634,7 +4524,7 @@ static void bst_function_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("function");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4642,7 +4532,7 @@ static void bst_function_command(BstCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("function");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4656,7 +4546,7 @@ static void bst_integers_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("integers");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4664,7 +4554,7 @@ static void bst_integers_command(BstCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("integers");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4673,7 +4563,7 @@ static void bst_integers_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("integers");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4685,7 +4575,7 @@ static void bst_integers_command(BstCtx* ctx)
             else {
                 TRY(bst_id_print(scan_result));
                 puts_log("integers");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4696,18 +4586,18 @@ static void bst_integers_command(BstCtx* ctx)
             fn_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true);
             {
                 if (hash_found) {
-                    already_seen_function_print(ctx, fn_loc);
+                    unwrap_res(already_seen_function_print(ctx, fn_loc));
                     return;
                 }
             }
-            set_fn_type(fn_loc, 7 /*int_global_var */);
+            set_fn_type(fn_loc, FN_CLASS_INT_GLBL_VAR);
             set_ilk_info(fn_loc, 0);
         }
         {
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("integers");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4799,14 +4689,14 @@ static void bst_macro_command(BstCtx* ctx)
 {
     if (read_seen) {
         puts_log("Illegal, macro command after read command");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
     {
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("macro");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4815,7 +4705,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4824,7 +4714,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4834,7 +4724,7 @@ static void bst_macro_command(BstCtx* ctx)
             else {
                 TRY(bst_id_print(scan_result));
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4846,7 +4736,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (hash_found) {
                 print_a_token();
                 puts_log(" is already defined as a macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             set_ilk_info(macro_name_loc, hash_text(macro_name_loc));
@@ -4855,7 +4745,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4863,7 +4753,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
                 bst_right_brace_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4873,7 +4763,7 @@ static void bst_macro_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("macro");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -4882,7 +4772,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
                 bst_left_brace_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4891,25 +4781,25 @@ static void bst_macro_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 34 /*double_quote */ ) {
             puts_log("A macro definition must be \"-delimited");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
         {
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
             if (!scan1(34 /*double_quote */)) {
                 puts_log("There's no `\"' to end macro definition");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
 
             macro_def_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ , true);
-            set_fn_type(macro_def_loc, 3 /*str_literal */);
+            set_fn_type(macro_def_loc, FN_CLASS_STR_LIT);
             set_ilk_info(macro_name_loc, hash_text(macro_def_loc));
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
         }
@@ -4917,7 +4807,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (!eat_bst_white_space(ctx)) {
                 eat_bst_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
         }
@@ -4925,7 +4815,7 @@ static void bst_macro_command(BstCtx* ctx)
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
                 bst_right_brace_print();
                 puts_log("macro");
-                bst_err_print_and_look_for_blank_line(ctx);
+                unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
                 return;
             }
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -5099,7 +4989,7 @@ static void get_bib_command_or_entry_and_process(void)
         } else {
 
             entry_type_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false);
-            if ((!hash_found) || (fn_type(entry_type_loc) != 1 /*wiz_defined */ ))
+            if ((!hash_found) || (fn_type(entry_type_loc) != FN_CLASS_WIZARD))
                 type_exists = false;
             else
                 type_exists = true;
@@ -5282,7 +5172,7 @@ static void get_bib_command_or_entry_and_process(void)
                     field_name_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false);
                     if (hash_found) {
 
-                        if (fn_type(field_name_loc) == 4 /*field */ )
+                        if (fn_type(field_name_loc) == FN_CLASS_FIELD)
                             store_field = true;
                     }
                 }
@@ -5318,13 +5208,13 @@ static void bst_read_command(BstCtx* ctx)
 
     if (read_seen) {
         puts_log("Illegal, another read command");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
     read_seen = true;
     if (!entry_seen) {
         puts_log("Illegal, read command before entry command");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
     bib_set_buf_offset(BUF_TY_SV, 1, bib_buf_offset(BUF_TY_BASE, 2));
@@ -5339,10 +5229,9 @@ static void bst_read_command(BstCtx* ctx)
         {
             {
                 check_field_overflow(num_fields * num_cites);
-                field_ptr = 0;
+                field_loc field_ptr = 0;
                 while (field_ptr < max_fields) {
-
-                    field_info[field_ptr] = 0 /*missing */ ;
+                    set_field_info(field_ptr, 0 /*missing */);
                     field_ptr = field_ptr + 1;
                 }
             }
@@ -5404,21 +5293,20 @@ static void bst_read_command(BstCtx* ctx)
                 }
                 set_cite_ptr(0);
                 while (cite_ptr() < num_cites) {
+                    field_loc field_ptr = cite_ptr() * num_fields + crossref_num;
+                    if (field_info(field_ptr) != 0 /*missing */ ) {
 
-                    field_ptr = cite_ptr() * num_fields + crossref_num;
-                    if (field_info[field_ptr] != 0 /*missing */ ) {
-
-                        if (find_cite_locs_for_this_cite_key(field_info[field_ptr])) {
+                        if (find_cite_locs_for_this_cite_key(field_info(field_ptr))) {
                             cite_loc = ilk_info(lc_cite_loc);
-                            field_info[field_ptr] = hash_text(cite_loc);
-                            cite_parent_ptr = ilk_info(cite_loc);
+                            set_field_info(field_ptr, hash_text(cite_loc));
+                            cite_number cite_parent_ptr = ilk_info(cite_loc);
                             field_ptr = cite_ptr() * num_fields + num_pre_defined_fields;
-                            field_end_ptr = field_ptr - num_pre_defined_fields + num_fields;
-                            field_parent_ptr = cite_parent_ptr * num_fields + num_pre_defined_fields;
+                            field_loc field_end_ptr = field_ptr - num_pre_defined_fields + num_fields;
+                            field_loc field_parent_ptr = cite_parent_ptr * num_fields + num_pre_defined_fields;
                             while (field_ptr < field_end_ptr) {
 
-                                if (field_info[field_ptr] == 0 /*missing */ )
-                                    field_info[field_ptr] = field_info[field_parent_ptr];
+                                if (field_info(field_ptr) == 0 /*missing */ )
+                                    set_field_info(field_ptr, field_info(field_parent_ptr));
                                 field_ptr = field_ptr + 1;
                                 field_parent_ptr = field_parent_ptr + 1;
                             }
@@ -5435,31 +5323,30 @@ static void bst_read_command(BstCtx* ctx)
                 }
                 set_cite_ptr(0);
                 while (cite_ptr() < num_cites) {
+                    field_loc field_ptr = cite_ptr() * num_fields + crossref_num;
+                    if (field_info(field_ptr) != 0 /*missing */ ) {
 
-                    field_ptr = cite_ptr() * num_fields + crossref_num;
-                    if (field_info[field_ptr] != 0 /*missing */ ) {
-
-                        if (!find_cite_locs_for_this_cite_key(field_info[field_ptr])) {
+                        if (!find_cite_locs_for_this_cite_key(field_info(field_ptr))) {
                             if (cite_hash_found) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            nonexistent_cross_reference_error();
-                            field_info[field_ptr] = 0 /*missing */ ;
+                            nonexistent_cross_reference_error(field_ptr);
+                            set_field_info(field_ptr, 0 /*missing */);
                         } else {
 
                             if (cite_loc != ilk_info(lc_cite_loc)) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            cite_parent_ptr = ilk_info(cite_loc);
+                            cite_number cite_parent_ptr = ilk_info(cite_loc);
                             if (type_list(cite_parent_ptr) == 0 /*empty */ ) {
-                                nonexistent_cross_reference_error();
-                                field_info[field_ptr] = 0 /*missing */ ;
+                                nonexistent_cross_reference_error(field_ptr);
+                                set_field_info(field_ptr, 0 /*missing */);
                             } else {
 
-                                field_parent_ptr = cite_parent_ptr * num_fields + crossref_num;
-                                if (field_info[field_parent_ptr] != 0 /*missing */ ) {        /*283: */
+                                field_loc field_parent_ptr = cite_parent_ptr * num_fields + crossref_num;
+                                if (field_info(field_parent_ptr) != 0 /*missing */ ) {        /*283: */
                                     puts_log("Warning--you've nested cross references");
                                     TRY(bad_cross_reference_print(cite_list(cite_parent_ptr)));
                                     puts_log("\", which also refers to something\n");
@@ -5467,7 +5354,7 @@ static void bst_read_command(BstCtx* ctx)
                                 }
                                 if (((!all_entries) && (cite_parent_ptr >= old_num_cites)
                                      && (cite_info(cite_parent_ptr) < bibtex_config->min_crossrefs)))
-                                    field_info[field_ptr] = 0 /*missing */ ;
+                                    set_field_info(field_ptr, 0 /*missing */);
                             }
                         }
                     }
@@ -5498,12 +5385,12 @@ static void bst_read_command(BstCtx* ctx)
                                 longjmp(error_jmpbuf, 1);
                             }
                             set_ilk_info(cite_loc, cite_xptr);
-                            field_ptr = cite_xptr * num_fields;
-                            field_end_ptr = field_ptr + num_fields;
+                            field_loc field_ptr = cite_xptr * num_fields;
+                            field_loc field_end_ptr = field_ptr + num_fields;
                             tmp_ptr = cite_ptr() * num_fields;
                             while (field_ptr < field_end_ptr) {
 
-                                field_info[field_ptr] = field_info[tmp_ptr];
+                                set_field_info(field_ptr, field_info(tmp_ptr));
                                 field_ptr = field_ptr + 1;
                                 tmp_ptr = tmp_ptr + 1;
                             }
@@ -5648,7 +5535,7 @@ bst_sort_command(BstCtx* ctx)
 {
     if (!read_seen) {
         puts_log("Illegal, sort command before read command");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
 
@@ -5663,14 +5550,14 @@ bst_strings_command(BstCtx* ctx)
     if (!eat_bst_white_space(ctx)) {
         eat_bst_print();
         puts_log("strings");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
 
     if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
         bst_left_brace_print();
         puts_log("strings");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
 
@@ -5679,7 +5566,7 @@ bst_strings_command(BstCtx* ctx)
     if (!eat_bst_white_space(ctx)) {
         eat_bst_print();
         puts_log("strings");
-        bst_err_print_and_look_for_blank_line(ctx);
+        unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
 
@@ -5688,18 +5575,18 @@ bst_strings_command(BstCtx* ctx)
         if (scan_result != SCAN_RES_WHITESPACE_ADJACENT && scan_result != SCAN_RES_SPECIFIED_CHAR_ADJACENT) {
             TRY(bst_id_print(scan_result));
             puts_log("strings");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
 
         lower_case(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1));
         fn_loc = str_lookup(bib_buf(BUF_TY_BASE), bib_buf_offset(BUF_TY_BASE, 1), bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1), 11 /*bst_fn_ilk */ , true);
         if (hash_found) {
-            already_seen_function_print(ctx, fn_loc);
+            unwrap_res(already_seen_function_print(ctx, fn_loc));
             return;
         }
 
-        set_fn_type(fn_loc, 8 /*str_global_var */);
+        set_fn_type(fn_loc, FN_CLASS_STR_GLBL_VAR);
         set_ilk_info(fn_loc, num_glb_strs);
 
         if (num_glb_strs == max_glob_strs) {
@@ -5722,7 +5609,7 @@ bst_strings_command(BstCtx* ctx)
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
             puts_log("strings");
-            bst_err_print_and_look_for_blank_line(ctx);
+            unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
             return;
         }
     }
@@ -5879,7 +5766,6 @@ initialize(const char *aux_file_name)
     bst_seen = false;
     citation_seen = false;
     all_entries = false;
-    wiz_def_ptr = 0;
     num_ent_ints = 0;
     num_ent_strs = 0;
     num_fields = 0;
@@ -5909,7 +5795,6 @@ bibtex_main(const char *aux_file_name)
 {
     max_glob_strs = MAX_GLOB_STRS;
     max_fields = MAX_FIELDS;
-    wiz_fn_space = WIZ_FN_SPACE;
 
     if (standard_output() == NULL)
         return HISTORY_FATAL_ERROR;
@@ -5920,8 +5805,6 @@ bibtex_main(const char *aux_file_name)
     entry_ints = NULL;
     entry_strs = NULL;
 
-    wiz_functions = XTALLOC(wiz_fn_space + 1, hash_ptr2);
-    field_info = XTALLOC(max_fields + 1, str_number);
     glb_bib_str_ptr = XTALLOC(max_glob_strs, str_number);
     global_strs = XTALLOC(max_glob_strs * (glob_str_size + 1), ASCII_code);
     glb_str_end = XTALLOC(max_glob_strs, int32_t);
