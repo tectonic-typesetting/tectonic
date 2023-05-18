@@ -1,7 +1,7 @@
-use std::cell::RefCell;
-use crate::c_api::{BibNumber, StrNumber};
 use crate::c_api::peekable::PeekableInput;
 use crate::c_api::xbuf::XBuf;
+use crate::c_api::{BibNumber, StrNumber};
+use std::cell::RefCell;
 
 const MAX_BIB_FILES: usize = 20;
 

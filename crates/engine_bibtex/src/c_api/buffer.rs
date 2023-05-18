@@ -1,5 +1,5 @@
-use crate::c_api::{ASCIICode, BufPointer, BufType};
 use super::xbuf::XBuf;
+use crate::c_api::{ASCIICode, BufPointer, BufType};
 use std::cell::RefCell;
 
 const BUF_SIZE: usize = 20000;
@@ -215,4 +215,57 @@ pub extern "C" fn name_tok(pos: BufPointer) -> BufPointer {
 #[no_mangle]
 pub extern "C" fn set_name_tok(pos: BufPointer, val: BufPointer) {
     with_buffers_mut(|buffers| buffers.name_tok[pos as usize] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn lower_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
+    with_buffers_mut(|buffers| {
+        buffers.buffer_mut(buf)[ptr as usize..(ptr + len) as usize].make_ascii_lowercase()
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn upper_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
+    with_buffers_mut(|buffers| {
+        buffers.buffer_mut(buf)[ptr as usize..(ptr + len) as usize].make_ascii_uppercase()
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn int_to_ascii(
+    mut the_int: i32,
+    int_buf: BufTy,
+    int_begin: BufPointer,
+) -> BufPointer {
+    with_buffers_mut(|buffers| {
+        let mut buf = buffers.buffer_mut(int_buf);
+        let mut int_ptr = int_begin as usize;
+
+        if the_int < 0 {
+            if int_ptr == buf.len() {
+                buffers.grow_all();
+                buf = buffers.buffer_mut(int_buf);
+            }
+            buf[int_ptr] = 45 /*minus_sign */ ;
+            int_ptr += 1;
+            the_int = -the_int;
+        }
+
+        loop {
+            if int_ptr == buf.len() {
+                buffers.grow_all();
+                buf = buffers.buffer_mut(int_buf);
+            }
+            buf[int_ptr] = b'0' + (the_int % 10) as u8;
+            int_ptr += 1;
+            the_int /= 10;
+
+            if the_int == 0 {
+                break;
+            }
+        }
+
+        buf[int_begin as usize..int_ptr].reverse();
+        int_ptr as BufPointer
+    })
 }

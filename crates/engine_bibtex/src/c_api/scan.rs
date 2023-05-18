@@ -1,4 +1,4 @@
-use crate::c_api::buffer::{with_buffers_mut, BufTy, with_buffers};
+use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::char_info::{IdClass, LexClass};
 use crate::c_api::{ASCIICode, BufPointer};
 
@@ -104,11 +104,7 @@ pub extern "C" fn scan2_white(char1: ASCIICode, char2: ASCIICode) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn scan3(
-    char1: ASCIICode,
-    char2: ASCIICode,
-    char3: ASCIICode,
-) -> bool {
+pub extern "C" fn scan3(char1: ASCIICode, char2: ASCIICode, char3: ASCIICode) -> bool {
     let last = with_buffers(|buffers| buffers.init(BufTy::Base));
     Scan::new(&[char1, char2, char3]).scan_till(last)
 }
@@ -130,11 +126,7 @@ pub extern "C" fn scan_white_space() -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn scan_identifier(
-    char1: ASCIICode,
-    char2: ASCIICode,
-    char3: ASCIICode,
-) -> ScanRes {
+pub extern "C" fn scan_identifier(char1: ASCIICode, char2: ASCIICode, char3: ASCIICode) -> ScanRes {
     with_buffers_mut(|buffers| {
         let last = buffers.init(BufTy::Base);
         let start = buffers.offset(BufTy::Base, 2);

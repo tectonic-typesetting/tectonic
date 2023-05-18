@@ -1,5 +1,5 @@
-use crate::c_api::{ASCIICode, StrNumber};
 use crate::c_api::xbuf::XBuf;
+use crate::c_api::{ASCIICode, StrNumber};
 
 pub struct GlobalData {
     glb_bib_str_ptr: XBuf<StrNumber>,

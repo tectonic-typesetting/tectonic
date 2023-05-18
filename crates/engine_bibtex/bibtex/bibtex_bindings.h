@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "tectonic_bridge_core.h"
 
+#define HASH_BASE 1
+
 typedef enum {
   BUF_TY_BASE,
   BUF_TY_SV,
@@ -21,9 +23,6 @@ typedef enum {
   CResult_Ok,
 } CResult;
 
-/**
- *
- */
 typedef enum {
   FN_CLASS_BUILTIN = 0,
   FN_CLASS_WIZARD = 1,
@@ -44,6 +43,11 @@ typedef enum {
   HISTORY_ABORTED = 4,
 } History;
 
+/**
+ * The lexer class of a character - this represents whether the parser considers it to be alphabetic,
+ * numeric, etc. Illegal represents tokens that shouldn't show up at all, such as ASCII backspace.
+ *
+ */
 typedef enum {
   LEX_CLASS_ILLEGAL = 0,
   LEX_CLASS_WHITESPACE = 1,
@@ -70,11 +74,9 @@ typedef enum {
 
 typedef int32_t StrNumber;
 
-typedef uint8_t ASCIICode;
-
-typedef ASCIICode *BufType;
-
 typedef int32_t BufPointer;
+
+typedef uint8_t ASCIICode;
 
 typedef struct {
   ASCIICode *name_of_file;
@@ -84,6 +86,8 @@ typedef struct {
 typedef struct {
   int min_crossrefs;
 } BibtexConfig;
+
+typedef ASCIICode *BufType;
 
 typedef int32_t CiteNumber;
 
@@ -122,6 +126,8 @@ typedef struct {
 
 typedef int32_t HashPointer;
 
+typedef int32_t FieldLoc;
+
 typedef uintptr_t PoolPointer;
 
 typedef enum {
@@ -139,17 +145,41 @@ typedef struct {
   };
 } CResultStr;
 
+typedef struct {
+  /**
+   * The location of the string - where it exists, was inserted, of if insert is false,
+   * where it *would* have been inserted
+   */
+  int32_t loc;
+  /**
+   * Whether the string existed in the hash table already
+   */
+  bool exists;
+} LookupRes;
+
+typedef enum {
+  CResultLookup_Error,
+  CResultLookup_Ok,
+} CResultLookup_Tag;
+
+typedef struct {
+  CResultLookup_Tag tag;
+  union {
+    struct {
+      LookupRes ok;
+    };
+  };
+} CResultLookup;
+
+typedef uint8_t StrIlk;
+
 typedef int32_t AuxNumber;
 
 typedef int32_t BibNumber;
 
-typedef uint8_t StrIlk;
-
 typedef int32_t WizFnLoc;
 
 typedef int32_t FnDefLoc;
-
-typedef int32_t FieldLoc;
 
 #ifdef __cplusplus
 extern "C" {
@@ -161,13 +191,7 @@ extern const int32_t CHAR_WIDTH[256];
 
 void reset_all(void);
 
-bool bib_str_eq_buf(StrNumber s, BufType buf, BufPointer bf_ptr, BufPointer len);
-
-void lower_case(BufType buf, BufPointer bf_ptr, BufPointer len);
-
-void upper_case(BufType buf, BufPointer bf_ptr, BufPointer len);
-
-BufPointer int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin);
+bool bib_str_eq_buf(StrNumber s, BufTy buf, BufPointer ptr, BufPointer len);
 
 NameAndLen start_name(StrNumber file_name);
 
@@ -198,6 +222,12 @@ void buffer_overflow(void);
 BufPointer name_tok(BufPointer pos);
 
 void set_name_tok(BufPointer pos, BufPointer val);
+
+void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
+
+void upper_case(BufTy buf, BufPointer ptr, BufPointer len);
+
+BufPointer int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin);
 
 void quick_sort(CiteNumber left_end, CiteNumber right_end);
 
@@ -266,8 +296,6 @@ void print_overflow(void);
 void print_confusion(void);
 
 void print_a_token(void);
-
-void print_bad_input_line(void);
 
 bool print_a_pool_str(StrNumber s);
 
@@ -351,6 +379,8 @@ CResult bst_err_print_and_look_for_blank_line(BstCtx *ctx);
 
 CResult already_seen_function_print(BstCtx *ctx, HashPointer seen_fn_loc);
 
+bool nonexistent_cross_reference_error(FieldLoc field_ptr);
+
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
@@ -384,6 +414,8 @@ PoolPointer bib_pool_ptr(void);
 void bib_set_pool_ptr(PoolPointer ptr);
 
 CResultStr bib_make_string(void);
+
+CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
 bool scan1(ASCIICode char1);
 
@@ -453,10 +485,6 @@ int32_t end_of_def(void);
 
 int32_t undefined(void);
 
-int32_t hash_used(void);
-
-void set_hash_used(int32_t num);
-
 FnClass fn_type(HashPointer pos);
 
 void set_fn_type(HashPointer pos, FnClass ty);
@@ -464,10 +492,6 @@ void set_fn_type(HashPointer pos, FnClass ty);
 StrNumber hash_text(HashPointer pos);
 
 void set_hash_text(HashPointer pos, StrNumber num);
-
-StrIlk hash_ilk(HashPointer pos);
-
-void set_hash_ilk(HashPointer pos, StrIlk val);
 
 int32_t ilk_info(HashPointer pos);
 

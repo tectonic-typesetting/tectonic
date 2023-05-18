@@ -103,44 +103,28 @@ impl BibtexEngine {
 
 #[doc(hidden)]
 pub mod c_api {
-    use crate::c_api::buffer::{bib_buf, bib_buf_size, buffer_overflow, BufTy};
+    use crate::c_api::buffer::{with_buffers, BufTy};
     use crate::c_api::history::History;
     use crate::c_api::pool::with_pool;
     use std::slice;
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
 
-    mod buffer;
-    mod char_info;
-    mod cite;
+    pub mod auxi;
+    pub mod bibs;
+    pub mod buffer;
+    pub mod char_info;
+    pub mod cite;
     pub mod exec;
+    pub mod global;
+    pub mod hash;
     pub mod history;
-    mod log;
-    mod peekable;
-    mod pool;
-    mod scan;
-    mod auxi;
-    mod bibs;
-    mod hash;
+    pub mod log;
+    pub mod other;
+    pub mod peekable;
+    pub mod pool;
+    pub mod scan;
     pub mod xbuf;
-    mod other;
-    mod global;
-
-    unsafe fn buf_to_slice<'a>(
-        buf: BufType,
-        start: BufPointer,
-        len: BufPointer,
-    ) -> &'a [ASCIICode] {
-        slice::from_raw_parts(buf.offset(start as isize), len as usize)
-    }
-
-    unsafe fn buf_to_slice_mut<'a>(
-        buf: BufType,
-        start: BufPointer,
-        len: BufPointer,
-    ) -> &'a mut [ASCIICode] {
-        slice::from_raw_parts_mut(buf.offset(start as isize), len as usize)
-    }
 
     #[repr(C)]
     #[derive(Clone, Debug)]
@@ -182,6 +166,21 @@ pub mod c_api {
         Ok(StrNumber),
     }
 
+    #[repr(C)]
+    pub struct LookupRes {
+        /// The location of the string - where it exists, was inserted, of if insert is false,
+        /// where it *would* have been inserted
+        loc: i32,
+        /// Whether the string existed in the hash table already
+        exists: bool,
+    }
+
+    #[repr(C)]
+    pub enum CResultLookup {
+        Error,
+        Ok(LookupRes),
+    }
+
     type StrNumber = i32;
     type CiteNumber = i32;
     type ASCIICode = u8;
@@ -211,73 +210,19 @@ pub mod c_api {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn bib_str_eq_buf(
+    pub extern "C" fn bib_str_eq_buf(
         s: StrNumber,
-        buf: BufType,
-        bf_ptr: BufPointer,
+        buf: BufTy,
+        ptr: BufPointer,
         len: BufPointer,
     ) -> bool {
-        let buf = buf_to_slice(buf, bf_ptr, len);
-        with_pool(|pool| buf == pool.get_str(s as usize))
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn lower_case(buf: BufType, bf_ptr: BufPointer, len: BufPointer) {
-        let buf = buf_to_slice_mut(buf, bf_ptr, len);
-        buf.make_ascii_lowercase();
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn upper_case(buf: BufType, bf_ptr: BufPointer, len: BufPointer) {
-        let buf = buf_to_slice_mut(buf, bf_ptr, len);
-        buf.make_ascii_uppercase();
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn int_to_ascii(
-        mut the_int: i32,
-        int_buf: BufTy,
-        int_begin: BufPointer,
-    ) -> BufPointer {
-        let buf = bib_buf(int_buf);
-        let mut int_ptr = int_begin;
-        let mut int_xptr = int_begin;
-
-        if the_int < 0 {
-            {
-                if int_ptr == bib_buf_size() {
-                    buffer_overflow();
-                }
-                *buf.offset(int_ptr as isize) = 45 /*minus_sign */ ;
-                int_ptr += 1;
-            }
-            the_int = -the_int;
-        }
-
-        loop {
-            if int_ptr == bib_buf_size() {
-                buffer_overflow();
-            }
-            *buf.offset(int_ptr as isize) = b'0' + (the_int % 10) as u8;
-            int_ptr += 1;
-            the_int /= 10;
-            if the_int == 0 {
-                break;
-            }
-        }
-
-        let out = int_ptr;
-
-        int_ptr -= 1;
-        while int_xptr < int_ptr {
-            let int_tmp_val = *buf.offset(int_xptr as isize);
-            *buf.offset(int_xptr as isize) = *buf.offset(int_ptr as isize);
-            *buf.offset(int_ptr as isize) = int_tmp_val;
-            int_ptr -= 1;
-            int_xptr += 1;
-        }
-
-        out
+        with_buffers(|buffers| {
+            with_pool(|pool| {
+                let buf = &buffers.buffer(buf)[ptr as usize..(ptr + len) as usize];
+                let str = pool.get_str(s as usize);
+                buf == str
+            })
+        })
     }
 
     #[no_mangle]
@@ -339,8 +284,8 @@ pub mod c_api {
             pub fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;
         }
     }
-    pub use external::*;
     use crate::c_api::xbuf::xcalloc_zeroed;
+    pub use external::*;
 }
 
 /// Does our resulting executable link correctly?

@@ -1,5 +1,5 @@
-use crate::c_api::{FieldLoc, FnDefLoc, HashPointer2, StrNumber, WizFnLoc};
 use crate::c_api::xbuf::XBuf;
+use crate::c_api::{FieldLoc, FnDefLoc, HashPointer2, StrNumber, WizFnLoc};
 use std::cell::RefCell;
 
 const WIZ_FN_SPACE: usize = 3000;
@@ -19,6 +19,10 @@ impl OtherData {
             field_info: XBuf::new(MAX_FIELDS),
         }
     }
+
+    pub fn field(&self, pos: usize) -> StrNumber {
+        self.field_info[pos]
+    }
 }
 
 thread_local! {
@@ -29,11 +33,11 @@ pub fn reset() {
     OTHER.with(|other| *other.borrow_mut() = OtherData::new());
 }
 
-fn with_other<T>(f: impl FnOnce(&OtherData) -> T) -> T {
+pub fn with_other<T>(f: impl FnOnce(&OtherData) -> T) -> T {
     OTHER.with(|other| f(&other.borrow()))
 }
 
-fn with_other_mut<T>(f: impl FnOnce(&mut OtherData) -> T) -> T {
+pub fn with_other_mut<T>(f: impl FnOnce(&mut OtherData) -> T) -> T {
     OTHER.with(|other| f(&mut other.borrow_mut()))
 }
 

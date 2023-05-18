@@ -1,6 +1,6 @@
+use crate::c_api::xbuf::XBuf;
 use crate::c_api::{CiteNumber, HashPointer2, StrNumber};
 use std::cell::RefCell;
-use crate::c_api::xbuf::XBuf;
 
 const MAX_CITES: usize = 750;
 

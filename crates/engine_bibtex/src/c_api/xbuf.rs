@@ -1,6 +1,6 @@
+use crate::c_api::{xcalloc, xrealloc};
 use std::ops::{Deref, DerefMut};
 use std::{mem, ptr, slice};
-use crate::c_api::{xcalloc, xrealloc};
 
 pub unsafe fn xcalloc_zeroed<T>(len: usize) -> &'static mut [T] {
     let ptr = xcalloc(len, mem::size_of::<T>());
@@ -13,8 +13,7 @@ pub unsafe fn xrealloc_zeroed<T>(old: &'static mut [T], new_len: usize) -> &'sta
     let old_len = old.len();
     let old_size = old_len * mem::size_of::<T>();
     let new_size = new_len * mem::size_of::<T>();
-    let ptr = xrealloc((old as *mut [_]).cast(), new_size)
-        .cast::<T>();
+    let ptr = xrealloc((old as *mut [_]).cast(), new_size).cast::<T>();
     ptr::write_bytes(ptr.add(old_len), 0, new_size - old_size);
     slice::from_raw_parts_mut(ptr.cast(), new_len)
 }

@@ -1,7 +1,7 @@
+use crate::c_api::peekable::PeekableInput;
+use crate::c_api::{AuxNumber, StrNumber};
 use std::cell::RefCell;
 use std::ptr;
-use crate::c_api::{AuxNumber, StrNumber};
-use crate::c_api::peekable::PeekableInput;
 
 const AUX_STACK_SIZE: usize = 20;
 

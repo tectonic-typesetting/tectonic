@@ -1,7 +1,12 @@
-use crate::c_api::{ASCIICode, CResultStr, PoolPointer, StrNumber};
-use std::cell::RefCell;
+use crate::c_api::buffer::{with_buffers, BufTy, GlobalBuffer};
+use crate::c_api::hash::{with_hash_mut, HashData};
 use crate::c_api::log::{print_overflow, write_logs};
 use crate::c_api::xbuf::XBuf;
+use crate::c_api::{
+    hash, ASCIICode, BufPointer, CResultLookup, CResultStr, HashPointer, LookupRes, PoolPointer,
+    StrIlk, StrNumber,
+};
+use std::cell::RefCell;
 
 const POOL_SIZE: usize = 65000;
 pub(crate) const MAX_STRINGS: usize = 35307;
@@ -40,6 +45,19 @@ impl StringPool {
 
     pub fn grow(&mut self) {
         self.strings.grow(POOL_SIZE);
+    }
+
+    /// Used while defining strings - declare the current `pool_ptr` as the end of the current
+    /// string, increment the `str_ptr`, and return the new string's `StrNumber`
+    fn make_string(&mut self) -> CResultStr {
+        if self.str_ptr as usize == MAX_STRINGS {
+            print_overflow();
+            write_logs(&format!("number of strings {}\n", MAX_STRINGS));
+            return CResultStr::Error;
+        }
+        self.str_ptr += 1;
+        self.offsets[self.str_ptr as usize] = self.pool_ptr;
+        CResultStr::Ok(self.str_ptr - 1)
     }
 }
 
@@ -121,14 +139,98 @@ pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
 
 #[no_mangle]
 pub extern "C" fn bib_make_string() -> CResultStr {
-    with_pool_mut(|pool| {
-        if pool.str_ptr as usize == MAX_STRINGS {
-            print_overflow();
-            write_logs(&format!("number of strings {}\n", MAX_STRINGS));
-            return CResultStr::Error;
+    with_pool_mut(|pool| pool.make_string())
+}
+
+#[no_mangle]
+pub extern "C" fn str_lookup(
+    buf: BufTy,
+    ptr: BufPointer,
+    len: BufPointer,
+    ilk: StrIlk,
+    insert: bool,
+) -> CResultLookup {
+    let f = |buffers: &GlobalBuffer, pool: &mut StringPool, hash: &mut HashData| {
+        let mut h = 0;
+        let mut str_num = 0;
+
+        let str = &buffers.buffer(buf)[ptr as usize..(ptr + len) as usize];
+
+        let hash_prime = hash.prime() as usize;
+
+        for &c in str {
+            h += h + c as usize;
+            while h >= hash_prime {
+                h -= hash_prime;
+            }
         }
-        pool.str_ptr += 1;
-        pool.offsets[pool.str_ptr as usize] = pool.pool_ptr;
-        CResultStr::Ok(pool.str_ptr - 1)
-    })
+
+        let mut p = (h + hash::HASH_BASE) as HashPointer;
+
+        loop {
+            let existing = hash.text(p as usize);
+            if existing > 0 && pool.get_str(existing as usize) == str {
+                if hash.hash_ilk(p as usize) == ilk {
+                    return CResultLookup::Ok(LookupRes {
+                        loc: p,
+                        exists: true,
+                    });
+                } else {
+                    str_num = existing;
+                }
+            }
+
+            if hash.next(p as usize) == 0 {
+                if !insert {
+                    return CResultLookup::Ok(LookupRes {
+                        loc: p,
+                        exists: false,
+                    });
+                }
+
+                if existing > 0 {
+                    loop {
+                        if hash.used() as usize == hash::HASH_BASE {
+                            print_overflow();
+                            write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
+                            return CResultLookup::Error;
+                        }
+                        hash.set_used(hash.used() - 1);
+
+                        if hash.text(hash.used() as usize) == 0 {
+                            break;
+                        }
+                    }
+                    hash.set_next(p as usize, hash.used());
+                    p = hash.used();
+                }
+
+                if str_num > 0 {
+                    hash.set_text(p as usize, str_num);
+                } else {
+                    while pool.pool_ptr + str.len() > pool.strings.len() {
+                        pool.grow();
+                    }
+                    pool.strings[pool.pool_ptr..pool.pool_ptr + str.len()].copy_from_slice(str);
+                    pool.pool_ptr += str.len();
+
+                    match pool.make_string() {
+                        CResultStr::Ok(str) => hash.set_text(p as usize, str),
+                        _ => return CResultLookup::Error,
+                    }
+                }
+
+                hash.set_hash_ilk(p as usize, ilk);
+
+                return CResultLookup::Ok(LookupRes {
+                    loc: p,
+                    exists: false,
+                });
+            }
+
+            p = hash.next(p as usize);
+        }
+    };
+
+    with_buffers(|buffers| with_pool_mut(|pool| with_hash_mut(|hash| f(buffers, pool, hash))))
 }

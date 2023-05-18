@@ -1,20 +1,24 @@
-use crate::c_api::buffer::{with_buffers, BufTy, with_buffers_mut};
+use crate::c_api::auxi::{cur_aux, cur_aux_ln};
+use crate::c_api::bibs::{bib_line_num, cur_bib};
+use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::char_info::LexClass;
+use crate::c_api::cite::with_cites;
+use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, BstCtx, ExecCtx};
+use crate::c_api::hash::{with_hash, FnClass};
 use crate::c_api::history::{mark_error, mark_fatal, mark_warning, set_history};
+use crate::c_api::other::with_other;
+use crate::c_api::peekable::input_ln;
 use crate::c_api::pool::with_pool;
-use crate::c_api::{ttstub_output_open, ttstub_output_open_stdout, History, StrNumber, NameAndLen, ASCIICode, HashPointer, CResult};
+use crate::c_api::scan::ScanRes;
+use crate::c_api::{
+    ttstub_output_open, ttstub_output_open_stdout, ASCIICode, CResult, FieldLoc, HashPointer,
+    History, NameAndLen, StrNumber,
+};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
 use std::{ptr, slice};
 use tectonic_io_base::OutputHandle;
-use crate::c_api::auxi::{cur_aux, cur_aux_ln};
-use crate::c_api::bibs::{bib_line_num, cur_bib};
-use crate::c_api::cite::with_cites;
-use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, BstCtx, ExecCtx};
-use crate::c_api::hash::{FnClass, with_hash};
-use crate::c_api::peekable::input_ln;
-use crate::c_api::scan::ScanRes;
 
 pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];
@@ -76,7 +80,7 @@ fn with_log<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
     LOG_FILE.with(|out| f(unsafe { out.get().as_mut() }.unwrap()))
 }
 
-pub fn write_logs<B: ?Sized + AsBytes>(str: &B) {
+pub(crate) fn write_logs<B: ?Sized + AsBytes>(str: &B) {
     with_log(|log| log.write_all(str.as_bytes())).unwrap();
     with_stdout(|out| out.write_all(str.as_bytes())).unwrap();
 }
@@ -161,8 +165,7 @@ pub extern "C" fn print_a_token() {
     with_log(|log| out_token(log));
 }
 
-#[no_mangle]
-pub extern "C" fn print_bad_input_line() {
+pub(crate) fn print_bad_input_line() {
     write_logs(" : ");
 
     with_buffers(|b| {
@@ -206,11 +209,11 @@ pub extern "C" fn print_bad_input_line() {
     mark_error();
 }
 
-pub fn print_skipping_whatever_remains() {
+pub(crate) fn print_skipping_whatever_remains() {
     write_logs("I'm skipping whatever remains of this ");
 }
 
-pub fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
+pub(crate) fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
     with_pool(|pool| {
         let str = pool.try_get_str(s as usize);
         if let Some(str) = str {
@@ -333,7 +336,8 @@ pub extern "C" fn print_bib_name() -> bool {
         return false;
     }
     let res = with_pool(|pool| {
-        pool.try_get_str(cur_bib() as usize).map(|str| str.ends_with(b".bib"))
+        pool.try_get_str(cur_bib() as usize)
+            .map(|str| str.ends_with(b".bib"))
     });
     match res {
         Some(true) => (),
@@ -353,7 +357,8 @@ pub extern "C" fn log_pr_bib_name() -> bool {
             return false;
         }
         let res = with_pool(|pool| {
-            pool.try_get_str(cur_bib() as usize).map(|str| str.ends_with(b".bib"))
+            pool.try_get_str(cur_bib() as usize)
+                .map(|str| str.ends_with(b".bib"))
         });
         match res {
             Some(true) => (),
@@ -365,9 +370,6 @@ pub extern "C" fn log_pr_bib_name() -> bool {
         write!(log, "\n").unwrap();
         true
     })
-
-
-
 }
 
 #[no_mangle]
@@ -422,7 +424,10 @@ pub extern "C" fn bst_id_print(scan_result: ScanRes) -> bool {
                 true
             }
             ScanRes::OtherCharAdjacent => {
-                write_logs(&format!("\"{}\" immediately follows identifier, command: ", char));
+                write_logs(&format!(
+                    "\"{}\" immediately follows identifier, command: ",
+                    char
+                ));
                 true
             }
             _ => {
@@ -443,7 +448,7 @@ pub extern "C" fn bst_right_brace_print() {
     write_logs("\"}\" is missing in command: ");
 }
 
-pub fn bib_ln_num_print() -> bool {
+pub(crate) fn bib_ln_num_print() -> bool {
     write_logs(&format!("--line {} of file ", bib_line_num()));
     print_bib_name()
 }
@@ -480,8 +485,15 @@ pub extern "C" fn eat_bib_print(at_bib_command: bool) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_one_of_two_print(char1: ASCIICode, char2: ASCIICode, at_bib_command: bool) -> bool {
-    write_logs(&format!("I was expecting a `{}` or a `{}`", char1 as char, char2 as char));
+pub extern "C" fn bib_one_of_two_print(
+    char1: ASCIICode,
+    char2: ASCIICode,
+    at_bib_command: bool,
+) -> bool {
+    write_logs(&format!(
+        "I was expecting a `{}` or a `{}`",
+        char1 as char, char2 as char
+    ));
     bib_err_print(at_bib_command)
 }
 
@@ -512,9 +524,7 @@ pub extern "C" fn bib_id_print(scan_res: ScanRes) -> bool {
             true
         }
         ScanRes::OtherCharAdjacent => {
-            let char = with_buffers(|buffers| {
-                buffers.at_offset(BufTy::Base, 2)
-            });
+            let char = with_buffers(|buffers| buffers.at_offset(BufTy::Base, 2));
             write_logs(&format!("\"{}\" immediately follows ", char));
             true
         }
@@ -540,9 +550,7 @@ pub extern "C" fn cite_key_disappeared_confusion() {
 #[no_mangle]
 pub extern "C" fn bad_cross_reference_print(s: StrNumber) -> bool {
     write_logs("--entry \"");
-    let res = with_cites(|cites| {
-        print_a_pool_str(cites.get_cite(cites.ptr() as usize))
-    });
+    let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr() as usize)));
     if !res {
         return false;
     }
@@ -565,12 +573,10 @@ pub extern "C" fn print_missing_entry(s: StrNumber) -> bool {
     true
 }
 
-pub fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
+pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        let res = with_cites(|cites| {
-            print_a_pool_str(cites.get_cite(cites.ptr() as usize))
-        });
+        let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr() as usize)));
         if !res {
             return false;
         }
@@ -654,12 +660,26 @@ pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut BstCtx)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn already_seen_function_print(ctx: *mut BstCtx, seen_fn_loc: HashPointer) -> CResult {
+pub unsafe extern "C" fn already_seen_function_print(
+    ctx: *mut BstCtx,
+    seen_fn_loc: HashPointer,
+) -> CResult {
     if with_hash(|hash| !print_a_pool_str(hash.text(seen_fn_loc as usize))) {
-        return CResult::Error
+        return CResult::Error;
     }
     write_logs(" is already a type \"");
     print_fn_class(seen_fn_loc);
     write_logs("\" function name\n");
     bst_err_print_and_look_for_blank_line(ctx)
+}
+
+#[no_mangle]
+pub extern "C" fn nonexistent_cross_reference_error(field_ptr: FieldLoc) -> bool {
+    write_logs("A bad cross reference-");
+    if !bad_cross_reference_print(with_other(|other| other.field(field_ptr as usize))) {
+        return false;
+    }
+    write_logs(", which doesn't exist\n");
+    mark_error();
+    true
 }

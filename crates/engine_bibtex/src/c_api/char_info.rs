@@ -16,6 +16,9 @@ macro_rules! const_for {
     };
 }
 
+/// The lexer class of a character - this represents whether the parser considers it to be alphabetic,
+/// numeric, etc. Illegal represents tokens that shouldn't show up at all, such as ASCII backspace.
+///
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[repr(C)]
@@ -29,11 +32,14 @@ pub enum LexClass {
 }
 
 impl LexClass {
+    /// Get the `LexClass` of a character
     pub fn of(char: ASCIICode) -> LexClass {
         LEX_CLASS[char as usize]
     }
 }
 
+/// Whether a token counts as valid in an identifier
+///
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 #[repr(C)]
@@ -43,6 +49,7 @@ pub enum IdClass {
 }
 
 impl IdClass {
+    /// Get the `IdClass` of a character
     pub const fn of(char: ASCIICode) -> IdClass {
         ID_CLASS[char as usize]
     }
