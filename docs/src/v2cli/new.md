@@ -2,8 +2,8 @@
 
 Create a new Tectonic workspace.
 
-***This is a [V2 CLI][v2cli-ref] command. For information on the original (“V1”
-CLI), see [its reference page][v1cli-ref].***
+**_This is a [V2 CLI][v2cli-ref] command. For information on the original (“V1”
+CLI), see [its reference page][v1cli-ref]._**
 
 [v2cli-ref]: ../ref/v2cli.md
 [v1cli-ref]: ../ref/v1cli.md
@@ -36,3 +36,7 @@ will process these files in the expected order:
 The intention of this framework is to allow you to isolate the main content of
 your document from the usual LaTeX boilerplate. There are no restrictions on
 what kind of content may be placed in each file, though.
+
+#### See Also
+
+- [`tectonic -X init`](./init.md)

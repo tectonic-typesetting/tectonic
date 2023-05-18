@@ -1,3 +1,8 @@
+# tectonic_xdv 0.2.2 (2023-05-18)
+
+- Tidy up formatting and recent Clippy warnings.
+
+
 # tectonic_xdv 0.2.1 (2022-10-04)
 
 - Remove a quasi-debug println (#941, @pkgw).

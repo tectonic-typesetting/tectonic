@@ -1,3 +1,9 @@
+# tectonic_engine_bibtex 0.1.5 (2023-05-18)
+
+- Treat `\r\n` sequences as a single unit (#1037, @CraftSpider). This leads to
+  more uniform behavior on Windows and non-Windows platforms.
+
+
 # tectonic_engine_bibtex 0.1.4 (2022-10-03)
 
 No code changes, but some internal documentation improvements about managing FFI

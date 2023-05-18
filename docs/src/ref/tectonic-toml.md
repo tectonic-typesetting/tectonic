@@ -40,7 +40,7 @@ filesystem-friendly.
 ### `doc.bundle`
 
 A string identifying the location of the “bundle” of TeX support files
-underyling the processing of the document.
+underlying the processing of the document.
 
 In most circumstances this value should be a URL. The `tectonic -X new` command
 will populate this field with the current recommended default.

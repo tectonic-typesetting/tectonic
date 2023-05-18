@@ -157,8 +157,7 @@ parameters:
 
   - name: x86_64_pc_windows_msvc
     vmImage: windows-2019
-    params:
-      windowsVcpkgWorkaround: true
+    params: {}
     vars:
       TARGET: x86_64-pc-windows-msvc
       TOOLCHAIN: stable-x86_64-pc-windows-msvc
@@ -199,8 +198,6 @@ jobs:
 # vcpkg builds
 - ${{ each build in parameters.vcpkgBuilds }}:
   - job: ${{ format('build_{0}_vcpkg', build.name) }}
-    ${{ if eq(build.name, 'x86_64_pc_windows_msvc') }}:  # work around timeouts with slow builds
-      dependsOn: windows_vcpkg_prebuild
     pool:
       vmImage: ${{ build.vmImage }}
     steps:
@@ -302,38 +299,3 @@ jobs:
       artifactName: book
   - bash: cd docs && ../mdbook test
     displayName: mdbook test
-
-# Hack to build Windows vcpkg deps in their own job, because it takes so long
-# that the Windows jobs routinely hit the 60-minute timeout.
-- job: windows_vcpkg_prebuild
-  pool:
-    vmImage: windows-2019
-  steps:
-  - bash: |
-      echo "##vso[task.setvariable variable=VCPKG_ROOT;]$(pwd)/target/vcpkg"
-    displayName: Set up build variables
-
-  - bash: cargo install cargo-vcpkg
-    displayName: Install cargo-vcpkg
-
-  - bash: |
-      set -xeuo pipefail
-      cargo vcpkg -v build
-
-      # There is something weird about buildtrees/icu/ that prevents
-      # us from easily rm -rf'ing it. Too bad because that directory
-      # is easily the largest part of the vcpkg tree.
-      rm -rf target/vcpkg/downloads
-      cd target/vcpkg/buildtrees
-      for d in * ; do
-        if [ $d != icu ] ; then
-          rm -rf $d
-        fi
-      done
-    displayName: Build vcpkg deps
-
-  - task: PublishPipelineArtifact@1
-    displayName: Publish vcpkg deps as artifact
-    inputs:
-      targetPath: 'target/vcpkg'
-      artifactName: vcpkg-deps-windows

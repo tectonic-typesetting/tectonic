@@ -168,7 +168,7 @@ impl SymbolTable {
 
         if let Some(prev) = self.by_name.insert(name.clone(), value) {
             // We let identical values get re-inserted, mainly for NORMAL.
-            ensure!(prev == value, format!("changed symbol name `{}`", name));
+            ensure!(prev == value, format!("changed symbol name `{name}`"));
         } else {
             let group = self.grouped.entry(cat).or_insert_with(Vec::new);
             group.push(name);
@@ -195,7 +195,7 @@ impl SymbolTable {
 
             for name in names {
                 let value = self.by_name.get(name).unwrap();
-                writeln!(stream, "#define {} {} /* = 0x{:x} */", name, value, value)?;
+                writeln!(stream, "#define {name} {value} /* = 0x{value:x} */")?;
             }
         }
 

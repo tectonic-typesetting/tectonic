@@ -1,6 +1,12 @@
+# tectonic_io_base 0.4.2 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+- Update the `sha2` dependency to the 0.10 series (#1038, @CraftSpider)
+
+
 # tectonic_io_base 0.4.1 (2022-10-03)
 
-- Print a warning when absolute paths are accesses (#806, #911, @ralismark,
+- Print a warning when absolute paths are accessed (#806, #911, @ralismark,
   @pkgw). Any such access represents an aspect of the build that won't
   necessarily be reproducible on other machines.
 

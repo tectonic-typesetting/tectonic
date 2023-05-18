@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_dep_support"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Support for finding third-party libraries using either pkg-config or vcpkg.

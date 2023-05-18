@@ -1,4 +1,4 @@
-// Copyright 2016-2021 the Tectonic Project
+// Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -349,7 +349,7 @@ impl<'a> CoreBridgeState<'a> {
         // `lipsum.ltd.tex` under the name `lipsum.ltd`.
 
         for e in format.extensions() {
-            let ext = format!("{}.{}", name, e);
+            let ext = format!("{name}.{e}");
 
             if let FileFormat::Format = format {
                 match io.input_open_format(&ext, self.status) {
@@ -714,11 +714,12 @@ pub struct SecuritySettings {
 
 /// Different high-level security stances that can be adopted when creating
 /// [`SecuritySettings`].
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub enum SecurityStance {
     /// Ensure that all known-insecure features are disabled.
     ///
     /// Use this stance if you are processing untrusted input.
+    #[default]
     DisableInsecures,
 
     /// Request to allow the use of known-insecure features.
@@ -728,13 +729,6 @@ pub enum SecurityStance {
     /// features might be overridden if the environment variable
     /// `TECTONIC_UNTRUSTED_MODE` is set.
     MaybeAllowInsecures,
-}
-
-impl Default for SecurityStance {
-    fn default() -> Self {
-        // Obvi, the default is secure!!!
-        SecurityStance::DisableInsecures
-    }
 }
 
 impl SecuritySettings {
@@ -817,11 +811,7 @@ pub unsafe extern "C" fn ttbc_get_file_md5(
     let rpath = CStr::from_ptr(path).to_string_lossy();
     let rdest = slice::from_raw_parts_mut(digest, 16);
 
-    if es.get_file_md5(rpath.as_ref(), rdest) {
-        1
-    } else {
-        0
-    }
+    libc::c_int::from(es.get_file_md5(rpath.as_ref(), rdest))
 }
 
 /// Calculate the MD5 digest of a block of binary data.
@@ -917,11 +907,7 @@ pub extern "C" fn ttbc_output_flush(
     es: &mut CoreBridgeState,
     handle: *mut OutputHandle,
 ) -> libc::c_int {
-    if es.output_flush(handle) {
-        1
-    } else {
-        0
-    }
+    libc::c_int::from(es.output_flush(handle))
 }
 
 /// Close a Tectonic output file.
@@ -934,11 +920,7 @@ pub extern "C" fn ttbc_output_close(
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    if es.output_close(handle) {
-        1
-    } else {
-        0
-    }
+    libc::c_int::from(es.output_close(handle))
 }
 
 /// Open a Tectonic file for input.
@@ -1137,11 +1119,7 @@ pub extern "C" fn ttbc_input_close(
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    if es.input_close(handle) {
-        1
-    } else {
-        0
-    }
+    libc::c_int::from(es.input_close(handle))
 }
 
 /// A buffer for diagnostic messages. Rust code does not need to use this type.
@@ -1214,11 +1192,7 @@ pub unsafe extern "C" fn ttbc_shell_escape(
         }
     };
 
-    if es.shell_escape(&rcmd) {
-        1
-    } else {
-        0
-    }
+    libc::c_int::from(es.shell_escape(&rcmd))
 }
 
 /// Different types of files that can be opened by TeX engines

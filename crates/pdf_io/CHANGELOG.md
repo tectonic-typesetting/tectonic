@@ -1,3 +1,8 @@
+# tectonic_pdf_io 0.4.1 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_pdf_io 0.4.0 (2022-10-27)
 
 - Make it possible to semi-properly handle the `dvipdfmx:config` special (#904,

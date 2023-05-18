@@ -1,3 +1,9 @@
+# tectonic_bridge_core 0.3.2 (2023-05-18)
+
+- Bump the `md-5` dep to the 0.10 series (#1038, @CraftSpider)
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_bridge_core 0.3.1 (2022-10-03)
 
 - Remove C's `time_t` from internal FFI APIs to avoid portability issues. This

@@ -1,3 +1,8 @@
+# tectonic_status_base 0.2.1 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_status_base 0.2.0 (2021-06-15)
 
 - Add `PlainStatusBackend.always_stderr()`, allowing users to specify that

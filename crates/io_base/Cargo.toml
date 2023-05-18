@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_io_base"
-version = "0.4.1"
+version = "0.4.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Basic types for Tectonic's pluggable I/O backend system
@@ -19,7 +19,7 @@ edition = "2018"
 app_dirs2 = "^2.3"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 libc = "^0.2" # for EISDIR :-(
-sha2 = "^0.9" # for digest computations
+sha2 = "^0.10" # for digest computations
 thiserror = "1.0"
 tectonic_errors = { path = "../errors", version =">=0.1.0,<1"}
 tectonic_status_base = { path = "../status_base", version =">=0.1.0,<1"}

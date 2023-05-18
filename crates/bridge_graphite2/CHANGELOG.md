@@ -1,3 +1,8 @@
+# tectonic_bridge_graphite2 0.2.2 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_bridge_graphite2 0.2.1 (2021-10-11)
 
 - Fix the build script for Rust >=1.55 (#820, @pkgw)

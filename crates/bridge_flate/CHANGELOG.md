@@ -1,3 +1,8 @@
+# tectonic_bridge_flate 0.1.7 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_bridge_flate 0.1.6 (2022-10-03)
 
 No code changes, but some internal documentation improvements about managing FFI

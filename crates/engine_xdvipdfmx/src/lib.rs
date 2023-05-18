@@ -118,8 +118,8 @@ impl XdvipdfmxEngine {
 
         let config = c_api::XdvipdfmxConfig {
             paperspec: paperspec_str.as_c_str().as_ptr(),
-            enable_compression: if self.enable_compression { 1 } else { 0 },
-            deterministic_tags: if self.deterministic_tags { 1 } else { 0 },
+            enable_compression: u8::from(self.enable_compression),
+            deterministic_tags: u8::from(self.deterministic_tags),
             build_date: self
                 .build_date
                 .duration_since(SystemTime::UNIX_EPOCH)

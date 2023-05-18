@@ -1,3 +1,12 @@
+# tectonic_engine_spx2html 0.3.0 (2023-05-18)
+
+- A massive rework to support more sophisticated HTML output for the
+  [Tectonopedia] project (#1016, @pkgw). This crate is still highly unstable so
+  we're not going to document them.
+
+[Tectonopedia]: https://github.com/tectonic-typesetting/tectonopedia
+
+
 # tectonic_engine_spx2html 0.2.1 (2022-10-27)
 
 - Avoid a dumb crash when attempting to compile documents that have not been

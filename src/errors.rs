@@ -145,7 +145,7 @@ macro_rules! ctry {
 
 impl convert::From<Error> for io::Error {
     fn from(err: Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, format!("{}", err))
+        io::Error::new(io::ErrorKind::Other, format!("{err}"))
     }
 }
 
@@ -165,13 +165,13 @@ impl Error {
         let mut s = io::stderr();
 
         for item in self.iter() {
-            writeln!(s, "{} {}", prefix, item).expect("write to stderr failed");
+            writeln!(s, "{prefix} {item}").expect("write to stderr failed");
             prefix = "caused by:";
         }
 
         if let Some(backtrace) = self.backtrace() {
             writeln!(s, "debugging: backtrace follows:").expect("write to stderr failed");
-            writeln!(s, "{:?}", backtrace).expect("write to stderr failed");
+            writeln!(s, "{backtrace:?}").expect("write to stderr failed");
         }
     }
 }

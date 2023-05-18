@@ -1,3 +1,8 @@
+# tectonic_xetex_format 0.3.1 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_xetex_format 0.3.0 (2022-10-03)
 
 - Define version 33 of the format in support of TeXLive 2022.0 (#936, @pkgw)

@@ -1,24 +1,25 @@
 use flate2::{write::GzEncoder, GzBuilder};
-use futures::future;
 use headers::HeaderMapExt;
 use hyper::header::{self, HeaderValue};
-use hyper::rt::Future;
-use hyper::service::service_fn;
-use hyper::{Body, Method, Request, Response, Server, StatusCode};
+use hyper::server::Server;
+use hyper::service::{make_service_fn, service_fn};
+use hyper::{Body, Method, Request, Response, StatusCode};
 use std::collections::HashMap;
+use std::convert::Infallible;
+use std::future::Future;
 use std::io::{self, Write};
 use std::net::SocketAddr;
 use std::ops::Bound;
 use std::path::Path;
+use std::pin::Pin;
 use std::sync::{Arc, Mutex};
-use std::thread;
-use std::{env, fs};
+use std::{env, fs, thread};
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::io::OpenResult;
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::ChatterLevel;
-use tokio::runtime::current_thread;
+use tokio::runtime;
 
 mod util;
 
@@ -45,7 +46,7 @@ impl TarIndexBuilder {
     fn push(&mut self, name: &str, content: &[u8]) -> &mut Self {
         let offset = self.tar.len();
         let len = content.len();
-        let _ = writeln!(&mut self.index, "{} {} {}", name, offset, len);
+        let _ = writeln!(&mut self.index, "{name} {offset} {len}");
         self.map
             .insert((offset as u64, len as u64), name.to_owned());
         self.tar.extend_from_slice(content);
@@ -101,7 +102,7 @@ struct TarIndexService {
     local_addr: Mutex<Option<SocketAddr>>,
 }
 
-type ResponseFuture = Box<dyn Future<Item = Response<Body>, Error = io::Error> + Send>;
+type ResponseFuture = Pin<Box<dyn Future<Output = Response<Body>> + Send + Sync + 'static>>;
 
 impl TarIndexService {
     fn new(tar_index: TarIndex) -> TarIndexService {
@@ -128,8 +129,7 @@ impl TarIndexService {
         ) {
             (&Method::HEAD, "/tectonic-default", None) => {
                 self.log_request(TectonicRequest::Head(req.uri().path().to_owned()));
-                let mut resp = Response::builder();
-                resp.status(StatusCode::FOUND);
+                let mut resp = Response::builder().status(StatusCode::FOUND);
                 resp.headers_mut().unwrap().insert(
                     header::LOCATION,
                     HeaderValue::from_str(&format!(
@@ -138,11 +138,11 @@ impl TarIndexService {
                     ))
                     .unwrap(),
                 );
-                Box::new(future::ok(resp.body(Body::empty()).unwrap()))
+                Box::pin(async move { resp.body(Body::empty()).unwrap() })
             }
             (&Method::HEAD, "/bundle.tar", None) => {
                 self.log_request(TectonicRequest::Head(req.uri().path().to_owned()));
-                Box::new(future::ok(Response::new(Body::empty())))
+                Box::pin(async move { Response::new(Body::empty()) })
             }
             (&Method::GET, "/bundle.tar", Some(range)) => {
                 if let Some((Bound::Included(l), Bound::Included(h))) = range.iter().next() {
@@ -152,31 +152,27 @@ impl TarIndexService {
                         .get(&(l, h - l + 1))
                         .expect("unknown file data requested");
                     self.log_request(TectonicRequest::File(name.to_owned()));
-                    let mut resp = Response::builder();
-                    resp.status(StatusCode::PARTIAL_CONTENT);
+                    let mut resp = Response::builder().status(StatusCode::PARTIAL_CONTENT);
                     resp.headers_mut()
                         .unwrap()
                         .typed_insert(headers::ContentRange::bytes(l..=h, None).unwrap());
-                    Box::new(future::ok(
-                        resp.body((tar_index.tar[l as usize..=h as usize]).to_vec().into())
-                            .unwrap(),
-                    ))
+                    let body = (tar_index.tar[l as usize..=h as usize]).to_vec().into();
+                    Box::pin(async move { resp.body(body).unwrap() })
                 } else {
                     panic!("unexpected");
                 }
             }
             (&Method::GET, "/bundle.tar.index.gz", None) => {
                 self.log_request(TectonicRequest::Index);
-                Box::new(future::ok(Response::new(
-                    self.tar_index.lock().unwrap().index.to_vec().into(),
-                )))
+                let resp = self.tar_index.lock().unwrap().index.to_vec().into();
+                Box::pin(async move { Response::new(resp) })
             }
-            _ => Box::new(future::ok(
+            _ => Box::pin(async move {
                 Response::builder()
                     .status(StatusCode::NOT_FOUND)
                     .body(Body::empty())
-                    .unwrap(),
-            )),
+                    .unwrap()
+            }),
         }
     }
 
@@ -207,34 +203,53 @@ where
             .join("assets");
         TarIndex::from_dir(root).unwrap()
     })));
+
+    let (url_available_tx, url_available_rx) = std::sync::mpsc::channel();
+    let (server_shutdown_tx, server_shutdown_rx) = futures::channel::oneshot::channel::<()>();
     let tar_service_clone = Arc::clone(&tar_service);
 
-    let server = Server::bind(&addr).serve(move || {
-        let tar_service = Arc::clone(&tar_service_clone);
-        service_fn(move |req| tar_service.response(req))
-    });
+    let server_thread = thread::spawn(move || {
+        let tar_service = tar_service_clone;
 
-    // server is listening now
-    tar_service.set_local_addr(server.local_addr());
-    let url = tar_service.url();
+        let rt = runtime::Builder::new_current_thread()
+            .enable_io()
+            .build()
+            .unwrap();
 
-    let (server_shutdown_tx, server_shutdown_rx) = futures::sync::oneshot::channel::<()>();
+        let tar_service_clone = Arc::clone(&tar_service);
+        rt.block_on(async move {
+            let server = Server::bind(&addr).serve(make_service_fn(move |_| {
+                let tar_service_clone = Arc::clone(&tar_service_clone);
+                async move {
+                    Ok::<_, Infallible>(service_fn(move |req| {
+                        let tar_service = Arc::clone(&tar_service_clone);
+                        async move { Ok::<_, Infallible>(tar_service.response(req).await) }
+                    }))
+                }
+            }));
 
-    let graceful = server.with_graceful_shutdown(server_shutdown_rx);
+            // server is listening now
+            tar_service.set_local_addr(server.local_addr());
+            let url = tar_service.url();
+            url_available_tx.send(url).unwrap();
 
-    let server_thread = thread::spawn(|| {
-        // Run the server on a single thread (current thread)
-        current_thread::run(graceful.map_err(|_| ()));
+            let graceful = server.with_graceful_shutdown(async move {
+                server_shutdown_rx.await.unwrap();
+            });
+
+            graceful.await
+        })
     });
 
     // Server running, run the provided test
+    let url = url_available_rx.recv().unwrap();
     run(Arc::clone(&tar_service), &url);
 
     println!("Shutting down");
 
     // Shut down server
     let _ = server_shutdown_tx.send(());
-    server_thread.join().unwrap();
+    server_thread.join().unwrap().unwrap();
 
     // Check tectonic's requests.
     let requests = tar_service.requests.lock().unwrap();
@@ -246,8 +261,7 @@ fn check_req_count(requests: &[TectonicRequest], request: TectonicRequest, expec
     let number = requests.iter().filter(|r| **r == request).count();
     assert_eq!(
         number, expected_number,
-        "Expected {} requests of {:?}, got {}",
-        expected_number, request, number
+        "Expected {expected_number} requests of {request:?}, got {number}"
     );
 }
 #[test]

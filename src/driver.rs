@@ -1,4 +1,4 @@
-// Copyright 2018-2021 the Tectonic Project
+// Copyright 2018-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 #![deny(missing_docs)]
@@ -16,7 +16,7 @@
 //! which contains tectonic's main CLI program.
 
 use byte_unit::Byte;
-use quick_xml::{events::Event, Reader};
+use quick_xml::{events::Event, NsReader};
 use std::{
     collections::{HashMap, HashSet},
     fs::File,
@@ -30,6 +30,7 @@ use std::{
 };
 use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SecuritySettings, SystemRequestError};
 use tectonic_bundles::Bundle;
+use tectonic_engine_spx2html::AssetSpecification;
 use tectonic_io_base::{
     digest::DigestData,
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
@@ -115,7 +116,7 @@ impl FileSummary {
 }
 
 /// The different types of output files that tectonic knows how to produce.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum OutputFormat {
     /// A '.aux' file.
     Aux,
@@ -124,6 +125,7 @@ pub enum OutputFormat {
     /// An extended DVI file.
     Xdv,
     /// A '.pdf' file.
+    #[default]
     Pdf,
     /// A '.fmt' file, for initializing the TeX engine.
     Format,
@@ -144,28 +146,17 @@ impl FromStr for OutputFormat {
     }
 }
 
-impl Default for OutputFormat {
-    fn default() -> OutputFormat {
-        OutputFormat::Pdf
-    }
-}
-
 /// The different types of "passes" that [`ProcessingSession`] knows how to run. See
 /// [`ProcessingSession::run`] for more details.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum PassSetting {
     /// The default pass, which repeatedly runs TeX and BibTeX until it doesn't need to any more.
+    #[default]
     Default,
     /// Just run the TeX engine once.
     Tex,
     /// Like the default pass, but runs BibTeX once first, before doing anything else.
     BibtexFirst,
-}
-
-impl Default for PassSetting {
-    fn default() -> PassSetting {
-        PassSetting::Default
-    }
 }
 
 impl FromStr for PassSetting {
@@ -182,9 +173,10 @@ impl FromStr for PassSetting {
 }
 
 /// Different places from which the "primary input" might originate.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum PrimaryInputMode {
     /// This process's standard input.
+    #[default]
     Stdin,
 
     /// A path on the filesystem.
@@ -194,18 +186,13 @@ enum PrimaryInputMode {
     Buffer(Vec<u8>),
 }
 
-impl Default for PrimaryInputMode {
-    fn default() -> PrimaryInputMode {
-        PrimaryInputMode::Stdin
-    }
-}
-
 /// Different places where the output files might land.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum OutputDestination {
     /// The "sensible" default. Files will land in the same directory as the
     /// input file, or the current working directory if the input is something
     /// without a path (such as standard input).
+    #[default]
     Default,
 
     /// Files should land in this particular directory.
@@ -214,12 +201,6 @@ enum OutputDestination {
     /// Files will not be written to disk. The code running the engine should
     /// examine the memory layer of the I/O stack to obtain the output files.
     Nowhere,
-}
-
-impl Default for OutputDestination {
-    fn default() -> OutputDestination {
-        OutputDestination::Default
-    }
 }
 
 /// The subset of the driver state that is captured when running a C/C++ engine.
@@ -280,9 +261,8 @@ impl BridgeState {
     /// mode”, in which the “primary input” is fixed, based on the requested
     /// format file name, and filesystem I/O is bypassed.
     fn enter_format_mode(&mut self, format_file_name: &str) {
-        self.format_primary = Some(BufferedPrimaryIo::from_text(&format!(
-            "\\input {}",
-            format_file_name
+        self.format_primary = Some(BufferedPrimaryIo::from_text(format!(
+            "\\input {format_file_name}"
         )));
     }
 
@@ -359,7 +339,7 @@ impl BridgeState {
 
                 if tool_parent != tempdir.path() {
                     ctry!(
-                        std::fs::create_dir_all(&tool_parent);
+                        std::fs::create_dir_all(tool_parent);
                         "failed to create sub directory `{}`", tool_parent.display()
                     );
                 }
@@ -431,7 +411,7 @@ impl BridgeState {
         // Mark the input files as having been read, and we're done.
 
         for name in &read_files {
-            let mut summ = self.events.get_mut(name).unwrap();
+            let summ = self.events.get_mut(name).unwrap();
             summ.access_pattern = match summ.access_pattern {
                 AccessPattern::Written => AccessPattern::WrittenThenRead,
                 c => c, // identity mapping makes sense for remaining options
@@ -740,7 +720,7 @@ impl DriverHooks for BridgeState {
 
             match Command::new(SHELL[0])
                 .args(&SHELL[1..])
-                .arg(&command)
+                .arg(command)
                 .current_dir(work.root())
                 .status()
             {
@@ -778,11 +758,12 @@ impl DriverHooks for BridgeState {
 }
 
 /// Possible modes for handling shell-escape functionality
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 enum ShellEscapeMode {
     /// "Default" mode: shell-escape is disabled, unless it's been turned on in
     /// the unstable options, in which case it will be allowed through a
     /// temporary directory.
+    #[default]
     Defaulted,
 
     /// Shell-escape is disabled, overriding any unstable-option setting.
@@ -796,12 +777,6 @@ enum ShellEscapeMode {
     /// Shell-escape is enabled, using some other work directory that is managed
     /// externally. The processing session won't delete this directory.
     ExternallyManagedDir(PathBuf),
-}
-
-impl Default for ShellEscapeMode {
-    fn default() -> Self {
-        ShellEscapeMode::Defaulted
-    }
 }
 
 /// A custom extra pass that invokes an external tool.
@@ -842,6 +817,10 @@ pub struct ProcessingSessionBuilder {
     build_date: Option<SystemTime>,
     unstables: UnstableOptions,
     shell_escape_mode: ShellEscapeMode,
+    html_assets_spec_path: Option<String>,
+    html_precomputed_assets: Option<AssetSpecification>,
+    html_do_not_emit_files: bool,
+    html_do_not_emit_assets: bool,
 }
 
 impl ProcessingSessionBuilder {
@@ -1045,6 +1024,67 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// When using HTML mode, emit an asset specification file instead of actual
+    /// asset files.
+    ///
+    /// "Assets" are files like fonts and images that accompany the HTML output
+    /// generated during processing. By default, these are emitted during
+    /// processing. If this method is called, the assets will *not* be created.
+    /// Instead, an "asset specification" file will be emitted to the given
+    /// output path. This specification file contains the information needed to
+    /// generate the assets upon a later invocation. Asset specification files
+    /// can be merged, allowing the results of multiple separate TeX
+    /// compilations to be synthesized into one HTML output tree.
+    ///
+    /// If the build does not use HTML mode, this setting has no effect.
+    pub fn html_assets_spec_path<S: ToString>(&mut self, path: S) -> &mut Self {
+        self.html_assets_spec_path = Some(path.to_string());
+        self
+    }
+
+    /// In HTML mode, use a precomputed asset specification.
+    ///
+    /// "Assets" are files like fonts and images that accompany the HTML output
+    /// generated during processing. By default, the engine gathers these during
+    /// processing and emits them at the end. After this method is used,
+    /// however, it will generate HTML outputs assuming the information given in
+    /// the asset specification given here. If the input calls for new assets or
+    /// different options inconsistent with the specification, processing will
+    /// abort with an error.
+    ///
+    /// The purpose of this mode is to allow for a unified set of assets to be
+    /// created from multiple independent runs of the SPX-to-HTML stage. First,
+    /// the different inputs should be processed independently, and their
+    /// individual assets should saved. These should then be merged. Then the
+    /// inputs should be reprocessed, all using the merged asset specification.
+    /// In one — but only one — of these sessions, the assets should actually be
+    /// emitted.
+    pub fn html_precomputed_assets(&mut self, assets: AssetSpecification) -> &mut Self {
+        self.html_precomputed_assets = Some(assets);
+        self
+    }
+
+    /// Set whether templated outputs should be created during HTML processing.
+    ///
+    /// This mode can be useful if you want to analyze what *would* be created
+    /// during HTML processing without actually creating the files.
+    pub fn html_emit_files(&mut self, do_emit: bool) -> &mut Self {
+        self.html_do_not_emit_files = !do_emit;
+        self
+    }
+
+    /// Set whether supporting asset files should be created during HTML
+    /// processing.
+    ///
+    /// This mode can be useful if you want to analyze what *would* be created
+    /// during HTML processing without actually creating the files. If you call
+    /// [`Self::html_assets_spec_path`], this setting will ignored, and no
+    /// assets will be emitted to disk.
+    pub fn html_emit_assets(&mut self, do_emit: bool) -> &mut Self {
+        self.html_do_not_emit_assets = !do_emit;
+        self
+    }
+
     /// Creates a `ProcessingSession`.
     pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
         // First, work on the "bridge state", which gathers the subset of our
@@ -1199,6 +1239,10 @@ impl ProcessingSessionBuilder {
             build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
             unstables: self.unstables,
             shell_escape_mode,
+            html_assets_spec_path: self.html_assets_spec_path,
+            html_precomputed_assets: self.html_precomputed_assets,
+            html_emit_files: !self.html_do_not_emit_files,
+            html_emit_assets: !self.html_do_not_emit_assets,
         })
     }
 }
@@ -1265,6 +1309,11 @@ pub struct ProcessingSession {
     /// How to handle shell-escape. The `Defaulted` option will never
     /// be used here.
     shell_escape_mode: ShellEscapeMode,
+
+    html_assets_spec_path: Option<String>,
+    html_precomputed_assets: Option<AssetSpecification>,
+    html_emit_files: bool,
+    html_emit_assets: bool,
 }
 
 const DEFAULT_MAX_TEX_PASSES: usize = 6;
@@ -1284,7 +1333,7 @@ impl ProcessingSession {
         for (name, info) in &self.bs.events {
             if info.access_pattern == AccessPattern::ReadThenWritten {
                 let file_changed = match (&info.read_digest, &info.write_digest) {
-                    (&Some(ref d1), &Some(ref d2)) => d1 != d2,
+                    (Some(d1), Some(d2)) => d1 != d2,
                     (&None, &Some(_)) => true,
                     (_, _) => {
                         // Other cases shouldn't happen.
@@ -1455,7 +1504,7 @@ impl ProcessingSession {
         if n_skipped_intermediates > 0 {
             status.note_highlighted(
                 "Skipped writing ",
-                &format!("{}", n_skipped_intermediates),
+                &format!("{n_skipped_intermediates}"),
                 " intermediate files (use --keep-intermediates to keep them)",
             );
         }
@@ -1560,7 +1609,7 @@ impl ProcessingSession {
             if file.data.is_empty() {
                 status.note_highlighted(
                     "Not writing ",
-                    &format!("`{}`", sname),
+                    &format!("`{sname}`"),
                     ": it would be empty.",
                 );
                 continue;
@@ -1634,7 +1683,7 @@ impl ProcessingSession {
                 match rerun_result {
                     Some(RerunReason::Biber) => "biber was run".to_owned(),
                     Some(RerunReason::Bibtex) => "bibtex was run".to_owned(),
-                    Some(RerunReason::FileChange(ref s)) => format!("\"{}\" changed", s),
+                    Some(RerunReason::FileChange(ref s)) => format!("\"{s}\" changed"),
                     None => break,
                 }
             };
@@ -1714,7 +1763,7 @@ impl ProcessingSession {
 
         let result = {
             self.bs
-                .enter_format_mode(&format!("tectonic-format-{}.tex", stem));
+                .enter_format_mode(&format!("tectonic-format-{stem}.tex"));
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
             let r = TexEngine::default()
@@ -1773,7 +1822,7 @@ impl ProcessingSession {
     ) -> Result<Option<&'static str>> {
         let result = {
             if let Some(s) = rerun_explanation {
-                status.note_highlighted("Rerunning ", "TeX", &format!(" because {} ...", s));
+                status.note_highlighted("Rerunning ", "TeX", &format!(" because {s} ..."));
             } else {
                 status.note_highlighted("Running ", "TeX", " ...");
             }
@@ -1825,7 +1874,7 @@ impl ProcessingSession {
         aux_file: &String,
     ) -> Result<i32> {
         let result = {
-            status.note_highlighted("Running ", "BibTeX", &format!(" on {} ...", aux_file));
+            status.note_highlighted("Running ", "BibTeX", &format!(" on {aux_file} ..."));
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
             let mut engine = BibtexEngine::new();
@@ -1894,15 +1943,27 @@ impl ProcessingSession {
     }
 
     fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
-        let op = match self.output_path {
-            Some(ref p) => p,
-            None => return Err(errmsg!("HTML output must be saved directly to disk")),
-        };
-
         {
             let mut engine = Spx2HtmlEngine::default();
+
+            match (self.html_emit_files, self.output_path.as_ref()) {
+                (true, Some(p)) => engine.output_base(p),
+                (false, _) => engine.do_not_emit_files(),
+                (true, None) => return Err(errmsg!("HTML output must be saved directly to disk")),
+            };
+
+            if let Some(p) = self.html_assets_spec_path.as_ref() {
+                engine.assets_spec_path(p);
+            } else if !self.html_emit_assets {
+                engine.do_not_emit_assets();
+            }
+
+            if let Some(a) = self.html_precomputed_assets.as_ref() {
+                engine.precomputed_assets(a.clone());
+            }
+
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path, op)?;
+            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path)?;
         }
 
         self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);
@@ -1992,13 +2053,13 @@ impl ProcessingSession {
         }
 
         let curs = Cursor::new(&run_xml_entry.data[..]);
-        let mut reader = Reader::from_reader(curs);
+        let mut reader = NsReader::from_reader(curs);
         let mut buf = Vec::new();
         let mut state = State::Searching;
 
         loop {
             let event = ctry!(
-                reader.read_event(&mut buf);
+                reader.read_event_into(&mut buf);
                 "error parsing run.xml file"
             );
 
@@ -2008,7 +2069,7 @@ impl ProcessingSession {
 
             match (state, event) {
                 (State::Searching, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "binary" {
                         state = State::InBinaryName;
@@ -2016,7 +2077,7 @@ impl ProcessingSession {
                 }
 
                 (State::InBinaryName, Event::Text(ref e)) => {
-                    let text = e.unescape_and_decode(&reader)?;
+                    let text = e.unescape()?;
 
                     state = if &text == "biber" {
                         State::InBiberCmdline
@@ -2030,18 +2091,18 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberCmdline, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     // Note that the "infile" might be `foo` without the `.bcf`
                     // extension, so we can't use it for file-finding.
-                    state = match name {
+                    state = match &*name {
                         "infile" | "outfile" | "option" => State::InBiberArgument,
                         _ => State::InBiberRemainder,
                     }
                 }
 
                 (State::InBiberCmdline, Event::End(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "cmdline" {
                         state = State::InBiberRemainder;
@@ -2049,21 +2110,21 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberArgument, Event::Text(ref e)) => {
-                    argv.push(e.unescape_and_decode(&reader)?);
+                    argv.push(e.unescape()?.to_string());
                     state = State::InBiberCmdline;
                 }
 
                 (State::InBiberRemainder, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
-                    state = match name {
+                    state = match &*name {
                         "input" | "requires" => State::InBiberRequirementSection,
                         _ => State::InBiberRemainder,
                     }
                 }
 
                 (State::InBiberRemainder, Event::End(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "external" {
                         break;
@@ -2071,16 +2132,16 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberRequirementSection, Event::Start(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
-                    state = match name {
+                    state = match &*name {
                         "file" => State::InBiberFileRequirement,
                         _ => State::InBiberRemainder,
                     }
                 }
 
                 (State::InBiberRequirementSection, Event::End(ref e)) => {
-                    let name = reader.decode(e.local_name())?;
+                    let name = reader.decoder().decode(e.local_name().into_inner())?;
 
                     if name == "input" || name == "requires" {
                         state = State::InBiberRemainder;
@@ -2088,7 +2149,7 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberFileRequirement, Event::Text(ref e)) => {
-                    extra_requires.insert(e.unescape_and_decode(&reader)?);
+                    extra_requires.insert(e.unescape()?.to_string());
                     state = State::InBiberRequirementSection;
                 }
 

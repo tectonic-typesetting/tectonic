@@ -529,8 +529,17 @@ input_ln(peekable_input_t *peekable)
         buffer[last] = peekable_getc(peekable);
         last++;
     }
+    
+    // For side effects - consume the eoln we saw
+    int eoln = peekable_getc(peekable);
 
-    peekable_getc(peekable);
+    if (eoln == '\r') {
+        // Handle \r\n newlines on Windows by trying to consume a \n after a \r, unget if it's not that exact pair
+        int next = peekable_getc(peekable);
+        if (next != '\n') {
+            peekable_ungetc(peekable, next);
+        } 
+    }
 
     while (last > 0) {
         if (lex_class[buffer[last - 1]] == 1 /*white_space */ )

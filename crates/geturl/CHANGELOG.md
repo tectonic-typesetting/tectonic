@@ -1,3 +1,8 @@
+# tectonic_geturl 0.3.2 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_geturl 0.3.1 (2022-02-28)
 
 - No meaningful code changes; we're just fixing some new Clippy complaints.

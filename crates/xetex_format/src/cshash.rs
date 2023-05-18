@@ -190,7 +190,7 @@ impl ControlSeqHash {
                 // The 1 here is formally ACTIVE_BASE
                 return Some(format!(
                     "[active character {}]",
-                    crate::format::fmt_usv(p as i32 - 1)
+                    crate::format::fmt_usv(p - 1)
                 ));
             }
         }

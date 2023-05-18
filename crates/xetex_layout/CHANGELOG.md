@@ -1,3 +1,8 @@
+# tectonic_xetex_layout 0.2.2 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_xetex_layout 0.2.1 (2022-10-03)
 
 - Work around ICU limitations in Alpine 3.16. The latest version of Alpine Linux

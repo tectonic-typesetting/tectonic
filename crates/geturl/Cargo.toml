@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_geturl"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A generic interface for HTTP GETs and byte-range requests, with pluggable backends.

@@ -1,3 +1,9 @@
+# tectonic_bundles 0.3.1 (2023-05-18)
+
+- Bump the `zip` dependency to the 0.6 series (#1038, @CraftSpider)
+- Tidy up formatting and recent Clippy warnings
+
+
 # tectonic_bundles 0.3.0 (2022-04-26)
 
 This minor bump contains a breaking change!

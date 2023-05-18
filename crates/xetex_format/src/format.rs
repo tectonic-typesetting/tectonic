@@ -73,7 +73,7 @@ impl Format {
     pub fn dump_string_table<W: Write>(&self, stream: &mut W) -> Result<()> {
         for sp in self.strings.all_sps() {
             let value = self.strings.lookup(sp);
-            writeln!(stream, "{} = \"{}\"", sp, value)?;
+            writeln!(stream, "{sp} = \"{value}\"")?;
         }
 
         Ok(())
@@ -165,10 +165,10 @@ impl Format {
                 (self.engine.commands.describe(entry.ty, entry.value), None)
             };
 
-            writeln!(stream, "{} => {}", cs_desc, cmd_desc)?;
+            writeln!(stream, "{cs_desc} => {cmd_desc}")?;
 
             if let Some(e) = extended {
-                writeln!(stream, "--------\n{}\n--------", e)?;
+                writeln!(stream, "--------\n{e}\n--------")?;
             }
         }
 
@@ -240,7 +240,7 @@ impl Format {
                     }
 
                     (true, 5 /* OUT_PARAM */) => {
-                        writeln!(result, "#{}", chr).unwrap();
+                        writeln!(result, "#{chr}").unwrap();
                     }
 
                     _ => {
@@ -271,9 +271,9 @@ impl Format {
 
     fn fmt_cs_pointer(&self, ptr: EqtbPointer) -> String {
         if let Some(text) = self.cshash.stringify(ptr, &self.strings) {
-            fmt_csname(&text)
+            fmt_csname(text)
         } else {
-            format!("[undecodable cseq pointer {}]", ptr)
+            format!("[undecodable cseq pointer {ptr}]")
         }
     }
 
@@ -314,7 +314,7 @@ fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
     let (input, hash_high) = be_i32(input)?;
     let (input, _mem_top) = parseutils::satisfy_be_i32(mem_top)(input)?;
     let (input, _eqtb_size) = parseutils::satisfy_be_i32(eqtb_size)(input)?;
-    let (input, _hash_prime) = parseutils::satisfy_be_i32(hash_prime as i32)(input)?;
+    let (input, _hash_prime) = parseutils::satisfy_be_i32(hash_prime)(input)?;
     let (input, _hyph_prime) = be_i32(input)?;
 
     // string table
@@ -330,9 +330,9 @@ fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
     let (input, eqtb) = eqtb::EquivalenciesTable::parse(input, &engine, hash_high)?;
 
     // nominally hash_top, but hash_top = eqtb_top since hash_extra is nonzero
-    let (input, _par_loc) = parseutils::ranged_be_i32(hash_base as i32, eqtb_top as i32)(input)?;
+    let (input, _par_loc) = parseutils::ranged_be_i32(hash_base, eqtb_top)(input)?;
 
-    let (input, _write_loc) = parseutils::ranged_be_i32(hash_base as i32, eqtb_top as i32)(input)?;
+    let (input, _write_loc) = parseutils::ranged_be_i32(hash_base, eqtb_top)(input)?;
 
     // Primitives. TODO: figure out best type for `prims`.
 
@@ -349,7 +349,7 @@ fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
     let (input, _font_info) = count(be_i64, fmem_ptr as usize)(input)?;
 
     // NB: FONT_BASE = 0
-    let (input, font_ptr) = parseutils::ranged_be_i32(0, max_fonts as i32)(input)?;
+    let (input, font_ptr) = parseutils::ranged_be_i32(0, max_fonts)(input)?;
 
     let n_fonts = font_ptr as usize + 1;
     let (input, _font_check) = count(be_i64, n_fonts)(input)?;
@@ -481,18 +481,18 @@ pub fn fmt_usv(c: i32) -> String {
 
     if let Some(chr) = maybe_chr {
         if chr == ' ' {
-            format!("' ' (0x{:06x})", c)
+            format!("' ' (0x{c:06x})")
         } else if chr == '\'' {
-            format!("\\' (0x{:06x})", c)
+            format!("\\' (0x{c:06x})")
         } else if chr == '\"' {
-            format!("\\\" (0x{:06x})", c)
+            format!("\\\" (0x{c:06x})")
         } else if chr.is_control() || chr.is_whitespace() {
             format!("{} (0x{:06x})", chr.escape_default(), c)
         } else {
-            format!("{} (0x{:06x})", chr, c)
+            format!("{chr} (0x{c:06x})")
         }
     } else {
-        format!("*invalid* (0x{:06x})", c)
+        format!("*invalid* (0x{c:06x})")
     }
 }
 
@@ -503,7 +503,7 @@ pub fn fmt_csname<S: AsRef<str>>(name: S) -> String {
     match (name.len(), has_ws) {
         (0, _) => "[null CS]".to_owned(),
         (1, _) => format!("'\\{}'", fmt_usv(name.chars().next().unwrap() as i32)),
-        (_, false) => format!("\\{}", name),
-        (_, true) => format!("\"\\{}\"", name),
+        (_, false) => format!("\\{name}"),
+        (_, true) => format!("\"\\{name}\""),
     }
 }

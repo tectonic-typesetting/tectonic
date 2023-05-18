@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_graphite2"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose the graphite2 library to Rust/Cargo.

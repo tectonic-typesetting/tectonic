@@ -101,7 +101,8 @@ impl DocumentExt for Document {
         }
 
         if config::is_config_test_mode_activated() {
-            Ok(Box::new(test_util::TestBundle::default()))
+            let bundle = test_util::TestBundle::default();
+            Ok(Box::new(bundle))
         } else if let Ok(url) = Url::parse(&self.bundle_loc) {
             if url.scheme() != "file" {
                 let mut cache = Cache::get_user_default()?;
@@ -130,8 +131,7 @@ impl DocumentExt for Document {
     ) -> Result<ProcessingSessionBuilder> {
         let profile = self.outputs.get(output_profile).ok_or_else(|| {
             ErrorKind::Msg(format!(
-                "unrecognized output profile name \"{}\"",
-                output_profile
+                "unrecognized output profile name \"{output_profile}\""
             ))
         })?;
 

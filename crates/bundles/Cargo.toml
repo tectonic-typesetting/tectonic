@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bundles"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Tectonic "bundle" (support file collection) implementations.
@@ -24,7 +24,7 @@ tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
 tectonic_geturl = { path = "../geturl", version =">=0.3.0,<1", default-features = false }
 tectonic_io_base = { path = "../io_base", version =">=0.3.0,<1"}
 tectonic_status_base = { path = "../status_base", version =">=0.1.0,<1"}
-zip = { version = "^0.5", default-features = false, features = ["deflate"] }
+zip = { version = "^0.6", default-features = false, features = ["deflate"] }
 
 [features]
 default = ["geturl-reqwest"]

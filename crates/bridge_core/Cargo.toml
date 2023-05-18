@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_core"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing core backend APIs to the Tectonic C/C++ code.
@@ -22,7 +22,7 @@ links = "tectonic_bridge_core"
 flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
 lazy_static = "^1.4"
 libc = "^0.2"
-md-5 = "^0.9"
+md-5 = "^0.10"
 tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
 tectonic_io_base = { path = "../io_base", version =">=0.3.0,<1"}
 tectonic_status_base = { path = "../status_base", version =">=0.1.0,<1"}

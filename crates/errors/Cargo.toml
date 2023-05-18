@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_errors"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A boxed error type for Tectonic, with supporting utilities.

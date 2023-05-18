@@ -1,3 +1,9 @@
+# tectonic_docmodel 0.2.1 (2023-05-18)
+
+- Update the `toml` dependency to the 0.7 series (#1038, @CraftSpider)
+- Have `shell_escape_cwd` imply `shell_escape = true` (#966, @pkgw)
+
+
 # tectonic_docmodel 0.2.0 (2022-10-03)
 
 - Define a new TOML item, `shell_escape_cwd`, that can be used to specify the

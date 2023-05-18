@@ -1,3 +1,8 @@
+# tectonic_errors 0.2.1 (2023-05-18)
+
+- Tidy up recent Clippy warnings.
+
+
 # tectonic_errors 0.2.0 (2021-06-03)
 
 The only change in this release is to add a helpful `tectonic_errors::prelude`

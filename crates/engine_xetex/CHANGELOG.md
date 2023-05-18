@@ -1,3 +1,16 @@
+# tectonic_engine_xetex 0.4.2 (2023-05-18)
+
+- Remove the automatic insertion of paragraph tags in HTML mode (#1016, @pkgw).
+  It turns out that in TeX's internals, the starts and ends of "paragraphs"
+  occur much more frequently than is apparent in the document source. And
+  TeXLive 2022 introduces new LaTeX-level hooks for paragraph starts and ends
+  that align much better with linguistic paragraphs. (This is not a coincidence,
+  since the LaTeX core team is being funded to add support for creating properly
+  semantically tagged PDFs.) So, for HTML output going forward, we'll use those
+  hooks, and then there's no need for paragraph tagging support to be built into
+  the engine here.
+
+
 # tectonic_engine_xetex 0.4.1 (2022-10-04)
 
 - When emitting in HTML mode, express paragraphs with `<div class="tdux-p">`
