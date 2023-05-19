@@ -327,6 +327,8 @@ CiteNumber all_marker(void);
 
 void set_all_marker(CiteNumber val);
 
+CiteNumber add_database_cite(CiteNumber new_cite, CiteNumber cite_loc, CiteNumber lc_cite_loc);
+
 bool print_lit(ExecVal val);
 
 bool print_stk_lit(ExecVal val);

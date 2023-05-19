@@ -180,16 +180,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static cite_number add_database_cite(cite_number new_cite, cite_number cite_loc, cite_number lc_cite_loc)
-{
-    check_cite_overflow(new_cite);
-    check_field_overflow(num_fields() * (new_cite + 1));
-    set_cite_list(new_cite, hash_text(cite_loc));
-    set_ilk_info(cite_loc, new_cite);
-    set_ilk_info(lc_cite_loc, cite_loc);
-    return new_cite + 1;
-}
-
 static find_cite_locs find_cite_locs_for_this_cite_key(str_number cite_str)
 {
     buf_pointer tmp_ptr;
