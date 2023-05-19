@@ -97,7 +97,7 @@ fn test_many() {
 
 #[test]
 fn test_empty_files() {
-    TestCase::new("empty", Some("empty")).test_bbl(false).go()
+    TestCase::new("empty", None).test_bbl(false).go()
 }
 
 #[test]
