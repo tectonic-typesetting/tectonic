@@ -1,0 +1,9 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: style.aux
+The style file: ../empty.bst
+Illegal, another \bibstyle command---line 5 of file style.aux
+ : \bibstyle
+ :          {../empty}
+I'm skipping whatever remains of this command
+(There was 1 error message)

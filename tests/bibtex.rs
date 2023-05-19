@@ -85,8 +85,14 @@ impl TestCase {
 }
 
 #[test]
-fn single_entry() {
-    TestCase::new("single_entry", None).go()
+fn test_single_entry() {
+    TestCase::new("single_entry", Some("cites")).go()
+}
+
+#[test]
+fn test_many() {
+    TestCase::new("many", Some("cites"))
+        .go();
 }
 
 #[test]
@@ -105,5 +111,45 @@ fn test_mismatched_function() {
 fn test_mismatched_expr() {
     TestCase::new("expr", Some("mismatched_braces"))
         .test_bbl(false)
+        .go();
+}
+
+#[test]
+fn test_mismatched_data() {
+    TestCase::new("data", Some("mismatched_braces"))
+        .test_bbl(false)
+        .go();
+}
+
+#[test]
+fn test_mismatched_style() {
+    TestCase::new("style", Some("mismatched_braces"))
+        .test_bbl(false)
+        .go();
+}
+
+#[test]
+fn test_duplicated_data() {
+    TestCase::new("data", Some("duplicated"))
+        .test_bbl(false)
+        .go();
+}
+
+#[test]
+fn test_duplicated_style() {
+    TestCase::new("style", Some("duplicated"))
+        .test_bbl(false)
+        .go();
+}
+
+#[test]
+fn test_bad_crossref() {
+    TestCase::new("bad", Some("crossref"))
+        .go();
+}
+
+#[test]
+fn test_min_crossref() {
+    TestCase::new("min", Some("crossref"))
         .go();
 }

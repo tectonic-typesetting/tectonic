@@ -1,0 +1,11 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: min.aux
+The style file: ../plain.bst
+Database file #1: min.bib
+Warning--to sort, need editor, organization, or key in Proceedings02
+Warning--empty booktitle in InProc01
+Warning--need editor, key, or booktitle for InProc03 to crossref Proceedings02
+Warning--need editor, key, or booktitle for InProc04 to crossref Proceedings02
+Warning--need editor, key, or booktitle for InProc02 to crossref Proceedings02
+(There were 5 warnings)

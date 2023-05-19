@@ -460,7 +460,7 @@ fn biber_issue_844() {
     let mut bibpath = std::fs::canonicalize(temp_source.path()).unwrap();
     bibpath.push("single_entry.bib");
 
-    let contents = include_str!("bibtex/single_entry.bib");
+    let contents = include_str!("bibtex/cites/single_entry.bib");
     std::fs::write(&bibpath, contents.as_bytes()).unwrap();
 
     // Futz the basic template to reference our absolute path input file:
