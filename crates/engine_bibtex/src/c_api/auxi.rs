@@ -22,11 +22,15 @@ impl AuxData {
         }
     }
 
+    pub fn set_ptr(&mut self, ptr: AuxNumber) {
+        self.aux_ptr = ptr;
+    }
+
     fn at_ptr(&self) -> StrNumber {
         self.aux_list[self.aux_ptr as usize]
     }
 
-    fn set_at_ptr(&mut self, num: StrNumber) {
+    pub fn set_at_ptr(&mut self, num: StrNumber) {
         self.aux_list[self.aux_ptr as usize] = num;
     }
 
@@ -34,7 +38,7 @@ impl AuxData {
         self.aux_file[self.aux_ptr as usize]
     }
 
-    fn set_file_at_ptr(&mut self, file: *mut PeekableInput) {
+    pub fn set_file_at_ptr(&mut self, file: *mut PeekableInput) {
         self.aux_file[self.aux_ptr as usize] = file;
     }
 

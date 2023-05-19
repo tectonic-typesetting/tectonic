@@ -2,7 +2,7 @@ use crate::c_api::xbuf::XBuf;
 use crate::c_api::{CiteNumber, HashPointer2, StrNumber};
 use std::cell::RefCell;
 
-const MAX_CITES: usize = 750;
+pub const MAX_CITES: usize = 750;
 
 pub struct CiteInfo {
     cite_list: XBuf<StrNumber>,

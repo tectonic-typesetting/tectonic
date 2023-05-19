@@ -46,9 +46,9 @@ pub struct GlobalBuffer {
     /// Allocated length of all buffers
     buf_len: usize,
     buffer: Buffer<ASCIICode, 2>,
-    sv_buffer: Buffer<ASCIICode, 2>,
+    sv_buffer: Buffer<ASCIICode, 0>,
     ex_buf: Buffer<ASCIICode, 1>,
-    out_buf: Buffer<ASCIICode, 1>,
+    out_buf: Buffer<ASCIICode, 0>,
     name_sep_char: Buffer<ASCIICode, 0>,
     name_tok: XBuf<BufPointer>,
 }
@@ -102,20 +102,16 @@ impl GlobalBuffer {
     pub fn set_offset(&mut self, ty: BufTy, offset: usize, val: BufPointer) {
         match ty {
             BufTy::Base => self.buffer.offset[offset - 1] = val,
-            BufTy::Sv => self.sv_buffer.offset[offset - 1] = val,
             BufTy::Ex => self.ex_buf.offset[offset - 1] = val,
-            BufTy::Out => self.out_buf.offset[offset - 1] = val,
-            BufTy::NameSep => self.out_buf.offset[offset - 1] = val,
+            BufTy::Sv | BufTy::Out | BufTy::NameSep => unreachable!("Buffer {:?} has no offsets", ty),
         }
     }
 
     pub fn offset(&self, ty: BufTy, offset: usize) -> BufPointer {
         match ty {
             BufTy::Base => self.buffer.offset[offset - 1],
-            BufTy::Sv => self.sv_buffer.offset[offset - 1],
             BufTy::Ex => self.ex_buf.offset[offset - 1],
-            BufTy::Out => self.out_buf.offset[offset - 1],
-            BufTy::NameSep => self.out_buf.offset[offset - 1],
+            BufTy::Sv | BufTy::Out | BufTy::NameSep => unreachable!("Buffer {:?} has no offsets", ty),
         }
     }
 

@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "tectonic_bridge_core.h"
 
+#define MAX_CITES 750
+
 #define HASH_BASE 1
 
 typedef enum {
@@ -72,6 +74,8 @@ typedef enum {
   STK_TYPE_ILLEGAL = 4,
 } StkType;
 
+typedef struct PeekableInput PeekableInput;
+
 typedef int32_t StrNumber;
 
 typedef int32_t BufPointer;
@@ -82,53 +86,6 @@ typedef struct {
   ASCIICode *name_of_file;
   int32_t name_length;
 } NameAndLen;
-
-typedef struct {
-  int min_crossrefs;
-} BibtexConfig;
-
-typedef ASCIICode *BufType;
-
-typedef int32_t CiteNumber;
-
-typedef int32_t HashPointer2;
-
-typedef struct {
-  StkType typ;
-  int32_t lit;
-} ExecVal;
-
-typedef struct {
-  ttbc_input_handle_t *handle;
-  int peek_char;
-  bool saw_eof;
-} PeekableInput;
-
-typedef struct {
-  PeekableInput *bst_file;
-  StrNumber bst_str;
-  int32_t bst_line_num;
-  int32_t num_bib_files;
-  int32_t num_preamble_strings;
-} BstCtx;
-
-typedef struct {
-  BstCtx *bst_ctx;
-  ExecVal pop1;
-  ExecVal pop2;
-  ExecVal pop3;
-  ExecVal *lit_stack;
-  int32_t lit_stk_size;
-  int32_t lit_stk_ptr;
-  bool mess_with_entries;
-  StrNumber bib_str_ptr;
-} ExecCtx;
-
-typedef int32_t HashPointer;
-
-typedef int32_t FieldLoc;
-
-typedef uintptr_t PoolPointer;
 
 typedef enum {
   CResultStr_Error,
@@ -144,6 +101,65 @@ typedef struct {
     };
   };
 } CResultStr;
+
+typedef struct {
+  PeekableInput *bst_file;
+  StrNumber bst_str;
+  int32_t bst_line_num;
+  ttbc_output_handle_t *bbl_file;
+  int32_t bbl_line_num;
+  int32_t num_bib_files;
+  int32_t num_preamble_strings;
+  int32_t impl_fn_num;
+  bool bib_seen;
+  bool bst_seen;
+  bool citation_seen;
+  bool entry_seen;
+  bool read_seen;
+  bool read_performed;
+  bool reading_completed;
+} GlblCtx;
+
+typedef struct {
+  int min_crossrefs;
+} BibtexConfig;
+
+typedef int32_t AuxNumber;
+
+typedef int32_t BibNumber;
+
+typedef ASCIICode *BufType;
+
+typedef int32_t CiteNumber;
+
+typedef int32_t HashPointer2;
+
+typedef struct {
+  StkType typ;
+  int32_t lit;
+} ExecVal;
+
+typedef struct {
+  GlblCtx *glbl_ctx;
+  ExecVal pop1;
+  ExecVal pop2;
+  ExecVal pop3;
+  ExecVal *lit_stack;
+  int32_t lit_stk_size;
+  int32_t lit_stk_ptr;
+  bool mess_with_entries;
+  StrNumber bib_str_ptr;
+} ExecCtx;
+
+typedef int32_t HashPointer;
+
+typedef int32_t FieldLoc;
+
+typedef int32_t WizFnLoc;
+
+typedef int32_t FnDefLoc;
+
+typedef uintptr_t PoolPointer;
 
 typedef struct {
   /**
@@ -173,13 +189,9 @@ typedef struct {
 
 typedef uint8_t StrIlk;
 
-typedef int32_t AuxNumber;
+typedef int32_t BltInRange;
 
-typedef int32_t BibNumber;
 
-typedef int32_t WizFnLoc;
-
-typedef int32_t FnDefLoc;
 
 #ifdef __cplusplus
 extern "C" {
@@ -195,11 +207,53 @@ bool bib_str_eq_buf(StrNumber s, BufTy buf, BufPointer ptr, BufPointer len);
 
 NameAndLen start_name(StrNumber file_name);
 
-void add_extension(NameAndLen *nal, StrNumber ext);
+CResultStr get_the_top_level_aux_file_name(GlblCtx *ctx, const char *aux_file_name);
 
 extern History tt_engine_bibtex_main(ttbc_state_t *api,
                                      const BibtexConfig *cfg,
                                      const char *aux_name);
+
+StrNumber cur_aux(void);
+
+void set_cur_aux(StrNumber num);
+
+PeekableInput *cur_aux_file(void);
+
+void set_cur_aux_file(PeekableInput *file);
+
+int32_t cur_aux_ln(void);
+
+void set_cur_aux_ln(int32_t ln);
+
+AuxNumber aux_ptr(void);
+
+void set_aux_ptr(AuxNumber num);
+
+StrNumber cur_bib(void);
+
+void set_cur_bib(StrNumber num);
+
+PeekableInput *cur_bib_file(void);
+
+void set_cur_bib_file(PeekableInput *input);
+
+BibNumber bib_ptr(void);
+
+void set_bib_ptr(BibNumber num);
+
+void check_bib_files(BibNumber ptr);
+
+void add_preamble(StrNumber num);
+
+StrNumber cur_preamble(void);
+
+BibNumber preamble_ptr(void);
+
+void set_preamble_ptr(BibNumber num);
+
+int32_t bib_line_num(void);
+
+void set_bib_line_num(int32_t num);
 
 int32_t bib_buf_size(void);
 
@@ -263,13 +317,37 @@ bool print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
 
 bool bst_ex_warn_print(const ExecCtx *ctx);
 
-bool bst_ln_num_print(const BstCtx *bst_ctx);
+bool bst_ln_num_print(const GlblCtx *glbl_ctx);
 
-bool print_bst_name(const BstCtx *bst_ctx);
+bool print_bst_name(const GlblCtx *glbl_ctx);
 
 void push_lit_stk(ExecCtx *ctx, ExecVal val);
 
 bool pop_lit_stk(ExecCtx *ctx, ExecVal *out);
+
+int32_t end_of_def(void);
+
+int32_t undefined(void);
+
+FnClass fn_type(HashPointer pos);
+
+void set_fn_type(HashPointer pos, FnClass ty);
+
+StrNumber hash_text(HashPointer pos);
+
+void set_hash_text(HashPointer pos, StrNumber num);
+
+int32_t ilk_info(HashPointer pos);
+
+void set_ilk_info(HashPointer pos, int32_t val);
+
+HashPointer hash_next(HashPointer pos);
+
+void set_hash_next(HashPointer pos, HashPointer val);
+
+int32_t hash_size(void);
+
+uintptr_t hash_prime(void);
 
 History get_history(void);
 
@@ -278,8 +356,6 @@ void mark_warning(void);
 void mark_error(void);
 
 uint32_t err_count(void);
-
-ttbc_output_handle_t *init_log_file(const char *file);
 
 ttbc_output_handle_t *standard_output(void);
 
@@ -298,8 +374,6 @@ void print_confusion(void);
 void print_a_token(void);
 
 bool print_a_pool_str(StrNumber s);
-
-void sam_wrong_file_name_print(NameAndLen file);
 
 bool print_aux_name(void);
 
@@ -323,11 +397,11 @@ bool print_bib_name(void);
 
 bool log_pr_bib_name(void);
 
-bool log_pr_bst_name(const BstCtx *ctx);
+bool log_pr_bst_name(const GlblCtx *ctx);
 
 void hash_cite_confusion(void);
 
-bool bst_warn_print(const BstCtx *ctx);
+bool bst_warn_print(const GlblCtx *ctx);
 
 void eat_bst_print(void);
 
@@ -375,11 +449,31 @@ void case_conversion_confusion(void);
 
 void print_fn_class(HashPointer fn_loc);
 
-CResult bst_err_print_and_look_for_blank_line(BstCtx *ctx);
+CResult bst_err_print_and_look_for_blank_line(GlblCtx *ctx);
 
-CResult already_seen_function_print(BstCtx *ctx, HashPointer seen_fn_loc);
+CResult already_seen_function_print(GlblCtx *ctx, HashPointer seen_fn_loc);
 
 bool nonexistent_cross_reference_error(FieldLoc field_ptr);
+
+void output_bbl_line(GlblCtx *ctx);
+
+HashPointer2 wiz_functions(WizFnLoc pos);
+
+void set_wiz_functions(WizFnLoc pos, HashPointer2 val);
+
+WizFnLoc wiz_def_ptr(void);
+
+void set_wiz_def_ptr(WizFnLoc val);
+
+void check_grow_wiz(FnDefLoc ptr);
+
+StrNumber field_info(FieldLoc pos);
+
+void set_field_info(FieldLoc pos, StrNumber val);
+
+void check_field_overflow(int32_t total_fields);
+
+int32_t max_fields(void);
 
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
@@ -417,6 +511,10 @@ CResultStr bib_make_string(void);
 
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
+CResultLookup pre_define(const char *pds, uintptr_t len, StrIlk ilk);
+
+CResult build_in(const char *pds, uintptr_t len, HashPointer *fn_hash_loc, BltInRange blt_in_num);
+
 bool scan1(ASCIICode char1);
 
 bool scan1_white(ASCIICode char1);
@@ -436,92 +534,6 @@ ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 bool scan_nonneg_integer(void);
 
 bool scan_integer(int32_t *token_value);
-
-StrNumber cur_aux(void);
-
-void set_cur_aux(StrNumber num);
-
-PeekableInput *cur_aux_file(void);
-
-void set_cur_aux_file(PeekableInput *file);
-
-int32_t cur_aux_ln(void);
-
-void set_cur_aux_ln(int32_t ln);
-
-AuxNumber aux_ptr(void);
-
-void set_aux_ptr(AuxNumber num);
-
-StrNumber cur_bib(void);
-
-void set_cur_bib(StrNumber num);
-
-PeekableInput *cur_bib_file(void);
-
-void set_cur_bib_file(PeekableInput *input);
-
-BibNumber bib_ptr(void);
-
-void set_bib_ptr(BibNumber num);
-
-void check_bib_files(BibNumber ptr);
-
-void add_preamble(StrNumber num);
-
-StrNumber cur_preamble(void);
-
-BibNumber preamble_ptr(void);
-
-void set_preamble_ptr(BibNumber num);
-
-int32_t bib_line_num(void);
-
-void set_bib_line_num(int32_t num);
-
-void reset_after_compute(void);
-
-int32_t end_of_def(void);
-
-int32_t undefined(void);
-
-FnClass fn_type(HashPointer pos);
-
-void set_fn_type(HashPointer pos, FnClass ty);
-
-StrNumber hash_text(HashPointer pos);
-
-void set_hash_text(HashPointer pos, StrNumber num);
-
-int32_t ilk_info(HashPointer pos);
-
-void set_ilk_info(HashPointer pos, int32_t val);
-
-HashPointer hash_next(HashPointer pos);
-
-void set_hash_next(HashPointer pos, HashPointer val);
-
-int32_t hash_size(void);
-
-int32_t hash_prime(void);
-
-void set_hash_prime(int32_t val);
-
-HashPointer2 wiz_functions(WizFnLoc pos);
-
-void set_wiz_functions(WizFnLoc pos, HashPointer2 val);
-
-WizFnLoc wiz_def_ptr(void);
-
-void set_wiz_def_ptr(WizFnLoc val);
-
-void check_grow_wiz(FnDefLoc ptr);
-
-StrNumber field_info(FieldLoc pos);
-
-void set_field_info(FieldLoc pos, StrNumber val);
-
-void check_field_overflow(int32_t total_fields);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -103,12 +103,19 @@ impl BibtexEngine {
 
 #[doc(hidden)]
 pub mod c_api {
+    use std::ffi::CStr;
     use crate::c_api::buffer::{with_buffers, BufTy};
     use crate::c_api::history::History;
-    use crate::c_api::pool::with_pool;
-    use std::slice;
+    use crate::c_api::pool::{with_pool, with_pool_mut};
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
+    use crate::c_api::xbuf::xcalloc_zeroed;
+    pub use external::*;
+    use crate::c_api::auxi::with_aux_mut;
+    use crate::c_api::exec::GlblCtx;
+    use crate::c_api::hash::with_hash;
+    use crate::c_api::log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
+    use crate::c_api::peekable::{PeekableInput};
 
     pub mod auxi;
     pub mod bibs;
@@ -125,6 +132,12 @@ pub mod c_api {
     pub mod pool;
     pub mod scan;
     pub mod xbuf;
+
+    // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
+    const _: () = assert!(hash::HASH_PRIME >= 128);
+    const _: () = assert!(hash::HASH_PRIME <= hash::HASH_SIZE);
+    const _: () = assert!(pool::MAX_STRINGS <= hash::HASH_SIZE);
+    const _: () = assert!(cite::MAX_CITES <= pool::MAX_STRINGS);
 
     #[repr(C)]
     #[derive(Clone, Debug)]
@@ -143,13 +156,6 @@ pub mod c_api {
     pub struct NameAndLen {
         name: *mut ASCIICode,
         len: i32,
-    }
-
-    impl NameAndLen {
-        fn as_mut_slice(&mut self) -> &mut [ASCIICode] {
-            // SAFETY: Requirement of the type
-            unsafe { slice::from_raw_parts_mut(self.name.cast(), self.len as usize + 1) }
-        }
     }
 
     #[repr(C)]
@@ -181,6 +187,15 @@ pub mod c_api {
         Ok(LookupRes),
     }
 
+    impl From<Option<LookupRes>> for CResultLookup {
+        fn from(value: Option<LookupRes>) -> Self {
+            match value {
+                Some(val) => CResultLookup::Ok(val),
+                None => CResultLookup::Error,
+            }
+        }
+    }
+
     type StrNumber = i32;
     type CiteNumber = i32;
     type ASCIICode = u8;
@@ -195,6 +210,7 @@ pub mod c_api {
     type WizFnLoc = i32;
     type FieldLoc = i32;
     type FnDefLoc = i32;
+    type BltInRange = i32;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -240,15 +256,62 @@ pub mod c_api {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn add_extension(nal: *mut NameAndLen, ext: StrNumber) {
-        let nal = &mut *nal;
-        with_pool(|pool| {
-            let ext = pool.get_str(ext as usize);
-            let old_len = nal.len as usize;
-            nal.len += ext.len() as i32;
-            let slice = nal.as_mut_slice();
-            slice[old_len..old_len + ext.len()].copy_from_slice(ext);
-            slice[old_len + ext.len()] = 0;
+    pub unsafe extern "C" fn get_the_top_level_aux_file_name(ctx: *mut GlblCtx, aux_file_name: *const libc::c_char) -> CResultStr {
+        let ctx = &mut *ctx;
+        let aux_file_name = CStr::from_ptr(aux_file_name);
+        let aux_bytes = aux_file_name.to_bytes_with_nul();
+
+        // This will be our scratch space for CStr filenames
+        let mut path = vec![0; aux_bytes.len()];
+        // Copy in all but the presumed trailing `.aux`
+        path[..aux_bytes.len()-5].copy_from_slice(&aux_bytes[..aux_bytes.len() - 5]);
+
+        let set_extension = |path: &mut Vec<_>, extension: &[u8]| {
+            let range = path.len()-5..path.len()-1;
+            path[range].copy_from_slice(extension);
+        };
+
+        with_aux_mut(|aux| {
+            aux.set_ptr(0);
+
+            let aux_file = match PeekableInput::open(aux_file_name, FileFormat::Tex) {
+                Ok(file) => file,
+                Err(_) => {
+                    sam_wrong_file_name_print(aux_file_name);
+                    return CResultStr::Ok(1);
+                }
+            };
+            aux.set_file_at_ptr(Box::into_raw(aux_file));
+
+            set_extension(&mut path, b".blg");
+            let log_file = CStr::from_bytes_with_nul(&path).unwrap();
+            if !init_log_file(log_file) {
+                sam_wrong_file_name_print(log_file);
+                return CResultStr::Ok(1);
+            }
+
+            set_extension(&mut path, b".bbl");
+            let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
+            ctx.bbl_file = ttstub_output_open(bbl_file.as_ptr(), 0);
+            if ctx.bbl_file.is_null() {
+                sam_wrong_file_name_print(bbl_file);
+                return CResultStr::Ok(1);
+            }
+
+            set_extension(&mut path, b".aux");
+            let lookup = match with_pool_mut(|pool| pool.lookup_str_insert(&path[..path.len()-1], 3)) {
+                None => return CResultStr::Error,
+                Some(res) => res,
+            };
+            aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc as usize)));
+
+            if lookup.exists {
+                write_logs("Already encountered auxiliary file");
+                print_confusion();
+                return CResultStr::Error;
+            }
+
+            CResultStr::Ok(0)
         })
     }
 
@@ -284,8 +347,6 @@ pub mod c_api {
             pub fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;
         }
     }
-    use crate::c_api::xbuf::xcalloc_zeroed;
-    pub use external::*;
 }
 
 /// Does our resulting executable link correctly?

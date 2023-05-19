@@ -90,3 +90,8 @@ pub extern "C" fn check_field_overflow(total_fields: i32) {
         }
     })
 }
+
+#[no_mangle]
+pub extern "C" fn max_fields() -> i32 {
+    with_other(|other| other.field_info.len() as i32)
+}

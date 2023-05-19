@@ -28,8 +28,6 @@
 
 /* duplicated from xetexd.h: */
 
-#define xmalloc_array(type,size) (xmalloc((size+1)*sizeof(type)))
-
 #include <setjmp.h>
 
 static jmp_buf error_jmpbuf, recover_jmpbuf;
@@ -45,63 +43,35 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define ENT_STR_SIZE 250
 #define GLOB_STR_SIZE 20000
 #define MAX_GLOB_STRS 10
-#define MAX_FIELDS 17250
 #define LIT_STK_SIZE 100
 
 /*22: */
 
 typedef unsigned char ASCII_code;
 typedef int32_t buf_pointer;
-typedef ASCII_code *buf_type;
 typedef size_t pool_pointer;
 typedef int32_t str_number;
 typedef int32_t hash_loc;
-typedef unsigned char /*last_ilk */ str_ilk;
-typedef unsigned char /*longest_pds */ pds_len;
-typedef const char *pds_type;
 typedef int32_t cite_number;
 typedef int32_t wiz_fn_loc;
 typedef int32_t int_ent_loc;
 typedef int32_t str_ent_loc;
 typedef int32_t field_loc;
 typedef int32_t hash_ptr2;
-typedef int32_t blt_in_range;
 
 static int32_t ent_str_size;
 static int32_t glob_str_size;
 static int32_t max_glob_strs;
-static int32_t max_fields;
-static int32_t bad;
-static int32_t string_width;
 static str_number s_aux_extension;
-static str_number s_log_extension;
-static str_number s_bbl_extension;
-static int32_t command_num;
-static rust_output_handle_t bbl_file;
-static bool bib_seen;
-static bool bst_seen;
 static cite_number entry_cite_ptr;
 static cite_number num_cites;
 static cite_number old_num_cites;
-static bool citation_seen;
-static hash_loc cite_loc;
-static hash_loc lc_cite_loc;
-static hash_loc lc_xcite_loc;
 static bool all_entries;
 static cite_number all_marker;
-static int32_t bbl_line_num;
-static hash_loc fn_loc;
-static hash_loc wiz_loc;
-static hash_loc literal_loc;
-static hash_loc macro_name_loc;
-static hash_loc macro_def_loc;
-static int_ent_loc int_ent_ptr;
 static int32_t *entry_ints;
 static int_ent_loc num_ent_ints;
-static str_ent_loc str_ent_ptr;
 static ASCII_code *entry_strs;
 static str_ent_loc num_ent_strs;
-static int32_t str_glb_ptr;
 static str_number *glb_bib_str_ptr;
 static ASCII_code *global_strs;
 static int32_t *glb_str_end;
@@ -110,28 +80,9 @@ static cite_number cite_xptr;
 static field_loc num_fields;
 static field_loc num_pre_defined_fields;
 static field_loc crossref_num;
-static bool entry_seen;
-static bool read_seen;
-static bool read_performed;
-static bool reading_completed;
-static int32_t impl_fn_num;
-static hash_loc entry_type_loc;
-static bool type_exists;
-static bool store_entry;
-static hash_loc field_name_loc;
-static hash_loc field_val_loc;
 static bool store_field;
-static bool store_token;
-static ASCII_code right_outer_delim;
-static ASCII_code right_str_delim;
-static hash_loc cur_macro_loc;
-static bool cite_hash_found;
-static int32_t bib_brace_level;
-static int32_t ent_chr_ptr;
-static int32_t glob_chr_ptr;
 static cite_number sort_cite_ptr;
 static str_ent_loc sort_key_num;
-static int32_t brace_level;
 static hash_loc b_equals;
 static hash_loc b_greater_than;
 static hash_loc b_less_than;
@@ -173,10 +124,6 @@ static hash_loc b_default;
 
 static str_number s_null;
 static str_number s_default;
-static hash_loc control_seq_loc;
-static int32_t num_names;
-static buf_pointer cur_token, last_token;
-static buf_pointer num_text_chars;
 static unsigned char /*bad_conversion */ conversion_type;
 static int verbose;
 
@@ -218,6 +165,11 @@ static LookupRes unwrap_res_lookup(CResultLookup res) {
     }
 }
 
+typedef struct {
+    cite_number cite_loc, lc_cite_loc;
+    bool found, cite_hash_found;
+} find_cite_locs;
+
 /*:473*//*12: *//*3: */
 
 #define FMT_BUF_SIZE 1024
@@ -237,46 +189,7 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void output_bbl_line(void)
-{
-    if (bib_buf_len(BUF_TY_OUT) != 0) {
-        while ((bib_buf_len(BUF_TY_OUT) > 0))
-            if (LEX_CLASS[bib_buf_at(BUF_TY_OUT, bib_buf_len(BUF_TY_OUT) - 1)] == LEX_CLASS_WHITESPACE )
-                bib_set_buf_len(BUF_TY_OUT, bib_buf_len(BUF_TY_OUT) - 1);
-            else
-                break;
-
-        if (bib_buf_len(BUF_TY_OUT) == 0)
-            return;
-        bib_set_buf_offset(BUF_TY_OUT, 1, 0);
-
-        while (bib_buf_offset(BUF_TY_OUT, 1) < bib_buf_len(BUF_TY_OUT)) {
-            ttstub_output_putc (bbl_file, bib_buf_at(BUF_TY_OUT, bib_buf_offset(BUF_TY_OUT, 1)));
-            bib_set_buf_offset(BUF_TY_OUT, 1, bib_buf_offset(BUF_TY_OUT, 1) + 1);
-        }
-    }
-
-    ttstub_output_putc(bbl_file, '\n');
-    bbl_line_num++;
-    bib_set_buf_len(BUF_TY_OUT, 0);
-}
-
-static LookupRes pre_define(pds_type pds, pds_len len, str_ilk ilk)
-{
-    pds_len i;
-    {
-        register int32_t for_end;
-        i = 1;
-        for_end = len;
-        if (i <= for_end)
-            do
-                bib_buf(BUF_TY_BASE)[i] = (unsigned char) pds[i - 1];
-            while (i++ < for_end);
-    }
-    return unwrap_res_lookup(str_lookup(BUF_TY_BASE, 1, len, ilk, true));
-}
-
-static cite_number add_database_cite(cite_number new_cite)
+static cite_number add_database_cite(cite_number new_cite, cite_number cite_loc, cite_number lc_cite_loc)
 {
     check_cite_overflow(new_cite);
     check_field_overflow(num_fields * (new_cite + 1));
@@ -286,7 +199,7 @@ static cite_number add_database_cite(cite_number new_cite)
     return new_cite + 1;
 }
 
-static bool find_cite_locs_for_this_cite_key(str_number cite_str)
+static find_cite_locs find_cite_locs_for_this_cite_key(str_number cite_str)
 {
     buf_pointer tmp_ptr;
     buf_pointer tmp_end_ptr;
@@ -300,12 +213,11 @@ static bool find_cite_locs_for_this_cite_key(str_number cite_str)
         tmp_ptr = tmp_ptr + 1;
     }
     LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, 0, (bib_str_start(cite_str + 1) - bib_str_start(cite_str)), 9 /*cite_ilk */ , false));
-    cite_loc = hash.loc;
-    cite_hash_found = hash.exists;
+    cite_number cite_loc = hash.loc;
+    bool cite_hash_found = hash.exists;
     lower_case(BUF_TY_EX, 0, (bib_str_start(cite_str + 1) - bib_str_start(cite_str)));
     hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, 0, (bib_str_start(cite_str + 1) - bib_str_start(cite_str)), 10 /*lc_cite_ilk */ , false));
-    lc_cite_loc = hash.loc;
-    return hash.exists;
+    return (find_cite_locs) { .cite_loc = cite_loc, .cite_hash_found = cite_hash_found, .lc_cite_loc = hash.loc, .found = hash.exists };
 }
 
 static bool less_than(cite_number arg1, cite_number arg2)
@@ -347,147 +259,134 @@ static bool less_than(cite_number arg1, cite_number arg2)
     }
 }
 
-static void build_in(pds_type pds, pds_len len, hash_loc * fn_hash_loc, blt_in_range blt_in_num)
-{
-    *fn_hash_loc = pre_define(pds, len, 11 /*bst_fn_ilk */ ).loc;
-    set_fn_type(*fn_hash_loc, FN_CLASS_BUILTIN);
-    set_ilk_info(*fn_hash_loc, blt_in_num);
-    ;
-
-}
-
 static void pre_def_certain_strings(void) {
     LookupRes pre_def_loc;
-    pre_def_loc = pre_define(".aux        ", 4, 7 /*file_ext_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define(".aux        ", 4, 7 /*file_ext_ilk */ ));
     s_aux_extension = hash_text(pre_def_loc.loc);
-    pre_def_loc = pre_define(".bbl        ", 4, 7 /*file_ext_ilk */ );
-    s_bbl_extension = hash_text(pre_def_loc.loc);
-    pre_def_loc = pre_define(".blg        ", 4, 7 /*file_ext_ilk */ );
-    s_log_extension = hash_text(pre_def_loc.loc);
-    pre_def_loc = pre_define("\\citation   ", 9, 2 /*aux_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("\\citation   ", 9, 2 /*aux_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 2 /*n_aux_citation */ );
-    pre_def_loc = pre_define("\\bibdata    ", 8, 2 /*aux_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("\\bibdata    ", 8, 2 /*aux_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 0 /*n_aux_bibdata */ );
-    pre_def_loc = pre_define("\\bibstyle   ", 9, 2 /*aux_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("\\bibstyle   ", 9, 2 /*aux_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 1 /*n_aux_bibstyle */ );
-    pre_def_loc = pre_define("\\@input     ", 7, 2 /*aux_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("\\@input     ", 7, 2 /*aux_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 3 /*n_aux_input */ );
-    pre_def_loc = pre_define("entry       ", 5, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("entry       ", 5, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 0 /*n_bst_entry */ );
-    pre_def_loc = pre_define("execute     ", 7, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("execute     ", 7, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 1 /*n_bst_execute */ );
-    pre_def_loc = pre_define("function    ", 8, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("function    ", 8, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 2 /*n_bst_function */ );
-    pre_def_loc = pre_define("integers    ", 8, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("integers    ", 8, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 3 /*n_bst_integers */ );
-    pre_def_loc = pre_define("iterate     ", 7, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("iterate     ", 7, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 4 /*n_bst_iterate */ );
-    pre_def_loc = pre_define("macro       ", 5, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("macro       ", 5, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 5 /*n_bst_macro */ );
-    pre_def_loc = pre_define("read        ", 4, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("read        ", 4, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 6 /*n_bst_read */ );
-    pre_def_loc = pre_define("reverse     ", 7, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("reverse     ", 7, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 7 /*n_bst_reverse */ );
-    pre_def_loc = pre_define("sort        ", 4, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("sort        ", 4, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 8 /*n_bst_sort */ );
-    pre_def_loc = pre_define("strings     ", 7, 4 /*bst_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("strings     ", 7, 4 /*bst_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 9 /*n_bst_strings */ );
-    pre_def_loc = pre_define("comment     ", 7, 12 /*bib_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("comment     ", 7, 12 /*bib_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 0 /*n_bib_comment */ );
-    pre_def_loc = pre_define("preamble    ", 8, 12 /*bib_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("preamble    ", 8, 12 /*bib_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 1 /*n_bib_preamble */ );
-    pre_def_loc = pre_define("string      ", 6, 12 /*bib_command_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("string      ", 6, 12 /*bib_command_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 2 /*n_bib_string */ );
-    build_in("=           ", 1, &b_equals, 0 /*n_equals */ );
-    build_in(">           ", 1, &b_greater_than, 1 /*n_greater_than */ );
-    build_in("<           ", 1, &b_less_than, 2 /*n_less_than */ );
-    build_in("+           ", 1, &b_plus, 3 /*n_plus */ );
-    build_in("-           ", 1, &b_minus, 4 /*n_minus */ );
-    build_in("*           ", 1, &b_concatenate, 5 /*n_concatenate */ );
-    build_in(":=          ", 2, &b_gets, 6 /*n_gets */ );
-    build_in("add.period$ ", 11, &b_add_period, 7 /*n_add_period */ );
-    build_in("call.type$  ", 10, &b_call_type, 8 /*n_call_type */ );
-    build_in("change.case$", 12, &b_change_case, 9 /*n_change_case */ );
-    build_in("chr.to.int$ ", 11, &b_chr_to_int, 10 /*n_chr_to_int */ );
-    build_in("cite$       ", 5, &b_cite, 11 /*n_cite */ );
-    build_in("duplicate$  ", 10, &b_duplicate, 12 /*n_duplicate */ );
-    build_in("empty$      ", 6, &b_empty, 13 /*n_empty */ );
-    build_in("format.name$", 12, &b_format_name, 14 /*n_format_name */ );
-    build_in("if$         ", 3, &b_if, 15 /*n_if */ );
-    build_in("int.to.chr$ ", 11, &b_int_to_chr, 16 /*n_int_to_chr */ );
-    build_in("int.to.str$ ", 11, &b_int_to_str, 17 /*n_int_to_str */ );
-    build_in("missing$    ", 8, &b_missing, 18 /*n_missing */ );
-    build_in("newline$    ", 8, &b_newline, 19 /*n_newline */ );
-    build_in("num.names$  ", 10, &b_num_names, 20 /*n_num_names */ );
-    build_in("pop$        ", 4, &b_pop, 21 /*n_pop */ );
-    build_in("preamble$   ", 9, &b_preamble, 22 /*n_preamble */ );
-    build_in("purify$     ", 7, &b_purify, 23 /*n_purify */ );
-    build_in("quote$      ", 6, &b_quote, 24 /*n_quote */ );
-    build_in("skip$       ", 5, &b_skip, 25 /*n_skip */ );
-    build_in("stack$      ", 6, &b_stack, 26 /*n_stack */ );
-    build_in("substring$  ", 10, &b_substring, 27 /*n_substring */ );
-    build_in("swap$       ", 5, &b_swap, 28 /*n_swap */ );
-    build_in("text.length$", 12, &b_text_length, 29 /*n_text_length */ );
-    build_in("text.prefix$", 12, &b_text_prefix, 30 /*n_text_prefix */ );
-    build_in("top$        ", 4, &b_top_stack, 31 /*n_top_stack */ );
-    build_in("type$       ", 5, &b_type, 32 /*n_type */ );
-    build_in("warning$    ", 8, &b_warning, 33 /*n_warning */ );
-    build_in("while$      ", 6, &b_while, 34 /*n_while */ );
-    build_in("width$      ", 6, &b_width, 35 /*n_width */ );
-    build_in("write$      ", 6, &b_write, 36 /*n_write */ );
-    pre_def_loc = pre_define("            ", 0, 0 /*text_ilk */ );
+    unwrap_res(build_in("=           ", 1, &b_equals, 0 /*n_equals */ ));
+    unwrap_res(build_in(">           ", 1, &b_greater_than, 1 /*n_greater_than */ ));
+    unwrap_res(build_in("<           ", 1, &b_less_than, 2 /*n_less_than */ ));
+    unwrap_res(build_in("+           ", 1, &b_plus, 3 /*n_plus */ ));
+    unwrap_res(build_in("-           ", 1, &b_minus, 4 /*n_minus */ ));
+    unwrap_res(build_in("*           ", 1, &b_concatenate, 5 /*n_concatenate */ ));
+    unwrap_res(build_in(":=          ", 2, &b_gets, 6 /*n_gets */ ));
+    unwrap_res(build_in("add.period$ ", 11, &b_add_period, 7 /*n_add_period */ ));
+    unwrap_res(build_in("call.type$  ", 10, &b_call_type, 8 /*n_call_type */ ));
+    unwrap_res(build_in("change.case$", 12, &b_change_case, 9 /*n_change_case */ ));
+    unwrap_res(build_in("chr.to.int$ ", 11, &b_chr_to_int, 10 /*n_chr_to_int */ ));
+    unwrap_res(build_in("cite$       ", 5, &b_cite, 11 /*n_cite */ ));
+    unwrap_res(build_in("duplicate$  ", 10, &b_duplicate, 12 /*n_duplicate */ ));
+    unwrap_res(build_in("empty$      ", 6, &b_empty, 13 /*n_empty */ ));
+    unwrap_res(build_in("format.name$", 12, &b_format_name, 14 /*n_format_name */ ));
+    unwrap_res(build_in("if$         ", 3, &b_if, 15 /*n_if */ ));
+    unwrap_res(build_in("int.to.chr$ ", 11, &b_int_to_chr, 16 /*n_int_to_chr */ ));
+    unwrap_res(build_in("int.to.str$ ", 11, &b_int_to_str, 17 /*n_int_to_str */ ));
+    unwrap_res(build_in("missing$    ", 8, &b_missing, 18 /*n_missing */ ));
+    unwrap_res(build_in("newline$    ", 8, &b_newline, 19 /*n_newline */ ));
+    unwrap_res(build_in("num.names$  ", 10, &b_num_names, 20 /*n_num_names */ ));
+    unwrap_res(build_in("pop$        ", 4, &b_pop, 21 /*n_pop */ ));
+    unwrap_res(build_in("preamble$   ", 9, &b_preamble, 22 /*n_preamble */ ));
+    unwrap_res(build_in("purify$     ", 7, &b_purify, 23 /*n_purify */ ));
+    unwrap_res(build_in("quote$      ", 6, &b_quote, 24 /*n_quote */ ));
+    unwrap_res(build_in("skip$       ", 5, &b_skip, 25 /*n_skip */ ));
+    unwrap_res(build_in("stack$      ", 6, &b_stack, 26 /*n_stack */ ));
+    unwrap_res(build_in("substring$  ", 10, &b_substring, 27 /*n_substring */ ));
+    unwrap_res(build_in("swap$       ", 5, &b_swap, 28 /*n_swap */ ));
+    unwrap_res(build_in("text.length$", 12, &b_text_length, 29 /*n_text_length */ ));
+    unwrap_res(build_in("text.prefix$", 12, &b_text_prefix, 30 /*n_text_prefix */ ));
+    unwrap_res(build_in("top$        ", 4, &b_top_stack, 31 /*n_top_stack */ ));
+    unwrap_res(build_in("type$       ", 5, &b_type, 32 /*n_type */ ));
+    unwrap_res(build_in("warning$    ", 8, &b_warning, 33 /*n_warning */ ));
+    unwrap_res(build_in("while$      ", 6, &b_while, 34 /*n_while */ ));
+    unwrap_res(build_in("width$      ", 6, &b_width, 35 /*n_width */ ));
+    unwrap_res(build_in("write$      ", 6, &b_write, 36 /*n_write */ ));
+    pre_def_loc = unwrap_res_lookup(pre_define("            ", 0, 0 /*text_ilk */ ));
     s_null = hash_text(pre_def_loc.loc);
     set_fn_type(pre_def_loc.loc, FN_CLASS_STR_LIT);
-    pre_def_loc = pre_define("default.type", 12, 0 /*text_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("default.type", 12, 0 /*text_ilk */ ));
     s_default = hash_text(pre_def_loc.loc);
     set_fn_type(pre_def_loc.loc, FN_CLASS_STR_LIT);
     b_default = b_skip;
-    pre_def_loc = pre_define("i           ", 1, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("i           ", 1, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 0 /*n_i */ );
-    pre_def_loc = pre_define("j           ", 1, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("j           ", 1, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 1 /*n_j */ );
-    pre_def_loc = pre_define("oe          ", 2, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("oe          ", 2, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 2 /*n_oe */ );
-    pre_def_loc = pre_define("OE          ", 2, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("OE          ", 2, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 3 /*n_oe_upper */ );
-    pre_def_loc = pre_define("ae          ", 2, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("ae          ", 2, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 4 /*n_ae */ );
-    pre_def_loc = pre_define("AE          ", 2, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("AE          ", 2, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 5 /*n_ae_upper */ );
-    pre_def_loc = pre_define("aa          ", 2, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("aa          ", 2, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 6 /*n_aa */ );
-    pre_def_loc = pre_define("AA          ", 2, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("AA          ", 2, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 7 /*n_aa_upper */ );
-    pre_def_loc = pre_define("o           ", 1, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("o           ", 1, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 8 /*n_o */ );
-    pre_def_loc = pre_define("O           ", 1, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("O           ", 1, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 9 /*n_o_upper */ );
-    pre_def_loc = pre_define("l           ", 1, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("l           ", 1, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 10 /*n_l */ );
-    pre_def_loc = pre_define("L           ", 1, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("L           ", 1, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 11 /*n_l_upper */ );
-    pre_def_loc = pre_define("ss          ", 2, 14 /*control_seq_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("ss          ", 2, 14 /*control_seq_ilk */ ));
     set_ilk_info(pre_def_loc.loc, 12 /*n_ss */ );
-    pre_def_loc = pre_define("crossref    ", 8, 11 /*bst_fn_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("crossref    ", 8, 11 /*bst_fn_ilk */ ));
     set_fn_type(pre_def_loc.loc, FN_CLASS_FIELD);
     set_ilk_info(pre_def_loc.loc, num_fields);
     crossref_num = num_fields;
     num_fields = num_fields + 1;
     num_pre_defined_fields = num_fields;
-    pre_def_loc = pre_define("sort.key$   ", 9, 11 /*bst_fn_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("sort.key$   ", 9, 11 /*bst_fn_ilk */ ));
     set_fn_type(pre_def_loc.loc, FN_CLASS_STR_ENTRY_VAR);
     set_ilk_info(pre_def_loc.loc, num_ent_strs);
     sort_key_num = num_ent_strs;
     num_ent_strs = num_ent_strs + 1;
-    pre_def_loc = pre_define("entry.max$  ", 10, 11 /*bst_fn_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("entry.max$  ", 10, 11 /*bst_fn_ilk */ ));
     set_fn_type(pre_def_loc.loc, FN_CLASS_INT_GLBL_VAR);
     set_ilk_info(pre_def_loc.loc, ent_str_size);
-    pre_def_loc = pre_define("global.max$ ", 11, 11 /*bst_fn_ilk */ );
+    pre_def_loc = unwrap_res_lookup(pre_define("global.max$ ", 11, 11 /*bst_fn_ilk */ ));
     set_fn_type(pre_def_loc.loc, FN_CLASS_INT_GLBL_VAR);
     set_ilk_info(pre_def_loc.loc, glob_str_size);
 }
 
-static bool eat_bst_white_space(BstCtx* ctx)
+static bool eat_bst_white_space(GlblCtx* ctx)
 {
     while (true) {
 
@@ -506,7 +405,7 @@ static bool eat_bst_white_space(BstCtx* ctx)
     return false;
 }
 
-static void skip_token_print(BstCtx* ctx)
+static void skip_token_print(GlblCtx* ctx)
 {
     putc_log('-');
     TRY(bst_ln_num_print(ctx));
@@ -514,7 +413,7 @@ static void skip_token_print(BstCtx* ctx)
     scan2_white(125 /*right_brace */ , 37 /*comment */);
 }
 
-static void print_recursion_illegal(BstCtx* ctx)
+static void print_recursion_illegal(GlblCtx* ctx)
 {
     puts_log("Curse you, wizard, before you recurse me:\n");
     puts_log("function ");
@@ -523,20 +422,20 @@ static void print_recursion_illegal(BstCtx* ctx)
     skip_token_print(ctx);
 }
 
-static void skp_token_unknown_function_print(BstCtx* ctx)
+static void skp_token_unknown_function_print(GlblCtx* ctx)
 {
     print_a_token();
     puts_log(" is an unknown function");
     skip_token_print(ctx);
 }
 
-static void skip_illegal_stuff_after_token_print(BstCtx* ctx)
+static void skip_illegal_stuff_after_token_print(GlblCtx* ctx)
 {
     printf_log("\"%c\" can't follow a literal", bib_buf_at_offset(BUF_TY_BASE, 2));
     skip_token_print(ctx);
 }
 
-static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
+static void scan_fn_def(GlblCtx* ctx, hash_loc fn_hash_loc, hash_loc wiz_loc)
 {
     typedef int32_t fn_def_loc;
     hash_ptr2 *singl_function;
@@ -576,7 +475,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                         1 /*integer_ilk */ ,
                         true
                 ));
-                literal_loc = hash.loc;
+                hash_loc literal_loc = hash.loc;
                 if (!hash.exists) {
                     set_fn_type(literal_loc, FN_CLASS_INT_LIT);
                     set_ilk_info(literal_loc, token_value);
@@ -606,7 +505,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                 };
 
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ , true));
-                literal_loc = hash.loc;
+                hash_loc literal_loc = hash.loc;
                 set_fn_type(literal_loc, FN_CLASS_STR_LIT);
                 bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
                 if ((bib_buf_offset(BUF_TY_BASE, 2) < bib_buf_len(BUF_TY_BASE)) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] != LEX_CLASS_WHITESPACE )
@@ -631,7 +530,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
 
                 lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
-                fn_loc = hash.loc;
+                hash_loc fn_loc = hash.loc;
                 if (!hash.exists) {
                     skp_token_unknown_function_print(ctx);
                     goto lab25;
@@ -667,7 +566,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
         case 123:
             {
                 bib_buf(BUF_TY_EX)[0] = 39 /*single_quote */ ;
-                end_of_num = int_to_ascii(impl_fn_num, BUF_TY_EX, 1);
+                end_of_num = int_to_ascii(ctx->impl_fn_num, BUF_TY_EX, 1);
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, 0, end_of_num, 11 /*bst_fn_ilk */ , true));
                 impl_fn_loc = hash.loc;
                 if (hash.exists) {
@@ -676,7 +575,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                     longjmp(error_jmpbuf, 1);
                 }
 
-                impl_fn_num = impl_fn_num + 1;
+                ctx->impl_fn_num += 1;
                 set_fn_type(impl_fn_loc, FN_CLASS_WIZARD);
                 {
                     singl_function[single_ptr] = quote_next_fn;
@@ -695,7 +594,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                     single_ptr = single_ptr + 1;
                 }
                 bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                scan_fn_def(ctx, impl_fn_loc);
+                scan_fn_def(ctx, impl_fn_loc, wiz_loc);
             }
             break;
         default:
@@ -703,7 +602,7 @@ static void scan_fn_def(BstCtx* ctx, hash_loc fn_hash_loc)
                 scan2_white(125 /*right_brace */ , 37 /*comment */);
                 lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
-                fn_loc = hash.loc;
+                hash_loc fn_loc = hash.loc;
                 if (!hash.exists) {
                     skp_token_unknown_function_print(ctx);
                     goto lab25;
@@ -794,7 +693,7 @@ static bool compress_bib_white(bool at_bib_command)
     return true;
 }
 
-static bool scan_balanced_braces(bool at_bib_command)
+static bool scan_balanced_braces(bool at_bib_command, ASCIICode right_str_delim)
 {
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     {
@@ -813,7 +712,7 @@ static bool scan_balanced_braces(bool at_bib_command)
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
         }
     }
-    bib_brace_level = 0;
+    int32_t bib_brace_level = 0;
     if (store_field) {        /*257: */
         while ((bib_buf_at_offset(BUF_TY_BASE, 2) != right_str_delim))
             switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
@@ -1005,24 +904,18 @@ static bool scan_balanced_braces(bool at_bib_command)
     return true;
 }
 
-static bool scan_a_field_token_and_eat_white(bool at_bib_command)
+static bool scan_a_field_token_and_eat_white(bool at_bib_command, int32_t command_num, hash_loc cur_macro_loc, ASCIICode right_outer_delim)
 {
     buf_pointer tmp_ptr, tmp_end_ptr;
 
     switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
     case 123:
-        {
-            right_str_delim = 125 /*right_brace */ ;
-            if (!scan_balanced_braces(at_bib_command))
-                return false;
-        }
+        if (!scan_balanced_braces(at_bib_command, 125 /*right_brace */))
+            return false;
         break;
     case 34:
-        {
-            right_str_delim = 34 /*double_quote */ ;
-            if (!scan_balanced_braces(at_bib_command))
-                return false;
-        }
+        if (!scan_balanced_braces(at_bib_command, 34 /*double_quote */))
+            return false;
         break;
     case 48:
     case 49:
@@ -1073,8 +966,8 @@ static bool scan_a_field_token_and_eat_white(bool at_bib_command)
             if (store_field) {
                 lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 13 /*macro_ilk */ , false));
-                macro_name_loc = hash.loc;
-                store_token = true;
+                hash_loc macro_name_loc = hash.loc;
+                bool store_token = true;
                 if (at_bib_command) {
 
                     if (command_num == 2 /*n_bib_string */ ) {
@@ -1148,12 +1041,12 @@ static bool scan_a_field_token_and_eat_white(bool at_bib_command)
     return true;
 }
 
-static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
+static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
 {
     buf_pointer tmp_ptr;
 
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
-    if (!scan_a_field_token_and_eat_white(at_bib_command))
+    if (!scan_a_field_token_and_eat_white(at_bib_command, command_num, cur_macro_loc, right_outer_delim))
         return false;
     while (bib_buf_at_offset(BUF_TY_BASE, 2) == 35 /*concat_char */ ) {
 
@@ -1164,7 +1057,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
                 return false;
             }
         }
-        if (!scan_a_field_token_and_eat_white(at_bib_command))
+        if (!scan_a_field_token_and_eat_white(at_bib_command, command_num, cur_macro_loc, right_outer_delim))
             return false;
     }
     if (store_field) {        /*262: */
@@ -1182,7 +1075,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
         else
             ex_buf_xptr = 0;
         LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 0 /*text_ilk */ , true));
-        field_val_loc = hash.loc;
+        hash_loc field_val_loc = hash.loc;
         set_fn_type(field_val_loc, FN_CLASS_STR_LIT);
 
         if (at_bib_command) { /*263: */
@@ -1200,7 +1093,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
             }
         } else {                /*264: */
             field_loc field_ptr = entry_cite_ptr * num_fields + ilk_info(field_name_loc);
-            if (field_ptr >= max_fields) {
+            if (field_ptr >= max_fields()) {
                 puts_log("field_info index is out of range");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
@@ -1222,19 +1115,22 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
                     }
                     lower_case(BUF_TY_OUT, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr);
                     hash = unwrap_res_lookup(str_lookup(BUF_TY_OUT, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 10 /*lc_cite_ilk */ , true));
-                    lc_cite_loc = hash.loc;
+                    cite_number lc_cite_loc = hash.loc;
+                    if (cite_out != NULL) {
+                        *cite_out = lc_cite_loc;
+                    }
                     if (hash.exists) {
-                        cite_loc = ilk_info(lc_cite_loc);
+                        cite_number cite_loc = ilk_info(lc_cite_loc);
                         if (ilk_info(cite_loc) >= old_num_cites)
                             set_cite_info(ilk_info(cite_loc), cite_info(ilk_info(cite_loc)) + 1);
                     } else {
                         hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 9 /*cite_ilk */ , true));
-                        cite_loc = hash.loc;
+                        cite_number cite_loc = hash.loc;
                         if (hash.exists) {
                             hash_cite_confusion();
                             longjmp(error_jmpbuf, 1);
                         }
-                        set_cite_ptr(add_database_cite(cite_ptr()));
+                        set_cite_ptr(add_database_cite(cite_ptr(), cite_loc, lc_cite_loc));
                         set_cite_info(ilk_info(cite_loc), 1);
                     }
                 }
@@ -1244,23 +1140,22 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command)
     return true;
 }
 
-static void decr_brace_level(ExecCtx* ctx, str_number pop_lit_var)
+static void decr_brace_level(ExecCtx* ctx, str_number pop_lit_var, int32_t* brace_level)
 {
-    if (brace_level == 0)
+    if (*brace_level == 0)
         TRY(braces_unbalanced_complaint(ctx, pop_lit_var));
     else
-        brace_level = brace_level - 1;
+        *brace_level -= 1;
 }
 
-static void check_brace_level(ExecCtx* ctx, str_number pop_lit_var)
+static void check_brace_level(ExecCtx* ctx, str_number pop_lit_var, int32_t brace_level)
 {
     if (brace_level > 0)
         TRY(braces_unbalanced_complaint(ctx, pop_lit_var));
 }
 
-static void name_scan_for_and(ExecCtx* ctx, str_number pop_lit_var)
+static void name_scan_for_and(ExecCtx* ctx, str_number pop_lit_var, int32_t* brace_level)
 {
-    brace_level = 0;
     bool preceding_white = false;
     bool and_found = false;
     while ((!and_found) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)))
@@ -1289,14 +1184,14 @@ static void name_scan_for_and(ExecCtx* ctx, str_number pop_lit_var)
             break;
         case 123:
             {
-                brace_level = brace_level + 1;
+                *brace_level += 1;
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                while ((brace_level > 0) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
+                while ((*brace_level > 0) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
 
                     if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 125 /*right_brace */ )
-                        brace_level = brace_level - 1;
+                        *brace_level -= 1;
                     else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 123 /*left_brace */ )
-                        brace_level = brace_level + 1;
+                        *brace_level += 1;
                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                 }
                 preceding_white = false;
@@ -1304,7 +1199,7 @@ static void name_scan_for_and(ExecCtx* ctx, str_number pop_lit_var)
             break;
         case 125:
             {
-                decr_brace_level(ctx, pop_lit_var);
+                decr_brace_level(ctx, pop_lit_var, brace_level);
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                 preceding_white = false;
             }
@@ -1320,7 +1215,7 @@ static void name_scan_for_and(ExecCtx* ctx, str_number pop_lit_var)
             }
             break;
         }
-    check_brace_level(ctx, pop_lit_var);
+    check_brace_level(ctx, pop_lit_var, *brace_level);
 }
 
 static bool von_token_found(buf_pointer* name_bf_ptr, buf_pointer name_bf_xptr)
@@ -1340,7 +1235,7 @@ static bool von_token_found(buf_pointer* name_bf_ptr, buf_pointer name_bf_xptr)
                 while ((*name_bf_ptr < name_bf_xptr) && (LEX_CLASS[bib_buf_at(BUF_TY_SV, *name_bf_ptr)] == LEX_CLASS_ALPHA ))
                     *name_bf_ptr = *name_bf_ptr + 1;
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_SV, name_bf_yptr, *name_bf_ptr - name_bf_yptr, 14 /*control_seq_ilk */ , false));
-                control_seq_loc = hash.loc;
+                hash_loc control_seq_loc = hash.loc;
                 if (hash.exists) {     /*400: */
                     switch ((ilk_info(control_seq_loc))) {
                     case 3:
@@ -1426,31 +1321,31 @@ static void brace_lvl_one_letters_complaint(ExecCtx* ctx)
     TRY(bst_ex_warn_print(ctx));
 }
 
-static bool enough_text_chars(buf_pointer enough_chars, buf_pointer ex_buf_xptr)
+static bool enough_text_chars(buf_pointer enough_chars, buf_pointer ex_buf_xptr, int32_t* brace_level)
 {
-    num_text_chars = 0;
+    buf_pointer num_text_chars = 0;
     buf_pointer ex_buf_yptr = ex_buf_xptr;
     while ((ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1)) && (num_text_chars < enough_chars)) {
 
         ex_buf_yptr = ex_buf_yptr + 1;
         if (bib_buf(BUF_TY_EX)[ex_buf_yptr - 1] == 123 /*left_brace */ ) {
-            brace_level = brace_level + 1;
-            if ((brace_level == 1) && (ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1))) {
+            *brace_level += 1;
+            if ((*brace_level == 1) && (ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1))) {
 
                 if (bib_buf(BUF_TY_EX)[ex_buf_yptr] == 92 /*backslash */ ) {
                     ex_buf_yptr = ex_buf_yptr + 1;
-                    while ((ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1)) && (brace_level > 0)) {
+                    while ((ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1)) && (*brace_level > 0)) {
 
                         if (bib_buf(BUF_TY_EX)[ex_buf_yptr] == 125 /*right_brace */ )
-                            brace_level = brace_level - 1;
+                            *brace_level -= 1;
                         else if (bib_buf(BUF_TY_EX)[ex_buf_yptr] == 123 /*left_brace */ )
-                            brace_level = brace_level + 1;
+                            *brace_level += 1;
                         ex_buf_yptr = ex_buf_yptr + 1;
                     }
                 }
             }
         } else if (bib_buf(BUF_TY_EX)[ex_buf_yptr - 1] == 125 /*right_brace */ )
-            brace_level = brace_level - 1;
+            *brace_level -= 1;
         num_text_chars = num_text_chars + 1;
     }
     return num_text_chars >= enough_chars;
@@ -1465,7 +1360,8 @@ static void figure_out_the_formatted_name(
         buf_pointer von_end,
         buf_pointer* name_bf_ptr,
         buf_pointer* name_bf_xptr,
-        buf_pointer jr_end
+        buf_pointer jr_end,
+        int32_t* brace_level
 ) {
     pool_pointer sp_xptr1 = 0;
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
@@ -1481,6 +1377,7 @@ static void figure_out_the_formatted_name(
             bool double_letter = false;
             bool end_of_group = false;
             bool to_be_written = true;
+            buf_pointer cur_token, last_token;
             while ((!end_of_group) && (sp_ptr < sp_end))
                 if (LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) {
                     sp_ptr = sp_ptr + 1;
@@ -1669,7 +1566,7 @@ static void figure_out_the_formatted_name(
                                             }
                                         } else
                                             if (((cur_token == last_token - 1)
-                                                 || (!enough_text_chars(3 /*long_token */, ex_buf_xptr)))) {
+                                                 || (!enough_text_chars(3 /*long_token */, ex_buf_xptr, brace_level)))) {
                                             if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size())
                                                 buffer_overflow();
                                             {
@@ -1743,7 +1640,7 @@ static void figure_out_the_formatted_name(
                     if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] == 126 /*tie */ ) {    /*420: */
                         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
                         if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1) - 1] == 126 /*tie */ ) ;
-                        else if (!enough_text_chars(3 /*long_name */, ex_buf_xptr))
+                        else if (!enough_text_chars(3 /*long_name */, ex_buf_xptr, brace_level))
                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                         else {
 
@@ -1842,7 +1739,7 @@ static void add_buf_pool(str_number p_str)
     bib_set_buf_len(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1));
 }
 
-static void add_out_pool(str_number p_str)
+static void add_out_pool(GlblCtx* ctx, str_number p_str)
 {
     buf_pointer tmp_ptr;
     buf_pointer break_ptr;
@@ -1854,37 +1751,36 @@ static void add_out_pool(str_number p_str)
     pool_pointer p_ptr2 = bib_str_start(p_str + 1);
     while (bib_buf_len(BUF_TY_OUT) + (p_ptr2 - p_ptr1) > bib_buf_size())
         buffer_overflow();
-    bib_set_buf_offset(BUF_TY_OUT, 1, bib_buf_len(BUF_TY_OUT));
+    buf_pointer out_offset = bib_buf_len(BUF_TY_OUT);
     while (p_ptr1 < p_ptr2) {
-
-        bib_buf(BUF_TY_OUT)[bib_buf_offset(BUF_TY_OUT, 1)] = bib_str_pool(p_ptr1);
+        bib_buf(BUF_TY_OUT)[out_offset] = bib_str_pool(p_ptr1);
         p_ptr1 = p_ptr1 + 1;
-        bib_set_buf_offset(BUF_TY_OUT, 1, bib_buf_offset(BUF_TY_OUT, 1) + 1);
+        out_offset += 1;
     }
-    bib_set_buf_len(BUF_TY_OUT, bib_buf_offset(BUF_TY_OUT, 1));
+    bib_set_buf_len(BUF_TY_OUT, out_offset);
     unbreakable_tail = false;
     while ((bib_buf_len(BUF_TY_OUT) > max_print_line) && (!unbreakable_tail)) {        /*324: */
 
         end_ptr = bib_buf_len(BUF_TY_OUT);
-        bib_set_buf_offset(BUF_TY_OUT, 1, max_print_line);
+        out_offset = max_print_line;
         break_pt_found = false;
-        while ((LEX_CLASS[bib_buf_at(BUF_TY_OUT, bib_buf_offset(BUF_TY_OUT, 1))] != LEX_CLASS_WHITESPACE ) && (bib_buf_offset(BUF_TY_OUT, 1) >= min_print_line))
-            bib_set_buf_offset(BUF_TY_OUT, 1, bib_buf_offset(BUF_TY_OUT, 1) - 1);
-        if (bib_buf_offset(BUF_TY_OUT, 1) == min_print_line - 1) {      /*325: */
-            bib_set_buf_offset(BUF_TY_OUT, 1, max_print_line + 1);
-            while (bib_buf_offset(BUF_TY_OUT, 1) < end_ptr)
-                if (LEX_CLASS[bib_buf_at(BUF_TY_OUT, bib_buf_offset(BUF_TY_OUT, 1))] != LEX_CLASS_WHITESPACE )
-                    bib_set_buf_offset(BUF_TY_OUT, 1, bib_buf_offset(BUF_TY_OUT, 1) + 1);
+        while ((LEX_CLASS[bib_buf_at(BUF_TY_OUT, out_offset)] != LEX_CLASS_WHITESPACE ) && (out_offset >= min_print_line))
+            out_offset -= 1;
+        if (out_offset == min_print_line - 1) {      /*325: */
+            out_offset = max_print_line + 1;
+            while (out_offset < end_ptr)
+                if (LEX_CLASS[bib_buf_at(BUF_TY_OUT, out_offset)] != LEX_CLASS_WHITESPACE )
+                   out_offset += 1;
                 else
                     goto lab16;
- lab16:                        /*loop1_exit */ if (bib_buf_offset(BUF_TY_OUT, 1) == end_ptr)
+ lab16:                        /*loop1_exit */ if (out_offset == end_ptr)
                 unbreakable_tail = true;
             else {
 
                 break_pt_found = true;
-                while (bib_buf_offset(BUF_TY_OUT, 1) + 1 < end_ptr)
-                    if (LEX_CLASS[bib_buf_at(BUF_TY_OUT, bib_buf_offset(BUF_TY_OUT, 1) + 1)] == LEX_CLASS_WHITESPACE )
-                        bib_set_buf_offset(BUF_TY_OUT, 1, bib_buf_offset(BUF_TY_OUT, 1) + 1);
+                while (out_offset + 1 < end_ptr)
+                    if (LEX_CLASS[bib_buf_at(BUF_TY_OUT, out_offset + 1)] == LEX_CLASS_WHITESPACE )
+                        out_offset += 1;
                     else
                         goto lab17;
  lab17:                        /*loop2_exit */ ;
@@ -1892,17 +1788,17 @@ static void add_out_pool(str_number p_str)
         } else
             break_pt_found = true;
         if (break_pt_found) {
-            bib_set_buf_len(BUF_TY_OUT, bib_buf_offset(BUF_TY_OUT, 1));
+            bib_set_buf_len(BUF_TY_OUT, out_offset);
             break_ptr = bib_buf_len(BUF_TY_OUT) + 1;
-            output_bbl_line();
+            output_bbl_line(ctx);
             bib_buf(BUF_TY_OUT)[0] = 32 /*space */ ;
             bib_buf(BUF_TY_OUT)[1] = 32 /*space */ ;
-            bib_set_buf_offset(BUF_TY_OUT, 1, 2);
+            out_offset = 2;
             tmp_ptr = break_ptr;
             while (tmp_ptr < end_ptr) {
-                bib_buf(BUF_TY_OUT)[bib_buf_offset(BUF_TY_OUT, 1)] = bib_buf_at(BUF_TY_OUT, tmp_ptr);
-                bib_set_buf_offset(BUF_TY_OUT, 1, bib_buf_offset(BUF_TY_OUT, 1) + 1);
-                tmp_ptr = tmp_ptr + 1;
+                bib_buf(BUF_TY_OUT)[out_offset] = bib_buf_at(BUF_TY_OUT, tmp_ptr);
+                out_offset += 1;
+                tmp_ptr += 1;
             }
             bib_set_buf_len(BUF_TY_OUT, end_ptr - break_ptr + 2);
         }
@@ -2153,8 +2049,8 @@ static void x_gets(ExecCtx* ctx)
                     print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
                 else {
 
-                    str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info(ctx->pop1.lit);
-                    ent_chr_ptr = 0;
+                    str_ent_loc str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info(ctx->pop1.lit);
+                    int32_t ent_chr_ptr = 0;
                     sp_ptr = bib_str_start(ctx->pop2.lit);
                     pool_pointer sp_xptr1 = bib_str_start(ctx->pop2.lit + 1);
                     if (sp_xptr1 - sp_ptr > ent_str_size) {
@@ -2187,13 +2083,13 @@ static void x_gets(ExecCtx* ctx)
                     print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
                 else {
 
-                    str_glb_ptr = ilk_info(ctx->pop1.lit);
+                    int32_t str_glb_ptr = ilk_info(ctx->pop1.lit);
                     if (ctx->pop2.lit < ctx->bib_str_ptr)
                         glb_bib_str_ptr[str_glb_ptr] = ctx->pop2.lit;
                     else {
 
                         glb_bib_str_ptr[str_glb_ptr] = 0;
-                        glob_chr_ptr = 0;
+                        int32_t glob_chr_ptr = 0;
                         sp_ptr = bib_str_start(ctx->pop2.lit);
                         sp_end = bib_str_start(ctx->pop2.lit + 1);
                         if (sp_end - sp_ptr > glob_str_size) {
@@ -2335,7 +2231,7 @@ static void x_change_case(ExecCtx* ctx)
         bib_set_buf_len(BUF_TY_EX, 0);
         add_buf_pool(ctx->pop2.lit);
         {
-            brace_level = 0;
+            int32_t brace_level = 0;
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
 
@@ -2363,7 +2259,7 @@ static void x_change_case(ExecCtx* ctx)
                             while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_ALPHA ))
                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                             LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 14 /*control_seq_ilk */ , false));
-                            control_seq_loc = hash.loc;
+                            hash_loc control_seq_loc = hash.loc;
                             if (hash.exists) { /*373: */
                                 switch ((conversion_type)) {
                                 case 0:
@@ -2461,7 +2357,7 @@ static void x_change_case(ExecCtx* ctx)
                     }
  lab21:                        /*ok_pascal_i_give_up */ prev_colon = false;
                 } else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 125 /*right_brace */ ) {
-                    decr_brace_level(ctx, ctx->pop2.lit);
+                    decr_brace_level(ctx, ctx->pop2.lit, &brace_level);
                     prev_colon = false;
                 } else if (brace_level == 0) {        /*377: */
                     switch ((conversion_type)) {
@@ -2494,7 +2390,7 @@ static void x_change_case(ExecCtx* ctx)
                 }
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            check_brace_level(ctx, ctx->pop2.lit);
+            check_brace_level(ctx, ctx->pop2.lit, brace_level);
         }
         add_pool_buf_and_push(ctx);
     }
@@ -2598,6 +2494,7 @@ static void x_empty(ExecCtx* ctx)
 
 static void x_format_name(ExecCtx* ctx)
 {
+    int32_t brace_level = 0;
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
     pop_lit_stk(ctx, &ctx->pop3);
@@ -2616,12 +2513,12 @@ static void x_format_name(ExecCtx* ctx)
         add_buf_pool(ctx->pop3.lit);
         {
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
-            num_names = 0;
+            int32_t num_names = 0;
             while ((num_names < ctx->pop2.lit) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
 
                 num_names = num_names + 1;
                 ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
-                name_scan_for_and(ctx, ctx->pop3.lit);
+                name_scan_for_and(ctx, ctx->pop3.lit, &brace_level);
             }
             if (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 4);
@@ -2685,7 +2582,7 @@ static void x_format_name(ExecCtx* ctx)
                     break;
                 case 123:
                     {
-                        brace_level = brace_level + 1;
+                        brace_level += 1;
                         if (token_starting) {
                             set_name_tok(num_tokens, name_bf_ptr);
                             num_tokens = num_tokens + 1;
@@ -2696,9 +2593,9 @@ static void x_format_name(ExecCtx* ctx)
                         while ((brace_level > 0) && (ex_buf_xptr < bib_buf_offset(BUF_TY_EX, 1))) {
 
                             if (bib_buf(BUF_TY_EX)[ex_buf_xptr] == 125 /*right_brace */ )
-                                brace_level = brace_level - 1;
+                                brace_level -= 1;
                             else if (bib_buf(BUF_TY_EX)[ex_buf_xptr] == 123 /*left_brace */ )
-                                brace_level = brace_level + 1;
+                                brace_level += 1;
                             bib_buf(BUF_TY_SV)[name_bf_ptr] = bib_buf(BUF_TY_EX)[ex_buf_xptr];
                             name_bf_ptr = name_bf_ptr + 1;
                             ex_buf_xptr = ex_buf_xptr + 1;
@@ -2806,7 +2703,7 @@ static void x_format_name(ExecCtx* ctx)
         }
         bib_set_buf_len(BUF_TY_EX, 0);
         add_buf_pool(ctx->pop1.lit);
-        figure_out_the_formatted_name(ctx, first_start, first_end, last_end, von_start, von_end, &name_bf_ptr, &name_bf_xptr, jr_end);
+        figure_out_the_formatted_name(ctx, first_start, first_end, last_end, von_start, von_end, &name_bf_ptr, &name_bf_xptr, jr_end, &brace_level);
         add_pool_buf_and_push(ctx);
     }
 }
@@ -2875,14 +2772,12 @@ static void x_num_names(ExecCtx* ctx)
 
         bib_set_buf_len(BUF_TY_EX, 0);
         add_buf_pool(ctx->pop1.lit);
-        {
-            bib_set_buf_offset(BUF_TY_EX, 1, 0);
-            num_names = 0;
-            while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
-
-                name_scan_for_and(ctx, ctx->pop1.lit);
-                num_names = num_names + 1;
-            }
+        bib_set_buf_offset(BUF_TY_EX, 1, 0);
+        int32_t num_names = 0;
+        while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
+            int32_t brace_level = 0;
+            name_scan_for_and(ctx, ctx->pop1.lit, &brace_level);
+            num_names = num_names + 1;
         }
         push_lit_stk(ctx, (ExecVal) { .lit = num_names, .typ = STK_TYPE_INTEGER });
     }
@@ -2892,7 +2787,7 @@ static void x_preamble(ExecCtx* ctx)
 {
     bib_set_buf_len(BUF_TY_EX, 0);
     set_preamble_ptr(0);
-    while (preamble_ptr() < ctx->bst_ctx->num_preamble_strings) {
+    while (preamble_ptr() < ctx->glbl_ctx->num_preamble_strings) {
         add_buf_pool(cur_preamble());
         set_preamble_ptr(preamble_ptr() + 1);
     }
@@ -2910,7 +2805,7 @@ static void x_purify(ExecCtx* ctx)
         bib_set_buf_len(BUF_TY_EX, 0);
         add_buf_pool(ctx->pop1.lit);
         {
-            brace_level = 0;
+            int32_t brace_level = 0;
             buf_pointer ex_buf_xptr = 0;
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
@@ -2945,7 +2840,7 @@ static void x_purify(ExecCtx* ctx)
                                             && (LEX_CLASS[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]] == LEX_CLASS_ALPHA )))
                                         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                     LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_yptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_yptr, 14 /*control_seq_ilk */ , false));
-                                    control_seq_loc = hash.loc;
+                                    hash_loc control_seq_loc = hash.loc;
                                     if (hash.exists) { /*434: */
                                         bib_buf(BUF_TY_EX)[ex_buf_xptr] = bib_buf(BUF_TY_EX)[ex_buf_yptr];
                                         ex_buf_xptr = ex_buf_xptr + 1;
@@ -3143,7 +3038,7 @@ static void x_text_length(ExecCtx* ctx)
         push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
     } else {
 
-        num_text_chars = 0;
+        buf_pointer num_text_chars = 0;
         {
             sp_ptr = bib_str_start(ctx->pop1.lit);
             sp_end = bib_str_start(ctx->pop1.lit + 1);
@@ -3199,7 +3094,7 @@ static void x_text_prefix(ExecCtx* ctx)
         sp_ptr = bib_str_start(ctx->pop2.lit);
         sp_end = bib_str_start(ctx->pop2.lit + 1);
         {
-            num_text_chars = 0;
+            buf_pointer num_text_chars = 0;
             pool_pointer sp_xptr1 = sp_ptr;
             while ((sp_xptr1 < sp_end) && (num_text_chars < ctx->pop1.lit)) {
 
@@ -3288,9 +3183,9 @@ static void x_width(ExecCtx* ctx)
 
         bib_set_buf_len(BUF_TY_EX, 0);
         add_buf_pool(ctx->pop1.lit);
-        string_width = 0;
+        int32_t string_width = 0;
         {
-            brace_level = 0;
+            int32_t brace_level = 0;
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
 
@@ -3311,7 +3206,7 @@ static void x_width(ExecCtx* ctx)
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                 else {
                                     LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 14 /*control_seq_ilk */ , false));
-                                    control_seq_loc = hash.loc;
+                                    hash_loc control_seq_loc = hash.loc;
                                     if (hash.exists) { /*454: */
                                         switch ((ilk_info(control_seq_loc))) {
                                         case 12:
@@ -3356,13 +3251,13 @@ static void x_width(ExecCtx* ctx)
                     } else
                         string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
                 } else if (bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] == 125 /*right_brace */ ) {
-                    decr_brace_level(ctx, ctx->pop1.lit);
+                    decr_brace_level(ctx, ctx->pop1.lit, &brace_level);
                     string_width = string_width + CHAR_WIDTH[125 /*right_brace */ ];
                 } else
                     string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)]];
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            check_brace_level(ctx, ctx->pop1.lit);
+            check_brace_level(ctx, ctx->pop1.lit, brace_level);
         }
         push_lit_stk(ctx, (ExecVal) { .lit = string_width, .typ = STK_TYPE_INTEGER });
     }
@@ -3374,7 +3269,7 @@ static void x_write(ExecCtx* ctx)
     if (ctx->pop1.typ != STK_TYPE_STRING)
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
     else
-        add_out_pool(ctx->pop1.lit);
+        add_out_pool(ctx->glbl_ctx, ctx->pop1.lit);
 }
 
 static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
@@ -3470,7 +3365,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 break;
             case 19:
                 {
-                    output_bbl_line();
+                    output_bbl_line(ctx->glbl_ctx);
                 }
                 break;
             case 20:
@@ -3589,7 +3484,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 TRY(bst_cant_mess_with_entries_print(ctx));
             else {
                 field_loc field_ptr = cite_ptr() * num_fields + ilk_info(ex_fn_loc);
-                if (field_ptr >= max_fields) {
+                if (field_ptr >= max_fields()) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -3615,7 +3510,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 TRY(bst_cant_mess_with_entries_print(ctx));
             else {
 
-                str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info(ex_fn_loc);
+                str_ent_loc str_ent_ptr = cite_ptr() * num_ent_strs + ilk_info(ex_fn_loc);
                 bib_set_buf_offset(BUF_TY_EX, 1, 0);
                 while (entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (bib_buf_offset(BUF_TY_EX, 1))] != 127 /*end_of_string */ ) {
 
@@ -3632,7 +3527,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
         break;
     case FN_CLASS_STR_GLBL_VAR:
         {
-            str_glb_ptr = ilk_info(ex_fn_loc);
+            int32_t str_glb_ptr = ilk_info(ex_fn_loc);
             if (glb_bib_str_ptr[str_glb_ptr] > 0)
                 push_lit_stk(ctx, (ExecVal) { .lit = glb_bib_str_ptr[str_glb_ptr], .typ = STK_TYPE_STRING });
             else {
@@ -3641,7 +3536,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                     while (bib_pool_ptr() + glb_str_end[str_glb_ptr] > bib_pool_size())
                         pool_overflow();
                 }
-                glob_chr_ptr = 0;
+                int32_t glob_chr_ptr = 0;
                 while (glob_chr_ptr < glb_str_end[str_glb_ptr]) {
 
                     {
@@ -3661,74 +3556,16 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
     }
 }
 
-
-static int
-get_the_top_level_aux_file_name(const char *aux_file_name)
+static void aux_bib_data_command(GlblCtx* ctx)
 {
-    NameAndLen nal;
-    nal.name_of_file = xmalloc_array(ASCII_code, strlen(aux_file_name) + 1);
-    strcpy((char *) nal.name_of_file, aux_file_name);
-    int32_t aux_name_length = strlen((char *) nal.name_of_file);
-    aux_name_length -= 4; /* strip off the (assumed) ".aux" for subsequent futzing */
-    nal.name_length = aux_name_length;
-
-    /* this code used to auto-add the .aux extension if needed; we don't */
-
-    set_aux_ptr(0);
-    PeekableInput* aux_file = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_TEX);
-    if (aux_file == NULL) {
-        sam_wrong_file_name_print(nal);
-        return 1;
-    }
-    set_cur_aux_file(aux_file);
-
-    add_extension(&nal, s_log_extension);
-    if (init_log_file((char *) nal.name_of_file) == NULL) {
-        sam_wrong_file_name_print(nal);
-        return 1;
-    }
-
-    nal.name_length = aux_name_length;
-    add_extension(&nal, s_bbl_extension);
-    if ((bbl_file = ttstub_output_open((char *) nal.name_of_file, 0)) == NULL) {
-        sam_wrong_file_name_print(nal);
-        return 1;
-    }
-
-    nal.name_length = aux_name_length;
-    add_extension(&nal, s_aux_extension);
-    int32_t name_ptr = 0;
-    while (name_ptr < nal.name_length) {
-        bib_buf(BUF_TY_BASE)[name_ptr + 1] = nal.name_of_file[name_ptr]; // preserve pascal-style string semantics
-        name_ptr = name_ptr + 1;
-    }
-
-    LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, 1, nal.name_length, 3 /*aux_file_ilk*/, true));
-    set_cur_aux(hash_text(hash.loc));
-
-    if (hash.exists) {
-        puts_log("Already encountered auxiliary file");
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
-
-    free(nal.name_of_file);
-
-    set_cur_aux_ln(0);
-    return 0;
-}
-
-
-static void aux_bib_data_command(void)
-{
-    if (bib_seen) {
+    if (ctx->bib_seen) {
         TRY(aux_err_illegal_another_print(0 /*n_aux_bibdata */ ));
         {
             TRY(aux_err_print());
             return;
         }
     }
-    bib_seen = true;
+    ctx->bib_seen = true;
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -3781,16 +3618,16 @@ static void aux_bib_data_command(void)
     }
 }
 
-static void aux_bib_style_command(BstCtx* ctx)
+static void aux_bib_style_command(GlblCtx* ctx)
 {
-    if (bst_seen) {
+    if (ctx->bst_seen) {
         TRY(aux_err_illegal_another_print(1 /*n_aux_bibstyle */ ));
         {
             TRY(aux_err_print());
             return;
         }
     }
-    bst_seen = true;
+    ctx->bst_seen = true;
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     if (!scan1_white(125 /*right_brace */)) {
         aux_err_no_right_brace_print();
@@ -3841,11 +3678,11 @@ static void aux_bib_style_command(BstCtx* ctx)
     }
 }
 
-static void aux_citation_command(void)
+static void aux_citation_command(GlblCtx* ctx)
 {
     buf_pointer tmp_ptr;
 
-    citation_seen = true;
+    ctx->citation_seen = true;
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
 
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -3896,7 +3733,7 @@ static void aux_citation_command(void)
             }
             lower_case(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
             LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 10 /*lc_cite_ilk */ , true));
-            lc_cite_loc = hash.loc;
+            cite_number lc_cite_loc = hash.loc;
             if (hash.exists) { /*136: */
                 hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , false));
                 if (!hash.exists) {
@@ -3910,7 +3747,7 @@ static void aux_citation_command(void)
                 }
             } else {            /*137: */
                 hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , true));
-                cite_loc = hash.loc;
+                cite_number cite_loc = hash.loc;
                 if (hash.exists) {
                     hash_cite_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -4022,23 +3859,23 @@ pop_the_aux_stack(void)
     return 0;
 }
 
-static void get_aux_command_and_process(BstCtx* ctx)
+static void get_aux_command_and_process(GlblCtx* ctx)
 {
     bib_set_buf_offset(BUF_TY_BASE, 2, 0);
     if (!scan1(123 /*left_brace */))
         return;
     LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 2 /*aux_command_ilk */ , false));
-    command_num = ilk_info(hash.loc);
+    int32_t command_num = ilk_info(hash.loc);
     if (hash.exists)
         switch ((command_num)) {
         case 0:
-            aux_bib_data_command();
+            aux_bib_data_command(ctx);
             break;
         case 1:
             aux_bib_style_command(ctx);
             break;
         case 2:
-            aux_citation_command();
+            aux_citation_command(ctx);
             break;
         case 3:
             aux_input_command();
@@ -4051,11 +3888,11 @@ static void get_aux_command_and_process(BstCtx* ctx)
         }
 }
 
-static void last_check_for_aux_errors(BstCtx* ctx)
+static void last_check_for_aux_errors(GlblCtx* ctx)
 {
     num_cites = cite_ptr();
     ctx->num_bib_files = bib_ptr();
-    if (!citation_seen) {
+    if (!ctx->citation_seen) {
         aux_end1_err_print();
         puts_log("\\citation commands");
         TRY(aux_end2_err_print());
@@ -4064,7 +3901,7 @@ static void last_check_for_aux_errors(BstCtx* ctx)
         puts_log("cite keys");
         TRY(aux_end2_err_print());
     }
-    if (!bib_seen) {
+    if (!ctx->bib_seen) {
         aux_end1_err_print();
         puts_log("\\bibdata command");
         TRY(aux_end2_err_print());
@@ -4073,7 +3910,7 @@ static void last_check_for_aux_errors(BstCtx* ctx)
         puts_log("database files");
         TRY(aux_end2_err_print());
     }
-    if (!bst_seen) {
+    if (!ctx->bst_seen) {
         aux_end1_err_print();
         puts_log("\\bibstyle command");
         TRY(aux_end2_err_print());
@@ -4084,14 +3921,14 @@ static void last_check_for_aux_errors(BstCtx* ctx)
     }
 }
 
-static void bst_entry_command(BstCtx* ctx)
+static void bst_entry_command(GlblCtx* ctx)
 {
-    if (entry_seen) {
+    if (ctx->entry_seen) {
         puts_log("Illegal, another entry command");
         unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
-    entry_seen = true;
+    ctx->entry_seen = true;
     {
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
@@ -4135,7 +3972,7 @@ static void bst_entry_command(BstCtx* ctx)
 
                 lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true));
-                fn_loc = hash.loc;
+                hash_loc fn_loc = hash.loc;
                 if (hash.exists) {
                     unwrap_res(already_seen_function_print(ctx, fn_loc));
                     return;
@@ -4202,7 +4039,7 @@ static void bst_entry_command(BstCtx* ctx)
 
                 lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true));
-                fn_loc = hash.loc;
+                hash_loc fn_loc = hash.loc;
                 if (hash.exists) {
                     unwrap_res(already_seen_function_print(ctx, fn_loc));
                     return;
@@ -4265,7 +4102,7 @@ static void bst_entry_command(BstCtx* ctx)
 
                 lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                 LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true));
-                fn_loc = hash.loc;
+                hash_loc fn_loc = hash.loc;
                 if (hash.exists) {
                     unwrap_res(already_seen_function_print(ctx, fn_loc));
                     return;
@@ -4287,11 +4124,14 @@ static void bst_entry_command(BstCtx* ctx)
     }
 }
 
-static bool bad_argument_token(BstCtx* ctx)
+static bool bad_argument_token(GlblCtx* ctx, hash_loc* fn_out)
 {
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
-    fn_loc = hash.loc;
+    hash_loc fn_loc = hash.loc;
+    if (fn_out != NULL) {
+        *fn_out = fn_loc;
+    }
     if (!hash.exists) {
         print_a_token();
         puts_log(" is an unknown function");
@@ -4309,16 +4149,16 @@ static bool bad_argument_token(BstCtx* ctx)
 
 static void bst_execute_command(ExecCtx* ctx)
 {
-    if (!read_seen) {
+    if (!ctx->glbl_ctx->read_seen) {
         puts_log("Illegal, execute command before read command");
-        bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
         return;
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("execute");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -4326,16 +4166,16 @@ static void bst_execute_command(ExecCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("execute");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("execute");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -4345,21 +4185,20 @@ static void bst_execute_command(ExecCtx* ctx)
         else {
             TRY(bst_id_print(scan_result));
             puts_log("execute");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
+    hash_loc fn_loc = 0;
     {
-        ;
-
-        if (bad_argument_token(ctx->bst_ctx))
+        if (bad_argument_token(ctx->glbl_ctx, &fn_loc))
             return;
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("execute");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -4367,7 +4206,7 @@ static void bst_execute_command(ExecCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
             bst_right_brace_print();
             puts_log("execute");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4380,8 +4219,10 @@ static void bst_execute_command(ExecCtx* ctx)
     }
 }
 
-static void bst_function_command(BstCtx* ctx)
+static void bst_function_command(GlblCtx* ctx)
 {
+    hash_loc wiz_loc = 0;
+
     {
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
@@ -4467,10 +4308,10 @@ static void bst_function_command(BstCtx* ctx)
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
-    scan_fn_def(ctx, wiz_loc);
+    scan_fn_def(ctx, wiz_loc, wiz_loc);
 }
 
-static void bst_integers_command(BstCtx* ctx)
+static void bst_integers_command(GlblCtx* ctx)
 {
     {
         if (!eat_bst_white_space(ctx)) {
@@ -4514,7 +4355,7 @@ static void bst_integers_command(BstCtx* ctx)
 
             lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
             LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , true));
-            fn_loc = hash.loc;
+            hash_loc fn_loc = hash.loc;
             if (hash.exists) {
                 unwrap_res(already_seen_function_print(ctx, fn_loc));
                 return;
@@ -4536,16 +4377,16 @@ static void bst_integers_command(BstCtx* ctx)
 
 static void bst_iterate_command(ExecCtx* ctx)
 {
-    if (!read_seen) {
+    if (!ctx->glbl_ctx->read_seen) {
         puts_log("Illegal, iterate command before read command");
-        bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
         return;
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("iterate");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -4553,16 +4394,16 @@ static void bst_iterate_command(ExecCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("iterate");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("iterate");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -4572,21 +4413,20 @@ static void bst_iterate_command(ExecCtx* ctx)
         else {
             TRY(bst_id_print(scan_result));
             puts_log("iterate");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
+    hash_loc fn_loc = 0;
     {
-        ;
-
-        if (bad_argument_token(ctx->bst_ctx))
+        if (bad_argument_token(ctx->glbl_ctx, &fn_loc))
             return;
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("iterate");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -4594,7 +4434,7 @@ static void bst_iterate_command(ExecCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
             bst_right_brace_print();
             puts_log("iterate");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4614,9 +4454,9 @@ static void bst_iterate_command(ExecCtx* ctx)
     }
 }
 
-static void bst_macro_command(BstCtx* ctx)
+static void bst_macro_command(GlblCtx* ctx)
 {
-    if (read_seen) {
+    if (ctx->read_seen) {
         puts_log("Illegal, macro command after read command");
         unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
@@ -4629,6 +4469,7 @@ static void bst_macro_command(BstCtx* ctx)
             return;
         }
     }
+    hash_loc macro_name_loc = 0;
     {
         {
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
@@ -4658,8 +4499,6 @@ static void bst_macro_command(BstCtx* ctx)
             }
         }
         {
-            ;
-
             lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
             LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 13 /*macro_ilk */ , true));
             macro_name_loc = hash.loc;
@@ -4729,7 +4568,7 @@ static void bst_macro_command(BstCtx* ctx)
             }
 
             LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ , true));
-            macro_def_loc = hash.loc;
+            hash_loc macro_def_loc = hash.loc;
             set_fn_type(macro_def_loc, FN_CLASS_STR_LIT);
             set_ilk_info(macro_name_loc, hash_text(macro_def_loc));
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -4754,12 +4593,16 @@ static void bst_macro_command(BstCtx* ctx)
     }
 }
 
-static void get_bib_command_or_entry_and_process(void)
+static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_loc* field_name_loc)
 {
-    // WAS: looking for at_bib_command uses and making them local
     buf_pointer tmp_ptr, tmp_end_ptr;
-
+    int32_t command_num = 0;
+    cite_number lc_cite_loc = 0;
+    hash_loc entry_type_loc = 0;
+    bool type_exists = false;
     bool at_bib_command = false;
+    ASCIICode right_outer_delim;
+
     while (!scan1(64 /*at_sign */)) {
 
         if (!input_ln(cur_bib_file()))
@@ -4767,165 +4610,131 @@ static void get_bib_command_or_entry_and_process(void)
         set_bib_line_num(bib_line_num() + 1);
         bib_set_buf_offset(BUF_TY_BASE, 2, 0);
     }
-    {
-        if (bib_buf_at_offset(BUF_TY_BASE, 2) != 64 /*at_sign */ ) {
-            puts_log("An \"@\" disappeared");
-            print_confusion();
-            longjmp(error_jmpbuf, 1);
-        }
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-        {
+    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 64 /*at_sign */ ) {
+        puts_log("An \"@\" disappeared");
+        print_confusion();
+        longjmp(error_jmpbuf, 1);
+    }
+    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+    if (!eat_bib_white_space()) {
+        TRY(eat_bib_print(at_bib_command));
+        return;
+    }
+    ScanRes scan_result = scan_identifier(123 /*left_brace */ , 40 /*left_paren */ , 40 /*left_paren */);
+    if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
+    else {
+        TRY(bib_id_print(scan_result));
+        puts_log("an entry type");
+        TRY(bib_err_print(at_bib_command));
+        return;
+    }
+
+    lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
+    LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 12 /*bib_command_ilk */ , false));
+    command_num = ilk_info(hash.loc);
+    if (hash.exists) {     /*240: */
+        at_bib_command = true;
+        switch ((command_num)) {
+        case 0:
+            return;
+            break;
+        case 1:
+            check_bib_files(preamble_ptr());
             if (!eat_bib_white_space()) {
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-        }
-        ScanRes scan_result = scan_identifier(123 /*left_brace */ , 40 /*left_paren */ , 40 /*left_paren */);
-        {
-            if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
+            if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ )
+                right_outer_delim = 125 /*right_brace */ ;
+            else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 40 /*left_paren */ )
+                right_outer_delim = 41 /*right_paren */ ;
             else {
-                TRY(bib_id_print(scan_result));
-                puts_log("an entry type");
+                TRY(bib_one_of_two_print(123 /*left_brace */ , 40 /*left_paren */, at_bib_command));
+                return;
+            }
+            bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+            if (!eat_bib_white_space()) {
+                TRY(eat_bib_print(at_bib_command));
+                return;
+            }
+            store_field = true;
+            if (!scan_and_store_the_field_value_and_eat_white(at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+                return;
+            if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
+                printf_log("Missing \"%c\" in preamble command", right_outer_delim);
                 TRY(bib_err_print(at_bib_command));
                 return;
             }
-        }
-        ;
-
-        lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-        LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 12 /*bib_command_ilk */ , false));
-        command_num = ilk_info(hash.loc);
-        if (hash.exists) {     /*240: */
-            at_bib_command = true;
-            switch ((command_num)) {
-            case 0:
-                {
-                    return;
-                }
-                break;
-            case 1:
-                {
-                    check_bib_files(preamble_ptr());
-                    if (!eat_bib_white_space()) {
-                        TRY(eat_bib_print(at_bib_command));
-                        return;
-                    }
-                    if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ )
-                        right_outer_delim = 125 /*right_brace */ ;
-                    else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 40 /*left_paren */ )
-                        right_outer_delim = 41 /*right_paren */ ;
-                    else {
-                        TRY(bib_one_of_two_print(123 /*left_brace */ , 40 /*left_paren */, at_bib_command));
-                        return;
-                    }
-                    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                    {
-                        if (!eat_bib_white_space()) {
-                            TRY(eat_bib_print(at_bib_command));
-                            return;
-                        }
-                    }
-                    store_field = true;
-                    if (!scan_and_store_the_field_value_and_eat_white(at_bib_command))
-                        return;
-                    if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
-                        printf_log("Missing \"%c\" in preamble command", right_outer_delim);
-                        TRY(bib_err_print(at_bib_command));
-                        return;
-                    }
-                    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                    return;
-                }
-                break;
-            case 2:
-                {
-                    {
-                        if (!eat_bib_white_space()) {
-                            TRY(eat_bib_print(at_bib_command));
-                            return;
-                        }
-                    }
-                    {
-                        if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ )
-                            right_outer_delim = 125 /*right_brace */ ;
-                        else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 40 /*left_paren */ )
-                            right_outer_delim = 41 /*right_paren */ ;
-                        else {
-
-                            TRY(bib_one_of_two_print(123 /*left_brace */ , 40 /*left_paren */, at_bib_command));
-                            return;
-                        }
-                        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                        {
-                            if (!eat_bib_white_space()) {
-                                TRY(eat_bib_print(at_bib_command));
-                                return;
-                            }
-                        };
-                        scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */);
-                        {
-                            if (((scan_result == SCAN_RES_WHITESPACE_ADJACENT)
-                                 || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT))) ;
-                            else {
-                                TRY(bib_id_print(scan_result));
-                                puts_log("a string name");
-                                TRY(bib_err_print(at_bib_command));
-                                return;
-                            }
-                        }
-                        {
-                            ;
-
-                            lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-                            hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 13 /*macro_ilk */ , true));
-                            cur_macro_loc = hash.loc;
-                            set_ilk_info(cur_macro_loc, hash_text(cur_macro_loc));
-                        }
-                    }
-                    {
-                        if (!eat_bib_white_space()) {
-                            TRY(eat_bib_print(at_bib_command));
-                            return;
-                        }
-                    }
-                    {
-                        if (bib_buf_at_offset(BUF_TY_BASE, 2) != 61 /*equals_sign */ ) {
-                            TRY(bib_equals_sign_print(at_bib_command));
-                            return;
-                        }
-                        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                        {
-                            if (!eat_bib_white_space()) {
-                                TRY(eat_bib_print(at_bib_command));
-                                return;
-                            }
-                        }
-                        store_field = true;
-                        if (!scan_and_store_the_field_value_and_eat_white(at_bib_command))
-                            return;
-                        if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
-                            printf_log("Missing \"%c\" in string command", right_outer_delim);
-                            TRY(bib_err_print(at_bib_command));
-                            return;
-                        }
-                        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                    }
-                    return;
-                }
-                break;
-            default:
-                bib_cmd_confusion();
-                longjmp(error_jmpbuf, 1);
-                break;
+            bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+            return;
+            break;
+        case 2:
+            if (!eat_bib_white_space()) {
+                TRY(eat_bib_print(at_bib_command));
+                return;
             }
-        } else {
-            hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
-            entry_type_loc = hash.loc;
-            if ((!hash.exists) || (fn_type(entry_type_loc) != FN_CLASS_WIZARD))
-                type_exists = false;
-            else
-                type_exists = true;
+            if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ )
+                right_outer_delim = 125 /*right_brace */ ;
+            else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 40 /*left_paren */ )
+                right_outer_delim = 41 /*right_paren */ ;
+            else {
+                TRY(bib_one_of_two_print(123 /*left_brace */ , 40 /*left_paren */, at_bib_command));
+                return;
+            }
+            bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+            if (!eat_bib_white_space()) {
+                TRY(eat_bib_print(at_bib_command));
+                return;
+            }
+            scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */);
+            if (((scan_result == SCAN_RES_WHITESPACE_ADJACENT)
+                 || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT))) ;
+            else {
+                TRY(bib_id_print(scan_result));
+                puts_log("a string name");
+                TRY(bib_err_print(at_bib_command));
+                return;
+            }
+            lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
+            hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 13 /*macro_ilk */ , true));
+            *cur_macro_loc = hash.loc;
+            set_ilk_info(*cur_macro_loc, hash_text(*cur_macro_loc));
+            if (!eat_bib_white_space()) {
+                TRY(eat_bib_print(at_bib_command));
+                return;
+            }
+            if (bib_buf_at_offset(BUF_TY_BASE, 2) != 61 /*equals_sign */ ) {
+                TRY(bib_equals_sign_print(at_bib_command));
+                return;
+            }
+            bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+            if (!eat_bib_white_space()) {
+                TRY(eat_bib_print(at_bib_command));
+                return;
+            }
+            store_field = true;
+            if (!scan_and_store_the_field_value_and_eat_white(at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+                return;
+            if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
+                printf_log("Missing \"%c\" in string command", right_outer_delim);
+                TRY(bib_err_print(at_bib_command));
+                return;
+            }
+            bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+            return;
+            break;
+        default:
+            bib_cmd_confusion();
+            longjmp(error_jmpbuf, 1);
+            break;
         }
+    } else {
+        hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
+        entry_type_loc = hash.loc;
+        if ((!hash.exists) || (fn_type(entry_type_loc) != FN_CLASS_WIZARD))
+            type_exists = false;
+        else
+            type_exists = true;
     }
     {
         if (!eat_bib_white_space()) {
@@ -4933,130 +4742,118 @@ static void get_bib_command_or_entry_and_process(void)
             return;
         }
     }
-    {
-        if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ )
-            right_outer_delim = 125 /*right_brace */ ;
-        else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 40 /*left_paren */ )
-            right_outer_delim = 41 /*right_paren */ ;
-        else {
+    if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ )
+        right_outer_delim = 125 /*right_brace */ ;
+    else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 40 /*left_paren */ )
+        right_outer_delim = 41 /*right_paren */ ;
+    else {
 
-            TRY(bib_one_of_two_print(123 /*left_brace */ , 40 /*left_paren */, at_bib_command));
+        TRY(bib_one_of_two_print(123 /*left_brace */ , 40 /*left_paren */, at_bib_command));
+        return;
+    }
+    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+    {
+        if (!eat_bib_white_space()) {
+            TRY(eat_bib_print(at_bib_command));
             return;
         }
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-        {
-            if (!eat_bib_white_space()) {
-                TRY(eat_bib_print(at_bib_command));
-                return;
+    }
+    if (right_outer_delim == 41 /*right_paren */ ) {
+        scan1_white(44 /*comma */);
+    } else {
+        scan2_white(44 /*comma */ , 125 /*right_brace */);
+    }
+
+    tmp_ptr = bib_buf_offset(BUF_TY_BASE, 1);
+    while (tmp_ptr < bib_buf_offset(BUF_TY_BASE, 2)) {
+
+        bib_buf(BUF_TY_EX)[tmp_ptr] = bib_buf_at(BUF_TY_BASE, tmp_ptr);
+        tmp_ptr = tmp_ptr + 1;
+    }
+    lower_case(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
+    hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 10 /*lc_cite_ilk */ , all_entries));
+    if (hash.exists) {
+        entry_cite_ptr = ilk_info(ilk_info(lc_cite_loc));
+        if ((!all_entries) || (entry_cite_ptr < all_marker) || (entry_cite_ptr >= old_num_cites)) {
+            if (type_list(entry_cite_ptr) == 0 /*empty */ ) {
+                if ((!all_entries) && (entry_cite_ptr >= old_num_cites)) {
+                    hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , true));
+                    cite_number cite_loc = hash.loc;
+                    if (!hash.exists) {
+                        set_ilk_info(lc_cite_loc, cite_loc);
+                        set_ilk_info(cite_loc, entry_cite_ptr);
+                        set_cite_list(entry_cite_ptr, hash_text(cite_loc));
+                        hash.exists = true;
+                    }
+                }
+                goto lab26;
             }
-        }
-        if (right_outer_delim == 41 /*right_paren */ ) {
-            scan1_white(44 /*comma */);
-        } else {
-            scan2_white(44 /*comma */ , 125 /*right_brace */);
-        }
+        } else if (!entry_exists(entry_cite_ptr)) {
+            bib_set_buf_offset(BUF_TY_EX, 1, 0);
+            tmp_ptr = bib_str_start(cite_info(entry_cite_ptr));
+            tmp_end_ptr = bib_str_start(cite_info(entry_cite_ptr) + 1);
+            while (tmp_ptr < tmp_end_ptr) {
 
-        {
-            ;
-
-            tmp_ptr = bib_buf_offset(BUF_TY_BASE, 1);
-            while (tmp_ptr < bib_buf_offset(BUF_TY_BASE, 2)) {
-
-                bib_buf(BUF_TY_EX)[tmp_ptr] = bib_buf_at(BUF_TY_BASE, tmp_ptr);
+                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(tmp_ptr);
+                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                 tmp_ptr = tmp_ptr + 1;
             }
-            lower_case(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-            LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 10 /*lc_cite_ilk */ , all_entries));
+            lower_case(BUF_TY_EX, 0,
+                       (bib_str_start(cite_info(entry_cite_ptr) + 1) -
+                        bib_str_start(cite_info(entry_cite_ptr))));
+            hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, 0,
+                                                (bib_str_start(cite_info(entry_cite_ptr) + 1) -
+                                                 bib_str_start(cite_info(entry_cite_ptr))), 10 /*lc_cite_ilk */ , false));
+            if (!hash.exists) {
+                cite_key_disappeared_confusion();
+                longjmp(error_jmpbuf, 1);
+            }
+            if (hash.loc == lc_cite_loc)
+                goto lab26;
+        }
+        if (type_list(entry_cite_ptr) == 0 /*empty */ ) {
+            puts_log("The cite list is messed up");
+            print_confusion();
+            longjmp(error_jmpbuf, 1);
+        }
+
+        puts_log("Repeated entry");
+        TRY(bib_err_print(at_bib_command));
+        return;
+lab26:                        /*first_time_entry */ ;
+    }
+    bool store_entry = true;
+    if (all_entries) {        /*273: */
+        cite_number cite_loc = 0;
+        if (hash.exists) {
+            if (entry_cite_ptr < all_marker)
+                goto lab22;
+            else {
+                set_entry_exists(entry_cite_ptr, true);
+                cite_loc = ilk_info(lc_cite_loc);
+            }
+        } else {
+            hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , true));
+            cite_loc = hash.loc;
             if (hash.exists) {
-                entry_cite_ptr = ilk_info(ilk_info(lc_cite_loc));
-                {
-                    if ((!all_entries) || (entry_cite_ptr < all_marker) || (entry_cite_ptr >= old_num_cites)) {
-                        if (type_list(entry_cite_ptr) == 0 /*empty */ ) {
-                            {
-                                if ((!all_entries) && (entry_cite_ptr >= old_num_cites)) {
-                                    hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , true));
-                                    cite_loc = hash.loc;
-                                    if (!hash.exists) {
-                                        set_ilk_info(lc_cite_loc, cite_loc);
-                                        set_ilk_info(cite_loc, entry_cite_ptr);
-                                        set_cite_list(entry_cite_ptr, hash_text(cite_loc));
-                                        hash.exists = true;
-                                    }
-                                }
-                            }
-                            goto lab26;
-                        }
-                    } else if (!entry_exists(entry_cite_ptr)) {
-                        {
-                            bib_set_buf_offset(BUF_TY_EX, 1, 0);
-                            tmp_ptr = bib_str_start(cite_info(entry_cite_ptr));
-                            tmp_end_ptr = bib_str_start(cite_info(entry_cite_ptr) + 1);
-                            while (tmp_ptr < tmp_end_ptr) {
-
-                                bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(tmp_ptr);
-                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                tmp_ptr = tmp_ptr + 1;
-                            }
-                            lower_case(BUF_TY_EX, 0,
-                                       (bib_str_start(cite_info(entry_cite_ptr) + 1) -
-                                        bib_str_start(cite_info(entry_cite_ptr))));
-                            hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, 0,
-                                                                (bib_str_start(cite_info(entry_cite_ptr) + 1) -
-                                                                 bib_str_start(cite_info(entry_cite_ptr))), 10 /*lc_cite_ilk */ , false));
-                            lc_xcite_loc = hash.loc;
-                            if (!hash.exists) {
-                                cite_key_disappeared_confusion();
-                                longjmp(error_jmpbuf, 1);
-                            }
-                        }
-                        if (lc_xcite_loc == lc_cite_loc)
-                            goto lab26;
-                    }
-                    if (type_list(entry_cite_ptr) == 0 /*empty */ ) {
-                        puts_log("The cite list is messed up");
-                        print_confusion();
-                        longjmp(error_jmpbuf, 1);
-                    }
-
-                    puts_log("Repeated entry");
-                    TRY(bib_err_print(at_bib_command));
-                    return;
- lab26:                        /*first_time_entry */ ;
-                }
+                hash_cite_confusion();
+                longjmp(error_jmpbuf, 1);
             }
-            store_entry = true;
-            if (all_entries) {        /*273: */
-                if (hash.exists) {
-                    if (entry_cite_ptr < all_marker)
-                        goto lab22;
-                    else {
-                        set_entry_exists(entry_cite_ptr, true);
-                        cite_loc = ilk_info(lc_cite_loc);
-                    }
-                } else {
-                    hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , true));
-                    cite_loc = hash.loc;
-                    if (hash.exists) {
-                        hash_cite_confusion();
-                        longjmp(error_jmpbuf, 1);
-                    }
-                }
-                entry_cite_ptr = cite_ptr();
-                set_cite_ptr(add_database_cite(cite_ptr()));
- lab22:                        /*cite_already_set */ ;
-            } else if (!hash.exists)
-                store_entry = false;
-            if (store_entry) {        /*274: */
-                if (type_exists)
-                    set_type_list(entry_cite_ptr, entry_type_loc);
-                else {
-                    set_type_list(entry_cite_ptr, undefined());
-                    puts_log("Warning--entry type for \"");
-                    print_a_token();
-                    puts_log("\" isn't style-file defined\n");
-                    TRY(bib_warn_print());
-                }
-            }
+        }
+        entry_cite_ptr = cite_ptr();
+        set_cite_ptr(add_database_cite(cite_ptr(), cite_loc, lc_cite_loc));
+lab22:                        /*cite_already_set */ ;
+    } else if (!hash.exists)
+        store_entry = false;
+    if (store_entry) {        /*274: */
+        if (type_exists)
+            set_type_list(entry_cite_ptr, entry_type_loc);
+        else {
+            set_type_list(entry_cite_ptr, undefined());
+            puts_log("Warning--entry type for \"");
+            print_a_token();
+            puts_log("\" isn't style-file defined\n");
+            TRY(bib_warn_print());
         }
     }
     {
@@ -5081,48 +4878,42 @@ static void get_bib_command_or_entry_and_process(void)
             }
             if (bib_buf_at_offset(BUF_TY_BASE, 2) == right_outer_delim)
                 goto loop_exit;
+            scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */);
             {
-                ScanRes scan_result = scan_identifier(61 /*equals_sign */ , 61 /*equals_sign */ , 61 /*equals_sign */);
-                {
-                    if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-                    else {
-                        TRY(bib_id_print(scan_result));
-                        puts_log("a field name");
-                        TRY(bib_err_print(at_bib_command));
-                        return;
-                    }
+                if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
+                else {
+                    TRY(bib_id_print(scan_result));
+                    puts_log("a field name");
+                    TRY(bib_err_print(at_bib_command));
+                    return;
                 }
-                ;
+            }
 
-                store_field = false;
-                if (store_entry) {
-                    lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-                    LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
-                    field_name_loc = hash.loc;
-                    if (hash.exists) {
-                        if (fn_type(field_name_loc) == FN_CLASS_FIELD)
-                            store_field = true;
-                    }
-                }
-                {
-                    if (!eat_bib_white_space()) {
-                        TRY(eat_bib_print(at_bib_command));
-                        return;
-                    }
-                }
-                if (bib_buf_at_offset(BUF_TY_BASE, 2) != 61 /*equals_sign */ ) {
-                    TRY(bib_equals_sign_print(at_bib_command));
-                    return;
-                }
-                bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-            }
-            {
-                if (!eat_bib_white_space()) {
-                    TRY(eat_bib_print(at_bib_command));
-                    return;
+            *field_name_loc = 0;
+            store_field = false;
+            if (store_entry) {
+                lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
+                hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
+                *field_name_loc = hash.loc;
+                if (hash.exists) {
+                    if (fn_type(*field_name_loc) == FN_CLASS_FIELD)
+                        store_field = true;
                 }
             }
-            if (!scan_and_store_the_field_value_and_eat_white(at_bib_command))
+            if (!eat_bib_white_space()) {
+                TRY(eat_bib_print(at_bib_command));
+                return;
+            }
+            if (bib_buf_at_offset(BUF_TY_BASE, 2) != 61 /*equals_sign */ ) {
+                TRY(bib_equals_sign_print(at_bib_command));
+                return;
+            }
+            bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+            if (!eat_bib_white_space()) {
+                TRY(eat_bib_print(at_bib_command));
+                return;
+            }
+            if (!scan_and_store_the_field_value_and_eat_white(at_bib_command, command_num, NULL, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
         }
  loop_exit:
@@ -5130,25 +4921,26 @@ static void get_bib_command_or_entry_and_process(void)
     }
 }
 
-static void bst_read_command(BstCtx* ctx)
+static void bst_read_command(GlblCtx* ctx)
 {
     buf_pointer tmp_ptr;
 
-    if (read_seen) {
+    if (ctx->read_seen) {
         puts_log("Illegal, another read command");
         unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
-    read_seen = true;
-    if (!entry_seen) {
+    ctx->read_seen = true;
+    if (!ctx->entry_seen) {
         puts_log("Illegal, read command before entry command");
         unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
     }
-    bib_set_buf_offset(BUF_TY_SV, 1, bib_buf_offset(BUF_TY_BASE, 2));
-    bib_set_buf_offset(BUF_TY_SV, 2, bib_buf_len(BUF_TY_BASE));
-    tmp_ptr = bib_buf_offset(BUF_TY_SV, 1);
-    while (tmp_ptr < bib_buf_offset(BUF_TY_SV, 2)) {
+
+    buf_pointer sv_offset1 = bib_buf_offset(BUF_TY_BASE, 2);
+    buf_pointer sv_offset2 = bib_buf_len(BUF_TY_BASE);
+    tmp_ptr = sv_offset1;
+    while (tmp_ptr < sv_offset2) {
 
         bib_buf(BUF_TY_SV)[tmp_ptr] = bib_buf_at(BUF_TY_BASE, tmp_ptr);
         tmp_ptr = tmp_ptr + 1;
@@ -5158,7 +4950,7 @@ static void bst_read_command(BstCtx* ctx)
             {
                 check_field_overflow(num_fields * num_cites);
                 field_loc field_ptr = 0;
-                while (field_ptr < max_fields) {
+                while (field_ptr < max_fields()) {
                     set_field_info(field_ptr, 0 /*missing */);
                     field_ptr = field_ptr + 1;
                 }
@@ -5187,7 +4979,7 @@ static void bst_read_command(BstCtx* ctx)
                 }
             }
         }
-        read_performed = true;
+        ctx->read_performed = true;
         set_bib_ptr(0);
         while (bib_ptr() < ctx->num_bib_files) {
             if (verbose) {
@@ -5201,20 +4993,21 @@ static void bst_read_command(BstCtx* ctx)
             }
             set_bib_line_num(0);
             bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_len(BUF_TY_BASE));
+            hash_loc cur_macro_loc = 0;
+            hash_loc field_name_loc = 0;
             while (!eof(cur_bib_file()))
-                get_bib_command_or_entry_and_process();
+                get_bib_command_or_entry_and_process(&cur_macro_loc, &field_name_loc);
             peekable_close(cur_bib_file());
             set_cur_bib_file(NULL);
             set_bib_ptr(bib_ptr() + 1);
         }
-        reading_completed = true;
-        ;
+        ctx->reading_completed = true;
 
         {
             num_cites = cite_ptr();
             ctx->num_preamble_strings = preamble_ptr();
             {
-                if ((num_cites - 1) * num_fields + crossref_num >= max_fields) {
+                if ((num_cites - 1) * num_fields + crossref_num >= max_fields()) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -5223,9 +5016,10 @@ static void bst_read_command(BstCtx* ctx)
                 while (cite_ptr() < num_cites) {
                     field_loc field_ptr = cite_ptr() * num_fields + crossref_num;
                     if (field_info(field_ptr) != 0 /*missing */ ) {
-
-                        if (find_cite_locs_for_this_cite_key(field_info(field_ptr))) {
-                            cite_loc = ilk_info(lc_cite_loc);
+                        find_cite_locs find = find_cite_locs_for_this_cite_key(field_info(field_ptr));
+                        cite_number lc_cite_loc = find.lc_cite_loc;
+                        if (find.found) {
+                            cite_number cite_loc = ilk_info(lc_cite_loc);
                             set_field_info(field_ptr, hash_text(cite_loc));
                             cite_number cite_parent_ptr = ilk_info(cite_loc);
                             field_ptr = cite_ptr() * num_fields + num_pre_defined_fields;
@@ -5244,7 +5038,7 @@ static void bst_read_command(BstCtx* ctx)
                 }
             }
             {
-                if ((num_cites - 1) * num_fields + crossref_num >= max_fields) {
+                if ((num_cites - 1) * num_fields + crossref_num >= max_fields()) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -5253,9 +5047,11 @@ static void bst_read_command(BstCtx* ctx)
                 while (cite_ptr() < num_cites) {
                     field_loc field_ptr = cite_ptr() * num_fields + crossref_num;
                     if (field_info(field_ptr) != 0 /*missing */ ) {
-
-                        if (!find_cite_locs_for_this_cite_key(field_info(field_ptr))) {
-                            if (cite_hash_found) {
+                        find_cite_locs find = find_cite_locs_for_this_cite_key(field_info(field_ptr));
+                        cite_number cite_loc = find.cite_loc;
+                        cite_number lc_cite_loc = find.lc_cite_loc;
+                        if (!find.found) {
+                            if (find.cite_hash_found) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
@@ -5297,18 +5093,21 @@ static void bst_read_command(BstCtx* ctx)
                         TRY(print_missing_entry(cite_list(cite_ptr())));
                     else if ((all_entries) || (cite_ptr() < old_num_cites) || (cite_info(cite_ptr()) >= bibtex_config->min_crossrefs)) {
                         if (cite_ptr() > cite_xptr) {   /*286: */
-                            if ((cite_xptr + 1) * num_fields > max_fields) {
+                            if ((cite_xptr + 1) * num_fields > max_fields()) {
                                 puts_log("field_info index is out of range");
                                 print_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
                             set_cite_list(cite_xptr, cite_list(cite_ptr()));
                             set_type_list(cite_xptr, type_list(cite_ptr()));
-                            if (!find_cite_locs_for_this_cite_key(cite_list(cite_ptr()))) {
+                            find_cite_locs find = find_cite_locs_for_this_cite_key(cite_list(cite_ptr()));
+                            cite_number cite_loc = find.cite_loc;
+                            cite_number lc_cite_loc = find.lc_cite_loc;
+                            if (!find.found) {
                                 cite_key_disappeared_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            if ((!cite_hash_found) || (cite_loc != ilk_info(lc_cite_loc))) {
+                            if ((!find.cite_hash_found) || (cite_loc != ilk_info(lc_cite_loc))) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
@@ -5340,7 +5139,7 @@ static void bst_read_command(BstCtx* ctx)
             }
             {
                 entry_ints = XTALLOC((num_ent_ints + 1) * (num_cites + 1), int32_t);
-                int_ent_ptr = 0;
+                int_ent_loc int_ent_ptr = 0;
                 while (int_ent_ptr < num_ent_ints * num_cites) {
 
                     entry_ints[int_ent_ptr] = 0;
@@ -5349,7 +5148,7 @@ static void bst_read_command(BstCtx* ctx)
             }
             {
                 entry_strs = XTALLOC((num_ent_strs + 1) * (num_cites + 1) * (ent_str_size + 1), ASCII_code);
-                str_ent_ptr = 0;
+                str_ent_loc str_ent_ptr = 0;
                 while (str_ent_ptr < num_ent_strs * num_cites) {
 
                     entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (0)] = 127 /*end_of_string */ ;
@@ -5365,8 +5164,8 @@ static void bst_read_command(BstCtx* ctx)
             }
         }
     }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_SV, 1));
-    bib_set_buf_len(BUF_TY_BASE, bib_buf_offset(BUF_TY_SV, 2));
+    bib_set_buf_offset(BUF_TY_BASE, 2, sv_offset1);
+    bib_set_buf_len(BUF_TY_BASE, sv_offset2);
     tmp_ptr = bib_buf_offset(BUF_TY_BASE, 2);
     while (tmp_ptr < bib_buf_len(BUF_TY_BASE)) {
 
@@ -5377,16 +5176,16 @@ static void bst_read_command(BstCtx* ctx)
 
 static void bst_reverse_command(ExecCtx* ctx)
 {
-    if (!read_seen) {
+    if (!ctx->glbl_ctx->read_seen) {
         puts_log("Illegal, reverse command before read command");
-        bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
         return;
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("reverse");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -5394,16 +5193,16 @@ static void bst_reverse_command(ExecCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
             bst_left_brace_print();
             puts_log("reverse");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("reverse");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -5413,21 +5212,20 @@ static void bst_reverse_command(ExecCtx* ctx)
         else {
             TRY(bst_id_print(scan_result));
             puts_log("reverse");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
+    hash_loc fn_loc = 0;
     {
-        ;
-
-        if (bad_argument_token(ctx->bst_ctx))
+        if (bad_argument_token(ctx->glbl_ctx, &fn_loc))
             return;
     }
     {
-        if (!eat_bst_white_space(ctx->bst_ctx)) {
+        if (!eat_bst_white_space(ctx->glbl_ctx)) {
             eat_bst_print();
             puts_log("reverse");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
     }
@@ -5435,7 +5233,7 @@ static void bst_reverse_command(ExecCtx* ctx)
         if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
             bst_right_brace_print();
             puts_log("reverse");
-            bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+            bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
             return;
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -5459,9 +5257,9 @@ static void bst_reverse_command(ExecCtx* ctx)
 
 
 static void
-bst_sort_command(BstCtx* ctx)
+bst_sort_command(GlblCtx* ctx)
 {
-    if (!read_seen) {
+    if (!ctx->read_seen) {
         puts_log("Illegal, sort command before read command");
         unwrap_res(bst_err_print_and_look_for_blank_line(ctx));
         return;
@@ -5473,7 +5271,7 @@ bst_sort_command(BstCtx* ctx)
 
 
 static void
-bst_strings_command(BstCtx* ctx)
+bst_strings_command(GlblCtx* ctx)
 {
     if (!eat_bst_white_space(ctx)) {
         eat_bst_print();
@@ -5509,7 +5307,7 @@ bst_strings_command(BstCtx* ctx)
 
         lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1));
         LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1), 11 /*bst_fn_ilk */ , true));
-        fn_loc = hash.loc;
+        hash_loc fn_loc = hash.loc;
         if (hash.exists) {
             unwrap_res(already_seen_function_print(ctx, fn_loc));
             return;
@@ -5524,7 +5322,7 @@ bst_strings_command(BstCtx* ctx)
             BIB_XRETALLOC_STRING("global_strs", global_strs, glob_str_size, max_glob_strs,
                                  max_glob_strs + MAX_GLOB_STRS);
             BIB_XRETALLOC("glb_str_end", glb_str_end, int32_t, max_glob_strs, max_glob_strs + MAX_GLOB_STRS);
-            str_glb_ptr = num_glb_strs;
+            int32_t str_glb_ptr = num_glb_strs;
 
             while (str_glb_ptr < max_glob_strs) {
                 glb_bib_str_ptr[str_glb_ptr] = 0;
@@ -5552,50 +5350,50 @@ get_bst_command_and_process(ExecCtx* ctx)
 {
     if (!scan_alpha()) {
         printf_log("\"%c\" can't start a style-file command", bib_buf_at_offset(BUF_TY_BASE, 2));
-        bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
         return;
     }
 
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 4 /*bst_command_ilk */ , false));
-    command_num = ilk_info(hash.loc);
+    int32_t command_num = ilk_info(hash.loc);
     if (!hash.exists) {
         print_a_token();
         puts_log(" is an illegal style-file command");
-        bst_err_print_and_look_for_blank_line(ctx->bst_ctx);
+        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
         return;
     }
 
     switch (command_num) {
     case 0:
-        bst_entry_command(ctx->bst_ctx);
+        bst_entry_command(ctx->glbl_ctx);
         break;
     case 1:
         bst_execute_command(ctx);
         break;
     case 2:
-        bst_function_command(ctx->bst_ctx);
+        bst_function_command(ctx->glbl_ctx);
         break;
     case 3:
-        bst_integers_command(ctx->bst_ctx);
+        bst_integers_command(ctx->glbl_ctx);
         break;
     case 4:
         bst_iterate_command(ctx);
         break;
     case 5:
-        bst_macro_command(ctx->bst_ctx);
+        bst_macro_command(ctx->glbl_ctx);
         break;
     case 6:
-        bst_read_command(ctx->bst_ctx);
+        bst_read_command(ctx->glbl_ctx);
         break;
     case 7:
         bst_reverse_command(ctx);
         break;
     case 8:
-        bst_sort_command(ctx->bst_ctx);
+        bst_sort_command(ctx->glbl_ctx);
         break;
     case 9:
-        bst_strings_command(ctx->bst_ctx);
+        bst_strings_command(ctx->glbl_ctx);
         break;
     default:
         puts_log("Unknown style-file command");
@@ -5613,57 +5411,12 @@ setup_params(void)
     glob_str_size = GLOB_STR_SIZE;
 }
 
-
-static void
-compute_hash_prime(void)
-{
-    int32_t hash_want, k, j, o, n, square;
-    bool j_prime;
-
-    hash_want = (hash_size() / 20) * 17;
-    j = 1;
-    k = 1;
-    set_hash_prime(2);
-    set_hash_next(k, hash_prime());
-    o = 2;
-    square = 9;
-
-    while (hash_prime() < hash_want) {
-        do {
-            j += 2;
-
-            if (j == square) {
-                set_hash_text(o, j);
-                j += 2;
-                o += 1;
-                square = hash_next(o) * hash_next(o);
-            }
-
-            n = 2;
-            j_prime = true;
-
-            while (n < o && j_prime) {
-                while (hash_text(n) < j)
-                    set_hash_text(n, hash_text(n) + 2 * hash_next(n));
-                if (hash_text(n) == j)
-                    j_prime = false;
-                n = n + 1;
-            }
-        } while (!j_prime);
-
-        k++;
-        set_hash_prime(j);
-        set_hash_next(k, hash_prime());
-    }
-}
-
-
 static int
-initialize(const char *aux_file_name)
+initialize(GlblCtx* ctx, const char *aux_file_name)
 {
     hash_loc k;
 
-    bad = 0;
+    int32_t bad = 0;
 
     if (min_print_line < 3)
         bad = 1;
@@ -5671,14 +5424,6 @@ initialize(const char *aux_file_name)
         bad = 10 * bad + 2;
     if (max_print_line >= bib_buf_size())
         bad = 10 * bad + 3;
-    if (hash_prime() < 128)
-        bad = 10 * bad + 4;
-    if (hash_prime() > hash_size())
-        bad = 10 * bad + 5;
-    if (bib_max_strings() > hash_size())
-        bad = 10 * bad + 7;
-    if (max_cites() > bib_max_strings())
-        bad = 10 * bad + 8;
     if (10 /*short_list */  < 2 * 4 /*end_offset */  + 2)
         bad = 100 * bad + 22;
 
@@ -5687,20 +5432,18 @@ initialize(const char *aux_file_name)
         return 1;
     }
 
-    reset_after_compute();
-
     bib_set_pool_ptr(0);
     bib_set_str_ptr(1);
     bib_set_str_start(bib_str_ptr(), 0);
-    bib_seen = false;
-    bst_seen = false;
-    citation_seen = false;
+    ctx->bib_seen = false;
+    ctx->bst_seen = false;
+    ctx->citation_seen = false;
     all_entries = false;
     num_ent_ints = 0;
     num_ent_strs = 0;
     num_fields = 0;
-    str_glb_ptr = 0;
 
+    int32_t str_glb_ptr = 0;
     while (str_glb_ptr < max_glob_strs) {
         glb_bib_str_ptr[str_glb_ptr] = 0;
         glb_str_end[str_glb_ptr] = 0;
@@ -5708,15 +5451,15 @@ initialize(const char *aux_file_name)
     }
 
     num_glb_strs = 0;
-    entry_seen = false;
-    read_seen = false;
-    read_performed = false;
-    reading_completed = false;
-    impl_fn_num = 0;
+    ctx->entry_seen = false;
+    ctx->read_seen = false;
+    ctx->read_performed = false;
+    ctx->reading_completed = false;
+    ctx->impl_fn_num = 0;
     bib_set_buf_len(BUF_TY_OUT, 0);
 
     pre_def_certain_strings();
-    return get_the_top_level_aux_file_name(aux_file_name);
+    return unwrap_res_str(get_the_top_level_aux_file_name(ctx, aux_file_name));
 }
 
 
@@ -5724,7 +5467,6 @@ History
 bibtex_main(const char *aux_file_name)
 {
     max_glob_strs = MAX_GLOB_STRS;
-    max_fields = MAX_FIELDS;
 
     if (standard_output() == NULL)
         return HISTORY_FATAL_ERROR;
@@ -5739,9 +5481,9 @@ bibtex_main(const char *aux_file_name)
     global_strs = XTALLOC(max_glob_strs * (glob_str_size + 1), ASCII_code);
     glb_str_end = XTALLOC(max_glob_strs, int32_t);
 
-    compute_hash_prime();
+    GlblCtx glbl_ctx = { 0 };
 
-    if (initialize(aux_file_name)) {
+    if (initialize(&glbl_ctx, aux_file_name)) {
         /* TODO: log initialization or get_the_..() error */
         return HISTORY_FATAL_ERROR;
     }
@@ -5769,8 +5511,6 @@ bibtex_main(const char *aux_file_name)
         TRY(log_pr_aux_name());
     }
 
-    BstCtx bst_ctx = { 0 };
-
     while (true) {
         set_cur_aux_ln(cur_aux_ln() + 1);
 
@@ -5778,42 +5518,42 @@ bibtex_main(const char *aux_file_name)
             if (pop_the_aux_stack())
                 break;
         } else {
-            get_aux_command_and_process(&bst_ctx);
+            get_aux_command_and_process(&glbl_ctx);
         }
     }
 
-    last_check_for_aux_errors(&bst_ctx);
+    last_check_for_aux_errors(&glbl_ctx);
 
-    if (bst_ctx.bst_str == 0)
+    if (glbl_ctx.bst_str == 0)
         goto no_bst_file;
 
-    bst_ctx.bst_line_num = 0;
-    bbl_line_num = 1;
+    glbl_ctx.bst_line_num = 0;
+    glbl_ctx.bbl_line_num = 1;
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_len(BUF_TY_BASE));
 
     if (setjmp(recover_jmpbuf) == 0) {
         ExecCtx ctx = { 0 };
-        ctx.bst_ctx = &bst_ctx;
+        ctx.glbl_ctx = &glbl_ctx;
         ctx.lit_stk_size = LIT_STK_SIZE;
         ctx.lit_stack = XTALLOC(ctx.lit_stk_size + 1, ExecVal);
         
         while(true) {
-            if (!eat_bst_white_space(ctx.bst_ctx))
+            if (!eat_bst_white_space(ctx.glbl_ctx))
                 break;
             get_bst_command_and_process(&ctx);
         }
     }
 
-    peekable_close(bst_ctx.bst_file);
-    bst_ctx.bst_file = NULL;
+    peekable_close(glbl_ctx.bst_file);
+    glbl_ctx.bst_file = NULL;
 
  no_bst_file:
-    ttstub_output_close (bbl_file);
+    ttstub_output_close (glbl_ctx.bbl_file);
 
 close_up_shop:
     /*456:*/
 
-    if (read_performed && !reading_completed) {
+    if (glbl_ctx.read_performed && !glbl_ctx.reading_completed) {
         printf_log("Aborted at line %ld of file ", (long) bib_line_num());
         TRY(print_bib_name());
     }

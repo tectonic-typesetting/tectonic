@@ -3,7 +3,7 @@ use crate::c_api::bibs::{bib_line_num, cur_bib};
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::cite::with_cites;
-use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, BstCtx, ExecCtx};
+use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, GlblCtx, ExecCtx};
 use crate::c_api::hash::{with_hash, FnClass};
 use crate::c_api::history::{mark_error, mark_fatal, mark_warning, set_history};
 use crate::c_api::other::with_other;
@@ -12,7 +12,7 @@ use crate::c_api::pool::with_pool;
 use crate::c_api::scan::ScanRes;
 use crate::c_api::{
     ttstub_output_open, ttstub_output_open_stdout, ASCIICode, CResult, FieldLoc, HashPointer,
-    History, NameAndLen, StrNumber,
+    History, StrNumber,
 };
 use std::cell::Cell;
 use std::ffi::CStr;
@@ -85,16 +85,15 @@ pub(crate) fn write_logs<B: ?Sized + AsBytes>(str: &B) {
     with_stdout(|out| out.write_all(str.as_bytes())).unwrap();
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn init_log_file(file: *const libc::c_char) -> *mut OutputHandle {
+pub fn init_log_file(file: &CStr) -> bool {
     LOG_FILE.with(|log| {
         let ptr = log.get();
         if ptr.is_null() {
-            let new = ttstub_output_open(file, 0);
+            let new = unsafe { ttstub_output_open(file.as_ptr(), 0) };
             log.set(new);
-            new
+            !new.is_null()
         } else {
-            ptr
+            true
         }
     })
 }
@@ -242,13 +241,9 @@ pub extern "C" fn print_a_pool_str(s: StrNumber) -> bool {
     })
 }
 
-#[no_mangle]
-pub extern "C" fn sam_wrong_file_name_print(file: NameAndLen) {
+pub fn sam_wrong_file_name_print(file: &CStr) {
     with_stdout(|stdout| {
-        let slice = unsafe { slice::from_raw_parts(file.name, file.len as usize) };
-        write!(stdout, "I couldn't open file name `").unwrap();
-        stdout.write_all(slice).unwrap();
-        write!(stdout, "`\n").unwrap();
+        writeln!(stdout, "I couldn't open file name `{}`", file.to_str().unwrap()).unwrap();
     })
 }
 
@@ -373,7 +368,7 @@ pub extern "C" fn log_pr_bib_name() -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn log_pr_bst_name(ctx: *const BstCtx) -> bool {
+pub unsafe extern "C" fn log_pr_bst_name(ctx: *const GlblCtx) -> bool {
     with_log(|log| {
         if !out_pool_str(log, (*ctx).bst_str) {
             return false;
@@ -390,7 +385,7 @@ pub extern "C" fn hash_cite_confusion() {
 }
 
 #[no_mangle]
-pub extern "C" fn bst_warn_print(ctx: *const BstCtx) -> bool {
+pub extern "C" fn bst_warn_print(ctx: *const GlblCtx) -> bool {
     if !bst_ln_num_print(ctx) {
         return false;
     }
@@ -582,7 +577,7 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
         }
     }
     write_logs("\nwhile executing");
-    bst_warn_print(ctx.bst_ctx)
+    bst_warn_print(ctx.glbl_ctx)
 }
 
 #[no_mangle]
@@ -639,7 +634,7 @@ pub extern "C" fn print_fn_class(fn_loc: HashPointer) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut BstCtx) -> CResult {
+pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut GlblCtx) -> CResult {
     let ctx = &mut *ctx;
 
     write_logs("-");
@@ -661,7 +656,7 @@ pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut BstCtx)
 
 #[no_mangle]
 pub unsafe extern "C" fn already_seen_function_print(
-    ctx: *mut BstCtx,
+    ctx: *mut GlblCtx,
     seen_fn_loc: HashPointer,
 ) -> CResult {
     if with_hash(|hash| !print_a_pool_str(hash.text(seen_fn_loc as usize))) {
@@ -682,4 +677,29 @@ pub extern "C" fn nonexistent_cross_reference_error(field_ptr: FieldLoc) -> bool
     write_logs(", which doesn't exist\n");
     mark_error();
     true
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn output_bbl_line(ctx: *mut GlblCtx) {
+    with_buffers_mut(|buffers| {
+        if buffers.init(BufTy::Out) != 0 {
+            let mut init = buffers.init(BufTy::Out);
+            while init > 0 {
+                if LexClass::of(buffers.at(BufTy::Out, (init - 1) as usize)) == LexClass::Whitespace {
+                    init -= 1;
+                } else {
+                    break
+                }
+            }
+            buffers.set_init(BufTy::Out, init);
+            if init == 0 {
+                return;
+            }
+            let slice = &buffers.buffer(BufTy::Out)[..init as usize];
+            (*(*ctx).bbl_file).write_all(slice).unwrap();
+        }
+        write!((*(*ctx).bbl_file), "\n").unwrap();
+        (*ctx).bbl_line_num += 1;
+        buffers.set_init(BufTy::Out, 0);
+    })
 }

@@ -1,12 +1,10 @@
-use crate::c_api::buffer::{with_buffers, BufTy, GlobalBuffer};
-use crate::c_api::hash::{with_hash_mut, HashData};
+use crate::c_api::buffer::{with_buffers, BufTy};
+use crate::c_api::hash::{with_hash_mut, with_hash, FnClass};
 use crate::c_api::log::{print_overflow, write_logs};
 use crate::c_api::xbuf::XBuf;
-use crate::c_api::{
-    hash, ASCIICode, BufPointer, CResultLookup, CResultStr, HashPointer, LookupRes, PoolPointer,
-    StrIlk, StrNumber,
-};
+use crate::c_api::{hash, ASCIICode, BufPointer, CResultLookup, CResultStr, HashPointer, LookupRes, PoolPointer, StrIlk, StrNumber, BltInRange, CResult};
 use std::cell::RefCell;
+use std::slice;
 
 const POOL_SIZE: usize = 65000;
 pub(crate) const MAX_STRINGS: usize = 35307;
@@ -58,6 +56,107 @@ impl StringPool {
         self.str_ptr += 1;
         self.offsets[self.str_ptr as usize] = self.pool_ptr;
         CResultStr::Ok(self.str_ptr - 1)
+    }
+
+    fn hash_str(str: &[ASCIICode]) -> usize {
+        let prime = with_hash(|hash| hash.prime());
+        str.iter()
+            .fold(0, |acc, &c| {
+                ((2 * acc) + c as usize) % prime
+            })
+    }
+
+    pub fn lookup_str(&self, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
+        let h = Self::hash_str(str);
+        with_hash(|hash| {
+            let mut p = h as HashPointer + hash::HASH_BASE as HashPointer;
+
+            loop {
+                let existing = hash.text(p as usize);
+
+                if existing > 0 && self.get_str(existing as usize) == str {
+                    if hash.hash_ilk(p as usize) == ilk {
+                        return LookupRes {
+                            loc: p,
+                            exists: true,
+                        };
+                    }
+                }
+
+                if hash.next(p as usize) == 0 {
+                    return LookupRes {
+                        loc: p,
+                        exists: false,
+                    };
+                }
+                p = hash.next(p as usize);
+            }
+        })
+    }
+
+    pub fn lookup_str_insert(&mut self, str: &[ASCIICode], ilk: StrIlk) -> Option<LookupRes> {
+        let h = Self::hash_str(str);
+        with_hash_mut(|hash| {
+            let mut str_num = 0;
+            let mut p = (h + hash::HASH_BASE) as HashPointer;
+
+            loop {
+                let existing = hash.text(p as usize);
+                if existing > 0 && self.get_str(existing as usize) == str {
+                    if hash.hash_ilk(p as usize) == ilk {
+                        return Some(LookupRes {
+                            loc: p,
+                            exists: true,
+                        });
+                    } else {
+                        str_num = existing;
+                    }
+                }
+
+                if hash.next(p as usize) == 0 {
+                    if existing > 0 {
+                        loop {
+                            if hash.used() as usize == hash::HASH_BASE {
+                                print_overflow();
+                                write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
+                                return None;
+                            }
+                            hash.set_used(hash.used() - 1);
+
+                            if hash.text(hash.used() as usize) == 0 {
+                                break;
+                            }
+                        }
+                        hash.set_next(p as usize, hash.used());
+                        p = hash.used();
+                    }
+
+                    if str_num > 0 {
+                        hash.set_text(p as usize, str_num);
+                    } else {
+                        while self.pool_ptr + str.len() > self.strings.len() {
+                            self.grow();
+                        }
+                        self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
+                        self.pool_ptr += str.len();
+
+                        match self.make_string() {
+                            CResultStr::Ok(str) => hash.set_text(p as usize, str),
+                            _ => return None,
+                        }
+                    }
+
+                    hash.set_hash_ilk(p as usize, ilk);
+
+                    return Some(LookupRes {
+                        loc: p,
+                        exists: false,
+                    });
+                }
+
+                p = hash.next(p as usize);
+            }
+        })
     }
 }
 
@@ -150,87 +249,32 @@ pub extern "C" fn str_lookup(
     ilk: StrIlk,
     insert: bool,
 ) -> CResultLookup {
-    let f = |buffers: &GlobalBuffer, pool: &mut StringPool, hash: &mut HashData| {
-        let mut h = 0;
-        let mut str_num = 0;
-
+    with_buffers(|buffers| {
         let str = &buffers.buffer(buf)[ptr as usize..(ptr + len) as usize];
-
-        let hash_prime = hash.prime() as usize;
-
-        for &c in str {
-            h += h + c as usize;
-            while h >= hash_prime {
-                h -= hash_prime;
-            }
+        if insert {
+            with_pool_mut(|pool| pool.lookup_str_insert(str, ilk).into())
+        } else {
+            with_pool(|pool| CResultLookup::Ok(pool.lookup_str(str, ilk)))
         }
+    })
+}
 
-        let mut p = (h + hash::HASH_BASE) as HashPointer;
+#[no_mangle]
+pub unsafe extern "C" fn pre_define(pds: *const libc::c_char, len: usize, ilk: StrIlk) -> CResultLookup {
+    let slice = slice::from_raw_parts(pds.cast(), len as usize);
+    with_pool_mut(|pool| pool.lookup_str_insert(slice, ilk).into())
+}
 
-        loop {
-            let existing = hash.text(p as usize);
-            if existing > 0 && pool.get_str(existing as usize) == str {
-                if hash.hash_ilk(p as usize) == ilk {
-                    return CResultLookup::Ok(LookupRes {
-                        loc: p,
-                        exists: true,
-                    });
-                } else {
-                    str_num = existing;
-                }
-            }
-
-            if hash.next(p as usize) == 0 {
-                if !insert {
-                    return CResultLookup::Ok(LookupRes {
-                        loc: p,
-                        exists: false,
-                    });
-                }
-
-                if existing > 0 {
-                    loop {
-                        if hash.used() as usize == hash::HASH_BASE {
-                            print_overflow();
-                            write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
-                            return CResultLookup::Error;
-                        }
-                        hash.set_used(hash.used() - 1);
-
-                        if hash.text(hash.used() as usize) == 0 {
-                            break;
-                        }
-                    }
-                    hash.set_next(p as usize, hash.used());
-                    p = hash.used();
-                }
-
-                if str_num > 0 {
-                    hash.set_text(p as usize, str_num);
-                } else {
-                    while pool.pool_ptr + str.len() > pool.strings.len() {
-                        pool.grow();
-                    }
-                    pool.strings[pool.pool_ptr..pool.pool_ptr + str.len()].copy_from_slice(str);
-                    pool.pool_ptr += str.len();
-
-                    match pool.make_string() {
-                        CResultStr::Ok(str) => hash.set_text(p as usize, str),
-                        _ => return CResultLookup::Error,
-                    }
-                }
-
-                hash.set_hash_ilk(p as usize, ilk);
-
-                return CResultLookup::Ok(LookupRes {
-                    loc: p,
-                    exists: false,
-                });
-            }
-
-            p = hash.next(p as usize);
-        }
+#[no_mangle]
+pub unsafe extern "C" fn build_in(pds: *const libc::c_char, len: usize, fn_hash_loc: *mut HashPointer, blt_in_num: BltInRange) -> CResult {
+    let res = match pre_define(pds, len, 11) {
+        CResultLookup::Error => return CResult::Error,
+        CResultLookup::Ok(res) => res,
     };
-
-    with_buffers(|buffers| with_pool_mut(|pool| with_hash_mut(|hash| f(buffers, pool, hash))))
+    (*fn_hash_loc) = res.loc;
+    with_hash_mut(|hash| {
+        hash.set_ty(res.loc as usize, FnClass::Builtin);
+        hash.set_ilk_info(res.loc as usize, blt_in_num);
+    });
+    CResult::Ok
 }

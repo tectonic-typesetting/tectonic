@@ -7,16 +7,30 @@ use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str
 use crate::c_api::xbuf::xrealloc_zeroed;
 use crate::c_api::StrNumber;
 use std::slice;
+use tectonic_io_base::OutputHandle;
 
 const LIT_STK_SIZE: usize = 100;
 
 #[repr(C)]
-pub struct BstCtx {
+pub struct GlblCtx {
     pub bst_file: *mut PeekableInput,
     pub bst_str: StrNumber,
     pub bst_line_num: i32,
+
+    pub bbl_file: *mut OutputHandle,
+    pub bbl_line_num: i32,
+
     pub num_bib_files: i32,
     pub num_preamble_strings: i32,
+    pub impl_fn_num: i32,
+
+    pub bib_seen: bool,
+    pub bst_seen: bool,
+    pub citation_seen: bool,
+    pub entry_seen: bool,
+    pub read_seen: bool,
+    pub read_performed: bool,
+    pub reading_completed: bool,
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase
@@ -40,7 +54,7 @@ pub struct ExecVal {
 
 #[repr(C)]
 pub struct ExecCtx {
-    pub bst_ctx: *mut BstCtx,
+    pub glbl_ctx: *mut GlblCtx,
     pub pop1: ExecVal,
     pub pop2: ExecVal,
     pub pop3: ExecVal,
@@ -180,22 +194,22 @@ pub extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
     }
 
     write_logs("\nwhile executing-");
-    bst_ln_num_print(unsafe { (*ctx).bst_ctx });
+    bst_ln_num_print(unsafe { (*ctx).glbl_ctx });
     mark_error();
     true
 }
 
 #[no_mangle]
-pub extern "C" fn bst_ln_num_print(bst_ctx: *const BstCtx) -> bool {
+pub extern "C" fn bst_ln_num_print(glbl_ctx: *const GlblCtx) -> bool {
     write_logs(&format!("--line {} of file ", unsafe {
-        (*bst_ctx).bst_line_num
+        (*glbl_ctx).bst_line_num
     }));
-    print_bst_name(bst_ctx)
+    print_bst_name(glbl_ctx)
 }
 
 #[no_mangle]
-pub extern "C" fn print_bst_name(bst_ctx: *const BstCtx) -> bool {
-    if !print_a_pool_str(unsafe { (*bst_ctx).bst_str }) {
+pub extern "C" fn print_bst_name(glbl_ctx: *const GlblCtx) -> bool {
+    if !print_a_pool_str(unsafe { (*glbl_ctx).bst_str }) {
         return false;
     }
     write_logs(".bst\n");

@@ -9,6 +9,56 @@ pub const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
     5000
 };
 const HASH_MAX: usize = HASH_SIZE + HASH_BASE - 1;
+pub const HASH_PRIME: usize = compute_hash_prime();
+
+/// Calculate a prime number for use in hashing that's at least 17/20 of HASH_SIZE
+const fn compute_hash_prime() -> usize {
+    const HASH_WANT: usize = HASH_SIZE / 20 * 17;
+
+    let mut primes = [0; HASH_SIZE];
+    let mut sieve = [0; HASH_SIZE];
+
+    let mut j = 1;
+    let mut k = 1;
+    let mut hash_prime = 2;
+    primes[k] = hash_prime;
+    let mut o = 2;
+    let mut square = 9;
+
+    while hash_prime < HASH_WANT {
+        loop {
+            j += 2;
+            if j == square {
+                sieve[o] = j;
+                j += 2;
+                o += 1;
+                square = primes[o] * primes[o];
+            }
+
+            let mut n = 2;
+            let mut j_prime = true;
+            while n < o && j_prime {
+                while sieve[n] < j {
+                    sieve[n] = sieve[n] + 2 * primes[n];
+                }
+                if sieve[n] == j {
+                    j_prime = false;
+                }
+                n += 1;
+            }
+
+            if j_prime {
+                break;
+            }
+        }
+
+        k += 1;
+        hash_prime = j;
+        primes[k] = hash_prime;
+    }
+
+    hash_prime
+}
 
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone)]
@@ -32,7 +82,6 @@ pub struct HashData {
     ilk_info: XBuf<i32>,
     fn_type: XBuf<FnClass>,
     hash_used: i32,
-    hash_prime: i32,
 }
 
 impl HashData {
@@ -44,7 +93,6 @@ impl HashData {
             ilk_info: XBuf::new(HASH_MAX),
             fn_type: XBuf::new(HASH_MAX),
             hash_used: HASH_MAX as i32 + 1,
-            hash_prime: 0,
         }
     }
 
@@ -68,6 +116,10 @@ impl HashData {
         self.fn_type[pos]
     }
 
+    pub fn set_ty(&mut self, pos: usize, class: FnClass) {
+        self.fn_type[pos] = class;
+    }
+
     pub fn used(&self) -> i32 {
         self.hash_used
     }
@@ -76,8 +128,8 @@ impl HashData {
         self.hash_used = val;
     }
 
-    pub fn prime(&self) -> i32 {
-        self.hash_prime
+    pub fn prime(&self) -> usize {
+        HASH_PRIME
     }
 
     pub fn hash_ilk(&self, pos: usize) -> StrIlk {
@@ -86,6 +138,10 @@ impl HashData {
 
     pub fn set_hash_ilk(&mut self, pos: usize, val: StrIlk) {
         self.hash_ilk[pos] = val;
+    }
+
+    pub fn set_ilk_info(&mut self, pos: usize, info: i32) {
+        self.ilk_info[pos] = info;
     }
 }
 
@@ -103,14 +159,6 @@ pub fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
 
 pub fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
     HASHES.with(|h| f(&mut h.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn reset_after_compute() {
-    with_hash_mut(|hash| {
-        hash.hash_next[1..].fill(0);
-        hash.hash_text[1..].fill(0);
-    })
 }
 
 #[no_mangle]
@@ -169,11 +217,6 @@ pub extern "C" fn hash_size() -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn hash_prime() -> i32 {
-    with_hash(|hash| hash.hash_prime)
-}
-
-#[no_mangle]
-pub extern "C" fn set_hash_prime(val: i32) {
-    with_hash_mut(|hash| hash.hash_prime = val)
+pub extern "C" fn hash_prime() -> usize {
+    HASH_PRIME
 }

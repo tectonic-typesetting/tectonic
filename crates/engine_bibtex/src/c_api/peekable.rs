@@ -1,14 +1,15 @@
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::char_info::LexClass;
-use crate::c_api::{ttstub_input_close, ttstub_input_open, xcalloc, ASCIICode, BufPointer};
+use crate::c_api::{ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer};
 use libc::{free, EOF};
-use std::{io, mem, ptr};
+use std::{io, ptr};
+use std::ffi::CStr;
+use tectonic_bridge_core::FileFormat;
 use tectonic_io_base::InputHandle;
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
  * here's a tiny wrapper that lets us fake it. */
 
-#[repr(C)]
 pub struct PeekableInput {
     handle: *mut InputHandle,
     peek_char: libc::c_int,
@@ -16,6 +17,19 @@ pub struct PeekableInput {
 }
 
 impl PeekableInput {
+    pub fn open(path: &CStr, format: FileFormat) -> Result<Box<PeekableInput>, ()> {
+        let handle = unsafe { ttstub_input_open(path.as_ptr(), format, 0) };
+        if handle.is_null() {
+            return Err(());
+        }
+
+        Ok(Box::new(PeekableInput {
+            handle,
+            peek_char: EOF,
+            saw_eof: false,
+        }))
+    }
+
     fn getc(&mut self) -> libc::c_int {
         if self.peek_char != EOF {
             let rv = self.peek_char;
@@ -75,20 +89,11 @@ impl PeekableInput {
 #[no_mangle]
 pub unsafe extern "C" fn peekable_open(
     path: *const libc::c_char,
-    format: tectonic_bridge_core::FileFormat,
+    format: FileFormat,
 ) -> *mut PeekableInput {
-    let handle = ttstub_input_open(path, format, 0);
-    if handle.is_null() {
-        return ptr::null_mut();
-    }
-
-    let peekable = xcalloc(1, mem::size_of::<PeekableInput>()).cast::<PeekableInput>();
-
-    (*peekable).handle = handle;
-    (*peekable).peek_char = EOF;
-    (*peekable).saw_eof = false;
-
-    peekable
+    PeekableInput::open(CStr::from_ptr(path), format)
+        .map(Box::into_raw)
+        .unwrap_or(ptr::null_mut())
 }
 
 #[no_mangle]
