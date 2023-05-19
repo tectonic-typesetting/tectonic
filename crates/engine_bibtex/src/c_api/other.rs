@@ -9,6 +9,9 @@ pub struct OtherData {
     wiz_functions: XBuf<HashPointer2>,
     wiz_def_ptr: WizFnLoc,
     field_info: XBuf<StrNumber>,
+    num_fields: FieldLoc,
+    num_pre_defined_fields: FieldLoc,
+    crossref_num: FieldLoc,
 }
 
 impl OtherData {
@@ -17,6 +20,9 @@ impl OtherData {
             wiz_functions: XBuf::new(WIZ_FN_SPACE),
             wiz_def_ptr: 0,
             field_info: XBuf::new(MAX_FIELDS),
+            num_fields: 0,
+            num_pre_defined_fields: 0,
+            crossref_num: 0,
         }
     }
 
@@ -94,4 +100,34 @@ pub extern "C" fn check_field_overflow(total_fields: i32) {
 #[no_mangle]
 pub extern "C" fn max_fields() -> i32 {
     with_other(|other| other.field_info.len() as i32)
+}
+
+#[no_mangle]
+pub extern "C" fn num_fields() -> FieldLoc {
+    with_other(|other| other.num_fields)
+}
+
+#[no_mangle]
+pub extern "C" fn set_num_fields(val: FieldLoc) {
+    with_other_mut(|other| other.num_fields = val)
+}
+
+#[no_mangle]
+pub extern "C" fn num_pre_defined_fields() -> FieldLoc {
+    with_other(|other| other.num_pre_defined_fields)
+}
+
+#[no_mangle]
+pub extern "C" fn set_num_pre_defined_fields(val: FieldLoc) {
+    with_other_mut(|other| other.num_pre_defined_fields = val)
+}
+
+#[no_mangle]
+pub extern "C" fn crossref_num() -> FieldLoc {
+    with_other(|other| other.crossref_num)
+}
+
+#[no_mangle]
+pub extern "C" fn set_crossref_num(val: FieldLoc) {
+    with_other_mut(|other| other.crossref_num = val)
 }

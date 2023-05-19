@@ -23,6 +23,7 @@ pub struct GlblCtx {
     pub num_bib_files: i32,
     pub num_preamble_strings: i32,
     pub impl_fn_num: i32,
+    pub cite_xptr: i32,
 
     pub bib_seen: bool,
     pub bst_seen: bool,
@@ -31,6 +32,7 @@ pub struct GlblCtx {
     pub read_seen: bool,
     pub read_performed: bool,
     pub reading_completed: bool,
+    pub all_entries: bool,
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase

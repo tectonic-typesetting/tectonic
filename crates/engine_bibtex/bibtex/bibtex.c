@@ -63,11 +63,6 @@ static int32_t ent_str_size;
 static int32_t glob_str_size;
 static int32_t max_glob_strs;
 static str_number s_aux_extension;
-static cite_number entry_cite_ptr;
-static cite_number num_cites;
-static cite_number old_num_cites;
-static bool all_entries;
-static cite_number all_marker;
 static int32_t *entry_ints;
 static int_ent_loc num_ent_ints;
 static ASCII_code *entry_strs;
@@ -76,10 +71,6 @@ static str_number *glb_bib_str_ptr;
 static ASCII_code *global_strs;
 static int32_t *glb_str_end;
 static int32_t num_glb_strs;
-static cite_number cite_xptr;
-static field_loc num_fields;
-static field_loc num_pre_defined_fields;
-static field_loc crossref_num;
 static bool store_field;
 static cite_number sort_cite_ptr;
 static str_ent_loc sort_key_num;
@@ -192,7 +183,7 @@ printf_log(const char *fmt, ...)
 static cite_number add_database_cite(cite_number new_cite, cite_number cite_loc, cite_number lc_cite_loc)
 {
     check_cite_overflow(new_cite);
-    check_field_overflow(num_fields * (new_cite + 1));
+    check_field_overflow(num_fields() * (new_cite + 1));
     set_cite_list(new_cite, hash_text(cite_loc));
     set_ilk_info(cite_loc, new_cite);
     set_ilk_info(lc_cite_loc, cite_loc);
@@ -369,10 +360,10 @@ static void pre_def_certain_strings(void) {
     set_ilk_info(pre_def_loc.loc, 12 /*n_ss */ );
     pre_def_loc = unwrap_res_lookup(pre_define("crossref    ", 8, 11 /*bst_fn_ilk */ ));
     set_fn_type(pre_def_loc.loc, FN_CLASS_FIELD);
-    set_ilk_info(pre_def_loc.loc, num_fields);
-    crossref_num = num_fields;
-    num_fields = num_fields + 1;
-    num_pre_defined_fields = num_fields;
+    set_ilk_info(pre_def_loc.loc, num_fields());
+    set_crossref_num(num_fields());
+    set_num_fields(num_fields() + 1);
+    set_num_pre_defined_fields(num_fields());
     pre_def_loc = unwrap_res_lookup(pre_define("sort.key$   ", 9, 11 /*bst_fn_ilk */ ));
     set_fn_type(pre_def_loc.loc, FN_CLASS_STR_ENTRY_VAR);
     set_ilk_info(pre_def_loc.loc, num_ent_strs);
@@ -1041,7 +1032,7 @@ static bool scan_a_field_token_and_eat_white(bool at_bib_command, int32_t comman
     return true;
 }
 
-static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
+static bool scan_and_store_the_field_value_and_eat_white(GlblCtx* ctx, bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
 {
     buf_pointer tmp_ptr;
 
@@ -1092,7 +1083,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command, in
                 break;
             }
         } else {                /*264: */
-            field_loc field_ptr = entry_cite_ptr * num_fields + ilk_info(field_name_loc);
+            field_loc field_ptr = entry_cite_ptr() * num_fields() + ilk_info(field_name_loc);
             if (field_ptr >= max_fields()) {
                 puts_log("field_info index is out of range");
                 print_confusion();
@@ -1100,14 +1091,14 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command, in
             }
             if (field_info(field_ptr) != 0 /*missing */ ) {
                 puts_log("Warning--I'm ignoring ");
-                TRY(print_a_pool_str(cite_list(entry_cite_ptr)));
+                TRY(print_a_pool_str(cite_list(entry_cite_ptr())));
                 puts_log("'s extra \"");
                 TRY(print_a_pool_str(hash_text(field_name_loc)));
                 puts_log("\" field\n");
                 TRY(bib_warn_print());
             } else {
                 set_field_info(field_ptr, hash_text(field_val_loc));
-                if ((ilk_info(field_name_loc) == crossref_num) && (!all_entries)) {   /*265: */
+                if ((ilk_info(field_name_loc) == crossref_num()) && (!ctx->all_entries)) {   /*265: */
                     tmp_ptr = ex_buf_xptr;
                     while (tmp_ptr < bib_buf_offset(BUF_TY_EX, 1)) {
                         bib_buf(BUF_TY_OUT)[tmp_ptr] = bib_buf(BUF_TY_EX)[tmp_ptr];
@@ -1121,7 +1112,7 @@ static bool scan_and_store_the_field_value_and_eat_white(bool at_bib_command, in
                     }
                     if (hash.exists) {
                         cite_number cite_loc = ilk_info(lc_cite_loc);
-                        if (ilk_info(cite_loc) >= old_num_cites)
+                        if (ilk_info(cite_loc) >= old_num_cites())
                             set_cite_info(ilk_info(cite_loc), cite_info(ilk_info(cite_loc)) + 1);
                     } else {
                         hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 9 /*cite_ilk */ , true));
@@ -3483,7 +3474,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             if (!ctx->mess_with_entries)
                 TRY(bst_cant_mess_with_entries_print(ctx));
             else {
-                field_loc field_ptr = cite_ptr() * num_fields + ilk_info(ex_fn_loc);
+                field_loc field_ptr = cite_ptr() * num_fields() + ilk_info(ex_fn_loc);
                 if (field_ptr >= max_fields()) {
                     puts_log("field_info index is out of range");
                     print_confusion();
@@ -3712,14 +3703,13 @@ static void aux_citation_command(GlblCtx* ctx)
                 if ((bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) == 1) {
 
                     if (bib_buf_at_offset(BUF_TY_BASE, 1) == 42 /*star */ ) {
-                        if (all_entries) {
+                        if (ctx->all_entries) {
                             puts_log("Multiple inclusions of entire database\n");
                             TRY(aux_err_print());
                             return;
                         } else {
-
-                            all_entries = true;
-                            all_marker = cite_ptr();
+                            ctx->all_entries = true;
+                            set_all_marker(cite_ptr());
                             goto lab23;
                         }
                     }
@@ -3890,13 +3880,13 @@ static void get_aux_command_and_process(GlblCtx* ctx)
 
 static void last_check_for_aux_errors(GlblCtx* ctx)
 {
-    num_cites = cite_ptr();
+    set_num_cites(cite_ptr());
     ctx->num_bib_files = bib_ptr();
     if (!ctx->citation_seen) {
         aux_end1_err_print();
         puts_log("\\citation commands");
         TRY(aux_end2_err_print());
-    } else if ((num_cites == 0) && (!all_entries)) {
+    } else if ((num_cites() == 0) && (!ctx->all_entries)) {
         aux_end1_err_print();
         puts_log("cite keys");
         TRY(aux_end2_err_print());
@@ -3978,8 +3968,8 @@ static void bst_entry_command(GlblCtx* ctx)
                     return;
                 }
                 set_fn_type(fn_loc, FN_CLASS_FIELD);
-                set_ilk_info(fn_loc, num_fields);
-                num_fields = num_fields + 1;
+                set_ilk_info(fn_loc, num_fields());
+                set_num_fields(num_fields() + 1);
             }
             {
                 if (!eat_bst_white_space(ctx)) {
@@ -4000,7 +3990,7 @@ static void bst_entry_command(GlblCtx* ctx)
             return;
         }
     }
-    if (num_fields == num_pre_defined_fields) {
+    if (num_fields() == num_pre_defined_fields()) {
         puts_log("Warning--I didn't find any fields");
         TRY(bst_warn_print(ctx));
     }
@@ -4443,7 +4433,7 @@ static void bst_iterate_command(ExecCtx* ctx)
         init_command_execution(ctx);
         ctx->mess_with_entries = true;
         sort_cite_ptr = 0;
-        while (sort_cite_ptr < num_cites) {
+        while (sort_cite_ptr < num_cites()) {
 
             set_cite_ptr(cite_info(sort_cite_ptr));
 
@@ -4593,7 +4583,7 @@ static void bst_macro_command(GlblCtx* ctx)
     }
 }
 
-static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_loc* field_name_loc)
+static void get_bib_command_or_entry_and_process(GlblCtx* ctx, hash_loc* cur_macro_loc, hash_loc* field_name_loc)
 {
     buf_pointer tmp_ptr, tmp_end_ptr;
     int32_t command_num = 0;
@@ -4658,7 +4648,7 @@ static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_l
                 return;
             }
             store_field = true;
-            if (!scan_and_store_the_field_value_and_eat_white(at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!scan_and_store_the_field_value_and_eat_white(ctx, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
                 printf_log("Missing \"%c\" in preamble command", right_outer_delim);
@@ -4713,7 +4703,7 @@ static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_l
                 return;
             }
             store_field = true;
-            if (!scan_and_store_the_field_value_and_eat_white(at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!scan_and_store_the_field_value_and_eat_white(ctx, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
                 printf_log("Missing \"%c\" in string command", right_outer_delim);
@@ -4771,27 +4761,27 @@ static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_l
         tmp_ptr = tmp_ptr + 1;
     }
     lower_case(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-    hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 10 /*lc_cite_ilk */ , all_entries));
+    hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 10 /*lc_cite_ilk */ , ctx->all_entries));
     if (hash.exists) {
-        entry_cite_ptr = ilk_info(ilk_info(lc_cite_loc));
-        if ((!all_entries) || (entry_cite_ptr < all_marker) || (entry_cite_ptr >= old_num_cites)) {
-            if (type_list(entry_cite_ptr) == 0 /*empty */ ) {
-                if ((!all_entries) && (entry_cite_ptr >= old_num_cites)) {
+        set_entry_cite_ptr(ilk_info(ilk_info(lc_cite_loc)));
+        if ((!ctx->all_entries) || (entry_cite_ptr() < all_marker()) || (entry_cite_ptr() >= old_num_cites())) {
+            if (type_list(entry_cite_ptr()) == 0 /*empty */ ) {
+                if ((!ctx->all_entries) && (entry_cite_ptr() >= old_num_cites())) {
                     hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 9 /*cite_ilk */ , true));
                     cite_number cite_loc = hash.loc;
                     if (!hash.exists) {
                         set_ilk_info(lc_cite_loc, cite_loc);
-                        set_ilk_info(cite_loc, entry_cite_ptr);
-                        set_cite_list(entry_cite_ptr, hash_text(cite_loc));
+                        set_ilk_info(cite_loc, entry_cite_ptr());
+                        set_cite_list(entry_cite_ptr(), hash_text(cite_loc));
                         hash.exists = true;
                     }
                 }
                 goto lab26;
             }
-        } else if (!entry_exists(entry_cite_ptr)) {
+        } else if (!entry_exists(entry_cite_ptr())) {
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
-            tmp_ptr = bib_str_start(cite_info(entry_cite_ptr));
-            tmp_end_ptr = bib_str_start(cite_info(entry_cite_ptr) + 1);
+            tmp_ptr = bib_str_start(cite_info(entry_cite_ptr()));
+            tmp_end_ptr = bib_str_start(cite_info(entry_cite_ptr()) + 1);
             while (tmp_ptr < tmp_end_ptr) {
 
                 bib_buf(BUF_TY_EX)[bib_buf_offset(BUF_TY_EX, 1)] = bib_str_pool(tmp_ptr);
@@ -4799,11 +4789,11 @@ static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_l
                 tmp_ptr = tmp_ptr + 1;
             }
             lower_case(BUF_TY_EX, 0,
-                       (bib_str_start(cite_info(entry_cite_ptr) + 1) -
-                        bib_str_start(cite_info(entry_cite_ptr))));
+                       (bib_str_start(cite_info(entry_cite_ptr()) + 1) -
+                        bib_str_start(cite_info(entry_cite_ptr()))));
             hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, 0,
-                                                (bib_str_start(cite_info(entry_cite_ptr) + 1) -
-                                                 bib_str_start(cite_info(entry_cite_ptr))), 10 /*lc_cite_ilk */ , false));
+                                                (bib_str_start(cite_info(entry_cite_ptr()) + 1) -
+                                                 bib_str_start(cite_info(entry_cite_ptr()))), 10 /*lc_cite_ilk */ , false));
             if (!hash.exists) {
                 cite_key_disappeared_confusion();
                 longjmp(error_jmpbuf, 1);
@@ -4811,7 +4801,7 @@ static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_l
             if (hash.loc == lc_cite_loc)
                 goto lab26;
         }
-        if (type_list(entry_cite_ptr) == 0 /*empty */ ) {
+        if (type_list(entry_cite_ptr()) == 0 /*empty */ ) {
             puts_log("The cite list is messed up");
             print_confusion();
             longjmp(error_jmpbuf, 1);
@@ -4823,13 +4813,13 @@ static void get_bib_command_or_entry_and_process(hash_loc* cur_macro_loc, hash_l
 lab26:                        /*first_time_entry */ ;
     }
     bool store_entry = true;
-    if (all_entries) {        /*273: */
+    if (ctx->all_entries) {        /*273: */
         cite_number cite_loc = 0;
         if (hash.exists) {
-            if (entry_cite_ptr < all_marker)
+            if (entry_cite_ptr() < all_marker())
                 goto lab22;
             else {
-                set_entry_exists(entry_cite_ptr, true);
+                set_entry_exists(entry_cite_ptr(), true);
                 cite_loc = ilk_info(lc_cite_loc);
             }
         } else {
@@ -4840,16 +4830,16 @@ lab26:                        /*first_time_entry */ ;
                 longjmp(error_jmpbuf, 1);
             }
         }
-        entry_cite_ptr = cite_ptr();
+        set_entry_cite_ptr(cite_ptr());
         set_cite_ptr(add_database_cite(cite_ptr(), cite_loc, lc_cite_loc));
 lab22:                        /*cite_already_set */ ;
     } else if (!hash.exists)
         store_entry = false;
     if (store_entry) {        /*274: */
         if (type_exists)
-            set_type_list(entry_cite_ptr, entry_type_loc);
+            set_type_list(entry_cite_ptr(), entry_type_loc);
         else {
-            set_type_list(entry_cite_ptr, undefined());
+            set_type_list(entry_cite_ptr(), undefined());
             puts_log("Warning--entry type for \"");
             print_a_token();
             puts_log("\" isn't style-file defined\n");
@@ -4913,7 +4903,7 @@ lab22:                        /*cite_already_set */ ;
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            if (!scan_and_store_the_field_value_and_eat_white(at_bib_command, command_num, NULL, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!scan_and_store_the_field_value_and_eat_white(ctx, at_bib_command, command_num, NULL, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
         }
  loop_exit:
@@ -4948,7 +4938,7 @@ static void bst_read_command(GlblCtx* ctx)
     {
         {
             {
-                check_field_overflow(num_fields * num_cites);
+                check_field_overflow(num_fields() * num_cites());
                 field_loc field_ptr = 0;
                 while (field_ptr < max_fields()) {
                     set_field_info(field_ptr, 0 /*missing */);
@@ -4963,19 +4953,19 @@ static void bst_read_command(GlblCtx* ctx)
                     set_cite_info(cite_ptr(), 0 /*any_value */);
                     set_cite_ptr(cite_ptr() + 1);
                 }
-                old_num_cites = num_cites;
-                if (all_entries) {
-                    set_cite_ptr(all_marker);
-                    while (cite_ptr() < old_num_cites) {
+                set_old_num_cites(num_cites());
+                if (ctx->all_entries) {
+                    set_cite_ptr(all_marker());
+                    while (cite_ptr() < old_num_cites()) {
                         set_cite_info(cite_ptr(), cite_list(cite_ptr()));
                         set_entry_exists(cite_ptr(), false);
                         set_cite_ptr(cite_ptr() + 1);
                     }
-                    set_cite_ptr(all_marker);
+                    set_cite_ptr(all_marker());
                 } else {
 
-                    set_cite_ptr(num_cites);
-                    all_marker = 0 /*any_value */ ;
+                    set_cite_ptr(num_cites());
+                    set_all_marker(0 /*any_value */);
                 }
             }
         }
@@ -4996,7 +4986,7 @@ static void bst_read_command(GlblCtx* ctx)
             hash_loc cur_macro_loc = 0;
             hash_loc field_name_loc = 0;
             while (!eof(cur_bib_file()))
-                get_bib_command_or_entry_and_process(&cur_macro_loc, &field_name_loc);
+                get_bib_command_or_entry_and_process(ctx, &cur_macro_loc, &field_name_loc);
             peekable_close(cur_bib_file());
             set_cur_bib_file(NULL);
             set_bib_ptr(bib_ptr() + 1);
@@ -5004,17 +4994,17 @@ static void bst_read_command(GlblCtx* ctx)
         ctx->reading_completed = true;
 
         {
-            num_cites = cite_ptr();
+            set_num_cites(cite_ptr());
             ctx->num_preamble_strings = preamble_ptr();
             {
-                if ((num_cites - 1) * num_fields + crossref_num >= max_fields()) {
+                if ((num_cites() - 1) * num_fields() + crossref_num() >= max_fields()) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
                 set_cite_ptr(0);
-                while (cite_ptr() < num_cites) {
-                    field_loc field_ptr = cite_ptr() * num_fields + crossref_num;
+                while (cite_ptr() < num_cites()) {
+                    field_loc field_ptr = cite_ptr() * num_fields() + crossref_num();
                     if (field_info(field_ptr) != 0 /*missing */ ) {
                         find_cite_locs find = find_cite_locs_for_this_cite_key(field_info(field_ptr));
                         cite_number lc_cite_loc = find.lc_cite_loc;
@@ -5022,9 +5012,9 @@ static void bst_read_command(GlblCtx* ctx)
                             cite_number cite_loc = ilk_info(lc_cite_loc);
                             set_field_info(field_ptr, hash_text(cite_loc));
                             cite_number cite_parent_ptr = ilk_info(cite_loc);
-                            field_ptr = cite_ptr() * num_fields + num_pre_defined_fields;
-                            field_loc field_end_ptr = field_ptr - num_pre_defined_fields + num_fields;
-                            field_loc field_parent_ptr = cite_parent_ptr * num_fields + num_pre_defined_fields;
+                            field_ptr = cite_ptr() * num_fields() + num_pre_defined_fields();
+                            field_loc field_end_ptr = field_ptr - num_pre_defined_fields() + num_fields();
+                            field_loc field_parent_ptr = cite_parent_ptr * num_fields() + num_pre_defined_fields();
                             while (field_ptr < field_end_ptr) {
 
                                 if (field_info(field_ptr) == 0 /*missing */ )
@@ -5038,14 +5028,14 @@ static void bst_read_command(GlblCtx* ctx)
                 }
             }
             {
-                if ((num_cites - 1) * num_fields + crossref_num >= max_fields()) {
+                if ((num_cites() - 1) * num_fields() + crossref_num() >= max_fields()) {
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
                 }
                 set_cite_ptr(0);
-                while (cite_ptr() < num_cites) {
-                    field_loc field_ptr = cite_ptr() * num_fields + crossref_num;
+                while (cite_ptr() < num_cites()) {
+                    field_loc field_ptr = cite_ptr() * num_fields() + crossref_num();
                     if (field_info(field_ptr) != 0 /*missing */ ) {
                         find_cite_locs find = find_cite_locs_for_this_cite_key(field_info(field_ptr));
                         cite_number cite_loc = find.cite_loc;
@@ -5069,14 +5059,14 @@ static void bst_read_command(GlblCtx* ctx)
                                 set_field_info(field_ptr, 0 /*missing */);
                             } else {
 
-                                field_loc field_parent_ptr = cite_parent_ptr * num_fields + crossref_num;
+                                field_loc field_parent_ptr = cite_parent_ptr * num_fields() + crossref_num();
                                 if (field_info(field_parent_ptr) != 0 /*missing */ ) {        /*283: */
                                     puts_log("Warning--you've nested cross references");
                                     TRY(bad_cross_reference_print(cite_list(cite_parent_ptr)));
                                     puts_log("\", which also refers to something\n");
                                     mark_warning();
                                 }
-                                if (((!all_entries) && (cite_parent_ptr >= old_num_cites)
+                                if (((!ctx->all_entries) && (cite_parent_ptr >= old_num_cites())
                                      && (cite_info(cite_parent_ptr) < bibtex_config->min_crossrefs)))
                                     set_field_info(field_ptr, 0 /*missing */);
                             }
@@ -5087,19 +5077,19 @@ static void bst_read_command(GlblCtx* ctx)
             }
             {
                 set_cite_ptr(0);
-                while (cite_ptr() < num_cites) {
+                while (cite_ptr() < num_cites()) {
 
                     if (type_list(cite_ptr()) == 0 /*empty */ )
                         TRY(print_missing_entry(cite_list(cite_ptr())));
-                    else if ((all_entries) || (cite_ptr() < old_num_cites) || (cite_info(cite_ptr()) >= bibtex_config->min_crossrefs)) {
-                        if (cite_ptr() > cite_xptr) {   /*286: */
-                            if ((cite_xptr + 1) * num_fields > max_fields()) {
+                    else if ((ctx->all_entries) || (cite_ptr() < old_num_cites()) || (cite_info(cite_ptr()) >= bibtex_config->min_crossrefs)) {
+                        if (cite_ptr() > ctx->cite_xptr) {   /*286: */
+                            if ((ctx->cite_xptr + 1) * num_fields() > max_fields()) {
                                 puts_log("field_info index is out of range");
                                 print_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            set_cite_list(cite_xptr, cite_list(cite_ptr()));
-                            set_type_list(cite_xptr, type_list(cite_ptr()));
+                            set_cite_list(ctx->cite_xptr, cite_list(cite_ptr()));
+                            set_type_list(ctx->cite_xptr, type_list(cite_ptr()));
                             find_cite_locs find = find_cite_locs_for_this_cite_key(cite_list(cite_ptr()));
                             cite_number cite_loc = find.cite_loc;
                             cite_number lc_cite_loc = find.lc_cite_loc;
@@ -5111,10 +5101,10 @@ static void bst_read_command(GlblCtx* ctx)
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            set_ilk_info(cite_loc, cite_xptr);
-                            field_loc field_ptr = cite_xptr * num_fields;
-                            field_loc field_end_ptr = field_ptr + num_fields;
-                            tmp_ptr = cite_ptr() * num_fields;
+                            set_ilk_info(cite_loc, ctx->cite_xptr);
+                            field_loc field_ptr = ctx->cite_xptr * num_fields();
+                            field_loc field_end_ptr = field_ptr + num_fields();
+                            tmp_ptr = cite_ptr() * num_fields();
                             while (field_ptr < field_end_ptr) {
 
                                 set_field_info(field_ptr, field_info(tmp_ptr));
@@ -5122,14 +5112,14 @@ static void bst_read_command(GlblCtx* ctx)
                                 tmp_ptr = tmp_ptr + 1;
                             }
                         }
-                        cite_xptr = cite_xptr + 1;
+                        ctx->cite_xptr = ctx->cite_xptr + 1;
                     }
                     set_cite_ptr(cite_ptr() + 1);
                 }
-                num_cites = cite_xptr;
-                if (all_entries) {    /*287: */
-                    set_cite_ptr(all_marker);
-                    while (cite_ptr() < old_num_cites) {
+                set_num_cites(ctx->cite_xptr);
+                if (ctx->all_entries) {    /*287: */
+                    set_cite_ptr(all_marker());
+                    while (cite_ptr() < old_num_cites()) {
 
                         if (!entry_exists(cite_ptr()))
                             TRY(print_missing_entry(cite_info(cite_ptr())));
@@ -5138,18 +5128,18 @@ static void bst_read_command(GlblCtx* ctx)
                 }
             }
             {
-                entry_ints = XTALLOC((num_ent_ints + 1) * (num_cites + 1), int32_t);
+                entry_ints = XTALLOC((num_ent_ints + 1) * (num_cites() + 1), int32_t);
                 int_ent_loc int_ent_ptr = 0;
-                while (int_ent_ptr < num_ent_ints * num_cites) {
+                while (int_ent_ptr < num_ent_ints * num_cites()) {
 
                     entry_ints[int_ent_ptr] = 0;
                     int_ent_ptr = int_ent_ptr + 1;
                 }
             }
             {
-                entry_strs = XTALLOC((num_ent_strs + 1) * (num_cites + 1) * (ent_str_size + 1), ASCII_code);
+                entry_strs = XTALLOC((num_ent_strs + 1) * (num_cites() + 1) * (ent_str_size + 1), ASCII_code);
                 str_ent_loc str_ent_ptr = 0;
-                while (str_ent_ptr < num_ent_strs * num_cites) {
+                while (str_ent_ptr < num_ent_strs * num_cites()) {
 
                     entry_strs[(str_ent_ptr) * (ent_str_size + 1) + (0)] = 127 /*end_of_string */ ;
                     str_ent_ptr = str_ent_ptr + 1;
@@ -5157,7 +5147,7 @@ static void bst_read_command(GlblCtx* ctx)
             }
             {
                 set_cite_ptr(0);
-                while (cite_ptr() < num_cites) {
+                while (cite_ptr() < num_cites()) {
                     set_cite_info(cite_ptr(), cite_ptr());
                     set_cite_ptr(cite_ptr() + 1);
                 }
@@ -5241,8 +5231,8 @@ static void bst_reverse_command(ExecCtx* ctx)
     {
         init_command_execution(ctx);
         ctx->mess_with_entries = true;
-        if (num_cites > 0) {
-            sort_cite_ptr = num_cites;
+        if (num_cites() > 0) {
+            sort_cite_ptr = num_cites();
             do {
                 sort_cite_ptr = sort_cite_ptr - 1;
                 set_cite_ptr(cite_info(sort_cite_ptr));
@@ -5265,8 +5255,8 @@ bst_sort_command(GlblCtx* ctx)
         return;
     }
 
-    if (num_cites > 1)
-        quick_sort(0, num_cites - 1);
+    if (num_cites() > 1)
+        quick_sort(0, num_cites() - 1);
 }
 
 
@@ -5414,8 +5404,6 @@ setup_params(void)
 static int
 initialize(GlblCtx* ctx, const char *aux_file_name)
 {
-    hash_loc k;
-
     int32_t bad = 0;
 
     if (min_print_line < 3)
@@ -5438,10 +5426,9 @@ initialize(GlblCtx* ctx, const char *aux_file_name)
     ctx->bib_seen = false;
     ctx->bst_seen = false;
     ctx->citation_seen = false;
-    all_entries = false;
+    ctx->all_entries = false;
     num_ent_ints = 0;
     num_ent_strs = 0;
-    num_fields = 0;
 
     int32_t str_glb_ptr = 0;
     while (str_glb_ptr < max_glob_strs) {

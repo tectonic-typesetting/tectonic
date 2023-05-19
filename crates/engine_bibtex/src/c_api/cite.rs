@@ -10,6 +10,11 @@ pub struct CiteInfo {
     type_list: XBuf<HashPointer2>,
     entry_exists: XBuf<bool>,
     cite_ptr: CiteNumber,
+
+    entry_cite_ptr: CiteNumber,
+    num_cites: CiteNumber,
+    old_num_cites: CiteNumber,
+    all_marker: CiteNumber,
 }
 
 impl CiteInfo {
@@ -20,6 +25,10 @@ impl CiteInfo {
             type_list: XBuf::new(MAX_CITES),
             entry_exists: XBuf::new(MAX_CITES),
             cite_ptr: 0,
+            entry_cite_ptr: 0,
+            num_cites: 0,
+            old_num_cites: 0,
+            all_marker: 0,
         }
     }
 
@@ -154,4 +163,44 @@ pub extern "C" fn entry_exists(num: CiteNumber) -> bool {
 #[no_mangle]
 pub extern "C" fn set_entry_exists(num: CiteNumber, exists: bool) {
     with_cites_mut(|cites| cites.set_exists(num as usize, exists))
+}
+
+#[no_mangle]
+pub extern "C" fn entry_cite_ptr() -> CiteNumber {
+    with_cites(|cites| cites.entry_cite_ptr)
+}
+
+#[no_mangle]
+pub extern "C" fn set_entry_cite_ptr(val: CiteNumber) {
+    with_cites_mut(|cites| cites.entry_cite_ptr = val)
+}
+
+#[no_mangle]
+pub extern "C" fn num_cites() -> CiteNumber {
+    with_cites(|cites| cites.num_cites)
+}
+
+#[no_mangle]
+pub extern "C" fn set_num_cites(val: CiteNumber) {
+    with_cites_mut(|cites| cites.num_cites = val)
+}
+
+#[no_mangle]
+pub extern "C" fn old_num_cites() -> CiteNumber {
+    with_cites(|cites| cites.old_num_cites)
+}
+
+#[no_mangle]
+pub extern "C" fn set_old_num_cites(val: CiteNumber) {
+    with_cites_mut(|cites| cites.old_num_cites = val)
+}
+
+#[no_mangle]
+pub extern "C" fn all_marker() -> CiteNumber {
+    with_cites(|cites| cites.all_marker)
+}
+
+#[no_mangle]
+pub extern "C" fn set_all_marker(val: CiteNumber) {
+    with_cites_mut(|cites| cites.all_marker = val)
 }

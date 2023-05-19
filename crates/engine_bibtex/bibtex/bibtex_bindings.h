@@ -111,6 +111,7 @@ typedef struct {
   int32_t num_bib_files;
   int32_t num_preamble_strings;
   int32_t impl_fn_num;
+  int32_t cite_xptr;
   bool bib_seen;
   bool bst_seen;
   bool citation_seen;
@@ -118,6 +119,7 @@ typedef struct {
   bool read_seen;
   bool read_performed;
   bool reading_completed;
+  bool all_entries;
 } GlblCtx;
 
 typedef struct {
@@ -309,6 +311,22 @@ bool entry_exists(CiteNumber num);
 
 void set_entry_exists(CiteNumber num, bool exists);
 
+CiteNumber entry_cite_ptr(void);
+
+void set_entry_cite_ptr(CiteNumber val);
+
+CiteNumber num_cites(void);
+
+void set_num_cites(CiteNumber val);
+
+CiteNumber old_num_cites(void);
+
+void set_old_num_cites(CiteNumber val);
+
+CiteNumber all_marker(void);
+
+void set_all_marker(CiteNumber val);
+
 bool print_lit(ExecVal val);
 
 bool print_stk_lit(ExecVal val);
@@ -474,6 +492,18 @@ void set_field_info(FieldLoc pos, StrNumber val);
 void check_field_overflow(int32_t total_fields);
 
 int32_t max_fields(void);
+
+FieldLoc num_fields(void);
+
+void set_num_fields(FieldLoc val);
+
+FieldLoc num_pre_defined_fields(void);
+
+void set_num_pre_defined_fields(FieldLoc val);
+
+FieldLoc crossref_num(void);
+
+void set_crossref_num(FieldLoc val);
 
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
