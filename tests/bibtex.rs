@@ -91,8 +91,7 @@ fn test_single_entry() {
 
 #[test]
 fn test_many() {
-    TestCase::new("many", Some("cites"))
-        .go();
+    TestCase::new("many", Some("cites")).go();
 }
 
 #[test]
@@ -144,12 +143,10 @@ fn test_duplicated_style() {
 
 #[test]
 fn test_bad_crossref() {
-    TestCase::new("bad", Some("crossref"))
-        .go();
+    TestCase::new("bad", Some("crossref")).go();
 }
 
 #[test]
 fn test_min_crossref() {
-    TestCase::new("min", Some("crossref"))
-        .go();
+    TestCase::new("min", Some("crossref")).go();
 }
