@@ -113,7 +113,7 @@ pub mod c_api {
     pub use external::*;
     use crate::c_api::auxi::with_aux_mut;
     use crate::c_api::exec::GlblCtx;
-    use crate::c_api::hash::with_hash;
+    use crate::c_api::hash::{with_hash, with_hash_mut};
     use crate::c_api::log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
     use crate::c_api::peekable::{PeekableInput};
 
@@ -132,6 +132,7 @@ pub mod c_api {
     pub mod pool;
     pub mod scan;
     pub mod xbuf;
+    pub mod entries;
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
     const _: () = assert!(hash::HASH_PRIME >= 128);
@@ -187,13 +188,42 @@ pub mod c_api {
         Ok(LookupRes),
     }
 
-    impl From<Option<LookupRes>> for CResultLookup {
-        fn from(value: Option<LookupRes>) -> Self {
+    impl From<Result<LookupRes, ()>> for CResultLookup {
+        fn from(value: Result<LookupRes, ()>) -> Self {
             match value {
-                Some(val) => CResultLookup::Ok(val),
-                None => CResultLookup::Error,
+                Ok(val) => CResultLookup::Ok(val),
+                Err(()) => CResultLookup::Error,
             }
         }
+    }
+
+    #[repr(C)]
+    pub struct FindCiteLocs {
+        cite_loc: CiteNumber,
+        lc_cite_loc: CiteNumber,
+
+        cite_found: bool,
+        lc_found: bool,
+    }
+
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
+    #[repr(u8)]
+    pub enum StrIlk {
+        Text = 0,
+        Integer = 1,
+        AuxCommand = 2,
+        AuxFile = 3,
+        BstCommand = 4,
+        BstFile = 5,
+        BibFile = 6,
+        FileExt = 7,
+        // 8 isn't used
+        Cite = 9,
+        LcCite = 10,
+        BstFn = 11,
+        BibCommand = 12,
+        Macro = 13,
+        ControlSeq = 14,
     }
 
     type StrNumber = i32;
@@ -203,14 +233,12 @@ pub mod c_api {
     type BufPointer = i32;
     type PoolPointer = usize;
     type HashPointer = i32;
-    type StrIlk = u8;
     type HashPointer2 = i32;
     type AuxNumber = i32;
     type BibNumber = i32;
     type WizFnLoc = i32;
     type FieldLoc = i32;
     type FnDefLoc = i32;
-    type BltInRange = i32;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -223,6 +251,8 @@ pub mod c_api {
         bibs::reset();
         hash::reset();
         other::reset();
+        entries::reset();
+        global::reset();
     }
 
     #[no_mangle]
@@ -299,9 +329,9 @@ pub mod c_api {
             }
 
             set_extension(&mut path, b".aux");
-            let lookup = match with_pool_mut(|pool| pool.lookup_str_insert(&path[..path.len()-1], 3)) {
-                None => return CResultStr::Error,
-                Some(res) => res,
+            let lookup = match with_hash_mut(|hash| with_pool_mut(|pool| pool.lookup_str_insert(hash, &path[..path.len()-1], StrIlk::AuxFile))) {
+                Err(()) => return CResultStr::Error,
+                Ok(res) => res,
             };
             aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc as usize)));
 

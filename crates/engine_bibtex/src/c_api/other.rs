@@ -33,6 +33,14 @@ impl OtherData {
     pub fn num_fields(&self) -> FieldLoc {
         self.num_fields
     }
+
+    pub fn set_num_fields(&mut self, val: FieldLoc) {
+        self.num_fields = val;
+    }
+
+    pub fn set_pre_defined_fields(&mut self, val: FieldLoc) {
+        self.num_pre_defined_fields = val;
+    }
     
     pub fn check_field_overflow(&mut self, fields: i32) {
         let start_fields = self.field_info.len();
@@ -40,6 +48,10 @@ impl OtherData {
             self.field_info.grow(MAX_FIELDS);
             self.field_info[start_fields..].fill(0);
         }
+    }
+
+    pub fn set_crossref_num(&mut self, val: FieldLoc) {
+        self.crossref_num = val;
     }
 }
 
@@ -126,16 +138,6 @@ pub extern "C" fn num_pre_defined_fields() -> FieldLoc {
 }
 
 #[no_mangle]
-pub extern "C" fn set_num_pre_defined_fields(val: FieldLoc) {
-    with_other_mut(|other| other.num_pre_defined_fields = val)
-}
-
-#[no_mangle]
 pub extern "C" fn crossref_num() -> FieldLoc {
     with_other(|other| other.crossref_num)
-}
-
-#[no_mangle]
-pub extern "C" fn set_crossref_num(val: FieldLoc) {
-    with_other_mut(|other| other.crossref_num = val)
 }

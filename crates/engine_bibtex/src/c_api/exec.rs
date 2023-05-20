@@ -5,7 +5,7 @@ use crate::c_api::log::{print_a_pool_str, print_confusion, write_logs};
 use crate::c_api::peekable::PeekableInput;
 use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start};
 use crate::c_api::xbuf::xrealloc_zeroed;
-use crate::c_api::StrNumber;
+use crate::c_api::{HashPointer, StrNumber};
 use std::slice;
 use tectonic_io_base::OutputHandle;
 
@@ -33,6 +33,11 @@ pub struct GlblCtx {
     pub read_performed: bool,
     pub reading_completed: bool,
     pub all_entries: bool,
+
+    pub b_default: HashPointer,
+    pub s_null: HashPointer,
+    pub s_default: HashPointer,
+    pub s_aux_extension: HashPointer,
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase
@@ -57,6 +62,7 @@ pub struct ExecVal {
 #[repr(C)]
 pub struct ExecCtx {
     pub glbl_ctx: *mut GlblCtx,
+    pub _default: HashPointer,
     pub pop1: ExecVal,
     pub pop2: ExecVal,
     pub pop3: ExecVal,

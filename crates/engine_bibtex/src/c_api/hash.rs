@@ -187,11 +187,6 @@ pub extern "C" fn hash_text(pos: HashPointer) -> StrNumber {
 }
 
 #[no_mangle]
-pub extern "C" fn set_hash_text(pos: HashPointer, num: StrNumber) {
-    with_hash_mut(|hash| hash.hash_text[pos as usize] = num)
-}
-
-#[no_mangle]
 pub extern "C" fn ilk_info(pos: HashPointer) -> i32 {
     with_hash(|hash| hash.ilk_info[pos as usize])
 }
@@ -199,16 +194,6 @@ pub extern "C" fn ilk_info(pos: HashPointer) -> i32 {
 #[no_mangle]
 pub extern "C" fn set_ilk_info(pos: HashPointer, val: i32) {
     with_hash_mut(|hash| hash.ilk_info[pos as usize] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn hash_next(pos: HashPointer) -> HashPointer {
-    with_hash(|hash| hash.hash_next[pos as usize])
-}
-
-#[no_mangle]
-pub extern "C" fn set_hash_next(pos: HashPointer, val: HashPointer) {
-    with_hash_mut(|hash| hash.hash_next[pos as usize] = val)
 }
 
 #[no_mangle]

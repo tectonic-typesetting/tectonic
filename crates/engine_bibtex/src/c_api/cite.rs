@@ -1,8 +1,9 @@
 use crate::c_api::xbuf::XBuf;
-use crate::c_api::{CiteNumber, HashPointer2, StrNumber};
+use crate::c_api::{CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber};
 use std::cell::RefCell;
 use crate::c_api::hash::with_hash_mut;
 use crate::c_api::other::with_other_mut;
+use crate::c_api::pool::with_pool;
 
 pub const MAX_CITES: usize = 750;
 
@@ -79,6 +80,10 @@ impl CiteInfo {
 
     pub fn set_ptr(&mut self, ptr: CiteNumber) {
         self.cite_ptr = ptr;
+    }
+
+    pub fn num_cites(&self) -> CiteNumber {
+        self.num_cites
     }
 }
 
@@ -224,4 +229,21 @@ pub extern "C" fn add_database_cite(new_cite: CiteNumber, cite_loc: CiteNumber, 
         });
     });
     new_cite + 1
+}
+
+#[no_mangle]
+pub extern "C" fn find_cite_locs_for_this_cite_key(cite_str: StrNumber) -> FindCiteLocs {
+    with_pool(|pool| {
+        let val = pool.get_str(cite_str as usize);
+
+        let cite_hash = pool.lookup_str(val, StrIlk::Cite);
+        let lc_cite_hash = pool.lookup_str(&val.to_ascii_lowercase(), StrIlk::LcCite);
+
+        FindCiteLocs {
+            cite_loc: cite_hash.loc,
+            cite_found: cite_hash.exists,
+            lc_cite_loc: lc_cite_hash.loc,
+            lc_found: lc_cite_hash.exists,
+        }
+    })
 }

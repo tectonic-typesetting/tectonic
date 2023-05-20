@@ -9,7 +9,11 @@
 
 #define MAX_CITES 750
 
+#define GLOB_STR_SIZE 20000
+
 #define HASH_BASE 1
+
+#define ENT_STR_SIZE 250
 
 typedef enum {
   BUF_TY_BASE,
@@ -74,6 +78,30 @@ typedef enum {
   STK_TYPE_ILLEGAL = 4,
 } StkType;
 
+enum StrIlk
+#ifdef __cplusplus
+  : uint8_t
+#endif // __cplusplus
+ {
+  StrIlk_Text = 0,
+  StrIlk_Integer = 1,
+  StrIlk_AuxCommand = 2,
+  StrIlk_AuxFile = 3,
+  StrIlk_BstCommand = 4,
+  StrIlk_BstFile = 5,
+  StrIlk_BibFile = 6,
+  StrIlk_FileExt = 7,
+  StrIlk_Cite = 9,
+  StrIlk_LcCite = 10,
+  StrIlk_BstFn = 11,
+  StrIlk_BibCommand = 12,
+  StrIlk_Macro = 13,
+  StrIlk_ControlSeq = 14,
+};
+#ifndef __cplusplus
+typedef uint8_t StrIlk;
+#endif // __cplusplus
+
 typedef struct PeekableInput PeekableInput;
 
 typedef int32_t StrNumber;
@@ -102,6 +130,8 @@ typedef struct {
   };
 } CResultStr;
 
+typedef int32_t HashPointer;
+
 typedef struct {
   PeekableInput *bst_file;
   StrNumber bst_str;
@@ -120,6 +150,10 @@ typedef struct {
   bool read_performed;
   bool reading_completed;
   bool all_entries;
+  HashPointer b_default;
+  HashPointer s_null;
+  HashPointer s_default;
+  HashPointer s_aux_extension;
 } GlblCtx;
 
 typedef struct {
@@ -137,12 +171,20 @@ typedef int32_t CiteNumber;
 typedef int32_t HashPointer2;
 
 typedef struct {
+  CiteNumber cite_loc;
+  CiteNumber lc_cite_loc;
+  bool cite_found;
+  bool lc_found;
+} FindCiteLocs;
+
+typedef struct {
   StkType typ;
   int32_t lit;
 } ExecVal;
 
 typedef struct {
   GlblCtx *glbl_ctx;
+  HashPointer _default;
   ExecVal pop1;
   ExecVal pop2;
   ExecVal pop3;
@@ -152,8 +194,6 @@ typedef struct {
   bool mess_with_entries;
   StrNumber bib_str_ptr;
 } ExecCtx;
-
-typedef int32_t HashPointer;
 
 typedef int32_t FieldLoc;
 
@@ -188,10 +228,6 @@ typedef struct {
     };
   };
 } CResultLookup;
-
-typedef uint8_t StrIlk;
-
-typedef int32_t BltInRange;
 
 
 
@@ -329,6 +365,8 @@ void set_all_marker(CiteNumber val);
 
 CiteNumber add_database_cite(CiteNumber new_cite, CiteNumber cite_loc, CiteNumber lc_cite_loc);
 
+FindCiteLocs find_cite_locs_for_this_cite_key(StrNumber cite_str);
+
 bool print_lit(ExecVal val);
 
 bool print_stk_lit(ExecVal val);
@@ -355,15 +393,9 @@ void set_fn_type(HashPointer pos, FnClass ty);
 
 StrNumber hash_text(HashPointer pos);
 
-void set_hash_text(HashPointer pos, StrNumber num);
-
 int32_t ilk_info(HashPointer pos);
 
 void set_ilk_info(HashPointer pos, int32_t val);
-
-HashPointer hash_next(HashPointer pos);
-
-void set_hash_next(HashPointer pos, HashPointer val);
 
 int32_t hash_size(void);
 
@@ -501,11 +533,7 @@ void set_num_fields(FieldLoc val);
 
 FieldLoc num_pre_defined_fields(void);
 
-void set_num_pre_defined_fields(FieldLoc val);
-
 FieldLoc crossref_num(void);
-
-void set_crossref_num(FieldLoc val);
 
 PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
@@ -543,9 +571,7 @@ CResultStr bib_make_string(void);
 
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
-CResultLookup pre_define(const char *pds, uintptr_t len, StrIlk ilk);
-
-CResult build_in(const char *pds, uintptr_t len, HashPointer *fn_hash_loc, BltInRange blt_in_num);
+CResult pre_def_certain_strings(GlblCtx *ctx);
 
 bool scan1(ASCIICode char1);
 
@@ -566,6 +592,26 @@ ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 bool scan_nonneg_integer(void);
 
 bool scan_integer(int32_t *token_value);
+
+void init_entry_ints(void);
+
+void init_entry_strs(void);
+
+int32_t num_ent_ints(void);
+
+void set_num_ent_ints(int32_t val);
+
+int32_t num_ent_strs(void);
+
+void set_num_ent_strs(int32_t val);
+
+int32_t entry_ints(int32_t pos);
+
+void set_entry_ints(int32_t pos, int32_t val);
+
+ASCIICode entry_strs(int32_t pos);
+
+void set_entry_strs(int32_t pos, ASCIICode val);
 
 #ifdef __cplusplus
 } // extern "C"
