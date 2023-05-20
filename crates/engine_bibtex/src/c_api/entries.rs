@@ -1,7 +1,7 @@
-use crate::c_api::ASCIICode;
-use crate::c_api::xbuf::XBuf;
-use std::cell::RefCell;
 use crate::c_api::cite::with_cites;
+use crate::c_api::xbuf::XBuf;
+use crate::c_api::ASCIICode;
+use std::cell::RefCell;
 
 pub const ENT_STR_SIZE: usize = 250;
 
@@ -57,7 +57,9 @@ pub fn with_entries_mut<T>(f: impl FnOnce(&mut EntryData) -> T) -> T {
 pub extern "C" fn init_entry_ints() {
     with_entries_mut(|entries| {
         let num_cites = with_cites(|cites| cites.num_cites());
-        entries.entry_ints = Some(XBuf::new(((entries.num_entry_ints + 1) * (num_cites + 1)) as usize));
+        entries.entry_ints = Some(XBuf::new(
+            ((entries.num_entry_ints + 1) * (num_cites + 1)) as usize,
+        ));
     })
 }
 
@@ -65,7 +67,9 @@ pub extern "C" fn init_entry_ints() {
 pub extern "C" fn init_entry_strs() {
     with_entries_mut(|entries| {
         let num_cites = with_cites(|cites| cites.num_cites());
-        let mut new_buf = XBuf::new((entries.num_entry_strs + 1) as usize * (num_cites + 1) as usize * (ENT_STR_SIZE + 1));
+        let mut new_buf = XBuf::new(
+            (entries.num_entry_strs + 1) as usize * (num_cites + 1) as usize * (ENT_STR_SIZE + 1),
+        );
         new_buf.fill(127);
         entries.entry_strs = Some(new_buf);
     })

@@ -2,43 +2,12 @@ use crate::c_api::cite::with_cites;
 use crate::c_api::hash::with_hash;
 use crate::c_api::history::mark_error;
 use crate::c_api::log::{print_a_pool_str, print_confusion, write_logs};
-use crate::c_api::peekable::PeekableInput;
 use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start};
 use crate::c_api::xbuf::xrealloc_zeroed;
-use crate::c_api::{HashPointer, StrNumber};
+use crate::c_api::{GlblCtx, HashPointer, StrNumber};
 use std::slice;
-use tectonic_io_base::OutputHandle;
 
 const LIT_STK_SIZE: usize = 100;
-
-#[repr(C)]
-pub struct GlblCtx {
-    pub bst_file: *mut PeekableInput,
-    pub bst_str: StrNumber,
-    pub bst_line_num: i32,
-
-    pub bbl_file: *mut OutputHandle,
-    pub bbl_line_num: i32,
-
-    pub num_bib_files: i32,
-    pub num_preamble_strings: i32,
-    pub impl_fn_num: i32,
-    pub cite_xptr: i32,
-
-    pub bib_seen: bool,
-    pub bst_seen: bool,
-    pub citation_seen: bool,
-    pub entry_seen: bool,
-    pub read_seen: bool,
-    pub read_performed: bool,
-    pub reading_completed: bool,
-    pub all_entries: bool,
-
-    pub b_default: HashPointer,
-    pub s_null: HashPointer,
-    pub s_default: HashPointer,
-    pub s_aux_extension: HashPointer,
-}
 
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -159,7 +128,7 @@ pub extern "C" fn print_stk_lit(val: ExecVal) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn print_wrong_stk_lit(ctx: *mut ExecCtx, val: ExecVal, typ2: StkType) -> bool {
+pub unsafe extern "C" fn print_wrong_stk_lit(ctx: *mut ExecCtx, val: ExecVal, typ2: StkType) -> bool {
     if val.typ != StkType::Illegal {
         if !print_stk_lit(val) {
             return false;
@@ -192,8 +161,8 @@ pub extern "C" fn print_wrong_stk_lit(ctx: *mut ExecCtx, val: ExecVal, typ2: Stk
 }
 
 #[no_mangle]
-pub extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
-    if unsafe { (*ctx).mess_with_entries } {
+pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
+    if (*ctx).mess_with_entries {
         write_logs(" for entry ");
         let res = with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr() as usize)));
         if !res {
@@ -208,16 +177,14 @@ pub extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn bst_ln_num_print(glbl_ctx: *const GlblCtx) -> bool {
-    write_logs(&format!("--line {} of file ", unsafe {
-        (*glbl_ctx).bst_line_num
-    }));
+pub unsafe extern "C" fn bst_ln_num_print(glbl_ctx: *const GlblCtx) -> bool {
+    write_logs(&format!("--line {} of file ", (*glbl_ctx).bst_line_num));
     print_bst_name(glbl_ctx)
 }
 
 #[no_mangle]
-pub extern "C" fn print_bst_name(glbl_ctx: *const GlblCtx) -> bool {
-    if !print_a_pool_str(unsafe { (*glbl_ctx).bst_str }) {
+pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const GlblCtx) -> bool {
+    if !print_a_pool_str((*glbl_ctx).bst_str) {
         return false;
     }
     write_logs(".bst\n");
@@ -252,16 +219,14 @@ pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> bo
     } else {
         ctx.lit_stk_ptr -= 1;
         let pop = ctx.lit_stack.offset(ctx.lit_stk_ptr as isize).read();
-        if pop.typ == StkType::String {
-            if pop.lit >= ctx.bib_str_ptr {
-                if pop.lit != (bib_str_ptr() - 1) as i32 {
-                    write_logs("Nontop top of string stack");
-                    print_confusion();
-                    return false;
-                }
-                bib_set_str_ptr(bib_str_ptr() - 1);
-                bib_set_pool_ptr(bib_str_start(bib_str_ptr() as StrNumber))
+        if pop.typ == StkType::String && pop.lit >= ctx.bib_str_ptr {
+            if pop.lit != bib_str_ptr() - 1 {
+                write_logs("Nontop top of string stack");
+                print_confusion();
+                return false;
             }
+            bib_set_str_ptr(bib_str_ptr() - 1);
+            bib_set_pool_ptr(bib_str_start(bib_str_ptr() as StrNumber))
         }
         *out = pop;
     }

@@ -1,9 +1,9 @@
-use crate::c_api::xbuf::XBuf;
-use crate::c_api::{CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber};
-use std::cell::RefCell;
 use crate::c_api::hash::with_hash_mut;
 use crate::c_api::other::with_other_mut;
 use crate::c_api::pool::with_pool;
+use crate::c_api::xbuf::XBuf;
+use crate::c_api::{CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber};
+use std::cell::RefCell;
 
 pub const MAX_CITES: usize = 750;
 
@@ -213,15 +213,17 @@ pub extern "C" fn set_all_marker(val: CiteNumber) {
 }
 
 #[no_mangle]
-pub extern "C" fn add_database_cite(new_cite: CiteNumber, cite_loc: CiteNumber, lc_cite_loc: CiteNumber) -> CiteNumber {
+pub extern "C" fn add_database_cite(
+    new_cite: CiteNumber,
+    cite_loc: CiteNumber,
+    lc_cite_loc: CiteNumber,
+) -> CiteNumber {
     with_cites_mut(|cites| {
         if new_cite as usize == cites.cite_list.len() {
             cites.grow();
         }
-        with_other_mut(|other| {
-            other.check_field_overflow(other.num_fields() * (new_cite + 1))
-        });
-        
+        with_other_mut(|other| other.check_field_overflow(other.num_fields() * (new_cite + 1)));
+
         with_hash_mut(|hash| {
             cites.set_cite(new_cite as usize, hash.text(cite_loc as usize));
             hash.set_ilk_info(cite_loc as usize, new_cite);

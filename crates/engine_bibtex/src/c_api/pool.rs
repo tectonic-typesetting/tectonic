@@ -1,13 +1,16 @@
 use crate::c_api::buffer::{with_buffers, BufTy};
-use crate::c_api::hash::{with_hash_mut, with_hash, FnClass, HashData};
-use crate::c_api::log::{print_overflow, write_logs};
-use crate::c_api::xbuf::XBuf;
-use crate::c_api::{hash, ASCIICode, BufPointer, CResultLookup, CResultStr, HashPointer, LookupRes, PoolPointer, StrIlk, StrNumber, CResult};
-use std::cell::RefCell;
-use crate::c_api::entries::{ENT_STR_SIZE, with_entries_mut};
-use crate::c_api::exec::GlblCtx;
+use crate::c_api::entries::{with_entries_mut, ENT_STR_SIZE};
 use crate::c_api::global::GLOB_STR_SIZE;
+use crate::c_api::hash::{with_hash, with_hash_mut, FnClass, HashData};
+use crate::c_api::log::{print_overflow, write_logs};
 use crate::c_api::other::with_other_mut;
+use crate::c_api::xbuf::XBuf;
+use crate::c_api::{
+    hash, ASCIICode, BufPointer, CResult, CResultLookup, CResultStr, GlblCtx, HashPointer,
+    LookupRes, PoolPointer, StrIlk, StrNumber,
+};
+use crate::BibtexError;
+use std::cell::RefCell;
 
 const POOL_SIZE: usize = 65000;
 pub(crate) const MAX_STRINGS: usize = 35307;
@@ -64,9 +67,7 @@ impl StringPool {
     fn hash_str(hash: &HashData, str: &[ASCIICode]) -> usize {
         let prime = hash.prime();
         str.iter()
-            .fold(0, |acc, &c| {
-                ((2 * acc) + c as usize) % prime
-            })
+            .fold(0, |acc, &c| ((2 * acc) + c as usize) % prime)
     }
 
     pub fn lookup_str(&self, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
@@ -77,13 +78,14 @@ impl StringPool {
             loop {
                 let existing = hash.text(p as usize);
 
-                if existing > 0 && self.get_str(existing as usize) == str {
-                    if hash.hash_ilk(p as usize) == ilk {
-                        return LookupRes {
-                            loc: p,
-                            exists: true,
-                        };
-                    }
+                if existing > 0
+                    && self.get_str(existing as usize) == str
+                    && hash.hash_ilk(p as usize) == ilk
+                {
+                    return LookupRes {
+                        loc: p,
+                        exists: true,
+                    };
                 }
 
                 if hash.next(p as usize) == 0 {
@@ -99,7 +101,12 @@ impl StringPool {
 
     /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
     /// string is found or not, only returning `Err` if a called function fails.
-    pub fn lookup_str_insert(&mut self, hash: &mut HashData, str: &[ASCIICode], ilk: StrIlk) -> Result<LookupRes, ()> {
+    pub(crate) fn lookup_str_insert(
+        &mut self,
+        hash: &mut HashData,
+        str: &[ASCIICode],
+        ilk: StrIlk,
+    ) -> Result<LookupRes, BibtexError> {
         let h = Self::hash_str(hash, str);
         let mut str_num = 0;
         let mut p = (h + hash::HASH_BASE) as HashPointer;
@@ -123,7 +130,7 @@ impl StringPool {
                         if hash.used() as usize == hash::HASH_BASE {
                             print_overflow();
                             write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
-                            return Err(());
+                            return Err(BibtexError);
                         }
                         hash.set_used(hash.used() - 1);
 
@@ -146,7 +153,7 @@ impl StringPool {
 
                     match self.make_string() {
                         CResultStr::Ok(str) => hash.set_text(p as usize, str),
-                        _ => return Err(()),
+                        _ => return Err(BibtexError),
                     }
                 }
 
@@ -421,6 +428,6 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut GlblCtx) -> CResult {
     });
     match res {
         Ok(()) => CResult::Ok,
-        Err(()) => CResult::Error,
+        Err(BibtexError) => CResult::Error,
     }
 }

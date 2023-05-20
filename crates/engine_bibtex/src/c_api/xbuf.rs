@@ -28,7 +28,7 @@ impl<T: Copy + 'static> XBuf<T> {
     }
 
     pub fn grow(&mut self, grow_by: usize) {
-        let slice = mem::replace(&mut self.0, &mut []);
+        let slice = mem::take(&mut self.0);
         let old_len = slice.len();
         self.0 = unsafe { xrealloc_zeroed(slice, grow_by + old_len) };
     }

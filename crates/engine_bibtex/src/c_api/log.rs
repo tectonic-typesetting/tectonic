@@ -3,7 +3,7 @@ use crate::c_api::bibs::{bib_line_num, cur_bib};
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::cite::with_cites;
-use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, GlblCtx, ExecCtx};
+use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx};
 use crate::c_api::hash::{with_hash, FnClass};
 use crate::c_api::history::{mark_error, mark_fatal, mark_warning, set_history};
 use crate::c_api::other::with_other;
@@ -11,8 +11,8 @@ use crate::c_api::peekable::input_ln;
 use crate::c_api::pool::with_pool;
 use crate::c_api::scan::ScanRes;
 use crate::c_api::{
-    ttstub_output_open, ttstub_output_open_stdout, ASCIICode, CResult, FieldLoc, HashPointer,
-    History, StrNumber,
+    ttstub_output_open, ttstub_output_open_stdout, ASCIICode, CResult, FieldLoc, GlblCtx,
+    HashPointer, History, StrNumber,
 };
 use std::cell::Cell;
 use std::ffi::CStr;
@@ -160,8 +160,8 @@ pub fn out_token(handle: &mut OutputHandle) {
 
 #[no_mangle]
 pub extern "C" fn print_a_token() {
-    with_stdout(|stdout| out_token(stdout));
-    with_log(|log| out_token(log));
+    with_stdout(out_token);
+    with_log(out_token);
 }
 
 pub(crate) fn print_bad_input_line() {
@@ -243,7 +243,12 @@ pub extern "C" fn print_a_pool_str(s: StrNumber) -> bool {
 
 pub fn sam_wrong_file_name_print(file: &CStr) {
     with_stdout(|stdout| {
-        writeln!(stdout, "I couldn't open file name `{}`", file.to_str().unwrap()).unwrap();
+        writeln!(
+            stdout,
+            "I couldn't open file name `{}`",
+            file.to_str().unwrap()
+        )
+        .unwrap();
     })
 }
 
@@ -385,7 +390,7 @@ pub extern "C" fn hash_cite_confusion() {
 }
 
 #[no_mangle]
-pub extern "C" fn bst_warn_print(ctx: *const GlblCtx) -> bool {
+pub unsafe extern "C" fn bst_warn_print(ctx: *const GlblCtx) -> bool {
     if !bst_ln_num_print(ctx) {
         return false;
     }
@@ -568,7 +573,7 @@ pub extern "C" fn print_missing_entry(s: StrNumber) -> bool {
     true
 }
 
-pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
+pub(crate) unsafe fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
         let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr() as usize)));
@@ -581,7 +586,7 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn bst_cant_mess_with_entries_print(ctx: *const ExecCtx) -> bool {
+pub unsafe extern "C" fn bst_cant_mess_with_entries_print(ctx: *const ExecCtx) -> bool {
     write_logs("You can't mess with entries here");
     bst_ex_warn_print(ctx)
 }
@@ -592,9 +597,9 @@ pub extern "C" fn bst_1print_string_size_exceeded() {
 }
 
 #[no_mangle]
-pub extern "C" fn bst_2print_string_size_exceeded(ctx: *const ExecCtx) -> bool {
+pub unsafe extern "C" fn bst_2print_string_size_exceeded(ctx: *const ExecCtx) -> bool {
     write_logs("-string-size,");
-    if !bst_mild_ex_warn_print(unsafe { &*ctx }) {
+    if !bst_mild_ex_warn_print(&*ctx) {
         return false;
     }
     write_logs("*Please notify the bibstyle designer*\n");
@@ -602,13 +607,16 @@ pub extern "C" fn bst_2print_string_size_exceeded(ctx: *const ExecCtx) -> bool {
 }
 
 #[no_mangle]
-pub extern "C" fn braces_unbalanced_complaint(ctx: *const ExecCtx, pop_lit_var: StrNumber) -> bool {
+pub unsafe extern "C" fn braces_unbalanced_complaint(
+    ctx: *const ExecCtx,
+    pop_lit_var: StrNumber,
+) -> bool {
     write_logs("Warning--\"");
     if !print_a_pool_str(pop_lit_var) {
         return false;
     }
     write_logs("\" isn't a brace-balanced string");
-    bst_mild_ex_warn_print(unsafe { &*ctx })
+    bst_mild_ex_warn_print(&*ctx)
 }
 
 #[no_mangle]
@@ -685,10 +693,11 @@ pub unsafe extern "C" fn output_bbl_line(ctx: *mut GlblCtx) {
         if buffers.init(BufTy::Out) != 0 {
             let mut init = buffers.init(BufTy::Out);
             while init > 0 {
-                if LexClass::of(buffers.at(BufTy::Out, (init - 1) as usize)) == LexClass::Whitespace {
+                if LexClass::of(buffers.at(BufTy::Out, (init - 1) as usize)) == LexClass::Whitespace
+                {
                     init -= 1;
                 } else {
-                    break
+                    break;
                 }
             }
             buffers.set_init(BufTy::Out, init);

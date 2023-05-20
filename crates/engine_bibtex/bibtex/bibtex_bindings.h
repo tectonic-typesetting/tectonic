@@ -130,9 +130,15 @@ typedef struct {
   };
 } CResultStr;
 
+typedef struct {
+  int min_crossrefs;
+  bool verbose;
+} BibtexConfig;
+
 typedef int32_t HashPointer;
 
 typedef struct {
+  BibtexConfig config;
   PeekableInput *bst_file;
   StrNumber bst_str;
   int32_t bst_line_num;
@@ -155,10 +161,6 @@ typedef struct {
   HashPointer s_default;
   HashPointer s_aux_extension;
 } GlblCtx;
-
-typedef struct {
-  int min_crossrefs;
-} BibtexConfig;
 
 typedef int32_t AuxNumber;
 
@@ -247,9 +249,7 @@ NameAndLen start_name(StrNumber file_name);
 
 CResultStr get_the_top_level_aux_file_name(GlblCtx *ctx, const char *aux_file_name);
 
-extern History tt_engine_bibtex_main(ttbc_state_t *api,
-                                     const BibtexConfig *cfg,
-                                     const char *aux_name);
+extern History tt_engine_bibtex_main(ttbc_state_t *api, GlblCtx *ctx, const char *aux_name);
 
 StrNumber cur_aux(void);
 
@@ -382,6 +382,24 @@ bool print_bst_name(const GlblCtx *glbl_ctx);
 void push_lit_stk(ExecCtx *ctx, ExecVal val);
 
 bool pop_lit_stk(ExecCtx *ctx, ExecVal *out);
+
+int32_t num_glb_strs(void);
+
+void set_num_glb_strs(int32_t val);
+
+void check_grow_global_strs(void);
+
+int32_t glb_bib_str_ptr(int32_t pos);
+
+void set_glb_bib_str_ptr(int32_t pos, int32_t val);
+
+ASCIICode global_strs(int32_t pos);
+
+void set_global_strs(int32_t pos, ASCIICode val);
+
+int32_t glb_str_end(int32_t pos);
+
+void set_glb_str_end(int32_t pos, int32_t val);
 
 int32_t end_of_def(void);
 

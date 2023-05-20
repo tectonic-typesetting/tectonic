@@ -103,7 +103,9 @@ impl GlobalBuffer {
         match ty {
             BufTy::Base => self.buffer.offset[offset - 1] = val,
             BufTy::Ex => self.ex_buf.offset[offset - 1] = val,
-            BufTy::Sv | BufTy::Out | BufTy::NameSep => unreachable!("Buffer {:?} has no offsets", ty),
+            BufTy::Sv | BufTy::Out | BufTy::NameSep => {
+                unreachable!("Buffer {:?} has no offsets", ty)
+            }
         }
     }
 
@@ -111,7 +113,9 @@ impl GlobalBuffer {
         match ty {
             BufTy::Base => self.buffer.offset[offset - 1],
             BufTy::Ex => self.ex_buf.offset[offset - 1],
-            BufTy::Sv | BufTy::Out | BufTy::NameSep => unreachable!("Buffer {:?} has no offsets", ty),
+            BufTy::Sv | BufTy::Out | BufTy::NameSep => {
+                unreachable!("Buffer {:?} has no offsets", ty)
+            }
         }
     }
 

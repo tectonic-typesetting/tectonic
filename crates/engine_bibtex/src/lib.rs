@@ -24,6 +24,8 @@ use std::ffi::CString;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
+pub(crate) struct BibtexError;
+
 /// A possible outcome from a BibTeX engine invocation.
 ///
 /// The classic TeX implementation provides a fourth outcome: “fatal error”. In
@@ -57,7 +59,7 @@ pub enum BibtexOutcome {
 /// the same time.
 #[derive(Debug, Default)]
 pub struct BibtexEngine {
-    config: c_api::BibtexConfig,
+    ctx: c_api::GlblCtx,
 }
 
 impl BibtexEngine {
@@ -69,7 +71,7 @@ impl BibtexEngine {
     /// times an item needs to be referenced in directly-referenced BibTeX
     /// entries before it gets its own standalone entry.
     pub fn min_crossrefs(&mut self, value: i32) -> &mut Self {
-        self.config.min_crossrefs = value as libc::c_int;
+        self.ctx.config.min_crossrefs = value as libc::c_int;
         self
     }
 
@@ -82,13 +84,14 @@ impl BibtexEngine {
     /// engine, that BibTeX will process.
     pub fn process(
         &mut self,
-        launcher: &mut CoreBridgeLauncher,
+        launcher: &mut CoreBridgeLauncher<'_>,
         aux: &str,
     ) -> Result<BibtexOutcome> {
         let caux = CString::new(aux)?;
 
         launcher.with_global_lock(|state| {
-            let hist = unsafe { c_api::tt_engine_bibtex_main(state, &self.config, caux.as_ptr()) };
+            // SAFETY: We're in the global lock, so this is unique access
+            let hist = unsafe { c_api::tt_engine_bibtex_main(state, &mut self.ctx, caux.as_ptr()) };
 
             match hist {
                 History::Spotless => Ok(BibtexOutcome::Spotless),
@@ -102,26 +105,31 @@ impl BibtexEngine {
 }
 
 #[doc(hidden)]
+#[allow(clippy::assertions_on_constants)]
 pub mod c_api {
-    use std::ffi::CStr;
+    use crate::c_api::auxi::with_aux_mut;
     use crate::c_api::buffer::{with_buffers, BufTy};
+    use crate::c_api::hash::{with_hash, with_hash_mut};
     use crate::c_api::history::History;
+    use crate::c_api::log::{
+        init_log_file, print_confusion, sam_wrong_file_name_print, write_logs,
+    };
+    use crate::c_api::peekable::PeekableInput;
     use crate::c_api::pool::{with_pool, with_pool_mut};
+    use crate::c_api::xbuf::xcalloc_zeroed;
+    use crate::BibtexError;
+    pub use external::*;
+    use std::ffi::CStr;
+    use std::ptr;
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
-    use crate::c_api::xbuf::xcalloc_zeroed;
-    pub use external::*;
-    use crate::c_api::auxi::with_aux_mut;
-    use crate::c_api::exec::GlblCtx;
-    use crate::c_api::hash::{with_hash, with_hash_mut};
-    use crate::c_api::log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
-    use crate::c_api::peekable::{PeekableInput};
 
     pub mod auxi;
     pub mod bibs;
     pub mod buffer;
     pub mod char_info;
     pub mod cite;
+    pub mod entries;
     pub mod exec;
     pub mod global;
     pub mod hash;
@@ -132,7 +140,6 @@ pub mod c_api {
     pub mod pool;
     pub mod scan;
     pub mod xbuf;
-    pub mod entries;
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
     const _: () = assert!(hash::HASH_PRIME >= 128);
@@ -144,11 +151,75 @@ pub mod c_api {
     #[derive(Clone, Debug)]
     pub struct BibtexConfig {
         pub min_crossrefs: libc::c_int,
+        pub verbose: bool,
     }
 
     impl Default for BibtexConfig {
         fn default() -> Self {
-            BibtexConfig { min_crossrefs: 2 }
+            BibtexConfig {
+                min_crossrefs: 2,
+                verbose: false,
+            }
+        }
+    }
+
+    #[derive(Debug)]
+    #[repr(C)]
+    pub struct GlblCtx {
+        pub config: BibtexConfig,
+        pub bst_file: *mut PeekableInput,
+        pub bst_str: StrNumber,
+        pub bst_line_num: i32,
+
+        pub bbl_file: *mut OutputHandle,
+        pub bbl_line_num: i32,
+
+        pub num_bib_files: i32,
+        pub num_preamble_strings: i32,
+        pub impl_fn_num: i32,
+        pub cite_xptr: i32,
+
+        pub bib_seen: bool,
+        pub bst_seen: bool,
+        pub citation_seen: bool,
+        pub entry_seen: bool,
+        pub read_seen: bool,
+        pub read_performed: bool,
+        pub reading_completed: bool,
+        pub all_entries: bool,
+
+        pub b_default: HashPointer,
+        pub s_null: HashPointer,
+        pub s_default: HashPointer,
+        pub s_aux_extension: HashPointer,
+    }
+
+    impl Default for GlblCtx {
+        fn default() -> Self {
+            GlblCtx {
+                config: Default::default(),
+                bst_file: ptr::null_mut(),
+                bst_str: 0,
+                bst_line_num: 0,
+                bbl_file: ptr::null_mut(),
+                bbl_line_num: 0,
+                num_bib_files: 0,
+                num_preamble_strings: 0,
+                impl_fn_num: 0,
+                cite_xptr: 0,
+                bib_seen: false,
+                bst_seen: false,
+                citation_seen: false,
+                entry_seen: false,
+                read_seen: false,
+                read_performed: false,
+                reading_completed: false,
+                all_entries: false,
+                b_default: 0,
+                s_null: 0,
+                s_default: 0,
+                s_aux_extension: 0,
+            }
         }
     }
 
@@ -188,11 +259,11 @@ pub mod c_api {
         Ok(LookupRes),
     }
 
-    impl From<Result<LookupRes, ()>> for CResultLookup {
-        fn from(value: Result<LookupRes, ()>) -> Self {
+    impl From<Result<LookupRes, BibtexError>> for CResultLookup {
+        fn from(value: Result<LookupRes, BibtexError>) -> Self {
             match value {
                 Ok(val) => CResultLookup::Ok(val),
-                Err(()) => CResultLookup::Error,
+                Err(BibtexError) => CResultLookup::Error,
             }
         }
     }
@@ -286,7 +357,10 @@ pub mod c_api {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn get_the_top_level_aux_file_name(ctx: *mut GlblCtx, aux_file_name: *const libc::c_char) -> CResultStr {
+    pub unsafe extern "C" fn get_the_top_level_aux_file_name(
+        ctx: *mut GlblCtx,
+        aux_file_name: *const libc::c_char,
+    ) -> CResultStr {
         let ctx = &mut *ctx;
         let aux_file_name = CStr::from_ptr(aux_file_name);
         let aux_bytes = aux_file_name.to_bytes_with_nul();
@@ -294,10 +368,10 @@ pub mod c_api {
         // This will be our scratch space for CStr filenames
         let mut path = vec![0; aux_bytes.len()];
         // Copy in all but the presumed trailing `.aux`
-        path[..aux_bytes.len()-5].copy_from_slice(&aux_bytes[..aux_bytes.len() - 5]);
+        path[..aux_bytes.len() - 5].copy_from_slice(&aux_bytes[..aux_bytes.len() - 5]);
 
         let set_extension = |path: &mut Vec<_>, extension: &[u8]| {
-            let range = path.len()-5..path.len()-1;
+            let range = path.len() - 5..path.len() - 1;
             path[range].copy_from_slice(extension);
         };
 
@@ -329,8 +403,12 @@ pub mod c_api {
             }
 
             set_extension(&mut path, b".aux");
-            let lookup = match with_hash_mut(|hash| with_pool_mut(|pool| pool.lookup_str_insert(hash, &path[..path.len()-1], StrIlk::AuxFile))) {
-                Err(()) => return CResultStr::Error,
+            let lookup = match with_hash_mut(|hash| {
+                with_pool_mut(|pool| {
+                    pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile)
+                })
+            }) {
+                Err(BibtexError) => return CResultStr::Error,
                 Ok(res) => res,
             };
             aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc as usize)));
@@ -348,8 +426,8 @@ pub mod c_api {
     #[allow(improper_ctypes)] // for CoreBridgeState
     extern "C" {
         pub fn tt_engine_bibtex_main(
-            api: &mut CoreBridgeState,
-            cfg: &BibtexConfig,
+            api: &mut CoreBridgeState<'_>,
+            ctx: &mut GlblCtx,
             aux_name: *const libc::c_char,
         ) -> History;
     }

@@ -1,9 +1,10 @@
 use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::{ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer};
+use crate::BibtexError;
 use libc::{free, EOF};
-use std::{io, ptr};
 use std::ffi::CStr;
+use std::{io, ptr};
 use tectonic_bridge_core::FileFormat;
 use tectonic_io_base::InputHandle;
 
@@ -17,10 +18,10 @@ pub struct PeekableInput {
 }
 
 impl PeekableInput {
-    pub fn open(path: &CStr, format: FileFormat) -> Result<Box<PeekableInput>, ()> {
+    pub(crate) fn open(path: &CStr, format: FileFormat) -> Result<Box<PeekableInput>, BibtexError> {
         let handle = unsafe { ttstub_input_open(path.as_ptr(), format, 0) };
         if handle.is_null() {
-            return Err(());
+            return Err(BibtexError);
         }
 
         Ok(Box::new(PeekableInput {

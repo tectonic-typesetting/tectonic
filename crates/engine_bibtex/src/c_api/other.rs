@@ -29,7 +29,7 @@ impl OtherData {
     pub fn field(&self, pos: usize) -> StrNumber {
         self.field_info[pos]
     }
-    
+
     pub fn num_fields(&self) -> FieldLoc {
         self.num_fields
     }
@@ -41,7 +41,7 @@ impl OtherData {
     pub fn set_pre_defined_fields(&mut self, val: FieldLoc) {
         self.num_pre_defined_fields = val;
     }
-    
+
     pub fn check_field_overflow(&mut self, fields: i32) {
         let start_fields = self.field_info.len();
         if fields as usize > self.field_info.len() {
@@ -112,9 +112,7 @@ pub extern "C" fn set_field_info(pos: FieldLoc, val: StrNumber) {
 
 #[no_mangle]
 pub extern "C" fn check_field_overflow(total_fields: i32) {
-    with_other_mut(|other| {
-        other.check_field_overflow(total_fields)
-    })
+    with_other_mut(|other| other.check_field_overflow(total_fields))
 }
 
 #[no_mangle]

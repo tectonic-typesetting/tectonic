@@ -11,7 +11,7 @@ pub const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
 const HASH_MAX: usize = HASH_SIZE + HASH_BASE - 1;
 pub const HASH_PRIME: usize = compute_hash_prime();
 
-/// Calculate a prime number for use in hashing that's at least 17/20 of HASH_SIZE
+/// Calculate a prime number for use in hashing that's at least 17/20 of `HASH_SIZE`
 const fn compute_hash_prime() -> usize {
     const HASH_WANT: usize = HASH_SIZE / 20 * 17;
 
@@ -39,7 +39,7 @@ const fn compute_hash_prime() -> usize {
             let mut j_prime = true;
             while n < o && j_prime {
                 while sieve[n] < j {
-                    sieve[n] = sieve[n] + 2 * primes[n];
+                    sieve[n] += 2 * primes[n];
                 }
                 if sieve[n] == j {
                     j_prime = false;

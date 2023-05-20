@@ -23,9 +23,6 @@
   size_var = new_size; \
 } while (0)
 
-#define BIB_XRETALLOC_STRING(array_name, array_var, length, size_var, new_size) \
-  (array_var) = (ASCII_code *) xrealloc((array_var), (new_size) * (length + 1) * sizeof(ASCII_code))
-
 /* duplicated from xetexd.h: */
 
 #include <setjmp.h>
@@ -40,76 +37,19 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define max_print_line 79
 #define aux_stack_size 20
 #define SINGLE_FN_SPACE 100
-#define MAX_GLOB_STRS 10
 #define LIT_STK_SIZE 100
 
 /*22: */
 
-typedef unsigned char ASCII_code;
 typedef int32_t buf_pointer;
 typedef size_t pool_pointer;
 typedef int32_t str_number;
 typedef int32_t hash_loc;
 typedef int32_t cite_number;
 typedef int32_t wiz_fn_loc;
-typedef int32_t int_ent_loc;
 typedef int32_t str_ent_loc;
 typedef int32_t field_loc;
 typedef int32_t hash_ptr2;
-
-static int32_t max_glob_strs;
-static str_number s_aux_extension;
-static str_number *glb_bib_str_ptr;
-static ASCII_code *global_strs;
-static int32_t *glb_str_end;
-static int32_t num_glb_strs;
-static bool store_field;
-static cite_number sort_cite_ptr;
-static str_ent_loc sort_key_num;
-static hash_loc b_equals;
-static hash_loc b_greater_than;
-static hash_loc b_less_than;
-static hash_loc b_plus;
-static hash_loc b_minus;
-static hash_loc b_concatenate;
-static hash_loc b_gets;
-static hash_loc b_add_period;
-static hash_loc b_call_type;
-static hash_loc b_change_case;
-static hash_loc b_chr_to_int;
-static hash_loc b_cite;
-static hash_loc b_duplicate;
-static hash_loc b_empty;
-static hash_loc b_format_name;
-static hash_loc b_if;
-static hash_loc b_int_to_chr;
-static hash_loc b_int_to_str;
-static hash_loc b_missing;
-static hash_loc b_newline;
-static hash_loc b_num_names;
-static hash_loc b_pop;
-static hash_loc b_preamble;
-static hash_loc b_purify;
-static hash_loc b_quote;
-static hash_loc b_skip;
-static hash_loc b_stack;
-static hash_loc b_substring;
-static hash_loc b_swap;
-static hash_loc b_text_length;
-static hash_loc b_text_prefix;
-static hash_loc b_top_stack;
-static hash_loc b_type;
-static hash_loc b_warning;
-static hash_loc b_while;
-static hash_loc b_width;
-static hash_loc b_write;
-
-static str_number s_null;
-static str_number s_default;
-static unsigned char /*bad_conversion */ conversion_type;
-static int verbose;
-
-const BibtexConfig* bibtex_config;
 
 static void unwrap_res(CResult res) {
     switch (res) {
@@ -512,7 +452,7 @@ static bool compress_bib_white(bool at_bib_command)
     return true;
 }
 
-static bool scan_balanced_braces(bool at_bib_command, ASCIICode right_str_delim)
+static bool scan_balanced_braces(bool store_field, bool at_bib_command, ASCIICode right_str_delim)
 {
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     {
@@ -723,17 +663,17 @@ static bool scan_balanced_braces(bool at_bib_command, ASCIICode right_str_delim)
     return true;
 }
 
-static bool scan_a_field_token_and_eat_white(bool at_bib_command, int32_t command_num, hash_loc cur_macro_loc, ASCIICode right_outer_delim)
+static bool scan_a_field_token_and_eat_white(bool store_field, bool at_bib_command, int32_t command_num, hash_loc cur_macro_loc, ASCIICode right_outer_delim)
 {
     buf_pointer tmp_ptr, tmp_end_ptr;
 
     switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
     case 123:
-        if (!scan_balanced_braces(at_bib_command, 125 /*right_brace */))
+        if (!scan_balanced_braces(store_field, at_bib_command, 125 /*right_brace */))
             return false;
         break;
     case 34:
-        if (!scan_balanced_braces(at_bib_command, 34 /*double_quote */))
+        if (!scan_balanced_braces(store_field, at_bib_command, 34 /*double_quote */))
             return false;
         break;
     case 48:
@@ -860,12 +800,12 @@ static bool scan_a_field_token_and_eat_white(bool at_bib_command, int32_t comman
     return true;
 }
 
-static bool scan_and_store_the_field_value_and_eat_white(GlblCtx* ctx, bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
+static bool scan_and_store_the_field_value_and_eat_white(GlblCtx* ctx, bool store_field, bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
 {
     buf_pointer tmp_ptr;
 
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
-    if (!scan_a_field_token_and_eat_white(at_bib_command, command_num, cur_macro_loc, right_outer_delim))
+    if (!scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim))
         return false;
     while (bib_buf_at_offset(BUF_TY_BASE, 2) == 35 /*concat_char */ ) {
 
@@ -876,7 +816,7 @@ static bool scan_and_store_the_field_value_and_eat_white(GlblCtx* ctx, bool at_b
                 return false;
             }
         }
-        if (!scan_a_field_token_and_eat_white(at_bib_command, command_num, cur_macro_loc, right_outer_delim))
+        if (!scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim))
             return false;
     }
     if (store_field) {        /*262: */
@@ -1196,7 +1136,7 @@ static void figure_out_the_formatted_name(
             bool double_letter = false;
             bool end_of_group = false;
             bool to_be_written = true;
-            buf_pointer cur_token, last_token;
+            buf_pointer cur_token = 0, last_token = 0;
             while ((!end_of_group) && (sp_ptr < sp_end))
                 if (LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) {
                     sp_ptr = sp_ptr + 1;
@@ -1724,10 +1664,10 @@ static void x_concatenate(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop2);
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop2.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {                    /*352: */
 
         if (ctx->pop2.lit >= ctx->bib_str_ptr) {
@@ -1904,10 +1844,9 @@ static void x_gets(ExecCtx* ctx)
 
                     int32_t str_glb_ptr = ilk_info(ctx->pop1.lit);
                     if (ctx->pop2.lit < ctx->bib_str_ptr)
-                        glb_bib_str_ptr[str_glb_ptr] = ctx->pop2.lit;
+                        set_glb_bib_str_ptr(str_glb_ptr, ctx->pop2.lit);
                     else {
-
-                        glb_bib_str_ptr[str_glb_ptr] = 0;
+                        set_glb_bib_str_ptr(str_glb_ptr, 0);
                         int32_t glob_chr_ptr = 0;
                         sp_ptr = bib_str_start(ctx->pop2.lit);
                         sp_end = bib_str_start(ctx->pop2.lit + 1);
@@ -1920,12 +1859,11 @@ static void x_gets(ExecCtx* ctx)
                             sp_end = sp_ptr + GLOB_STR_SIZE;
                         }
                         while (sp_ptr < sp_end) {
-
-                            global_strs[(str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr)] = bib_str_pool(sp_ptr);
+                            set_global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr), bib_str_pool(sp_ptr));
                             glob_chr_ptr = glob_chr_ptr + 1;
                             sp_ptr = sp_ptr + 1;
                         }
-                        glb_str_end[str_glb_ptr] = glob_chr_ptr;
+                        set_glb_str_end(str_glb_ptr, glob_chr_ptr);
                     }
                 }
             }
@@ -1945,9 +1883,9 @@ static void x_add_period(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if ((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) == 0)
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     else {                      /*362: */
 
         sp_ptr = bib_str_start(ctx->pop1.lit + 1);
@@ -2016,12 +1954,12 @@ static void x_change_case(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop2);
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop2.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
-
+        unsigned char conversion_type = 0;
         {
             switch ((bib_str_pool(bib_str_start(ctx->pop1.lit)))) {
             case 116:
@@ -2319,13 +2257,13 @@ static void x_format_name(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop3);
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop3.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
         buf_pointer ex_buf_xptr = 0;
         bib_set_buf_len(BUF_TY_EX, 0);
@@ -2532,11 +2470,11 @@ static void x_int_to_chr(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if ((ctx->pop1.lit < 0) || (ctx->pop1.lit > 127)) {
         printf_log("%ld isn't valid ASCII", (long) ctx->pop1.lit);
         TRY(bst_ex_warn_print(ctx));
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
 
         {
@@ -2556,7 +2494,7 @@ static void x_int_to_str(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
         bib_set_buf_len(BUF_TY_EX, int_to_ascii(ctx->pop1.lit, BUF_TY_EX, 0));
         add_pool_buf_and_push(ctx);
@@ -2618,7 +2556,7 @@ static void x_purify(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
 
         bib_set_buf_len(BUF_TY_EX, 0);
@@ -2740,13 +2678,13 @@ static void x_substring(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop3);
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop3.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
 
         pool_pointer sp_length = (bib_str_start(ctx->pop3.lit + 1) - bib_str_start(ctx->pop3.lit));
@@ -2764,7 +2702,7 @@ static void x_substring(ExecCtx* ctx)
             }
         }
         if ((ctx->pop1.lit <= 0) || (ctx->pop2.lit == 0) || (ctx->pop2.lit > sp_length) || (ctx->pop2.lit < -(int32_t) sp_length)) {
-            push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+            push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
             return;
         } else {                /*439: */
 
@@ -2854,7 +2792,7 @@ static void x_text_length(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop1);
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
 
         buf_pointer num_text_chars = 0;
@@ -2901,12 +2839,12 @@ static void x_text_prefix(ExecCtx* ctx)
     pop_lit_stk(ctx, &ctx->pop2);
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop2.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else if (ctx->pop1.lit <= 0) {
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
         return;
     } else {                    /*445: */
         int32_t sp_brace_level = 0;
@@ -2975,7 +2913,7 @@ static void x_type(ExecCtx* ctx)
     if (!ctx->mess_with_entries)
         TRY(bst_cant_mess_with_entries_print(ctx));
     else if ((type_list(cite_ptr()) == undefined()) || (type_list(cite_ptr()) == 0 /*empty */ ))
-        push_lit_stk(ctx, (ExecVal) { .lit = s_null, .typ = STK_TYPE_STRING });
+        push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     else
         push_lit_stk(ctx, (ExecVal) { .lit = hash_text(type_list(cite_ptr())), .typ = STK_TYPE_STRING });
 }
@@ -3347,19 +3285,19 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
     case FN_CLASS_STR_GLBL_VAR:
         {
             int32_t str_glb_ptr = ilk_info(ex_fn_loc);
-            if (glb_bib_str_ptr[str_glb_ptr] > 0)
-                push_lit_stk(ctx, (ExecVal) { .lit = glb_bib_str_ptr[str_glb_ptr], .typ = STK_TYPE_STRING });
+            if (glb_bib_str_ptr(str_glb_ptr) > 0)
+                push_lit_stk(ctx, (ExecVal) { .lit = glb_bib_str_ptr(str_glb_ptr), .typ = STK_TYPE_STRING });
             else {
 
                 {
-                    while (bib_pool_ptr() + glb_str_end[str_glb_ptr] > bib_pool_size())
+                    while (bib_pool_ptr() + glb_str_end(str_glb_ptr) > bib_pool_size())
                         pool_overflow();
                 }
                 int32_t glob_chr_ptr = 0;
-                while (glob_chr_ptr < glb_str_end[str_glb_ptr]) {
+                while (glob_chr_ptr < glb_str_end(str_glb_ptr)) {
 
                     {
-                        bib_set_str_pool(bib_pool_ptr(), global_strs[(str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr)]);
+                        bib_set_str_pool(bib_pool_ptr(), global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr)));
                         bib_set_pool_ptr(bib_pool_ptr() + 1);
                     }
                     glob_chr_ptr = glob_chr_ptr + 1;
@@ -3487,7 +3425,7 @@ static void aux_bib_style_command(GlblCtx* ctx)
             return;
         }
         free(nal.name_of_file);
-        if (verbose) {
+        if (ctx->config.verbose) {
             puts_log("The style file: ");
             print_bst_name(ctx);
         } else {
@@ -3581,7 +3519,7 @@ static void aux_citation_command(GlblCtx* ctx)
     }
 }
 
-static void aux_input_command(void)
+static void aux_input_command(GlblCtx* ctx)
 {
     bool aux_extension_ok;
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -3616,13 +3554,13 @@ static void aux_input_command(void)
             longjmp(error_jmpbuf, 1);
         }
         aux_extension_ok = true;
-        if ((bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) < (bib_str_start(s_aux_extension + 1) - bib_str_start(s_aux_extension)))
+        if ((bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)) < (bib_str_start(ctx->s_aux_extension + 1) - bib_str_start(ctx->s_aux_extension)))
             aux_extension_ok = false;
         else if (!bib_str_eq_buf(
-                s_aux_extension,
+                ctx->s_aux_extension,
                 BUF_TY_BASE,
-                bib_buf_offset(BUF_TY_BASE, 2) - (bib_str_start(s_aux_extension + 1) - bib_str_start(s_aux_extension)),
-                (bib_str_start(s_aux_extension + 1) - bib_str_start(s_aux_extension))
+                bib_buf_offset(BUF_TY_BASE, 2) - (bib_str_start(ctx->s_aux_extension + 1) - bib_str_start(ctx->s_aux_extension)),
+                (bib_str_start(ctx->s_aux_extension + 1) - bib_str_start(ctx->s_aux_extension))
                 ))
             aux_extension_ok = false;
         if (!aux_extension_ok) {
@@ -3696,7 +3634,7 @@ static void get_aux_command_and_process(GlblCtx* ctx)
             aux_citation_command(ctx);
             break;
         case 3:
-            aux_input_command();
+            aux_input_command(ctx);
             break;
         default:
             puts_log("Unknown auxiliary-file command");
@@ -4088,7 +4026,7 @@ static void bst_function_command(ExecCtx* ctx)
                 return;
             }
             set_fn_type(wiz_loc, FN_CLASS_WIZARD);
-            if (hash_text(wiz_loc) == s_default)
+            if (hash_text(wiz_loc) == ctx->glbl_ctx->s_default)
                 ctx->_default = wiz_loc;
         }
         {
@@ -4260,7 +4198,7 @@ static void bst_iterate_command(ExecCtx* ctx)
     {
         init_command_execution(ctx);
         ctx->mess_with_entries = true;
-        sort_cite_ptr = 0;
+        cite_number sort_cite_ptr = 0;
         while (sort_cite_ptr < num_cites()) {
 
             set_cite_ptr(cite_info(sort_cite_ptr));
@@ -4475,8 +4413,7 @@ static void get_bib_command_or_entry_and_process(GlblCtx* ctx, hash_loc* cur_mac
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            store_field = true;
-            if (!scan_and_store_the_field_value_and_eat_white(ctx, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!scan_and_store_the_field_value_and_eat_white(ctx, false, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
                 printf_log("Missing \"%c\" in preamble command", right_outer_delim);
@@ -4530,8 +4467,7 @@ static void get_bib_command_or_entry_and_process(GlblCtx* ctx, hash_loc* cur_mac
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            store_field = true;
-            if (!scan_and_store_the_field_value_and_eat_white(ctx, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!scan_and_store_the_field_value_and_eat_white(ctx, true, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
                 printf_log("Missing \"%c\" in string command", right_outer_delim);
@@ -4708,7 +4644,7 @@ lab22:                        /*cite_already_set */ ;
             }
 
             *field_name_loc = 0;
-            store_field = false;
+            bool store_field = false;
             if (store_entry) {
                 lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
                 hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
@@ -4731,7 +4667,7 @@ lab22:                        /*cite_already_set */ ;
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            if (!scan_and_store_the_field_value_and_eat_white(ctx, at_bib_command, command_num, NULL, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!scan_and_store_the_field_value_and_eat_white(ctx, store_field, at_bib_command, command_num, NULL, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
         }
  loop_exit:
@@ -4800,7 +4736,7 @@ static void bst_read_command(GlblCtx* ctx)
         ctx->read_performed = true;
         set_bib_ptr(0);
         while (bib_ptr() < ctx->num_bib_files) {
-            if (verbose) {
+            if (ctx->config.verbose) {
                 printf_log("Database file #%ld: ", (long) bib_ptr() + 1);
                 TRY(print_bib_name());
             } else {
@@ -4895,7 +4831,7 @@ static void bst_read_command(GlblCtx* ctx)
                                     mark_warning();
                                 }
                                 if (((!ctx->all_entries) && (cite_parent_ptr >= old_num_cites())
-                                     && (cite_info(cite_parent_ptr) < bibtex_config->min_crossrefs)))
+                                     && (cite_info(cite_parent_ptr) < ctx->config.min_crossrefs)))
                                     set_field_info(field_ptr, 0 /*missing */);
                             }
                         }
@@ -4909,7 +4845,7 @@ static void bst_read_command(GlblCtx* ctx)
 
                     if (type_list(cite_ptr()) == 0 /*empty */ )
                         TRY(print_missing_entry(cite_list(cite_ptr())));
-                    else if ((ctx->all_entries) || (cite_ptr() < old_num_cites()) || (cite_info(cite_ptr()) >= bibtex_config->min_crossrefs)) {
+                    else if ((ctx->all_entries) || (cite_ptr() < old_num_cites()) || (cite_info(cite_ptr()) >= ctx->config.min_crossrefs)) {
                         if (cite_ptr() > ctx->cite_xptr) {   /*286: */
                             if ((ctx->cite_xptr + 1) * num_fields() > max_fields()) {
                                 puts_log("field_info index is out of range");
@@ -5044,7 +4980,7 @@ static void bst_reverse_command(ExecCtx* ctx)
         init_command_execution(ctx);
         ctx->mess_with_entries = true;
         if (num_cites() > 0) {
-            sort_cite_ptr = num_cites();
+            cite_number sort_cite_ptr = num_cites();
             do {
                 sort_cite_ptr = sort_cite_ptr - 1;
                 set_cite_ptr(cite_info(sort_cite_ptr));
@@ -5116,24 +5052,11 @@ bst_strings_command(GlblCtx* ctx)
         }
 
         set_fn_type(fn_loc, FN_CLASS_STR_GLBL_VAR);
-        set_ilk_info(fn_loc, num_glb_strs);
+        set_ilk_info(fn_loc, num_glb_strs());
 
-        if (num_glb_strs == max_glob_strs) {
-            BIB_XRETALLOC_NOSET("glb_bib_str_ptr", glb_bib_str_ptr, str_number, max_glob_strs,
-                                max_glob_strs + MAX_GLOB_STRS);
-            BIB_XRETALLOC_STRING("global_strs", global_strs, GLOB_STR_SIZE, max_glob_strs,
-                                 max_glob_strs + MAX_GLOB_STRS);
-            BIB_XRETALLOC("glb_str_end", glb_str_end, int32_t, max_glob_strs, max_glob_strs + MAX_GLOB_STRS);
-            int32_t str_glb_ptr = num_glb_strs;
+        check_grow_global_strs();
 
-            while (str_glb_ptr < max_glob_strs) {
-                glb_bib_str_ptr[str_glb_ptr] = 0;
-                glb_str_end[str_glb_ptr] = 0;
-                str_glb_ptr = str_glb_ptr + 1;
-            }
-        }
-
-        num_glb_strs++;
+        set_num_glb_strs(num_glb_strs() + 1);
 
         if (!eat_bst_white_space(ctx)) {
             eat_bst_print();
@@ -5232,14 +5155,6 @@ initialize(GlblCtx* ctx, const char *aux_file_name)
     ctx->citation_seen = false;
     ctx->all_entries = false;
 
-    int32_t str_glb_ptr = 0;
-    while (str_glb_ptr < max_glob_strs) {
-        glb_bib_str_ptr[str_glb_ptr] = 0;
-        glb_str_end[str_glb_ptr] = 0;
-        str_glb_ptr = str_glb_ptr + 1;
-    }
-
-    num_glb_strs = 0;
     ctx->entry_seen = false;
     ctx->read_seen = false;
     ctx->read_performed = false;
@@ -5253,22 +5168,14 @@ initialize(GlblCtx* ctx, const char *aux_file_name)
 
 
 History
-bibtex_main(const char *aux_file_name)
+bibtex_main(GlblCtx* glbl_ctx, const char *aux_file_name)
 {
-    max_glob_strs = MAX_GLOB_STRS;
-
     if (standard_output() == NULL)
         return HISTORY_FATAL_ERROR;
 
     reset_all();
 
-    glb_bib_str_ptr = XTALLOC(max_glob_strs, str_number);
-    global_strs = XTALLOC(max_glob_strs * (GLOB_STR_SIZE + 1), ASCII_code);
-    glb_str_end = XTALLOC(max_glob_strs, int32_t);
-
-    GlblCtx glbl_ctx = { 0 };
-
-    if (initialize(&glbl_ctx, aux_file_name)) {
+    if (initialize(glbl_ctx, aux_file_name)) {
         /* TODO: log initialization or get_the_..() error */
         return HISTORY_FATAL_ERROR;
     }
@@ -5276,7 +5183,7 @@ bibtex_main(const char *aux_file_name)
     if (setjmp(error_jmpbuf) == 1)
         goto close_up_shop;
 
-    if (verbose)
+    if (glbl_ctx->config.verbose)
         puts_log("This is BibTeX, Version 0.99d\n");
     else
         ttstub_puts (bib_log_file(), "This is BibTeX, Version 0.99d\n");
@@ -5288,7 +5195,7 @@ bibtex_main(const char *aux_file_name)
         ttstub_output_write (bib_log_file(), buf, strlen(buf));
     }
 
-    if (verbose) {
+    if (glbl_ctx->config.verbose) {
         puts_log("The top-level auxiliary file: ");
         TRY(print_aux_name());
     } else {
@@ -5303,22 +5210,22 @@ bibtex_main(const char *aux_file_name)
             if (pop_the_aux_stack())
                 break;
         } else {
-            get_aux_command_and_process(&glbl_ctx);
+            get_aux_command_and_process(glbl_ctx);
         }
     }
 
-    last_check_for_aux_errors(&glbl_ctx);
+    last_check_for_aux_errors(glbl_ctx);
 
-    if (glbl_ctx.bst_str == 0)
+    if (glbl_ctx->bst_str == 0)
         goto no_bst_file;
 
-    glbl_ctx.bst_line_num = 0;
-    glbl_ctx.bbl_line_num = 1;
+    glbl_ctx->bst_line_num = 0;
+    glbl_ctx->bbl_line_num = 1;
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_len(BUF_TY_BASE));
 
     if (setjmp(recover_jmpbuf) == 0) {
         ExecCtx ctx = { 0 };
-        ctx.glbl_ctx = &glbl_ctx;
+        ctx.glbl_ctx = glbl_ctx;
         ctx.lit_stk_size = LIT_STK_SIZE;
         ctx.lit_stack = XTALLOC(ctx.lit_stk_size + 1, ExecVal);
         
@@ -5329,16 +5236,16 @@ bibtex_main(const char *aux_file_name)
         }
     }
 
-    peekable_close(glbl_ctx.bst_file);
-    glbl_ctx.bst_file = NULL;
+    peekable_close(glbl_ctx->bst_file);
+    glbl_ctx->bst_file = NULL;
 
  no_bst_file:
-    ttstub_output_close (glbl_ctx.bbl_file);
+    ttstub_output_close (glbl_ctx->bbl_file);
 
 close_up_shop:
     /*456:*/
 
-    if (glbl_ctx.read_performed && !glbl_ctx.reading_completed) {
+    if (glbl_ctx->read_performed && !glbl_ctx->reading_completed) {
         printf_log("Aborted at line %ld of file ", (long) bib_line_num());
         TRY(print_bib_name());
     }
@@ -5373,7 +5280,7 @@ close_up_shop:
 
 
 History
-tt_engine_bibtex_main(ttbc_state_t *api, const BibtexConfig *config, const char *aux_file_name)
+tt_engine_bibtex_main(ttbc_state_t *api, GlblCtx* ctx, const char *aux_file_name)
 {
     History rv;
 
@@ -5382,8 +5289,7 @@ tt_engine_bibtex_main(ttbc_state_t *api, const BibtexConfig *config, const char 
         return HISTORY_ABORTED;
     }
 
-    bibtex_config = config;
-    rv = bibtex_main(aux_file_name);
+    rv = bibtex_main(ctx, aux_file_name);
     ttbc_global_engine_exit();
     return rv;
 }
