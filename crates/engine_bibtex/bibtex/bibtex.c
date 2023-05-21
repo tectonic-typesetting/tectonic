@@ -115,45 +115,6 @@ static void log_fprintf(const char* fmt, ...) {
 
 /*:159*//*160: */
 
-//static bool less_than(cite_number arg1, cite_number arg2)
-//{
-//    int32_t char_ptr;
-//    str_ent_loc ptr1, ptr2;
-//    ASCII_code char1, char2;
-//    ptr1 = arg1 * num_ent_strs() + sort_key_num;
-//    ptr2 = arg2 * num_ent_strs() + sort_key_num;
-//    char_ptr = 0;
-//    while (true) {
-//
-//        char1 = entry_strs((ptr1) * (ENT_STR_SIZE + 1) + (char_ptr));
-//        char2 = entry_strs((ptr2) * (ENT_STR_SIZE + 1) + (char_ptr));
-//        if (char1 == 127 /*end_of_string */ ) {
-//
-//            if (char2 == 127 /*end_of_string */ ) {
-//
-//                if (arg1 < arg2) {
-//                    return true;
-//                } else if (arg1 > arg2) {
-//                    return false;
-//                } else {
-//                    puts_log("Duplicate sort key");
-//                    print_confusion();
-//                    longjmp(error_jmpbuf, 1);
-//                }
-//            } else {
-//                return true;
-//            }
-//        } else if (char2 == 127 /*end_of_string */ ) {
-//            return false;
-//        } else if (char1 < char2) {
-//            return true;
-//        } else if (char1 > char2) {
-//            return false;
-//        }
-//        char_ptr = char_ptr + 1;
-//    }
-//}
-
 static bool eat_bst_white_space(GlblCtx* ctx)
 {
     while (true) {
@@ -4535,6 +4496,7 @@ static void get_bib_command_or_entry_and_process(GlblCtx* ctx, hash_loc* cur_mac
     }
     lower_case(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 10 /*lc_cite_ilk */ , ctx->all_entries));
+    lc_cite_loc = hash.loc;
     if (hash.exists) {
         set_entry_cite_ptr(ilk_info(ilk_info(lc_cite_loc)));
         if ((!ctx->all_entries) || (entry_cite_ptr() < all_marker()) || (entry_cite_ptr() >= old_num_cites())) {

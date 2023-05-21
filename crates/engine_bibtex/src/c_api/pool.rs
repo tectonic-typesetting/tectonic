@@ -371,10 +371,10 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut GlblCtx) -> CResult {
 
             let res = pool.lookup_str_insert(hash, b"", StrIlk::Text)?;
             hash.set_ty(res.loc as usize, FnClass::StrLit);
-            ctx.s_null = res.loc;
+            ctx.s_null = hash.text(res.loc as usize);
             let res = pool.lookup_str_insert(hash, b"default.type", StrIlk::Text)?;
             hash.set_ty(res.loc as usize, FnClass::StrLit);
-            ctx.s_default = res.loc;
+            ctx.s_default = hash.text(res.loc as usize);
             ctx.b_default = skip_loc;
 
             let res = pool.lookup_str_insert(hash, b"i", StrIlk::ControlSeq)?;

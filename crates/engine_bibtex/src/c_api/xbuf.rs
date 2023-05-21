@@ -63,7 +63,6 @@ pub(crate) struct XBuf<T: Copy + 'static>(&'static mut [T]);
 
 impl<T: SafelyZero + Copy + 'static> XBuf<T> {
     pub fn new(init_len: usize) -> XBuf<T> {
-        // TODO: Only sound for T that can be zero
         XBuf(xcalloc_zeroed(init_len + 1).unwrap())
     }
 

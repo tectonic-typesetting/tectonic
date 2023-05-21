@@ -269,7 +269,7 @@ pub extern "C" fn log_pr_aux_name() -> bool {
         if !out_pool_str(log, cur_aux()) {
             return false;
         }
-        write!(log, "\n").unwrap();
+        writeln!(log).unwrap();
         true
     })
 }
@@ -369,7 +369,7 @@ pub extern "C" fn log_pr_bib_name() -> bool {
             }
             Err(_) => return false,
         }
-        write!(log, "\n").unwrap();
+        writeln!(log).unwrap();
         true
     })
 }
@@ -380,7 +380,7 @@ pub unsafe extern "C" fn log_pr_bst_name(ctx: *const GlblCtx) -> bool {
         if !out_pool_str(log, (*ctx).bst_str) {
             return false;
         }
-        write!(log, ".bst\n").unwrap();
+        writeln!(log, ".bst").unwrap();
         true
     })
 }
@@ -709,7 +709,7 @@ pub unsafe extern "C" fn output_bbl_line(ctx: *mut GlblCtx) {
             let slice = &buffers.buffer(BufTy::Out)[..init as usize];
             (*(*ctx).bbl_file).write_all(slice).unwrap();
         }
-        write!((*(*ctx).bbl_file), "\n").unwrap();
+        writeln!((*(*ctx).bbl_file)).unwrap();
         (*ctx).bbl_line_num += 1;
         buffers.set_init(BufTy::Out, 0);
     })

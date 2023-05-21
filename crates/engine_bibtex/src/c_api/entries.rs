@@ -24,12 +24,20 @@ impl EntryData {
         }
     }
 
+    pub fn strs(&self, pos: usize) -> ASCIICode {
+        self.entry_strs.as_ref().unwrap()[pos]
+    }
+
     pub fn num_ent_strs(&self) -> i32 {
         self.num_entry_strs
     }
 
     pub fn set_num_ent_strs(&mut self, val: i32) {
         self.num_entry_strs = val;
+    }
+
+    pub fn sort_key_num(&self) -> i32 {
+        self.sort_key_num
     }
 
     pub fn set_sort_key_num(&mut self, val: i32) {

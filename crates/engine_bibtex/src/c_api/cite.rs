@@ -4,6 +4,8 @@ use crate::c_api::pool::with_pool;
 use crate::c_api::xbuf::XBuf;
 use crate::c_api::{CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber};
 use std::cell::RefCell;
+use std::cmp::Ordering;
+use crate::c_api::entries::{ENT_STR_SIZE, with_entries};
 
 pub const MAX_CITES: usize = 750;
 
@@ -103,9 +105,33 @@ pub fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
     CITE_INFO.with(|ci| f(&mut ci.borrow_mut()))
 }
 
+fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
+    with_entries(|entries| {
+        let ptr1 = (arg1 * entries.num_ent_strs() + entries.sort_key_num()) as usize;
+        let ptr2 = (arg2 * entries.num_ent_strs() + entries.sort_key_num()) as usize;
+        let mut char_ptr = 0;
+        loop {
+            let char1 = entries.strs(ptr1 * (ENT_STR_SIZE + 1) + char_ptr);
+            let char2 = entries.strs(ptr2 * (ENT_STR_SIZE + 1) + char_ptr);
+
+            match (char1, char2) {
+                (127, 127) => return arg1.cmp(arg2),
+                (127, _) => return Ordering::Less,
+                (_, 127) => return Ordering::Greater,
+                (char1, char2) if char1 != char2 => {
+                    return char1.cmp(&char2)
+                }
+                _ => (),
+            }
+
+            char_ptr += 1;
+        }
+    })
+}
+
 #[no_mangle]
 pub extern "C" fn quick_sort(left_end: CiteNumber, right_end: CiteNumber) {
-    with_cites_mut(|cites| cites.cite_info[left_end as usize..right_end as usize].sort())
+    with_cites_mut(|cites| cites.cite_info[left_end as usize..right_end as usize].sort_by(less_than))
 }
 
 #[no_mangle]
