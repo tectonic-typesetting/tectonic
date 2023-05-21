@@ -24,6 +24,7 @@ use std::ffi::CString;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
+#[derive(Debug)]
 pub(crate) struct BibtexError;
 
 /// A possible outcome from a BibTeX engine invocation.
@@ -116,11 +117,12 @@ pub mod c_api {
     };
     use crate::c_api::peekable::PeekableInput;
     use crate::c_api::pool::{with_pool, with_pool_mut};
-    use crate::c_api::xbuf::xcalloc_zeroed;
+    use crate::c_api::xbuf::{xcalloc_zeroed, SafelyZero};
     use crate::BibtexError;
     pub use external::*;
     use std::ffi::CStr;
     use std::ptr;
+    use std::ptr::NonNull;
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
 
@@ -167,7 +169,7 @@ pub mod c_api {
     #[repr(C)]
     pub struct GlblCtx {
         pub config: BibtexConfig,
-        pub bst_file: *mut PeekableInput,
+        pub bst_file: Option<NonNull<PeekableInput>>,
         pub bst_str: StrNumber,
         pub bst_line_num: i32,
 
@@ -198,7 +200,7 @@ pub mod c_api {
         fn default() -> Self {
             GlblCtx {
                 config: Default::default(),
-                bst_file: ptr::null_mut(),
+                bst_file: None,
                 bst_str: 0,
                 bst_line_num: 0,
                 bbl_file: ptr::null_mut(),
@@ -297,10 +299,12 @@ pub mod c_api {
         ControlSeq = 14,
     }
 
+    // SAFETY: StrIlk is valid at zero as StrIlk::Text
+    unsafe impl SafelyZero for StrIlk {}
+
     type StrNumber = i32;
     type CiteNumber = i32;
     type ASCIICode = u8;
-    type BufType = *mut ASCIICode;
     type BufPointer = i32;
     type PoolPointer = usize;
     type HashPointer = i32;
@@ -346,7 +350,7 @@ pub mod c_api {
     pub extern "C" fn start_name(file_name: StrNumber) -> NameAndLen {
         with_pool(|pool| {
             let file_name = pool.get_str(file_name as usize);
-            let new_name = unsafe { xcalloc_zeroed::<ASCIICode>(file_name.len() + 1) };
+            let new_name = xcalloc_zeroed::<ASCIICode>(file_name.len() + 1).unwrap();
             new_name[..file_name.len()].copy_from_slice(file_name);
             new_name[file_name.len()] = 0;
             NameAndLen {
@@ -449,6 +453,7 @@ pub mod c_api {
                 path: *const libc::c_char,
                 is_gz: libc::c_int,
             ) -> *mut OutputHandle;
+            pub fn ttstub_output_close(handle: *mut OutputHandle) -> libc::c_int;
 
             pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
 

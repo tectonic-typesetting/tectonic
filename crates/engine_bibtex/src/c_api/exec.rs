@@ -3,7 +3,7 @@ use crate::c_api::hash::with_hash;
 use crate::c_api::history::mark_error;
 use crate::c_api::log::{print_a_pool_str, print_confusion, write_logs};
 use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start};
-use crate::c_api::xbuf::xrealloc_zeroed;
+use crate::c_api::xbuf::{xrealloc_zeroed, SafelyZero};
 use crate::c_api::{GlblCtx, HashPointer, StrNumber};
 use std::slice;
 
@@ -28,6 +28,9 @@ pub struct ExecVal {
     lit: i32,
 }
 
+// SAFETY: StkType is valid as 0 because of StkType::Integer, i32 is always valid as 0
+unsafe impl SafelyZero for ExecVal {}
+
 #[repr(C)]
 pub struct ExecCtx {
     pub glbl_ctx: *mut GlblCtx,
@@ -46,10 +49,11 @@ pub struct ExecCtx {
 
 impl ExecCtx {
     fn grow_stack(&mut self) {
-        let slice =
-            unsafe { slice::from_raw_parts_mut(self.lit_stack.cast(), self.lit_stk_size as usize) };
+        let (ptr, size) = (self.lit_stack.cast(), self.lit_stk_size as usize);
+        // SAFETY: The lit_stack should be valid for lit_stk_size. We trust the C code to uphold this invariant.
+        let slice = unsafe { slice::from_raw_parts_mut(ptr, size) };
         let new_stack =
-            unsafe { xrealloc_zeroed::<ExecVal>(slice, self.lit_stk_size as usize + LIT_STK_SIZE) };
+            xrealloc_zeroed::<ExecVal>(slice, self.lit_stk_size as usize + LIT_STK_SIZE).unwrap();
         self.lit_stack = (new_stack as *mut [_]).cast();
     }
 }
@@ -128,7 +132,11 @@ pub extern "C" fn print_stk_lit(val: ExecVal) -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn print_wrong_stk_lit(ctx: *mut ExecCtx, val: ExecVal, typ2: StkType) -> bool {
+pub unsafe extern "C" fn print_wrong_stk_lit(
+    ctx: *mut ExecCtx,
+    val: ExecVal,
+    typ2: StkType,
+) -> bool {
     if val.typ != StkType::Illegal {
         if !print_stk_lit(val) {
             return false;
@@ -171,7 +179,7 @@ pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
     }
 
     write_logs("\nwhile executing-");
-    bst_ln_num_print(unsafe { (*ctx).glbl_ctx });
+    bst_ln_num_print((*ctx).glbl_ctx);
     mark_error();
     true
 }

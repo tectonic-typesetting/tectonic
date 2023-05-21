@@ -1,4 +1,4 @@
-use crate::c_api::xbuf::XBuf;
+use crate::c_api::xbuf::{SafelyZero, XBuf};
 use crate::c_api::{pool, HashPointer, StrIlk, StrNumber};
 use std::cell::RefCell;
 
@@ -75,6 +75,10 @@ pub enum FnClass {
     StrGlblVar = 8,
 }
 
+// SAFETY: The FnClass type is valid at zero as FnClass::Builtin
+unsafe impl SafelyZero for FnClass {}
+
+// TODO: Split string-pool stuff into string pool, executor stuff into execution context
 pub struct HashData {
     hash_next: XBuf<HashPointer>,
     hash_text: XBuf<StrNumber>,
@@ -85,7 +89,7 @@ pub struct HashData {
 }
 
 impl HashData {
-    fn new() -> HashData {
+    pub(crate) fn new() -> HashData {
         HashData {
             hash_next: XBuf::new(HASH_MAX),
             hash_text: XBuf::new(HASH_MAX),

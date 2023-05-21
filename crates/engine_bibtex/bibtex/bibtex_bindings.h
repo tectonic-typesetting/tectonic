@@ -9,11 +9,11 @@
 
 #define MAX_CITES 750
 
+#define ENT_STR_SIZE 250
+
 #define GLOB_STR_SIZE 20000
 
 #define HASH_BASE 1
-
-#define ENT_STR_SIZE 250
 
 typedef enum {
   BUF_TY_BASE,
@@ -166,8 +166,6 @@ typedef int32_t AuxNumber;
 
 typedef int32_t BibNumber;
 
-typedef ASCIICode *BufType;
-
 typedef int32_t CiteNumber;
 
 typedef int32_t HashPointer2;
@@ -295,9 +293,9 @@ void set_bib_line_num(int32_t num);
 
 int32_t bib_buf_size(void);
 
-BufType bib_buf(BufTy ty);
+ASCIICode bib_buf(BufTy ty, BufPointer pos);
 
-ASCIICode bib_buf_at(BufTy ty, BufPointer num);
+void bib_set_buf(BufTy ty, BufPointer num, ASCIICode val);
 
 ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
 
@@ -367,6 +365,26 @@ CiteNumber add_database_cite(CiteNumber new_cite, CiteNumber cite_loc, CiteNumbe
 
 FindCiteLocs find_cite_locs_for_this_cite_key(StrNumber cite_str);
 
+void init_entry_ints(void);
+
+void init_entry_strs(void);
+
+int32_t num_ent_ints(void);
+
+void set_num_ent_ints(int32_t val);
+
+int32_t num_ent_strs(void);
+
+void set_num_ent_strs(int32_t val);
+
+int32_t entry_ints(int32_t pos);
+
+void set_entry_ints(int32_t pos, int32_t val);
+
+ASCIICode entry_strs(int32_t pos);
+
+void set_entry_strs(int32_t pos, ASCIICode val);
+
 bool print_lit(ExecVal val);
 
 bool print_stk_lit(ExecVal val);
@@ -427,15 +445,15 @@ void mark_error(void);
 
 uint32_t err_count(void);
 
-ttbc_output_handle_t *standard_output(void);
+bool init_standard_output(void);
 
-ttbc_output_handle_t *bib_log_file(void);
+void bib_close_log(void);
+
+void bib_log_prints(const char *str);
 
 void putc_log(int c);
 
 void puts_log(const char *str);
-
-void ttstub_puts(ttbc_output_handle_t *handle, const char *s);
 
 void print_overflow(void);
 
@@ -610,26 +628,6 @@ ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 bool scan_nonneg_integer(void);
 
 bool scan_integer(int32_t *token_value);
-
-void init_entry_ints(void);
-
-void init_entry_strs(void);
-
-int32_t num_ent_ints(void);
-
-void set_num_ent_ints(int32_t val);
-
-int32_t num_ent_strs(void);
-
-void set_num_ent_strs(int32_t val);
-
-int32_t entry_ints(int32_t pos);
-
-void set_entry_ints(int32_t pos, int32_t val);
-
-ASCIICode entry_strs(int32_t pos);
-
-void set_entry_strs(int32_t pos, ASCIICode val);
 
 #ifdef __cplusplus
 } // extern "C"

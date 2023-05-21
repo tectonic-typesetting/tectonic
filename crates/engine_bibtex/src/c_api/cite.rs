@@ -1,4 +1,4 @@
-use crate::c_api::hash::with_hash_mut;
+use crate::c_api::hash::{with_hash, with_hash_mut};
 use crate::c_api::other::with_other_mut;
 use crate::c_api::pool::with_pool;
 use crate::c_api::xbuf::XBuf;
@@ -238,8 +238,11 @@ pub extern "C" fn find_cite_locs_for_this_cite_key(cite_str: StrNumber) -> FindC
     with_pool(|pool| {
         let val = pool.get_str(cite_str as usize);
 
-        let cite_hash = pool.lookup_str(val, StrIlk::Cite);
-        let lc_cite_hash = pool.lookup_str(&val.to_ascii_lowercase(), StrIlk::LcCite);
+        let (cite_hash, lc_cite_hash) = with_hash(|hash| {
+            let cite_hash = pool.lookup_str(hash, val, StrIlk::Cite);
+            let lc_cite_hash = pool.lookup_str(hash, &val.to_ascii_lowercase(), StrIlk::LcCite);
+            (cite_hash, lc_cite_hash)
+        });
 
         FindCiteLocs {
             cite_loc: cite_hash.loc,

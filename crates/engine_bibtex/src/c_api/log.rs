@@ -5,19 +5,19 @@ use crate::c_api::char_info::LexClass;
 use crate::c_api::cite::with_cites;
 use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx};
 use crate::c_api::hash::{with_hash, FnClass};
-use crate::c_api::history::{mark_error, mark_fatal, mark_warning, set_history};
+use crate::c_api::history::{mark_error, mark_fatal, mark_warning};
 use crate::c_api::other::with_other;
 use crate::c_api::peekable::input_ln;
 use crate::c_api::pool::with_pool;
 use crate::c_api::scan::ScanRes;
 use crate::c_api::{
-    ttstub_output_open, ttstub_output_open_stdout, ASCIICode, CResult, FieldLoc, GlblCtx,
-    HashPointer, History, StrNumber,
+    ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, CResult,
+    FieldLoc, GlblCtx, HashPointer, StrNumber,
 };
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::io::Write;
-use std::{ptr, slice};
+use std::slice;
 use tectonic_io_base::OutputHandle;
 
 pub trait AsBytes {
@@ -43,41 +43,31 @@ impl AsBytes for [u8] {
 }
 
 thread_local! {
-    static STANDARD_OUTPUT: Cell<*mut OutputHandle> = Cell::new(ptr::null_mut());
-    static LOG_FILE: Cell<*mut OutputHandle> = Cell::new(ptr::null_mut());
+    static STANDARD_OUTPUT: Cell<Option<&'static mut OutputHandle>> = Cell::new(None);
+    static LOG_FILE: Cell<Option<&'static mut OutputHandle>> = Cell::new(None);
 }
 
 pub(crate) fn reset() {
-    STANDARD_OUTPUT.with(|cell| cell.set(ptr::null_mut()));
-    LOG_FILE.with(|cell| cell.set(ptr::null_mut()));
-}
-
-fn init_stdout(out: &Cell<*mut OutputHandle>) {
-    let ptr = out.get();
-    if ptr.is_null() {
-        let stdout = unsafe { ttstub_output_open_stdout() };
-        if stdout.is_null() {
-            set_history(History::FatalError);
-        }
-        out.set(stdout);
-    }
+    STANDARD_OUTPUT.with(|cell| cell.set(None));
+    LOG_FILE.with(|cell| cell.set(None));
 }
 
 fn with_stdout<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
     STANDARD_OUTPUT.with(|out| {
-        let ptr = out.get();
-        let ptr = if ptr.is_null() {
-            init_stdout(out);
-            out.get()
-        } else {
-            ptr
-        };
-        f(unsafe { ptr.as_mut() }.unwrap())
+        let mut stdout = out.replace(None);
+        let res = f(stdout.as_mut().unwrap());
+        out.set(stdout);
+        res
     })
 }
 
 fn with_log<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
-    LOG_FILE.with(|out| f(unsafe { out.get().as_mut() }.unwrap()))
+    LOG_FILE.with(|out| {
+        let mut log = out.replace(None);
+        let res = f(log.as_mut().unwrap());
+        out.set(log);
+        res
+    })
 }
 
 pub(crate) fn write_logs<B: ?Sized + AsBytes>(str: &B) {
@@ -87,34 +77,52 @@ pub(crate) fn write_logs<B: ?Sized + AsBytes>(str: &B) {
 
 pub fn init_log_file(file: &CStr) -> bool {
     LOG_FILE.with(|log| {
-        let ptr = log.get();
-        if ptr.is_null() {
+        let ptr = log.replace(None);
+        if ptr.is_none() {
+            // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
             let new = unsafe { ttstub_output_open(file.as_ptr(), 0) };
-            log.set(new);
+            // SAFETY: Return of ttstub_output_open should be valid if non-null
+            log.set(unsafe { new.as_mut() });
             !new.is_null()
         } else {
+            log.set(ptr);
             true
         }
     })
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn standard_output() -> *mut OutputHandle {
-    STANDARD_OUTPUT.with(|output| {
-        let ptr = output.get();
-
-        if ptr.is_null() {
-            init_stdout(output);
-            output.get()
+pub extern "C" fn init_standard_output() -> bool {
+    STANDARD_OUTPUT.with(|out| {
+        let ptr = out.replace(None);
+        if ptr.is_none() {
+            // SAFETY: This is actually fine to call, just extern
+            let stdout = unsafe { ttstub_output_open_stdout() };
+            // SAFETY: Pointer from ttstub_output_open_stdout is valid if non-null
+            out.set(unsafe { stdout.as_mut() });
+            !stdout.is_null()
         } else {
-            ptr
+            out.set(ptr);
+            true
         }
     })
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_log_file() -> *mut OutputHandle {
-    LOG_FILE.with(|file| file.get())
+pub extern "C" fn bib_close_log() {
+    LOG_FILE.with(|log| {
+        let log = log.replace(None);
+        if let Some(log) = log {
+            // SAFETY: Log is valid due to being a mut ref
+            unsafe { ttstub_output_close(log) };
+        }
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bib_log_prints(str: *const libc::c_char) {
+    let str = CStr::from_ptr(str);
+    with_log(|log| log.write_all(str.to_bytes())).unwrap()
 }
 
 #[no_mangle]
@@ -129,12 +137,6 @@ pub unsafe extern "C" fn puts_log(str: *const libc::c_char) {
     let str = CStr::from_ptr(str);
     with_log(|log| log.write_all(str.to_bytes())).unwrap();
     with_stdout(|out| out.write_all(str.to_bytes())).unwrap();
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn ttstub_puts(handle: *mut OutputHandle, s: *const libc::c_char) {
-    let str = CStr::from_ptr(s);
-    (*handle).write_all(str.to_bytes()).unwrap();
 }
 
 #[no_mangle]
@@ -215,7 +217,7 @@ pub(crate) fn print_skipping_whatever_remains() {
 pub(crate) fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
     with_pool(|pool| {
         let str = pool.try_get_str(s as usize);
-        if let Some(str) = str {
+        if let Ok(str) = str {
             handle.write_all(str).unwrap();
             true
         } else {
@@ -230,7 +232,7 @@ pub(crate) fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
 pub extern "C" fn print_a_pool_str(s: StrNumber) -> bool {
     with_pool(|pool| {
         let str = pool.try_get_str(s as usize);
-        if let Some(str) = str {
+        if let Ok(str) = str {
             write_logs(str);
             true
         } else {
@@ -340,11 +342,11 @@ pub extern "C" fn print_bib_name() -> bool {
             .map(|str| str.ends_with(b".bib"))
     });
     match res {
-        Some(true) => (),
-        Some(false) => {
+        Ok(true) => (),
+        Ok(false) => {
             write_logs(".bib");
         }
-        None => return false,
+        Err(_) => return false,
     }
     write_logs("\n");
     true
@@ -361,11 +363,11 @@ pub extern "C" fn log_pr_bib_name() -> bool {
                 .map(|str| str.ends_with(b".bib"))
         });
         match res {
-            Some(true) => (),
-            Some(false) => {
+            Ok(true) => (),
+            Ok(false) => {
                 write!(log, ".bib").unwrap();
             }
-            None => return false,
+            Err(_) => return false,
         }
         write!(log, "\n").unwrap();
         true

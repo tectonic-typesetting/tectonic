@@ -1,5 +1,6 @@
 use super::xbuf::XBuf;
-use crate::c_api::{ASCIICode, BufPointer, BufType};
+use crate::c_api::xbuf::SafelyZero;
+use crate::c_api::{ASCIICode, BufPointer};
 use std::cell::RefCell;
 
 const BUF_SIZE: usize = 20000;
@@ -28,7 +29,7 @@ struct Buffer<T: Copy + 'static, const N: usize> {
     init: BufPointer,
 }
 
-impl<T: Copy + 'static, const N: usize> Buffer<T, N> {
+impl<T: SafelyZero + Copy + 'static, const N: usize> Buffer<T, N> {
     fn new(len: usize) -> Buffer<T, N> {
         Buffer {
             ptr: XBuf::new(len),
@@ -71,6 +72,10 @@ impl GlobalBuffer {
         self.buf_len
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.buf_len == 0
+    }
+
     pub fn buffer(&self, ty: BufTy) -> &[ASCIICode] {
         match ty {
             BufTy::Base => &self.buffer.ptr,
@@ -93,6 +98,10 @@ impl GlobalBuffer {
 
     pub fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
         self.buffer(ty)[offset]
+    }
+
+    pub fn set_at(&mut self, ty: BufTy, offset: usize, val: ASCIICode) {
+        self.buffer_mut(ty)[offset] = val;
     }
 
     pub fn at_offset(&self, ty: BufTy, offset: usize) -> ASCIICode {
@@ -168,13 +177,13 @@ pub extern "C" fn bib_buf_size() -> i32 {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_buf(ty: BufTy) -> BufType {
-    with_buffers_mut(|b| (b.buffer_mut(ty) as *mut [u8]).cast())
+pub extern "C" fn bib_buf(ty: BufTy, pos: BufPointer) -> ASCIICode {
+    with_buffers(|b| b.at(ty, pos as usize))
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_buf_at(ty: BufTy, num: BufPointer) -> ASCIICode {
-    with_buffers(|b| b.at(ty, num as usize))
+pub unsafe extern "C" fn bib_set_buf(ty: BufTy, num: BufPointer, val: ASCIICode) {
+    with_buffers_mut(|b| b.set_at(ty, num as usize, val))
 }
 
 #[no_mangle]

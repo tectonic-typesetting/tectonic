@@ -15,6 +15,12 @@ use std::cell::RefCell;
 const POOL_SIZE: usize = 65000;
 pub(crate) const MAX_STRINGS: usize = 35307;
 
+#[derive(Debug, PartialEq)]
+pub enum LookupErr {
+    Invalid,
+    DoesntExist,
+}
+
 pub struct StringPool {
     strings: XBuf<u8>,
     // Stores string starting locations in the string pool
@@ -30,21 +36,26 @@ impl StringPool {
             strings: XBuf::new(POOL_SIZE),
             offsets: XBuf::new(MAX_STRINGS),
             pool_ptr: 0,
-            str_ptr: 0,
+            str_ptr: 1,
         }
     }
 
-    pub fn try_get_str(&self, s: usize) -> Option<&[u8]> {
-        if s >= self.str_ptr as usize + 3 || s >= MAX_STRINGS {
-            None
+    pub fn try_get_str(&self, s: usize) -> Result<&[u8], LookupErr> {
+        // TODO: Why plus three? Should probably find if somewhere relies on that
+        if s == 0 || s >= self.str_ptr as usize + 3 {
+            Err(LookupErr::DoesntExist)
+        } else if s >= MAX_STRINGS {
+            Err(LookupErr::Invalid)
         } else {
-            Some(&self.strings[self.offsets[s]..self.offsets[s + 1]])
+            Ok(&self.strings[self.offsets[s]..self.offsets[s + 1]])
         }
     }
 
     pub fn get_str(&self, s: usize) -> &[u8] {
-        self.try_get_str(s)
-            .unwrap_or_else(|| panic!("Invalid string number {}", s))
+        self.try_get_str(s).unwrap_or_else(|e| match e {
+            LookupErr::DoesntExist => panic!("String number {} doesn't exist", s),
+            LookupErr::Invalid => panic!("Invalid string number {}", s),
+        })
     }
 
     pub fn grow(&mut self) {
@@ -70,33 +81,31 @@ impl StringPool {
             .fold(0, |acc, &c| ((2 * acc) + c as usize) % prime)
     }
 
-    pub fn lookup_str(&self, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
-        with_hash(|hash| {
-            let h = Self::hash_str(hash, str);
-            let mut p = h as HashPointer + hash::HASH_BASE as HashPointer;
+    pub fn lookup_str(&self, hash: &HashData, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
+        let h = Self::hash_str(hash, str);
+        let mut p = h as HashPointer + hash::HASH_BASE as HashPointer;
 
-            loop {
-                let existing = hash.text(p as usize);
+        loop {
+            let existing = hash.text(p as usize);
 
-                if existing > 0
-                    && self.get_str(existing as usize) == str
-                    && hash.hash_ilk(p as usize) == ilk
-                {
-                    return LookupRes {
-                        loc: p,
-                        exists: true,
-                    };
-                }
-
-                if hash.next(p as usize) == 0 {
-                    return LookupRes {
-                        loc: p,
-                        exists: false,
-                    };
-                }
-                p = hash.next(p as usize);
+            if existing > 0
+                && self.get_str(existing as usize) == str
+                && hash.hash_ilk(p as usize) == ilk
+            {
+                return LookupRes {
+                    loc: p,
+                    exists: true,
+                };
             }
-        })
+
+            if hash.next(p as usize) == 0 {
+                return LookupRes {
+                    loc: p,
+                    exists: false,
+                };
+            }
+            p = hash.next(p as usize);
+        }
     }
 
     /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
@@ -113,7 +122,7 @@ impl StringPool {
 
         loop {
             let existing = hash.text(p as usize);
-            if existing > 0 && self.get_str(existing as usize) == str {
+            if existing > 0 && self.try_get_str(existing as usize) == Ok(str) {
                 if hash.hash_ilk(p as usize) == ilk {
                     return Ok(LookupRes {
                         loc: p,
@@ -266,7 +275,7 @@ pub extern "C" fn str_lookup(
                 with_pool_mut(|pool| pool.lookup_str_insert(hash, str, ilk).into())
             })
         } else {
-            with_pool(|pool| CResultLookup::Ok(pool.lookup_str(str, ilk)))
+            with_hash(|hash| with_pool(|pool| CResultLookup::Ok(pool.lookup_str(hash, str, ilk))))
         }
     })
 }
@@ -429,5 +438,47 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut GlblCtx) -> CResult {
     match res {
         Ok(()) => CResult::Ok,
         Err(BibtexError) => CResult::Error,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pool() {
+        let mut hash = HashData::new();
+        let mut new_pool = StringPool::new();
+        let res = new_pool
+            .lookup_str_insert(&mut hash, b"a cool string", StrIlk::Text)
+            .unwrap();
+        assert!(!res.exists);
+        assert_eq!(
+            new_pool.try_get_str(hash.text(res.loc as usize) as usize),
+            Ok(b"a cool string" as &[_])
+        );
+
+        let res2 = new_pool
+            .lookup_str_insert(&mut hash, b"a cool string", StrIlk::Text)
+            .unwrap();
+        assert!(res2.exists);
+        assert_eq!(
+            new_pool.try_get_str(hash.text(res2.loc as usize) as usize),
+            Ok(b"a cool string" as &[_])
+        );
+
+        let res3 = new_pool.lookup_str(&mut hash, b"a cool string", StrIlk::Text);
+        assert!(res3.exists);
+        assert_eq!(
+            new_pool.try_get_str(hash.text(res3.loc as usize) as usize),
+            Ok(b"a cool string" as &[_])
+        );
+
+        let res4 = new_pool.lookup_str(&hash, b"a bad string", StrIlk::Text);
+        assert!(!res4.exists);
+        assert_eq!(
+            new_pool.try_get_str(hash.text(res4.loc as usize) as usize),
+            Err(LookupErr::DoesntExist)
+        );
     }
 }

@@ -2,8 +2,9 @@ use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
 use crate::c_api::char_info::LexClass;
 use crate::c_api::{ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer};
 use crate::BibtexError;
-use libc::{free, EOF};
+use libc::EOF;
 use std::ffi::CStr;
+use std::ptr::NonNull;
 use std::{io, ptr};
 use tectonic_bridge_core::FileFormat;
 use tectonic_io_base::InputHandle;
@@ -12,23 +13,25 @@ use tectonic_io_base::InputHandle;
  * here's a tiny wrapper that lets us fake it. */
 
 pub struct PeekableInput {
-    handle: *mut InputHandle,
+    handle: NonNull<InputHandle>,
     peek_char: libc::c_int,
     saw_eof: bool,
 }
 
 impl PeekableInput {
     pub(crate) fn open(path: &CStr, format: FileFormat) -> Result<Box<PeekableInput>, BibtexError> {
+        // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
         let handle = unsafe { ttstub_input_open(path.as_ptr(), format, 0) };
-        if handle.is_null() {
-            return Err(BibtexError);
-        }
 
-        Ok(Box::new(PeekableInput {
-            handle,
-            peek_char: EOF,
-            saw_eof: false,
-        }))
+        if let Some(handle) = NonNull::new(handle) {
+            Ok(Box::new(PeekableInput {
+                handle,
+                peek_char: EOF,
+                saw_eof: false,
+            }))
+        } else {
+            Err(BibtexError)
+        }
     }
 
     fn getc(&mut self) -> libc::c_int {
@@ -40,7 +43,7 @@ impl PeekableInput {
 
         // SAFETY: Internal handle guaranteed valid, unique access to this input is unique access
         //         to the handle
-        let handle = unsafe { &mut *self.handle };
+        let handle = unsafe { self.handle.as_mut() };
         let rv = match handle.getc() {
             Ok(c) => libc::c_int::from(c),
             Err(e) => {
@@ -98,31 +101,37 @@ pub unsafe extern "C" fn peekable_open(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn peekable_close(peekable: *mut PeekableInput) -> libc::c_int {
-    if peekable.is_null() {
-        return 0;
+pub unsafe extern "C" fn peekable_close(peekable: Option<NonNull<PeekableInput>>) -> libc::c_int {
+    match peekable {
+        Some(mut peekable) => {
+            let rv = ttstub_input_close(peekable.as_mut().handle.as_ptr());
+            drop(Box::<PeekableInput>::from_raw(peekable.as_ptr()));
+            rv
+        }
+        None => 0,
     }
-
-    let rv = ttstub_input_close((*peekable).handle);
-    free(peekable.cast());
-    rv
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn tectonic_eof(peekable: *mut PeekableInput) -> bool {
+pub unsafe extern "C" fn tectonic_eof(peekable: Option<NonNull<PeekableInput>>) -> bool {
     // Check for EOF following Pascal semantics.
-    let peekable = match peekable.as_mut() {
-        Some(p) => p,
+    let peekable = match peekable {
+        Some(mut p) => p.as_mut(),
         None => return true,
     };
     peekable.eof()
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn input_ln(peekable: *mut PeekableInput) -> bool {
+pub unsafe extern "C" fn input_ln(peekable: Option<NonNull<PeekableInput>>) -> bool {
+    let mut peekable = match peekable {
+        Some(p) => p,
+        None => return false,
+    };
+
     with_buffers_mut(|buffers| buffers.set_init(BufTy::Base, 0));
     let mut last = 0;
-    let peekable = &mut *peekable;
+    let peekable = peekable.as_mut();
     if peekable.eof() {
         return false;
     }
