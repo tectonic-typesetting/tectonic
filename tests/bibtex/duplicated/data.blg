@@ -1,0 +1,9 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: data.aux
+Illegal, another \bibdata command---line 4 of file data.aux
+ : \bibdata
+ :         {../empty}
+I'm skipping whatever remains of this command
+The style file: ../empty.bst
+(There was 1 error message)

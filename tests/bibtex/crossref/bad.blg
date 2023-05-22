@@ -1,0 +1,13 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: bad.aux
+The style file: ../plain.bst
+Database file #1: bad.bib
+A bad cross reference---entry "InProc01"
+refers to entry "Proceedings01", which doesn't exist
+Warning--I didn't find a database entry for "Proceedings01"
+Warning--to sort, need author or key in InProc01
+Warning--empty author in InProc01
+Warning--empty booktitle in InProc01
+Warning--empty year in InProc01
+(There was 1 error message)

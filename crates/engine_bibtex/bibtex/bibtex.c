@@ -7278,6 +7278,7 @@ initialize(const char *aux_file_name)
         hash_text[k] = 0;
     }
 
+    cite_xptr = 0;
     hash_used = hash_max + 1;
     pool_ptr = 0;
     str_ptr = 1;
