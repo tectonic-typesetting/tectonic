@@ -24,6 +24,7 @@ use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_status_base::plain::PlainStatusBackend;
 use tokio::runtime;
+use watchexec::event::ProcessEnd;
 use watchexec::{
     action::{Action, Outcome, PreSpawn},
     command::{Command, Shell},
@@ -537,12 +538,19 @@ impl WatchCommand {
             .into_string()
             .expect("Executable path wasn't valid UTF-8");
         let mut cmds = Vec::new();
+
+        #[cfg(windows)]
+        let shell = Shell::Cmd;
+        #[cfg(unix)]
+        let shell = Shell::Unix("bash".to_string());
+
         for x in self.execute.iter() {
             let x = x.trim();
             if !x.is_empty() {
-                let cmd = Command::Exec {
-                    prog: exe_name.clone(),
-                    args: vec!["-X".to_string(), x.to_string()],
+                let cmd = Command::Shell {
+                    shell: shell.clone(),
+                    args: vec![],
+                    command: format!("{exe_name} -X {}", x),
                 };
                 cmds.push(cmd)
             }
@@ -554,23 +562,6 @@ impl WatchCommand {
                 args: vec!["-X".to_string(), "build".to_string()],
             });
         }
-
-        #[cfg(windows)]
-        let (shell, command) = (
-            Shell::Cmd,
-            "echo [Finished running. Exit status: %ERRORLEVEL%]",
-        );
-        #[cfg(unix)]
-        let (shell, command) = (
-            Shell::Unix("bash".to_string()),
-            "echo [Finished running. Exit status: $?]",
-        );
-
-        cmds.push(Command::Shell {
-            shell,
-            args: vec![],
-            command: command.to_string(),
-        });
 
         let mut runtime_config = watchexec::config::RuntimeConfig::default();
         runtime_config.commands(cmds);
@@ -609,6 +600,18 @@ impl WatchCommand {
                     if is_kill {
                         action.outcome(Outcome::Exit);
                         return Ok::<_, Infallible>(());
+                    }
+
+                    for complete in event.completions() {
+                        match complete {
+                            Some(ProcessEnd::Success) => {
+                                println!("[Finished Running. Exit Status: 0]")
+                            }
+                            Some(ProcessEnd::ExitError(err)) => {
+                                println!("[Finished Running. Exit Status: {}]", err.get())
+                            }
+                            _ => (),
+                        }
                     }
 
                     let paths = event.paths().collect::<Vec<_>>();

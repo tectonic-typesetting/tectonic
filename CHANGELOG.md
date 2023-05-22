@@ -1,4 +1,23 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix a bug introduced in the previous release where custom commands in the
+  `tectonic -X watch` mode broke (reported by [@LudvigHz] in [#1040], fixed by
+  [@CraftSpider] in [#1041]).
+- Update the version of the vendored Harfbuzz library to the latest, 7.3.0
+  ([@pkgw], [#1042]), and a general update of Cargo dependencies
+
+Big thanks to [@LudvigHz] and [@CraftSpider] for the prompt report and solution!
+
+[#1040]: https://github.com/tectonic-typesetting/tectonic/issues/1040
+[#1041]: https://github.com/tectonic-typesetting/tectonic/pull/1041
+[#1042]: https://github.com/tectonic-typesetting/tectonic/pull/1042
+[@LudvigHz]: https://github.com/LudvigHz
+[@CraftSpider]: https://github.com/CraftSpider
+[@pkgw]: https://github.com/pkgw
+
+
+
+# tectonic 0.13.0 (2023-05-18)
 
 This release of Tectonic adds some quality-of-life features and improves the
 project's technical infrastructure in several important ways.
