@@ -131,7 +131,7 @@ fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
 
 #[no_mangle]
 pub extern "C" fn quick_sort(left_end: CiteNumber, right_end: CiteNumber) {
-    with_cites_mut(|cites| cites.cite_info[left_end as usize..right_end as usize].sort_by(less_than))
+    with_cites_mut(|cites| cites.cite_info[left_end as usize..=right_end as usize].sort_by(less_than))
 }
 
 #[no_mangle]
