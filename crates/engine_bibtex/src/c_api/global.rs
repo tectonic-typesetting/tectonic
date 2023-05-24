@@ -65,31 +65,31 @@ pub extern "C" fn check_grow_global_strs() {
 }
 
 #[no_mangle]
-pub extern "C" fn glb_bib_str_ptr(pos: i32) -> i32 {
-    with_globals(|globals| globals.glb_bib_str_ptr[pos as usize])
+pub extern "C" fn glb_bib_str_ptr(pos: usize) -> usize {
+    with_globals(|globals| globals.glb_bib_str_ptr[pos])
 }
 
 #[no_mangle]
-pub extern "C" fn set_glb_bib_str_ptr(pos: i32, val: i32) {
-    with_globals_mut(|globals| globals.glb_bib_str_ptr[pos as usize] = val)
+pub extern "C" fn set_glb_bib_str_ptr(pos: usize, val: usize) {
+    with_globals_mut(|globals| globals.glb_bib_str_ptr[pos] = val)
 }
 
 #[no_mangle]
-pub extern "C" fn global_strs(pos: i32) -> ASCIICode {
-    with_globals(|globals| globals.global_strs[pos as usize])
+pub extern "C" fn global_strs(pos: usize) -> ASCIICode {
+    with_globals(|globals| globals.global_strs[pos])
 }
 
 #[no_mangle]
-pub extern "C" fn set_global_strs(pos: i32, val: ASCIICode) {
-    with_globals_mut(|globals| globals.global_strs[pos as usize] = val)
+pub extern "C" fn set_global_strs(pos: usize, val: ASCIICode) {
+    with_globals_mut(|globals| globals.global_strs[pos] = val)
 }
 
 #[no_mangle]
-pub extern "C" fn glb_str_end(pos: i32) -> i32 {
-    with_globals(|globals| globals.glb_str_end[pos as usize])
+pub extern "C" fn glb_str_end(pos: usize) -> i32 {
+    with_globals(|globals| globals.glb_str_end[pos])
 }
 
 #[no_mangle]
-pub extern "C" fn set_glb_str_end(pos: i32, val: i32) {
-    with_globals_mut(|globals| globals.glb_str_end[pos as usize] = val)
+pub extern "C" fn set_glb_str_end(pos: usize, val: i32) {
+    with_globals_mut(|globals| globals.glb_str_end[pos] = val)
 }

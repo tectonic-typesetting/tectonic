@@ -1,3 +1,4 @@
+use crate::c_api::entries::{with_entries, ENT_STR_SIZE};
 use crate::c_api::hash::{with_hash, with_hash_mut};
 use crate::c_api::other::with_other_mut;
 use crate::c_api::pool::with_pool;
@@ -5,7 +6,6 @@ use crate::c_api::xbuf::XBuf;
 use crate::c_api::{CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber};
 use std::cell::RefCell;
 use std::cmp::Ordering;
-use crate::c_api::entries::{ENT_STR_SIZE, with_entries};
 
 pub const MAX_CITES: usize = 750;
 
@@ -107,8 +107,8 @@ pub fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
 
 fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
     with_entries(|entries| {
-        let ptr1 = (arg1 * entries.num_ent_strs() + entries.sort_key_num()) as usize;
-        let ptr2 = (arg2 * entries.num_ent_strs() + entries.sort_key_num()) as usize;
+        let ptr1 = arg1 * entries.num_ent_strs() + entries.sort_key_num();
+        let ptr2 = arg2 * entries.num_ent_strs() + entries.sort_key_num();
         let mut char_ptr = 0;
         loop {
             let char1 = entries.strs(ptr1 * (ENT_STR_SIZE + 1) + char_ptr);
@@ -118,9 +118,7 @@ fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
                 (127, 127) => return arg1.cmp(arg2),
                 (127, _) => return Ordering::Less,
                 (_, 127) => return Ordering::Greater,
-                (char1, char2) if char1 != char2 => {
-                    return char1.cmp(&char2)
-                }
+                (char1, char2) if char1 != char2 => return char1.cmp(&char2),
                 _ => (),
             }
 
@@ -131,17 +129,17 @@ fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
 
 #[no_mangle]
 pub extern "C" fn quick_sort(left_end: CiteNumber, right_end: CiteNumber) {
-    with_cites_mut(|cites| cites.cite_info[left_end as usize..=right_end as usize].sort_by(less_than))
+    with_cites_mut(|cites| cites.cite_info[left_end..=right_end].sort_by(less_than))
 }
 
 #[no_mangle]
 pub extern "C" fn cite_list(num: CiteNumber) -> StrNumber {
-    with_cites(|cites| cites.get_cite(num as usize))
+    with_cites(|cites| cites.get_cite(num))
 }
 
 #[no_mangle]
 pub extern "C" fn set_cite_list(num: CiteNumber, str: StrNumber) {
-    with_cites_mut(|cites| cites.set_cite(num as usize, str))
+    with_cites_mut(|cites| cites.set_cite(num, str))
 }
 
 #[no_mangle]
@@ -157,7 +155,7 @@ pub extern "C" fn set_cite_ptr(num: CiteNumber) {
 #[no_mangle]
 pub extern "C" fn check_cite_overflow(last_cite: CiteNumber) {
     with_cites_mut(|cites| {
-        if last_cite as usize == cites.cite_list.len() {
+        if last_cite == cites.cite_list.len() {
             cites.grow();
         }
     })
@@ -170,32 +168,32 @@ pub extern "C" fn max_cites() -> usize {
 
 #[no_mangle]
 pub extern "C" fn cite_info(num: CiteNumber) -> StrNumber {
-    with_cites(|cites| cites.get_info(num as usize))
+    with_cites(|cites| cites.get_info(num))
 }
 
 #[no_mangle]
 pub extern "C" fn set_cite_info(num: CiteNumber, info: StrNumber) {
-    with_cites_mut(|cites| cites.set_info(num as usize, info))
+    with_cites_mut(|cites| cites.set_info(num, info))
 }
 
 #[no_mangle]
 pub extern "C" fn type_list(num: CiteNumber) -> HashPointer2 {
-    with_cites(|cites| cites.get_type(num as usize))
+    with_cites(|cites| cites.get_type(num))
 }
 
 #[no_mangle]
 pub extern "C" fn set_type_list(num: CiteNumber, ty: HashPointer2) {
-    with_cites_mut(|cites| cites.set_type(num as usize, ty))
+    with_cites_mut(|cites| cites.set_type(num, ty))
 }
 
 #[no_mangle]
 pub extern "C" fn entry_exists(num: CiteNumber) -> bool {
-    with_cites(|cites| cites.get_exists(num as usize))
+    with_cites(|cites| cites.get_exists(num))
 }
 
 #[no_mangle]
 pub extern "C" fn set_entry_exists(num: CiteNumber, exists: bool) {
-    with_cites_mut(|cites| cites.set_exists(num as usize, exists))
+    with_cites_mut(|cites| cites.set_exists(num, exists))
 }
 
 #[no_mangle]
@@ -245,15 +243,15 @@ pub extern "C" fn add_database_cite(
     lc_cite_loc: CiteNumber,
 ) -> CiteNumber {
     with_cites_mut(|cites| {
-        if new_cite as usize == cites.cite_list.len() {
+        if new_cite == cites.cite_list.len() {
             cites.grow();
         }
         with_other_mut(|other| other.check_field_overflow(other.num_fields() * (new_cite + 1)));
 
         with_hash_mut(|hash| {
-            cites.set_cite(new_cite as usize, hash.text(cite_loc as usize));
-            hash.set_ilk_info(cite_loc as usize, new_cite);
-            hash.set_ilk_info(lc_cite_loc as usize, cite_loc);
+            cites.set_cite(new_cite, hash.text(cite_loc));
+            hash.set_ilk_info(cite_loc, new_cite as i32);
+            hash.set_ilk_info(lc_cite_loc, cite_loc as i32);
         });
     });
     new_cite + 1
@@ -262,7 +260,7 @@ pub extern "C" fn add_database_cite(
 #[no_mangle]
 pub extern "C" fn find_cite_locs_for_this_cite_key(cite_str: StrNumber) -> FindCiteLocs {
     with_pool(|pool| {
-        let val = pool.get_str(cite_str as usize);
+        let val = pool.get_str(cite_str);
 
         let (cite_hash, lc_cite_hash) = with_hash(|hash| {
             let cite_hash = pool.lookup_str(hash, val, StrIlk::Cite);

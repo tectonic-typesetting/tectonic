@@ -154,8 +154,8 @@ pub extern "C" fn print_confusion() {
 pub fn out_token(handle: &mut OutputHandle) {
     with_buffers(|b| {
         let bytes = b.buffer(BufTy::Base);
-        let start = b.offset(BufTy::Base, 1) as usize;
-        let end = b.offset(BufTy::Base, 2) as usize;
+        let start = b.offset(BufTy::Base, 1);
+        let end = b.offset(BufTy::Base, 2);
         handle.write_all(&bytes[start..end]).unwrap();
     })
 }
@@ -170,7 +170,7 @@ pub(crate) fn print_bad_input_line() {
     write_logs(" : ");
 
     with_buffers(|b| {
-        let offset2 = b.offset(BufTy::Base, 2) as usize;
+        let offset2 = b.offset(BufTy::Base, 2);
 
         let slice = &b.buffer(BufTy::Base)[0..offset2];
 
@@ -185,7 +185,7 @@ pub(crate) fn print_bad_input_line() {
         let str = (0..offset2).map(|_| ' ').collect::<String>();
         write_logs(&str);
 
-        let last = b.init(BufTy::Base) as usize;
+        let last = b.init(BufTy::Base);
         if offset2 < last {
             let slice = &b.buffer(BufTy::Base)[offset2..last];
             for code in slice {
@@ -216,7 +216,7 @@ pub(crate) fn print_skipping_whatever_remains() {
 
 pub(crate) fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
     with_pool(|pool| {
-        let str = pool.try_get_str(s as usize);
+        let str = pool.try_get_str(s);
         if let Ok(str) = str {
             handle.write_all(str).unwrap();
             true
@@ -231,7 +231,7 @@ pub(crate) fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
 #[no_mangle]
 pub extern "C" fn print_a_pool_str(s: StrNumber) -> bool {
     with_pool(|pool| {
-        let str = pool.try_get_str(s as usize);
+        let str = pool.try_get_str(s);
         if let Ok(str) = str {
             write_logs(str);
             true
@@ -338,7 +338,7 @@ pub extern "C" fn print_bib_name() -> bool {
         return false;
     }
     let res = with_pool(|pool| {
-        pool.try_get_str(cur_bib() as usize)
+        pool.try_get_str(cur_bib())
             .map(|str| str.ends_with(b".bib"))
     });
     match res {
@@ -359,7 +359,7 @@ pub extern "C" fn log_pr_bib_name() -> bool {
             return false;
         }
         let res = with_pool(|pool| {
-            pool.try_get_str(cur_bib() as usize)
+            pool.try_get_str(cur_bib())
                 .map(|str| str.ends_with(b".bib"))
         });
         match res {
@@ -552,7 +552,7 @@ pub extern "C" fn cite_key_disappeared_confusion() {
 #[no_mangle]
 pub extern "C" fn bad_cross_reference_print(s: StrNumber) -> bool {
     write_logs("--entry \"");
-    let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr() as usize)));
+    let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr())));
     if !res {
         return false;
     }
@@ -578,7 +578,7 @@ pub extern "C" fn print_missing_entry(s: StrNumber) -> bool {
 pub(crate) unsafe fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr() as usize)));
+        let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr())));
         if !res {
             return false;
         }
@@ -629,7 +629,7 @@ pub extern "C" fn case_conversion_confusion() {
 
 #[no_mangle]
 pub extern "C" fn print_fn_class(fn_loc: HashPointer) {
-    let ty = with_hash(|hash| hash.ty(fn_loc as usize));
+    let ty = with_hash(|hash| hash.ty(fn_loc));
     match ty {
         FnClass::Builtin => write_logs("built-in"),
         FnClass::Wizard => write_logs("wizard-defined"),
@@ -669,7 +669,7 @@ pub unsafe extern "C" fn already_seen_function_print(
     ctx: *mut GlblCtx,
     seen_fn_loc: HashPointer,
 ) -> CResult {
-    if with_hash(|hash| !print_a_pool_str(hash.text(seen_fn_loc as usize))) {
+    if with_hash(|hash| !print_a_pool_str(hash.text(seen_fn_loc))) {
         return CResult::Error;
     }
     write_logs(" is already a type \"");
@@ -681,7 +681,7 @@ pub unsafe extern "C" fn already_seen_function_print(
 #[no_mangle]
 pub extern "C" fn nonexistent_cross_reference_error(field_ptr: FieldLoc) -> bool {
     write_logs("A bad cross reference-");
-    if !bad_cross_reference_print(with_other(|other| other.field(field_ptr as usize))) {
+    if !bad_cross_reference_print(with_other(|other| other.field(field_ptr))) {
         return false;
     }
     write_logs(", which doesn't exist\n");
@@ -695,8 +695,7 @@ pub unsafe extern "C" fn output_bbl_line(ctx: *mut GlblCtx) {
         if buffers.init(BufTy::Out) != 0 {
             let mut init = buffers.init(BufTy::Out);
             while init > 0 {
-                if LexClass::of(buffers.at(BufTy::Out, (init - 1) as usize)) == LexClass::Whitespace
-                {
+                if LexClass::of(buffers.at(BufTy::Out, init - 1)) == LexClass::Whitespace {
                     init -= 1;
                 } else {
                     break;
@@ -706,7 +705,7 @@ pub unsafe extern "C" fn output_bbl_line(ctx: *mut GlblCtx) {
             if init == 0 {
                 return;
             }
-            let slice = &buffers.buffer(BufTy::Out)[..init as usize];
+            let slice = &buffers.buffer(BufTy::Out)[..init];
             (*(*ctx).bbl_file).write_all(slice).unwrap();
         }
         writeln!((*(*ctx).bbl_file)).unwrap();

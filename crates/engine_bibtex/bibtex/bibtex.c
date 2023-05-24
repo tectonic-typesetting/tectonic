@@ -41,15 +41,15 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 
 /*22: */
 
-typedef int32_t buf_pointer;
+typedef size_t buf_pointer;
 typedef size_t pool_pointer;
-typedef int32_t str_number;
-typedef int32_t hash_loc;
-typedef int32_t cite_number;
-typedef int32_t wiz_fn_loc;
-typedef int32_t str_ent_loc;
-typedef int32_t field_loc;
-typedef int32_t hash_ptr2;
+typedef size_t str_number;
+typedef size_t hash_loc;
+typedef size_t cite_number;
+typedef size_t wiz_fn_loc;
+typedef size_t str_ent_loc;
+typedef size_t field_loc;
+typedef size_t hash_ptr2;
 
 static void unwrap_res(CResult res) {
     switch (res) {
@@ -73,8 +73,9 @@ static StrNumber unwrap_res_str(CResultStr res) {
         longjmp(recover_jmpbuf, 1);
         break;
     case CResultStr_Ok:
-        return res.ok;
+        break;
     }
+    return res.ok;
 }
 
 static LookupRes unwrap_res_lookup(CResultLookup res) {
@@ -83,8 +84,9 @@ static LookupRes unwrap_res_lookup(CResultLookup res) {
         longjmp(error_jmpbuf, 1);
         break;
     case CResultLookup_Ok:
-        return res.ok;
+        break;
     }
+    return res.ok;
 }
 
 /*:473*//*12: *//*3: */
@@ -836,7 +838,7 @@ static bool scan_and_store_the_field_value_and_eat_white(GlblCtx* ctx, bool stor
                 TRY(bib_warn_print());
             } else {
                 set_field_info(field_ptr, hash_text(field_val_loc));
-                if ((ilk_info(field_name_loc) == crossref_num()) && (!ctx->all_entries)) {   /*265: */
+                if ((ilk_info(field_name_loc) == (int32_t)crossref_num()) && (!ctx->all_entries)) {   /*265: */
                     tmp_ptr = ex_buf_xptr;
                     while (tmp_ptr < bib_buf_offset(BUF_TY_EX, 1)) {
                         bib_set_buf(BUF_TY_OUT, tmp_ptr, bib_buf(BUF_TY_EX, tmp_ptr));
@@ -850,7 +852,7 @@ static bool scan_and_store_the_field_value_and_eat_white(GlblCtx* ctx, bool stor
                     }
                     if (hash.exists) {
                         cite_number cite_loc = ilk_info(lc_cite_loc);
-                        if (ilk_info(cite_loc) >= old_num_cites())
+                        if (ilk_info(cite_loc) >= (int32_t)old_num_cites())
                             set_cite_info(ilk_info(cite_loc), cite_info(ilk_info(cite_loc)) + 1);
                     } else {
                         hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 9 /*cite_ilk */ , true));
@@ -1640,9 +1642,9 @@ static void x_concatenate(ExecCtx* ctx)
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {                    /*352: */
 
-        if (ctx->pop2.lit >= ctx->bib_str_ptr) {
+        if ((size_t)ctx->pop2.lit >= ctx->bib_str_ptr) {
 
-            if (ctx->pop1.lit >= ctx->bib_str_ptr) {
+            if ((size_t)ctx->pop1.lit >= ctx->bib_str_ptr) {
                 bib_set_str_start(ctx->pop1.lit, bib_str_start(ctx->pop1.lit + 1));
                 {
                     bib_set_str_ptr(bib_str_ptr() + 1);
@@ -1672,7 +1674,7 @@ static void x_concatenate(ExecCtx* ctx)
             }
         } else {                /*353: */
 
-            if (ctx->pop1.lit >= ctx->bib_str_ptr) {
+            if ((size_t)ctx->pop1.lit >= ctx->bib_str_ptr) {
 
                 if ((bib_str_start(ctx->pop2.lit + 1) - bib_str_start(ctx->pop2.lit)) == 0) {
                     {
@@ -1813,7 +1815,7 @@ static void x_gets(ExecCtx* ctx)
                 else {
 
                     int32_t str_glb_ptr = ilk_info(ctx->pop1.lit);
-                    if (ctx->pop2.lit < ctx->bib_str_ptr)
+                    if ((size_t)ctx->pop2.lit < ctx->bib_str_ptr)
                         set_glb_bib_str_ptr(str_glb_ptr, ctx->pop2.lit);
                     else {
                         set_glb_bib_str_ptr(str_glb_ptr, 0);
@@ -1872,7 +1874,7 @@ static void x_add_period(ExecCtx* ctx)
         case 63:
         case 33:
             {
-                if (ctx->lit_stack[ctx->lit_stk_ptr].lit >= ctx->bib_str_ptr) {
+                if ((size_t)ctx->lit_stack[ctx->lit_stk_ptr].lit >= ctx->bib_str_ptr) {
                     bib_set_str_ptr(bib_str_ptr() + 1);
                     bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
                 }
@@ -1881,7 +1883,7 @@ static void x_add_period(ExecCtx* ctx)
             break;
         default:
             {
-                if (ctx->pop1.lit < ctx->bib_str_ptr) {
+                if ((size_t)ctx->pop1.lit < ctx->bib_str_ptr) {
                     {
                         while (bib_pool_ptr() + (bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) + 1 > bib_pool_size())
                             pool_overflow();
@@ -2156,13 +2158,13 @@ static void x_duplicate(ExecCtx* ctx)
     } else {
 
         {
-            if (ctx->lit_stack[ctx->lit_stk_ptr].lit >= ctx->bib_str_ptr) {
+            if ((size_t)ctx->lit_stack[ctx->lit_stk_ptr].lit >= ctx->bib_str_ptr) {
                 bib_set_str_ptr(bib_str_ptr() + 1);
                 bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
             }
             ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
         }
-        if (ctx->pop1.lit < ctx->bib_str_ptr)
+        if ((size_t)ctx->pop1.lit < ctx->bib_str_ptr)
             push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop1.lit, .typ = ctx->pop1.typ });
         else {
 
@@ -2242,7 +2244,6 @@ static void x_format_name(ExecCtx* ctx)
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             int32_t num_names = 0;
             while ((num_names < ctx->pop2.lit) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
-
                 num_names = num_names + 1;
                 ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
                 name_scan_for_and(ctx, ctx->pop3.lit, &brace_level);
@@ -2658,11 +2659,11 @@ static void x_substring(ExecCtx* ctx)
     } else {
 
         pool_pointer sp_length = (bib_str_start(ctx->pop3.lit + 1) - bib_str_start(ctx->pop3.lit));
-        if (ctx->pop1.lit >= sp_length) {
+        if ((size_t)ctx->pop1.lit >= sp_length) {
 
             if ((ctx->pop2.lit == 1) || (ctx->pop2.lit == -1)) {
                 {
-                    if (ctx->lit_stack[ctx->lit_stk_ptr].lit >= ctx->bib_str_ptr) {
+                    if ((size_t)ctx->lit_stack[ctx->lit_stk_ptr].lit >= ctx->bib_str_ptr) {
                         bib_set_str_ptr(bib_str_ptr() + 1);
                         bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
                     }
@@ -2671,19 +2672,19 @@ static void x_substring(ExecCtx* ctx)
                 return;
             }
         }
-        if ((ctx->pop1.lit <= 0) || (ctx->pop2.lit == 0) || (ctx->pop2.lit > sp_length) || (ctx->pop2.lit < -(int32_t) sp_length)) {
+        if ((ctx->pop1.lit <= 0) || (ctx->pop2.lit == 0) || (ctx->pop2.lit > (int32_t)sp_length) || (ctx->pop2.lit < -(int32_t)sp_length)) {
             push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
             return;
         } else {                /*439: */
 
             if (ctx->pop2.lit > 0) {
-                if (ctx->pop1.lit > sp_length - (ctx->pop2.lit - 1))
+                if (ctx->pop1.lit > (int32_t)sp_length - (ctx->pop2.lit - 1))
                     ctx->pop1.lit = sp_length - (ctx->pop2.lit - 1);
                 sp_ptr = bib_str_start(ctx->pop3.lit) + (ctx->pop2.lit - 1);
                 sp_end = sp_ptr + ctx->pop1.lit;
                 if (ctx->pop2.lit == 1) {
 
-                    if (ctx->pop3.lit >= ctx->bib_str_ptr) {
+                    if ((size_t)ctx->pop3.lit >= ctx->bib_str_ptr) {
                         bib_set_str_start(ctx->pop3.lit + 1, sp_end);
                         {
                             bib_set_str_ptr(bib_str_ptr() + 1);
@@ -2696,8 +2697,8 @@ static void x_substring(ExecCtx* ctx)
             } else {
 
                 ctx->pop2.lit = -(int32_t) ctx->pop2.lit;
-                if (ctx->pop1.lit > sp_length - (ctx->pop2.lit - 1))
-                    ctx->pop1.lit = sp_length - (ctx->pop2.lit - 1);
+                if (ctx->pop1.lit > (int32_t)sp_length - (ctx->pop2.lit - 1))
+                    ctx->pop1.lit = (int32_t)sp_length - (ctx->pop2.lit - 1);
                 sp_end = bib_str_start(ctx->pop3.lit + 1) - (ctx->pop2.lit - 1);
                 sp_ptr = sp_end - ctx->pop1.lit;
             }
@@ -2722,14 +2723,14 @@ static void x_swap(ExecCtx* ctx)
 {
     pop_lit_stk(ctx, &ctx->pop1);
     pop_lit_stk(ctx, &ctx->pop2);
-    if ((ctx->pop1.typ != STK_TYPE_STRING ) || (ctx->pop1.lit < ctx->bib_str_ptr)) {
+    if ((ctx->pop1.typ != STK_TYPE_STRING ) || ((size_t)ctx->pop1.lit < ctx->bib_str_ptr)) {
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop1.lit, .typ = ctx->pop1.typ });
-        if ((ctx->pop2.typ == STK_TYPE_STRING ) && (ctx->pop2.lit >= ctx->bib_str_ptr)) {
+        if ((ctx->pop2.typ == STK_TYPE_STRING ) && ((size_t)ctx->pop2.lit >= ctx->bib_str_ptr)) {
             bib_set_str_ptr(bib_str_ptr() + 1);
             bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
         }
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop2.lit, .typ = ctx->pop2.typ });
-    } else if ((ctx->pop2.typ != STK_TYPE_STRING ) || (ctx->pop2.lit < ctx->bib_str_ptr)) {
+    } else if ((ctx->pop2.typ != STK_TYPE_STRING ) || ((size_t)ctx->pop2.lit < ctx->bib_str_ptr)) {
         {
             bib_set_str_ptr(bib_str_ptr() + 1);
             bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
@@ -2823,7 +2824,7 @@ static void x_text_prefix(ExecCtx* ctx)
         {
             buf_pointer num_text_chars = 0;
             pool_pointer sp_xptr1 = sp_ptr;
-            while ((sp_xptr1 < sp_end) && (num_text_chars < ctx->pop1.lit)) {
+            while ((sp_xptr1 < sp_end) && (num_text_chars < (size_t)ctx->pop1.lit)) {
 
                 sp_xptr1 = sp_xptr1 + 1;
                 if (bib_str_pool(sp_xptr1 - 1) == 123 /*left_brace */ ) {
@@ -2855,7 +2856,7 @@ static void x_text_prefix(ExecCtx* ctx)
             while (bib_pool_ptr() + sp_brace_level + sp_end - sp_ptr > bib_pool_size())
                 pool_overflow();
         }
-        if (ctx->pop2.lit >= ctx->bib_str_ptr)
+        if ((size_t)ctx->pop2.lit >= ctx->bib_str_ptr)
             bib_set_pool_ptr(sp_end);
         else
             while (sp_ptr < sp_end) {
@@ -4784,7 +4785,7 @@ static void bst_read_command(GlblCtx* ctx)
                             set_field_info(field_ptr, 0 /*missing */);
                         } else {
 
-                            if (cite_loc != ilk_info(lc_cite_loc)) {
+                            if (cite_loc != (size_t)ilk_info(lc_cite_loc)) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
@@ -4832,7 +4833,7 @@ static void bst_read_command(GlblCtx* ctx)
                                 cite_key_disappeared_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }
-                            if ((!find.cite_found) || (cite_loc != ilk_info(lc_cite_loc))) {
+                            if ((!find.cite_found) || (cite_loc != (size_t)ilk_info(lc_cite_loc))) {
                                 hash_cite_confusion();
                                 longjmp(error_jmpbuf, 1);
                             }

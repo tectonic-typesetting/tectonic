@@ -40,8 +40,8 @@ pub struct ExecCtx {
     pub pop3: ExecVal,
     // TODO: Make an XBuf after this is more encapsulated
     pub lit_stack: *mut ExecVal,
-    pub lit_stk_size: i32,
-    pub lit_stk_ptr: i32,
+    pub lit_stk_size: usize,
+    pub lit_stk_ptr: usize,
 
     pub mess_with_entries: bool,
     pub bib_str_ptr: StrNumber,
@@ -49,11 +49,11 @@ pub struct ExecCtx {
 
 impl ExecCtx {
     fn grow_stack(&mut self) {
-        let (ptr, size) = (self.lit_stack.cast(), self.lit_stk_size as usize);
+        let (ptr, size) = (self.lit_stack.cast(), self.lit_stk_size);
         // SAFETY: The lit_stack should be valid for lit_stk_size. We trust the C code to uphold this invariant.
         let slice = unsafe { slice::from_raw_parts_mut(ptr, size) };
         let new_stack =
-            xrealloc_zeroed::<ExecVal>(slice, self.lit_stk_size as usize + LIT_STK_SIZE).unwrap();
+            xrealloc_zeroed::<ExecVal>(slice, self.lit_stk_size + LIT_STK_SIZE).unwrap();
         self.lit_stack = (new_stack as *mut [_]).cast();
     }
 }
@@ -66,7 +66,7 @@ pub extern "C" fn print_lit(val: ExecVal) -> bool {
             true
         }
         StkType::String => {
-            if !print_a_pool_str(val.lit) {
+            if !print_a_pool_str(val.lit as usize) {
                 return false;
             }
             write_logs("\n");
@@ -80,7 +80,7 @@ pub extern "C" fn print_lit(val: ExecVal) -> bool {
             true
         }
         StkType::Missing => {
-            if !print_a_pool_str(val.lit) {
+            if !print_a_pool_str(val.lit as usize) {
                 return false;
             }
             write_logs("\n");
@@ -102,7 +102,7 @@ pub extern "C" fn print_stk_lit(val: ExecVal) -> bool {
         }
         StkType::String => {
             write_logs("\"");
-            if !print_a_pool_str(val.lit) {
+            if !print_a_pool_str(val.lit as usize) {
                 return false;
             }
             write_logs("\" is a string literal");
@@ -118,7 +118,7 @@ pub extern "C" fn print_stk_lit(val: ExecVal) -> bool {
         }
         StkType::Missing => {
             write_logs("`");
-            if !print_a_pool_str(val.lit) {
+            if !print_a_pool_str(val.lit as usize) {
                 return false;
             }
             write_logs("` is a missing field");
@@ -172,7 +172,7 @@ pub unsafe extern "C" fn print_wrong_stk_lit(
 pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
     if (*ctx).mess_with_entries {
         write_logs(" for entry ");
-        let res = with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr() as usize)));
+        let res = with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr())));
         if !res {
             return false;
         }
@@ -202,7 +202,7 @@ pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const GlblCtx) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
     let ctx = &mut *ctx;
-    *ctx.lit_stack.offset(ctx.lit_stk_ptr as isize) = val;
+    *ctx.lit_stack.add(ctx.lit_stk_ptr) = val;
 
     if ctx.lit_stk_ptr >= ctx.lit_stk_size {
         ctx.grow_stack();
@@ -226,9 +226,9 @@ pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> bo
         };
     } else {
         ctx.lit_stk_ptr -= 1;
-        let pop = ctx.lit_stack.offset(ctx.lit_stk_ptr as isize).read();
-        if pop.typ == StkType::String && pop.lit >= ctx.bib_str_ptr {
-            if pop.lit != bib_str_ptr() - 1 {
+        let pop = ctx.lit_stack.add(ctx.lit_stk_ptr).read();
+        if pop.typ == StkType::String && pop.lit as usize >= ctx.bib_str_ptr {
+            if pop.lit as usize != bib_str_ptr() - 1 {
                 write_logs("Nontop top of string stack");
                 print_confusion();
                 return false;

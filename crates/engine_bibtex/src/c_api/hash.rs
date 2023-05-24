@@ -85,7 +85,7 @@ pub struct HashData {
     hash_ilk: XBuf<StrIlk>,
     ilk_info: XBuf<i32>,
     fn_type: XBuf<FnClass>,
-    hash_used: i32,
+    hash_used: usize,
 }
 
 impl HashData {
@@ -96,7 +96,7 @@ impl HashData {
             hash_ilk: XBuf::new(HASH_MAX),
             ilk_info: XBuf::new(HASH_MAX),
             fn_type: XBuf::new(HASH_MAX),
-            hash_used: HASH_MAX as i32 + 1,
+            hash_used: HASH_MAX + 1,
         }
     }
 
@@ -124,11 +124,11 @@ impl HashData {
         self.fn_type[pos] = class;
     }
 
-    pub fn used(&self) -> i32 {
+    pub fn used(&self) -> usize {
         self.hash_used
     }
 
-    pub fn set_used(&mut self, val: i32) {
+    pub fn set_used(&mut self, val: usize) {
         self.hash_used = val;
     }
 
@@ -166,38 +166,38 @@ pub fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn end_of_def() -> i32 {
-    HASH_MAX as i32 + 1
+pub extern "C" fn end_of_def() -> usize {
+    HASH_MAX + 1
 }
 
 #[no_mangle]
-pub extern "C" fn undefined() -> i32 {
-    HASH_MAX as i32 + 1
+pub extern "C" fn undefined() -> usize {
+    HASH_MAX + 1
 }
 
 #[no_mangle]
 pub extern "C" fn fn_type(pos: HashPointer) -> FnClass {
-    with_hash(|hash| hash.fn_type[pos as usize])
+    with_hash(|hash| hash.fn_type[pos])
 }
 
 #[no_mangle]
 pub extern "C" fn set_fn_type(pos: HashPointer, ty: FnClass) {
-    with_hash_mut(|hash| hash.fn_type[pos as usize] = ty)
+    with_hash_mut(|hash| hash.fn_type[pos] = ty)
 }
 
 #[no_mangle]
 pub extern "C" fn hash_text(pos: HashPointer) -> StrNumber {
-    with_hash(|hash| hash.hash_text[pos as usize])
+    with_hash(|hash| hash.hash_text[pos])
 }
 
 #[no_mangle]
 pub extern "C" fn ilk_info(pos: HashPointer) -> i32 {
-    with_hash(|hash| hash.ilk_info[pos as usize])
+    with_hash(|hash| hash.ilk_info[pos])
 }
 
 #[no_mangle]
 pub extern "C" fn set_ilk_info(pos: HashPointer, val: i32) {
-    with_hash_mut(|hash| hash.ilk_info[pos as usize] = val)
+    with_hash_mut(|hash| hash.ilk_info[pos] = val)
 }
 
 #[no_mangle]

@@ -105,7 +105,7 @@ impl GlobalBuffer {
     }
 
     pub fn at_offset(&self, ty: BufTy, offset: usize) -> ASCIICode {
-        self.buffer(ty)[self.offset(ty, offset) as usize]
+        self.buffer(ty)[self.offset(ty, offset)]
     }
 
     pub fn set_offset(&mut self, ty: BufTy, offset: usize, val: BufPointer) {
@@ -172,18 +172,18 @@ pub enum BufTy {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_buf_size() -> i32 {
-    with_buffers(|buffers| buffers.len() as i32)
+pub extern "C" fn bib_buf_size() -> usize {
+    with_buffers(|buffers| buffers.len())
 }
 
 #[no_mangle]
 pub extern "C" fn bib_buf(ty: BufTy, pos: BufPointer) -> ASCIICode {
-    with_buffers(|b| b.at(ty, pos as usize))
+    with_buffers(|b| b.at(ty, pos))
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bib_set_buf(ty: BufTy, num: BufPointer, val: ASCIICode) {
-    with_buffers_mut(|b| b.set_at(ty, num as usize, val))
+    with_buffers_mut(|b| b.set_at(ty, num, val))
 }
 
 #[no_mangle]
@@ -218,26 +218,22 @@ pub extern "C" fn buffer_overflow() {
 
 #[no_mangle]
 pub extern "C" fn name_tok(pos: BufPointer) -> BufPointer {
-    with_buffers(|buffers| buffers.name_tok[pos as usize])
+    with_buffers(|buffers| buffers.name_tok[pos])
 }
 
 #[no_mangle]
 pub extern "C" fn set_name_tok(pos: BufPointer, val: BufPointer) {
-    with_buffers_mut(|buffers| buffers.name_tok[pos as usize] = val)
+    with_buffers_mut(|buffers| buffers.name_tok[pos] = val)
 }
 
 #[no_mangle]
 pub extern "C" fn lower_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
-    with_buffers_mut(|buffers| {
-        buffers.buffer_mut(buf)[ptr as usize..(ptr + len) as usize].make_ascii_lowercase()
-    })
+    with_buffers_mut(|buffers| buffers.buffer_mut(buf)[ptr..(ptr + len)].make_ascii_lowercase())
 }
 
 #[no_mangle]
 pub extern "C" fn upper_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
-    with_buffers_mut(|buffers| {
-        buffers.buffer_mut(buf)[ptr as usize..(ptr + len) as usize].make_ascii_uppercase()
-    })
+    with_buffers_mut(|buffers| buffers.buffer_mut(buf)[ptr..(ptr + len)].make_ascii_uppercase())
 }
 
 #[no_mangle]
@@ -248,7 +244,7 @@ pub extern "C" fn int_to_ascii(
 ) -> BufPointer {
     with_buffers_mut(|buffers| {
         let mut buf = buffers.buffer_mut(int_buf);
-        let mut int_ptr = int_begin as usize;
+        let mut int_ptr = int_begin;
 
         if the_int < 0 {
             if int_ptr == buf.len() {
@@ -274,7 +270,7 @@ pub extern "C" fn int_to_ascii(
             }
         }
 
-        buf[int_begin as usize..int_ptr].reverse();
+        buf[int_begin..int_ptr].reverse();
         int_ptr as BufPointer
     })
 }

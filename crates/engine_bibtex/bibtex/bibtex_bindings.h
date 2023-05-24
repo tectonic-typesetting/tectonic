@@ -104,9 +104,9 @@ typedef uint8_t StrIlk;
 
 typedef struct PeekableInput PeekableInput;
 
-typedef int32_t StrNumber;
+typedef uintptr_t StrNumber;
 
-typedef int32_t BufPointer;
+typedef uintptr_t BufPointer;
 
 typedef uint8_t ASCIICode;
 
@@ -131,23 +131,23 @@ typedef struct {
 } CResultStr;
 
 typedef struct {
-  int min_crossrefs;
+  uint32_t min_crossrefs;
   bool verbose;
 } BibtexConfig;
 
-typedef int32_t HashPointer;
+typedef uintptr_t HashPointer;
 
 typedef struct {
   BibtexConfig config;
   PeekableInput *bst_file;
   StrNumber bst_str;
-  int32_t bst_line_num;
+  uintptr_t bst_line_num;
   ttbc_output_handle_t *bbl_file;
-  int32_t bbl_line_num;
-  int32_t num_bib_files;
-  int32_t num_preamble_strings;
-  int32_t impl_fn_num;
-  int32_t cite_xptr;
+  uintptr_t bbl_line_num;
+  uintptr_t num_bib_files;
+  uintptr_t num_preamble_strings;
+  uintptr_t impl_fn_num;
+  uintptr_t cite_xptr;
   bool bib_seen;
   bool bst_seen;
   bool citation_seen;
@@ -162,13 +162,13 @@ typedef struct {
   HashPointer s_aux_extension;
 } GlblCtx;
 
-typedef int32_t AuxNumber;
+typedef uintptr_t AuxNumber;
 
-typedef int32_t BibNumber;
+typedef uintptr_t BibNumber;
 
-typedef int32_t CiteNumber;
+typedef uintptr_t CiteNumber;
 
-typedef int32_t HashPointer2;
+typedef uintptr_t HashPointer2;
 
 typedef struct {
   CiteNumber cite_loc;
@@ -189,17 +189,17 @@ typedef struct {
   ExecVal pop2;
   ExecVal pop3;
   ExecVal *lit_stack;
-  int32_t lit_stk_size;
-  int32_t lit_stk_ptr;
+  uintptr_t lit_stk_size;
+  uintptr_t lit_stk_ptr;
   bool mess_with_entries;
   StrNumber bib_str_ptr;
 } ExecCtx;
 
-typedef int32_t FieldLoc;
+typedef uintptr_t FieldLoc;
 
-typedef int32_t WizFnLoc;
+typedef uintptr_t WizFnLoc;
 
-typedef int32_t FnDefLoc;
+typedef uintptr_t FnDefLoc;
 
 typedef uintptr_t PoolPointer;
 
@@ -208,7 +208,7 @@ typedef struct {
    * The location of the string - where it exists, was inserted, of if insert is false,
    * where it *would* have been inserted
    */
-  int32_t loc;
+  uintptr_t loc;
   /**
    * Whether the string existed in the hash table already
    */
@@ -291,7 +291,7 @@ int32_t bib_line_num(void);
 
 void set_bib_line_num(int32_t num);
 
-int32_t bib_buf_size(void);
+uintptr_t bib_buf_size(void);
 
 ASCIICode bib_buf(BufTy ty, BufPointer pos);
 
@@ -369,13 +369,13 @@ void init_entry_ints(void);
 
 void init_entry_strs(void);
 
-int32_t num_ent_ints(void);
+uintptr_t num_ent_ints(void);
 
-void set_num_ent_ints(int32_t val);
+void set_num_ent_ints(uintptr_t val);
 
-int32_t num_ent_strs(void);
+uintptr_t num_ent_strs(void);
 
-void set_num_ent_strs(int32_t val);
+void set_num_ent_strs(uintptr_t val);
 
 int32_t entry_ints(int32_t pos);
 
@@ -407,21 +407,21 @@ void set_num_glb_strs(int32_t val);
 
 void check_grow_global_strs(void);
 
-int32_t glb_bib_str_ptr(int32_t pos);
+uintptr_t glb_bib_str_ptr(uintptr_t pos);
 
-void set_glb_bib_str_ptr(int32_t pos, int32_t val);
+void set_glb_bib_str_ptr(uintptr_t pos, uintptr_t val);
 
-ASCIICode global_strs(int32_t pos);
+ASCIICode global_strs(uintptr_t pos);
 
-void set_global_strs(int32_t pos, ASCIICode val);
+void set_global_strs(uintptr_t pos, ASCIICode val);
 
-int32_t glb_str_end(int32_t pos);
+int32_t glb_str_end(uintptr_t pos);
 
-void set_glb_str_end(int32_t pos, int32_t val);
+void set_glb_str_end(uintptr_t pos, int32_t val);
 
-int32_t end_of_def(void);
+uintptr_t end_of_def(void);
 
-int32_t undefined(void);
+uintptr_t undefined(void);
 
 FnClass fn_type(HashPointer pos);
 
@@ -559,9 +559,9 @@ StrNumber field_info(FieldLoc pos);
 
 void set_field_info(FieldLoc pos, StrNumber val);
 
-void check_field_overflow(int32_t total_fields);
+void check_field_overflow(uintptr_t total_fields);
 
-int32_t max_fields(void);
+uintptr_t max_fields(void);
 
 FieldLoc num_fields(void);
 

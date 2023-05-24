@@ -50,7 +50,7 @@ impl<'a> Scan<'a> {
             buffers.set_offset(BufTy::Base, 1, buffers.offset(BufTy::Base, 2));
 
             let mut idx = buffers.offset(BufTy::Base, 2);
-            while idx < last && !self.match_char(buffers.at(BufTy::Base, idx as usize)) {
+            while idx < last && !self.match_char(buffers.at(BufTy::Base, idx)) {
                 idx += 1;
             }
             buffers.set_offset(BufTy::Base, 2, idx);
@@ -65,7 +65,7 @@ impl<'a> Scan<'a> {
             buffers.set_offset(BufTy::Base, 1, start);
 
             let mut idx = start;
-            while idx < last && !self.match_char(buffers.at(BufTy::Base, idx as usize)) {
+            while idx < last && !self.match_char(buffers.at(BufTy::Base, idx)) {
                 idx += 1;
             }
             buffers.set_offset(BufTy::Base, 2, idx);
@@ -133,17 +133,15 @@ pub extern "C" fn scan_identifier(char1: ASCIICode, char2: ASCIICode, char3: ASC
         buffers.set_offset(BufTy::Base, 1, start);
 
         let mut idx = start;
-        let char = buffers.at(BufTy::Base, idx as usize);
+        let char = buffers.at(BufTy::Base, idx);
         if LexClass::of(char) != LexClass::Numeric {
-            while idx < last
-                && IdClass::of(buffers.at(BufTy::Base, idx as usize)) == IdClass::LegalIdChar
-            {
+            while idx < last && IdClass::of(buffers.at(BufTy::Base, idx)) == IdClass::LegalIdChar {
                 idx += 1;
             }
             buffers.set_offset(BufTy::Base, 2, idx);
         }
 
-        let char = buffers.at(BufTy::Base, idx as usize);
+        let char = buffers.at(BufTy::Base, idx);
         if idx - start == 0 {
             ScanRes::IdNull
         } else if LexClass::of(char) == LexClass::Whitespace || idx == last {
@@ -172,7 +170,7 @@ pub extern "C" fn scan_integer(token_value: &mut i32) -> bool {
         buffers.set_offset(BufTy::Base, 1, start);
 
         let mut idx = start;
-        let sign = if buffers.at(BufTy::Base, idx as usize) == b'-' {
+        let sign = if buffers.at(BufTy::Base, idx) == b'-' {
             idx += 1;
             true
         } else {
@@ -180,11 +178,11 @@ pub extern "C" fn scan_integer(token_value: &mut i32) -> bool {
         };
 
         *token_value = 0;
-        let mut char = buffers.at(BufTy::Base, idx as usize);
+        let mut char = buffers.at(BufTy::Base, idx);
         while idx < last && LexClass::of(char) == LexClass::Numeric {
             *token_value = *token_value * 10 + (char - 48) as i32;
             idx += 1;
-            char = buffers.at(BufTy::Base, idx as usize);
+            char = buffers.at(BufTy::Base, idx);
         }
         buffers.set_offset(BufTy::Base, 2, idx);
 

@@ -27,27 +27,27 @@ impl AuxData {
     }
 
     fn at_ptr(&self) -> StrNumber {
-        self.aux_list[self.aux_ptr as usize]
+        self.aux_list[self.aux_ptr]
     }
 
     pub fn set_at_ptr(&mut self, num: StrNumber) {
-        self.aux_list[self.aux_ptr as usize] = num;
+        self.aux_list[self.aux_ptr] = num;
     }
 
     fn file_at_ptr(&self) -> *mut PeekableInput {
-        self.aux_file[self.aux_ptr as usize]
+        self.aux_file[self.aux_ptr]
     }
 
     pub fn set_file_at_ptr(&mut self, file: *mut PeekableInput) {
-        self.aux_file[self.aux_ptr as usize] = file;
+        self.aux_file[self.aux_ptr] = file;
     }
 
     fn ln_at_ptr(&self) -> i32 {
-        self.aux_ln_stack[self.aux_ptr as usize]
+        self.aux_ln_stack[self.aux_ptr]
     }
 
     fn set_ln_at_ptr(&mut self, ln: i32) {
-        self.aux_ln_stack[self.aux_ptr as usize] = ln;
+        self.aux_ln_stack[self.aux_ptr] = ln;
     }
 }
 

@@ -42,9 +42,9 @@ impl OtherData {
         self.num_pre_defined_fields = val;
     }
 
-    pub fn check_field_overflow(&mut self, fields: i32) {
+    pub fn check_field_overflow(&mut self, fields: usize) {
         let start_fields = self.field_info.len();
-        if fields as usize > self.field_info.len() {
+        if fields > self.field_info.len() {
             self.field_info.grow(MAX_FIELDS);
             self.field_info[start_fields..].fill(0);
         }
@@ -73,12 +73,12 @@ pub fn with_other_mut<T>(f: impl FnOnce(&mut OtherData) -> T) -> T {
 
 #[no_mangle]
 pub extern "C" fn wiz_functions(pos: WizFnLoc) -> HashPointer2 {
-    with_other(|other| other.wiz_functions[pos as usize])
+    with_other(|other| other.wiz_functions[pos])
 }
 
 #[no_mangle]
 pub extern "C" fn set_wiz_functions(pos: WizFnLoc, val: HashPointer2) {
-    with_other_mut(|other| other.wiz_functions[pos as usize] = val)
+    with_other_mut(|other| other.wiz_functions[pos] = val)
 }
 
 #[no_mangle]
@@ -94,7 +94,7 @@ pub extern "C" fn set_wiz_def_ptr(val: WizFnLoc) {
 #[no_mangle]
 pub extern "C" fn check_grow_wiz(ptr: FnDefLoc) {
     with_other_mut(|other| {
-        while ptr + other.wiz_def_ptr > other.wiz_functions.len() as i32 {
+        while ptr + other.wiz_def_ptr > other.wiz_functions.len() {
             other.wiz_functions.grow(WIZ_FN_SPACE)
         }
     })
@@ -102,22 +102,22 @@ pub extern "C" fn check_grow_wiz(ptr: FnDefLoc) {
 
 #[no_mangle]
 pub extern "C" fn field_info(pos: FieldLoc) -> StrNumber {
-    with_other(|other| other.field_info[pos as usize])
+    with_other(|other| other.field_info[pos])
 }
 
 #[no_mangle]
 pub extern "C" fn set_field_info(pos: FieldLoc, val: StrNumber) {
-    with_other_mut(|other| other.field_info[pos as usize] = val)
+    with_other_mut(|other| other.field_info[pos] = val)
 }
 
 #[no_mangle]
-pub extern "C" fn check_field_overflow(total_fields: i32) {
+pub extern "C" fn check_field_overflow(total_fields: usize) {
     with_other_mut(|other| other.check_field_overflow(total_fields))
 }
 
 #[no_mangle]
-pub extern "C" fn max_fields() -> i32 {
-    with_other(|other| other.field_info.len() as i32)
+pub extern "C" fn max_fields() -> usize {
+    with_other(|other| other.field_info.len())
 }
 
 #[no_mangle]

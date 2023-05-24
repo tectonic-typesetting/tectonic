@@ -143,7 +143,7 @@ pub unsafe extern "C" fn input_ln(peekable: Option<NonNull<PeekableInput>>) -> b
                 b.grow_all();
             }
 
-            let ptr = &mut b.buffer_mut(BufTy::Base)[last as usize];
+            let ptr = &mut b.buffer_mut(BufTy::Base)[last];
             *ptr = peekable.getc() as ASCIICode;
             last += 1;
         }
@@ -161,7 +161,7 @@ pub unsafe extern "C" fn input_ln(peekable: Option<NonNull<PeekableInput>>) -> b
     // Trim whitespace
     with_buffers(|b| {
         while last > 0 {
-            if LexClass::of(b.at(BufTy::Base, (last - 1) as usize)) == LexClass::Whitespace {
+            if LexClass::of(b.at(BufTy::Base, last - 1)) == LexClass::Whitespace {
                 last -= 1;
             } else {
                 break;

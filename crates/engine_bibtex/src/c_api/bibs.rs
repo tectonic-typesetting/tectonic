@@ -27,19 +27,19 @@ impl BibData {
     }
 
     fn cur_bib(&self) -> StrNumber {
-        self.bib_list[self.bib_ptr as usize]
+        self.bib_list[self.bib_ptr]
     }
 
     fn set_cur_bib(&mut self, num: StrNumber) {
-        self.bib_list[self.bib_ptr as usize] = num;
+        self.bib_list[self.bib_ptr] = num;
     }
 
     fn cur_bib_file(&self) -> *mut PeekableInput {
-        self.bib_file[self.bib_ptr as usize]
+        self.bib_file[self.bib_ptr]
     }
 
     fn set_cur_bib_file(&mut self, input: *mut PeekableInput) {
-        self.bib_file[self.bib_ptr as usize] = input;
+        self.bib_file[self.bib_ptr] = input;
     }
 
     fn grow(&mut self) {
@@ -98,7 +98,7 @@ pub extern "C" fn set_bib_ptr(num: BibNumber) {
 #[no_mangle]
 pub extern "C" fn check_bib_files(ptr: BibNumber) {
     with_bibs_mut(|bibs| {
-        if ptr as usize == bibs.bib_list.len() {
+        if ptr == bibs.bib_list.len() {
             bibs.grow();
         }
     })
@@ -107,14 +107,14 @@ pub extern "C" fn check_bib_files(ptr: BibNumber) {
 #[no_mangle]
 pub extern "C" fn add_preamble(num: StrNumber) {
     with_bibs_mut(|bibs| {
-        bibs.preamble[bibs.preamble_ptr as usize] = num;
+        bibs.preamble[bibs.preamble_ptr] = num;
         bibs.preamble_ptr += 1;
     })
 }
 
 #[no_mangle]
 pub extern "C" fn cur_preamble() -> StrNumber {
-    with_bibs(|bibs| bibs.preamble[bibs.preamble_ptr as usize])
+    with_bibs(|bibs| bibs.preamble[bibs.preamble_ptr])
 }
 
 #[no_mangle]

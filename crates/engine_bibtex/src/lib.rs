@@ -71,8 +71,8 @@ impl BibtexEngine {
     /// This needs verifying, but I believe that this setting affects how many
     /// times an item needs to be referenced in directly-referenced BibTeX
     /// entries before it gets its own standalone entry.
-    pub fn min_crossrefs(&mut self, value: i32) -> &mut Self {
-        self.ctx.config.min_crossrefs = value as libc::c_int;
+    pub fn min_crossrefs(&mut self, value: u32) -> &mut Self {
+        self.ctx.config.min_crossrefs = value;
         self
     }
 
@@ -152,7 +152,7 @@ pub mod c_api {
     #[repr(C)]
     #[derive(Clone, Debug)]
     pub struct BibtexConfig {
-        pub min_crossrefs: libc::c_int,
+        pub min_crossrefs: u32,
         pub verbose: bool,
     }
 
@@ -171,15 +171,15 @@ pub mod c_api {
         pub config: BibtexConfig,
         pub bst_file: Option<NonNull<PeekableInput>>,
         pub bst_str: StrNumber,
-        pub bst_line_num: i32,
+        pub bst_line_num: usize,
 
         pub bbl_file: *mut OutputHandle,
-        pub bbl_line_num: i32,
+        pub bbl_line_num: usize,
 
-        pub num_bib_files: i32,
-        pub num_preamble_strings: i32,
-        pub impl_fn_num: i32,
-        pub cite_xptr: i32,
+        pub num_bib_files: usize,
+        pub num_preamble_strings: usize,
+        pub impl_fn_num: usize,
+        pub cite_xptr: usize,
 
         pub bib_seen: bool,
         pub bst_seen: bool,
@@ -250,7 +250,7 @@ pub mod c_api {
     pub struct LookupRes {
         /// The location of the string - where it exists, was inserted, of if insert is false,
         /// where it *would* have been inserted
-        loc: i32,
+        loc: usize,
         /// Whether the string existed in the hash table already
         exists: bool,
     }
@@ -302,18 +302,18 @@ pub mod c_api {
     // SAFETY: StrIlk is valid at zero as StrIlk::Text
     unsafe impl SafelyZero for StrIlk {}
 
-    type StrNumber = i32;
-    type CiteNumber = i32;
+    type StrNumber = usize;
+    type CiteNumber = usize;
     type ASCIICode = u8;
-    type BufPointer = i32;
+    type BufPointer = usize;
     type PoolPointer = usize;
-    type HashPointer = i32;
-    type HashPointer2 = i32;
-    type AuxNumber = i32;
-    type BibNumber = i32;
-    type WizFnLoc = i32;
-    type FieldLoc = i32;
-    type FnDefLoc = i32;
+    type HashPointer = usize;
+    type HashPointer2 = usize;
+    type AuxNumber = usize;
+    type BibNumber = usize;
+    type WizFnLoc = usize;
+    type FieldLoc = usize;
+    type FnDefLoc = usize;
 
     #[no_mangle]
     pub unsafe extern "C" fn reset_all() {
@@ -339,8 +339,8 @@ pub mod c_api {
     ) -> bool {
         with_buffers(|buffers| {
             with_pool(|pool| {
-                let buf = &buffers.buffer(buf)[ptr as usize..(ptr + len) as usize];
-                let str = pool.get_str(s as usize);
+                let buf = &buffers.buffer(buf)[ptr..(ptr + len)];
+                let str = pool.get_str(s);
                 buf == str
             })
         })
@@ -349,7 +349,7 @@ pub mod c_api {
     #[no_mangle]
     pub extern "C" fn start_name(file_name: StrNumber) -> NameAndLen {
         with_pool(|pool| {
-            let file_name = pool.get_str(file_name as usize);
+            let file_name = pool.get_str(file_name);
             let new_name = xcalloc_zeroed::<ASCIICode>(file_name.len() + 1).unwrap();
             new_name[..file_name.len()].copy_from_slice(file_name);
             new_name[file_name.len()] = 0;
@@ -415,7 +415,7 @@ pub mod c_api {
                 Err(BibtexError) => return CResultStr::Error,
                 Ok(res) => res,
             };
-            aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc as usize)));
+            aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc)));
 
             if lookup.exists {
                 write_logs("Already encountered auxiliary file");
