@@ -266,7 +266,6 @@ impl BuildCommand {
         setup_options.only_cached(self.only_cached);
 
         for output_name in doc.output_names() {
-
             // Added checking to see if the output name matches the specified target name
             if let Some(out) = self.target.clone() {
                 if out != output_name {
