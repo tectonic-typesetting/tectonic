@@ -1,11 +1,12 @@
-use crate::c_api::entries::{with_entries, ENT_STR_SIZE};
-use crate::c_api::hash::{with_hash, with_hash_mut};
-use crate::c_api::other::with_other_mut;
-use crate::c_api::pool::with_pool;
-use crate::c_api::xbuf::XBuf;
-use crate::c_api::{CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber};
-use std::cell::RefCell;
-use std::cmp::Ordering;
+use crate::c_api::{
+    entries::{with_entries, ENT_STR_SIZE},
+    hash::{with_hash, with_hash_mut},
+    other::with_other_mut,
+    pool::with_pool,
+    xbuf::XBuf,
+    CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber,
+};
+use std::{cell::RefCell, cmp::Ordering};
 
 pub const MAX_CITES: usize = 750;
 

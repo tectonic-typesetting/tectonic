@@ -1,6 +1,9 @@
 use crate::c_api::{xcalloc, xrealloc};
-use std::ops::{Deref, DerefMut};
-use std::{mem, ptr, slice};
+use std::{
+    mem,
+    ops::{Deref, DerefMut},
+    ptr, slice,
+};
 
 /// # Safety
 /// The all-zero byte pattern must be a valid instance of this type

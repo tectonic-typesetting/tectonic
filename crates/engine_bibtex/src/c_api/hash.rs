@@ -1,5 +1,8 @@
-use crate::c_api::xbuf::{SafelyZero, XBuf};
-use crate::c_api::{pool, HashPointer, StrIlk, StrNumber};
+use crate::c_api::{
+    pool,
+    xbuf::{SafelyZero, XBuf},
+    HashPointer, StrIlk, StrNumber,
+};
 use std::cell::RefCell;
 
 pub const HASH_BASE: usize = 1;

@@ -1,6 +1,7 @@
-use super::xbuf::XBuf;
-use crate::c_api::xbuf::SafelyZero;
-use crate::c_api::{ASCIICode, BufPointer};
+use crate::c_api::{
+    xbuf::{SafelyZero, XBuf},
+    ASCIICode, BufPointer,
+};
 use std::cell::RefCell;
 
 const BUF_SIZE: usize = 20000;

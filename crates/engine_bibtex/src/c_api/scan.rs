@@ -1,6 +1,8 @@
-use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
-use crate::c_api::char_info::{IdClass, LexClass};
-use crate::c_api::{ASCIICode, BufPointer};
+use crate::c_api::{
+    buffer::{with_buffers, with_buffers_mut, BufTy},
+    char_info::{IdClass, LexClass},
+    ASCIICode, BufPointer,
+};
 
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[repr(C)]

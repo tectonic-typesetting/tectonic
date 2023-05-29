@@ -1,11 +1,13 @@
-use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
-use crate::c_api::char_info::LexClass;
-use crate::c_api::{ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer};
-use crate::BibtexError;
+use crate::{
+    c_api::{
+        buffer::{with_buffers, with_buffers_mut, BufTy},
+        char_info::LexClass,
+        ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer,
+    },
+    BibtexError,
+};
 use libc::EOF;
-use std::ffi::CStr;
-use std::ptr::NonNull;
-use std::{io, ptr};
+use std::{ffi::CStr, io, ptr, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
 use tectonic_io_base::InputHandle;
 

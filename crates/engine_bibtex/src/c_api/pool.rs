@@ -1,15 +1,18 @@
-use crate::c_api::buffer::{with_buffers, BufTy};
-use crate::c_api::entries::{with_entries_mut, ENT_STR_SIZE};
-use crate::c_api::global::GLOB_STR_SIZE;
-use crate::c_api::hash::{with_hash, with_hash_mut, FnClass, HashData};
-use crate::c_api::log::{print_overflow, write_logs};
-use crate::c_api::other::with_other_mut;
-use crate::c_api::xbuf::XBuf;
-use crate::c_api::{
-    hash, ASCIICode, BufPointer, CResult, CResultLookup, CResultStr, GlblCtx, HashPointer,
-    LookupRes, PoolPointer, StrIlk, StrNumber,
+use crate::{
+    c_api::{
+        buffer::{with_buffers, BufTy},
+        entries::{with_entries_mut, ENT_STR_SIZE},
+        global::GLOB_STR_SIZE,
+        hash,
+        hash::{with_hash, with_hash_mut, FnClass, HashData},
+        log::{print_overflow, write_logs},
+        other::with_other_mut,
+        xbuf::XBuf,
+        ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, CResultStr, HashPointer, LookupRes,
+        PoolPointer, StrIlk, StrNumber,
+    },
+    BibtexError,
 };
-use crate::BibtexError;
 use std::cell::RefCell;
 
 const POOL_SIZE: usize = 65000;
@@ -278,7 +281,7 @@ pub extern "C" fn str_lookup(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut GlblCtx) -> CResult {
+pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     let ctx = &mut *ctx;
     let res = with_hash_mut(|hash| {
         with_pool_mut(|pool| {

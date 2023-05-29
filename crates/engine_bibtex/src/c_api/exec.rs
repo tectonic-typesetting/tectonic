@@ -1,10 +1,12 @@
-use crate::c_api::cite::with_cites;
-use crate::c_api::hash::with_hash;
-use crate::c_api::history::mark_error;
-use crate::c_api::log::{print_a_pool_str, print_confusion, write_logs};
-use crate::c_api::pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start};
-use crate::c_api::xbuf::{xrealloc_zeroed, SafelyZero};
-use crate::c_api::{GlblCtx, HashPointer, StrNumber};
+use crate::c_api::{
+    cite::with_cites,
+    hash::with_hash,
+    history::mark_error,
+    log::{print_a_pool_str, print_confusion, write_logs},
+    pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start},
+    xbuf::{xrealloc_zeroed, SafelyZero},
+    Bibtex, HashPointer, StrNumber,
+};
 use std::slice;
 
 const LIT_STK_SIZE: usize = 100;
@@ -33,7 +35,7 @@ unsafe impl SafelyZero for ExecVal {}
 
 #[repr(C)]
 pub struct ExecCtx {
-    pub glbl_ctx: *mut GlblCtx,
+    pub glbl_ctx: *mut Bibtex,
     pub _default: HashPointer,
     pub pop1: ExecVal,
     pub pop2: ExecVal,
@@ -185,13 +187,13 @@ pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bst_ln_num_print(glbl_ctx: *const GlblCtx) -> bool {
+pub unsafe extern "C" fn bst_ln_num_print(glbl_ctx: *const Bibtex) -> bool {
     write_logs(&format!("--line {} of file ", (*glbl_ctx).bst_line_num));
     print_bst_name(glbl_ctx)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const GlblCtx) -> bool {
+pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> bool {
     if !print_a_pool_str((*glbl_ctx).bst_str) {
         return false;
     }

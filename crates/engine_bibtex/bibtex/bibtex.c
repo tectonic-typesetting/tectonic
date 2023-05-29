@@ -117,7 +117,7 @@ static void log_fprintf(const char* fmt, ...) {
 
 /*:159*//*160: */
 
-static bool eat_bst_white_space(GlblCtx* ctx)
+static bool eat_bst_white_space(Bibtex* ctx)
 {
     while (true) {
 
@@ -136,7 +136,7 @@ static bool eat_bst_white_space(GlblCtx* ctx)
     return false;
 }
 
-static void skip_token_print(GlblCtx* ctx)
+static void skip_token_print(Bibtex* ctx)
 {
     putc_log('-');
     TRY(bst_ln_num_print(ctx));
@@ -144,7 +144,7 @@ static void skip_token_print(GlblCtx* ctx)
     scan2_white(125 /*right_brace */ , 37 /*comment */);
 }
 
-static void print_recursion_illegal(GlblCtx* ctx)
+static void print_recursion_illegal(Bibtex* ctx)
 {
     puts_log("Curse you, wizard, before you recurse me:\n");
     puts_log("function ");
@@ -153,20 +153,20 @@ static void print_recursion_illegal(GlblCtx* ctx)
     skip_token_print(ctx);
 }
 
-static void skp_token_unknown_function_print(GlblCtx* ctx)
+static void skp_token_unknown_function_print(Bibtex* ctx)
 {
     print_a_token();
     puts_log(" is an unknown function");
     skip_token_print(ctx);
 }
 
-static void skip_illegal_stuff_after_token_print(GlblCtx* ctx)
+static void skip_illegal_stuff_after_token_print(Bibtex* ctx)
 {
     printf_log("\"%c\" can't follow a literal", bib_buf_at_offset(BUF_TY_BASE, 2));
     skip_token_print(ctx);
 }
 
-static void scan_fn_def(GlblCtx* ctx, hash_loc fn_hash_loc, hash_loc wiz_loc)
+static void scan_fn_def(Bibtex* ctx, hash_loc fn_hash_loc, hash_loc wiz_loc)
 {
     typedef int32_t fn_def_loc;
     hash_ptr2 *singl_function;
@@ -772,7 +772,7 @@ static bool scan_a_field_token_and_eat_white(bool store_field, bool at_bib_comma
     return true;
 }
 
-static bool scan_and_store_the_field_value_and_eat_white(GlblCtx* ctx, bool store_field, bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
+static bool scan_and_store_the_field_value_and_eat_white(Bibtex* ctx, bool store_field, bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
 {
     buf_pointer tmp_ptr;
 
@@ -1470,7 +1470,7 @@ static void add_buf_pool(str_number p_str)
     bib_set_buf_len(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1));
 }
 
-static void add_out_pool(GlblCtx* ctx, str_number p_str)
+static void add_out_pool(Bibtex* ctx, str_number p_str)
 {
     buf_pointer tmp_ptr;
     buf_pointer break_ptr;
@@ -3284,7 +3284,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
     }
 }
 
-static void aux_bib_data_command(GlblCtx* ctx)
+static void aux_bib_data_command(Bibtex* ctx)
 {
     if (ctx->bib_seen) {
         TRY(aux_err_illegal_another_print(0 /*n_aux_bibdata */ ));
@@ -3346,7 +3346,7 @@ static void aux_bib_data_command(GlblCtx* ctx)
     }
 }
 
-static void aux_bib_style_command(GlblCtx* ctx)
+static void aux_bib_style_command(Bibtex* ctx)
 {
     if (ctx->bst_seen) {
         TRY(aux_err_illegal_another_print(1 /*n_aux_bibstyle */ ));
@@ -3406,7 +3406,7 @@ static void aux_bib_style_command(GlblCtx* ctx)
     }
 }
 
-static void aux_citation_command(GlblCtx* ctx)
+static void aux_citation_command(Bibtex* ctx)
 {
     buf_pointer tmp_ptr;
 
@@ -3490,7 +3490,7 @@ static void aux_citation_command(GlblCtx* ctx)
     }
 }
 
-static void aux_input_command(GlblCtx* ctx)
+static void aux_input_command(Bibtex* ctx)
 {
     bool aux_extension_ok;
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
@@ -3586,7 +3586,7 @@ pop_the_aux_stack(void)
     return 0;
 }
 
-static void get_aux_command_and_process(GlblCtx* ctx)
+static void get_aux_command_and_process(Bibtex* ctx)
 {
     bib_set_buf_offset(BUF_TY_BASE, 2, 0);
     if (!scan1(123 /*left_brace */))
@@ -3615,7 +3615,7 @@ static void get_aux_command_and_process(GlblCtx* ctx)
         }
 }
 
-static void last_check_for_aux_errors(GlblCtx* ctx)
+static void last_check_for_aux_errors(Bibtex* ctx)
 {
     set_num_cites(cite_ptr());
     ctx->num_bib_files = bib_ptr();
@@ -3648,7 +3648,7 @@ static void last_check_for_aux_errors(GlblCtx* ctx)
     }
 }
 
-static void bst_entry_command(GlblCtx* ctx)
+static void bst_entry_command(Bibtex* ctx)
 {
     if (ctx->entry_seen) {
         puts_log("Illegal, another entry command");
@@ -3851,7 +3851,7 @@ static void bst_entry_command(GlblCtx* ctx)
     }
 }
 
-static bool bad_argument_token(GlblCtx* ctx, hash_loc* fn_out)
+static bool bad_argument_token(Bibtex* ctx, hash_loc* fn_out)
 {
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 11 /*bst_fn_ilk */ , false));
@@ -4038,7 +4038,7 @@ static void bst_function_command(ExecCtx* ctx)
     scan_fn_def(ctx->glbl_ctx, wiz_loc, wiz_loc);
 }
 
-static void bst_integers_command(GlblCtx* ctx)
+static void bst_integers_command(Bibtex* ctx)
 {
     {
         if (!eat_bst_white_space(ctx)) {
@@ -4181,7 +4181,7 @@ static void bst_iterate_command(ExecCtx* ctx)
     }
 }
 
-static void bst_macro_command(GlblCtx* ctx)
+static void bst_macro_command(Bibtex* ctx)
 {
     if (ctx->read_seen) {
         puts_log("Illegal, macro command after read command");
@@ -4320,7 +4320,7 @@ static void bst_macro_command(GlblCtx* ctx)
     }
 }
 
-static void get_bib_command_or_entry_and_process(GlblCtx* ctx, hash_loc* cur_macro_loc, hash_loc* field_name_loc)
+static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macro_loc, hash_loc* field_name_loc)
 {
     buf_pointer tmp_ptr, tmp_end_ptr;
     int32_t command_num = 0;
@@ -4647,7 +4647,7 @@ lab22:                        /*cite_already_set */ ;
     }
 }
 
-static void bst_read_command(GlblCtx* ctx)
+static void bst_read_command(Bibtex* ctx)
 {
     buf_pointer tmp_ptr;
 
@@ -4967,7 +4967,7 @@ static void bst_reverse_command(ExecCtx* ctx)
 
 
 static void
-bst_sort_command(GlblCtx* ctx)
+bst_sort_command(Bibtex* ctx)
 {
     if (!ctx->read_seen) {
         puts_log("Illegal, sort command before read command");
@@ -4981,7 +4981,7 @@ bst_sort_command(GlblCtx* ctx)
 
 
 static void
-bst_strings_command(GlblCtx* ctx)
+bst_strings_command(Bibtex* ctx)
 {
     if (!eat_bst_white_space(ctx)) {
         eat_bst_print();
@@ -5101,7 +5101,7 @@ get_bst_command_and_process(ExecCtx* ctx)
 }
 
 static int
-initialize(GlblCtx* ctx, const char *aux_file_name)
+initialize(Bibtex* ctx, const char *aux_file_name)
 {
     int32_t bad = 0;
 
@@ -5140,7 +5140,7 @@ initialize(GlblCtx* ctx, const char *aux_file_name)
 
 
 History
-bibtex_main(GlblCtx* glbl_ctx, const char *aux_file_name)
+bibtex_main(Bibtex* glbl_ctx, const char *aux_file_name)
 {
     reset_all();
 
@@ -5252,7 +5252,7 @@ close_up_shop:
 
 
 History
-tt_engine_bibtex_main(ttbc_state_t *api, GlblCtx* ctx, const char *aux_file_name)
+tt_engine_bibtex_main(ttbc_state_t *api, Bibtex* ctx, const char *aux_file_name)
 {
     History rv;
 

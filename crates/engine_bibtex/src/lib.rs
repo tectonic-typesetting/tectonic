@@ -60,7 +60,7 @@ pub enum BibtexOutcome {
 /// the same time.
 #[derive(Debug, Default)]
 pub struct BibtexEngine {
-    ctx: c_api::GlblCtx,
+    ctx: c_api::Bibtex,
 }
 
 impl BibtexEngine {
@@ -108,23 +108,21 @@ impl BibtexEngine {
 #[doc(hidden)]
 #[allow(clippy::assertions_on_constants)]
 pub mod c_api {
-    use crate::c_api::auxi::with_aux_mut;
-    use crate::c_api::buffer::{with_buffers, BufTy};
-    use crate::c_api::hash::{with_hash, with_hash_mut};
-    use crate::c_api::history::History;
-    use crate::c_api::log::{
-        init_log_file, print_confusion, sam_wrong_file_name_print, write_logs,
-    };
-    use crate::c_api::peekable::PeekableInput;
-    use crate::c_api::pool::{with_pool, with_pool_mut};
-    use crate::c_api::xbuf::{xcalloc_zeroed, SafelyZero};
     use crate::BibtexError;
-    pub use external::*;
-    use std::ffi::CStr;
-    use std::ptr;
-    use std::ptr::NonNull;
+    use auxi::with_aux_mut;
+    use buffer::{with_buffers, BufTy};
+    use hash::{with_hash, with_hash_mut};
+    use history::History;
+    use log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
+    use peekable::PeekableInput;
+    use pool::{with_pool, with_pool_mut};
+    use std::{
+        ffi::CStr,
+        ptr::{self, NonNull},
+    };
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
+    use xbuf::{xcalloc_zeroed, SafelyZero};
 
     pub mod auxi;
     pub mod bibs;
@@ -142,6 +140,8 @@ pub mod c_api {
     pub mod pool;
     pub mod scan;
     pub mod xbuf;
+
+    pub use external::*;
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
     const _: () = assert!(hash::HASH_PRIME >= 128);
@@ -167,7 +167,7 @@ pub mod c_api {
 
     #[derive(Debug)]
     #[repr(C)]
-    pub struct GlblCtx {
+    pub struct Bibtex {
         pub config: BibtexConfig,
         pub bst_file: Option<NonNull<PeekableInput>>,
         pub bst_str: StrNumber,
@@ -196,9 +196,9 @@ pub mod c_api {
         pub s_aux_extension: HashPointer,
     }
 
-    impl Default for GlblCtx {
+    impl Default for Bibtex {
         fn default() -> Self {
-            GlblCtx {
+            Bibtex {
                 config: Default::default(),
                 bst_file: None,
                 bst_str: 0,
@@ -362,7 +362,7 @@ pub mod c_api {
 
     #[no_mangle]
     pub unsafe extern "C" fn get_the_top_level_aux_file_name(
-        ctx: *mut GlblCtx,
+        ctx: *mut Bibtex,
         aux_file_name: *const libc::c_char,
     ) -> CResultStr {
         let ctx = &mut *ctx;
@@ -431,7 +431,7 @@ pub mod c_api {
     extern "C" {
         pub fn tt_engine_bibtex_main(
             api: &mut CoreBridgeState<'_>,
-            ctx: &mut GlblCtx,
+            ctx: &mut Bibtex,
             aux_name: *const libc::c_char,
         ) -> History;
     }

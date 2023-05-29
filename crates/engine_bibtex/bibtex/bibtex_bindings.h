@@ -160,7 +160,7 @@ typedef struct {
   HashPointer s_null;
   HashPointer s_default;
   HashPointer s_aux_extension;
-} GlblCtx;
+} Bibtex;
 
 typedef uintptr_t AuxNumber;
 
@@ -183,7 +183,7 @@ typedef struct {
 } ExecVal;
 
 typedef struct {
-  GlblCtx *glbl_ctx;
+  Bibtex *glbl_ctx;
   HashPointer _default;
   ExecVal pop1;
   ExecVal pop2;
@@ -245,9 +245,9 @@ bool bib_str_eq_buf(StrNumber s, BufTy buf, BufPointer ptr, BufPointer len);
 
 NameAndLen start_name(StrNumber file_name);
 
-CResultStr get_the_top_level_aux_file_name(GlblCtx *ctx, const char *aux_file_name);
+CResultStr get_the_top_level_aux_file_name(Bibtex *ctx, const char *aux_file_name);
 
-extern History tt_engine_bibtex_main(ttbc_state_t *api, GlblCtx *ctx, const char *aux_name);
+extern History tt_engine_bibtex_main(ttbc_state_t *api, Bibtex *ctx, const char *aux_name);
 
 StrNumber cur_aux(void);
 
@@ -393,9 +393,9 @@ bool print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
 
 bool bst_ex_warn_print(const ExecCtx *ctx);
 
-bool bst_ln_num_print(const GlblCtx *glbl_ctx);
+bool bst_ln_num_print(const Bibtex *glbl_ctx);
 
-bool print_bst_name(const GlblCtx *glbl_ctx);
+bool print_bst_name(const Bibtex *glbl_ctx);
 
 void push_lit_stk(ExecCtx *ctx, ExecVal val);
 
@@ -485,11 +485,11 @@ bool print_bib_name(void);
 
 bool log_pr_bib_name(void);
 
-bool log_pr_bst_name(const GlblCtx *ctx);
+bool log_pr_bst_name(const Bibtex *ctx);
 
 void hash_cite_confusion(void);
 
-bool bst_warn_print(const GlblCtx *ctx);
+bool bst_warn_print(const Bibtex *ctx);
 
 void eat_bst_print(void);
 
@@ -537,13 +537,13 @@ void case_conversion_confusion(void);
 
 void print_fn_class(HashPointer fn_loc);
 
-CResult bst_err_print_and_look_for_blank_line(GlblCtx *ctx);
+CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
 
-CResult already_seen_function_print(GlblCtx *ctx, HashPointer seen_fn_loc);
+CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
 
 bool nonexistent_cross_reference_error(FieldLoc field_ptr);
 
-void output_bbl_line(GlblCtx *ctx);
+void output_bbl_line(Bibtex *ctx);
 
 HashPointer2 wiz_functions(WizFnLoc pos);
 
@@ -607,7 +607,7 @@ CResultStr bib_make_string(void);
 
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
-CResult pre_def_certain_strings(GlblCtx *ctx);
+CResult pre_def_certain_strings(Bibtex *ctx);
 
 bool scan1(ASCIICode char1);
 

@@ -1,23 +1,20 @@
-use crate::c_api::auxi::{cur_aux, cur_aux_ln};
-use crate::c_api::bibs::{bib_line_num, cur_bib};
-use crate::c_api::buffer::{with_buffers, with_buffers_mut, BufTy};
-use crate::c_api::char_info::LexClass;
-use crate::c_api::cite::with_cites;
-use crate::c_api::exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx};
-use crate::c_api::hash::{with_hash, FnClass};
-use crate::c_api::history::{mark_error, mark_fatal, mark_warning};
-use crate::c_api::other::with_other;
-use crate::c_api::peekable::input_ln;
-use crate::c_api::pool::with_pool;
-use crate::c_api::scan::ScanRes;
 use crate::c_api::{
-    ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, CResult,
-    FieldLoc, GlblCtx, HashPointer, StrNumber,
+    auxi::{cur_aux, cur_aux_ln},
+    bibs::{bib_line_num, cur_bib},
+    buffer::{with_buffers, with_buffers_mut, BufTy},
+    char_info::LexClass,
+    cite::with_cites,
+    exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
+    hash::{with_hash, FnClass},
+    history::{mark_error, mark_fatal, mark_warning},
+    other::with_other,
+    peekable::input_ln,
+    pool::with_pool,
+    scan::ScanRes,
+    ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex, CResult,
+    FieldLoc, HashPointer, StrNumber,
 };
-use std::cell::Cell;
-use std::ffi::CStr;
-use std::io::Write;
-use std::slice;
+use std::{cell::Cell, ffi::CStr, io::Write, slice};
 use tectonic_io_base::OutputHandle;
 
 pub trait AsBytes {
@@ -375,7 +372,7 @@ pub extern "C" fn log_pr_bib_name() -> bool {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn log_pr_bst_name(ctx: *const GlblCtx) -> bool {
+pub unsafe extern "C" fn log_pr_bst_name(ctx: *const Bibtex) -> bool {
     with_log(|log| {
         if !out_pool_str(log, (*ctx).bst_str) {
             return false;
@@ -392,7 +389,7 @@ pub extern "C" fn hash_cite_confusion() {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bst_warn_print(ctx: *const GlblCtx) -> bool {
+pub unsafe extern "C" fn bst_warn_print(ctx: *const Bibtex) -> bool {
     if !bst_ln_num_print(ctx) {
         return false;
     }
@@ -644,7 +641,7 @@ pub extern "C" fn print_fn_class(fn_loc: HashPointer) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut GlblCtx) -> CResult {
+pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut Bibtex) -> CResult {
     let ctx = &mut *ctx;
 
     write_logs("-");
@@ -666,7 +663,7 @@ pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut GlblCtx
 
 #[no_mangle]
 pub unsafe extern "C" fn already_seen_function_print(
-    ctx: *mut GlblCtx,
+    ctx: *mut Bibtex,
     seen_fn_loc: HashPointer,
 ) -> CResult {
     if with_hash(|hash| !print_a_pool_str(hash.text(seen_fn_loc))) {
@@ -690,7 +687,7 @@ pub extern "C" fn nonexistent_cross_reference_error(field_ptr: FieldLoc) -> bool
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn output_bbl_line(ctx: *mut GlblCtx) {
+pub unsafe extern "C" fn output_bbl_line(ctx: *mut Bibtex) {
     with_buffers_mut(|buffers| {
         if buffers.init(BufTy::Out) != 0 {
             let mut init = buffers.init(BufTy::Out);
