@@ -247,7 +247,7 @@ pub extern "C" fn int_to_ascii(
         let mut buf = buffers.buffer_mut(int_buf);
         let mut int_ptr = int_begin;
 
-        if the_int < 0 {
+        let neg = if the_int < 0 {
             if int_ptr == buf.len() {
                 buffers.grow_all();
                 buf = buffers.buffer_mut(int_buf);
@@ -255,7 +255,10 @@ pub extern "C" fn int_to_ascii(
             buf[int_ptr] = 45 /*minus_sign */ ;
             int_ptr += 1;
             the_int = -the_int;
-        }
+            true
+        } else {
+            false
+        };
 
         loop {
             if int_ptr == buf.len() {
@@ -271,7 +274,8 @@ pub extern "C" fn int_to_ascii(
             }
         }
 
-        buf[int_begin..int_ptr].reverse();
+        let begin = if neg { int_begin + 1 } else { int_begin };
+        buf[begin..int_ptr].reverse();
         int_ptr as BufPointer
     })
 }
