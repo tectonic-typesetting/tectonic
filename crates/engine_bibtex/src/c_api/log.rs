@@ -490,7 +490,7 @@ pub extern "C" fn bib_one_of_two_print(
     at_bib_command: bool,
 ) -> bool {
     write_logs(&format!(
-        "I was expecting a `{}` or a `{}`",
+        "I was expecting a `{}' or a `{}'",
         char1 as char, char2 as char
     ));
     bib_err_print(at_bib_command)
