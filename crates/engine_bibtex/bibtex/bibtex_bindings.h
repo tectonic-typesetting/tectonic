@@ -199,8 +199,6 @@ typedef uintptr_t FieldLoc;
 
 typedef uintptr_t WizFnLoc;
 
-typedef uintptr_t FnDefLoc;
-
 typedef uintptr_t PoolPointer;
 
 typedef struct {
@@ -393,8 +391,6 @@ bool print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
 
 bool bst_ex_warn_print(const ExecCtx *ctx);
 
-bool bst_ln_num_print(const Bibtex *glbl_ctx);
-
 bool print_bst_name(const Bibtex *glbl_ctx);
 
 void push_lit_stk(ExecCtx *ctx, ExecVal val);
@@ -440,8 +436,6 @@ uintptr_t hash_prime(void);
 History get_history(void);
 
 void mark_warning(void);
-
-void mark_error(void);
 
 uint32_t err_count(void);
 
@@ -547,14 +541,6 @@ void output_bbl_line(Bibtex *ctx);
 
 HashPointer2 wiz_functions(WizFnLoc pos);
 
-void set_wiz_functions(WizFnLoc pos, HashPointer2 val);
-
-WizFnLoc wiz_def_ptr(void);
-
-void set_wiz_def_ptr(WizFnLoc val);
-
-void check_grow_wiz(FnDefLoc ptr);
-
 StrNumber field_info(FieldLoc pos);
 
 void set_field_info(FieldLoc pos, StrNumber val);
@@ -627,7 +613,9 @@ ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
 bool scan_nonneg_integer(void);
 
-bool scan_integer(int32_t *token_value);
+bool eat_bst_white_space(Bibtex *ctx);
+
+CResult scan_fn_def(Bibtex *ctx, HashPointer fn_hash_loc, HashPointer wiz_loc);
 
 #ifdef __cplusplus
 } // extern "C"

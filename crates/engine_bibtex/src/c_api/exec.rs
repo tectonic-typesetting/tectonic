@@ -181,15 +181,14 @@ pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
     }
 
     write_logs("\nwhile executing-");
-    bst_ln_num_print((*ctx).glbl_ctx);
+    bst_ln_num_print(&*(*ctx).glbl_ctx);
     mark_error();
     true
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bst_ln_num_print(glbl_ctx: *const Bibtex) -> bool {
-    write_logs(&format!("--line {} of file ", (*glbl_ctx).bst_line_num));
-    print_bst_name(glbl_ctx)
+pub fn bst_ln_num_print(glbl_ctx: &Bibtex) -> bool {
+    write_logs(&format!("--line {} of file ", glbl_ctx.bst_line_num));
+    unsafe { print_bst_name(glbl_ctx) }
 }
 
 #[no_mangle]

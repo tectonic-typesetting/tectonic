@@ -139,7 +139,7 @@ impl StringPool {
                         if hash.used() == hash::HASH_BASE {
                             print_overflow();
                             write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
-                            return Err(BibtexError);
+                            return Err(BibtexError::Fatal);
                         }
                         hash.set_used(hash.used() - 1);
 
@@ -162,7 +162,7 @@ impl StringPool {
 
                     match self.make_string() {
                         CResultStr::Ok(str) => hash.set_text(p, str),
-                        _ => return Err(BibtexError),
+                        _ => return Err(BibtexError::Fatal),
                     }
                 }
 
@@ -283,7 +283,7 @@ pub extern "C" fn str_lookup(
 #[no_mangle]
 pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     let ctx = &mut *ctx;
-    let res = with_hash_mut(|hash| {
+    let res: Result<_, BibtexError> = with_hash_mut(|hash| {
         with_pool_mut(|pool| {
             let res = pool.lookup_str_insert(hash, b".aux", StrIlk::FileExt)?;
             ctx.s_aux_extension = hash.text(res.loc);
@@ -438,7 +438,8 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     });
     match res {
         Ok(()) => CResult::Ok,
-        Err(BibtexError) => CResult::Error,
+        Err(BibtexError::Fatal) => CResult::Error,
+        Err(BibtexError::Recover) => CResult::Recover,
     }
 }
 

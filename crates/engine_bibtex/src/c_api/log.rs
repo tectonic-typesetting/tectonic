@@ -1,3 +1,6 @@
+use crate::c_api::buffer::GlobalBuffer;
+use crate::c_api::peekable::rs_input_ln;
+use crate::c_api::scan::Scan;
 use crate::c_api::{
     auxi::{cur_aux, cur_aux_ln},
     bibs::{bib_line_num, cur_bib},
@@ -8,12 +11,12 @@ use crate::c_api::{
     hash::{with_hash, FnClass},
     history::{mark_error, mark_fatal, mark_warning},
     other::with_other,
-    peekable::input_ln,
     pool::with_pool,
     scan::ScanRes,
     ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex, CResult,
     FieldLoc, HashPointer, StrNumber,
 };
+use crate::BibtexError;
 use std::{cell::Cell, ffi::CStr, io::Write, slice};
 use tectonic_io_base::OutputHandle;
 
@@ -163,46 +166,44 @@ pub extern "C" fn print_a_token() {
     with_log(out_token);
 }
 
-pub(crate) fn print_bad_input_line() {
+pub(crate) fn print_bad_input_line(buffers: &GlobalBuffer) {
     write_logs(" : ");
 
-    with_buffers(|b| {
-        let offset2 = b.offset(BufTy::Base, 2);
+    let offset2 = buffers.offset(BufTy::Base, 2);
 
-        let slice = &b.buffer(BufTy::Base)[0..offset2];
+    let slice = &buffers.buffer(BufTy::Base)[0..offset2];
 
+    for code in slice {
+        if LexClass::of(*code) == LexClass::Whitespace {
+            write_logs(" ");
+        } else {
+            write_logs(slice::from_ref(code))
+        }
+    }
+    write_logs("\n : ");
+    let str = (0..offset2).map(|_| ' ').collect::<String>();
+    write_logs(&str);
+
+    let last = buffers.init(BufTy::Base);
+    if offset2 < last {
+        let slice = &buffers.buffer(BufTy::Base)[offset2..last];
         for code in slice {
             if LexClass::of(*code) == LexClass::Whitespace {
                 write_logs(" ");
             } else {
-                write_logs(slice::from_ref(code))
+                write_logs(slice::from_ref(code));
             }
         }
-        write_logs("\n : ");
-        let str = (0..offset2).map(|_| ' ').collect::<String>();
-        write_logs(&str);
+    }
 
-        let last = b.init(BufTy::Base);
-        if offset2 < last {
-            let slice = &b.buffer(BufTy::Base)[offset2..last];
-            for code in slice {
-                if LexClass::of(*code) == LexClass::Whitespace {
-                    write_logs(" ");
-                } else {
-                    write_logs(slice::from_ref(code));
-                }
-            }
-        }
+    write_logs("\n");
 
-        write_logs("\n");
-
-        if !slice
-            .iter()
-            .any(|c| LexClass::of(*c) != LexClass::Whitespace)
-        {
-            write_logs("(Error may have been on previous line)\n");
-        }
-    });
+    if !slice
+        .iter()
+        .any(|c| LexClass::of(*c) != LexClass::Whitespace)
+    {
+        write_logs("(Error may have been on previous line)\n");
+    }
 
     mark_error();
 }
@@ -277,7 +278,7 @@ pub extern "C" fn aux_err_print() -> bool {
     if !print_aux_name() {
         return false;
     }
-    print_bad_input_line();
+    with_buffers(print_bad_input_line);
     print_skipping_whatever_remains();
     write_logs("command\n");
     true
@@ -390,7 +391,7 @@ pub extern "C" fn hash_cite_confusion() {
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_warn_print(ctx: *const Bibtex) -> bool {
-    if !bst_ln_num_print(ctx) {
+    if !bst_ln_num_print(&*ctx) {
         return false;
     }
     mark_warning();
@@ -458,7 +459,7 @@ pub extern "C" fn bib_err_print(at_bib_command: bool) -> bool {
     if !bib_ln_num_print() {
         return false;
     }
-    print_bad_input_line();
+    with_buffers(print_bad_input_line);
     print_skipping_whatever_remains();
     if at_bib_command {
         write_logs("command\n");
@@ -640,25 +641,35 @@ pub extern "C" fn print_fn_class(fn_loc: HashPointer) {
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut Bibtex) -> CResult {
-    let ctx = &mut *ctx;
-
+pub fn rs_bst_err_print_and_look_for_blank_line(
+    ctx: &mut Bibtex,
+    buffers: &mut GlobalBuffer,
+) -> Result<(), BibtexError> {
     write_logs("-");
     if !bst_ln_num_print(ctx) {
-        return CResult::Error;
+        return Err(BibtexError::Fatal);
     }
-    print_bad_input_line();
-    while with_buffers(|buffers| buffers.init(BufTy::Base)) != 0 {
-        if !input_ln(ctx.bst_file) {
-            return CResult::Recover;
+    print_bad_input_line(buffers);
+    while buffers.init(BufTy::Base) != 0 {
+        if !rs_input_ln(unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) }, buffers) {
+            return Err(BibtexError::Recover);
         } else {
             ctx.bst_line_num += 1;
         }
     }
-    with_buffers_mut(|buffers| buffers.set_offset(BufTy::Base, 2, buffers.init(BufTy::Base)));
+    buffers.set_offset(BufTy::Base, 2, buffers.init(BufTy::Base));
+    Ok(())
+}
 
-    CResult::Ok
+#[no_mangle]
+pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut Bibtex) -> CResult {
+    with_buffers_mut(
+        |buffers| match rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers) {
+            Ok(()) => CResult::Ok,
+            Err(BibtexError::Fatal) => CResult::Error,
+            Err(BibtexError::Recover) => CResult::Recover,
+        },
+    )
 }
 
 #[no_mangle]
@@ -709,4 +720,48 @@ pub unsafe extern "C" fn output_bbl_line(ctx: *mut Bibtex) {
         (*ctx).bbl_line_num += 1;
         buffers.set_init(BufTy::Out, 0);
     })
+}
+
+pub fn skip_token_print(ctx: &Bibtex, buffers: &mut GlobalBuffer) -> Result<(), BibtexError> {
+    write_logs("-");
+    if !bst_ln_num_print(ctx) {
+        return Err(BibtexError::Fatal);
+    }
+    mark_error();
+
+    Scan::new(&[b'}', b'%'])
+        .class(LexClass::Whitespace)
+        .scan_till(buffers, buffers.init(BufTy::Base));
+
+    Ok(())
+}
+
+pub fn print_recursion_illegal(
+    ctx: &Bibtex,
+    buffers: &mut GlobalBuffer,
+) -> Result<(), BibtexError> {
+    write_logs("Curse you, wizard, before you recurse me:\nfunction ");
+    print_a_token();
+    write_logs(" is illegal in its own definition\n");
+    skip_token_print(ctx, buffers)
+}
+
+pub fn skip_token_unknown_function_print(
+    ctx: &Bibtex,
+    buffers: &mut GlobalBuffer,
+) -> Result<(), BibtexError> {
+    print_a_token();
+    write_logs(" is an unknown function");
+    skip_token_print(ctx, buffers)
+}
+
+pub fn skip_illegal_stuff_after_token_print(
+    ctx: &Bibtex,
+    buffers: &mut GlobalBuffer,
+) -> Result<(), BibtexError> {
+    write_logs(&format!(
+        "\"{}\" can't follow a literal",
+        buffers.at_offset(BufTy::Base, 2) as char
+    ));
+    skip_token_print(ctx, buffers)
 }

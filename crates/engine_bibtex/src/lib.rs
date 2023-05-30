@@ -24,8 +24,12 @@ use std::ffi::CString;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
+#[doc(hidden)]
 #[derive(Debug)]
-pub(crate) struct BibtexError;
+pub enum BibtexError {
+    Fatal,
+    Recover,
+}
 
 /// A possible outcome from a BibTeX engine invocation.
 ///
@@ -265,7 +269,7 @@ pub mod c_api {
         fn from(value: Result<LookupRes, BibtexError>) -> Self {
             match value {
                 Ok(val) => CResultLookup::Ok(val),
-                Err(BibtexError) => CResultLookup::Error,
+                Err(_) => CResultLookup::Error,
             }
         }
     }
@@ -412,8 +416,8 @@ pub mod c_api {
                     pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile)
                 })
             }) {
-                Err(BibtexError) => return CResultStr::Error,
                 Ok(res) => res,
+                Err(_) => return CResultStr::Error,
             };
             aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc)));
 

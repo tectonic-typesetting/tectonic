@@ -49,8 +49,7 @@ pub extern "C" fn mark_warning() {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn mark_error() {
+pub fn mark_error() {
     if get_history() < History::ErrorIssued {
         set_history(History::ErrorIssued);
         set_err(|_| 1);
