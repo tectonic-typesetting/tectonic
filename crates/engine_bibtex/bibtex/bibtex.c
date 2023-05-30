@@ -68,6 +68,20 @@ static StrNumber unwrap_res_str(CResultStr res) {
     return res.ok;
 }
 
+static bool unwrap_res_bool(CResultBool res) {
+    switch (res.tag) {
+    case CResultBool_Error:
+        longjmp(error_jmpbuf, 1);
+        break;
+    case CResultBool_Recover:
+        longjmp(recover_jmpbuf, 1);
+        break;
+    case CResultBool_Ok:
+        break;
+    }
+    return res.ok;
+}
+
 static LookupRes unwrap_res_lookup(CResultLookup res) {
     switch (res.tag) {
     case CResultLookup_Error:
@@ -107,264 +121,17 @@ static void log_fprintf(const char* fmt, ...) {
 
 /*:159*//*160: */
 
-static bool eat_bib_white_space(void)
-{
-    while ((!scan_white_space())) {
-
-        if (!input_ln(cur_bib_file())) {
-            return false;
-        }
-        set_bib_line_num(bib_line_num() + 1);
-        bib_set_buf_offset(BUF_TY_BASE, 2, 0);
-    }
-    return true;
-}
-
-static bool compress_bib_white(bool at_bib_command)
-{
-    {
-        if (bib_buf_offset(BUF_TY_EX, 1) == bib_buf_size()) {
-            bib_log_prints("Field filled up at ' ', reallocating.\n");
-            buffer_overflow();
-        }
-
-        bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), 32 /*space */ );
-        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-    }
-    while ((!scan_white_space())) {
-
-        if (!input_ln(cur_bib_file())) {
-            TRY(eat_bib_print(at_bib_command));
-            return false;
-        }
-        set_bib_line_num(bib_line_num() + 1);
-        bib_set_buf_offset(BUF_TY_BASE, 2, 0);
-    }
-    return true;
-}
-
-static bool scan_balanced_braces(bool store_field, bool at_bib_command, ASCIICode right_str_delim)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    {
-        if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == bib_buf_len(BUF_TY_BASE))) {
-
-            if (!compress_bib_white(at_bib_command)) {
-                return false;
-            }
-        }
-    }
-    if (bib_buf_offset(BUF_TY_EX, 1) > 1) {
-
-        if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) - 1) == 32 /*space */ ) {
-
-            if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) - 2) == 32 /*space */ )
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
-        }
-    }
-    int32_t bib_brace_level = 0;
-    if (store_field) {        /*257: */
-        while ((bib_buf_at_offset(BUF_TY_BASE, 2) != right_str_delim))
-            switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
-            case 123: /*'{'*/
-                {
-                    bib_brace_level = bib_brace_level + 1;
-                    {
-                        if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                            bib_log_prints("Field filled up at '{', reallocating.\n");
-                            buffer_overflow();
-                        }
-
-                        bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), 123 /*left_brace */ );
-                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                    }
-                    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                    {
-                        if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == bib_buf_len(BUF_TY_BASE))) {
-
-                            if (!compress_bib_white(at_bib_command))
-                                return false;
-                        }
-                    }
-                    {
-                        while (true)
-                            switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
-                            case 125: /*'}'*/
-                                {
-                                    bib_brace_level = bib_brace_level - 1;
-                                    {
-                                        if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                            bib_log_prints("Field filled up at '}', reallocating.\n");
-                                            buffer_overflow();
-                                        }
-
-                                        bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), 125 /*right_brace */ );
-                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                    }
-                                    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                                    {
-                                        if (((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE )
-                                             || (bib_buf_offset(BUF_TY_BASE, 2) == bib_buf_len(BUF_TY_BASE)))) {
-
-                                            if (!compress_bib_white(at_bib_command))
-                                                return false;
-                                        }
-                                    }
-                                    if (bib_brace_level == 0)
-                                        goto loop_exit;
-                                }
-                                break;
-                            case 123: /*'{'*/
-                                {
-                                    bib_brace_level = bib_brace_level + 1;
-                                    {
-                                        if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                            bib_log_prints("Field filled up at '{', reallocating.\n");
-                                            buffer_overflow();
-                                        }
-
-                                        bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), 123 /*left_brace */ );
-                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                    }
-                                    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                                    {
-                                        if (((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE )
-                                             || (bib_buf_offset(BUF_TY_BASE, 2) == bib_buf_len(BUF_TY_BASE)))) {
-
-                                            if (!compress_bib_white(at_bib_command))
-                                                return false;
-                                        }
-                                    }
-                                }
-                                break;
-                            default:
-                                {
-                                    {
-                                        if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                                            log_fprintf("Field filled up at %ld, reallocating.\n", (long) bib_buf_at_offset(BUF_TY_BASE, 2));
-                                            buffer_overflow();
-                                        }
-
-                                        bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), bib_buf_at_offset(BUF_TY_BASE, 2));
-                                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                    }
-                                    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                                    {
-                                        if (((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE )
-                                             || (bib_buf_offset(BUF_TY_BASE, 2) == bib_buf_len(BUF_TY_BASE)))) {
-
-                                            if (!compress_bib_white(at_bib_command))
-                                                return false;
-                                        }
-                                    }
-                                }
-                                break;
-                            }
-                    loop_exit:
-                        ;
-                    }
-                }
-                break;
-            case 125:
-                {
-                    TRY(bib_unbalanced_braces_print(at_bib_command));
-                    return false;
-                }
-                break;
-            default:
-                {
-                    {
-                        if (bib_buf_offset(BUF_TY_EX, 1) >= bib_buf_size()) {
-                            log_fprintf("Field filled up at %ld, reallocating.\n", (long) bib_buf_at_offset(BUF_TY_BASE, 2));
-                            buffer_overflow();
-                        }
-
-                        bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), bib_buf_at_offset(BUF_TY_BASE, 2));
-                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                    }
-                    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                    {
-                        if ((LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) || (bib_buf_offset(BUF_TY_BASE, 2) == bib_buf_len(BUF_TY_BASE))) {
-
-                            if (!compress_bib_white(at_bib_command))
-                                return false;
-                        }
-                    }
-                }
-                break;
-            }
-    } else {                    /*255: */
-
-        while ((bib_buf_at_offset(BUF_TY_BASE, 2) != right_str_delim))
-            if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ ) {
-                bib_brace_level = bib_brace_level + 1;
-                bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                {
-                    if (!eat_bib_white_space()) {
-                        TRY(eat_bib_print(at_bib_command));
-                        return false;
-                    }
-                }
-                while ((bib_brace_level > 0)) { /*256: */
-
-                    if (bib_buf_at_offset(BUF_TY_BASE, 2) == 125 /*right_brace */ ) {
-                        bib_brace_level = bib_brace_level - 1;
-                        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                        {
-                            if (!eat_bib_white_space()) {
-                                TRY(eat_bib_print(at_bib_command));
-                                return false;
-                            }
-                        }
-                    } else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 123 /*left_brace */ ) {
-                        bib_brace_level = bib_brace_level + 1;
-                        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                        {
-                            if (!eat_bib_white_space()) {
-                                TRY(eat_bib_print(at_bib_command));
-                                return false;
-                            }
-                        }
-                    } else {
-
-                        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                        if (!scan2(125 /*right_brace */ , 123 /*left_brace */)) {
-                            if (!eat_bib_white_space()) {
-                                TRY(eat_bib_print(at_bib_command));
-                                return false;
-                            }
-                        }
-                    }
-                }
-            } else if (bib_buf_at_offset(BUF_TY_BASE, 2) == 125 /*right_brace */ ) {
-                TRY(bib_unbalanced_braces_print(at_bib_command));
-                return false;
-            } else {
-
-                bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-                if (!scan3(right_str_delim, 123 /*left_brace */ , 125 /*right_brace */)) {
-                    if (!eat_bib_white_space()) {
-                        TRY(eat_bib_print(at_bib_command));
-                        return false;
-                    }
-                }
-            }
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    return true;
-}
-
 static bool scan_a_field_token_and_eat_white(bool store_field, bool at_bib_command, int32_t command_num, hash_loc cur_macro_loc, ASCIICode right_outer_delim)
 {
     buf_pointer tmp_ptr, tmp_end_ptr;
 
     switch ((bib_buf_at_offset(BUF_TY_BASE, 2))) {
     case 123:
-        if (!scan_balanced_braces(store_field, at_bib_command, 125 /*right_brace */))
+        if (!unwrap_res_bool(scan_balanced_braces(store_field, at_bib_command, 125 /*right_brace */)))
             return false;
         break;
     case 34:
-        if (!scan_balanced_braces(store_field, at_bib_command, 34 /*double_quote */))
+        if (!unwrap_res_bool(scan_balanced_braces(store_field, at_bib_command, 34 /*double_quote */)))
             return false;
         break;
     case 48:
@@ -3754,7 +3521,7 @@ static void bst_function_command(ExecCtx* ctx)
         }
         bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
     }
-    scan_fn_def(ctx->glbl_ctx, wiz_loc, wiz_loc);
+    unwrap_res(scan_fn_def(ctx->glbl_ctx, wiz_loc, wiz_loc));
 }
 
 static void bst_integers_command(Bibtex* ctx)

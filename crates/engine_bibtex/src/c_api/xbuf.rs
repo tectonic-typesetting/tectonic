@@ -2,7 +2,9 @@ use crate::c_api::{xcalloc, xrealloc};
 use std::{
     mem,
     ops::{Deref, DerefMut},
-    ptr, slice,
+    ptr,
+    ptr::NonNull,
+    slice,
 };
 
 /// # Safety
@@ -21,6 +23,8 @@ unsafe impl SafelyZero for i32 {}
 unsafe impl SafelyZero for i64 {}
 // SAFETY: Pointers are sound to init as all-zero, that's just null
 unsafe impl<T> SafelyZero for *mut T {}
+// SAFETY: Option<NonNull<T>> has the same layout as *mut T
+unsafe impl<T> SafelyZero for Option<NonNull<T>> {}
 
 pub fn xcalloc_zeroed<T: SafelyZero>(len: usize) -> Option<&'static mut [T]> {
     if len == 0 || mem::size_of::<T>() == 0 {

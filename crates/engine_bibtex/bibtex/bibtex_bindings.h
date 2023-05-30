@@ -227,6 +227,21 @@ typedef struct {
   };
 } CResultLookup;
 
+typedef enum {
+  CResultBool_Error,
+  CResultBool_Recover,
+  CResultBool_Ok,
+} CResultBool_Tag;
+
+typedef struct {
+  CResultBool_Tag tag;
+  union {
+    struct {
+      bool ok;
+    };
+  };
+} CResultBool;
+
 
 
 #ifdef __cplusplus
@@ -288,6 +303,8 @@ void set_preamble_ptr(BibNumber num);
 int32_t bib_line_num(void);
 
 void set_bib_line_num(int32_t num);
+
+bool eat_bib_white_space(void);
 
 uintptr_t bib_buf_size(void);
 
@@ -505,8 +522,6 @@ bool bib_one_of_two_print(ASCIICode char1, ASCIICode char2, bool at_bib_command)
 
 bool bib_equals_sign_print(bool at_bib_command);
 
-bool bib_unbalanced_braces_print(bool at_bib_command);
-
 void macro_warn_print(void);
 
 bool bib_id_print(ScanRes scan_res);
@@ -599,15 +614,9 @@ bool scan1(ASCIICode char1);
 
 bool scan1_white(ASCIICode char1);
 
-bool scan2(ASCIICode char1, ASCIICode char2);
-
 bool scan2_white(ASCIICode char1, ASCIICode char2);
 
-bool scan3(ASCIICode char1, ASCIICode char2, ASCIICode char3);
-
 bool scan_alpha(void);
-
-bool scan_white_space(void);
 
 ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
@@ -616,6 +625,8 @@ bool scan_nonneg_integer(void);
 bool eat_bst_white_space(Bibtex *ctx);
 
 CResult scan_fn_def(Bibtex *ctx, HashPointer fn_hash_loc, HashPointer wiz_loc);
+
+CResultBool scan_balanced_braces(bool store_field, bool at_bib_command, ASCIICode right_str_delim);
 
 #ifdef __cplusplus
 } // extern "C"

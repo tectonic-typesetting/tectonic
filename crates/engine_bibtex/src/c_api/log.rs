@@ -75,6 +75,10 @@ pub(crate) fn write_logs<B: ?Sized + AsBytes>(str: &B) {
     let _ = with_stdout(|out| out.write_all(str.as_bytes()));
 }
 
+pub(crate) fn write_log_file<B: ?Sized + AsBytes>(str: &B) {
+    with_log(|log| log.write_all(str.as_bytes())).unwrap();
+}
+
 pub fn init_log_file(file: &CStr) -> bool {
     LOG_FILE.with(|log| {
         let ptr = log.replace(None);
@@ -503,10 +507,13 @@ pub extern "C" fn bib_equals_sign_print(at_bib_command: bool) -> bool {
     bib_err_print(at_bib_command)
 }
 
-#[no_mangle]
-pub extern "C" fn bib_unbalanced_braces_print(at_bib_command: bool) -> bool {
+pub fn bib_unbalanced_braces_print(at_bib_command: bool) -> Result<(), BibtexError> {
     write_logs("Unbalanced braces");
-    bib_err_print(at_bib_command)
+    if !bib_err_print(at_bib_command) {
+        Err(BibtexError::Fatal)
+    } else {
+        Ok(())
+    }
 }
 
 #[no_mangle]
@@ -729,7 +736,8 @@ pub fn skip_token_print(ctx: &Bibtex, buffers: &mut GlobalBuffer) -> Result<(), 
     }
     mark_error();
 
-    Scan::new(&[b'}', b'%'])
+    Scan::new()
+        .chars(&[b'}', b'%'])
         .class(LexClass::Whitespace)
         .scan_till(buffers, buffers.init(BufTy::Base));
 

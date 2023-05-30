@@ -251,6 +251,13 @@ pub mod c_api {
     }
 
     #[repr(C)]
+    pub enum CResultBool {
+        Error,
+        Recover,
+        Ok(bool),
+    }
+
+    #[repr(C)]
     pub struct LookupRes {
         /// The location of the string - where it exists, was inserted, of if insert is false,
         /// where it *would* have been inserted
