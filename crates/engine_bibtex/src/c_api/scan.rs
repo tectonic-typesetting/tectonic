@@ -1,18 +1,21 @@
-use crate::c_api::hash::{end_of_def, with_hash, with_hash_mut, FnClass};
-use crate::c_api::log::{
-    eat_bst_print, print_confusion, print_recursion_illegal,
-    rs_bst_err_print_and_look_for_blank_line, skip_illegal_stuff_after_token_print,
-    skip_token_print, skip_token_unknown_function_print, write_logs,
+use crate::{
+    c_api::{
+        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        char_info::{IdClass, LexClass},
+        hash,
+        hash::{end_of_def, with_hash, with_hash_mut, FnClass},
+        log::{
+            eat_bst_print, print_confusion, print_recursion_illegal,
+            rs_bst_err_print_and_look_for_blank_line, skip_illegal_stuff_after_token_print,
+            skip_token_print, skip_token_unknown_function_print, write_logs,
+        },
+        other::with_other_mut,
+        peekable::rs_input_ln,
+        pool::{with_pool, with_pool_mut},
+        ASCIICode, Bibtex, BufPointer, CResult, FnDefLoc, HashPointer, StrIlk,
+    },
+    BibtexError,
 };
-use crate::c_api::other::with_other_mut;
-use crate::c_api::peekable::rs_input_ln;
-use crate::c_api::pool::{with_pool, with_pool_mut};
-use crate::c_api::{
-    buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
-    char_info::{IdClass, LexClass},
-    hash, ASCIICode, Bibtex, BufPointer, CResult, FnDefLoc, HashPointer, StrIlk,
-};
-use crate::BibtexError;
 
 const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
 

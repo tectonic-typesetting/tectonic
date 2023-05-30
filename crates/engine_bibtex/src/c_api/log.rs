@@ -1,22 +1,22 @@
-use crate::c_api::buffer::GlobalBuffer;
-use crate::c_api::peekable::rs_input_ln;
-use crate::c_api::scan::Scan;
-use crate::c_api::{
-    auxi::{cur_aux, cur_aux_ln},
-    bibs::{bib_line_num, cur_bib},
-    buffer::{with_buffers, with_buffers_mut, BufTy},
-    char_info::LexClass,
-    cite::with_cites,
-    exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
-    hash::{with_hash, FnClass},
-    history::{mark_error, mark_fatal, mark_warning},
-    other::with_other,
-    pool::with_pool,
-    scan::ScanRes,
-    ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex, CResult,
-    FieldLoc, HashPointer, StrNumber,
+use crate::{
+    c_api::{
+        auxi::{cur_aux, cur_aux_ln},
+        bibs::{bib_line_num, cur_bib},
+        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        char_info::LexClass,
+        cite::with_cites,
+        exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
+        hash::{with_hash, FnClass},
+        history::{mark_error, mark_fatal, mark_warning},
+        other::with_other,
+        peekable::rs_input_ln,
+        pool::with_pool,
+        scan::{Scan, ScanRes},
+        ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex,
+        CResult, FieldLoc, HashPointer, StrNumber,
+    },
+    BibtexError,
 };
-use crate::BibtexError;
 use std::{cell::Cell, ffi::CStr, io::Write, slice};
 use tectonic_io_base::OutputHandle;
 

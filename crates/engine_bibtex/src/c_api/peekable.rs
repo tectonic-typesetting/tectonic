@@ -1,7 +1,6 @@
-use crate::c_api::buffer::GlobalBuffer;
 use crate::{
     c_api::{
-        buffer::{with_buffers_mut, BufTy},
+        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer,
     },
