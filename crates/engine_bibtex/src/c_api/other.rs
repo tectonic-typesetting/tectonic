@@ -42,10 +42,8 @@ impl OtherData {
     }
 
     pub fn check_field_overflow(&mut self, fields: usize) {
-        let start_fields = self.field_info.len();
         if fields > self.field_info.len() {
             self.field_info.grow(MAX_FIELDS);
-            self.field_info[start_fields..].fill(0);
         }
     }
 

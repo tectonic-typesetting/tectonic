@@ -825,6 +825,8 @@ static bool scan_and_store_the_field_value_and_eat_white(Bibtex* ctx, bool store
         } else {                /*264: */
             field_loc field_ptr = entry_cite_ptr() * num_fields() + ilk_info(field_name_loc);
             if (field_ptr >= max_fields()) {
+                puts_log("entry_cite_ptr * num_fields + ilk_info[field_name_loc] >= max_fields\n");
+                printf_log("%d * %d + %d >= %d\n", entry_cite_ptr(), num_fields(), ilk_info(field_name_loc), max_fields());
                 puts_log("field_info index is out of range");
                 print_confusion();
                 longjmp(error_jmpbuf, 1);
@@ -3213,6 +3215,8 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             else {
                 field_loc field_ptr = cite_ptr() * num_fields() + ilk_info(ex_fn_loc);
                 if (field_ptr >= max_fields()) {
+                    puts_log("cite_ptr * num_fields + ilk_info[ex_fn_loc] >= max_fields\n");
+                    printf_log("%d * %d + %d >= %d\n", cite_ptr(), num_fields(), ilk_info(ex_fn_loc), max_fields());
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -4734,6 +4738,9 @@ static void bst_read_command(Bibtex* ctx)
             ctx->num_preamble_strings = preamble_ptr();
             {
                 if ((num_cites() - 1) * num_fields() + crossref_num() >= max_fields()) {
+                    puts_log("First One\n");
+                    puts_log("(num_cites - 1) * num_fields + crossref_num >= max_fields\n");
+                    printf_log("(%d - 1) * %d + %d >= %d\n", num_cites(), num_fields(), crossref_num(), max_fields());
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -4765,6 +4772,9 @@ static void bst_read_command(Bibtex* ctx)
             }
             {
                 if ((num_cites() - 1) * num_fields() + crossref_num() >= max_fields()) {
+                    puts_log("Second One\n");
+                    puts_log("(num_cites - 1) * num_fields + crossref_num >= max_fields\n");
+                    printf_log("(%d - 1) * %d + %d >= %d\n", num_cites(), num_fields(), crossref_num(), max_fields());
                     puts_log("field_info index is out of range");
                     print_confusion();
                     longjmp(error_jmpbuf, 1);
@@ -4820,6 +4830,8 @@ static void bst_read_command(Bibtex* ctx)
                     } else if ((ctx->all_entries) || (cite_ptr() < old_num_cites()) || (cite_info(cite_ptr()) >= ctx->config.min_crossrefs)) {
                         if (cite_ptr() > ctx->cite_xptr) {   /*286: */
                             if ((ctx->cite_xptr + 1) * num_fields() > max_fields()) {
+                                puts_log("(cite_xptr + 1) * num_fields > max_fields\n");
+                                printf_log("(%d + 1) * %d > %d\n", ctx->cite_xptr, num_fields(), max_fields());
                                 puts_log("field_info index is out of range");
                                 print_confusion();
                                 longjmp(error_jmpbuf, 1);
