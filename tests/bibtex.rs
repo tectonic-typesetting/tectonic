@@ -150,3 +150,13 @@ fn test_bad_crossref() {
 fn test_min_crossref() {
     TestCase::new("min", Some("crossref")).go();
 }
+
+#[test]
+fn test_single_preamble() {
+    TestCase::new("single", Some("preamble")).go();
+}
+
+#[test]
+fn test_many_preamble() {
+    TestCase::new("many", Some("preamble")).go();
+}

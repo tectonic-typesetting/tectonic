@@ -4384,7 +4384,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            if (!scan_and_store_the_field_value_and_eat_white(ctx, false, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!scan_and_store_the_field_value_and_eat_white(ctx, true, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
                 return;
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
                 printf_log("Missing \"%c\" in preamble command", right_outer_delim);
@@ -4815,9 +4815,9 @@ static void bst_read_command(Bibtex* ctx)
                 set_cite_ptr(0);
                 while (cite_ptr() < num_cites()) {
 
-                    if (type_list(cite_ptr()) == 0 /*empty */ )
+                    if (type_list(cite_ptr()) == 0 /*empty */ ) {
                         TRY(print_missing_entry(cite_list(cite_ptr())));
-                    else if ((ctx->all_entries) || (cite_ptr() < old_num_cites()) || (cite_info(cite_ptr()) >= ctx->config.min_crossrefs)) {
+                    } else if ((ctx->all_entries) || (cite_ptr() < old_num_cites()) || (cite_info(cite_ptr()) >= ctx->config.min_crossrefs)) {
                         if (cite_ptr() > ctx->cite_xptr) {   /*286: */
                             if ((ctx->cite_xptr + 1) * num_fields() > max_fields()) {
                                 puts_log("field_info index is out of range");
