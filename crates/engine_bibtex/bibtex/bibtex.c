@@ -4734,7 +4734,7 @@ static void bst_read_command(Bibtex* ctx)
             ctx->num_preamble_strings = preamble_ptr();
             {
                 CiteNumber cites = num_cites();
-                if cites > 0 {
+                if (cites > 0) {
                     cites -= 1;
                 }
                 if (cites * num_fields() + crossref_num() >= max_fields()) {
@@ -4772,7 +4772,7 @@ static void bst_read_command(Bibtex* ctx)
             }
             {
                 CiteNumber cites = num_cites();
-                if cites > 0 {
+                if (cites > 0) {
                     cites -= 1;
                 }
                 if (cites * num_fields() + crossref_num() >= max_fields()) {
