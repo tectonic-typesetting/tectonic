@@ -50,7 +50,7 @@ cause it to look for that file in the online support bundle.
 The `--print` option (or `-p` for short) will cause the engine to print the
 regular terminal output of the TeX engine. This output is similar to, but not
 identical to, the contents of the log file. By default, this output is only
-printed if the engine encounteres a fatal error.
+printed if the engine encounters a fatal error.
 
 The `--open` option will open the built document using the system handler.
 
@@ -65,3 +65,9 @@ genuine concern, we recommend setting the environment variable
 `TECTONIC_UNTRUSTED_MODE` to a non-empty value. This has the same effect as the
 `--untrusted` option. Note, however, that a hostile shell user can trivially
 clear this variable.
+
+The `--reproducible` option ensures a fully deterministic build environment.
+The most notable difference is a static document build time (`\today`), which can
+be configured explicitly by setting the `SOURCE_DATE_EPOCH` environment variable.
+There's a few ways to break determinism (shell escape, reading from `/dev/urandom`),
+but anything else (especially behaviour in TeXLive packages) is considered a bug.

@@ -111,6 +111,7 @@ The following are the available flags.
 |       | `--outfmt <FORMAT>`       | The kind of output to generate. Possible values: `pdf` (the default), `html`, `xdv`, `aux`, `format` |
 |       | `--pass <PASS>`           | Which engines to run. Possible values: `default`, `tex`, `bibtex_first` |
 | `-p`  | `--print`                 | Print the engine's chatter during processing |
+|       | `--reproducible`          | Ensure deterministic builds |
 | `-r`  | `--reruns <COUNT>`        | Rerun the TeX engine exactly this many times after the first |
 |       | `--synctex`               | Generate SyncTeX data |
 |       | `--untrusted`             | Input is untrusted: disable all known-insecure features |

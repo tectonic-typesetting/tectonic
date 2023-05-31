@@ -6,10 +6,8 @@
 //! `compile` subcommand of the "V2" / "cargo-like" interface.
 
 use std::{
-    env,
     path::{Path, PathBuf},
     str::FromStr,
-    time,
 };
 use structopt::StructOpt;
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
@@ -91,6 +89,10 @@ pub struct CompileOptions {
     #[structopt(long)]
     untrusted: bool,
 
+    /// Ensure deterministic build environment
+    #[structopt(long = "reproducible")]
+    reproducible_mode: bool,
+
     /// Unstable options. Pass -Zhelp to show a list
     #[structopt(name = "option", short = "Z", number_of_values = 1)]
     unstable: Vec<UnstableArg>,
@@ -119,7 +121,8 @@ impl CompileOptions {
             .keep_logs(self.keep_logs)
             .keep_intermediates(self.keep_intermediates)
             .format_cache_path(config.format_cache_path()?)
-            .synctex(self.synctex);
+            .synctex(self.synctex)
+            .reproducible_mode(self.reproducible_mode);
 
         sess_builder.output_format(OutputFormat::from_str(&self.outfmt).unwrap());
 
@@ -199,18 +202,7 @@ impl CompileOptions {
         } else {
             sess_builder.bundle(config.default_bundle(only_cached, status)?);
         }
-
-        let build_date_str = env::var("SOURCE_DATE_EPOCH").ok();
-        let build_date = match build_date_str {
-            Some(s) => {
-                let epoch = s.parse::<u64>().expect("invalid build date (not a number)");
-                time::SystemTime::UNIX_EPOCH
-                    .checked_add(time::Duration::from_secs(epoch))
-                    .expect("time overflow")
-            }
-            None => time::SystemTime::now(),
-        };
-        sess_builder.build_date(build_date);
+        sess_builder.build_date_from_env(self.reproducible_mode);
         run_and_report(sess_builder, status).map(|_| 0)
     }
 }

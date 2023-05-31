@@ -26,11 +26,9 @@ use std::{
     rc::Rc,
     result::Result as StdResult,
     str::FromStr,
-    time::SystemTime,
+    time::{Duration, SystemTime},
 };
-use tectonic_bridge_core::{
-    CoreBridgeLauncher, DriverHooks, FsEmulationSettings, SecuritySettings, SystemRequestError,
-};
+use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SecuritySettings, SystemRequestError};
 use tectonic_bundles::Bundle;
 use tectonic_engine_spx2html::AssetSpecification;
 use tectonic_io_base::{
@@ -819,6 +817,7 @@ pub struct ProcessingSessionBuilder {
     build_date: Option<SystemTime>,
     unstables: UnstableOptions,
     shell_escape_mode: ShellEscapeMode,
+    reproducible_mode: bool,
     html_assets_spec_path: Option<String>,
     html_precomputed_assets: Option<AssetSpecification>,
     html_do_not_emit_files: bool,
@@ -987,6 +986,28 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Configures the date and time of the processing session from the environment:
+    /// If `SOURCE_DATE_EPOCH` is set, it's used as the build date.
+    /// If `force_reproducible` is set, we fall back to UNIX_EPOCH.
+    /// Otherwise, we use the current system time.
+    pub fn build_date_from_env(&mut self, force_reproducible: bool) -> &mut Self {
+        let build_date_str = std::env::var("SOURCE_DATE_EPOCH").ok();
+        let build_date = match (force_reproducible, build_date_str) {
+            (_, Some(s)) => {
+                let epoch = s
+                    .parse::<u64>()
+                    .expect("invalid SOURCE_DATE_EPOCH (not a number)");
+
+                SystemTime::UNIX_EPOCH
+                    .checked_add(Duration::from_secs(epoch))
+                    .expect("time overflow")
+            }
+            (true, None) => SystemTime::UNIX_EPOCH,
+            (false, None) => SystemTime::now(),
+        };
+        self.build_date(build_date)
+    }
+
     /// Loads unstable options into the processing session
     pub fn unstables(&mut self, opts: UnstableOptions) -> &mut Self {
         self.unstables = opts;
@@ -1023,6 +1044,21 @@ impl ProcessingSessionBuilder {
     /// temporary directory will be used.
     pub fn shell_escape_disabled(&mut self) -> &mut Self {
         self.shell_escape_mode = ShellEscapeMode::Disabled;
+        self
+    }
+
+    /// Ensure a deterministic build environment.
+    ///
+    /// The most significant user-facing difference is a static document build
+    /// date, but this is already covered by [`build_date_from_env`], which
+    /// accepts a `reproducible` flag. Additionally, reproducible mode spoofs
+    /// file modification times and hides absolute paths from the engine.
+    ///
+    /// There's a few ways to break determinism (shell escape, reading from
+    /// `/dev/urandom`), but anything else (especially behaviour in TeXLive
+    /// packages) is considered a bug.
+    pub fn reproducible_mode(&mut self, reproducible: bool) -> &mut Self {
+        self.reproducible_mode = reproducible;
         self
     }
 
@@ -1241,6 +1277,7 @@ impl ProcessingSessionBuilder {
             build_date: self.build_date.unwrap_or(SystemTime::UNIX_EPOCH),
             unstables: self.unstables,
             shell_escape_mode,
+            reproducible_mode: self.reproducible_mode,
             html_assets_spec_path: self.html_assets_spec_path,
             html_precomputed_assets: self.html_precomputed_assets,
             html_emit_files: !self.html_do_not_emit_files,
@@ -1307,6 +1344,8 @@ pub struct ProcessingSession {
     build_date: SystemTime,
 
     unstables: UnstableOptions,
+
+    reproducible_mode: bool,
 
     /// How to handle shell-escape. The `Defaulted` option will never
     /// be used here.
@@ -1831,18 +1870,18 @@ impl ProcessingSession {
 
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
-            launcher.with_fs_emulation_settings(FsEmulationSettings {
-                // We enable absolute paths if synctex was requested or other
-                // external tools are involved.
-                expose_absolute_paths: self.synctex_enabled || self.security.allow_shell_escape(),
-                // Note: We always return "dummy" modification times. Should
-                // there be a configuration knob to return the real mtime?
-                mtime_override: self
-                    .build_date
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .map(|x| x.as_secs() as i64)
-                    .ok(),
-            });
+
+            // In reproducible mode, we stub a few aspects of the environment.
+            // They default to a "realistic" view, but we override them with static values:
+            if self.reproducible_mode {
+                launcher.with_expose_absolute_paths(false);
+                launcher.with_mtime_override(Some(
+                    self.build_date
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .map(|x| x.as_secs() as i64)
+                        .expect("invalid build date in reproducible mode"),
+                ));
+            }
 
             TexEngine::default()
                 .halt_on_error_mode(!self.unstables.continue_on_errors)

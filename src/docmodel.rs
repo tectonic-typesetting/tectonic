@@ -40,6 +40,9 @@ pub struct DocumentSetupOptions {
 
     /// Security settings for engine features.
     security: SecuritySettings,
+
+    /// Ensure a deterministic build environment.
+    reproducible_mode: bool,
 }
 
 impl DocumentSetupOptions {
@@ -48,6 +51,7 @@ impl DocumentSetupOptions {
     pub fn new_with_security(security: SecuritySettings) -> Self {
         DocumentSetupOptions {
             only_cached: false,
+            reproducible_mode: false,
             security,
         }
     }
@@ -59,6 +63,12 @@ impl DocumentSetupOptions {
     /// have no effect.
     pub fn only_cached(&mut self, s: bool) -> &mut Self {
         self.only_cached = s;
+        self
+    }
+
+    /// Specify whether we want to ensure a deterministic build environment.
+    pub fn reproducible_mode(&mut self, s: bool) -> &mut Self {
+        self.reproducible_mode = s;
         self
     }
 }
@@ -157,7 +167,8 @@ impl DocumentExt for Document {
         sess_builder
             .output_format(output_format)
             .format_name(&profile.tex_format)
-            .build_date(std::time::SystemTime::now())
+            .build_date_from_env(setup_options.reproducible_mode)
+            .reproducible_mode(setup_options.reproducible_mode)
             .pass(PassSetting::Default)
             .primary_input_buffer(input_buffer.as_bytes())
             .tex_input_name(output_profile);

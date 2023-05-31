@@ -49,16 +49,18 @@ The following are the available flags.
 | `-c`  | `--chatter <LEVEL>`       | How much chatter to print when running [default: default]  [possible values: default, minimal] |
 |       | `--format <PATH>`         | The name of the "format" file used to initialize the TeX engine [default: latex]               |
 | `-h`  | `--help`                  | Prints help information                                                                        |
-|       | `--hide <PATH>...`        | Tell the engine that no file at `<PATH>` exists, if it tries to read it                          |
+|       | `--hide <PATH>...`        | Tell the engine that no file at `<PATH>` exists, if it tries to read it                        |
 | `-k`  | `--keep-intermediates`    | Keep the intermediate files generated during processing                                        |
-|       | `--keep-logs`             | Keep the log files generated during processing                                                |
-|       | `--makefile-rules <PATH>` | Write Makefile-format rules expressing the dependencies of this run to <PATH>                  |
+|       | `--keep-logs`             | Keep the log files generated during processing                                                 |
+|       | `--makefile-rules <PATH>` | Write Makefile-format rules expressing the dependencies of this run to `<PATH>`                |
 | `-C`  | `--only-cached`           | Use only resource files cached locally                                                         |
 | `-o`  | `--outdir <OUTDIR>`       | The directory in which to place output files [default: the directory containing INPUT]         |
 |       | `--outfmt <FORMAT>`       | The kind of output to generate [default: pdf]  [possible values: pdf, html, xdv, aux, format]  |
 |       | `--pass <PASS>`           | Which engines to run [default: default]  [possible values: default, tex, bibtex_first]         |
 | `-p`  | `--print`                 | Print the engine's chatter during processing                                                   |
+|       | `--reproducible`          | Ensure deterministic builds                                                                    |
 | `-r`  | `--reruns <COUNT>`        | Rerun the TeX engine exactly this many times after the first                                   |
 |       | `--synctex`               | Generate SyncTeX data                                                                          |
+|       | `--untrusted`             | Input is untrusted: disable all known-insecure features                                        |
 | `-V`  | `--version`               | Prints version information                                                                     |
 | `-w`  | `--web-bundle <URL>`      | Use this URL find resource files instead of the default                                        |

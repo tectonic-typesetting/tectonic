@@ -247,11 +247,18 @@ impl<'a> CoreBridgeLauncher<'a> {
         }
     }
 
-    /// Configure filesystem emulation settings. These default to an "accurate"
-    /// view of the provided IO subsystem, but can be restricted to provide
-    /// reproducible file modified timestamps or hide absolute paths.
-    pub fn with_fs_emulation_settings(&mut self, settings: FsEmulationSettings) -> &mut Self {
-        self.filesystem_emulation_settings = settings;
+    /// While absolute paths are useful (for SyncTeX and external tools that
+    /// resolve paths to TeX sources), we can disable them for reproducibility.
+    pub fn with_expose_absolute_paths(&mut self, expose_absolute_paths: bool) -> &mut Self {
+        self.filesystem_emulation_settings.expose_absolute_paths = expose_absolute_paths;
+        self
+    }
+
+    /// Ditto for file modification timestamps. In reproducible mode, we return
+    /// the configured build time (i.e. `SOURCE_DATE_EPOCH`) instead of the
+    /// modification timestamp reported by the IO subsystem.
+    pub fn with_mtime_override(&mut self, mtime_override: Option<i64>) -> &mut Self {
+        self.filesystem_emulation_settings.mtime_override = mtime_override;
         self
     }
 
@@ -803,15 +810,15 @@ impl Default for SecuritySettings {
 /// underlying IO subsystem and have options that stub the respective IO
 /// functions with fake / stable values.
 #[derive(Clone, Debug)]
-pub struct FsEmulationSettings {
+struct FsEmulationSettings {
     /// While absolute paths are useful (for SyncTeX and external tools that
     /// resolve paths to TeX sources), we can disable them for reproducibility.
-    pub expose_absolute_paths: bool,
+    expose_absolute_paths: bool,
 
     /// Ditto for file modification timestamps. In reproducible mode, we return
     /// the configured build time (i.e. `SOURCE_DATE_EPOCH`) instead of the
     /// modification timestamp reported by the IO subsystem.
-    pub mtime_override: Option<i64>,
+    mtime_override: Option<i64>,
 }
 
 impl Default for FsEmulationSettings {
