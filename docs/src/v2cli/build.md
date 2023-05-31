@@ -65,9 +65,3 @@ genuine concern, we recommend setting the environment variable
 `TECTONIC_UNTRUSTED_MODE` to a non-empty value. This has the same effect as the
 `--untrusted` option. Note, however, that a hostile shell user can trivially
 clear this variable.
-
-The `--reproducible` option ensures a fully deterministic build environment.
-The most notable difference is a static document build time (`\today`), which can
-be configured explicitly by setting the `SOURCE_DATE_EPOCH` environment variable.
-There's a few ways to break determinism (shell escape, reading from `/dev/urandom`),
-but anything else (especially behaviour in TeXLive packages) is considered a bug.

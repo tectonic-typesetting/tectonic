@@ -29,6 +29,11 @@ const HELPMSG: &str = r#"Available unstable options:
     -Z shell-escape-cwd         Working directory to use for \write18. Use $(pwd) for same behaviour as
                                     most other engines (e.g. for relative paths in \inputminted).
                                     Implies -Z shell-escape
+    -Z deterministic-mode       Force a deterministic build environment. Note that setting
+                                    `SOURCE_DATE_EPOCH` is usually sufficient for reproducible builds,
+                                    and this option makes some extra functionality trade-offs.
+                                    Specifically, deterministic mode breaks SyncTeX's auxiliary files
+                                    as they include and rely on absolute file paths
 "#;
 
 // Each entry of this should correspond to a field of UnstableOptions.
@@ -41,6 +46,7 @@ pub enum UnstableArg {
     SearchPath(PathBuf),
     ShellEscapeEnabled,
     ShellEscapeCwd(String),
+    DeterministicModeEnabled,
 }
 
 impl FromStr for UnstableArg {
@@ -97,6 +103,8 @@ impl FromStr for UnstableArg {
                 require_value("path").map(|s| UnstableArg::ShellEscapeCwd(s.to_string()))
             }
 
+            "deterministic-mode" => require_no_value(value, UnstableArg::DeterministicModeEnabled),
+
             _ => Err(format!("Unknown unstable option '{arg}'").into()),
         }
     }
@@ -110,6 +118,18 @@ pub struct UnstableOptions {
     pub min_crossrefs: Option<i32>,
     pub extra_search_paths: Vec<PathBuf>,
     pub shell_escape_cwd: Option<String>,
+
+    /// Ensure a deterministic build environment.
+    ///
+    /// The most significant user-facing difference is a static document build
+    /// date, but this is already covered by [`crate::driver::ProcessingSessionBuilder::build_date_from_env`],
+    /// which accepts a `deterministic` flag. Additionally, deterministic mode
+    /// spoofs file modification times and hides absolute paths from the engine.
+    ///
+    /// There's a few ways to break determinism (shell escape, reading from
+    /// `/dev/urandom`), but anything else (especially behaviour in TeXLive
+    /// packages) is considered a bug.
+    pub deterministic_mode: bool,
 }
 
 impl UnstableOptions {
@@ -132,6 +152,7 @@ impl UnstableOptions {
                     opts.shell_escape_cwd = Some(p);
                     opts.shell_escape = true;
                 }
+                DeterministicModeEnabled => opts.deterministic_mode = true,
             }
         }
 

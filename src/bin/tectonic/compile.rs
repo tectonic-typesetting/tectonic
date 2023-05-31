@@ -89,10 +89,6 @@ pub struct CompileOptions {
     #[structopt(long)]
     untrusted: bool,
 
-    /// Ensure deterministic build environment
-    #[structopt(long = "reproducible")]
-    reproducible_mode: bool,
-
     /// Unstable options. Pass -Zhelp to show a list
     #[structopt(name = "option", short = "Z", number_of_values = 1)]
     unstable: Vec<UnstableArg>,
@@ -115,14 +111,14 @@ impl CompileOptions {
         let mut sess_builder =
             ProcessingSessionBuilder::new_with_security(SecuritySettings::new(stance));
         let format_path = self.format;
+        let deterministic_mode = unstable.deterministic_mode;
         sess_builder
             .unstables(unstable)
             .format_name(&format_path)
             .keep_logs(self.keep_logs)
             .keep_intermediates(self.keep_intermediates)
             .format_cache_path(config.format_cache_path()?)
-            .synctex(self.synctex)
-            .reproducible_mode(self.reproducible_mode);
+            .synctex(self.synctex);
 
         sess_builder.output_format(OutputFormat::from_str(&self.outfmt).unwrap());
 
@@ -202,7 +198,7 @@ impl CompileOptions {
         } else {
             sess_builder.bundle(config.default_bundle(only_cached, status)?);
         }
-        sess_builder.build_date_from_env(self.reproducible_mode);
+        sess_builder.build_date_from_env(deterministic_mode);
         run_and_report(sess_builder, status).map(|_| 0)
     }
 }

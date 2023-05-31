@@ -111,7 +111,6 @@ The following are the available flags.
 |       | `--outfmt <FORMAT>`       | The kind of output to generate. Possible values: `pdf` (the default), `html`, `xdv`, `aux`, `format` |
 |       | `--pass <PASS>`           | Which engines to run. Possible values: `default`, `tex`, `bibtex_first` |
 | `-p`  | `--print`                 | Print the engine's chatter during processing |
-|       | `--reproducible`          | Ensure deterministic builds |
 | `-r`  | `--reruns <COUNT>`        | Rerun the TeX engine exactly this many times after the first |
 |       | `--synctex`               | Generate SyncTeX data |
 |       | `--untrusted`             | Input is untrusted: disable all known-insecure features |
@@ -135,3 +134,4 @@ the set of unstable options is subject to change at any time.
 | `-Z search-path=<path>`  | Also look in `<path>` for files (unless `--untrusted` has been specified), like TEXINPUTS. Can be specified multiple times. |
 | `-Z shell-escape`        | Enable `\write18` (unless `--untrusted` has been specified) |
 | `-Z shell-escape-cwd=<path>` | Working directory to use for \write18. Use $(pwd) for same behaviour as most other engines (e.g. for relative paths in \inputminted). Implies -Z shell-escape |
+| `-Z deterministic-mode`  | Force a deterministic build environment. Note that setting `SOURCE_DATE_EPOCH` is usually sufficient for reproducible builds, and this option makes some extra functionality trade-offs. Specifically, deterministic mode breaks SyncTeX's auxiliary files as they include and rely on absolute file paths |

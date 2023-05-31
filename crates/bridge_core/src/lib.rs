@@ -254,7 +254,7 @@ impl<'a> CoreBridgeLauncher<'a> {
         self
     }
 
-    /// Ditto for file modification timestamps. In reproducible mode, we return
+    /// Ditto for file modification timestamps. In deterministic mode, we return
     /// the configured build time (i.e. `SOURCE_DATE_EPOCH`) instead of the
     /// modification timestamp reported by the IO subsystem.
     pub fn with_mtime_override(&mut self, mtime_override: Option<i64>) -> &mut Self {
@@ -815,7 +815,7 @@ struct FsEmulationSettings {
     /// resolve paths to TeX sources), we can disable them for reproducibility.
     expose_absolute_paths: bool,
 
-    /// Ditto for file modification timestamps. In reproducible mode, we return
+    /// Ditto for file modification timestamps. In deterministic mode, we return
     /// the configured build time (i.e. `SOURCE_DATE_EPOCH`) instead of the
     /// modification timestamp reported by the IO subsystem.
     mtime_override: Option<i64>,

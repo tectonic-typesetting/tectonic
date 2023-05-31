@@ -238,10 +238,6 @@ pub struct BuildCommand {
     /// Open built document using system handler
     #[structopt(long)]
     open: bool,
-
-    /// Ensure deterministic build environment
-    #[structopt(long = "reproducible")]
-    reproducible_mode: bool,
 }
 
 impl BuildCommand {
@@ -264,7 +260,6 @@ impl BuildCommand {
         let mut setup_options =
             DocumentSetupOptions::new_with_security(SecuritySettings::new(stance));
         setup_options.only_cached(self.only_cached);
-        setup_options.reproducible_mode(self.reproducible_mode);
 
         for output_name in doc.output_names() {
             let mut builder = doc.setup_session(output_name, &setup_options, status)?;

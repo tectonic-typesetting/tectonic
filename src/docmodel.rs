@@ -29,6 +29,7 @@ use crate::{
     errors::{ErrorKind, Result},
     status::StatusBackend,
     test_util, tt_note,
+    unstable_opts::UnstableOptions,
 };
 
 /// Options for setting up [`Document`] instances with the driver
@@ -42,7 +43,7 @@ pub struct DocumentSetupOptions {
     security: SecuritySettings,
 
     /// Ensure a deterministic build environment.
-    reproducible_mode: bool,
+    deterministic_mode: bool,
 }
 
 impl DocumentSetupOptions {
@@ -51,7 +52,7 @@ impl DocumentSetupOptions {
     pub fn new_with_security(security: SecuritySettings) -> Self {
         DocumentSetupOptions {
             only_cached: false,
-            reproducible_mode: false,
+            deterministic_mode: false,
             security,
         }
     }
@@ -67,8 +68,8 @@ impl DocumentSetupOptions {
     }
 
     /// Specify whether we want to ensure a deterministic build environment.
-    pub fn reproducible_mode(&mut self, s: bool) -> &mut Self {
-        self.reproducible_mode = s;
+    pub fn deterministic_mode(&mut self, s: bool) -> &mut Self {
+        self.deterministic_mode = s;
         self
     }
 }
@@ -167,8 +168,11 @@ impl DocumentExt for Document {
         sess_builder
             .output_format(output_format)
             .format_name(&profile.tex_format)
-            .build_date_from_env(setup_options.reproducible_mode)
-            .reproducible_mode(setup_options.reproducible_mode)
+            .build_date_from_env(setup_options.deterministic_mode)
+            .unstables(UnstableOptions {
+                deterministic_mode: setup_options.deterministic_mode,
+                ..Default::default()
+            })
             .pass(PassSetting::Default)
             .primary_input_buffer(input_buffer.as_bytes())
             .tex_input_name(output_profile);
