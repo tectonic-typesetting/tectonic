@@ -155,19 +155,21 @@ pub extern "C" fn print_confusion() {
     mark_fatal();
 }
 
-pub fn out_token(handle: &mut OutputHandle) {
-    with_buffers(|b| {
-        let bytes = b.buffer(BufTy::Base);
-        let start = b.offset(BufTy::Base, 1);
-        let end = b.offset(BufTy::Base, 2);
-        handle.write_all(&bytes[start..end]).unwrap();
-    })
+pub fn out_token(handle: &mut OutputHandle, buffers: &GlobalBuffer) {
+    let bytes = buffers.buffer(BufTy::Base);
+    let start = buffers.offset(BufTy::Base, 1);
+    let end = buffers.offset(BufTy::Base, 2);
+    handle.write_all(&bytes[start..end]).unwrap();
+}
+
+pub fn rs_print_a_token(buffers: &GlobalBuffer) {
+    with_stdout(|stdout| out_token(stdout, buffers));
+    with_log(|log| out_token(log, buffers));
 }
 
 #[no_mangle]
 pub extern "C" fn print_a_token() {
-    with_stdout(out_token);
-    with_log(out_token);
+    with_buffers(rs_print_a_token)
 }
 
 pub(crate) fn print_bad_input_line(buffers: &GlobalBuffer) {
@@ -530,10 +532,9 @@ pub fn bib_unbalanced_braces_print(at_bib_command: bool) -> Result<(), BibtexErr
     }
 }
 
-#[no_mangle]
-pub extern "C" fn macro_warn_print() {
+pub fn macro_warn_print(buffers: &GlobalBuffer) {
     write_logs("Warning--string name \"");
-    print_a_token();
+    rs_print_a_token(buffers);
     write_logs("\" is ");
 }
 
@@ -770,7 +771,7 @@ pub fn print_recursion_illegal(
     buffers: &mut GlobalBuffer,
 ) -> Result<(), BibtexError> {
     write_logs("Curse you, wizard, before you recurse me:\nfunction ");
-    print_a_token();
+    rs_print_a_token(buffers);
     write_logs(" is illegal in its own definition\n");
     skip_token_print(ctx, buffers)
 }
@@ -779,7 +780,7 @@ pub fn skip_token_unknown_function_print(
     ctx: &Bibtex,
     buffers: &mut GlobalBuffer,
 ) -> Result<(), BibtexError> {
-    print_a_token();
+    rs_print_a_token(buffers);
     write_logs(" is an unknown function");
     skip_token_print(ctx, buffers)
 }

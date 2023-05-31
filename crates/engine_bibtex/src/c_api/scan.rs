@@ -173,14 +173,6 @@ pub extern "C" fn scan_identifier(char1: ASCIICode, char2: ASCIICode, char3: ASC
     with_buffers_mut(|buffers| rs_scan_identifier(buffers, char1, char2, char3))
 }
 
-#[no_mangle]
-pub extern "C" fn scan_nonneg_integer() -> bool {
-    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
-    Scan::new()
-        .not_class(LexClass::Numeric)
-        .scan_till_nonempty(last)
-}
-
 fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
     let last = buffers.init(BufTy::Base);
     let start = buffers.offset(BufTy::Base, 2);
@@ -445,7 +437,7 @@ pub unsafe extern "C" fn scan_fn_def(
     )
 }
 
-fn rs_scan_balanced_braces(
+fn scan_balanced_braces(
     buffers: &mut GlobalBuffer,
     store_field: bool,
     at_bib_command: bool,
@@ -618,22 +610,6 @@ fn rs_scan_balanced_braces(
     Ok(true)
 }
 
-#[no_mangle]
-pub extern "C" fn scan_balanced_braces(
-    store_field: bool,
-    at_bib_command: bool,
-    right_str_delim: ASCIICode,
-) -> CResultBool {
-    let res = with_buffers_mut(|buffers| {
-        rs_scan_balanced_braces(buffers, store_field, at_bib_command, right_str_delim)
-    });
-    match res {
-        Ok(val) => CResultBool::Ok(val),
-        Err(BibtexError::Fatal) => CResultBool::Error,
-        Err(BibtexError::Recover) => CResultBool::Recover,
-    }
-}
-
 fn rs_scan_a_field_token_and_eat_white(
     buffers: &mut GlobalBuffer,
     store_field: bool,
@@ -644,12 +620,12 @@ fn rs_scan_a_field_token_and_eat_white(
 ) -> Result<bool, BibtexError> {
     match buffers.at_offset(BufTy::Base, 2) {
         b'{' => {
-            if !rs_scan_balanced_braces(buffers, store_field, at_bib_command, b'}')? {
+            if !scan_balanced_braces(buffers, store_field, at_bib_command, b'}')? {
                 return Ok(false);
             }
         }
         b'"' => {
-            if !rs_scan_balanced_braces(buffers, store_field, at_bib_command, b'"')? {
+            if !scan_balanced_braces(buffers, store_field, at_bib_command, b'"')? {
                 return Ok(false);
             }
         }
@@ -712,7 +688,7 @@ fn rs_scan_a_field_token_and_eat_white(
                     cur_macro_loc
                 {
                     store_token = false;
-                    macro_warn_print();
+                    macro_warn_print(buffers);
                     write_logs("used in its own definition\n");
                     if !bib_warn_print() {
                         return Err(BibtexError::Fatal);
@@ -721,7 +697,7 @@ fn rs_scan_a_field_token_and_eat_white(
 
                 if !res.exists {
                     store_token = false;
-                    macro_warn_print();
+                    macro_warn_print(buffers);
                     write_logs("undefined\n");
                     if !bib_warn_print() {
                         return Err(BibtexError::Fatal);

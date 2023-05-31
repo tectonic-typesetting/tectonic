@@ -522,8 +522,6 @@ bool bib_one_of_two_print(ASCIICode char1, ASCIICode char2, bool at_bib_command)
 
 bool bib_equals_sign_print(bool at_bib_command);
 
-void macro_warn_print(void);
-
 bool bib_id_print(ScanRes scan_res);
 
 void bib_cmd_confusion(void);
@@ -620,13 +618,15 @@ bool scan_alpha(void);
 
 ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
-bool scan_nonneg_integer(void);
-
 bool eat_bst_white_space(Bibtex *ctx);
 
 CResult scan_fn_def(Bibtex *ctx, HashPointer fn_hash_loc, HashPointer wiz_loc);
 
-CResultBool scan_balanced_braces(bool store_field, bool at_bib_command, ASCIICode right_str_delim);
+CResultBool scan_a_field_token_and_eat_white(bool store_field,
+                                             bool at_bib_command,
+                                             int32_t command_num,
+                                             HashPointer cur_macro_loc,
+                                             ASCIICode right_outer_delim);
 
 #ifdef __cplusplus
 } // extern "C"

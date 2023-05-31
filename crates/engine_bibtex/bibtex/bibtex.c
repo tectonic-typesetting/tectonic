@@ -126,7 +126,7 @@ static bool scan_and_store_the_field_value_and_eat_white(Bibtex* ctx, bool store
     buf_pointer tmp_ptr;
 
     bib_set_buf_offset(BUF_TY_EX, 1, 0);
-    if (!scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim))
+    if (!unwrap_res_bool(scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim)))
         return false;
     while (bib_buf_at_offset(BUF_TY_BASE, 2) == 35 /*concat_char */ ) {
 
@@ -137,7 +137,7 @@ static bool scan_and_store_the_field_value_and_eat_white(Bibtex* ctx, bool store
                 return false;
             }
         }
-        if (!scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim))
+        if (!unwrap_res_bool(scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim)))
             return false;
     }
     if (store_field) {        /*262: */
