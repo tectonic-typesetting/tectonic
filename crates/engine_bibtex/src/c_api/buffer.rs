@@ -2,7 +2,7 @@ use crate::c_api::{
     xbuf::{SafelyZero, XBuf},
     ASCIICode, BufPointer,
 };
-use std::cell::RefCell;
+use std::{cell::RefCell, slice};
 
 const BUF_SIZE: usize = 20000;
 
@@ -77,6 +77,16 @@ impl GlobalBuffer {
         self.buf_len == 0
     }
 
+    fn buffer_raw(&mut self, ty: BufTy) -> *mut ASCIICode {
+        match ty {
+            BufTy::Base => self.buffer.ptr.as_mut_ptr(),
+            BufTy::Sv => self.sv_buffer.ptr.as_mut_ptr(),
+            BufTy::Ex => self.ex_buf.ptr.as_mut_ptr(),
+            BufTy::Out => self.out_buf.ptr.as_mut_ptr(),
+            BufTy::NameSep => self.name_sep_char.ptr.as_mut_ptr(),
+        }
+    }
+
     pub fn buffer(&self, ty: BufTy) -> &[ASCIICode] {
         match ty {
             BufTy::Base => &self.buffer.ptr,
@@ -95,6 +105,21 @@ impl GlobalBuffer {
             BufTy::Out => &mut self.out_buf.ptr,
             BufTy::NameSep => &mut self.name_sep_char.ptr,
         }
+    }
+
+    pub fn copy_within(
+        &mut self,
+        from: BufTy,
+        to: BufTy,
+        from_start: usize,
+        to_start: usize,
+        len: usize,
+    ) {
+        assert_ne!(from, to);
+        let to = unsafe { slice::from_raw_parts_mut(self.buffer_raw(to).add(to_start), len) };
+        let from = &self.buffer(from)[from_start..from_start + len];
+
+        to.copy_from_slice(from);
     }
 
     pub fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
@@ -118,6 +143,16 @@ impl GlobalBuffer {
             }
         }
     }
+
+    // pub fn incr_offset(&mut self, ty: BufTy, offset: usize) {
+    //     match ty {
+    //         BufTy::Base => self.buffer.offset[offset - 1] += 1,
+    //         BufTy::Ex => self.ex_buf.offset[offset - 1] += 1,
+    //         BufTy::Sv | BufTy::Out | BufTy::NameSep => {
+    //             unreachable!("Buffer {:?} has no offsets", ty)
+    //         }
+    //     }
+    // }
 
     pub fn offset(&self, ty: BufTy, offset: usize) -> BufPointer {
         match ty {
@@ -162,7 +197,7 @@ impl GlobalBuffer {
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub enum BufTy {
     Base,

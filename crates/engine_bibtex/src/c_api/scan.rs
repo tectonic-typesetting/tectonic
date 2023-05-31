@@ -6,8 +6,9 @@ use crate::{
         hash,
         hash::{end_of_def, with_hash, with_hash_mut, FnClass},
         log::{
-            bib_unbalanced_braces_print, eat_bib_print, eat_bst_print, print_confusion,
-            print_recursion_illegal, rs_bst_err_print_and_look_for_blank_line,
+            bib_unbalanced_braces_print, bib_warn_print, eat_bst_print, macro_warn_print,
+            print_confusion, print_recursion_illegal, rs_bib_err_print, rs_bib_id_print,
+            rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print,
             skip_illegal_stuff_after_token_print, skip_token_print,
             skip_token_unknown_function_print, write_log_file, write_logs,
         },
@@ -15,6 +16,7 @@ use crate::{
         peekable::rs_input_ln,
         pool::{with_pool, with_pool_mut},
         ASCIICode, Bibtex, BufPointer, CResult, CResultBool, FnDefLoc, HashPointer, StrIlk,
+        StrNumber,
     },
     BibtexError,
 };
@@ -135,33 +137,40 @@ pub extern "C" fn scan_alpha() -> bool {
         .scan_till_nonempty(last)
 }
 
+fn rs_scan_identifier(
+    buffers: &mut GlobalBuffer,
+    char1: ASCIICode,
+    char2: ASCIICode,
+    char3: ASCIICode,
+) -> ScanRes {
+    let last = buffers.init(BufTy::Base);
+    let start = buffers.offset(BufTy::Base, 2);
+    buffers.set_offset(BufTy::Base, 1, start);
+
+    let mut idx = start;
+    let char = buffers.at(BufTy::Base, idx);
+    if LexClass::of(char) != LexClass::Numeric {
+        while idx < last && IdClass::of(buffers.at(BufTy::Base, idx)) == IdClass::LegalIdChar {
+            idx += 1;
+        }
+        buffers.set_offset(BufTy::Base, 2, idx);
+    }
+
+    let char = buffers.at(BufTy::Base, idx);
+    if idx - start == 0 {
+        ScanRes::IdNull
+    } else if LexClass::of(char) == LexClass::Whitespace || idx == last {
+        ScanRes::WhitespaceAdjacent
+    } else if char == char1 || char == char2 || char == char3 {
+        ScanRes::SpecifiedCharAdjacent
+    } else {
+        ScanRes::OtherCharAdjacent
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn scan_identifier(char1: ASCIICode, char2: ASCIICode, char3: ASCIICode) -> ScanRes {
-    with_buffers_mut(|buffers| {
-        let last = buffers.init(BufTy::Base);
-        let start = buffers.offset(BufTy::Base, 2);
-        buffers.set_offset(BufTy::Base, 1, start);
-
-        let mut idx = start;
-        let char = buffers.at(BufTy::Base, idx);
-        if LexClass::of(char) != LexClass::Numeric {
-            while idx < last && IdClass::of(buffers.at(BufTy::Base, idx)) == IdClass::LegalIdChar {
-                idx += 1;
-            }
-            buffers.set_offset(BufTy::Base, 2, idx);
-        }
-
-        let char = buffers.at(BufTy::Base, idx);
-        if idx - start == 0 {
-            ScanRes::IdNull
-        } else if LexClass::of(char) == LexClass::Whitespace || idx == last {
-            ScanRes::WhitespaceAdjacent
-        } else if char == char1 || char == char2 || char == char3 {
-            ScanRes::SpecifiedCharAdjacent
-        } else {
-            ScanRes::OtherCharAdjacent
-        }
-    })
+    with_buffers_mut(|buffers| rs_scan_identifier(buffers, char1, char2, char3))
 }
 
 #[no_mangle]
@@ -436,7 +445,7 @@ pub unsafe extern "C" fn scan_fn_def(
     )
 }
 
-fn inner_scan_balanced_braces(
+fn rs_scan_balanced_braces(
     buffers: &mut GlobalBuffer,
     store_field: bool,
     at_bib_command: bool,
@@ -563,10 +572,7 @@ fn inner_scan_balanced_braces(
                     brace_level += 1;
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
                     if !rs_eat_bib_white_space(buffers) {
-                        if !eat_bib_print(at_bib_command) {
-                            return Err(BibtexError::Fatal);
-                        }
-                        return Ok(false);
+                        return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
                     }
                     while brace_level > 0 {
                         let c = buffers.at_offset(BufTy::Base, 2);
@@ -584,10 +590,7 @@ fn inner_scan_balanced_braces(
                             || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init)
                         {
                             if !rs_eat_bib_white_space(buffers) {
-                                if !eat_bib_print(at_bib_command) {
-                                    return Err(BibtexError::Fatal);
-                                }
-                                return Ok(false);
+                                return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
                             }
                         }
                     }
@@ -603,10 +606,7 @@ fn inner_scan_balanced_braces(
                         .scan_till(buffers, init)
                     {
                         if !rs_eat_bib_white_space(buffers) {
-                            if !eat_bib_print(at_bib_command) {
-                                return Err(BibtexError::Fatal);
-                            }
-                            return Ok(false);
+                            return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
                         }
                     }
                 }
@@ -619,13 +619,196 @@ fn inner_scan_balanced_braces(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn scan_balanced_braces(
+pub extern "C" fn scan_balanced_braces(
     store_field: bool,
     at_bib_command: bool,
     right_str_delim: ASCIICode,
 ) -> CResultBool {
     let res = with_buffers_mut(|buffers| {
-        inner_scan_balanced_braces(buffers, store_field, at_bib_command, right_str_delim)
+        rs_scan_balanced_braces(buffers, store_field, at_bib_command, right_str_delim)
+    });
+    match res {
+        Ok(val) => CResultBool::Ok(val),
+        Err(BibtexError::Fatal) => CResultBool::Error,
+        Err(BibtexError::Recover) => CResultBool::Recover,
+    }
+}
+
+fn rs_scan_a_field_token_and_eat_white(
+    buffers: &mut GlobalBuffer,
+    store_field: bool,
+    at_bib_command: bool,
+    command_num: i32,
+    cur_macro_loc: HashPointer,
+    right_outer_delim: ASCIICode,
+) -> Result<bool, BibtexError> {
+    match buffers.at_offset(BufTy::Base, 2) {
+        b'{' => {
+            if !rs_scan_balanced_braces(buffers, store_field, at_bib_command, b'}')? {
+                return Ok(false);
+            }
+        }
+        b'"' => {
+            if !rs_scan_balanced_braces(buffers, store_field, at_bib_command, b'"')? {
+                return Ok(false);
+            }
+        }
+        b'0'..=b'9' => {
+            let last = buffers.init(BufTy::Base);
+            if !Scan::new()
+                .not_class(LexClass::Numeric)
+                .scan_till_nonempty(last)
+            {
+                write_logs("A digit disappeared");
+                print_confusion();
+                return Err(BibtexError::Fatal);
+            }
+
+            if store_field {
+                let range = buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2);
+                let len = range.end - range.start;
+
+                while len >= buffers.len() {
+                    // TODO: This may change output of a field long enough to fill the buffer twice. OTOH, that is a 40KB field roughly
+                    write_log_file(&format!(
+                        "Field filled up at {}, reallocating.\n",
+                        buffers.at_offset(BufTy::Base, 1)
+                    ));
+                    buffers.grow_all();
+                }
+
+                buffers.copy_within(
+                    BufTy::Base,
+                    BufTy::Ex,
+                    range.start,
+                    buffers.offset(BufTy::Ex, 1),
+                    len,
+                );
+
+                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + len);
+            }
+        }
+        _ => {
+            let res = rs_scan_identifier(buffers, b',', right_outer_delim, b'#');
+            if !matches!(
+                res,
+                ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent
+            ) {
+                rs_bib_id_print(buffers, res)?;
+                write_logs("a field part");
+                rs_bib_err_print(buffers, at_bib_command)?;
+                return Ok(false);
+            }
+
+            if store_field {
+                let range = buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2);
+                buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
+                let str = &buffers.buffer(BufTy::Base)[range];
+
+                let res =
+                    with_hash(|hash| with_pool(|pool| pool.lookup_str(hash, str, StrIlk::Macro)));
+                let mut store_token = true;
+                if at_bib_command && command_num == 2 /* n_bib_string */ && res.loc ==
+                    cur_macro_loc
+                {
+                    store_token = false;
+                    macro_warn_print();
+                    write_logs("used in its own definition\n");
+                    if !bib_warn_print() {
+                        return Err(BibtexError::Fatal);
+                    }
+                }
+
+                if !res.exists {
+                    store_token = false;
+                    macro_warn_print();
+                    write_logs("undefined\n");
+                    if !bib_warn_print() {
+                        return Err(BibtexError::Fatal);
+                    }
+                }
+
+                if store_token {
+                    with_hash(|hash| {
+                        with_pool(|pool| {
+                            let strnum = hash.ilk_info(res.loc) as StrNumber;
+                            let mut str = pool.get_str(strnum);
+
+                            if buffers.offset(BufTy::Ex, 1) == 0
+                                && LexClass::of(str[0]) == LexClass::Whitespace
+                            {
+                                if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
+                                    write_log_file("Field filled up at ' ', reallocating.\n");
+                                    buffers.grow_all();
+                                }
+
+                                buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b' ');
+                                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+
+                                while str.len() != 0 && LexClass::of(str[0]) == LexClass::Whitespace
+                                {
+                                    str = &str[1..];
+                                }
+                            }
+
+                            for &c in str {
+                                let msg = if LexClass::of(c) != LexClass::Whitespace {
+                                    |c| format!("Field filled up at {}, reallocating.\n", c as char)
+                                } else {
+                                    |_| String::from("Field filled up at ' ', reallocating.\n")
+                                };
+
+                                if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
+                                    write_log_file(&msg(c));
+                                    buffers.grow_all();
+                                }
+
+                                if LexClass::of(c) != LexClass::Whitespace {
+                                    buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), c);
+                                    buffers.set_offset(
+                                        BufTy::Ex,
+                                        1,
+                                        buffers.offset(BufTy::Ex, 1) + 1,
+                                    );
+                                } else if c != b' ' {
+                                    buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b' ');
+                                    buffers.set_offset(
+                                        BufTy::Ex,
+                                        1,
+                                        buffers.offset(BufTy::Ex, 1) + 1,
+                                    );
+                                }
+                            }
+                        })
+                    })
+                }
+            }
+        }
+    }
+
+    if !rs_eat_bib_white_space(buffers) {
+        return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
+    }
+    Ok(true)
+}
+
+#[no_mangle]
+pub extern "C" fn scan_a_field_token_and_eat_white(
+    store_field: bool,
+    at_bib_command: bool,
+    command_num: i32,
+    cur_macro_loc: HashPointer,
+    right_outer_delim: ASCIICode,
+) -> CResultBool {
+    let res = with_buffers_mut(|buffers| {
+        rs_scan_a_field_token_and_eat_white(
+            buffers,
+            store_field,
+            at_bib_command,
+            command_num,
+            cur_macro_loc,
+            right_outer_delim,
+        )
     });
     match res {
         Ok(val) => CResultBool::Ok(val),

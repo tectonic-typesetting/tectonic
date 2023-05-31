@@ -457,20 +457,27 @@ pub(crate) fn bib_ln_num_print() -> bool {
     print_bib_name()
 }
 
-#[no_mangle]
-pub extern "C" fn bib_err_print(at_bib_command: bool) -> bool {
+pub fn rs_bib_err_print(buffers: &GlobalBuffer, at_bib_command: bool) -> Result<(), BibtexError> {
     write_logs("-");
     if !bib_ln_num_print() {
-        return false;
+        return Err(BibtexError::Fatal);
     }
-    with_buffers(print_bad_input_line);
+    print_bad_input_line(buffers);
     print_skipping_whatever_remains();
     if at_bib_command {
         write_logs("command\n");
     } else {
         write_logs("entry\n");
     }
-    true
+    Ok(())
+}
+
+#[no_mangle]
+pub extern "C" fn bib_err_print(at_bib_command: bool) -> bool {
+    match with_buffers(|buffers| rs_bib_err_print(buffers, at_bib_command)) {
+        Ok(()) => true,
+        Err(_) => false,
+    }
 }
 
 #[no_mangle]
@@ -482,10 +489,17 @@ pub extern "C" fn bib_warn_print() -> bool {
     true
 }
 
+pub fn rs_eat_bib_print(buffers: &GlobalBuffer, at_bib_command: bool) -> Result<(), BibtexError> {
+    write_logs("Illegal end of database file");
+    rs_bib_err_print(buffers, at_bib_command)
+}
+
 #[no_mangle]
 pub extern "C" fn eat_bib_print(at_bib_command: bool) -> bool {
-    write_logs("Illegal end of database file");
-    bib_err_print(at_bib_command)
+    match with_buffers(|buffers| rs_eat_bib_print(buffers, at_bib_command)) {
+        Ok(()) => true,
+        Err(_) => false,
+    }
 }
 
 #[no_mangle]
@@ -523,22 +537,29 @@ pub extern "C" fn macro_warn_print() {
     write_logs("\" is ");
 }
 
-#[no_mangle]
-pub extern "C" fn bib_id_print(scan_res: ScanRes) -> bool {
+pub fn rs_bib_id_print(buffers: &GlobalBuffer, scan_res: ScanRes) -> Result<(), BibtexError> {
     match scan_res {
         ScanRes::IdNull => {
             write_logs("You're missing ");
-            true
+            Ok(())
         }
         ScanRes::OtherCharAdjacent => {
-            let char = with_buffers(|buffers| buffers.at_offset(BufTy::Base, 2));
+            let char = buffers.at_offset(BufTy::Base, 2);
             write_logs(&format!("\"{}\" immediately follows ", char));
-            true
+            Ok(())
         }
         _ => {
             id_scanning_confusion();
-            false
+            Err(BibtexError::Fatal)
         }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn bib_id_print(scan_res: ScanRes) -> bool {
+    match with_buffers(|buffers| rs_bib_id_print(buffers, scan_res)) {
+        Ok(()) => true,
+        Err(_) => false,
     }
 }
 

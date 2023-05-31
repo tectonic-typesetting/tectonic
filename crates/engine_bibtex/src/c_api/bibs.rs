@@ -2,7 +2,7 @@ use crate::{
     c_api::{
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
-        log::{eat_bib_print, write_log_file},
+        log::{rs_eat_bib_print, write_log_file},
         peekable::{rs_input_ln, PeekableInput},
         scan::Scan,
         xbuf::XBuf,
@@ -201,10 +201,7 @@ pub fn compress_bib_white(
             unsafe { cur_bib_file().map(|mut ptr| ptr.as_mut()) },
             buffers,
         ) {
-            if !eat_bib_print(at_bib_command) {
-                return Err(BibtexError::Fatal);
-            }
-            return Ok(false);
+            return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
         }
 
         with_bibs_mut(|bibs| {
