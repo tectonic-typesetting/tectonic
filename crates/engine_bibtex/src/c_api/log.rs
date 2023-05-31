@@ -68,8 +68,8 @@ fn with_log<T>(f: impl FnOnce(&mut OutputHandle) -> T) -> T {
 }
 
 pub(crate) fn write_logs<B: ?Sized + AsBytes>(str: &B) {
-    with_log(|log| log.write_all(str.as_bytes())).unwrap();
-    with_stdout(|out| out.write_all(str.as_bytes())).unwrap();
+    let _ = with_log(|log| log.write_all(str.as_bytes()));
+    let _ = with_stdout(|out| out.write_all(str.as_bytes()));
 }
 
 pub fn init_log_file(file: &CStr) -> bool {
@@ -119,21 +119,21 @@ pub extern "C" fn bib_close_log() {
 #[no_mangle]
 pub unsafe extern "C" fn bib_log_prints(str: *const libc::c_char) {
     let str = CStr::from_ptr(str);
-    with_log(|log| log.write_all(str.to_bytes())).unwrap()
+    let _ = with_log(|log| log.write_all(str.to_bytes()));
 }
 
 #[no_mangle]
 pub extern "C" fn putc_log(c: libc::c_int) {
     let c = c as u8;
-    with_log(|log| log.write_all(&[c])).unwrap();
-    with_stdout(|out| out.write_all(&[c])).unwrap();
+    let _ = with_log(|log| log.write_all(&[c]));
+    let _ = with_stdout(|out| out.write_all(&[c]));
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn puts_log(str: *const libc::c_char) {
     let str = CStr::from_ptr(str);
-    with_log(|log| log.write_all(str.to_bytes())).unwrap();
-    with_stdout(|out| out.write_all(str.to_bytes())).unwrap();
+    let _ = with_log(|log| log.write_all(str.to_bytes()));
+    let _ = with_stdout(|out| out.write_all(str.to_bytes()));
 }
 
 #[no_mangle]
