@@ -285,7 +285,8 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     let ctx = &mut *ctx;
     let res = with_hash_mut(|hash| {
         with_pool_mut(|pool| {
-            pool.lookup_str_insert(hash, b".aux", StrIlk::FileExt)?;
+            let res = pool.lookup_str_insert(hash, b".aux", StrIlk::FileExt)?;
+            ctx.s_aux_extension = hash.text(res.loc);
 
             let res = pool.lookup_str_insert(hash, b"\\citation", StrIlk::AuxCommand)?;
             hash.set_ilk_info(res.loc, 2);

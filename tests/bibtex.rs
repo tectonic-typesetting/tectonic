@@ -160,3 +160,8 @@ fn test_single_preamble() {
 fn test_many_preamble() {
     TestCase::new("many", Some("preamble")).go();
 }
+
+#[test]
+fn test_nested_aux() {
+    TestCase::new("nested", Some("aux")).go();
+}
