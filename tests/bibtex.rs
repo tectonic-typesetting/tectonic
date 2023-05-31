@@ -163,5 +163,5 @@ fn test_many_preamble() {
 
 #[test]
 fn test_nested_aux() {
-    TestCase::new("nested", Some("aux")).go();
+    TestCase::new("nested", Some("aux_files")).go();
 }
