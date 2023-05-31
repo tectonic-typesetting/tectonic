@@ -25,8 +25,16 @@ impl OtherData {
         }
     }
 
+    pub fn max_fields(&self) -> usize {
+        self.field_info.len()
+    }
+
     pub fn field(&self, pos: usize) -> StrNumber {
         self.field_info[pos]
+    }
+
+    pub fn set_field(&mut self, pos: usize, s: StrNumber) {
+        self.field_info[pos] = s
     }
 
     pub fn num_fields(&self) -> FieldLoc {
@@ -45,6 +53,10 @@ impl OtherData {
         if fields > self.field_info.len() {
             self.field_info.grow(MAX_FIELDS);
         }
+    }
+
+    pub fn crossref_num(&self) -> FieldLoc {
+        self.crossref_num
     }
 
     pub fn set_crossref_num(&mut self, val: FieldLoc) {

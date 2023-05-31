@@ -110,115 +110,7 @@ printf_log(const char *fmt, ...)
     puts_log(fmt_buf);
 }
 
-static void log_fprintf(const char* fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(fmt_buf, FMT_BUF_SIZE, fmt, ap);
-    va_end(ap);
-
-    bib_log_prints(fmt_buf);
-}
-
 /*:159*//*160: */
-
-static bool scan_and_store_the_field_value_and_eat_white(Bibtex* ctx, bool store_field, bool at_bib_command, int32_t command_num, cite_number* cite_out, hash_loc cur_macro_loc, ASCIICode right_outer_delim, hash_loc field_name_loc)
-{
-    buf_pointer tmp_ptr;
-
-    bib_set_buf_offset(BUF_TY_EX, 1, 0);
-    if (!unwrap_res_bool(scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim)))
-        return false;
-    while (bib_buf_at_offset(BUF_TY_BASE, 2) == 35 /*concat_char */ ) {
-
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-        {
-            if (!eat_bib_white_space()) {
-                TRY(eat_bib_print(at_bib_command));
-                return false;
-            }
-        }
-        if (!unwrap_res_bool(scan_a_field_token_and_eat_white(store_field, at_bib_command, command_num, cur_macro_loc, right_outer_delim)))
-            return false;
-    }
-    if (store_field) {        /*262: */
-        if (!at_bib_command) {
-
-            if (bib_buf_offset(BUF_TY_EX, 1) > 0) {
-
-                if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) - 1) == 32 /*space */ )
-                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
-            }
-        }
-        buf_pointer ex_buf_xptr = 0;
-        if ((!at_bib_command) && (bib_buf(BUF_TY_EX, 0) == 32 /*space */ ) && (bib_buf_offset(BUF_TY_EX, 1) > 0))
-            ex_buf_xptr = 1;
-        else
-            ex_buf_xptr = 0;
-        LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 0 /*text_ilk */ , true));
-        hash_loc field_val_loc = hash.loc;
-        set_fn_type(field_val_loc, FN_CLASS_STR_LIT);
-
-        if (at_bib_command) { /*263: */
-            switch ((command_num)) {
-            case 1:
-                add_preamble(hash_text(field_val_loc));
-                break;
-            case 2:
-                set_ilk_info(cur_macro_loc, hash_text(field_val_loc));
-                break;
-            default:
-                bib_cmd_confusion();
-                longjmp(error_jmpbuf, 1);
-                break;
-            }
-        } else {                /*264: */
-            field_loc field_ptr = entry_cite_ptr() * num_fields() + ilk_info(field_name_loc);
-            if (field_ptr >= max_fields()) {
-                puts_log("field_info index is out of range");
-                print_confusion();
-                longjmp(error_jmpbuf, 1);
-            }
-            if (field_info(field_ptr) != 0 /*missing */ ) {
-                puts_log("Warning--I'm ignoring ");
-                TRY(print_a_pool_str(cite_list(entry_cite_ptr())));
-                puts_log("'s extra \"");
-                TRY(print_a_pool_str(hash_text(field_name_loc)));
-                puts_log("\" field\n");
-                TRY(bib_warn_print());
-            } else {
-                set_field_info(field_ptr, hash_text(field_val_loc));
-                if ((ilk_info(field_name_loc) == (int32_t)crossref_num()) && (!ctx->all_entries)) {   /*265: */
-                    tmp_ptr = ex_buf_xptr;
-                    while (tmp_ptr < bib_buf_offset(BUF_TY_EX, 1)) {
-                        bib_set_buf(BUF_TY_OUT, tmp_ptr, bib_buf(BUF_TY_EX, tmp_ptr));
-                        tmp_ptr = tmp_ptr + 1;
-                    }
-                    lower_case(BUF_TY_OUT, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr);
-                    hash = unwrap_res_lookup(str_lookup(BUF_TY_OUT, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 10 /*lc_cite_ilk */ , true));
-                    cite_number lc_cite_loc = hash.loc;
-                    if (cite_out != NULL) {
-                        *cite_out = lc_cite_loc;
-                    }
-                    if (hash.exists) {
-                        cite_number cite_loc = ilk_info(lc_cite_loc);
-                        if (ilk_info(cite_loc) >= (int32_t)old_num_cites())
-                            set_cite_info(ilk_info(cite_loc), cite_info(ilk_info(cite_loc)) + 1);
-                    } else {
-                        hash = unwrap_res_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr, 9 /*cite_ilk */ , true));
-                        cite_number cite_loc = hash.loc;
-                        if (hash.exists) {
-                            hash_cite_confusion();
-                            longjmp(error_jmpbuf, 1);
-                        }
-                        set_cite_ptr(add_database_cite(cite_ptr(), cite_loc, lc_cite_loc));
-                        set_cite_info(ilk_info(cite_loc), 1);
-                    }
-                }
-            }
-        }
-    }
-    return true;
-}
 
 static void decr_brace_level(ExecCtx* ctx, str_number pop_lit_var, int32_t* brace_level)
 {
@@ -3733,7 +3625,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            if (!scan_and_store_the_field_value_and_eat_white(ctx, true, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!unwrap_res_bool(scan_and_store_the_field_value_and_eat_white(ctx, true, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc)))
                 return;
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
                 printf_log("Missing \"%c\" in preamble command", right_outer_delim);
@@ -3787,7 +3679,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            if (!scan_and_store_the_field_value_and_eat_white(ctx, true, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!unwrap_res_bool(scan_and_store_the_field_value_and_eat_white(ctx, true, at_bib_command, command_num, &lc_cite_loc, *cur_macro_loc, right_outer_delim, *field_name_loc)))
                 return;
             if (bib_buf_at_offset(BUF_TY_BASE, 2) != right_outer_delim) {
                 printf_log("Missing \"%c\" in string command", right_outer_delim);
@@ -3988,7 +3880,7 @@ lab22:                        /*cite_already_set */ ;
                 TRY(eat_bib_print(at_bib_command));
                 return;
             }
-            if (!scan_and_store_the_field_value_and_eat_white(ctx, store_field, at_bib_command, command_num, NULL, *cur_macro_loc, right_outer_delim, *field_name_loc))
+            if (!unwrap_res_bool(scan_and_store_the_field_value_and_eat_white(ctx, store_field, at_bib_command, command_num, NULL, *cur_macro_loc, right_outer_delim, *field_name_loc)))
                 return;
         }
  loop_exit:
