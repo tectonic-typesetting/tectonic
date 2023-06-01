@@ -436,11 +436,7 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
             Ok(())
         })
     });
-    match res {
-        Ok(()) => CResult::Ok,
-        Err(BibtexError::Fatal) => CResult::Error,
-        Err(BibtexError::Recover) => CResult::Recover,
-    }
+    res.into()
 }
 
 #[cfg(test)]

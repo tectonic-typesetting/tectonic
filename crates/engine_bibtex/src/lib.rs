@@ -243,6 +243,16 @@ pub mod c_api {
         Ok,
     }
 
+    impl From<Result<(), BibtexError>> for CResult {
+        fn from(value: Result<(), BibtexError>) -> Self {
+            match value {
+                Ok(()) => CResult::Ok,
+                Err(BibtexError::Fatal) => CResult::Error,
+                Err(BibtexError::Recover) => CResult::Recover,
+            }
+        }
+    }
+
     #[repr(C)]
     pub enum CResultStr {
         Error,
@@ -255,6 +265,16 @@ pub mod c_api {
         Error,
         Recover,
         Ok(bool),
+    }
+
+    impl From<Result<bool, BibtexError>> for CResultBool {
+        fn from(value: Result<bool, BibtexError>) -> Self {
+            match value {
+                Ok(val) => CResultBool::Ok(val),
+                Err(BibtexError::Fatal) => CResultBool::Error,
+                Err(BibtexError::Recover) => CResultBool::Recover,
+            }
+        }
     }
 
     #[repr(C)]

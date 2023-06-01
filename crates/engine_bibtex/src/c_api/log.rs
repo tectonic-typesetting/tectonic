@@ -705,13 +705,7 @@ pub fn rs_bst_err_print_and_look_for_blank_line(
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut Bibtex) -> CResult {
-    with_buffers_mut(
-        |buffers| match rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers) {
-            Ok(()) => CResult::Ok,
-            Err(BibtexError::Fatal) => CResult::Error,
-            Err(BibtexError::Recover) => CResult::Recover,
-        },
-    )
+    with_buffers_mut(|buffers| rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers).into())
 }
 
 #[no_mangle]

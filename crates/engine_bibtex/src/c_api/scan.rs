@@ -431,13 +431,7 @@ pub unsafe extern "C" fn scan_fn_def(
     fn_hash_loc: HashPointer,
     wiz_loc: HashPointer,
 ) -> CResult {
-    with_buffers_mut(
-        |buffers| match inner_scan_fn_def(&mut *ctx, buffers, fn_hash_loc, wiz_loc) {
-            Ok(()) => CResult::Ok,
-            Err(BibtexError::Fatal) => CResult::Error,
-            Err(BibtexError::Recover) => CResult::Recover,
-        },
-    )
+    with_buffers_mut(|buffers| inner_scan_fn_def(&mut *ctx, buffers, fn_hash_loc, wiz_loc).into())
 }
 
 fn scan_balanced_braces(
@@ -965,11 +959,7 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
         )
     });
 
-    match res {
-        Ok(val) => CResultBool::Ok(val),
-        Err(BibtexError::Fatal) => CResultBool::Error,
-        Err(BibtexError::Recover) => CResultBool::Recover,
-    }
+    res.into()
 }
 
 fn rs_decr_brace_level(
@@ -992,10 +982,7 @@ pub unsafe extern "C" fn decr_brace_level(
     pop_lit_var: StrNumber,
     brace_level: *mut i32,
 ) -> CResult {
-    match rs_decr_brace_level(&*ctx, pop_lit_var, &mut *brace_level) {
-        Ok(()) => CResult::Ok,
-        Err(_) => CResult::Error,
-    }
+    rs_decr_brace_level(&*ctx, pop_lit_var, &mut *brace_level).into()
 }
 
 fn rs_check_brace_level(
@@ -1015,10 +1002,7 @@ pub unsafe extern "C" fn check_brace_level(
     pop_lit_var: StrNumber,
     brace_level: i32,
 ) -> CResult {
-    match rs_check_brace_level(&*ctx, pop_lit_var, brace_level) {
-        Ok(()) => CResult::Ok,
-        Err(_) => CResult::Error,
-    }
+    rs_check_brace_level(&*ctx, pop_lit_var, brace_level).into()
 }
 
 fn rs_name_scan_for_and(
@@ -1085,10 +1069,84 @@ pub unsafe extern "C" fn name_scan_for_and(
     brace_level: *mut i32,
 ) -> CResult {
     with_buffers_mut(|buffers| {
-        match rs_name_scan_for_and(&mut *ctx, buffers, pop_lit_var, &mut *brace_level) {
-            Ok(()) => CResult::Ok,
-            Err(BibtexError::Fatal) => CResult::Error,
-            Err(BibtexError::Recover) => CResult::Recover,
-        }
+        rs_name_scan_for_and(&mut *ctx, buffers, pop_lit_var, &mut *brace_level).into()
     })
+}
+
+fn rs_von_token_found(
+    buffers: &mut GlobalBuffer,
+    name_bf_ptr: &mut BufPointer,
+    name_bf_xptr: BufPointer,
+) -> Result<bool, BibtexError> {
+    while *name_bf_ptr < name_bf_xptr {
+        let char = buffers.at(BufTy::Sv, *name_bf_ptr);
+        match char {
+            b'A'..=b'Z' => return Ok(false),
+            b'a'..=b'z' => return Ok(true),
+            b'{' => {
+                let mut nm_brace_level = 1;
+                *name_bf_ptr += 1;
+                if *name_bf_ptr + 2 < name_bf_xptr && buffers.at(BufTy::Sv, *name_bf_ptr) == b'\\' {
+                    *name_bf_ptr += 1;
+                    let name_bf_yptr = *name_bf_ptr;
+                    while *name_bf_ptr < name_bf_xptr
+                        && LexClass::of(buffers.at(BufTy::Sv, *name_bf_ptr)) == LexClass::Alpha
+                    {
+                        *name_bf_ptr += 1;
+                    }
+                    let str = &buffers.buffer(BufTy::Sv)[name_bf_yptr..*name_bf_ptr];
+                    let ilk = with_hash(|hash| {
+                        let res = with_pool(|pool| pool.lookup_str(hash, str, StrIlk::ControlSeq));
+                        res.exists.then(|| hash.ilk_info(res.loc))
+                    });
+                    if let Some(ilk) = ilk {
+                        match ilk {
+                            3 | 5 | 7 | 9 | 11 => return Ok(false),
+                            0 | 1 | 2 | 4 | 6 | 8 | 10 | 12 => return Ok(true),
+                            _ => {
+                                write_logs("Control-sequence hash error");
+                                print_confusion();
+                                return Err(BibtexError::Fatal);
+                            }
+                        }
+                    }
+
+                    while *name_bf_ptr < name_bf_xptr && nm_brace_level > 0 {
+                        let char = buffers.at(BufTy::Sv, *name_bf_ptr);
+                        match char {
+                            b'A'..=b'Z' => return Ok(false),
+                            b'a'..=b'z' => return Ok(true),
+                            b'}' => nm_brace_level -= 1,
+                            b'{' => nm_brace_level += 1,
+                            _ => (),
+                        }
+                        *name_bf_ptr += 1;
+                    }
+                    return Ok(false);
+                } else {
+                    while nm_brace_level > 0 && *name_bf_ptr < name_bf_xptr {
+                        let char = buffers.at(BufTy::Sv, *name_bf_ptr);
+                        match char {
+                            b'{' => nm_brace_level += 1,
+                            b'}' => nm_brace_level -= 1,
+                            _ => (),
+                        }
+                        *name_bf_ptr += 1;
+                    }
+                }
+            }
+            _ => {
+                *name_bf_ptr += 1;
+            }
+        }
+    }
+    Ok(false)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn von_token_found(
+    name_bf_ptr: *mut BufPointer,
+    name_bf_xptr: BufPointer,
+) -> CResultBool {
+    with_buffers_mut(|buffers| rs_von_token_found(buffers, &mut *name_bf_ptr, name_bf_xptr).into())
 }

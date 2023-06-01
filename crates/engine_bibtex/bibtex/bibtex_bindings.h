@@ -635,6 +635,8 @@ CResult check_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t bra
 
 CResult name_scan_for_and(ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
 
+CResultBool von_token_found(BufPointer *name_bf_ptr, BufPointer name_bf_xptr);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif // __cplusplus

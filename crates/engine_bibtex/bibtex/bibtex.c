@@ -112,75 +112,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static bool von_token_found(buf_pointer* name_bf_ptr, buf_pointer name_bf_xptr)
-{
-    int32_t nm_brace_level = 0;
-    while (*name_bf_ptr < name_bf_xptr)
-        if ((bib_buf(BUF_TY_SV, *name_bf_ptr) >= 'A' ) && (bib_buf(BUF_TY_SV, *name_bf_ptr) <= 'Z' ))
-            return false;
-        else if ((bib_buf(BUF_TY_SV, *name_bf_ptr) >= 'a' ) && (bib_buf(BUF_TY_SV, *name_bf_ptr) <= 'z' )) {
-            return true;
-        } else if (bib_buf(BUF_TY_SV, *name_bf_ptr) == 123 /*left_brace */ ) {
-            nm_brace_level = nm_brace_level + 1;
-            *name_bf_ptr = *name_bf_ptr + 1;
-            if ((*name_bf_ptr + 2 < name_bf_xptr) && (bib_buf(BUF_TY_SV, *name_bf_ptr) == 92 /*backslash */ )) { /*399: */
-                *name_bf_ptr = *name_bf_ptr + 1;
-                buf_pointer name_bf_yptr = *name_bf_ptr;
-                while ((*name_bf_ptr < name_bf_xptr) && (LEX_CLASS[bib_buf(BUF_TY_SV, *name_bf_ptr)] == LEX_CLASS_ALPHA ))
-                    *name_bf_ptr = *name_bf_ptr + 1;
-                LookupRes hash = unwrap_res_lookup(str_lookup(BUF_TY_SV, name_bf_yptr, *name_bf_ptr - name_bf_yptr, 14 /*control_seq_ilk */ , false));
-                hash_loc control_seq_loc = hash.loc;
-                if (hash.exists) {     /*400: */
-                    switch ((ilk_info(control_seq_loc))) {
-                    case 3:
-                    case 5:
-                    case 7:
-                    case 9:
-                    case 11:
-                        return false;
-                    case 0:
-                    case 1:
-                    case 2:
-                    case 4:
-                    case 6:
-                    case 8:
-                    case 10:
-                    case 12:
-                        return true;
-                    default:
-                        puts_log("Control-sequence hash error");
-                        print_confusion();
-                        longjmp(error_jmpbuf, 1);
-                        break;
-                    }
-                }
-                while ((*name_bf_ptr < name_bf_xptr) && (nm_brace_level > 0)) {
-
-                    if ((bib_buf(BUF_TY_SV, *name_bf_ptr) >= 'A' ) && (bib_buf(BUF_TY_SV, *name_bf_ptr) <= 'Z' ))
-                        return false;
-                    else if ((bib_buf(BUF_TY_SV, *name_bf_ptr) >= 'a' ) && (bib_buf(BUF_TY_SV, *name_bf_ptr) <= 'z' )) {
-                        return true;
-                    } else if (bib_buf(BUF_TY_SV, *name_bf_ptr) == 125 /*right_brace */ )
-                        nm_brace_level = nm_brace_level - 1;
-                    else if (bib_buf(BUF_TY_SV, *name_bf_ptr) == 123 /*left_brace */ )
-                        nm_brace_level = nm_brace_level + 1;
-                    *name_bf_ptr = *name_bf_ptr + 1;
-                }
-                return false;
-            } else /*401: */
-                while ((nm_brace_level > 0) && (*name_bf_ptr < name_bf_xptr)) {
-
-                    if (bib_buf(BUF_TY_SV, *name_bf_ptr) == 125 /*right_brace */ )
-                        nm_brace_level = nm_brace_level - 1;
-                    else if (bib_buf(BUF_TY_SV, *name_bf_ptr) == 123 /*left_brace */ )
-                        nm_brace_level = nm_brace_level + 1;
-                    *name_bf_ptr = *name_bf_ptr + 1;
-                }
-        } else
-            *name_bf_ptr = *name_bf_ptr + 1;
-    return false;
-}
-
 static void von_name_ends_and_last_name_starts_stuff(buf_pointer last_end, buf_pointer von_start, buf_pointer* von_end, buf_pointer* name_bf_ptr, buf_pointer* name_bf_xptr)
 {
     *von_end = last_end - 1;
@@ -188,7 +119,7 @@ static void von_name_ends_and_last_name_starts_stuff(buf_pointer last_end, buf_p
 
         *name_bf_ptr = name_tok(*von_end - 1);
         *name_bf_xptr = name_tok(*von_end);
-        if (von_token_found(name_bf_ptr, *name_bf_xptr))
+        if (unwrap_res_bool(von_token_found(name_bf_ptr, *name_bf_xptr)))
             return;
         *von_end = *von_end - 1;
     }
@@ -1556,7 +1487,7 @@ static void x_format_name(ExecCtx* ctx)
 
                         name_bf_ptr = name_tok(von_start);
                         name_bf_xptr = name_tok(von_start + 1);
-                        if (von_token_found(&name_bf_ptr, name_bf_xptr)) {
+                        if (unwrap_res_bool(von_token_found(&name_bf_ptr, name_bf_xptr))) {
                             von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr);
                             goto lab52;
                         }
