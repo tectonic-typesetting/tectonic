@@ -184,6 +184,10 @@ impl GlobalBuffer {
         }
     }
 
+    pub fn name_tok(&self, pos: usize) -> BufPointer {
+        self.name_tok[pos]
+    }
+
     pub fn grow_all(&mut self) {
         let new_len = self.buf_len + BUF_SIZE;
         self.buffer.grow(BUF_SIZE);

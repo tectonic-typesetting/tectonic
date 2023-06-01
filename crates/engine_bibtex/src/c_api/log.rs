@@ -802,3 +802,17 @@ pub fn skip_illegal_stuff_after_token_print(
     ));
     skip_token_print(ctx, buffers)
 }
+
+#[no_mangle]
+pub unsafe extern "C" fn brace_lvl_one_letters_complaint(ctx: *mut ExecCtx) -> CResult {
+    write_logs("The format string \"");
+    if !print_a_pool_str((*ctx).pop1.lit as usize) {
+        return CResult::Error;
+    }
+    write_logs("\" has an illegal brace-level-1 letter");
+    if !bst_ex_warn_print(ctx) {
+        return CResult::Error;
+    }
+
+    CResult::Ok
+}

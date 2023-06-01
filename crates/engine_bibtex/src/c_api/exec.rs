@@ -26,8 +26,8 @@ pub enum StkType {
 #[derive(Copy, Clone, PartialEq)]
 #[repr(C)]
 pub struct ExecVal {
-    typ: StkType,
-    lit: i32,
+    pub typ: StkType,
+    pub lit: i32,
 }
 
 // SAFETY: StkType is valid as 0 because of StkType::Integer, i32 is always valid as 0

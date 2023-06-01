@@ -112,40 +112,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void von_name_ends_and_last_name_starts_stuff(buf_pointer last_end, buf_pointer von_start, buf_pointer* von_end, buf_pointer* name_bf_ptr, buf_pointer* name_bf_xptr)
-{
-    *von_end = last_end - 1;
-    while (*von_end > von_start) {
-
-        *name_bf_ptr = name_tok(*von_end - 1);
-        *name_bf_xptr = name_tok(*von_end);
-        if (unwrap_res_bool(von_token_found(name_bf_ptr, *name_bf_xptr)))
-            return;
-        *von_end = *von_end - 1;
-    }
-}
-
-static pool_pointer skip_stuff_at_sp_brace_level_greater_than_one(pool_pointer sp_ptr, pool_pointer sp_end, int32_t* sp_brace_level)
-{
-    while ((*sp_brace_level > 1) && (sp_ptr < sp_end)) {
-
-        if (bib_str_pool(sp_ptr) == 125 /*right_brace */ )
-            *sp_brace_level = *sp_brace_level - 1;
-        else if (bib_str_pool(sp_ptr) == 123 /*left_brace */ )
-            *sp_brace_level = *sp_brace_level + 1;
-        sp_ptr = sp_ptr + 1;
-    }
-    return sp_ptr;
-}
-
-static void brace_lvl_one_letters_complaint(ExecCtx* ctx)
-{
-    puts_log("The format string \"");
-    TRY(print_a_pool_str(ctx->pop1.lit));
-    puts_log("\" has an illegal brace-level-1 letter");
-    TRY(bst_ex_warn_print(ctx));
-}
-
 static bool enough_text_chars(buf_pointer enough_chars, buf_pointer ex_buf_xptr, int32_t* brace_level)
 {
     buf_pointer num_text_chars = 0;
@@ -207,7 +173,7 @@ static void figure_out_the_formatted_name(
                 if (LEX_CLASS[bib_str_pool(sp_ptr)] == LEX_CLASS_ALPHA ) {
                     sp_ptr = sp_ptr + 1;
                     if (alpha_found) {
-                        brace_lvl_one_letters_complaint(ctx);
+                        unwrap_res(brace_lvl_one_letters_complaint(ctx));
                         to_be_written = false;
                     } else {
 
@@ -262,7 +228,7 @@ static void figure_out_the_formatted_name(
                             break;
                         default:
                             {
-                                brace_lvl_one_letters_complaint(ctx);
+                                unwrap_res(brace_lvl_one_letters_complaint(ctx));
                                 to_be_written = false;
                             }
                             break;
@@ -1488,7 +1454,7 @@ static void x_format_name(ExecCtx* ctx)
                         name_bf_ptr = name_tok(von_start);
                         name_bf_xptr = name_tok(von_start + 1);
                         if (unwrap_res_bool(von_token_found(&name_bf_ptr, name_bf_xptr))) {
-                            von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr);
+                            unwrap_res(von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr));
                             goto lab52;
                         }
                         von_start = von_start + 1;
@@ -1509,14 +1475,14 @@ static void x_format_name(ExecCtx* ctx)
                 jr_end = last_end;
                 first_start = jr_end;
                 first_end = num_tokens;
-                von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr);
+                unwrap_res(von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr));
             } else if (num_commas == 2) {
                 von_start = 0;
                 last_end = comma1;
                 jr_end = comma2;
                 first_start = jr_end;
                 first_end = num_tokens;
-                von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr);
+                unwrap_res(von_name_ends_and_last_name_starts_stuff(last_end, von_start, &von_end, &name_bf_ptr, &name_bf_xptr));
             } else {
                 puts_log("Illegal number of comma,s");
                 print_confusion();

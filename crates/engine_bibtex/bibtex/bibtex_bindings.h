@@ -550,6 +550,8 @@ bool nonexistent_cross_reference_error(FieldLoc field_ptr);
 
 void output_bbl_line(Bibtex *ctx);
 
+CResult brace_lvl_one_letters_complaint(ExecCtx *ctx);
+
 HashPointer2 wiz_functions(WizFnLoc pos);
 
 StrNumber field_info(FieldLoc pos);
@@ -606,6 +608,10 @@ CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, 
 
 CResult pre_def_certain_strings(Bibtex *ctx);
 
+PoolPointer skip_stuff_at_sp_brace_level_greater_than_one(PoolPointer sp_ptr,
+                                                          PoolPointer sp_end,
+                                                          int32_t *sp_brace_level);
+
 bool scan1(ASCIICode char1);
 
 bool scan1_white(ASCIICode char1);
@@ -636,6 +642,12 @@ CResult check_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t bra
 CResult name_scan_for_and(ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
 
 CResultBool von_token_found(BufPointer *name_bf_ptr, BufPointer name_bf_xptr);
+
+CResult von_name_ends_and_last_name_starts_stuff(BufPointer last_end,
+                                                 BufPointer von_start,
+                                                 BufPointer *von_end,
+                                                 BufPointer *name_bf_ptr,
+                                                 BufPointer *name_bf_xptr);
 
 #ifdef __cplusplus
 } // extern "C"

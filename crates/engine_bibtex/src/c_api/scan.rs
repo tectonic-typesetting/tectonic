@@ -1150,3 +1150,44 @@ pub unsafe extern "C" fn von_token_found(
 ) -> CResultBool {
     with_buffers_mut(|buffers| rs_von_token_found(buffers, &mut *name_bf_ptr, name_bf_xptr).into())
 }
+
+fn rs_von_name_ends_and_last_name_starts_stuff(
+    buffers: &mut GlobalBuffer,
+    last_end: BufPointer,
+    von_start: BufPointer,
+    von_end: &mut BufPointer,
+    name_bf_ptr: &mut BufPointer,
+    name_bf_xptr: &mut BufPointer,
+) -> Result<(), BibtexError> {
+    *von_end = last_end - 1;
+    while *von_end > von_start {
+        *name_bf_ptr = buffers.name_tok(*von_end - 1);
+        *name_bf_xptr = buffers.name_tok(*von_end);
+        if rs_von_token_found(buffers, name_bf_ptr, *name_bf_xptr)? {
+            return Ok(());
+        }
+        *von_end = *von_end - 1;
+    }
+    Ok(())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff(
+    last_end: BufPointer,
+    von_start: BufPointer,
+    von_end: *mut BufPointer,
+    name_bf_ptr: *mut BufPointer,
+    name_bf_xptr: *mut BufPointer,
+) -> CResult {
+    with_buffers_mut(|buffers| {
+        rs_von_name_ends_and_last_name_starts_stuff(
+            buffers,
+            last_end,
+            von_start,
+            &mut *von_end,
+            &mut *name_bf_ptr,
+            &mut *name_bf_xptr,
+        )
+        .into()
+    })
+}
