@@ -112,84 +112,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void decr_brace_level(ExecCtx* ctx, str_number pop_lit_var, int32_t* brace_level)
-{
-    if (*brace_level == 0)
-        TRY(braces_unbalanced_complaint(ctx, pop_lit_var));
-    else
-        *brace_level -= 1;
-}
-
-static void check_brace_level(ExecCtx* ctx, str_number pop_lit_var, int32_t brace_level)
-{
-    if (brace_level > 0)
-        TRY(braces_unbalanced_complaint(ctx, pop_lit_var));
-}
-
-static void name_scan_for_and(ExecCtx* ctx, str_number pop_lit_var, int32_t* brace_level)
-{
-    bool preceding_white = false;
-    bool and_found = false;
-    while ((!and_found) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)))
-        switch ((bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)))) {
-        case 97:
-        case 65:
-            {
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                if (preceding_white) {        /*387: */
-                    if (bib_buf_offset(BUF_TY_EX, 1) <= (bib_buf_len(BUF_TY_EX) - 3)) {
-
-                        if ((bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 'n' ) || (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 'N' )) {
-
-                            if ((bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) + 1) == 'd' ) || (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) + 1) == 'D' )) {
-
-                                if (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) + 2)] == LEX_CLASS_WHITESPACE ) {
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 2);
-                                    and_found = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                preceding_white = false;
-            }
-            break;
-        case 123:
-            {
-                *brace_level += 1;
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                while ((*brace_level > 0) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
-
-                    if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ )
-                        *brace_level -= 1;
-                    else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 123 /*left_brace */ )
-                        *brace_level += 1;
-                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                }
-                preceding_white = false;
-            }
-            break;
-        case 125:
-            {
-                decr_brace_level(ctx, pop_lit_var, brace_level);
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                preceding_white = false;
-            }
-            break;
-        default:
-            if (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))] == LEX_CLASS_WHITESPACE ) {
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                preceding_white = true;
-            } else {
-
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                preceding_white = false;
-            }
-            break;
-        }
-    check_brace_level(ctx, pop_lit_var, *brace_level);
-}
-
 static bool von_token_found(buf_pointer* name_bf_ptr, buf_pointer name_bf_xptr)
 {
     int32_t nm_brace_level = 0;
@@ -1327,7 +1249,7 @@ static void x_change_case(ExecCtx* ctx)
                     }
  lab21:                        /*ok_pascal_i_give_up */ prev_colon = false;
                 } else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ ) {
-                    decr_brace_level(ctx, ctx->pop2.lit, &brace_level);
+                    unwrap_res(decr_brace_level(ctx, ctx->pop2.lit, &brace_level));
                     prev_colon = false;
                 } else if (brace_level == 0) {        /*377: */
                     switch ((conversion_type)) {
@@ -1360,7 +1282,7 @@ static void x_change_case(ExecCtx* ctx)
                 }
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            check_brace_level(ctx, ctx->pop2.lit, brace_level);
+            unwrap_res(check_brace_level(ctx, ctx->pop2.lit, brace_level));
         }
         add_pool_buf_and_push(ctx);
     }
@@ -1487,7 +1409,7 @@ static void x_format_name(ExecCtx* ctx)
             while ((num_names < ctx->pop2.lit) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
                 num_names = num_names + 1;
                 ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
-                name_scan_for_and(ctx, ctx->pop3.lit, &brace_level);
+                unwrap_res(name_scan_for_and(ctx, ctx->pop3.lit, &brace_level));
             }
             if (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 4);
@@ -1745,7 +1667,7 @@ static void x_num_names(ExecCtx* ctx)
         int32_t num_names = 0;
         while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
             int32_t brace_level = 0;
-            name_scan_for_and(ctx, ctx->pop1.lit, &brace_level);
+            unwrap_res(name_scan_for_and(ctx, ctx->pop1.lit, &brace_level));
             num_names = num_names + 1;
         }
         push_lit_stk(ctx, (ExecVal) { .lit = num_names, .typ = STK_TYPE_INTEGER });
@@ -2220,13 +2142,13 @@ static void x_width(ExecCtx* ctx)
                     } else
                         string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
                 } else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ ) {
-                    decr_brace_level(ctx, ctx->pop1.lit, &brace_level);
+                    unwrap_res(decr_brace_level(ctx, ctx->pop1.lit, &brace_level));
                     string_width = string_width + CHAR_WIDTH[125 /*right_brace */ ];
                 } else
                     string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))];
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            check_brace_level(ctx, ctx->pop1.lit, brace_level);
+            unwrap_res(check_brace_level(ctx, ctx->pop1.lit, brace_level));
         }
         push_lit_stk(ctx, (ExecVal) { .lit = string_width, .typ = STK_TYPE_INTEGER });
     }

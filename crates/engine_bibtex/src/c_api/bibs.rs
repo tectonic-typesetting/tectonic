@@ -59,6 +59,11 @@ impl BibData {
         self.bib_line_num = val;
     }
 
+    pub fn add_preamble(&mut self, s: StrNumber) {
+        self.preamble[self.preamble_ptr] = s;
+        self.preamble_ptr += 1;
+    }
+
     fn grow(&mut self) {
         self.bib_list.grow(MAX_BIB_FILES);
         self.bib_file.grow(MAX_BIB_FILES);
@@ -118,14 +123,6 @@ pub extern "C" fn check_bib_files(ptr: BibNumber) {
         if ptr == bibs.bib_list.len() {
             bibs.grow();
         }
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn add_preamble(num: StrNumber) {
-    with_bibs_mut(|bibs| {
-        bibs.preamble[bibs.preamble_ptr] = num;
-        bibs.preamble_ptr += 1;
     })
 }
 

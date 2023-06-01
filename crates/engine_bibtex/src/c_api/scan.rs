@@ -1,17 +1,18 @@
 use crate::{
     c_api::{
-        bibs::{add_preamble, compress_bib_white, rs_eat_bib_white_space},
+        bibs::{compress_bib_white, rs_eat_bib_white_space, with_bibs_mut},
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::{IdClass, LexClass},
         cite::{rs_add_database_cite, with_cites_mut},
+        exec::ExecCtx,
         hash,
         hash::{end_of_def, with_hash, with_hash_mut, FnClass},
         log::{
             bib_cmd_confusion, bib_unbalanced_braces_print, bib_warn_print, eat_bst_print,
             hash_cite_confusion, macro_warn_print, print_a_pool_str, print_confusion,
             print_recursion_illegal, rs_bib_err_print, rs_bib_id_print,
-            rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print,
-            skip_illegal_stuff_after_token_print, skip_token_print,
+            rs_braces_unbalanced_complaint, rs_bst_err_print_and_look_for_blank_line,
+            rs_eat_bib_print, skip_illegal_stuff_after_token_print, skip_token_print,
             skip_token_unknown_function_print, write_log_file, write_logs,
         },
         other::with_other_mut,
@@ -612,7 +613,7 @@ fn scan_balanced_braces(
     Ok(true)
 }
 
-fn rs_scan_a_field_token_and_eat_white(
+fn scan_a_field_token_and_eat_white(
     buffers: &mut GlobalBuffer,
     store_field: bool,
     at_bib_command: bool,
@@ -770,31 +771,6 @@ fn rs_scan_a_field_token_and_eat_white(
     Ok(true)
 }
 
-#[no_mangle]
-pub extern "C" fn scan_a_field_token_and_eat_white(
-    store_field: bool,
-    at_bib_command: bool,
-    command_num: i32,
-    cur_macro_loc: HashPointer,
-    right_outer_delim: ASCIICode,
-) -> CResultBool {
-    let res = with_buffers_mut(|buffers| {
-        rs_scan_a_field_token_and_eat_white(
-            buffers,
-            store_field,
-            at_bib_command,
-            command_num,
-            cur_macro_loc,
-            right_outer_delim,
-        )
-    });
-    match res {
-        Ok(val) => CResultBool::Ok(val),
-        Err(BibtexError::Fatal) => CResultBool::Error,
-        Err(BibtexError::Recover) => CResultBool::Recover,
-    }
-}
-
 fn rs_scan_and_store_the_field_value_and_eat_white(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
@@ -808,7 +784,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
 ) -> Result<bool, BibtexError> {
     // Consume tokens/strings separated by #
     buffers.set_offset(BufTy::Ex, 1, 0);
-    if !rs_scan_a_field_token_and_eat_white(
+    if !scan_a_field_token_and_eat_white(
         buffers,
         store_field,
         at_bib_command,
@@ -823,7 +799,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
         if !rs_eat_bib_white_space(buffers) {
             return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
         }
-        if !rs_scan_a_field_token_and_eat_white(
+        if !scan_a_field_token_and_eat_white(
             buffers,
             store_field,
             at_bib_command,
@@ -864,7 +840,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
         if at_bib_command {
             with_hash_mut(|hash| {
                 match command_num {
-                    1 => add_preamble(hash.text(res.loc)),
+                    1 => with_bibs_mut(|bibs| bibs.add_preamble(hash.text(res.loc))),
                     2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i32),
                     _ => {
                         // TODO: Replace command_num with an enum
@@ -994,4 +970,125 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
         Err(BibtexError::Fatal) => CResultBool::Error,
         Err(BibtexError::Recover) => CResultBool::Recover,
     }
+}
+
+fn rs_decr_brace_level(
+    ctx: &ExecCtx,
+    pop_lit_var: StrNumber,
+    brace_level: &mut i32,
+) -> Result<(), BibtexError> {
+    if *brace_level == 0 {
+        rs_braces_unbalanced_complaint(ctx, pop_lit_var)?;
+    } else {
+        *brace_level -= 1;
+    }
+
+    Ok(())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn decr_brace_level(
+    ctx: *const ExecCtx,
+    pop_lit_var: StrNumber,
+    brace_level: *mut i32,
+) -> CResult {
+    match rs_decr_brace_level(&*ctx, pop_lit_var, &mut *brace_level) {
+        Ok(()) => CResult::Ok,
+        Err(_) => CResult::Error,
+    }
+}
+
+fn rs_check_brace_level(
+    ctx: &ExecCtx,
+    pop_lit_var: StrNumber,
+    brace_level: i32,
+) -> Result<(), BibtexError> {
+    if brace_level > 0 {
+        rs_braces_unbalanced_complaint(ctx, pop_lit_var)?;
+    }
+    Ok(())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn check_brace_level(
+    ctx: *const ExecCtx,
+    pop_lit_var: StrNumber,
+    brace_level: i32,
+) -> CResult {
+    match rs_check_brace_level(&*ctx, pop_lit_var, brace_level) {
+        Ok(()) => CResult::Ok,
+        Err(_) => CResult::Error,
+    }
+}
+
+fn rs_name_scan_for_and(
+    ctx: &mut ExecCtx,
+    buffers: &mut GlobalBuffer,
+    pop_lit_var: StrNumber,
+    brace_level: &mut i32,
+) -> Result<(), BibtexError> {
+    let mut preceding_white = false;
+    let mut and_found = false;
+
+    while !and_found && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
+        match buffers.at_offset(BufTy::Ex, 1) {
+            b'A' | b'a' => {
+                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                if preceding_white
+                    && buffers.offset(BufTy::Ex, 1) <= buffers.init(BufTy::Ex).saturating_sub(3)
+                    && buffers.at_offset(BufTy::Ex, 1).to_ascii_lowercase() == b'n'
+                    && buffers
+                        .at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 1)
+                        .to_ascii_lowercase()
+                        == b'd'
+                    && LexClass::of(buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 2))
+                        == LexClass::Whitespace
+                {
+                    buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 2);
+                    and_found = true;
+                }
+                preceding_white = false;
+            }
+            b'{' => {
+                *brace_level += 1;
+                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                while *brace_level > 0 && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
+                    match buffers.at_offset(BufTy::Ex, 1) {
+                        b'{' => *brace_level += 1,
+                        b'}' => *brace_level -= 1,
+                        _ => (),
+                    }
+                    buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                }
+                preceding_white = false;
+            }
+            b'}' => {
+                rs_decr_brace_level(ctx, pop_lit_var, brace_level)?;
+                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                preceding_white = false;
+            }
+            _ => {
+                preceding_white =
+                    LexClass::of(buffers.at_offset(BufTy::Ex, 1)) == LexClass::Whitespace;
+                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+            }
+        }
+    }
+
+    rs_check_brace_level(ctx, pop_lit_var, *brace_level)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn name_scan_for_and(
+    ctx: *mut ExecCtx,
+    pop_lit_var: StrNumber,
+    brace_level: *mut i32,
+) -> CResult {
+    with_buffers_mut(|buffers| {
+        match rs_name_scan_for_and(&mut *ctx, buffers, pop_lit_var, &mut *brace_level) {
+            Ok(()) => CResult::Ok,
+            Err(BibtexError::Fatal) => CResult::Error,
+            Err(BibtexError::Recover) => CResult::Recover,
+        }
+    })
 }

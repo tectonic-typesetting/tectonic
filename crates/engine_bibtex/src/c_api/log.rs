@@ -602,7 +602,7 @@ pub extern "C" fn print_missing_entry(s: StrNumber) -> bool {
     true
 }
 
-pub(crate) unsafe fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
+pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
         let res = with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr())));
@@ -611,7 +611,7 @@ pub(crate) unsafe fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
         }
     }
     write_logs("\nwhile executing");
-    bst_warn_print(ctx.glbl_ctx)
+    unsafe { bst_warn_print(ctx.glbl_ctx) }
 }
 
 #[no_mangle]
@@ -635,17 +635,30 @@ pub unsafe extern "C" fn bst_2print_string_size_exceeded(ctx: *const ExecCtx) ->
     true
 }
 
+pub fn rs_braces_unbalanced_complaint(
+    ctx: &ExecCtx,
+    pop_lit_var: StrNumber,
+) -> Result<(), BibtexError> {
+    write_logs("Warning--\"");
+    if !print_a_pool_str(pop_lit_var) {
+        return Err(BibtexError::Fatal);
+    }
+    write_logs("\" isn't a brace-balanced string");
+    if !bst_mild_ex_warn_print(ctx) {
+        return Err(BibtexError::Fatal);
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn braces_unbalanced_complaint(
     ctx: *const ExecCtx,
     pop_lit_var: StrNumber,
 ) -> bool {
-    write_logs("Warning--\"");
-    if !print_a_pool_str(pop_lit_var) {
-        return false;
+    match rs_braces_unbalanced_complaint(&*ctx, pop_lit_var) {
+        Ok(()) => true,
+        Err(_) => false,
     }
-    write_logs("\" isn't a brace-balanced string");
-    bst_mild_ex_warn_print(&*ctx)
 }
 
 #[no_mangle]

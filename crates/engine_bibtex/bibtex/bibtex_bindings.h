@@ -292,8 +292,6 @@ void set_bib_ptr(BibNumber num);
 
 void check_bib_files(BibNumber ptr);
 
-void add_preamble(StrNumber num);
-
 StrNumber cur_preamble(void);
 
 BibNumber preamble_ptr(void);
@@ -622,12 +620,6 @@ bool eat_bst_white_space(Bibtex *ctx);
 
 CResult scan_fn_def(Bibtex *ctx, HashPointer fn_hash_loc, HashPointer wiz_loc);
 
-CResultBool scan_a_field_token_and_eat_white(bool store_field,
-                                             bool at_bib_command,
-                                             int32_t command_num,
-                                             HashPointer cur_macro_loc,
-                                             ASCIICode right_outer_delim);
-
 CResultBool scan_and_store_the_field_value_and_eat_white(Bibtex *ctx,
                                                          bool store_field,
                                                          bool at_bib_command,
@@ -636,6 +628,12 @@ CResultBool scan_and_store_the_field_value_and_eat_white(Bibtex *ctx,
                                                          HashPointer cur_macro_loc,
                                                          ASCIICode right_outer_delim,
                                                          HashPointer field_name_loc);
+
+CResult decr_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
+
+CResult check_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t brace_level);
+
+CResult name_scan_for_and(ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
 
 #ifdef __cplusplus
 } // extern "C"
