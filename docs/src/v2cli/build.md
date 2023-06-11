@@ -18,6 +18,7 @@ tectonic -X build
   [--print]
   [--open]
   [--untrusted]
+  [--target NAME]
 ```
 
 #### Remarks
@@ -31,6 +32,10 @@ directory.
 [tectonic-toml]: ../ref/tectonic-toml.md
 
 #### Command-Line Options
+
+The `--target` option will only build the
+[output](../ref/tectonic-toml.md#output) with the specified name. If this option
+is not given, all outputs will be built.
 
 The `--keep-intermediates` option (or `-k` for short) will cause the engine to
 save intermediate files (such as `mydoc.aux` or `mydoc.bbl`) in the build output
