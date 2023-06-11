@@ -44,9 +44,9 @@ one of its parents.
 [tectonic-toml]: ../ref/tectonic-toml.md
 
 The “partial build” consists of one pass of the TeX engine. Future versions of
-this tool might gain options allowing you specify different passes. This command
-can be used to dump any file created by TeX during the build (so long as it's
-created on the first pass).
+this tool might gain options allowing you to specify different passes. This
+command can be used to dump any file created by TeX during the build (so long
+as it's created on the first pass).
 
 #### Command-Line Options
 
