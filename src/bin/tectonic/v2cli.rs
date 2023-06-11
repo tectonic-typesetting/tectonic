@@ -238,6 +238,10 @@ pub struct BuildCommand {
     /// Open built document using system handler
     #[structopt(long)]
     open: bool,
+
+    /// Specify a target to be used by the build
+    #[structopt(long, help = "Specify the target of the build.")]
+    target: Option<String>,
 }
 
 impl BuildCommand {
@@ -262,6 +266,12 @@ impl BuildCommand {
         setup_options.only_cached(self.only_cached);
 
         for output_name in doc.output_names() {
+            if let Some(out) = self.target.as_ref() {
+                if out != output_name {
+                    continue;
+                }
+            }
+
             let mut builder = doc.setup_session(output_name, &setup_options, status)?;
 
             builder
