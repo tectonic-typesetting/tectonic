@@ -86,19 +86,17 @@ impl<'a> Scan<'a> {
         idx < last
     }
 
-    fn scan_till_nonempty(&self, last: BufPointer) -> bool {
-        with_buffers_mut(|buffers| {
-            let start = buffers.offset(BufTy::Base, 2);
-            buffers.set_offset(BufTy::Base, 1, start);
+    fn scan_till_nonempty(&self, buffers: &mut GlobalBuffer, last: BufPointer) -> bool {
+        let start = buffers.offset(BufTy::Base, 2);
+        buffers.set_offset(BufTy::Base, 1, start);
 
-            let mut idx = start;
-            while idx < last && !self.match_char(buffers.at(BufTy::Base, idx)) {
-                idx += 1;
-            }
-            buffers.set_offset(BufTy::Base, 2, idx);
+        let mut idx = start;
+        while idx < last && !self.match_char(buffers.at(BufTy::Base, idx)) {
+            idx += 1;
+        }
+        buffers.set_offset(BufTy::Base, 2, idx);
 
-            idx - start != 0
-        })
+        idx - start != 0
     }
 }
 
@@ -134,10 +132,12 @@ pub extern "C" fn scan2_white(char1: ASCIICode, char2: ASCIICode) -> bool {
 
 #[no_mangle]
 pub extern "C" fn scan_alpha() -> bool {
-    let last = with_buffers(|buffers| buffers.init(BufTy::Base));
-    Scan::new()
-        .not_class(LexClass::Alpha)
-        .scan_till_nonempty(last)
+    with_buffers_mut(|buffers| {
+        let last = buffers.init(BufTy::Base);
+        Scan::new()
+            .not_class(LexClass::Alpha)
+            .scan_till_nonempty(buffers, last)
+    })
 }
 
 fn rs_scan_identifier(
@@ -630,7 +630,7 @@ fn scan_a_field_token_and_eat_white(
             let last = buffers.init(BufTy::Base);
             if !Scan::new()
                 .not_class(LexClass::Numeric)
-                .scan_till_nonempty(last)
+                .scan_till_nonempty(buffers, last)
             {
                 write_logs("A digit disappeared");
                 print_confusion();
