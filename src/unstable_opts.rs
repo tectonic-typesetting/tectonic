@@ -41,7 +41,7 @@ const HELPMSG: &str = r#"Available unstable options:
 pub enum UnstableArg {
     ContinueOnErrors,
     Help,
-    MinCrossrefs(i32),
+    MinCrossrefs(u32),
     PaperSize(String),
     SearchPath(PathBuf),
     ShellEscapeEnabled,
@@ -115,7 +115,7 @@ pub struct UnstableOptions {
     pub continue_on_errors: bool,
     pub paper_size: Option<String>,
     pub shell_escape: bool,
-    pub min_crossrefs: Option<i32>,
+    pub min_crossrefs: Option<u32>,
     pub extra_search_paths: Vec<PathBuf>,
     pub shell_escape_cwd: Option<String>,
 
