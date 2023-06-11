@@ -189,7 +189,7 @@ pub fn compress_bib_white(
 
     buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b' ');
     buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
-    let last = buffers.init(BufTy::Base);
+    let mut last = buffers.init(BufTy::Base);
     while !Scan::new()
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, last)
@@ -204,9 +204,8 @@ pub fn compress_bib_white(
         with_bibs_mut(|bibs| {
             bibs.set_line_num(bibs.line_num() + 1);
         });
-        with_buffers_mut(|buffers| {
-            buffers.set_offset(BufTy::Base, 2, 0);
-        });
+        buffers.set_offset(BufTy::Base, 2, 0);
+        last = buffers.init(BufTy::Base);
     }
 
     return Ok(true);

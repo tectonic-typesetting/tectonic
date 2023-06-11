@@ -810,7 +810,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
             && buffers.offset(BufTy::Ex, 1) > 0
             && buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b' '
         {
-            buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1));
+            buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
         }
 
         let ex_buf_xptr = if !at_bib_command
