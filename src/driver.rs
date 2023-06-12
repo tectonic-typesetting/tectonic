@@ -26,7 +26,7 @@ use std::{
     rc::Rc,
     result::Result as StdResult,
     str::FromStr,
-    time::SystemTime,
+    time::{Duration, SystemTime},
 };
 use tectonic_bridge_core::{CoreBridgeLauncher, DriverHooks, SecuritySettings, SystemRequestError};
 use tectonic_bundles::Bundle;
@@ -985,6 +985,28 @@ impl ProcessingSessionBuilder {
         self
     }
 
+    /// Configures the date and time of the processing session from the environment:
+    /// If `SOURCE_DATE_EPOCH` is set, it's used as the build date.
+    /// If `force_deterministic` is set, we fall back to UNIX_EPOCH.
+    /// Otherwise, we use the current system time.
+    pub fn build_date_from_env(&mut self, force_deterministic: bool) -> &mut Self {
+        let build_date_str = std::env::var("SOURCE_DATE_EPOCH").ok();
+        let build_date = match (force_deterministic, build_date_str) {
+            (_, Some(s)) => {
+                let epoch = s
+                    .parse::<u64>()
+                    .expect("invalid SOURCE_DATE_EPOCH (not a number)");
+
+                SystemTime::UNIX_EPOCH
+                    .checked_add(Duration::from_secs(epoch))
+                    .expect("time overflow")
+            }
+            (true, None) => SystemTime::UNIX_EPOCH,
+            (false, None) => SystemTime::now(),
+        };
+        self.build_date(build_date)
+    }
+
     /// Loads unstable options into the processing session
     pub fn unstables(&mut self, opts: UnstableOptions) -> &mut Self {
         self.unstables = opts;
@@ -1829,6 +1851,18 @@ impl ProcessingSession {
 
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
+
+            // In deterministic mode, we stub a few aspects of the environment.
+            // They default to a "realistic" view, but we override them with static values:
+            if self.unstables.deterministic_mode {
+                launcher.with_expose_absolute_paths(false);
+                launcher.with_mtime_override(Some(
+                    self.build_date
+                        .duration_since(SystemTime::UNIX_EPOCH)
+                        .map(|x| x.as_secs() as i64)
+                        .expect("invalid build date in deterministic mode"),
+                ));
+            }
 
             TexEngine::default()
                 .halt_on_error_mode(!self.unstables.continue_on_errors)

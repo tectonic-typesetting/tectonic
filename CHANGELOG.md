@@ -1,4 +1,48 @@
-# rc: micro bump
+# rc: minor bump
+
+This release features a significant, but hopefully invisible, change: Tectonic’s
+BibTeX engine has been partially translated from C to Rust ([#1032], [#1037],
+[#1039], [@CraftSpider]). The intention is that the engine’s behavior should be
+completely unchanged, and there are not plans to make any significant
+alterations in the near future, but this effort demonstrates how Tectonic’s
+legacy C/C++ code can be migrated to cleaner, safer, more maintainable Rust over
+time.
+
+There are also a few new features:
+
+- Add a new `--target` option to `tectonic -X build` allowing you to
+  specify which output to build ([#1043], [@xinslu]).
+- Add a new unstable option, `-Z deterministic-mode`, that turns on some
+  features that help create fully deterministic outputs ([#1036], [@Mrmaxmeier]).
+  These settings aren’t desirable for day-to-day use, but they help create
+  byte-for-byte reproducible outputs for automated testing. This option
+  is part of further work by [@Mrmaxmeier] to bring the valuable
+  [tectonic-on-arXiv] testing service back into regular operation.
+
+As well as some developer improvements and bugfixes:
+
+- Fix some corner-case bugs in the HTML output ([#1052], [@pkgw]).
+- Update the vendored version of Harfbuzz to the latest upstream release,
+  version 7.3.0 ([#1042], [@pkgw]).
+
+Thanks to our new contributor [@xinslu] and everyone else contributing to this
+release!
+
+[#1032]: https://github.com/tectonic-typesetting/tectonic/pull/1032
+[#1036]: https://github.com/tectonic-typesetting/tectonic/pull/1036
+[#1037]: https://github.com/tectonic-typesetting/tectonic/pull/1037
+[#1039]: https://github.com/tectonic-typesetting/tectonic/pull/1039
+[#1042]: https://github.com/tectonic-typesetting/tectonic/pull/1042
+[#1043]: https://github.com/tectonic-typesetting/tectonic/pull/1043
+[#1052]: https://github.com/tectonic-typesetting/tectonic/pull/1052
+[@CraftSpider]: https://github.com/CraftSpider
+[@Mrmaxmeier]: https://github.com/Mrmaxmeier
+[@pkgw]: https://github.com/pkgw
+[@xinslu]: https://github.com/xinslu
+[tectonic-on-arXiv]: https://github.com/Mrmaxmeier/tectonic-on-arXiv
+
+
+# tectonic 0.13.1 (2023-05-22)
 
 - Fix a bug introduced in the previous release where custom commands in the
   `tectonic -X watch` mode broke (reported by [@LudvigHz] in [#1040], fixed by

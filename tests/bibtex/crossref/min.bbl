@@ -1,0 +1,26 @@
+\begin{thebibliography}{1}
+
+\bibitem{Proceedings02}
+{\em The Worst Proceedings Ever}, 1998.
+
+\bibitem{InProc01}
+Proceedings Author.
+\newblock The best subsection.
+\newblock 1998.
+
+\bibitem{InProc03}
+Proceedings Author.
+\newblock The second-worst subsection.
+\newblock  \cite{Proceedings02}.
+
+\bibitem{InProc04}
+Proceedings Author.
+\newblock The third-worst subsection.
+\newblock  \cite{Proceedings02}.
+
+\bibitem{InProc02}
+Proceedings Author.
+\newblock The worst subsection.
+\newblock  \cite{Proceedings02}.
+
+\end{thebibliography}

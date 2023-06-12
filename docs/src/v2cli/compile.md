@@ -134,3 +134,4 @@ the set of unstable options is subject to change at any time.
 | `-Z search-path=<path>`  | Also look in `<path>` for files (unless `--untrusted` has been specified), like TEXINPUTS. Can be specified multiple times. |
 | `-Z shell-escape`        | Enable `\write18` (unless `--untrusted` has been specified) |
 | `-Z shell-escape-cwd=<path>` | Working directory to use for \write18. Use $(pwd) for same behaviour as most other engines (e.g. for relative paths in \inputminted). Implies -Z shell-escape |
+| `-Z deterministic-mode`  | Force a deterministic build environment. Note that setting `SOURCE_DATE_EPOCH` is usually sufficient for reproducible builds, and this option makes some extra functionality trade-offs. Specifically, deterministic mode breaks SyncTeX's auxiliary files as they include and rely on absolute file paths |

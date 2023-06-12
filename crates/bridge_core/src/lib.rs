@@ -219,6 +219,7 @@ pub struct CoreBridgeLauncher<'a> {
     hooks: &'a mut dyn DriverHooks,
     status: &'a mut dyn StatusBackend,
     security: SecuritySettings,
+    filesystem_emulation_settings: FsEmulationSettings,
 }
 
 impl<'a> CoreBridgeLauncher<'a> {
@@ -242,8 +243,25 @@ impl<'a> CoreBridgeLauncher<'a> {
             hooks,
             status,
             security,
+            filesystem_emulation_settings: FsEmulationSettings::default(),
         }
     }
+
+    /// While absolute paths are useful (for SyncTeX and external tools that
+    /// resolve paths to TeX sources), we can disable them for reproducibility.
+    pub fn with_expose_absolute_paths(&mut self, expose_absolute_paths: bool) -> &mut Self {
+        self.filesystem_emulation_settings.expose_absolute_paths = expose_absolute_paths;
+        self
+    }
+
+    /// Ditto for file modification timestamps. In deterministic mode, we return
+    /// the configured build time (i.e. `SOURCE_DATE_EPOCH`) instead of the
+    /// modification timestamp reported by the IO subsystem.
+    pub fn with_mtime_override(&mut self, mtime_override: Option<i64>) -> &mut Self {
+        self.filesystem_emulation_settings.mtime_override = mtime_override;
+        self
+    }
+
     /// Invoke a function to launch a bridged FFI engine with a global mutex
     /// held.
     ///
@@ -262,7 +280,12 @@ impl<'a> CoreBridgeLauncher<'a> {
         F: FnOnce(&mut CoreBridgeState<'_>) -> Result<T>,
     {
         let _guard = ENGINE_LOCK.lock().unwrap();
-        let mut state = CoreBridgeState::new(self.security.clone(), self.hooks, self.status);
+        let mut state = CoreBridgeState::new(
+            self.security.clone(),
+            self.hooks,
+            self.status,
+            self.filesystem_emulation_settings.clone(),
+        );
         let result = callback(&mut state);
 
         if let Err(ref e) = result {
@@ -284,6 +307,9 @@ impl<'a> CoreBridgeLauncher<'a> {
 pub struct CoreBridgeState<'a> {
     /// The security settings for this invocation
     security: SecuritySettings,
+
+    /// The filesystem emulation settings for this invocation.
+    fs_emulation_settings: FsEmulationSettings,
 
     /// The driver hooks associated with this engine invocation.
     hooks: &'a mut dyn DriverHooks,
@@ -312,6 +338,7 @@ impl<'a> CoreBridgeState<'a> {
         security: SecuritySettings,
         hooks: &'a mut dyn DriverHooks,
         status: &'a mut dyn StatusBackend,
+        fs_emulation_settings: FsEmulationSettings,
     ) -> CoreBridgeState<'a> {
         CoreBridgeState {
             security,
@@ -320,6 +347,7 @@ impl<'a> CoreBridgeState<'a> {
             output_handles: Vec::new(),
             input_handles: Vec::new(),
             latest_input_path: None,
+            fs_emulation_settings,
         }
     }
 
@@ -592,6 +620,9 @@ impl<'a> CoreBridgeState<'a> {
     }
 
     fn input_get_mtime(&mut self, handle: *mut InputHandle) -> i64 {
+        if let Some(mtime) = self.fs_emulation_settings.mtime_override {
+            return mtime;
+        }
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
 
         let maybe_time = match rhandle.get_unix_mtime() {
@@ -770,6 +801,32 @@ impl SecuritySettings {
 impl Default for SecuritySettings {
     fn default() -> Self {
         SecuritySettings::new(SecurityStance::default())
+    }
+}
+
+/// A type that stores configuration knobs related to filesystem emulation.
+/// These options are not security-critical, but are relevant for
+/// reproducible document builds. We default to an "accurate" view of the
+/// underlying IO subsystem and have options that stub the respective IO
+/// functions with fake / stable values.
+#[derive(Clone, Debug)]
+struct FsEmulationSettings {
+    /// While absolute paths are useful (for SyncTeX and external tools that
+    /// resolve paths to TeX sources), we can disable them for reproducibility.
+    expose_absolute_paths: bool,
+
+    /// Ditto for file modification timestamps. In deterministic mode, we return
+    /// the configured build time (i.e. `SOURCE_DATE_EPOCH`) instead of the
+    /// modification timestamp reported by the IO subsystem.
+    mtime_override: Option<i64>,
+}
+
+impl Default for FsEmulationSettings {
+    fn default() -> Self {
+        Self {
+            expose_absolute_paths: true,
+            mtime_override: None,
+        }
     }
 }
 
@@ -968,6 +1025,9 @@ pub unsafe extern "C" fn ttbc_get_last_input_abspath(
     buffer: *mut u8,
     len: libc::size_t,
 ) -> libc::ssize_t {
+    if !es.fs_emulation_settings.expose_absolute_paths {
+        return 0;
+    }
     match es.latest_input_path {
         None => 0,
 

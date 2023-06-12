@@ -122,7 +122,7 @@ tempfile = "^3.1"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "ea222747b888b8d63df56240b262db38b095c68f"
+rev = "63366443439398a62afc9a63b34b9a3ba63b1cae"
 overlay-triplets-path = "dist/vcpkg-triplets"
 
 # If other targets start using custom triplets like x86_64-pc-windows-msvc,
@@ -135,7 +135,7 @@ x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,gr
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
 
 [package.metadata.internal_dep_versions]
-tectonic_bridge_core = "526ff57d5dd9f80dff35a3a5dd856edc9f0f61aa"
+tectonic_bridge_core = "thiscommit:2023-06-11:PvhF7YB"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"

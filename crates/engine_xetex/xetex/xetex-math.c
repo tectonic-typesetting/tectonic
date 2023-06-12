@@ -3373,7 +3373,7 @@ var_delimiter(int32_t d, int32_t s, scaled_t v)
     int32_t b;
     void *ot_assembly_ptr;
     internal_font_number f, g;
-    uint16_t c, x, y;
+    uint16_t c = 0, x, y;
     int32_t m, n;
     scaled_t u;
     scaled_t w;
