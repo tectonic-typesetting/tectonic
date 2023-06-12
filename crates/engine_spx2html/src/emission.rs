@@ -424,6 +424,8 @@ impl EmittingState {
         match special {
             Special::AutoStartParagraph => {
                 if self.cur_elstate().do_auto_tags {
+                    self.close_automatics();
+
                     // Why are we using <div>s instead of <p>? As the HTML spec
                     // emphasizes, <p> tags are structural, not semantic. You cannot
                     // put tags like <ul> or <div> inside <p> -- they automatically
@@ -452,6 +454,7 @@ impl EmittingState {
                 if let Some(canvas) = self.current_canvas.as_mut() {
                     canvas.depth += 1;
                 } else {
+                    self.close_automatics();
                     self.current_canvas = Some(CanvasState::new(kind, x, y));
                 }
                 Ok(())
@@ -474,6 +477,7 @@ impl EmittingState {
             }
 
             Special::ManualFlexibleStart(spec) => {
+                self.close_automatics();
                 self.handle_flexible_start_tag(x, y, spec, common)
             }
 
@@ -1168,6 +1172,12 @@ impl EmittingState {
 
         let element = self.create_elem(element, true, common);
 
+        // Negative padding values are illegal.
+        let pad_left = match -x_min_tex as f32 * self.rems_per_tex {
+            pl if pl <= 0.0 => 0.0,
+            pl => pl,
+        };
+
         write!(
             self.content,
             "<{} class=\"canvas {}\" style=\"width: {}rem; height: {}rem; padding-left: {}rem{}\">",
@@ -1175,7 +1185,7 @@ impl EmittingState {
             layout_class,
             (x_max_tex - x_min_tex) as f32 * self.rems_per_tex,
             (y_max_tex - y_min_tex) as f32 * self.rems_per_tex,
-            -x_min_tex as f32 * self.rems_per_tex,
+            pad_left,
             valign,
         )
         .unwrap();

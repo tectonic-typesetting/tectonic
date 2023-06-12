@@ -1,3 +1,8 @@
+# tectonic_engine_xetex 0.4.3 (2023-06-12)
+
+- Address a C compiler warning (#1050, @pkgw).
+
+
 # tectonic_engine_xetex 0.4.2 (2023-05-18)
 
 - Remove the automatic insertion of paragraph tags in HTML mode (#1016, @pkgw).

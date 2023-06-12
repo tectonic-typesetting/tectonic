@@ -1,3 +1,9 @@
+# tectonic_engine_spx2html 0.3.1 (2023-06-12)
+
+- Avoid emitting negative padding values, which are illegal (#1052, @pkgw)
+- Close automatic tags when starting certain automatic tags (#1052, @pkgw)
+
+
 # tectonic_engine_spx2html 0.3.0 (2023-05-18)
 
 - A massive rework to support more sophisticated HTML output for the

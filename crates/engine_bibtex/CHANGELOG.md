@@ -1,3 +1,28 @@
+# tectonic_engine_bibtex 0.2.0 (2023-06-12)
+
+This is a big release! This version of the BibTeX engine doesn’t change its
+behavior or APIs, but major chunks of its internals have been translated into
+Rust by [@CraftSpider] in [#1032], with a bunch of new tests introduced in
+[#1037] and [#1039]. This translation replaces about 2,200 lines of C code with
+clean, well-organized, (mostly) safe Rust. While there aren’t any major changes
+planned for the behavior of the BibTeX engine, this work demonstrates how the
+legacy C/C++ code in Tectonic can gradually be replaced with safer, more modern,
+more maintainable code.
+
+[@CraftSpider]: https://github.com/CraftSpider
+[#1032]: https://github.com/tectonic-typesetting/tectonic/pull/1032
+[#1037]: https://github.com/tectonic-typesetting/tectonic/pull/1037
+[#1039]: https://github.com/tectonic-typesetting/tectonic/pull/1039
+
+This effort benefited significantly from work by [@Mrmaxmeier] to revitalize the
+[tectonic-on-arXiv] service, which runs Tectonic pull requests on a large corpus
+of [arxiv.org] preprints and reports any changes in the outputs.
+
+[@Mrmaxmeier]: https://github.com/Mrmaxmeier
+[tectonic-on-arXiv]: https://github.com/mrmaxmeier/tectonic-on-arXiv
+[arxiv.org]: https://arxiv.org/
+
+
 # tectonic_engine_bibtex 0.1.5 (2023-05-18)
 
 - Treat `\r\n` sequences as a single unit (#1037, @CraftSpider). This leads to

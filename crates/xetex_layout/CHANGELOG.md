@@ -1,3 +1,8 @@
+# tectonic_xetex_layout 0.2.3 (2023-06-12)
+
+- Fix a potential crash on invalid font files (#1035, @Mrmaxmeier).
+
+
 # tectonic_xetex_layout 0.2.2 (2023-05-18)
 
 - Tidy up recent Clippy warnings.

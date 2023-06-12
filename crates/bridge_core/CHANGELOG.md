@@ -1,3 +1,10 @@
+# tectonic_bridge_core 0.4.0 (2023-06-12)
+
+- Add new APIs, `CoreBridgeLauncher::with_expose_absolute_paths` and
+  `CoreBridgeLauncher::with_mtime_override` (#1036, @Mrmaxmeier). These help
+  enable the new `-Z deterministic-mode` mode.
+
+
 # tectonic_bridge_core 0.3.2 (2023-05-18)
 
 - Bump the `md-5` dep to the 0.10 series (#1038, @CraftSpider)

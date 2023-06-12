@@ -18,6 +18,7 @@ tectonic -X build
   [--print]
   [--open]
   [--untrusted]
+  [--target NAME]
 ```
 
 #### Remarks
@@ -31,6 +32,10 @@ directory.
 [tectonic-toml]: ../ref/tectonic-toml.md
 
 #### Command-Line Options
+
+The `--target` option will only build the
+[output](../ref/tectonic-toml.md#output) with the specified name. If this option
+is not given, all outputs will be built.
 
 The `--keep-intermediates` option (or `-k` for short) will cause the engine to
 save intermediate files (such as `mydoc.aux` or `mydoc.bbl`) in the build output
@@ -50,7 +55,7 @@ cause it to look for that file in the online support bundle.
 The `--print` option (or `-p` for short) will cause the engine to print the
 regular terminal output of the TeX engine. This output is similar to, but not
 identical to, the contents of the log file. By default, this output is only
-printed if the engine encounteres a fatal error.
+printed if the engine encounters a fatal error.
 
 The `--open` option will open the built document using the system handler.
 

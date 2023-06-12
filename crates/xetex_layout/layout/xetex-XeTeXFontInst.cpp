@@ -333,7 +333,7 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 
     error = FT_New_Memory_Face(gFreeTypeLibrary, m_backingData, sz, index, &m_ftFace);
 
-    if (!FT_IS_SCALABLE(m_ftFace)) {
+    if (error || !FT_IS_SCALABLE(m_ftFace)) {
         status = 1;
         return;
     }
