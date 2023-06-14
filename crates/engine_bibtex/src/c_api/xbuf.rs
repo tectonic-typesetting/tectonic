@@ -25,6 +25,8 @@ unsafe impl SafelyZero for i64 {}
 unsafe impl<T> SafelyZero for *mut T {}
 // SAFETY: Option<NonNull<T>> has the same layout as *mut T
 unsafe impl<T> SafelyZero for Option<NonNull<T>> {}
+// SAFETY: Option<&mut T> has the same layout as *mut T
+unsafe impl<T> SafelyZero for Option<&mut T> {}
 
 pub fn xcalloc_zeroed<T: SafelyZero>(len: usize) -> Option<&'static mut [T]> {
     if len == 0 || mem::size_of::<T>() == 0 {
@@ -66,9 +68,9 @@ pub fn xrealloc_zeroed<T: SafelyZero>(
 }
 
 #[derive(Debug)]
-pub(crate) struct XBuf<T: Copy + 'static>(&'static mut [T]);
+pub(crate) struct XBuf<T: SafelyZero + 'static>(&'static mut [T]);
 
-impl<T: SafelyZero + Copy + 'static> XBuf<T> {
+impl<T: SafelyZero + 'static> XBuf<T> {
     pub fn new(init_len: usize) -> XBuf<T> {
         XBuf(xcalloc_zeroed(init_len + 1).unwrap())
     }
@@ -80,7 +82,7 @@ impl<T: SafelyZero + Copy + 'static> XBuf<T> {
     }
 }
 
-impl<T: Copy + 'static> Deref for XBuf<T> {
+impl<T: SafelyZero + 'static> Deref for XBuf<T> {
     type Target = [T];
 
     fn deref(&self) -> &Self::Target {
@@ -88,13 +90,13 @@ impl<T: Copy + 'static> Deref for XBuf<T> {
     }
 }
 
-impl<T: Copy + 'static> DerefMut for XBuf<T> {
+impl<T: SafelyZero + 'static> DerefMut for XBuf<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.0
     }
 }
 
-impl<T: Copy + 'static> Drop for XBuf<T> {
+impl<T: SafelyZero + 'static> Drop for XBuf<T> {
     fn drop(&mut self) {
         // SAFETY: Inner pointer is guaranteed valid and not previously freed
         unsafe { libc::free((self.0 as *mut [_]).cast()) };

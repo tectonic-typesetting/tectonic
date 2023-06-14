@@ -188,6 +188,7 @@ pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
 
 pub fn bst_ln_num_print(glbl_ctx: &Bibtex) -> bool {
     write_logs(&format!("--line {} of file ", glbl_ctx.bst_line_num));
+    // SAFETY: Reference -> pointer makes a valid pointer
     unsafe { print_bst_name(glbl_ctx) }
 }
 

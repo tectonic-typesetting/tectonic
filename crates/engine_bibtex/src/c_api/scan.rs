@@ -1,7 +1,7 @@
 use crate::{
     c_api::{
         bibs::{compress_bib_white, rs_eat_bib_white_space, with_bibs_mut},
-        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::{IdClass, LexClass},
         cite::{rs_add_database_cite, with_cites_mut},
         exec::ExecCtx,
@@ -35,6 +35,7 @@ pub enum ScanRes {
     WhitespaceAdjacent = 3,
 }
 
+#[derive(Default)]
 pub struct Scan<'a> {
     chars: &'a [ASCIICode],
     not_class: Option<LexClass>,
@@ -216,7 +217,9 @@ fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool 
             return true;
         }
 
-        if !rs_input_ln(unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) }, buffers) {
+        // SAFETY: bst_file guarantee valid if non-null
+        let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
+        if !rs_input_ln(bst_file, buffers) {
             return false;
         }
 
@@ -444,10 +447,9 @@ fn scan_balanced_braces(
 
     if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
+            && !compress_bib_white(buffers, at_bib_command)?
     {
-        if !compress_bib_white(buffers, at_bib_command)? {
-            return Ok(false);
-        }
+        return Ok(false);
     }
 
     if buffers.offset(BufTy::Ex, 1) > 1
@@ -476,10 +478,9 @@ fn scan_balanced_braces(
 
                     if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
+                            && !compress_bib_white(buffers, at_bib_command)?
                     {
-                        if !compress_bib_white(buffers, at_bib_command)? {
-                            return Ok(false);
-                        }
+                        return Ok(false);
                     }
 
                     loop {
@@ -516,10 +517,9 @@ fn scan_balanced_braces(
 
                         if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                             || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
+                                && !compress_bib_white(buffers, at_bib_command)?
                         {
-                            if !compress_bib_white(buffers, at_bib_command)? {
-                                return Ok(false);
-                            }
+                            return Ok(false);
                         }
 
                         if brace_level == 0 {
@@ -546,10 +546,9 @@ fn scan_balanced_braces(
 
                     if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
+                            && !compress_bib_white(buffers, at_bib_command)?
                     {
-                        if !compress_bib_white(buffers, at_bib_command)? {
-                            return Ok(false);
-                        }
+                        return Ok(false);
                     }
                 }
             }
@@ -577,10 +576,9 @@ fn scan_balanced_braces(
                         if c == b'{'
                             || c == b'}'
                             || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init)
+                                && !rs_eat_bib_white_space(buffers)
                         {
-                            if !rs_eat_bib_white_space(buffers) {
-                                return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
-                            }
+                            return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
                         }
                     }
                 }
@@ -593,10 +591,9 @@ fn scan_balanced_braces(
                     if !Scan::new()
                         .chars(&[right_str_delim, b'{', b'}'])
                         .scan_till(buffers, init)
+                        && !rs_eat_bib_white_space(buffers)
                     {
-                        if !rs_eat_bib_white_space(buffers) {
-                            return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
-                        }
+                        return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
                     }
                 }
             }
@@ -718,7 +715,8 @@ fn scan_a_field_token_and_eat_white(
                                 buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b' ');
                                 buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
 
-                                while str.len() != 0 && LexClass::of(str[0]) == LexClass::Whitespace
+                                while !str.is_empty()
+                                    && LexClass::of(str[0]) == LexClass::Whitespace
                                 {
                                     str = &str[1..];
                                 }
@@ -765,6 +763,8 @@ fn scan_a_field_token_and_eat_white(
     Ok(true)
 }
 
+// TODO: Refactor this to bundle up arguments into structs as relevant
+#[allow(clippy::too_many_arguments)]
 fn rs_scan_and_store_the_field_value_and_eat_white(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
@@ -1166,7 +1166,7 @@ fn rs_von_name_ends_and_last_name_starts_stuff(
         if rs_von_token_found(buffers, name_bf_ptr, *name_bf_xptr)? {
             return Ok(());
         }
-        *von_end = *von_end - 1;
+        *von_end -= 1;
     }
     Ok(())
 }

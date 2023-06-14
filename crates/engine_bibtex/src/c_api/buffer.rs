@@ -22,7 +22,7 @@ pub fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
     GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
 }
 
-struct Buffer<T: Copy + 'static, const N: usize> {
+struct Buffer<T: SafelyZero + 'static, const N: usize> {
     ptr: XBuf<T>,
     /// Stateful offsets into the buffer
     offset: [BufPointer; N],
@@ -116,6 +116,9 @@ impl GlobalBuffer {
         len: usize,
     ) {
         assert_ne!(from, to);
+        assert!(to_start + len < self.buf_len);
+        assert!(from_start + len < self.buf_len);
+        // SAFETY: Pointer guaranteed valid for up to `len`
         let to = unsafe { slice::from_raw_parts_mut(self.buffer_raw(to).add(to_start), len) };
         let from = &self.buffer(from)[from_start..from_start + len];
 

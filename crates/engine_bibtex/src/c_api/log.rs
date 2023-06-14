@@ -611,6 +611,7 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
         }
     }
     write_logs("\nwhile executing");
+    // SAFETY: glbl_ctx pointer guaranteed valid
     unsafe { bst_warn_print(ctx.glbl_ctx) }
 }
 
@@ -693,7 +694,9 @@ pub fn rs_bst_err_print_and_look_for_blank_line(
     }
     print_bad_input_line(buffers);
     while buffers.init(BufTy::Base) != 0 {
-        if !rs_input_ln(unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) }, buffers) {
+        // SAFETY: bst_file guaranteed valid
+        let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
+        if !rs_input_ln(bst_file, buffers) {
             return Err(BibtexError::Recover);
         } else {
             ctx.bst_line_num += 1;

@@ -15,7 +15,7 @@ use std::{cell::RefCell, ptr::NonNull};
 const MAX_BIB_FILES: usize = 20;
 
 pub struct BibData {
-    bib_file: XBuf<Option<NonNull<PeekableInput>>>,
+    bib_file: XBuf<Option<&'static mut PeekableInput>>,
     bib_list: XBuf<StrNumber>,
     bib_ptr: BibNumber,
     bib_line_num: i32,
@@ -43,11 +43,14 @@ impl BibData {
         self.bib_list[self.bib_ptr] = num;
     }
 
-    fn cur_bib_file(&self) -> Option<NonNull<PeekableInput>> {
-        self.bib_file[self.bib_ptr]
+    fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
+        match &mut self.bib_file[self.bib_ptr] {
+            Some(r) => Some(*r),
+            None => None,
+        }
     }
 
-    fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
+    fn set_cur_bib_file(&mut self, input: Option<&'static mut PeekableInput>) {
         self.bib_file[self.bib_ptr] = input;
     }
 
@@ -99,12 +102,12 @@ pub extern "C" fn set_cur_bib(num: StrNumber) {
 
 #[no_mangle]
 pub extern "C" fn cur_bib_file() -> Option<NonNull<PeekableInput>> {
-    with_bibs(|bibs| bibs.cur_bib_file())
+    with_bibs_mut(|bibs| bibs.cur_bib_file().map(NonNull::from))
 }
 
 #[no_mangle]
 pub extern "C" fn set_cur_bib_file(input: Option<NonNull<PeekableInput>>) {
-    with_bibs_mut(|bibs| bibs.set_cur_bib_file(input))
+    with_bibs_mut(|bibs| bibs.set_cur_bib_file(input.map(|mut ptr| unsafe { ptr.as_mut() })))
 }
 
 #[no_mangle]
@@ -157,10 +160,12 @@ pub fn rs_eat_bib_white_space(buffers: &mut GlobalBuffer) -> bool {
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
-        if !rs_input_ln(
-            unsafe { cur_bib_file().map(|mut ptr| ptr.as_mut()) },
-            buffers,
-        ) {
+        let res = with_bibs_mut(|bibs| {
+            let bib_file = bibs.cur_bib_file();
+            !rs_input_ln(bib_file, buffers)
+        });
+
+        if res {
             return false;
         }
 
@@ -175,7 +180,7 @@ pub fn rs_eat_bib_white_space(buffers: &mut GlobalBuffer) -> bool {
 
 #[no_mangle]
 pub extern "C" fn eat_bib_white_space() -> bool {
-    with_buffers_mut(|buffers| rs_eat_bib_white_space(buffers))
+    with_buffers_mut(rs_eat_bib_white_space)
 }
 
 pub fn compress_bib_white(
@@ -183,7 +188,7 @@ pub fn compress_bib_white(
     at_bib_command: bool,
 ) -> Result<bool, BibtexError> {
     if buffers.offset(BufTy::Ex, 1) == buffers.len() {
-        write_log_file(&format!("Field filled up at ' ', reallocating.\n"));
+        write_log_file("Field filled up at ' ', reallocating.\n");
         buffers.grow_all();
     }
 
@@ -194,10 +199,12 @@ pub fn compress_bib_white(
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, last)
     {
-        if !rs_input_ln(
-            unsafe { cur_bib_file().map(|mut ptr| ptr.as_mut()) },
-            buffers,
-        ) {
+        let res = with_bibs_mut(|bibs| {
+            let bib_file = bibs.cur_bib_file();
+            !rs_input_ln(bib_file, buffers)
+        });
+
+        if res {
             return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
         }
 
@@ -208,5 +215,5 @@ pub fn compress_bib_white(
         last = buffers.init(BufTy::Base);
     }
 
-    return Ok(true);
+    Ok(true)
 }
