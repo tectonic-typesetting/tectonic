@@ -23,7 +23,7 @@ impl GlobalData {
 
     fn grow(&mut self) {
         self.glb_bib_str_ptr.grow(MAX_GLOB_STRS);
-        self.global_strs.grow(MAX_GLOB_STRS);
+        self.global_strs.grow((GLOB_STR_SIZE + 1) * MAX_GLOB_STRS);
         self.glb_str_end.grow(MAX_GLOB_STRS);
     }
 }
