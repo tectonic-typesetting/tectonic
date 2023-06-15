@@ -1,4 +1,10 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix a translation bug in the growth of the `global_str` buffer
+  (#1055, @CraftSpider, reported in #1054 by @giammirove)
+
+
+# tectonic_engine_bibtex 0.2.0 (2023-06-12)
 
 This is a big release! This version of the BibTeX engine doesn’t change its
 behavior or APIs, but major chunks of its internals have been translated into

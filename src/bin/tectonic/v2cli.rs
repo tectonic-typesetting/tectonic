@@ -560,7 +560,7 @@ impl WatchCommand {
                 let cmd = Command::Shell {
                     shell: shell.clone(),
                     args: vec![],
-                    command: format!("{exe_name} -X {}", x),
+                    command: format!("\"{exe_name}\" -X {}", x),
                 };
                 cmds.push(cmd)
             }
