@@ -2327,7 +2327,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "atty",
  "byte-unit",
@@ -2463,7 +2463,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_bibtex"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "cc",
  "libc",

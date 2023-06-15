@@ -1,3 +1,25 @@
+# tectonic 0.14.1 (2023-06-15)
+
+This is a bugfix release:
+
+- [@giammirove] wins the prize for discovering the first bug in the Rust
+  translation of the BibTeX engine (issue [#1054]) — no small feat since our
+  test suite includes nearly 8000 ArXiv submissions! Correcting a line of code
+  that resizes an internal buffer fixes the problem ([#1055], [@CraftSpider]).
+- The updated “watch” implementation failed if the path to the Tectonic
+  executable contained whitespace (issue [#1003], reported by [@m-haug]).
+  Proper quoting addresses the issue ([#1053], [@xinslu]).
+
+[#1003]: https://github.com/tectonic-typesetting/tectonic/issues/1003
+[#1053]: https://github.com/tectonic-typesetting/tectonic/pull/1053
+[#1054]: https://github.com/tectonic-typesetting/tectonic/issues/1054
+[#1055]: https://github.com/tectonic-typesetting/tectonic/pull/1055
+[@giammirove]: https://github.com/giammirove
+[@CraftSpider]: https://github.com/CraftSpider
+[@m-haug]: https://github.com/m-haug
+[@xinslu]: https://github.com/xinslu
+
+
 # tectonic 0.14.0 (2023-06-12)
 
 This release features a significant, but hopefully invisible, change: Tectonic’s
