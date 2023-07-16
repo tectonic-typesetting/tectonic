@@ -22,26 +22,23 @@ tectonic -X compile myfile.tex
 
 ```sh
 tectonic -X compile  # full form
-  [--bundle PATH] [-b PATH]
-  [--chatter LEVEL] [-c LEVEL]
-  [--color WHEN]
-  [--format PATH] [-f]
-  [--hide PATH...]
+  [--bundle <file_path>] [-b <file_path>]
+  [--format <path>] [-f <path>]
+  [--hide <hide_path>...]
   [--keep-intermediates] [-k]
   [--keep-logs]
-  [--makefile-rules PATH]
+  [--makefile-rules <dest_path>]
   [--only-cached] [-C]
-  [--open]
-  [--outdir DIR] [-o]
-  [--outfmt FORMAT]
-  [--pass PASS]
+  [--outdir <outdir>] [-o <outdir>]
+  [--outfmt <format>]
+  [--pass <pass>]
   [--print] [-p]
-  [--reruns COUNT] [-r COUNT]
+  [--reruns <count>] [-r <count>]
   [--synctex]
   [--untrusted]
-  [--web-bundle URL] [-w]
-  [-Z UNSTABLE-OPTION]
-  TEXPATH
+  [--web-bundle <url>] [-w <url>]
+  [-Z <option>...]
+  <input>
 ```
 
 #### Remarks
