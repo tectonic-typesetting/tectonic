@@ -7,6 +7,5 @@ multilingual = false
 src = "src"
 
 [output.html]
-# FIXME these do not seem to appear anywhere?
 git-repository-url = "https://github.com/tectonic-typesetting/tectonic"
 git-repository-icon = "fa-github"
