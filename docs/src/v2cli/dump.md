@@ -29,10 +29,10 @@ that provides exactly the records needed for the document build.
 ```sh
 tectonic -X dump
   [--only-cached] [-C]
-  [--untrusted]
-  [--profile PROFILE] [-p PROFILE]
+  [--profile <profile>] [-p <profile>]
   [--suffix] [-s]
-  <FILENAME-OR-PATTERN>
+  [--untrusted]
+  <filename>
 ```
 
 #### Remarks
@@ -62,12 +62,11 @@ profile will be used for the build. If unspecified, the profile to use will be
 effectively chosen at random.
 
 If the `--suffix` (`-s`) argument is provided, the name of the dumped file
-simply has to *end* with the content of the argument `FILENAME-OR-PATTERN`,
-rather than matching it exactly. Therefore `tectonic -X build -s aux` will dump
-the LaTeX `aux` file regardless of its complete name, and `tectonic -X build -s
-log` will dump the log file. If there happens to be more than one file whose
-name ends with your specified suffix, they will *all* be dumped, in a
-pseudo-random order.
+simply has to *end* with the content of the argument `<filename>`, rather than
+matching it exactly. Therefore `tectonic -X dump -s aux` will dump the LaTeX
+`aux` file regardless of its complete name, and `tectonic -X dump -s log` will
+dump the log file. If there happens to be more than one file whose name ends
+with your specified suffix, they will *all* be dumped, in a pseudo-random order.
 
 Use the `--untrusted` option if working with untrusted content. This is not the
 default because in most cases you *will* trust the document that you’re
@@ -80,4 +79,3 @@ genuine concern, we recommend setting the environment variable
 `TECTONIC_UNTRUSTED_MODE` to a non-empty value. This has the same effect as the
 `--untrusted` option. Note, however, that a hostile shell user can trivially
 clear this variable.
-
