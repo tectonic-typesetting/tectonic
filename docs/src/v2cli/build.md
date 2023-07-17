@@ -12,13 +12,13 @@ CLI), see [its reference page][v1cli-ref].***
 
 ```sh
 tectonic -X build
-  [--keep-intermediates]
+  [--keep-intermediates] [-k]
   [--keep-logs]
-  [--only-cached]
-  [--print]
+  [--only-cached] [-C]
   [--open]
+  [--print] [-p]
+  [--target <target>]
   [--untrusted]
-  [--target NAME]
 ```
 
 #### Remarks
@@ -32,10 +32,6 @@ directory.
 [tectonic-toml]: ../ref/tectonic-toml.md
 
 #### Command-Line Options
-
-The `--target` option will only build the
-[output](../ref/tectonic-toml.md#output) with the specified name. If this option
-is not given, all outputs will be built.
 
 The `--keep-intermediates` option (or `-k` for short) will cause the engine to
 save intermediate files (such as `mydoc.aux` or `mydoc.bbl`) in the build output
@@ -52,12 +48,16 @@ unavailable (e.g., on an airplane). While the engine generally avoids
 unnecessary network connections, referencing a new file in your document will
 cause it to look for that file in the online support bundle.
 
+The `--open` option will open the built document using the system handler.
+
 The `--print` option (or `-p` for short) will cause the engine to print the
 regular terminal output of the TeX engine. This output is similar to, but not
 identical to, the contents of the log file. By default, this output is only
 printed if the engine encounters a fatal error.
 
-The `--open` option will open the built document using the system handler.
+The `--target` option will only build the
+[output](../ref/tectonic-toml.md#output) with the specified name. If this option
+is not given, all outputs will be built.
 
 Use the `--untrusted` option if building untrusted content. This is not the
 default because in most cases you *will* trust the document that you’re
