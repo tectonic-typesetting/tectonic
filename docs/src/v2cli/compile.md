@@ -68,7 +68,7 @@ this case, the output file will be named `texput.pdf`.)
 By default, the document is compiled in a “trusted” mode. This means that the
 calling user can request to enable certain engine features that could raise
 security concerns if used with untrusted input: the classic example of this
-being TeX's “shell-escape” functionality. These features are *not* enabled by
+being TeX’s “shell-escape” functionality. These features are *not* enabled by
 default, but they can be enabled on the command line; in the case of
 shell-escape, this is done with `-Z shell-escape`.
 
@@ -104,7 +104,7 @@ The following are the available flags.
 | `-o`  | `--outdir <outdir>`            | The directory in which to place output files [default: the directory containing `<input>`]             |
 |       | `--outfmt <format>`            | The kind of output to generate [default: `pdf`]  [possible values: `pdf`, `html`, `xdv`, `aux`, `fmt`] |
 |       | `--pass <pass>`                | Which engines to run [default: `default`]  [possible values: `default`, `tex`, `bibtex_first`]         |
-| `-p`  | `--print`                      | Print the engine's chatter during processing                                                           |
+| `-p`  | `--print`                      | Print the engine’s chatter during processing                                                           |
 | `-r`  | `--reruns <count>`             | Rerun the TeX engine exactly this many times after the first                                           |
 |       | `--synctex`                    | Generate SyncTeX data                                                                                  |
 |       | `--untrusted`                  | Input is untrusted — disable all known-insecure features                                               |
@@ -123,9 +123,9 @@ the set of unstable options is subject to change at any time.
 |:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `-Z help`                    | List all unstable options                                                                                                                                                                                                                                                                                  |
 | `-Z continue-on-errors`      | Keep compiling even when severe errors occur                                                                                                                                                                                                                                                               |
-| `-Z min-crossrefs=<num>`     | Equivalent to bibtex's `-min-crossrefs` flag - “include after `<num>` crossrefs” [default: `2`]                                                                                                                                                                                                            |
+| `-Z min-crossrefs=<num>`     | Equivalent to bibtex’s `-min-crossrefs` flag - “include after `<num>` crossrefs” [default: `2`]                                                                                                                                                                                                            |
 | `-Z paper-size=<spec>`       | Change the initial paper size [default: `letter`]                                                                                                                                                                                                                                                          |
 | `-Z search-path=<path>`      | Also look in `<path>` for files (unless `--untrusted` has been specified), like `TEXINPUTS`. Can be specified multiple times.                                                                                                                                                                              |
 | `-Z shell-escape`            | Enable `\write18` (unless `--untrusted` has been specified)                                                                                                                                                                                                                                                |
 | `-Z shell-escape-cwd=<path>` | Working directory to use for `\write18`. Use `$(pwd)` for same behaviour as most other engines (e.g. for relative paths in `\inputminted`). Implies `-Z shell-escape`                                                                                                                                      |
-| `-Z deterministic-mode`      | Force a deterministic build environment. Note that setting `SOURCE_DATE_EPOCH` is usually sufficient for reproducible builds, and this option makes some extra functionality trade-offs. Specifically, deterministic mode breaks SyncTeX's auxiliary files as they include and rely on absolute file paths |
+| `-Z deterministic-mode`      | Force a deterministic build environment. Note that setting `SOURCE_DATE_EPOCH` is usually sufficient for reproducible builds, and this option makes some extra functionality trade-offs. Specifically, deterministic mode breaks SyncTeX’s auxiliary files as they include and rely on absolute file paths |

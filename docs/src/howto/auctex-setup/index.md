@@ -46,7 +46,7 @@ have to modify the `TeX-engine-alist` varible.
                           nil)))
 ```
 
-Next, modify the `LaTeX-command-style` so that AucTex doesn't add extra options
+Next, modify the `LaTeX-command-style` so that AucTex doesn’t add extra options
 to it that Tectonic does not recognize. We simply set it to the `%(latex)`
 expansion (from `TeX-expand-list-builtin`), removing any other extra options.
 
@@ -56,12 +56,12 @@ expansion (from `TeX-expand-list-builtin`), removing any other extra options.
 
 We need to set the `TeX-check-TeX` variable to `nil` since AucTeX will try to
 find a traditional distibution like `TeXLive` or others, and will fail since
-Tectonic doesn't meet it's criteria.
+Tectonic doesn’t meet its criteria.
 
 Additionally, we should also set `TeX-process-asynchronous` to `t`, so that
-running Tectonic in watch mode doesn't hang up Emacs.
+running Tectonic in watch mode doesn’t hang up Emacs.
 
-We'll also just ensure that the `TeX-engine` is set to `default`.
+We’ll also just ensure that the `TeX-engine` is set to `default`.
 
 ```lisp
 (setq TeX-process-asynchronous t
@@ -93,7 +93,7 @@ To do this, you can simply invoke `M-x TeX-command-master`, and the select the
 of file>`.
 
 > **Caution**: Compiling a document with multiple LaTeX files in this manner
-> isn't extensively tested, as using a Tectonic project is the better way in
+> isn’t extensively tested, as using a Tectonic project is the better way in
 > that case. Any bug reports are welcome.
 
 ### Live PDF Preview in Tectonic projects

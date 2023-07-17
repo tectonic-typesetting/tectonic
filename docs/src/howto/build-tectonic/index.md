@@ -111,7 +111,7 @@ control build options. Tectonic offers the following features:
 - **`native-tls-vendored`**. If using [reqwest], activate the `vendored` option
   in the [native-tls] crate, causing OpenSSL to be vendored. This can be useful
   when cross-compiling or building static binaries, but is discouraged because
-  that means that the resulting binaries won't benefit from security fixes to
+  that means that the resulting binaries won’t benefit from security fixes to
   system TLS libraries.
 
 [curl]: https://docs.rs/curl/

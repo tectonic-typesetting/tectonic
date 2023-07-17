@@ -142,7 +142,7 @@ $ sudo port install tectonic
 
 ### nix or nixOS
 
-If you're using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
+If you’re using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
 
 ```sh
 $ nix-env -f '<nixpkgs>' -iA tectonic
