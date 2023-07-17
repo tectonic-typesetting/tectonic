@@ -12,7 +12,7 @@ CLI), see [its reference page][v1cli-ref].***
 
 ```sh
 tectonic -X watch
-  [--exec COMMAND] [-x COMMAND]
+  [--exec <execute>...] [-x <execute>...]
 ```
 
 #### Remarks
