@@ -36,6 +36,7 @@ in the `docs/` directory.
 [install mdbook]: https://github.com/rust-lang-nursery/mdBook#installation
 
 Members of the Tectonic community are eager to help if you run into any issues —
-please launch a thread on [the Tectonic forum] if you’d like to get involved!
+please launch a discussion on [the Tectonic forum] if you’d like to get
+involved!
 
-[the Tectonic forum]: https://tectonic.newton.cx/
+[the Tectonic forum]: https://github.com/tectonic-typesetting/tectonic/discussions
