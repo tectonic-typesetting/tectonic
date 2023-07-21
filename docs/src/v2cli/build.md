@@ -60,7 +60,7 @@ The `--target` option will only build the
 is not given, all outputs will be built.
 
 Use the `--untrusted` option if building untrusted content. This is not the
-default because in most cases you *will* trust the document that you’re
+default, because in most cases you *will* trust the document that you’re
 building, probably because you have created it yourself, and it would be very
 annoying to have to pass `--trusted` every time you build a document that uses
 shell-escape. See the security discussion in the documentation of the

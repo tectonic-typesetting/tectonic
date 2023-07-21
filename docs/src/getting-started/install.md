@@ -7,14 +7,14 @@ TeX systems. To install a normal TeX system such as [TeXLive], you normally need
 to download gigabytes of support files and set them up in a complex directory
 hierarchy. Tectonic, on the other hand, is distributed as a single executable
 file. That one file not only combines the functionality of many standard TeX
-programs, it also can download the many necessary support files on the fly. This
-makes Tectonic super easy to install.
+programs, but it also can download the many necessary support files on the fly.
+This makes Tectonic super easy to install.
 
 [TeXLive]: https://www.tug.org/texlive/acquire-netinstall.html
 
-The quickest way to get started is to using your terminal. On a
-computer running a Unix-like operating system, including macOS, just run the
-following command in your terminal:
+The quickest way to get started is to use your terminal. On a computer running a
+Unix-like operating system, including macOS, just run the following command in
+your terminal:
 
 ```sh
 curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net |sh
@@ -37,10 +37,9 @@ working directory. For the time being, the download script doesn’t do this
 because it can be tricky to automatically determine what the best installation
 destination would be.
 
-Alternatively, you can to [install a packaged version of
-Tectonic][inst-packaged] if one is available. For detailed instructions and
-additional installation options, go to the [How To Install Tectonic][inst-ref]
-guide.
+Alternatively, you can [install a packaged version of Tectonic][inst-packaged]
+if one is available. For detailed instructions and additional installation
+options, go to the [How To Install Tectonic][inst-ref] guide.
 
 [inst-packaged]: ../installation/index.md#pre-built-binary-packages
 [inst-ref]: ../installation/index.md

@@ -63,13 +63,13 @@ effectively chosen at random.
 
 If the `--suffix` (`-s`) argument is provided, the name of the dumped file
 simply has to *end* with the content of the argument `<filename>`, rather than
-matching it exactly. Therefore `tectonic -X dump -s aux` will dump the LaTeX
-`aux` file regardless of its complete name, and `tectonic -X dump -s log` will
-dump the log file. If there happens to be more than one file whose name ends
-with your specified suffix, they will *all* be dumped, in a pseudo-random order.
+match it exactly. Therefore `tectonic -X dump -s aux` will dump the LaTeX `aux`
+file regardless of its complete name, and `tectonic -X dump -s log` will dump
+the log file. If there happens to be more than one file whose name ends with
+your specified suffix, they will *all* be dumped, in a pseudo-random order.
 
 Use the `--untrusted` option if working with untrusted content. This is not the
-default because in most cases you *will* trust the document that you’re
+default, because in most cases you *will* trust the document that you’re
 building, probably because you have created it yourself, and it would be very
 annoying to have to pass `--trusted` every time you dump a document that uses
 shell-escape. See the security discussion in the documentation of the

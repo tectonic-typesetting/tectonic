@@ -104,8 +104,8 @@ control build options. Tectonic offers the following features:
   library. If you would like to link to an externally-supplied version instead,
   enable this feature.
 - **`geturl-curl`**. Uses the [curl] crate to get URLs. In order for this to
-  take effect, you must use `--no-default-features` because `geturl-reqwest` is
-  a default feature and it takes precedence.
+  take effect, you must use `--no-default-features`, because `geturl-reqwest` is
+  a default feature and takes precedence.
 - **`geturl-reqwest`** (enabled by default). Uses the [reqwest] crate to get
   URLs. This is a good portable default.
 - **`native-tls-vendored`**. If using [reqwest], activate the `vendored` option
@@ -128,7 +128,7 @@ Some lesser-used features are:
   mandatory in the future, and one can still produce static `tectonic`
   executables using a cross-compilation approach. Therefore we do not recommend
   that you rely on this feature.
-- **`profile`**. Compile Tectonic code in such a way as to make it profile-able.
+- **`profile`**. Compile Tectonic code in such a way as to make it profileable.
   In particular, this forces the C/C++ compiler to include frame pointer
   information unless it is known that such information is not needed for
   profiling on the target platform.
