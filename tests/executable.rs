@@ -806,6 +806,35 @@ fn v2_dump_suffix() {
     assert!(saw_first && saw_second);
 }
 
+#[test]
+fn v2_help_on_no_subcmd() {
+    let output = run_tectonic(&PathBuf::from("."), &["-X"]);
+    error_or_panic(&output);
+}
+
+#[test]
+fn v2_help_succeeds() {
+    let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
+    success_or_panic(&output);
+}
+
+#[test]
+fn v2_helps_equal() {
+    let output_long = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
+
+    let output_short = run_tectonic(&PathBuf::from("."), &["-X", "-h"]);
+    assert_eq!(&output_long, &output_short);
+
+    let output_subcmd = run_tectonic(&PathBuf::from("."), &["-X", "help"]);
+    assert_eq!(&output_long, &output_subcmd);
+
+    let output_no_subcmd = run_tectonic(&PathBuf::from("."), &["-X"]);
+    assert_eq!(
+        &[&output_long.stdout, &output_long.stderr],
+        &[&output_no_subcmd.stderr, &output_no_subcmd.stdout]
+    );
+}
+
 const SHELL_ESCAPE_TEST_DOC: &str = r"\immediate\write18{mkdir shellwork}
 \immediate\write18{echo 123 >shellwork/persist}
 \ifnum123=\input{shellwork/persist}
