@@ -812,6 +812,106 @@ fn v2_help_on_no_subcmd() {
     error_or_panic(&output);
 }
 
+/// Test that flags, options, and subcommands are each ordered alphabetically.
+///
+/// Flags and options use their long name as the sort key or fall back to their
+/// lowercased short name. Subcommands use their name as the sort key.
+#[test]
+fn v2_help_ordered() {
+    /// The number of spaces leading up to a flag, option, or subcommand.
+    ///
+    /// Without this, it becomes annoying to parse the help message for argument
+    /// names. For example, consider part of a help message:
+    ///
+    /// ```text
+    /// FLAGS:
+    ///     --example0    Long description that gets wrapped
+    ///                   --oops, we used a double hyphen in
+    ///                   the description
+    ///
+    /// SUBCOMMANDS:
+    ///     example1    Another long description that gets
+    ///                 wrapped
+    /// ```
+    ///
+    /// How do we know `--oops` is not a flag and `wrapped` is not a subcommand?
+    /// A simple way is to only consider text that is indented by exactly four
+    /// spaces.
+    const SPACES_LEADING: usize = 4;
+
+    fn parse_arg(line: &str) -> &str {
+        // For `-X, --example` or `--example`, this could be `example` or
+        // `example    Description...` with varying spaces.
+        //
+        // For just `-X`, it could be `X` or have a description as above.
+        let name_onward = line
+            .split_once("--")
+            .or_else(|| line.split_once('-'))
+            .expect("line should begin with an argument")
+            .1;
+        // The above becomes `example` or `X`
+        let name = name_onward
+            .split_once(' ')
+            .map_or_else(|| name_onward, |(name, _)| name);
+        name
+    }
+
+    fn parse_subcmd(line: &str) -> &str {
+        let name = line.split_once(' ').map_or_else(|| line, |(name, _)| name);
+        name
+    }
+
+    // Mapping from each section heading to the function that parses argument or
+    // subcommand names from its lines
+    let parse_map: &[(&str, &dyn Fn(&str) -> &str)] = &[
+        ("FLAGS", &parse_arg),
+        ("OPTIONS", &parse_arg),
+        ("SUBCOMMANDS", &parse_subcmd),
+    ];
+
+    let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
+    let output =
+        std::str::from_utf8(&output.stdout[..]).expect("help message should be valid UTF-8");
+
+    parse_map
+        .iter()
+        // Parse the help message section by section using the functions in
+        // `parse_map`
+        .fold(output, |remaining, (section, parse)| {
+            let (section, parse) = (*section, *parse);
+            // Trim the help message up until the section we are working on
+            let remaining = remaining
+                .split_once(&(section.to_owned() + ":\n"))
+                .unwrap_or_else(|| panic!("help message should have a(n) {} section", section))
+                .1;
+            // Get the lines of the help message that belong to this section
+            let lines = remaining
+                .split_once("\n\n")
+                .map_or_else(|| remaining, |(lines, _)| lines)
+                .split_terminator('\n');
+            // Parse the argument or subcommand names from the lines
+            lines.fold(None, |prev_name, line| {
+                let line = &line[SPACES_LEADING..];
+                if line.starts_with(' ') {
+                    // This is a continuation of the previous line
+                    return prev_name;
+                }
+                // In ASCII, uppercase letters preceed lowercase letters, so
+                // flags like `-Z` would preceed `-a`. To avoid this, we compare
+                // in all lowercase.
+                let name = parse(line).to_lowercase();
+                if let Some(prev_name) = prev_name {
+                    assert!(
+                        name >= prev_name,
+                        "args in help message should be ordered alphabetically"
+                    );
+                }
+                Some(name)
+            });
+            remaining
+        });
+}
+
 #[test]
 fn v2_help_succeeds() {
     let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
