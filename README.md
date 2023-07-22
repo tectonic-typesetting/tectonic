@@ -26,7 +26,7 @@ README](./CARGO_README.md).
 </a>
 
 - [User website](https://tectonic-typesetting.github.io/)
-- [Community discussion forum](https://tectonic.newton.cx/)
+- [Community discussion forum](https://github.com/tectonic-typesetting/tectonic/discussions)
 - [Installation](https://tectonic-typesetting.github.io/book/latest/installation/)
 - [Build instructions](https://tectonic-typesetting.github.io/book/latest/howto/build-tectonic/)
 - [API documentation](https://docs.rs/tectonic/)
