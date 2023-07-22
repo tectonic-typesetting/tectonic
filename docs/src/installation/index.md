@@ -62,7 +62,7 @@ appropriate archive for your platform and unpack it.
 
 For instance, on most Linux systems, you’ll want to download the file with the
 name looking like `tectonic-<VERSION>-x86_64-unknown-linux-gnu.tar.gz`. This
-tarball will unpack to a single file, `tectonic`, that is the Tectonic
+tarball will unpack to a single file, `tectonic`, which is the Tectonic
 executable.
 
 
@@ -74,7 +74,7 @@ repository][repo] for an up-to-date listing.
 
 [repo]: https://github.com/tectonic-typesetting/tectonic/#readme
 
-In most cases, the package name will be `tectonic` and it will provide a
+In most cases, the package name will be `tectonic` and will provide a
 command-line tool also named `tectonic`.
 
 ### Pre-built packages for (Ana)conda
@@ -142,7 +142,7 @@ $ sudo port install tectonic
 
 ### nix or nixOS
 
-If you're using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
+If you’re using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
 
 ```sh
 $ nix-env -f '<nixpkgs>' -iA tectonic

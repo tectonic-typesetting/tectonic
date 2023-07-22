@@ -76,12 +76,12 @@ of formats that are supported will depend on the bundle that is being used.
 ### `output.shell_escape`
 
 Whether the TeX “shell escape”, AKA `\write18`, mechanism is allowed. The
-default is false. Shell-escape is inherently insecure because its usages require
-that text from the document compilation is passed directly to the
-operating-system shell. It also is inherently unportable, because it requires
-that your document compilation run in an environment where an operating system
-shell exists and can be invoked. Its use is therefore strongly discouraged, but
-some packages require it.
+default is false. Shell-escape is inherently insecure, because its usage
+requires that text from the document compilation is passed directly to the
+operating system shell. It also is inherently unportable, because it requires
+that your document compilation is run in an environment where an operating
+system shell exists and can be invoked. Its use is therefore strongly
+discouraged, but some packages require it.
 
 ### `output.preamble`
 

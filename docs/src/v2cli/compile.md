@@ -22,26 +22,23 @@ tectonic -X compile myfile.tex
 
 ```sh
 tectonic -X compile  # full form
-  [--bundle PATH] [-b PATH]
-  [--chatter LEVEL] [-c LEVEL]
-  [--color WHEN]
-  [--format PATH] [-f]
-  [--hide PATH...]
+  [--bundle <file_path>] [-b <file_path>]
+  [--format <path>] [-f <path>]
+  [--hide <hide_path>...]
   [--keep-intermediates] [-k]
   [--keep-logs]
-  [--makefile-rules PATH]
+  [--makefile-rules <dest_path>]
   [--only-cached] [-C]
-  [--open]
-  [--outdir DIR] [-o]
-  [--outfmt FORMAT]
-  [--pass PASS]
+  [--outdir <outdir>] [-o <outdir>]
+  [--outfmt <format>]
+  [--pass <pass>]
   [--print] [-p]
-  [--reruns COUNT] [-r COUNT]
+  [--reruns <count>] [-r <count>]
   [--synctex]
   [--untrusted]
-  [--web-bundle URL] [-w]
-  [-Z UNSTABLE-OPTION]
-  TEXPATH
+  [--web-bundle <url>] [-w <url>]
+  [-Z <option>...]
+  <input>
 ```
 
 #### Remarks
@@ -71,7 +68,7 @@ this case, the output file will be named `texput.pdf`.)
 By default, the document is compiled in a “trusted” mode. This means that the
 calling user can request to enable certain engine features that could raise
 security concerns if used with untrusted input: the classic example of this
-being TeX's “shell-escape” functionality. These features are *not* enabled by
+being TeX’s “shell-escape” functionality. These features are *not* enabled by
 default, but they can be enabled on the command line; in the case of
 shell-escape, this is done with `-Z shell-escape`.
 
@@ -94,29 +91,26 @@ The following are the available flags.
 
 <!-- Keep alphabetized by full name: -->
 
-| Short | Full                      | Explanation                                                                                    |
-|:------|:--------------------------|:-----------------------------------------------------------------------------------------------|
-| `-b`  | `--bundle <PATH>`         | Use this Zip-format bundle file to find resource files instead of the default |
-| `-c`  | `--chatter <LEVEL>`       | How much chatter to print when running. Possible values: `default`, `minimal` |
-|       | `--color <WHEN>`          | When to colorize the program’s output: `always`, `auto`, or `never` |
-|       | `--format <PATH>`         | The name of the "format" file used to initialize the TeX engine. Default: `latex` |
-| `-h`  | `--help`                  | Prints help information |
-|       | `--hide <PATH>...`        | Tell the engine that no file at `<PATH>` exists, if it tries to read it |
-| `-k`  | `--keep-intermediates`    | Keep the intermediate files generated during processing |
-|       | `--keep-logs`             | Keep the log files generated during processing |
-|       | `--makefile-rules <PATH>` | Write Makefile-format rules expressing the dependencies of this run to `<PATH>` |
-| `-C`  | `--only-cached`           | Use only resource files cached locally |
-|       | `--open`                  | Open the output PDF after it is built |
-| `-o`  | `--outdir <OUTDIR>`       | The directory in which to place output files. Default: the directory containing INPUT |
-|       | `--outfmt <FORMAT>`       | The kind of output to generate. Possible values: `pdf` (the default), `html`, `xdv`, `aux`, `format` |
-|       | `--pass <PASS>`           | Which engines to run. Possible values: `default`, `tex`, `bibtex_first` |
-| `-p`  | `--print`                 | Print the engine's chatter during processing |
-| `-r`  | `--reruns <COUNT>`        | Rerun the TeX engine exactly this many times after the first |
-|       | `--synctex`               | Generate SyncTeX data |
-|       | `--untrusted`             | Input is untrusted: disable all known-insecure features |
-| `-V`  | `--version`               | Prints version information |
-| `-w`  | `--web-bundle <URL>`      | Use this URL find resource files instead of the default |
-| `-Z`  | `-Z <UNSTABLE-OPTION>`    | Activate experimental “unstable” options |
+| Short | Full                           | Explanation                                                                                            |
+|:------|:-------------------------------|:-------------------------------------------------------------------------------------------------------|
+| `-b`  | `--bundle <file_path>`         | Use this directory or Zip-format bundle file to find resource files instead of the default             |
+| `-f`  | `--format <path>`              | The name of the “format” file used to initialize the TeX engine [default: `latex`]                     |
+| `-h`  | `--help`                       | Prints help information                                                                                |
+|       | `--hide <hide_path>...`        | Tell the engine that no file at `<hide_path>` exists, if it tries to read it                           |
+| `-k`  | `--keep-intermediates`         | Keep the intermediate files generated during processing                                                |
+|       | `--keep-logs`                  | Keep the log files generated during processing                                                         |
+|       | `--makefile-rules <dest_path>` | Write Makefile-format rules expressing the dependencies of this run to `<dest_path>`                   |
+| `-C`  | `--only-cached`                | Use only resource files cached locally                                                                 |
+| `-o`  | `--outdir <outdir>`            | The directory in which to place output files [default: the directory containing `<input>`]             |
+|       | `--outfmt <format>`            | The kind of output to generate [default: `pdf`]  [possible values: `pdf`, `html`, `xdv`, `aux`, `fmt`] |
+|       | `--pass <pass>`                | Which engines to run [default: `default`]  [possible values: `default`, `tex`, `bibtex_first`]         |
+| `-p`  | `--print`                      | Print the engine’s chatter during processing                                                           |
+| `-r`  | `--reruns <count>`             | Rerun the TeX engine exactly this many times after the first                                           |
+|       | `--synctex`                    | Generate SyncTeX data                                                                                  |
+|       | `--untrusted`                  | Input is untrusted — disable all known-insecure features                                               |
+| `-V`  | `--version`                    | Prints version information                                                                             |
+| `-w`  | `--web-bundle <url>`           | Use this URL to find resource files instead of the default                                             |
+| `-Z`  | `-Z <option>...`               | Unstable options. Pass `-Zhelp` to show a list                                                         |
 
 #### Unstable options
 
@@ -125,13 +119,13 @@ the set of unstable options is subject to change at any time.
 
 <!-- Keep alphabetized: -->
 
-| Expression               | Explanation |
-|:-------------------------|:------------|
-| `-Z help`                | List all unstable options |
-| `-Z continue-on-errors`  | Keep compiling even when severe errors occur |
-| `-Z min-crossrefs=<num>` | Equivalent to bibtex's `-min-crossrefs` flag. Default vaue: 2 |
-| `-Z paper-size=<spec>`   | Change the initial paper size. Default: `letter` |
-| `-Z search-path=<path>`  | Also look in `<path>` for files (unless `--untrusted` has been specified), like TEXINPUTS. Can be specified multiple times. |
-| `-Z shell-escape`        | Enable `\write18` (unless `--untrusted` has been specified) |
-| `-Z shell-escape-cwd=<path>` | Working directory to use for \write18. Use $(pwd) for same behaviour as most other engines (e.g. for relative paths in \inputminted). Implies -Z shell-escape |
-| `-Z deterministic-mode`  | Force a deterministic build environment. Note that setting `SOURCE_DATE_EPOCH` is usually sufficient for reproducible builds, and this option makes some extra functionality trade-offs. Specifically, deterministic mode breaks SyncTeX's auxiliary files as they include and rely on absolute file paths |
+| Expression                   | Explanation |
+|:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `-Z help`                    | List all unstable options                                                                                                                                                                                                                                                                                  |
+| `-Z continue-on-errors`      | Keep compiling even when severe errors occur                                                                                                                                                                                                                                                               |
+| `-Z min-crossrefs=<num>`     | Equivalent to bibtex’s `-min-crossrefs` flag - “include after `<num>` crossrefs” [default: `2`]                                                                                                                                                                                                            |
+| `-Z paper-size=<spec>`       | Change the initial paper size [default: `letter`]                                                                                                                                                                                                                                                          |
+| `-Z search-path=<path>`      | Also look in `<path>` for files (unless `--untrusted` has been specified), like `TEXINPUTS`. Can be specified multiple times.                                                                                                                                                                              |
+| `-Z shell-escape`            | Enable `\write18` (unless `--untrusted` has been specified)                                                                                                                                                                                                                                                |
+| `-Z shell-escape-cwd=<path>` | Working directory to use for `\write18`. Use `$(pwd)` for same behaviour as most other engines (e.g. for relative paths in `\inputminted`). Implies `-Z shell-escape`                                                                                                                                      |
+| `-Z deterministic-mode`      | Force a deterministic build environment. Note that setting `SOURCE_DATE_EPOCH` is usually sufficient for reproducible builds, and this option makes some extra functionality trade-offs. Specifically, deterministic mode breaks SyncTeX’s auxiliary files as they include and rely on absolute file paths |

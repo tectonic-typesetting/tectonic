@@ -34,9 +34,9 @@ export VCPKG_ROOT="${CARGO_TARGET_DIR:-$(pwd)/target}/vcpkg"
 If you’re building on Windows, you’ll likely want to make sure that your
 [`RUSTFLAGS`] variable includes a `+crt-static` [target feature] and set the
 `VCPKGRS_TRIPLET` variable to `x64-windows-static-release`. This is a custom
-[vcpkg triplet] provided by Tectonic's build system (in the directory
+[vcpkg triplet] provided by Tectonic’s build system (in the directory
 `dist/vcpkg-triplets`) that is automatically activated by its [cargo-vcpkg]
-integration. If you don't use [cargo-vcpkg], the default triplet is
+integration. If you don’t use [cargo-vcpkg], the default triplet is
 `x64-windows-static` if the `+crt-static` feature is activated, or
 `x64-windows-static-md` if it is not.
 

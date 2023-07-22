@@ -1,7 +1,7 @@
 # How To: Build Tectonic: Install System Dependencies
 
-Here are quick commands to for install Tectonic’s dependencies using various
-package managers:
+Here are quick commands to install Tectonic’s dependencies using various package
+managers:
 
 - [Debian and Ubuntu Linux](#debian-and-ubuntu-linux) and related variants
 - [RHEL, CentOS, and Fedora Linux](#rhel-centos-and-fedora-linux) and related variants
@@ -10,7 +10,7 @@ package managers:
 - [vcpkg](#vcpkg) on various operating systems (including Windows)
 
 If none of these fit your needs, you’ll need to figure out the right packages
-for your particular setup. Tectonic require the following libraries:
+for your particular setup. Tectonic requires the following libraries:
 
 - [fontconfig](https://fontconfig.org/) (except on macOS)
 - [freetype2](https://www.freetype.org/)
