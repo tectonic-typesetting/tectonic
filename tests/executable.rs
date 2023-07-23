@@ -839,10 +839,20 @@ fn test_v2_help_section_lines<'a>(
 
     // Parse the argument or subcommand names from the lines
     lines.into_iter().fold(None, |prev_name, line| {
-        let line = &line[SPACES_LEADING..];
-        if line.starts_with(' ') {
-            // This is a continuation of the previous line
-            return prev_name;
+        let line = line.get(SPACES_LEADING..).unwrap_or_else(|| {
+            panic!(
+                "line should be indented by at least {} spaces",
+                SPACES_LEADING
+            )
+        });
+
+        match line.chars().nth(0) {
+            None => panic!("help section should not have empty lines"),
+            Some(' ') => {
+                // This is a continuation of the previous line
+                return prev_name;
+            }
+            Some(_) => {}
         }
         // In ASCII, uppercase letters preceed lowercase letters, so
         // flags like `-Z` would preceed `-a`. To avoid this, we compare
