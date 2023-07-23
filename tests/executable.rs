@@ -812,48 +812,59 @@ fn v2_help_on_no_subcmd() {
     error_or_panic(&output);
 }
 
+/// The number of spaces leading up to a flag, option, or subcommand.
+///
+/// Without this, it becomes annoying to parse the help message for argument
+/// names. For example, consider part of a help message:
+///
+/// ```text
+/// FLAGS:
+///     --example0    Long description that gets wrapped
+///                   --oops, we used a double hyphen
+///
+/// SUBCOMMANDS:
+///     example1    Another long description that gets
+///                 wrapped
+/// ```
+///
+/// If we naively trim leading spaces, then we get:
+///
+/// ```text
+/// FLAGS:
+/// --example0    Long description that gets wrapped
+/// --oops, we used a double hyphen
+///
+/// SUBCOMMANDS:
+/// example1    Another long description that gets
+/// wrapped
+/// ```
+///
+/// How do we know `--oops` is not a flag and `wrapped` is not a subcommand?
+///
+/// It is easier if we take the indent into account by only matching text that
+/// comes right after it.
+const HELP_INDENT: usize = 4;
+
 fn test_v2_help_section_lines<'a>(
     lines: impl IntoIterator<Item = &'a str>,
     parse: impl Fn(&str) -> &str,
 ) {
-    /// The number of spaces leading up to a flag, option, or subcommand.
-    ///
-    /// Without this, it becomes annoying to parse the help message for argument
-    /// names. For example, consider part of a help message:
-    ///
-    /// ```text
-    /// FLAGS:
-    ///     --example0    Long description that gets wrapped
-    ///                   --oops, we used a double hyphen in
-    ///                   the description
-    ///
-    /// SUBCOMMANDS:
-    ///     example1    Another long description that gets
-    ///                 wrapped
-    /// ```
-    ///
-    /// How do we know `--oops` is not a flag and `wrapped` is not a subcommand?
-    /// A simple way is to only consider text that is indented by exactly four
-    /// spaces.
-    const SPACES_LEADING: usize = 4;
-
-    // Parse the argument or subcommand names from the lines
+    // Parse the argument or subcommand name from each line, and compare it to
+    // the previous one to ensure they are ordered alphabetically
     lines.into_iter().fold(None, |prev_name, line| {
-        let line = line.get(SPACES_LEADING..).unwrap_or_else(|| {
-            panic!(
-                "line should be indented by at least {} spaces",
-                SPACES_LEADING
-            )
+        let line = line.get(HELP_INDENT..).unwrap_or_else(|| {
+            panic!("line should be indented by at least {} spaces", HELP_INDENT)
         });
 
         match line.chars().nth(0) {
             None => panic!("help section should not have empty lines"),
             Some(' ') => {
-                // This is a continuation of the previous line
+                // This is a continuation of the previous line, so skip it
                 return prev_name;
             }
             Some(_) => {}
         }
+
         // In ASCII, uppercase letters preceed lowercase letters, so
         // flags like `-Z` would preceed `-a`. To avoid this, we compare
         // in all lowercase.
@@ -868,39 +879,46 @@ fn test_v2_help_section_lines<'a>(
     });
 }
 
-fn test_v2_help_section(section: &str, parse: impl Fn(&str) -> &str) {
+fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
     let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
-    let output =
-        std::str::from_utf8(&output.stdout[..]).expect("help message should be valid UTF-8");
+    let output = str::from_utf8(&output.stdout).expect("help message should be valid UTF-8");
 
-    // Trim the help message up until the section we are working on
-    let remaining = output
-        .split_once(&(section.to_owned() + ":\n"))
-        .unwrap_or_else(|| panic!("help message should have a(n) {} section", section))
+    // Start after the section heading
+    let lines_onward = output
+        .split_once(&format!("{}:\n", name))
+        .unwrap_or_else(|| panic!("help message should have a \"{}\" section", name))
         .1;
-    // Get the lines of the help message that belong to this section
-    let lines = remaining
+
+    // Stop at the end of the section
+    let lines = lines_onward
         .split_once("\n\n")
-        .map_or_else(|| remaining, |(lines, _)| lines)
+        .map_or(lines_onward, |(lines, _)| lines)
         .split_terminator('\n');
-    // Parse the argument or subcommand names from the lines
+
     test_v2_help_section_lines(lines, parse);
 }
 
+/// Parse the argument name from an unindented line in a help message.
+///
+/// This is the long version of the name if it exists, or the short version
+/// otherwise.
+///
+/// For example, `-X, --example    Description...` is parsed as `example`, while
+/// `-X    Description...` is parsed as `X`. This is true regardless of whether
+/// there is a description.
 fn parse_v2_help_arg(line: &str) -> &str {
-    // For `-X, --example` or `--example`, this could be `example` or
-    // `example    Description...` with varying spaces.
-    //
-    // For just `-X`, it could be `X` or have a description as above.
+    // Start at the argument name
     let name_onward = line
         .split_once("--")
         .or_else(|| line.split_once('-'))
         .expect("line should begin with an argument")
         .1;
-    // The above becomes `example` or `X`
+
+    // Stop at the end of the argument name
     let name = name_onward
         .split_once(' ')
-        .map_or_else(|| name_onward, |(name, _)| name);
+        .map_or(name_onward, |(name, _)| name);
+
     name
 }
 
@@ -916,9 +934,12 @@ fn v2_help_options_ordered() {
     test_v2_help_section("OPTIONS", parse_v2_help_arg);
 }
 
+/// Parse the subcommand name from an unindented line in a help message.
+///
+/// For example, `example    Description...` is parsed as `example` (regardless
+/// of whether there is a description).
 fn parse_v2_help_subcmd(line: &str) -> &str {
-    let name = line.split_once(' ').map_or_else(|| line, |(name, _)| name);
-    name
+    line.split_once(' ').map_or(line, |(name, _)| name)
 }
 
 /// Test that subcommands are ordered alphabetically.
