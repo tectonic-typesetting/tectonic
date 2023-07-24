@@ -107,7 +107,7 @@ fn test_v2_help_section_lines<'a>(
             panic!("line should be indented by at least {} spaces", HELP_INDENT)
         });
 
-        match line.chars().nth(0) {
+        match line.chars().next() {
             None => panic!("help section should not have empty lines"),
             Some(' ') => {
                 // This is a continuation of the previous line, so skip it
