@@ -1,284 +1,24 @@
 // Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-use lazy_static::lazy_static;
 use std::{
-    env,
-    fs::{self, File, OpenOptions},
+    fs::{File, OpenOptions},
     io::{Read, Write},
-    path::{Path, PathBuf},
-    process::{Command, Output, Stdio},
+    path::PathBuf,
+    process::{Output, Stdio},
     str, thread,
     time::{Duration, Instant},
 };
-use tempfile::TempDir;
 
-#[path = "util/mod.rs"]
+mod executable_util;
+use executable_util::{
+    check_file, error_or_panic, get_plain_format_arg, prep_tectonic, run_tectonic,
+    run_tectonic_until, run_tectonic_with_stdin, setup_and_copy_files, setup_v2, success_or_panic,
+    KCOV_WORDS,
+};
+
 mod util;
-use crate::util::{cargo_dir, ensure_plain_format};
-
-lazy_static! {
-    static ref TEST_ROOT: PathBuf = {
-        util::set_test_root();
-
-        let mut root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        root.push("tests");
-        root
-    };
-
-    static ref TARGET_RUNNER_WORDS: Vec<String> = {
-        // compile-time environment variable from build.rs:
-        let target = env!("TARGET").to_owned();
-        let mut target = target.replace('-', "_");
-        target.make_ascii_uppercase();
-
-        // run-time environment variable check:
-        if let Ok(runtext) = env::var(format!("CARGO_TARGET_{target}_RUNNER")) {
-            runtext.split_whitespace().map(|x| x.to_owned()).collect()
-        } else {
-            vec![]
-        }
-    };
-
-    // Special coverage-collection mode. This implementation is quite tuned for
-    // the Tectonic CI/CD system, so if you're trying to use it manually, expect
-    // some rough edges.
-    static ref KCOV_WORDS: Vec<String> = {
-        if let Ok(runtext) = env::var("TECTONIC_EXETEST_KCOV_RUNNER") {
-            runtext.split_whitespace().map(|x| x.to_owned()).collect()
-        } else {
-            vec![]
-        }
-    };
-}
-
-fn get_plain_format_arg() -> String {
-    util::set_test_root();
-    let path = ensure_plain_format().expect("couldn't write format file");
-    format!("--format={}", path.display())
-}
-
-/// Note the special sauce here — we set the magic environment variable that
-/// tells the Tectonic binary to go into "test mode" and use local test
-/// assets, rather than an actual network bundle.
-fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
-    let tectonic = cargo_dir()
-        .join("tectonic")
-        .with_extension(env::consts::EXE_EXTENSION);
-
-    if fs::metadata(&tectonic).is_err() {
-        panic!(
-            "tectonic binary not found at {:?}. Do you need to run `cargo build`?",
-            tectonic
-        )
-    }
-    println!("using tectonic binary at {tectonic:?}");
-    println!("using cwd {cwd:?}");
-
-    // We may need to wrap the Tectonic invocation. If we're cross-compiling, we
-    // might need to use something like QEMU to actually be able to run the
-    // executable. If we're collecting code coverage information with kcov, we
-    // need to wrap the invocation with that program.
-    let mut command = if TARGET_RUNNER_WORDS.len() > 0 {
-        let mut cmd = Command::new(&TARGET_RUNNER_WORDS[0]);
-        cmd.args(&TARGET_RUNNER_WORDS[1..]).arg(tectonic);
-        cmd
-    } else if KCOV_WORDS.len() > 0 {
-        let mut cmd = Command::new(&KCOV_WORDS[0]);
-        cmd.args(&KCOV_WORDS[1..]);
-
-        // Give kcov a directory into which to put its output. We use
-        // mktemp-like functionality to automatically create such directories
-        // uniquely so that we don't have to manually bookkeep. This does mean
-        // that successive runs will build up new data directories indefinitely.
-        let mut root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        root.push("target");
-        root.push("cov");
-        root.push("exetest.");
-        let tempdir = tempfile::Builder::new().prefix(&root).tempdir().unwrap();
-        let tempdir = tempdir.into_path();
-        cmd.arg(tempdir);
-
-        cmd.arg(tectonic);
-        cmd
-    } else {
-        Command::new(tectonic)
-    };
-
-    command.args(args).current_dir(cwd).env(
-        tectonic::test_util::TEST_ROOT_ENV_VAR,
-        TEST_ROOT.as_os_str(),
-    );
-    command
-}
-
-fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
-    let mut command = prep_tectonic(cwd, args);
-    command.env("BROWSER", "echo");
-    println!("running {command:?}");
-    command.output().expect("tectonic failed to start")
-}
-
-fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool) -> Output {
-    // This harness doesn't work when running with kcov because there's no good
-    // way to stop the Tectonic child process that is "inside" of the kcov
-    // runner. If we kill kcov itself, the child process keeps running and we
-    // hang because our pipes never get fully closed. Right now I don't see a
-    // way to actually terminate the Tectonic subprocess short of guessing its
-    // PID, which is hackier than I want to implement. We could address this by
-    // providing some other mechanism to tell the "watch" subprocess to stop,
-    // such as closing its stdin.
-    assert_eq!(KCOV_WORDS.len(), 0, "\"until\" tests do not work with kcov");
-
-    let mut command = prep_tectonic(cwd, args);
-    command.stdout(Stdio::piped()).stderr(Stdio::piped());
-    command.env("BROWSER", "echo");
-
-    println!("running {command:?} until test passes");
-    let mut child = command.spawn().expect("tectonic failed to start");
-    while !kill() {
-        thread::sleep(Duration::from_secs(1));
-    }
-
-    // Ignore if the child already died
-    let _ = child.kill();
-    child
-        .wait_with_output()
-        .expect("tectonic failed to execute")
-}
-
-fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
-    let mut command = prep_tectonic(cwd, args);
-    command
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    println!("running {command:?}");
-    let mut child = command.spawn().expect("tectonic failed to start");
-    write!(child.stdin.as_mut().unwrap(), "{stdin}")
-        .expect("failed to send data to tectonic subprocess");
-    child
-        .wait_with_output()
-        .expect("failed to wait on tectonic subprocess")
-}
-
-fn setup_and_copy_files(files: &[&str]) -> TempDir {
-    let tempdir = tempfile::Builder::new()
-        .prefix("tectonic_executable_test")
-        .tempdir()
-        .unwrap();
-
-    // `cargo kcov` (0.5.2) does not set this variable:
-    let executable_test_dir = if let Some(v) = env::var_os("CARGO_MANIFEST_DIR") {
-        PathBuf::from(v)
-    } else {
-        PathBuf::new()
-    }
-    .join("tests/executable");
-
-    for file in files {
-        // Create parent directories, if the file is not at the root of `tests/executable/`
-        let file_path = PathBuf::from(file);
-        let parent_dir = file_path.parent().unwrap();
-        let mut dirbuilder = fs::DirBuilder::new();
-        dirbuilder.recursive(true);
-        dirbuilder.create(tempdir.path().join(parent_dir)).unwrap();
-
-        fs::copy(executable_test_dir.join(file), tempdir.path().join(file)).unwrap();
-    }
-
-    tempdir
-}
-
-fn success_or_panic(output: &Output) {
-    if output.status.success() {
-        println!("status: {}", output.status);
-        println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
-        println!("stderr:\n{}", String::from_utf8_lossy(&output.stderr));
-    } else {
-        panic!(
-            "Command exited badly:\nstatus: {}\nstdout:\n{}\nstderr:\n{}",
-            output.status,
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-    }
-}
-
-fn error_or_panic(output: &Output) {
-    if !output.status.success() {
-        println!("status: {}", output.status);
-        println!("stdout:\n{}", String::from_utf8_lossy(&output.stdout));
-        println!("stderr:\n{}", String::from_utf8_lossy(&output.stderr));
-    } else {
-        panic!(
-            "Command should have failed but didn't:\nstatus: {}\nstdout:\n{}\nstderr:\n{}",
-            output.status,
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-    }
-}
-
-fn check_file(tempdir: &TempDir, rest: &str) {
-    let mut p = tempdir.path().to_owned();
-    p.push(rest);
-
-    if !p.is_file() {
-        panic!(
-            "file \"{}\" should have been created but wasn\'t",
-            p.to_string_lossy()
-        );
-    }
-}
-
-fn setup_v2() -> (tempfile::TempDir, PathBuf) {
-    util::set_test_root();
-
-    let tempdir = setup_and_copy_files(&[]);
-    let mut temppath = tempdir.path().to_owned();
-    let output = run_tectonic(&temppath, &["-X", "new", "doc"]);
-    success_or_panic(&output);
-
-    temppath.push("doc");
-
-    // To run a build in our test setup, we can only use plain TeX. So, jankily
-    // change the format ...
-
-    {
-        let mut toml_path = temppath.clone();
-        toml_path.push("Tectonic.toml");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(toml_path)
-            .unwrap();
-        writeln!(file, "tex_format = 'plain'").unwrap();
-    }
-
-    // ... and write some files that are plain TeX.
-
-    {
-        let mut path = temppath.clone();
-        path.push("src");
-
-        {
-            path.push("_preamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file).unwrap();
-            path.pop();
-        }
-
-        {
-            path.push("_postamble.tex");
-            let mut file = File::create(&path).unwrap();
-            writeln!(file, "\\end").unwrap();
-            path.pop();
-        }
-    }
-
-    (tempdir, temppath)
-}
+use util::{set_test_root, test_path};
 
 /* Keep tests alphabetized */
 
@@ -314,11 +54,11 @@ fn run_with_biber(args: &str, stdin: &str) -> Output {
     let test_cmd = if cfg!(windows) {
         format!(
             "cmd /c {} {}",
-            util::test_path(&["fake-biber.bat"]).display(),
+            test_path(&["fake-biber.bat"]).display(),
             args
         )
     } else {
-        format!("{} {}", util::test_path(&["fake-biber.sh"]).display(), args)
+        format!("{} {}", test_path(&["fake-biber.sh"]).display(), args)
     };
 
     command.env("TECTONIC_TEST_FAKE_BIBER", &test_cmd);
@@ -655,7 +395,7 @@ fn v2_build_open() {
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_build_multiple_outputs() {
-    util::set_test_root();
+    set_test_root();
 
     let tempdir = setup_and_copy_files(&[]);
     let mut temppath = tempdir.path().to_owned();
@@ -804,171 +544,6 @@ fn v2_dump_suffix() {
     }
 
     assert!(saw_first && saw_second);
-}
-
-#[test]
-fn v2_help_on_no_subcmd() {
-    let output = run_tectonic(&PathBuf::from("."), &["-X"]);
-    error_or_panic(&output);
-}
-
-/// The number of spaces leading up to a flag, option, or subcommand.
-///
-/// Without this, it becomes annoying to parse the help message for argument
-/// names. For example, consider part of a help message:
-///
-/// ```text
-/// FLAGS:
-///     --example0    Long description that gets wrapped
-///                   --oops, we used a double hyphen
-///
-/// SUBCOMMANDS:
-///     example1    Another long description that gets
-///                 wrapped
-/// ```
-///
-/// If we naively trim leading spaces, then we get:
-///
-/// ```text
-/// FLAGS:
-/// --example0    Long description that gets wrapped
-/// --oops, we used a double hyphen
-///
-/// SUBCOMMANDS:
-/// example1    Another long description that gets
-/// wrapped
-/// ```
-///
-/// How do we know `--oops` is not a flag and `wrapped` is not a subcommand?
-///
-/// It is easier if we take the indent into account by only matching text that
-/// comes right after it.
-const HELP_INDENT: usize = 4;
-
-fn test_v2_help_section_lines<'a>(
-    lines: impl IntoIterator<Item = &'a str>,
-    parse: impl Fn(&str) -> &str,
-) {
-    // Parse the argument or subcommand name from each line, and compare it to
-    // the previous one to ensure they are ordered alphabetically
-    lines.into_iter().fold(None, |prev_name, line| {
-        let line = line.get(HELP_INDENT..).unwrap_or_else(|| {
-            panic!("line should be indented by at least {} spaces", HELP_INDENT)
-        });
-
-        match line.chars().nth(0) {
-            None => panic!("help section should not have empty lines"),
-            Some(' ') => {
-                // This is a continuation of the previous line, so skip it
-                return prev_name;
-            }
-            Some(_) => {}
-        }
-
-        // In ASCII, uppercase letters preceed lowercase letters, so
-        // flags like `-Z` would preceed `-a`. To avoid this, we compare
-        // in all lowercase.
-        let name = parse(line).to_lowercase();
-        if let Some(prev_name) = prev_name {
-            assert!(
-                name >= prev_name,
-                "args in help message should be ordered alphabetically"
-            );
-        }
-        Some(name)
-    });
-}
-
-fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
-    let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
-    let output = str::from_utf8(&output.stdout).expect("help message should be valid UTF-8");
-
-    // Start after the section heading
-    let lines_onward = output
-        .split_once(&format!("{}:\n", name))
-        .unwrap_or_else(|| panic!("help message should have a \"{}\" section", name))
-        .1;
-
-    // Stop at the end of the section
-    let lines = lines_onward
-        .split_once("\n\n")
-        .map_or(lines_onward, |(lines, _)| lines)
-        .split_terminator('\n');
-
-    test_v2_help_section_lines(lines, parse);
-}
-
-/// Parse the argument name from an unindented line in a help message.
-///
-/// This is the long version of the name if it exists, or the short version
-/// otherwise.
-///
-/// For example, `-X, --example    Description...` is parsed as `example`, while
-/// `-X    Description...` is parsed as `X`. This is true regardless of whether
-/// there is a description.
-fn parse_v2_help_arg(line: &str) -> &str {
-    // Start at the argument name
-    let name_onward = line
-        .split_once("--")
-        .or_else(|| line.split_once('-'))
-        .expect("line should begin with an argument")
-        .1;
-
-    // Stop at the end of the argument name
-    let name = name_onward
-        .split_once(' ')
-        .map_or(name_onward, |(name, _)| name);
-
-    name
-}
-
-/// Test that flags are ordered alphabetically according to their long name.
-#[test]
-fn v2_help_flags_ordered() {
-    test_v2_help_section("FLAGS", parse_v2_help_arg);
-}
-
-/// Test that options are ordered alphabetically according to their long name.
-#[test]
-fn v2_help_options_ordered() {
-    test_v2_help_section("OPTIONS", parse_v2_help_arg);
-}
-
-/// Parse the subcommand name from an unindented line in a help message.
-///
-/// For example, `example    Description...` is parsed as `example` (regardless
-/// of whether there is a description).
-fn parse_v2_help_subcmd(line: &str) -> &str {
-    line.split_once(' ').map_or(line, |(name, _)| name)
-}
-
-/// Test that subcommands are ordered alphabetically.
-#[test]
-fn v2_help_subcmds_ordered() {
-    test_v2_help_section("SUBCOMMANDS", parse_v2_help_subcmd);
-}
-
-#[test]
-fn v2_help_succeeds() {
-    let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
-    success_or_panic(&output);
-}
-
-#[test]
-fn v2_helps_equal() {
-    let output_long = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
-
-    let output_short = run_tectonic(&PathBuf::from("."), &["-X", "-h"]);
-    assert_eq!(&output_long, &output_short);
-
-    let output_subcmd = run_tectonic(&PathBuf::from("."), &["-X", "help"]);
-    assert_eq!(&output_long, &output_subcmd);
-
-    let output_no_subcmd = run_tectonic(&PathBuf::from("."), &["-X"]);
-    assert_eq!(
-        &[&output_long.stdout, &output_long.stderr],
-        &[&output_no_subcmd.stderr, &output_no_subcmd.stdout]
-    );
 }
 
 const SHELL_ESCAPE_TEST_DOC: &str = r"\immediate\write18{mkdir shellwork}
