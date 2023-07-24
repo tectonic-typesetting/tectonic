@@ -102,7 +102,7 @@ fn test_v2_help_section_lines<'a>(
 ) {
     // Parse the argument or subcommand name from each line, and compare it to
     // the previous one to ensure they are ordered alphabetically
-    lines.into_iter().fold(None, |prev_name, line| {
+    lines.into_iter().fold("", |prev_name, line| {
         let line = line.get(HELP_INDENT..).unwrap_or_else(|| {
             panic!("line should be indented by at least {} spaces", HELP_INDENT)
         });
@@ -116,17 +116,24 @@ fn test_v2_help_section_lines<'a>(
             Some(_) => {}
         }
 
-        // In ASCII, uppercase letters preceed lowercase letters, so
-        // flags like `-Z` would preceed `-a`. To avoid this, we compare
-        // in all lowercase.
-        let name = parse(line).to_lowercase();
-        if let Some(prev_name) = prev_name {
-            assert!(
-                name >= prev_name,
-                "args in help message should be ordered alphabetically"
-            );
-        }
-        Some(name)
+        let name = parse(line);
+
+        let prev_name_lower = prev_name.chars().next().map_or(true, char::is_lowercase);
+        let name_lower = name.chars().next().unwrap().is_lowercase();
+
+        let ordered = match (prev_name_lower, name_lower) {
+            (true, true) | (false, false) => prev_name <= name,
+            (true, false) => prev_name <= name.to_lowercase().as_str(),
+            // We do not want uppercase flags to preceed lowercase ones, even
+            // though that is how they are ordered in ASCII.
+            (false, true) => false,
+        };
+        assert!(
+            ordered,
+            "\"{}\" preceeds \"{}\", but args in help message should be ordered alphabetically",
+            prev_name, name
+        );
+        name
     });
 }
 
