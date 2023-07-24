@@ -8,18 +8,21 @@ use executable_util::{error_or_panic, run_tectonic, success_or_panic};
 
 // BEGIN TESTS
 
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_help_succeeds() {
     let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
     success_or_panic(&output);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_help_on_no_subcmd() {
     let output = run_tectonic(&PathBuf::from("."), &["-X"]);
     error_or_panic(&output);
 }
 
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_helps_equal() {
     let output_long = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
@@ -38,18 +41,21 @@ fn v2_helps_equal() {
 }
 
 /// Test that flags are ordered alphabetically according to their long name.
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_help_flags_ordered() {
     test_v2_help_section("FLAGS", parse_v2_help_arg);
 }
 
 /// Test that options are ordered alphabetically according to their long name.
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_help_options_ordered() {
     test_v2_help_section("OPTIONS", parse_v2_help_arg);
 }
 
 /// Test that subcommands are ordered alphabetically.
+#[cfg(feature = "serialization")]
 #[test]
 fn v2_help_subcmds_ordered() {
     test_v2_help_section("SUBCOMMANDS", parse_v2_help_subcmd);
