@@ -40,21 +40,22 @@ fn v2_helps_equal() {
     );
 }
 
-/// Test that flags are ordered alphabetically according to their long name.
+/// Test that flags are ordered lexicographically according to their long name.
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_help_flags_ordered() {
     test_v2_help_section("FLAGS", parse_v2_help_arg);
 }
 
-/// Test that options are ordered alphabetically according to their long name.
+/// Test that options are ordered lexicographically according to their long
+/// name.
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_help_options_ordered() {
     test_v2_help_section("OPTIONS", parse_v2_help_arg);
 }
 
-/// Test that subcommands are ordered alphabetically.
+/// Test that subcommands are ordered lexicographically.
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_help_subcmds_ordered() {
@@ -101,14 +102,14 @@ fn test_v2_help_section_lines<'a>(
     parse: impl Fn(&str) -> &str,
 ) {
     // Parse the argument or subcommand name from each line, and compare it to
-    // the previous one to ensure they are ordered alphabetically
+    // the previous one to ensure they are ordered lexicographically
     lines.into_iter().fold("", |prev_name, line| {
         let line = line.get(HELP_INDENT..).unwrap_or_else(|| {
             panic!("line should be indented by at least {} spaces", HELP_INDENT)
         });
 
         match line.chars().next() {
-            None => panic!("help section should not have empty lines"),
+            None => panic!("section should not have empty lines"),
             Some(' ') => {
                 // This is a continuation of the previous line, so skip it
                 return prev_name;
@@ -130,7 +131,7 @@ fn test_v2_help_section_lines<'a>(
         };
         assert!(
             ordered,
-            "\"{}\" preceeds \"{}\", but args in help message should be ordered alphabetically",
+            "\"{}\" preceeds \"{}\", but lines should be ordered lexicographically",
             prev_name, name
         );
         name
@@ -139,12 +140,12 @@ fn test_v2_help_section_lines<'a>(
 
 fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
     let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
-    let output = from_utf8(&output.stdout).expect("help message should be valid UTF-8");
+    let output = from_utf8(&output.stdout).expect("message should be valid UTF-8");
 
     // Start after the section heading
     let lines_onward = output
         .split_once(&format!("{}:\n", name))
-        .unwrap_or_else(|| panic!("help message should have a \"{}\" section", name))
+        .unwrap_or_else(|| panic!("message should have a \"{}\" section", name))
         .1;
 
     // Stop at the end of the section
