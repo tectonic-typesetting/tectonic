@@ -44,15 +44,14 @@ fn v2_helps_equal() {
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_help_flags_ordered() {
-    test_v2_help_section("FLAGS", parse_v2_help_arg);
+    test_v2_help_section("FLAGS", parse_v2_help_flag);
 }
 
-/// Test that options are ordered lexicographically according to their long
-/// name.
+/// Test that options are ordered lexicographically according to their argument.
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_help_options_ordered() {
-    test_v2_help_section("OPTIONS", parse_v2_help_arg);
+    test_v2_help_section("OPTIONS", parse_v2_help_option);
 }
 
 /// Test that subcommands are ordered lexicographically.
@@ -157,7 +156,7 @@ fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
     test_v2_help_section_lines(lines, parse);
 }
 
-/// Parse the argument name from an unindented line in a help message.
+/// Parse the flag name from an unindented line in a help message.
 ///
 /// This is the long version of the name if it exists, or the short version
 /// otherwise.
@@ -165,18 +164,39 @@ fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
 /// For example, `-X, --example    Description...` is parsed as `example`, while
 /// `-X    Description...` is parsed as `X`. This is true regardless of whether
 /// there is a description.
-fn parse_v2_help_arg(line: &str) -> &str {
-    // Start at the argument name
+fn parse_v2_help_flag(line: &str) -> &str {
+    // Start at the flag name
     let name_onward = line
         .split_once("--")
         .or_else(|| line.split_once('-'))
         .expect("line should begin with an argument")
         .1;
 
-    // Stop at the end of the argument name
+    // Stop at the end of the flag name
     let name = name_onward
         .split_once(' ')
         .map_or(name_onward, |(name, _)| name);
+
+    name
+}
+
+/// Parse the option argument from an unindented line in a help message.
+///
+/// For example, `-X, --example <arg>    Description...` is parsed as `arg`,
+/// regardless of the presence of the short option name, long option name, and
+/// description.
+fn parse_v2_help_option(line: &str) -> &str {
+    // Start at the argument name
+    let name_onward = line
+        .split_once('<')
+        .expect("option should have an argument")
+        .1;
+
+    // Stop at the end of the argument name
+    let name = name_onward
+        .split_once('>')
+        .expect("argument should be enclosed in angle brackets")
+        .0;
 
     name
 }
