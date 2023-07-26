@@ -1,3 +1,5 @@
+use rstest::rstest;
+use rstest_reuse::{self, apply, template};
 use std::path::PathBuf;
 use std::str::from_utf8;
 
@@ -9,59 +11,107 @@ use executable_util::{error_or_panic, run_tectonic, success_or_panic};
 // BEGIN TESTS
 
 #[cfg(feature = "serialization")]
-#[test]
-fn v2_help_succeeds() {
-    let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
+#[apply(all_commands)]
+fn help_succeeds(#[case] args: &[&str]) {
+    let args = [args, &["--help"]].concat();
+    let output = run_tectonic(&PathBuf::from("."), &args);
     success_or_panic(&output);
 }
 
 #[cfg(feature = "serialization")]
-#[test]
-fn v2_help_on_no_subcmd() {
-    let output = run_tectonic(&PathBuf::from("."), &["-X"]);
+#[apply(cmds_with_subcmds)]
+fn help_on_no_subcmd(#[case] args: &[&str]) {
+    let output = run_tectonic(&PathBuf::from("."), args);
     error_or_panic(&output);
 }
 
 #[cfg(feature = "serialization")]
-#[test]
-fn v2_helps_equal() {
-    let output_long = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
+#[apply(all_commands)]
+fn helps_equal(#[case] args: &[&str]) {
+    let args_long = [args, &["--help"]].concat();
+    let output_long = run_tectonic(&PathBuf::from("."), &args_long);
 
-    let output_short = run_tectonic(&PathBuf::from("."), &["-X", "-h"]);
+    let args_short = [args, &["-h"]].concat();
+    let output_short = run_tectonic(&PathBuf::from("."), &args_short);
     assert_eq!(&output_long, &output_short);
 
-    let output_subcmd = run_tectonic(&PathBuf::from("."), &["-X", "help"]);
-    assert_eq!(&output_long, &output_subcmd);
+    let has_subcmd = from_utf8(&output_long.stdout)
+        .ok()
+        .and_then(|output| output.find("SUBCOMMANDS:\n"))
+        .is_some();
+    if has_subcmd {
+        let args_subcmd = [args, &["help"]].concat();
+        let output_subcmd = run_tectonic(&PathBuf::from("."), &args_subcmd);
+        assert_eq!(&output_long, &output_subcmd);
 
-    let output_no_subcmd = run_tectonic(&PathBuf::from("."), &["-X"]);
-    assert_eq!(
-        &[&output_long.stdout, &output_long.stderr],
-        &[&output_no_subcmd.stderr, &output_no_subcmd.stdout]
-    );
+        let output_no_subcmd = run_tectonic(&PathBuf::from("."), args);
+        assert_eq!(
+            &[&output_long.stdout, &output_long.stderr],
+            &[&output_no_subcmd.stderr, &output_no_subcmd.stdout]
+        );
+    }
 }
 
 /// Test that flags are ordered lexicographically according to their long name.
 #[cfg(feature = "serialization")]
-#[test]
-fn v2_help_flags_ordered() {
-    test_v2_help_section("FLAGS", parse_v2_help_flag);
+#[apply(cmds_with_flags)]
+fn help_flags_ordered(#[case] args: &[&str]) {
+    test_help_section(args, "FLAGS", parse_help_flag);
 }
 
 /// Test that options are ordered lexicographically according to their argument.
 #[cfg(feature = "serialization")]
-#[test]
-fn v2_help_options_ordered() {
-    test_v2_help_section("OPTIONS", parse_v2_help_option);
+#[apply(cmds_with_options)]
+fn help_options_ordered(#[case] args: &[&str]) {
+    test_help_section(args, "OPTIONS", parse_help_option);
 }
 
 /// Test that subcommands are ordered lexicographically.
 #[cfg(feature = "serialization")]
-#[test]
-fn v2_help_subcmds_ordered() {
-    test_v2_help_section("SUBCOMMANDS", parse_v2_help_subcmd);
+#[apply(cmds_with_subcmds)]
+fn help_subcmds_ordered(#[case] args: &[&str]) {
+    test_help_section(args, "SUBCOMMANDS", parse_help_subcmd);
 }
 
 // END TESTS
+
+#[template]
+#[rstest]
+#[case::v1_main(&[])]
+#[case::v2_main(&["-X"])]
+#[case::v2_build(&["-X", "build"])]
+#[case::v2_bundle_main(&["-X", "bundle"])]
+#[case::v2_bundle_cat(&["-X", "bundle", "cat"])]
+#[case::v2_bundle_search(&["-X", "bundle", "search"])]
+#[case::v2_compile(&["-X", "compile"])]
+#[case::v2_dump(&["-X", "dump"])]
+#[case::v2_init(&["-X", "init"])]
+#[case::v2_new(&["-X", "new"])]
+#[case::v2_show_main(&["-X", "show"])]
+#[case::v2_show_user_cache_dir(&["-X", "show", "user-cache-dir"])]
+#[case::v2_watch(&["-X", "watch"])]
+fn all_commands(#[case] args: &[&str]) {}
+
+#[template]
+#[apply(all_commands)]
+fn cmds_with_flags(#[case] args: &[&str]) {}
+
+#[template]
+#[rstest]
+#[case::v1_main(&[])]
+#[case::v2_main(&["-X"])]
+#[case::v2_build(&["-X", "build"])]
+#[case::v2_compile(&["-X", "compile"])]
+#[case::v2_dump(&["-X", "dump"])]
+#[case::v2_watch(&["-X", "watch"])]
+fn cmds_with_options(#[case] args: &[&str]) {}
+
+#[template]
+#[rstest]
+#[case::v2_main(&["-X"])]
+#[case::v2_bundle_main(&["-X", "bundle"])]
+#[case::v2_show_main(&["-X", "show"])]
+fn cmds_with_subcmds(#[case] args: &[&str]) {}
 
 /// The number of spaces leading up to a flag, option, or subcommand.
 ///
@@ -96,7 +146,7 @@ fn v2_help_subcmds_ordered() {
 /// comes right after it.
 const HELP_INDENT: usize = 4;
 
-fn test_v2_help_section_lines<'a>(
+fn test_help_section_lines<'a>(
     lines: impl IntoIterator<Item = &'a str>,
     parse: impl Fn(&str) -> &str,
 ) {
@@ -137,8 +187,9 @@ fn test_v2_help_section_lines<'a>(
     });
 }
 
-fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
-    let output = run_tectonic(&PathBuf::from("."), &["-X", "--help"]);
+fn test_help_section(args: &[&str], name: &str, parse: impl Fn(&str) -> &str) {
+    let args = [args, &["--help"]].concat();
+    let output = run_tectonic(&PathBuf::from("."), &args);
     let output = from_utf8(&output.stdout).expect("message should be valid UTF-8");
 
     // Start after the section heading
@@ -153,7 +204,7 @@ fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
         .map_or(lines_onward, |(lines, _)| lines)
         .split_terminator('\n');
 
-    test_v2_help_section_lines(lines, parse);
+    test_help_section_lines(lines, parse);
 }
 
 /// Parse the flag name from an unindented line in a help message.
@@ -164,7 +215,7 @@ fn test_v2_help_section(name: &str, parse: impl Fn(&str) -> &str) {
 /// For example, `-X, --example    Description...` is parsed as `example`, while
 /// `-X    Description...` is parsed as `X`. This is true regardless of whether
 /// there is a description.
-fn parse_v2_help_flag(line: &str) -> &str {
+fn parse_help_flag(line: &str) -> &str {
     // Start at the flag name
     let name_onward = line
         .split_once("--")
@@ -185,7 +236,7 @@ fn parse_v2_help_flag(line: &str) -> &str {
 /// For example, `-X, --example <arg>    Description...` is parsed as `arg`,
 /// regardless of the presence of the short option name, long option name, and
 /// description.
-fn parse_v2_help_option(line: &str) -> &str {
+fn parse_help_option(line: &str) -> &str {
     // Start at the argument name
     let name_onward = line
         .split_once('<')
@@ -205,6 +256,6 @@ fn parse_v2_help_option(line: &str) -> &str {
 ///
 /// For example, `example    Description...` is parsed as `example` (regardless
 /// of whether there is a description).
-fn parse_v2_help_subcmd(line: &str) -> &str {
+fn parse_help_subcmd(line: &str) -> &str {
     line.split_once(' ').map_or(line, |(name, _)| name)
 }
