@@ -157,26 +157,19 @@ fn test_help_section_lines<'a>(
             panic!("line should be indented by at least {} spaces", HELP_INDENT)
         });
 
-        match line.chars().next() {
-            None => panic!("section should not have empty lines"),
-            Some(' ') => {
-                // This is a continuation of the previous line, so skip it
-                return prev_name;
-            }
-            Some(_) => {}
-        }
-
         let name = parse(line);
 
-        let prev_name_lower = prev_name.chars().next().map_or(true, char::is_lowercase);
-        let name_lower = name.chars().next().unwrap().is_lowercase();
+        let prev_name_lower = prev_name.chars().next().map(char::is_lowercase);
+        let name_lower = name.chars().next().map(char::is_lowercase);
 
         let ordered = match (prev_name_lower, name_lower) {
-            (true, true) | (false, false) => prev_name <= name,
-            (true, false) => prev_name <= name.to_lowercase().as_str(),
+            (_, None) => return prev_name,
+            (None, _) => return name,
+            (Some(true), Some(true)) | (Some(false), Some(false)) => prev_name <= name,
+            (Some(true), Some(false)) => prev_name <= name.to_lowercase().as_str(),
             // We do not want uppercase flags to preceed lowercase ones, even
             // though that is how they are ordered in ASCII.
-            (false, true) => false,
+            (Some(false), Some(true)) => false,
         };
         assert!(
             ordered,
@@ -217,11 +210,12 @@ fn test_help_section(args: &[&str], name: &str, parse: impl Fn(&str) -> &str) {
 /// there is a description.
 fn parse_help_flag(line: &str) -> &str {
     // Start at the flag name
-    let name_onward = line
-        .split_once("--")
-        .or_else(|| line.split_once('-'))
-        .expect("line should begin with an argument")
-        .1;
+    let name_onward = match line.get(HELP_INDENT..HELP_INDENT + 2) {
+        Some("--") => &line[HELP_INDENT + 2..],
+        Some("  ") => &line[1..],
+        None => line.get(1..).expect("line should start with a flag"),
+        Some(s) => panic!("line should not contain text at this position: \"{}\"", s),
+    };
 
     // Stop at the end of the flag name
     let name = name_onward
@@ -237,6 +231,10 @@ fn parse_help_flag(line: &str) -> &str {
 /// regardless of the presence of the short option name, long option name, and
 /// description.
 fn parse_help_option(line: &str) -> &str {
+    if line.starts_with(' ') {
+        return "";
+    }
+
     // Start at the argument name
     let name_onward = line
         .split_once('<')
