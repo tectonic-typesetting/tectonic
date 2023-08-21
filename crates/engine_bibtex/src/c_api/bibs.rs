@@ -45,6 +45,7 @@ impl BibData {
 
     fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
         match &mut self.bib_file[self.bib_ptr] {
+            // SAFETY: If non-null, bib files are guaranteed valid inputs
             Some(r) => Some(unsafe { r.as_mut() }),
             None => None,
         }

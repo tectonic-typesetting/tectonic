@@ -440,7 +440,7 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
 }
 
 fn rs_skip_stuff_at_sp_brace_level_greater_than_one(
-    pool: &mut StringPool,
+    pool: &StringPool,
     mut sp_ptr: PoolPointer,
     sp_end: PoolPointer,
     sp_brace_level: &mut i32,

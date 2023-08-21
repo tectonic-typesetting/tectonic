@@ -766,7 +766,7 @@ fn scan_a_field_token_and_eat_white(
 // TODO: Refactor this to bundle up arguments into structs as relevant
 #[allow(clippy::too_many_arguments)]
 fn rs_scan_and_store_the_field_value_and_eat_white(
-    ctx: &mut Bibtex,
+    ctx: &Bibtex,
     buffers: &mut GlobalBuffer,
     store_field: bool,
     at_bib_command: bool,
@@ -947,7 +947,7 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
 ) -> CResultBool {
     let res = with_buffers_mut(|buffers| {
         rs_scan_and_store_the_field_value_and_eat_white(
-            &mut *ctx,
+            &*ctx,
             buffers,
             store_field,
             at_bib_command,
@@ -1006,7 +1006,7 @@ pub unsafe extern "C" fn check_brace_level(
 }
 
 fn rs_name_scan_for_and(
-    ctx: &mut ExecCtx,
+    ctx: &ExecCtx,
     buffers: &mut GlobalBuffer,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
@@ -1069,12 +1069,12 @@ pub unsafe extern "C" fn name_scan_for_and(
     brace_level: *mut i32,
 ) -> CResult {
     with_buffers_mut(|buffers| {
-        rs_name_scan_for_and(&mut *ctx, buffers, pop_lit_var, &mut *brace_level).into()
+        rs_name_scan_for_and(&*ctx, buffers, pop_lit_var, &mut *brace_level).into()
     })
 }
 
 fn rs_von_token_found(
-    buffers: &mut GlobalBuffer,
+    buffers: &GlobalBuffer,
     name_bf_ptr: &mut BufPointer,
     name_bf_xptr: BufPointer,
 ) -> Result<bool, BibtexError> {
@@ -1152,7 +1152,7 @@ pub unsafe extern "C" fn von_token_found(
 }
 
 fn rs_von_name_ends_and_last_name_starts_stuff(
-    buffers: &mut GlobalBuffer,
+    buffers: &GlobalBuffer,
     last_end: BufPointer,
     von_start: BufPointer,
     von_end: &mut BufPointer,
