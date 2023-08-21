@@ -1,11 +1,14 @@
-use crate::c_api::{
-    cite::with_cites,
-    hash::with_hash,
-    history::mark_error,
-    log::{print_a_pool_str, print_confusion, write_logs},
-    pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start},
-    xbuf::{xrealloc_zeroed, SafelyZero},
-    Bibtex, HashPointer, StrNumber,
+use crate::{
+    c_api::{
+        cite::with_cites,
+        hash::with_hash,
+        history::mark_error,
+        log::{print_a_pool_str, print_confusion, write_logs},
+        pool::{bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start, with_pool},
+        xbuf::{xrealloc_zeroed, SafelyZero},
+        Bibtex, HashPointer, StrNumber,
+    },
+    BibtexError,
 };
 use std::slice;
 
@@ -213,38 +216,76 @@ pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
     ctx.lit_stk_ptr += 1;
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> bool {
-    let ctx = &mut *ctx;
-
+pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
     if ctx.lit_stk_ptr == 0 {
         write_logs("You can't pop an empty literal stack");
-        if !bst_ex_warn_print(ctx) {
-            return false;
+        if unsafe { !bst_ex_warn_print(ctx) } {
+            return Err(BibtexError::Fatal);
         }
-        *out = ExecVal {
+        Ok(ExecVal {
             lit: 0,
             typ: StkType::Illegal,
-        };
+        })
     } else {
         ctx.lit_stk_ptr -= 1;
-        let pop = ctx.lit_stack.add(ctx.lit_stk_ptr).read();
+        let pop = unsafe { ctx.lit_stack.add(ctx.lit_stk_ptr).read() };
         if pop.typ == StkType::String && pop.lit as usize >= ctx.bib_str_ptr {
             if pop.lit as usize != bib_str_ptr() - 1 {
                 write_logs("Nontop top of string stack");
                 print_confusion();
-                return false;
+                return Err(BibtexError::Fatal);
             }
             bib_set_str_ptr(bib_str_ptr() - 1);
             bib_set_pool_ptr(bib_str_start(bib_str_ptr() as StrNumber))
         }
-        *out = pop;
+        Ok(pop)
     }
+}
 
-    true
+#[no_mangle]
+pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> bool {
+    let ctx = &mut *ctx;
+    match rs_pop_lit_stk(ctx) {
+        Ok(val) => {
+            *out = val;
+            true
+        }
+        Err(_) => false,
+    }
 }
 
 pub fn illegl_literal_confusion() {
     write_logs("Illegal literal type");
     print_confusion();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn pop_top_and_print(ctx: *mut ExecCtx) -> bool {
+    match rs_pop_lit_stk(&mut *ctx) {
+        Ok(val) => {
+            if val.typ == StkType::Illegal {
+                write_logs("Empty literal\n");
+                true
+            } else {
+                print_lit(val)
+            }
+        }
+        Err(_) => false,
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn pop_whole_stack(ctx: *mut ExecCtx) -> bool {
+    while (*ctx).lit_stk_ptr > 0 {
+        if !pop_top_and_print(ctx) {
+            return false;
+        }
+    }
+    true
+}
+
+pub unsafe extern "C" fn init_command_execution(ctx: *mut ExecCtx) {
+    let ctx = &mut *ctx;
+    ctx.lit_stk_ptr = 0;
+    ctx.bib_str_ptr = with_pool(|pool| pool.str_ptr());
 }

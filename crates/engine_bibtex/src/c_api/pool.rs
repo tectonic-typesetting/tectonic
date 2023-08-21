@@ -177,6 +177,10 @@ impl StringPool {
             p = hash.next(p);
         }
     }
+
+    pub fn str_ptr(&self) -> usize {
+        self.str_ptr
+    }
 }
 
 thread_local! {

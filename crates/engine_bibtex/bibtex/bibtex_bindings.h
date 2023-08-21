@@ -412,6 +412,10 @@ void push_lit_stk(ExecCtx *ctx, ExecVal val);
 
 bool pop_lit_stk(ExecCtx *ctx, ExecVal *out);
 
+bool pop_top_and_print(ExecCtx *ctx);
+
+bool pop_whole_stack(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);

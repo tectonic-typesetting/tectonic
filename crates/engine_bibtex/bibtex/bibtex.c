@@ -426,34 +426,11 @@ static void figure_out_the_formatted_name(
     bib_set_buf_len(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1));
 }
 
-static void pop_top_and_print(ExecCtx* ctx)
-{
-    ExecVal val;
-    pop_lit_stk(ctx, &val);
-    if (val.typ == STK_TYPE_ILLEGAL) {
-        puts_log("Empty literal\n");
-    } else {
-        TRY(print_lit(val));
-    }
-}
-
-static void pop_whole_stack(ExecCtx* ctx)
-{
-    while (ctx->lit_stk_ptr > 0)
-        pop_top_and_print(ctx);
-}
-
-static void init_command_execution(ExecCtx* ctx)
-{
-    ctx->lit_stk_ptr = 0;
-    ctx->bib_str_ptr = bib_str_ptr();
-}
-
 static void check_command_execution(ExecCtx* ctx)
 {
     if (ctx->lit_stk_ptr != 0) {
         printf_log("ptr=%ld, stack=\n", (long) ctx->lit_stk_ptr);
-        pop_whole_stack(ctx);
+        TRY(pop_whole_stack(ctx));
         puts_log("---the literal stack isn't empty");
         TRY(bst_ex_warn_print(ctx));
     }
@@ -568,8 +545,8 @@ static void add_out_pool(Bibtex* ctx, str_number p_str)
 
 static void x_equals(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != ctx->pop2.typ) {
         if ((ctx->pop1.typ != STK_TYPE_ILLEGAL) && (ctx->pop2.typ != STK_TYPE_ILLEGAL)) {
             TRY(print_stk_lit(ctx->pop1));
@@ -601,8 +578,8 @@ static void x_equals(ExecCtx* ctx)
 
 static void x_greater_than(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -617,8 +594,8 @@ static void x_greater_than(ExecCtx* ctx)
 
 static void x_less_than(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -633,8 +610,8 @@ static void x_less_than(ExecCtx* ctx)
 
 static void x_plus(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -647,8 +624,8 @@ static void x_plus(ExecCtx* ctx)
 
 static void x_minus(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -662,8 +639,8 @@ static void x_minus(ExecCtx* ctx)
 static void x_concatenate(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -788,8 +765,8 @@ static void x_concatenate(ExecCtx* ctx)
 static void x_gets(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_FUNCTION)
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION);
     else if (((!ctx->mess_with_entries)
@@ -882,7 +859,7 @@ static void x_gets(ExecCtx* ctx)
 static void x_add_period(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -952,8 +929,8 @@ static void x_change_case(ExecCtx* ctx)
     buf_pointer tmp_ptr;
     bool prev_colon = false;
 
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1157,7 +1134,7 @@ static void x_change_case(ExecCtx* ctx)
 
 static void x_chr_to_int(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -1181,7 +1158,7 @@ static void x_cite(ExecCtx* ctx)
 
 static void x_duplicate(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop1.lit, .typ = ctx->pop1.typ });
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop1.lit, .typ = ctx->pop1.typ });
@@ -1219,7 +1196,7 @@ static void x_duplicate(ExecCtx* ctx)
 
 static void x_empty(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     switch ((ctx->pop1.typ)) {
     case 1:
         {
@@ -1254,9 +1231,9 @@ static void x_empty(ExecCtx* ctx)
 static void x_format_name(ExecCtx* ctx)
 {
     int32_t brace_level = 0;
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
-    pop_lit_stk(ctx, &ctx->pop3);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
+    TRY(pop_lit_stk(ctx, &ctx->pop3));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1468,7 +1445,7 @@ static void x_format_name(ExecCtx* ctx)
 
 static void x_int_to_chr(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1492,7 +1469,7 @@ static void x_int_to_chr(ExecCtx* ctx)
 
 static void x_int_to_str(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1504,7 +1481,7 @@ static void x_int_to_str(ExecCtx* ctx)
 
 static void x_missing(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (!ctx->mess_with_entries)
         TRY(bst_cant_mess_with_entries_print(ctx));
     else if ((ctx->pop1.typ != STK_TYPE_STRING) && (ctx->pop1.typ != STK_TYPE_MISSING)) {
@@ -1522,7 +1499,7 @@ static void x_missing(ExecCtx* ctx)
 
 static void x_num_names(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -1554,7 +1531,7 @@ static void x_preamble(ExecCtx* ctx)
 
 static void x_purify(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1674,9 +1651,9 @@ static void x_substring(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
 
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
-    pop_lit_stk(ctx, &ctx->pop3);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
+    TRY(pop_lit_stk(ctx, &ctx->pop3));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1751,8 +1728,8 @@ static void x_substring(ExecCtx* ctx)
 
 static void x_swap(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if ((ctx->pop1.typ != STK_TYPE_STRING ) || ((size_t)ctx->pop1.lit < ctx->bib_str_ptr)) {
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->pop1.lit, .typ = ctx->pop1.typ });
         if ((ctx->pop2.typ == STK_TYPE_STRING ) && ((size_t)ctx->pop2.lit >= ctx->bib_str_ptr)) {
@@ -1790,7 +1767,7 @@ static void x_text_length(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
 
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1836,8 +1813,8 @@ static void x_text_prefix(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
 
-    pop_lit_stk(ctx, &ctx->pop1);
-    pop_lit_stk(ctx, &ctx->pop2);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
+    TRY(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.typ != STK_TYPE_INTEGER) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
@@ -1921,7 +1898,7 @@ static void x_type(ExecCtx* ctx)
 
 static void x_warning(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING)
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
     else {
@@ -1933,7 +1910,7 @@ static void x_warning(ExecCtx* ctx)
 
 static void x_width(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING) {
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
         push_lit_stk(ctx, (ExecVal) { .lit = 0, .typ = STK_TYPE_INTEGER });
@@ -2023,7 +2000,7 @@ static void x_width(ExecCtx* ctx)
 
 static void x_write(ExecCtx* ctx)
 {
-    pop_lit_stk(ctx, &ctx->pop1);
+    TRY(pop_lit_stk(ctx, &ctx->pop1));
     if (ctx->pop1.typ != STK_TYPE_STRING)
         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING);
     else
@@ -2097,9 +2074,9 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 break;
             case 15:
                 {
-                    pop_lit_stk(ctx, &ctx->pop1);
-                    pop_lit_stk(ctx, &ctx->pop2);
-                    pop_lit_stk(ctx, &ctx->pop3);
+                    TRY(pop_lit_stk(ctx, &ctx->pop1));
+                    TRY(pop_lit_stk(ctx, &ctx->pop2));
+                    TRY(pop_lit_stk(ctx, &ctx->pop3));
                     if (ctx->pop1.typ != STK_TYPE_FUNCTION)
                         print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION);
                     else if (ctx->pop2.typ != STK_TYPE_FUNCTION)
@@ -2131,7 +2108,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 break;
             case 21:
                 {
-                    pop_lit_stk(ctx, &ctx->pop1);
+                    TRY(pop_lit_stk(ctx, &ctx->pop1));
                 }
                 break;
             case 22:
@@ -2150,7 +2127,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 break;
             case 26:
                 {
-                    pop_whole_stack(ctx);
+                    TRY(pop_whole_stack(ctx));
                 }
                 break;
             case 27:
@@ -2178,8 +2155,8 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 break;
             case 34:
                 {
-                    pop_lit_stk(ctx, &r_pop1);
-                    pop_lit_stk(ctx, &r_pop2);
+                    TRY(pop_lit_stk(ctx, &r_pop1));
+                    TRY(pop_lit_stk(ctx, &r_pop2));
                     if (r_pop1.typ != STK_TYPE_FUNCTION)
                         print_wrong_stk_lit(ctx, r_pop1, STK_TYPE_FUNCTION);
                     else if (r_pop2.typ != STK_TYPE_FUNCTION)
@@ -2188,7 +2165,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                         while (true) {
 
                             execute_fn(ctx, r_pop2.lit);
-                            pop_lit_stk(ctx, &ctx->pop1);
+                            TRY(pop_lit_stk(ctx, &ctx->pop1));
                             if (ctx->pop1.typ != STK_TYPE_INTEGER) {
                                 print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER);
                                 goto lab51;
