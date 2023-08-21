@@ -649,6 +649,8 @@ CResult von_name_ends_and_last_name_starts_stuff(BufPointer last_end,
                                                  BufPointer *name_bf_ptr,
                                                  BufPointer *name_bf_xptr);
 
+bool enough_text_chars(BufPointer enough_chars, BufPointer buf_start, int32_t *brace_level);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif // __cplusplus

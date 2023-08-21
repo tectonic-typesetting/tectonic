@@ -1,7 +1,7 @@
 use crate::{
     c_api::{
         bibs::{compress_bib_white, rs_eat_bib_white_space, with_bibs_mut},
-        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::{IdClass, LexClass},
         cite::{rs_add_database_cite, with_cites_mut},
         exec::ExecCtx,
@@ -1190,4 +1190,41 @@ pub unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff(
         )
         .into()
     })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn enough_text_chars(
+    enough_chars: BufPointer,
+    buf_start: BufPointer,
+    brace_level: *mut i32,
+) -> bool {
+    let mut num_text_chars = 0;
+    let mut buf_cur = buf_start;
+
+    with_buffers(|buffers| {
+        while buf_cur < buffers.offset(BufTy::Ex, 1) && num_text_chars < enough_chars {
+            buf_cur += 1;
+            if buffers.at(BufTy::Ex, buf_cur - 1) == b'{' {
+                *brace_level += 1;
+                if *brace_level == 1
+                    && buf_cur < buffers.offset(BufTy::Ex, 1)
+                    && buffers.at(BufTy::Ex, buf_cur) == b'\\'
+                {
+                    buf_cur += 1;
+                    while buf_cur < buffers.offset(BufTy::Ex, 1) && *brace_level > 0 {
+                        match buffers.at(BufTy::Ex, buf_cur) {
+                            b'}' => *brace_level -= 1,
+                            b'{' => *brace_level += 1,
+                            _ => (),
+                        }
+                        buf_cur += 1;
+                    }
+                }
+            } else if buffers.at(BufTy::Ex, buf_cur - 1) == b'}' {
+                *brace_level -= 1;
+            }
+            num_text_chars += 1;
+        }
+    });
+    num_text_chars >= enough_chars
 }

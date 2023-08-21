@@ -112,36 +112,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static bool enough_text_chars(buf_pointer enough_chars, buf_pointer ex_buf_xptr, int32_t* brace_level)
-{
-    buf_pointer num_text_chars = 0;
-    buf_pointer ex_buf_yptr = ex_buf_xptr;
-    while ((ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1)) && (num_text_chars < enough_chars)) {
-
-        ex_buf_yptr = ex_buf_yptr + 1;
-        if (bib_buf(BUF_TY_EX, ex_buf_yptr - 1) == 123 /*left_brace */ ) {
-            *brace_level += 1;
-            if ((*brace_level == 1) && (ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1))) {
-
-                if (bib_buf(BUF_TY_EX, ex_buf_yptr) == 92 /*backslash */ ) {
-                    ex_buf_yptr = ex_buf_yptr + 1;
-                    while ((ex_buf_yptr < bib_buf_offset(BUF_TY_EX, 1)) && (*brace_level > 0)) {
-
-                        if (bib_buf(BUF_TY_EX, ex_buf_yptr) == 125 /*right_brace */ )
-                            *brace_level -= 1;
-                        else if (bib_buf(BUF_TY_EX, ex_buf_yptr) == 123 /*left_brace */ )
-                            *brace_level += 1;
-                        ex_buf_yptr = ex_buf_yptr + 1;
-                    }
-                }
-            }
-        } else if (bib_buf(BUF_TY_EX, ex_buf_yptr - 1) == 125 /*right_brace */ )
-            *brace_level -= 1;
-        num_text_chars = num_text_chars + 1;
-    }
-    return num_text_chars >= enough_chars;
-}
-
 static void figure_out_the_formatted_name(
         ExecCtx* ctx,
         buf_pointer first_start,
