@@ -573,10 +573,10 @@ fn scan_balanced_braces(
                         buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
                         let init = buffers.init(BufTy::Base);
-                        if c == b'{'
+                        if (c == b'{'
                             || c == b'}'
-                            || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init)
-                                && !rs_eat_bib_white_space(buffers)
+                            || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
+                            && !rs_eat_bib_white_space(buffers)
                         {
                             return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
                         }
