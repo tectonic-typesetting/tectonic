@@ -90,6 +90,11 @@ fn test_single_entry() {
 }
 
 #[test]
+fn test_brace_string() {
+    TestCase::new("brace_string", Some("cites")).go();
+}
+
+#[test]
 fn test_many() {
     TestCase::new("many", Some("cites")).go();
 }
