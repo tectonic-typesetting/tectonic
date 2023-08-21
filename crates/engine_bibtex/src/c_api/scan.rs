@@ -445,9 +445,9 @@ fn scan_balanced_braces(
 ) -> Result<bool, BibtexError> {
     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
-    if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
-        || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
-            && !compress_bib_white(buffers, at_bib_command)?
+    if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
+        || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
+        && !compress_bib_white(buffers, at_bib_command)?
     {
         return Ok(false);
     }
@@ -476,9 +476,9 @@ fn scan_balanced_braces(
 
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
-                    if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
-                        || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
-                            && !compress_bib_white(buffers, at_bib_command)?
+                    if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
+                        || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
+                        && !compress_bib_white(buffers, at_bib_command)?
                     {
                         return Ok(false);
                     }
@@ -515,9 +515,9 @@ fn scan_balanced_braces(
 
                         buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
-                        if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
-                            || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
-                                && !compress_bib_white(buffers, at_bib_command)?
+                        if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
+                            || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
+                            && !compress_bib_white(buffers, at_bib_command)?
                         {
                             return Ok(false);
                         }
@@ -544,9 +544,9 @@ fn scan_balanced_braces(
 
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
-                    if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
-                        || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base)
-                            && !compress_bib_white(buffers, at_bib_command)?
+                    if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
+                        || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
+                        && !compress_bib_white(buffers, at_bib_command)?
                     {
                         return Ok(false);
                     }

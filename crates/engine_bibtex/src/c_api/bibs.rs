@@ -15,7 +15,7 @@ use std::{cell::RefCell, ptr::NonNull};
 const MAX_BIB_FILES: usize = 20;
 
 pub struct BibData {
-    bib_file: XBuf<Option<&'static mut PeekableInput>>,
+    bib_file: XBuf<Option<NonNull<PeekableInput>>>,
     bib_list: XBuf<StrNumber>,
     bib_ptr: BibNumber,
     bib_line_num: i32,
@@ -45,12 +45,16 @@ impl BibData {
 
     fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
         match &mut self.bib_file[self.bib_ptr] {
-            Some(r) => Some(*r),
+            Some(r) => Some(unsafe { r.as_mut() }),
             None => None,
         }
     }
 
-    fn set_cur_bib_file(&mut self, input: Option<&'static mut PeekableInput>) {
+    fn cur_bib_file_raw(&mut self) -> Option<NonNull<PeekableInput>> {
+        self.bib_file[self.bib_ptr]
+    }
+
+    fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
         self.bib_file[self.bib_ptr] = input;
     }
 
@@ -102,12 +106,12 @@ pub extern "C" fn set_cur_bib(num: StrNumber) {
 
 #[no_mangle]
 pub extern "C" fn cur_bib_file() -> Option<NonNull<PeekableInput>> {
-    with_bibs_mut(|bibs| bibs.cur_bib_file().map(NonNull::from))
+    with_bibs_mut(|bibs| bibs.cur_bib_file_raw())
 }
 
 #[no_mangle]
 pub extern "C" fn set_cur_bib_file(input: Option<NonNull<PeekableInput>>) {
-    with_bibs_mut(|bibs| bibs.set_cur_bib_file(input.map(|mut ptr| unsafe { ptr.as_mut() })))
+    with_bibs_mut(|bibs| bibs.set_cur_bib_file(input))
 }
 
 #[no_mangle]
