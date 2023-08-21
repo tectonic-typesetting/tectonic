@@ -6,7 +6,7 @@ Nobody Jr.
 
 \bibitem{Book01}
 Nobody Sr.
-\newblock {\em Foo {Bar}}.
-\newblock 2020.
+\newblock {\em Foo {\em Bar}}.
+\newblock Book Publisher, July 2020.
 
 \end{thebibliography}

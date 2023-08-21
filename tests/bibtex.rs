@@ -91,7 +91,7 @@ fn test_single_entry() {
 
 #[test]
 fn test_brace_string() {
-    TestCase::new("brace_string", Some("cites")).go();
+    TestCase::new("odd_strings", Some("cites")).go();
 }
 
 #[test]
