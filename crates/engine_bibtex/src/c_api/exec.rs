@@ -176,41 +176,48 @@ pub unsafe extern "C" fn print_wrong_stk_lit(
         if !res {
             return false;
         }
-        bst_ex_warn_print(ctx)
+        rs_bst_ex_warn_print(&*ctx).is_ok()
     } else {
         true
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
-    if (*ctx).mess_with_entries {
+pub fn rs_bst_ex_warn_print(ctx: &ExecCtx) -> Result<(), BibtexError> {
+    if ctx.mess_with_entries {
         write_logs(" for entry ");
         let res = with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr())));
         if !res {
-            return false;
+            return Err(BibtexError::Fatal);
         }
     }
 
     write_logs("\nwhile executing-");
-    bst_ln_num_print(&*(*ctx).glbl_ctx);
+    bst_ln_num_print(unsafe { &*ctx.glbl_ctx })?;
     mark_error();
-    true
+    Ok(())
 }
 
-pub fn bst_ln_num_print(glbl_ctx: &Bibtex) -> bool {
+#[no_mangle]
+pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> bool {
+    rs_bst_ex_warn_print(&*ctx).is_ok()
+}
+
+pub fn bst_ln_num_print(glbl_ctx: &Bibtex) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", glbl_ctx.bst_line_num));
-    // SAFETY: Reference -> pointer makes a valid pointer
-    unsafe { print_bst_name(glbl_ctx) }
+    rs_print_bst_name(glbl_ctx)
+}
+
+pub fn rs_print_bst_name(glbl_ctx: &Bibtex) -> Result<(), BibtexError> {
+    if !print_a_pool_str((*glbl_ctx).bst_str) {
+        return Err(BibtexError::Fatal);
+    }
+    write_logs(".bst\n");
+    Ok(())
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> bool {
-    if !print_a_pool_str((*glbl_ctx).bst_str) {
-        return false;
-    }
-    write_logs(".bst\n");
-    true
+    rs_print_bst_name(&*glbl_ctx).is_ok()
 }
 
 fn rs_push_lit_stk(ctx: &mut ExecCtx, val: ExecVal) {
@@ -232,10 +239,7 @@ pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
 pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
     if ctx.lit_stk_ptr == 0 {
         write_logs("You can't pop an empty literal stack");
-        // SAfETY: ctx guaranteed valid
-        if unsafe { !bst_ex_warn_print(ctx) } {
-            return Err(BibtexError::Fatal);
-        }
+        rs_bst_ex_warn_print(ctx)?;
         Ok(ExecVal {
             lit: 0,
             typ: StkType::Illegal,
@@ -286,10 +290,7 @@ fn rs_pop_top_and_print(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
 
 #[no_mangle]
 pub unsafe extern "C" fn pop_top_and_print(ctx: *mut ExecCtx) -> bool {
-    match rs_pop_top_and_print(&mut *ctx) {
-        Ok(()) => true,
-        Err(_) => false,
-    }
+    rs_pop_top_and_print(&mut *ctx).is_ok()
 }
 
 fn rs_pop_whole_stack(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
@@ -301,10 +302,7 @@ fn rs_pop_whole_stack(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
 
 #[no_mangle]
 pub unsafe extern "C" fn pop_whole_stack(ctx: *mut ExecCtx) -> bool {
-    match rs_pop_whole_stack(&mut *ctx) {
-        Ok(()) => true,
-        Err(_) => false,
-    }
+    rs_pop_whole_stack(&mut *ctx).is_ok()
 }
 
 #[no_mangle]
@@ -314,16 +312,13 @@ pub unsafe extern "C" fn init_command_execution(ctx: *mut ExecCtx) {
     ctx.bib_str_ptr = with_pool(|pool| pool.str_ptr());
 }
 
-pub fn skip_brace_level_greater_than_one(
-    str: &[ASCIICode],
-    sp_brace_level: &mut i32,
-) -> PoolPointer {
+pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i32) -> PoolPointer {
     let mut pos = 0;
-    while *sp_brace_level > 1 && pos < str.len() {
+    while *brace_level > 1 && pos < str.len() {
         if str[pos] == b'}' {
-            *sp_brace_level -= 1;
+            *brace_level -= 1;
         } else if str[pos] == b'{' {
-            *sp_brace_level += 1;
+            *brace_level += 1;
         }
         pos += 1;
     }
@@ -715,10 +710,7 @@ fn rs_check_command_execution(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
         write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
         rs_pop_whole_stack(ctx)?;
         write_logs("---the literal stack isn't empty");
-        // SAFETY: ctx guaranteed valid
-        if !unsafe { bst_ex_warn_print(ctx) } {
-            return Err(BibtexError::Fatal);
-        }
+        rs_bst_ex_warn_print(ctx)?;
     }
     if ctx.bib_str_ptr != with_pool(|pool| pool.str_ptr()) {
         write_logs("Nonempty empty string stack");

@@ -5,7 +5,7 @@ use crate::{
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::with_cites,
-        exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
+        exec::{bst_ln_num_print, rs_bst_ex_warn_print, ExecCtx},
         hash::{with_hash, FnClass},
         history::{mark_error, mark_fatal, mark_warning},
         other::with_other,
@@ -397,7 +397,7 @@ pub extern "C" fn hash_cite_confusion() {
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_warn_print(ctx: *const Bibtex) -> bool {
-    if !bst_ln_num_print(&*ctx) {
+    if bst_ln_num_print(&*ctx).is_err() {
         return false;
     }
     mark_warning();
@@ -498,10 +498,7 @@ pub fn rs_eat_bib_print(buffers: &GlobalBuffer, at_bib_command: bool) -> Result<
 
 #[no_mangle]
 pub extern "C" fn eat_bib_print(at_bib_command: bool) -> bool {
-    match with_buffers(|buffers| rs_eat_bib_print(buffers, at_bib_command)) {
-        Ok(()) => true,
-        Err(_) => false,
-    }
+    with_buffers(|buffers| rs_eat_bib_print(buffers, at_bib_command)).is_ok()
 }
 
 #[no_mangle]
@@ -558,10 +555,7 @@ pub fn rs_bib_id_print(buffers: &GlobalBuffer, scan_res: ScanRes) -> Result<(), 
 
 #[no_mangle]
 pub extern "C" fn bib_id_print(scan_res: ScanRes) -> bool {
-    match with_buffers(|buffers| rs_bib_id_print(buffers, scan_res)) {
-        Ok(()) => true,
-        Err(_) => false,
-    }
+    with_buffers(|buffers| rs_bib_id_print(buffers, scan_res)).is_ok()
 }
 
 #[no_mangle]
@@ -618,7 +612,7 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> bool {
 #[no_mangle]
 pub unsafe extern "C" fn bst_cant_mess_with_entries_print(ctx: *const ExecCtx) -> bool {
     write_logs("You can't mess with entries here");
-    bst_ex_warn_print(ctx)
+    rs_bst_ex_warn_print(&*ctx).is_ok()
 }
 
 #[no_mangle]
@@ -678,9 +672,7 @@ pub fn rs_bst_err_print_and_look_for_blank_line(
     buffers: &mut GlobalBuffer,
 ) -> Result<(), BibtexError> {
     write_logs("-");
-    if !bst_ln_num_print(ctx) {
-        return Err(BibtexError::Fatal);
-    }
+    bst_ln_num_print(ctx)?;
     print_bad_input_line(buffers);
     while buffers.init(BufTy::Base) != 0 {
         // SAFETY: bst_file guaranteed valid
@@ -711,7 +703,7 @@ pub unsafe extern "C" fn already_seen_function_print(
     write_logs(" is already a type \"");
     print_fn_class(seen_fn_loc);
     write_logs("\" function name\n");
-    bst_err_print_and_look_for_blank_line(ctx)
+    with_buffers_mut(|buffers| rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers)).into()
 }
 
 #[no_mangle]
@@ -754,9 +746,7 @@ pub unsafe extern "C" fn output_bbl_line(ctx: *mut Bibtex) {
 
 pub fn skip_token_print(ctx: &Bibtex, buffers: &mut GlobalBuffer) -> Result<(), BibtexError> {
     write_logs("-");
-    if !bst_ln_num_print(ctx) {
-        return Err(BibtexError::Fatal);
-    }
+    bst_ln_num_print(ctx)?;
     mark_error();
 
     Scan::new()
@@ -803,10 +793,7 @@ pub fn brace_lvl_one_letters_complaint(ctx: &mut ExecCtx) -> Result<(), BibtexEr
         return Err(BibtexError::Fatal);
     }
     write_logs("\" has an illegal brace-level-1 letter");
-    // SAFETY: ctx guaranteed valid
-    if unsafe { !bst_ex_warn_print(ctx) } {
-        return Err(BibtexError::Fatal);
-    }
+    rs_bst_ex_warn_print(ctx)?;
 
     Ok(())
 }
