@@ -11,7 +11,7 @@ use crate::{
         },
         pool::{
             bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start,
-            skip_stuff_at_sp_brace_level_greater_than_one, with_pool, StringPool,
+            skip_stuff_at_sp_brace_level_greater_than_one, with_pool, with_pool_mut, StringPool,
         },
         scan::enough_text_chars,
         xbuf::{xrealloc_zeroed, SafelyZero},
@@ -213,16 +213,19 @@ pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> bool {
     true
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
-    let ctx = &mut *ctx;
-    *ctx.lit_stack.add(ctx.lit_stk_ptr) = val;
+fn rs_push_lit_stk(ctx: &mut ExecCtx, val: ExecVal) {
+    unsafe { *ctx.lit_stack.add(ctx.lit_stk_ptr) = val };
 
     if ctx.lit_stk_ptr >= ctx.lit_stk_size {
         ctx.grow_stack();
     }
 
     ctx.lit_stk_ptr += 1;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
+    rs_push_lit_stk(&mut *ctx, val)
 }
 
 pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
@@ -268,29 +271,37 @@ pub fn illegl_literal_confusion() {
     print_confusion();
 }
 
+fn rs_pop_top_and_print(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
+    rs_pop_lit_stk(&mut *ctx).map(|val| {
+        if val.typ == StkType::Illegal {
+            write_logs("Empty literal\n");
+        } else {
+            print_lit(val);
+        }
+    })
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn pop_top_and_print(ctx: *mut ExecCtx) -> bool {
-    match rs_pop_lit_stk(&mut *ctx) {
-        Ok(val) => {
-            if val.typ == StkType::Illegal {
-                write_logs("Empty literal\n");
-                true
-            } else {
-                print_lit(val)
-            }
-        }
+    match rs_pop_top_and_print(&mut *ctx) {
+        Ok(()) => true,
         Err(_) => false,
     }
 }
 
+fn rs_pop_whole_stack(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
+    while ctx.lit_stk_ptr > 0 {
+        rs_pop_top_and_print(ctx)?;
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn pop_whole_stack(ctx: *mut ExecCtx) -> bool {
-    while (*ctx).lit_stk_ptr > 0 {
-        if !pop_top_and_print(ctx) {
-            return false;
-        }
+    match rs_pop_whole_stack(&mut *ctx) {
+        Ok(()) => true,
+        Err(_) => false,
     }
-    true
 }
 
 #[no_mangle]
@@ -682,4 +693,51 @@ pub unsafe extern "C" fn figure_out_the_formatted_name(
         })
     });
     res.into()
+}
+
+fn rs_check_command_execution(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
+    if ctx.lit_stk_ptr != 0 {
+        write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
+        rs_pop_whole_stack(ctx)?;
+        write_logs("---the literal stack isn't empty");
+        if !unsafe { bst_ex_warn_print(ctx) } {
+            return Err(BibtexError::Fatal);
+        }
+    }
+    if ctx.bib_str_ptr != with_pool(|pool| pool.str_ptr()) {
+        write_logs("Nonempty empty string stack");
+        print_confusion();
+        return Err(BibtexError::Fatal);
+    }
+    Ok(())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn check_command_execution(ctx: *mut ExecCtx) -> CResult {
+    rs_check_command_execution(&mut *ctx).into()
+}
+
+fn rs_add_pool_buf_and_push(
+    ctx: &mut ExecCtx,
+    buffers: &mut GlobalBuffer,
+    pool: &mut StringPool,
+) -> Result<(), BibtexError> {
+    buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
+    let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
+    rs_push_lit_stk(
+        ctx,
+        ExecVal {
+            lit: pool.add_string_raw(str)? as i32,
+            typ: StkType::String,
+        },
+    );
+    Ok(())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn add_pool_buf_and_push(ctx: *mut ExecCtx) -> CResult {
+    with_buffers_mut(|buffers| {
+        with_pool_mut(|pool| rs_add_pool_buf_and_push(&mut *ctx, buffers, pool))
+    })
+    .into()
 }

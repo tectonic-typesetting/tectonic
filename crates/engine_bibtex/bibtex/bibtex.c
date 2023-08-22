@@ -112,56 +112,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void check_command_execution(ExecCtx* ctx)
-{
-    if (ctx->lit_stk_ptr != 0) {
-        printf_log("ptr=%ld, stack=\n", (long) ctx->lit_stk_ptr);
-        TRY(pop_whole_stack(ctx));
-        puts_log("---the literal stack isn't empty");
-        TRY(bst_ex_warn_print(ctx));
-    }
-    if (ctx->bib_str_ptr != bib_str_ptr()) {
-        puts_log("Nonempty empty string stack");
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
-}
-
-static void add_pool_buf_and_push(ExecCtx* ctx)
-{
-    {
-        while (bib_pool_ptr() + bib_buf_len(BUF_TY_EX) > bib_pool_size())
-            pool_overflow();
-    }
-    bib_set_buf_offset(BUF_TY_EX, 1, 0);
-    while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
-
-        {
-            bib_set_str_pool(bib_pool_ptr(), bib_buf_at_offset(BUF_TY_EX, 1));
-            bib_set_pool_ptr(bib_pool_ptr() + 1);
-        }
-        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-    }
-    push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING} );
-}
-
-static void add_buf_pool(str_number p_str)
-{
-    pool_pointer p_ptr1 = bib_str_start(p_str);
-    pool_pointer p_ptr2 = bib_str_start(p_str + 1);
-    if (bib_buf_len(BUF_TY_EX) + (p_ptr2 - p_ptr1) > bib_buf_size())
-        buffer_overflow();
-    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_len(BUF_TY_EX));
-    while (p_ptr1 < p_ptr2) {
-
-        {
-            bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), bib_str_pool(p_ptr1));
-            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-        }
-        p_ptr1 = p_ptr1 + 1;
-    }
-    bib_set_buf_len(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1));
-}
 
 static void add_out_pool(Bibtex* ctx, str_number p_str)
 {
@@ -814,7 +764,7 @@ static void x_change_case(ExecCtx* ctx)
             }
             unwrap_res(check_brace_level(ctx, ctx->pop2.lit, brace_level));
         }
-        add_pool_buf_and_push(ctx);
+        unwrap_res(add_pool_buf_and_push(ctx));
     }
 }
 
@@ -1125,7 +1075,7 @@ static void x_format_name(ExecCtx* ctx)
         bib_set_buf_len(BUF_TY_EX, 0);
         add_buf_pool(ctx->pop1.lit);
         figure_out_the_formatted_name(ctx, first_start, first_end, last_end, von_start, von_end, &name_bf_ptr, &name_bf_xptr, jr_end, &brace_level);
-        add_pool_buf_and_push(ctx);
+        unwrap_res(add_pool_buf_and_push(ctx));
     }
 }
 
@@ -1161,7 +1111,7 @@ static void x_int_to_str(ExecCtx* ctx)
         push_lit_stk(ctx, (ExecVal) { .lit = ctx->glbl_ctx->s_null, .typ = STK_TYPE_STRING });
     } else {
         bib_set_buf_len(BUF_TY_EX, int_to_ascii(ctx->pop1.lit, BUF_TY_EX, 0));
-        add_pool_buf_and_push(ctx);
+        unwrap_res(add_pool_buf_and_push(ctx));
     }
 }
 
@@ -1212,7 +1162,7 @@ static void x_preamble(ExecCtx* ctx)
         add_buf_pool(cur_preamble());
         set_preamble_ptr(preamble_ptr() + 1);
     }
-    add_pool_buf_and_push(ctx);
+    unwrap_res(add_pool_buf_and_push(ctx));
 }
 
 static void x_purify(ExecCtx* ctx)
@@ -1316,7 +1266,7 @@ static void x_purify(ExecCtx* ctx)
             }
             bib_set_buf_len(BUF_TY_EX, ex_buf_xptr);
         }
-        add_pool_buf_and_push(ctx);
+        unwrap_res(add_pool_buf_and_push(ctx));
     }
 }
 
@@ -1445,7 +1395,7 @@ static void x_swap(ExecCtx* ctx)
             sp_ptr = sp_ptr + 1;
         }
         push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
-        add_pool_buf_and_push(ctx);
+        unwrap_res(add_pool_buf_and_push(ctx));
     }
 }
 
@@ -1939,7 +1889,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                 }
                 bib_set_buf_len(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1));
-                add_pool_buf_and_push(ctx);
+                unwrap_res(add_pool_buf_and_push(ctx));
             }
         }
         break;
@@ -2635,7 +2585,7 @@ static void bst_execute_command(ExecCtx* ctx)
         init_command_execution(ctx);
         ctx->mess_with_entries = false;
         execute_fn(ctx, fn_loc);
-        check_command_execution(ctx);
+        unwrap_res(check_command_execution(ctx));
     }
 }
 
@@ -2868,7 +2818,7 @@ static void bst_iterate_command(ExecCtx* ctx)
             set_cite_ptr(cite_info(sort_cite_ptr));
 
             execute_fn(ctx, fn_loc);
-            check_command_execution(ctx);
+            unwrap_res(check_command_execution(ctx));
             sort_cite_ptr = sort_cite_ptr + 1;
         }
     }
@@ -3663,11 +3613,10 @@ static void bst_reverse_command(ExecCtx* ctx)
             do {
                 sort_cite_ptr = sort_cite_ptr - 1;
                 set_cite_ptr(cite_info(sort_cite_ptr));
-                ;
 
                 execute_fn(ctx, fn_loc);
-                check_command_execution(ctx);
-            } while (!((sort_cite_ptr == 0)));
+                unwrap_res(check_command_execution(ctx));
+            } while (sort_cite_ptr != 0);
         }
     }
 }

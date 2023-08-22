@@ -1,6 +1,6 @@
 use crate::{
     c_api::{
-        buffer::{with_buffers, BufTy},
+        buffer::{with_buffers, with_buffers_mut, BufTy},
         entries::{with_entries_mut, ENT_STR_SIZE},
         global::GLOB_STR_SIZE,
         hash,
@@ -67,15 +67,15 @@ impl StringPool {
 
     /// Used while defining strings - declare the current `pool_ptr` as the end of the current
     /// string, increment the `str_ptr`, and return the new string's `StrNumber`
-    fn make_string(&mut self) -> CResultStr {
+    fn make_string(&mut self) -> Result<StrNumber, BibtexError> {
         if self.str_ptr == MAX_STRINGS {
             print_overflow();
             write_logs(&format!("number of strings {}\n", MAX_STRINGS));
-            return CResultStr::Error;
+            return Err(BibtexError::Fatal);
         }
         self.str_ptr += 1;
         self.offsets[self.str_ptr] = self.pool_ptr;
-        CResultStr::Ok(self.str_ptr - 1)
+        Ok(self.str_ptr - 1)
     }
 
     fn hash_str(hash: &HashData, str: &[ASCIICode]) -> usize {
@@ -161,8 +161,8 @@ impl StringPool {
                     self.pool_ptr += str.len();
 
                     match self.make_string() {
-                        CResultStr::Ok(str) => hash.set_text(p, str),
-                        _ => return Err(BibtexError::Fatal),
+                        Ok(str) => hash.set_text(p, str),
+                        Err(err) => return Err(err),
                     }
                 }
 
@@ -180,6 +180,15 @@ impl StringPool {
 
     pub fn str_ptr(&self) -> usize {
         self.str_ptr
+    }
+
+    pub fn add_string_raw(&mut self, str: &[ASCIICode]) -> Result<PoolPointer, BibtexError> {
+        while self.pool_ptr + str.len() > self.strings.len() {
+            self.grow();
+        }
+        self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
+        self.pool_ptr += str.len();
+        self.make_string()
     }
 }
 
@@ -261,7 +270,39 @@ pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
 
 #[no_mangle]
 pub extern "C" fn bib_make_string() -> CResultStr {
-    with_pool_mut(|pool| pool.make_string())
+    with_pool_mut(|pool| match pool.make_string() {
+        Ok(str) => CResultStr::Ok(str),
+        Err(BibtexError::Fatal) => CResultStr::Error,
+        Err(BibtexError::Recover) => CResultStr::Recover,
+    })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn add_buf_pool(p_str: StrNumber) {
+    with_pool_mut(|pool| {
+        with_buffers_mut(|buffers| {
+            let mut p_ptr1 = pool.offsets[p_str];
+            let p_ptr2 = pool.offsets[p_str + 1];
+
+            if buffers.init(BufTy::Ex) + (p_ptr2 - p_ptr1) > buffers.len() {
+                buffers.grow_all();
+            }
+
+            buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
+
+            while p_ptr1 < p_ptr2 {
+                buffers.set_at(
+                    BufTy::Ex,
+                    buffers.offset(BufTy::Ex, 1),
+                    pool.strings[p_ptr1],
+                );
+                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                p_ptr1 += 1;
+            }
+
+            buffers.set_init(BufTy::Ex, buffers.offset(BufTy::Ex, 1));
+        })
+    })
 }
 
 #[no_mangle]

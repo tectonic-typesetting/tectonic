@@ -429,6 +429,10 @@ CResult figure_out_the_formatted_name(ExecCtx *ctx,
                                       BufPointer jr_end,
                                       int32_t *brace_level);
 
+CResult check_command_execution(ExecCtx *ctx);
+
+CResult add_pool_buf_and_push(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
@@ -616,6 +620,8 @@ PoolPointer bib_pool_ptr(void);
 void bib_set_pool_ptr(PoolPointer ptr);
 
 CResultStr bib_make_string(void);
+
+void add_buf_pool(StrNumber p_str);
 
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
