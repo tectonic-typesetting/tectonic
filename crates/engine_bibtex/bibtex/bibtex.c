@@ -138,19 +138,22 @@ static void add_out_pool(Bibtex* ctx, str_number p_str)
         end_ptr = bib_buf_len(BUF_TY_OUT);
         out_offset = max_print_line;
         break_pt_found = false;
-        while ((LEX_CLASS[bib_buf(BUF_TY_OUT, out_offset)] != LEX_CLASS_WHITESPACE ) && (out_offset >= min_print_line))
+        while ((LEX_CLASS[bib_buf(BUF_TY_OUT, out_offset)] != LEX_CLASS_WHITESPACE ) && (out_offset >= min_print_line)) {
             out_offset -= 1;
+        }
         if (out_offset == min_print_line - 1) {      /*325: */
             out_offset = max_print_line + 1;
-            while (out_offset < end_ptr)
-                if (LEX_CLASS[bib_buf(BUF_TY_OUT, out_offset)] != LEX_CLASS_WHITESPACE )
-                   out_offset += 1;
-                else
+            while (out_offset < end_ptr) {
+                if (LEX_CLASS[bib_buf(BUF_TY_OUT, out_offset)] != LEX_CLASS_WHITESPACE) {
+                    out_offset += 1;
+                } else {
                     goto lab16;
- lab16:                        /*loop1_exit */ if (out_offset == end_ptr)
+                }
+            }
+ lab16:                        /*loop1_exit */
+            if (out_offset == end_ptr) {
                 unbreakable_tail = true;
-            else {
-
+            } else {
                 break_pt_found = true;
                 while (out_offset + 1 < end_ptr)
                     if (LEX_CLASS[bib_buf(BUF_TY_OUT, out_offset + 1)] == LEX_CLASS_WHITESPACE )

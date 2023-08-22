@@ -484,22 +484,6 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     res.into()
 }
 
-pub fn skip_stuff_at_sp_brace_level_greater_than_one(
-    str: &[ASCIICode],
-    sp_brace_level: &mut i32,
-) -> PoolPointer {
-    let mut pos = 0;
-    while *sp_brace_level > 1 && pos < str.len() {
-        if str[pos] == b'}' {
-            *sp_brace_level -= 1;
-        } else if str[pos] == b'{' {
-            *sp_brace_level += 1;
-        }
-        pos += 1;
-    }
-    pos
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

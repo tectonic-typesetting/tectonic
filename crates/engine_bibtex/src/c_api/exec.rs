@@ -10,12 +10,12 @@ use crate::{
             print_confusion, write_logs,
         },
         pool::{
-            bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start,
-            skip_stuff_at_sp_brace_level_greater_than_one, with_pool, with_pool_mut, StringPool,
+            bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start, with_pool,
+            with_pool_mut, StringPool,
         },
         scan::enough_text_chars,
         xbuf::{xrealloc_zeroed, SafelyZero},
-        Bibtex, BufPointer, CResult, HashPointer, StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrNumber,
     },
     BibtexError,
 };
@@ -214,6 +214,7 @@ pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> bool {
 }
 
 fn rs_push_lit_stk(ctx: &mut ExecCtx, val: ExecVal) {
+    // SAFETY: Length guaranteed to be >= lit_stk_ptr
     unsafe { *ctx.lit_stack.add(ctx.lit_stk_ptr) = val };
 
     if ctx.lit_stk_ptr >= ctx.lit_stk_size {
@@ -231,6 +232,7 @@ pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
 pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
     if ctx.lit_stk_ptr == 0 {
         write_logs("You can't pop an empty literal stack");
+        // SAfETY: ctx guaranteed valid
         if unsafe { !bst_ex_warn_print(ctx) } {
             return Err(BibtexError::Fatal);
         }
@@ -240,6 +242,7 @@ pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
         })
     } else {
         ctx.lit_stk_ptr -= 1;
+        // SAFETY: lit_stack length guaranteed >= lit_stk_ptr
         let pop = unsafe { ctx.lit_stack.add(ctx.lit_stk_ptr).read() };
         if pop.typ == StkType::String && pop.lit as usize >= ctx.bib_str_ptr {
             if pop.lit as usize != bib_str_ptr() - 1 {
@@ -311,6 +314,23 @@ pub unsafe extern "C" fn init_command_execution(ctx: *mut ExecCtx) {
     ctx.bib_str_ptr = with_pool(|pool| pool.str_ptr());
 }
 
+pub fn skip_brace_level_greater_than_one(
+    str: &[ASCIICode],
+    sp_brace_level: &mut i32,
+) -> PoolPointer {
+    let mut pos = 0;
+    while *sp_brace_level > 1 && pos < str.len() {
+        if str[pos] == b'}' {
+            *sp_brace_level -= 1;
+        } else if str[pos] == b'{' {
+            *sp_brace_level += 1;
+        }
+        pos += 1;
+    }
+    pos
+}
+
+#[allow(clippy::too_many_arguments)]
 pub fn rs_figure_out_the_formatted_name(
     ctx: &mut ExecCtx,
     buffers: &mut GlobalBuffer,
@@ -410,7 +430,7 @@ pub fn rs_figure_out_the_formatted_name(
                     end_of_group = true;
                 } else if sp_str[sp_ptr] == b'{' {
                     sp_brace_level += 1;
-                    sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(
+                    sp_ptr = skip_brace_level_greater_than_one(
                         &sp_str[sp_ptr + 1..],
                         &mut sp_brace_level,
                     ) + sp_ptr;
@@ -437,7 +457,7 @@ pub fn rs_figure_out_the_formatted_name(
                             sp_brace_level += 1;
                             sp_ptr += 1;
                             sp_xptr1 = sp_ptr;
-                            sp_ptr = skip_stuff_at_sp_brace_level_greater_than_one(
+                            sp_ptr = skip_brace_level_greater_than_one(
                                 &sp_str[sp_ptr..],
                                 &mut sp_brace_level,
                             ) + sp_ptr;
@@ -487,45 +507,41 @@ pub fn rs_figure_out_the_formatted_name(
                                         break;
                                     } else if *name_bf_ptr + 1 < *name_bf_xptr
                                         && buffers.at(BufTy::Sv, *name_bf_ptr) == b'{'
+                                        && buffers.at(BufTy::Sv, *name_bf_ptr + 1) == b'\\'
                                     {
-                                        if buffers.at(BufTy::Sv, *name_bf_ptr + 1) == b'\\' {
-                                            if buffers.offset(BufTy::Ex, 1) + 2 > buffers.len() {
+                                        if buffers.offset(BufTy::Ex, 1) + 2 > buffers.len() {
+                                            buffers.grow_all();
+                                        }
+                                        let offset = buffers.offset(BufTy::Ex, 1);
+                                        buffers.set_at(BufTy::Ex, offset, b'{');
+                                        buffers.set_at(BufTy::Ex, offset + 1, b'\\');
+                                        buffers.set_offset(BufTy::Ex, 1, offset + 2);
+                                        *name_bf_ptr += 2;
+                                        let mut nm_brace_level = 1;
+                                        while *name_bf_ptr < *name_bf_xptr && nm_brace_level > 0 {
+                                            if buffers.at(BufTy::Sv, *name_bf_ptr) == b'}' {
+                                                nm_brace_level -= 1;
+                                            } else if buffers.at(BufTy::Sv, *name_bf_ptr) == b'{' {
+                                                nm_brace_level += 1;
+                                            }
+
+                                            if buffers.offset(BufTy::Ex, 1) == buffers.len() {
                                                 buffers.grow_all();
                                             }
-                                            let offset = buffers.offset(BufTy::Ex, 1);
-                                            buffers.set_at(BufTy::Ex, offset, b'{');
-                                            buffers.set_at(BufTy::Ex, offset + 1, b'\\');
-                                            buffers.set_offset(BufTy::Ex, 1, offset + 2);
-                                            *name_bf_ptr += 2;
-                                            let mut nm_brace_level = 1;
-                                            while *name_bf_ptr < *name_bf_xptr && nm_brace_level > 0
-                                            {
-                                                if buffers.at(BufTy::Sv, *name_bf_ptr) == b'}' {
-                                                    nm_brace_level -= 1;
-                                                } else if buffers.at(BufTy::Sv, *name_bf_ptr)
-                                                    == b'{'
-                                                {
-                                                    nm_brace_level += 1;
-                                                }
 
-                                                if buffers.offset(BufTy::Ex, 1) == buffers.len() {
-                                                    buffers.grow_all();
-                                                }
-
-                                                buffers.set_at(
-                                                    BufTy::Ex,
-                                                    buffers.offset(BufTy::Ex, 1),
-                                                    buffers.at(BufTy::Sv, *name_bf_ptr),
-                                                );
-                                                buffers.set_offset(
-                                                    BufTy::Ex,
-                                                    1,
-                                                    buffers.offset(BufTy::Ex, 1) + 1,
-                                                );
-                                                *name_bf_ptr += 1;
-                                            }
-                                            break;
+                                            buffers.set_at(
+                                                BufTy::Ex,
+                                                buffers.offset(BufTy::Ex, 1),
+                                                buffers.at(BufTy::Sv, *name_bf_ptr),
+                                            );
+                                            buffers.set_offset(
+                                                BufTy::Ex,
+                                                1,
+                                                buffers.offset(BufTy::Ex, 1) + 1,
+                                            );
+                                            *name_bf_ptr += 1;
                                         }
+                                        break;
                                     }
                                     *name_bf_ptr += 1;
                                 }
@@ -700,6 +716,7 @@ fn rs_check_command_execution(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
         write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
         rs_pop_whole_stack(ctx)?;
         write_logs("---the literal stack isn't empty");
+        // SAFETY: ctx guaranteed valid
         if !unsafe { bst_ex_warn_print(ctx) } {
             return Err(BibtexError::Fatal);
         }

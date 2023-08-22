@@ -801,6 +801,7 @@ pub fn brace_lvl_one_letters_complaint(ctx: &mut ExecCtx) -> Result<(), BibtexEr
         return Err(BibtexError::Fatal);
     }
     write_logs("\" has an illegal brace-level-1 letter");
+    // SAFETY: ctx guaranteed valid
     if unsafe { !bst_ex_warn_print(ctx) } {
         return Err(BibtexError::Fatal);
     }
