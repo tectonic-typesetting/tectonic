@@ -633,7 +633,6 @@ pub fn rs_figure_out_the_formatted_name(
                         buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b'{');
                         buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                     } else {
-                        println!("  Printing part of sp_str");
                         if buffers.offset(BufTy::Ex, 1) == buffers.len() {
                             buffers.grow_all();
                         }

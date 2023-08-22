@@ -149,6 +149,9 @@ pub mod c_api {
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
     const _: () = assert!(hash::HASH_PRIME >= 128);
+    const _: () = assert!(pool::MAX_PRINT_LINE > pool::MIN_PRINT_LINE);
+    const _: () = assert!(pool::MIN_PRINT_LINE >= 3);
+    const _: () = assert!(pool::MAX_PRINT_LINE < buffer::BUF_SIZE + 1);
     const _: () = assert!(hash::HASH_PRIME <= hash::HASH_SIZE);
     const _: () = assert!(pool::MAX_STRINGS <= hash::HASH_SIZE);
     const _: () = assert!(cite::MAX_CITES <= pool::MAX_STRINGS);

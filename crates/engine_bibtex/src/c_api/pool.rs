@@ -6,7 +6,7 @@ use crate::{
         global::GLOB_STR_SIZE,
         hash,
         hash::{with_hash, with_hash_mut, FnClass, HashData},
-        log::{output_bbl_line, print_overflow, rs_output_bbl_line, write_logs},
+        log::{print_overflow, rs_output_bbl_line, write_logs},
         other::with_other_mut,
         xbuf::XBuf,
         ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, CResultStr, HashPointer, LookupRes,
@@ -17,8 +17,8 @@ use crate::{
 use std::cell::RefCell;
 
 const POOL_SIZE: usize = 65000;
-const MAX_PRINT_LINE: usize = 79;
-const MIN_PRINT_LINE: usize = 3;
+pub(crate) const MAX_PRINT_LINE: usize = 79;
+pub(crate) const MIN_PRINT_LINE: usize = 3;
 pub(crate) const MAX_STRINGS: usize = 35307;
 
 #[derive(Debug, PartialEq)]

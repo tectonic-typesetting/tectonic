@@ -4,7 +4,7 @@ use crate::c_api::{
 };
 use std::{cell::RefCell, slice};
 
-const BUF_SIZE: usize = 20000;
+pub(crate) const BUF_SIZE: usize = 20000;
 
 thread_local! {
     static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = RefCell::new(GlobalBuffer::new());
@@ -212,11 +212,6 @@ pub enum BufTy {
     Ex,
     Out,
     NameSep,
-}
-
-#[no_mangle]
-pub extern "C" fn bib_buf_size() -> usize {
-    with_buffers(|buffers| buffers.len())
 }
 
 #[no_mangle]
