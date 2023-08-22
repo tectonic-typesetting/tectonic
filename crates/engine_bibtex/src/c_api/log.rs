@@ -636,7 +636,7 @@ pub unsafe extern "C" fn bst_2print_string_size_exceeded(ctx: *const ExecCtx) ->
     true
 }
 
-pub fn rs_braces_unbalanced_complaint(
+pub fn braces_unbalanced_complaint(
     ctx: &ExecCtx,
     pop_lit_var: StrNumber,
 ) -> Result<(), BibtexError> {
@@ -649,17 +649,6 @@ pub fn rs_braces_unbalanced_complaint(
         return Err(BibtexError::Fatal);
     }
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn braces_unbalanced_complaint(
-    ctx: *const ExecCtx,
-    pop_lit_var: StrNumber,
-) -> bool {
-    match rs_braces_unbalanced_complaint(&*ctx, pop_lit_var) {
-        Ok(()) => true,
-        Err(_) => false,
-    }
 }
 
 #[no_mangle]
@@ -806,16 +795,15 @@ pub fn skip_illegal_stuff_after_token_print(
     skip_token_print(ctx, buffers)
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn brace_lvl_one_letters_complaint(ctx: *mut ExecCtx) -> CResult {
+pub fn brace_lvl_one_letters_complaint(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
     write_logs("The format string \"");
-    if !print_a_pool_str((*ctx).pop1.lit as usize) {
-        return CResult::Error;
+    if !print_a_pool_str(ctx.pop1.lit as usize) {
+        return Err(BibtexError::Fatal);
     }
     write_logs("\" has an illegal brace-level-1 letter");
-    if !bst_ex_warn_print(ctx) {
-        return CResult::Error;
+    if unsafe { !bst_ex_warn_print(ctx) } {
+        return Err(BibtexError::Fatal);
     }
 
-    CResult::Ok
+    Ok(())
 }

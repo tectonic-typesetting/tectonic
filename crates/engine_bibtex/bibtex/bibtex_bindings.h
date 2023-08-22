@@ -416,6 +416,19 @@ bool pop_top_and_print(ExecCtx *ctx);
 
 bool pop_whole_stack(ExecCtx *ctx);
 
+void init_command_execution(ExecCtx *ctx);
+
+CResult figure_out_the_formatted_name(ExecCtx *ctx,
+                                      BufPointer first_start,
+                                      BufPointer first_end,
+                                      BufPointer last_end,
+                                      BufPointer von_start,
+                                      BufPointer von_end,
+                                      BufPointer *name_bf_ptr,
+                                      BufPointer *name_bf_xptr,
+                                      BufPointer jr_end,
+                                      int32_t *brace_level);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
@@ -540,8 +553,6 @@ void bst_1print_string_size_exceeded(void);
 
 bool bst_2print_string_size_exceeded(const ExecCtx *ctx);
 
-bool braces_unbalanced_complaint(const ExecCtx *ctx, StrNumber pop_lit_var);
-
 void case_conversion_confusion(void);
 
 void print_fn_class(HashPointer fn_loc);
@@ -553,8 +564,6 @@ CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
 bool nonexistent_cross_reference_error(FieldLoc field_ptr);
 
 void output_bbl_line(Bibtex *ctx);
-
-CResult brace_lvl_one_letters_complaint(ExecCtx *ctx);
 
 HashPointer2 wiz_functions(WizFnLoc pos);
 
@@ -612,10 +621,6 @@ CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, 
 
 CResult pre_def_certain_strings(Bibtex *ctx);
 
-PoolPointer skip_stuff_at_sp_brace_level_greater_than_one(PoolPointer sp_ptr,
-                                                          PoolPointer sp_end,
-                                                          int32_t *sp_brace_level);
-
 bool scan1(ASCIICode char1);
 
 bool scan1_white(ASCIICode char1);
@@ -652,8 +657,6 @@ CResult von_name_ends_and_last_name_starts_stuff(BufPointer last_end,
                                                  BufPointer *von_end,
                                                  BufPointer *name_bf_ptr,
                                                  BufPointer *name_bf_xptr);
-
-bool enough_text_chars(BufPointer enough_chars, BufPointer buf_start, int32_t *brace_level);
 
 #ifdef __cplusplus
 } // extern "C"

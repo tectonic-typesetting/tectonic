@@ -443,32 +443,20 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     res.into()
 }
 
-fn rs_skip_stuff_at_sp_brace_level_greater_than_one(
-    pool: &StringPool,
-    mut sp_ptr: PoolPointer,
-    sp_end: PoolPointer,
+pub fn skip_stuff_at_sp_brace_level_greater_than_one(
+    str: &[ASCIICode],
     sp_brace_level: &mut i32,
 ) -> PoolPointer {
-    while *sp_brace_level > 1 && sp_ptr < sp_end {
-        if pool.strings[sp_ptr] == b'}' {
+    let mut pos = 0;
+    while *sp_brace_level > 1 && pos < str.len() {
+        if str[pos] == b'}' {
             *sp_brace_level -= 1;
-        } else if pool.strings[sp_ptr] == b'{' {
+        } else if str[pos] == b'{' {
             *sp_brace_level += 1;
         }
-        sp_ptr += 1;
+        pos += 1;
     }
-    sp_ptr
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn skip_stuff_at_sp_brace_level_greater_than_one(
-    sp_ptr: PoolPointer,
-    sp_end: PoolPointer,
-    sp_brace_level: *mut i32,
-) -> PoolPointer {
-    with_pool_mut(|pool| {
-        rs_skip_stuff_at_sp_brace_level_greater_than_one(pool, sp_ptr, sp_end, &mut *sp_brace_level)
-    })
+    pos
 }
 
 #[cfg(test)]

@@ -1,18 +1,18 @@
 use crate::{
     c_api::{
         bibs::{compress_bib_white, rs_eat_bib_white_space, with_bibs_mut},
-        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::{IdClass, LexClass},
         cite::{rs_add_database_cite, with_cites_mut},
         exec::ExecCtx,
         hash,
         hash::{end_of_def, with_hash, with_hash_mut, FnClass},
         log::{
-            bib_cmd_confusion, bib_unbalanced_braces_print, bib_warn_print, eat_bst_print,
-            hash_cite_confusion, macro_warn_print, print_a_pool_str, print_confusion,
-            print_recursion_illegal, rs_bib_err_print, rs_bib_id_print,
-            rs_braces_unbalanced_complaint, rs_bst_err_print_and_look_for_blank_line,
-            rs_eat_bib_print, skip_illegal_stuff_after_token_print, skip_token_print,
+            bib_cmd_confusion, bib_unbalanced_braces_print, bib_warn_print,
+            braces_unbalanced_complaint, eat_bst_print, hash_cite_confusion, macro_warn_print,
+            print_a_pool_str, print_confusion, print_recursion_illegal, rs_bib_err_print,
+            rs_bib_id_print, rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print,
+            skip_illegal_stuff_after_token_print, skip_token_print,
             skip_token_unknown_function_print, write_log_file, write_logs,
         },
         other::with_other_mut,
@@ -968,7 +968,7 @@ fn rs_decr_brace_level(
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
     if *brace_level == 0 {
-        rs_braces_unbalanced_complaint(ctx, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pop_lit_var)?;
     } else {
         *brace_level -= 1;
     }
@@ -991,7 +991,7 @@ fn rs_check_brace_level(
     brace_level: i32,
 ) -> Result<(), BibtexError> {
     if brace_level > 0 {
-        rs_braces_unbalanced_complaint(ctx, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pop_lit_var)?;
     }
     Ok(())
 }
@@ -1192,39 +1192,38 @@ pub unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff(
     })
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn enough_text_chars(
+pub fn enough_text_chars(
+    buffers: &mut GlobalBuffer,
     enough_chars: BufPointer,
     buf_start: BufPointer,
-    brace_level: *mut i32,
+    brace_level: &mut i32,
 ) -> bool {
     let mut num_text_chars = 0;
     let mut buf_cur = buf_start;
 
-    with_buffers(|buffers| {
-        while buf_cur < buffers.offset(BufTy::Ex, 1) && num_text_chars < enough_chars {
-            buf_cur += 1;
-            if buffers.at(BufTy::Ex, buf_cur - 1) == b'{' {
-                *brace_level += 1;
-                if *brace_level == 1
-                    && buf_cur < buffers.offset(BufTy::Ex, 1)
-                    && buffers.at(BufTy::Ex, buf_cur) == b'\\'
-                {
-                    buf_cur += 1;
-                    while buf_cur < buffers.offset(BufTy::Ex, 1) && *brace_level > 0 {
-                        match buffers.at(BufTy::Ex, buf_cur) {
-                            b'}' => *brace_level -= 1,
-                            b'{' => *brace_level += 1,
-                            _ => (),
-                        }
-                        buf_cur += 1;
+    while buf_cur < buffers.offset(BufTy::Ex, 1) && num_text_chars < enough_chars {
+        buf_cur += 1;
+        if buffers.at(BufTy::Ex, buf_cur - 1) == b'{' {
+            *brace_level += 1;
+            if *brace_level == 1
+                && buf_cur < buffers.offset(BufTy::Ex, 1)
+                && buffers.at(BufTy::Ex, buf_cur) == b'\\'
+            {
+                buf_cur += 1;
+                while buf_cur < buffers.offset(BufTy::Ex, 1) && *brace_level > 0 {
+                    match buffers.at(BufTy::Ex, buf_cur) {
+                        b'}' => *brace_level -= 1,
+                        b'{' => *brace_level += 1,
+                        _ => (),
                     }
+                    buf_cur += 1;
                 }
-            } else if buffers.at(BufTy::Ex, buf_cur - 1) == b'}' {
-                *brace_level -= 1;
             }
-            num_text_chars += 1;
+        } else if buffers.at(BufTy::Ex, buf_cur - 1) == b'}' {
+            *brace_level -= 1;
         }
-    });
+        num_text_chars += 1;
+    }
+
     num_text_chars >= enough_chars
 }
