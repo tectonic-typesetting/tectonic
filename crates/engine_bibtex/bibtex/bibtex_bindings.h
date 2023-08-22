@@ -304,8 +304,6 @@ void set_bib_line_num(int32_t num);
 
 bool eat_bib_white_space(void);
 
-uintptr_t bib_buf_size(void);
-
 ASCIICode bib_buf(BufTy ty, BufPointer pos);
 
 void bib_set_buf(BufTy ty, BufPointer num, ASCIICode val);
@@ -395,6 +393,8 @@ void set_entry_ints(int32_t pos, int32_t val);
 ASCIICode entry_strs(int32_t pos);
 
 void set_entry_strs(int32_t pos, ASCIICode val);
+
+ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
 bool print_lit(ExecVal val);
 

@@ -12,9 +12,6 @@
 /* hack: the name eof conflicts with other function declarations under mingw. */
 #define eof tectonic_eof
 
-/* (Re)Allocate N items of type T using xmalloc/xrealloc.  */
-#define XTALLOC(n, t) (xcalloc (n, sizeof (t)))
-
 /* duplicated from xetexd.h: */
 
 #include <setjmp.h>
@@ -26,7 +23,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 #define hash_base 1 /*empty 1*/
 #define quote_next_fn (hash_base - 1)
 #define aux_stack_size 20
-#define LIT_STK_SIZE 100
 
 /*22: */
 
@@ -381,34 +377,29 @@ static void x_gets(ExecCtx* ctx)
                 set_ilk_info(ctx->pop1.lit, /*:359 */ ctx->pop2.lit);
             break;
         case FN_CLASS_STR_GLBL_VAR:
-            {
-                if (ctx->pop2.typ != STK_TYPE_STRING)
-                    print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
+            if (ctx->pop2.typ != STK_TYPE_STRING) {
+                print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING);
+            } else {
+                int32_t str_glb_ptr = ilk_info(ctx->pop1.lit);
+                if ((size_t)ctx->pop2.lit < ctx->bib_str_ptr)
+                    set_glb_bib_str_ptr(str_glb_ptr, ctx->pop2.lit);
                 else {
-
-                    int32_t str_glb_ptr = ilk_info(ctx->pop1.lit);
-                    if ((size_t)ctx->pop2.lit < ctx->bib_str_ptr)
-                        set_glb_bib_str_ptr(str_glb_ptr, ctx->pop2.lit);
-                    else {
-                        set_glb_bib_str_ptr(str_glb_ptr, 0);
-                        int32_t glob_chr_ptr = 0;
-                        sp_ptr = bib_str_start(ctx->pop2.lit);
-                        sp_end = bib_str_start(ctx->pop2.lit + 1);
-                        if (sp_end - sp_ptr > GLOB_STR_SIZE) {
-                            {
-                                bst_1print_string_size_exceeded();
-                                printf_log("%ld, the global", (long) GLOB_STR_SIZE);
-                                TRY(bst_2print_string_size_exceeded(ctx));
-                            }
-                            sp_end = sp_ptr + GLOB_STR_SIZE;
-                        }
-                        while (sp_ptr < sp_end) {
-                            set_global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr), bib_str_pool(sp_ptr));
-                            glob_chr_ptr = glob_chr_ptr + 1;
-                            sp_ptr = sp_ptr + 1;
-                        }
-                        set_glb_str_end(str_glb_ptr, glob_chr_ptr);
+                    set_glb_bib_str_ptr(str_glb_ptr, 0);
+                    int32_t glob_chr_ptr = 0;
+                    sp_ptr = bib_str_start(ctx->pop2.lit);
+                    sp_end = bib_str_start(ctx->pop2.lit + 1);
+                    if (sp_end - sp_ptr > GLOB_STR_SIZE) {
+                        bst_1print_string_size_exceeded();
+                        printf_log("%ld, the global", (long) GLOB_STR_SIZE);
+                        TRY(bst_2print_string_size_exceeded(ctx));
+                        sp_end = sp_ptr + GLOB_STR_SIZE;
                     }
+                    while (sp_ptr < sp_end) {
+                        set_global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr), bib_str_pool(sp_ptr));
+                        glob_chr_ptr = glob_chr_ptr + 1;
+                        sp_ptr = sp_ptr + 1;
+                    }
+                    set_glb_str_end(str_glb_ptr, glob_chr_ptr);
                 }
             }
             break;
@@ -1795,19 +1786,21 @@ lab51:                        /*end_while */ ;
         push_lit_stk(ctx, (ExecVal) { .lit = ilk_info(ex_fn_loc), .typ = STK_TYPE_INTEGER });
         break;
     case FN_CLASS_STR_GLBL_VAR:
-        int32_t str_glb_ptr = ilk_info(ex_fn_loc);
-        if (glb_bib_str_ptr(str_glb_ptr) > 0)
-            push_lit_stk(ctx, (ExecVal) { .lit = glb_bib_str_ptr(str_glb_ptr), .typ = STK_TYPE_STRING });
-        else {
-            while (bib_pool_ptr() + glb_str_end(str_glb_ptr) > bib_pool_size())
-                pool_overflow();
-            int32_t glob_chr_ptr = 0;
-            while (glob_chr_ptr < glb_str_end(str_glb_ptr)) {
-                bib_set_str_pool(bib_pool_ptr(), global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr)));
-                bib_set_pool_ptr(bib_pool_ptr() + 1);
-                glob_chr_ptr = glob_chr_ptr + 1;
+        {
+            int32_t str_glb_ptr = ilk_info(ex_fn_loc);
+            if (glb_bib_str_ptr(str_glb_ptr) > 0) {
+                push_lit_stk(ctx, (ExecVal) {.lit = glb_bib_str_ptr(str_glb_ptr), .typ = STK_TYPE_STRING});
+            } else {
+                while (bib_pool_ptr() + glb_str_end(str_glb_ptr) > bib_pool_size())
+                    pool_overflow();
+                int32_t glob_chr_ptr = 0;
+                while (glob_chr_ptr < glb_str_end(str_glb_ptr)) {
+                    bib_set_str_pool(bib_pool_ptr(), global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr)));
+                    bib_set_pool_ptr(bib_pool_ptr() + 1);
+                    glob_chr_ptr = glob_chr_ptr + 1;
+                }
+                push_lit_stk(ctx, (ExecVal) {.lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING});
             }
-            push_lit_stk(ctx, (ExecVal) { .lit = unwrap_res_str(bib_make_string()), .typ = STK_TYPE_STRING });
         }
         break;
     default:
@@ -3436,8 +3429,6 @@ get_bst_command_and_process(ExecCtx* ctx)
 static int
 initialize(Bibtex* ctx, const char *aux_file_name)
 {
-    int32_t bad = 0;
-
     bib_set_pool_ptr(0);
     bib_set_str_ptr(1);
     bib_set_str_start(bib_str_ptr(), 0);
@@ -3515,11 +3506,7 @@ bibtex_main(Bibtex* glbl_ctx, const char *aux_file_name)
     bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_len(BUF_TY_BASE));
 
     if (setjmp(recover_jmpbuf) == 0) {
-        ExecCtx ctx = { 0 };
-        ctx.glbl_ctx = glbl_ctx;
-        ctx.lit_stk_size = LIT_STK_SIZE;
-        ctx.lit_stack = XTALLOC(ctx.lit_stk_size + 1, ExecVal);
-        
+        ExecCtx ctx = init_exec_ctx(glbl_ctx);
         while(true) {
             if (!eat_bst_white_space(ctx.glbl_ctx))
                 break;

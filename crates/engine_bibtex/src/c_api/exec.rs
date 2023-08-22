@@ -15,11 +15,11 @@ use crate::{
         },
         scan::enough_text_chars,
         xbuf::{xrealloc_zeroed, SafelyZero},
-        ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrNumber,
+        xcalloc, ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrNumber,
     },
     BibtexError,
 };
-use std::slice;
+use std::{mem, ptr, slice};
 
 const LIT_STK_SIZE: usize = 100;
 
@@ -40,6 +40,15 @@ pub enum StkType {
 pub struct ExecVal {
     pub typ: StkType,
     pub lit: i32,
+}
+
+impl ExecVal {
+    fn empty() -> ExecVal {
+        ExecVal {
+            typ: StkType::Integer,
+            lit: 0,
+        }
+    }
 }
 
 // SAFETY: StkType is valid as 0 because of StkType::Integer, i32 is always valid as 0
@@ -69,6 +78,22 @@ impl ExecCtx {
         let new_stack =
             xrealloc_zeroed::<ExecVal>(slice, self.lit_stk_size + LIT_STK_SIZE).unwrap();
         self.lit_stack = (new_stack as *mut [_]).cast();
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
+    ExecCtx {
+        glbl_ctx,
+        _default: 0,
+        pop1: ExecVal::empty(),
+        pop2: ExecVal::empty(),
+        pop3: ExecVal::empty(),
+        lit_stack: unsafe { xcalloc(LIT_STK_SIZE + 1, mem::size_of::<ExecVal>()) }.cast(),
+        lit_stk_size: LIT_STK_SIZE,
+        lit_stk_ptr: 0,
+        mess_with_entries: false,
+        bib_str_ptr: 0,
     }
 }
 
