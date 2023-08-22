@@ -320,8 +320,6 @@ BufPointer bib_buf_len(BufTy ty);
 
 void bib_set_buf_len(BufTy ty, BufPointer len);
 
-void buffer_overflow(void);
-
 BufPointer name_tok(BufPointer pos);
 
 void set_name_tok(BufPointer pos, BufPointer val);
@@ -626,6 +624,8 @@ void add_buf_pool(StrNumber p_str);
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
 CResult pre_def_certain_strings(Bibtex *ctx);
+
+void add_out_pool(Bibtex *ctx, StrNumber str);
 
 bool scan1(ASCIICode char1);
 

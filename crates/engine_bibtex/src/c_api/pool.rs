@@ -1,11 +1,12 @@
 use crate::{
     c_api::{
-        buffer::{with_buffers, with_buffers_mut, BufTy},
+        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        char_info::LexClass,
         entries::{with_entries_mut, ENT_STR_SIZE},
         global::GLOB_STR_SIZE,
         hash,
         hash::{with_hash, with_hash_mut, FnClass, HashData},
-        log::{print_overflow, write_logs},
+        log::{output_bbl_line, print_overflow, rs_output_bbl_line, write_logs},
         other::with_other_mut,
         xbuf::XBuf,
         ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, CResultStr, HashPointer, LookupRes,
@@ -16,6 +17,8 @@ use crate::{
 use std::cell::RefCell;
 
 const POOL_SIZE: usize = 65000;
+const MAX_PRINT_LINE: usize = 79;
+const MIN_PRINT_LINE: usize = 3;
 pub(crate) const MAX_STRINGS: usize = 35307;
 
 #[derive(Debug, PartialEq)]
@@ -482,6 +485,86 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
         })
     });
     res.into()
+}
+
+fn rs_add_out_pool(
+    ctx: &mut Bibtex,
+    buffers: &mut GlobalBuffer,
+    pool: &StringPool,
+    str: StrNumber,
+) {
+    let str = pool.get_str(str);
+
+    while buffers.init(BufTy::Out) + str.len() > buffers.len() {
+        buffers.grow_all();
+    }
+
+    let out_offset = buffers.init(BufTy::Out);
+    for (idx, c) in str.iter().copied().enumerate() {
+        buffers.set_at(BufTy::Out, out_offset + idx, c);
+    }
+    buffers.set_init(BufTy::Out, out_offset + str.len());
+
+    let mut unbreakable_tail = false;
+    while buffers.init(BufTy::Out) > MAX_PRINT_LINE && !unbreakable_tail {
+        let end_ptr = buffers.init(BufTy::Out);
+        let mut out_offset = MAX_PRINT_LINE;
+        let mut break_pt_found = false;
+
+        while LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace
+            && out_offset >= MIN_PRINT_LINE
+        {
+            out_offset -= 1;
+        }
+
+        if out_offset == MIN_PRINT_LINE - 1 {
+            out_offset = MAX_PRINT_LINE + 1;
+            while out_offset < end_ptr {
+                if LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace {
+                    out_offset += 1;
+                } else {
+                    break;
+                }
+            }
+
+            if out_offset == end_ptr {
+                unbreakable_tail = true;
+            } else {
+                break_pt_found = true;
+                while out_offset + 1 < end_ptr {
+                    if LexClass::of(buffers.at(BufTy::Out, out_offset + 1)) == LexClass::Whitespace
+                    {
+                        out_offset += 1;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        } else {
+            break_pt_found = true;
+        }
+
+        if break_pt_found {
+            buffers.set_init(BufTy::Out, out_offset);
+            let break_ptr = buffers.init(BufTy::Out) + 1;
+            rs_output_bbl_line(ctx, buffers);
+            buffers.set_at(BufTy::Out, 0, b' ');
+            buffers.set_at(BufTy::Out, 1, b' ');
+            out_offset = 2;
+            let mut tmp_ptr = break_ptr;
+            while tmp_ptr < end_ptr {
+                buffers.set_at(BufTy::Out, out_offset, buffers.at(BufTy::Out, tmp_ptr));
+                out_offset += 1;
+                tmp_ptr += 1;
+            }
+            buffers.set_init(BufTy::Out, end_ptr - break_ptr + 2);
+        }
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn add_out_pool(ctx: *mut Bibtex, str: StrNumber) {
+    with_buffers_mut(|buffers| with_pool(|pool| rs_add_out_pool(&mut *ctx, buffers, pool, str)))
 }
 
 #[cfg(test)]

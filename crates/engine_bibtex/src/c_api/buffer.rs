@@ -255,11 +255,6 @@ pub extern "C" fn bib_set_buf_len(ty: BufTy, len: BufPointer) {
 }
 
 #[no_mangle]
-pub extern "C" fn buffer_overflow() {
-    with_buffers_mut(|buffers| buffers.grow_all())
-}
-
-#[no_mangle]
 pub extern "C" fn name_tok(pos: BufPointer) -> BufPointer {
     with_buffers(|buffers| buffers.name_tok[pos])
 }

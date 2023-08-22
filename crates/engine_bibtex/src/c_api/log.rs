@@ -725,29 +725,31 @@ pub extern "C" fn nonexistent_cross_reference_error(field_ptr: FieldLoc) -> bool
     true
 }
 
+pub fn rs_output_bbl_line(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) {
+    if buffers.init(BufTy::Out) != 0 {
+        let mut init = buffers.init(BufTy::Out);
+        while init > 0 {
+            if LexClass::of(buffers.at(BufTy::Out, init - 1)) == LexClass::Whitespace {
+                init -= 1;
+            } else {
+                break;
+            }
+        }
+        buffers.set_init(BufTy::Out, init);
+        if init == 0 {
+            return;
+        }
+        let slice = &buffers.buffer(BufTy::Out)[..init];
+        (unsafe { &mut *ctx.bbl_file }).write_all(slice).unwrap();
+    }
+    writeln!(unsafe { &mut *ctx.bbl_file }).unwrap();
+    (*ctx).bbl_line_num += 1;
+    buffers.set_init(BufTy::Out, 0);
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn output_bbl_line(ctx: *mut Bibtex) {
-    with_buffers_mut(|buffers| {
-        if buffers.init(BufTy::Out) != 0 {
-            let mut init = buffers.init(BufTy::Out);
-            while init > 0 {
-                if LexClass::of(buffers.at(BufTy::Out, init - 1)) == LexClass::Whitespace {
-                    init -= 1;
-                } else {
-                    break;
-                }
-            }
-            buffers.set_init(BufTy::Out, init);
-            if init == 0 {
-                return;
-            }
-            let slice = &buffers.buffer(BufTy::Out)[..init];
-            (*(*ctx).bbl_file).write_all(slice).unwrap();
-        }
-        writeln!((*(*ctx).bbl_file)).unwrap();
-        (*ctx).bbl_line_num += 1;
-        buffers.set_init(BufTy::Out, 0);
-    })
+    with_buffers_mut(|buffers| rs_output_bbl_line(&mut *ctx, buffers))
 }
 
 pub fn skip_token_print(ctx: &Bibtex, buffers: &mut GlobalBuffer) -> Result<(), BibtexError> {
