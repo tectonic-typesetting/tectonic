@@ -240,10 +240,21 @@ pub mod c_api {
     }
 
     #[repr(C)]
+    #[derive(PartialEq)]
     pub enum CResult {
         Error,
         Recover,
         Ok,
+    }
+
+    impl From<CResult> for Result<(), BibtexError> {
+        fn from(value: CResult) -> Self {
+            match value {
+                CResult::Error => Err(BibtexError::Fatal),
+                CResult::Recover => Err(BibtexError::Recover),
+                CResult::Ok => Ok(()),
+            }
+        }
     }
 
     impl From<Result<(), BibtexError>> for CResult {

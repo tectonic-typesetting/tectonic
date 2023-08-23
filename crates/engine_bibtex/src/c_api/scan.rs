@@ -684,8 +684,10 @@ fn scan_a_field_token_and_eat_white(
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("used in its own definition\n");
-                    if !bib_warn_print() {
-                        return Err(BibtexError::Fatal);
+                    match bib_warn_print() {
+                        CResult::Ok => (),
+                        CResult::Error => return Err(BibtexError::Fatal),
+                        CResult::Recover => return Err(BibtexError::Recover),
                     }
                 }
 
@@ -693,8 +695,10 @@ fn scan_a_field_token_and_eat_white(
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("undefined\n");
-                    if !bib_warn_print() {
-                        return Err(BibtexError::Fatal);
+                    match bib_warn_print() {
+                        CResult::Ok => (),
+                        CResult::Error => return Err(BibtexError::Fatal),
+                        CResult::Recover => return Err(BibtexError::Recover),
                     }
                 }
 
@@ -860,16 +864,19 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
                         /* missing */
                         {
                             write_logs("Warning--I'm ignoring ");
-                            if !print_a_pool_str(cites.get_cite(cites.entry_ptr())) {
-                                return Err(BibtexError::Fatal);
+                            match print_a_pool_str(cites.get_cite(cites.entry_ptr())) {
+                                CResult::Ok => (),
+                                err => return err.into(),
                             }
                             write_logs("'s extra \"");
-                            if !print_a_pool_str(hash.text(field_name_loc)) {
-                                return Err(BibtexError::Fatal);
+                            match print_a_pool_str(hash.text(field_name_loc)) {
+                                CResult::Ok => (),
+                                err => return err.into(),
                             }
                             write_logs("\" field\n");
-                            if !bib_warn_print() {
-                                return Err(BibtexError::Fatal);
+                            match bib_warn_print() {
+                                CResult::Ok => (),
+                                err => return err.into(),
                             }
                         } else {
                             other.set_field(field_ptr, hash.text(res.loc));

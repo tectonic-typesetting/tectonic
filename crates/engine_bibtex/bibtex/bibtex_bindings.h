@@ -396,23 +396,23 @@ void set_entry_strs(int32_t pos, ASCIICode val);
 
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
-bool print_lit(ExecVal val);
+CResult print_lit(ExecVal val);
 
-bool print_stk_lit(ExecVal val);
+CResult print_stk_lit(ExecVal val);
 
-bool print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
+CResult print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
 
-bool bst_ex_warn_print(const ExecCtx *ctx);
+CResult bst_ex_warn_print(const ExecCtx *ctx);
 
-bool print_bst_name(const Bibtex *glbl_ctx);
+CResult print_bst_name(const Bibtex *glbl_ctx);
 
 void push_lit_stk(ExecCtx *ctx, ExecVal val);
 
-bool pop_lit_stk(ExecCtx *ctx, ExecVal *out);
+CResult pop_lit_stk(ExecCtx *ctx, ExecVal *out);
 
-bool pop_top_and_print(ExecCtx *ctx);
+CResult pop_top_and_print(ExecCtx *ctx);
 
-bool pop_whole_stack(ExecCtx *ctx);
+CResult pop_whole_stack(ExecCtx *ctx);
 
 void init_command_execution(ExecCtx *ctx);
 
@@ -489,15 +489,15 @@ void print_confusion(void);
 
 void print_a_token(void);
 
-bool print_a_pool_str(StrNumber s);
+CResult print_a_pool_str(StrNumber s);
 
-bool print_aux_name(void);
+CResult print_aux_name(void);
 
-bool log_pr_aux_name(void);
+CResult log_pr_aux_name(void);
 
-bool aux_err_print(void);
+CResult aux_err_print(void);
 
-bool aux_err_illegal_another_print(int32_t cmd_num);
+CResult aux_err_illegal_another_print(int32_t cmd_num);
 
 void aux_err_no_right_brace_print(void);
 
@@ -507,53 +507,53 @@ void aux_err_white_space_in_argument_print(void);
 
 void aux_end1_err_print(void);
 
-bool aux_end2_err_print(void);
+CResult aux_end2_err_print(void);
 
-bool print_bib_name(void);
+CResult print_bib_name(void);
 
-bool log_pr_bib_name(void);
+CResult log_pr_bib_name(void);
 
-bool log_pr_bst_name(const Bibtex *ctx);
+CResult log_pr_bst_name(const Bibtex *ctx);
 
 void hash_cite_confusion(void);
 
-bool bst_warn_print(const Bibtex *ctx);
+CResult bst_warn_print(const Bibtex *ctx);
 
 void eat_bst_print(void);
 
 void unknwn_function_class_confusion(void);
 
-bool bst_id_print(ScanRes scan_result);
+CResult bst_id_print(ScanRes scan_result);
 
 void bst_left_brace_print(void);
 
 void bst_right_brace_print(void);
 
-bool bib_err_print(bool at_bib_command);
+CResult bib_err_print(bool at_bib_command);
 
-bool bib_warn_print(void);
+CResult bib_warn_print(void);
 
-bool eat_bib_print(bool at_bib_command);
+CResult eat_bib_print(bool at_bib_command);
 
-bool bib_one_of_two_print(ASCIICode char1, ASCIICode char2, bool at_bib_command);
+CResult bib_one_of_two_print(ASCIICode char1, ASCIICode char2, bool at_bib_command);
 
-bool bib_equals_sign_print(bool at_bib_command);
+CResult bib_equals_sign_print(bool at_bib_command);
 
-bool bib_id_print(ScanRes scan_res);
+CResult bib_id_print(ScanRes scan_res);
 
 void bib_cmd_confusion(void);
 
 void cite_key_disappeared_confusion(void);
 
-bool bad_cross_reference_print(StrNumber s);
+CResult bad_cross_reference_print(StrNumber s);
 
-bool print_missing_entry(StrNumber s);
+CResult print_missing_entry(StrNumber s);
 
-bool bst_cant_mess_with_entries_print(const ExecCtx *ctx);
+CResult bst_cant_mess_with_entries_print(const ExecCtx *ctx);
 
 void bst_1print_string_size_exceeded(void);
 
-bool bst_2print_string_size_exceeded(const ExecCtx *ctx);
+CResult bst_2print_string_size_exceeded(const ExecCtx *ctx);
 
 void case_conversion_confusion(void);
 
@@ -563,7 +563,7 @@ CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
 
 CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
 
-bool nonexistent_cross_reference_error(FieldLoc field_ptr);
+CResult nonexistent_cross_reference_error(FieldLoc field_ptr);
 
 void output_bbl_line(Bibtex *ctx);
 
