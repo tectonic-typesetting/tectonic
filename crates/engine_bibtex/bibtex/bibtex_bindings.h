@@ -104,6 +104,8 @@ typedef uint8_t StrIlk;
 
 typedef struct PeekableInput PeekableInput;
 
+typedef struct XBuf_ExecVal XBuf_ExecVal;
+
 typedef uintptr_t StrNumber;
 
 typedef uintptr_t BufPointer;
@@ -188,8 +190,7 @@ typedef struct {
   ExecVal pop1;
   ExecVal pop2;
   ExecVal pop3;
-  ExecVal *lit_stack;
-  uintptr_t lit_stk_size;
+  XBuf_ExecVal *lit_stack;
   uintptr_t lit_stk_ptr;
   bool mess_with_entries;
   StrNumber bib_str_ptr;
@@ -394,6 +395,14 @@ ASCIICode entry_strs(int32_t pos);
 
 void set_entry_strs(int32_t pos, ASCIICode val);
 
+ExecVal int_val(int32_t lit);
+
+ExecVal str_val(StrNumber str);
+
+ExecVal func_val(HashPointer f);
+
+ExecVal missing_val(StrNumber f);
+
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
 CResult print_lit(ExecVal val);
@@ -430,6 +439,8 @@ CResult figure_out_the_formatted_name(ExecCtx *ctx,
 CResult check_command_execution(ExecCtx *ctx);
 
 CResult add_pool_buf_and_push(ExecCtx *ctx);
+
+ExecVal *cur_lit(ExecCtx *ctx);
 
 int32_t num_glb_strs(void);
 

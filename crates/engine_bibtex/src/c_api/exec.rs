@@ -14,12 +14,11 @@ use crate::{
             with_pool_mut, StringPool,
         },
         scan::enough_text_chars,
-        xbuf::{xrealloc_zeroed, SafelyZero},
-        xcalloc, ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrNumber,
+        xbuf::{SafelyZero, XBuf},
+        ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrNumber,
     },
     BibtexError,
 };
-use std::{mem, slice};
 
 const LIT_STK_SIZE: usize = 100;
 
@@ -49,6 +48,38 @@ impl ExecVal {
             lit: 0,
         }
     }
+
+    #[no_mangle]
+    pub extern "C" fn int_val(lit: i32) -> ExecVal {
+        ExecVal {
+            lit,
+            typ: StkType::Integer,
+        }
+    }
+
+    #[no_mangle]
+    pub extern "C" fn str_val(str: StrNumber) -> ExecVal {
+        ExecVal {
+            lit: str as i32,
+            typ: StkType::String,
+        }
+    }
+
+    #[no_mangle]
+    pub extern "C" fn func_val(f: HashPointer) -> ExecVal {
+        ExecVal {
+            lit: f as i32,
+            typ: StkType::Function,
+        }
+    }
+
+    #[no_mangle]
+    pub extern "C" fn missing_val(f: StrNumber) -> ExecVal {
+        ExecVal {
+            lit: f as i32,
+            typ: StkType::Missing,
+        }
+    }
 }
 
 // SAFETY: StkType is valid as 0 because of StkType::Integer, i32 is always valid as 0
@@ -61,23 +92,15 @@ pub struct ExecCtx {
     pub pop1: ExecVal,
     pub pop2: ExecVal,
     pub pop3: ExecVal,
-    // TODO: Make an XBuf after this is more encapsulated
-    pub lit_stack: *mut ExecVal,
-    pub lit_stk_size: usize,
+    pub lit_stack: Box<XBuf<ExecVal>>,
     pub lit_stk_ptr: usize,
-
     pub mess_with_entries: bool,
     pub bib_str_ptr: StrNumber,
 }
 
 impl ExecCtx {
     fn grow_stack(&mut self) {
-        let (ptr, size) = (self.lit_stack.cast(), self.lit_stk_size);
-        // SAFETY: The lit_stack should be valid for lit_stk_size. We trust the C code to uphold this invariant.
-        let slice = unsafe { slice::from_raw_parts_mut(ptr, size) };
-        let new_stack =
-            xrealloc_zeroed::<ExecVal>(slice, self.lit_stk_size + LIT_STK_SIZE).unwrap();
-        self.lit_stack = (new_stack as *mut [_]).cast();
+        self.lit_stack.grow(LIT_STK_SIZE);
     }
 }
 
@@ -89,9 +112,7 @@ pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
         pop1: ExecVal::empty(),
         pop2: ExecVal::empty(),
         pop3: ExecVal::empty(),
-        // SAFETY: Allocation is actually safe
-        lit_stack: unsafe { xcalloc(LIT_STK_SIZE + 1, mem::size_of::<ExecVal>()) }.cast(),
-        lit_stk_size: LIT_STK_SIZE,
+        lit_stack: Box::new(XBuf::new(LIT_STK_SIZE + 1)),
         lit_stk_ptr: 0,
         mess_with_entries: false,
         bib_str_ptr: 0,
@@ -257,10 +278,9 @@ pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> CResult {
 }
 
 fn rs_push_lit_stk(ctx: &mut ExecCtx, val: ExecVal) {
-    // SAFETY: Length guaranteed to be >= lit_stk_ptr
-    unsafe { *ctx.lit_stack.add(ctx.lit_stk_ptr) = val };
+    ctx.lit_stack[ctx.lit_stk_ptr] = val;
 
-    if ctx.lit_stk_ptr >= ctx.lit_stk_size {
+    if ctx.lit_stk_ptr >= ctx.lit_stack.len() {
         ctx.grow_stack();
     }
 
@@ -283,7 +303,7 @@ pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
     } else {
         ctx.lit_stk_ptr -= 1;
         // SAFETY: lit_stack length guaranteed >= lit_stk_ptr
-        let pop = unsafe { ctx.lit_stack.add(ctx.lit_stk_ptr).read() };
+        let pop = ctx.lit_stack[ctx.lit_stk_ptr];
         if pop.typ == StkType::String && pop.lit as usize >= ctx.bib_str_ptr {
             if pop.lit as usize != bib_str_ptr() - 1 {
                 write_logs("Nontop top of string stack");
@@ -785,4 +805,9 @@ pub unsafe extern "C" fn add_pool_buf_and_push(ctx: *mut ExecCtx) -> CResult {
         with_pool_mut(|pool| rs_add_pool_buf_and_push(&mut *ctx, buffers, pool))
     })
     .into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn cur_lit(ctx: *mut ExecCtx) -> *mut ExecVal {
+    &mut (*ctx).lit_stack[(*ctx).lit_stk_ptr]
 }
